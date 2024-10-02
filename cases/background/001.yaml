@@ -1,0 +1,3042 @@
+screen:
+  width: 1280
+  height: 720
+  backgroundColor: "#000000"
+
+resources:
+  background:
+    - id: "bg1"
+      src: /public/first-contract/images/circle.png
+      name: "Background 1"
+    - id: "bg2"
+      src: "/public/first-contract/images/circle lit.png"
+      name: "Background 2"
+    - id: "bg3"
+      src: "/public/first-contract/images/bg darkbedroom.png"
+      name: "Background 3"
+    - id: "bg4"
+      src: "/public/first-contract/gui/red.png"
+      name: "Background 4"
+    - id: "bg5"
+      src: "/public/first-contract/images/bg bedroom.png"
+      name: "Background 5"
+  visuals:
+    - id: "candle"
+      name: "Candle"
+      src: "/public/first-contract/images/candle.webp"
+    - id: "pink-overlay"
+      name: "Pink Overlay"
+      src: "/public/first-contract/images/pink-overlay.png"
+    - id: "cg1"
+      name: "CG 1"
+      src: "/public/first-contract/images/cg punishment.png"
+  bgm:
+    - id: "bgm1"
+      name: "BGM 1"
+      src: "/public/first-contract/audio/friend ritual.ogg"
+    - id: "bgm2"
+      name: "BGM 2"
+      src: "/public/first-contract/audio/play together.ogg"
+  sfx:
+    - id: "candle"
+      name: "Candle"
+      src: "/public/first-contract/audio/sfx_candle.wav"
+    - id: flute
+      name: "flute"
+      src: "/public/first-contract/audio/sfx_flute.wav"
+    - id: light
+      name: "Light"
+      src: "/public/first-contract/audio/sfx_light.wav"
+    - id: rumble
+      name: "Rumble"
+      src: "/public/first-contract/audio/sfx_rumble.wav"
+    - id: oh
+      name: "Oh"
+      src: "/public/first-contract/audio/sfx_oh.wav"
+  characters:
+    - id: "eleni"
+      name: "Eleni"
+      whoColor: "#ff74b2"
+      sprites:
+        - id: "eleni2_hidden"
+          name: "Eleni 2 Hidden"
+          src: "/public/first-contract/images/eleni/eleni2 hidden.png"
+        - id: "eleni_arms_pjs_down"
+          name: "Eleni Arms PJs Down"
+          src: "/public/first-contract/images/eleni/eleni_arms_pjs_down.png"
+        - id: "eleni_arms_pjs_oneup"
+          name: "Eleni Arms PJs One Up"
+          src: "/public/first-contract/images/eleni/eleni_arms_pjs_oneup.png"
+        - id: "eleni_arms_pjs_up"
+          name: "Eleni Arms PJs Up"
+          src: "/public/first-contract/images/eleni/eleni_arms_pjs_up.png"
+        - id: "eleni_arms_robe_down"
+          name: "Eleni Arms Robe Down"
+          src: "/public/first-contract/images/eleni/eleni_arms_robe_down.png"
+        - id: "eleni_arms_robe_up"
+          name: "Eleni Arms Robe Up"
+          src: "/public/first-contract/images/eleni/eleni_arms_robe_up.png"
+        - id: "eleni_base"
+          name: "Eleni Base"
+          src: "/public/first-contract/images/eleni/eleni_base.png"
+        - id: "eleni_brows_mad"
+          name: "Eleni Brows Mad"
+          src: "/public/first-contract/images/eleni/eleni_brows_mad.png"
+        - id: "eleni_brows_relax"
+          name: "Eleni Brows Relax"
+          src: "/public/first-contract/images/eleni/eleni_brows_relax.png"
+        - id: "eleni_brows_sad"
+          name: "Eleni Brows Sad"
+          src: "/public/first-contract/images/eleni/eleni_brows_sad.png"
+        - id: "eleni_brows_up"
+          name: "Eleni Brows Up"
+          src: "/public/first-contract/images/eleni/eleni_brows_up.png"
+        - id: "eleni_eyes_closed"
+          name: "Eleni Eyes Closed"
+          src: "/public/first-contract/images/eleni/eleni_eyes_closed.png"
+        - id: "eleni_eyes_lookaway"
+          name: "Eleni Eyes Look Away"
+          src: "/public/first-contract/images/eleni/eleni_eyes_lookaway.png"
+        - id: "eleni_eyes_open"
+          name: "Eleni Eyes Open"
+          src: "/public/first-contract/images/eleni/eleni_eyes_open.png"
+        - id: "eleni_eyes_squee"
+          name: "Eleni Eyes Squee"
+          src: "/public/first-contract/images/eleni/eleni_eyes_squee.png"
+        - id: "eleni_eyes_tired"
+          name: "Eleni Eyes Tired"
+          src: "/public/first-contract/images/eleni/eleni_eyes_tired.png"
+        - id: "eleni_eyes_yay"
+          name: "Eleni Eyes Yay"
+          src: "/public/first-contract/images/eleni/eleni_eyes_yay.png"
+        - id: "eleni_mouth_ehe"
+          name: "Eleni Mouth Ehe"
+          src: "/public/first-contract/images/eleni/eleni_mouth_ehe.png"
+        - id: "eleni_mouth_frown"
+          name: "Eleni Mouth Frown"
+          src: "/public/first-contract/images/eleni/eleni_mouth_frown.png"
+        - id: "eleni_mouth_happy"
+          name: "Eleni Mouth Happy"
+          src: "/public/first-contract/images/eleni/eleni_mouth_happy.png"
+        - id: "eleni_mouth_oh"
+          name: "Eleni Mouth Oh"
+          src: "/public/first-contract/images/eleni/eleni_mouth_oh.png"
+        - id: "eleni_mouth_pout"
+          name: "Eleni Mouth Pout"
+          src: "/public/first-contract/images/eleni/eleni_mouth_pout.png"
+        - id: "eleni_mouth_shout"
+          name: "Eleni Mouth Shout"
+          src: "/public/first-contract/images/eleni/eleni_mouth_shout.png"
+        - id: "eleni_mouth_smile"
+          name: "Eleni Mouth Smile"
+          src: "/public/first-contract/images/eleni/eleni_mouth_smile.png"
+        - id: "eleni_outfit_pjs"
+          name: "Eleni Outfit PJs"
+          src: "/public/first-contract/images/eleni/eleni_outfit_pjs.png"
+        - id: "eleni_outfit_robe"
+          name: "Eleni Outfit Robe"
+          src: "/public/first-contract/images/eleni/eleni_outfit_robe.png"
+    - id: "kamilla"
+      name: "Kamilla"
+      whoColor: "#cc005b"
+      sprites:
+        - id: "kamilla_base"
+          name: "Kamilla Base"
+          src: "/public/first-contract/images/kamilla/kamilla_base.png"
+        - id: "kamilla2_despair"
+          name: "Kamilla Despair"
+          src: "/public/first-contract/images/kamilla/kamilla2_despair.png"
+        - id: "kamilla_arms_cas_down"
+          name: "Kamilla Arms Casual Down"
+          src: "/public/first-contract/images/kamilla/kamilla_arms_cas_down.png"
+        - id: "kamilla_arms_cas_oneup"
+          name: "Kamilla Arms Casual One Up"
+          src: "/public/first-contract/images/kamilla/kamilla_arms_cas_oneup.png"
+        - id: "kamilla_arms_cas_up"
+          name: "Kamilla Arms Casual Up"
+          src: "/public/first-contract/images/kamilla/kamilla_arms_cas_up.png"
+        - id: "kamilla_arms_pjs_down"
+          name: "Kamilla Arms PJs Down"
+          src: "/public/first-contract/images/kamilla/kamilla_arms_pjs_down.png"
+        - id: "kamilla_arms_pjs_oneup"
+          name: "Kamilla Arms PJs One Up"
+          src: "/public/first-contract/images/kamilla/kamilla_arms_pjs_oneup.png"
+        - id: "kamilla_arms_work_cover"
+          name: "Kamilla Arms Work Cover"
+          src: "/public/first-contract/images/kamilla/kamilla_arms_work_cover.png"
+        - id: "kamilla_arms_work_down"
+          name: "Kamilla Arms Work Down"
+          src: "/public/first-contract/images/kamilla/kamilla_arms_work_down.png"
+        - id: "kamilla_arms_work_grab"
+          name: "Kamilla Arms Work Grab"
+          src: "/public/first-contract/images/kamilla/kamilla_arms_work_grab.png"
+        - id: "kamilla_brows_concern"
+          name: "Kamilla Brows Concern"
+          src: "/public/first-contract/images/kamilla/kamilla_brows_concern.png"
+        - id: "kamilla_brows_mad"
+          name: "Kamilla Brows Mad"
+          src: "/public/first-contract/images/kamilla/kamilla_brows_mad.png"
+        - id: "kamilla_brows_surprise"
+          name: "Kamilla Brows Surprise"
+          src: "/public/first-contract/images/kamilla/kamilla_brows_surprise.png"
+        - id: "kamilla_brows_up"
+          name: "Kamilla Brows Up"
+          src: "/public/first-contract/images/kamilla/kamilla_brows_up.png"
+        - id: "kamilla_brows_worry"
+          name: "Kamilla Brows Worry"
+          src: "/public/first-contract/images/kamilla/kamilla_brows_worry.png"
+        - id: "kamilla_eyes_blush"
+          name: "Kamilla Eyes Blush"
+          src: "/public/first-contract/images/kamilla/kamilla_eyes_blush.png"
+        - id: "kamilla_eyes_closed"
+          name: "Kamilla Eyes Closed"
+          src: "/public/first-contract/images/kamilla/kamilla_eyes_closed.png"
+        - id: "kamilla_eyes_dark"
+          name: "Kamilla Eyes Dark"
+          src: "/public/first-contract/images/kamilla/kamilla_eyes_dark.png"
+        - id: "kamilla_eyes_half"
+          name: "Kamilla Eyes Half"
+          src: "/public/first-contract/images/kamilla/kamilla_eyes_half.png"
+        - id: "kamilla_eyes_half2"
+          name: "Kamilla Eyes Half 2"
+          src: "/public/first-contract/images/kamilla/kamilla_eyes_half2.png"
+        - id: "kamilla_eyes_halfaway"
+          name: "Kamilla Eyes Half Away"
+          src: "/public/first-contract/images/kamilla/kamilla_eyes_halfaway.png"
+        - id: "kamilla_eyes_open"
+          name: "Kamilla Eyes Open"
+          src: "/public/first-contract/images/kamilla/kamilla_eyes_open.png"
+        - id: "kamilla_eyes_open2"
+          name: "Kamilla Eyes Open 2"
+          src: "/public/first-contract/images/kamilla/kamilla_eyes_open2.png"
+        - id: "kamilla_eyes_open3"
+          name: "Kamilla Eyes Open 3"
+          src: "/public/first-contract/images/kamilla/kamilla_eyes_open3.png"
+        - id: "kamilla_eyes_open4"
+          name: "Kamilla Eyes Open 4"
+          src: "/public/first-contract/images/kamilla/kamilla_eyes_open4.png"
+        - id: "kamilla_mouth_grin"
+          name: "Kamilla Mouth Grin"
+          src: "/public/first-contract/images/kamilla/kamilla_mouth_grin.png"
+        - id: "kamilla_mouth_oh"
+          name: "Kamilla Mouth Oh"
+          src: "/public/first-contract/images/kamilla/kamilla_mouth_oh.png"
+        - id: "kamilla_mouth_panic"
+          name: "Kamilla Mouth Panic"
+          src: "/public/first-contract/images/kamilla/kamilla_mouth_panic.png"
+        - id: "kamilla_mouth_pout"
+          name: "Kamilla Mouth Pout"
+          src: "/public/first-contract/images/kamilla/kamilla_mouth_pout.png"
+        - id: "kamilla_mouth_shout"
+          name: "Kamilla Mouth Shout"
+          src: "/public/first-contract/images/kamilla/kamilla_mouth_shout.png"
+        - id: "kamilla_mouth_smile"
+          name: "Kamilla Mouth Smile"
+          src: "/public/first-contract/images/kamilla/kamilla_mouth_smile.png"
+        - id: "kamilla_mouth_uh"
+          name: "Kamilla Mouth Uh"
+          src: "/public/first-contract/images/kamilla/kamilla_mouth_uh.png"
+        - id: "kamilla_mouth_um"
+          name: "Kamilla Mouth Um"
+          src: "/public/first-contract/images/kamilla/kamilla_mouth_um.png"
+        - id: "kamilla_outfit_casual"
+          name: "Kamilla Outfit Casual"
+          src: "/public/first-contract/images/kamilla/kamilla_outfit_casual.png"
+        - id: "kamilla_outfit_pjs"
+          name: "Kamilla Outfit PJs"
+          src: "/public/first-contract/images/kamilla/kamilla_outfit_pjs.png"
+        - id: "kamilla_outfit_work"
+          name: "Kamilla Outfit Work"
+          src: "/public/first-contract/images/kamilla/kamilla_outfit_work.png"
+  position:
+    - id: "character_left"
+      name: "Character Left"
+      x: 320
+      y: 720
+      xa: 0.5
+      ya: 1
+    - id: "character_center"
+      name: "Character Center"
+      x: 640
+      y: 720
+      xa: 0.5
+      ya: 1
+    - id: "character_right"
+      name: "Character Right"
+      x: 960
+      y: 720
+      xa: 0.5
+      ya: 1
+    - id: "visual_center"
+      name: "Visual Center"
+      x: 640
+      y: 70
+      xa: 0.5
+      ya: 0
+  animation:
+    - id: "ani1"
+      properties:
+        - property: alpha
+          initialValue: 0
+          keyframes:
+            - duration: 700
+              value: 1
+              easing: linear
+    - id: "ani2"
+      properties:
+        - property: alpha
+          initialValue: 0
+          keyframes:
+            - duration: 700
+              value: 0
+              easing: linear
+            - duration: 1400
+              value: 1
+              easing: linear
+    - id: "ani3"
+      properties:
+        - property: alpha
+          initialValue: 0
+          keyframes:
+            - duration: 1400
+              value: 0
+              easing: linear
+            - duration: 700
+              value: 1
+              easing: linear
+    - id: "ani4"
+      properties:
+        - property: alpha
+          initialValue: 1
+          keyframes:
+            - duration: 1000
+              value: 0
+              easing: linear
+    - id: "ani5"
+      properties:
+        - property: x
+          keyframes:
+            - duration: 600
+              relative: true
+              value: -600
+              easing: linear
+        - property: scale.x
+          keyframes:
+            - duration: 0
+              value: -1
+              easing: linear
+    - id: "ani7"
+      properties:
+        - property: x
+          keyframes:
+            - duration: 0
+              relative: true
+              value: -600
+              easing: linear
+            - duration: 600
+              relative: true
+              value: 600
+              easing: linear
+        - property: scale.x
+          keyframes:
+            - duration: 0
+              value: 1
+              easing: linear
+    - id: ani6
+      properties:
+        - property: y
+          keyframes:
+            - duration: 100
+              relative: true
+              value: 20
+              easing: linear
+            - duration: 100
+              relative: true
+              value: -40
+              easing: linear
+            - duration: 100
+              relative: true
+              value: 40
+              easing: linear
+            - duration: 100
+              relative: true
+              value: -40
+              easing: linear
+            - duration: 100
+              relative: true
+              value: 40
+              easing: linear
+            - duration: 100
+              relative: true
+              value: -40
+              easing: linear
+            - duration: 100
+              relative: true
+              value: 20
+              easing: linear
+  screens:
+    - id: "screen1"
+      name: "Title Screen"
+
+  dialogueBoxes:
+    - id: "dialogueBox1"
+      name: "Dialogue Box 1"
+      layout:
+        - id: "asdf"
+          type: "anchor-layout-container"
+          anchor: "BottomLeft"
+          direction: "horizontal"
+          x: 0
+          y: 720
+          children:
+            - id: "title"
+              type: "sprite"
+              url: "/public/first-contract/gui/textbox.png"
+              direction: horizontal
+        - id: awefg
+          type: anchor-layout-container
+          anchor: TopLeft
+          direction: horizontal
+          x: 220
+          y: 530
+          children:
+            - id: "name"
+              type: text
+              width: 43
+              height: 48
+              text: ""
+              contentSource: "characterName"
+              style:
+                fill: "#cc005b"
+                fontSize: 40
+                fontFamily: "NomnomNami2"
+                wordWrapWidth: 1740
+                strokeColor: black
+                strokeWidth: 6
+
+        - id: awefg
+          type: anchor-layout-container
+          anchor: TopLeft
+          direction: horizontal
+          x: 240
+          y: 570
+          children:
+            - id: "name3"
+              type: text-revealing
+              width: 43
+              height: 48
+              text: "This is the text content"
+              contentSource: "dialogueContent"
+              style:
+                fill: "white"
+                fontSize: 30
+                fontFamily: "NomnomNami2"
+                wordWrapWidth: 780
+                strokeColor: black
+                strokeWidth: 3
+
+    - id: "dialogueBox2"
+      name: "Dialogue Box 2"
+      layout:
+        - id: "as23df"
+          type: "anchor-layout-container"
+          anchor: "CenterCenter"
+          direction: "horizontal"
+          x: 640
+          y: 360
+          children:
+            - id: "name3"
+              type: text-revealing
+              width: 100
+              height: 48
+              text: "This is the text content"
+              contentSource: "dialogueContent"
+              style:
+                fill: "white"
+                fontSize: 30
+                fontFamily: "NomnomNami2"
+                wordWrapWidth: 1740
+                strokeColor: black
+                strokeWidth: 3
+    - id: "dialogueBox3"
+      name: "Dialogue Box 3"
+      layout:
+        - id: "asdf"
+          type: "anchor-layout-container"
+          anchor: "BottomLeft"
+          direction: "horizontal"
+          x: 0
+          y: 720
+          children:
+            - id: "title"
+              type: "sprite"
+              url: "/public/first-contract/gui/nvl.png"
+              direction: horizontal
+        - id: 'f34afeja'
+          type: 'anchor-layout-container'
+          anchor: 'TopLeft'
+          direction: 'horizontal'
+          x: 700
+          y: 30
+          children:
+            - id: 'title'
+              type: 'text'
+              text: 'Olog'
+              style:
+                fill: 'white'
+                fontSize: 40
+                fontFamily: 'NomnomNami2'
+                wordWrapWidth: 1740
+                strokeColor: 'black'
+                strokeWidth: 6
+        - id: 'f34afeja231'
+          type: 'anchor-layout-container'
+          incremental: true
+          anchor: 'TopLeft'
+          direction: 'vertical'
+          gap: 20
+          x: 420
+          y: 120
+          height: 500
+          width: 1200
+          childItems:
+            - id: 'left'
+              type: 'anchor-layout-container'
+              x: 0
+              width: 550
+              # height: 96
+              radius: 8
+              anchor: 'TopLeft'
+              direction: 'horizontal'
+              fill:
+                color: '#ff74b2'
+              children:
+                - id: 'lefte2'
+                  type: 'text'
+                  contentSource: "dialogueContent"
+                  fill:
+                    color: '#ff74b2'
+                  text: ''
+                  x: 10
+                  # height: 96
+                  style:
+                    fill: 'white'
+                    fontSize: 34
+                    fontFamily: 'NomnomNami2'
+                    wordWrapWidth: 530
+                    strokeColor: 'black'
+                    strokeWidth: 6 
+                    align: left
+            - id: 'right'
+              type: 'anchor-layout-container'
+              x: 600
+              width: 550
+              # height: 96
+              radius: 8
+              anchor: 'TopRight'
+              direction: 'horizontal'
+              fill:
+                color: '#cc005b'
+              children:
+                - id: 'title14123'
+                  width: 580
+                  type: 'text'
+                  text: ''
+                  x: -10
+                  contentSource: "dialogueContent"
+                  # height: 96
+                  style:
+                    fill: '#cccccc'
+                    fontSize: 34
+                    fontFamily: 'NomnomNami2'
+                    wordWrapWidth: 530
+                    strokeColor: 'black'
+                    strokeWidth: 6 
+                    align: right
+          children: []
+            # - id: 'title14123'
+            #   type: 'text-revealing'
+            #   text: 'New contract has a time obligation, be back tomorrow'
+            #   height: 96
+            #   style:
+            #     fill: 'white'
+            #     fontSize: 34
+            #     fontFamily: 'NomnomNami2'
+            #     wordWrapWidth: 600
+            #     strokeColor: 'black'
+            #     strokeWidth: 6
+            # - id: 'title12sd12f23'
+            #   type: 'text-revealing'
+            #   text: 'OK, no lasagna for you tonight'
+            #   height: 48
+            #   style:
+            #     fill: 'white'
+            #     fontSize: 34
+            #     fontFamily: 'NomnomNami2'
+            #     wordWrapWidth: 600
+            #     strokeColor: 'black'
+            #     strokeWidth: 6
+
+story:
+  startSceneId: "scene0"
+  scenes:
+    - id: "scene0"
+      name: "Scene 0"
+      description: "This is the first scene"
+      sections:
+        - id: sectiontest
+          steps:
+            - id: "step0"
+              actions:
+                background:
+                  backgroundId: "bg5"
+                dialogue:
+                  incremental: true
+                  dialogueBoxId: "dialogueBox3"
+                  childItemId: right
+                  text: "New contract has a time obligation, be back tomorrow"
+            - id: "step1"
+              actions:
+                dialogue:
+                  incremental: true
+                  childItemId: left
+                  text: "OK, no lasagna for you tonight"
+            - id: "step51"
+              actions:
+                dialogue:
+                  childItemId: right
+                  incremental: true
+                  text: "I'll have the left overs"
+
+            - id: "step52"
+              actions:
+                dialogue:
+                  childItemId: left
+                  incremental: true
+                  text: "Not if I eat it all"
+
+            - id: "step53"
+              actions:
+                dialogue:
+                  childItemId: right
+                  incremental: true
+                  text: "BROTHER..."
+
+            - id: "step54"
+              actions:
+                dialogue:
+                  childItemId: right
+                  incremental: true
+                  text: "You are truly a demon among demons. If only I could learn from your evil ways."
+            - id: "step55"
+              actions:
+                dialogue:
+                  childItemId: left
+                  incremental: true
+                  text: Such praise. I'll leave you my scraps out of mercy
+
+            - id: "step56"
+              actions:
+                dialogue:
+                  childItemId: right
+                  incremental: true
+                  text: Wow, I'm grateful
+
+
+
+
+        - id: "section0"
+
+          name: "Section 0"
+          description: "This is the first section"
+          steps:
+            - id: "zero"
+              actions: {}
+            - id: "step0"
+              autoNext: true
+              actions:
+                background:
+                  backgroundId: "bg1"
+                  inAnimation:
+                    animationId: "ani1"
+            - id: "step1"
+              autoNext: true
+              actions:
+                sfx:
+                  items:
+                    - id: sfx-candle-1
+                      sfxId: "candle"
+                    - id: sfx-candle-2
+                      sfxId: "candle"
+                      delay: 700
+                    - id: sfx-candle-3
+                      sfxId: "candle"
+                      delay: 1400
+                visuals:
+                  items:
+                    - id: "candle1"
+                      visualId: "candle"
+                      inAnimation:
+                        animationId: "ani1"
+                      position:
+                        x: 256
+                        y: 57.6
+                    - id: "candle2"
+                      visualId: "candle"
+                      inAnimation:
+                        animationId: "ani1"
+                      position:
+                        x: 1024
+                        y: 57.6
+                    - id: "candle3"
+                      visualId: "candle"
+                      inAnimation:
+                        animationId: "ani2"
+                      position:
+                        x: 153.6
+                        y: 273.6
+                    - id: "candle4"
+                      visualId: "candle"
+                      inAnimation:
+                        animationId: "ani2"
+                      position:
+                        x: 1126.4
+                        y: 273.6
+                    - id: "candle5"
+                      visualId: "candle"
+                      inAnimation:
+                        animationId: "ani3"
+                      position:
+                        x: 192
+                        y: 489.6
+                    - id: "candle6"
+                      visualId: "candle"
+                      inAnimation:
+                        animationId: "ani3"
+                      position:
+                        x: 1088
+                        y: 489.6
+            - id: "step4"
+              autoNext: true
+              autoNextDelay: 3000
+              actions:
+                sfx:
+                  items:
+                    - sfxId: "flute"
+            - id: stef342
+              actions:
+                dialogue:
+                  character:
+                    characterName: "???"
+                  dialogueBoxId: "dialogueBox1"
+                  text: "May my melody reach the deepest pits of the Netherworld!"
+            - id: asdf32
+              autoNext: true
+              actions:
+                sfx:
+                  items:
+                    - sfxId: "light"
+                dialogue:
+                  dialogueBoxId:
+                background:
+                  backgroundId: "bg2"
+                  inAnimation:
+                    animationId: "ani1"
+                  # outAnimation:
+                  #   animationId: "ani4"
+            - id: "step1233"
+              actions:
+                dialogue:
+                  character:
+                    characterName: "???"
+                  dialogueBoxId: "dialogueBox1"
+                  text: "Kamilla, if you're listening, I invite you to this world!"
+
+            - id: "step9"
+              actions:
+                dialogue:
+                  text: "Let's form a contract!!"
+                sfx:
+                  items:
+                    - sfxId: "rumble"
+                background:
+                  backgroundId: "bg4"
+                  inAnimation:
+                    animationId: "ani1"
+                  # outAnimation:
+                  #   animationId: "ani4"
+                visuals:
+                  items:
+                    - id: "candle1"
+                      visualId:
+                      outAnimation:
+                        animationId: "ani4"
+                    - id: "candle2"
+                      visualId:
+                      outAnimation:
+                        animationId: "ani4"
+                    - id: "candle3"
+                      visualId:
+                      outAnimation:
+                        animationId: "ani4"
+                    - id: "candle4"
+                      visualId:
+                      outAnimation:
+                        animationId: "ani4"
+                    - id: "candle5"
+                      visualId:
+                      outAnimation:
+                        animationId: "ani4"
+                    - id: "candle6"
+                      visualId:
+                      outAnimation:
+                        animationId: "ani4"
+            - id: "step1023"
+              actions:
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "SO YOU'VE CALLED UPON ME AGAIN..."
+            - id: "step41023"
+              actions:
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "TREMBLE IN FEAR, PATHETIC FOOL... FOR I, FROM THE VERY DEPTHS OF OBLIVION, HAVE BROUGHT...!"
+           
+            - id: "step10"
+              actions:
+                sfx:
+                  items:
+                    - sfxId: "oh"
+                background:
+                  backgroundId: "bg3"
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_robe",
+                          "eleni_arms_robe_up",
+                          "eleni_eyes_open",
+                          "eleni_brows_mad",
+                          "eleni_mouth_smile",
+                        ]
+                      position:
+                        positionId: "character_left"
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_eyes_open",
+                          "kamilla_mouth_grin",
+                          "kamilla_arms_work_down",
+                        ]
+                      position:
+                        positionId: "character_right"
+                dialogue:
+                  dialogueBoxId: "dialogueBox1"
+                  character:
+                    characterId: "kamilla"
+                  text: "...The book you asked for."
+            - id: "step13"
+              actions:
+                bgm:
+                  bgmId: "bgm1"
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_robe",
+                          "eleni_arms_robe_up",
+                          "eleni_eyes_squee",
+                          "eleni_mouth_ehe",
+                        ]
+                      position:
+                        positionId: "character_left"
+                      # inAnimation:
+                      #   animationId: "ani7"
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_eyes_open",
+                          "kamilla_mouth_grin",
+                          "kamilla_arms_work_down",
+                          "kamilla_outfit_work",
+                        ]
+                      position:
+                        positionId: "character_right"
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: EEEEEEE show me, show me!
+            - id: "step14"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_eyes_half2",
+                          "kamilla_brows_mad",
+                          "kamilla_mouth_um",
+                          "kamilla_arms_work_down",
+                          "kamilla_outfit_work",
+                        ]
+                      position:
+                        positionId: "character_right"
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: 'Here... "A Comprehensive Guide to Capturing Princesses." Not sure why you''d want a guidebook aimed at overlord-level demons, but...'
+
+            - id: "step15"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_robe",
+                          "eleni_arms_robe_up",
+                          "eleni_brows_mad",
+                          "eleni_eyes_open",
+                          "eleni_mouth_happy",
+                        ]
+                      position:
+                        positionId: "character_left"
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Of course I'd want it! It's important to learn what kinds of knowledge they want to pass down to future generations!"
+
+            - id: "step16"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_eyes_open",
+                          "kamilla_brows_surprise",
+                          "kamilla_mouth_pout",
+                          "kamilla_arms_work_down",
+                          "kamilla_outfit_work",
+                        ]
+                      position:
+                        positionId: "character_right"
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "You're not secretly vying to become an overlord, then?"
+
+            - id: "step17"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_robe",
+                          "eleni_arms_robe_up",
+                          "eleni_brows_up",
+                          "eleni_eyes_lookaway",
+                          "eleni_mouth_smile",
+                        ]
+                      position:
+                        positionId: "character_left"
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Heheh, I wonder~"
+
+            - id: "step18"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_eyes_half2",
+                          "kamilla_brows_mad",
+                          "kamilla_mouth_uh",
+                          "kamilla_arms_work_cover",
+                        ]
+                      position:
+                        positionId: "character_right"
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "By the way... do you really have to wear those robes every time you summon me."
+
+            - id: "step19"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_robe",
+                          "eleni_arms_robe_up",
+                          "eleni_brows_mad",
+                          "eleni_eyes_open",
+                          "eleni_mouth_shout",
+                        ]
+                      position:
+                        positionId: "character_left"
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "YES!! It's part of the ritual!"
+
+            - id: "step20"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_eyes_closed",
+                          "kamilla_mouth_um",
+                          "kamilla_arms_work_down",
+                        ]
+                      position:
+                        positionId: "character_right"
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "This is the third time we've done this."
+
+            - id: "step21"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_robe",
+                          "eleni_arms_robe_up",
+                          "eleni_eyes_open",
+                          "eleni_mouth_oh",
+                        ]
+                      position:
+                        positionId: "character_left"
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "I have to be dressed for the ritual, Kamilla."
+
+            - id: "step22"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_eyes_half2",
+                          "kamilla_brows_mad",
+                          "kamilla_mouth_um",
+                          "kamilla_arms_work_down",
+                        ]
+                      position:
+                        positionId: "character_right"
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "And is this daily ritual really necessary to our original contract?"
+
+            - id: "step23"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_robe",
+                          "eleni_arms_robe_up",
+                          "eleni_brows_up",
+                          "eleni_eyes_yay",
+                          "eleni_mouth_happy",
+                        ]
+                      position:
+                        positionId: "character_left"
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "If I don't set the mood, it won't be as fun! It gives you an excuse to make a fun demonic entrance, too..."
+
+            - id: "step24"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_eyes_closed",
+                          "kamilla_brows_up",
+                          "kamilla_mouth_oh",
+                          "kamilla_arms_work_down",
+                        ]
+                      position:
+                        positionId: "character_right"
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "Any entrance I make is demonic..."
+
+            - id: "step25"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_eyes_dark",
+                          "kamilla_brows_mad",
+                          "kamilla_mouth_grin",
+                          "kamilla_arms_work_cover",
+                        ]
+                      position:
+                        positionId: "character_right"
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "FOR I AM A FEARSOME DEMON!\nA CREATURE BORN FROM... TH-THE NIGHTMARES OF PATHETIC HUMANS!"
+
+            - id: "step26"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_robe",
+                          "eleni_arms_robe_up",
+                          "eleni_eyes_open",
+                          "eleni_mouth_oh",
+                        ]
+                      position:
+                        positionId: "character_left"
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Is that really how demons are born? Do you think I could dream a demon into existence too?"
+
+            - id: "step27"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_eyes_open",
+                          "kamilla_brows_mad",
+                          "kamilla_mouth_uh",
+                          "kamilla_arms_work_grab",
+                        ]
+                      position:
+                        positionId: "character_right"
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "No, that's not really--"
+
+            - id: "step28"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_robe",
+                          "eleni_arms_robe_down",
+                          "eleni_brows_mad",
+                          "eleni_eyes_lookaway",
+                          "eleni_mouth_pout",
+                        ]
+                      position:
+                        positionId: "character_left"
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "But I dream about demons all the time! What am I doing wrong? Is it because I'm an angel?"
+
+            - id: "step29"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_eyes_dark",
+                          "kamilla_mouth_shout",
+                          "kamilla_arms_work_down",
+                        ]
+                      position:
+                        positionId: "character_right"
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "No! I-I just meant we're supposed to be like a human's worst fear! I don't know!"
+
+            - id: "step30"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_robe",
+                          "eleni_arms_robe_up",
+                          "eleni_eyes_open",
+                          "eleni_mouth_oh",
+                          "eleni_brows_up",
+                        ]
+                      position:
+                        positionId: "character_left"
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Huh? Then how ARE demons born?"
+
+            - id: "step31"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_cover",
+                          "kamilla_eyes_closed",
+                          "kamilla_mouth_shout",
+                        ]
+                      position:
+                        positionId: "character_right"
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "...Just, nevermind!! Wh-why are we talking about this?!"
+
+            - id: "step32"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_robe",
+                          "eleni_arms_robe_up",
+                          "eleni_eyes_open",
+                          "eleni_mouth_smile",
+                          "eleni_brows_up",
+                        ]
+                      position:
+                        positionId: "character_left"
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "You're the one who brought it up. Here, lemme get the lights."
+
+            - id: "step33"
+              autoNext: true
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_robe",
+                          "eleni_arms_robe_up",
+                          "eleni_eyes_open",
+                          "eleni_mouth_smile",
+                          "eleni_brows_up",
+                        ]
+                      position:
+                        positionId: "character_left"
+                      inAnimation:
+                        animationId: "ani5"
+                dialogue:
+                  dialogueBoxId:
+
+            - id: "step34"
+              autoNext: true
+              actions:
+                # animation:
+                #   animationId: "ani4"
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId:
+            - id: "step35"
+              actions:
+                background:
+                  backgroundId: "bg5"
+                animation:
+                  animationId: "ani1"
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_up",
+                          "eleni_eyes_open",
+                          "eleni_mouth_smile",
+                          "eleni_brows_up",
+                        ]
+                      position:
+                        positionId: "character_left"
+                      inAnimation: 
+                        animationId: "ani7"
+
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_open",
+                          "kamilla_mouth_smile",
+                          "kamilla_brows_up",
+                        ]
+                      position:
+                        positionId: "character_right"
+                dialogue:
+                  dialogueBoxId: "dialogueBox1"
+                  character:
+                    characterId: "eleni"
+                  text: "Ahh, that's much better!"
+            - id: "step36"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_grab",
+                          "kamilla_eyes_halfaway",
+                          "kamilla_mouth_um",
+                          "kamilla_brows_up",
+                        ]
+                      position:
+                        positionId: "character_right"
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "Then don't bother with that atmosphere in the first place..."
+            - id: "step37"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_up",
+                          "eleni_eyes_open",
+                          "eleni_mouth_smile",
+                          "eleni_brows_up",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Is it okay if I come up with a new task for you so I can get to reading this new book?"
+            - id: "step38"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_open",
+                          "kamilla_mouth_uh",
+                          "kamilla_brows_surprise",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "Huh? Y-yeah... I-I mean!"
+            - id: "step39"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_cover",
+                          "kamilla_eyes_open",
+                          "kamilla_mouth_grin",
+                          "kamilla_brows_mad",
+                        ]
+                      inAnimation:
+                        animationId: "ani6"
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "DON'T CASUALLY BELIEVE I'LL OBEY YOUR WHIMS! THINK SERIOUSLY AS TO WHAT YOU'LL OFFER YOUR SOUL! YOUR NEXT WISH MAY BE YOUR LAST!"
+            - id: "step40"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_oneup",
+                          "eleni_eyes_open",
+                          "eleni_mouth_oh",
+                          "eleni_brows_up",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Oh, is there a 3 wish limit? Like a genie?"
+
+            - id: "step41"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_grab",
+                          "kamilla_eyes_open",
+                          "kamilla_mouth_uh",
+                          "kamilla_brows_up",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "That was supposed to be like, a threat on your life..."
+
+            - id: "step42"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_up",
+                          "eleni_eyes_open",
+                          "eleni_mouth_smile",
+                          "eleni_brows_mad",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Let's do a one-contract-per-day minimum! That's my new contract with you!"
+
+            - id: "step43"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_open",
+                          "kamilla_mouth_pout",
+                          "kamilla_brows_mad",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "Refused."
+
+            - id: "step44"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_down",
+                          "eleni_eyes_tired",
+                          "eleni_mouth_oh",
+                          "eleni_brows_sad",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Whaaat? I thought that would be a good one."
+
+            - id: "step45"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_open",
+                          "kamilla_mouth_oh",
+                          "kamilla_brows_mad",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "I can't let myself be monopolized by one client... I'm just starting out, I need a wider range of experience."
+
+            - id: "step46"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_down",
+                          "eleni_eyes_open",
+                          "eleni_mouth_oh",
+                          "eleni_brows_sad",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "So I can't play with you every day?"
+
+            - id: "step47"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_dark",
+                          "kamilla_mouth_shout",
+                          "kamilla_brows_mad",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "Absolutely not. F-fool... you think demon summoning is a game? These contracts have grave consequences for your soul!"
+
+            - id: "step48"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_down",
+                          "eleni_eyes_open",
+                          "eleni_mouth_smile",
+                          "eleni_brows_mad",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Oh, I don't care about that. Whatever the price to talk to a demon, I'll pay it!"
+
+            - id: "step49"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_grab",
+                          "kamilla_eyes_open",
+                          "kamilla_mouth_uh",
+                          "kamilla_brows_up",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "S-seriously?"
+
+            - id: "step50"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_up",
+                          "eleni_eyes_open",
+                          "eleni_mouth_happy",
+                          "eleni_brows_up",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "If asking you to come back every day is too much, then... my new contract is for you to hang out with me for the next 24 hours!"
+
+            - id: "step51"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_open",
+                          "kamilla_mouth_uh",
+                          "kamilla_brows_mad",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "W-weren't you about to read that book I brought you?!"
+
+            - id: "step52"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_up",
+                          "eleni_eyes_open",
+                          "eleni_mouth_smile",
+                          "eleni_brows_mad",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "I can find something to entertain you in the meantime! What's important is that we're here together!"
+
+            - id: "step53"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_up",
+                          "eleni_eyes_yay",
+                          "eleni_mouth_happy",
+                          "eleni_brows_up",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Plus, this is basically an addendum to our original contract!"
+
+            - id: "step54"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_up",
+                          "eleni_eyes_open",
+                          "eleni_mouth_happy",
+                          "eleni_brows_up",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Friends should spend time together! Aren't we friends, Kamilla?"
+
+            - id: "step55"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_closed",
+                          "kamilla_mouth_oh",
+                          "kamilla_brows_mad",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "Due to that contract, yes... ongoing interaction would be required, I think. I just didn't realize \"ongoing\" meant DAILY...."
+
+            - id: "step56"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_oneup",
+                          "eleni_eyes_squee",
+                          "eleni_mouth_smile",
+                          "eleni_brows_up",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "You're agreeing to this one though, right?"
+
+            - id: "step57"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_open",
+                          "kamilla_mouth_pout",
+                          "kamilla_brows_up",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "I have no objections. It's a fair contract."
+
+            - id: "step58"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_half2",
+                          "kamilla_mouth_grin",
+                          "kamilla_brows_up",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "Spend the next 24 hours \"hanging out\" with you, and then... you give me a break for a few days. Alright?"
+
+            - id: "step59"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_up",
+                          "eleni_eyes_yay",
+                          "eleni_mouth_happy",
+                          "eleni_brows_up",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Ooookaaaay <3"
+
+            - id: "step60"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_open",
+                          "kamilla_mouth_smile",
+                          "kamilla_brows_up",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "Good! Then it's decided... I-I mean--"
+
+            - id: "step61"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_cover",
+                          "kamilla_eyes_dark",
+                          "kamilla_mouth_grin",
+                          "kamilla_brows_mad",
+                        ]
+                      inAnimation:
+                        animationId: "ani6"
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "THE CONTRACT IS SEALED!\nMUHAHAHAHAAA...."
+            - id: "step62"
+              actions:
+                cleanAll: true
+                # scene:
+                #   cleanAll: true
+
+                # animation:
+                # #   animationId: "ani4"
+                # bgm:
+                #   bgmId:
+        - id: section1
+          steps:
+            - id: "4123step1"
+              actions:
+                background:
+                  backgroundId: "bg3"
+                  inAnimation:
+                    animationId: "ani1"
+            - id: "step58"
+              actions:
+                bgm:
+                  bgmId: "bgm2"
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_half",
+                          "kamilla_mouth_grin",
+                          "kamilla_brows_relax",
+                        ]
+                      position:
+                        positionId: "character_right"
+                dialogue:
+                  dialogueBoxId: "dialogueBox1"
+                  character:
+                    characterId: "kamilla"
+                  text: "Heh..."
+            - id: "step59"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_down",
+                          "eleni_eyes_squee",
+                          "eleni_mouth_smile",
+                          "eleni_brows_relax",
+                        ]
+                      position:
+                        positionId: "character_left"
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "...heehee..."
+
+            - id: "step60"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_half",
+                          "kamilla_mouth_pout",
+                          "kamilla_brows_relax",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "...."
+
+            - id: "step61"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_open",
+                          "kamilla_mouth_oh",
+                          "kamilla_brows_mad",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "Are you done reading yet? I'm bored."
+
+            - id: "step62"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_oneup",
+                          "eleni_eyes_yay",
+                          "eleni_mouth_happy",
+                          "eleni_brows_up",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Eheheh sorry~ I'll take a break. This book is really funny."
+
+            - id: "step63"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_half",
+                          "kamilla_mouth_uh",
+                          "kamilla_brows_up",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "I'm sure the author would be disappointed to hear that. \n{size=-5}Considering it's a technical manual...{/size}"
+
+            - id: "step64"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_down",
+                          "eleni_eyes_open",
+                          "eleni_mouth_smile",
+                          "eleni_brows_relax",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Did you finish reading that comic?"
+
+            - id: "step65"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_open",
+                          "kamilla_mouth_oh",
+                          "kamilla_brows_relax",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "Huh? Yeah, like an hour ago."
+
+            - id: "step66"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_up",
+                          "eleni_eyes_open",
+                          "eleni_mouth_happy",
+                          "eleni_brows_mad",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "What'd you think?! Is any of the demon lore accurate?! It's totally in line with my vision of the Netherworld so I HAVE to know!!"
+
+            - id: "step67"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_halfaway",
+                          "kamilla_mouth_panic",
+                          "kamilla_brows_mad",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "Uhh... you aren't the least bit embarrassed to say a comic called \"Succubus Sex Party\" is your vision of the Netherworld?"
+
+            - id: "step68"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_down",
+                          "eleni_eyes_open",
+                          "eleni_mouth_smile",
+                          "eleni_brows_relax",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "It's my ideal! Was it too good to be true?"
+
+            - id: "step69"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_cover",
+                          "kamilla_eyes_closed",
+                          "kamilla_mouth_um",
+                          "kamilla_brows_relax",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "...Yeah."
+
+            - id: "step70"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_half2",
+                          "kamilla_mouth_grin",
+                          "kamilla_brows_relax",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "Also, y-you're pretty brave to hand over your porn to someone you barely know!"
+
+            - id: "step71"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_down",
+                          "eleni_eyes_lookaway",
+                          "eleni_mouth_smile",
+                          "eleni_brows_up",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "That one's pretty tame. Besides..."
+
+            - id: "step72"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_down",
+                          "eleni_eyes_yay",
+                          "eleni_mouth_happy",
+                          "eleni_brows_up",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "You read all the way through, so it must've been fine!"
+
+            - id: "step73"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_cover",
+                          "kamilla_eyes_open",
+                          "kamilla_mouth_shout",
+                          "kamilla_brows_mad",
+                          "kamilla_blush",
+                        ]
+                animation:
+                  animationId: "bounce2"
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "I-I didn't have anything else to do...!"
+
+            - id: "step74"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_oneup",
+                          "eleni_eyes_open",
+                          "eleni_mouth_smile",
+                          "eleni_brows_relax",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Do you like succubus ladies too, Kamilla?"
+
+            - id: "step75"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_grab",
+                          "kamilla_eyes_open",
+                          "kamilla_mouth_shout",
+                          "kamilla_brows_mad",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "WE'RE NOT TALKING ABOUT THIS!!"
+
+            - id: "step76"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_down",
+                          "eleni_eyes_yay",
+                          "eleni_mouth_happy",
+                          "eleni_brows_up",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Heehee, okay, sorry~!"
+
+            - id: "step77"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_down",
+                          "eleni_eyes_open",
+                          "eleni_mouth_smile",
+                          "eleni_brows_relax",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Then what do you wanna do next?"
+
+            - id: "step78"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_open",
+                          "kamilla_mouth_pout",
+                          "kamilla_brows_up",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "Uh... I don't know. You're the host, here."
+
+            - id: "step79"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_down",
+                          "eleni_eyes_lookaway",
+                          "eleni_mouth_pout",
+                          "eleni_brows_relax",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Friend stuff... Demon friend stuff? What do demon friends normally do?!"
+
+            - id: "step80"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_halfaway",
+                          "kamilla_mouth_pout",
+                          "kamilla_brows_relax",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "Demon friends, hmm..."
+
+            - id: "step81"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_cover",
+                          "kamilla_eyes_half",
+                          "kamilla_mouth_grin",
+                          "kamilla_brows_mad",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "Muhaha... Demons despise the very idea of petty friendships! What a waste of time!"
+
+            - id: "step82"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_down",
+                          "eleni_eyes_open",
+                          "eleni_mouth_oh",
+                          "eleni_brows_relax",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "So there's no demon friend stuff to do...?"
+
+            - id: "step83"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_dark",
+                          "kamilla_mouth_grin",
+                          "kamilla_brows_mad",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "Of course not, you fool!"
+
+            - id: "step84"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_up",
+                          "eleni_eyes_yay",
+                          "eleni_mouth_happy",
+                          "eleni_brows_up",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Then let's play Capture the Princess! You be the Overlord, and I'll be the Princess."
+
+            - id: "step85"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_grab",
+                          "kamilla_eyes_open",
+                          "kamilla_mouth_uh",
+                          "kamilla_brows_up",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "Huh? I-is that a real thing?"
+
+            - id: "step86"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_up",
+                          "eleni_eyes_open",
+                          "eleni_mouth_smile",
+                          "eleni_brows_mad",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "I just made it up! Try to capture me!"
+
+            - id: "step87"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_open",
+                          "kamilla_mouth_oh",
+                          "kamilla_brows_mad",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "Isn't this just tag?"
+
+            - id: "step88"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_down",
+                          "eleni_eyes_open",
+                          "eleni_mouth_smile",
+                          "eleni_brows_relax",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Demons play tag, too? Heehee!"
+
+            - id: "step89"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_cover",
+                          "kamilla_eyes_halfaway",
+                          "kamilla_mouth_grin",
+                          "kamilla_brows_relax",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "...Very well! I shall engage in this game of tag!"
+
+            - id: "step90"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_down",
+                          "eleni_eyes_squee",
+                          "eleni_mouth_happy",
+                          "eleni_brows_up",
+                        ]
+                      position:
+                        positionId: "character_left"
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Kyaa~ the evil Overlord is after me! Heeheehee!!"
+
+            - id: "step91"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_dark",
+                          "kamilla_mouth_grin",
+                          "kamilla_brows_mad",
+                        ]
+                      position:
+                        positionId: "character_center"
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "I'll capture and imprison you! Like a true Overlord would do!"
+
+            - id: "step92"
+              actions:
+                visuals:
+                  items:
+                    - id: "cg1"
+                      visualId: "cg1"
+                      position:
+                        positionId: "visual_center"
+                      inAnimation:
+                        animationId: "ani1"
+                characters:
+                  items: []
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Wahh! I'm cornered~!"
+
+            - id: "step93"
+              actions:
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "I have you now, Princess!"
+
+            - id: "step94"
+              actions:
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Oh nooo~! What are you gonna do to me?"
+
+            - id: "step95"
+              actions:
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "Uh... I-imprison you, right?"
+
+            - id: "step96"
+              actions:
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "What about after that?"
+
+            - id: "step97"
+              actions:
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "Wait for a hero to come challenge me? A-AND THEN SLAY HIM REMORSELESSLY!! MUAHAHAHAA!!"
+
+            - id: "step98"
+              actions:
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Heehee... so you'll fight to protect me, Miss Overlord?"
+
+            - id: "step99"
+              actions:
+                visuals:
+                  items:
+                    - id: "cg1"
+                      visualId:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_down",
+                          "eleni_eyes_open",
+                          "eleni_mouth_smile",
+                          "eleni_brows_relax",
+                        ]
+                      position:
+                        positionId: "character_left"
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_open",
+                          "kamilla_mouth_uh",
+                          "kamilla_brows_mad",
+                        ]
+                      position:
+                        positionId: "character_right"
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "H-hold on... are Princesses supposed to like their captors?"
+
+            - id: "step100"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_down",
+                          "eleni_eyes_open",
+                          "eleni_mouth_smile",
+                          "eleni_brows_mad",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "This one does!"
+
+            - id: "step101"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_grab",
+                          "kamilla_eyes_dark",
+                          "kamilla_mouth_panic",
+                          "kamilla_brows_mad",
+                        ]
+                animation:
+                  animationId: "bounce2"
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "Isn't that kinda messed up?!"
+
+            - id: "step102"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_down",
+                          "eleni_eyes_open",
+                          "eleni_mouth_oh",
+                          "eleni_brows_up",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "We're just playing... but if you don't like it, I guess we can do something else."
+
+            - id: "step103"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_down",
+                          "eleni_eyes_open",
+                          "eleni_mouth_happy",
+                          "eleni_brows_relax",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Are you hungry? Ooh, what do demons eat? Meat, right?!"
+
+            - id: "step104"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_open",
+                          "kamilla_mouth_oh",
+                          "kamilla_brows_mad",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "Stop right there! Do NOT try to serve me something weird like human flesh, okay?!"
+
+            - id: "step105"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_down",
+                          "eleni_eyes_squee",
+                          "eleni_mouth_happy",
+                          "eleni_brows_relax",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Mind reader!! We're really on the same wavelength now!"
+
+            - id: "step106"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_cover",
+                          "kamilla_eyes_halfaway",
+                          "kamilla_mouth_grin",
+                          "kamilla_brows_relax",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "Ah... haha... you're a dangerous angel."
+
+            - id: "step107"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_oneup",
+                          "eleni_eyes_lookaway",
+                          "eleni_mouth_smile",
+                          "eleni_brows_up",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "So what should I cook...?"
+
+            - id: "step108"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_down",
+                          "eleni_eyes_open",
+                          "eleni_mouth_oh",
+                          "eleni_brows_sad",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Or maybe food made by an angel would poison you? I didn't consider that!!"
+
+            - id: "step109"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_half",
+                          "kamilla_mouth_oh",
+                          "kamilla_brows_up",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "It'd only become poison if you put something weird in it. Maybe I'd be better off eating out..."
+
+            - id: "step110"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_up",
+                          "eleni_eyes_open",
+                          "eleni_mouth_oh",
+                          "eleni_brows_mad",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "No no no, you can't go outside. Everyone would freak out!"
+
+            - id: "step111"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_open",
+                          "kamilla_mouth_pout",
+                          "kamilla_brows_relax",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "Oh. Right. Angels."
+
+            - id: "step112"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_oneup",
+                          "eleni_eyes_open",
+                          "eleni_mouth_happy",
+                          "eleni_brows_up",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "We might be able to disguise you if not for your big long horns... Oh, maybe you can put stockings over them to look like a bunny!"
+
+            - id: "step113"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_half",
+                          "kamilla_mouth_uh",
+                          "kamilla_brows_relax",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "Pass. Just order pizza or something."
+
+            - id: "step114"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_up",
+                          "eleni_eyes_open",
+                          "eleni_mouth_oh",
+                          "eleni_brows_mad",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Pizza...! Demon pizza!!"
+
+            - id: "step115"
+              actions:
+                characters:
+                  items:
+                    - id: "kamilla"
+                      characterId: "kamilla"
+                      spriteIds:
+                        [
+                          "kamilla_base",
+                          "kamilla_outfit_work",
+                          "kamilla_arms_work_down",
+                          "kamilla_eyes_dark",
+                          "kamilla_mouth_shout",
+                          "kamilla_brows_mad",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "kamilla"
+                  text: "They're not going to deliver from the Netherworld!! Just order your regular angel pizza!!!"
+
+            - id: "step116"
+              actions:
+                characters:
+                  items:
+                    - id: "eleni"
+                      characterId: "eleni"
+                      spriteIds:
+                        [
+                          "eleni_base",
+                          "eleni_outfit_pjs",
+                          "eleni_arms_pjs_up",
+                          "eleni_eyes_yay",
+                          "eleni_mouth_smile",
+                          "eleni_brows_up",
+                        ]
+                dialogue:
+                  character:
+                    characterId: "eleni"
+                  text: "Heheheh... okay. I'll order pizza."
+
+
+
