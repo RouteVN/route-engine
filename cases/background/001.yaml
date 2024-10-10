@@ -53,7 +53,7 @@ resources:
     - id: oh
       name: "Oh"
       src: "/public/first-contract/audio/sfx_oh.wav"
-  characters:
+  character:
     - id: "eleni"
       name: "Eleni"
       whoColor: "#ff74b2"
@@ -554,28 +554,6 @@ resources:
                     strokeWidth: 6 
                     align: right
           children: []
-            # - id: 'title14123'
-            #   type: 'text-revealing'
-            #   text: 'New contract has a time obligation, be back tomorrow'
-            #   height: 96
-            #   style:
-            #     fill: 'white'
-            #     fontSize: 34
-            #     fontFamily: 'NomnomNami2'
-            #     wordWrapWidth: 600
-            #     strokeColor: 'black'
-            #     strokeWidth: 6
-            # - id: 'title12sd12f23'
-            #   type: 'text-revealing'
-            #   text: 'OK, no lasagna for you tonight'
-            #   height: 48
-            #   style:
-            #     fill: 'white'
-            #     fontSize: 34
-            #     fontFamily: 'NomnomNami2'
-            #     wordWrapWidth: 600
-            #     strokeColor: 'black'
-            #     strokeWidth: 6
 
 story:
   startSceneId: "scene0"
