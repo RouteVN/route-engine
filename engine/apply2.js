@@ -13,6 +13,7 @@ import {
   AnchorLayoutContainerRendererPlugin,
   GraphicsRendererPlugin,
   SoundPlugin,
+  SliderRendererPlugin,
 } from "./renderer.js";
 
 class VnController {
@@ -35,21 +36,75 @@ class VnController {
     this.takeScreenshot = takeScreenshot;
   }
 
+  _history = [];
+  // _history = [{
+  //   sceneId: 'asdf',
+  //   sections: [{
+  //     sectionId: 'v4332',
+  //     choices: [{
+  //       stepId: 'v332a',
+  //       choiceId: '3dfk32',
+  //     }],
+  //     lastStepId: 'va3'
+  //   }]
+  // }]
+
+  // points to the current history step
+  // _historyPointer = undefined;
+  _historyPointer = {
+    sceneId: undefined,
+    sectionId: undefined,
+    stepId: undefined,
+  }
+
   _state = {
     currentPage: "main",
+    mode: "menu", // read
   };
+
+  _historyMode = false;
+
+  get _currentSceneId() {
+    if (this._historyMode) {
+      return this._historyPointer.sceneId;
+    }
+    return this._latestSceneId;
+  }
+
+  get _currentSectionId() {
+    if (this._historyMode) {
+      return this._historyPointer.sectionId;
+    }
+    return this._latestSectionId;
+  }
+
+  get _currentStepId() {
+    if (this._historyMode) {
+      return this._historyPointer.stepId;
+    }
+    return this._latestStepId;
+  }
+
+  _latestSceneId;
+  _latestSectionId;
+  _latestStepId;
 
   _stage = {
     currentSceneId: undefined,
     currentSectionId: undefined,
     currentStepId: undefined,
-    elements: [],
-    transitions: [],
-    gameState: {
-      hideDialogBox: false,
-      endEffects: false,
-      stepCompleted: false,
-    },
+
+    // currentHistoryIndex: -1,
+    // historyMaxiumStepId: undefined,
+
+
+    // elements: [],
+    // transitions: [],
+    // gameState: {
+    //   hideDialogBox: false,
+    //   endEffects: false,
+    //   stepCompleted: false,
+    // },
     config: {
       screenWidth: undefined,
       screenHeight: undefined,
@@ -57,24 +112,24 @@ class VnController {
   };
 
   get _currentScene() {
-    if (!this._stage.currentSceneId) {
+    if (!this._currentSceneId) {
       return;
     }
-    return this.gameData.story.scenes.items[this._stage.currentSceneId];
+    return this.gameData.story.scenes.items[this._currentSceneId];
   }
 
   get _currentSection() {
-    if (!this._stage.currentSectionId) {
+    if (!this._currentSectionId) {
       return;
     }
-    return this._currentScene.sections.items[this._stage.currentSectionId];
+    return this._currentScene.sections.items[this._currentSectionId];
   }
 
   get _currentStep() {
-    if (!this._stage.currentStepId) {
+    if (!this._currentStepId) {
       return;
     }
-    return this._currentSection.steps.items[this._stage.currentStepId];
+    return this._currentSection.steps.items[this._currentStepId];
   }
 
   get _currentState() {
@@ -256,11 +311,32 @@ class VnController {
     const elements = [];
     const transitions = [];
 
+    elements.push({
+      id: "bg-screen",
+      type: "graphics",
+      x1: 0,
+      x2: this._stage.config.screenWidth,
+      y1: 0,
+      y2: this._stage.config.screenHeight,
+      fill: "black",
+    });
+
     console.log("currentState", currentState);
 
     if (currentState.moveToSection) {
       this._stage.currentSectionId = currentState.moveToSection.sectionId;
       this._stage.currentStepId = this._currentSection.steps.itemsOrder[0];
+      // if (this._stage.currentHistoryIndex === this._stage.history.length - 1) {
+      //   this._stage.history.push({
+      //     sceneId: this._stage.currentSceneId,
+      //     sectionId: this._stage.currentSectionId,
+      //     jumps: [],
+      //   });
+      //   this._stage.currentHistoryIndex = this._stage.history.length - 1;
+      //   this._stage.historyMaxiumStepId = this._stage.currentStepId;
+      // } else {
+      //   this._stage.currentHistoryIndex++;
+      // }
       this.updateStep();
       return;
     }
@@ -402,7 +478,12 @@ class VnController {
       const _dialogueBox =
         resources.dialogueBox.items[currentState.dialogue.dialogueBoxId];
       if (_dialogueBox) {
-        const dialogueBox = JSON.parse(JSON.stringify(_dialogueBox));
+        const dialogueBox = JSON.parse(
+          JSON.stringify(_dialogueBox).replace(
+            "$config.textSpeed",
+            this.getPersistentData("textSpeed")?.value
+          )
+        );
         const id = `dialogueBox-${dialogueBox.id}-${Math.random()}`;
         const character =
           resources.character.items[
@@ -504,10 +585,12 @@ class VnController {
     if (currentState.screen) {
       for (const { id, screenId } of currentState.screen.items) {
         const screen = JSON.parse(
-          JSON.stringify(resources.screen.items[screenId]).replace(
-            "$state.currentPage",
-            this._state.currentPage
-          )
+          JSON.stringify(resources.screen.items[screenId])
+            .replace("$state.currentPage", this._state.currentPage)
+            .replace(
+              "$config.textSpeed",
+              this.getPersistentData("textSpeed")?.value
+            )
         );
 
         // Recursively replace data = $saveData with saveData
@@ -547,8 +630,14 @@ class VnController {
       }
     }
 
-    console.log("elements", elements);
-    console.log("transitions", transitions);
+    // console.log("elements", elements);
+    // console.log("transitions", transitions);
+
+    // this._stage.historyMaxiumStepId = this._stage.currentStepId;
+    // const index = this._currentSection.steps.itemsOrder.findIndex(stepId => stepId === this._stage.currentStepId);
+    // if (this._stage.currentHistoryIndex < index) {
+    //   this._stage.currentHistoryIndex = index;
+    // }
 
     this.onChangeGameStage({
       elements: [
@@ -563,19 +652,48 @@ class VnController {
     });
   };
 
+  /**
+   * Read mode, go to next step
+   */
+  _goToNextStep = () => {
+
+    if (this._historyMode) {
+      // this._historyPointer.sectionIndex++;
+      // if (this._historyPointer.sectionIndex >= this._currentScene.sections.length) {
+      //   this._historyPointer.sectionIndex = 0;
+      // }
+      // this._historyPointer.stepId = this._currentSection.steps.itemsOrder[0];
+    }
+
+    const currentSection = this._currentSection;
+    const currentStepIndex = currentSection.steps.itemsOrder.findIndex(
+      (stepId) => stepId === this._stage.currentStepId
+    );
+    const nextStepId = currentSection.steps.itemsOrder[currentStepIndex + 1];
+    const nextStep = currentSection.steps.items[nextStepId];
+    if (nextStep) {
+      this._stage.currentStepId = nextStepId;
+      this.updateStep();
+    } else {
+      console.warn("no next step");
+    }
+  }
+
   handleAction = (action, payload) => {
-    // console.log('action', action, payload)
     if (action === "init") {
       this.updateStep();
     }
 
-    if (action === "rightClick") {
-      console.log("rightClick", action, payload);
+    if (action === "rightClick" && this._state.mode === "read") {
       this.takeScreenshot().then((url) => {
         this._stage.previousSceneId = this._stage.currentSceneId;
         this._stage.previousSectionId = this._stage.currentSectionId;
         this._stage.previousStepId = this._stage.currentStepId;
+        this._stage.previousMode = this._state.mode;
         this._stage.previousScreenshotUrl = url;
+
+        this._state.mode = "menu";
+        this._state.currentPage = "options";
 
         this._stage.currentSceneId =
           this.gameData.story.optionsConfig.rightClick.sceneId;
@@ -589,50 +707,81 @@ class VnController {
     }
 
     if (action === "click") {
-      // return;
-      const currentSection = this._currentSection;
-      const currentStepIndex = currentSection.steps.itemsOrder.findIndex(
-        (stepId) => stepId === this._stage.currentStepId
-      );
-      const nextStepId = currentSection.steps.itemsOrder[currentStepIndex + 1];
-      const nextStep = currentSection.steps.items[nextStepId];
-      if (nextStep) {
-        this._stage.currentStepId = nextStepId;
-        this.updateStep();
-      } else {
+      if (this._state.mode !== "read") {
         return;
-        const currentSectionIndex =
-          this._currentScene.sections.itemsOrder.findIndex(
-            (sectionId) => sectionId === this._stage.currentSectionId
-          );
-        const nextSectionId =
-          this._currentScene.sections.itemsOrder[currentSectionIndex + 1];
-        const nextSection = this._currentScene.sections.items[nextSectionId];
-        if (nextSection) {
-          const nextStepId = nextSection.steps.itemsOrder[0];
-          this._stage.currentSectionId = nextSectionId;
-          this._stage.currentStepId = nextStepId;
-          this.updateStep();
-        } else {
-          this.onClose && this.onClose();
-        }
       }
+      this._goToNextStep();
+    }
+
+    if (action === "historyBack") {
+      // console.log("history back", this._state.mode);
+      // if (this._state.mode === "read") {
+      //   console.log("this._stage.history.length", this._stage.history.length);
+      //   if (this._stage.history.length > 0) {
+      //     const history = this._stage.history[this._stage.currentHistoryIndex];
+      //     console.log("history", history);
+      //     if (history) {
+      //       console.log(
+      //         "this._currentSection.steps.itemsOrder",
+      //         this._currentSection.steps.itemsOrder
+      //       );
+      //       console.log(
+      //         "this._stage.currentHistoryIndex",
+      //         this._stage.currentHistoryIndex
+      //       );
+      //       // const index = this._stage.currentHistoryIndex;
+      //       const index = this._currentSection.steps.itemsOrder.findIndex(
+      //         (stepId) => stepId === this._stage.currentStepId
+      //       );
+      //       console.log('history back index', index)
+      //       if (index === 0) {
+      //         console.log('HISTROY BACK first step ')
+      //         this._stage.currentHistoryIndex--;
+      //         if (!this._stage.history[this._stage.currentHistoryIndex]) {
+      //           // pass
+      //         } else {
+      //           this._stage.currentSceneId = this._stage.history[this._stage.currentHistoryIndex].sceneId;
+      //           this._stage.currentSectionId = this._stage.history[this._stage.currentHistoryIndex].sectionId;
+      //           this._stage.currentStepId = this._currentSection.steps.itemsOrder[this._currentSection.steps.itemsOrder.length - 1];
+      //           if (this._currentStep.actions.moveToSection) {
+      //             this._stage.currentStepId = this._currentSection.steps.itemsOrder[this._currentSection.steps.itemsOrder.length - 2];
+      //           }
+      //           console.log('history back first step this._stage.currentStepId', this._stage.currentStepId)
+      //           this.updateStep();
+      //         }
+      //       } else {
+      //         const previousStepId =
+      //           this._currentSection.steps.itemsOrder[index - 1];
+      //         console.log("history back previousStepId", previousStepId);
+      //         if (previousStepId) {
+      //           this._stage.currentStepId = previousStepId;
+      //           this.updateStep();
+      //         }
+      //       }
+
+      //       // this._stage.historyMaxiumStepId;
+      //     }
+      //   }
+      // }
     }
 
     if (action === "event") {
-      console.log("event", action, payload);
+      if (payload.eventAction === "sliderEvent") {
+        if (payload.eventPayload.eventName) {
+          this.savePersistentData(payload.eventPayload.eventName, {
+            value: payload.eventPayload.value,
+          });
+        }
+      }
+
       if (
         payload.eventAction === "click" &&
         payload.eventPayload.eventName === "saveSlot"
       ) {
-        console.log("saveSlot", payload);
         const saveData = this.getPersistentData("saveData") || {};
-        console.log("saveData", saveData);
-        // this.takeScreenshot().then((url) => {
         saveData[Number(payload.eventPayload.eventPayload.index) + 1] = {
           name: "Save Slot 2",
           date: Date.now(),
-          // url: '/public/first-contract/images/cg holdhands.png',
           url: this._stage.previousScreenshotUrl,
           data: {
             sceneId: this._stage.previousSceneId,
@@ -642,7 +791,6 @@ class VnController {
         };
         this.savePersistentData("saveData", saveData);
         this.updateStep();
-        // })
 
         return;
       }
@@ -651,11 +799,10 @@ class VnController {
         payload.eventAction === "click" &&
         payload.eventPayload.eventName === "loadSlot"
       ) {
-        console.log("loadSlot", payload);
         const saveData = this.getPersistentData("saveData") || {};
         const saveSlot =
           saveData[Number(payload.eventPayload.eventPayload.index) + 1];
-        console.log("saveSlot", saveSlot);
+        this._state.mode = "read";
         this._stage.currentSceneId = saveSlot.data.sceneId;
         this._stage.currentSectionId = saveSlot.data.sectionId;
         this._stage.currentStepId = saveSlot.data.stepId;
@@ -669,22 +816,20 @@ class VnController {
           this._currentSection?.eventHandlers?.[eventName] ||
           this._currentScene?.eventHandlers?.[eventName];
         if (handler) {
-          console.log("handler", handler);
-
           if (handler.actions.setState) {
             this._state = {
               ...this._state,
               ...handler.actions.setState,
             };
-            console.log("this._state", this._state);
           }
 
           if (handler.actions.moveToSection) {
-            if (handler.actions.moveToSection.history) {
-              this._stage.previousSceneId = this._stage.currentSceneId;
-              this._stage.previousSectionId = this._stage.currentSectionId;
-              this._stage.previousStepId = this._stage.currentStepId;
-            }
+            // if (handler.actions.moveToSection.history) {
+            //   this._stage.previousSceneId = this._stage.currentSceneId;
+            //   this._stage.previousSectionId = this._stage.currentSectionId;
+            //   this._stage.previousStepId = this._stage.currentStepId;
+            //   this._stage.previousMode = this._state.mode;
+            // }
             if (handler.actions.moveToSection.sceneId) {
               this._stage.currentSceneId =
                 handler.actions.moveToSection.sceneId;
@@ -693,12 +838,28 @@ class VnController {
               handler.actions.moveToSection.sectionId;
             const nextStepId = this._currentSection.steps.itemsOrder[0];
             this._stage.currentStepId = nextStepId;
+
+            // if (
+            //   this._stage.currentHistoryIndex ===
+            //   this._stage.history.length - 1
+            // ) {
+            //   this._stage.history.push({
+            //     sceneId: this._stage.currentSceneId,
+            //     sectionId: this._stage.currentSectionId,
+            //     jumps: [],
+            //   });
+            //   this._stage.currentHistoryIndex = this._stage.history.length - 1;
+            //   this._stage.historyMaxiumStepId = this._stage.currentStepId;
+            // } else {
+            //   this._stage.currentHistoryIndex++;
+            // }
           }
 
           if (handler.actions.back) {
             this._stage.currentSceneId = this._stage.previousSceneId;
             this._stage.currentSectionId = this._stage.previousSectionId;
             this._stage.currentStepId = this._stage.previousStepId;
+            this._state.mode = this._stage.previousMode;
           }
           this.updateStep();
         }
@@ -723,7 +884,6 @@ class VnController {
               );
               const nextSection =
                 this._currentScene.sections[currentSectionIndex + 1];
-              console.log("nextSection", nextSection);
               if (nextSection) {
                 this._stage.currentSectionId = nextSection.id;
                 this._stage.currentStepId = nextSection.steps[0].id;
@@ -738,9 +898,9 @@ class VnController {
 }
 
 const applyWasmController = async (options) => {
-  const contorller = new VnController(options);
-  await contorller.init();
-  return contorller.handleAction;
+  const controller = new VnController(options);
+  await controller.init();
+  return controller.handleAction;
 };
 
 const getAllValuesByPropertyName = (obj, propertyNames) => {
@@ -826,6 +986,7 @@ const initializeVnPlayer = async (element, onClose) => {
       new AnchorLayoutContainerRendererPlugin(),
       new GraphicsRendererPlugin(),
       new SoundPlugin(),
+      new SliderRendererPlugin(),
     ],
     eventHandler: (action, payload) =>
       controller("event", {
@@ -834,24 +995,57 @@ const initializeVnPlayer = async (element, onClose) => {
       }),
   });
 
-  app.loadAssets(["/public/first-contract/font/NomnomNami2.ttf"]);
+  app._app.stage.eventMode = "static";
+  app._app.stage.on("pointerdown", (e) => {
+    if (e.data.button === 0) {
+      controller("click", {
+        eventAction: undefined,
+        eventPayload: undefined,
+      });
+    } else if (e.data.button === 2) {
+      controller("rightClick", {
+        eventAction: undefined,
+        eventPayload: undefined,
+      });
+    }
+  });
+  let lastWheelTime = 0;
+  const throttleDelay = 300; // 1 second
+
+  app._app.stage.on("wheel", (e) => {
+    const currentTime = Date.now();
+    if (currentTime - lastWheelTime < throttleDelay) {
+      return; // Ignore wheel events within the throttle delay
+    }
+    lastWheelTime = currentTime;
+
+    if (e.deltaY > 0) {
+      console.log("Wheel scrolled down");
+    } else {
+      console.log("Wheel scrolled up");
+      controller("historyBack", {
+        eventAction: undefined,
+        eventPayload: undefined,
+      });
+    }
+  });
+
+  app.loadAssets([
+    "/public/first-contract/font/NomnomNami2.ttf",
+    "/public/first-contract/gui/slider/horizontal_idle_thumb.png",
+    "/public/first-contract/gui/slider/horizontal_hover_thumb.png",
+    "/public/first-contract/gui/slider/horizontal_idle_bar.png",
+    "/public/first-contract/gui/slider/horizontal_hover_bar.png",
+    "/public/first-contract/gui/slider/vertical_idle_thumb.png",
+    "/public/first-contract/gui/slider/vertical_hover_thumb.png",
+    "/public/first-contract/gui/slider/vertical_idle_bar.png",
+    "/public/first-contract/gui/slider/vertical_hover_bar.png",
+  ]);
 
   element.appendChild(app.canvas);
-  element.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    controller("click", {
-      eventAction: e.action,
-      eventPayload: e.payload,
-    });
-  });
   element.addEventListener("contextmenu", (e) => {
     e.preventDefault();
     e.stopPropagation();
-    controller("rightClick", {
-      eventAction: e.action,
-      eventPayload: e.payload,
-    });
   });
   controller("init", {});
 };

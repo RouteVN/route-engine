@@ -4,6 +4,16 @@ screen:
   backgroundColor: "#000000"
 
 resources:
+  # background2:
+  #   tags:
+  #     order: []
+  #     items: {}
+  #   folders:
+  #     order: []
+  #     items: {}
+  #   order: []
+  #   items: {}
+
   background:
     tagsOrder: []
     tags:
@@ -43,7 +53,7 @@ resources:
       bg7:
         src: /public/first-contract/images/splash.png
         name: "Background 7"
-  
+
   visual:
     tagsOrder: []
     tags: {}
@@ -65,6 +75,16 @@ resources:
         src: "/public/first-contract/gui/mmbutton_frame.png"
       mainMenu:
         src: /public/first-contract/gui/main_menu.png
+      extra1:
+        src: /public/first-contract/images/bonus/ingame gallery1.png
+      extra2:
+        src: /public/first-contract/images/bonus/ingame gallery2.png
+      extra3:
+        src: /public/first-contract/images/bonus/ingame gallery3.png
+      extra4:
+        src: /public/first-contract/images/bonus/ingame gallery4.png
+      extra5:
+        src: /public/first-contract/images/bonus/ingame gallery5b.png
   bgm:
     tagsOrder: []
     tags: {}
@@ -113,11 +133,13 @@ resources:
         label: Eyes
       mouth:
         label: Mouth
+    itemsOrder: [eleni, kamilla]
     items:
       eleni:
         name: Eleni
         whoColor: "ff74b2"
         sprites:
+          itemsOrder: [eleni2_hidden, eleni_arms_pjs_down, eleni_arms_pjs_oneup]
           items:
             eleni2_hidden:
               name: "Eleni 2 Hidden"
@@ -386,6 +408,18 @@ resources:
               - duration: 1400
                 value: 1
                 easing: linear
+      extraFadeIn:
+        name: "Extra Fade In"
+        properties:
+          - property: alpha
+            initialValue: 0
+            keyframes:
+              - duration: 2000
+                value: 0
+                easing: linear
+              - duration: 1400
+                value: 1
+                easing: linear
       ani3:
         name: "Long Delayed Fade In"
         properties:
@@ -456,50 +490,79 @@ resources:
                 relative: true
                 value: 40
                 easing: linear
-              - duration: 100
-                relative: true
-                value: -40
+      ani8:
+        name: Title splash
+        properties:
+          - property: alpha
+            initialValue: 0
+            keyframes:
+              - duration: 1000
+                value: 1
                 easing: linear
-              - duration: 100
-                relative: true
-                value: 40
+              - duration: 2000
+                value: 1
                 easing: linear
-              - duration: 100
-                relative: true
-                value: -40
+              - duration: 1000
+                value: 0
                 easing: linear
-              - duration: 100
+      titleLogo:
+        name: Title Logo
+        properties:
+          - property: alpha
+            initialValue: 0
+            keyframes:
+              - duration: 500
+                value: 1
+                easing: linear
+          - property: y
+            keyframes:
+              - duration: 0
                 relative: true
                 value: 20
+                easing: linear
+              - duration: 400
+                relative: true
+                value: -20
+                easing: linear
+      titleBg:
+        name: Title Background
+        properties:
+          - property: alpha
+            initialValue: 0
+            keyframes:
+              - duration: 1000
+                value: 0
+                easing: linear
+              - duration: 1000
+                value: 1
+                easing: linear
+      aniButtonFrame:
+        name: Button Frame
+        properties:
+          - property: alpha
+            initialValue: 0
+            keyframes:
+              - duration: 2000
+                value: 0
+                easing: linear
+              - duration: 1000
+                value: 1
                 easing: linear
   screen:
     items:
       menuBase:
         layout:
-          - id: "about2"
-            type: "anchor-layout-container"
-            anchor: "TopLeft"
-            direction: "horizontal"
-            x: 0
-            y: 0
-            children:
-              - id: "about"
-                type: "sprite"
-                url: "/public/first-contract/gui/game_menu.png"
-                height: 720
-                width: 1280
-          - id: "about1"
-            type: "anchor-layout-container"
-            anchor: "TopLeft"
-            direction: "horizontal"
-            x: 0
-            y: 0
-            children:
-              - id: "about"
-                type: "sprite"
-                url: "/public/first-contract/gui/overlay/main_menu.png"
-                height: 720
-                width: 1280
+          - id: "abou3t"
+            type: "sprite"
+            url: "/public/first-contract/gui/game_menu.png"
+            alpha: 0.3
+            height: 720
+            width: 1280
+          - id: "abodf33ut"
+            type: "sprite"
+            url: "/public/first-contract/gui/overlay/main_menu.png"
+            height: 720
+            width: 1280
           - id: "about3"
             type: "anchor-layout-container"
             anchor: "CenterLeft"
@@ -510,32 +573,60 @@ resources:
             y: 360
             data:
               - text: Start
-                eventName: 'start'
+                page: start
+                eventPayload:
+                  actions:
+                    moveToSection:
+                      clearHistory: true
+                      sceneId: scene1
+                      sectionId: section2
+                    setCustomState:
+                      currentPage: "start"
               - text: Load
-                eventName: 'load'
+                page: load
+                eventPayload:
+                  actions:
+                    moveToSection:
+                      sectionId: sectionload
+                    setCustomState:
+                      currentPage: "load"
               - text: Options
-                eventName: 'options'
+                page: options
+                eventPayload:
+                  actions:
+                    moveToSection:
+                      sectionId: sectionOptions
+                    setCustomState:
+                      currentPage: "options"
               - text: About
-                eventName: 'about'
+                page: about
+                eventPayload:
+                  actions:
+                    moveToSection:
+                      sectionId: sectionx
+                    setCustomState:
+                      currentPage: "about"
             template:
               mapping:
                 cases:
                   - case:
-                      property: eventName
+                      property: page
                       op: eq
-                      value: $state.currentPage
+                      value: "{{ customState.currentPage }}"
                     then: selected
                 default: default
               items:
                 - template: default
                   id: "ladfkj3"
-                  text: '{{ text }}'
-                  eventName: '{{ eventName }}'
+                  page: {{ page }}
+                  text: "{{ text }}"
+                  eventName: "Actions"
+                  eventPayload: "{{ eventPayload }}"
                   type: "text-interactive"
                   width: 120
                   height: 40
                   style:
-                    fill: '#ccc'
+                    fill: "#ccc"
                     fontSize: 40
                     fontFamily: "NomnomNami2"
                     wordWrapWidth: 1740
@@ -550,73 +641,58 @@ resources:
                     strokeWidth: 6
                 - template: selected
                   id: "ladfkj3"
-                  text: '{{ text }}'
-                  eventName: '{{ eventName }}'
+                  text: "{{ text }}"
+                  eventName: "{{ eventName }}"
                   type: "text-interactive"
                   width: 120
                   height: 40
                   style:
-                    fill: 'white'
+                    fill: "white"
                     fontSize: 40
                     fontFamily: "NomnomNami2"
                     wordWrapWidth: 1740
                     strokeColor: black
                     strokeWidth: 6
-          - id: "about3412x"
-            type: "anchor-layout-container"
-            anchor: "CenterLeft"
-            direction: "vertical"
-            width: 200
-            height: 300
+          - id: "ladf421k4dd2j3"
+            type: "text-interactive"
             x: 20
             y: 640
-            children:
-              - id: "ladf421k4dd2j3"
-                type: "text-interactive"
-                width: 120
-                height: 40
-                text: Return
-                eventName: return
-                style:
-                  fill: '#ccc'
-                  fontSize: 40
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-                  strokeColor: black
-                  strokeWidth: 6
-                hoverStyle:
-                  fontSize: 40
-                  fill: "yellow"
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-                  strokeColor: black
-                  strokeWidth: 6
+            width: 120
+            height: 40
+            text: Return
+            eventName: Actions
+            eventPayload:
+              actions:
+                moveToSection:
+                  sceneId: sceneTitleMenu
+                  sectionId: sectionTitleMenu2
+            style:
+              fill: "#ccc"
+              fontSize: 40
+              fontFamily: "NomnomNami2"
+              wordWrapWidth: 1740
+              strokeColor: black
+              strokeWidth: 6
+            hoverStyle:
+              fontSize: 40
+              fill: "yellow"
+              fontFamily: "NomnomNami2"
+              wordWrapWidth: 1740
+              strokeColor: black
+              strokeWidth: 6
       menuGame:
         layout:
-          - id: "menuGame"
-            type: "anchor-layout-container"
-            anchor: "TopLeft"
-            direction: "horizontal"
-            x: 0
-            y: 0
-            children:
-              - id: "about"
-                type: "sprite"
-                url: "/public/first-contract/gui/game_menu.png"
-                height: 720
-                width: 1280
-          - id: "about1"
-            type: "anchor-layout-container"
-            anchor: "TopLeft"
-            direction: "horizontal"
-            x: 0
-            y: 0
-            children:
-              - id: "about"
-                type: "sprite"
-                url: "/public/first-contract/gui/overlay/main_menu.png"
-                height: 720
-                width: 1280
+          - id: "abosdfeut"
+            type: "sprite"
+            url: "/public/first-contract/gui/game_menu.png"
+            alpha: 0.3
+            height: 720
+            width: 1280
+          - id: "ab34gout"
+            type: "sprite"
+            url: "/public/first-contract/gui/overlay/main_menu.png"
+            height: 720
+            width: 1280
           - id: "about3"
             type: "anchor-layout-container"
             anchor: "CenterLeft"
@@ -627,34 +703,80 @@ resources:
             y: 360
             data:
               - text: Save
-                eventName: 'save'
+                page: save
+                eventPayload:
+                  actions:
+                    moveToSection:
+                      sceneId: sceneGameMenu
+                      sectionId: sectionsave
+                    setCustomState:
+                      currentPage: "save"
+              - text: History
+                page: history
+                eventPayload:
+                  actions:
+                    moveToSection:
+                      sceneId: sceneGameMenu
+                      sectionId: sectionHistory
+                    setCustomState:
+                      currentPage: "history"
               - text: Load
-                eventName: 'load'
+                page: load
+                eventPayload:
+                  actions:
+                    moveToSection:
+                      sceneId: sceneGameMenu
+                      sectionId: sectionload
+                    setCustomState:
+                      currentPage: "load"
               - text: Options
-                eventName: 'options'
+                page: options
+                eventPayload:
+                  actions:
+                    moveToSection:
+                      sceneId: sceneGameMenu
+                      sectionId: sectionOptions
+                    setCustomState:
+                      currentPage: "options"
               - text: About
-                eventName: 'about'
+                page: about
+                eventPayload:
+                  actions:
+                    moveToSection:
+                      sceneId: sceneGameMenu
+                      sectionId: sectionx
+                    setCustomState:
+                      currentPage: "about"
               - text: Main
-                eventName: 'main'
+                page: main
+                eventPayload:
+                  actions:
+                    moveToSection:
+                      sceneId: sceneTitleMenu
+                      sectionId: sectionTitleMenu2
+                    setCustomState:
+                      currentPage: "main"
             template:
               mapping:
                 cases:
                   - case:
-                      property: eventName
+                      property: page
                       op: eq
-                      value: $state.currentPage
+                      value: "{{ customState.currentPage }}"
                     then: selected
                 default: default
               items:
                 - template: default
                   id: "ladfkj3"
-                  text: '{{ text }}'
-                  eventName: '{{ eventName }}'
+                  page: {{ page }}
+                  text: "{{ text }}"
+                  eventName: "Actions"
+                  eventPayload: "{{ eventPayload }}"
                   type: "text-interactive"
                   width: 120
                   height: 40
                   style:
-                    fill: '#ccc'
+                    fill: "#ccc"
                     fontSize: 40
                     fontFamily: "NomnomNami2"
                     wordWrapWidth: 1740
@@ -669,18 +791,100 @@ resources:
                     strokeWidth: 6
                 - template: selected
                   id: "ladfkj3"
-                  text: '{{ text }}'
-                  eventName: '{{ eventName }}'
+                  text: "{{ text }}"
+                  eventName: "{{ eventName }}"
                   type: "text-interactive"
                   width: 120
                   height: 40
                   style:
-                    fill: 'white'
+                    fill: "white"
                     fontSize: 40
                     fontFamily: "NomnomNami2"
                     wordWrapWidth: 1740
                     strokeColor: black
                     strokeWidth: 6
+          - id: overlayConfirm
+            type: "container"
+            displayWhen:
+              property: '{{ customState.returnToMainMenuConfirmationVisible }}'
+              op: eq
+              value: true
+            anchor: "TopLeft"
+            zIndex: 1000
+            x: 0
+            y: 0
+            children:
+              - id: "ladf423kj3"
+                type: graphics
+                zIndex: 1000
+                x1: 0
+                x2: 1280
+                y1: 0
+                y2: 720
+                fill: 'black'
+                alpha: 0.7
+              - id: "ladf1kj3"
+                type: sprite
+                zIndex: 1000
+                xa: 0.5
+                ya: 0.5
+                x: 640
+                y: 360
+                width: 600
+                height: 180
+                url: "/public/first-contract/gui/frame.png"
+              - id: "ladfkj42d3"
+                type: text
+                zIndex: 1000
+                text: 'Are you sure you want to return to the main menu? This will lose unsaved progress.'
+                xa: 0.5
+                ya: 0.5
+                x: 640
+                y: 340
+                style:
+                  fill: 'white'
+                  fontSize: 27
+                  fontFamily: 'NomnomNami2'
+                  wordWrapWidth: 600
+                  align: center
+              - id: "ladfkj42dxi3"
+                type: anchor-layout-container
+                anchor: "CenterCenter"
+                direction: "horizontal"
+                zIndex: 1000
+                gap: 120
+                x: 640
+                y: 410
+                children:
+                  - id: "ladfkj42dxi3"
+                    type: text-interactive
+                    text: "Yes"
+                    zIndex: 1000
+                    style:
+                      fill: "#ccc"
+                      fontSize: 28
+                      fontFamily: "NomnomNami2"
+                      wordWrapWidth: 1740
+                    hoverStyle:
+                      fontSize: 28
+                      fill: "yellow"
+                      fontFamily: "NomnomNami2"
+                      wordWrapWidth: 1740
+                  - id: "ladfkj42dxi3"
+                    type: text-interactive
+                    text: "No"
+                    zIndex: 1000
+                    style:
+                      fill: "#ccc"
+                      fontSize: 28
+                      fontFamily: "NomnomNami2"
+                      wordWrapWidth: 1740
+                    hoverStyle:
+                      fontSize: 28
+                      fill: "yellow"
+                      fontFamily: "NomnomNami2"
+                      wordWrapWidth: 1740
+
           - id: "about3412x"
             type: "anchor-layout-container"
             anchor: "CenterLeft"
@@ -695,9 +899,12 @@ resources:
                 width: 120
                 height: 40
                 text: Return
-                eventName: return
+                eventName: Actions
+                eventPayload:
+                  actions:
+                    clearMenu: true
                 style:
-                  fill: '#ccc'
+                  fill: "#ccc"
                   fontSize: 40
                   fontFamily: "NomnomNami2"
                   wordWrapWidth: 1740
@@ -710,29 +917,24 @@ resources:
                   wordWrapWidth: 1740
                   strokeColor: black
                   strokeWidth: 6
+
+
       about:
         layout:
-          - id: "about312312"
-            type: "anchor-layout-container"
-            anchor: "TopLeft"
-            direction: "vertical"
-            width: 200
-            height: 300
+          - id: "lad3fkj3"
+            text: About
             x: 20
             y: 20
-            children:
-              - id: "ladfkj3"
-                text: About
-                type: "text-interactive"
-                width: 120
-                height: 40
-                style:
-                  fill: '#cc005b'
-                  fontSize: 120
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-                  strokeColor: black
-                  strokeWidth: 6
+            type: "text"
+            width: 120
+            height: 40
+            style:
+              fill: "#cc005b"
+              fontSize: 120
+              fontFamily: "NomnomNami2"
+              wordWrapWidth: 1740
+              strokeColor: black
+              strokeWidth: 6
           - id: "about32fs2"
             type: "anchor-layout-container"
             anchor: "TopLeft"
@@ -753,7 +955,7 @@ resources:
                 width: 120
                 height: 40
                 style:
-                  fill: '#cc005b'
+                  fill: "#cc005b"
                   fontSize: 40
                   fontFamily: "NomnomNami2"
                   wordWrapWidth: 1740
@@ -765,7 +967,7 @@ resources:
                 width: 120
                 height: 40
                 style:
-                  fill: 'white'
+                  fill: "white"
                   fontSize: 30
                   fontFamily: "NomnomNami2"
                   wordWrapWidth: 1740
@@ -777,7 +979,7 @@ resources:
                 width: 120
                 height: 40
                 style:
-                  fill: 'white'
+                  fill: "white"
                   fontSize: 36
                   fontFamily: "NomnomNami2"
                   wordWrapWidth: 1740
@@ -789,7 +991,7 @@ resources:
                 width: 120
                 height: 40
                 style:
-                  fill: 'white'
+                  fill: "white"
                   fontSize: 36
                   fontFamily: "NomnomNami2"
                   wordWrapWidth: 1740
@@ -801,7 +1003,7 @@ resources:
                 width: 120
                 height: 40
                 style:
-                  fill: 'white'
+                  fill: "white"
                   fontSize: 30
                   fontFamily: "NomnomNami2"
                   wordWrapWidth: 1740
@@ -813,120 +1015,345 @@ resources:
                 width: 120
                 height: 40
                 style:
-                  fill: 'white'
+                  fill: "white"
                   fontSize: 28
                   fontFamily: "NomnomNami2"
                   wordWrapWidth: 900
                   strokeColor: black
                   strokeWidth: 6
+
       options:
         layout:
-          - id: "about312312"
-            type: "anchor-layout-container"
-            anchor: "TopLeft"
-            direction: "vertical"
-            width: 200
-            height: 300
+          - id: "ladfkj3x3"
+            text: Options
             x: 20
             y: 20
-            children:
-              - id: "ladfkj3x3"
-                text: Options
-                type: "text-interactive"
-                width: 120
-                height: 40
-                style:
-                  fill: '#cc005b'
-                  fontSize: 120
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-                  strokeColor: black
-                  strokeWidth: 6
+            type: "text-interactive"
+            width: 120
+            height: 40
+            style:
+              fill: "#cc005b"
+              fontSize: 120
+              fontFamily: "NomnomNami2"
+              wordWrapWidth: 1740
+              strokeColor: black
+              strokeWidth: 6
           - id: "about32fs2"
             type: "anchor-layout-container"
             anchor: "TopLeft"
             direction: "vertical"
             x: 360
             y: 150
+            gap: 20
             width: 780
             height: 1000
             children:
               - id: "ladfkj3"
-                text: Rollback direction
+                text: Rollback Side
                 type: "text"
                 width: 120
                 height: 40
                 style:
-                  fill: 'white'
+                  fill: "#cc005b"
                   fontSize: 40
                   fontFamily: "NomnomNami2"
                   wordWrapWidth: 1740
                   strokeColor: black
                   strokeWidth: 6
+              - id: df3kk3
+                type: anchor-layout-container
+                anchor: "TopLeft"
+                direction: "vertical"
+                gap: 12
+                width: 300
+                height: 300 
+                data:
+                  - text: Disable
+                    value: disable
+                  - text: Left
+                    value: left
+                  - text: Right
+                    value: right
+                template:
+                  mapping:
+                    cases:
+                      - case:
+                          property: value
+                          op: eq
+                          value: "{{ config.rollbackSide }}"
+                        then: selected
+                    default: default
+                  items:
+                    - template: default
+                      id: "ladfkf1j3"
+                      type: "text-interactive"
+                      text: "{{ text }}"
+                      eventName: "Actions"
+                      eventPayload:
+                        actions:
+                          setConfig:
+                            rollbackSide: "{{ value }}"
+                      style:
+                        fill: "#ccc"
+                        fontSize: 28
+                        fontFamily: "NomnomNami2"
+                        wordWrapWidth: 1740
+                      hoverStyle:
+                        fontSize: 28
+                        fill: "yellow"
+                        fontFamily: "NomnomNami2"
+                        wordWrapWidth: 1740
+                    - template: selected
+                      id: "askd3d34jd"
+                      type: "text"
+                      text: "{{ text }}"
+                      style:
+                        fill: "white"
+                        fontSize: 28
+                        fontFamily: "NomnomNami2"
+                        wordWrapWidth: 1740
+                children: []
+
           - id: "about325fs2"
             type: "anchor-layout-container"
             anchor: "TopLeft"
             direction: "vertical"
-            x: 860
+            x: 660
             y: 150
+            gap: 40
             width: 780
             height: 1000
             children:
-              - id: "ladsfkj3"
-                text: Some other options
+              - id: "ladsfgkj3"
+                text: Skip
                 type: "text"
                 width: 120
                 height: 40
                 style:
-                  fill: 'white'
+                  fill: "#cc005b"
                   fontSize: 40
                   fontFamily: "NomnomNami2"
                   wordWrapWidth: 1740
                   strokeColor: black
                   strokeWidth: 6
-          - id: "about32e2fss232"
+              - id: df3kgeawdf3erk3
+                type: anchor-layout-container
+                anchor: "TopLeft"
+                direction: "vertical"
+                gap: 12
+                width: 300
+                height: 300 
+                data:
+                  - text: Unseen Text
+                    value: skipUnseenText
+                  - text: Transitions
+                    value: skipTransitions
+                template:
+                  mapping:
+                    cases:
+                      - case:
+                          property: value
+                          op: eq
+                          value: "{{ config.skip }}"
+                        then: selected
+                    default: default
+                  items:
+                    - template: default
+                      id: "ladfkf1jc3"
+                      type: "text-interactive"
+                      text: "{{ text }}"
+                      eventName: "Actions"
+                      eventPayload:
+                        actions:
+                          setConfig:
+                            skip: "{{ value }}"
+                      style:
+                        fill: "#ccc"
+                        fontSize: 28
+                        fontFamily: "NomnomNami2"
+                        wordWrapWidth: 1740
+                      hoverStyle:
+                        fontSize: 28
+                        fill: "yellow"
+                        fontFamily: "NomnomNami2"
+                        wordWrapWidth: 1740
+                    - template: selected
+                      id: "askd3d34jd"
+                      type: "text"
+                      text: "{{ text }}"
+                      style:
+                        fill: "white"
+                        fontSize: 28
+                        fontFamily: "NomnomNami2"
+                        wordWrapWidth: 1740
+                children: []
+             
+          - id: "about32e2fcss232"
             type: "anchor-layout-container"
             anchor: "TopLeft"
             direction: "vertical"
             x: 360
-            y: 450
-            width: 780
-            height: 1000
+            y: 400
+            gap: 20
             children:
-              - id: "ladfkj3"
-                text: Auto Speed
+              - id: "ladr2fkj3"
+                text: Text Speed
                 type: "text"
                 width: 120
                 height: 40
                 style:
-                  fill: 'white'
+                  fill: "#cc005b"
                   fontSize: 40
                   fontFamily: "NomnomNami2"
                   wordWrapWidth: 1740
                   strokeColor: black
                   strokeWidth: 6
+              - id: slidetefvxz2r3f
+                type: slider
+                direction: horizontal
+                x: 0
+                y: 0
+                dragEventName: "Actions"
+                dragEventPayload:
+                  actions:
+                    setConfig:
+                      textSpeed: '{{ value }}'
+                initialValue: '{{ config.textSpeed }}'
+                idleThumb: "/public/first-contract/gui/slider/horizontal_idle_thumb.png"
+                hoverThumb: "/public/first-contract/gui/slider/horizontal_hover_thumb.png"
+                idleBar: "/public/first-contract/gui/slider/horizontal_idle_bar.png"
+                hoverBar: "/public/first-contract/gui/slider/horizontal_hover_bar.png"
+          - id: "about32e2fsfes232"
+            type: "anchor-layout-container"
+            anchor: "TopLeft"
+            direction: "vertical"
+            x: 360
+            y: 520
+            gap: 20
+            children:
+              - id: "ladfkj3"
+                text: Auto-Forward Time
+                type: "text"
+                width: 120
+                height: 40
+                style:
+                  fill: "#cc005b"
+                  fontSize: 40
+                  fontFamily: "NomnomNami2"
+                  wordWrapWidth: 1740
+                  strokeColor: black
+                  strokeWidth: 6
+              - id: slidet342e2c2d2r3
+                type: slider
+                direction: horizontal
+                x: 0
+                y: 0
+                dragEventName: "Actions"
+                dragEventPayload:
+                  actions:
+                    setConfig:
+                      autoForwardTime: '{{ value }}'
+                initialValue: '{{ config.autoForwardTime }}'
+                idleThumb: "/public/first-contract/gui/slider/horizontal_idle_thumb.png"
+                hoverThumb: "/public/first-contract/gui/slider/horizontal_hover_thumb.png"
+                idleBar: "/public/first-contract/gui/slider/horizontal_idle_bar.png"
+                hoverBar: "/public/first-contract/gui/slider/horizontal_hover_bar.png"
           - id: "about32e2fs2"
             type: "anchor-layout-container"
             anchor: "TopLeft"
             direction: "vertical"
             x: 860
-            y: 450
-            width: 780
-            height: 1000
+            y: 400
+            gap: 20
             children:
-              - id: "ladfkj3"
-                text: Sound
+              - id: "ladfk4j3"
+                text: Music Volume
                 type: "text"
                 width: 120
                 height: 40
                 style:
-                  fill: 'white'
+                  fill: "#cc005b"
                   fontSize: 40
                   fontFamily: "NomnomNami2"
                   wordWrapWidth: 1740
                   strokeColor: black
                   strokeWidth: 6
-          - id: "about3412x"
+              - id: slidet3342e2r332
+                type: slider
+                direction: horizontal
+                x: 0
+                y: 0
+                dragEventName: "Actions"
+                dragEventPayload:
+                  actions:
+                    setConfig:
+                      musicVolume: '{{ value }}'
+                initialValue: '{{ config.musicVolume }}'
+                idleThumb: "/public/first-contract/gui/slider/horizontal_idle_thumb.png"
+                hoverThumb: "/public/first-contract/gui/slider/horizontal_hover_thumb.png"
+                idleBar: "/public/first-contract/gui/slider/horizontal_idle_bar.png"
+                hoverBar: "/public/first-contract/gui/slider/horizontal_hover_bar.png"
+          - id: "about32e422af23wefs2"
+            type: "anchor-layout-container"
+            anchor: "TopLeft"
+            direction: "vertical"
+            x: 860
+            y: 520
+            gap: 20
+            children:
+              - id: "ladfwkj3"
+                text: Sound Volume
+                type: "text"
+                width: 120
+                height: 40
+                style:
+                  fill: "#cc005b"
+                  fontSize: 40
+                  fontFamily: "NomnomNami2"
+                  wordWrapWidth: 1740
+                  strokeColor: black
+                  strokeWidth: 6
+              - id: slidet343f2ee2r33
+                type: slider
+                direction: horizontal
+                x: 0
+                y: 0
+                dragEventName: "Actions"
+                dragEventPayload:
+                  actions:
+                    setConfig:
+                      soundVolume: '{{ value }}'
+                initialValue: '{{ config.soundVolume }}'
+                idleThumb: "/public/first-contract/gui/slider/horizontal_idle_thumb.png"
+                hoverThumb: "/public/first-contract/gui/slider/horizontal_hover_thumb.png"
+                idleBar: "/public/first-contract/gui/slider/horizontal_idle_bar.png"
+                hoverBar: "/public/first-contract/gui/slider/horizontal_hover_bar.png"
+          - id: "ladfwkj3d3"
+            text: Mute All
+            type: "text-interactive"
+            x: 860
+            y: 640
+            eventName: "Actions"
+            eventPayload:
+              actions:
+                setConfig:
+                  soundVolume: 0
+                  musicVolume: 0
+            style:
+              fill: "#ccc"
+              fontSize: 40
+              fontFamily: "NomnomNami2"
+              wordWrapWidth: 1740
+              strokeColor: black
+              strokeWidth: 6
+            hoverStyle:
+              fontSize: 40
+              fill: "yellow"
+              fontFamily: "NomnomNami2"
+              wordWrapWidth: 1740
+              strokeColor: black
+              strokeWidth: 6
+          - id: "aboutf341d2x"
             type: "anchor-layout-container"
             anchor: "CenterLeft"
             direction: "vertical"
@@ -940,9 +1367,16 @@ resources:
                 width: 120
                 height: 40
                 text: Language...
-                eventName: language
+                eventName: Actions
+                eventPayload:
+                  actions:
+                    moveToSection:
+                      sectionId: "sectionLanguage"
+                    setCustomState:
+                      currentPage: "language"
+
                 style:
-                  fill: '#ccc'
+                  fill: "#ccc"
                   fontSize: 40
                   fontFamily: "NomnomNami2"
                   wordWrapWidth: 1740
@@ -972,66 +1406,111 @@ resources:
                 width: 120
                 height: 40
                 style:
-                  fill: '#cc005b'
+                  fill: "#cc005b"
                   fontSize: 120
                   fontFamily: "NomnomNami2"
                   wordWrapWidth: 1740
                   strokeColor: black
                   strokeWidth: 6
+          - id: "ladfbackkj3"
+            text: Back
+            type: "text-interactive"
+            x: 980
+            y: 30
+            eventName: "Actions"
+            eventPayload:
+              actions:
+                moveToSection:
+                  sectionId: "sectionOptions"
+                setCustomState:
+                  currentPage: "options"
+            style:
+              fill: "#ccc"
+              fontSize: 32
+              fontFamily: "NomnomNami2"
+              wordWrapWidth: 200
+            hoverStyle:
+              fill: "yellow"
+              fontSize: 32
+              fontFamily: "NomnomNami2"
+              wordWrapWidth: 200
           - id: "about312312"
             type: "anchor-layout-container"
             anchor: "TopLeft"
             direction: "horizontal"
             gap: 20
-            width: 200
-            height: 300
             x: 320
             y: 320
-            children:
-              - id: "ladfkj3"
-                text: English
-                type: "text-interactive"
-                width: 120
-                height: 40
-                style:
-                  fill: 'white'
-                  fontSize: 40
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-              - id: "ladf3fkj3"
-                text: French
-                type: "text-interactive"
-                width: 120
-                height: 40
-                style:
-                  fill: 'white'
-                  fontSize: 40
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
+            data:
+              - text: English
+                value: en
+              - text: French
+                value: fr
+              - text: Italian
+                value: it
+              - text: Spanish
+                value: es
+              - text: 中文
+                value: zh
+              - text: 日本語
+                value: ja
+            template:
+              mapping:
+                cases:
+                  - case:
+                      property: value
+                      op: eq
+                      value: "{{ config.language }}"
+                    then: selected
+                default: default
+              items:
+                - template: default
+                  id: "ladfkj3"
+                  text: "{{ text }}"
+                  type: "text-interactive"
+                  eventName: "Actions"
+                  eventPayload:
+                    actions:
+                      setConfig:
+                        language: "{{ value }}"
+                  style:
+                    fill: "#ccc"
+                    fontSize: 40
+                    fontFamily: "NomnomNami2"
+                    wordWrapWidth: 400
+                  hoverStyle:
+                    fill: "yellow"
+                    fontSize: 40
+                    fontFamily: "NomnomNami2"
+                    wordWrapWidth: 400
+                - template: selected
+                  id: "ladfkj3233"
+                  text: "{{ text }}"
+                  type: "text-interactive"
+                  style:
+                    fill: "white"
+                    fontSize: 40
+                    fontFamily: "NomnomNami2"
+                    wordWrapWidth: 400
+            children: []
+     
 
       load:
         layout:
-          - id: "about312312"
-            type: "anchor-layout-container"
-            anchor: "TopLeft"
-            direction: "vertical"
-            width: 200
-            height: 300
+          - id: "ladfkj3x3d3"
+            text: Load
             x: 20
             y: 20
-            children:
-              - id: "ladfkj3x3"
-                text: Load
-                type: "text-interactive"
-                width: 120
-                height: 40
-                style:
-                  fill: '#cc005b'
-                  fontSize: 120
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-                  strokeColor: black
-                  strokeWidth: 6
+            type: "text-interactive"
+            width: 120
+            height: 40
+            style:
+              fill: "#cc005b"
+              fontSize: 120
+              fontFamily: "NomnomNami2"
+              wordWrapWidth: 1740
+              strokeColor: black
+              strokeWidth: 6
           - id: "about32fs2"
             type: "anchor-layout-container"
             anchor: "TopLeft"
@@ -1042,12 +1521,12 @@ resources:
             height: 1000
             children:
               - id: "ladfkj3"
-                text: Page 1
+                text: "{{ customState.currentSavePageTitle }}"
                 type: "text"
                 width: 120
                 height: 40
                 style:
-                  fill: '#cc005b'
+                  fill: "#cc005b"
                   fontSize: 40
                   fontFamily: "NomnomNami2"
                   wordWrapWidth: 1740
@@ -1062,7 +1541,7 @@ resources:
             y: 200
             width: 780
             height: 1000
-            data: '$saveData'
+            data: "$saveData"
             template:
               mapping:
                 cases:
@@ -1073,38 +1552,45 @@ resources:
                 default: empty
               items:
                 - template: slot
+                  id: kf3jkl32
                   type: container
+                  propagateEvents: true
                   width: 240
                   height: 150
                   children:
-                    - id: "ladsfkj3"
-                      type: "sprite"
+                    - id: "ladseefkj3"
+                      type: "sprite-interactive"
                       url: "/public/first-contract/gui/button/slot_idle_background.png"
+                      hoverUrl: "/public/first-contract/gui/button/slot_hover_background.png"
                       width: 280
                       height: 200
-                    - id: "ladfkj3"
+                    - id: "ladfxkj3"
                       x: 10
                       y: 8
                       type: "sprite"
                       url: "{{ url }}"
                       width: 260
                       height: 144
-                    - id: kekjx3f2
-                      type: "text-interactive"
-                      text: Load
-                      eventName: loadSlot
+                      eventName: LoadSlot
                       eventPayload:
-                        index: '{{ index }}'
-                      width: 260
-                      height: 144
+                        index: "{{ index }}"
+                    - id: kekjx3f322
+                      type: "text-interactive"
+                      text: '10/10/2024 10:10:10'
+                      x: 150
+                      y: 160
+                      xa: 0.5
+                      ya: 0.5
                       style:
                         fill: "white"
-                        fontSize: 40
+                        fontSize: 16
                         fontFamily: "NomnomNami2"
                         wordWrapWidth: 1740
-                        strokeColor: black
-                        strokeWidth: 6
-
+                      hoverStyle:
+                        fill: "yellow"
+                        fontSize: 20
+                        fontFamily: "NomnomNami2"
+                        wordWrapWidth: 1740
                 - template: empty
                   type: container
                   width: 240
@@ -1124,43 +1610,78 @@ resources:
             gap: 20
             width: 500
             height: 80
-            children:
-              - id: "ladsf4da3kj3"
-                type: "text-interactive"
-                text: '1'
-                width: 40
-                height: 40
-                style:
-                  fill: '#ccc'
-                  fontSize: 40
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 100
-                  strokeColor: black
-                  strokeWidth: 6
-              - id: "lads2fda3kj3"
-                type: "text-interactive"
-                text: '2'
-                width: 40
-                height: 40
-                style:
-                  fill: '#ccc'
-                  fontSize: 40
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 100
-                  strokeColor: black
-                  strokeWidth: 6
-              - id: "lads23k21j33"
-                type: "text-interactive"
-                text: '3'
-                width: 40
-                height: 40
-                style:
-                  fill: '#ccc'
-                  fontSize: 40
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 100
-                  strokeColor: black
-                  strokeWidth: 6
+            data:
+              - text: "A"
+                value: 0
+                title: Auto Save
+              - text: "Q"
+                value: 1
+                title: Quick Save
+              - text: "1"
+                value: 2
+                title: Page 1
+              - text: "2"
+                value: 3
+                title: Page 2
+              - text: "3"
+                value: 4
+                title: Page 3
+              - text: "4"
+                value: 5
+                title: Page 4
+              - text: "5"
+                value: 6
+                title: Page 5
+              - text: "6"
+                value: 7
+                title: Page 6
+              - text: "7"
+                value: 8
+                title: Page 8
+              - text: "9"
+                value: 9
+                title: Page 9
+              - text: "10"
+                value: 10
+                title: Page 10
+            template:
+              mapping:
+                cases:
+                  - case:
+                      property: value
+                      op: eq
+                      value: "{{ customState.currentSavePageNumber }}"
+                    then: selected
+                default: default
+              items:
+                - template: selected
+                  type: "text"
+                  text: "{{ text }}"
+                  style:
+                    fill: "white"
+                    fontSize: 32
+                    fontFamily: "NomnomNami2"
+                    wordWrapWidth: 100
+                - template: default
+                  type: "text-interactive"
+                  text: "{{ text }}"
+                  eventName: "Actions"
+                  eventPayload:
+                    actions:
+                      setCustomState:
+                        currentSavePageNumber: "{{ value }}"
+                        currentSavePageTitle: "{{ title }}"
+                  style:
+                    fill: "#ccc"
+                    fontSize: 32
+                    fontFamily: "NomnomNami2"
+                    wordWrapWidth: 100
+                  hoverStyle:
+                    fill: "yellow"
+                    fontSize: 32
+                    fontFamily: "NomnomNami2"
+                    wordWrapWidth: 100
+            children: []
 
       save:
         layout:
@@ -1179,7 +1700,7 @@ resources:
                 width: 120
                 height: 40
                 style:
-                  fill: '#cc005b'
+                  fill: "#cc005b"
                   fontSize: 120
                   fontFamily: "NomnomNami2"
                   wordWrapWidth: 1740
@@ -1195,12 +1716,12 @@ resources:
             height: 1000
             children:
               - id: "ladfkj3"
-                text: Page 1
+                text: "{{ customState.currentSavePageTitle }}"
                 type: "text"
                 width: 120
                 height: 40
                 style:
-                  fill: '#cc005b'
+                  fill: "#cc005b"
                   fontSize: 40
                   fontFamily: "NomnomNami2"
                   wordWrapWidth: 1740
@@ -1215,7 +1736,7 @@ resources:
             y: 200
             width: 780
             height: 1000
-            data: '$saveData'
+            data: "$saveData"
             template:
               mapping:
                 cases:
@@ -1229,10 +1750,12 @@ resources:
                   type: container
                   width: 240
                   height: 150
+                  propagateEvents: true
                   children:
                     - id: "ladsfkj3"
-                      type: "sprite"
+                      type: "sprite-interactive"
                       url: "/public/first-contract/gui/button/slot_idle_background.png"
+                      hoverUrl: "/public/first-contract/gui/button/slot_hover_background.png"
                       width: 280
                       height: 200
                     - id: "ladfkj3"
@@ -1242,46 +1765,63 @@ resources:
                       url: "{{ url }}"
                       width: 260
                       height: 144
-                    - id: kekj3f2
-                      type: "text-interactive"
-                      text: Save Slot
-                      eventName: saveSlot
+                      eventName: SaveSlot
                       eventPayload:
-                        index: '{{ index }}'
-                      width: 260
-                      height: 144
+                        index: "{{ index }}"
+                    - id: kekjx3def322
+                      type: "text-interactive"
+                      text: '10/10/2024 10:10:10'
+                      x: 150
+                      y: 160
+                      xa: 0.5
+                      ya: 0.5
                       style:
                         fill: "white"
-                        fontSize: 40
+                        fontSize: 16
                         fontFamily: "NomnomNami2"
                         wordWrapWidth: 1740
-                        strokeColor: black
-                        strokeWidth: 6
+                      hoverStyle:
+                        fill: "yellow"
+                        fontSize: 20
+                        fontFamily: "NomnomNami2"
+                        wordWrapWidth: 1740
                 - template: empty
                   type: container
                   width: 240
                   height: 150
+                  propagateEvents: true
                   children:
                     - id: "ladsfkj3"
-                      type: "sprite"
+                      type: "sprite-interactive"
                       url: "/public/first-contract/gui/button/slot_idle_background.png"
+                      hoverUrl: "/public/first-contract/gui/button/slot_hover_background.png"
+                      eventName: SaveSlot
+                      eventPayload:
+                        index: "{{ index }}"
                       width: 280
                       height: 200
                     - id: kekj3f2
                       type: "text-interactive"
-                      text: Save Slot
-                      eventName: saveSlot
-                      eventPayload:
-                        index: '{{ index }}'
+                      text: Empty Slot
+                      # eventName: SaveSlot
+                      # eventPayload:
+                      #   index: "{{ index }}"
+                      x: 150
+                      y: 160
+                      xa: 0.5
+                      ya: 0.5
                       width: 260
                       height: 144
                       style:
                         fill: "white"
-                        fontSize: 40
+                        fontSize: 16
                         fontFamily: "NomnomNami2"
                         wordWrapWidth: 1740
-                        strokeColor: black
-                        strokeWidth: 6
+                      hoverStyle:
+                        fill: "yellow"
+                        fontSize: 20
+                        fontFamily: "NomnomNami2"
+                        wordWrapWidth: 1740
 
           - id: cmi2x3x23233
             type: anchor-layout-container
@@ -1292,45 +1832,248 @@ resources:
             gap: 20
             width: 500
             height: 80
+            data:
+              - text: "A"
+                value: 0
+                title: Auto Save
+              - text: "Q"
+                value: 1
+                title: Quick Save
+              - text: "1"
+                value: 2
+                title: Page 1
+              - text: "2"
+                value: 3
+                title: Page 2
+              - text: "3"
+                value: 4
+                title: Page 3
+              - text: "4"
+                value: 5
+                title: Page 4
+              - text: "5"
+                value: 6
+                title: Page 5
+              - text: "6"
+                value: 7
+                title: Page 6
+              - text: "7"
+                value: 8
+                title: Page 8
+              - text: "9"
+                value: 9
+                title: Page 9
+              - text: "10"
+                value: 10
+                title: Page 10
+            template:
+              mapping:
+                cases:
+                  - case:
+                      property: value
+                      op: eq
+                      value: "{{ customState.currentSavePageNumber }}"
+                    then: selected
+                default: default
+              items:
+                - template: selected
+                  type: "text"
+                  text: "{{ text }}"
+                  style:
+                    fill: "white"
+                    fontSize: 32
+                    fontFamily: "NomnomNami2"
+                    wordWrapWidth: 100
+                - template: default
+                  type: "text-interactive"
+                  text: "{{ text }}"
+                  eventName: "Actions"
+                  eventPayload:
+                    actions:
+                      setCustomState:
+                        currentSavePageNumber: "{{ value }}"
+                        currentSavePageTitle: "{{ title }}"
+                  style:
+                    fill: "#ccc"
+                    fontSize: 32
+                    fontFamily: "NomnomNami2"
+                    wordWrapWidth: 100
+                  hoverStyle:
+                    fill: "yellow"
+                    fontSize: 32
+                    fontFamily: "NomnomNami2"
+                    wordWrapWidth: 100
+            children: []
+      history:
+        layout:
+          - id: "abos3ut3123312"
+            type: "anchor-layout-container"
+            anchor: "TopLeft"
+            direction: "vertical"
+            width: 200
+            height: 300
+            x: 20
+            y: 20
             children:
-              - id: "ladsf4da3kj3"
+              - id: "laedfkj3x3"
+                text: History
                 type: "text-interactive"
-                text: '1'
-                width: 40
+                width: 120
                 height: 40
                 style:
-                  fill: '#ccc'
-                  fontSize: 40
+                  fill: "#cc005b"
+                  fontSize: 120
                   fontFamily: "NomnomNami2"
-                  wordWrapWidth: 100
+                  wordWrapWidth: 1740
                   strokeColor: black
                   strokeWidth: 6
-              - id: "lads2fda3kj3"
+          - id: "history"
+            type: "anchor-layout-container"
+            anchor: "TopLeft"
+            direction: "vertical"
+            x: 340
+            y: 220
+            gap: 40
+            height: 800
+            data:
+              - characterName: Kamilla
+                content: "Hey, good morning!"
+              - characterName: Eleni
+                content: "Hello, how are you?"
+              - characterName: Kamilla
+                content: "All good thanks. Where have you been recently? Havent seen you around"
+              - characterName: Eleni
+                content: "Not much, just been to the store. How about you?"
+            template:
+              mapping:
+                cases: []
+                default: default
+              items:
+                - template: default
+                  id: "ladfkj3"
+                  width: 120
+                  height: 80
+                  type: "anchor-layout-container"
+                  anchor: "TopLeft"
+                  direction: "horizontal"
+                  gap: 40
+                  children:
+                    - id: 23kf323c
+                      text: "{{ characterName }}"
+                      type: "text"
+                      width: 120
+                      height: 40
+                      style:
+                        fill: "#ccc"
+                        fontSize: 40
+                        fontFamily: "NomnomNami2"
+                        wordWrapWidth: 700
+                        strokeColor: black
+                        strokeWidth: 6
+                    - id: 23kffeww323c
+                      text: "{{ content }}"
+                      type: "text"
+                      width: 120
+                      height: 40
+                      style:
+                        fill: "white"
+                        fontSize: 40
+                        fontFamily: "NomnomNami2"
+                        wordWrapWidth: 700
+                        strokeColor: black
+                        strokeWidth: 6
+      mainMenuExtra:
+        layout:
+          - id: "mainMef32nuextra"
+            type: "anchor-layout-container"
+            anchor: "CenterLeft"
+            direction: "horizontal"
+            x: 60
+            y: 680
+            children:
+              - id: "ladfkj3"
+                text: "Extra feaures: Bonus gallery unlocked"
                 type: "text-interactive"
-                text: '2'
-                width: 40
+                eventName: Actions
+                eventPayload:
+                  actions:
+                    moveToSection:
+                      sceneId: sceneExtra
+                      sectionId: sectionExtra
+                width: 120
                 height: 40
                 style:
-                  fill: '#ccc'
-                  fontSize: 40
+                  fill: "white"
+                  fontSize: 24
                   fontFamily: "NomnomNami2"
-                  wordWrapWidth: 100
+                  wordWrapWidth: 1740
                   strokeColor: black
                   strokeWidth: 6
-              - id: "lads23k21j33"
-                type: "text-interactive"
-                text: '3'
-                width: 40
-                height: 40
-                style:
-                  fill: '#ccc'
-                  fontSize: 40
+                hoverStyle:
+                  fontSize: 24
+                  fill: "yellow"
                   fontFamily: "NomnomNami2"
-                  wordWrapWidth: 100
+                  wordWrapWidth: 1740
                   strokeColor: black
                   strokeWidth: 6
-
       mainMenu:
+        transitions:
+          - id: "f34afeja"
+            type: keyframes
+            elementId: 'labi-0'
+            event: add
+            animationProperties:
+              - property: alpha
+                initialValue: 0
+                keyframes:
+                  - duration: 0
+                    value: 0
+                    easing: linear
+                  - duration: 1000
+                    value: 1
+                    easing: linear
+          - id: "f34afeja1"
+            type: keyframes
+            elementId: 'labi-1'
+            event: add
+            animationProperties:
+              - property: alpha
+                initialValue: 0
+                keyframes:
+                  - duration: 300
+                    value: 0
+                    easing: linear
+                  - duration: 300
+                    value: 1
+                    easing: linear
+          - id: "f34afeja2"
+            type: keyframes
+            elementId: 'labi-2'
+            event: add
+            animationProperties:
+              - property: alpha
+                initialValue: 0
+                keyframes:
+                  - duration: 600
+                    value: 0
+                    easing: linear
+                  - duration: 300
+                    value: 1
+                    easing: linear
+          - id: "f34afeja3"
+            type: keyframes
+            elementId: 'labi-3'
+            event: add
+            animationProperties:
+              - property: alpha
+                initialValue: 0
+                keyframes:
+                  - duration: 900
+                    value: 0
+                    easing: linear
+                  - duration: 300
+                    value: 1
+                    easing: linear
         layout:
           - id: "mainMenu"
             type: "anchor-layout-container"
@@ -1338,88 +2081,71 @@ resources:
             direction: "horizontal"
             x: 640
             y: 610
-            children:
-              - id: "ladfkj3"
-                text: Start
-                type: "text-interactive"
-                eventName: start
-                width: 120
-                height: 40
-                style:
-                  fill: "white"
-                  fontSize: 40
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-                  strokeColor: black
-                  strokeWidth: 6
-                hoverStyle:
-                  fontSize: 40
-                  fill: "yellow"
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-                  strokeColor: black
-                  strokeWidth: 6
-              - id: "ladf421kj3"
-                type: "text-interactive"
-                eventName: load
-                width: 120
-                height: 40
-                text: Load
-                style:
-                  fill: "white"
-                  fontSize: 40
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-                  strokeColor: black
-                  strokeWidth: 6
-                hoverStyle:
-                  fontSize: 40
-                  fill: "yellow"
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-                  strokeColor: black
-                  strokeWidth: 6
-              - id: "ladf421k412j3"
-                type: "text-interactive"
-                width: 120
-                height: 40
-                text: Options
-                eventName: options
-                style:
-                  fill: "white"
-                  fontSize: 40
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-                  strokeColor: black
-                  strokeWidth: 6
-                hoverStyle:
-                  fontSize: 40
-                  fill: "yellow"
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-                  strokeColor: black
-                  strokeWidth: 6
-
-              - id: "ladfsd421kj3"
-                type: "text-interactive"
-                eventName: about
-                width: 120
-                height: 40
-                text: About
-                style:
-                  fill: "white"
-                  fontSize: 40
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-                  strokeColor: black
-                  strokeWidth: 6
-                hoverStyle:
-                  fontSize: 40
-                  fill: "yellow"
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-                  strokeColor: black
-                  strokeWidth: 6
+            # height: 40
+            # width: 300
+            gap: 20
+            data:
+              - text: Start
+                eventPayload:
+                  actions:
+                    moveToSection:
+                      clearHistory: true
+                      sceneId: scene1
+                      sectionId: section2
+                    setCustomState:
+                      currentPage: "start"
+              - text: Load
+                eventPayload:
+                  actions:
+                    moveToSection:
+                      sceneId: sceneTitleMenu
+                      sectionId: sectionload
+                    setCustomState:
+                      currentPage: "load"
+              - text: Options
+                eventPayload:
+                  actions:
+                    moveToSection:
+                      sceneId: sceneTitleMenu
+                      sectionId: sectionOptions
+                    setCustomState:
+                      currentPage: "options"
+              - text: About
+                eventPayload:
+                  actions:
+                    moveToSection:
+                      sceneId: sceneTitleMenu
+                      sectionId: sectionx
+                    setCustomState:
+                      currentPage: "about"
+            template:
+              mapping:
+                cases:
+                  - case: []
+                default: default
+              items:
+                - template: default
+                  id: "labi-{{ index }}"
+                  text: "{{ text }}"
+                  eventName: "Actions"
+                  eventPayload: "{{ eventPayload }}"
+                  type: "text-interactive"
+                  # width: 120
+                  # height: 40
+                  style:
+                    fill: "#ccc"
+                    fontSize: 40
+                    fontFamily: "NomnomNami2"
+                    wordWrapWidth: 1740
+                    strokeColor: black
+                    strokeWidth: 6
+                  hoverStyle:
+                    fontSize: 40
+                    fill: "yellow"
+                    fontFamily: "NomnomNami2"
+                    wordWrapWidth: 1740
+                    strokeColor: black
+                    strokeWidth: 6
 
   dialogueBox:
     tagsOrder: []
@@ -1472,6 +2198,7 @@ resources:
                 type: text-revealing
                 width: 43
                 height: 48
+                displaySpeed: $config.textSpeed
                 text: "This is the text content"
                 contentSource: "dialogueContent"
                 style:
@@ -1598,68 +2325,25 @@ resources:
             children: []
 
 story:
-  startSceneId: "scene1"
-
+  startSceneId: "sceneTitleMenu"
   optionsConfig:
     rightClick:
-      sceneId: "sceneGameMenu"
-      sectionId: sectionOptions
+      actions:
+        moveToSection:
+          sceneId: "sceneGameMenu"
+          sectionId: sectionOptions
+        setCustomState:
+          currentPage: "options"
 
   scenes:
     foldersOrder: {}
     folders: {}
     items:
-      sceneGameMenu:
-        name: Scene Game Menu
-        eventHandlers:
-          options:
-            actions:
-              moveToSection:
-                sectionId: sectionOptions
-              setState:
-                currentPage: "options"
-          save:
-            actions:
-              moveToSection:
-                sectionId: sectionsave
-              setState:
-                currentPage: "save"
-          about:
-            actions:
-              moveToSection:
-                sectionId: sectionx
-              setState:
-                currentPage: "about"
-          start:
-            actions:
-              moveToSection:
-                sectionId: section2
-              setState:
-                currentPage: "main"
-          main:
-            actions:
-              moveToSection:
-                sceneId: scene1
-                sectionId: sectionmain
-              setState:
-                currentPage: "main"
-          load:
-            actions:
-              moveToSection:
-                sectionId: sectionload
-              setState:
-                currentPage: "load"
-          language:
-            actions:
-              moveToSection:
-                sectionId: sectionLanguage
-              setState:
-                currentPage: "language"
-          return:
-            actions:
-              back: true
+      sceneTitleMenu:
+        mode: menu
+        name: Scene Title Menu
         sections:
-          itemsOrder: [sectionsave] # section2, section0
+          itemsOrder: [sectionTitleMenu2] # section2, section0
           items:
             sectionsave:
               name: Section Save
@@ -1671,9 +2355,22 @@ story:
                       screen:
                         items:
                           - id: 324x34k3xax
-                            screenId: "menuGame"
+                            screenId: "menuBase"
                           - id: fkje4aefklx33g1
                             screenId: "save"
+            sectionOptions:
+              name: Options
+              steps:
+                itemsOrder: [step12]
+                items:
+                  step12:
+                    actions:
+                      screen:
+                        items:
+                          - id: 324x3x4k
+                            screenId: "menuBase"
+                          - id: fkje4aefkl
+                            screenId: "options"
             sectionload:
               name: Section Load
               steps:
@@ -1684,12 +2381,12 @@ story:
                       screen:
                         items:
                           - id: 324x34k3xax
-                            screenId: "menuGame"
+                            screenId: "menuBase"
                             keep: true
                           - id: fkje4aefklx33g1
                             screenId: "load"
             sectionx:
-              name: secion x
+              name: secion About
               steps:
                 itemsOrder: [step11]
                 items:
@@ -1698,11 +2395,11 @@ story:
                       screen:
                         items:
                           - id: 324x34k3ax
-                            screenId: "menuGame"
+                            screenId: "menuBase"
                           - id: fkje4aefkl3g1
                             screenId: "about"
-            sectionOptions:
-              name: sectionOptions
+            sectionMenuGame:
+              name: Options
               steps:
                 itemsOrder: [step12]
                 # itemsOrder: [step0, step1, step2]
@@ -1712,11 +2409,11 @@ story:
                       screen:
                         items:
                           - id: 324x34k
-                            screenId: "menuGame"
+                            screenId: "menuBase"
                           - id: fkje4aefkl
                             screenId: "options"
             sectionLanguage:
-              name: sectionLanguage
+              name: Language
               steps:
                 itemsOrder: [step12]
                 # itemsOrder: [step0, step1, step2]
@@ -1726,82 +2423,71 @@ story:
                       screen:
                         items:
                           - id: 324x34k
-                            screenId: "menuGame"
+                            screenId: "menuBase"
                           - id: fkje4aefkl
                             screenId: "language"
-
-      scene1:
-        name: Scene 1
-        eventHandlers:
-          options:
-            actions:
-              moveToSection:
-                sectionId: section00
-              setState:
-                currentPage: "options"
-          save:
-            actions:
-              moveToSection:
-                sectionId: sectionsave
-              setState:
-                currentPage: "save"
-          about:
-            actions:
-              moveToSection:
-                sectionId: sectionx
-              setState:
-                currentPage: "about"
-          start:
-            actions:
-              moveToSection:
-                sectionId: section2
-              setState:
-                currentPage: "main"
-          main:
-            actions:
-              moveToSection:
-                sectionId: section00
-              setState:
-                currentPage: "main"
-          load:
-            actions:
-              moveToSection:
-                sectionId: sectionload
-              setState:
-                currentPage: "load"
-          language:
-            actions:
-              moveToSection:
-                sectionId: sectionLanguage
-              setState:
-                currentPage: "language"
-          return:
-            actions:
-              moveToSection:
-                sectionId: sectionmain
-              setState:
-                currentPage: "main"
-        sections:
-          itemsOrder: [sectionmain] # section2, section0
-          items:
-            sectionmain:
+            sectionTitleMenu:
+              name: Title  Menu
               steps:
-                itemsOrder: [step2]
+                itemsOrder: [step1, step2, step3]
                 items:
+                  step1:
+                    autoNext: true
+                    actions:
+                      background:
+                        backgroundId: "bg7"
+                        inAnimation:
+                          animationId: "ani8"
                   step2:
+                    autoNext: true
                     actions:
                       visual:
                         items:
                           - id: mainMenu
                             visualId: "mainMenu"
                             inAnimation:
-                              animationId: "ani1"
+                              animationId: "titleBg"
                             position:
                               positionId: center_center
                           - id: "logo"
                             visualId: "logo"
                             inAnimation:
-                              animationId: "ani1"
+                              animationId: "titleLogo"
+                            position:
+                              x: 640
+                              y: 305
+                              xa: 0.5
+                              ya: 0.5
+                          - id: buttonFrame
+                            visualId: buttonFrame
+                            inAnimation:
+                              animationId: "aniButtonFrame"
+                            position:
+                              x: 640
+                              y: 640
+                              xa: 0.5
+                              ya: 0.5
+                  step3:
+                    actions:
+                      moveToSection:
+                        sceneId: sceneTitleMenu
+                        sectionId: sectionTitleMenu2
+                        stepId: step1
+            sectionTitleMenu2:
+              name: Title  Menu 2
+              steps:
+                itemsOrder: [step1]
+                items:
+                  step1:
+                    actions:
+                      visual:
+                        items:
+                          - id: mainMenu
+                            visualId: "mainMenu"
+                            position:
+                              positionId: center_center
+                          - id: "logo"
+                            visualId: "logo"
                             position:
                               x: 640
                               y: 305
@@ -1818,7 +2504,17 @@ story:
                         items:
                           - id: kj3m23
                             screenId: "mainMenu"
+                          - id: extra
+                            screenId: "mainMenuExtra"
+                            inAnimation:
+                              animationId: extraFadeIn
 
+      sceneGameMenu:
+        mode: menu
+        name: Scene Game Menu
+        sections:
+          itemsOrder: [sectionmain] # section2, section0
+          items:
             sectionsave:
               name: Section Save
               steps:
@@ -1829,9 +2525,22 @@ story:
                       screen:
                         items:
                           - id: 324x34k3xax
-                            screenId: "menuBase"
+                            screenId: "menuGame"
                           - id: fkje4aefklx33g1
                             screenId: "save"
+            sectionHistory:
+              name: Section History
+              steps:
+                itemsOrder: [step11]
+                items:
+                  step11:
+                    actions:
+                      screen:
+                        items:
+                          - id: 324x34k3xax
+                            screenId: "menuGame"
+                          - id: fkje4aefklx33g1
+                            screenId: "history"
             sectionload:
               name: Section Load
               steps:
@@ -1842,12 +2551,12 @@ story:
                       screen:
                         items:
                           - id: 324x34k3xax
-                            screenId: "menuBase"
+                            screenId: "menuGame"
                             keep: true
                           - id: fkje4aefklx33g1
                             screenId: "load"
             sectionx:
-              name: secion x
+              name: Section About
               steps:
                 itemsOrder: [step11]
                 items:
@@ -1856,82 +2565,141 @@ story:
                       screen:
                         items:
                           - id: 324x34k3ax
-                            screenId: "menuBase"
+                            screenId: "menuGame"
                           - id: fkje4aefkl3g1
                             screenId: "about"
-            sectionMenuGame:
-              name: sectionMenuGame
+            sectionOptions:
+              name: Options
               steps:
                 itemsOrder: [step12]
-                # itemsOrder: [step0, step1, step2]
                 items:
                   step12:
                     actions:
                       screen:
                         items:
                           - id: 324x34k
-                            screenId: "menuBase"
+                            screenId: "menuGame"
                           - id: fkje4aefkl
                             screenId: "options"
             sectionLanguage:
-              name: sectionLanguage
+              name: Language
               steps:
                 itemsOrder: [step12]
-                # itemsOrder: [step0, step1, step2]
                 items:
                   step12:
                     actions:
                       screen:
                         items:
                           - id: 324x34k
-                            screenId: "menuBase"
+                            screenId: "menuGame"
                           - id: fkje4aefkl
                             screenId: "language"
-            section00:
-              name: Section 00
-              steps:
-                itemsOrder: [step12]
-                # itemsOrder: [step0, step1, step2]
-                items:
-                  step12:
-                    actions:
-                      screen:
-                        items:
-                          - id: 324x34k
-                            screenId: "menuBase"
-                          - id: fkje4aefkl
-                            screenId: "options"
 
-                  step0:
-                    autoNext: true
-                    autoNextDelay: 1000
-                    actions:
-                      background:
-                        backgroundId: "bg7"
-                        inAnimation:
-                          animationId: "ani1"
+      sceneExtra:
+        name: Scene Extra
+        mode: read
+        noHistory: true
+        sections:
+          itemsOrder: [sectionExtra]
+          items:
+            sectionExtra:
+              name: Section Extra
+              steps:
+                itemsOrder: [step1, step2, step3, step4, step5, step6, step7, step8]
+                items:
                   step1:
                     autoNext: true
-                    autoNextDelay: 1000
+                    autoNextDelay: 500
                     actions:
-                      background:
-                        backgroundId:
+                      visual:
+                        items: []
+                  step2:
+                    actions:
                       visual:
                         items:
-                          - id: "logo"
-                            visualId: "logo"
+                          - id: extra
+                            visualId: "extra1"
                             inAnimation:
                               animationId: "ani1"
-                            position:
-                              x: 640
-                              y: 305
-                              xa: 0.5
-                              ya: 0.5
+                            outAnimation:
+                              animationId: "ani4"
+                  step3:
+                    actions:
+                      visual:
+                        items:
+                          - id: extra
+                            visualId: "extra2"
+                            inAnimation:
+                              animationId: "ani1"
+                            outAnimation:
+                              animationId: "ani4"
+                  step4:
+                    actions:
+                      visual:
+                        items:
+                          - id: extra
+                            visualId: "extra3"
+                            inAnimation:
+                              animationId: "ani1"
+                            outAnimation:
+                              animationId: "ani4"
+                  step5:
+                    actions:
+                      visual:
+                        items:
+                          - id: extra
+                            visualId: "extra4"
+                            inAnimation:
+                              animationId: "ani1"
+                            outAnimation:
+                              animationId: "ani4"
+                  step6:
+                    actions:
+                      visual:
+                        items:
+                          - id: extra
+                            visualId: "extra5"
+                            inAnimation:
+                              animationId: "ani1"
+                            outAnimation:
+                              animationId: "ani4"
+                  step7:
+                    autoNext: true
+                    autoNextDelay: 500
+                    actions:
+                      visual:
+                        items:
+                          - id: extra
+                            visualId:
+                            outAnimation:
+                              animationId: "ani4"
+                  step8:
+                    actions:
+                      moveToSection:
+                        sceneId: sceneTitleMenu
+                        sectionId: sectionTitleMenu2
 
+      scene1:
+        name: Scene 1
+        mode: read
+        sections:
+          itemsOrder: [section2] # section2, section0
+          items:
             section2:
               name: Section 2
               steps:
-                itemsOrder: [step0, step1, step51, step52, step53, step54, step55, step56, step57]
+                itemsOrder:
+                  [
+                    step0,
+                    step1,
+                    step51,
+                    step52,
+                    step53,
+                    step54,
+                    step55,
+                    step56,
+                    step57,
+                  ]
                 items:
                   step0:
                     actions:
@@ -1989,7 +2757,6 @@ story:
                       moveToSection:
                         sectionId: section0
 
-                        
             section0:
               name: "Section 0"
               description: "This is the first section"
@@ -2088,20 +2855,20 @@ story:
                     "step113",
                     "step114",
                     "step115",
-                    "step116"
-                ]
+                    "step116",
+                  ]
                 items:
                   stepzero:
                     actions: {}
                   step0:
-                    autoNext: true
+                    # autoNext: true
                     actions:
                       background:
                         backgroundId: "bg1"
                         inAnimation:
                           animationId: "ani1"
                   step1:
-                    autoNext: true
+                    # autoNext: true
                     actions:
                       sfx:
                         items:
@@ -2158,7 +2925,7 @@ story:
                               x: 1088
                               y: 489.6
                   step4:
-                    autoNext: true
+                    # autoNext: true
                     autoNextDelay: 3000
                     actions:
                       sfx:
@@ -2174,7 +2941,7 @@ story:
                         text: "May my melody reach the deepest pits of the Netherworld!"
                   asdf32:
                     id: asdf32
-                    autoNext: true
+                    # autoNext: true
                     actions:
                       sfx:
                         items:

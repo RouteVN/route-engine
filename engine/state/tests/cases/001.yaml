@@ -1,0 +1,17 @@
+
+
+steps:
+  - actions: 
+      background:
+        backgroundId: 1
+  - actions: 
+      background:
+        backgroundId: 2
+
+expectations:
+  - state:
+      background:
+        backgroundId: 1
+  - state:
+      background:
+        backgroundId: 2
