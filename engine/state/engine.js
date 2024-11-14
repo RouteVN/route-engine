@@ -4,6 +4,7 @@ import { generateRenderTree } from "./renderer.js";
 export const HandlerActions = {
   Init: "Init",
   OpenMenu: "OpenMenu",
+  HideMenu: "HideMenu",
   NextStep: "NextStep",
   PreviousStep: "PreviousStep",
   SaveSlot: "SaveSlot",
@@ -13,6 +14,8 @@ export const HandlerActions = {
   Slider: "Slider",
   Actions: "Actions",
   Wheel: "Wheel",
+  Skip: "Skip",
+  StopSkip: "StopSkip",
 };
 
 /**
@@ -42,6 +45,8 @@ export class RvnEngine {
     this.takeScreenshot = takeScreenshot;
   }
 
+  _seenSections = {};
+
   /**
    * example history
    * _history = [{
@@ -56,6 +61,53 @@ export class RvnEngine {
    * }]
    */
   _history = [];
+
+  get _canSkip() {
+    if (this._mode !== "read") {
+      return false;
+    }
+    const config = this.getPersistentData("config") || {};
+    if (
+      config.skipUnseenText ||
+      this._seenSections[this._currentSectionId] === true
+    ) {
+      return true;
+    }
+
+    const existingIndex = this._currentSection.steps.itemsOrder.indexOf(
+      this._seenSections[this._currentSectionId]
+    );
+    const currentIndex = this._currentSection.steps.itemsOrder.indexOf(
+      this._currentStepId
+    );
+    return existingIndex > currentIndex;
+  }
+
+  get _historyDialogue() {
+    const scene = this.gameData.story.scenes.items[this._latestSceneId];
+
+    if (!scene) {
+      return [];
+    }
+
+    const section = scene.sections.items[this._latestSectionId];
+
+    const currentStepIndex = section.steps.itemsOrder.findIndex(
+      (stepId) => stepId === this._latestStepId
+    );
+    const stepIds = section.steps.itemsOrder.slice(0, currentStepIndex + 1);
+    let steps = stepIds.map((stepId) => section.steps.items[stepId]);
+    const dialogueSteps = steps.filter(
+      (step) => !!step.actions.dialogue && !!step.actions.dialogue.text
+    );
+    const chatData = dialogueSteps.map((step) => {
+      return {
+        characterName: step.actions.dialogue.character?.characterId || "-",
+        content: step.actions.dialogue.text,
+      };
+    });
+    return chatData;
+  }
 
   /**
    * points to the current history step
@@ -96,6 +148,8 @@ export class RvnEngine {
     currentSavePageNumber: 0,
     currentSavePageTitle: "Auto Save",
     returnToMainMenuConfirmationVisible: false,
+    autoMode: false,
+    skipMode: false,
   };
 
   _setMenuPointer = (pointer) => {
@@ -179,6 +233,8 @@ export class RvnEngine {
     height: undefined,
     fill: "#000000",
   };
+
+  _tempGlobalActions = {};
 
   /**
    * returns the current scene id
@@ -282,7 +338,10 @@ export class RvnEngine {
       0,
       currentStepIndex + 1
     );
-    const steps = stepIds.map((stepId) => currentSection.steps.items[stepId]);
+    let steps = stepIds.map((stepId) => currentSection.steps.items[stepId]);
+    // if (this._tempGlobalActions && Object.keys(this._tempGlobalActions).length > 0) {
+    //   steps.push(this._tempGlobalActions);
+    // }
     const state = steps.reduce(applyState, {});
     return state;
   }
@@ -294,6 +353,12 @@ export class RvnEngine {
     const { resources } = this.gameData;
     const currentState = this._currentState;
 
+    if (currentState.bgm) {
+      this._customState.bgmId = currentState.bgm.bgmId;
+    }
+
+    console.log("currentState1", currentState);
+
     const { elements, transitions } = generateRenderTree({
       state: currentState,
       resources,
@@ -303,12 +368,28 @@ export class RvnEngine {
       // gameState: this.gameState,
       mode: this._mode,
       customState: this._customState,
+      historyDialogue: this._historyDialogue,
+      skipMode: this._customState.skipMode,
+      data: this.gameData.data,
+      canSkip: this._canSkip,
+      modalScreenId: this._modalScreenId,
+      persistentVariables: this.getPersistentData("persistentVariables") || {},
     });
+
+    if (this._currentStep.actions.setPersistentVariables) {
+      const persistentVariables = this.getPersistentData("persistentVariables") || {};
+      Object.keys(this._currentStep.actions.setPersistentVariables).forEach(key => {
+        persistentVariables[key] = this._currentStep.actions.setPersistentVariables[key];
+      });
+      this.savePersistentData("persistentVariables", persistentVariables);
+    }
 
     this.onChangeGameStage({
       elements,
       transitions,
     });
+
+    console.log("mode", this._mode);
   };
 
   /**
@@ -317,7 +398,19 @@ export class RvnEngine {
   init = async () => {
     const gameData = await this.getData(this.gameDataPath);
     this.gameData = gameData;
-    const { screen, story } = gameData;
+
+    const { screen } = gameData;
+
+    this._setInitialScene();
+
+    this._screen.width = screen.width;
+    this._screen.height = screen.height;
+
+    this._seenSections = this.getPersistentData("seenSections") || {};
+  };
+
+  _setInitialScene = () => {
+    const { story } = this.gameData;
     const { startSceneId } = story;
 
     this._latestSceneId = startSceneId;
@@ -335,10 +428,7 @@ export class RvnEngine {
       sectionId: startSectionId,
       stepId: startStepId,
     });
-
-    this._screen.width = screen.width;
-    this._screen.height = screen.height;
-  };
+  }
 
   _goToNextStepInHistory = () => {
     // 1. go to next step index
@@ -410,6 +500,7 @@ export class RvnEngine {
     const nextStepId =
       this._currentSection.steps.itemsOrder[currentStepIndex + 1];
     const nextStep = this._currentSection.steps.items[nextStepId];
+
     if (nextStep) {
       if (nextStep.actions.clearHistory) {
         this._history = [];
@@ -435,6 +526,10 @@ export class RvnEngine {
           }
 
           if (nextStep.actions.moveToSection.sectionId) {
+            if (this._seenSections[this._currentSectionId] !== true) {
+              this._seenSections[this._currentSectionId] = true;
+              this.savePersistentData("seenSections", this._seenSections);
+            }
             if (
               this._latestSectionId !== nextStep.actions.moveToSection.sectionId
             ) {
@@ -464,6 +559,11 @@ export class RvnEngine {
         return;
       }
       this._latestStepId = nextStepId;
+
+      if (!this._canSkip) {
+        this._seenSections[this._currentSectionId] = this._currentStepId;
+        this.savePersistentData("seenSections", this._seenSections);
+      }
       this._updateStep();
     } else {
       console.warn("no next step");
@@ -618,6 +718,12 @@ export class RvnEngine {
     this._goToPreviousStep();
   };
 
+  _clearLatest = () => {
+    this._latestSceneId = undefined;
+    this._latestSectionId = undefined;
+    this._latestStepId = undefined;
+  };
+
   /**
    * start the game by rendering the first step
    */
@@ -630,47 +736,22 @@ export class RvnEngine {
    * we take screenshot to be used as the thumbnail for the save slot
    */
   _openMenu = () => {
-    // this.takeScreenshot().then((url) => {
-    // this._setMenuPointer({
-    //   sceneId: this.gameData.story.optionsConfig.rightClick.sceneId,
-    //   sectionId: this.gameData.story.optionsConfig.rightClick.sectionId,
-    //   // stepId,
-    //   // screenShotUrl: url,
-    // });
-
-    // let stepId;
-    // if (this.gameData.story.optionsConfig.rightClick.stepId) {
-    //   stepId = this.gameData.story.optionsConfig.rightClick.stepId;
-    // } else {
-    //   stepId = this._currentSection.steps.itemsOrder[0];
-    // }
-
-    // this.gameData.story.optionsConfig.rightClick
-
     this._eventActionHandler(this.gameData.story.optionsConfig.rightClick);
-
-    // this._setMenuPointer({
-    //   sceneId: this.gameData.story.optionsConfig.rightClick.sceneId,
-    //   sectionId: this.gameData.story.optionsConfig.rightClick.sectionId,
-    //   stepId:
-    //     this.gameData.story.scenes.items[
-    //       this.gameData.story.optionsConfig.rightClick.sceneId
-    //     ].sections.items[this.gameData.story.optionsConfig.rightClick.sectionId]
-    //       .steps.itemsOrder[0],
-    //   // screenShotUrl: url,
-    // });
-
-    // this._updateStep();
-    // });
   };
 
   /**
    * update persistent data
    */
   _updateConfig = (key, value) => {
-    const config = this.getPersistentData('config') || {};
+    const config = this.getPersistentData("config") || {};
     config[key] = value;
-    this.savePersistentData('config', config);
+    this.savePersistentData("config", config);
+  };
+
+  _toggleConfig = (key) => {
+    const config = this.getPersistentData("config") || {};
+    config[key] = !config[key];
+    this.savePersistentData("config", config);
   };
 
   /**
@@ -693,7 +774,6 @@ export class RvnEngine {
    * @param {*} index
    */
   _saveSlot = (index) => {
-
     const saveData = this.getPersistentData("saveData") || {};
     saveData[index] = {
       date: Date.now(),
@@ -715,10 +795,31 @@ export class RvnEngine {
    */
   _eventActionHandler = (payload) => {
     if (payload.actions.setCustomState) {
-      this._customState = {
-        ...this._customState,
-        ...payload.actions.setCustomState,
-      };
+      Object.keys(payload.actions.setCustomState).forEach((key) => {
+        const value = payload.actions.setCustomState[key];
+        if (typeof value === "object" && value.op) {
+          if (value.op === "dec") {
+            if (this._customState[key] - value.value < value.min) {
+              // pass
+            } else {
+              this._customState[key] = this._customState[key] - value.value;
+            }
+          } else if (value.op === "inc") {
+            if (this._customState[key] + value.value > value.max) {
+              // pass
+            } else {
+              this._customState[key] = this._customState[key] + value.value;
+            }
+          }
+        } else {
+          this._customState[key] = value;
+        }
+      });
+
+      // this._customState = {
+      //   ...this._customState,
+      //   ...payload.actions.setCustomState,
+      // };
 
       console.log("this._customState", this._customState);
     }
@@ -798,15 +899,72 @@ export class RvnEngine {
 
     if (payload.actions.setConfig) {
       Object.keys(payload.actions.setConfig).forEach((key) => {
-        const value = payload.actions.setConfig[key];
-        console.log(`key: ${key}, value: ${value}`);
-        this._updateConfig(key, value);
+        if (
+          typeof payload.actions.setConfig[key] === "object" &&
+          payload.actions.setConfig[key].op === "toggle"
+        ) {
+          this._toggleConfig(key);
+        } else {
+          this._updateConfig(key, payload.actions.setConfig[key]);
+        }
       });
+    }
+
+    if (payload.actions.clearTempAction) {
+      this._modalScreenId = undefined;
+    }
+
+    // if (payload.actions.screen) {
+    //   this._tempGlobalActions = payload;
+    // }
+    if (payload.actions.modalScreenId) {
+      this._modalScreenId = payload.actions.modalScreenId;
     }
 
     if (payload.actions.clearMenu) {
       this._clearMenuPointer();
     }
+
+    if (payload.actions.back) {
+      this._goToPreviousStep();
+    }
+
+
+    if (payload.actions.toggleSkipMode) {
+      this._customState.skipMode = !this._customState.skipMode;
+      if (this._customState.skipMode) {
+        this._skipInterval = setInterval(() => {
+          if (this._canSkip) {
+            this._goToNextStep();
+          } else {
+            clearInterval(this._skipInterval);
+            this._customState.skipMode = false;
+            this._updateStep();
+          }
+        }, 200);
+      } else {
+        clearInterval(this._skipInterval);
+        this._updateStep();
+      }
+    }
+
+    if (payload.actions.clearLatest) {
+      this._clearHistoryPointer();
+      // this._clearLatest();
+      // this._setInitialScene();
+    }
+
+    if (payload.actions.toggleAutoMode) {
+      this._customState.autoMode = !this._customState.autoMode;
+      if (this._customState.autoMode) {
+        this._goToNextStep();
+        this._updateStep();
+      } else {
+        this._updateStep();
+      }
+      return;
+    }
+
     this._updateStep();
   };
 
@@ -823,8 +981,15 @@ export class RvnEngine {
       return;
     }
 
+    if (action === HandlerActions.HideMenu) {
+      this._clearMenuPointer();
+      this._updateStep();
+      return;
+    }
+
     if (action === HandlerActions.NextStep) {
       this._goToNextStep();
+      console.log("this._historyDialogue", this._historyDialogue);
       return;
     }
 
@@ -854,12 +1019,57 @@ export class RvnEngine {
     }
 
     if (action === HandlerActions.StepCompleted) {
-      console.log('this._mode', this._mode)
       if (this._currentStep.autoNext) {
         setTimeout(() => {
           this._goToNextStep();
         }, this._currentStep.autoNextDelay || 0);
+      } else if (this._customState.autoMode) {
+        const config = this.getPersistentData("config") || {};
+        const interval = Math.max(100 - config.autoForwardTime, 1) * 50;
+        if (this._autoModeTimeout) {
+          clearTimeout(this._autoModeTimeout);
+        }
+        this._autoModeTimeout = setTimeout(() => {
+          if (this._mode === "read") {
+            this._goToNextStep();
+          }
+        }, interval);
       }
+    }
+
+    if (action === HandlerActions.Skip) {
+      if (this._mode === "menu") {
+        return;
+      }
+      if (this._customState.skipMode === true) {
+        return;
+      }
+
+      if (this._canSkip) {
+        this._customState.skipMode = true;
+        this._goToNextStep();
+        this._skipInterval = setInterval(() => {
+          if (this._canSkip) {
+            this._goToNextStep();
+          } else {
+            clearInterval(this._skipInterval);
+            this._customState.skipMode = false;
+            this._updateStep();
+          }
+        }, 200);
+      } else {
+        clearInterval(this._skipInterval);
+        this._customState.skipMode = false;
+      }
+    }
+
+    if (action === HandlerActions.StopSkip) {
+      if (this._customState.skipMode === false) {
+        return;
+      }
+      this._customState.skipMode = false;
+      clearInterval(this._skipInterval);
+      this._updateStep();
     }
 
     if (action === HandlerActions.Wheel) {

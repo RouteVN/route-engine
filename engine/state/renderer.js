@@ -1,3 +1,19 @@
+
+const removeClickSoundUrl = (item) => {
+  if (!item || typeof item !== 'object') return;
+  
+  if (item.clickSoundUrl) {
+    delete item.clickSoundUrl;
+  }
+
+  // Handle both object properties and arrays
+  Object.values(item).forEach(value => {
+    if (value && typeof value === 'object') {
+      removeClickSoundUrl(value);
+    }
+  });
+};
+
 /**
  *
  *
@@ -11,6 +27,12 @@ export const generateRenderTree = ({
   saveData,
   gameState,
   customState,
+  historyDialogue,
+  skipMode,
+  data,
+  canSkip,
+  modalScreenId,
+  persistentVariables
 }) => {
   const elements = [];
   const transitions = [];
@@ -28,7 +50,6 @@ export const generateRenderTree = ({
     wheelEventName: "Wheel",
   });
 
-  // console.log("state", state);
 
   if (state.background) {
     const background =
@@ -166,10 +187,39 @@ export const generateRenderTree = ({
     if (_dialogueBox) {
       let stringified = JSON.stringify(_dialogueBox);
       Object.keys(config).forEach((key) => {
-        stringified = stringified.replace(`{{ config.${key} }}`, config[key]);
+        if (typeof config[key] === "string") {
+          stringified = stringified.replace(`{{ config.${key} }}`, config[key]);
+        } else {
+          if (skipMode && key === "textSpeed") {
+            stringified = stringified.replace(`"{{ config.${key} }}"`, "100");
+          } else {
+            stringified = stringified.replace(`"{{ config.${key} }}"`, JSON.stringify(config[key]));
+          }
+        }
       });
 
+      Object.keys(customState).forEach((key) => {
+        if (typeof customState[key] === "string") {
+          stringified = stringified.replaceAll(
+            `{{ customState.${key} }}`,
+            customState[key]
+          );
+        } else {
+          stringified = stringified.replaceAll(
+            `"{{ customState.${key} }}"`,
+            customState[key]
+          );
+        }
+      });
+
+      stringified = stringified.replaceAll(`"{{ cannotSkip }}"`, JSON.stringify(!canSkip));
+
       const dialogueBox = JSON.parse(stringified);
+
+      if (config.muteAll) {
+        
+        removeClickSoundUrl(dialogueBox);
+      }
 
       const id = `dialogueBox-${dialogueBox.id}-${Math.random()}`;
       const character =
@@ -228,19 +278,20 @@ export const generateRenderTree = ({
     }
   }
 
-  if (state.bgm) {
-    const bgm = resources.bgm.items[state.bgm.bgmId];
+  if (!config.muteAll && customState.bgmId) {
+    const bgm = resources.bgm.items[customState.bgmId];
     if (bgm) {
       elements.push({
-        id: `bgm`,
+        id: `bgm-${bgm.src}`,
         type: "sound",
         url: bgm.src,
-        loop: state.bgm.loop,
+        loop: true,
+        volume: config.musicVolume / 100,
       });
     }
   }
 
-  if (state.sfx) {
+  if (!config.muteAll && state.sfx) {
     for (const item of state.sfx.items) {
       const sfx = resources.sfx.items[item.sfxId];
       if (sfx) {
@@ -249,6 +300,7 @@ export const generateRenderTree = ({
           type: "sound",
           url: sfx.src,
           delay: item.delay,
+          volume: config.soundVolume / 100,
         });
       }
     }
@@ -266,16 +318,54 @@ export const generateRenderTree = ({
     }
   }
 
-  if (state.screen) {
-    for (const { id, screenId, inAnimation } of state.screen.items) {
+  const stateScreen = state.screen ? JSON.parse(JSON.stringify(state.screen)) : {items: []};
+
+  console.log('stateScreen', stateScreen)
+  console.log('modalScreenId', modalScreenId)
+  if (modalScreenId) {
+    stateScreen.items.push({
+      id: 'modal-screen',
+      screenId: modalScreenId,
+    });
+  }
+
+  if (stateScreen) {
+    for (const { id, screenId, condition, inAnimation, outAnimation } of stateScreen
+      .items) {
       let stringified = JSON.stringify(resources.screen.items[screenId]);
 
-      Object.keys(config).forEach((key) => {
-        stringified = stringified.replaceAll(`{{ config.${key} }}`, config[key]);
+      Object.keys(data).forEach((key) => {
+        stringified = stringified.replaceAll(
+          `"{{ data.${key} }}"`,
+          JSON.stringify(data[key])
+        );
       });
-      
+
+      stringified = stringified.replaceAll(
+        "{{ data.saveLoadSlots[customState.currentSavePageNumber].title }}",
+        data.saveLoadSlots.find((x) => x.value === customState.currentSavePageNumber).title
+      );
+
+      Object.keys(config).forEach((key) => {
+        if (typeof config[key] === "string") {
+          stringified = stringified.replaceAll(
+            `{{ config.${key} }}`,
+            config[key]
+          );
+        } else {
+          if (skipMode && key === "textSpeed") {
+            stringified = stringified.replaceAll(`"{{ config.${key} }}"`, "100");
+          } else {
+            stringified = stringified.replaceAll(
+              `"{{ config.${key} }}"`,
+              JSON.stringify(config[key])
+            );
+          }
+        }
+      });
+
       Object.keys(customState).forEach((key) => {
-        if (typeof customState[key] === 'number') {
+        if (typeof customState[key] === "number") {
           stringified = stringified.replaceAll(
             `"{{ customState.${key} }}"`,
             customState[key]
@@ -288,26 +378,70 @@ export const generateRenderTree = ({
         }
       });
 
+      Object.keys(persistentVariables).forEach((key) => {
+        if (typeof persistentVariables[key] === "string") {
+          stringified = stringified.replaceAll(
+            `{{ persistentVariables.${key} }}`,
+            persistentVariables[key]
+            );
+        } else {
+          stringified = stringified.replaceAll(
+            `"{{ persistentVariables.${key} }}"`,
+            persistentVariables[key]
+          );
+        }
+      });
+
+      stringified = stringified.replaceAll(
+        '"{{ historyDialogue }}"',
+        JSON.stringify(historyDialogue || [])
+      );
+
       const screen = JSON.parse(stringified);
-      // console.log('screen', screen)
 
       // Recursively replace data = $saveData with saveData
       const rawSaveData = saveData || {};
-      console.log('customState', customState)
 
-      const newSaveData = [0, 1, 2].map(x => 3 * (Number(customState.currentSavePageNumber) || 0) + x).map((slot) => {
-        const res = rawSaveData[slot];
-        if (res) {
-          res.id = `saveSlot-${slot}`;
+      if (condition) {
+        let stringifiedCondition = JSON.stringify(condition);
+          Object.keys(persistentVariables).forEach((key) => {   
+          if (typeof persistentVariables[key] === "string") {
+            stringifiedCondition = stringifiedCondition.replaceAll(
+              `{{ persistentVariables.${key} }}`,
+              persistentVariables[key]
+            );
+          } else {
+            stringifiedCondition = stringifiedCondition.replaceAll(
+              `"{{ persistentVariables.${key} }}"`,
+              persistentVariables[key]
+            );
+          }
+        });
+        const parsedCondition = JSON.parse(stringifiedCondition);
+
+        console.log('parsedCondition', parsedCondition)
+
+        const { op, value1, value2 } = parsedCondition;
+        if (op === "eq" && value1 !== value2) {
+          continue;
+        }
+      }
+
+      const newSaveData = [0, 1, 2]
+        .map((x) => 3 * (Number(customState.currentSavePageNumber) || 0) + x)
+        .map((slot) => {
+          const res = rawSaveData[slot];
+          if (res) {
+            res.id = `saveSlot-${slot}`;
+            return {
+              index: slot,
+              ...res,
+            };
+          }
           return {
             index: slot,
-            ...res,
           };
-        }
-        return {
-          index: slot,
-        };
-      });
+        });
 
       const replaceSaveData = (obj) => {
         if (obj.data === "$saveData") {
@@ -324,6 +458,10 @@ export const generateRenderTree = ({
         }
       };
       replaceSaveData(screen);
+
+      if (config.muteAll) {
+        removeClickSoundUrl(screen);
+      }
 
       if (screen) {
         const screenId = `screen-${id}-${Math.random()}`;
@@ -344,6 +482,17 @@ export const generateRenderTree = ({
             });
           }
         }
+        if (outAnimation) {
+          const animation = resources.animation.items[outAnimation.animationId];
+          if (animation) {
+            transitions.push({
+              elementId: screenId,
+              type: "keyframes",
+              event: "remove",
+              animationProperties: animation.properties,
+            });
+          }
+        }
         if (screen.transitions) {
           for (const transition of screen.transitions) {
             transitions.push(transition);
@@ -353,6 +502,16 @@ export const generateRenderTree = ({
     }
   }
 
+  if (skipMode) {
+    const skipGui = resources.screen.items["skipMenu"];
+    if (skipGui) {
+      skipGui.layout.forEach((item) => {
+        elements.push(item);
+      });
+    }
+  }
+
+  console.log("state", state);
   console.log("transitions", transitions);
   console.log("elements", elements);
 
@@ -364,6 +523,6 @@ export const generateRenderTree = ({
         children: elements,
       },
     ],
-    transitions,
+    transitions: (skipMode && config.skipTransitions) ? [] : transitions,
   };
 };

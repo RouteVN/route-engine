@@ -5,7 +5,7 @@
  * @param {*} step 
  * @returns 
  */
-export const applyState =(state, step) => {
+export const applyState = (state, step) => {
   if (step.actions.background) {
     if (step.actions.background.backgroundId) {
       state.background = step.actions.background;
@@ -77,7 +77,7 @@ export const applyState =(state, step) => {
 
   if (step.actions.character) {
     if (!state.character) {
-      state.character = step.actions.character;
+      state.character = JSON.parse(JSON.stringify(step.actions.character));
     } else {
       for (const item of step.actions.character.items) {
         const accStateItemIndex = state.character.items.findIndex(

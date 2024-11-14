@@ -79,7 +79,7 @@ const initializeVnPlayer = async (element, onClose) => {
       const soundFileIds = fileUrls.filter(
         (url) => url.endsWith(".wav") || url.endsWith(".ogg")
       );
-      await app.loadSoundAssets(soundFileIds);
+      await app.loadSoundAssets(soundFileIds.concat(["/public/first-contract/audio/sfx_button1.wav", "/public/first-contract/audio/sfx_button2.wav"]));
       app.render({
         id: "rvn_root",
         elements: elements,
@@ -163,6 +163,20 @@ const initializeVnPlayer = async (element, onClose) => {
   element.addEventListener("contextmenu", (e) => {
     e.preventDefault();
     e.stopPropagation();
+  });
+  element.addEventListener("keydown", (e) => {
+    if (e.key === "Control") {
+      e.preventDefault();
+      e.stopPropagation();
+      controller(HandlerActions.Skip);
+    }
+  });
+  element.addEventListener("keyup", (e) => {
+    if (e.key === "Control") {
+      e.preventDefault();
+      e.stopPropagation();
+      controller(HandlerActions.StopSkip);
+    }
   });
   controller(HandlerActions.Init);
 };

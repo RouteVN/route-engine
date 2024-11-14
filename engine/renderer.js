@@ -6942,10 +6942,10 @@ var init_EventSystem = __esm({
        * To deregister the current DOM element without setting a new one, pass {@code null}.
        * @param element - The new DOM element.
        */
-      setTargetElement(element) {
+      setTargetElement(element2) {
         this._removeEvents();
-        this.domElement = element;
-        EventsTicker.domElement = element;
+        this.domElement = element2;
+        EventsTicker.domElement = element2;
         this._addEvents();
       }
       /** Register event listeners on {@link Renderer#domElement this.domElement}. */
@@ -12064,18 +12064,18 @@ var init_Batcher = __esm({
         let action = "startBatch";
         let batch = this._batchPool[this._batchPoolIndex++] || new Batch();
         for (let i2 = this.elementStart; i2 < this.elementSize; ++i2) {
-          const element = elements[i2];
+          const element2 = elements[i2];
           elements[i2] = null;
-          const texture = element.texture;
+          const texture = element2.texture;
           const source2 = texture._source;
-          const adjustedBlendMode = getAdjustedBlendModeBlend(element.blendMode, source2);
+          const adjustedBlendMode = getAdjustedBlendModeBlend(element2.blendMode, source2);
           const blendModeChange = blendMode !== adjustedBlendMode;
           if (source2._batchTick === BATCH_TICK && !blendModeChange) {
-            element.textureId = source2._textureBindLocation;
-            size += element.indexSize;
-            element.packAttributes(f32, u32, element.location, element.textureId);
-            element.packIndex(iBuffer, element.indexStart, element.location / this._vertexSize);
-            element.batch = batch;
+            element2.textureId = source2._textureBindLocation;
+            size += element2.indexSize;
+            element2.packAttributes(f32, u32, element2.location, element2.textureId);
+            element2.packIndex(iBuffer, element2.indexStart, element2.location / this._vertexSize);
+            element2.batch = batch;
             continue;
           }
           source2._batchTick = BATCH_TICK;
@@ -12097,13 +12097,13 @@ var init_Batcher = __esm({
             batch = this._batchPool[this._batchPoolIndex++] || new Batch();
             ++BATCH_TICK;
           }
-          element.textureId = source2._textureBindLocation = textureBatch.count;
+          element2.textureId = source2._textureBindLocation = textureBatch.count;
           textureBatch.ids[source2.uid] = textureBatch.count;
           textureBatch.textures[textureBatch.count++] = source2;
-          element.batch = batch;
-          size += element.indexSize;
-          element.packAttributes(f32, u32, element.location, element.textureId);
-          element.packIndex(iBuffer, element.indexStart, element.location / this._vertexSize);
+          element2.batch = batch;
+          size += element2.indexSize;
+          element2.packAttributes(f32, u32, element2.location, element2.textureId);
+          element2.packIndex(iBuffer, element2.indexStart, element2.location / this._vertexSize);
         }
         if (textureBatch.count > 0) {
           this._finishBatch(
@@ -31304,9 +31304,9 @@ var init_GlContextSystem = __esm({
         this.getExtensions();
         this.validateContext(gl);
         this._renderer.runners.contextChange.emit(gl);
-        const element = this._renderer.view.canvas;
-        element.addEventListener("webglcontextlost", this.handleContextLost, false);
-        element.addEventListener("webglcontextrestored", this.handleContextRestored, false);
+        const element2 = this._renderer.view.canvas;
+        element2.addEventListener("webglcontextlost", this.handleContextLost, false);
+        element2.addEventListener("webglcontextrestored", this.handleContextRestored, false);
       }
       /**
        * Initialize from context options
@@ -31394,10 +31394,10 @@ var init_GlContextSystem = __esm({
         this._renderer.runners.contextChange.emit(this.gl);
       }
       destroy() {
-        const element = this._renderer.view.canvas;
+        const element2 = this._renderer.view.canvas;
         this._renderer = null;
-        element.removeEventListener("webglcontextlost", this.handleContextLost);
-        element.removeEventListener("webglcontextrestored", this.handleContextRestored);
+        element2.removeEventListener("webglcontextlost", this.handleContextLost);
+        element2.removeEventListener("webglcontextrestored", this.handleContextRestored);
         this.gl.useProgram(null);
         this.extensions.loseContext?.loseContext();
       }
@@ -35776,18 +35776,18 @@ init_VideoSource();
 init_detectVideoAlphaMode();
 var validVideoExtensions = [".mp4", ".m4v", ".webm", ".ogg", ".ogv", ".h264", ".avi", ".mov"];
 var validVideoMIMEs = validVideoExtensions.map((ext) => `video/${ext.substring(1)}`);
-function crossOrigin(element, url, crossorigin) {
+function crossOrigin(element2, url, crossorigin) {
   if (crossorigin === void 0 && !url.startsWith("data:")) {
-    element.crossOrigin = determineCrossOrigin(url);
+    element2.crossOrigin = determineCrossOrigin(url);
   } else if (crossorigin !== false) {
-    element.crossOrigin = typeof crossorigin === "string" ? crossorigin : "anonymous";
+    element2.crossOrigin = typeof crossorigin === "string" ? crossorigin : "anonymous";
   }
 }
-function preloadVideo(element) {
+function preloadVideo(element2) {
   return new Promise((resolve, reject) => {
-    element.addEventListener("canplaythrough", loaded);
-    element.addEventListener("error", error);
-    element.load();
+    element2.addEventListener("canplaythrough", loaded);
+    element2.addEventListener("error", error);
+    element2.load();
     function loaded() {
       cleanup();
       resolve();
@@ -35797,8 +35797,8 @@ function preloadVideo(element) {
       reject(err);
     }
     function cleanup() {
-      element.removeEventListener("canplaythrough", loaded);
-      element.removeEventListener("error", error);
+      element2.removeEventListener("canplaythrough", loaded);
+      element2.removeEventListener("error", error);
     }
   });
 }
@@ -36753,7 +36753,7 @@ var diffElements = (prevElements = [], nextElements = []) => {
   const toUpdateElements = [];
   const toAddElements = [];
   for (const prevElement of prevElements) {
-    const nextElement = nextElements.find((element) => element.id === prevElement.id && element.type === prevElement.type);
+    const nextElement = nextElements.find((element2) => element2.id === prevElement.id && element2.type === prevElement.type);
     if (!nextElement) {
       toDeleteElements.push(prevElement);
     } else {
@@ -36764,7 +36764,7 @@ var diffElements = (prevElements = [], nextElements = []) => {
     }
   }
   for (const nextElement of nextElements) {
-    const prevElement = prevElements.find((element) => element.id === nextElement.id && element.type === nextElement.type);
+    const prevElement = prevElements.find((element2) => element2.id === nextElement.id && element2.type === nextElement.type);
     if (!prevElement) {
       toAddElements.push(nextElement);
     }
@@ -36808,6 +36808,14 @@ var SoundPlayer = class {
    */
   _audioSource;
   /**
+   * @type {GainNode}
+   */
+  _gainNode;
+  /**
+   * @type {number}
+   */
+  volume = 1;
+  /**
    * @type {string}
    */
   id;
@@ -36825,11 +36833,16 @@ var SoundPlayer = class {
    * @param {Object} options
    * @param {string} options.url
    * @param {boolean} [options.loop=false]
+   * @param {number} [options.volume=1.0]
    */
   constructor(id, options) {
     this.id = id;
     this.url = options.url;
     this.loop = options.loop || false;
+    this.volume = options.volume ?? 1;
+    this._gainNode = audioContext.createGain();
+    this._gainNode.gain.value = this.volume;
+    this._gainNode.connect(audioContext.destination);
   }
   play = () => {
     const audioBuffer = SoundAsset.getAsset(this.url);
@@ -36840,13 +36853,18 @@ var SoundPlayer = class {
     this._audioSource = audioContext.createBufferSource();
     this._audioSource.buffer = audioBuffer;
     this._audioSource.loop = this.loop;
-    this._audioSource.connect(audioContext.destination);
-    this._audioSource.start(0, 0);
+    this._gainNode.gain.setValueAtTime(this.volume, audioContext.currentTime);
+    this._audioSource.connect(this._gainNode);
+    this._audioSource.start(0);
   };
   stop = () => {
     if (this._audioSource) {
       this._audioSource.stop();
       this._audioSource.disconnect();
+      this._gainNode.disconnect();
+      this._gainNode = audioContext.createGain();
+      this._gainNode.gain.value = this.volume;
+      this._gainNode.connect(audioContext.destination);
     }
   };
 };
@@ -36863,8 +36881,8 @@ var SoundStage = class {
    *
    * @param {SoundElement} element
    */
-  add = (element) => {
-    this.stageSounds.push(element);
+  add = (element2) => {
+    this.stageSounds.push(element2);
   };
   /**
    *
@@ -36888,7 +36906,11 @@ var SoundStage = class {
     for (const sound of this.stageSounds) {
       const soundPlayer = this.soundPlayers.find((player) => player.id === sound.id);
       if (!soundPlayer) {
-        const player = new SoundPlayer(sound.id, { url: sound.url, loop: sound.loop });
+        const player = new SoundPlayer(sound.id, {
+          url: sound.url,
+          loop: sound.loop,
+          volume: sound.volume ?? 1
+        });
         this.soundPlayers.push(player);
         player.play();
         return;
@@ -36898,6 +36920,10 @@ var SoundStage = class {
         soundPlayer.url = sound.url;
         soundPlayer.loop = sound.loop ?? false;
         soundPlayer.play();
+      }
+      if (soundPlayer.volume !== (sound.volume ?? 1)) {
+        soundPlayer.volume = sound.volume ?? 1;
+        soundPlayer._gainNode.gain.value = soundPlayer.volume;
       }
     }
     const toRemoveSoundPlayerIds = [];
@@ -37007,13 +37033,13 @@ var PixiTDR = class _PixiTDR extends BaseTDR {
    * @param {BaseElement} element
    * @returns
    */
-  _getRendererByElement = (element) => {
+  _getRendererByElement = (element2) => {
     for (const plugin of this._plugins) {
-      if (plugin.rendererType === element.type) {
+      if (plugin.rendererType === element2.type) {
         return plugin;
       }
     }
-    throw new Error(`No renderer found for element type: ${element.type}`);
+    throw new Error(`No renderer found for element type: ${element2.type}`);
   };
   _getTransitionByType = (transitionType) => {
     for (const plugin of this._plugins) {
@@ -37078,8 +37104,8 @@ var PixiTDR = class _PixiTDR extends BaseTDR {
       );
     }
     app.stage.children.sort((a2, b2) => {
-      const aIndex = nextState.elements.findIndex((element) => element.id === a2.label);
-      const bIndex = nextState.elements.findIndex((element) => element.id === b2.label);
+      const aIndex = nextState.elements.findIndex((element2) => element2.id === a2.label);
+      const bIndex = nextState.elements.findIndex((element2) => element2.id === b2.label);
       return aIndex - bIndex;
     });
     await Promise.all(actions);
@@ -37105,50 +37131,50 @@ var SpriteRendererPlugin = class extends BaseRendererPlugin {
    * @param {Function} options.getTransitionByType
    * @returns {Promise<undefined>}
    */
-  add = async (app, { parent, element, transitions = [], getTransitionByType, eventHandler }) => {
-    const sprite = Sprite.from(element.url);
-    sprite.label = element.id;
-    if (element.xa !== void 0) {
-      sprite.anchor.x = element.xa;
+  add = async (app, { parent, element: element2, transitions = [], getTransitionByType, eventHandler }) => {
+    const sprite = Sprite.from(element2.url);
+    sprite.label = element2.id;
+    if (element2.xa !== void 0) {
+      sprite.anchor.x = element2.xa;
     }
-    if (element.ya !== void 0) {
-      sprite.anchor.y = element.ya;
+    if (element2.ya !== void 0) {
+      sprite.anchor.y = element2.ya;
     }
-    if (element.xp !== void 0) {
-      sprite.x = element.xp * app.screen.width;
+    if (element2.xp !== void 0) {
+      sprite.x = element2.xp * app.screen.width;
     }
-    if (element.x !== void 0) {
-      sprite.x = element.x;
+    if (element2.x !== void 0) {
+      sprite.x = element2.x;
     }
-    if (element.yp !== void 0) {
-      sprite.y = element.yp * app.screen.height;
+    if (element2.yp !== void 0) {
+      sprite.y = element2.yp * app.screen.height;
     }
-    if (element.y !== void 0) {
-      sprite.y = element.y;
+    if (element2.y !== void 0) {
+      sprite.y = element2.y;
     }
-    if (element.width !== void 0) {
-      sprite.width = element.width;
+    if (element2.width !== void 0) {
+      sprite.width = element2.width;
     }
-    if (element.height !== void 0) {
-      sprite.height = element.height;
+    if (element2.height !== void 0) {
+      sprite.height = element2.height;
     }
-    if (element.alpha !== void 0) {
-      sprite.alpha = element.alpha;
+    if (element2.alpha !== void 0) {
+      sprite.alpha = element2.alpha;
     }
-    if (element.eventName) {
+    if (element2.eventName) {
       sprite.cursor = "pointer";
       sprite.eventMode = "static";
     }
-    if (element.zIndex !== void 0) {
-      sprite.zIndex = element.zIndex;
+    if (element2.zIndex !== void 0) {
+      sprite.zIndex = element2.zIndex;
     }
     sprite.on("click", (e2) => {
       e2.stopPropagation();
-      eventHandler && eventHandler(element.eventName, element.eventPayload);
+      eventHandler && eventHandler(element2.eventName, element2.eventPayload);
     });
     const transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element.id && transition.event === TransitionEvent.Add) {
+      if (transition.elementId === element2.id && transition.event === TransitionEvent.Add) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
@@ -37169,14 +37195,14 @@ var SpriteRendererPlugin = class extends BaseRendererPlugin {
    * @returns {Promise<undefined>}
    */
   remove = async (app, options) => {
-    const { parent, element, transitions = [], getTransitionByType } = options;
-    const sprite = parent.getChildByName(element.id);
+    const { parent, element: element2, transitions = [], getTransitionByType } = options;
+    const sprite = parent.getChildByName(element2.id);
     if (!sprite) {
-      throw new Error(`Sprite with id ${element.id} not found`);
+      throw new Error(`Sprite with id ${element2.id} not found`);
     }
     let transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element.id && transition.event === TransitionEvent.Remove) {
+      if (transition.elementId === element2.id && transition.event === TransitionEvent.Remove) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
@@ -37226,38 +37252,38 @@ var TextRendererPlugin = class {
    * @returns {Promise<undefined>}
    */
   add = async (app, options) => {
-    const { parent, element, transitions = [], getTransitionByType } = options;
+    const { parent, element: element2, transitions = [], getTransitionByType } = options;
     const textStyle = new TextStyle({
-      wordWrap: element.style?.wordWrap || true,
-      breakWords: element.text ? !element.text.includes(" ") : false,
-      align: element.style?.align,
-      fill: element.style?.fill,
-      fontSize: element.style?.fontSize,
-      lineHeight: element.style?.lineHeight,
-      wordWrapWidth: element.style?.wordWrapWidth,
-      fontFamily: element.style?.fontFamily,
-      stroke: element.style?.strokeColor ? {
-        color: element.style?.strokeColor,
-        width: element.style?.strokeWidth
+      wordWrap: element2.style?.wordWrap || true,
+      breakWords: element2.text ? !element2.text.includes(" ") : false,
+      align: element2.style?.align,
+      fill: element2.style?.fill,
+      fontSize: element2.style?.fontSize,
+      lineHeight: element2.style?.lineHeight,
+      wordWrapWidth: element2.style?.wordWrapWidth,
+      fontFamily: element2.style?.fontFamily,
+      stroke: element2.style?.strokeColor ? {
+        color: element2.style?.strokeColor,
+        width: element2.style?.strokeWidth
       } : void 0
     });
-    const newText = new Text({ text: element.text, style: textStyle });
-    newText.label = element.id;
-    if (element.x !== void 0) {
-      newText.x = element.x;
+    const newText = new Text({ text: element2.text, style: textStyle });
+    newText.label = element2.id;
+    if (element2.x !== void 0) {
+      newText.x = element2.x;
     }
-    if (element.y !== void 0) {
-      newText.y = element.y;
+    if (element2.y !== void 0) {
+      newText.y = element2.y;
     }
-    if (element.xa !== void 0) {
-      newText.anchor.x = element.xa;
+    if (element2.xa !== void 0) {
+      newText.anchor.x = element2.xa;
     }
-    if (element.ya !== void 0) {
-      newText.anchor.y = element.ya;
+    if (element2.ya !== void 0) {
+      newText.anchor.y = element2.ya;
     }
     const transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element.id && transition.event === TransitionEvent.Add) {
+      if (transition.elementId === element2.id && transition.event === TransitionEvent.Add) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
@@ -37278,14 +37304,14 @@ var TextRendererPlugin = class {
    * @returns {Promise<undefined>}
    */
   remove = async (app, options) => {
-    const { parent, element, transitions = [], getTransitionByType } = options;
-    const text = parent.getChildByName(element.id);
+    const { parent, element: element2, transitions = [], getTransitionByType } = options;
+    const text = parent.getChildByName(element2.id);
     if (!text) {
-      throw new Error(`Text with id ${element.id} not found`);
+      throw new Error(`Text with id ${element2.id} not found`);
     }
     let transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element.id && transition.event === TransitionEvent.Remove) {
+      if (transition.elementId === element2.id && transition.event === TransitionEvent.Remove) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
@@ -37354,31 +37380,31 @@ var TextInteractiveRendererPlugin = class {
    * @returns {Promise<undefined>}
    */
   add = async (app, options) => {
-    const { parent, element, eventHandler, transitions = [], getTransitionByType } = options;
-    const textStyle = new TextStyle(element.style);
-    const newText = new Text({ text: element.text, style: textStyle });
+    const { parent, element: element2, eventHandler, transitions = [], getTransitionByType } = options;
+    const textStyle = new TextStyle(element2.style);
+    const newText = new Text({ text: element2.text, style: textStyle });
     let hoverTextStyle;
-    if (element.hoverStyle) {
-      hoverTextStyle = new TextStyle(element.hoverStyle);
+    if (element2.hoverStyle) {
+      hoverTextStyle = new TextStyle(element2.hoverStyle);
     }
     let clickedTextStyle;
-    if (element.clickedStyle) {
-      clickedTextStyle = new TextStyle(element.clickedStyle);
+    if (element2.clickedStyle) {
+      clickedTextStyle = new TextStyle(element2.clickedStyle);
     }
     newText.cursor = "pointer";
     newText.eventMode = "static";
-    newText.label = element.id;
-    if (element.x !== void 0) {
-      newText.x = element.x;
+    newText.label = element2.id;
+    if (element2.x !== void 0) {
+      newText.x = element2.x;
     }
-    if (element.y !== void 0) {
-      newText.y = element.y;
+    if (element2.y !== void 0) {
+      newText.y = element2.y;
     }
-    if (element.xa !== void 0) {
-      newText.anchor.x = element.xa;
+    if (element2.xa !== void 0) {
+      newText.anchor.x = element2.xa;
     }
-    if (element.ya !== void 0) {
-      newText.anchor.y = element.ya;
+    if (element2.ya !== void 0) {
+      newText.anchor.y = element2.ya;
     }
     newText.on("pointerupoutside", () => {
       newText.style = textStyle;
@@ -37388,8 +37414,16 @@ var TextInteractiveRendererPlugin = class {
       newText.style = textStyle;
     });
     newText.on("click", (e2) => {
+      if (element2.clickSoundUrl) {
+        app.soundStage.add({
+          id: `${element2.id}-click-${Math.random()}`,
+          url: element2.clickSoundUrl,
+          loop: false,
+          volume: element2.clickSoundVolume / 100
+        });
+      }
       e2.stopPropagation();
-      eventHandler && eventHandler(element.eventName, element.eventPayload);
+      eventHandler && eventHandler(element2.eventName, element2.eventPayload);
     });
     if (clickedTextStyle) {
       newText.on("pointerdown", () => {
@@ -37399,11 +37433,19 @@ var TextInteractiveRendererPlugin = class {
     if (hoverTextStyle) {
       newText.on("pointerenter", () => {
         newText.style = hoverTextStyle;
+        if (element2.hoverSoundUrl) {
+          app.soundStage.add({
+            id: `${element2.id}-hover-${Math.random()}`,
+            url: element2.hoverSoundUrl,
+            loop: false,
+            volume: element2.hoverSoundVolume / 100
+          });
+        }
       });
     }
     const transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element.id && transition.event === TransitionEvent.Add) {
+      if (transition.elementId === element2.id && transition.event === TransitionEvent.Add) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
@@ -37424,14 +37466,14 @@ var TextInteractiveRendererPlugin = class {
    * @returns {Promise<undefined>}
    */
   remove = async (app, options) => {
-    const { parent, element, transitions = [], getTransitionByType } = options;
-    const text = parent.getChildByName(element.id);
+    const { parent, element: element2, transitions = [], getTransitionByType } = options;
+    const text = parent.getChildByName(element2.id);
     if (!text) {
-      throw new Error(`Text with id ${element.id} not found`);
+      throw new Error(`Text with id ${element2.id} not found`);
     }
     let transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element.id && transition.event === TransitionEvent.Remove) {
+      if (transition.elementId === element2.id && transition.event === TransitionEvent.Remove) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
@@ -37499,54 +37541,68 @@ var TextRevealingRendererPlugin = class {
    * @param {Function} options.getTransitionByType
    * @returns {Promise<undefined>}
    */
-  add = async (app, { parent, element }) => {
+  add = async (app, { parent, element: element2 }) => {
     const textStyle = new TextStyle({
-      wordWrap: element.style.wordWrap || true,
-      breakWords: !element.text.includes(" "),
-      align: element.style.align,
-      fill: element.style.fill,
-      fontSize: element.style.fontSize,
-      lineHeight: element.style.lineHeight,
-      wordWrapWidth: element.style.wordWrapWidth,
-      fontFamily: element.style.fontFamily,
-      stroke: element.style.strokeColor ? {
-        color: element.style.strokeColor,
-        width: element.style.strokeWidth
+      wordWrap: element2.style.wordWrap || true,
+      breakWords: !element2.text.includes(" "),
+      align: element2.style.align,
+      fill: element2.style.fill,
+      fontSize: element2.style.fontSize,
+      lineHeight: element2.style.lineHeight,
+      wordWrapWidth: element2.style.wordWrapWidth,
+      fontFamily: element2.style.fontFamily,
+      stroke: element2.style.strokeColor ? {
+        color: element2.style.strokeColor,
+        width: element2.style.strokeWidth
       } : void 0
     });
     const newText = new Text({ text: "", style: textStyle });
-    newText.label = element.id;
-    newText["text_id"] = element.text;
-    if (element.x !== void 0) {
-      newText.x = element.x;
+    newText.label = element2.id;
+    newText["text_id"] = element2.text;
+    if (element2.x !== void 0) {
+      newText.x = element2.x;
     }
-    if (element.y !== void 0) {
-      newText.y = element.y;
+    if (element2.y !== void 0) {
+      newText.y = element2.y;
     }
     parent.addChild(newText);
     return new Promise((resolve) => {
       const revealText = (content, textObject, speed = 50) => {
+        if (speed === 100) {
+          textObject.text = content;
+          resolve();
+          return;
+        }
         let index = 0;
-        const addNextChar = () => {
-          if (textObject["text_id"] !== element.text) {
-            resolve();
-            return;
-          }
-          if (index < content.length) {
-            textObject.text += content[index];
-            index++;
-            const delay = speed === 100 ? 0 : Math.max(1, 100 - speed);
-            setTimeout(addNextChar, delay);
-          } else {
+        let currentTimDelta = 0;
+        const effect = (time) => {
+          if (textObject["text_id"] !== element2.text) {
+            app.ticker.remove(effect);
             setTimeout(() => {
               resolve();
-            }, 100);
+            }, 500);
+            return;
+          }
+          currentTimDelta += time.deltaMS;
+          const characterIntervalInMs = 100 - speed;
+          const characterIndex = Math.min(content.length, Math.floor(currentTimDelta / characterIntervalInMs) + 1);
+          if (characterIndex > index) {
+            textObject.text = content.slice(0, characterIndex);
+            console.log("bbbbbbbbb 111", textObject.text);
+            index = characterIndex;
+            return;
+          }
+          if (index >= content.length) {
+            app.ticker.remove(effect);
+            setTimeout(() => {
+              resolve();
+            }, 500);
           }
         };
-        addNextChar();
+        app.ticker.add(effect);
       };
-      const measurements = CanvasTextMetrics.measureText(element.text, textStyle);
-      revealText(measurements.lines.join("\n"), newText, element.displaySpeed);
+      const measurements = CanvasTextMetrics.measureText(element2.text, textStyle);
+      revealText(measurements.lines.join("\n"), newText, element2.displaySpeed);
     });
   };
   /**
@@ -37559,14 +37615,14 @@ var TextRevealingRendererPlugin = class {
    * @returns {Promise<undefined>}
    */
   remove = async (app, options) => {
-    const { parent, element, transitions = [], getTransitionByType } = options;
-    const text = parent.getChildByName(element.id);
+    const { parent, element: element2, transitions = [], getTransitionByType } = options;
+    const text = parent.getChildByName(element2.id);
     if (!text) {
-      throw new Error(`Text with id ${element.id} not found`);
+      throw new Error(`Text with id ${element2.id} not found`);
     }
     let transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element.id && transition.event === TransitionEvent.Remove) {
+      if (transition.elementId === element2.id && transition.event === TransitionEvent.Remove) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
@@ -37617,24 +37673,39 @@ var TextRevealingRendererPlugin = class {
       text.text = "";
       return new Promise((resolve) => {
         text["text_id"] = nextElement.text;
-        const revealText = (content, textObject, speed = 20) => {
+        const revealText = (content, textObject, speed = 50) => {
+          if (speed === 100) {
+            textObject.text = content;
+            resolve();
+            return;
+          }
           let index = 0;
-          const addNextChar = () => {
-            if (textObject["text_id"] !== nextElement.text) {
-              resolve();
-              return;
-            }
-            if (index < content.length) {
-              textObject.text += content[index];
-              index++;
-              setTimeout(addNextChar, speed);
-            } else {
+          let currentTimDelta = 0;
+          const effect = (time) => {
+            if (textObject["text_id"] !== element.text) {
+              app.ticker.remove(effect);
               setTimeout(() => {
                 resolve();
-              }, 100);
+              }, 500);
+              return;
+            }
+            currentTimDelta += time.deltaMS;
+            const characterIntervalInMs = 100 - speed;
+            const characterIndex = Math.min(content.length, Math.floor(currentTimDelta / characterIntervalInMs) + 1);
+            if (characterIndex > index) {
+              textObject.text = content.slice(0, characterIndex);
+              console.log("aaaaaaaaaaaaa 111", textObject.text);
+              index = characterIndex;
+              return;
+            }
+            if (index >= content.length) {
+              app.ticker.remove(effect);
+              setTimeout(() => {
+                resolve();
+              }, 500);
             }
           };
-          addNextChar();
+          app.ticker.add(effect);
         };
         const measurements = CanvasTextMetrics.measureText(nextElement.text, text.style);
         revealText(measurements.lines.join("\n"), text, nextElement.displaySpeed);
@@ -37660,50 +37731,53 @@ var SpriteInteractiveRendererPlugin = class extends BaseRendererPlugin {
   add = async (app, options) => {
     const {
       parent,
-      element,
+      element: element2,
       transitions = [],
       getTransitionByType,
       eventHandler
     } = options;
-    const textureButton = Texture.from(element.url);
+    const textureButton = Texture.from(element2.url);
     let textureButtonHover;
     let textureButtonClicked;
-    if (element.hoverUrl) {
-      textureButtonHover = Texture.from(element.hoverUrl);
+    if (element2.hoverUrl) {
+      textureButtonHover = Texture.from(element2.hoverUrl);
     }
-    if (element.clickUrl) {
-      textureButtonClicked = Texture.from(element.clickUrl);
+    if (element2.clickUrl) {
+      textureButtonClicked = Texture.from(element2.clickUrl);
     }
     const sprite = new Sprite(textureButton);
-    sprite.label = element.id;
+    sprite.label = element2.id;
     sprite.cursor = "pointer";
     sprite.eventMode = "static";
-    if (element.xa !== void 0) {
-      sprite.anchor.x = element.xa;
+    if (element2.xa !== void 0) {
+      sprite.anchor.x = element2.xa;
     }
-    if (element.ya !== void 0) {
-      sprite.anchor.y = element.ya;
+    if (element2.ya !== void 0) {
+      sprite.anchor.y = element2.ya;
     }
-    if (element.xp !== void 0) {
-      sprite.x = element.xp * app.screen.width;
+    if (element2.xp !== void 0) {
+      sprite.x = element2.xp * app.screen.width;
     }
-    if (element.x !== void 0) {
-      sprite.x = element.x;
+    if (element2.x !== void 0) {
+      sprite.x = element2.x;
     }
-    if (element.yp !== void 0) {
-      sprite.y = element.yp * app.screen.height;
+    if (element2.yp !== void 0) {
+      sprite.y = element2.yp * app.screen.height;
     }
-    if (element.y !== void 0) {
-      sprite.y = element.y;
+    if (element2.y !== void 0) {
+      sprite.y = element2.y;
     }
-    if (element.width !== void 0) {
-      sprite.width = element.width;
+    if (element2.width !== void 0) {
+      sprite.width = element2.width;
     }
-    if (element.height !== void 0) {
-      sprite.height = element.height;
+    if (element2.height !== void 0) {
+      sprite.height = element2.height;
     }
-    if (element.zIndex !== void 0) {
-      sprite.zIndex = element.zIndex;
+    if (element2.zIndex !== void 0) {
+      sprite.zIndex = element2.zIndex;
+    }
+    if (element2.alpha !== void 0) {
+      sprite.alpha = element2.alpha;
     }
     sprite.on("pointerup", () => {
       sprite.texture = textureButton;
@@ -37724,11 +37798,17 @@ var SpriteInteractiveRendererPlugin = class extends BaseRendererPlugin {
     }
     sprite.on("click", (e2) => {
       e2.stopPropagation();
-      eventHandler && eventHandler(element.eventName, element.eventPayload);
+      eventHandler && eventHandler(element2.eventName, element2.eventPayload);
     });
+    if (element2.rightClickEventName && eventHandler) {
+      sprite.interactive = true;
+      sprite.on("rightclick", () => {
+        eventHandler(element2.rightClickEventName);
+      });
+    }
     const transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element.id && transition.event === TransitionEvent.Add) {
+      if (transition.elementId === element2.id && transition.event === TransitionEvent.Add) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
@@ -37749,14 +37829,14 @@ var SpriteInteractiveRendererPlugin = class extends BaseRendererPlugin {
    * @returns {Promise<undefined>}
    */
   remove = async (app, options) => {
-    const { parent, element, transitions = [], getTransitionByType } = options;
-    const sprite = parent.getChildByName(element.id);
+    const { parent, element: element2, transitions = [], getTransitionByType } = options;
+    const sprite = parent.getChildByName(element2.id);
     if (!sprite) {
-      throw new Error(`Sprite with id ${element.id} not found`);
+      throw new Error(`Sprite with id ${element2.id} not found`);
     }
     let transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element.id && transition.event === TransitionEvent.Remove) {
+      if (transition.elementId === element2.id && transition.event === TransitionEvent.Remove) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
@@ -37807,30 +37887,30 @@ var ContainerRendererPlugin = class {
   add = async (app, options) => {
     const {
       parent,
-      element,
+      element: element2,
       transitions = [],
       getTransitionByType,
       getRendererByElement,
       eventHandler
     } = options;
     const container = new Container();
-    container.label = element.id;
-    if (element.xp !== void 0) {
-      container.x = element.xp * app.screen.width;
+    container.label = element2.id;
+    if (element2.xp !== void 0) {
+      container.x = element2.xp * app.screen.width;
     }
-    if (element.x !== void 0) {
-      container.x = element.x;
+    if (element2.x !== void 0) {
+      container.x = element2.x;
     }
-    if (element.y !== void 0) {
-      container.y = element.y;
+    if (element2.y !== void 0) {
+      container.y = element2.y;
     }
-    if (element.yp !== void 0) {
-      container.y = element.yp * app.screen.height;
+    if (element2.yp !== void 0) {
+      container.y = element2.yp * app.screen.height;
     }
-    if (element.zIndex !== void 0) {
-      container.zIndex = element.zIndex;
+    if (element2.zIndex !== void 0) {
+      container.zIndex = element2.zIndex;
     }
-    if (element.propagateEvents) {
+    if (element2.propagateEvents) {
       container.eventMode = "static";
       container.on("pointerenter", (e2) => {
         e2.stopPropagation();
@@ -37846,13 +37926,13 @@ var ContainerRendererPlugin = class {
       });
     }
     const renderPromises = [];
-    (element.children || []).forEach((childElement) => {
+    (element2.children || []).forEach((childElement) => {
       const renderer = getRendererByElement(childElement);
       renderPromises.push(
         renderer.add(app, {
           parent: container,
           element: {
-            zIndex: element.zIndex,
+            zIndex: element2.zIndex,
             ...childElement
           },
           transitions,
@@ -37864,7 +37944,7 @@ var ContainerRendererPlugin = class {
     });
     const transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element.id && transition.event === TransitionEvent.Add) {
+      if (transition.elementId === element2.id && transition.event === TransitionEvent.Add) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
@@ -37882,8 +37962,8 @@ var ContainerRendererPlugin = class {
       }
     };
     await Promise.all(transitionPromises.concat(renderPromises));
-    if (element.zIndex !== void 0) {
-      recursiveSetZIndex(container.children, element.zIndex);
+    if (element2.zIndex !== void 0) {
+      recursiveSetZIndex(container.children, element2.zIndex);
     }
   };
   /**
@@ -37896,10 +37976,10 @@ var ContainerRendererPlugin = class {
    * @returns {Promise<undefined>}
    */
   remove = async (app, options) => {
-    const { parent, element } = options;
-    const sprite = parent.getChildByName(element.id);
+    const { parent, element: element2 } = options;
+    const sprite = parent.getChildByName(element2.id);
     if (!sprite) {
-      throw new Error(`Sprite with id ${element.id} not found`);
+      throw new Error(`Sprite with id ${element2.id} not found`);
     }
     sprite.destroy();
   };
@@ -37939,12 +38019,12 @@ var ContainerRendererPlugin = class {
       nextElement.children
     );
     const renderPromises = [];
-    for (const element of toDeleteElements) {
-      const renderer = getRendererByElement(element);
+    for (const element2 of toDeleteElements) {
+      const renderer = getRendererByElement(element2);
       renderPromises.push(
         renderer.remove(app, {
           parent: container,
-          element,
+          element: element2,
           transitions,
           getTransitionByType,
           getRendererByElement,
@@ -37952,12 +38032,12 @@ var ContainerRendererPlugin = class {
         })
       );
     }
-    for (const element of toAddElements) {
-      const renderer = getRendererByElement(element);
+    for (const element2 of toAddElements) {
+      const renderer = getRendererByElement(element2);
       renderPromises.push(
         renderer.add(app, {
           parent: container,
-          element,
+          element: element2,
           transitions,
           getTransitionByType,
           getRendererByElement,
@@ -37965,13 +38045,13 @@ var ContainerRendererPlugin = class {
         })
       );
     }
-    for (const element of toUpdateElements) {
-      const renderer = getRendererByElement(element.next);
+    for (const element2 of toUpdateElements) {
+      const renderer = getRendererByElement(element2.next);
       renderPromises.push(
         renderer.update(app, {
           parent: container,
-          prevElement: element.prev,
-          nextElement: element.next,
+          prevElement: element2.prev,
+          nextElement: element2.next,
           transitions,
           getTransitionByType,
           getRendererByElement,
@@ -37980,8 +38060,8 @@ var ContainerRendererPlugin = class {
       );
     }
     container.children.sort((a2, b2) => {
-      const aIndex = nextElement.children.findIndex((element) => element.id === a2.label);
-      const bIndex = nextElement.children.findIndex((element) => element.id === b2.label);
+      const aIndex = nextElement.children.findIndex((element2) => element2.id === a2.label);
+      const bIndex = nextElement.children.findIndex((element2) => element2.id === b2.label);
       return aIndex - bIndex;
     });
     const transitionPromises = [];
@@ -38253,56 +38333,56 @@ var GraphicsRendererPlugin = class {
   add = async (app, options) => {
     const {
       parent,
-      element,
+      element: element2,
       transitions = [],
       getTransitionByType,
       eventHandler
     } = options;
     const graphics = new Graphics();
-    graphics.label = element.id;
-    if (element.xp !== void 0) {
-      graphics.x = element.xp * app.screen.width;
+    graphics.label = element2.id;
+    if (element2.xp !== void 0) {
+      graphics.x = element2.xp * app.screen.width;
     }
-    if (element.x !== void 0) {
-      graphics.x = element.x;
+    if (element2.x !== void 0) {
+      graphics.x = element2.x;
     }
-    if (element.y !== void 0) {
-      graphics.y = element.y;
+    if (element2.y !== void 0) {
+      graphics.y = element2.y;
     }
-    if (element.yp !== void 0) {
-      graphics.y = element.yp * app.screen.height;
+    if (element2.yp !== void 0) {
+      graphics.y = element2.yp * app.screen.height;
     }
-    if (element.alpha !== void 0) {
-      graphics.alpha = element.alpha;
+    if (element2.alpha !== void 0) {
+      graphics.alpha = element2.alpha;
     }
-    if (element.zIndex !== void 0) {
-      graphics.zIndex = element.zIndex;
+    if (element2.zIndex !== void 0) {
+      graphics.zIndex = element2.zIndex;
     }
-    graphics.rect(element.x1, element.y1, element.x2, element.y2);
-    graphics.fill(element.fill);
-    if (element.clickEventName && eventHandler) {
+    graphics.rect(element2.x1, element2.y1, element2.x2, element2.y2);
+    graphics.fill(element2.fill);
+    if (element2.clickEventName && eventHandler) {
       graphics.interactive = true;
       graphics.on("click", () => {
-        eventHandler(element.clickEventName);
+        eventHandler(element2.clickEventName);
       });
     }
-    if (element.rightClickEventName && eventHandler) {
+    if (element2.rightClickEventName && eventHandler) {
       graphics.interactive = true;
       graphics.on("rightclick", () => {
-        eventHandler(element.rightClickEventName);
+        eventHandler(element2.rightClickEventName);
       });
     }
-    if (element.wheelEventName && eventHandler) {
+    if (element2.wheelEventName && eventHandler) {
       graphics.interactive = true;
       graphics.on("wheel", (e2) => {
-        eventHandler(element.wheelEventName, {
+        eventHandler(element2.wheelEventName, {
           deltaY: e2.deltaY
         });
       });
     }
     const transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element.id && transition.event === TransitionEvent.Add) {
+      if (transition.elementId === element2.id && transition.event === TransitionEvent.Add) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
@@ -38323,10 +38403,10 @@ var GraphicsRendererPlugin = class {
    * @returns {Promise<undefined>}
    */
   remove = async (app, options) => {
-    const { parent, element } = options;
-    const sprite = parent.getChildByName(element.id);
+    const { parent, element: element2 } = options;
+    const sprite = parent.getChildByName(element2.id);
     if (!sprite) {
-      throw new Error(`Sprite with id ${element.id} not found`);
+      throw new Error(`Sprite with id ${element2.id} not found`);
     }
     sprite.destroy();
   };
@@ -38408,28 +38488,28 @@ var AnchorLayoutContainerRendererPlugin = class {
       getRendererByElement,
       eventHandler
     } = options;
-    const element = JSON.parse(JSON.stringify(originalElement));
+    const element2 = JSON.parse(JSON.stringify(originalElement));
     const container = new Container();
-    container.label = element.id;
-    if (element.xp !== void 0) {
-      container.x = element.xp * app.screen.width;
+    container.label = element2.id;
+    if (element2.xp !== void 0) {
+      container.x = element2.xp * app.screen.width;
     }
-    if (element.x !== void 0) {
-      container.x = element.x;
+    if (element2.x !== void 0) {
+      container.x = element2.x;
     }
-    if (element.y !== void 0) {
-      container.y = element.y;
+    if (element2.y !== void 0) {
+      container.y = element2.y;
     }
-    if (element.yp !== void 0) {
-      container.y = element.yp * app.screen.height;
+    if (element2.yp !== void 0) {
+      container.y = element2.yp * app.screen.height;
     }
-    if (element.zIndex !== void 0) {
-      container.zIndex = element.zIndex;
+    if (element2.zIndex !== void 0) {
+      container.zIndex = element2.zIndex;
     }
-    if (element.template && element.data) {
-      const template = element.template;
-      element.children = [];
-      element.data.forEach((dataItem, index) => {
+    if (element2.template && element2.data) {
+      const template = element2.template;
+      element2.children = [];
+      element2.data.forEach((dataItem, index) => {
         let templateId;
         if (template.mapping.cases) {
           for (const caseItem of template.mapping.cases) {
@@ -38465,7 +38545,7 @@ var AnchorLayoutContainerRendererPlugin = class {
           }
         });
         const itemElement = JSON.parse(strintigified);
-        element.children.push(itemElement);
+        element2.children.push(itemElement);
       });
     }
     const populateMissingHeightAndWidth = (el) => {
@@ -38507,23 +38587,23 @@ var AnchorLayoutContainerRendererPlugin = class {
         }, 0);
       }
     };
-    populateMissingHeightAndWidth(element);
-    const gap = element.gap || 0;
-    if (element.anchor !== void 0) {
+    populateMissingHeightAndWidth(element2);
+    const gap = element2.gap || 0;
+    if (element2.anchor !== void 0) {
       let totalWidth = 0;
       let totalHeight = 0;
-      const anchor = AnchorLayoutAnchorMapping[element.anchor];
-      (element.children || []).forEach((childElement, i2) => {
+      const anchor = AnchorLayoutAnchorMapping[element2.anchor];
+      (element2.children || []).forEach((childElement, i2) => {
         childElement.xa = anchor.x;
         childElement.ya = anchor.y;
-        if (element.direction === "horizontal") {
+        if (element2.direction === "horizontal") {
           if (i2 > 0) {
             totalWidth += gap;
           }
           totalWidth += childElement.width;
           totalHeight = Math.max(totalHeight, childElement.height);
         }
-        if (element.direction === "vertical") {
+        if (element2.direction === "vertical") {
           if (i2 > 0) {
             totalHeight += gap;
           }
@@ -38531,86 +38611,86 @@ var AnchorLayoutContainerRendererPlugin = class {
           totalWidth = Math.max(totalWidth, childElement.width);
         }
       });
-      if (anchor.x === 0 && element.direction === "horizontal") {
+      if (anchor.x === 0 && element2.direction === "horizontal") {
         let layoutX = 0;
-        (element.children || []).forEach((childElement) => {
+        (element2.children || []).forEach((childElement) => {
           childElement.x = (childElement.x || 0) + layoutX;
           layoutX += childElement.width + gap;
         });
       }
-      if (anchor.x === 1 && element.direction === "horizontal") {
+      if (anchor.x === 1 && element2.direction === "horizontal") {
         let layoutX = 0;
-        (element.children || []).concat([]).reverse().forEach((childElement) => {
+        (element2.children || []).concat([]).reverse().forEach((childElement) => {
           childElement.x = (childElement.x || 0) + layoutX;
           layoutX -= childElement.width + gap;
         });
       }
-      if (anchor.y === 0 && element.direction === "vertical") {
+      if (anchor.y === 0 && element2.direction === "vertical") {
         let layoutY = 0;
-        (element.children || []).forEach((childElement) => {
+        (element2.children || []).forEach((childElement) => {
           childElement.y = layoutY;
           layoutY += childElement.height + gap;
         });
       }
-      if (anchor.y === 1 && element.direction === "vertical") {
+      if (anchor.y === 1 && element2.direction === "vertical") {
         let layoutY = 0;
-        (element.children || []).concat([]).reverse().forEach((childElement) => {
+        (element2.children || []).concat([]).reverse().forEach((childElement) => {
           childElement.y = layoutY;
           layoutY -= childElement.height + gap;
         });
       }
-      if (anchor.x === 0.5 && element.direction === "horizontal") {
+      if (anchor.x === 0.5 && element2.direction === "horizontal") {
         let layoutX = -totalWidth / 2;
-        (element.children || []).forEach((childElement) => {
+        (element2.children || []).forEach((childElement) => {
           childElement.x = (childElement.x || 0) + layoutX + childElement.width / 2;
           layoutX += childElement.width + gap;
         });
       }
-      if (anchor.x === 0.5 && element.direction === "vertical") {
-        let offsetX = -totalWidth / 2 + element.children.reduce((sum, child) => sum + (child.width || 0), 0) / element.children.length * 0.5;
-        (element.children || []).forEach((childElement) => {
+      if (anchor.x === 0.5 && element2.direction === "vertical") {
+        let offsetX = -totalWidth / 2 + element2.children.reduce((sum, child) => sum + (child.width || 0), 0) / element2.children.length * 0.5;
+        (element2.children || []).forEach((childElement) => {
           childElement.x = offsetX;
         });
       }
-      if (anchor.y === 0.5 && element.direction === "vertical") {
-        let startLayoutY = -totalHeight / 2 + (element.children[0].height || 0) * 0.5;
-        (element.children || []).forEach((childElement) => {
+      if (anchor.y === 0.5 && element2.direction === "vertical") {
+        let startLayoutY = -totalHeight / 2 + (element2.children[0].height || 0) * 0.5;
+        (element2.children || []).forEach((childElement) => {
           childElement.y = startLayoutY;
           startLayoutY += childElement.height + gap;
         });
       }
-      if (anchor.y === 0.5 && element.direction === "horizontal") {
-        let offsetY = -totalHeight / 2 + (element.children[0].height || 0) * 0.5;
-        (element.children || []).forEach((childElement) => {
+      if (anchor.y === 0.5 && element2.direction === "horizontal") {
+        let offsetY = -totalHeight / 2 + (element2.children[0].height || 0) * 0.5;
+        (element2.children || []).forEach((childElement) => {
           childElement.y = offsetY;
         });
       }
-      if (totalHeight > element.height) {
-        const diff = totalHeight - element.height;
+      if (totalHeight > element2.height) {
+        const diff = totalHeight - element2.height;
         container.y -= diff;
-        const clip = new Graphics().rect(0, element.y, element.width + 100, element.height).fill("black");
+        const clip = new Graphics().rect(0, element2.y, element2.width + 100, element2.height).fill("black");
         container.mask = clip;
       }
-      if (element.fill) {
-        const graphic = new Graphics().roundRect(0, 0, element.width, element.height, element.radius).fill(element.fill.color);
+      if (element2.fill) {
+        const graphic = new Graphics().roundRect(0, 0, element2.width, element2.height, element2.radius).fill(element2.fill.color);
         graphic.label = "anchor-layout-container-background";
         if (anchor.x === 1) {
-          graphic.x -= element.width;
+          graphic.x -= element2.width;
         }
         if (anchor.x === -0.5) {
-          graphic.x -= element.width / 2;
+          graphic.x -= element2.width / 2;
         }
         container.addChild(graphic);
       }
     }
     const renderPromises = [];
-    (element.children || []).forEach((childElement) => {
+    (element2.children || []).forEach((childElement) => {
       const renderer = getRendererByElement(childElement);
       renderPromises.push(
         renderer.add(app, {
           parent: container,
           element: {
-            zIndex: element.zIndex,
+            zIndex: element2.zIndex,
             ...childElement
           },
           transitions,
@@ -38622,7 +38702,7 @@ var AnchorLayoutContainerRendererPlugin = class {
     });
     const transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element.id && transition.event === TransitionEvent.Add) {
+      if (transition.elementId === element2.id && transition.event === TransitionEvent.Add) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
@@ -38643,10 +38723,10 @@ var AnchorLayoutContainerRendererPlugin = class {
    * @returns {Promise<undefined>}
    */
   remove = async (app, options) => {
-    const { parent, element } = options;
-    const sprite = parent.getChildByName(element.id);
+    const { parent, element: element2 } = options;
+    const sprite = parent.getChildByName(element2.id);
     if (!sprite) {
-      throw new Error(`Sprite with id ${element.id} not found`);
+      throw new Error(`Sprite with id ${element2.id} not found`);
     }
     sprite.destroy();
   };
@@ -38686,12 +38766,12 @@ var AnchorLayoutContainerRendererPlugin = class {
       nextElement.children
     );
     const renderPromises = [];
-    for (const element of toDeleteElements) {
-      const renderer = getRendererByElement(element);
+    for (const element2 of toDeleteElements) {
+      const renderer = getRendererByElement(element2);
       renderPromises.push(
         renderer.remove(app, {
           parent: container,
-          element,
+          element: element2,
           transitions,
           getTransitionByType,
           getRendererByElement,
@@ -38699,12 +38779,12 @@ var AnchorLayoutContainerRendererPlugin = class {
         })
       );
     }
-    for (const element of toAddElements) {
-      const renderer = getRendererByElement(element);
+    for (const element2 of toAddElements) {
+      const renderer = getRendererByElement(element2);
       renderPromises.push(
         renderer.add(app, {
           parent: container,
-          element,
+          element: element2,
           transitions,
           getTransitionByType,
           getRendererByElement,
@@ -38712,13 +38792,13 @@ var AnchorLayoutContainerRendererPlugin = class {
         })
       );
     }
-    for (const element of toUpdateElements) {
-      const renderer = getRendererByElement(element.next);
+    for (const element2 of toUpdateElements) {
+      const renderer = getRendererByElement(element2.next);
       renderPromises.push(
         renderer.update(app, {
           parent: container,
-          prevElement: element.prev,
-          nextElement: element.next,
+          prevElement: element2.prev,
+          nextElement: element2.next,
           transitions,
           getTransitionByType,
           getRendererByElement,
@@ -38727,8 +38807,8 @@ var AnchorLayoutContainerRendererPlugin = class {
       );
     }
     container.children.sort((a2, b2) => {
-      const aIndex = nextElement.children?.findIndex((element) => element.id === a2.label);
-      const bIndex = nextElement.children?.findIndex((element) => element.id === b2.label);
+      const aIndex = nextElement.children?.findIndex((element2) => element2.id === a2.label);
+      const bIndex = nextElement.children?.findIndex((element2) => element2.id === b2.label);
       return aIndex - bIndex;
     });
     await Promise.all(renderPromises);
@@ -38749,7 +38829,7 @@ var SliderRendererPlugin = class extends BaseRendererPlugin {
    * @param {Function} options.getTransitionByType
    * @returns {Promise<undefined>}
    */
-  add = async (app, { parent, element, transitions = [], getTransitionByType, eventHandler }) => {
+  add = async (app, { parent, element: element2, transitions = [], getTransitionByType, eventHandler }) => {
     const {
       direction,
       idleThumb,
@@ -38760,7 +38840,7 @@ var SliderRendererPlugin = class extends BaseRendererPlugin {
       dragEventName,
       dragEventPayload,
       initialValue
-    } = element;
+    } = element2;
     const config = {
       horizontal: {
         axis: "x",
@@ -38782,8 +38862,8 @@ var SliderRendererPlugin = class extends BaseRendererPlugin {
       anchor: { x: 0, y: 0 }
     });
     const sliderSize = slider[size];
-    slider.x = element.x || 0;
-    slider.y = element.y || 0;
+    slider.x = element2.x || 0;
+    slider.y = element2.y || 0;
     const handle = new Sprite({
       texture: idleHandleTexture,
       anchor: { x: 0.5, y: 0.5 }
@@ -38844,7 +38924,7 @@ var SliderRendererPlugin = class extends BaseRendererPlugin {
     }
     const transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element.id && transition.event === TransitionEvent.Add) {
+      if (transition.elementId === element2.id && transition.event === TransitionEvent.Add) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
@@ -38865,14 +38945,14 @@ var SliderRendererPlugin = class extends BaseRendererPlugin {
    * @returns {Promise<undefined>}
    */
   remove = async (app, options) => {
-    const { parent, element, transitions = [], getTransitionByType } = options;
-    const sprite = parent.getChildByName(element.id);
+    const { parent, element: element2, transitions = [], getTransitionByType } = options;
+    const sprite = parent.getChildByName(element2.id);
     if (!sprite) {
-      throw new Error(`Sprite with id ${element.id} not found`);
+      throw new Error(`Sprite with id ${element2.id} not found`);
     }
     let transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element.id && transition.event === TransitionEvent.Remove) {
+      if (transition.elementId === element2.id && transition.event === TransitionEvent.Remove) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
@@ -38933,20 +39013,22 @@ var SoundPlugin = class extends BaseRendererPlugin {
    * @param {Function} options.getTransitionByType
    * @returns {Promise<undefined>}
    */
-  add = async (app, { parent, element, transitions = [], getTransitionByType }) => {
-    if (element.delay) {
+  add = async (app, { parent, element: element2, transitions = [], getTransitionByType }) => {
+    if (element2.delay) {
       setTimeout(() => {
         app.soundStage.add({
-          id: element.id,
-          url: element.url,
-          loop: element.loop ?? false
+          id: element2.id,
+          url: element2.url,
+          loop: element2.loop ?? false,
+          volume: element2.volume ?? 1
         });
-      }, element.delay);
+      }, element2.delay);
     } else {
       app.soundStage.add({
-        id: element.id,
-        url: element.url,
-        loop: element.loop ?? false
+        id: element2.id,
+        url: element2.url,
+        loop: element2.loop ?? false,
+        volume: element2.volume ?? 1
       });
     }
   };
@@ -38960,8 +39042,8 @@ var SoundPlugin = class extends BaseRendererPlugin {
    * @returns {Promise<undefined>}
    */
   remove = async (app, options) => {
-    const { element } = options;
-    app.soundStage.remove(element.id);
+    const { element: element2 } = options;
+    app.soundStage.remove(element2.id);
   };
   /**
    * @param {ApplicationWithSoundStage} app
@@ -38974,10 +39056,11 @@ var SoundPlugin = class extends BaseRendererPlugin {
    * @returns {Promise<undefined>}
    */
   update = async (app, { parent, prevElement, nextElement, transitions, getTransitionByType }) => {
-    if (prevElement.url !== nextElement.url) {
+    if (prevElement.url !== nextElement.url || prevElement.volume !== nextElement.volume) {
       const soundElement = app.soundStage.getById(prevElement.id);
       if (soundElement) {
         soundElement.url = nextElement.url;
+        soundElement.volume = nextElement.volume ?? 1;
       }
     }
   };

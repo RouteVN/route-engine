@@ -3,6 +3,49 @@ screen:
   height: 720
   backgroundColor: "#000000"
 
+data:
+  saveLoadSlots:
+    - text: "<"
+      value: -1
+    - text: "A"
+      value: 0
+      title: Auto Save
+    - text: "Q"
+      value: 1
+      title: Quick Save
+    - text: "1"
+      value: 2
+      title: Page 1
+    - text: "2"
+      value: 3
+      title: Page 2
+    - text: "3"
+      value: 4
+      title: Page 3
+    - text: "4"
+      value: 5
+      title: Page 4
+    - text: "5"
+      value: 6
+      title: Page 5
+    - text: "6"
+      value: 7
+      title: Page 6
+    - text: "7"
+      value: 8
+      title: Page 8
+    - text: "8"
+      value: 9
+      title: Page 9
+    - text: "9"
+      value: 10
+      title: Page 10
+    - text: "10"
+      value: 11
+      title: Page 11
+    - text: ">"
+      value: 12
+
 resources:
   # background2:
   #   tags:
@@ -97,6 +140,9 @@ resources:
       bgm2:
         name: "BGM 2"
         src: "/public/first-contract/audio/play together.ogg"
+      title:
+        name: "BGM 3"
+        src: "/public/first-contract/audio/title.ogg"
   sfx:
     tagsOrder: []
     tags: {}
@@ -136,6 +182,7 @@ resources:
     itemsOrder: [eleni, kamilla]
     items:
       eleni:
+        id: eleni
         name: Eleni
         whoColor: "ff74b2"
         sprites:
@@ -548,21 +595,41 @@ resources:
               - duration: 1000
                 value: 1
                 easing: linear
+      aniFadeInScreen:
+        name: Fade In Screen
+        properties:
+          - property: alpha
+            initialValue: 0
+            keyframes:
+              - duration: 500
+                value: 1
+                easing: linear
+      aniFadeOutScreen:
+        name: Fade Out Screen
+        properties:
+          - property: alpha
+            initialValue: 1
+            keyframes:
+              - duration: 2000
+                value: 0
+                easing: linear
   screen:
     items:
       menuBase:
         layout:
           - id: "abou3t"
-            type: "sprite"
+            type: "sprite-interactive"
             url: "/public/first-contract/gui/game_menu.png"
             alpha: 0.3
             height: 720
             width: 1280
+            rightClickEventName: "HideMenu"
           - id: "abodf33ut"
-            type: "sprite"
+            type: "sprite-interactive"
             url: "/public/first-contract/gui/overlay/main_menu.png"
             height: 720
             width: 1280
+            rightClickEventName: "HideMenu"
           - id: "about3"
             type: "anchor-layout-container"
             anchor: "CenterLeft"
@@ -639,6 +706,8 @@ resources:
                     wordWrapWidth: 1740
                     strokeColor: black
                     strokeWidth: 6
+                  clickSoundUrl: "/public/first-contract/audio/sfx_button1.wav"
+                  clickSoundVolume: "{{ config.soundVolume }}"
                 - template: selected
                   id: "ladfkj3"
                   text: "{{ text }}"
@@ -653,6 +722,7 @@ resources:
                     wordWrapWidth: 1740
                     strokeColor: black
                     strokeWidth: 6
+                    
           - id: "ladf421k4dd2j3"
             type: "text-interactive"
             x: 20
@@ -680,19 +750,23 @@ resources:
               wordWrapWidth: 1740
               strokeColor: black
               strokeWidth: 6
+            clickSoundUrl: "/public/first-contract/audio/sfx_button1.wav"
+            clickSoundVolume: "{{ config.soundVolume }}"
       menuGame:
         layout:
           - id: "abosdfeut"
-            type: "sprite"
+            type: "sprite-interactive"
             url: "/public/first-contract/gui/game_menu.png"
             alpha: 0.3
             height: 720
             width: 1280
+            rightClickEventName: "HideMenu"
           - id: "ab34gout"
-            type: "sprite"
+            type: "sprite-interactive"
             url: "/public/first-contract/gui/overlay/main_menu.png"
             height: 720
             width: 1280
+            rightClickEventName: "HideMenu"
           - id: "about3"
             type: "anchor-layout-container"
             anchor: "CenterLeft"
@@ -751,11 +825,12 @@ resources:
                 page: main
                 eventPayload:
                   actions:
-                    moveToSection:
-                      sceneId: sceneTitleMenu
-                      sectionId: sectionTitleMenu2
-                    setCustomState:
-                      currentPage: "main"
+                    modalScreenId: goToMainConfirmModal
+                    # screen:
+                    #   items:
+                    #     - id: "about3412xxxew34"
+                    #       screenId: goToMainConfirmModal
+                    #       modal: true
             template:
               mapping:
                 cases:
@@ -803,87 +878,6 @@ resources:
                     wordWrapWidth: 1740
                     strokeColor: black
                     strokeWidth: 6
-          - id: overlayConfirm
-            type: "container"
-            displayWhen:
-              property: '{{ customState.returnToMainMenuConfirmationVisible }}'
-              op: eq
-              value: true
-            anchor: "TopLeft"
-            zIndex: 1000
-            x: 0
-            y: 0
-            children:
-              - id: "ladf423kj3"
-                type: graphics
-                zIndex: 1000
-                x1: 0
-                x2: 1280
-                y1: 0
-                y2: 720
-                fill: 'black'
-                alpha: 0.7
-              - id: "ladf1kj3"
-                type: sprite
-                zIndex: 1000
-                xa: 0.5
-                ya: 0.5
-                x: 640
-                y: 360
-                width: 600
-                height: 180
-                url: "/public/first-contract/gui/frame.png"
-              - id: "ladfkj42d3"
-                type: text
-                zIndex: 1000
-                text: 'Are you sure you want to return to the main menu? This will lose unsaved progress.'
-                xa: 0.5
-                ya: 0.5
-                x: 640
-                y: 340
-                style:
-                  fill: 'white'
-                  fontSize: 27
-                  fontFamily: 'NomnomNami2'
-                  wordWrapWidth: 600
-                  align: center
-              - id: "ladfkj42dxi3"
-                type: anchor-layout-container
-                anchor: "CenterCenter"
-                direction: "horizontal"
-                zIndex: 1000
-                gap: 120
-                x: 640
-                y: 410
-                children:
-                  - id: "ladfkj42dxi3"
-                    type: text-interactive
-                    text: "Yes"
-                    zIndex: 1000
-                    style:
-                      fill: "#ccc"
-                      fontSize: 28
-                      fontFamily: "NomnomNami2"
-                      wordWrapWidth: 1740
-                    hoverStyle:
-                      fontSize: 28
-                      fill: "yellow"
-                      fontFamily: "NomnomNami2"
-                      wordWrapWidth: 1740
-                  - id: "ladfkj42dxi3"
-                    type: text-interactive
-                    text: "No"
-                    zIndex: 1000
-                    style:
-                      fill: "#ccc"
-                      fontSize: 28
-                      fontFamily: "NomnomNami2"
-                      wordWrapWidth: 1740
-                    hoverStyle:
-                      fontSize: 28
-                      fill: "yellow"
-                      fontFamily: "NomnomNami2"
-                      wordWrapWidth: 1740
 
           - id: "about3412x"
             type: "anchor-layout-container"
@@ -918,6 +912,97 @@ resources:
                   strokeColor: black
                   strokeWidth: 6
 
+      goToMainConfirmModal:
+        layout:
+          - id: overlayConfirm
+            type: "container"
+            anchor: "TopLeft"
+            zIndex: 1005
+            x: 0
+            y: 0
+            children:
+              - id: "ladf423kj3"
+                type: graphics
+                zIndex: 1000
+                x1: 0
+                x2: 1280
+                y1: 0
+                y2: 720
+                fill: 'black'
+                alpha: 0.5
+              - id: "ladf1kj3"
+                type: sprite
+                zIndex: 800
+                xa: 0.5
+                ya: 0.5
+                x: 640
+                y: 360
+                width: 600
+                height: 180
+                url: "/public/first-contract/gui/frame.png"
+              - id: "ladfkj42d3"
+                type: text
+                zIndex: 1005
+                text: 'Are you sure you want to return to the main menu? This will lose unsaved progress.'
+                xa: 0.5
+                ya: 0.5
+                x: 640
+                y: 340
+                style:
+                  fill: 'white'
+                  fontSize: 27
+                  fontFamily: 'NomnomNami2'
+                  wordWrapWidth: 600
+                  align: center
+              - id: "ladfkj42dxi3"
+                type: anchor-layout-container
+                anchor: "CenterCenter"
+                direction: "horizontal"
+                zIndex: 1002
+                gap: 120
+                x: 640
+                y: 410
+                children:
+                  - id: "ladfkj42dxi3"
+                    type: text-interactive
+                    text: "Yes"
+                    zIndex: 1005
+                    eventName: Actions
+                    eventPayload:
+                      actions:
+                        moveToSection:
+                          sceneId: sceneTitleMenu
+                          sectionId: sectionTitleMenu2
+                        clearTempAction: true
+                        clearLatest: true
+                    style:
+                      fill: "#ccc"
+                      fontSize: 28
+                      fontFamily: "NomnomNami2"
+                      wordWrapWidth: 1740
+                    hoverStyle:
+                      fontSize: 28
+                      fill: "yellow"
+                      fontFamily: "NomnomNami2"
+                      wordWrapWidth: 1740
+                  - id: "ladfkj42dxi3"
+                    type: text-interactive
+                    text: "No"
+                    zIndex: 1005
+                    eventName: Actions
+                    eventPayload:
+                      actions:
+                        clearTempAction: true
+                    style:
+                      fill: "#ccc"
+                      fontSize: 28
+                      fontFamily: "NomnomNami2"
+                      wordWrapWidth: 1740
+                    hoverStyle:
+                      fontSize: 28
+                      fill: "yellow"
+                      fontFamily: "NomnomNami2"
+                      wordWrapWidth: 1740
 
       about:
         layout:
@@ -1085,9 +1170,10 @@ resources:
                     default: default
                   items:
                     - template: default
-                      id: "ladfkf1j3"
+                      id: "ladfkf1d22j3"
                       type: "text-interactive"
                       text: "{{ text }}"
+                      x: 28
                       eventName: "Actions"
                       eventPayload:
                         actions:
@@ -1104,15 +1190,25 @@ resources:
                         fontFamily: "NomnomNami2"
                         wordWrapWidth: 1740
                     - template: selected
-                      id: "askd3d34jd"
-                      type: "text"
-                      text: "{{ text }}"
-                      style:
-                        fill: "white"
-                        fontSize: 28
-                        fontFamily: "NomnomNami2"
-                        wordWrapWidth: 1740
-                children: []
+                      id: "askd3d34dejd"
+                      type: "container"
+                      x: 0
+                      y: 0
+                      height: 30
+                      children:
+                        - id: df3kgeawdf3erk3
+                          type: sprite
+                          url: "/public/first-contract/gui/button/check_selected_foreground.png"
+                        - id: df3kgxeawdf3erk3
+                          type: "text"
+                          x: 28
+                          y: 0
+                          text: "{{ text }}"
+                          style:
+                            fill: "white"
+                            fontSize: 28
+                            fontFamily: "NomnomNami2"
+                            wordWrapWidth: 1740
 
           - id: "about325fs2"
             type: "anchor-layout-container"
@@ -1145,16 +1241,26 @@ resources:
                 height: 300 
                 data:
                   - text: Unseen Text
-                    value: skipUnseenText
+                    value: "{{ config.skipUnseenText }}"
+                    eventPayload:
+                      actions:
+                        setConfig:
+                          skipUnseenText:
+                            op: toggle
                   - text: Transitions
-                    value: skipTransitions
+                    value: "{{ config.skipTransitions }}"
+                    eventPayload:
+                      actions:
+                        setConfig:
+                          skipTransitions:
+                            op: toggle
                 template:
                   mapping:
                     cases:
                       - case:
                           property: value
                           op: eq
-                          value: "{{ config.skip }}"
+                          value: true
                         then: selected
                     default: default
                   items:
@@ -1162,11 +1268,9 @@ resources:
                       id: "ladfkf1jc3"
                       type: "text-interactive"
                       text: "{{ text }}"
+                      x: 28
                       eventName: "Actions"
-                      eventPayload:
-                        actions:
-                          setConfig:
-                            skip: "{{ value }}"
+                      eventPayload: "{{ eventPayload }}"
                       style:
                         fill: "#ccc"
                         fontSize: 28
@@ -1178,14 +1282,27 @@ resources:
                         fontFamily: "NomnomNami2"
                         wordWrapWidth: 1740
                     - template: selected
-                      id: "askd3d34jd"
-                      type: "text"
-                      text: "{{ text }}"
-                      style:
-                        fill: "white"
-                        fontSize: 28
-                        fontFamily: "NomnomNami2"
-                        wordWrapWidth: 1740
+                      id: "askd3d34dejd"
+                      type: "container"
+                      x: 0
+                      y: 0
+                      height: 30
+                      children:
+                        - id: df3kgeawdf3erk3
+                          type: sprite
+                          url: "/public/first-contract/gui/button/check_selected_foreground.png"
+                        - id: df3kgxeawdf3erk3
+                          type: "text-interactive"
+                          eventName: "Actions"
+                          eventPayload: "{{ eventPayload }}"
+                          x: 28
+                          y: 0
+                          text: "{{ text }}"
+                          style:
+                            fill: "white"
+                            fontSize: 28
+                            fontFamily: "NomnomNami2"
+                            wordWrapWidth: 1740
                 children: []
              
           - id: "about32e2fcss232"
@@ -1329,30 +1446,71 @@ resources:
                 idleBar: "/public/first-contract/gui/slider/horizontal_idle_bar.png"
                 hoverBar: "/public/first-contract/gui/slider/horizontal_hover_bar.png"
           - id: "ladfwkj3d3"
-            text: Mute All
-            type: "text-interactive"
+            type: "anchor-layout-container"
+            children: []
             x: 860
             y: 640
-            eventName: "Actions"
-            eventPayload:
-              actions:
-                setConfig:
-                  soundVolume: 0
-                  musicVolume: 0
-            style:
-              fill: "#ccc"
-              fontSize: 40
-              fontFamily: "NomnomNami2"
-              wordWrapWidth: 1740
-              strokeColor: black
-              strokeWidth: 6
-            hoverStyle:
-              fontSize: 40
-              fill: "yellow"
-              fontFamily: "NomnomNami2"
-              wordWrapWidth: 1740
-              strokeColor: black
-              strokeWidth: 6
+            data:
+              - value: "{{ config.muteAll }}"
+            template:
+              mapping:
+                cases:
+                  - case:
+                      property: value
+                      op: eq
+                      value: true
+                    then: selected
+                default: default
+              items:
+                - template: default
+                  id: "ladfkj3"
+                  text: Mute All
+                  type: "text-interactive"
+                  x: 28
+                  eventName: "Actions"
+                  eventPayload:
+                    actions:
+                      setConfig:
+                        muteAll:
+                          op: toggle
+                  style:
+                    fill: "#ccc"
+                    fontSize: 40
+                    fontFamily: "NomnomNami2"
+                    wordWrapWidth: 1740
+                    strokeColor: black
+                    strokeWidth: 6
+                  hoverStyle:
+                    fontSize: 40
+                    fill: "yellow"
+                    fontFamily: "NomnomNami2"
+                    wordWrapWidth: 1740
+                    strokeColor: black
+                    strokeWidth: 6
+                - template: selected
+                  id: kfj34jk49fk
+                  type: container
+                  children:
+                    - id: "ladseefkj3"
+                      type: "sprite"
+                      url: "/public/first-contract/gui/button/check_selected_foreground.png"
+                    - id: "ladfkj3"
+                      text: Mute All
+                      type: "text-interactive"
+                      x: 28
+                      eventName: "Actions"
+                      eventPayload:
+                        actions:
+                          setConfig:
+                            muteAll:
+                              op: toggle
+                      style:
+                        fill: "white"
+                        fontSize: 40
+                        fontFamily: "NomnomNami2"
+                        wordWrapWidth: 1740
+                        strokeColor: black
+                        strokeWidth: 6
           - id: "aboutf341d2x"
             type: "anchor-layout-container"
             anchor: "CenterLeft"
@@ -1521,7 +1679,7 @@ resources:
             height: 1000
             children:
               - id: "ladfkj3"
-                text: "{{ customState.currentSavePageTitle }}"
+                text: "{{ data.saveLoadSlots[customState.currentSavePageNumber].title }}"
                 type: "text"
                 width: 120
                 height: 40
@@ -1610,43 +1768,20 @@ resources:
             gap: 20
             width: 500
             height: 80
-            data:
-              - text: "A"
-                value: 0
-                title: Auto Save
-              - text: "Q"
-                value: 1
-                title: Quick Save
-              - text: "1"
-                value: 2
-                title: Page 1
-              - text: "2"
-                value: 3
-                title: Page 2
-              - text: "3"
-                value: 4
-                title: Page 3
-              - text: "4"
-                value: 5
-                title: Page 4
-              - text: "5"
-                value: 6
-                title: Page 5
-              - text: "6"
-                value: 7
-                title: Page 6
-              - text: "7"
-                value: 8
-                title: Page 8
-              - text: "9"
-                value: 9
-                title: Page 9
-              - text: "10"
-                value: 10
-                title: Page 10
+            data: "{{ data.saveLoadSlots }}"
             template:
               mapping:
                 cases:
+                  - case:
+                      property: value
+                      op: eq
+                      value: -1
+                    then: prev
+                  - case:
+                      property: value
+                      op: eq
+                      value: 12
+                    then: next
                   - case:
                       property: value
                       op: eq
@@ -1654,6 +1789,48 @@ resources:
                     then: selected
                 default: default
               items:
+                - template: prev
+                  type: "text-interactive"
+                  text: "{{ text }}"
+                  style:
+                    fill: "white"
+                    fontSize: 32
+                    fontFamily: "NomnomNami2"
+                    wordWrapWidth: 100
+                  hoverStyle:
+                    fill: "yellow"
+                    fontSize: 32
+                    fontFamily: "NomnomNami2"
+                    wordWrapWidth: 100
+                  eventName: "Actions"
+                  eventPayload:
+                    actions:
+                      setCustomState:
+                        currentSavePageNumber:
+                          op: dec
+                          value: 1
+                          min: 0
+                - template: next
+                  type: "text-interactive"
+                  text: "{{ text }}"
+                  style:
+                    fill: "white"
+                    fontSize: 32
+                    fontFamily: "NomnomNami2"
+                    wordWrapWidth: 100
+                  hoverStyle:
+                    fill: "yellow"
+                    fontSize: 32
+                    fontFamily: "NomnomNami2"
+                    wordWrapWidth: 100
+                  eventName: "Actions"
+                  eventPayload:
+                    actions:
+                      setCustomState:
+                        currentSavePageNumber:
+                          op: inc
+                          value: 1
+                          max: 11
                 - template: selected
                   type: "text"
                   text: "{{ text }}"
@@ -1716,7 +1893,7 @@ resources:
             height: 1000
             children:
               - id: "ladfkj3"
-                text: "{{ customState.currentSavePageTitle }}"
+                text: "{{ data.saveLoadSlots[customState.currentSavePageNumber].title }}"
                 type: "text"
                 width: 120
                 height: 40
@@ -1832,40 +2009,7 @@ resources:
             gap: 20
             width: 500
             height: 80
-            data:
-              - text: "A"
-                value: 0
-                title: Auto Save
-              - text: "Q"
-                value: 1
-                title: Quick Save
-              - text: "1"
-                value: 2
-                title: Page 1
-              - text: "2"
-                value: 3
-                title: Page 2
-              - text: "3"
-                value: 4
-                title: Page 3
-              - text: "4"
-                value: 5
-                title: Page 4
-              - text: "5"
-                value: 6
-                title: Page 5
-              - text: "6"
-                value: 7
-                title: Page 6
-              - text: "7"
-                value: 8
-                title: Page 8
-              - text: "9"
-                value: 9
-                title: Page 9
-              - text: "10"
-                value: 10
-                title: Page 10
+            data: "{{ data.saveLoadSlots }}"
             template:
               mapping:
                 cases:
@@ -1892,7 +2036,6 @@ resources:
                     actions:
                       setCustomState:
                         currentSavePageNumber: "{{ value }}"
-                        currentSavePageTitle: "{{ title }}"
                   style:
                     fill: "#ccc"
                     fontSize: 32
@@ -1929,21 +2072,15 @@ resources:
                   strokeWidth: 6
           - id: "history"
             type: "anchor-layout-container"
+            scrollable: true
             anchor: "TopLeft"
             direction: "vertical"
             x: 340
             y: 220
             gap: 40
-            height: 800
-            data:
-              - characterName: Kamilla
-                content: "Hey, good morning!"
-              - characterName: Eleni
-                content: "Hello, how are you?"
-              - characterName: Kamilla
-                content: "All good thanks. Where have you been recently? Havent seen you around"
-              - characterName: Eleni
-                content: "Not much, just been to the store. How about you?"
+            height: 600
+            width: 1000
+            data: '{{ historyDialogue }}'
             template:
               mapping:
                 cases: []
@@ -1951,8 +2088,6 @@ resources:
               items:
                 - template: default
                   id: "ladfkj3"
-                  width: 120
-                  height: 80
                   type: "anchor-layout-container"
                   anchor: "TopLeft"
                   direction: "horizontal"
@@ -1961,8 +2096,6 @@ resources:
                     - id: 23kf323c
                       text: "{{ characterName }}"
                       type: "text"
-                      width: 120
-                      height: 40
                       style:
                         fill: "#ccc"
                         fontSize: 40
@@ -1973,8 +2106,6 @@ resources:
                     - id: 23kffeww323c
                       text: "{{ content }}"
                       type: "text"
-                      width: 120
-                      height: 40
                       style:
                         fill: "white"
                         fontSize: 40
@@ -1992,7 +2123,7 @@ resources:
             y: 680
             children:
               - id: "ladfkj3"
-                text: "Extra feaures: Bonus gallery unlocked"
+                text: "Extra features: Bonus gallery unlocked"
                 type: "text-interactive"
                 eventName: Actions
                 eventPayload:
@@ -2146,6 +2277,36 @@ resources:
                     wordWrapWidth: 1740
                     strokeColor: black
                     strokeWidth: 6
+                  clickSoundUrl: "/public/first-contract/audio/sfx_button1.wav"
+                  clickSoundVolume: "{{ config.soundVolume }}"
+      skipMenu:
+        layout:
+          - id: "skipMifeakjefkljenu"
+            type: "anchor-layout-container"
+            anchor: "TopLeft"
+            direction: "horizontal"
+            x: 0
+            y: 10
+            children:
+              - id: ekjfeaf93jkdk
+                type: sprite
+                url: "/public/first-contract/gui/skip.png"
+                x: 0
+                y: 0
+                xa: 0
+                ya: 0
+              - id: 'skiptext'
+                text: "Skip"
+                type: "text"
+                x: 50
+                y: 10
+                xa: 0
+                ya: 0
+                style:
+                  fill: "white"
+                  fontSize: 32
+                  fontFamily: "NomnomNami2"
+                  wordWrapWidth: 1740
 
   dialogueBox:
     tagsOrder: []
@@ -2198,7 +2359,7 @@ resources:
                 type: text-revealing
                 width: 43
                 height: 48
-                displaySpeed: $config.textSpeed
+                displaySpeed: "{{ config.textSpeed }}"
                 text: "This is the text content"
                 contentSource: "dialogueContent"
                 style:
@@ -2208,6 +2369,112 @@ resources:
                   wordWrapWidth: 780
                   strokeColor: black
                   strokeWidth: 3
+          - id: di3i3kd
+            type: anchor-layout-container
+            anchor: TopLeft
+            direction: horizontal
+            gap: 20
+            x: 540
+            y: 680
+            data:
+              - label: Back
+                eventPayload: 
+                  actions:
+                    back: true
+              - label: History
+                eventPayload: 
+                  actions:
+                    moveToSection:
+                      sceneId: "sceneGameMenu"
+                      sectionId: sectionHistory
+                    setCustomState:
+                      currentPage: "history"
+              - label: Skip
+                active: "{{ customState.skipMode }}"
+                eventPayload: 
+                  actions:
+                    toggleSkipMode: true
+                disabled: "{{ cannotSkip }}"
+              - label: Auto
+                active: "{{ customState.autoMode }}"
+                eventPayload: 
+                  actions:
+                    toggleAutoMode: true
+              - label: Save
+                eventPayload: 
+                  actions:
+                    moveToSection:
+                      sceneId: "sceneGameMenu"
+                      sectionId: sectionsave
+                    setCustomState:
+                      currentPage: "save"
+              - label: Options
+                eventPayload: 
+                  actions:
+                    moveToSection:
+                      sceneId: "sceneGameMenu"
+                      sectionId: sectionOptions
+                    setCustomState:
+                      currentPage: "options"
+            template:
+              mapping:
+                cases:
+                  - case:
+                      property: active
+                      op: eq
+                      value: true
+                    then: active
+                  - case:
+                      property: disabled
+                      op: eq
+                      value: true
+                    then: disabled
+                default: default
+              items:
+                - template: active
+                  id: "active-{{ index }}"
+                  type: "text-interactive"
+                  text: "{{ label }}"
+                  eventName: "Actions"
+                  eventPayload: "{{ eventPayload }}"
+                  style:
+                    fill: "#cc005b"
+                    fontSize: 24
+                    fontFamily: "NomnomNami2"
+                    wordWrapWidth: 1740
+                  hoverStyle:
+                    fill: "#cc005b"
+                    fontSize: 24
+                    fontFamily: "NomnomNami2"
+                    wordWrapWidth: 1740
+                - template: disabled
+                  id: "disabled-{{ index }}"
+                  type: "text"
+                  text: "{{ label }}"
+                  style:
+                    fill: "#ccc"
+                    fontSize: 24
+                    fontFamily: "NomnomNami2"
+                    wordWrapWidth: 1740
+                - template: default
+                  id: "labi-{{ index }}"
+                  type: "text-interactive"
+                  text: "{{ label }}"
+                  eventName: "Actions"
+                  eventPayload: "{{ eventPayload }}"
+                  style:
+                    fill: "white"
+                    fontSize: 24
+                    fontFamily: "NomnomNami2"
+                    wordWrapWidth: 1740
+                  hoverStyle:
+                    fontSize: 24
+                    fill: "yellow"
+                    fontFamily: "NomnomNami2"
+                    wordWrapWidth: 1740
+                  clickSoundUrl: "/public/first-contract/audio/sfx_button1.wav"
+                  clickSoundVolume: "{{ config.soundVolume }}"
+            children: []
       dialogueBox2:
         name: "Dialogue Box 2"
         layout:
@@ -2326,6 +2593,8 @@ resources:
 
 story:
   startSceneId: "sceneTitleMenu"
+  skipGui:
+    screenId: "skipMenu"
   optionsConfig:
     rightClick:
       actions:
@@ -2356,7 +2625,7 @@ story:
                         items:
                           - id: 324x34k3xax
                             screenId: "menuBase"
-                          - id: fkje4aefklx33g1
+                          - id: fkje4aefkl
                             screenId: "save"
             sectionOptions:
               name: Options
@@ -2480,6 +2749,8 @@ story:
                 items:
                   step1:
                     actions:
+                      bgm:
+                        bgmId: "title"
                       visual:
                         items:
                           - id: mainMenu
@@ -2505,6 +2776,10 @@ story:
                           - id: kj3m23
                             screenId: "mainMenu"
                           - id: extra
+                            condition:
+                              op: eq
+                              value1: "{{ persistentVariables.gameOver }}" 
+                              value2: true
                             screenId: "mainMenuExtra"
                             inAnimation:
                               animationId: extraFadeIn
@@ -2703,6 +2978,8 @@ story:
                 items:
                   step0:
                     actions:
+                      bgm:
+                        bgmId: none
                       background:
                         backgroundId: "bg5"
                       dialogue:
@@ -2710,6 +2987,8 @@ story:
                         dialogueBoxId: "dialogueBox3"
                         childItemId: right
                         text: "New contract has a time obligation, be back tomorrow"
+                      setPersistentVariables:
+                        gameStarted: true
                   step1:
                     actions:
                       dialogue:
@@ -2859,7 +3138,9 @@ story:
                   ]
                 items:
                   stepzero:
-                    actions: {}
+                    actions:
+                      bgm:
+                        bgmId: none
                   step0:
                     # autoNext: true
                     actions:
@@ -3125,7 +3406,7 @@ story:
                       dialogue:
                         character:
                           characterId: "kamilla"
-                        text: 'Here... "A Comprehensive Guide to Capturing Princesses." Not sure why you''d want a guidebook aimed at overlord-level demons, but...'
+                        text: 'Here... [A Comprehensive Guide to Capturing Princesses.] Not sure why you''d want a guidebook aimed at overlord-level demons, but...'
                   step15:
                     id: "step15"
                     actions:
@@ -5049,4 +5330,6 @@ story:
                       dialogue:
                         character:
                           characterId: "eleni"
-                        text: "Heheheh... okay. I'll order pizza."
+                        text: "Game Over: Heheheh... okay. I'll order pizza."
+                      setPersistentVariables:
+                        gameOver: true
