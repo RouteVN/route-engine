@@ -377,10 +377,14 @@ export class RvnEngine {
     });
 
     if (this._currentStep.actions.setPersistentVariables) {
-      const persistentVariables = this.getPersistentData("persistentVariables") || {};
-      Object.keys(this._currentStep.actions.setPersistentVariables).forEach(key => {
-        persistentVariables[key] = this._currentStep.actions.setPersistentVariables[key];
-      });
+      const persistentVariables =
+        this.getPersistentData("persistentVariables") || {};
+      Object.keys(this._currentStep.actions.setPersistentVariables).forEach(
+        (key) => {
+          persistentVariables[key] =
+            this._currentStep.actions.setPersistentVariables[key];
+        }
+      );
       this.savePersistentData("persistentVariables", persistentVariables);
     }
 
@@ -428,7 +432,7 @@ export class RvnEngine {
       sectionId: startSectionId,
       stepId: startStepId,
     });
-  }
+  };
 
   _goToNextStepInHistory = () => {
     // 1. go to next step index
@@ -928,7 +932,6 @@ export class RvnEngine {
     if (payload.actions.back) {
       this._goToPreviousStep();
     }
-
 
     if (payload.actions.toggleSkipMode) {
       this._customState.skipMode = !this._customState.skipMode;

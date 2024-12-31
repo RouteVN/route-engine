@@ -6942,10 +6942,10 @@ var init_EventSystem = __esm({
        * To deregister the current DOM element without setting a new one, pass {@code null}.
        * @param element - The new DOM element.
        */
-      setTargetElement(element2) {
+      setTargetElement(element) {
         this._removeEvents();
-        this.domElement = element2;
-        EventsTicker.domElement = element2;
+        this.domElement = element;
+        EventsTicker.domElement = element;
         this._addEvents();
       }
       /** Register event listeners on {@link Renderer#domElement this.domElement}. */
@@ -12064,18 +12064,18 @@ var init_Batcher = __esm({
         let action = "startBatch";
         let batch = this._batchPool[this._batchPoolIndex++] || new Batch();
         for (let i2 = this.elementStart; i2 < this.elementSize; ++i2) {
-          const element2 = elements[i2];
+          const element = elements[i2];
           elements[i2] = null;
-          const texture = element2.texture;
+          const texture = element.texture;
           const source2 = texture._source;
-          const adjustedBlendMode = getAdjustedBlendModeBlend(element2.blendMode, source2);
+          const adjustedBlendMode = getAdjustedBlendModeBlend(element.blendMode, source2);
           const blendModeChange = blendMode !== adjustedBlendMode;
           if (source2._batchTick === BATCH_TICK && !blendModeChange) {
-            element2.textureId = source2._textureBindLocation;
-            size += element2.indexSize;
-            element2.packAttributes(f32, u32, element2.location, element2.textureId);
-            element2.packIndex(iBuffer, element2.indexStart, element2.location / this._vertexSize);
-            element2.batch = batch;
+            element.textureId = source2._textureBindLocation;
+            size += element.indexSize;
+            element.packAttributes(f32, u32, element.location, element.textureId);
+            element.packIndex(iBuffer, element.indexStart, element.location / this._vertexSize);
+            element.batch = batch;
             continue;
           }
           source2._batchTick = BATCH_TICK;
@@ -12097,13 +12097,13 @@ var init_Batcher = __esm({
             batch = this._batchPool[this._batchPoolIndex++] || new Batch();
             ++BATCH_TICK;
           }
-          element2.textureId = source2._textureBindLocation = textureBatch.count;
+          element.textureId = source2._textureBindLocation = textureBatch.count;
           textureBatch.ids[source2.uid] = textureBatch.count;
           textureBatch.textures[textureBatch.count++] = source2;
-          element2.batch = batch;
-          size += element2.indexSize;
-          element2.packAttributes(f32, u32, element2.location, element2.textureId);
-          element2.packIndex(iBuffer, element2.indexStart, element2.location / this._vertexSize);
+          element.batch = batch;
+          size += element.indexSize;
+          element.packAttributes(f32, u32, element.location, element.textureId);
+          element.packIndex(iBuffer, element.indexStart, element.location / this._vertexSize);
         }
         if (textureBatch.count > 0) {
           this._finishBatch(
@@ -31304,9 +31304,9 @@ var init_GlContextSystem = __esm({
         this.getExtensions();
         this.validateContext(gl);
         this._renderer.runners.contextChange.emit(gl);
-        const element2 = this._renderer.view.canvas;
-        element2.addEventListener("webglcontextlost", this.handleContextLost, false);
-        element2.addEventListener("webglcontextrestored", this.handleContextRestored, false);
+        const element = this._renderer.view.canvas;
+        element.addEventListener("webglcontextlost", this.handleContextLost, false);
+        element.addEventListener("webglcontextrestored", this.handleContextRestored, false);
       }
       /**
        * Initialize from context options
@@ -31394,10 +31394,10 @@ var init_GlContextSystem = __esm({
         this._renderer.runners.contextChange.emit(this.gl);
       }
       destroy() {
-        const element2 = this._renderer.view.canvas;
+        const element = this._renderer.view.canvas;
         this._renderer = null;
-        element2.removeEventListener("webglcontextlost", this.handleContextLost);
-        element2.removeEventListener("webglcontextrestored", this.handleContextRestored);
+        element.removeEventListener("webglcontextlost", this.handleContextLost);
+        element.removeEventListener("webglcontextrestored", this.handleContextRestored);
         this.gl.useProgram(null);
         this.extensions.loseContext?.loseContext();
       }
@@ -35776,18 +35776,18 @@ init_VideoSource();
 init_detectVideoAlphaMode();
 var validVideoExtensions = [".mp4", ".m4v", ".webm", ".ogg", ".ogv", ".h264", ".avi", ".mov"];
 var validVideoMIMEs = validVideoExtensions.map((ext) => `video/${ext.substring(1)}`);
-function crossOrigin(element2, url, crossorigin) {
+function crossOrigin(element, url, crossorigin) {
   if (crossorigin === void 0 && !url.startsWith("data:")) {
-    element2.crossOrigin = determineCrossOrigin(url);
+    element.crossOrigin = determineCrossOrigin(url);
   } else if (crossorigin !== false) {
-    element2.crossOrigin = typeof crossorigin === "string" ? crossorigin : "anonymous";
+    element.crossOrigin = typeof crossorigin === "string" ? crossorigin : "anonymous";
   }
 }
-function preloadVideo(element2) {
+function preloadVideo(element) {
   return new Promise((resolve, reject) => {
-    element2.addEventListener("canplaythrough", loaded);
-    element2.addEventListener("error", error);
-    element2.load();
+    element.addEventListener("canplaythrough", loaded);
+    element.addEventListener("error", error);
+    element.load();
     function loaded() {
       cleanup();
       resolve();
@@ -35797,8 +35797,8 @@ function preloadVideo(element2) {
       reject(err);
     }
     function cleanup() {
-      element2.removeEventListener("canplaythrough", loaded);
-      element2.removeEventListener("error", error);
+      element.removeEventListener("canplaythrough", loaded);
+      element.removeEventListener("error", error);
     }
   });
 }
@@ -36753,7 +36753,7 @@ var diffElements = (prevElements = [], nextElements = []) => {
   const toUpdateElements = [];
   const toAddElements = [];
   for (const prevElement of prevElements) {
-    const nextElement = nextElements.find((element2) => element2.id === prevElement.id && element2.type === prevElement.type);
+    const nextElement = nextElements.find((element) => element.id === prevElement.id && element.type === prevElement.type);
     if (!nextElement) {
       toDeleteElements.push(prevElement);
     } else {
@@ -36764,7 +36764,7 @@ var diffElements = (prevElements = [], nextElements = []) => {
     }
   }
   for (const nextElement of nextElements) {
-    const prevElement = prevElements.find((element2) => element2.id === nextElement.id && element2.type === nextElement.type);
+    const prevElement = prevElements.find((element) => element.id === nextElement.id && element.type === nextElement.type);
     if (!prevElement) {
       toAddElements.push(nextElement);
     }
@@ -36881,8 +36881,8 @@ var SoundStage = class {
    *
    * @param {SoundElement} element
    */
-  add = (element2) => {
-    this.stageSounds.push(element2);
+  add = (element) => {
+    this.stageSounds.push(element);
   };
   /**
    *
@@ -37033,13 +37033,13 @@ var PixiTDR = class _PixiTDR extends BaseTDR {
    * @param {BaseElement} element
    * @returns
    */
-  _getRendererByElement = (element2) => {
+  _getRendererByElement = (element) => {
     for (const plugin of this._plugins) {
-      if (plugin.rendererType === element2.type) {
+      if (plugin.rendererType === element.type) {
         return plugin;
       }
     }
-    throw new Error(`No renderer found for element type: ${element2.type}`);
+    throw new Error(`No renderer found for element type: ${element.type}`);
   };
   _getTransitionByType = (transitionType) => {
     for (const plugin of this._plugins) {
@@ -37104,8 +37104,8 @@ var PixiTDR = class _PixiTDR extends BaseTDR {
       );
     }
     app.stage.children.sort((a2, b2) => {
-      const aIndex = nextState.elements.findIndex((element2) => element2.id === a2.label);
-      const bIndex = nextState.elements.findIndex((element2) => element2.id === b2.label);
+      const aIndex = nextState.elements.findIndex((element) => element.id === a2.label);
+      const bIndex = nextState.elements.findIndex((element) => element.id === b2.label);
       return aIndex - bIndex;
     });
     await Promise.all(actions);
@@ -37131,50 +37131,50 @@ var SpriteRendererPlugin = class extends BaseRendererPlugin {
    * @param {Function} options.getTransitionByType
    * @returns {Promise<undefined>}
    */
-  add = async (app, { parent, element: element2, transitions = [], getTransitionByType, eventHandler }) => {
-    const sprite = Sprite.from(element2.url);
-    sprite.label = element2.id;
-    if (element2.xa !== void 0) {
-      sprite.anchor.x = element2.xa;
+  add = async (app, { parent, element, transitions = [], getTransitionByType, eventHandler }) => {
+    const sprite = Sprite.from(element.url);
+    sprite.label = element.id;
+    if (element.xa !== void 0) {
+      sprite.anchor.x = element.xa;
     }
-    if (element2.ya !== void 0) {
-      sprite.anchor.y = element2.ya;
+    if (element.ya !== void 0) {
+      sprite.anchor.y = element.ya;
     }
-    if (element2.xp !== void 0) {
-      sprite.x = element2.xp * app.screen.width;
+    if (element.xp !== void 0) {
+      sprite.x = element.xp * app.screen.width;
     }
-    if (element2.x !== void 0) {
-      sprite.x = element2.x;
+    if (element.x !== void 0) {
+      sprite.x = element.x;
     }
-    if (element2.yp !== void 0) {
-      sprite.y = element2.yp * app.screen.height;
+    if (element.yp !== void 0) {
+      sprite.y = element.yp * app.screen.height;
     }
-    if (element2.y !== void 0) {
-      sprite.y = element2.y;
+    if (element.y !== void 0) {
+      sprite.y = element.y;
     }
-    if (element2.width !== void 0) {
-      sprite.width = element2.width;
+    if (element.width !== void 0) {
+      sprite.width = element.width;
     }
-    if (element2.height !== void 0) {
-      sprite.height = element2.height;
+    if (element.height !== void 0) {
+      sprite.height = element.height;
     }
-    if (element2.alpha !== void 0) {
-      sprite.alpha = element2.alpha;
+    if (element.alpha !== void 0) {
+      sprite.alpha = element.alpha;
     }
-    if (element2.eventName) {
+    if (element.eventName) {
       sprite.cursor = "pointer";
       sprite.eventMode = "static";
     }
-    if (element2.zIndex !== void 0) {
-      sprite.zIndex = element2.zIndex;
+    if (element.zIndex !== void 0) {
+      sprite.zIndex = element.zIndex;
     }
     sprite.on("click", (e2) => {
       e2.stopPropagation();
-      eventHandler && eventHandler(element2.eventName, element2.eventPayload);
+      eventHandler && eventHandler(element.eventName, element.eventPayload);
     });
     const transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element2.id && transition.event === TransitionEvent.Add) {
+      if (transition.elementId === element.id && transition.event === TransitionEvent.Add) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
@@ -37195,14 +37195,14 @@ var SpriteRendererPlugin = class extends BaseRendererPlugin {
    * @returns {Promise<undefined>}
    */
   remove = async (app, options) => {
-    const { parent, element: element2, transitions = [], getTransitionByType } = options;
-    const sprite = parent.getChildByName(element2.id);
+    const { parent, element, transitions = [], getTransitionByType } = options;
+    const sprite = parent.getChildByName(element.id);
     if (!sprite) {
-      throw new Error(`Sprite with id ${element2.id} not found`);
+      throw new Error(`Sprite with id ${element.id} not found`);
     }
     let transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element2.id && transition.event === TransitionEvent.Remove) {
+      if (transition.elementId === element.id && transition.event === TransitionEvent.Remove) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
@@ -37252,38 +37252,38 @@ var TextRendererPlugin = class {
    * @returns {Promise<undefined>}
    */
   add = async (app, options) => {
-    const { parent, element: element2, transitions = [], getTransitionByType } = options;
+    const { parent, element, transitions = [], getTransitionByType } = options;
     const textStyle = new TextStyle({
-      wordWrap: element2.style?.wordWrap || true,
-      breakWords: element2.text ? !element2.text.includes(" ") : false,
-      align: element2.style?.align,
-      fill: element2.style?.fill,
-      fontSize: element2.style?.fontSize,
-      lineHeight: element2.style?.lineHeight,
-      wordWrapWidth: element2.style?.wordWrapWidth,
-      fontFamily: element2.style?.fontFamily,
-      stroke: element2.style?.strokeColor ? {
-        color: element2.style?.strokeColor,
-        width: element2.style?.strokeWidth
+      wordWrap: element.style?.wordWrap || true,
+      breakWords: element.text ? !element.text.includes(" ") : false,
+      align: element.style?.align,
+      fill: element.style?.fill,
+      fontSize: element.style?.fontSize,
+      lineHeight: element.style?.lineHeight,
+      wordWrapWidth: element.style?.wordWrapWidth,
+      fontFamily: element.style?.fontFamily,
+      stroke: element.style?.strokeColor ? {
+        color: element.style?.strokeColor,
+        width: element.style?.strokeWidth
       } : void 0
     });
-    const newText = new Text({ text: element2.text, style: textStyle });
-    newText.label = element2.id;
-    if (element2.x !== void 0) {
-      newText.x = element2.x;
+    const newText = new Text({ text: element.text, style: textStyle });
+    newText.label = element.id;
+    if (element.x !== void 0) {
+      newText.x = element.x;
     }
-    if (element2.y !== void 0) {
-      newText.y = element2.y;
+    if (element.y !== void 0) {
+      newText.y = element.y;
     }
-    if (element2.xa !== void 0) {
-      newText.anchor.x = element2.xa;
+    if (element.xa !== void 0) {
+      newText.anchor.x = element.xa;
     }
-    if (element2.ya !== void 0) {
-      newText.anchor.y = element2.ya;
+    if (element.ya !== void 0) {
+      newText.anchor.y = element.ya;
     }
     const transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element2.id && transition.event === TransitionEvent.Add) {
+      if (transition.elementId === element.id && transition.event === TransitionEvent.Add) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
@@ -37304,14 +37304,14 @@ var TextRendererPlugin = class {
    * @returns {Promise<undefined>}
    */
   remove = async (app, options) => {
-    const { parent, element: element2, transitions = [], getTransitionByType } = options;
-    const text = parent.getChildByName(element2.id);
+    const { parent, element, transitions = [], getTransitionByType } = options;
+    const text = parent.getChildByName(element.id);
     if (!text) {
-      throw new Error(`Text with id ${element2.id} not found`);
+      throw new Error(`Text with id ${element.id} not found`);
     }
     let transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element2.id && transition.event === TransitionEvent.Remove) {
+      if (transition.elementId === element.id && transition.event === TransitionEvent.Remove) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
@@ -37380,31 +37380,31 @@ var TextInteractiveRendererPlugin = class {
    * @returns {Promise<undefined>}
    */
   add = async (app, options) => {
-    const { parent, element: element2, eventHandler, transitions = [], getTransitionByType } = options;
-    const textStyle = new TextStyle(element2.style);
-    const newText = new Text({ text: element2.text, style: textStyle });
+    const { parent, element, eventHandler, transitions = [], getTransitionByType } = options;
+    const textStyle = new TextStyle(element.style);
+    const newText = new Text({ text: element.text, style: textStyle });
     let hoverTextStyle;
-    if (element2.hoverStyle) {
-      hoverTextStyle = new TextStyle(element2.hoverStyle);
+    if (element.hoverStyle) {
+      hoverTextStyle = new TextStyle(element.hoverStyle);
     }
     let clickedTextStyle;
-    if (element2.clickedStyle) {
-      clickedTextStyle = new TextStyle(element2.clickedStyle);
+    if (element.clickedStyle) {
+      clickedTextStyle = new TextStyle(element.clickedStyle);
     }
     newText.cursor = "pointer";
     newText.eventMode = "static";
-    newText.label = element2.id;
-    if (element2.x !== void 0) {
-      newText.x = element2.x;
+    newText.label = element.id;
+    if (element.x !== void 0) {
+      newText.x = element.x;
     }
-    if (element2.y !== void 0) {
-      newText.y = element2.y;
+    if (element.y !== void 0) {
+      newText.y = element.y;
     }
-    if (element2.xa !== void 0) {
-      newText.anchor.x = element2.xa;
+    if (element.xa !== void 0) {
+      newText.anchor.x = element.xa;
     }
-    if (element2.ya !== void 0) {
-      newText.anchor.y = element2.ya;
+    if (element.ya !== void 0) {
+      newText.anchor.y = element.ya;
     }
     newText.on("pointerupoutside", () => {
       newText.style = textStyle;
@@ -37414,16 +37414,16 @@ var TextInteractiveRendererPlugin = class {
       newText.style = textStyle;
     });
     newText.on("click", (e2) => {
-      if (element2.clickSoundUrl) {
+      if (element.clickSoundUrl) {
         app.soundStage.add({
-          id: `${element2.id}-click-${Math.random()}`,
-          url: element2.clickSoundUrl,
+          id: `${element.id}-click-${Math.random()}`,
+          url: element.clickSoundUrl,
           loop: false,
-          volume: element2.clickSoundVolume / 100
+          volume: element.clickSoundVolume ?? 50 / 100
         });
       }
       e2.stopPropagation();
-      eventHandler && eventHandler(element2.eventName, element2.eventPayload);
+      eventHandler && eventHandler(element.eventName, element.eventPayload);
     });
     if (clickedTextStyle) {
       newText.on("pointerdown", () => {
@@ -37433,19 +37433,19 @@ var TextInteractiveRendererPlugin = class {
     if (hoverTextStyle) {
       newText.on("pointerenter", () => {
         newText.style = hoverTextStyle;
-        if (element2.hoverSoundUrl) {
+        if (element.hoverSoundUrl) {
           app.soundStage.add({
-            id: `${element2.id}-hover-${Math.random()}`,
-            url: element2.hoverSoundUrl,
+            id: `${element.id}-hover-${Math.random()}`,
+            url: element.hoverSoundUrl,
             loop: false,
-            volume: element2.hoverSoundVolume / 100
+            volume: element.hoverSoundVolume / 100
           });
         }
       });
     }
     const transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element2.id && transition.event === TransitionEvent.Add) {
+      if (transition.elementId === element.id && transition.event === TransitionEvent.Add) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
@@ -37466,14 +37466,14 @@ var TextInteractiveRendererPlugin = class {
    * @returns {Promise<undefined>}
    */
   remove = async (app, options) => {
-    const { parent, element: element2, transitions = [], getTransitionByType } = options;
-    const text = parent.getChildByName(element2.id);
+    const { parent, element, transitions = [], getTransitionByType } = options;
+    const text = parent.getChildByName(element.id);
     if (!text) {
-      throw new Error(`Text with id ${element2.id} not found`);
+      throw new Error(`Text with id ${element.id} not found`);
     }
     let transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element2.id && transition.event === TransitionEvent.Remove) {
+      if (transition.elementId === element.id && transition.event === TransitionEvent.Remove) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
@@ -37528,6 +37528,22 @@ var TextInteractiveRendererPlugin = class {
 };
 
 // src/plugins/elements/TextRevealingRendererPlugin.js
+var createTextStyle = (style, breakWords = false) => {
+  return new TextStyle({
+    wordWrap: style.wordWrap || true,
+    breakWords,
+    align: style.align,
+    fill: style.fill,
+    fontSize: style.fontSize,
+    lineHeight: style.lineHeight,
+    wordWrapWidth: style.wordWrapWidth,
+    fontFamily: style.fontFamily || "Roboto",
+    stroke: style.strokeColor ? {
+      color: style.strokeColor,
+      width: style.strokeWidth
+    } : void 0
+  });
+};
 var TextRevealingRendererPlugin = class {
   static rendererName = "pixi";
   rendererName = "pixi";
@@ -37541,69 +37557,154 @@ var TextRevealingRendererPlugin = class {
    * @param {Function} options.getTransitionByType
    * @returns {Promise<undefined>}
    */
-  add = async (app, { parent, element: element2 }) => {
-    const textStyle = new TextStyle({
-      wordWrap: element2.style.wordWrap || true,
-      breakWords: !element2.text.includes(" "),
-      align: element2.style.align,
-      fill: element2.style.fill,
-      fontSize: element2.style.fontSize,
-      lineHeight: element2.style.lineHeight,
-      wordWrapWidth: element2.style.wordWrapWidth,
-      fontFamily: element2.style.fontFamily,
-      stroke: element2.style.strokeColor ? {
-        color: element2.style.strokeColor,
-        width: element2.style.strokeWidth
-      } : void 0
-    });
+  add = async (app, { parent, element }) => {
+    const textStyle = createTextStyle(element.style, element.text);
     const newText = new Text({ text: "", style: textStyle });
-    newText.label = element2.id;
-    newText["text_id"] = element2.text;
-    if (element2.x !== void 0) {
-      newText.x = element2.x;
+    newText.label = element.id;
+    newText["text_id"] = element.text;
+    const container = new Container();
+    if (element.x !== void 0) {
+      container.x = element.x;
     }
-    if (element2.y !== void 0) {
-      newText.y = element2.y;
+    if (element.y !== void 0) {
+      container.y = element.y;
     }
-    parent.addChild(newText);
-    return new Promise((resolve) => {
-      const revealText = (content, textObject, speed = 50) => {
-        if (speed === 100) {
-          textObject.text = content;
-          resolve();
-          return;
+    container.addChild(newText);
+    container.label = element.id;
+    parent.addChild(container);
+    const wordWrapWidth = 500;
+    const segments = element.text ? [{
+      text: element.text,
+      style: element.style
+    }] : element.segments;
+    const chunks = [];
+    let lineParts = [];
+    let x2 = 0;
+    let y2 = 0;
+    let lineMaxHeight = 0;
+    while (true) {
+      const segment = segments[0];
+      if (!segment) {
+        if (lineParts.length > 0) {
+          chunks.push({
+            lineParts,
+            y: y2
+          });
         }
-        let index = 0;
-        let currentTimDelta = 0;
-        const effect = (time) => {
-          if (textObject["text_id"] !== element2.text) {
-            app.ticker.remove(effect);
-            setTimeout(() => {
-              resolve();
-            }, 500);
-            return;
-          }
-          currentTimDelta += time.deltaMS;
-          const characterIntervalInMs = 100 - speed;
-          const characterIndex = Math.min(content.length, Math.floor(currentTimDelta / characterIntervalInMs) + 1);
-          if (characterIndex > index) {
-            textObject.text = content.slice(0, characterIndex);
-            console.log("bbbbbbbbb 111", textObject.text);
-            index = characterIndex;
-            return;
-          }
-          if (index >= content.length) {
-            app.ticker.remove(effect);
-            setTimeout(() => {
-              resolve();
-            }, 500);
-          }
-        };
-        app.ticker.add(effect);
+        break;
+      }
+      if (y2 > 1e4) {
+        break;
+      }
+      const styleWithWordWrapWidth = {
+        ...segment.style,
+        wordWrapWidth: wordWrapWidth - x2
       };
-      const measurements = CanvasTextMetrics.measureText(element2.text, textStyle);
-      revealText(measurements.lines.join("\n"), newText, element2.displaySpeed);
+      const measurements = CanvasTextMetrics.measureText(
+        segment.text,
+        createTextStyle(styleWithWordWrapWidth)
+      );
+      console.log({ measurements, wordWrapWidth });
+      if (measurements.lineHeight > lineMaxHeight) {
+        lineMaxHeight = measurements.lineHeight;
+      }
+      const m1 = CanvasTextMetrics.measureText("a", createTextStyle(styleWithWordWrapWidth));
+      const m2 = CanvasTextMetrics.measureText("a a", createTextStyle(styleWithWordWrapWidth));
+      const spaceWidth = m2.width - m1.width * 2;
+      if (measurements.lineWidths[0] + x2 > wordWrapWidth) {
+        x2 = 0;
+        chunks.push({
+          lineParts,
+          y: y2
+        });
+        y2 += lineMaxHeight;
+        lineMaxHeight = 0;
+        lineParts = [];
+        continue;
+      }
+      const text = measurements.lines[0];
+      const remainingText = measurements.lines.slice(1).join(" ");
+      const newText2 = { text, style: styleWithWordWrapWidth, x: x2, y: 0 };
+      lineParts.push(newText2);
+      if (remainingText && remainingText.length > 0) {
+        segment.text = remainingText;
+      } else {
+        segments.shift();
+      }
+      if (!text || text.length === 0) {
+        continue;
+      }
+      if (segment.furigana) {
+        const furiganaMeasurement = CanvasTextMetrics.measureText(
+          segment.furigana.text,
+          createTextStyle(segment.furigana.style)
+        );
+        const furiganaText = {
+          text: segment.furigana.text,
+          style: segment.furigana.style,
+          x: x2 + (measurements.width - furiganaMeasurement.width) / 2,
+          y: -10
+        };
+        lineParts.push(furiganaText);
+      }
+      x2 += measurements.lineWidths[0] + spaceWidth;
+    }
+    console.log("chunks", chunks);
+    chunks.forEach((chunk) => {
+      const lineContainer = new Container();
+      lineContainer.y = chunk.y;
+      lineContainer.alpha = 0;
+      chunk.lineParts.forEach((part) => {
+        const text = new Text({
+          text: part.text,
+          style: createTextStyle(part.style),
+          x: part.x,
+          y: part.y
+        });
+        lineContainer.addChild(text);
+      });
+      container.addChild(lineContainer);
     });
+    const gradient = new Graphics();
+    const gradientHeight = 1e3;
+    const xOffset = wordWrapWidth / 2;
+    const gradientWidth = wordWrapWidth / 2;
+    gradient.fill({ color: 16777215, alpha: 1 });
+    gradient.rect(0, 0, xOffset, gradientHeight);
+    for (let i2 = 0; i2 < gradientWidth; i2++) {
+      gradient.fill({ color: 16777215, alpha: 1 - i2 / gradientWidth });
+      gradient.rect(xOffset + i2, 0, xOffset + 1, gradientHeight);
+    }
+    const gradientTexture = app.renderer.generateTexture(gradient);
+    const mask = new Sprite(gradientTexture);
+    mask.x = -1.35 * xOffset - gradientWidth;
+    app.stage.addChild(mask);
+    let timeDelta = 0;
+    let lineIndex = 1;
+    if (chunks.length === 0) {
+      return;
+    }
+    const effect = (time) => {
+      if (!container.getChildAt(lineIndex).mask) {
+        container.getChildAt(lineIndex).mask = mask;
+        container.getChildAt(lineIndex).alpha = 1;
+      }
+      timeDelta += time.deltaMS;
+      const speed = 30;
+      const widthPerMs = speed / 1e3;
+      mask.x += widthPerMs * timeDelta;
+      if (mask.x >= 0) {
+        container.getChildAt(lineIndex).mask = null;
+        mask.x = -1.35 * xOffset - gradientWidth;
+        lineIndex = lineIndex + 1;
+        timeDelta = 0;
+        if (lineIndex >= container.children.length) {
+          container.getChildAt(lineIndex - 1).mask = null;
+          app.ticker.remove(effect);
+        }
+      }
+    };
+    app.ticker.add(effect);
   };
   /**
    * @param {Application} app
@@ -37615,23 +37716,24 @@ var TextRevealingRendererPlugin = class {
    * @returns {Promise<undefined>}
    */
   remove = async (app, options) => {
-    const { parent, element: element2, transitions = [], getTransitionByType } = options;
-    const text = parent.getChildByName(element2.id);
-    if (!text) {
-      throw new Error(`Text with id ${element2.id} not found`);
+    console.log("VVVVVVVVVVVVVVVVVVVVVV remove");
+    const { parent, element, transitions = [], getTransitionByType } = options;
+    const container = parent.getChildByName(element.id);
+    if (!container) {
+      throw new Error(`Text with id ${element.id} not found`);
     }
     let transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element2.id && transition.event === TransitionEvent.Remove) {
+      if (transition.elementId === element.id && transition.event === TransitionEvent.Remove) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
         }
-        transitionPromises.push(transitionClass.remove(app, text, transition));
+        transitionPromises.push(transitionClass.remove(app, container, transition));
       }
     }
     await Promise.all(transitionPromises);
-    text.destroy();
+    container.destroy();
   };
   /**
    * @param {Application} app
@@ -37644,6 +37746,7 @@ var TextRevealingRendererPlugin = class {
    * @returns {Promise<undefined>}
    */
   update = async (app, options) => {
+    console.log("PPPPPPPPPPPPPPPPPPP update");
     const { parent, prevElement, nextElement } = options;
     const text = (
       /** @type {Text | null} */
@@ -37652,65 +37755,8 @@ var TextRevealingRendererPlugin = class {
     if (!text) {
       throw new Error(`Text with id ${prevElement.id} not found`);
     }
-    if (JSON.stringify(prevElement.style) !== JSON.stringify(nextElement.style)) {
-      text.style = new TextStyle({
-        wordWrap: nextElement.style.wordWrap || true,
-        breakWords: !nextElement.text.includes(" "),
-        align: nextElement.style.align,
-        fontSize: nextElement.style.fontSize,
-        fill: nextElement.style.fill,
-        lineHeight: nextElement.style.lineHeight,
-        wordWrapWidth: nextElement.style.wordWrapWidth
-      });
-    }
-    if (nextElement.x !== void 0) {
-      text.x = nextElement.x;
-    }
-    if (nextElement.y !== void 0) {
-      text.y = nextElement.y;
-    }
-    if (prevElement.text !== nextElement.text) {
-      text.text = "";
-      return new Promise((resolve) => {
-        text["text_id"] = nextElement.text;
-        const revealText = (content, textObject, speed = 50) => {
-          if (speed === 100) {
-            textObject.text = content;
-            resolve();
-            return;
-          }
-          let index = 0;
-          let currentTimDelta = 0;
-          const effect = (time) => {
-            if (textObject["text_id"] !== element.text) {
-              app.ticker.remove(effect);
-              setTimeout(() => {
-                resolve();
-              }, 500);
-              return;
-            }
-            currentTimDelta += time.deltaMS;
-            const characterIntervalInMs = 100 - speed;
-            const characterIndex = Math.min(content.length, Math.floor(currentTimDelta / characterIntervalInMs) + 1);
-            if (characterIndex > index) {
-              textObject.text = content.slice(0, characterIndex);
-              console.log("aaaaaaaaaaaaa 111", textObject.text);
-              index = characterIndex;
-              return;
-            }
-            if (index >= content.length) {
-              app.ticker.remove(effect);
-              setTimeout(() => {
-                resolve();
-              }, 500);
-            }
-          };
-          app.ticker.add(effect);
-        };
-        const measurements = CanvasTextMetrics.measureText(nextElement.text, text.style);
-        revealText(measurements.lines.join("\n"), text, nextElement.displaySpeed);
-      });
-    }
+    await this.remove(app, { parent, element: prevElement });
+    await this.add(app, { parent, element: nextElement });
   };
 };
 
@@ -37731,53 +37777,53 @@ var SpriteInteractiveRendererPlugin = class extends BaseRendererPlugin {
   add = async (app, options) => {
     const {
       parent,
-      element: element2,
+      element,
       transitions = [],
       getTransitionByType,
       eventHandler
     } = options;
-    const textureButton = Texture.from(element2.url);
+    const textureButton = Texture.from(element.url);
     let textureButtonHover;
     let textureButtonClicked;
-    if (element2.hoverUrl) {
-      textureButtonHover = Texture.from(element2.hoverUrl);
+    if (element.hoverUrl) {
+      textureButtonHover = Texture.from(element.hoverUrl);
     }
-    if (element2.clickUrl) {
-      textureButtonClicked = Texture.from(element2.clickUrl);
+    if (element.clickUrl) {
+      textureButtonClicked = Texture.from(element.clickUrl);
     }
     const sprite = new Sprite(textureButton);
-    sprite.label = element2.id;
+    sprite.label = element.id;
     sprite.cursor = "pointer";
     sprite.eventMode = "static";
-    if (element2.xa !== void 0) {
-      sprite.anchor.x = element2.xa;
+    if (element.xa !== void 0) {
+      sprite.anchor.x = element.xa;
     }
-    if (element2.ya !== void 0) {
-      sprite.anchor.y = element2.ya;
+    if (element.ya !== void 0) {
+      sprite.anchor.y = element.ya;
     }
-    if (element2.xp !== void 0) {
-      sprite.x = element2.xp * app.screen.width;
+    if (element.xp !== void 0) {
+      sprite.x = element.xp * app.screen.width;
     }
-    if (element2.x !== void 0) {
-      sprite.x = element2.x;
+    if (element.x !== void 0) {
+      sprite.x = element.x;
     }
-    if (element2.yp !== void 0) {
-      sprite.y = element2.yp * app.screen.height;
+    if (element.yp !== void 0) {
+      sprite.y = element.yp * app.screen.height;
     }
-    if (element2.y !== void 0) {
-      sprite.y = element2.y;
+    if (element.y !== void 0) {
+      sprite.y = element.y;
     }
-    if (element2.width !== void 0) {
-      sprite.width = element2.width;
+    if (element.width !== void 0) {
+      sprite.width = element.width;
     }
-    if (element2.height !== void 0) {
-      sprite.height = element2.height;
+    if (element.height !== void 0) {
+      sprite.height = element.height;
     }
-    if (element2.zIndex !== void 0) {
-      sprite.zIndex = element2.zIndex;
+    if (element.zIndex !== void 0) {
+      sprite.zIndex = element.zIndex;
     }
-    if (element2.alpha !== void 0) {
-      sprite.alpha = element2.alpha;
+    if (element.alpha !== void 0) {
+      sprite.alpha = element.alpha;
     }
     sprite.on("pointerup", () => {
       sprite.texture = textureButton;
@@ -37798,17 +37844,17 @@ var SpriteInteractiveRendererPlugin = class extends BaseRendererPlugin {
     }
     sprite.on("click", (e2) => {
       e2.stopPropagation();
-      eventHandler && eventHandler(element2.eventName, element2.eventPayload);
+      eventHandler && eventHandler(element.eventName, element.eventPayload);
     });
-    if (element2.rightClickEventName && eventHandler) {
+    if (element.rightClickEventName && eventHandler) {
       sprite.interactive = true;
       sprite.on("rightclick", () => {
-        eventHandler(element2.rightClickEventName);
+        eventHandler(element.rightClickEventName);
       });
     }
     const transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element2.id && transition.event === TransitionEvent.Add) {
+      if (transition.elementId === element.id && transition.event === TransitionEvent.Add) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
@@ -37829,14 +37875,14 @@ var SpriteInteractiveRendererPlugin = class extends BaseRendererPlugin {
    * @returns {Promise<undefined>}
    */
   remove = async (app, options) => {
-    const { parent, element: element2, transitions = [], getTransitionByType } = options;
-    const sprite = parent.getChildByName(element2.id);
+    const { parent, element, transitions = [], getTransitionByType } = options;
+    const sprite = parent.getChildByName(element.id);
     if (!sprite) {
-      throw new Error(`Sprite with id ${element2.id} not found`);
+      throw new Error(`Sprite with id ${element.id} not found`);
     }
     let transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element2.id && transition.event === TransitionEvent.Remove) {
+      if (transition.elementId === element.id && transition.event === TransitionEvent.Remove) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
@@ -37887,30 +37933,30 @@ var ContainerRendererPlugin = class {
   add = async (app, options) => {
     const {
       parent,
-      element: element2,
+      element,
       transitions = [],
       getTransitionByType,
       getRendererByElement,
       eventHandler
     } = options;
     const container = new Container();
-    container.label = element2.id;
-    if (element2.xp !== void 0) {
-      container.x = element2.xp * app.screen.width;
+    container.label = element.id;
+    if (element.xp !== void 0) {
+      container.x = element.xp * app.screen.width;
     }
-    if (element2.x !== void 0) {
-      container.x = element2.x;
+    if (element.x !== void 0) {
+      container.x = element.x;
     }
-    if (element2.y !== void 0) {
-      container.y = element2.y;
+    if (element.y !== void 0) {
+      container.y = element.y;
     }
-    if (element2.yp !== void 0) {
-      container.y = element2.yp * app.screen.height;
+    if (element.yp !== void 0) {
+      container.y = element.yp * app.screen.height;
     }
-    if (element2.zIndex !== void 0) {
-      container.zIndex = element2.zIndex;
+    if (element.zIndex !== void 0) {
+      container.zIndex = element.zIndex;
     }
-    if (element2.propagateEvents) {
+    if (element.propagateEvents) {
       container.eventMode = "static";
       container.on("pointerenter", (e2) => {
         e2.stopPropagation();
@@ -37926,13 +37972,13 @@ var ContainerRendererPlugin = class {
       });
     }
     const renderPromises = [];
-    (element2.children || []).forEach((childElement) => {
+    (element.children || []).forEach((childElement) => {
       const renderer = getRendererByElement(childElement);
       renderPromises.push(
         renderer.add(app, {
           parent: container,
           element: {
-            zIndex: element2.zIndex,
+            zIndex: element.zIndex,
             ...childElement
           },
           transitions,
@@ -37944,7 +37990,7 @@ var ContainerRendererPlugin = class {
     });
     const transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element2.id && transition.event === TransitionEvent.Add) {
+      if (transition.elementId === element.id && transition.event === TransitionEvent.Add) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
@@ -37962,8 +38008,8 @@ var ContainerRendererPlugin = class {
       }
     };
     await Promise.all(transitionPromises.concat(renderPromises));
-    if (element2.zIndex !== void 0) {
-      recursiveSetZIndex(container.children, element2.zIndex);
+    if (element.zIndex !== void 0) {
+      recursiveSetZIndex(container.children, element.zIndex);
     }
   };
   /**
@@ -37976,10 +38022,10 @@ var ContainerRendererPlugin = class {
    * @returns {Promise<undefined>}
    */
   remove = async (app, options) => {
-    const { parent, element: element2 } = options;
-    const sprite = parent.getChildByName(element2.id);
+    const { parent, element } = options;
+    const sprite = parent.getChildByName(element.id);
     if (!sprite) {
-      throw new Error(`Sprite with id ${element2.id} not found`);
+      throw new Error(`Sprite with id ${element.id} not found`);
     }
     sprite.destroy();
   };
@@ -38019,12 +38065,12 @@ var ContainerRendererPlugin = class {
       nextElement.children
     );
     const renderPromises = [];
-    for (const element2 of toDeleteElements) {
-      const renderer = getRendererByElement(element2);
+    for (const element of toDeleteElements) {
+      const renderer = getRendererByElement(element);
       renderPromises.push(
         renderer.remove(app, {
           parent: container,
-          element: element2,
+          element,
           transitions,
           getTransitionByType,
           getRendererByElement,
@@ -38032,12 +38078,12 @@ var ContainerRendererPlugin = class {
         })
       );
     }
-    for (const element2 of toAddElements) {
-      const renderer = getRendererByElement(element2);
+    for (const element of toAddElements) {
+      const renderer = getRendererByElement(element);
       renderPromises.push(
         renderer.add(app, {
           parent: container,
-          element: element2,
+          element,
           transitions,
           getTransitionByType,
           getRendererByElement,
@@ -38045,13 +38091,13 @@ var ContainerRendererPlugin = class {
         })
       );
     }
-    for (const element2 of toUpdateElements) {
-      const renderer = getRendererByElement(element2.next);
+    for (const element of toUpdateElements) {
+      const renderer = getRendererByElement(element.next);
       renderPromises.push(
         renderer.update(app, {
           parent: container,
-          prevElement: element2.prev,
-          nextElement: element2.next,
+          prevElement: element.prev,
+          nextElement: element.next,
           transitions,
           getTransitionByType,
           getRendererByElement,
@@ -38060,8 +38106,8 @@ var ContainerRendererPlugin = class {
       );
     }
     container.children.sort((a2, b2) => {
-      const aIndex = nextElement.children.findIndex((element2) => element2.id === a2.label);
-      const bIndex = nextElement.children.findIndex((element2) => element2.id === b2.label);
+      const aIndex = nextElement.children.findIndex((element) => element.id === a2.label);
+      const bIndex = nextElement.children.findIndex((element) => element.id === b2.label);
       return aIndex - bIndex;
     });
     const transitionPromises = [];
@@ -38333,56 +38379,56 @@ var GraphicsRendererPlugin = class {
   add = async (app, options) => {
     const {
       parent,
-      element: element2,
+      element,
       transitions = [],
       getTransitionByType,
       eventHandler
     } = options;
     const graphics = new Graphics();
-    graphics.label = element2.id;
-    if (element2.xp !== void 0) {
-      graphics.x = element2.xp * app.screen.width;
+    graphics.label = element.id;
+    if (element.xp !== void 0) {
+      graphics.x = element.xp * app.screen.width;
     }
-    if (element2.x !== void 0) {
-      graphics.x = element2.x;
+    if (element.x !== void 0) {
+      graphics.x = element.x;
     }
-    if (element2.y !== void 0) {
-      graphics.y = element2.y;
+    if (element.y !== void 0) {
+      graphics.y = element.y;
     }
-    if (element2.yp !== void 0) {
-      graphics.y = element2.yp * app.screen.height;
+    if (element.yp !== void 0) {
+      graphics.y = element.yp * app.screen.height;
     }
-    if (element2.alpha !== void 0) {
-      graphics.alpha = element2.alpha;
+    if (element.alpha !== void 0) {
+      graphics.alpha = element.alpha;
     }
-    if (element2.zIndex !== void 0) {
-      graphics.zIndex = element2.zIndex;
+    if (element.zIndex !== void 0) {
+      graphics.zIndex = element.zIndex;
     }
-    graphics.rect(element2.x1, element2.y1, element2.x2, element2.y2);
-    graphics.fill(element2.fill);
-    if (element2.clickEventName && eventHandler) {
+    graphics.rect(element.x1, element.y1, element.x2, element.y2);
+    graphics.fill(element.fill);
+    if (element.clickEventName && eventHandler) {
       graphics.interactive = true;
       graphics.on("click", () => {
-        eventHandler(element2.clickEventName);
+        eventHandler(element.clickEventName);
       });
     }
-    if (element2.rightClickEventName && eventHandler) {
+    if (element.rightClickEventName && eventHandler) {
       graphics.interactive = true;
-      graphics.on("rightclick", () => {
-        eventHandler(element2.rightClickEventName);
+      graphics.on("rightclick", (e2) => {
+        eventHandler(element.rightClickEventName);
       });
     }
-    if (element2.wheelEventName && eventHandler) {
+    if (element.wheelEventName && eventHandler) {
       graphics.interactive = true;
       graphics.on("wheel", (e2) => {
-        eventHandler(element2.wheelEventName, {
+        eventHandler(element.wheelEventName, {
           deltaY: e2.deltaY
         });
       });
     }
     const transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element2.id && transition.event === TransitionEvent.Add) {
+      if (transition.elementId === element.id && transition.event === TransitionEvent.Add) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
@@ -38403,10 +38449,10 @@ var GraphicsRendererPlugin = class {
    * @returns {Promise<undefined>}
    */
   remove = async (app, options) => {
-    const { parent, element: element2 } = options;
-    const sprite = parent.getChildByName(element2.id);
+    const { parent, element } = options;
+    const sprite = parent.getChildByName(element.id);
     if (!sprite) {
-      throw new Error(`Sprite with id ${element2.id} not found`);
+      throw new Error(`Sprite with id ${element.id} not found`);
     }
     sprite.destroy();
   };
@@ -38488,28 +38534,28 @@ var AnchorLayoutContainerRendererPlugin = class {
       getRendererByElement,
       eventHandler
     } = options;
-    const element2 = JSON.parse(JSON.stringify(originalElement));
+    const element = JSON.parse(JSON.stringify(originalElement));
     const container = new Container();
-    container.label = element2.id;
-    if (element2.xp !== void 0) {
-      container.x = element2.xp * app.screen.width;
+    container.label = element.id;
+    if (element.xp !== void 0) {
+      container.x = element.xp * app.screen.width;
     }
-    if (element2.x !== void 0) {
-      container.x = element2.x;
+    if (element.x !== void 0) {
+      container.x = element.x;
     }
-    if (element2.y !== void 0) {
-      container.y = element2.y;
+    if (element.y !== void 0) {
+      container.y = element.y;
     }
-    if (element2.yp !== void 0) {
-      container.y = element2.yp * app.screen.height;
+    if (element.yp !== void 0) {
+      container.y = element.yp * app.screen.height;
     }
-    if (element2.zIndex !== void 0) {
-      container.zIndex = element2.zIndex;
+    if (element.zIndex !== void 0) {
+      container.zIndex = element.zIndex;
     }
-    if (element2.template && element2.data) {
-      const template = element2.template;
-      element2.children = [];
-      element2.data.forEach((dataItem, index) => {
+    if (element.template && element.data) {
+      const template = element.template;
+      element.children = [];
+      element.data.forEach((dataItem, index) => {
         let templateId;
         if (template.mapping.cases) {
           for (const caseItem of template.mapping.cases) {
@@ -38545,7 +38591,7 @@ var AnchorLayoutContainerRendererPlugin = class {
           }
         });
         const itemElement = JSON.parse(strintigified);
-        element2.children.push(itemElement);
+        element.children.push(itemElement);
       });
     }
     const populateMissingHeightAndWidth = (el) => {
@@ -38587,23 +38633,23 @@ var AnchorLayoutContainerRendererPlugin = class {
         }, 0);
       }
     };
-    populateMissingHeightAndWidth(element2);
-    const gap = element2.gap || 0;
-    if (element2.anchor !== void 0) {
+    populateMissingHeightAndWidth(element);
+    const gap = element.gap || 0;
+    if (element.anchor !== void 0) {
       let totalWidth = 0;
       let totalHeight = 0;
-      const anchor = AnchorLayoutAnchorMapping[element2.anchor];
-      (element2.children || []).forEach((childElement, i2) => {
+      const anchor = AnchorLayoutAnchorMapping[element.anchor];
+      (element.children || []).forEach((childElement, i2) => {
         childElement.xa = anchor.x;
         childElement.ya = anchor.y;
-        if (element2.direction === "horizontal") {
+        if (element.direction === "horizontal") {
           if (i2 > 0) {
             totalWidth += gap;
           }
           totalWidth += childElement.width;
           totalHeight = Math.max(totalHeight, childElement.height);
         }
-        if (element2.direction === "vertical") {
+        if (element.direction === "vertical") {
           if (i2 > 0) {
             totalHeight += gap;
           }
@@ -38611,86 +38657,86 @@ var AnchorLayoutContainerRendererPlugin = class {
           totalWidth = Math.max(totalWidth, childElement.width);
         }
       });
-      if (anchor.x === 0 && element2.direction === "horizontal") {
+      if (anchor.x === 0 && element.direction === "horizontal") {
         let layoutX = 0;
-        (element2.children || []).forEach((childElement) => {
+        (element.children || []).forEach((childElement) => {
           childElement.x = (childElement.x || 0) + layoutX;
           layoutX += childElement.width + gap;
         });
       }
-      if (anchor.x === 1 && element2.direction === "horizontal") {
+      if (anchor.x === 1 && element.direction === "horizontal") {
         let layoutX = 0;
-        (element2.children || []).concat([]).reverse().forEach((childElement) => {
+        (element.children || []).concat([]).reverse().forEach((childElement) => {
           childElement.x = (childElement.x || 0) + layoutX;
           layoutX -= childElement.width + gap;
         });
       }
-      if (anchor.y === 0 && element2.direction === "vertical") {
+      if (anchor.y === 0 && element.direction === "vertical") {
         let layoutY = 0;
-        (element2.children || []).forEach((childElement) => {
+        (element.children || []).forEach((childElement) => {
           childElement.y = layoutY;
           layoutY += childElement.height + gap;
         });
       }
-      if (anchor.y === 1 && element2.direction === "vertical") {
+      if (anchor.y === 1 && element.direction === "vertical") {
         let layoutY = 0;
-        (element2.children || []).concat([]).reverse().forEach((childElement) => {
+        (element.children || []).concat([]).reverse().forEach((childElement) => {
           childElement.y = layoutY;
           layoutY -= childElement.height + gap;
         });
       }
-      if (anchor.x === 0.5 && element2.direction === "horizontal") {
+      if (anchor.x === 0.5 && element.direction === "horizontal") {
         let layoutX = -totalWidth / 2;
-        (element2.children || []).forEach((childElement) => {
+        (element.children || []).forEach((childElement) => {
           childElement.x = (childElement.x || 0) + layoutX + childElement.width / 2;
           layoutX += childElement.width + gap;
         });
       }
-      if (anchor.x === 0.5 && element2.direction === "vertical") {
-        let offsetX = -totalWidth / 2 + element2.children.reduce((sum, child) => sum + (child.width || 0), 0) / element2.children.length * 0.5;
-        (element2.children || []).forEach((childElement) => {
+      if (anchor.x === 0.5 && element.direction === "vertical") {
+        let offsetX = -totalWidth / 2 + element.children.reduce((sum, child) => sum + (child.width || 0), 0) / element.children.length * 0.5;
+        (element.children || []).forEach((childElement) => {
           childElement.x = offsetX;
         });
       }
-      if (anchor.y === 0.5 && element2.direction === "vertical") {
-        let startLayoutY = -totalHeight / 2 + (element2.children[0].height || 0) * 0.5;
-        (element2.children || []).forEach((childElement) => {
+      if (anchor.y === 0.5 && element.direction === "vertical") {
+        let startLayoutY = -totalHeight / 2 + (element.children[0].height || 0) * 0.5;
+        (element.children || []).forEach((childElement) => {
           childElement.y = startLayoutY;
           startLayoutY += childElement.height + gap;
         });
       }
-      if (anchor.y === 0.5 && element2.direction === "horizontal") {
-        let offsetY = -totalHeight / 2 + (element2.children[0].height || 0) * 0.5;
-        (element2.children || []).forEach((childElement) => {
+      if (anchor.y === 0.5 && element.direction === "horizontal") {
+        let offsetY = -totalHeight / 2 + (element.children[0].height || 0) * 0.5;
+        (element.children || []).forEach((childElement) => {
           childElement.y = offsetY;
         });
       }
-      if (totalHeight > element2.height) {
-        const diff = totalHeight - element2.height;
+      if (totalHeight > element.height) {
+        const diff = totalHeight - element.height;
         container.y -= diff;
-        const clip = new Graphics().rect(0, element2.y, element2.width + 100, element2.height).fill("black");
+        const clip = new Graphics().rect(0, element.y, element.width + 100, element.height).fill("black");
         container.mask = clip;
       }
-      if (element2.fill) {
-        const graphic = new Graphics().roundRect(0, 0, element2.width, element2.height, element2.radius).fill(element2.fill.color);
+      if (element.fill) {
+        const graphic = new Graphics().roundRect(0, 0, element.width, element.height, element.radius).fill(element.fill.color);
         graphic.label = "anchor-layout-container-background";
         if (anchor.x === 1) {
-          graphic.x -= element2.width;
+          graphic.x -= element.width;
         }
         if (anchor.x === -0.5) {
-          graphic.x -= element2.width / 2;
+          graphic.x -= element.width / 2;
         }
         container.addChild(graphic);
       }
     }
     const renderPromises = [];
-    (element2.children || []).forEach((childElement) => {
+    (element.children || []).forEach((childElement) => {
       const renderer = getRendererByElement(childElement);
       renderPromises.push(
         renderer.add(app, {
           parent: container,
           element: {
-            zIndex: element2.zIndex,
+            zIndex: element.zIndex,
             ...childElement
           },
           transitions,
@@ -38702,7 +38748,7 @@ var AnchorLayoutContainerRendererPlugin = class {
     });
     const transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element2.id && transition.event === TransitionEvent.Add) {
+      if (transition.elementId === element.id && transition.event === TransitionEvent.Add) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
@@ -38723,10 +38769,10 @@ var AnchorLayoutContainerRendererPlugin = class {
    * @returns {Promise<undefined>}
    */
   remove = async (app, options) => {
-    const { parent, element: element2 } = options;
-    const sprite = parent.getChildByName(element2.id);
+    const { parent, element } = options;
+    const sprite = parent.getChildByName(element.id);
     if (!sprite) {
-      throw new Error(`Sprite with id ${element2.id} not found`);
+      throw new Error(`Sprite with id ${element.id} not found`);
     }
     sprite.destroy();
   };
@@ -38766,12 +38812,12 @@ var AnchorLayoutContainerRendererPlugin = class {
       nextElement.children
     );
     const renderPromises = [];
-    for (const element2 of toDeleteElements) {
-      const renderer = getRendererByElement(element2);
+    for (const element of toDeleteElements) {
+      const renderer = getRendererByElement(element);
       renderPromises.push(
         renderer.remove(app, {
           parent: container,
-          element: element2,
+          element,
           transitions,
           getTransitionByType,
           getRendererByElement,
@@ -38779,12 +38825,12 @@ var AnchorLayoutContainerRendererPlugin = class {
         })
       );
     }
-    for (const element2 of toAddElements) {
-      const renderer = getRendererByElement(element2);
+    for (const element of toAddElements) {
+      const renderer = getRendererByElement(element);
       renderPromises.push(
         renderer.add(app, {
           parent: container,
-          element: element2,
+          element,
           transitions,
           getTransitionByType,
           getRendererByElement,
@@ -38792,13 +38838,13 @@ var AnchorLayoutContainerRendererPlugin = class {
         })
       );
     }
-    for (const element2 of toUpdateElements) {
-      const renderer = getRendererByElement(element2.next);
+    for (const element of toUpdateElements) {
+      const renderer = getRendererByElement(element.next);
       renderPromises.push(
         renderer.update(app, {
           parent: container,
-          prevElement: element2.prev,
-          nextElement: element2.next,
+          prevElement: element.prev,
+          nextElement: element.next,
           transitions,
           getTransitionByType,
           getRendererByElement,
@@ -38807,8 +38853,8 @@ var AnchorLayoutContainerRendererPlugin = class {
       );
     }
     container.children.sort((a2, b2) => {
-      const aIndex = nextElement.children?.findIndex((element2) => element2.id === a2.label);
-      const bIndex = nextElement.children?.findIndex((element2) => element2.id === b2.label);
+      const aIndex = nextElement.children?.findIndex((element) => element.id === a2.label);
+      const bIndex = nextElement.children?.findIndex((element) => element.id === b2.label);
       return aIndex - bIndex;
     });
     await Promise.all(renderPromises);
@@ -38829,7 +38875,7 @@ var SliderRendererPlugin = class extends BaseRendererPlugin {
    * @param {Function} options.getTransitionByType
    * @returns {Promise<undefined>}
    */
-  add = async (app, { parent, element: element2, transitions = [], getTransitionByType, eventHandler }) => {
+  add = async (app, { parent, element, transitions = [], getTransitionByType, eventHandler }) => {
     const {
       direction,
       idleThumb,
@@ -38840,7 +38886,7 @@ var SliderRendererPlugin = class extends BaseRendererPlugin {
       dragEventName,
       dragEventPayload,
       initialValue
-    } = element2;
+    } = element;
     const config = {
       horizontal: {
         axis: "x",
@@ -38862,8 +38908,8 @@ var SliderRendererPlugin = class extends BaseRendererPlugin {
       anchor: { x: 0, y: 0 }
     });
     const sliderSize = slider[size];
-    slider.x = element2.x || 0;
-    slider.y = element2.y || 0;
+    slider.x = element.x || 0;
+    slider.y = element.y || 0;
     const handle = new Sprite({
       texture: idleHandleTexture,
       anchor: { x: 0.5, y: 0.5 }
@@ -38924,7 +38970,7 @@ var SliderRendererPlugin = class extends BaseRendererPlugin {
     }
     const transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element2.id && transition.event === TransitionEvent.Add) {
+      if (transition.elementId === element.id && transition.event === TransitionEvent.Add) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
@@ -38945,14 +38991,14 @@ var SliderRendererPlugin = class extends BaseRendererPlugin {
    * @returns {Promise<undefined>}
    */
   remove = async (app, options) => {
-    const { parent, element: element2, transitions = [], getTransitionByType } = options;
-    const sprite = parent.getChildByName(element2.id);
+    const { parent, element, transitions = [], getTransitionByType } = options;
+    const sprite = parent.getChildByName(element.id);
     if (!sprite) {
-      throw new Error(`Sprite with id ${element2.id} not found`);
+      throw new Error(`Sprite with id ${element.id} not found`);
     }
     let transitionPromises = [];
     for (const transition of transitions) {
-      if (transition.elementId === element2.id && transition.event === TransitionEvent.Remove) {
+      if (transition.elementId === element.id && transition.event === TransitionEvent.Remove) {
         const transitionClass = getTransitionByType(transition.type);
         if (!transitionClass) {
           throw new Error(`Transition class not found for type ${transition.type}`);
@@ -39013,22 +39059,22 @@ var SoundPlugin = class extends BaseRendererPlugin {
    * @param {Function} options.getTransitionByType
    * @returns {Promise<undefined>}
    */
-  add = async (app, { parent, element: element2, transitions = [], getTransitionByType }) => {
-    if (element2.delay) {
+  add = async (app, { parent, element, transitions = [], getTransitionByType }) => {
+    if (element.delay) {
       setTimeout(() => {
         app.soundStage.add({
-          id: element2.id,
-          url: element2.url,
-          loop: element2.loop ?? false,
-          volume: element2.volume ?? 1
+          id: element.id,
+          url: element.url,
+          loop: element.loop ?? false,
+          volume: element.volume ?? 1
         });
-      }, element2.delay);
+      }, element.delay);
     } else {
       app.soundStage.add({
-        id: element2.id,
-        url: element2.url,
-        loop: element2.loop ?? false,
-        volume: element2.volume ?? 1
+        id: element.id,
+        url: element.url,
+        loop: element.loop ?? false,
+        volume: element.volume ?? 1
       });
     }
   };
@@ -39042,8 +39088,8 @@ var SoundPlugin = class extends BaseRendererPlugin {
    * @returns {Promise<undefined>}
    */
   remove = async (app, options) => {
-    const { element: element2 } = options;
-    app.soundStage.remove(element2.id);
+    const { element } = options;
+    app.soundStage.remove(element.id);
   };
   /**
    * @param {ApplicationWithSoundStage} app

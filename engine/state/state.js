@@ -6,6 +6,9 @@
  * @returns 
  */
 export const applyState = (state, step) => {
+  if (!step.actions) {
+    return {}
+  }
   if (step.actions.background) {
     if (step.actions.background.backgroundId) {
       state.background = step.actions.background;
@@ -59,6 +62,12 @@ export const applyState = (state, step) => {
       ...state.dialogue,
       ...step.actions.dialogue,
     };
+    if (step.actions.dialogue.segments) {
+      delete state.dialogue.text;
+    }
+    if (step.actions.dialogue.text) {
+      delete state.dialogue.segments;
+    }
     if (step.actions.dialogue.character) {
       if (!step.actions.dialogue.character.characterName) {
         delete state.dialogue.character.characterName;

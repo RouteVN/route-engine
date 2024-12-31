@@ -1,0 +1,110 @@
+{
+  "name": "xxx",
+  "gameData": {
+    "initial": {
+      "sectionId": "section1",
+      "stepId": "step1",
+      "presetId": "read",
+      "mode": "read"
+    },
+    "story": {
+      "sections": {
+        "section1": {
+          "type": "read",
+          "id": "section1",
+          "steps": [
+            {
+              "id": "step1"
+            },
+            {
+              "id": "step2"
+            }
+          ]
+        },
+        "section2": {
+          "type": "read",
+          "id": "section2",
+          "steps": [
+            {
+              "id": "s2step1"
+            },
+            {
+              "id": "s2step2"
+            },
+            {
+              "id": "s2step3"
+            }
+          ]
+        },
+        "section3": {
+          "type": "menu",
+          "id": "section3",
+          "steps": [
+            {
+              "id": "s3step1"
+            }
+          ]
+        },
+        "section4": {
+          "type": "menu",
+          "id": "section4",
+          "steps": [
+            {
+              "id": "s4step1"
+            }
+          ]
+        }
+      }
+    },
+    "presets": {
+      "title": {
+        "events": {
+          "history": false
+        },
+        "configuration": {
+          "recordHistory": false
+        }
+      },
+      "read": {
+        "events": {
+          "leftClick": {
+            "action": "nextStep"
+          },
+          "rightClick": null,
+          "action": "moveToMenuSection",
+          "payload": {
+            "sectionId": "section3",
+            "presetId": "menu"
+          }
+        },
+        "configuration": {
+          "recordHistory": true
+        }
+      },
+      "menu": {
+        "events": {
+          "rightClick": {
+            "action": "clearMenu",
+            "presetId": "read"
+          }
+        },
+        "configuration": {
+          "recordHistory": true
+        }
+      }
+    }
+  },
+  "sequences": [
+    {
+      "action": {
+        "name": "init"
+      },
+      "assert": {
+        "pointerMode": "read",
+        "preset": "read",
+        "sectionId": "section1",
+        "stepId": "step1"
+      }
+    }
+  ]
+}

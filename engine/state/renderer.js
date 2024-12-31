@@ -23,16 +23,22 @@ export const generateRenderTree = ({
   resources,
   screen,
   mode,
-  config,
-  saveData,
+  config = {
+    clickSoundVolume: 1,
+    soundVolume: 1,
+    musicVolume: 1
+  },
+  saveData = {},
   gameState,
-  customState,
-  historyDialogue,
-  skipMode,
-  data,
-  canSkip,
-  modalScreenId,
-  persistentVariables
+  customState = {},
+  historyDialogue = [],
+  skipMode = false,
+  data = {
+    saveLoadSlots: []
+  },
+  canSkip = false,
+  modalScreenId = '',
+  persistentVariables = {}
 }) => {
   const elements = [];
   const transitions = [];
@@ -45,11 +51,10 @@ export const generateRenderTree = ({
     y1: 0,
     y2: screen.height,
     fill: screen.fill,
-    clickEventName: mode === "menu" ? undefined : "NextStep",
-    rightClickEventName: mode === "menu" ? undefined : "OpenMenu",
-    wheelEventName: "Wheel",
+    clickEventName: "LeftClick",
+    rightClickEventName: "RightClick",
+    wheelEventName: "ScrollUp",
   });
-
 
   if (state.background) {
     const background =
@@ -258,7 +263,18 @@ export const generateRenderTree = ({
         } else {
           for (const child of item.children) {
             if (child.contentSource === "dialogueContent") {
-              child.text = state.dialogue.text;
+              if (state.dialogue.segments) {
+                child.segments = state.dialogue.segments.map((segment) => {
+                  return {
+                    ...segment,
+                    style: segment.style || child.style,
+                  };
+                });
+                delete child.text;
+              } else {
+                child.text = state.dialogue.text;
+                delete child.segments;
+              }
             }
             if (character && child.contentSource === "characterName") {
               child.text = character.name;
@@ -286,7 +302,7 @@ export const generateRenderTree = ({
         type: "sound",
         url: bgm.src,
         loop: true,
-        volume: config.musicVolume / 100,
+        volume: config.musicVolume ?? 50 / 100,
       });
     }
   }
@@ -300,7 +316,7 @@ export const generateRenderTree = ({
           type: "sound",
           url: sfx.src,
           delay: item.delay,
-          volume: config.soundVolume / 100,
+          volume: (config.soundVolume ?? 50) / 100,
         });
       }
     }
@@ -343,7 +359,7 @@ export const generateRenderTree = ({
 
       stringified = stringified.replaceAll(
         "{{ data.saveLoadSlots[customState.currentSavePageNumber].title }}",
-        data.saveLoadSlots.find((x) => x.value === customState.currentSavePageNumber).title
+        data.saveLoadSlots.find((x) => x.value === customState.currentSavePageNumber)?.title
       );
 
       Object.keys(config).forEach((key) => {

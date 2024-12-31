@@ -3240,7 +3240,17 @@ story:
                         character:
                           characterName: "???"
                         dialogueBoxId: "dialogueBox1"
-                        text: "Kamilla, if you're listening, I invite you to this world!"
+                        # text: "Kamilla, if you're listening, I invite you to this world!"
+                        segments:
+                          - text: "Kamilla"
+                            style:
+                              fill: "#cc005b"
+                              fontSize: 48
+                              fontFamily: "NomnomNami2"
+                              # wordWrapWidth: 780
+                              strokeColor: black
+                              strokeWidth: 3
+                          - text: ", if you're listening, I invite you to this world!"
                   step9:
                     id: "step9"
                     actions:
