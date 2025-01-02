@@ -36995,6 +36995,9 @@ var PixiTDR = class _PixiTDR extends BaseTDR {
       height,
       backgroundColor: backgroundColor || 0
     });
+    const modalContainer = new Container();
+    modalContainer.label = "modalContainer";
+    this._app.stage.addChild(modalContainer);
     this._app.ticker.add(this._app.soundStage.tick);
     return this;
   };
@@ -37104,6 +37107,10 @@ var PixiTDR = class _PixiTDR extends BaseTDR {
       );
     }
     app.stage.children.sort((a2, b2) => {
+      if (a2.label === "modalContainer")
+        return 1;
+      if (b2.label === "modalContainer")
+        return -1;
       const aIndex = nextState.elements.findIndex((element) => element.id === a2.label);
       const bIndex = nextState.elements.findIndex((element) => element.id === b2.label);
       return aIndex - bIndex;
@@ -37261,7 +37268,7 @@ var TextRendererPlugin = class {
       fontSize: element.style?.fontSize,
       lineHeight: element.style?.lineHeight,
       wordWrapWidth: element.style?.wordWrapWidth,
-      fontFamily: element.style?.fontFamily,
+      fontFamily: element.style?.fontFamily || "",
       stroke: element.style?.strokeColor ? {
         color: element.style?.strokeColor,
         width: element.style?.strokeWidth
@@ -37307,7 +37314,7 @@ var TextRendererPlugin = class {
     const { parent, element, transitions = [], getTransitionByType } = options;
     const text = parent.getChildByName(element.id);
     if (!text) {
-      throw new Error(`Text with id ${element.id} not found`);
+      return;
     }
     let transitionPromises = [];
     for (const transition of transitions) {
@@ -37469,6 +37476,7 @@ var TextInteractiveRendererPlugin = class {
     const { parent, element, transitions = [], getTransitionByType } = options;
     const text = parent.getChildByName(element.id);
     if (!text) {
+      return;
       throw new Error(`Text with id ${element.id} not found`);
     }
     let transitionPromises = [];
@@ -37572,7 +37580,7 @@ var TextRevealingRendererPlugin = class {
     container.addChild(newText);
     container.label = element.id;
     parent.addChild(container);
-    const wordWrapWidth = 500;
+    const wordWrapWidth = element.style.wordWrapWidth || 500;
     const segments = element.text ? [{
       text: element.text,
       style: element.style
@@ -37604,7 +37612,6 @@ var TextRevealingRendererPlugin = class {
         segment.text,
         createTextStyle(styleWithWordWrapWidth)
       );
-      console.log({ measurements, wordWrapWidth });
       if (measurements.lineHeight > lineMaxHeight) {
         lineMaxHeight = measurements.lineHeight;
       }
@@ -37649,7 +37656,6 @@ var TextRevealingRendererPlugin = class {
       }
       x2 += measurements.lineWidths[0] + spaceWidth;
     }
-    console.log("chunks", chunks);
     chunks.forEach((chunk) => {
       const lineContainer = new Container();
       lineContainer.y = chunk.y;
@@ -37684,27 +37690,37 @@ var TextRevealingRendererPlugin = class {
     if (chunks.length === 0) {
       return;
     }
-    const effect = (time) => {
-      if (!container.getChildAt(lineIndex).mask) {
-        container.getChildAt(lineIndex).mask = mask;
-        container.getChildAt(lineIndex).alpha = 1;
-      }
-      timeDelta += time.deltaMS;
-      const speed = 30;
-      const widthPerMs = speed / 1e3;
-      mask.x += widthPerMs * timeDelta;
-      if (mask.x >= 0) {
-        container.getChildAt(lineIndex).mask = null;
-        mask.x = -1.35 * xOffset - gradientWidth;
-        lineIndex = lineIndex + 1;
-        timeDelta = 0;
-        if (lineIndex >= container.children.length) {
-          container.getChildAt(lineIndex - 1).mask = null;
-          app.ticker.remove(effect);
+    if (element.displaySpeed === 100) {
+      container.children.forEach((child) => {
+        child.mask = null;
+        child.alpha = 1;
+      });
+      return;
+    }
+    await new Promise((resolve) => {
+      const effect = (time) => {
+        if (!container.getChildAt(lineIndex).mask) {
+          container.getChildAt(lineIndex).mask = mask;
+          container.getChildAt(lineIndex).alpha = 1;
         }
-      }
-    };
-    app.ticker.add(effect);
+        timeDelta += time.deltaMS;
+        const speed = element.displaySpeed || 50;
+        const widthPerMs = speed / 1e3;
+        mask.x += widthPerMs * timeDelta;
+        if (mask.x >= 0) {
+          container.getChildAt(lineIndex).mask = null;
+          mask.x = -1.35 * xOffset - gradientWidth;
+          lineIndex = lineIndex + 1;
+          timeDelta = 0;
+          if (lineIndex >= container.children.length) {
+            container.getChildAt(lineIndex - 1).mask = null;
+            app.ticker.remove(effect);
+            resolve();
+          }
+        }
+      };
+      app.ticker.add(effect);
+    });
   };
   /**
    * @param {Application} app
@@ -37716,7 +37732,6 @@ var TextRevealingRendererPlugin = class {
    * @returns {Promise<undefined>}
    */
   remove = async (app, options) => {
-    console.log("VVVVVVVVVVVVVVVVVVVVVV remove");
     const { parent, element, transitions = [], getTransitionByType } = options;
     const container = parent.getChildByName(element.id);
     if (!container) {
@@ -37746,7 +37761,6 @@ var TextRevealingRendererPlugin = class {
    * @returns {Promise<undefined>}
    */
   update = async (app, options) => {
-    console.log("PPPPPPPPPPPPPPPPPPP update");
     const { parent, prevElement, nextElement } = options;
     const text = (
       /** @type {Text | null} */
@@ -38022,12 +38036,26 @@ var ContainerRendererPlugin = class {
    * @returns {Promise<undefined>}
    */
   remove = async (app, options) => {
-    const { parent, element } = options;
-    const sprite = parent.getChildByName(element.id);
-    if (!sprite) {
-      throw new Error(`Sprite with id ${element.id} not found`);
+    const { parent, element, getRendererByElement, transitions, getTransitionByType, eventHandler } = options;
+    const container = parent.getChildByName(element.id);
+    if (!container) {
+      console.warn(`Container with id ${element.id} not found`);
+      return;
+      throw new Error(`Container with id ${element.id} not found`);
     }
-    sprite.destroy();
+    const removeModalElements = (element2) => {
+      element2.children.forEach((child) => {
+        if (child.type === "modal") {
+          const modalRenderer = getRendererByElement(child);
+          modalRenderer.remove(app, { parent: app.stage.getChildByName("modalContainer"), element: child, transitions, getTransitionByType, getRendererByElement, eventHandler });
+        }
+        if (child.children) {
+          removeModalElements(child);
+        }
+      });
+    };
+    removeModalElements(element);
+    container.destroy();
   };
   /**
    * @param {Application} app
@@ -38485,6 +38513,101 @@ var GraphicsRendererPlugin = class {
         this.add(app, { parent, element: nextElement, transitions, getTransitionByType, eventHandler })
       ]);
     }
+  };
+};
+
+// src/plugins/elements/ModalRendererPlugin.js
+var ModalRendererPlugin = class {
+  static rendererName = "pixi";
+  rendererName = "pixi";
+  rendererType = "modal";
+  /**
+   * @param {Application} app
+   * @param {Object} options
+   * @param {Container} options.parent
+   * @param {ModalElement} options.element
+   * @param {BaseTransition[]} [options.transitions=[]]
+   * @param {Function} options.getTransitionByType
+   * @param {Function} options.getRendererByElement
+   * @param {Function} options.eventHandler
+   * @returns {Promise<undefined>}
+   */
+  add = async (app, options) => {
+    const { parent, element, transitions = [], getTransitionByType, getRendererByElement, eventHandler } = options;
+    if (element.child) {
+      const renderer = getRendererByElement(element.child);
+      renderer.add(app, {
+        parent,
+        element: element.child,
+        transitions: [],
+        getTransitionByType,
+        getRendererByElement,
+        eventHandler
+      });
+    }
+    if (element.modalDisplayed) {
+      const modalRenderer = getRendererByElement(element.layout);
+      modalRenderer.add(app, {
+        parent: app.stage.getChildByName("modalContainer"),
+        element: element.layout,
+        transitions: [],
+        getTransitionByType,
+        getRendererByElement,
+        eventHandler
+      });
+    }
+  };
+  /**
+   * @param {Application} app
+   * @param {Object} options
+   * @param {Container} options.parent
+   * @param {ModalElement} options.element
+   * @param {BaseTransition[]} [options.transitions=[]]
+   * @param {Function} options.getTransitionByType
+   * @param {Function} options.getRendererByElement
+   * @param {Function} options.eventHandler
+   * @returns {Promise<undefined>}
+   */
+  remove = async (app, options) => {
+    const { parent, element, transitions = [], getTransitionByType, getRendererByElement, eventHandler } = options;
+    if (element.child) {
+      const renderer = getRendererByElement(element.child);
+      renderer.remove(app, {
+        parent,
+        element: element.child,
+        transitions: [],
+        getTransitionByType,
+        getRendererByElement,
+        eventHandler
+      });
+    }
+    const modalRenderer = getRendererByElement(element.layout);
+    modalRenderer.remove(app, {
+      parent: app.stage.getChildByName("modalContainer"),
+      element: element.layout,
+      transitions: [],
+      getTransitionByType,
+      getRendererByElement,
+      eventHandler
+    });
+    console.log("REMOVE MODAL RRRRRRRRRRRRRRRRRRRRRRRRR 2", {
+      modalContainer: app.stage.getChildByName("modalContainer")
+    });
+  };
+  /**
+   * @param {Application} app
+   * @param {Object} options
+   * @param {Container} options.parent
+   * @param {ModalElement} options.prevElement
+   * @param {ModalElement} options.nextElement
+   * @param {BaseTransition[]} [options.transitions=[]]
+   * @param {Function} options.getTransitionByType
+   * @returns {Promise<undefined>}
+   */
+  update = async (app, options) => {
+    const { parent, prevElement, nextElement, transitions = [], getTransitionByType, getRendererByElement, eventHandler } = options;
+    this.remove(app, { parent, element: prevElement, transitions, getTransitionByType, getRendererByElement, eventHandler });
+    this.add(app, { parent, element: nextElement, transitions, getTransitionByType, getRendererByElement, eventHandler });
   };
 };
 
@@ -39117,6 +39240,7 @@ export {
   FadeTransitionPlugin,
   GraphicsRendererPlugin,
   KeyframeTransitionPlugin,
+  ModalRendererPlugin,
   PixiTDR_default as PixiTDR,
   RepeatFadeTransitionPlugin,
   ScaleTransitionPlugin,

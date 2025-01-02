@@ -176,6 +176,11 @@ saveData:
 ```
 
 
+## Persistent Variables
+
+This is user set variables that will be persisted forever
+
+
 
 
 

@@ -14,6 +14,7 @@ import {
   GraphicsRendererPlugin,
   SoundPlugin,
   SliderRendererPlugin,
+  ModalRendererPlugin
 } from "./renderer.js";
 
 import RvnEngine from "./state/engine2.js";
@@ -51,21 +52,14 @@ const initializeVnPlayer = async (element, onClose) => {
   const fileUrls = getAllValuesByPropertyName(gameData.resources, [
     "url",
     "src",
+    "idleThumb",
+    "hoverThumb",
+    "idleBar",
+    "hoverBar",
   ]).filter((url) => !!url);
-  const imageUrls = fileUrls
-    .filter((url) => !url.endsWith(".wav") && !url.endsWith(".ogg"))
-    .concat([
-      "/public/first-contract/font/NomnomNami2.ttf",
-      "/public/first-contract/gui/slider/horizontal_idle_thumb.png",
-      "/public/first-contract/gui/slider/horizontal_hover_thumb.png",
-      "/public/first-contract/gui/slider/horizontal_idle_bar.png",
-      "/public/first-contract/gui/slider/horizontal_hover_bar.png",
-      "/public/first-contract/gui/slider/vertical_idle_thumb.png",
-      "/public/first-contract/gui/slider/vertical_hover_thumb.png",
-      "/public/first-contract/gui/slider/vertical_idle_bar.png",
-      "/public/first-contract/gui/slider/vertical_hover_bar.png",
-      "/public/first-contract/gui/button/slot_hover_background.png",
-    ]);
+  const imageUrls = fileUrls.filter(
+    (url) => !url.endsWith(".wav") && !url.endsWith(".ogg")
+  );
 
   await app.loadAssets(imageUrls);
   const soundUrls = fileUrls.filter(
@@ -97,6 +91,7 @@ const initializeVnPlayer = async (element, onClose) => {
       new GraphicsRendererPlugin(),
       new SoundPlugin(),
       new SliderRendererPlugin(),
+      new ModalRendererPlugin(),
     ],
     eventHandler: (event, payload) => {
       console.log("eventHandler", {
@@ -165,7 +160,30 @@ const initializeVnPlayer = async (element, onClose) => {
       });
       return configObj;
     },
-  }
+  };
+
+  const persistentVariableKey = "rvn_persistent_variables";
+  engine.persistentVariablesInterface = {
+    setAll: (config) => {
+      localStorage.setItem(persistentVariableKey, JSON.stringify(config));
+    },
+    set: (key, data) => {
+      const config = localStorage.getItem(persistentVariableKey);
+      const configObj = config ? JSON.parse(config) : {};
+      configObj[key] = data;
+      localStorage.setItem(persistentVariableKey, JSON.stringify(configObj));
+    },
+    get: (key) => {
+      const config = localStorage.getItem(persistentVariableKey);
+      const configObj = config ? JSON.parse(config) : {};
+      return configObj[key];
+    },
+    getAll: () => {
+      const config = localStorage.getItem(persistentVariableKey);
+      const configObj = config ? JSON.parse(config) : {};
+      return configObj;
+    },
+  };
 
   engine.onTriggerRender = ({ elements, transitions }) => {
     app.render({
@@ -175,8 +193,21 @@ const initializeVnPlayer = async (element, onClose) => {
     });
   };
 
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Control") {
+      console.log("ctrl");
+      engine.handleEvent("ControlDown");
+    }
+  });
+
+  window.addEventListener("keyup", (e) => {
+    if (e.key === "Control") {
+      console.log("ctrl up");
+      engine.handleEvent("ControlUp");
+    }
+  });
+
   engine.init();
-  console.log(engine._currentStepPointer());
 };
 
 export default initializeVnPlayer;

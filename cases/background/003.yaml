@@ -2,6 +2,7 @@ initial:
   sectionId: "section3"
   presetId: "title"
   mode: "read"
+  language: en_default
 initialPersistentConfig:
   musicVolume: 1
   soundVolume: 1
@@ -9,6 +10,52 @@ initialPersistentConfig:
   rollbackSide: "left"
   skipTransitions: false
   skipUnseenText: false
+  language: en_default
+initialCustomState:
+  exitMenuConfirmationModal: false
+  currentSavePageNumber: 0
+staticData:
+  saveLoadSlots:
+    - text: "<"
+      value: -1
+    - text: "A"
+      value: 0
+      title: Auto Save
+    - text: "Q"
+      value: 1
+      title: Quick Save
+    - text: "1"
+      value: 2
+      title: Page 1
+    - text: "2"
+      value: 3
+      title: Page 2
+    - text: "3"
+      value: 4
+      title: Page 3
+    - text: "4"
+      value: 5
+      title: Page 4
+    - text: "5"
+      value: 6
+      title: Page 5
+    - text: "6"
+      value: 7
+      title: Page 6
+    - text: "7"
+      value: 8
+      title: Page 8
+    - text: "8"
+      value: 9
+      title: Page 9
+    - text: "9"
+      value: 10
+      title: Page 10
+    - text: "10"
+      value: 11
+      title: Page 11
+    - text: ">"
+      value: 12
 resources:
   background:
     items:
@@ -522,18 +569,18 @@ resources:
       menuBase:
         layout:
           - id: "abou3t"
-            type: "sprite-interactive"
+            type: "sprite"
             url: "/public/first-contract/gui/game_menu.png"
             alpha: 0.3
             height: 720
             width: 1280
-            rightClickEventName: "HideMenu"
+            # rightClickEventName: "HideMenu"
           - id: "abodf33ut"
-            type: "sprite-interactive"
+            type: "sprite"
             url: "/public/first-contract/gui/overlay/main_menu.png"
             height: 720
             width: 1280
-            rightClickEventName: "HideMenu"
+            # rightClickEventName: "HideMenu"
           - id: "about3"
             type: "anchor-layout-container"
             anchor: "CenterLeft"
@@ -551,6 +598,7 @@ resources:
                       sectionId: section2
                       mode: read
                       presetId: read
+                      addToSection: true
                     setCustomState:
                       currentPage: "start"
               - text: Load
@@ -664,18 +712,121 @@ resources:
       menuGame:
         layout:
           - id: "abosdfeut"
-            type: "sprite-interactive"
+            type: "sprite"
             url: "/public/first-contract/gui/game_menu.png"
             alpha: 0.3
             height: 720
             width: 1280
-            rightClickEventName: "HideMenu"
+            # rightClickEventName: "HideMenu"
           - id: "ab34gout"
-            type: "sprite-interactive"
+            type: "sprite"
             url: "/public/first-contract/gui/overlay/main_menu.png"
             height: 720
             width: 1280
-            rightClickEventName: "HideMenu"
+            # rightClickEventName: "HideMenu"
+          - id: 'adgeaer'
+            type: modal
+            modalDisplayed: "{{ customState.exitMenuConfirmationModal }}"
+            x: 0
+            y: 0
+            width: 120
+            height: 40
+            layout:
+              id: 'asdfjk'
+              type: container
+              children:
+                - id: overlayConfirm3d
+                  type: "container"
+                  anchor: "TopLeft"
+                  zIndex: 1005
+                  x: 0
+                  y: 0
+                  children:
+                    - id: "ladf423kj3"
+                      type: graphics
+                      zIndex: 1000
+                      x1: 0
+                      x2: 1280
+                      y1: 0
+                      y2: 720
+                      fill: 'black'
+                      alpha: 0.5
+                    - id: "ladf1kj3"
+                      type: sprite
+                      zIndex: 800
+                      xa: 0.5
+                      ya: 0.5
+                      x: 640
+                      y: 360
+                      width: 600
+                      height: 180
+                      url: "/public/first-contract/gui/frame.png"
+                    - id: "ladfkj42d3"
+                      type: text
+                      zIndex: 1005
+                      text: 'Are you sure you want to return to the main menu? This will lose unsaved progress.'
+                      xa: 0.5
+                      ya: 0.5
+                      x: 640
+                      y: 340
+                      style:
+                        fill: 'white'
+                        fontSize: 27
+                        fontFamily: 'NomnomNami2'
+                        wordWrapWidth: 600
+                        align: center
+                    - id: "ladfkj42dxi3"
+                      type: anchor-layout-container
+                      anchor: "CenterCenter"
+                      direction: "horizontal"
+                      zIndex: 1002
+                      gap: 120
+                      x: 640
+                      y: 410
+                      children:
+                        - id: "ladfkj42dxi3"
+                          type: text-interactive
+                          text: "Yes"
+                          zIndex: 1005
+                          eventName: Actions
+                          eventPayload:
+                            actions:
+                              exitMenu:
+                                sectionId: section3
+                                presetId: title
+                                mode: read
+                              setCustomState:
+                                exitMenuConfirmationModal: false
+                          style:
+                            fill: "#ccc"
+                            fontSize: 28
+                            fontFamily: "NomnomNami2"
+                            wordWrapWidth: 1740
+                          hoverStyle:
+                            fontSize: 28
+                            fill: "yellow"
+                            fontFamily: "NomnomNami2"
+                            wordWrapWidth: 1740
+                        - id: "ladfkj42dxi3"
+                          type: text-interactive
+                          text: "No"
+                          zIndex: 1005
+                          eventName: Actions
+                          eventPayload:
+                            actions:
+                              setCustomState:
+                                exitMenuConfirmationModal: false
+                          style:
+                            fill: "#ccc"
+                            fontSize: 28
+                            fontFamily: "NomnomNami2"
+                            wordWrapWidth: 1740
+                          hoverStyle:
+                            fontSize: 28
+                            fill: "yellow"
+                            fontFamily: "NomnomNami2"
+                            wordWrapWidth: 1740
+
           - id: "about3"
             type: "anchor-layout-container"
             anchor: "CenterLeft"
@@ -739,10 +890,12 @@ resources:
                 page: main
                 eventPayload:
                   actions:
-                    exitMenu:
-                      sectionId: section3
-                      presetId: title
-                      mode: read
+                    setCustomState:
+                      exitMenuConfirmationModal: true
+                    # exitMenu:
+                    #   sectionId: section3
+                    #   presetId: title
+                    #   mode: read
                     # modalScreenId: goToMainConfirmModal
                     # screen:
                     #   items:
@@ -1447,8 +1600,10 @@ resources:
                 eventName: Actions
                 eventPayload:
                   actions:
-                    moveToSection:
-                      sectionId: "sectionLanguage"
+                    triggerStepEvent:
+                      stepEventName: "moveToLanguage"
+                    # moveToSection:
+                      # sectionId: "sectionLanguage"
                     setCustomState:
                       currentPage: "language"
 
@@ -1497,8 +1652,10 @@ resources:
             eventName: "Actions"
             eventPayload:
               actions:
-                moveToSection:
-                  sectionId: "sectionOptions"
+                triggerStepEvent:
+                  stepEventName: "backToOptions"
+                # moveToSection:
+                #   sectionId: "sectionOptions"
                 setCustomState:
                   currentPage: "options"
             style:
@@ -1520,7 +1677,7 @@ resources:
             y: 320
             data:
               - text: English
-                value: en
+                value: en_default
               - text: French
                 value: fr
               - text: Italian
@@ -1550,6 +1707,7 @@ resources:
                     actions:
                       setPersistentConfig:
                         language: "{{ value }}"
+                      
                   style:
                     fill: "#ccc"
                     fontSize: 40
@@ -2056,8 +2214,9 @@ resources:
                 eventPayload:
                   actions:
                     moveToSection:
-                      sceneId: sceneExtra
-                      sectionId: sectionExtra
+                      sectionId: section14
+                      presetId: read
+                      mode: read
                 width: 120
                 height: 40
                 style:
@@ -2148,6 +2307,7 @@ resources:
                       sectionId: section2
                       presetId: read
                       mode: read
+                      addToSection: true
                     setCustomState:
                       currentPage: "start"
               - text: Load
@@ -2319,16 +2479,16 @@ resources:
                     setCustomState:
                       currentPage: "history"
               - label: Skip
-                active: "{{ customState.skipMode }}"
+                active: "{{ skipMode }}"
                 eventPayload: 
                   actions:
                     toggleSkipMode: true
                 disabled: "{{ cannotSkip }}"
               - label: Auto
-                active: "{{ customState.autoMode }}"
+                active: "{{ autoMode }}"
                 eventPayload: 
                   actions:
-                    toggleAutoMode: true
+                    toggleAutoMode: {}
               - label: Save
                 eventPayload: 
                   actions:
@@ -2540,13 +2700,19 @@ presets:
           mode: "menu"
       ScrollUp:
         action: "prevStep"
+      ControlDown:
+        action: "startSkipMode"
+      ControlUp:
+        action: "stopSkipMode"
     configuration:
       recordHistory: true
   menu:
     events:
-      # rightClick:
-      #   action: "clearMenu"
-      #   presetId: "read"
+      RightClick:
+        action: "exitMenu"
+        payload:
+          presetId: "read"
+          mode: "read"
     configuration:
       recordHistory: true
 story:
@@ -2597,246 +2763,6 @@ story:
           actions:
             moveToSection:
               sectionId: section3
-    section2:
-      type: "read"
-      id: "section1"
-      steps:
-        - id: "s2step1"
-          actions:
-            background:
-              backgroundId: "bg1"
-              inAnimation:
-                animationId: "ani1"
-        - id: "s2tep2"
-          actions:
-            # sfx:
-            #   items:
-            #     - id: sfx-candle-1
-            #       sfxId: "candle"
-            #     - id: sfx-candle-2
-            #       sfxId: "candle"
-            #       delay: 700
-            #     - id: sfx-candle-3
-            #       sfxId: "candle"
-            #       delay: 1400
-            visual:
-              items:
-                - id: "candle1"
-                  visualId: "candle"
-                  inAnimation:
-                    animationId: "ani1"
-                  position:
-                    x: 256
-                    y: 57.6
-                - id: "candle2"
-                  visualId: "candle"
-                  inAnimation:
-                    animationId: "ani1"
-                  position:
-                    x: 1024
-                    y: 57.6
-                - id: "candle3"
-                  visualId: "candle"
-                  inAnimation:
-                    animationId: "ani2"
-                  position:
-                    x: 153.6
-                    y: 273.6
-                - id: "candle4"
-                  visualId: "candle"
-                  inAnimation:
-                    animationId: "ani2"
-                  position:
-                    x: 1126.4
-                    y: 273.6
-                - id: "candle5"
-                  visualId: "candle"
-                  inAnimation:
-                    animationId: "ani3"
-                  position:
-                    x: 192
-                    y: 489.6
-                - id: "candle6"
-                  visualId: "candle"
-                  inAnimation:
-                    animationId: "ani3"
-                  position:
-                    x: 1088
-                    y: 489.6
-        # - id: "step3"
-        #   actions:
-        #     sfx:
-        #       items:
-        #         - sfxId: "flute"
-        - id: "s2step4"
-          actions:
-            background:
-              backgroundId: "bg4"
-        - id: "s2step5"
-          actions:
-            dialogue:
-              character:
-                characterName: "???"
-              dialogueBoxId: "dialogueBox1"
-              text: "May my melody reach the deepest pits of the Netherworld!"
-        - id: s2step6
-          # autoNext: true
-          actions:
-            sfx:
-              items:
-                - sfxId: "light"
-            dialogue:
-              dialogueBoxId:
-            background:
-              backgroundId: "bg2"
-              inAnimation:
-                animationId: "ani1"
-        - id: s2step7
-          actions:
-            dialogue:
-              character:
-                characterName: "???"
-              dialogueBoxId: "dialogueBox1"
-              # text: "Kamilla, if you're listening, I invite you to this world!"
-              segments:
-                - text: "Kamilla"
-                  style:
-                    fill: "#cc005b"
-                    fontSize: 48
-                    fontFamily: "NomnomNami2"
-                    # wordWrapWidth: 780
-                    strokeColor: black
-                    strokeWidth: 3
-                - text: ", if you're listening, I invite you to this world!"
-        - id: s2step8
-          actions:
-            dialogue:
-              text: "Let's form a contract!!"
-            sfx:
-              items:
-                - sfxId: "rumble"
-            background:
-              backgroundId: "bg4"
-              inAnimation:
-                animationId: "ani1"
-            visual:
-              items:
-                - id: "candle1"
-                  visualId:
-                  outAnimation:
-                    animationId: "ani4"
-                - id: "candle2"
-                  visualId:
-                  outAnimation:
-                    animationId: "ani4"
-                - id: "candle3"
-                  visualId:
-                  outAnimation:
-                    animationId: "ani4"
-                - id: "candle4"
-                  visualId:
-                  outAnimation:
-                    animationId: "ani4"
-                - id: "candle5"
-                  visualId:
-                  outAnimation:
-                    animationId: "ani4"
-                - id: "candle6"
-                  visualId:
-                  outAnimation:
-                    animationId: "ani4"
-        - id: s2step9
-          actions:
-            dialogue:
-              character:
-                characterId: "kamilla"
-              text: "SO YOU'VE CALLED UPON ME AGAIN..."
-        - id: s2step10
-          actions:
-            # sfx:
-            #   items:
-            #     - sfxId: "oh"
-            background:
-              backgroundId: "bg3"
-            character:
-              items:
-                - id: "eleni"
-                  characterId: "eleni"
-                  spriteParts:
-                    - partId: base
-                      spriteId: eleni_base
-                    - partId: outfit
-                      spriteId: eleni_outfit_robe
-                    - partId: arms
-                      spriteId: eleni_arms_robe_up
-                    - partId: eyes
-                      spriteId: eleni_eyes_open
-                    - partId: brows
-                      spriteId: eleni_brows_mad
-                    - partId: mouth
-                      spriteId: eleni_mouth_smile
-                  position:
-                    positionId: "character_left"
-                - id: "kamilla"
-                  characterId: "kamilla"
-                  spriteParts:
-                    - partId: base
-                      spriteId: kamilla_base
-                    - partId: outfit
-                      spriteId: kamilla_outfit_work
-                    - partId: eyes
-                      spriteId: kamilla_eyes_open
-                    - partId: mouth
-                      spriteId: kamilla_mouth_grin
-                    - partId: arms
-                      spriteId: kamilla_arms_work_down
-                  position:
-                    positionId: "character_right"
-            dialogue:
-              dialogueBoxId: "dialogueBox1"
-              character:
-                characterId: "kamilla"
-              text: "...The book you asked for."
-        - id: s2step11
-          actions:
-            bgm:
-              bgmId: "bgm1"
-            character:
-              items:
-                - id: "eleni"
-                  characterId: "eleni"
-                  spriteParts:
-                    - partId: base
-                      spriteId: eleni_base
-                    - partId: outfit
-                      spriteId: eleni_outfit_robe
-                    - partId: arms
-                      spriteId: eleni_arms_robe_up
-                    - partId: eyes
-                      spriteId: eleni_eyes_squee
-                    - partId: mouth
-                      spriteId: eleni_mouth_ehe
-                  position:
-                    positionId: "character_left"
-                - id: "kamilla"
-                  characterId: "kamilla"
-                  spriteParts:
-                    - partId: base
-                      spriteId: kamilla_base
-                    - partId: eyes
-                      spriteId: kamilla_eyes_open
-                    - partId: mouth
-                      spriteId: kamilla_mouth_grin
-                    - partId: arms
-                      spriteId: kamilla_arms_work_down
-                    - partId: outfit
-                      spriteId: kamilla_outfit_work
-                  position:
-                    positionId: "character_right"
-            dialogue:
-              character:
-                characterId: "eleni"
-              text: EEEEEEE show me, show me!
     section3:
       type: "menu"
       id: "section3"
@@ -2893,6 +2819,11 @@ story:
       name: Section Options
       steps:
         - id: s5s1
+          eventHandlers:
+            moveToLanguage:
+              actions:
+                moveToSection:
+                  sectionId: "section5l"
           actions:
             screen:
               items:
@@ -2901,6 +2832,23 @@ story:
                   keep: true
                 - id: fkje4aefklx3x3g1
                   screenId: "options"
+    section5l:
+      name: Section Language
+      steps:
+        - id: s5l1
+          eventHandlers:
+            backToOptions:
+              actions:
+                moveToSection:
+                  sectionId: "section5"
+          actions:
+            screen:
+              items:
+                - id: 324x34k3xax
+                  screenId: "menuBase"
+                  keep: true
+                - id: fkje4aefklx3x3g1
+                  screenId: "language"
     section6:
       name: Section About
       steps:
@@ -2936,8 +2884,14 @@ story:
                 - id: fkje443aef4klx33g1
                   screenId: "load"
     section9:
+    
       steps:
         - id: s8s1
+          eventHandlers:
+            moveToLanguage:
+              actions:
+                moveToSection:
+                  sectionId: "section9l"
           actions:
             screen:
               items:
@@ -2946,6 +2900,22 @@ story:
                   keep: true
                 - id: fkje443aef4klx33g1
                   screenId: "options"
+    section9l:
+      steps:
+        - id: s9l1
+          eventHandlers:
+            backToOptions:
+              actions:
+                moveToSection:
+                  sectionId: "section9"
+          actions:
+            screen:
+              items:
+                - id: 324x3x4k3xax
+                  screenId: "menuGame"
+                  keep: true
+                - id: fkje443aef4klx33g1
+                  screenId: "language"
     section10:
       steps:
         - id: s8s1
@@ -2990,4 +2960,2204 @@ story:
                   screenId: "menuGame"
                 - id: fkje4aefkl
                   screenId: "language"
-# TODO language
+    section2:
+      type: "read"
+      id: "section1"
+      steps:
+        # - id: "s2step1"
+        #   actions:
+        #     background:
+        #       backgroundId: "bg1"
+        #       inAnimation:
+        #         animationId: "ani1"
+        # - id: "s2tep2"
+        #   actions:
+        #     sfx:
+        #       items:
+        #         - id: sfx-candle-1
+        #           sfxId: "candle"
+        #         - id: sfx-candle-2
+        #           sfxId: "candle"
+        #           delay: 700
+        #         - id: sfx-candle-3
+        #           sfxId: "candle"
+        #           delay: 1400
+        #     visual:
+        #       items:
+        #         - id: "candle1"
+        #           visualId: "candle"
+        #           inAnimation:
+        #             animationId: "ani1"
+        #           position:
+        #             x: 256
+        #             y: 57.6
+        #         - id: "candle2"
+        #           visualId: "candle"
+        #           inAnimation:
+        #             animationId: "ani1"
+        #           position:
+        #             x: 1024
+        #             y: 57.6
+        #         - id: "candle3"
+        #           visualId: "candle"
+        #           inAnimation:
+        #             animationId: "ani2"
+        #           position:
+        #             x: 153.6
+        #             y: 273.6
+        #         - id: "candle4"
+        #           visualId: "candle"
+        #           inAnimation:
+        #             animationId: "ani2"
+        #           position:
+        #             x: 1126.4
+        #             y: 273.6
+        #         - id: "candle5"
+        #           visualId: "candle"
+        #           inAnimation:
+        #             animationId: "ani3"
+        #           position:
+        #             x: 192
+        #             y: 489.6
+        #         - id: "candle6"
+        #           visualId: "candle"
+        #           inAnimation:
+        #             animationId: "ani3"
+        #           position:
+        #             x: 1088
+        #             y: 489.6
+        # - id: "step3"
+        #   actions:
+        #     sfx:
+        #       items:
+        #         - sfxId: "flute"
+        # - id: "s2step4"
+        #   actions:
+        #     background:
+        #       backgroundId: "bg4"
+        # - id: "s2step5"
+        #   actions:
+        #     dialogue:
+        #       character:
+        #         characterName: "???"
+        #       dialogueBoxId: "dialogueBox1"
+        #       text: "May my melody reach the deepest pits of the Netherworld!"
+        # - id: s2step6
+        #   # autoNext: true
+        #   actions:
+        #     sfx:
+        #       items:
+        #         - sfxId: "light"
+        #     dialogue:
+        #       dialogueBoxId:
+        #     background:
+        #       backgroundId: "bg2"
+        #       inAnimation:
+        #         animationId: "ani1"
+        # - id: s2step7
+        #   actions:
+        #     dialogue:
+        #       character:
+        #         characterName: "???"
+        #       dialogueBoxId: "dialogueBox1"
+        #       # text: "Kamilla, if you're listening, I invite you to this world!"
+        #       segments:
+        #         - text: "Kamilla"
+        #           style:
+        #             fill: "#cc005b"
+        #             fontSize: 48
+        #             fontFamily: "NomnomNami2"
+        #             # wordWrapWidth: 780
+        #             strokeColor: black
+        #             strokeWidth: 3
+        #         - text: ", if you're listening, I invite you to this world!"
+        # - id: s2step8
+        #   actions:
+        #     dialogue:
+        #       text: "Let's form a contract!!"
+        #     sfx:
+        #       items:
+        #         - sfxId: "rumble"
+        #     background:
+        #       backgroundId: "bg4"
+        #       inAnimation:
+        #         animationId: "ani1"
+        #     visual:
+        #       items:
+        #         - id: "candle1"
+        #           visualId:
+        #           outAnimation:
+        #             animationId: "ani4"
+        #         - id: "candle2"
+        #           visualId:
+        #           outAnimation:
+        #             animationId: "ani4"
+        #         - id: "candle3"
+        #           visualId:
+        #           outAnimation:
+        #             animationId: "ani4"
+        #         - id: "candle4"
+        #           visualId:
+        #           outAnimation:
+        #             animationId: "ani4"
+        #         - id: "candle5"
+        #           visualId:
+        #           outAnimation:
+        #             animationId: "ani4"
+        #         - id: "candle6"
+        #           visualId:
+        #           outAnimation:
+        #             animationId: "ani4"
+        # - id: s2step9
+        #   actions:
+        #     dialogue:
+        #       character:
+        #         characterId: "kamilla"
+        #       text: "SO YOU'VE CALLED UPON ME AGAIN..."
+        - id: s2step10
+          actions:
+            sfx:
+              items:
+                - sfxId: "oh"
+            background:
+              backgroundId: "bg3"
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_robe
+                    - partId: arms
+                      spriteId: eleni_arms_robe_up
+                    - partId: eyes
+                      spriteId: eleni_eyes_open
+                    - partId: brows
+                      spriteId: eleni_brows_mad
+                    - partId: mouth
+                      spriteId: eleni_mouth_smile
+                  position:
+                    positionId: "character_left"
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: eyes
+                      spriteId: kamilla_eyes_open
+                    - partId: mouth
+                      spriteId: kamilla_mouth_grin
+                    - partId: arms
+                      spriteId: kamilla_arms_work_down
+                  position:
+                    positionId: "character_right"
+            dialogue:
+              dialogueBoxId: "dialogueBox1"
+              character:
+                characterId: "kamilla"
+              # text: "...The book you asked for."
+              text: "{{ i18n.en_default.a1 }}"
+        - id: s2step11
+          actions:
+            bgm:
+              bgmId: "bgm1"
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_robe
+                    - partId: arms
+                      spriteId: eleni_arms_robe_up
+                    - partId: eyes
+                      spriteId: eleni_eyes_squee
+                    - partId: mouth
+                      spriteId: eleni_mouth_ehe
+                  position:
+                    positionId: "character_left"
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: eyes
+                      spriteId: kamilla_eyes_open
+                    - partId: mouth
+                      spriteId: kamilla_mouth_grin
+                    - partId: arms
+                      spriteId: kamilla_arms_work_down
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                  position:
+                    positionId: "character_right"
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "{{ i18n.en_default.a2 }}"
+        - id: "step14"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: eyes
+                      spriteId: kamilla_eyes_half2
+                    - partId: brows
+                      spriteId: kamilla_brows_mad
+                    - partId: mouth
+                      spriteId: kamilla_mouth_um
+                    - partId: arms
+                      spriteId: kamilla_arms_work_down
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                  position:
+                    positionId: "character_right"
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: 'Here... [A Comprehensive Guide to Capturing Princesses.] Not sure why you''d want a guidebook aimed at overlord-level demons, but...'
+        - id: "step15"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_robe
+                    - partId: arms
+                      spriteId: eleni_arms_robe_up
+                    - partId: eyes
+                      spriteId: eleni_eyes_open
+                    - partId: mouth
+                      spriteId: eleni_mouth_happy
+                  position:
+                    positionId: "character_left"
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "Of course I'd want it! It's important to learn what kinds of knowledge they want to pass down to future generations!"
+        - id: "step16"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_down
+                    - partId: eyes
+                      spriteId: kamilla_eyes_open
+                    - partId: brows
+                      spriteId: kamilla_brows_surprise
+                    - partId: mouth
+                      spriteId: kamilla_mouth_pout
+                  position:
+                    positionId: "character_right"
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "You're not secretly vying to become an overlord, then?"
+        - id: "step17"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_robe
+                    - partId: arms
+                      spriteId: eleni_arms_robe_up
+                    - partId: brows
+                      spriteId: eleni_brows_up
+                    - partId: eyes
+                      spriteId: eleni_eyes_lookaway
+                    - partId: mouth
+                      spriteId: eleni_mouth_smile
+                  position:
+                    positionId: "character_left"
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "Heheh, I wonder~"
+        - id: "step18"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: eyes
+                      spriteId: kamilla_eyes_half2
+                    - partId: brows
+                      spriteId: kamilla_brows_mad
+                    - partId: mouth
+                      spriteId: kamilla_mouth_uh
+                    - partId: arms
+                      spriteId: kamilla_arms_work_cover
+                  position:
+                    positionId: "character_right"
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "By the way... do you really have to wear those robes every time you summon me."
+        - id: "step19"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_robe
+                    - partId: arms
+                      spriteId: eleni_arms_robe_up
+                    - partId: brows
+                      spriteId: eleni_brows_mad
+                    - partId: eyes
+                      spriteId: eleni_eyes_open
+                    - partId: mouth
+                      spriteId: eleni_mouth_shout
+                  position:
+                    positionId: "character_left"
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "YES!! It's part of the ritual!"
+        - id: "step20"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: eyes
+                      spriteId: kamilla_eyes_closed
+                    - partId: mouth
+                      spriteId: kamilla_mouth_um
+                    - partId: arms
+                      spriteId: kamilla_arms_work_down
+                  position:
+                    positionId: "character_right"
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "This is the third time we've done this."
+        - id: "step21"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_robe
+                    - partId: arms
+                      spriteId: eleni_arms_robe_up
+                    - partId: eyes
+                      spriteId: eleni_eyes_open
+                    - partId: mouth
+                      spriteId: eleni_mouth_oh
+                  position:
+                    positionId: "character_left"
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "I have to be dressed for the ritual, Kamilla."
+        - id: "step22"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: eyes
+                      spriteId: kamilla_eyes_half2
+                    - partId: brows
+                      spriteId: kamilla_brows_mad
+                    - partId: mouth
+                      spriteId: kamilla_mouth_um
+                    - partId: arms
+                      spriteId: kamilla_arms_work_down
+                  position:
+                    positionId: "character_right"
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "And is this daily ritual really necessary to our original contract?"
+        - id: "step23"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_robe
+                    - partId: arms
+                      spriteId: eleni_arms_robe_up
+                    - partId: brows
+                      spriteId: eleni_brows_up
+                    - partId: eyes
+                      spriteId: eleni_eyes_yay
+                    - partId: mouth
+                      spriteId: eleni_mouth_happy
+                  position:
+                    positionId: "character_left"
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "If I don't set the mood, it won't be as fun! It gives you an excuse to make a fun demonic entrance, too..."
+        - id: "step24"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: eyes
+                      spriteId: kamilla_eyes_closed
+                    - partId: brows
+                      spriteId: kamilla_brows_up
+                    - partId: mouth
+                      spriteId: kamilla_mouth_oh
+                    - partId: arms
+                      spriteId: kamilla_arms_work_down
+                  position:
+                    positionId: "character_right"
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "Any entrance I make is demonic..."
+        - id: "step25"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: eyes
+                      spriteId: kamilla_eyes_dark
+                    - partId: brows
+                      spriteId: kamilla_brows_mad
+                    - partId: mouth
+                      spriteId: kamilla_mouth_grin
+                    - partId: arms
+                      spriteId: kamilla_arms_work_cover
+                  position:
+                    positionId: "character_right"
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "FOR I AM A FEARSOME DEMON!\nA CREATURE BORN FROM... TH-THE NIGHTMARES OF PATHETIC HUMANS!"
+        - id: "step26"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_robe
+                    - partId: arms
+                      spriteId: eleni_arms_robe_up
+                    - partId: eyes
+                      spriteId: eleni_eyes_open
+                    - partId: mouth
+                      spriteId: eleni_mouth_oh
+                  position:
+                    positionId: "character_left"
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "Is that really how demons are born? Do you think I could dream a demon into existence too?"
+        - id: "step27"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: eyes
+                      spriteId: kamilla_eyes_open
+                    - partId: brows
+                      spriteId: kamilla_brows_mad
+                    - partId: mouth
+                      spriteId: kamilla_mouth_uh
+                    - partId: arms
+                      spriteId: kamilla_arms_work_grab
+                  position:
+                    positionId: "character_right"
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "No, that's not really--"
+        - id: "step28"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_robe
+                    - partId: arms
+                      spriteId: eleni_arms_robe_down
+                    - partId: brows
+                      spriteId: eleni_brows_mad
+                    - partId: eyes
+                      spriteId: eleni_eyes_lookaway
+                    - partId: mouth
+                      spriteId: eleni_mouth_pout
+                  position:
+                    positionId: "character_left"
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "But I dream about demons all the time! What am I doing wrong? Is it because I'm an angel?"
+        - id: "step29"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: eyes
+                      spriteId: kamilla_eyes_dark
+                    - partId: mouth
+                      spriteId: kamilla_mouth_shout
+                    - partId: arms
+                      spriteId: kamilla_arms_work_down
+                  position:
+                    positionId: "character_right"
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "No! I-I just meant we're supposed to be like a human's worst fear! I don't know!"
+        - id: "step30"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_robe
+                    - partId: arms
+                      spriteId: eleni_arms_robe_up
+                    - partId: eyes
+                      spriteId: eleni_eyes_open
+                    - partId: mouth
+                      spriteId: eleni_mouth_oh
+                    - partId: brows
+                      spriteId: eleni_brows_up
+                  position:
+                    positionId: "character_left"
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "Huh? Then how ARE demons born?"
+        - id: "step31"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_cover
+                    - partId: eyes
+                      spriteId: kamilla_eyes_closed
+                    - partId: mouth
+                      spriteId: kamilla_mouth_shout
+                  position:
+                    positionId: "character_right"
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "...Just, nevermind!! Wh-why are we talking about this?!"
+        - id: "step32"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_robe
+                    - partId: arms
+                      spriteId: eleni_arms_robe_up
+                    - partId: eyes
+                      spriteId: eleni_eyes_open
+                    - partId: mouth
+                      spriteId: eleni_mouth_smile
+                    - partId: brows
+                      spriteId: eleni_brows_up
+                  position:
+                    positionId: "character_left"
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "You're the one who brought it up. Here, lemme get the lights."
+        - id: "step33"
+          autoNext: true
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_robe
+                    - partId: arms
+                      spriteId: eleni_arms_robe_up
+                    - partId: eyes
+                      spriteId: eleni_eyes_open
+                    - partId: mouth
+                      spriteId: eleni_mouth_smile
+                    - partId: brows
+                      spriteId: eleni_brows_up
+                  position:
+                    positionId: "character_left"
+                  inAnimation:
+                    animationId: "ani5"
+            dialogue:
+              dialogueBoxId:
+        - id: "step34"
+          autoNext: true
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId:
+        - id: "step35"
+          actions:
+            background:
+              backgroundId: "bg5"
+            animation:
+              animationId: "ani1"
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_pjs
+                    - partId: arms
+                      spriteId: eleni_arms_pjs_up
+                    - partId: eyes
+                      spriteId: eleni_eyes_open
+                    - partId: mouth
+                      spriteId: eleni_mouth_smile
+                    - partId: brows
+                      spriteId: eleni_brows_up
+                  position:
+                    positionId: "character_left"
+                  inAnimation:
+                    animationId: "ani7"
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_down
+                    - partId: eyes
+                      spriteId: kamilla_eyes_open
+                    - partId: mouth
+                      spriteId: kamilla_mouth_smile
+                    - partId: brows
+                      spriteId: kamilla_brows_up
+                  position:
+                    positionId: "character_right"
+            dialogue:
+              dialogueBoxId: "dialogueBox1"
+              character:
+                characterId: "eleni"
+              text: "Ahh, that's much better!"
+        - id: "step36"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_grab
+                    - partId: eyes
+                      spriteId: kamilla_eyes_halfaway
+                    - partId: mouth
+                      spriteId: kamilla_mouth_um
+                    - partId: brows
+                      spriteId: kamilla_brows_up
+                  position:
+                    positionId: "character_right"
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "Then don't bother with that atmosphere in the first place..."
+        - id: "step37"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_pjs
+                    - partId: arms
+                      spriteId: eleni_arms_pjs_up
+                    - partId: eyes
+                      spriteId: eleni_eyes_open
+                    - partId: mouth
+                      spriteId: eleni_mouth_smile
+                    - partId: brows
+                      spriteId: eleni_brows_up
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "Is it okay if I come up with a new task for you so I can get to reading this new book?"
+        - id: "step38"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_down
+                    - partId: eyes
+                      spriteId: kamilla_eyes_open
+                    - partId: mouth
+                      spriteId: kamilla_mouth_uh
+                    - partId: brows
+                      spriteId: kamilla_brows_surprise
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "Huh? Y-yeah... I-I mean!"
+        - id: "step39"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_cover
+                    - partId: eyes
+                      spriteId: kamilla_eyes_open
+                    - partId: mouth
+                      spriteId: kamilla_mouth_grin
+                    - partId: brows
+                      spriteId: kamilla_brows_mad
+                  inAnimation:
+                    animationId: "ani6"
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "DON'T CASUALLY BELIEVE I'LL OBEY YOUR WHIMS! THINK SERIOUSLY AS TO WHAT YOU'LL OFFER YOUR SOUL! YOUR NEXT WISH MAY BE YOUR LAST!"
+        - id: "step40"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_pjs
+                    - partId: arms
+                      spriteId: eleni_arms_pjs_oneup
+                    - partId: eyes
+                      spriteId: eleni_eyes_open
+                    - partId: mouth
+                      spriteId: eleni_mouth_oh
+                    - partId: brows
+                      spriteId: eleni_brows_up
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "Oh, is there a 3 wish limit? Like a genie?"
+        - id: "step41"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_grab
+                    - partId: eyes
+                      spriteId: kamilla_eyes_open
+                    - partId: mouth
+                      spriteId: kamilla_mouth_uh
+                    - partId: brows
+                      spriteId: kamilla_brows_up
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "That was supposed to be like, a threat on your life..."
+        - id: "step42"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_pjs
+                    - partId: arms
+                      spriteId: eleni_arms_pjs_up
+                    - partId: eyes
+                      spriteId: eleni_eyes_open
+                    - partId: mouth
+                      spriteId: eleni_mouth_smile
+                    - partId: brows
+                      spriteId: eleni_brows_mad
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "Let's do a one-contract-per-day minimum! That's my new contract with you!"
+        - id: "step43"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_down
+                    - partId: eyes
+                      spriteId: kamilla_eyes_open
+                    - partId: mouth
+                      spriteId: kamilla_mouth_pout
+                    - partId: brows
+                      spriteId: kamilla_brows_mad
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "Refused."
+        - id: "step44"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_pjs
+                    - partId: arms
+                      spriteId: eleni_arms_pjs_down
+                    - partId: eyes
+                      spriteId: eleni_eyes_tired
+                    - partId: mouth
+                      spriteId: eleni_mouth_oh
+                    - partId: brows
+                      spriteId: eleni_brows_sad
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "Whaaat? I thought that would be a good one."
+        - id: "step45"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_down
+                    - partId: eyes
+                      spriteId: kamilla_eyes_open
+                    - partId: mouth
+                      spriteId: kamilla_mouth_oh
+                    - partId: brows
+                      spriteId: kamilla_brows_mad
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "I can't let myself be monopolized by one client... I'm just starting out, I need a wider range of experience."
+        - id: "step46"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_pjs
+                    - partId: arms
+                      spriteId: eleni_arms_pjs_down
+                    - partId: eyes
+                      spriteId: eleni_eyes_open
+                    - partId: mouth
+                      spriteId: eleni_mouth_oh
+                    - partId: brows
+                      spriteId: eleni_brows_sad
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "So I can't play with you every day?"
+        - id: "step47"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_down
+                    - partId: eyes
+                      spriteId: kamilla_eyes_dark
+                    - partId: mouth
+                      spriteId: kamilla_mouth_shout
+                    - partId: brows
+                      spriteId: kamilla_brows_mad
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "Absolutely not. F-fool... you think demon summoning is a game? These contracts have grave consequences for your soul!"
+        - id: "step48"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_pjs
+                    - partId: arms
+                      spriteId: eleni_arms_pjs_down
+                    - partId: eyes
+                      spriteId: eleni_eyes_open
+                    - partId: mouth
+                      spriteId: eleni_mouth_smile
+                    - partId: brows
+                      spriteId: eleni_brows_mad
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "Oh, I don't care about that. Whatever the price to talk to a demon, I'll pay it!"
+        - id: "step49"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                      character:
+                        items:
+                          - id: "kamilla"
+                            characterId: "kamilla"
+                            spriteParts:
+                              - partId: base
+                                spriteId: kamilla_base
+                              - partId: eyes
+                                spriteId: kamilla_eyes_half2
+                              - partId: brows
+                                spriteId: kamilla_brows_mad
+                              - partId: mouth
+                                spriteId: kamilla_mouth_um
+                              - partId: arms
+                                spriteId: kamilla_arms_work_down
+                              - partId: outfit
+                                spriteId: kamilla_outfit_work
+                            position:
+                              positionId: "character_right"
+                      dialogue:
+                        character:
+                          characterId: "kamilla"
+                        text: 'Here... [A Comprehensive Guide to Capturing Princesses.] Not sure why you''d want a guidebook aimed at overlord-level demons, but...'
+        - id: "step50"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_robe
+                    - partId: arms
+                      spriteId: eleni_arms_robe_up
+                    - partId: eyes
+                      spriteId: eleni_eyes_open
+                    - partId: mouth
+                      spriteId: eleni_mouth_happy
+                  position:
+                    positionId: "character_left"
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "Of course I'd want it! It's important to learn what kinds of knowledge they want to pass down to future generations!"
+        - id: "step51"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_down
+                    - partId: eyes
+                      spriteId: kamilla_eyes_open
+                    - partId: mouth
+                      spriteId: kamilla_mouth_uh
+                    - partId: brows
+                      spriteId: kamilla_brows_mad
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "W-weren't you about to read that book I brought you?!"
+        - id: "step52"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_pjs
+                    - partId: arms
+                      spriteId: eleni_arms_pjs_up
+                    - partId: eyes
+                      spriteId: eleni_eyes_open
+                    - partId: mouth
+                      spriteId: eleni_mouth_smile
+                    - partId: brows
+                      spriteId: eleni_brows_mad
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "I can find something to entertain you in the meantime! What's important is that we're here together!"
+        - id: "step53"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_pjs
+                    - partId: arms
+                      spriteId: eleni_arms_pjs_up
+                    - partId: eyes
+                      spriteId: eleni_eyes_yay
+                    - partId: mouth
+                      spriteId: eleni_mouth_happy
+                    - partId: brows
+                      spriteId: eleni_brows_up
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "Plus, this is basically an addendum to our original contract!"
+        - id: "step54"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_pjs
+                    - partId: arms
+                      spriteId: eleni_arms_pjs_up
+                    - partId: eyes
+                      spriteId: eleni_eyes_open
+                    - partId: mouth
+                      spriteId: eleni_mouth_happy
+                    - partId: brows
+                      spriteId: eleni_brows_up
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "Friends should spend time together! Aren't we friends, Kamilla?"
+        - id: "step55"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_down
+                    - partId: eyes
+                      spriteId: kamilla_eyes_closed
+                    - partId: mouth
+                      spriteId: kamilla_mouth_oh
+                    - partId: brows
+                      spriteId: kamilla_brows_mad
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: 'Due to that contract, yes... ongoing interaction would be required, I think. I just didn''t realize "ongoing" meant DAILY....'
+        - id: "step56"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_pjs
+                    - partId: arms
+                      spriteId: eleni_arms_pjs_oneup
+                    - partId: eyes
+                      spriteId: eleni_eyes_squee
+                    - partId: mouth
+                      spriteId: eleni_mouth_smile
+                    - partId: brows
+                      spriteId: eleni_brows_up
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "You're agreeing to this one though, right?"
+        - id: "step57"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_down
+                    - partId: eyes
+                      spriteId: kamilla_eyes_open
+                    - partId: mouth
+                      spriteId: kamilla_mouth_pout
+                    - partId: brows
+                      spriteId: kamilla_brows_up
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "I have no objections. It's a fair contract."
+        - id: "step58"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_down
+                    - partId: eyes
+                      spriteId: kamilla_eyes_half2
+                    - partId: mouth
+                      spriteId: kamilla_mouth_grin
+                    - partId: brows
+                      spriteId: kamilla_brows_up
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: 'Spend the next 24 hours "hanging out" with you, and then... you give me a break for a few days. Alright?'
+        - id: "step59"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_pjs
+                    - partId: arms
+                      spriteId: eleni_arms_pjs_up
+                    - partId: eyes
+                      spriteId: eleni_eyes_yay
+                    - partId: mouth
+                      spriteId: eleni_mouth_happy
+                    - partId: brows
+                      spriteId: eleni_brows_up
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "Ooookaaaay <3"
+        - id: "step60"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_down
+                    - partId: eyes
+                      spriteId: kamilla_eyes_open
+                    - partId: mouth
+                      spriteId: kamilla_mouth_smile
+                    - partId: brows
+                      spriteId: kamilla_brows_up
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "Good! Then it's decided... I-I mean--"
+        - id: "step61"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_cover
+                    - partId: eyes
+                      spriteId: kamilla_eyes_dark
+                    - partId: mouth
+                      spriteId: kamilla_mouth_grin
+                    - partId: brows
+                      spriteId: kamilla_brows_mad
+                  inAnimation:
+                    animationId: "ani6"
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "THE CONTRACT IS SEALED!\nMUHAHAHAHAAA...."
+            text: "So there's no demon friend stuff to do...?"
+        - id: "step83"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_down
+                    - partId: eyes
+                      spriteId: kamilla_eyes_dark
+                    - partId: mouth
+                      spriteId: kamilla_mouth_grin
+                    - partId: brows
+                      spriteId: kamilla_brows_mad
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "Of course not, you fool!"
+        - id: "step84"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_pjs
+                    - partId: arms
+                      spriteId: eleni_arms_pjs_up
+                    - partId: eyes
+                      spriteId: eleni_eyes_yay
+                    - partId: mouth
+                      spriteId: eleni_mouth_happy
+                    - partId: brows
+                      spriteId: eleni_brows_up
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "Then let's play Capture the Princess! You be the Overlord, and I'll be the Princess."
+        - id: "step85"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_grab
+                    - partId: eyes
+                      spriteId: kamilla_eyes_open
+                    - partId: mouth
+                      spriteId: kamilla_mouth_uh
+                    - partId: brows
+                      spriteId: kamilla_brows_up
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "Huh? I-is that a real thing?"
+        - id: "step86"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_pjs
+                    - partId: arms
+                      spriteId: eleni_arms_pjs_up
+                    - partId: eyes
+                      spriteId: eleni_eyes_open
+                    - partId: mouth
+                      spriteId: eleni_mouth_smile
+                    - partId: brows
+                      spriteId: eleni_brows_mad
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "I just made it up! Try to capture me!"
+        - id: "step87"  
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_down
+                    - partId: eyes
+                      spriteId: kamilla_eyes_open
+                    - partId: mouth
+                      spriteId: kamilla_mouth_oh
+                    - partId: brows
+                      spriteId: kamilla_brows_mad
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "Isn't this just tag?"
+        - id: "step88"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_pjs
+                    - partId: arms
+                      spriteId: eleni_arms_pjs_down
+                    - partId: eyes
+                      spriteId: eleni_eyes_open
+                    - partId: mouth
+                      spriteId: eleni_mouth_smile
+                    - partId: brows
+                      spriteId: eleni_brows_relax
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "Demons play tag, too? Heehee!"
+        - id: "step89"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_cover
+                    - partId: eyes
+                      spriteId: kamilla_eyes_halfaway
+                    - partId: mouth
+                      spriteId: kamilla_mouth_grin
+                    - partId: brows
+                      spriteId: kamilla_brows_relax
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "...Very well! I shall engage in this game of tag!"
+        - id: "step90"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_pjs
+                    - partId: arms
+                      spriteId: eleni_arms_pjs_down
+                    - partId: eyes
+                      spriteId: eleni_eyes_squee
+                    - partId: mouth
+                      spriteId: eleni_mouth_happy
+                    - partId: brows
+                      spriteId: eleni_brows_up
+                  position:
+                    positionId: "character_left"
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "Kyaa~ the evil Overlord is after me! Heeheehee!!"
+        - id: "step91"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_down
+                    - partId: eyes
+                      spriteId: kamilla_eyes_dark
+                    - partId: mouth
+                      spriteId: kamilla_mouth_grin
+                    - partId: brows
+                      spriteId: kamilla_brows_mad
+                  position:
+                    positionId: "character_center"
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "I'll capture and imprison you! Like a true Overlord would do!"
+        - id: "step92"
+          actions:
+            visual:
+              items:
+                - id: "cg1"
+                  visualId: "cg1"
+                  position:
+                    positionId: "visual_center"
+                  inAnimation:
+                    animationId: "ani1"
+            character:
+              items: []
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "Wahh! I'm cornered~!"
+        - id: "step93"
+          actions:
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "I have you now, Princess!"
+        - id: "step94"
+          actions:
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "Oh nooo~! What are you gonna do to me?"
+        - id: "step95"
+          actions:
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "Uh... I-imprison you, right?"
+        - id: "step96"
+          actions:
+            dialogue:
+              character:
+                characterId: "eleni"
+                text: "What about after that?"
+        - id: "step97"
+          actions:
+            dialogue:
+              character:
+                characterId: "kamilla"
+                text: "Wait for a hero to come challenge me? A-AND THEN SLAY HIM REMORSELESSLY!! MUAHAHAHAA!!"
+        - id: "step98"
+          actions:
+            dialogue:
+              character:
+                characterId: "eleni"
+                text: "Heehee... so you'll fight to protect me, Miss Overlord?"
+        - id: "step99"
+          actions:
+            visual:
+              items:
+                - id: "cg1"
+                  visualId: "cg1"
+                  position:
+                    positionId: "visual_center"
+                  inAnimation:
+                    animationId: "ani1"
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_pjs
+                    - partId: arms
+                      spriteId: eleni_arms_pjs_down
+                    - partId: eyes
+                      spriteId: eleni_eyes_open
+                    - partId: mouth
+                      spriteId: eleni_mouth_smile
+                    - partId: brows
+                      spriteId: eleni_brows_relax
+                  position:
+                    positionId: "character_left"
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_down
+                    - partId: eyes
+                      spriteId: kamilla_eyes_open
+                    - partId: mouth
+                      spriteId: kamilla_mouth_uh
+                    - partId: brows
+                      spriteId: kamilla_brows_mad
+                  position:
+                    positionId: "character_right"
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "H-hold on... are Princesses supposed to like their captors?"
+        - id: "step100"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_pjs
+                    - partId: arms
+                      spriteId: eleni_arms_pjs_down
+                    - partId: eyes
+                      spriteId: eleni_eyes_open
+                    - partId: mouth
+                      spriteId: eleni_mouth_smile
+                    - partId: brows
+                      spriteId: eleni_brows_mad
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "This one does!"
+        - id: "step101"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_grab
+                    - partId: eyes
+                      spriteId: kamilla_eyes_dark
+                    - partId: mouth
+                      spriteId: kamilla_mouth_panic
+                    - partId: brows
+                      spriteId: kamilla_brows_mad
+            animation:
+              animationId: "bounce2"
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "Isn't that kinda messed up?!"
+        - id: "step102"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_pjs
+                    - partId: arms
+                      spriteId: eleni_arms_pjs_down
+                    - partId: eyes
+                      spriteId: eleni_eyes_open
+                    - partId: mouth
+                      spriteId: eleni_mouth_oh
+                    - partId: brows
+                      spriteId: eleni_brows_up
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "We're just playing... but if you don't like it, I guess we can do something else."
+        - id: "step103"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_pjs
+                    - partId: arms
+                      spriteId: eleni_arms_pjs_down
+                    - partId: eyes
+                      spriteId: eleni_eyes_open
+                    - partId: mouth
+                      spriteId: eleni_mouth_happy
+                    - partId: brows
+                      spriteId: eleni_brows_relax
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "Are you hungry? Ooh, what do demons eat? Meat, right?!"
+        - id: "step104"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_down
+                    - partId: eyes
+                      spriteId: kamilla_eyes_open
+                    - partId: mouth
+                      spriteId: kamilla_mouth_oh
+                    - partId: brows
+                      spriteId: kamilla_brows_mad
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "Stop right there! Do NOT try to serve me something weird like human flesh, okay?!"
+        - id: "step105"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_pjs
+                    - partId: arms
+                      spriteId: eleni_arms_pjs_down
+                    - partId: eyes
+                      spriteId: eleni_eyes_squee
+                    - partId: mouth
+                      spriteId: eleni_mouth_happy
+                    - partId: brows
+                      spriteId: eleni_brows_relax
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "Mind reader!! We're really on the same wavelength now!"
+        - id: "step106"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_cover
+                    - partId: eyes
+                      spriteId: kamilla_eyes_halfaway
+                    - partId: mouth
+                      spriteId: kamilla_mouth_grin
+                    - partId: brows
+                      spriteId: kamilla_brows_relax
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "Ah... haha... you're a dangerous angel."
+        - id: "step107"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_pjs
+                    - partId: arms
+                      spriteId: eleni_arms_pjs_oneup
+                    - partId: eyes
+                      spriteId: eleni_eyes_lookaway
+                    - partId: mouth
+                      spriteId: eleni_mouth_smile
+                    - partId: brows
+                      spriteId: eleni_brows_up
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "So what should I cook...?"
+        - id: "step108"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_pjs
+                    - partId: arms
+                      spriteId: eleni_arms_pjs_down
+                    - partId: eyes
+                      spriteId: eleni_eyes_open
+                    - partId: mouth
+                      spriteId: eleni_mouth_oh
+                    - partId: brows
+                      spriteId: eleni_brows_sad
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "Or maybe food made by an angel would poison you? I didn't consider that!!"
+        - id: "step109"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_down
+                    - partId: eyes
+                      spriteId: kamilla_eyes_half
+                    - partId: mouth
+                      spriteId: kamilla_mouth_oh
+                    - partId: brows
+                      spriteId: kamilla_brows_up
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "It'd only become poison if you put something weird in it. Maybe I'd be better off eating out..."
+        - id: "step110"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_pjs
+                    - partId: arms
+                      spriteId: eleni_arms_pjs_up
+                    - partId: eyes
+                      spriteId: eleni_eyes_open
+                    - partId: mouth
+                      spriteId: eleni_mouth_oh
+                    - partId: brows
+                      spriteId: eleni_brows_mad
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "No no no, you can't go outside. Everyone would freak out!"
+        - id: "step111"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_down
+                    - partId: eyes
+                      spriteId: kamilla_eyes_open
+                    - partId: mouth
+                      spriteId: kamilla_mouth_pout
+                    - partId: brows
+                      spriteId: kamilla_brows_relax
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "Oh. Right. Angels."
+        - id: "step112"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_pjs
+                    - partId: arms
+                      spriteId: eleni_arms_pjs_oneup
+                    - partId: eyes
+                      spriteId: eleni_eyes_open
+                    - partId: mouth
+                      spriteId: eleni_mouth_happy
+                    - partId: brows
+                      spriteId: eleni_brows_up
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "We might be able to disguise you if not for your big long horns... Oh, maybe you can put stockings over them to look like a bunny!"
+        - id: "step113"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_down
+                    - partId: eyes
+                      spriteId: kamilla_eyes_half
+                    - partId: mouth
+                      spriteId: kamilla_mouth_uh
+                    - partId: brows
+                      spriteId: kamilla_brows_relax
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "Pass. Just order pizza or something."
+        - id: "step114"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_pjs
+                    - partId: arms
+                      spriteId: eleni_arms_pjs_up
+                    - partId: eyes
+                      spriteId: eleni_eyes_open
+                    - partId: mouth
+                      spriteId: eleni_mouth_oh
+                    - partId: brows
+                      spriteId: eleni_brows_mad
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "Pizza...! Demon pizza!!"
+        - id: "step115"
+          actions:
+            character:
+              items:
+                - id: "kamilla"
+                  characterId: "kamilla"
+                  spriteParts:
+                    - partId: base
+                      spriteId: kamilla_base
+                    - partId: outfit
+                      spriteId: kamilla_outfit_work
+                    - partId: arms
+                      spriteId: kamilla_arms_work_down
+                    - partId: eyes
+                      spriteId: kamilla_eyes_dark
+                    - partId: mouth
+                      spriteId: kamilla_mouth_shout
+                    - partId: brows
+                      spriteId: kamilla_brows_mad
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "They're not going to deliver from the Netherworld!! Just order your regular angel pizza!!!"
+        - id: "step116"
+          actions:
+            character:
+              items:
+                - id: "eleni"
+                  characterId: "eleni"
+                  spriteParts:
+                    - partId: base
+                      spriteId: eleni_base
+                    - partId: outfit
+                      spriteId: eleni_outfit_pjs
+                    - partId: arms
+                      spriteId: eleni_arms_pjs_up
+                    - partId: eyes
+                      spriteId: eleni_eyes_yay
+                    - partId: mouth
+                      spriteId: eleni_mouth_smile
+                    - partId: brows
+                      spriteId: eleni_brows_up
+            dialogue:
+              character:
+                characterId: "eleni"
+              text: "Game Over: Heheheh... okay. I'll order pizza."
+        - id: "step117"
+          actions:
+            setPersistentVariables:
+              gameOver: true
+            moveToSection:
+              sectionId: "section3"
+              pointerMode: "read"
+              presetId: "step1"
+
+    section14:
+      steps:
+        - id: step1
+          autoNext: true
+          autoNextDelay: 500
+          actions:
+            visual:
+              items: []
+        - id: step2
+          actions:
+            visual:
+              items:
+                - id: extra
+                  visualId: "extra1"
+                  inAnimation:
+                    animationId: "ani1"
+                  outAnimation:
+                    animationId: "ani4"
+        - id: step3
+          actions:
+            visual:
+              items:
+                - id: extra
+                  visualId: "extra2"
+                  inAnimation:
+                    animationId: "ani1"
+                  outAnimation:
+                    animationId: "ani4"
+        - id: step4
+          actions:
+            visual:
+              items:
+                - id: extra
+                  visualId: "extra3"
+                  inAnimation:
+                    animationId: "ani1"
+                  outAnimation:
+                    animationId: "ani4"
+        - id: step5
+          actions:
+            visual:
+              items:
+                - id: extra
+                  visualId: "extra4"
+                  inAnimation:
+                    animationId: "ani1"
+                  outAnimation:
+                    animationId: "ani4"
+        - id: step6
+          actions:
+            visual:
+              items:
+                - id: extra
+                  visualId: "extra5"
+                  inAnimation:
+                    animationId: "ani1"
+                  outAnimation:
+                    animationId: "ani4"
+        - id: step7
+          autoNext: true
+          autoNextDelay: 500
+          actions:
+            visual:
+              items:
+                - id: extra
+                  visualId:
+                  outAnimation:
+                    animationId: "ani4"
+        - id: step8
+          actions:
+            moveToSection:
+              sectionId: section3
+              pointerMode: "read"
+              presetId: "title"
+i18n:
+  en_default:
+    language: en
+    keys:
+      a1: sss ...The book you asked for.
+      a2: sss EEEEEEE show me, show me!
+  it:
+    language: it
+    keys:
+      a1: sss ...Il libro che hai chiesto.
+      a2: sss EEEEEEE mostrami, mostrami!
+
