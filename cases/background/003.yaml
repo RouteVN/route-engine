@@ -581,7 +581,7 @@ resources:
             height: 720
             width: 1280
             # rightClickEventName: "HideMenu"
-          - id: "about3"
+          - id: "about3-{{ customState.currentPage }}"
             type: "anchor-layout-container"
             anchor: "CenterLeft"
             direction: "vertical"
@@ -642,7 +642,7 @@ resources:
                 default: default
               items:
                 - template: default
-                  id: "ladfkj3"
+                  id: "ck3iladfkj3"
                   page: {{ page }}
                   text: "{{ text }}"
                   eventName: "Actions"
@@ -667,7 +667,7 @@ resources:
                   clickSoundUrl: "/public/first-contract/audio/sfx_button1.wav"
                   clickSoundVolume: "{{ config.soundVolume }}"
                 - template: selected
-                  id: "ladfkj3"
+                  id: "c94k2ladfkj3"
                   text: "{{ text }}"
                   eventName: "{{ eventName }}"
                   type: "text-interactive"
@@ -827,7 +827,7 @@ resources:
                             fontFamily: "NomnomNami2"
                             wordWrapWidth: 1740
 
-          - id: "about3"
+          - id: "about3-{{ customState.currentPage }}"
             type: "anchor-layout-container"
             anchor: "CenterLeft"
             direction: "vertical"
@@ -913,7 +913,7 @@ resources:
                 default: default
               items:
                 - template: default
-                  id: "ladfkj3"
+                  id: "xm4934ladfkj3"
                   page: {{ page }}
                   text: "{{ text }}"
                   eventName: "Actions"
@@ -936,7 +936,7 @@ resources:
                     strokeColor: black
                     strokeWidth: 6
                 - template: selected
-                  id: "ladfkj3"
+                  id: "cdk3ladfkj3"
                   text: "{{ text }}"
                   eventName: "{{ eventName }}"
                   type: "text-interactive"
@@ -1077,255 +1077,483 @@ resources:
                       wordWrapWidth: 1740
 
       about:
+        transitions:
+          - id: "f34afeja"
+            type: keyframes
+            elementId: 'contao421piawefkj'
+            event: add
+            animationProperties:
+              - property: alpha
+                initialValue: 0.2
+                keyframes:
+                  - duration: 600
+                    value: 1
+                    easing: linear
         layout:
-          - id: "lad3fkj3"
-            text: About
-            x: 20
-            y: 20
-            type: "text"
-            width: 120
-            height: 40
-            style:
-              fill: "#cc005b"
-              fontSize: 120
-              fontFamily: "NomnomNami2"
-              wordWrapWidth: 1740
-              strokeColor: black
-              strokeWidth: 6
-          - id: "about32fs2"
-            type: "anchor-layout-container"
-            anchor: "TopLeft"
-            direction: "vertical"
-            x: 360
-            y: 150
-            width: 780
-            height: 1000
+          - id: contao421piawefkj
+            type: container
             children:
-              - id: "about"
-                type: "sprite"
-                url: "/public/first-contract/gui/patreon ad.png"
-                height: 150
-                width: 780
-              - id: "ladfkj3"
-                text: Contract Demon
+              - id: "lad3fkj3"
+                text: About
+                x: 20
+                y: 20
                 type: "text"
                 width: 120
                 height: 40
                 style:
                   fill: "#cc005b"
-                  fontSize: 40
+                  fontSize: 120
                   fontFamily: "NomnomNami2"
                   wordWrapWidth: 1740
                   strokeColor: black
                   strokeWidth: 6
-              - id: "ladfkj3"
-                text: Version 1.1.0
-                type: "text"
-                width: 120
-                height: 40
-                style:
-                  fill: "white"
-                  fontSize: 30
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-                  strokeColor: black
-                  strokeWidth: 6
-              - id: "ladfkj3"
-                text: Created by NomNomNami for NanoReno 2019
-                type: "text"
-                width: 120
-                height: 40
-                style:
-                  fill: "white"
-                  fontSize: 36
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-                  strokeColor: black
-                  strokeWidth: 6
-              - id: "ladfkj3"
-                text: Various sound effects downloaded from freesound.org
-                type: "text"
-                width: 120
-                height: 40
-                style:
-                  fill: "white"
-                  fontSize: 36
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-                  strokeColor: black
-                  strokeWidth: 6
-              - id: "ladfe1kj3"
-                text: Made with RenPy 8.2.0.24012702
-                type: "text"
-                width: 120
-                height: 40
-                style:
-                  fill: "white"
-                  fontSize: 30
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-                  strokeColor: black
-                  strokeWidth: 6
-              - id: "ladgdffkj3"
-                text: This program contains free software under a number of licenses, including MIT license, and GNU Lesser General Public License. A complete list of software, including link sto full source code, can be found here.
-                type: "text"
-                width: 120
-                height: 40
-                style:
-                  fill: "white"
-                  fontSize: 28
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 900
-                  strokeColor: black
-                  strokeWidth: 6
-
-      options:
-        layout:
-          - id: "ladfkj3x3"
-            text: Options
-            x: 20
-            y: 20
-            type: "text-interactive"
-            width: 120
-            height: 40
-            style:
-              fill: "#cc005b"
-              fontSize: 120
-              fontFamily: "NomnomNami2"
-              wordWrapWidth: 1740
-              strokeColor: black
-              strokeWidth: 6
-          - id: "about32fs2"
-            type: "anchor-layout-container"
-            anchor: "TopLeft"
-            direction: "vertical"
-            x: 360
-            y: 150
-            gap: 20
-            width: 780
-            height: 1000
-            children:
-              - id: "ladfkj3"
-                text: Rollback Side
-                type: "text"
-                width: 120
-                height: 40
-                style:
-                  fill: "#cc005b"
-                  fontSize: 40
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-                  strokeColor: black
-                  strokeWidth: 6
-              - id: df3kk3
-                type: anchor-layout-container
+              - id: "about32fs2"
+                type: "anchor-layout-container"
                 anchor: "TopLeft"
                 direction: "vertical"
-                gap: 12
-                width: 300
-                height: 300 
-                data:
-                  - text: Disable
-                    value: disable
-                  - text: Left
-                    value: left
-                  - text: Right
-                    value: right
-                template:
-                  mapping:
-                    cases:
-                      - case:
-                          property: value
-                          op: eq
-                          value: "{{ config.rollbackSide }}"
-                        then: selected
-                    default: default
-                  items:
-                    - template: default
-                      id: "ladfkf1d22j3"
-                      type: "text-interactive"
-                      text: "{{ text }}"
-                      x: 28
-                      eventName: "Actions"
-                      eventPayload:
-                        actions:
-                          setPersistentConfig:
-                            rollbackSide: "{{ value }}"
-                      style:
-                        fill: "#ccc"
-                        fontSize: 28
-                        fontFamily: "NomnomNami2"
-                        wordWrapWidth: 1740
-                      hoverStyle:
-                        fontSize: 28
-                        fill: "yellow"
-                        fontFamily: "NomnomNami2"
-                        wordWrapWidth: 1740
-                    - template: selected
-                      id: "askd3d34dejd"
-                      type: "container"
-                      x: 0
-                      y: 0
-                      height: 30
-                      children:
-                        - id: df3kgeawdf3erk3
-                          type: sprite
-                          url: "/public/first-contract/gui/button/check_selected_foreground.png"
-                        - id: df3kgxeawdf3erk3
-                          type: "text"
-                          x: 28
-                          y: 0
+                x: 360
+                y: 150
+                width: 780
+                height: 1000
+                children:
+                  - id: "about"
+                    type: "sprite"
+                    url: "/public/first-contract/gui/patreon ad.png"
+                    height: 150
+                    width: 780
+                  - id: "jkg93ladfkj3"
+                    text: Contract Demon
+                    type: "text"
+                    width: 120
+                    height: 40
+                    style:
+                      fill: "#cc005b"
+                      fontSize: 40
+                      fontFamily: "NomnomNami2"
+                      wordWrapWidth: 1740
+                      strokeColor: black
+                      strokeWidth: 6
+                  - id: "g34ladfkj3"
+                    text: Version 1.1.0
+                    type: "text"
+                    width: 120
+                    height: 40
+                    style:
+                      fill: "white"
+                      fontSize: 30
+                      fontFamily: "NomnomNami2"
+                      wordWrapWidth: 1740
+                      strokeColor: black
+                      strokeWidth: 6
+                  - id: "234gladfkj3"
+                    text: Created by NomNomNami for NanoReno 2019
+                    type: "text"
+                    width: 120
+                    height: 40
+                    style:
+                      fill: "white"
+                      fontSize: 36
+                      fontFamily: "NomnomNami2"
+                      wordWrapWidth: 1740
+                      strokeColor: black
+                      strokeWidth: 6
+                  - id: "lcdfeadfkj3"
+                    text: Various sound effects downloaded from freesound.org
+                    type: "text"
+                    width: 120
+                    height: 40
+                    style:
+                      fill: "white"
+                      fontSize: 36
+                      fontFamily: "NomnomNami2"
+                      wordWrapWidth: 1740
+                      strokeColor: black
+                      strokeWidth: 6
+                  - id: "gaweladfe1kj3"
+                    text: Made with RenPy 8.2.0.24012702
+                    type: "text"
+                    width: 120
+                    height: 40
+                    style:
+                      fill: "white"
+                      fontSize: 30
+                      fontFamily: "NomnomNami2"
+                      wordWrapWidth: 1740
+                      strokeColor: black
+                      strokeWidth: 6
+                  - id: "ladgdffkj3"
+                    text: This program contains free software under a number of licenses, including MIT license, and GNU Lesser General Public License. A complete list of software, including link sto full source code, can be found here.
+                    type: "text"
+                    width: 120
+                    height: 40
+                    style:
+                      fill: "white"
+                      fontSize: 28
+                      fontFamily: "NomnomNami2"
+                      wordWrapWidth: 900
+                      strokeColor: black
+                      strokeWidth: 6
+
+      options:
+        transitions:
+          - id: "f34afeja"
+            type: keyframes
+            elementId: 'contaopiawefkj'
+            event: add
+            animationProperties:
+              - property: alpha
+                initialValue: 0.2
+                keyframes:
+                  - duration: 600
+                    value: 1
+                    easing: linear
+        layout:
+          - id: contaopiawefkj
+            type: container
+            children:
+              - id: "ladfkj3x3"
+                text: Options
+                x: 20
+                y: 20
+                type: "text-interactive"
+                width: 120
+                height: 40
+                style:
+                  fill: "#cc005b"
+                  fontSize: 120
+                  fontFamily: "NomnomNami2"
+                  wordWrapWidth: 1740
+                  strokeColor: black
+                  strokeWidth: 6
+              - id: "about32fs2-{{ config.rollbackSide }}"
+                type: "anchor-layout-container"
+                anchor: "TopLeft"
+                direction: "vertical"
+                x: 360
+                y: 150
+                gap: 20
+                width: 780
+                height: 1000
+                children:
+                  - id: "ladfkj3"
+                    text: Rollback Side
+                    type: "text"
+                    width: 120
+                    height: 40
+                    style:
+                      fill: "#cc005b"
+                      fontSize: 40
+                      fontFamily: "NomnomNami2"
+                      wordWrapWidth: 1740
+                      strokeColor: black
+                      strokeWidth: 6
+                  - id: df3kk323
+                    type: anchor-layout-container
+                    anchor: "TopLeft"
+                    direction: "vertical"
+                    gap: 12
+                    width: 300
+                    height: 300 
+                    data:
+                      - text: Disable
+                        value: disable
+                      - text: Left
+                        value: left
+                      - text: Right
+                        value: right
+                    template:
+                      mapping:
+                        cases:
+                          - case:
+                              property: value
+                              op: eq
+                              value: "{{ config.rollbackSide }}"
+                            then: selected
+                        default: default
+                      items:
+                        - template: default
+                          id: "ladfkf1d22j3-{{ value }}"
+                          type: "text-interactive"
                           text: "{{ text }}"
+                          x: 28
+                          eventName: "Actions"
+                          eventPayload:
+                            actions:
+                              setPersistentConfig:
+                                rollbackSide: "{{ value }}"
                           style:
-                            fill: "white"
+                            fill: "#ccc"
                             fontSize: 28
                             fontFamily: "NomnomNami2"
                             wordWrapWidth: 1740
+                          hoverStyle:
+                            fontSize: 28
+                            fill: "yellow"
+                            fontFamily: "NomnomNami2"
+                            wordWrapWidth: 1740
+                        - template: selected
+                          id: "askd3d34dejd-{{ value }}"
+                          type: "container"
+                          x: 0
+                          y: 0
+                          height: 30
+                          children:
+                            - id: df3kgeawdf3erk3
+                              type: sprite
+                              url: "/public/first-contract/gui/button/check_selected_foreground.png"
+                            - id: df3kgxeawdf3erk3
+                              type: "text"
+                              x: 28
+                              y: 0
+                              text: "{{ text }}"
+                              style:
+                                fill: "white"
+                                fontSize: 28
+                                fontFamily: "NomnomNami2"
+                                wordWrapWidth: 1740
 
-          - id: "about325fs2"
-            type: "anchor-layout-container"
-            anchor: "TopLeft"
-            direction: "vertical"
-            x: 660
-            y: 150
-            gap: 40
-            width: 780
-            height: 1000
-            children:
-              - id: "ladsfgkj3"
-                text: Skip
-                type: "text"
-                width: 120
-                height: 40
-                style:
-                  fill: "#cc005b"
-                  fontSize: 40
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-                  strokeColor: black
-                  strokeWidth: 6
-              - id: df3kgeawdf3erk3
-                type: anchor-layout-container
+              - id: "about325fs2-{{ config.skipUnseenText }}-{{ config.skipTransitions }}"
+                type: "anchor-layout-container"
                 anchor: "TopLeft"
                 direction: "vertical"
-                gap: 12
-                width: 300
-                height: 300 
+                x: 660
+                y: 150
+                gap: 40
+                width: 780
+                height: 1000
+                children:
+                  - id: "ladsfgkj3"
+                    text: Skip
+                    type: "text"
+                    width: 120
+                    height: 40
+                    style:
+                      fill: "#cc005b"
+                      fontSize: 40
+                      fontFamily: "NomnomNami2"
+                      wordWrapWidth: 1740
+                      strokeColor: black
+                      strokeWidth: 6
+                  - id: df3kgeawdf3erk3
+                    type: anchor-layout-container
+                    anchor: "TopLeft"
+                    direction: "vertical"
+                    gap: 12
+                    width: 300
+                    height: 300 
+                    data:
+                      - text: Unseen Text
+                        value: "{{ config.skipUnseenText }}"
+                        eventPayload:
+                          actions:
+                            setPersistentConfig:
+                              skipUnseenText:
+                                op: toggle
+                      - text: Transitions
+                        value: "{{ config.skipTransitions }}"
+                        eventPayload:
+                          actions:
+                            setPersistentConfig:
+                              skipTransitions:
+                                op: toggle
+                    template:
+                      mapping:
+                        cases:
+                          - case:
+                              property: value
+                              op: eq
+                              value: true
+                            then: selected
+                        default: default
+                      items:
+                        - template: default
+                          id: "ladfkf1jc3d-{{ value }}"
+                          type: "text-interactive"
+                          text: "{{ text }}"
+                          x: 28
+                          eventName: "Actions"
+                          eventPayload: "{{ eventPayload }}"
+                          style:
+                            fill: "#ccc"
+                            fontSize: 28
+                            fontFamily: "NomnomNami2"
+                            wordWrapWidth: 1740
+                          hoverStyle:
+                            fontSize: 28
+                            fill: "yellow"
+                            fontFamily: "NomnomNami2"
+                            wordWrapWidth: 1740
+                        - template: selected
+                          id: "askd3d34dejd-{{ value }}"
+                          type: "container"
+                          x: 0
+                          y: 0
+                          height: 30
+                          children:
+                            - id: df3kgeawdf3erk3
+                              type: sprite
+                              url: "/public/first-contract/gui/button/check_selected_foreground.png"
+                            - id: df3kgxeawdf3erk3-{{ value }}
+                              type: "text-interactive"
+                              eventName: "Actions"
+                              eventPayload: "{{ eventPayload }}"
+                              x: 28
+                              y: 0
+                              text: "{{ text }}"
+                              style:
+                                fill: "white"
+                                fontSize: 28
+                                fontFamily: "NomnomNami2"
+                                wordWrapWidth: 1740
+                    children: []
+                
+              - id: "about32e2fcss232-{{ config.textSpeed }}"
+                type: "anchor-layout-container"
+                anchor: "TopLeft"
+                direction: "vertical"
+                x: 360
+                y: 400
+                gap: 20
+                children:
+                  - id: "ladr2fkj3-{{ config.textSpeed }}"
+                    text: Text Speed
+                    type: "text"
+                    width: 120
+                    height: 40
+                    style:
+                      fill: "#cc005b"
+                      fontSize: 40
+                      fontFamily: "NomnomNami2"
+                      wordWrapWidth: 1740
+                      strokeColor: black
+                      strokeWidth: 6
+                  - id: slidetefvxz2r3f
+                    type: slider
+                    direction: horizontal
+                    x: 0
+                    y: 0
+                    dragEventName: "Actions"
+                    dragEventPayload:
+                      actions:
+                        setPersistentConfig:
+                          textSpeed: '{{ value }}'
+                    initialValue: '{{ config.textSpeed }}'
+                    idleThumb: "/public/first-contract/gui/slider/horizontal_idle_thumb.png"
+                    hoverThumb: "/public/first-contract/gui/slider/horizontal_hover_thumb.png"
+                    idleBar: "/public/first-contract/gui/slider/horizontal_idle_bar.png"
+                    hoverBar: "/public/first-contract/gui/slider/horizontal_hover_bar.png"
+              - id: "about32e2fsfes232-{{ config.autoForwardTime }}"
+                type: "anchor-layout-container"
+                anchor: "TopLeft"
+                direction: "vertical"
+                x: 360
+                y: 520
+                gap: 20
+                children:
+                  - id: "ladfkj3-{{ config.autoForwardTime }}"
+                    text: Auto-Forward Time
+                    type: "text"
+                    width: 120
+                    height: 40
+                    style:
+                      fill: "#cc005b"
+                      fontSize: 40
+                      fontFamily: "NomnomNami2"
+                      wordWrapWidth: 1740
+                      strokeColor: black
+                      strokeWidth: 6
+                  - id: slidet342e2c2d2r3
+                    type: slider
+                    direction: horizontal
+                    x: 0
+                    y: 0
+                    dragEventName: "Actions"
+                    dragEventPayload:
+                      actions:
+                        setPersistentConfig:
+                          autoForwardTime: '{{ value }}'
+                    initialValue: '{{ config.autoForwardTime }}'
+                    idleThumb: "/public/first-contract/gui/slider/horizontal_idle_thumb.png"
+                    hoverThumb: "/public/first-contract/gui/slider/horizontal_hover_thumb.png"
+                    idleBar: "/public/first-contract/gui/slider/horizontal_idle_bar.png"
+                    hoverBar: "/public/first-contract/gui/slider/horizontal_hover_bar.png"
+              - id: "about32e2fs2-{{ config.musicVolume }}"
+                type: "anchor-layout-container"
+                anchor: "TopLeft"
+                direction: "vertical"
+                x: 860
+                y: 400
+                gap: 20
+                children:
+                  - id: "ladfk4j3-{{ config.musicVolume }}"
+                    text: Music Volume
+                    type: "text"
+                    width: 120
+                    height: 40
+                    style:
+                      fill: "#cc005b"
+                      fontSize: 40
+                      fontFamily: "NomnomNami2"
+                      wordWrapWidth: 1740
+                      strokeColor: black
+                      strokeWidth: 6
+                  - id: slidet3342e2r332
+                    type: slider
+                    direction: horizontal
+                    x: 0
+                    y: 0
+                    dragEventName: "Actions"
+                    dragEventPayload:
+                      actions:
+                        setPersistentConfig:
+                          musicVolume: '{{ value }}'
+                    initialValue: '{{ config.musicVolume }}'
+                    idleThumb: "/public/first-contract/gui/slider/horizontal_idle_thumb.png"
+                    hoverThumb: "/public/first-contract/gui/slider/horizontal_hover_thumb.png"
+                    idleBar: "/public/first-contract/gui/slider/horizontal_idle_bar.png"
+                    hoverBar: "/public/first-contract/gui/slider/horizontal_hover_bar.png"
+              - id: "about32e422af23wefs2-{{ config.soundVolume }}"
+                type: "anchor-layout-container"
+                anchor: "TopLeft"
+                direction: "vertical"
+                x: 860
+                y: 520
+                gap: 20
+                children:
+                  - id: "ladfwkj3-{{ config.soundVolume }}"
+                    text: Sound Volume
+                    type: "text"
+                    width: 120
+                    height: 40
+                    style:
+                      fill: "#cc005b"
+                      fontSize: 40
+                      fontFamily: "NomnomNami2"
+                      wordWrapWidth: 1740
+                      strokeColor: black
+                      strokeWidth: 6
+                  - id: slidet343f2ee2r33
+                    type: slider
+                    direction: horizontal
+                    x: 0
+                    y: 0
+                    dragEventName: "Actions"
+                    dragEventPayload:
+                      actions:
+                        setPersistentConfig:
+                          soundVolume: '{{ value }}'
+                    initialValue: '{{ config.soundVolume }}'
+                    idleThumb: "/public/first-contract/gui/slider/horizontal_idle_thumb.png"
+                    hoverThumb: "/public/first-contract/gui/slider/horizontal_hover_thumb.png"
+                    idleBar: "/public/first-contract/gui/slider/horizontal_idle_bar.png"
+                    hoverBar: "/public/first-contract/gui/slider/horizontal_hover_bar.png"
+              - id: "ladfwkj3d3"
+                type: "anchor-layout-container"
+                children: []
+                x: 860
+                y: 640
                 data:
-                  - text: Unseen Text
-                    value: "{{ config.skipUnseenText }}"
-                    eventPayload:
-                      actions:
-                        setPersistentConfig:
-                          skipUnseenText:
-                            op: toggle
-                  - text: Transitions
-                    value: "{{ config.skipTransitions }}"
-                    eventPayload:
-                      actions:
-                        setPersistentConfig:
-                          skipTransitions:
-                            op: toggle
+                  - value: "{{ config.muteAll }}"
                 template:
                   mapping:
                     cases:
@@ -1337,236 +1565,7 @@ resources:
                     default: default
                   items:
                     - template: default
-                      id: "ladfkf1jc3"
-                      type: "text-interactive"
-                      text: "{{ text }}"
-                      x: 28
-                      eventName: "Actions"
-                      eventPayload: "{{ eventPayload }}"
-                      style:
-                        fill: "#ccc"
-                        fontSize: 28
-                        fontFamily: "NomnomNami2"
-                        wordWrapWidth: 1740
-                      hoverStyle:
-                        fontSize: 28
-                        fill: "yellow"
-                        fontFamily: "NomnomNami2"
-                        wordWrapWidth: 1740
-                    - template: selected
-                      id: "askd3d34dejd"
-                      type: "container"
-                      x: 0
-                      y: 0
-                      height: 30
-                      children:
-                        - id: df3kgeawdf3erk3
-                          type: sprite
-                          url: "/public/first-contract/gui/button/check_selected_foreground.png"
-                        - id: df3kgxeawdf3erk3
-                          type: "text-interactive"
-                          eventName: "Actions"
-                          eventPayload: "{{ eventPayload }}"
-                          x: 28
-                          y: 0
-                          text: "{{ text }}"
-                          style:
-                            fill: "white"
-                            fontSize: 28
-                            fontFamily: "NomnomNami2"
-                            wordWrapWidth: 1740
-                children: []
-             
-          - id: "about32e2fcss232"
-            type: "anchor-layout-container"
-            anchor: "TopLeft"
-            direction: "vertical"
-            x: 360
-            y: 400
-            gap: 20
-            children:
-              - id: "ladr2fkj3"
-                text: Text Speed
-                type: "text"
-                width: 120
-                height: 40
-                style:
-                  fill: "#cc005b"
-                  fontSize: 40
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-                  strokeColor: black
-                  strokeWidth: 6
-              - id: slidetefvxz2r3f
-                type: slider
-                direction: horizontal
-                x: 0
-                y: 0
-                dragEventName: "Actions"
-                dragEventPayload:
-                  actions:
-                    setPersistentConfig:
-                      textSpeed: '{{ value }}'
-                initialValue: '{{ config.textSpeed }}'
-                idleThumb: "/public/first-contract/gui/slider/horizontal_idle_thumb.png"
-                hoverThumb: "/public/first-contract/gui/slider/horizontal_hover_thumb.png"
-                idleBar: "/public/first-contract/gui/slider/horizontal_idle_bar.png"
-                hoverBar: "/public/first-contract/gui/slider/horizontal_hover_bar.png"
-          - id: "about32e2fsfes232"
-            type: "anchor-layout-container"
-            anchor: "TopLeft"
-            direction: "vertical"
-            x: 360
-            y: 520
-            gap: 20
-            children:
-              - id: "ladfkj3"
-                text: Auto-Forward Time
-                type: "text"
-                width: 120
-                height: 40
-                style:
-                  fill: "#cc005b"
-                  fontSize: 40
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-                  strokeColor: black
-                  strokeWidth: 6
-              - id: slidet342e2c2d2r3
-                type: slider
-                direction: horizontal
-                x: 0
-                y: 0
-                dragEventName: "Actions"
-                dragEventPayload:
-                  actions:
-                    setPersistentConfig:
-                      autoForwardTime: '{{ value }}'
-                initialValue: '{{ config.autoForwardTime }}'
-                idleThumb: "/public/first-contract/gui/slider/horizontal_idle_thumb.png"
-                hoverThumb: "/public/first-contract/gui/slider/horizontal_hover_thumb.png"
-                idleBar: "/public/first-contract/gui/slider/horizontal_idle_bar.png"
-                hoverBar: "/public/first-contract/gui/slider/horizontal_hover_bar.png"
-          - id: "about32e2fs2"
-            type: "anchor-layout-container"
-            anchor: "TopLeft"
-            direction: "vertical"
-            x: 860
-            y: 400
-            gap: 20
-            children:
-              - id: "ladfk4j3"
-                text: Music Volume
-                type: "text"
-                width: 120
-                height: 40
-                style:
-                  fill: "#cc005b"
-                  fontSize: 40
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-                  strokeColor: black
-                  strokeWidth: 6
-              - id: slidet3342e2r332
-                type: slider
-                direction: horizontal
-                x: 0
-                y: 0
-                dragEventName: "Actions"
-                dragEventPayload:
-                  actions:
-                    setPersistentConfig:
-                      musicVolume: '{{ value }}'
-                initialValue: '{{ config.musicVolume }}'
-                idleThumb: "/public/first-contract/gui/slider/horizontal_idle_thumb.png"
-                hoverThumb: "/public/first-contract/gui/slider/horizontal_hover_thumb.png"
-                idleBar: "/public/first-contract/gui/slider/horizontal_idle_bar.png"
-                hoverBar: "/public/first-contract/gui/slider/horizontal_hover_bar.png"
-          - id: "about32e422af23wefs2"
-            type: "anchor-layout-container"
-            anchor: "TopLeft"
-            direction: "vertical"
-            x: 860
-            y: 520
-            gap: 20
-            children:
-              - id: "ladfwkj3"
-                text: Sound Volume
-                type: "text"
-                width: 120
-                height: 40
-                style:
-                  fill: "#cc005b"
-                  fontSize: 40
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-                  strokeColor: black
-                  strokeWidth: 6
-              - id: slidet343f2ee2r33
-                type: slider
-                direction: horizontal
-                x: 0
-                y: 0
-                dragEventName: "Actions"
-                dragEventPayload:
-                  actions:
-                    setPersistentConfig:
-                      soundVolume: '{{ value }}'
-                initialValue: '{{ config.soundVolume }}'
-                idleThumb: "/public/first-contract/gui/slider/horizontal_idle_thumb.png"
-                hoverThumb: "/public/first-contract/gui/slider/horizontal_hover_thumb.png"
-                idleBar: "/public/first-contract/gui/slider/horizontal_idle_bar.png"
-                hoverBar: "/public/first-contract/gui/slider/horizontal_hover_bar.png"
-          - id: "ladfwkj3d3"
-            type: "anchor-layout-container"
-            children: []
-            x: 860
-            y: 640
-            data:
-              - value: "{{ config.muteAll }}"
-            template:
-              mapping:
-                cases:
-                  - case:
-                      property: value
-                      op: eq
-                      value: true
-                    then: selected
-                default: default
-              items:
-                - template: default
-                  id: "ladfkj3"
-                  text: Mute All
-                  type: "text-interactive"
-                  x: 28
-                  eventName: "Actions"
-                  eventPayload:
-                    actions:
-                      setPersistentConfig:
-                        muteAll:
-                          op: toggle
-                  style:
-                    fill: "#ccc"
-                    fontSize: 40
-                    fontFamily: "NomnomNami2"
-                    wordWrapWidth: 1740
-                    strokeColor: black
-                    strokeWidth: 6
-                  hoverStyle:
-                    fontSize: 40
-                    fill: "yellow"
-                    fontFamily: "NomnomNami2"
-                    wordWrapWidth: 1740
-                    strokeColor: black
-                    strokeWidth: 6
-                - template: selected
-                  id: kfj34jk49fk
-                  type: container
-                  children:
-                    - id: "ladseefkj3"
-                      type: "sprite"
-                      url: "/public/first-contract/gui/button/check_selected_foreground.png"
-                    - id: "ladfkj3"
+                      id: "ladfkj3"
                       text: Mute All
                       type: "text-interactive"
                       x: 28
@@ -1577,63 +1576,224 @@ resources:
                             muteAll:
                               op: toggle
                       style:
-                        fill: "white"
+                        fill: "#ccc"
                         fontSize: 40
                         fontFamily: "NomnomNami2"
                         wordWrapWidth: 1740
                         strokeColor: black
                         strokeWidth: 6
-          - id: "aboutf341d2x"
-            type: "anchor-layout-container"
-            anchor: "CenterLeft"
-            direction: "vertical"
-            width: 300
-            height: 500
-            x: 960
-            y: 40
+                      hoverStyle:
+                        fontSize: 40
+                        fill: "yellow"
+                        fontFamily: "NomnomNami2"
+                        wordWrapWidth: 1740
+                        strokeColor: black
+                        strokeWidth: 6
+                    - template: selected
+                      id: kfj34jk49fk
+                      type: container
+                      children:
+                        - id: "ladseefkj3"
+                          type: "sprite"
+                          url: "/public/first-contract/gui/button/check_selected_foreground.png"
+                        - id: "ladfkj3"
+                          text: Mute All
+                          type: "text-interactive"
+                          x: 28
+                          eventName: "Actions"
+                          eventPayload:
+                            actions:
+                              setPersistentConfig:
+                                muteAll:
+                                  op: toggle
+                          style:
+                            fill: "white"
+                            fontSize: 40
+                            fontFamily: "NomnomNami2"
+                            wordWrapWidth: 1740
+                            strokeColor: black
+                            strokeWidth: 6
+              - id: "aboutf341d2x"
+                type: "anchor-layout-container"
+                anchor: "CenterLeft"
+                direction: "vertical"
+                width: 300
+                height: 500
+                x: 960
+                y: 40
+                children:
+                  - id: "ladf421k4dd2j3"
+                    type: "text-interactive"
+                    width: 120
+                    height: 40
+                    text: Language...
+                    eventName: Actions
+                    eventPayload:
+                      actions:
+                        triggerStepEvent:
+                          stepEventName: "moveToLanguage"
+                        # moveToSection:
+                          # sectionId: "sectionLanguage"
+                        setCustomState:
+                          currentPage: "language"
+
+                    style:
+                      fill: "#ccc"
+                      fontSize: 40
+                      fontFamily: "NomnomNami2"
+                      wordWrapWidth: 1740
+                      strokeColor: black
+                      strokeWidth: 6
+                    hoverStyle:
+                      fontSize: 40
+                      fill: "yellow"
+                      fontFamily: "NomnomNami2"
+                      wordWrapWidth: 1740
+                      strokeColor: black
+                      strokeWidth: 6
+      language:
+        transitions:
+          - id: "f34afeja"
+            type: keyframes
+            elementId: 'cong2tao323421piawefkj'
+            event: add
+            animationProperties:
+              - property: alpha
+                initialValue: 0.2
+                keyframes:
+                  - duration: 600
+                    value: 1
+                    easing: linear
+        layout:
+          - id: cong2tao323421piawefkj
+            type: container
             children:
-              - id: "ladf421k4dd2j3"
+              - id: "about312312"
+                type: "anchor-layout-container"
+                anchor: "TopLeft"
+                direction: "vertical"
+                width: 200
+                height: 300
+                x: 20
+                y: 20
+                children:
+                  - id: "ladfkj3"
+                    text: Language
+                    type: "text-interactive"
+                    width: 120
+                    height: 40
+                    style:
+                      fill: "#cc005b"
+                      fontSize: 120
+                      fontFamily: "NomnomNami2"
+                      wordWrapWidth: 1740
+                      strokeColor: black
+                      strokeWidth: 6
+              - id: "ladfbackkj3"
+                text: Back
                 type: "text-interactive"
-                width: 120
-                height: 40
-                text: Language...
-                eventName: Actions
+                x: 980
+                y: 30
+                eventName: "Actions"
                 eventPayload:
                   actions:
                     triggerStepEvent:
-                      stepEventName: "moveToLanguage"
+                      stepEventName: "backToOptions"
                     # moveToSection:
-                      # sectionId: "sectionLanguage"
+                    #   sectionId: "sectionOptions"
                     setCustomState:
-                      currentPage: "language"
-
+                      currentPage: "options"
                 style:
                   fill: "#ccc"
-                  fontSize: 40
+                  fontSize: 32
                   fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-                  strokeColor: black
-                  strokeWidth: 6
+                  wordWrapWidth: 200
                 hoverStyle:
-                  fontSize: 40
                   fill: "yellow"
+                  fontSize: 32
                   fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-                  strokeColor: black
-                  strokeWidth: 6
-      language:
+                  wordWrapWidth: 200
+              - id: "about312312"
+                type: "anchor-layout-container"
+                anchor: "TopLeft"
+                direction: "horizontal"
+                gap: 20
+                x: 320
+                y: 320
+                data:
+                  - text: English
+                    value: en_default
+                  - text: French
+                    value: fr
+                  - text: Italian
+                    value: it
+                  - text: Spanish
+                    value: es
+                  - text: 中文
+                    value: zh
+                  - text: 日本語
+                    value: ja
+                template:
+                  mapping:
+                    cases:
+                      - case:
+                          property: value
+                          op: eq
+                          value: "{{ config.language }}"
+                        then: selected
+                    default: default
+                  items:
+                    - template: default
+                      id: "ladfkj3"
+                      text: "{{ text }}"
+                      type: "text-interactive"
+                      eventName: "Actions"
+                      eventPayload:
+                        actions:
+                          setPersistentConfig:
+                            language: "{{ value }}"
+
+                      style:
+                        fill: "#ccc"
+                        fontSize: 40
+                        fontFamily: "NomnomNami2"
+                        wordWrapWidth: 400
+                      hoverStyle:
+                        fill: "yellow"
+                        fontSize: 40
+                        fontFamily: "NomnomNami2"
+                        wordWrapWidth: 400
+                    - template: selected
+                      id: "ladfkj3233"
+                      text: "{{ text }}"
+                      type: "text-interactive"
+                      style:
+                        fill: "white"
+                        fontSize: 40
+                        fontFamily: "NomnomNami2"
+                        wordWrapWidth: 400
+                children: []
+      load:
+        transitions:
+          - id: "f34afeja"
+            type: keyframes
+            elementId: 'cong2tao421piawefkj'
+            event: add
+            animationProperties:
+              - property: alpha
+                initialValue: 0.2
+                keyframes:
+                  - duration: 600
+                    value: 1
+                    easing: linear
         layout:
-          - id: "about312312"
-            type: "anchor-layout-container"
-            anchor: "TopLeft"
-            direction: "vertical"
-            width: 200
-            height: 300
-            x: 20
-            y: 20
+          - id: cong2tao421piawefkj
+            type: container
             children:
-              - id: "ladfkj3"
-                text: Language
+              - id: "ladfkj3x3d3"
+                text: Load
+                x: 20
+                y: 20
                 type: "text-interactive"
                 width: 120
                 height: 40
@@ -1644,300 +1804,198 @@ resources:
                   wordWrapWidth: 1740
                   strokeColor: black
                   strokeWidth: 6
-          - id: "ladfbackkj3"
-            text: Back
-            type: "text-interactive"
-            x: 980
-            y: 30
-            eventName: "Actions"
-            eventPayload:
-              actions:
-                triggerStepEvent:
-                  stepEventName: "backToOptions"
-                # moveToSection:
-                #   sectionId: "sectionOptions"
-                setCustomState:
-                  currentPage: "options"
-            style:
-              fill: "#ccc"
-              fontSize: 32
-              fontFamily: "NomnomNami2"
-              wordWrapWidth: 200
-            hoverStyle:
-              fill: "yellow"
-              fontSize: 32
-              fontFamily: "NomnomNami2"
-              wordWrapWidth: 200
-          - id: "about312312"
-            type: "anchor-layout-container"
-            anchor: "TopLeft"
-            direction: "horizontal"
-            gap: 20
-            x: 320
-            y: 320
-            data:
-              - text: English
-                value: en_default
-              - text: French
-                value: fr
-              - text: Italian
-                value: it
-              - text: Spanish
-                value: es
-              - text: 中文
-                value: zh
-              - text: 日本語
-                value: ja
-            template:
-              mapping:
-                cases:
-                  - case:
-                      property: value
-                      op: eq
-                      value: "{{ config.language }}"
-                    then: selected
-                default: default
-              items:
-                - template: default
-                  id: "ladfkj3"
-                  text: "{{ text }}"
-                  type: "text-interactive"
-                  eventName: "Actions"
-                  eventPayload:
-                    actions:
-                      setPersistentConfig:
-                        language: "{{ value }}"
-                      
-                  style:
-                    fill: "#ccc"
-                    fontSize: 40
-                    fontFamily: "NomnomNami2"
-                    wordWrapWidth: 400
-                  hoverStyle:
-                    fill: "yellow"
-                    fontSize: 40
-                    fontFamily: "NomnomNami2"
-                    wordWrapWidth: 400
-                - template: selected
-                  id: "ladfkj3233"
-                  text: "{{ text }}"
-                  type: "text-interactive"
-                  style:
-                    fill: "white"
-                    fontSize: 40
-                    fontFamily: "NomnomNami2"
-                    wordWrapWidth: 400
-            children: []
-     
-
-      load:
-        layout:
-          - id: "ladfkj3x3d3"
-            text: Load
-            x: 20
-            y: 20
-            type: "text-interactive"
-            width: 120
-            height: 40
-            style:
-              fill: "#cc005b"
-              fontSize: 120
-              fontFamily: "NomnomNami2"
-              wordWrapWidth: 1740
-              strokeColor: black
-              strokeWidth: 6
-          - id: "about32fs2"
-            type: "anchor-layout-container"
-            anchor: "TopLeft"
-            direction: "vertical"
-            x: 640
-            y: 100
-            width: 780
-            height: 1000
-            children:
-              - id: "ladfkj3"
-                text: "{{ data.saveLoadSlots[customState.currentSavePageNumber].title }}"
-                type: "text"
-                width: 120
-                height: 40
-                style:
-                  fill: "#cc005b"
-                  fontSize: 40
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-                  strokeColor: black
-                  strokeWidth: 6
-          - id: "abosut32fs2"
-            type: "anchor-layout-container"
-            anchor: "TopLeft"
-            direction: "horizontal"
-            gap: 50
-            x: 360
-            y: 200
-            width: 780
-            height: 1000
-            data: "$saveData"
-            template:
-              mapping:
-                cases:
-                  - case:
-                      property: id
-                      op: exists
-                    then: slot
-                default: empty
-              items:
-                - template: slot
-                  id: kf3jkl32
-                  type: container
-                  propagateEvents: true
-                  width: 240
-                  height: 150
-                  children:
-                    - id: "ladseefkj3"
-                      type: "sprite-interactive"
-                      url: "/public/first-contract/gui/button/slot_idle_background.png"
-                      hoverUrl: "/public/first-contract/gui/button/slot_hover_background.png"
-                      width: 280
-                      height: 200
-                    - id: "ladfxkj3"
-                      x: 10
-                      y: 8
-                      type: "sprite"
-                      url: "{{ url }}"
-                      width: 260
-                      height: 144
-                      eventName: Actions
-                      eventPayload:
-                        actions:
-                          load: 
-                            index: "{{ index }}"
-                    - id: kekjx3f322
+              - id: "about32fs2-{{ customState.currentSavePageNumber }}"
+                type: "anchor-layout-container"
+                anchor: "TopLeft"
+                direction: "vertical"
+                x: 640
+                y: 100
+                width: 780
+                height: 1000
+                children:
+                  - id: "29ri3ladfkj3"
+                    text: "{{ data.saveLoadSlots[customState.currentSavePageNumber].title }}"
+                    type: "text"
+                    width: 120
+                    height: 40
+                    style:
+                      fill: "#cc005b"
+                      fontSize: 40
+                      fontFamily: "NomnomNami2"
+                      wordWrapWidth: 1740
+                      strokeColor: black
+                      strokeWidth: 6
+              - id: "abosut32fs2-{{ customState.currentSavePageNumber }}"
+                type: "anchor-layout-container"
+                anchor: "TopLeft"
+                direction: "horizontal"
+                gap: 50
+                x: 360
+                y: 200
+                width: 780
+                height: 1000
+                data: "$saveData"
+                template:
+                  mapping:
+                    cases:
+                      - case:
+                          property: id
+                          op: exists
+                        then: slot
+                    default: empty
+                  items:
+                    - template: slot
+                      id: kf3jkl32
+                      type: container
+                      propagateEvents: true
+                      width: 240
+                      height: 150
+                      children:
+                        - id: "ladseefkj3"
+                          type: "sprite-interactive"
+                          url: "/public/first-contract/gui/button/slot_idle_background.png"
+                          hoverUrl: "/public/first-contract/gui/button/slot_hover_background.png"
+                          width: 280
+                          height: 200
+                        - id: "ladfxkj3"
+                          x: 10
+                          y: 8
+                          type: "sprite"
+                          url: "{{ url }}"
+                          width: 260
+                          height: 144
+                          eventName: Actions
+                          eventPayload:
+                            actions:
+                              load: 
+                                index: "{{ index }}"
+                        - id: kekjx3f322
+                          type: "text-interactive"
+                          text: '10/10/2024 10:10:10'
+                          x: 150
+                          y: 160
+                          xa: 0.5
+                          ya: 0.5
+                          style:
+                            fill: "white"
+                            fontSize: 16
+                            fontFamily: "NomnomNami2"
+                            wordWrapWidth: 1740
+                          hoverStyle:
+                            fill: "yellow"
+                            fontSize: 20
+                            fontFamily: "NomnomNami2"
+                            wordWrapWidth: 1740
+                    - template: empty
+                      type: container
+                      width: 240
+                      height: 150
+                      children:
+                        - id: "ladsfkj3"
+                          type: "sprite"
+                          url: "/public/first-contract/gui/button/slot_idle_background.png"
+                          width: 280
+                          height: 200
+              - id: "cmi2x3x23233-{{ customState.currentSavePageNumber }}"
+                type: anchor-layout-container
+                anchor: "CenterCenter"
+                direction: "horizontal"
+                x: 800
+                y: 660
+                gap: 20
+                width: 500
+                height: 80
+                data: "{{ data.saveLoadSlots }}"
+                template:
+                  mapping:
+                    cases:
+                      - case:
+                          property: value
+                          op: eq
+                          value: -1
+                        then: prev
+                      - case:
+                          property: value
+                          op: eq
+                          value: 12
+                        then: next
+                      - case:
+                          property: value
+                          op: eq
+                          value: "{{ customState.currentSavePageNumber }}"
+                        then: selected
+                    default: default
+                  items:
+                    - template: prev
                       type: "text-interactive"
-                      text: '10/10/2024 10:10:10'
-                      x: 150
-                      y: 160
-                      xa: 0.5
-                      ya: 0.5
+                      text: "{{ text }}"
                       style:
                         fill: "white"
-                        fontSize: 16
+                        fontSize: 32
                         fontFamily: "NomnomNami2"
-                        wordWrapWidth: 1740
+                        wordWrapWidth: 100
                       hoverStyle:
                         fill: "yellow"
-                        fontSize: 20
+                        fontSize: 32
                         fontFamily: "NomnomNami2"
-                        wordWrapWidth: 1740
-                - template: empty
-                  type: container
-                  width: 240
-                  height: 150
-                  children:
-                    - id: "ladsfkj3"
-                      type: "sprite"
-                      url: "/public/first-contract/gui/button/slot_idle_background.png"
-                      width: 280
-                      height: 200
-          - id: cmi2x3x23233
-            type: anchor-layout-container
-            anchor: "CenterCenter"
-            direction: "horizontal"
-            x: 800
-            y: 660
-            gap: 20
-            width: 500
-            height: 80
-            data: "{{ data.saveLoadSlots }}"
-            template:
-              mapping:
-                cases:
-                  - case:
-                      property: value
-                      op: eq
-                      value: -1
-                    then: prev
-                  - case:
-                      property: value
-                      op: eq
-                      value: 12
-                    then: next
-                  - case:
-                      property: value
-                      op: eq
-                      value: "{{ customState.currentSavePageNumber }}"
-                    then: selected
-                default: default
-              items:
-                - template: prev
-                  type: "text-interactive"
-                  text: "{{ text }}"
-                  style:
-                    fill: "white"
-                    fontSize: 32
-                    fontFamily: "NomnomNami2"
-                    wordWrapWidth: 100
-                  hoverStyle:
-                    fill: "yellow"
-                    fontSize: 32
-                    fontFamily: "NomnomNami2"
-                    wordWrapWidth: 100
-                  eventName: "Actions"
-                  eventPayload:
-                    actions:
-                      setCustomState:
-                        currentSavePageNumber:
-                          op: dec
-                          value: 1
-                          min: 0
-                - template: next
-                  type: "text-interactive"
-                  text: "{{ text }}"
-                  style:
-                    fill: "white"
-                    fontSize: 32
-                    fontFamily: "NomnomNami2"
-                    wordWrapWidth: 100
-                  hoverStyle:
-                    fill: "yellow"
-                    fontSize: 32
-                    fontFamily: "NomnomNami2"
-                    wordWrapWidth: 100
-                  eventName: "Actions"
-                  eventPayload:
-                    actions:
-                      setCustomState:
-                        currentSavePageNumber:
-                          op: inc
-                          value: 1
-                          max: 11
-                - template: selected
-                  type: "text"
-                  text: "{{ text }}"
-                  style:
-                    fill: "white"
-                    fontSize: 32
-                    fontFamily: "NomnomNami2"
-                    wordWrapWidth: 100
-                - template: default
-                  type: "text-interactive"
-                  text: "{{ text }}"
-                  eventName: "Actions"
-                  eventPayload:
-                    actions:
-                      setCustomState:
-                        currentSavePageNumber: "{{ value }}"
-                        currentSavePageTitle: "{{ title }}"
-                  style:
-                    fill: "#ccc"
-                    fontSize: 32
-                    fontFamily: "NomnomNami2"
-                    wordWrapWidth: 100
-                  hoverStyle:
-                    fill: "yellow"
-                    fontSize: 32
-                    fontFamily: "NomnomNami2"
-                    wordWrapWidth: 100
-            children: []
+                        wordWrapWidth: 100
+                      eventName: "Actions"
+                      eventPayload:
+                        actions:
+                          setCustomState:
+                            currentSavePageNumber:
+                              op: dec
+                              value: 1
+                              min: 0
+                    - template: next
+                      type: "text-interactive"
+                      text: "{{ text }}"
+                      style:
+                        fill: "white"
+                        fontSize: 32
+                        fontFamily: "NomnomNami2"
+                        wordWrapWidth: 100
+                      hoverStyle:
+                        fill: "yellow"
+                        fontSize: 32
+                        fontFamily: "NomnomNami2"
+                        wordWrapWidth: 100
+                      eventName: "Actions"
+                      eventPayload:
+                        actions:
+                          setCustomState:
+                            currentSavePageNumber:
+                              op: inc
+                              value: 1
+                              max: 11
+                    - template: selected
+                      type: "text"
+                      text: "{{ text }}"
+                      style:
+                        fill: "white"
+                        fontSize: 32
+                        fontFamily: "NomnomNami2"
+                        wordWrapWidth: 100
+                    - template: default
+                      type: "text-interactive"
+                      text: "{{ text }}"
+                      eventName: "Actions"
+                      eventPayload:
+                        actions:
+                          setCustomState:
+                            currentSavePageNumber: "{{ value }}"
+                            currentSavePageTitle: "{{ title }}"
+                      style:
+                        fill: "#ccc"
+                        fontSize: 32
+                        fontFamily: "NomnomNami2"
+                        wordWrapWidth: 100
+                      hoverStyle:
+                        fill: "yellow"
+                        fontSize: 32
+                        fontFamily: "NomnomNami2"
+                        wordWrapWidth: 100
+                children: []
 
       save:
         layout:
@@ -1971,7 +2029,7 @@ resources:
             width: 780
             height: 1000
             children:
-              - id: "ladfkj3"
+              - id: "89gj3ladfkj3"
                 text: "{{ data.saveLoadSlots[customState.currentSavePageNumber].title }}"
                 type: "text"
                 width: 120
@@ -2014,7 +2072,7 @@ resources:
                       hoverUrl: "/public/first-contract/gui/button/slot_hover_background.png"
                       width: 280
                       height: 200
-                    - id: "ladfkj3"
+                    - id: "cjk3ladfkj3"
                       x: 10
                       y: 8
                       type: "sprite"
@@ -2085,7 +2143,7 @@ resources:
                         fontFamily: "NomnomNami2"
                         wordWrapWidth: 1740
 
-          - id: cmi2x3x23233
+          - id: "cmi2x3x23233-{{ customState.currentSavePageNumber }}"
             type: anchor-layout-container
             anchor: "CenterCenter"
             direction: "horizontal"
@@ -2172,7 +2230,7 @@ resources:
                 default: default
               items:
                 - template: default
-                  id: "ladfkj3"
+                  id: "ladfkj33d"
                   type: "anchor-layout-container"
                   anchor: "TopLeft"
                   direction: "horizontal"
@@ -2180,7 +2238,7 @@ resources:
                   children:
                     - id: 23kf323c
                       text: "{{ characterName }}"
-                      type: "text"
+                      type: "text-interactive"
                       style:
                         fill: "#ccc"
                         fontSize: 40
@@ -2188,9 +2246,26 @@ resources:
                         wordWrapWidth: 700
                         strokeColor: black
                         strokeWidth: 6
+                      hoverStyle:
+                        fill: "yellow"
+                        fontSize: 40
+                        fontFamily: "NomnomNami2"
+                        wordWrapWidth: 700
+                        strokeColor: black
+                        strokeWidth: 6
+                      eventName: Actions
+                      eventPayload:
+                        actions:
+                          exitMenu:
+                            sectionId: "{{ sectionId }}"
+                            stepId: "{{ stepId }}"
+                            presetId: read
+                            mode: read # TODO change to history
+
+
                     - id: 23kffeww323c
                       text: "{{ content }}"
-                      type: "text"
+                      type: "text-interactive"
                       style:
                         fill: "white"
                         fontSize: 40
@@ -2207,7 +2282,7 @@ resources:
             x: 60
             y: 680
             children:
-              - id: "ladfkj3"
+              - id: "90fkl34ladfkj3"
                 text: "Extra features: Bonus gallery unlocked"
                 type: "text-interactive"
                 eventName: Actions
@@ -2405,7 +2480,7 @@ resources:
       dialogueBox1:
         name: "Dialogue Box 1"
         layout:
-          - id: "asdf"
+          - id: "asxxdf3f"
             type: "anchor-layout-container"
             anchor: "BottomLeft"
             direction: "horizontal"
@@ -2416,7 +2491,7 @@ resources:
                 type: "sprite"
                 url: "/public/first-contract/gui/textbox.png"
                 direction: horizontal
-          - id: awefg
+          - id: aweff3g
             type: anchor-layout-container
             anchor: TopLeft
             direction: horizontal
@@ -2436,7 +2511,7 @@ resources:
                   wordWrapWidth: 1740
                   strokeColor: black
                   strokeWidth: 6
-          - id: awefg
+          - id: awefgsgf3
             type: anchor-layout-container
             anchor: TopLeft
             direction: horizontal
@@ -2457,7 +2532,7 @@ resources:
                   wordWrapWidth: 780
                   strokeColor: black
                   strokeWidth: 3
-          - id: di3i3kd
+          - id: dife3i33kd
             type: anchor-layout-container
             anchor: TopLeft
             direction: horizontal
@@ -2569,7 +2644,7 @@ resources:
       dialogueBox2:
         name: "Dialogue Box 2"
         layout:
-          - id: "as23df"
+          - id: "as323f3dfa3a3"
             type: "anchor-layout-container"
             anchor: "CenterCenter"
             direction: "horizontal"
@@ -2592,7 +2667,7 @@ resources:
       dialogueBox3:
         name: "Dialogue Box 3"
         layout:
-          - id: "asdf"
+          - id: "asdf3df"
             type: "anchor-layout-container"
             anchor: "BottomLeft"
             direction: "horizontal"
@@ -2603,7 +2678,7 @@ resources:
                 type: "sprite"
                 url: "/public/first-contract/gui/nvl.png"
                 direction: horizontal
-          - id: "f34afeja"
+          - id: "f34af3afeja"
             type: "anchor-layout-container"
             anchor: "TopLeft"
             direction: "horizontal"
@@ -2620,7 +2695,7 @@ resources:
                   wordWrapWidth: 1740
                   strokeColor: "black"
                   strokeWidth: 6
-          - id: "f34afeja231"
+          - id: "f3asd4afeja231"
             type: "anchor-layout-container"
             incremental: true
             anchor: "TopLeft"
@@ -2691,19 +2766,25 @@ presets:
   read:
     events:
       LeftClick:
-        action: "nextStep"
+        actions:
+          nextStep: {}
       RightClick:
-        action: "moveToSection"
-        payload:
-          sectionId: "section7"
-          presetId: "menu"
-          mode: "menu"
+        actions:
+          moveToSection:
+            sectionId: "section9"
+            presetId: "menu"
+            mode: "menu"
+          setCustomState:
+            currentPage: "options"
       ScrollUp:
-        action: "prevStep"
+        actions:
+          prevStep: {}
       ControlDown:
-        action: "startSkipMode"
+        actions:
+          startSkipMode: {}
       ControlUp:
-        action: "stopSkipMode"
+        action:
+          stopSkipMode: {}
     configuration:
       recordHistory: true
   menu:

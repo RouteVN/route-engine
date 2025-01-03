@@ -693,10 +693,6 @@ class RvnEngine {
         this.handleAction(action, payload || payload2);
       }
     );
-
-    // this._selectedPreset.events[event].actions.forEach((action) => {
-
-    // })
   }
 }
 
