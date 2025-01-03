@@ -37079,13 +37079,12 @@ var PixiTDR = class _PixiTDR extends BaseTDR {
         })
       );
     }
-    for (const toUpdateElement of toUpdateElements) {
-      const elementRenderer = this._getRendererByElement(toUpdateElement.next);
+    for (const toAddElement of toAddElements) {
+      const elementRenderer = this._getRendererByElement(toAddElement);
       actions.push(
-        elementRenderer.update(app, {
+        elementRenderer.add(app, {
           parent: app.stage,
-          prevElement: toUpdateElement.prev,
-          nextElement: toUpdateElement.next,
+          element: toAddElement,
           getRendererByElement: this._getRendererByElement,
           transitions: nextState.transitions,
           getTransitionByType: this._getTransitionByType,
@@ -37093,12 +37092,13 @@ var PixiTDR = class _PixiTDR extends BaseTDR {
         })
       );
     }
-    for (const toAddElement of toAddElements) {
-      const elementRenderer = this._getRendererByElement(toAddElement);
+    for (const toUpdateElement of toUpdateElements) {
+      const elementRenderer = this._getRendererByElement(toUpdateElement.next);
       actions.push(
-        elementRenderer.add(app, {
+        elementRenderer.update(app, {
           parent: app.stage,
-          element: toAddElement,
+          prevElement: toUpdateElement.prev,
+          nextElement: toUpdateElement.next,
           getRendererByElement: this._getRendererByElement,
           transitions: nextState.transitions,
           getTransitionByType: this._getTransitionByType,
@@ -37314,6 +37314,9 @@ var TextRendererPlugin = class {
     const { parent, element, transitions = [], getTransitionByType } = options;
     const text = parent.getChildByName(element.id);
     if (!text) {
+      console.warn(`Text with id ${element.id} not found`, {
+        parent
+      });
       return;
     }
     let transitionPromises = [];
@@ -37346,7 +37349,11 @@ var TextRendererPlugin = class {
       parent.getChildByName(prevElement.id)
     );
     if (!text) {
-      throw new Error(`Text with id ${prevElement.id} not found`);
+      console.warn(`Text with id ${prevElement.id} not found`, {
+        parent,
+        labels: parent.children.map((child) => child.label)
+      });
+      return;
     }
     if (prevElement.text !== nextElement.text) {
       text.text = nextElement.text;
@@ -37360,7 +37367,12 @@ var TextRendererPlugin = class {
         fontSize: nextElement.style?.fontSize,
         fill: nextElement.style?.fill,
         lineHeight: nextElement.style?.lineHeight,
-        wordWrapWidth: nextElement.style?.wordWrapWidth
+        wordWrapWidth: nextElement.style?.wordWrapWidth,
+        fontFamily: nextElement.style?.fontFamily || "",
+        stroke: nextElement.style?.strokeColor ? {
+          color: nextElement.style?.strokeColor,
+          width: nextElement.style?.strokeWidth
+        } : void 0
       });
     }
     if (nextElement.x !== void 0) {
@@ -37476,8 +37488,8 @@ var TextInteractiveRendererPlugin = class {
     const { parent, element, transitions = [], getTransitionByType } = options;
     const text = parent.getChildByName(element.id);
     if (!text) {
+      console.warn(`Text with id ${element.id} not found`);
       return;
-      throw new Error(`Text with id ${element.id} not found`);
     }
     let transitionPromises = [];
     for (const transition of transitions) {
@@ -37509,22 +37521,15 @@ var TextInteractiveRendererPlugin = class {
       parent.getChildByName(prevElement.id)
     );
     if (!text) {
-      throw new Error(`Text with id ${prevElement.id} not found`);
+      console.warn(`Text with id ${prevElement.id} not found`);
+      return;
     }
     if (prevElement.text !== nextElement.text) {
       text.text = nextElement.text;
     } else {
     }
     if (JSON.stringify(prevElement.style) !== JSON.stringify(nextElement.style)) {
-      text.style = new TextStyle({
-        wordWrap: nextElement?.style.wordWrap || true,
-        breakWords: !nextElement.text.includes(" "),
-        align: nextElement?.style.align,
-        fontSize: nextElement?.style.fontSize,
-        fill: nextElement?.style.fill,
-        lineHeight: nextElement?.style.lineHeight,
-        wordWrapWidth: nextElement?.style.wordWrapWidth
-      });
+      text.style = new TextStyle(nextElement?.style);
     }
     if (nextElement.x !== void 0) {
       text.x = nextElement.x;
@@ -37699,6 +37704,10 @@ var TextRevealingRendererPlugin = class {
     }
     await new Promise((resolve) => {
       const effect = (time) => {
+        if (lineIndex > container.children.length) {
+          resolve();
+          return;
+        }
         if (!container.getChildAt(lineIndex).mask) {
           container.getChildAt(lineIndex).mask = mask;
           container.getChildAt(lineIndex).alpha = 1;
@@ -37735,7 +37744,10 @@ var TextRevealingRendererPlugin = class {
     const { parent, element, transitions = [], getTransitionByType } = options;
     const container = parent.getChildByName(element.id);
     if (!container) {
-      throw new Error(`Text with id ${element.id} not found`);
+      console.warn(`Text with id ${element.id} not found`, {
+        parent
+      });
+      return;
     }
     let transitionPromises = [];
     for (const transition of transitions) {
@@ -37767,7 +37779,10 @@ var TextRevealingRendererPlugin = class {
       parent.getChildByName(prevElement.id)
     );
     if (!text) {
-      throw new Error(`Text with id ${prevElement.id} not found`);
+      console.warn(`Text with id ${prevElement.id} not found`, {
+        parent
+      });
+      return;
     }
     await this.remove(app, { parent, element: prevElement });
     await this.add(app, { parent, element: nextElement });
@@ -38080,7 +38095,8 @@ var ContainerRendererPlugin = class {
     } = options;
     const container = parent.getChildByName(prevElement.id);
     if (!container) {
-      throw new Error(`Container with id ${prevElement.id} not found`);
+      console.warn(`Container with id ${prevElement.id} not found`);
+      return;
     }
     if (nextElement.x !== void 0 && nextElement.x !== prevElement.x) {
       container.x = nextElement.x;
@@ -38138,17 +38154,6 @@ var ContainerRendererPlugin = class {
       const bIndex = nextElement.children.findIndex((element) => element.id === b2.label);
       return aIndex - bIndex;
     });
-    const transitionPromises = [];
-    for (const transition of transitions) {
-      if (transition.elementId === prevElement.id && transition.event === TransitionEvent.Add) {
-        const transitionClass = getTransitionByType(transition.type);
-        if (!transitionClass) {
-          throw new Error(`Transition class not found for type ${transition.type}`);
-        }
-        transitionPromises.push(transitionClass.add(app, container, transition));
-      }
-    }
-    await Promise.all(renderPromises.concat(transitionPromises.concat(renderPromises)));
   };
 };
 
@@ -38590,9 +38595,6 @@ var ModalRendererPlugin = class {
       getRendererByElement,
       eventHandler
     });
-    console.log("REMOVE MODAL RRRRRRRRRRRRRRRRRRRRRRRRR 2", {
-      modalContainer: app.stage.getChildByName("modalContainer")
-    });
   };
   /**
    * @param {Application} app
@@ -38633,6 +38635,50 @@ var AnchorLayoutAnchorMapping = {
   [AnchorLayoutValues.BottomLeft]: { x: 0, y: 1 },
   [AnchorLayoutValues.BottomCenter]: { x: 0.5, y: 1 },
   [AnchorLayoutValues.BottomRight]: { x: 1, y: 1 }
+};
+var compileChildren = (_data, _template) => {
+  const data = JSON.parse(JSON.stringify(_data));
+  const template = JSON.parse(JSON.stringify(_template));
+  const children = [];
+  data.forEach((dataItem, index) => {
+    let templateId;
+    if (template.mapping.cases) {
+      for (const caseItem of template.mapping.cases) {
+        if (caseItem.case.op === "exists") {
+          if (dataItem[caseItem.case.property]) {
+            templateId = caseItem.then;
+            if (templateId) {
+              break;
+            }
+          }
+        } else if (caseItem.case.op === "eq") {
+          if (dataItem[caseItem.case.property] === caseItem.case.value) {
+            templateId = caseItem.then;
+            if (templateId) {
+              break;
+            }
+          }
+        }
+      }
+      if (templateId === void 0 && template.mapping.default) {
+        templateId = template.mapping.default;
+      }
+    }
+    const templateElement = template.items.find((item) => item.template === templateId);
+    let strintigified = JSON.stringify(templateElement);
+    Object.keys(dataItem).forEach((key) => {
+      if (typeof dataItem[key] === "object") {
+        strintigified = strintigified.replaceAll(`"{{ ${key} }}"`, JSON.stringify(dataItem[key])).replaceAll("{{ index }}", index);
+      } else if (typeof dataItem[key] === "number") {
+        strintigified = strintigified.replaceAll(`"{{ ${key} }}"`, String(dataItem[key])).replaceAll("{{ index }}", index);
+      } else {
+        strintigified = strintigified.replaceAll(`{{ ${key} }}`, dataItem[key]).replaceAll("{{ index }}", index);
+      }
+    });
+    const itemElement = JSON.parse(strintigified);
+    children.push(itemElement);
+  });
+  return children;
 };
 var AnchorLayoutContainerRendererPlugin = class {
   static rendererName = "pixi";
@@ -38676,46 +38722,7 @@ var AnchorLayoutContainerRendererPlugin = class {
       container.zIndex = element.zIndex;
     }
     if (element.template && element.data) {
-      const template = element.template;
-      element.children = [];
-      element.data.forEach((dataItem, index) => {
-        let templateId;
-        if (template.mapping.cases) {
-          for (const caseItem of template.mapping.cases) {
-            if (caseItem.case.op === "exists") {
-              if (dataItem[caseItem.case.property]) {
-                templateId = caseItem.then;
-                if (templateId) {
-                  break;
-                }
-              }
-            } else if (caseItem.case.op === "eq") {
-              if (dataItem[caseItem.case.property] === caseItem.case.value) {
-                templateId = caseItem.then;
-                if (templateId) {
-                  break;
-                }
-              }
-            }
-          }
-          if (templateId === void 0 && template.mapping.default) {
-            templateId = template.mapping.default;
-          }
-        }
-        const templateElement = template.items.find((item) => item.template === templateId);
-        let strintigified = JSON.stringify(templateElement);
-        Object.keys(dataItem).forEach((key) => {
-          if (typeof dataItem[key] === "object") {
-            strintigified = strintigified.replace(`"{{ ${key} }}"`, JSON.stringify(dataItem[key])).replace("{{ index }}", index);
-          } else if (typeof dataItem[key] === "number") {
-            strintigified = strintigified.replace(`"{{ ${key} }}"`, String(dataItem[key])).replace("{{ index }}", index);
-          } else {
-            strintigified = strintigified.replace(`{{ ${key} }}`, dataItem[key]).replace("{{ index }}", index);
-          }
-        });
-        const itemElement = JSON.parse(strintigified);
-        element.children.push(itemElement);
-      });
+      element.children = compileChildren(element.data, element.template);
     }
     const populateMissingHeightAndWidth = (el) => {
       (el.children || []).forEach((child) => {
@@ -38895,7 +38902,8 @@ var AnchorLayoutContainerRendererPlugin = class {
     const { parent, element } = options;
     const sprite = parent.getChildByName(element.id);
     if (!sprite) {
-      throw new Error(`Sprite with id ${element.id} not found`);
+      console.warn(`Sprite with id ${element.id} not found`);
+      return;
     }
     sprite.destroy();
   };
@@ -38922,7 +38930,8 @@ var AnchorLayoutContainerRendererPlugin = class {
     } = options;
     const container = parent.getChildByName(prevElement.id);
     if (!container) {
-      throw new Error(`Container with id ${prevElement.id} not found`);
+      console.warn(`Container with id ${prevElement.id} not found`);
+      return;
     }
     if (nextElement.x !== void 0 && nextElement.x !== prevElement.x) {
       container.x = nextElement.x;
@@ -38930,56 +38939,74 @@ var AnchorLayoutContainerRendererPlugin = class {
     if (nextElement.y !== void 0 && nextElement.y !== prevElement.y) {
       container.y = nextElement.y;
     }
-    const { toAddElements, toUpdateElements, toDeleteElements } = diffElements(
-      prevElement.children,
-      nextElement.children
-    );
     const renderPromises = [];
-    for (const element of toDeleteElements) {
-      const renderer = getRendererByElement(element);
-      renderPromises.push(
-        renderer.remove(app, {
-          parent: container,
-          element,
-          transitions,
-          getTransitionByType,
-          getRendererByElement,
-          eventHandler
-        })
+    if (nextElement.data && nextElement.template) {
+      const children = compileChildren(nextElement.data, nextElement.template);
+      for (const element of children) {
+        const renderer = getRendererByElement(element);
+        renderPromises.push(
+          renderer.update(app, {
+            parent: container,
+            prevElement: element,
+            nextElement: element,
+            transitions,
+            getTransitionByType,
+            getRendererByElement,
+            eventHandler
+          })
+        );
+      }
+    } else {
+      const { toAddElements, toUpdateElements, toDeleteElements } = diffElements(
+        prevElement.children,
+        nextElement.children
       );
+      for (const element of toDeleteElements) {
+        const renderer = getRendererByElement(element);
+        renderPromises.push(
+          renderer.remove(app, {
+            parent: container,
+            element,
+            transitions,
+            getTransitionByType,
+            getRendererByElement,
+            eventHandler
+          })
+        );
+      }
+      for (const element of toAddElements) {
+        const renderer = getRendererByElement(element);
+        renderPromises.push(
+          renderer.add(app, {
+            parent: container,
+            element,
+            transitions,
+            getTransitionByType,
+            getRendererByElement,
+            eventHandler
+          })
+        );
+      }
+      for (const element of toUpdateElements) {
+        const renderer = getRendererByElement(element.next);
+        renderPromises.push(
+          renderer.update(app, {
+            parent: container,
+            prevElement: element.prev,
+            nextElement: element.next,
+            transitions,
+            getTransitionByType,
+            getRendererByElement,
+            eventHandler
+          })
+        );
+      }
+      container.children.sort((a2, b2) => {
+        const aIndex = nextElement.children?.findIndex((element) => element.id === a2.label);
+        const bIndex = nextElement.children?.findIndex((element) => element.id === b2.label);
+        return aIndex - bIndex;
+      });
     }
-    for (const element of toAddElements) {
-      const renderer = getRendererByElement(element);
-      renderPromises.push(
-        renderer.add(app, {
-          parent: container,
-          element,
-          transitions,
-          getTransitionByType,
-          getRendererByElement,
-          eventHandler
-        })
-      );
-    }
-    for (const element of toUpdateElements) {
-      const renderer = getRendererByElement(element.next);
-      renderPromises.push(
-        renderer.update(app, {
-          parent: container,
-          prevElement: element.prev,
-          nextElement: element.next,
-          transitions,
-          getTransitionByType,
-          getRendererByElement,
-          eventHandler
-        })
-      );
-    }
-    container.children.sort((a2, b2) => {
-      const aIndex = nextElement.children?.findIndex((element) => element.id === a2.label);
-      const bIndex = nextElement.children?.findIndex((element) => element.id === b2.label);
-      return aIndex - bIndex;
-    });
     await Promise.all(renderPromises);
   };
 };
@@ -39030,6 +39057,7 @@ var SliderRendererPlugin = class extends BaseRendererPlugin {
       texture: idleBarTexture,
       anchor: { x: 0, y: 0 }
     });
+    slider.label = element.id;
     const sliderSize = slider[size];
     slider.x = element.x || 0;
     slider.y = element.y || 0;
@@ -39117,7 +39145,8 @@ var SliderRendererPlugin = class extends BaseRendererPlugin {
     const { parent, element, transitions = [], getTransitionByType } = options;
     const sprite = parent.getChildByName(element.id);
     if (!sprite) {
-      throw new Error(`Sprite with id ${element.id} not found`);
+      console.warn(`Sprite with id ${element.id} not found`);
+      return;
     }
     let transitionPromises = [];
     for (const transition of transitions) {
@@ -39145,7 +39174,10 @@ var SliderRendererPlugin = class extends BaseRendererPlugin {
   update = async (app, { parent, prevElement, nextElement, transitions, getTransitionByType, eventHandler }) => {
     const sprite = parent.getChildByName(prevElement.id);
     if (!sprite) {
-      throw new Error(`Slider with id ${prevElement.id} not found`);
+      console.warn(`Slider with id ${prevElement.id} not found`, {
+        parent
+      });
+      return;
     }
     if (JSON.stringify(prevElement) !== JSON.stringify(nextElement)) {
       await Promise.all([

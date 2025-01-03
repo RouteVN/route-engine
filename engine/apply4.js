@@ -56,6 +56,7 @@ const initializeVnPlayer = async (element, onClose) => {
     "hoverThumb",
     "idleBar",
     "hoverBar",
+    "hoverUrl"
   ]).filter((url) => !!url);
   const imageUrls = fileUrls.filter(
     (url) => !url.endsWith(".wav") && !url.endsWith(".ogg")

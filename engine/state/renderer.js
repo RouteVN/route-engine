@@ -47,10 +47,6 @@ export const generateRenderTree = ({
   const elements = [];
   const transitions = [];
 
-  console.log({
-    config
-  })
-
   elements.push({
     id: "bg-screen",
     type: "graphics",
@@ -201,12 +197,12 @@ export const generateRenderTree = ({
       let stringified = JSON.stringify(_dialogueBox);
       Object.keys(config).forEach((key) => {
         if (typeof config[key] === "string") {
-          stringified = stringified.replace(`{{ config.${key} }}`, config[key]);
+          stringified = stringified.replaceAll(`{{ config.${key} }}`, config[key]);
         } else {
           if ((skipMode || completedStep) && key === "textSpeed") {
-            stringified = stringified.replace(`"{{ config.${key} }}"`, "100");
+            stringified = stringified.replaceAll(`"{{ config.${key} }}"`, "100");
           } else {
-            stringified = stringified.replace(
+            stringified = stringified.replaceAll(
               `"{{ config.${key} }}"`,
               JSON.stringify(config[key])
             );
@@ -249,13 +245,12 @@ export const generateRenderTree = ({
         removeClickSoundUrl(dialogueBox);
       }
 
-      const id = `dialogueBox-${dialogueBox.id}-${Math.random()}`;
       const character =
-        resources.character.items[state.dialogue?.character?.characterId];
+      resources.character.items[state.dialogue?.character?.characterId];
       const characterName = state.dialogue?.character
-        ? state.dialogue.character.characterName
-        : undefined;
-
+      ? state.dialogue.character.characterName
+      : undefined;
+      
       for (const item of dialogueBox.layout) {
         if (item.incremental) {
           for (const { text, childItemId } of state.dialogue.texts) {
@@ -323,11 +318,7 @@ export const generateRenderTree = ({
             }
           }
         }
-
-        elements.push({
-          ...item,
-          id,
-        });
+        elements.push(item)
       }
     }
   }
@@ -418,6 +409,7 @@ export const generateRenderTree = ({
             stringified = stringified.replaceAll(
               `"{{ config.${key} }}"`,
               "100"
+              // TODO
             );
           } else {
             stringified = stringified.replaceAll(
@@ -425,6 +417,10 @@ export const generateRenderTree = ({
               JSON.stringify(config[key])
             );
           }
+          stringified = stringified.replaceAll(
+            `{{ config.${key} }}`,
+            config[key]
+          );
         }
       });
 
@@ -465,8 +461,6 @@ export const generateRenderTree = ({
       );
 
       const screen = JSON.parse(stringified);
-
-      console.log("screen", screen);
 
       // Recursively replace data = $saveData with saveData
       const rawSaveData = saveData || {};
@@ -531,7 +525,7 @@ export const generateRenderTree = ({
       }
 
       if (screen) {
-        const screenId = `screen-${id}-${Math.random()}`;
+        const screenId = `screen-${id}`;
         elements.push({
           id: screenId,
           type: "container",
@@ -579,74 +573,74 @@ export const generateRenderTree = ({
     }
   }
 
-  const menuTransitions = [
-    {
-      elementId: `root-menu`,
-      type: "keyframes",
-      event: "add",
-      animationProperties: [
-        {
-          property: "alpha",
-          initialValue: 0,
-          keyframes: [
-            {
-              duration: 500,
-              value: 1,
-              easing: "linear",
-            },
-          ],
-        },
-      ],
-    },
-    {
-      elementId: `root-read`,
-      type: "keyframes",
-      event: "add",
-      animationProperties: [
-        {
-          property: "alpha",
-          initialValue: 0,
-          keyframes: [
-            {
-              duration: 500,
-              value: 1,
-              easing: "linear",
-            },
-          ],
-        },
-      ],
-    },
-    {
-      elementId: `root-read`,
-      type: "keyframes",
-      event: "remove",
-      animationProperties: [
-        {
-          property: "alpha",
-          initialValue: 1,
-          keyframes: [{ duration: 500, value: 0, easing: "linear" }],
-        },
-      ],
-    },
-    {
-      elementId: `root-menu`,
-      type: "keyframes",
-      event: "remove",
-      animationProperties: [
-        {
-          property: "alpha",
-          initialValue: 1,
-          keyframes: [{ duration: 500, value: 0, easing: "linear" }],
-        },
-      ],
-    },
-  ];
+  // const menuTransitions = [
+  //   {
+  //     elementId: `root-menu`,
+  //     type: "keyframes",
+  //     event: "add",
+  //     animationProperties: [
+  //       {
+  //         property: "alpha",
+  //         initialValue: 0,
+  //         keyframes: [
+  //           {
+  //             duration: 500,
+  //             value: 1,
+  //             easing: "linear",
+  //           },
+  //         ],
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     elementId: `root-read`,
+  //     type: "keyframes",
+  //     event: "add",
+  //     animationProperties: [
+  //       {
+  //         property: "alpha",
+  //         initialValue: 0,
+  //         keyframes: [
+  //           {
+  //             duration: 500,
+  //             value: 1,
+  //             easing: "linear",
+  //           },
+  //         ],
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     elementId: `root-read`,
+  //     type: "keyframes",
+  //     event: "remove",
+  //     animationProperties: [
+  //       {
+  //         property: "alpha",
+  //         initialValue: 1,
+  //         keyframes: [{ duration: 500, value: 0, easing: "linear" }],
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     elementId: `root-menu`,
+  //     type: "keyframes",
+  //     event: "remove",
+  //     animationProperties: [
+  //       {
+  //         property: "alpha",
+  //         initialValue: 1,
+  //         keyframes: [{ duration: 500, value: 0, easing: "linear" }],
+  //       },
+  //     ],
+  //   },
+  // ];
 
-  if (pointerMode === "menu") {
-    // menuTransitions.forEach((transition) => {
-    //   transitions.push(transition)
-    // })
-  }
+  // if (pointerMode === "menu") {
+  //   menuTransitions.forEach((transition) => {
+  //     transitions.push(transition)
+  //   })
+  // }
 
   return {
     elements: [
@@ -658,7 +652,7 @@ export const generateRenderTree = ({
     ],
     transitions:
       (skipMode && config.skipTransitions) || completedStep
-        ? menuTransitions
+        ? [] 
         : transitions,
   };
 };
