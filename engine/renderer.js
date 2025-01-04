@@ -36752,6 +36752,10 @@ var diffElements = (prevElements = [], nextElements = []) => {
   const toDeleteElements = [];
   const toUpdateElements = [];
   const toAddElements = [];
+  console.log({
+    prevElements,
+    nextElements
+  });
   for (const prevElement of prevElements) {
     const nextElement = nextElements.find((element) => element.id === prevElement.id && element.type === prevElement.type);
     if (!nextElement) {
@@ -36769,6 +36773,11 @@ var diffElements = (prevElements = [], nextElements = []) => {
       toAddElements.push(nextElement);
     }
   }
+  console.log({
+    toDeleteElements,
+    toUpdateElements,
+    toAddElements
+  });
   return { toDeleteElements, toUpdateElements, toAddElements };
 };
 
@@ -37957,6 +37966,8 @@ var ContainerRendererPlugin = class {
    * @param {BaseTransition[]} [options.transitions=[]]
    * @param {Function} options.getTransitionByType
    * @param {Function} options.getRendererByElement
+   * @param {Function} options.eventHandler
+   * @param {Function} options.selectedTabId
    * @returns {Promise<undefined>}
    */
   add = async (app, options) => {
@@ -37968,6 +37979,7 @@ var ContainerRendererPlugin = class {
       getRendererByElement,
       eventHandler
     } = options;
+    console.log("container add");
     const container = new Container();
     container.label = element.id;
     if (element.xp !== void 0) {
@@ -37981,6 +37993,12 @@ var ContainerRendererPlugin = class {
     }
     if (element.yp !== void 0) {
       container.y = element.yp * app.screen.height;
+    }
+    if (element.scaleX !== void 0) {
+      container.scale.x = element.scaleX;
+    }
+    if (element.scaleY !== void 0) {
+      container.scale.y = element.scaleY;
     }
     if (element.zIndex !== void 0) {
       container.zIndex = element.zIndex;
@@ -38001,7 +38019,12 @@ var ContainerRendererPlugin = class {
       });
     }
     const renderPromises = [];
-    (element.children || []).forEach((childElement) => {
+    (element.children || []).filter((child) => {
+      if (element.selectedTabId) {
+        return child.tabId === element.selectedTabId;
+      }
+      return true;
+    }).forEach((childElement) => {
       const renderer = getRendererByElement(childElement);
       renderPromises.push(
         renderer.add(app, {
@@ -38051,7 +38074,15 @@ var ContainerRendererPlugin = class {
    * @returns {Promise<undefined>}
    */
   remove = async (app, options) => {
-    const { parent, element, getRendererByElement, transitions, getTransitionByType, eventHandler } = options;
+    const {
+      parent,
+      element,
+      getRendererByElement,
+      transitions,
+      getTransitionByType,
+      eventHandler
+    } = options;
+    console.log("container remove");
     const container = parent.getChildByName(element.id);
     if (!container) {
       console.warn(`Container with id ${element.id} not found`);
@@ -38062,7 +38093,14 @@ var ContainerRendererPlugin = class {
       element2.children.forEach((child) => {
         if (child.type === "modal") {
           const modalRenderer = getRendererByElement(child);
-          modalRenderer.remove(app, { parent: app.stage.getChildByName("modalContainer"), element: child, transitions, getTransitionByType, getRendererByElement, eventHandler });
+          modalRenderer.remove(app, {
+            parent: app.stage.getChildByName("modalContainer"),
+            element: child,
+            transitions,
+            getTransitionByType,
+            getRendererByElement,
+            eventHandler
+          });
         }
         if (child.children) {
           removeModalElements(child);
@@ -38098,6 +38136,41 @@ var ContainerRendererPlugin = class {
       console.warn(`Container with id ${prevElement.id} not found`);
       return;
     }
+    if (nextElement.animated && nextElement.animationKey !== prevElement.animationKey) {
+      const removeModalElements = (element) => {
+        element.children.forEach((child) => {
+          if (child.type === "modal") {
+            const modalRenderer = getRendererByElement(child);
+            modalRenderer.remove(app, {
+              parent: app.stage.getChildByName("modalContainer"),
+              element: child,
+              transitions,
+              getTransitionByType,
+              getRendererByElement,
+              eventHandler
+            });
+          }
+          if (child.children) {
+            removeModalElements(child);
+          }
+        });
+      };
+      removeModalElements(prevElement);
+      const transitionClass = getTransitionByType("keyframes");
+      await Promise.all([
+        transitionClass.add(app, container, nextElement.animation.out),
+        this.add(app, {
+          parent,
+          element: nextElement,
+          getRendererByElement,
+          getTransitionByType,
+          eventHandler,
+          transitions: [nextElement.animation.in]
+        })
+      ]);
+      container.destroy();
+      return;
+    }
     if (nextElement.x !== void 0 && nextElement.x !== prevElement.x) {
       container.x = nextElement.x;
     }
@@ -38105,8 +38178,18 @@ var ContainerRendererPlugin = class {
       container.y = nextElement.y;
     }
     const { toAddElements, toUpdateElements, toDeleteElements } = diffElements(
-      prevElement.children,
-      nextElement.children
+      prevElement.children.filter((childElement) => {
+        if (prevElement.selectedTabId) {
+          return childElement.tabId === prevElement.selectedTabId;
+        }
+        return true;
+      }),
+      nextElement.children.filter((childElement) => {
+        if (nextElement.selectedTabId) {
+          return childElement.tabId === nextElement.selectedTabId;
+        }
+        return true;
+      })
     );
     const renderPromises = [];
     for (const element of toDeleteElements) {

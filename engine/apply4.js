@@ -14,10 +14,39 @@ import {
   GraphicsRendererPlugin,
   SoundPlugin,
   SliderRendererPlugin,
-  ModalRendererPlugin
+  ModalRendererPlugin,
 } from "./renderer.js";
 
 import RvnEngine from "./state/engine2.js";
+
+async function downsizeBase64Image(base64Image, scaleFactor = 4) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    
+    img.onload = function () {
+      const originalWidth = img.width;
+      const originalHeight = img.height;
+      const newWidth = originalWidth / scaleFactor;
+      const newHeight = originalHeight / scaleFactor;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = newWidth;
+      canvas.height = newHeight;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+      const resizedBase64 = canvas.toDataURL();
+      resolve(resizedBase64);
+    };
+
+    img.onerror = function () {
+      reject(new Error("Failed to load the image."));
+    };
+
+    img.src = base64Image;
+  });
+}
 
 const getAllValuesByPropertyName = (obj, propertyNames) => {
   const result = [];
@@ -193,6 +222,14 @@ const initializeVnPlayer = async (element, onClose) => {
       transitions: transitions,
     });
   };
+
+  engine.onGetScreenShot = async () => {
+    const screenShot = app._app.stage.getChildByName('root1');
+    const base64 = await app._app.renderer.extract.base64(screenShot);
+    const downsizedBase64 = await downsizeBase64Image(base64, 4);
+    await app.loadAssets([downsizedBase64]);
+    return downsizedBase64;
+  }
 
   window.addEventListener("keydown", (e) => {
     if (e.key === "Control") {

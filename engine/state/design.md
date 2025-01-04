@@ -181,6 +181,38 @@ saveData:
 This is user set variables that will be persisted forever
 
 
+## TAB interface
+
+```yaml
+
+
+id: asdfj
+type: tab
+selectedTab: options
+screens:
+  options:
+    layout:
+      ...
+  load:
+    layout:
+      ...
+
+
+
+id: asdlkfj
+type: container
+selectedTabId: options
+children:
+  - id: jfkalwefj
+    tabId: options
+    type: 'container'
+  - id: k3kjfdk
+    tabId: load   
+    type: container
+    ...
+
+
+```
 
 
 
