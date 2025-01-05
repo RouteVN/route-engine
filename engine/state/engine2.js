@@ -184,8 +184,33 @@ class RvnEngine {
     this._render();
   }
 
+  get _currentHistorySteps() {
+    const pointer = this._stepPointers.history;
+    if (!pointer._sectionId) {
+      return [];
+    }
+    const section = this._sections[pointer._sectionId];
+    const allSteps = section.steps;
+    const index = allSteps.findIndex((step) => step.id === pointer._stepId);
+    return allSteps.slice(0, index + 1);
+  }
+
   get _currentReadSteps() {
     const pointer = this._stepPointers.read;
+    if (!pointer._sectionId) {
+      return [];
+    }
+    const section = this._sections[pointer._sectionId];
+    const allSteps = section.steps;
+    const index = allSteps.findIndex((step) => step.id === pointer._stepId);
+    return allSteps.slice(0, index + 1);
+  }
+
+  get _currentMenuSteps() {
+    const pointer = this._stepPointers.menu;
+    if (!pointer._sectionId) {
+      return [];
+    }
     const section = this._sections[pointer._sectionId];
     const allSteps = section.steps;
     const index = allSteps.findIndex((step) => step.id === pointer._stepId);
@@ -242,8 +267,11 @@ class RvnEngine {
   _render() {
     const state = this._currentSteps.reduce(applyState, {});
     const { elements, transitions } = generateRenderTree({
-      readState: this._mode === "menu" ? this._currentReadSteps.reduce(applyState, {}) : undefined,
-      state,
+      readState:
+        this._mode === "read"
+          ? this._currentReadSteps.reduce(applyState, {})
+          : this._currentHistorySteps.reduce(applyState, {}),
+      state: this._currentMenuSteps.reduce(applyState, {}),
       resources: this._resources,
       screen: {
         width: 1280,
@@ -507,7 +535,7 @@ class RvnEngine {
   }
 
   save(payload) {
-    console.log('save aaaaaaaaa')
+    console.log("save aaaaaaaaa");
     this.onGetScreenShot().then((url) => {
       const { index } = payload;
       const time = Date.now();
@@ -519,7 +547,7 @@ class RvnEngine {
         history: this._history._historySections,
         seenSections: this._seenSections._seenSections,
         title: "...",
-        url
+        url,
       };
 
       this.persistentSaveInterface.setAll(this._persistentSaveData);
@@ -527,8 +555,6 @@ class RvnEngine {
 
       this._render();
     });
-
-
   }
 
   load(payload) {
@@ -689,7 +715,7 @@ class RvnEngine {
   }
 
   handleEvent(event, payload) {
-    console.log('handleEvent',{ event, payload })
+    console.log("handleEvent", { event, payload });
     if (!event) {
       return;
     }

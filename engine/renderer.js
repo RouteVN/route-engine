@@ -38137,6 +38137,10 @@ var ContainerRendererPlugin = class {
       return;
     }
     if (nextElement.animated && nextElement.animationKey !== prevElement.animationKey) {
+      const nextContainer = parent.getChildByName(nextElement.id);
+      if (nextContainer) {
+        nextContainer.destroy();
+      }
       const removeModalElements = (element) => {
         element.children.forEach((child) => {
           if (child.type === "modal") {
@@ -38165,10 +38169,15 @@ var ContainerRendererPlugin = class {
           getRendererByElement,
           getTransitionByType,
           eventHandler,
-          transitions: [nextElement.animation.in]
+          transitions: [{
+            ...nextElement.animation.in,
+            elementId: nextElement.id
+          }]
         })
       ]);
-      container.destroy();
+      if (container && container.destroy) {
+        container.destroy();
+      }
       return;
     }
     if (nextElement.x !== void 0 && nextElement.x !== prevElement.x) {

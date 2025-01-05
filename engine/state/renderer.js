@@ -604,55 +604,66 @@ export const generateRenderTree = ({
 
   const finalElements = [];
 
-  if (readState) {
-    finalElements.push({
-      id: "root1",
-      type: "container",
-      x: -100,
-      y: -100,
-      children: generateElements(readState),
-      // scaleX: 0.2,
-      // scaleY: 0.2
-    });
-  }
-
   finalElements.push({
-    id: "root2",
+    id: "root",
     type: "container",
-    children: generateElements(state),
-  });
-
-  console.log({
-    readState,
-    finalElements
+    selectedTabId: pointerMode === "menu" ? "menu" : "read",
+    animationKey: pointerMode === "menu" ? "menu" : "read",
+    animated: true,
+    animation: {
+      out: {
+        type: "keyframes",
+        event: "remove",
+        animationProperties: [
+          {
+            property: "alpha",
+            initialValue: 0.8,
+            keyframes: [
+              {
+                duration: 600,
+                value: 0,
+                easing: "linear",
+              },
+            ],
+          },
+        ],
+      },
+      in: {
+        type: "keyframes",
+        event: "add",
+        animationProperties: [
+          {
+            property: "alpha",
+            initialValue: 0.2,
+            keyframes: [
+              {
+                duration: 600,
+                value: 1,
+                easing: "linear",
+              },
+            ],
+          },
+        ],
+      },
+    },
+    children: [
+      {
+        id: "asdeadk3f",
+        type: "container",
+        tabId: "read",
+        children: generateElements(readState),
+      },
+      {
+        id: "asfeawkjdf",
+        type: "container",
+        tabId: "menu",
+        children: generateElements(state),
+      },
+    ],
   });
 
   return {
     elements: finalElements,
-    // elements: [
-    //   // {
-    //   //   id: 'screen-shot-tester',
-    //   //   type: 'container',
-    //   //   x: -100,
-    //   //   y: -200,
-    //   //   children: [{
-    //   //     id: 'screen-shot-tester-image',
-    //   //     type: 'graphics',
-    //   //     x1: 0,
-    //   //     x2: 100,
-    //   //     y1: 0,
-    //   //     y2: 100,
-    //   //     fill: 'red',
-    //   //   }],
-    //   // },
-    //   {
-    //     // ...rootElement,
-    //     // animationKey: pointerMode,
-    //     id: 'root2',
-    //     type: 'container',
-    //     children: elements,
-    //   },
-    // ],
     transitions:
       (skipMode && config.skipTransitions) || completedStep ? [] : transitions,
   };

@@ -1171,40 +1171,40 @@ resources:
               - text: Start
                 eventPayload:
                   actions:
+                    setCustomState:
+                      currentPage: "start"
                     moveToSection:
                       sectionId: section2
                       presetId: read
                       mode: read
                       addToSection: true
-                    setCustomState:
-                      currentPage: "start"
               - text: Load
                 eventPayload:
                   actions:
+                    setCustomState:
+                      currentPage: "load"
                     moveToSection:
                       sectionId: section16
                       presetId: menu
                       mode: menu
-                    setCustomState:
-                      currentPage: "load"
               - text: Options
                 eventPayload:
                   actions:
+                    setCustomState:
+                      currentPage: "options"
                     moveToSection:
                       sectionId: section16
                       mode: menu
                       presetId: menu
-                    setCustomState:
-                      currentPage: "options"
               - text: About
                 eventPayload:
                   actions:
+                    setCustomState:
+                      currentPage: "about"
                     moveToSection:
                       sectionId: section16
                       mode: menu
                       presetId: menu
-                    setCustomState:
-                      currentPage: "about"
             template:
               mapping:
                 cases:
@@ -1265,9 +1265,32 @@ resources:
                   wordWrapWidth: 1740
       menuTabs:
         layout:
-          - id: "menuTabs-{{ customState.currentPage }}"
+          - id: "menuTabs"
             type: "container"
             selectedTabId: "{{ customState.currentPage }}"
+            animationKey: "{{ customState.currentPage }}"
+            animated: true
+            animation:
+              out:
+                type: keyframes
+                event: remove
+                animationProperties:
+                  - property: alpha
+                    initialValue: 0.8
+                    keyframes:
+                      - duration: 600
+                        value: 0
+                        easing: linear
+              in:
+                type: keyframes
+                event: add
+                animationProperties:
+                  - property: alpha
+                    initialValue: 0.2
+                    keyframes:
+                      - duration: 600
+                        value: 1
+                        easing: linear
             children:
               - id: "options-efajfk3l2"
                 tabId: options
@@ -2749,12 +2772,12 @@ presets:
           nextStep: {}
       RightClick:
         actions:
+          setCustomState:
+            currentPage: "options"
           moveToSection:
             sectionId: "section15"
             presetId: "menu"
             mode: "menu"
-          setCustomState:
-            currentPage: "options"
       ScrollUp:
         actions:
           prevStep: {}
@@ -3047,156 +3070,156 @@ story:
       type: "read"
       id: "section1"
       steps:
-        # - id: "s2step1"
-        #   actions:
-        #     background:
-        #       backgroundId: "bg1"
-        #       inAnimation:
-        #         animationId: "ani1"
-        # - id: "s2tep2"
-        #   actions:
-        #     sfx:
-        #       items:
-        #         - id: sfx-candle-1
-        #           sfxId: "candle"
-        #         - id: sfx-candle-2
-        #           sfxId: "candle"
-        #           delay: 700
-        #         - id: sfx-candle-3
-        #           sfxId: "candle"
-        #           delay: 1400
-        #     visual:
-        #       items:
-        #         - id: "candle1"
-        #           visualId: "candle"
-        #           inAnimation:
-        #             animationId: "ani1"
-        #           position:
-        #             x: 256
-        #             y: 57.6
-        #         - id: "candle2"
-        #           visualId: "candle"
-        #           inAnimation:
-        #             animationId: "ani1"
-        #           position:
-        #             x: 1024
-        #             y: 57.6
-        #         - id: "candle3"
-        #           visualId: "candle"
-        #           inAnimation:
-        #             animationId: "ani2"
-        #           position:
-        #             x: 153.6
-        #             y: 273.6
-        #         - id: "candle4"
-        #           visualId: "candle"
-        #           inAnimation:
-        #             animationId: "ani2"
-        #           position:
-        #             x: 1126.4
-        #             y: 273.6
-        #         - id: "candle5"
-        #           visualId: "candle"
-        #           inAnimation:
-        #             animationId: "ani3"
-        #           position:
-        #             x: 192
-        #             y: 489.6
-        #         - id: "candle6"
-        #           visualId: "candle"
-        #           inAnimation:
-        #             animationId: "ani3"
-        #           position:
-        #             x: 1088
-        #             y: 489.6
-        # - id: "step3"
-        #   actions:
-        #     sfx:
-        #       items:
-        #         - sfxId: "flute"
-        # - id: "s2step4"
-        #   actions:
-        #     background:
-        #       backgroundId: "bg4"
-        # - id: "s2step5"
-        #   actions:
-        #     dialogue:
-        #       character:
-        #         characterName: "???"
-        #       dialogueBoxId: "dialogueBox1"
-        #       text: "May my melody reach the deepest pits of the Netherworld!"
-        # - id: s2step6
-        #   # autoNext: true
-        #   actions:
-        #     sfx:
-        #       items:
-        #         - sfxId: "light"
-        #     dialogue:
-        #       dialogueBoxId:
-        #     background:
-        #       backgroundId: "bg2"
-        #       inAnimation:
-        #         animationId: "ani1"
-        # - id: s2step7
-        #   actions:
-        #     dialogue:
-        #       character:
-        #         characterName: "???"
-        #       dialogueBoxId: "dialogueBox1"
-        #       # text: "Kamilla, if you're listening, I invite you to this world!"
-        #       segments:
-        #         - text: "Kamilla"
-        #           style:
-        #             fill: "#cc005b"
-        #             fontSize: 48
-        #             fontFamily: "NomnomNami2"
-        #             # wordWrapWidth: 780
-        #             strokeColor: black
-        #             strokeWidth: 3
-        #         - text: ", if you're listening, I invite you to this world!"
-        # - id: s2step8
-        #   actions:
-        #     dialogue:
-        #       text: "Let's form a contract!!"
-        #     sfx:
-        #       items:
-        #         - sfxId: "rumble"
-        #     background:
-        #       backgroundId: "bg4"
-        #       inAnimation:
-        #         animationId: "ani1"
-        #     visual:
-        #       items:
-        #         - id: "candle1"
-        #           visualId:
-        #           outAnimation:
-        #             animationId: "ani4"
-        #         - id: "candle2"
-        #           visualId:
-        #           outAnimation:
-        #             animationId: "ani4"
-        #         - id: "candle3"
-        #           visualId:
-        #           outAnimation:
-        #             animationId: "ani4"
-        #         - id: "candle4"
-        #           visualId:
-        #           outAnimation:
-        #             animationId: "ani4"
-        #         - id: "candle5"
-        #           visualId:
-        #           outAnimation:
-        #             animationId: "ani4"
-        #         - id: "candle6"
-        #           visualId:
-        #           outAnimation:
-        #             animationId: "ani4"
-        # - id: s2step9
-        #   actions:
-        #     dialogue:
-        #       character:
-        #         characterId: "kamilla"
-        #       text: "SO YOU'VE CALLED UPON ME AGAIN..."
+        - id: "s2step1"
+          actions:
+            background:
+              backgroundId: "bg1"
+              inAnimation:
+                animationId: "ani1"
+        - id: "s2tep2"
+          actions:
+            sfx:
+              items:
+                - id: sfx-candle-1
+                  sfxId: "candle"
+                - id: sfx-candle-2
+                  sfxId: "candle"
+                  delay: 700
+                - id: sfx-candle-3
+                  sfxId: "candle"
+                  delay: 1400
+            visual:
+              items:
+                - id: "candle1"
+                  visualId: "candle"
+                  inAnimation:
+                    animationId: "ani1"
+                  position:
+                    x: 256
+                    y: 57.6
+                - id: "candle2"
+                  visualId: "candle"
+                  inAnimation:
+                    animationId: "ani1"
+                  position:
+                    x: 1024
+                    y: 57.6
+                - id: "candle3"
+                  visualId: "candle"
+                  inAnimation:
+                    animationId: "ani2"
+                  position:
+                    x: 153.6
+                    y: 273.6
+                - id: "candle4"
+                  visualId: "candle"
+                  inAnimation:
+                    animationId: "ani2"
+                  position:
+                    x: 1126.4
+                    y: 273.6
+                - id: "candle5"
+                  visualId: "candle"
+                  inAnimation:
+                    animationId: "ani3"
+                  position:
+                    x: 192
+                    y: 489.6
+                - id: "candle6"
+                  visualId: "candle"
+                  inAnimation:
+                    animationId: "ani3"
+                  position:
+                    x: 1088
+                    y: 489.6
+        - id: "step3"
+          actions:
+            sfx:
+              items:
+                - sfxId: "flute"
+        - id: "s2step4"
+          actions:
+            background:
+              backgroundId: "bg4"
+        - id: "s2step5"
+          actions:
+            dialogue:
+              character:
+                characterName: "???"
+              dialogueBoxId: "dialogueBox1"
+              text: "May my melody reach the deepest pits of the Netherworld!"
+        - id: s2step6
+          # autoNext: true
+          actions:
+            sfx:
+              items:
+                - sfxId: "light"
+            dialogue:
+              dialogueBoxId:
+            background:
+              backgroundId: "bg2"
+              inAnimation:
+                animationId: "ani1"
+        - id: s2step7
+          actions:
+            dialogue:
+              character:
+                characterName: "???"
+              dialogueBoxId: "dialogueBox1"
+              # text: "Kamilla, if you're listening, I invite you to this world!"
+              segments:
+                - text: "Kamilla"
+                  style:
+                    fill: "#cc005b"
+                    fontSize: 48
+                    fontFamily: "NomnomNami2"
+                    # wordWrapWidth: 780
+                    strokeColor: black
+                    strokeWidth: 3
+                - text: ", if you're listening, I invite you to this world!"
+        - id: s2step8
+          actions:
+            dialogue:
+              text: "Let's form a contract!!"
+            sfx:
+              items:
+                - sfxId: "rumble"
+            background:
+              backgroundId: "bg4"
+              inAnimation:
+                animationId: "ani1"
+            visual:
+              items:
+                - id: "candle1"
+                  visualId:
+                  outAnimation:
+                    animationId: "ani4"
+                - id: "candle2"
+                  visualId:
+                  outAnimation:
+                    animationId: "ani4"
+                - id: "candle3"
+                  visualId:
+                  outAnimation:
+                    animationId: "ani4"
+                - id: "candle4"
+                  visualId:
+                  outAnimation:
+                    animationId: "ani4"
+                - id: "candle5"
+                  visualId:
+                  outAnimation:
+                    animationId: "ani4"
+                - id: "candle6"
+                  visualId:
+                  outAnimation:
+                    animationId: "ani4"
+        - id: s2step9
+          actions:
+            dialogue:
+              character:
+                characterId: "kamilla"
+              text: "SO YOU'VE CALLED UPON ME AGAIN..."
         - id: s2step10
           actions:
             sfx:
