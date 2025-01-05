@@ -37037,7 +37037,7 @@ var PixiTDR = class _PixiTDR extends BaseTDR {
    * @param {TDRState} state
    */
   render = (state) => {
-    this._render(this._app, this._state, state, this._eventHandler);
+    this._render(this._app, this._app.stage, this._state, state, this._eventHandler);
     this._state = state;
   };
   /**
@@ -37068,7 +37068,7 @@ var PixiTDR = class _PixiTDR extends BaseTDR {
    * @param {TDRState} nextState
    * @param {Function} eventHandler
    */
-  _render = async (app, prevState, nextState, eventHandler) => {
+  _render = async (app, parent, prevState, nextState, eventHandler) => {
     const time = Date.now();
     const { toAddElements, toUpdateElements, toDeleteElements } = diffElements(
       prevState.elements,
@@ -37079,7 +37079,7 @@ var PixiTDR = class _PixiTDR extends BaseTDR {
       const elementRenderer = this._getRendererByElement(toDeleteElement);
       actions.push(
         elementRenderer.remove(app, {
-          parent: app.stage,
+          parent,
           element: toDeleteElement,
           transitions: nextState.transitions,
           getRendererByElement: this._getRendererByElement,
@@ -37092,7 +37092,7 @@ var PixiTDR = class _PixiTDR extends BaseTDR {
       const elementRenderer = this._getRendererByElement(toAddElement);
       actions.push(
         elementRenderer.add(app, {
-          parent: app.stage,
+          parent,
           element: toAddElement,
           getRendererByElement: this._getRendererByElement,
           transitions: nextState.transitions,
@@ -37105,7 +37105,7 @@ var PixiTDR = class _PixiTDR extends BaseTDR {
       const elementRenderer = this._getRendererByElement(toUpdateElement.next);
       actions.push(
         elementRenderer.update(app, {
-          parent: app.stage,
+          parent,
           prevElement: toUpdateElement.prev,
           nextElement: toUpdateElement.next,
           getRendererByElement: this._getRendererByElement,

@@ -264,14 +264,10 @@ class RvnEngine {
     });
   }
 
-  _render() {
-    const state = this._currentSteps.reduce(applyState, {});
+  _generateRenderTree(readState, menuState) {
     const { elements, transitions } = generateRenderTree({
-      readState:
-        this._mode === "read"
-          ? this._currentReadSteps.reduce(applyState, {})
-          : this._currentHistorySteps.reduce(applyState, {}),
-      state: this._currentMenuSteps.reduce(applyState, {}),
+      readState,
+      state: menuState,
       resources: this._resources,
       screen: {
         width: 1280,
@@ -297,15 +293,24 @@ class RvnEngine {
       historyDialogue: this.historyDialogue,
     });
 
+    return {
+      elements,
+      transitions,
+    };
+  }
+
+  _render() {
+    const { elements, transitions } = this._generateRenderTree(
+      this._mode === "read"
+        ? this._currentReadSteps.reduce(applyState, {})
+        : this._currentHistorySteps.reduce(applyState, {}),
+      this._currentMenuSteps.reduce(applyState, {})
+    );
+
     console.log({
       elements,
       transitions,
     });
-
-    // this.onChangeGameStage({
-    //   elements,
-    //   transitions,
-    // })
 
     if (this.onTriggerRender) {
       this.onTriggerRender({

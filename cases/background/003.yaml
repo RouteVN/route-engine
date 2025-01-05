@@ -605,30 +605,18 @@ resources:
                 page: load
                 eventPayload:
                   actions:
-                    # moveToSection:
-                    #   sectionId: section4
-                    #   mode: menu
-                    #   presetId: menu
                     setCustomState:
                       currentPage: "load"
               - text: Options
                 page: options
                 eventPayload:
                   actions:
-                    # moveToSection:
-                    #   sectionId: section5
-                    #   mode: menu
-                    #   presetId: menu
                     setCustomState:
                       currentPage: "options"
               - text: About
                 page: about
                 eventPayload:
                   actions:
-                    # moveToSection:
-                    #   sectionId: section6
-                    #   mode: menu
-                    #   presetId: menu
                     setCustomState:
                       currentPage: "about"
             template:
@@ -717,13 +705,11 @@ resources:
             alpha: 0.3
             height: 720
             width: 1280
-            # rightClickEventName: "HideMenu"
           - id: "ab34gout"
             type: "sprite"
             url: "/public/first-contract/gui/overlay/main_menu.png"
             height: 720
             width: 1280
-            # rightClickEventName: "HideMenu"
           - id: 'adgeaer'
             type: modal
             modalDisplayed: "{{ customState.exitMenuConfirmationModal }}"
@@ -840,50 +826,30 @@ resources:
                 page: save
                 eventPayload:
                   actions:
-                    # moveToSection:
-                    #   sectionId: section10
-                    #   presetId: menu
-                    #   mode: menu
                     setCustomState:
                       currentPage: "save"
               - text: History
                 page: history
                 eventPayload:
                   actions:
-                    # moveToSection:
-                    #   sectionId: section11
-                    #   presetId: menu
-                    #   mode: menu
                     setCustomState:
                       currentPage: "history"
               - text: Load
                 page: load
                 eventPayload:
                   actions:
-                    # moveToSection:
-                    #   sectionId: section8
-                    #   presetId: menu
-                    #   mode: menu
                     setCustomState:
                       currentPage: "load"
               - text: Options
                 page: options
                 eventPayload:
                   actions:
-                    # moveToSection:
-                    #   sectionId: section9
-                    #   presetId: menu
-                    #   mode: menu
                     setCustomState:
                       currentPage: "options"
               - text: About
                 page: about
                 eventPayload:
                   actions:
-                    # moveToSection:
-                    #   sectionId: section7
-                    #   presetId: menu
-                    #   mode: menu
                     setCustomState:
                       currentPage: "about"
               - text: Main
@@ -1718,10 +1684,6 @@ resources:
                             eventName: Actions
                             eventPayload:
                               actions:
-                                # triggerStepEvent:
-                                #   stepEventName: "moveToLanguage"
-                                # moveToSection:
-                                  # sectionId: "sectionLanguage"
                                 setCustomState:
                                   currentPage: "language"
 
@@ -2089,10 +2051,6 @@ resources:
                     eventName: "Actions"
                     eventPayload:
                       actions:
-                        # triggerStepEvent:
-                          # stepEventName: "backToOptions"
-                        # moveToSection:
-                        #   sectionId: "sectionOptions"
                         setCustomState:
                           currentPage: "options"
                     style:
@@ -2886,35 +2844,6 @@ story:
                   screenId: "mainMenuExtra"
                   inAnimation:
                     animationId: extraFadeIn
-    # section4:
-    #   name: Section Load
-    #   steps:
-    #     - id: s4s1
-    #       actions:
-    #         screen:
-    #           items:
-    #             - id: 324x34k3xax
-    #               screenId: "menuBase"
-    #               keep: true
-    #             - id: fkje4aefklx33g1
-    #               screenId: "load"
-    # section5:
-    #   name: Section Options
-    #   steps:
-    #     - id: s5s1
-    #       eventHandlers:
-    #         moveToLanguage:
-    #           actions:
-    #             moveToSection:
-    #               sectionId: "section5l"
-    #       actions:
-    #         screen:
-    #           items:
-    #             - id: 324x34k3xax
-    #               screenId: "menuBase"
-    #               keep: true
-    #             - id: fkje4aefklx3x3g1
-    #               screenId: "options"
     section5l:
       name: Section Language
       steps:
@@ -2932,117 +2861,6 @@ story:
                   keep: true
                 - id: fkje4aefklx3x3g1
                   screenId: "language"
-    # section6:
-    #   name: Section About
-    #   steps:
-    #     - id: s6s1
-    #       actions:
-    #         screen:
-    #           items:
-    #             - id: 324x34k3xax
-    #               screenId: "menuBase"
-    #               keep: true
-    #             - id: fkje4aef4klx33g1
-    #               screenId: "about"
-    # section7:
-    #   steps:
-    #     - id: s7s1
-    #       actions:
-    #         screen:
-    #           items:
-    #             - id: 324x3x4k3xax
-    #               screenId: "menuGame"
-    #               keep: true
-    #             - id: fkje443aef4klx33g1
-    #               screenId: "about"
-    # section8:
-    #   steps:
-    #     - id: s8s1
-    #       actions:
-    #         screen:
-    #           items:
-    #             - id: 324x3x4k3xax
-    #               screenId: "menuGame"
-    #               keep: true
-    #             - id: fkje443aef4klx33g1
-    #               screenId: "load"
-    # section9:
-    
-    #   steps:
-    #     - id: s8s1
-    #       eventHandlers:
-    #         moveToLanguage:
-    #           actions:
-    #             moveToSection:
-    #               sectionId: "section9l"
-    #       actions:
-    #         screen:
-    #           items:
-    #             - id: 324x3x4k3xax
-    #               screenId: "menuGame"
-    #               keep: true
-    #             - id: fkje443aef4klx33g1
-    #               screenId: "options"
-    # section9l:
-    #   steps:
-    #     - id: s9l1
-    #       eventHandlers:
-    #         backToOptions:
-    #           actions:
-    #             moveToSection:
-    #               sectionId: "section9"
-    #       actions:
-    #         screen:
-    #           items:
-    #             - id: 324x3x4k3xax
-    #               screenId: "menuGame"
-    #               keep: true
-    #             - id: fkje443aef4klx33g1
-    #               screenId: "language"
-    # section10:
-    #   steps:
-    #     - id: s8s1
-    #       actions:
-    #         screen:
-    #           items:
-    #             - id: 324x3x4k3xax
-    #               screenId: "menuGame"
-    #               keep: true
-    #             - id: fkje443aef4klx33g1
-    #               screenId: "save"
-    # section11:
-    #   steps:
-    #     - id: s8s1
-    #       actions:
-    #         screen:
-    #           items:
-    #             - id: 324x3x4k3xax
-    #               screenId: "menuGame"
-    #               keep: true
-    #             - id: fkje443aef4klx33g1
-    #               screenId: "history"
-    # section12:
-    #   name: Language
-    #   steps:
-    #     - id: step12
-    #       actions:
-    #         screen:
-    #           items:
-    #             - id: 324x34k
-    #               screenId: "menuBase"
-    #             - id: fkje4aefkl
-    #               screenId: "language"
-    # section13:
-    #   name: Language
-    #   steps:
-    #     - id: step12
-    #       actions:
-    #         screen:
-    #           items:
-    #             - id: 324x34k
-    #               screenId: "menuGame"
-    #             - id: fkje4aefkl
-    #               screenId: "language"
     section15:
       name: menu tabs
       steps:

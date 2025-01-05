@@ -18,22 +18,23 @@ import {
 } from "./renderer.js";
 
 import RvnEngine from "./state/engine2.js";
+import { applyState } from "./state/state.js";
 
 async function downsizeBase64Image(base64Image, scaleFactor = 4) {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    
+
     img.onload = function () {
       const originalWidth = img.width;
       const originalHeight = img.height;
       const newWidth = originalWidth / scaleFactor;
       const newHeight = originalHeight / scaleFactor;
 
-      const canvas = document.createElement('canvas');
+      const canvas = document.createElement("canvas");
       canvas.width = newWidth;
       canvas.height = newHeight;
 
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0, newWidth, newHeight);
 
       const resizedBase64 = canvas.toDataURL();
@@ -85,7 +86,7 @@ const initializeVnPlayer = async (element, onClose) => {
     "hoverThumb",
     "idleBar",
     "hoverBar",
-    "hoverUrl"
+    "hoverUrl",
   ]).filter((url) => !!url);
   const imageUrls = fileUrls.filter(
     (url) => !url.endsWith(".wav") && !url.endsWith(".ogg")
@@ -224,12 +225,34 @@ const initializeVnPlayer = async (element, onClose) => {
   };
 
   engine.onGetScreenShot = async () => {
-    const screenShot = app._app.stage.getChildByName('root1');
+    const { elements } = engine._generateRenderTree(
+      engine._currentReadSteps.reduce(applyState, {}),
+      {}
+    );
+
+    const root1 = elements[0].children[0]
+
+    app._render(
+      app._app,
+      app._app.stage,
+      {},
+      {
+        elements: [{
+          ...root1,
+          id: 'root000',
+        }],
+        transitions: [],
+      },
+      () => {}
+    );
+    const screenShot = app._app.stage.getChildByName("root000");
+    app._app.stage.setChildIndex(screenShot, 0);
     const base64 = await app._app.renderer.extract.base64(screenShot);
+    screenShot.destroy();
     const downsizedBase64 = await downsizeBase64Image(base64, 4);
     await app.loadAssets([downsizedBase64]);
     return downsizedBase64;
-  }
+  };
 
   window.addEventListener("keydown", (e) => {
     if (e.key === "Control") {
