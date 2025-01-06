@@ -96,10 +96,6 @@ resources:
       extra5:
         src: /public/first-contract/images/bonus/ingame gallery5b.png
   bgm:
-    tagsOrder: []
-    tags: {}
-    foldersOrder: []
-    folders: {}
     items:
       bgm1:
         src: "/public/first-contract/audio/friend ritual.ogg"
@@ -108,10 +104,6 @@ resources:
       title:
         src: "/public/first-contract/audio/title.ogg"
   sfx:
-    tagsOrder: []
-    tags: {}
-    foldersOrder: []
-    folders: {}
     items:
       candle:
         src: "/public/first-contract/audio/sfx_candle.wav"
@@ -380,10 +372,6 @@ resources:
         xa: 0.5
         ya: 0.5
   animation:
-    tagsOrder: []
-    tags: {}
-    foldersOrder: []
-    folders: {}
     items:
       ani1:
         name: "Fade In"
@@ -574,13 +562,11 @@ resources:
             alpha: 0.3
             height: 720
             width: 1280
-            # rightClickEventName: "HideMenu"
           - id: "abodf33ut"
             type: "sprite"
             url: "/public/first-contract/gui/overlay/main_menu.png"
             height: 720
             width: 1280
-            # rightClickEventName: "HideMenu"
           - id: "about3-{{ customState.currentPage }}"
             type: "anchor-layout-container"
             anchor: "CenterLeft"
@@ -2170,10 +2156,12 @@ resources:
                           anchor: "TopLeft"
                           direction: "horizontal"
                           gap: 40
+                          height: 120
                           children:
                             - id: 23kf323c
                               text: "{{ characterName }}"
                               type: "text-interactive"
+                              height: 100
                               style:
                                 fill: "#ccc"
                                 fontSize: 40
@@ -2404,10 +2392,6 @@ resources:
 
 
   dialogueBox:
-    tagsOrder: []
-    tags: {}
-    foldersOrder: []
-    folders: {}
     items:
       dialogueBox1:
         name: "Dialogue Box 1"
@@ -2689,33 +2673,33 @@ resources:
                       align: right
             children: []
 
-rootElement:
-  id: "root"
-  type: "container"
-  animated: true
-  animation:
-    out:
-      type: keyframes
-      event: remove
-      animationProperties:
-        - property: alpha
-          initialValue: 0.8
-          keyframes:
-            - duration: 600
-              value: 0
-              easing: linear
-    in:
-      type: keyframes
-      elementId: 'root'
-      event: add
-      animationProperties:
-        - property: alpha
-          initialValue: 0.2
-          keyframes:
-            - duration: 600
-              value: 1
-              easing: linear
-  children: []
+# rootElement:
+#   id: "root"
+#   type: "container"
+#   animated: true
+#   animation:
+#     out:
+#       type: keyframes
+#       event: remove
+#       animationProperties:
+#         - property: alpha
+#           initialValue: 0.8
+#           keyframes:
+#             - duration: 600
+#               value: 0
+#               easing: linear
+#     in:
+#       type: keyframes
+#       elementId: 'root'
+#       event: add
+#       animationProperties:
+#         - property: alpha
+#           initialValue: 0.2
+#           keyframes:
+#             - duration: 600
+#               value: 1
+#               easing: linear
+#   children: []
 
 presets:
   title:
@@ -2759,7 +2743,6 @@ presets:
 story:
   sections:
     section1:
-      type: "read"
       id: "section2"
       steps:
         - id: step0
@@ -2805,7 +2788,6 @@ story:
             moveToSection:
               sectionId: section3
     section3:
-      type: "menu"
       id: "section3"
       steps:
         - id: "s3step1"
@@ -2885,7 +2867,6 @@ story:
                   screenId: "menuTabs"
 
     section2:
-      type: "read"
       id: "section1"
       steps:
         - id: "s2step1"
@@ -5073,6 +5054,71 @@ story:
               sectionId: section3
               pointerMode: "read"
               presetId: "title"
+
+    section20:
+      id: "section20"
+      steps:
+        - id: step0
+          actions:
+            bgm:
+              bgmId: none
+            background:
+              backgroundId: "bg5"
+            dialogue:
+              incremental: true
+              dialogueBoxId: "dialogueBox3"
+              childItemId: right
+              text: "New contract has a time obligation, be back tomorrow"
+            setPersistentVariables:
+              gameStarted: true
+        - id: step1
+          actions:
+            dialogue:
+              incremental: true
+              childItemId: left
+              text: "OK, no lasagna for you tonight"
+        - id: step2
+          actions:
+            dialogue:
+              childItemId: right
+              incremental: true
+              text: "I'll have the left overs"
+        - id: step3
+          actions:
+            dialogue:
+              childItemId: left
+              incremental: true
+              text: "Not if I eat it all"
+        - id: step53
+          actions:
+            dialogue:
+              childItemId: right
+              incremental: true
+              text: "BROTHER..."
+        - id: step54
+          actions:
+            dialogue:
+              childItemId: right
+              incremental: true
+              text: "You are truly a demon among demons. If only I could learn from your evil ways."
+        - id: step55
+          actions:
+            dialogue:
+              childItemId: left
+              incremental: true
+              text: Such praise. I'll leave you my scraps out of mercy
+        - id: step56
+          actions:
+            dialogue:
+              childItemId: right
+              incremental: true
+              text: Wow, I'm grateful
+        - id: step57
+          actions:
+            moveToSection:
+              sectionId: section0
+
+
 i18n:
   en_default:
     language: en

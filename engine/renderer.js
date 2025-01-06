@@ -36752,10 +36752,6 @@ var diffElements = (prevElements = [], nextElements = []) => {
   const toDeleteElements = [];
   const toUpdateElements = [];
   const toAddElements = [];
-  console.log({
-    prevElements,
-    nextElements
-  });
   for (const prevElement of prevElements) {
     const nextElement = nextElements.find((element) => element.id === prevElement.id && element.type === prevElement.type);
     if (!nextElement) {
@@ -37007,6 +37003,7 @@ var PixiTDR = class _PixiTDR extends BaseTDR {
     const modalContainer = new Container();
     modalContainer.label = "modalContainer";
     this._app.stage.addChild(modalContainer);
+    this._app.stage.label = "STAGE";
     this._app.ticker.add(this._app.soundStage.tick);
     return this;
   };
@@ -38847,19 +38844,23 @@ var AnchorLayoutContainerRendererPlugin = class {
         }
       }
       if (el.type === "anchor-layout-container") {
-        el.height = el.children.reduce((p2, c2) => {
-          return (p2.height || 0) + (c2.height || 0);
-        }, 0);
-        el.width = el.children.reduce((p2, c2) => {
-          return (p2.width || 0) + (c2.width || 0);
-        }, 0);
+        if (el.height === void 0 && el.direction === "vertical") {
+          el.height = el.children.reduce((p2, c2) => {
+            return p2 + (c2.height || 0);
+          }, 0);
+        }
+        if (el.width === void 0 && el.direction === "horizontal") {
+          el.width = el.children.reduce((p2, c2) => {
+            return p2 + (c2.width || 0);
+          }, 0);
+        }
       }
     };
     populateMissingHeightAndWidth(element);
     const gap = element.gap || 0;
+    let totalHeight = 0;
     if (element.anchor !== void 0) {
       let totalWidth = 0;
-      let totalHeight = 0;
       const anchor = AnchorLayoutAnchorMapping[element.anchor];
       (element.children || []).forEach((childElement, i2) => {
         childElement.xa = anchor.x;
@@ -38933,22 +38934,29 @@ var AnchorLayoutContainerRendererPlugin = class {
           childElement.y = offsetY;
         });
       }
+      const graphic = new Graphics().roundRect(0, 0, element.width, totalHeight, element.radius).fill(element.fill ? element.fill.color : "transparent");
+      graphic.label = "anchor-layout-container-background";
+      if (anchor.x === 1) {
+        graphic.x -= element.width;
+      }
+      if (anchor.x === -0.5) {
+        graphic.x -= element.width / 2;
+      }
+      container.addChild(graphic);
       if (totalHeight > element.height) {
+        let scrollOffset = element.scrollOffset || 0;
         const diff = totalHeight - element.height;
-        container.y -= diff;
+        container.y -= diff + Math.max(-diff, scrollOffset);
         const clip = new Graphics().rect(0, element.y, element.width + 100, element.height).fill("black");
         container.mask = clip;
-      }
-      if (element.fill) {
-        const graphic = new Graphics().roundRect(0, 0, element.width, element.height, element.radius).fill(element.fill.color);
-        graphic.label = "anchor-layout-container-background";
-        if (anchor.x === 1) {
-          graphic.x -= element.width;
-        }
-        if (anchor.x === -0.5) {
-          graphic.x -= element.width / 2;
-        }
-        container.addChild(graphic);
+        container.interactive = true;
+        container.on("wheel", (e2) => {
+          container.y = Math.min(Math.max(-diff, container.y + Math.floor(e2.deltaY)), 200);
+          console.log("container.y", container.y);
+          eventHandler(element.wheelEventName, {
+            deltaY: e2.deltaY
+          });
+        });
       }
     }
     const renderPromises = [];
@@ -38968,6 +38976,10 @@ var AnchorLayoutContainerRendererPlugin = class {
         })
       );
     });
+    if (totalHeight > element.height) {
+      const scrollBar = new Graphics().rect(element.width - 10, 0, 10, totalHeight).fill("white");
+      container.addChild(scrollBar);
+    }
     const transitionPromises = [];
     for (const transition of transitions) {
       if (transition.elementId === element.id && transition.event === TransitionEvent.Add) {

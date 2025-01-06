@@ -307,11 +307,6 @@ class RvnEngine {
       this._currentMenuSteps.reduce(applyState, {})
     );
 
-    console.log({
-      elements,
-      transitions,
-    });
-
     if (this.onTriggerRender) {
       this.onTriggerRender({
         elements,
@@ -540,7 +535,6 @@ class RvnEngine {
   }
 
   save(payload) {
-    console.log("save aaaaaaaaa");
     this.onGetScreenShot().then((url) => {
       const { index } = payload;
       const time = Date.now();
@@ -720,7 +714,7 @@ class RvnEngine {
   }
 
   handleEvent(event, payload) {
-    console.log("handleEvent", { event, payload });
+    // console.log("handleEvent", { event, payload });
     if (!event) {
       return;
     }
