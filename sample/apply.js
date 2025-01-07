@@ -17,8 +17,8 @@ import {
   ModalRendererPlugin,
 } from "./renderer.js";
 
-import RvnEngine from "./state/engine2.js";
-import { applyState } from "./state/state.js";
+import RvnEngine from "./../engine/engine.js";
+import { applyState } from "./../engine/state.js";
 
 async function downsizeBase64Image(base64Image, scaleFactor = 4) {
   return new Promise((resolve, reject) => {
@@ -76,7 +76,7 @@ const getAllValuesByPropertyName = (obj, propertyNames) => {
 const initializeVnPlayer = async (element, onClose) => {
   const app = new PixiTDR();
 
-  const res = await fetch(`/public/vndata/003.json`);
+  const res = await fetch(`/sample/vndata.json`);
   const gameData = await res.json();
 
   const fileUrls = getAllValuesByPropertyName(gameData.resources, [
@@ -225,6 +225,7 @@ const initializeVnPlayer = async (element, onClose) => {
   };
 
   engine.onGetScreenShot = async () => {
+
     const { elements } = engine._generateRenderTree(
       engine._currentReadSteps.reduce(applyState, {}),
       {}

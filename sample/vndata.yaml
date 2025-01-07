@@ -1,8 +1,11 @@
+# initial pointers needed to display first step
 initial:
   sectionId: "section3"
   presetId: "title"
   mode: "read"
-  language: en_default
+
+# initial persistent configuration for first time visual novel is opened
+# next time, it will load from persistent save data
 initialPersistentConfig:
   musicVolume: 1
   soundVolume: 1
@@ -11,10 +14,12 @@ initialPersistentConfig:
   skipTransitions: false
   skipUnseenText: false
   language: en_default
+
+# initial custom state for first time visual novel is opened
+# this will be used each time the visual novel is opened and is not persisted
 initialCustomState:
   exitMenuConfirmationModal: false
   currentSavePageNumber: 0
-staticData:
   saveLoadSlots:
     - text: "<"
       value: -1
@@ -56,8 +61,11 @@ staticData:
       title: Page 11
     - text: ">"
       value: 12
+
+# visual novel resources that inlcudes all assets etc...
 resources:
   background:
+  # TODO t100283: decide on the schema of the resources. object vs array?
     items:
       bg1:
         src: /public/first-contract/images/circle.png
@@ -75,8 +83,6 @@ resources:
     items:
       candle:
         src: "/public/first-contract/images/candle.webp"
-      # pink-overlay:
-      #   src: "/public/first-contract/images/pink-overlay.png"
       cg1:
         src: "/public/first-contract/images/cg punishment.png"
       logo:
@@ -116,6 +122,7 @@ resources:
       oh:
         src: "/public/first-contract/audio/sfx_oh.wav"
   character:
+  # TODO t100284: decide on the schema of the character and parts
     parts:
       base:
         label: Base
@@ -234,9 +241,6 @@ resources:
             kamilla_base:
               name: "Kamilla Base"
               src: "/public/first-contract/images/kamilla/kamilla_base.png"
-            # kamilla2_despair:
-            #   name: "Kamilla Despair"
-            #   src: "/public/first-contract/images/kamilla/kamilla2_despair.png"
             kamilla_arms_cas_down:
               name: "Kamilla Arms Casual Down"
               src: "/public/first-contract/images/kamilla/kamilla_arms_cas_down.png"
@@ -444,6 +448,7 @@ resources:
       ani7:
         name: "Slide Right"
         properties:
+          # TODO t100285:make properties from array to object?
           - property: x
             keyframes:
               - duration: 0
@@ -575,6 +580,7 @@ resources:
             height: 300
             x: 20
             y: 360
+            # TODO t100286: improve data and templating for anchor-layout-container
             data:
               - text: Start
                 page: start
@@ -698,6 +704,7 @@ resources:
             width: 1280
           - id: 'adgeaer'
             type: modal
+            # TODO t100287: review modal type
             modalDisplayed: "{{ customState.exitMenuConfirmationModal }}"
             x: 0
             y: 0
@@ -798,7 +805,7 @@ resources:
                             fill: "yellow"
                             fontFamily: "NomnomNami2"
                             wordWrapWidth: 1740
-
+          # TODO t100288: find better way to handle diffs and id
           - id: "about3-{{ customState.currentPage }}"
             type: "anchor-layout-container"
             anchor: "CenterLeft"
@@ -1220,6 +1227,7 @@ resources:
           - id: "menuTabs"
             type: "container"
             selectedTabId: "{{ customState.currentPage }}"
+            # TODO t100289: improve container animation properties API
             animationKey: "{{ customState.currentPage }}"
             animated: true
             animation:
@@ -1718,7 +1726,7 @@ resources:
                         height: 1000
                         children:
                           - id: "29ri3ladfkj3"
-                            text: "{{ data.saveLoadSlots[customState.currentSavePageNumber].title }}"
+                            text: "{{ customState.saveLoadSlots[customState.currentSavePageNumber].title }}"
                             type: "text"
                             width: 120
                             height: 40
@@ -1738,6 +1746,7 @@ resources:
                         y: 200
                         width: 780
                         height: 1000
+                        # TODO t100290: change save data to use standarding templating variables with {{ }} 
                         data: "$saveData"
                         template:
                           mapping:
@@ -1809,7 +1818,7 @@ resources:
                         gap: 20
                         width: 500
                         height: 80
-                        data: "{{ data.saveLoadSlots }}"
+                        data: "{{ customState.saveLoadSlots }}"
                         template:
                           mapping:
                             cases:
@@ -2229,7 +2238,7 @@ resources:
                     height: 1000
                     children:
                       - id: "89gj3ladfkj3"
-                        text: "{{ data.saveLoadSlots[customState.currentSavePageNumber].title }}"
+                        text: "{{ customState.saveLoadSlots[customState.currentSavePageNumber].title }}"
                         type: "text"
                         width: 120
                         height: 40
@@ -2351,7 +2360,7 @@ resources:
                     gap: 20
                     width: 500
                     height: 80
-                    data: "{{ data.saveLoadSlots }}"
+                    data: "{{ customState.saveLoadSlots }}"
                     template:
                       mapping:
                         cases:
@@ -2662,6 +2671,7 @@ resources:
                     type: "text"
                     text: ""
                     x: -10
+                    # TODO t100292: improve dialogue content templating, maybe use {}
                     contentSource: "dialogueContent"
                     style:
                       fill: "#cccccc"
@@ -2673,6 +2683,7 @@ resources:
                       align: right
             children: []
 
+# TODO t100293: review root element
 # rootElement:
 #   id: "root"
 #   type: "container"
@@ -2701,6 +2712,7 @@ resources:
 #               easing: linear
 #   children: []
 
+# TODO t100294: review presets
 presets:
   title:
     events:
@@ -2740,6 +2752,8 @@ presets:
           mode: "read"
     configuration:
       recordHistory: true
+
+# TODO t100295: review presets. whether to add scenes
 story:
   sections:
     section1:
@@ -5118,7 +5132,7 @@ story:
             moveToSection:
               sectionId: section0
 
-
+# TODO t100296: review i18n
 i18n:
   en_default:
     language: en

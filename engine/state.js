@@ -1,6 +1,7 @@
 
 
 /**
+ * Takes an array of Steps and outputs a state object
  * @param {*} state 
  * @param {*} step 
  * @returns 

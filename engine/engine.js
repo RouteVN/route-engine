@@ -5,35 +5,18 @@ import SeenSections from "./SeenSections.js";
 import History from "./History.js";
 
 /**
- * @typedef {Object} Step
- * @property {string} id
+ * The rvn engine.
+ * We want to bring out the best of Visual Novels
+ * 
+ * May you do good and not evil.
+ * May you find forgiveness for yourself and forgive others.
+ * May you share freely, never taking more than you give.
  */
-
-/**
- * @typedef {Object} Section
- * @property {string} sectionId
- * @property {Step[]} steps
- */
-
-const Events = {
-  rightClick: "rightClick",
-  leftClick: "leftClick",
-  scrollUp: "scrollUp",
-};
-
-const Actions = {
-  nextStep: "nextStep",
-  prevStep: "prevStep",
-  startRead: "startRead",
-  openMenu: "openMenu",
-  closeMenu: "closeMenu",
-  exitHistory: "exitHistory",
-};
-
 class RvnEngine {
   _initial = {
     sectionId: undefined,
-    mode: "read",
+    mode: undefined,
+    presetId: undefined,
   };
 
   _rootElement;
@@ -51,8 +34,6 @@ class RvnEngine {
   _customState = {};
 
   _initialCustomState = {};
-
-  _staticData = {};
 
   /**
    * @type {Record<string, any>}
@@ -83,8 +64,16 @@ class RvnEngine {
    */
   _presets = {};
 
+  /**
+   * @type {boolean}
+   * Whether the engine is in auto mode
+   */
   _autoMode = false;
 
+  /**
+   * @type {boolean}
+   * Whether the engine is in skip mode
+   */
   _skipMode = false;
 
   _skipModeInterval;
@@ -167,10 +156,6 @@ class RvnEngine {
    */
   init() {
     this._mode = this._initial.mode;
-    // this._history.addSection({
-    //   sectionId: this._initial.sectionId,
-    //   clearHistory: false,
-    // });
     this._selectedPresetId = this._initial.presetId;
     const stepId = this._sections[this._initial.sectionId].steps[0].id;
     this._currentStepPointer().set(this._initial.sectionId, stepId);
@@ -287,7 +272,6 @@ class RvnEngine {
       persistentVariables: this._persistentVariables,
       // completedStep: this._completedStep,
       pointerMode: this._mode,
-      data: this._staticData,
       i18n: this._i18n,
       rootElement: this._rootElement,
       historyDialogue: this.historyDialogue,
@@ -488,7 +472,6 @@ class RvnEngine {
     this._resources = gameData.resources;
     this._initialPersistentConfig = gameData.initialPersistentConfig;
     this._initialCustomState = gameData.initialCustomState;
-    this._staticData = gameData.staticData;
     this._i18n = gameData.i18n;
     this._rootElement = gameData.rootElement;
   }
@@ -559,18 +542,21 @@ class RvnEngine {
   load(payload) {
     const { index } = payload;
     const data = this._persistentSaveData[index];
+    this._history = new History(data.history);
+    this._seenSections = new SeenSections(data.seenSections);
     this.exitMenu({
       mode: "read",
       presetId: "read",
       sectionId: data.sectionId,
       stepId: data.stepId,
     });
-    this._history = new History(data.history);
-    this._seenSections = new SeenSections(data.seenSections);
-    // this._render();
   }
 
-  startAutoMode(payload) {
+
+  /**
+   * Start auto mode
+   */
+  startAutoMode() {
     this._autoMode = true;
 
     const intervalTime = (1 / this._persistentConfig.autoForwardTime) * 100000;
@@ -578,18 +564,21 @@ class RvnEngine {
     setTimeout(() => {
       this.nextStep();
     }, intervalTime);
-    // this._autoModeInterval = setInterval(() => {
-    //   this.nextStep();
-    // }, (1 / this._persistentConfig.autoForwardTime) * 100000);
     this._render();
   }
 
+  /**
+   * Stop auto mode
+   */
   stopAutoMode() {
     this._autoMode = false;
     clearInterval(this._autoModeInterval);
     this._render();
   }
 
+  /**
+   * Toggle auto mode
+   */
   toggleAutoMode() {
     if (this._autoMode) {
       this.stopAutoMode();
@@ -599,6 +588,9 @@ class RvnEngine {
     this._render();
   }
 
+  /**
+   * Start skip mode
+   */
   startSkipMode() {
     this._skipMode = true;
     this._autoMode = false;
@@ -609,12 +601,18 @@ class RvnEngine {
     this._render();
   }
 
+  /**
+   * Stop skip mode
+   */
   stopSkipMode() {
     this._skipMode = false;
     clearInterval(this._skipModeInterval);
     this._render();
   }
 
+  /**
+   * Toggle skip mode
+   */
   toggleSkipMode() {
     if (this._skipMode) {
       this.stopSkipMode();
@@ -684,6 +682,10 @@ class RvnEngine {
     // this._render();
   }
 
+  /**
+   * Called when a step is completed. Which includes
+   * Text revealing and animations
+   */
   completed() {
     const pointer = this._currentStepPointer();
     const section = this._sections[pointer._sectionId];
@@ -714,7 +716,6 @@ class RvnEngine {
   }
 
   handleEvent(event, payload) {
-    // console.log("handleEvent", { event, payload });
     if (!event) {
       return;
     }
