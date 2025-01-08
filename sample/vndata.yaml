@@ -4,6 +4,66 @@ initial:
   presetId: "title"
   mode: "read"
 
+  runtimeState:
+    currentPage: about
+    currentSavePageNumber: 0
+    hideExitMenuConfirmationModal: true
+    saveLoadSlots:
+      - text: "<"
+        value: -1
+      - text: "A"
+        value: 0
+        title: Auto Save
+      - text: "Q"
+        value: 1
+        title: Quick Save
+      - text: "1"
+        value: 2
+        title: Page 1
+      - text: "2"
+        value: 3
+        title: Page 2
+      - text: "3"
+        value: 4
+        title: Page 3
+      - text: "4"
+        value: 5
+        title: Page 4
+      - text: "5"
+        value: 6
+        title: Page 5
+      - text: "6"
+        value: 7
+        title: Page 6
+      - text: "7"
+        value: 8
+        title: Page 8
+      - text: "8"
+        value: 9
+        title: Page 9
+      - text: "9"
+        value: 10
+        title: Page 10
+      - text: "10"
+        value: 11
+        title: Page 11
+      - text: ">"
+        value: 12
+
+  deviceState:
+    musicVolume: 1
+    soundVolume: 1
+    clickSoundVolume: 1
+    rollbackSide: "left"
+    skipTransitions: false
+    skipUnseenText: false
+    language: en_default
+
+  persistentState:
+    novelCompleted: false
+    saveData: []
+
+
 # initial persistent configuration for first time visual novel is opened
 # next time, it will load from persistent save data
 initialPersistentConfig:
@@ -15,57 +75,10 @@ initialPersistentConfig:
   skipUnseenText: false
   language: en_default
 
-# initial custom state for first time visual novel is opened
-# this will be used each time the visual novel is opened and is not persisted
-initialCustomState:
-  exitMenuConfirmationModal: false
-  currentSavePageNumber: 0
-  saveLoadSlots:
-    - text: "<"
-      value: -1
-    - text: "A"
-      value: 0
-      title: Auto Save
-    - text: "Q"
-      value: 1
-      title: Quick Save
-    - text: "1"
-      value: 2
-      title: Page 1
-    - text: "2"
-      value: 3
-      title: Page 2
-    - text: "3"
-      value: 4
-      title: Page 3
-    - text: "4"
-      value: 5
-      title: Page 4
-    - text: "5"
-      value: 6
-      title: Page 5
-    - text: "6"
-      value: 7
-      title: Page 6
-    - text: "7"
-      value: 8
-      title: Page 8
-    - text: "8"
-      value: 9
-      title: Page 9
-    - text: "9"
-      value: 10
-      title: Page 10
-    - text: "10"
-      value: 11
-      title: Page 11
-    - text: ">"
-      value: 12
 
 # visual novel resources that inlcudes all assets etc...
 resources:
   background:
-  # TODO t100283: decide on the schema of the resources. object vs array?
     items:
       bg1:
         src: /public/first-contract/images/circle.png
@@ -122,25 +135,24 @@ resources:
       oh:
         src: "/public/first-contract/audio/sfx_oh.wav"
   character:
-  # TODO t100284: decide on the schema of the character and parts
-    parts:
-      base:
-        label: Base
-      outfit:
-        label: Outfit
-      arms:
-        label: Arms
-      eyes:
-        label: Eyes
-      mouth:
-        label: Mouth
     items:
       eleni:
         id: eleni
         name: Eleni
-        whoColor: "ff74b2"
+        variables:
+          mainColor: "#ff74b2"
         sprites:
-          itemsOrder: [eleni2_hidden, eleni_arms_pjs_down, eleni_arms_pjs_oneup]
+          parts:
+            base:
+              label: Base
+            outfit:
+              label: Outfit
+            arms:
+              label: Arms
+            eyes:
+              label: Eyes
+            mouth:
+              label: Mouth
           items:
             eleni2_hidden:
               name: "Eleni 2 Hidden"
@@ -223,20 +235,20 @@ resources:
       kamilla:
         id: "kamilla"
         name: "Kamilla"
-        whoColor: "#cc005b"
-        partsOrder: [base, outfit, arms, eyes, mouth]
-        parts:
-          base:
-            label: Base
-          outfit:
-            label: Outfit
-          arms:
-            label: Arms
-          eyes:
-            label: Eyes
-          mouth:
-            label: Mouth
+        variables:
+          mainColor: "#cc005b"
         sprites:
+          parts:
+            base:
+              label: Base
+            outfit:
+              label: Outfit
+            arms:
+              label: Arms
+            eyes:
+              label: Eyes
+            mouth:
+              label: Mouth
           items:
             kamilla_base:
               name: "Kamilla Base"
@@ -572,7 +584,7 @@ resources:
             url: "/public/first-contract/gui/overlay/main_menu.png"
             height: 720
             width: 1280
-          - id: "about3-{{ customState.currentPage }}"
+          - id: "about3-{{ runtimeState.currentPage }}"
             type: "anchor-layout-container"
             anchor: "CenterLeft"
             direction: "vertical"
@@ -591,25 +603,25 @@ resources:
                       mode: read
                       presetId: read
                       addToSection: true
-                    setCustomState:
+                    setRuntimeState:
                       currentPage: "start"
               - text: Load
                 page: load
                 eventPayload:
                   actions:
-                    setCustomState:
+                    setRuntimeState:
                       currentPage: "load"
               - text: Options
                 page: options
                 eventPayload:
                   actions:
-                    setCustomState:
+                    setRuntimeState:
                       currentPage: "options"
               - text: About
                 page: about
                 eventPayload:
                   actions:
-                    setCustomState:
+                    setRuntimeState:
                       currentPage: "about"
             template:
               mapping:
@@ -617,7 +629,7 @@ resources:
                   - case:
                       property: page
                       op: eq
-                      value: "{{ customState.currentPage }}"
+                      value: "{{ runtimeState.currentPage }}"
                     then: selected
                 default: default
               items:
@@ -645,7 +657,7 @@ resources:
                     strokeColor: black
                     strokeWidth: 6
                   clickSoundUrl: "/public/first-contract/audio/sfx_button1.wav"
-                  clickSoundVolume: "{{ config.soundVolume }}"
+                  clickSoundVolume: "{{ deviceState.soundVolume }}"
                 - template: selected
                   id: "c94k2ladfkj3"
                   text: "{{ text }}"
@@ -660,7 +672,7 @@ resources:
                     wordWrapWidth: 1740
                     strokeColor: black
                     strokeWidth: 6
-                    
+
           - id: "ladf421k4dd2j3"
             type: "text-interactive"
             x: 20
@@ -688,7 +700,7 @@ resources:
               strokeColor: black
               strokeWidth: 6
             clickSoundUrl: "/public/first-contract/audio/sfx_button1.wav"
-            clickSoundVolume: "{{ config.soundVolume }}"
+            clickSoundVolume: "{{ deviceState.soundVolume }}"
       menuGame:
         layout:
           - id: "abosdfeut"
@@ -702,111 +714,9 @@ resources:
             url: "/public/first-contract/gui/overlay/main_menu.png"
             height: 720
             width: 1280
-          - id: 'adgeaer'
-            type: modal
-            # TODO t100287: review modal type
-            modalDisplayed: "{{ customState.exitMenuConfirmationModal }}"
-            x: 0
-            y: 0
-            width: 120
-            height: 40
-            layout:
-              id: 'asdfjk'
-              type: container
-              children:
-                - id: overlayConfirm3d
-                  type: "container"
-                  anchor: "TopLeft"
-                  zIndex: 1005
-                  x: 0
-                  y: 0
-                  children:
-                    - id: "ladf423kj3"
-                      type: graphics
-                      zIndex: 1000
-                      x1: 0
-                      x2: 1280
-                      y1: 0
-                      y2: 720
-                      fill: 'black'
-                      alpha: 0.5
-                    - id: "ladf1kj3"
-                      type: sprite
-                      zIndex: 800
-                      xa: 0.5
-                      ya: 0.5
-                      x: 640
-                      y: 360
-                      width: 600
-                      height: 180
-                      url: "/public/first-contract/gui/frame.png"
-                    - id: "ladfkj42d3"
-                      type: text
-                      zIndex: 1005
-                      text: 'Are you sure you want to return to the main menu? This will lose unsaved progress.'
-                      xa: 0.5
-                      ya: 0.5
-                      x: 640
-                      y: 340
-                      style:
-                        fill: 'white'
-                        fontSize: 27
-                        fontFamily: 'NomnomNami2'
-                        wordWrapWidth: 600
-                        align: center
-                    - id: "ladfkj42dxi3"
-                      type: anchor-layout-container
-                      anchor: "CenterCenter"
-                      direction: "horizontal"
-                      zIndex: 1002
-                      gap: 120
-                      x: 640
-                      y: 410
-                      children:
-                        - id: "ladfkj42dxi3"
-                          type: text-interactive
-                          text: "Yes"
-                          zIndex: 1005
-                          eventName: Actions
-                          eventPayload:
-                            actions:
-                              exitMenu:
-                                sectionId: section3
-                                presetId: title
-                                mode: read
-                              setCustomState:
-                                exitMenuConfirmationModal: false
-                          style:
-                            fill: "#ccc"
-                            fontSize: 28
-                            fontFamily: "NomnomNami2"
-                            wordWrapWidth: 1740
-                          hoverStyle:
-                            fontSize: 28
-                            fill: "yellow"
-                            fontFamily: "NomnomNami2"
-                            wordWrapWidth: 1740
-                        - id: "ladfkj42dxi3"
-                          type: text-interactive
-                          text: "No"
-                          zIndex: 1005
-                          eventName: Actions
-                          eventPayload:
-                            actions:
-                              setCustomState:
-                                exitMenuConfirmationModal: false
-                          style:
-                            fill: "#ccc"
-                            fontSize: 28
-                            fontFamily: "NomnomNami2"
-                            wordWrapWidth: 1740
-                          hoverStyle:
-                            fontSize: 28
-                            fill: "yellow"
-                            fontFamily: "NomnomNami2"
-                            wordWrapWidth: 1740
+
           # TODO t100288: find better way to handle diffs and id
-          - id: "about3-{{ customState.currentPage }}"
+          - id: "about3-{{ runtimeState.currentPage }}"
             type: "anchor-layout-container"
             anchor: "CenterLeft"
             direction: "vertical"
@@ -819,45 +729,45 @@ resources:
                 page: save
                 eventPayload:
                   actions:
-                    setCustomState:
+                    setRuntimeState:
                       currentPage: "save"
               - text: History
                 page: history
                 eventPayload:
                   actions:
-                    setCustomState:
+                    setRuntimeState:
                       currentPage: "history"
               - text: Load
                 page: load
                 eventPayload:
                   actions:
-                    setCustomState:
+                    setRuntimeState:
                       currentPage: "load"
               - text: Options
                 page: options
                 eventPayload:
                   actions:
-                    setCustomState:
+                    setRuntimeState:
                       currentPage: "options"
               - text: About
                 page: about
                 eventPayload:
                   actions:
-                    setCustomState:
+                    setRuntimeState:
                       currentPage: "about"
               - text: Main
                 page: main
                 eventPayload:
                   actions:
-                    setCustomState:
-                      exitMenuConfirmationModal: true
+                    setRuntimeState:
+                      hideExitMenuConfirmationModal: false
             template:
               mapping:
                 cases:
                   - case:
                       property: page
                       op: eq
-                      value: "{{ customState.currentPage }}"
+                      value: "{{ runtimeState.currentPage }}"
                     then: selected
                 default: default
               items:
@@ -1130,7 +1040,7 @@ resources:
               - text: Start
                 eventPayload:
                   actions:
-                    setCustomState:
+                    setRuntimeState:
                       currentPage: "start"
                     moveToSection:
                       sectionId: section2
@@ -1140,7 +1050,7 @@ resources:
               - text: Load
                 eventPayload:
                   actions:
-                    setCustomState:
+                    setRuntimeState:
                       currentPage: "load"
                     moveToSection:
                       sectionId: section16
@@ -1149,7 +1059,7 @@ resources:
               - text: Options
                 eventPayload:
                   actions:
-                    setCustomState:
+                    setRuntimeState:
                       currentPage: "options"
                     moveToSection:
                       sectionId: section16
@@ -1158,7 +1068,7 @@ resources:
               - text: About
                 eventPayload:
                   actions:
-                    setCustomState:
+                    setRuntimeState:
                       currentPage: "about"
                     moveToSection:
                       sectionId: section16
@@ -1193,7 +1103,7 @@ resources:
                     strokeColor: black
                     strokeWidth: 6
                   clickSoundUrl: "/public/first-contract/audio/sfx_button1.wav"
-                  clickSoundVolume: "{{ config.soundVolume }}"
+                  clickSoundVolume: "{{ deviceState.soundVolume }}"
       skipMenu:
         layout:
           - id: "skipMifeakjefkljenu"
@@ -1226,9 +1136,9 @@ resources:
         layout:
           - id: "menuTabs"
             type: "container"
-            selectedTabId: "{{ customState.currentPage }}"
+            selectedTabId: "{{ runtimeState.currentPage }}"
             # TODO t100289: improve container animation properties API
-            animationKey: "{{ customState.currentPage }}"
+            animationKey: "{{ runtimeState.currentPage }}"
             animated: true
             animation:
               out:
@@ -1273,7 +1183,7 @@ resources:
                           wordWrapWidth: 1740
                           strokeColor: black
                           strokeWidth: 6
-                      - id: "about32fs2-{{ config.rollbackSide }}"
+                      - id: "about32fs2-{{ deviceState.rollbackSide }}"
                         type: "anchor-layout-container"
                         anchor: "TopLeft"
                         direction: "vertical"
@@ -1315,7 +1225,7 @@ resources:
                                   - case:
                                       property: value
                                       op: eq
-                                      value: "{{ config.rollbackSide }}"
+                                      value: "{{ deviceState.rollbackSide }}"
                                     then: selected
                                 default: default
                               items:
@@ -1327,7 +1237,7 @@ resources:
                                   eventName: "Actions"
                                   eventPayload:
                                     actions:
-                                      setPersistentConfig:
+                                      setDeviceState:
                                         rollbackSide: "{{ value }}"
                                   style:
                                     fill: "#ccc"
@@ -1360,7 +1270,7 @@ resources:
                                         fontFamily: "NomnomNami2"
                                         wordWrapWidth: 1740
 
-                      - id: "about325fs2-{{ config.skipUnseenText }}-{{ config.skipTransitions }}"
+                      - id: "about325fs2-{{ deviceState.skipUnseenText }}-{{ deviceState.skipTransitions }}"
                         type: "anchor-layout-container"
                         anchor: "TopLeft"
                         direction: "vertical"
@@ -1391,17 +1301,17 @@ resources:
                             height: 300 
                             data:
                               - text: Unseen Text
-                                value: "{{ config.skipUnseenText }}"
+                                value: "{{ deviceState.skipUnseenText }}"
                                 eventPayload:
                                   actions:
-                                    setPersistentConfig:
+                                    setDeviceState:
                                       skipUnseenText:
                                         op: toggle
                               - text: Transitions
-                                value: "{{ config.skipTransitions }}"
+                                value: "{{ deviceState.skipTransitions }}"
                                 eventPayload:
                                   actions:
-                                    setPersistentConfig:
+                                    setDeviceState:
                                       skipTransitions:
                                         op: toggle
                             template:
@@ -1455,7 +1365,7 @@ resources:
                                         wordWrapWidth: 1740
                             children: []
                         
-                      - id: "about32e2fcss232-{{ config.textSpeed }}"
+                      - id: "about32e2fcss232-{{ deviceState.textSpeed }}"
                         type: "anchor-layout-container"
                         anchor: "TopLeft"
                         direction: "vertical"
@@ -1463,7 +1373,7 @@ resources:
                         y: 400
                         gap: 20
                         children:
-                          - id: "ladr2fkj3-{{ config.textSpeed }}"
+                          - id: "ladr2fkj3-{{ deviceState.textSpeed }}"
                             text: Text Speed
                             type: "text"
                             width: 120
@@ -1483,14 +1393,14 @@ resources:
                             dragEventName: "Actions"
                             dragEventPayload:
                               actions:
-                                setPersistentConfig:
+                                setDeviceState:
                                   textSpeed: '{{ value }}'
-                            initialValue: '{{ config.textSpeed }}'
+                            initialValue: '{{ deviceState.textSpeed }}'
                             idleThumb: "/public/first-contract/gui/slider/horizontal_idle_thumb.png"
                             hoverThumb: "/public/first-contract/gui/slider/horizontal_hover_thumb.png"
                             idleBar: "/public/first-contract/gui/slider/horizontal_idle_bar.png"
                             hoverBar: "/public/first-contract/gui/slider/horizontal_hover_bar.png"
-                      - id: "about32e2fsfes232-{{ config.autoForwardTime }}"
+                      - id: "about32e2fsfes232-{{ deviceState.autoForwardTime }}"
                         type: "anchor-layout-container"
                         anchor: "TopLeft"
                         direction: "vertical"
@@ -1498,7 +1408,7 @@ resources:
                         y: 520
                         gap: 20
                         children:
-                          - id: "ladfkj3-{{ config.autoForwardTime }}"
+                          - id: "ladfkj3-{{ deviceState.autoForwardTime }}"
                             text: Auto-Forward Time
                             type: "text"
                             width: 120
@@ -1518,14 +1428,14 @@ resources:
                             dragEventName: "Actions"
                             dragEventPayload:
                               actions:
-                                setPersistentConfig:
+                                setDeviceState:
                                   autoForwardTime: '{{ value }}'
-                            initialValue: '{{ config.autoForwardTime }}'
+                            initialValue: '{{ deviceState.autoForwardTime }}'
                             idleThumb: "/public/first-contract/gui/slider/horizontal_idle_thumb.png"
                             hoverThumb: "/public/first-contract/gui/slider/horizontal_hover_thumb.png"
                             idleBar: "/public/first-contract/gui/slider/horizontal_idle_bar.png"
                             hoverBar: "/public/first-contract/gui/slider/horizontal_hover_bar.png"
-                      - id: "about32e2fs2-{{ config.musicVolume }}"
+                      - id: "about32e2fs2-{{ deviceState.musicVolume }}"
                         type: "anchor-layout-container"
                         anchor: "TopLeft"
                         direction: "vertical"
@@ -1533,7 +1443,7 @@ resources:
                         y: 400
                         gap: 20
                         children:
-                          - id: "ladfk4j3-{{ config.musicVolume }}"
+                          - id: "ladfk4j3-{{ deviceState.musicVolume }}"
                             text: Music Volume
                             type: "text"
                             width: 120
@@ -1553,14 +1463,14 @@ resources:
                             dragEventName: "Actions"
                             dragEventPayload:
                               actions:
-                                setPersistentConfig:
+                                setDeviceState:
                                   musicVolume: '{{ value }}'
-                            initialValue: '{{ config.musicVolume }}'
+                            initialValue: '{{ deviceState.musicVolume }}'
                             idleThumb: "/public/first-contract/gui/slider/horizontal_idle_thumb.png"
                             hoverThumb: "/public/first-contract/gui/slider/horizontal_hover_thumb.png"
                             idleBar: "/public/first-contract/gui/slider/horizontal_idle_bar.png"
                             hoverBar: "/public/first-contract/gui/slider/horizontal_hover_bar.png"
-                      - id: "about32e422af23wefs2-{{ config.soundVolume }}"
+                      - id: "about32e422af23wefs2-{{ deviceState.soundVolume }}"
                         type: "anchor-layout-container"
                         anchor: "TopLeft"
                         direction: "vertical"
@@ -1568,7 +1478,7 @@ resources:
                         y: 520
                         gap: 20
                         children:
-                          - id: "ladfwkj3-{{ config.soundVolume }}"
+                          - id: "ladfwkj3-{{ deviceState.soundVolume }}"
                             text: Sound Volume
                             type: "text"
                             width: 120
@@ -1588,9 +1498,9 @@ resources:
                             dragEventName: "Actions"
                             dragEventPayload:
                               actions:
-                                setPersistentConfig:
+                                setDeviceState:
                                   soundVolume: '{{ value }}'
-                            initialValue: '{{ config.soundVolume }}'
+                            initialValue: '{{ deviceState.soundVolume }}'
                             idleThumb: "/public/first-contract/gui/slider/horizontal_idle_thumb.png"
                             hoverThumb: "/public/first-contract/gui/slider/horizontal_hover_thumb.png"
                             idleBar: "/public/first-contract/gui/slider/horizontal_idle_bar.png"
@@ -1601,7 +1511,7 @@ resources:
                         x: 860
                         y: 640
                         data:
-                          - value: "{{ config.muteAll }}"
+                          - value: "{{ deviceState.muteAll }}"
                         template:
                           mapping:
                             cases:
@@ -1620,7 +1530,7 @@ resources:
                               eventName: "Actions"
                               eventPayload:
                                 actions:
-                                  setPersistentConfig:
+                                  setDeviceState:
                                     muteAll:
                                       op: toggle
                               style:
@@ -1651,7 +1561,7 @@ resources:
                                   eventName: "Actions"
                                   eventPayload:
                                     actions:
-                                      setPersistentConfig:
+                                      setDeviceState:
                                         muteAll:
                                           op: toggle
                                   style:
@@ -1678,7 +1588,7 @@ resources:
                             eventName: Actions
                             eventPayload:
                               actions:
-                                setCustomState:
+                                setRuntimeState:
                                   currentPage: "language"
 
                             style:
@@ -1716,7 +1626,7 @@ resources:
                           wordWrapWidth: 1740
                           strokeColor: black
                           strokeWidth: 6
-                      - id: "about32fs2-{{ customState.currentSavePageNumber }}"
+                      - id: "about32fs2-{{ runtimeState.currentSavePageNumber }}"
                         type: "anchor-layout-container"
                         anchor: "TopLeft"
                         direction: "vertical"
@@ -1726,7 +1636,7 @@ resources:
                         height: 1000
                         children:
                           - id: "29ri3ladfkj3"
-                            text: "{{ customState.saveLoadSlots[customState.currentSavePageNumber].title }}"
+                            text: "{{ runtimeState.saveLoadSlots[runtimeState.currentSavePageNumber].title }}"
                             type: "text"
                             width: 120
                             height: 40
@@ -1737,7 +1647,7 @@ resources:
                               wordWrapWidth: 1740
                               strokeColor: black
                               strokeWidth: 6
-                      - id: "abosut32fs2-{{ customState.currentSavePageNumber }}-{{ customState.saveDataCommitId }}"
+                      - id: "abosut32fs2-{{ runtimeState.currentSavePageNumber }}"
                         type: "anchor-layout-container"
                         anchor: "TopLeft"
                         direction: "horizontal"
@@ -1747,7 +1657,7 @@ resources:
                         width: 780
                         height: 1000
                         # TODO t100290: change save data to use standarding templating variables with {{ }} 
-                        data: "$saveData"
+                        data: "{{ persistentState.saveData | saveDataFilter }}"
                         template:
                           mapping:
                             cases:
@@ -1809,7 +1719,7 @@ resources:
                                   url: "/public/first-contract/gui/button/slot_idle_background.png"
                                   width: 280
                                   height: 200
-                      - id: "cmi2x3x23233-{{ customState.currentSavePageNumber }}"
+                      - id: "cmi2x3x23233-{{ runtimeState.currentSavePageNumber }}"
                         type: anchor-layout-container
                         anchor: "CenterCenter"
                         direction: "horizontal"
@@ -1818,7 +1728,7 @@ resources:
                         gap: 20
                         width: 500
                         height: 80
-                        data: "{{ customState.saveLoadSlots }}"
+                        data: "{{ runtimeState.saveLoadSlots }}"
                         template:
                           mapping:
                             cases:
@@ -1835,7 +1745,7 @@ resources:
                               - case:
                                   property: value
                                   op: eq
-                                  value: "{{ customState.currentSavePageNumber }}"
+                                  value: "{{ runtimeState.currentSavePageNumber }}"
                                 then: selected
                             default: default
                           items:
@@ -1855,7 +1765,7 @@ resources:
                               eventName: "Actions"
                               eventPayload:
                                 actions:
-                                  setCustomState:
+                                  setRuntimeState:
                                     currentSavePageNumber:
                                       op: dec
                                       value: 1
@@ -1876,7 +1786,7 @@ resources:
                               eventName: "Actions"
                               eventPayload:
                                 actions:
-                                  setCustomState:
+                                  setRuntimeState:
                                     currentSavePageNumber:
                                       op: inc
                                       value: 1
@@ -1895,7 +1805,7 @@ resources:
                               eventName: "Actions"
                               eventPayload:
                                 actions:
-                                  setCustomState:
+                                  setRuntimeState:
                                     currentSavePageNumber: "{{ value }}"
                                     currentSavePageTitle: "{{ title }}"
                               style:
@@ -2046,7 +1956,7 @@ resources:
                     eventName: "Actions"
                     eventPayload:
                       actions:
-                        setCustomState:
+                        setRuntimeState:
                           currentPage: "options"
                     style:
                       fill: "#ccc"
@@ -2084,7 +1994,7 @@ resources:
                           - case:
                               property: value
                               op: eq
-                              value: "{{ config.language }}"
+                              value: "{{ deviceState.language }}"
                             then: selected
                         default: default
                       items:
@@ -2095,7 +2005,7 @@ resources:
                           eventName: "Actions"
                           eventPayload:
                             actions:
-                              setPersistentConfig:
+                              setDeviceState:
                                 language: "{{ value }}"
 
                           style:
@@ -2238,7 +2148,7 @@ resources:
                     height: 1000
                     children:
                       - id: "89gj3ladfkj3"
-                        text: "{{ customState.saveLoadSlots[customState.currentSavePageNumber].title }}"
+                        text: "{{ runtimeState.saveLoadSlots[runtimeState.currentSavePageNumber].title }}"
                         type: "text"
                         width: 120
                         height: 40
@@ -2249,7 +2159,7 @@ resources:
                           wordWrapWidth: 1740
                           strokeColor: black
                           strokeWidth: 6
-                  - id: "abosute32fs2-{{ customState.currentSavePageNumber }}-{{ customState.saveDataCommitId }}"
+                  - id: "abosute32fs2-{{ runtimeState.currentSavePageNumber }}"
                     type: "anchor-layout-container"
                     anchor: "TopLeft"
                     direction: "horizontal"
@@ -2258,7 +2168,7 @@ resources:
                     y: 200
                     width: 780
                     height: 1000
-                    data: "$saveData"
+                    data: "{{ persistentState.saveData | saveDataFilter }}"
                     template:
                       mapping:
                         cases:
@@ -2351,7 +2261,7 @@ resources:
                                 fontFamily: "NomnomNami2"
                                 wordWrapWidth: 1740
 
-                  - id: "cmi2x3x23233-{{ customState.currentSavePageNumber }}"
+                  - id: "cmi2x3x23233-{{ runtimeState.currentSavePageNumber }}"
                     type: anchor-layout-container
                     anchor: "CenterCenter"
                     direction: "horizontal"
@@ -2360,14 +2270,14 @@ resources:
                     gap: 20
                     width: 500
                     height: 80
-                    data: "{{ customState.saveLoadSlots }}"
+                    data: "{{ runtimeState.saveLoadSlots }}"
                     template:
                       mapping:
                         cases:
                           - case:
                               property: value
                               op: eq
-                              value: "{{ customState.currentSavePageNumber }}"
+                              value: "{{ runtimeState.currentSavePageNumber }}"
                             then: selected
                         default: default
                       items:
@@ -2385,7 +2295,7 @@ resources:
                           eventName: "Actions"
                           eventPayload:
                             actions:
-                              setCustomState:
+                              setRuntimeState:
                                 currentSavePageNumber: "{{ value }}"
                           style:
                             fill: "#ccc"
@@ -2398,7 +2308,106 @@ resources:
                             fontFamily: "NomnomNami2"
                             wordWrapWidth: 100
                     children: []
-
+          - id: 'adgeaer'
+            type: container
+            zIndex: 2006
+            hidden: "{{ runtimeState.hideExitMenuConfirmationModal }}"
+            x: 0
+            y: 0
+            width: 120
+            height: 40
+            children:
+              - id: overlayConfirm3d
+                type: "container"
+                anchor: "TopLeft"
+                zIndex: 2005
+                x: 0
+                y: 0
+                children:
+                  - id: "ladf423kj3"
+                    type: graphics
+                    zIndex: 1000
+                    x1: 0
+                    x2: 1280
+                    y1: 0
+                    y2: 720
+                    fill: 'black'
+                    alpha: 0.5
+                  - id: "ladf1kj3"
+                    type: sprite
+                    zIndex: 800
+                    xa: 0.5
+                    ya: 0.5
+                    x: 640
+                    y: 360
+                    width: 600
+                    height: 180
+                    url: "/public/first-contract/gui/frame.png"
+                  - id: "ladfkj42d3"
+                    type: text
+                    zIndex: 1005
+                    text: 'Are you sure you want to return to the main menu? This will lose unsaved progress.'
+                    xa: 0.5
+                    ya: 0.5
+                    x: 640
+                    y: 340
+                    style:
+                      fill: 'white'
+                      fontSize: 27
+                      fontFamily: 'NomnomNami2'
+                      wordWrapWidth: 600
+                      align: center
+                  - id: "ladfkj42dxi3"
+                    type: anchor-layout-container
+                    anchor: "CenterCenter"
+                    direction: "horizontal"
+                    zIndex: 1002
+                    gap: 120
+                    x: 640
+                    y: 410
+                    children:
+                      - id: "ladfkj42dxi3"
+                        type: text-interactive
+                        text: "Yes"
+                        zIndex: 1005
+                        eventName: Actions
+                        eventPayload:
+                          actions:
+                            exitMenu:
+                              sectionId: section3
+                              presetId: title
+                              mode: read
+                            setRuntimeState:
+                              hideExitMenuConfirmationModal: true
+                        style:
+                          fill: "#ccc"
+                          fontSize: 28
+                          fontFamily: "NomnomNami2"
+                          wordWrapWidth: 1740
+                        hoverStyle:
+                          fontSize: 28
+                          fill: "yellow"
+                          fontFamily: "NomnomNami2"
+                          wordWrapWidth: 1740
+                      - id: "ladfkj42dxi3"
+                        type: text-interactive
+                        text: "No"
+                        zIndex: 1005
+                        eventName: Actions
+                        eventPayload:
+                          actions:
+                            setRuntimeState:
+                              hideExitMenuConfirmationModal: true
+                        style:
+                          fill: "#ccc"
+                          fontSize: 28
+                          fontFamily: "NomnomNami2"
+                          wordWrapWidth: 1740
+                        hoverStyle:
+                          fontSize: 28
+                          fill: "yellow"
+                          fontFamily: "NomnomNami2"
+                          wordWrapWidth: 1740
 
   dialogueBox:
     items:
@@ -2427,10 +2436,9 @@ resources:
                 type: text
                 width: 43
                 height: 48
-                text: ""
-                contentSource: "characterName"
+                text: "{{ character.name }}"
                 style:
-                  fill: "#cc005b"
+                  fill: "{{ character.variables.mainColor }}"
                   fontSize: 40
                   fontFamily: "NomnomNami2"
                   wordWrapWidth: 1740
@@ -2447,9 +2455,10 @@ resources:
                 type: text-revealing
                 width: 43
                 height: 48
-                displaySpeed: "{{ config.textSpeed }}"
-                text: "This is the text content"
-                contentSource: "dialogueContent"
+                displaySpeed: "{{ deviceState.textSpeed }}"
+                # text: "This is the text content"
+                text: "{{ dialogue.text }}"
+                # contentSource: "dialogueContent"
                 style:
                   fill: "white"
                   fontSize: 30
@@ -2476,7 +2485,7 @@ resources:
                       sectionId: section15
                       presetId: menu
                       mode: menu
-                    setCustomState:
+                    setRuntimeState:
                       currentPage: "history"
               - label: Skip
                 active: "{{ skipMode }}"
@@ -2496,7 +2505,7 @@ resources:
                       sectionId: section15
                       presetId: menu
                       mode: menu
-                    setCustomState:
+                    setRuntimeState:
                       currentPage: "save"
               - label: Options
                 eventPayload: 
@@ -2505,7 +2514,7 @@ resources:
                       sectionId: section15
                       presetId: menu
                       mode: menu
-                    setCustomState:
+                    setRuntimeState:
                       currentPage: "options"
             template:
               mapping:
@@ -2564,7 +2573,7 @@ resources:
                     fontFamily: "NomnomNami2"
                     wordWrapWidth: 1740
                   clickSoundUrl: "/public/first-contract/audio/sfx_button1.wav"
-                  clickSoundVolume: "{{ config.soundVolume }}"
+                  clickSoundVolume: "{{ deviceState.soundVolume }}"
             children: []
       dialogueBox2:
         name: "Dialogue Box 2"
@@ -2580,8 +2589,9 @@ resources:
                 type: text-revealing
                 width: 100
                 height: 48
-                text: "This is the text content"
-                contentSource: "dialogueContent"
+                # text: "This is the text content"
+                text: "{{ dialogue.text }}"
+                # contentSource: "dialogueContent"
                 style:
                   fill: "white"
                   fontSize: 30
@@ -2630,6 +2640,7 @@ resources:
             y: 120
             height: 500
             width: 1200
+            # TODO t100297: use more standard templating for incremental dialogue box
             childItems:
               - id: "left"
                 type: "anchor-layout-container"
@@ -2643,10 +2654,9 @@ resources:
                 children:
                   - id: "lefte2"
                     type: "text"
-                    contentSource: "dialogueContent"
                     fill:
                       color: "#ff74b2"
-                    text: ""
+                    text: "{{ dialogue.text }}"
                     x: 10
                     style:
                       fill: "white"
@@ -2726,7 +2736,7 @@ presets:
           nextStep: {}
       RightClick:
         actions:
-          setCustomState:
+          setRuntimeState:
             currentPage: "options"
           moveToSection:
             sectionId: "section15"
@@ -2835,7 +2845,7 @@ story:
                 - id: extra
                   condition:
                     op: eq
-                    value1: "{{ persistentVariables.gameOver }}" 
+                    value1: "{{ persistentState.novelCompleted }}" 
                     value2: true
                   screenId: "mainMenuExtra"
                   inAnimation:
@@ -2958,7 +2968,9 @@ story:
           actions:
             dialogue:
               character:
-                characterName: "???"
+                name: "???"
+                variables:
+                  mainColor: "#cc005b"
               dialogueBoxId: "dialogueBox1"
               text: "May my melody reach the deepest pits of the Netherworld!"
         - id: s2step6
@@ -2977,7 +2989,9 @@ story:
           actions:
             dialogue:
               character:
-                characterName: "???"
+                name: "???"
+                variables:
+                  mainColor: "#cc005b"
               dialogueBoxId: "dialogueBox1"
               # text: "Kamilla, if you're listening, I invite you to this world!"
               segments:
@@ -4987,8 +5001,8 @@ story:
               text: "Game Over: Heheheh... okay. I'll order pizza."
         - id: "step117"
           actions:
-            setPersistentVariables:
-              gameOver: true
+            setPersistentState:
+              novelCompleted: true
             moveToSection:
               sectionId: "section3"
               pointerMode: "read"
@@ -5083,7 +5097,7 @@ story:
               dialogueBoxId: "dialogueBox3"
               childItemId: right
               text: "New contract has a time obligation, be back tomorrow"
-            setPersistentVariables:
+            setPersistentState:
               gameStarted: true
         - id: step1
           actions:

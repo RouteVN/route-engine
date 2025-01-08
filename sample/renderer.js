@@ -36752,8 +36752,10 @@ var diffElements = (prevElements = [], nextElements = []) => {
   const toDeleteElements = [];
   const toUpdateElements = [];
   const toAddElements = [];
-  for (const prevElement of prevElements) {
-    const nextElement = nextElements.find((element) => element.id === prevElement.id && element.type === prevElement.type);
+  const visiblePrevElements = prevElements.filter((el) => !el.hidden);
+  const visibleNextElements = nextElements.filter((el) => !el.hidden);
+  for (const prevElement of visiblePrevElements) {
+    const nextElement = visibleNextElements.find((element) => element.id === prevElement.id && element.type === prevElement.type);
     if (!nextElement) {
       toDeleteElements.push(prevElement);
     } else {
@@ -36763,17 +36765,18 @@ var diffElements = (prevElements = [], nextElements = []) => {
       });
     }
   }
-  for (const nextElement of nextElements) {
-    const prevElement = prevElements.find((element) => element.id === nextElement.id && element.type === nextElement.type);
+  for (const nextElement of visibleNextElements) {
+    const prevElement = visiblePrevElements.find((element) => element.id === nextElement.id && element.type === nextElement.type);
     if (!prevElement) {
       toAddElements.push(nextElement);
     }
   }
-  console.log({
-    toDeleteElements,
-    toUpdateElements,
-    toAddElements
-  });
+  for (const prevElement of prevElements) {
+    const nextElement = nextElements.find((el) => el.id === prevElement.id && el.type === prevElement.type);
+    if (nextElement && nextElement.hidden && !prevElement.hidden) {
+      toDeleteElements.push(prevElement);
+    }
+  }
   return { toDeleteElements, toUpdateElements, toAddElements };
 };
 
@@ -37000,10 +37003,6 @@ var PixiTDR = class _PixiTDR extends BaseTDR {
       height,
       backgroundColor: backgroundColor || 0
     });
-    const modalContainer = new Container();
-    modalContainer.label = "modalContainer";
-    this._app.stage.addChild(modalContainer);
-    this._app.stage.label = "STAGE";
     this._app.ticker.add(this._app.soundStage.tick);
     return this;
   };
@@ -37113,10 +37112,6 @@ var PixiTDR = class _PixiTDR extends BaseTDR {
       );
     }
     app.stage.children.sort((a2, b2) => {
-      if (a2.label === "modalContainer")
-        return 1;
-      if (b2.label === "modalContainer")
-        return -1;
       const aIndex = nextState.elements.findIndex((element) => element.id === a2.label);
       const bIndex = nextState.elements.findIndex((element) => element.id === b2.label);
       return aIndex - bIndex;
@@ -38020,6 +38015,12 @@ var ContainerRendererPlugin = class {
       if (element.selectedTabId) {
         return child.tabId === element.selectedTabId;
       }
+      if (child.id === "adgeaer") {
+        console.log("YYYYYYYYYYYYYYYYYYYYYYYYYYYYYY");
+      }
+      if (child.hidden) {
+        return false;
+      }
       return true;
     }).forEach((childElement) => {
       const renderer = getRendererByElement(childElement);
@@ -38610,98 +38611,6 @@ var GraphicsRendererPlugin = class {
   };
 };
 
-// src/plugins/elements/ModalRendererPlugin.js
-var ModalRendererPlugin = class {
-  static rendererName = "pixi";
-  rendererName = "pixi";
-  rendererType = "modal";
-  /**
-   * @param {Application} app
-   * @param {Object} options
-   * @param {Container} options.parent
-   * @param {ModalElement} options.element
-   * @param {BaseTransition[]} [options.transitions=[]]
-   * @param {Function} options.getTransitionByType
-   * @param {Function} options.getRendererByElement
-   * @param {Function} options.eventHandler
-   * @returns {Promise<undefined>}
-   */
-  add = async (app, options) => {
-    const { parent, element, transitions = [], getTransitionByType, getRendererByElement, eventHandler } = options;
-    if (element.child) {
-      const renderer = getRendererByElement(element.child);
-      renderer.add(app, {
-        parent,
-        element: element.child,
-        transitions: [],
-        getTransitionByType,
-        getRendererByElement,
-        eventHandler
-      });
-    }
-    if (element.modalDisplayed) {
-      const modalRenderer = getRendererByElement(element.layout);
-      modalRenderer.add(app, {
-        parent: app.stage.getChildByName("modalContainer"),
-        element: element.layout,
-        transitions: [],
-        getTransitionByType,
-        getRendererByElement,
-        eventHandler
-      });
-    }
-  };
-  /**
-   * @param {Application} app
-   * @param {Object} options
-   * @param {Container} options.parent
-   * @param {ModalElement} options.element
-   * @param {BaseTransition[]} [options.transitions=[]]
-   * @param {Function} options.getTransitionByType
-   * @param {Function} options.getRendererByElement
-   * @param {Function} options.eventHandler
-   * @returns {Promise<undefined>}
-   */
-  remove = async (app, options) => {
-    const { parent, element, transitions = [], getTransitionByType, getRendererByElement, eventHandler } = options;
-    if (element.child) {
-      const renderer = getRendererByElement(element.child);
-      renderer.remove(app, {
-        parent,
-        element: element.child,
-        transitions: [],
-        getTransitionByType,
-        getRendererByElement,
-        eventHandler
-      });
-    }
-    const modalRenderer = getRendererByElement(element.layout);
-    modalRenderer.remove(app, {
-      parent: app.stage.getChildByName("modalContainer"),
-      element: element.layout,
-      transitions: [],
-      getTransitionByType,
-      getRendererByElement,
-      eventHandler
-    });
-  };
-  /**
-   * @param {Application} app
-   * @param {Object} options
-   * @param {Container} options.parent
-   * @param {ModalElement} options.prevElement
-   * @param {ModalElement} options.nextElement
-   * @param {BaseTransition[]} [options.transitions=[]]
-   * @param {Function} options.getTransitionByType
-   * @returns {Promise<undefined>}
-   */
-  update = async (app, options) => {
-    const { parent, prevElement, nextElement, transitions = [], getTransitionByType, getRendererByElement, eventHandler } = options;
-    this.remove(app, { parent, element: prevElement, transitions, getTransitionByType, getRendererByElement, eventHandler });
-    this.add(app, { parent, element: nextElement, transitions, getTransitionByType, getRendererByElement, eventHandler });
-  };
-};
-
 // src/plugins/elements/AnchorLayoutContainerRendererPlugin.js
 var AnchorLayoutValues = {
   TopLeft: "TopLeft",
@@ -38960,7 +38869,7 @@ var AnchorLayoutContainerRendererPlugin = class {
       }
     }
     const renderPromises = [];
-    (element.children || []).forEach((childElement) => {
+    (element.children || []).filter((childElement) => !childElement.hidden).forEach((childElement) => {
       const renderer = getRendererByElement(childElement);
       renderPromises.push(
         renderer.add(app, {
@@ -38991,6 +38900,12 @@ var AnchorLayoutContainerRendererPlugin = class {
       }
     }
     parent.addChild(container);
+    console.log("container", {
+      parent,
+      container,
+      element,
+      children: element.children
+    });
     await Promise.all(transitionPromises.concat(renderPromises));
   };
   /**
@@ -39376,7 +39291,6 @@ export {
   FadeTransitionPlugin,
   GraphicsRendererPlugin,
   KeyframeTransitionPlugin,
-  ModalRendererPlugin,
   PixiTDR_default as PixiTDR,
   RepeatFadeTransitionPlugin,
   ScaleTransitionPlugin,

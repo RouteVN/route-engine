@@ -14,12 +14,17 @@ import {
   GraphicsRendererPlugin,
   SoundPlugin,
   SliderRendererPlugin,
-  ModalRendererPlugin,
 } from "./renderer.js";
 
 import RvnEngine from "./../engine/engine.js";
 import { applyState } from "./../engine/state.js";
 
+/**
+ * Downsize a base64 image
+ * @param {string} base64Image - The base64 image to downsize
+ * @param {number} scaleFactor - The scale factor to downsize the image by
+ * @returns {Promise<string>} - The downsized base64 image
+ */
 async function downsizeBase64Image(base64Image, scaleFactor = 4) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -49,6 +54,12 @@ async function downsizeBase64Image(base64Image, scaleFactor = 4) {
   });
 }
 
+/**
+ * Get all values by property name
+ * @param {object} obj - The object to get the values from
+ * @param {string[]} propertyNames - The property names to get the values from
+ * @returns {string[]} - The values
+ */
 const getAllValuesByPropertyName = (obj, propertyNames) => {
   const result = [];
 
@@ -73,7 +84,12 @@ const getAllValuesByPropertyName = (obj, propertyNames) => {
   return result;
 };
 
-const initializeVnPlayer = async (element, onClose) => {
+/**
+ * Initialize the Visual Novel Player
+ * @param {HTMLElement} element - The element to initialize the player in
+ * @param {function} onClose - The function to call when the player is closed
+ */
+const initializeVnPlayer = async (element) => {
   const app = new PixiTDR();
 
   const res = await fetch(`/sample/vndata.json`);
@@ -122,13 +138,8 @@ const initializeVnPlayer = async (element, onClose) => {
       new GraphicsRendererPlugin(),
       new SoundPlugin(),
       new SliderRendererPlugin(),
-      new ModalRendererPlugin(),
     ],
     eventHandler: (event, payload) => {
-      console.log("eventHandler", {
-        action: event,
-        payload,
-      });
       engine.handleEvent(event, payload);
     },
   });
@@ -142,79 +153,52 @@ const initializeVnPlayer = async (element, onClose) => {
   const engine = new RvnEngine();
   engine.loadGameData(gameData);
 
-  const configKey = "rvn_config";
-  engine.persistentConfigInterface = {
-    setAll: (config) => {
-      localStorage.setItem(configKey, JSON.stringify(config));
-    },
-    set: (key, data) => {
-      const config = localStorage.getItem(configKey);
-      const configObj = config ? JSON.parse(config) : {};
-      configObj[key] = data;
-      localStorage.setItem(configKey, JSON.stringify(configObj));
-    },
-    get: (key) => {
-      const config = localStorage.getItem(configKey);
-      const configObj = config ? JSON.parse(config) : {};
-      return configObj[key];
-    },
-    getAll: () => {
-      const config = localStorage.getItem(configKey);
-      const configObj = config ? JSON.parse(config) : {};
-      return configObj;
-    },
-  };
 
-  const saveDataKey = "rvn_save_data";
-  engine.persistentSaveInterface = {
+  const deviceStateKey = "rvn_device_state";  
+  engine.deviceStateInterface = {
     setAll: (config) => {
-      localStorage.setItem(saveDataKey, JSON.stringify(config));
+      localStorage.setItem(deviceStateKey, JSON.stringify(config));
     },
     set: (key, data) => {
-      const config = localStorage.getItem(saveDataKey);
+      const config = localStorage.getItem(deviceStateKey);
       const configObj = config ? JSON.parse(config) : {};
       configObj[key] = data;
-      localStorage.setItem(saveDataKey, JSON.stringify(configObj));
+      localStorage.setItem(deviceStateKey, JSON.stringify(configObj));
     },
     get: (key) => {
-      const config = localStorage.getItem(saveDataKey);
+      const config = localStorage.getItem(deviceStateKey);
       const configObj = config ? JSON.parse(config) : {};
       return configObj[key];
     },
     getAll: () => {
-      const config = localStorage.getItem(saveDataKey);
+      const config = localStorage.getItem(deviceStateKey);
       const configObj = config ? JSON.parse(config) : {};
-      Object.values(configObj).forEach((value) => {
-        if (value.url) {
-          app.loadAssets([value.url]);
-        }
-      });
       return configObj;
     },
-  };
+  }
 
-  const persistentVariableKey = "rvn_persistent_variables";
-  engine.persistentVariablesInterface = {
+  const persistentStateKey = "rvn_persistent_state";
+  engine.persistentStateInterface = {
     setAll: (config) => {
-      localStorage.setItem(persistentVariableKey, JSON.stringify(config));
+      localStorage.setItem(persistentStateKey, JSON.stringify(config));
     },
     set: (key, data) => {
-      const config = localStorage.getItem(persistentVariableKey);
+      const config = localStorage.getItem(persistentStateKey);
       const configObj = config ? JSON.parse(config) : {};
       configObj[key] = data;
-      localStorage.setItem(persistentVariableKey, JSON.stringify(configObj));
+      localStorage.setItem(persistentStateKey, JSON.stringify(configObj));
     },
     get: (key) => {
-      const config = localStorage.getItem(persistentVariableKey);
+      const config = localStorage.getItem(persistentStateKey);
       const configObj = config ? JSON.parse(config) : {};
       return configObj[key];
     },
     getAll: () => {
-      const config = localStorage.getItem(persistentVariableKey);
+      const config = localStorage.getItem(persistentStateKey);
       const configObj = config ? JSON.parse(config) : {};
       return configObj;
     },
-  };
+  }
 
   engine.onTriggerRender = ({ elements, transitions }) => {
     app.render({

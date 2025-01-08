@@ -2,7 +2,95 @@
   "initial": {
     "sectionId": "section3",
     "presetId": "title",
-    "mode": "read"
+    "mode": "read",
+    "runtimeState": {
+      "currentPage": "about",
+      "currentSavePageNumber": 0,
+      "hideExitMenuConfirmationModal": true,
+      "saveLoadSlots": [
+        {
+          "text": "<",
+          "value": -1
+        },
+        {
+          "text": "A",
+          "value": 0,
+          "title": "Auto Save"
+        },
+        {
+          "text": "Q",
+          "value": 1,
+          "title": "Quick Save"
+        },
+        {
+          "text": "1",
+          "value": 2,
+          "title": "Page 1"
+        },
+        {
+          "text": "2",
+          "value": 3,
+          "title": "Page 2"
+        },
+        {
+          "text": "3",
+          "value": 4,
+          "title": "Page 3"
+        },
+        {
+          "text": "4",
+          "value": 5,
+          "title": "Page 4"
+        },
+        {
+          "text": "5",
+          "value": 6,
+          "title": "Page 5"
+        },
+        {
+          "text": "6",
+          "value": 7,
+          "title": "Page 6"
+        },
+        {
+          "text": "7",
+          "value": 8,
+          "title": "Page 8"
+        },
+        {
+          "text": "8",
+          "value": 9,
+          "title": "Page 9"
+        },
+        {
+          "text": "9",
+          "value": 10,
+          "title": "Page 10"
+        },
+        {
+          "text": "10",
+          "value": 11,
+          "title": "Page 11"
+        },
+        {
+          "text": ">",
+          "value": 12
+        }
+      ]
+    },
+    "deviceState": {
+      "musicVolume": 1,
+      "soundVolume": 1,
+      "clickSoundVolume": 1,
+      "rollbackSide": "left",
+      "skipTransitions": false,
+      "skipUnseenText": false,
+      "language": "en_default"
+    },
+    "persistentState": {
+      "novelCompleted": false,
+      "saveData": []
+    }
   },
   "initialPersistentConfig": {
     "musicVolume": 1,
@@ -12,80 +100,6 @@
     "skipTransitions": false,
     "skipUnseenText": false,
     "language": "en_default"
-  },
-  "initialCustomState": {
-    "exitMenuConfirmationModal": false,
-    "currentSavePageNumber": 0,
-    "saveLoadSlots": [
-      {
-        "text": "<",
-        "value": -1
-      },
-      {
-        "text": "A",
-        "value": 0,
-        "title": "Auto Save"
-      },
-      {
-        "text": "Q",
-        "value": 1,
-        "title": "Quick Save"
-      },
-      {
-        "text": "1",
-        "value": 2,
-        "title": "Page 1"
-      },
-      {
-        "text": "2",
-        "value": 3,
-        "title": "Page 2"
-      },
-      {
-        "text": "3",
-        "value": 4,
-        "title": "Page 3"
-      },
-      {
-        "text": "4",
-        "value": 5,
-        "title": "Page 4"
-      },
-      {
-        "text": "5",
-        "value": 6,
-        "title": "Page 5"
-      },
-      {
-        "text": "6",
-        "value": 7,
-        "title": "Page 6"
-      },
-      {
-        "text": "7",
-        "value": 8,
-        "title": "Page 8"
-      },
-      {
-        "text": "8",
-        "value": 9,
-        "title": "Page 9"
-      },
-      {
-        "text": "9",
-        "value": 10,
-        "title": "Page 10"
-      },
-      {
-        "text": "10",
-        "value": 11,
-        "title": "Page 11"
-      },
-      {
-        "text": ">",
-        "value": 12
-      }
-    ]
   },
   "resources": {
     "background": {
@@ -177,34 +191,31 @@
       }
     },
     "character": {
-      "parts": {
-        "base": {
-          "label": "Base"
-        },
-        "outfit": {
-          "label": "Outfit"
-        },
-        "arms": {
-          "label": "Arms"
-        },
-        "eyes": {
-          "label": "Eyes"
-        },
-        "mouth": {
-          "label": "Mouth"
-        }
-      },
       "items": {
         "eleni": {
           "id": "eleni",
           "name": "Eleni",
-          "whoColor": "ff74b2",
+          "variables": {
+            "mainColor": "#ff74b2"
+          },
           "sprites": {
-            "itemsOrder": [
-              "eleni2_hidden",
-              "eleni_arms_pjs_down",
-              "eleni_arms_pjs_oneup"
-            ],
+            "parts": {
+              "base": {
+                "label": "Base"
+              },
+              "outfit": {
+                "label": "Outfit"
+              },
+              "arms": {
+                "label": "Arms"
+              },
+              "eyes": {
+                "label": "Eyes"
+              },
+              "mouth": {
+                "label": "Mouth"
+              }
+            },
             "items": {
               "eleni2_hidden": {
                 "name": "Eleni 2 Hidden",
@@ -316,32 +327,27 @@
         "kamilla": {
           "id": "kamilla",
           "name": "Kamilla",
-          "whoColor": "#cc005b",
-          "partsOrder": [
-            "base",
-            "outfit",
-            "arms",
-            "eyes",
-            "mouth"
-          ],
-          "parts": {
-            "base": {
-              "label": "Base"
-            },
-            "outfit": {
-              "label": "Outfit"
-            },
-            "arms": {
-              "label": "Arms"
-            },
-            "eyes": {
-              "label": "Eyes"
-            },
-            "mouth": {
-              "label": "Mouth"
-            }
+          "variables": {
+            "mainColor": "#cc005b"
           },
           "sprites": {
+            "parts": {
+              "base": {
+                "label": "Base"
+              },
+              "outfit": {
+                "label": "Outfit"
+              },
+              "arms": {
+                "label": "Arms"
+              },
+              "eyes": {
+                "label": "Eyes"
+              },
+              "mouth": {
+                "label": "Mouth"
+              }
+            },
             "items": {
               "kamilla_base": {
                 "name": "Kamilla Base",
@@ -865,7 +871,7 @@
               "width": 1280
             },
             {
-              "id": "about3-{{ customState.currentPage }}",
+              "id": "about3-{{ runtimeState.currentPage }}",
               "type": "anchor-layout-container",
               "anchor": "CenterLeft",
               "direction": "vertical",
@@ -885,7 +891,7 @@
                         "presetId": "read",
                         "addToSection": true
                       },
-                      "setCustomState": {
+                      "setRuntimeState": {
                         "currentPage": "start"
                       }
                     }
@@ -896,7 +902,7 @@
                   "page": "load",
                   "eventPayload": {
                     "actions": {
-                      "setCustomState": {
+                      "setRuntimeState": {
                         "currentPage": "load"
                       }
                     }
@@ -907,7 +913,7 @@
                   "page": "options",
                   "eventPayload": {
                     "actions": {
-                      "setCustomState": {
+                      "setRuntimeState": {
                         "currentPage": "options"
                       }
                     }
@@ -918,7 +924,7 @@
                   "page": "about",
                   "eventPayload": {
                     "actions": {
-                      "setCustomState": {
+                      "setRuntimeState": {
                         "currentPage": "about"
                       }
                     }
@@ -932,7 +938,7 @@
                       "case": {
                         "property": "page",
                         "op": "eq",
-                        "value": "{{ customState.currentPage }}"
+                        "value": "{{ runtimeState.currentPage }}"
                       },
                       "then": "selected"
                     }
@@ -969,7 +975,7 @@
                       "strokeWidth": 6
                     },
                     "clickSoundUrl": "/public/first-contract/audio/sfx_button1.wav",
-                    "clickSoundVolume": "{{ config.soundVolume }}"
+                    "clickSoundVolume": "{{ deviceState.soundVolume }}"
                   },
                   {
                     "template": "selected",
@@ -1024,7 +1030,7 @@
                 "strokeWidth": 6
               },
               "clickSoundUrl": "/public/first-contract/audio/sfx_button1.wav",
-              "clickSoundVolume": "{{ config.soundVolume }}"
+              "clickSoundVolume": "{{ deviceState.soundVolume }}"
             }
           ]
         },
@@ -1046,141 +1052,7 @@
               "width": 1280
             },
             {
-              "id": "adgeaer",
-              "type": "modal",
-              "modalDisplayed": "{{ customState.exitMenuConfirmationModal }}",
-              "x": 0,
-              "y": 0,
-              "width": 120,
-              "height": 40,
-              "layout": {
-                "id": "asdfjk",
-                "type": "container",
-                "children": [
-                  {
-                    "id": "overlayConfirm3d",
-                    "type": "container",
-                    "anchor": "TopLeft",
-                    "zIndex": 1005,
-                    "x": 0,
-                    "y": 0,
-                    "children": [
-                      {
-                        "id": "ladf423kj3",
-                        "type": "graphics",
-                        "zIndex": 1000,
-                        "x1": 0,
-                        "x2": 1280,
-                        "y1": 0,
-                        "y2": 720,
-                        "fill": "black",
-                        "alpha": 0.5
-                      },
-                      {
-                        "id": "ladf1kj3",
-                        "type": "sprite",
-                        "zIndex": 800,
-                        "xa": 0.5,
-                        "ya": 0.5,
-                        "x": 640,
-                        "y": 360,
-                        "width": 600,
-                        "height": 180,
-                        "url": "/public/first-contract/gui/frame.png"
-                      },
-                      {
-                        "id": "ladfkj42d3",
-                        "type": "text",
-                        "zIndex": 1005,
-                        "text": "Are you sure you want to return to the main menu? This will lose unsaved progress.",
-                        "xa": 0.5,
-                        "ya": 0.5,
-                        "x": 640,
-                        "y": 340,
-                        "style": {
-                          "fill": "white",
-                          "fontSize": 27,
-                          "fontFamily": "NomnomNami2",
-                          "wordWrapWidth": 600,
-                          "align": "center"
-                        }
-                      },
-                      {
-                        "id": "ladfkj42dxi3",
-                        "type": "anchor-layout-container",
-                        "anchor": "CenterCenter",
-                        "direction": "horizontal",
-                        "zIndex": 1002,
-                        "gap": 120,
-                        "x": 640,
-                        "y": 410,
-                        "children": [
-                          {
-                            "id": "ladfkj42dxi3",
-                            "type": "text-interactive",
-                            "text": "Yes",
-                            "zIndex": 1005,
-                            "eventName": "Actions",
-                            "eventPayload": {
-                              "actions": {
-                                "exitMenu": {
-                                  "sectionId": "section3",
-                                  "presetId": "title",
-                                  "mode": "read"
-                                },
-                                "setCustomState": {
-                                  "exitMenuConfirmationModal": false
-                                }
-                              }
-                            },
-                            "style": {
-                              "fill": "#ccc",
-                              "fontSize": 28,
-                              "fontFamily": "NomnomNami2",
-                              "wordWrapWidth": 1740
-                            },
-                            "hoverStyle": {
-                              "fontSize": 28,
-                              "fill": "yellow",
-                              "fontFamily": "NomnomNami2",
-                              "wordWrapWidth": 1740
-                            }
-                          },
-                          {
-                            "id": "ladfkj42dxi3",
-                            "type": "text-interactive",
-                            "text": "No",
-                            "zIndex": 1005,
-                            "eventName": "Actions",
-                            "eventPayload": {
-                              "actions": {
-                                "setCustomState": {
-                                  "exitMenuConfirmationModal": false
-                                }
-                              }
-                            },
-                            "style": {
-                              "fill": "#ccc",
-                              "fontSize": 28,
-                              "fontFamily": "NomnomNami2",
-                              "wordWrapWidth": 1740
-                            },
-                            "hoverStyle": {
-                              "fontSize": 28,
-                              "fill": "yellow",
-                              "fontFamily": "NomnomNami2",
-                              "wordWrapWidth": 1740
-                            }
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              }
-            },
-            {
-              "id": "about3-{{ customState.currentPage }}",
+              "id": "about3-{{ runtimeState.currentPage }}",
               "type": "anchor-layout-container",
               "anchor": "CenterLeft",
               "direction": "vertical",
@@ -1194,7 +1066,7 @@
                   "page": "save",
                   "eventPayload": {
                     "actions": {
-                      "setCustomState": {
+                      "setRuntimeState": {
                         "currentPage": "save"
                       }
                     }
@@ -1205,7 +1077,7 @@
                   "page": "history",
                   "eventPayload": {
                     "actions": {
-                      "setCustomState": {
+                      "setRuntimeState": {
                         "currentPage": "history"
                       }
                     }
@@ -1216,7 +1088,7 @@
                   "page": "load",
                   "eventPayload": {
                     "actions": {
-                      "setCustomState": {
+                      "setRuntimeState": {
                         "currentPage": "load"
                       }
                     }
@@ -1227,7 +1099,7 @@
                   "page": "options",
                   "eventPayload": {
                     "actions": {
-                      "setCustomState": {
+                      "setRuntimeState": {
                         "currentPage": "options"
                       }
                     }
@@ -1238,7 +1110,7 @@
                   "page": "about",
                   "eventPayload": {
                     "actions": {
-                      "setCustomState": {
+                      "setRuntimeState": {
                         "currentPage": "about"
                       }
                     }
@@ -1249,8 +1121,8 @@
                   "page": "main",
                   "eventPayload": {
                     "actions": {
-                      "setCustomState": {
-                        "exitMenuConfirmationModal": true
+                      "setRuntimeState": {
+                        "hideExitMenuConfirmationModal": false
                       }
                     }
                   }
@@ -1263,7 +1135,7 @@
                       "case": {
                         "property": "page",
                         "op": "eq",
-                        "value": "{{ customState.currentPage }}"
+                        "value": "{{ runtimeState.currentPage }}"
                       },
                       "then": "selected"
                     }
@@ -1644,7 +1516,7 @@
                   "text": "Start",
                   "eventPayload": {
                     "actions": {
-                      "setCustomState": {
+                      "setRuntimeState": {
                         "currentPage": "start"
                       },
                       "moveToSection": {
@@ -1660,7 +1532,7 @@
                   "text": "Load",
                   "eventPayload": {
                     "actions": {
-                      "setCustomState": {
+                      "setRuntimeState": {
                         "currentPage": "load"
                       },
                       "moveToSection": {
@@ -1675,7 +1547,7 @@
                   "text": "Options",
                   "eventPayload": {
                     "actions": {
-                      "setCustomState": {
+                      "setRuntimeState": {
                         "currentPage": "options"
                       },
                       "moveToSection": {
@@ -1690,7 +1562,7 @@
                   "text": "About",
                   "eventPayload": {
                     "actions": {
-                      "setCustomState": {
+                      "setRuntimeState": {
                         "currentPage": "about"
                       },
                       "moveToSection": {
@@ -1736,7 +1608,7 @@
                       "strokeWidth": 6
                     },
                     "clickSoundUrl": "/public/first-contract/audio/sfx_button1.wav",
-                    "clickSoundVolume": "{{ config.soundVolume }}"
+                    "clickSoundVolume": "{{ deviceState.soundVolume }}"
                   }
                 ]
               }
@@ -1786,8 +1658,8 @@
             {
               "id": "menuTabs",
               "type": "container",
-              "selectedTabId": "{{ customState.currentPage }}",
-              "animationKey": "{{ customState.currentPage }}",
+              "selectedTabId": "{{ runtimeState.currentPage }}",
+              "animationKey": "{{ runtimeState.currentPage }}",
               "animated": true,
               "animation": {
                 "out": {
@@ -1853,7 +1725,7 @@
                           }
                         },
                         {
-                          "id": "about32fs2-{{ config.rollbackSide }}",
+                          "id": "about32fs2-{{ deviceState.rollbackSide }}",
                           "type": "anchor-layout-container",
                           "anchor": "TopLeft",
                           "direction": "vertical",
@@ -1907,7 +1779,7 @@
                                       "case": {
                                         "property": "value",
                                         "op": "eq",
-                                        "value": "{{ config.rollbackSide }}"
+                                        "value": "{{ deviceState.rollbackSide }}"
                                       },
                                       "then": "selected"
                                     }
@@ -1924,7 +1796,7 @@
                                     "eventName": "Actions",
                                     "eventPayload": {
                                       "actions": {
-                                        "setPersistentConfig": {
+                                        "setDeviceState": {
                                           "rollbackSide": "{{ value }}"
                                         }
                                       }
@@ -1976,7 +1848,7 @@
                           ]
                         },
                         {
-                          "id": "about325fs2-{{ config.skipUnseenText }}-{{ config.skipTransitions }}",
+                          "id": "about325fs2-{{ deviceState.skipUnseenText }}-{{ deviceState.skipTransitions }}",
                           "type": "anchor-layout-container",
                           "anchor": "TopLeft",
                           "direction": "vertical",
@@ -2012,10 +1884,10 @@
                               "data": [
                                 {
                                   "text": "Unseen Text",
-                                  "value": "{{ config.skipUnseenText }}",
+                                  "value": "{{ deviceState.skipUnseenText }}",
                                   "eventPayload": {
                                     "actions": {
-                                      "setPersistentConfig": {
+                                      "setDeviceState": {
                                         "skipUnseenText": {
                                           "op": "toggle"
                                         }
@@ -2025,10 +1897,10 @@
                                 },
                                 {
                                   "text": "Transitions",
-                                  "value": "{{ config.skipTransitions }}",
+                                  "value": "{{ deviceState.skipTransitions }}",
                                   "eventPayload": {
                                     "actions": {
-                                      "setPersistentConfig": {
+                                      "setDeviceState": {
                                         "skipTransitions": {
                                           "op": "toggle"
                                         }
@@ -2110,7 +1982,7 @@
                           ]
                         },
                         {
-                          "id": "about32e2fcss232-{{ config.textSpeed }}",
+                          "id": "about32e2fcss232-{{ deviceState.textSpeed }}",
                           "type": "anchor-layout-container",
                           "anchor": "TopLeft",
                           "direction": "vertical",
@@ -2119,7 +1991,7 @@
                           "gap": 20,
                           "children": [
                             {
-                              "id": "ladr2fkj3-{{ config.textSpeed }}",
+                              "id": "ladr2fkj3-{{ deviceState.textSpeed }}",
                               "text": "Text Speed",
                               "type": "text",
                               "width": 120,
@@ -2142,12 +2014,12 @@
                               "dragEventName": "Actions",
                               "dragEventPayload": {
                                 "actions": {
-                                  "setPersistentConfig": {
+                                  "setDeviceState": {
                                     "textSpeed": "{{ value }}"
                                   }
                                 }
                               },
-                              "initialValue": "{{ config.textSpeed }}",
+                              "initialValue": "{{ deviceState.textSpeed }}",
                               "idleThumb": "/public/first-contract/gui/slider/horizontal_idle_thumb.png",
                               "hoverThumb": "/public/first-contract/gui/slider/horizontal_hover_thumb.png",
                               "idleBar": "/public/first-contract/gui/slider/horizontal_idle_bar.png",
@@ -2156,7 +2028,7 @@
                           ]
                         },
                         {
-                          "id": "about32e2fsfes232-{{ config.autoForwardTime }}",
+                          "id": "about32e2fsfes232-{{ deviceState.autoForwardTime }}",
                           "type": "anchor-layout-container",
                           "anchor": "TopLeft",
                           "direction": "vertical",
@@ -2165,7 +2037,7 @@
                           "gap": 20,
                           "children": [
                             {
-                              "id": "ladfkj3-{{ config.autoForwardTime }}",
+                              "id": "ladfkj3-{{ deviceState.autoForwardTime }}",
                               "text": "Auto-Forward Time",
                               "type": "text",
                               "width": 120,
@@ -2188,12 +2060,12 @@
                               "dragEventName": "Actions",
                               "dragEventPayload": {
                                 "actions": {
-                                  "setPersistentConfig": {
+                                  "setDeviceState": {
                                     "autoForwardTime": "{{ value }}"
                                   }
                                 }
                               },
-                              "initialValue": "{{ config.autoForwardTime }}",
+                              "initialValue": "{{ deviceState.autoForwardTime }}",
                               "idleThumb": "/public/first-contract/gui/slider/horizontal_idle_thumb.png",
                               "hoverThumb": "/public/first-contract/gui/slider/horizontal_hover_thumb.png",
                               "idleBar": "/public/first-contract/gui/slider/horizontal_idle_bar.png",
@@ -2202,7 +2074,7 @@
                           ]
                         },
                         {
-                          "id": "about32e2fs2-{{ config.musicVolume }}",
+                          "id": "about32e2fs2-{{ deviceState.musicVolume }}",
                           "type": "anchor-layout-container",
                           "anchor": "TopLeft",
                           "direction": "vertical",
@@ -2211,7 +2083,7 @@
                           "gap": 20,
                           "children": [
                             {
-                              "id": "ladfk4j3-{{ config.musicVolume }}",
+                              "id": "ladfk4j3-{{ deviceState.musicVolume }}",
                               "text": "Music Volume",
                               "type": "text",
                               "width": 120,
@@ -2234,12 +2106,12 @@
                               "dragEventName": "Actions",
                               "dragEventPayload": {
                                 "actions": {
-                                  "setPersistentConfig": {
+                                  "setDeviceState": {
                                     "musicVolume": "{{ value }}"
                                   }
                                 }
                               },
-                              "initialValue": "{{ config.musicVolume }}",
+                              "initialValue": "{{ deviceState.musicVolume }}",
                               "idleThumb": "/public/first-contract/gui/slider/horizontal_idle_thumb.png",
                               "hoverThumb": "/public/first-contract/gui/slider/horizontal_hover_thumb.png",
                               "idleBar": "/public/first-contract/gui/slider/horizontal_idle_bar.png",
@@ -2248,7 +2120,7 @@
                           ]
                         },
                         {
-                          "id": "about32e422af23wefs2-{{ config.soundVolume }}",
+                          "id": "about32e422af23wefs2-{{ deviceState.soundVolume }}",
                           "type": "anchor-layout-container",
                           "anchor": "TopLeft",
                           "direction": "vertical",
@@ -2257,7 +2129,7 @@
                           "gap": 20,
                           "children": [
                             {
-                              "id": "ladfwkj3-{{ config.soundVolume }}",
+                              "id": "ladfwkj3-{{ deviceState.soundVolume }}",
                               "text": "Sound Volume",
                               "type": "text",
                               "width": 120,
@@ -2280,12 +2152,12 @@
                               "dragEventName": "Actions",
                               "dragEventPayload": {
                                 "actions": {
-                                  "setPersistentConfig": {
+                                  "setDeviceState": {
                                     "soundVolume": "{{ value }}"
                                   }
                                 }
                               },
-                              "initialValue": "{{ config.soundVolume }}",
+                              "initialValue": "{{ deviceState.soundVolume }}",
                               "idleThumb": "/public/first-contract/gui/slider/horizontal_idle_thumb.png",
                               "hoverThumb": "/public/first-contract/gui/slider/horizontal_hover_thumb.png",
                               "idleBar": "/public/first-contract/gui/slider/horizontal_idle_bar.png",
@@ -2301,7 +2173,7 @@
                           "y": 640,
                           "data": [
                             {
-                              "value": "{{ config.muteAll }}"
+                              "value": "{{ deviceState.muteAll }}"
                             }
                           ],
                           "template": {
@@ -2328,7 +2200,7 @@
                                 "eventName": "Actions",
                                 "eventPayload": {
                                   "actions": {
-                                    "setPersistentConfig": {
+                                    "setDeviceState": {
                                       "muteAll": {
                                         "op": "toggle"
                                       }
@@ -2370,7 +2242,7 @@
                                     "eventName": "Actions",
                                     "eventPayload": {
                                       "actions": {
-                                        "setPersistentConfig": {
+                                        "setDeviceState": {
                                           "muteAll": {
                                             "op": "toggle"
                                           }
@@ -2410,7 +2282,7 @@
                               "eventName": "Actions",
                               "eventPayload": {
                                 "actions": {
-                                  "setCustomState": {
+                                  "setRuntimeState": {
                                     "currentPage": "language"
                                   }
                                 }
@@ -2465,7 +2337,7 @@
                           }
                         },
                         {
-                          "id": "about32fs2-{{ customState.currentSavePageNumber }}",
+                          "id": "about32fs2-{{ runtimeState.currentSavePageNumber }}",
                           "type": "anchor-layout-container",
                           "anchor": "TopLeft",
                           "direction": "vertical",
@@ -2476,7 +2348,7 @@
                           "children": [
                             {
                               "id": "29ri3ladfkj3",
-                              "text": "{{ customState.saveLoadSlots[customState.currentSavePageNumber].title }}",
+                              "text": "{{ runtimeState.saveLoadSlots[runtimeState.currentSavePageNumber].title }}",
                               "type": "text",
                               "width": 120,
                               "height": 40,
@@ -2492,7 +2364,7 @@
                           ]
                         },
                         {
-                          "id": "abosut32fs2-{{ customState.currentSavePageNumber }}-{{ customState.saveDataCommitId }}",
+                          "id": "abosut32fs2-{{ runtimeState.currentSavePageNumber }}",
                           "type": "anchor-layout-container",
                           "anchor": "TopLeft",
                           "direction": "horizontal",
@@ -2501,7 +2373,7 @@
                           "y": 200,
                           "width": 780,
                           "height": 1000,
-                          "data": "$saveData",
+                          "data": "{{ persistentState.saveData | saveDataFilter }}",
                           "template": {
                             "mapping": {
                               "cases": [
@@ -2591,7 +2463,7 @@
                           }
                         },
                         {
-                          "id": "cmi2x3x23233-{{ customState.currentSavePageNumber }}",
+                          "id": "cmi2x3x23233-{{ runtimeState.currentSavePageNumber }}",
                           "type": "anchor-layout-container",
                           "anchor": "CenterCenter",
                           "direction": "horizontal",
@@ -2600,7 +2472,7 @@
                           "gap": 20,
                           "width": 500,
                           "height": 80,
-                          "data": "{{ customState.saveLoadSlots }}",
+                          "data": "{{ runtimeState.saveLoadSlots }}",
                           "template": {
                             "mapping": {
                               "cases": [
@@ -2624,7 +2496,7 @@
                                   "case": {
                                     "property": "value",
                                     "op": "eq",
-                                    "value": "{{ customState.currentSavePageNumber }}"
+                                    "value": "{{ runtimeState.currentSavePageNumber }}"
                                   },
                                   "then": "selected"
                                 }
@@ -2651,7 +2523,7 @@
                                 "eventName": "Actions",
                                 "eventPayload": {
                                   "actions": {
-                                    "setCustomState": {
+                                    "setRuntimeState": {
                                       "currentSavePageNumber": {
                                         "op": "dec",
                                         "value": 1,
@@ -2680,7 +2552,7 @@
                                 "eventName": "Actions",
                                 "eventPayload": {
                                   "actions": {
-                                    "setCustomState": {
+                                    "setRuntimeState": {
                                       "currentSavePageNumber": {
                                         "op": "inc",
                                         "value": 1,
@@ -2708,7 +2580,7 @@
                                 "eventName": "Actions",
                                 "eventPayload": {
                                   "actions": {
-                                    "setCustomState": {
+                                    "setRuntimeState": {
                                       "currentSavePageNumber": "{{ value }}",
                                       "currentSavePageTitle": "{{ title }}"
                                     }
@@ -2909,7 +2781,7 @@
                       "eventName": "Actions",
                       "eventPayload": {
                         "actions": {
-                          "setCustomState": {
+                          "setRuntimeState": {
                             "currentPage": "options"
                           }
                         }
@@ -2968,7 +2840,7 @@
                               "case": {
                                 "property": "value",
                                 "op": "eq",
-                                "value": "{{ config.language }}"
+                                "value": "{{ deviceState.language }}"
                               },
                               "then": "selected"
                             }
@@ -2984,7 +2856,7 @@
                             "eventName": "Actions",
                             "eventPayload": {
                               "actions": {
-                                "setPersistentConfig": {
+                                "setDeviceState": {
                                   "language": "{{ value }}"
                                 }
                               }
@@ -3176,7 +3048,7 @@
                       "children": [
                         {
                           "id": "89gj3ladfkj3",
-                          "text": "{{ customState.saveLoadSlots[customState.currentSavePageNumber].title }}",
+                          "text": "{{ runtimeState.saveLoadSlots[runtimeState.currentSavePageNumber].title }}",
                           "type": "text",
                           "width": 120,
                           "height": 40,
@@ -3192,7 +3064,7 @@
                       ]
                     },
                     {
-                      "id": "abosute32fs2-{{ customState.currentSavePageNumber }}-{{ customState.saveDataCommitId }}",
+                      "id": "abosute32fs2-{{ runtimeState.currentSavePageNumber }}",
                       "type": "anchor-layout-container",
                       "anchor": "TopLeft",
                       "direction": "horizontal",
@@ -3201,7 +3073,7 @@
                       "y": 200,
                       "width": 780,
                       "height": 1000,
-                      "data": "$saveData",
+                      "data": "{{ persistentState.saveData | saveDataFilter }}",
                       "template": {
                         "mapping": {
                           "cases": [
@@ -3331,7 +3203,7 @@
                       }
                     },
                     {
-                      "id": "cmi2x3x23233-{{ customState.currentSavePageNumber }}",
+                      "id": "cmi2x3x23233-{{ runtimeState.currentSavePageNumber }}",
                       "type": "anchor-layout-container",
                       "anchor": "CenterCenter",
                       "direction": "horizontal",
@@ -3340,7 +3212,7 @@
                       "gap": 20,
                       "width": 500,
                       "height": 80,
-                      "data": "{{ customState.saveLoadSlots }}",
+                      "data": "{{ runtimeState.saveLoadSlots }}",
                       "template": {
                         "mapping": {
                           "cases": [
@@ -3348,7 +3220,7 @@
                               "case": {
                                 "property": "value",
                                 "op": "eq",
-                                "value": "{{ customState.currentSavePageNumber }}"
+                                "value": "{{ runtimeState.currentSavePageNumber }}"
                               },
                               "then": "selected"
                             }
@@ -3374,7 +3246,7 @@
                             "eventName": "Actions",
                             "eventPayload": {
                               "actions": {
-                                "setCustomState": {
+                                "setRuntimeState": {
                                   "currentSavePageNumber": "{{ value }}"
                                 }
                               }
@@ -3395,6 +3267,137 @@
                         ]
                       },
                       "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "adgeaer",
+              "type": "container",
+              "zIndex": 2006,
+              "hidden": "{{ runtimeState.hideExitMenuConfirmationModal }}",
+              "x": 0,
+              "y": 0,
+              "width": 120,
+              "height": 40,
+              "children": [
+                {
+                  "id": "overlayConfirm3d",
+                  "type": "container",
+                  "anchor": "TopLeft",
+                  "zIndex": 2005,
+                  "x": 0,
+                  "y": 0,
+                  "children": [
+                    {
+                      "id": "ladf423kj3",
+                      "type": "graphics",
+                      "zIndex": 1000,
+                      "x1": 0,
+                      "x2": 1280,
+                      "y1": 0,
+                      "y2": 720,
+                      "fill": "black",
+                      "alpha": 0.5
+                    },
+                    {
+                      "id": "ladf1kj3",
+                      "type": "sprite",
+                      "zIndex": 800,
+                      "xa": 0.5,
+                      "ya": 0.5,
+                      "x": 640,
+                      "y": 360,
+                      "width": 600,
+                      "height": 180,
+                      "url": "/public/first-contract/gui/frame.png"
+                    },
+                    {
+                      "id": "ladfkj42d3",
+                      "type": "text",
+                      "zIndex": 1005,
+                      "text": "Are you sure you want to return to the main menu? This will lose unsaved progress.",
+                      "xa": 0.5,
+                      "ya": 0.5,
+                      "x": 640,
+                      "y": 340,
+                      "style": {
+                        "fill": "white",
+                        "fontSize": 27,
+                        "fontFamily": "NomnomNami2",
+                        "wordWrapWidth": 600,
+                        "align": "center"
+                      }
+                    },
+                    {
+                      "id": "ladfkj42dxi3",
+                      "type": "anchor-layout-container",
+                      "anchor": "CenterCenter",
+                      "direction": "horizontal",
+                      "zIndex": 1002,
+                      "gap": 120,
+                      "x": 640,
+                      "y": 410,
+                      "children": [
+                        {
+                          "id": "ladfkj42dxi3",
+                          "type": "text-interactive",
+                          "text": "Yes",
+                          "zIndex": 1005,
+                          "eventName": "Actions",
+                          "eventPayload": {
+                            "actions": {
+                              "exitMenu": {
+                                "sectionId": "section3",
+                                "presetId": "title",
+                                "mode": "read"
+                              },
+                              "setRuntimeState": {
+                                "hideExitMenuConfirmationModal": true
+                              }
+                            }
+                          },
+                          "style": {
+                            "fill": "#ccc",
+                            "fontSize": 28,
+                            "fontFamily": "NomnomNami2",
+                            "wordWrapWidth": 1740
+                          },
+                          "hoverStyle": {
+                            "fontSize": 28,
+                            "fill": "yellow",
+                            "fontFamily": "NomnomNami2",
+                            "wordWrapWidth": 1740
+                          }
+                        },
+                        {
+                          "id": "ladfkj42dxi3",
+                          "type": "text-interactive",
+                          "text": "No",
+                          "zIndex": 1005,
+                          "eventName": "Actions",
+                          "eventPayload": {
+                            "actions": {
+                              "setRuntimeState": {
+                                "hideExitMenuConfirmationModal": true
+                              }
+                            }
+                          },
+                          "style": {
+                            "fill": "#ccc",
+                            "fontSize": 28,
+                            "fontFamily": "NomnomNami2",
+                            "wordWrapWidth": 1740
+                          },
+                          "hoverStyle": {
+                            "fontSize": 28,
+                            "fill": "yellow",
+                            "fontFamily": "NomnomNami2",
+                            "wordWrapWidth": 1740
+                          }
+                        }
+                      ]
                     }
                   ]
                 }
@@ -3438,10 +3441,9 @@
                   "type": "text",
                   "width": 43,
                   "height": 48,
-                  "text": "",
-                  "contentSource": "characterName",
+                  "text": "{{ character.name }}",
                   "style": {
-                    "fill": "#cc005b",
+                    "fill": "{{ character.variables.mainColor }}",
                     "fontSize": 40,
                     "fontFamily": "NomnomNami2",
                     "wordWrapWidth": 1740,
@@ -3464,9 +3466,8 @@
                   "type": "text-revealing",
                   "width": 43,
                   "height": 48,
-                  "displaySpeed": "{{ config.textSpeed }}",
-                  "text": "This is the text content",
-                  "contentSource": "dialogueContent",
+                  "displaySpeed": "{{ deviceState.textSpeed }}",
+                  "text": "{{ dialogue.text }}",
                   "style": {
                     "fill": "white",
                     "fontSize": 30,
@@ -3504,7 +3505,7 @@
                         "presetId": "menu",
                         "mode": "menu"
                       },
-                      "setCustomState": {
+                      "setRuntimeState": {
                         "currentPage": "history"
                       }
                     }
@@ -3538,7 +3539,7 @@
                         "presetId": "menu",
                         "mode": "menu"
                       },
-                      "setCustomState": {
+                      "setRuntimeState": {
                         "currentPage": "save"
                       }
                     }
@@ -3553,7 +3554,7 @@
                         "presetId": "menu",
                         "mode": "menu"
                       },
-                      "setCustomState": {
+                      "setRuntimeState": {
                         "currentPage": "options"
                       }
                     }
@@ -3635,7 +3636,7 @@
                       "wordWrapWidth": 1740
                     },
                     "clickSoundUrl": "/public/first-contract/audio/sfx_button1.wav",
-                    "clickSoundVolume": "{{ config.soundVolume }}"
+                    "clickSoundVolume": "{{ deviceState.soundVolume }}"
                   }
                 ]
               },
@@ -3659,8 +3660,7 @@
                   "type": "text-revealing",
                   "width": 100,
                   "height": 48,
-                  "text": "This is the text content",
-                  "contentSource": "dialogueContent",
+                  "text": "{{ dialogue.text }}",
                   "style": {
                     "fill": "white",
                     "fontSize": 30,
@@ -3743,11 +3743,10 @@
                     {
                       "id": "lefte2",
                       "type": "text",
-                      "contentSource": "dialogueContent",
                       "fill": {
                         "color": "#ff74b2"
                       },
-                      "text": "",
+                      "text": "{{ dialogue.text }}",
                       "x": 10,
                       "style": {
                         "fill": "white",
@@ -3818,7 +3817,7 @@
         },
         "RightClick": {
           "actions": {
-            "setCustomState": {
+            "setRuntimeState": {
               "currentPage": "options"
             },
             "moveToSection": {
@@ -3990,7 +3989,7 @@
                     "id": "extra",
                     "condition": {
                       "op": "eq",
-                      "value1": "{{ persistentVariables.gameOver }}",
+                      "value1": "{{ persistentState.novelCompleted }}",
                       "value2": true
                     },
                     "screenId": "mainMenuExtra",
@@ -4212,7 +4211,10 @@
             "actions": {
               "dialogue": {
                 "character": {
-                  "characterName": "???"
+                  "name": "???",
+                  "variables": {
+                    "mainColor": "#cc005b"
+                  }
                 },
                 "dialogueBoxId": "dialogueBox1",
                 "text": "May my melody reach the deepest pits of the Netherworld!"
@@ -4245,7 +4247,10 @@
             "actions": {
               "dialogue": {
                 "character": {
-                  "characterName": "???"
+                  "name": "???",
+                  "variables": {
+                    "mainColor": "#cc005b"
+                  }
                 },
                 "dialogueBoxId": "dialogueBox1",
                 "segments": [
@@ -8117,8 +8122,8 @@
           {
             "id": "step117",
             "actions": {
-              "setPersistentVariables": {
-                "gameOver": true
+              "setPersistentState": {
+                "novelCompleted": true
               },
               "moveToSection": {
                 "sectionId": "section3",
@@ -8284,7 +8289,7 @@
                 "childItemId": "right",
                 "text": "New contract has a time obligation, be back tomorrow"
               },
-              "setPersistentVariables": {
+              "setPersistentState": {
                 "gameStarted": true
               }
             }

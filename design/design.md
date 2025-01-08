@@ -1,4 +1,16 @@
 
+## Goal
+
+Every visual novel that can be ported into rvn, should be ported into rvn.
+
+* Flexible, neutral, adaptable: the engine should not force a specific design, it should give the power to the creator maximum customization.
+* Powerful functionalities: It should push the limits of what Visual Novels can do
+* Easy to work with for visual editors: There is a visual editor project and other tools that depend on this engine. The engine should be easy enough for those tools to work with.
+* Open Source, the engine must be open with a permissive license. This is vital so an ecosystem can be built on this engine so that everyone can benefit.
+* Reliable: We want to build stable foundations so people have confidence to build on this engine and know it will work for decades to come. This is why there will be throughou test cases, and as few dependencies as possible, simple and documented design.
+* Render engine agnostic
+
+
 ## Preset
 
 A preset is a set of game configuration.
@@ -110,31 +122,117 @@ const connectDomAndEngine = (element, engine) => {
 ```
 
 
-## Temporary State
+## Runtime State
 
 Lifetime temporarly state is to live in a section or during the game.
 It does not need to be persisted.
 
-Example:
+There is an initial state, and the engine will always use this initial state on game initialization.
+
+Example 1:
+Runtime state variable
 
 In menu page, store which menu item is currently selected. so that in the UI it can be highlighted.
 
 
 ```yaml
-customState:
+runtimeState:
   currentPage: about
 ```
 
 TODO change naming from "custom state"
 
+Example 2:
+Runtime state constant
 
-## Persistent Config
+When you need to store some constants, such as the numbers for pagination.
+It can be stored here.
 
-Configuration that should be persisted, but also used during the reading
+Or also list of menu items
 
-Includes things such as text speed, music volume, user's inputted name etc...
+```yaml
+runtimeState:
+  hideExitMenuConfirmationModal: true
+  currentSavePageNumber: 0
+  saveLoadSlots:
+    - text: "<"
+      value: -1
+    - text: "A"
+      value: 0
+      title: Auto Save
+    - text: "Q"
+      value: 1
+      title: Quick Save
+    - text: "1"
+      value: 2
+      title: Page 1
+    - text: "2"
+      value: 3
+      title: Page 2
+    - text: "3"
+      value: 4
+      title: Page 3
+    - text: "4"
+      value: 5
+      title: Page 4
+    - text: "5"
+      value: 6
+      title: Page 5
+    - text: "6"
+      value: 7
+      title: Page 6
+    - text: "7"
+      value: 8
+      title: Page 8
+    - text: "8"
+      value: 9
+      title: Page 9
+    - text: "9"
+      value: 10
+      title: Page 10
+    - text: "10"
+      value: 11
+      title: Page 11
+    - text: ">"
+      value: 12
+```
 
-The engine should be connected to a persistence interface interface
+## Readthrough State
+resets on each visual novel start, it is saved during save slot:
+* History
+* User inputted name
+
+## Device State
+Stored locally, will not persist over devices. This data will be lost once app is uninstalled, or start with a new device. May provide some migration or cloud too to save this so it can be migrated.
+* text speed, music volume, sound volume
+
+
+```yaml
+deviceState:
+  textSpeed: 123
+  musicVolume: 123
+  soundVolume: 123
+```
+
+### Persistent State
+* Whether user has completed vn or not (to show some extras when user completed the visual novel)
+* Save data
+
+```yaml
+persistentState:
+  novelCompleted: true
+  saveData[0]:
+    date: 2314123212 # (unix timestamp)
+    image: base64image
+    title: ...
+    history: ...
+    readthroughState: ...
+  saveData[1]:
+  saveData[2]:
+  saveData[3]:
+  saveData[4]:
+
+```
 
 
 ```js
@@ -165,7 +263,7 @@ Save data is made up of save slots.
 
 saveData:
   1:
-    date: 2314123212
+    date: 2314123212 # (unix timestamp)
     image: base64image
     title: ...
   2:
@@ -174,45 +272,4 @@ saveData:
     title: ...
 
 ```
-
-
-## Persistent Variables
-
-This is user set variables that will be persisted forever
-
-
-## TAB interface
-
-```yaml
-
-
-id: asdfj
-type: tab
-selectedTab: options
-screens:
-  options:
-    layout:
-      ...
-  load:
-    layout:
-      ...
-
-
-
-id: asdlkfj
-type: container
-selectedTabId: options
-children:
-  - id: jfkalwefj
-    tabId: options
-    type: 'container'
-  - id: k3kjfdk
-    tabId: load   
-    type: container
-    ...
-
-
-```
-
-
 

@@ -29,20 +29,31 @@ export const generateRenderTree = ({
     musicVolume: 1,
     language: "en_default",
   },
-  saveData = {},
-  customState = {},
   historyDialogue = [],
   skipMode = false,
   autoMode = false,
   canSkip = false,
-  modalScreenId = "",
-  persistentVariables = {},
   completedStep = false,
   pointerMode,
   rootElement,
   i18n = {},
+  runtimeState,
+  deviceState,
+  persistentState,
 }) => {
   const transitions = [];
+
+  const applyTemplate = templatingEngine({
+    saveDataFilter
+  }, {
+    runtimeState,
+    deviceState,
+    persistentState,
+  });
+
+  console.log("render", {
+    runtimeState,
+  });
 
   const generateElements = (state) => {
     const elements = [];
@@ -197,40 +208,8 @@ export const generateRenderTree = ({
         resources.dialogueBox.items[state.dialogue.dialogueBoxId];
       if (_dialogueBox) {
         let stringified = JSON.stringify(_dialogueBox);
-        Object.keys(config).forEach((key) => {
-          if (typeof config[key] === "string") {
-            stringified = stringified.replaceAll(
-              `{{ config.${key} }}`,
-              config[key]
-            );
-          } else {
-            if ((skipMode || completedStep) && key === "textSpeed") {
-              stringified = stringified.replaceAll(
-                `"{{ config.${key} }}"`,
-                "100"
-              );
-            } else {
-              stringified = stringified.replaceAll(
-                `"{{ config.${key} }}"`,
-                JSON.stringify(config[key])
-              );
-            }
-          }
-        });
 
-        Object.keys(customState).forEach((key) => {
-          if (typeof customState[key] === "string") {
-            stringified = stringified.replaceAll(
-              `{{ customState.${key} }}`,
-              customState[key]
-            );
-          } else {
-            stringified = stringified.replaceAll(
-              `"{{ customState.${key} }}"`,
-              customState[key]
-            );
-          }
-        });
+        stringified = applyTemplate(stringified);
 
         stringified = stringified.replaceAll(
           `"{{ skipMode }}"`,
@@ -254,12 +233,19 @@ export const generateRenderTree = ({
         }
 
         const character =
-          resources.character.items[state.dialogue?.character?.characterId];
-        const characterName = state.dialogue?.character
-          ? state.dialogue.character.characterName
-          : undefined;
+          resources.character.items[state.dialogue?.character?.characterId] ||
+          state.dialogue?.character;
 
-        for (const item of dialogueBox.layout) {
+        const layout = JSON.parse(
+          JSON.stringify(dialogueBox.layout)
+            .replaceAll("{{ character.name }}", character?.name || "")
+            .replaceAll(
+              "{{ character.variables.mainColor }}",
+              character?.variables?.mainColor
+            )
+        );
+
+        for (const item of layout) {
           if (item.incremental) {
             for (const { text, childItemId } of state.dialogue.texts) {
               const childItem = JSON.parse(
@@ -304,7 +290,7 @@ export const generateRenderTree = ({
             }
           } else {
             for (const child of item.children) {
-              if (child.contentSource === "dialogueContent") {
+              if (child.text) {
                 if (state.dialogue.segments) {
                   child.segments = state.dialogue.segments.map((segment) => {
                     return {
@@ -319,37 +305,23 @@ export const generateRenderTree = ({
                       .replace("{{ ", "")
                       .replace(" }}", "")
                       .split(".");
-                    child.text = i18n[config.language].keys[k];
+                    child.text = child.text.replaceAll(
+                      "{{ dialogue.text }}",
+                      i18n[config.language].keys[k]
+                    );
                   } else {
-                    child.text = state.dialogue.text;
+                    child.text = child.text.replaceAll(
+                      "{{ dialogue.text }}",
+                      state.dialogue.text
+                    );
                   }
                   delete child.segments;
                 }
-              }
-              if (character && child.contentSource === "characterName") {
-                child.text = character.name;
-                child.style.fill = character.whoColor;
-              }
-              if (characterName && child.contentSource === "characterName") {
-                child.text = characterName;
               }
             }
           }
           elements.push(item);
         }
-      }
-    }
-
-    if (!config.muteAll && customState.bgmId) {
-      const bgm = resources.bgm.items[customState.bgmId];
-      if (bgm) {
-        elements.push({
-          id: `bgm-${bgm.src}`,
-          type: "sound",
-          url: bgm.src,
-          loop: true,
-          volume: config.musicVolume ?? 50 / 100,
-        });
       }
     }
 
@@ -384,13 +356,6 @@ export const generateRenderTree = ({
       ? JSON.parse(JSON.stringify(state.screen))
       : { items: [] };
 
-    if (modalScreenId) {
-      stateScreen.items.push({
-        id: "modal-screen",
-        screenId: modalScreenId,
-      });
-    }
-
     if (stateScreen) {
       for (const {
         id,
@@ -402,77 +367,13 @@ export const generateRenderTree = ({
         let stringified = JSON.stringify(resources.screen.items[screenId]);
 
         stringified = stringified.replaceAll(
-          "{{ customState.saveLoadSlots[customState.currentSavePageNumber].title }}",
-          customState.saveLoadSlots.find(
-            (x) => x.value === customState.currentSavePageNumber
+          "{{ runtimeState.saveLoadSlots[runtimeState.currentSavePageNumber].title }}",
+          runtimeState.saveLoadSlots?.find(
+            (x) => x.value === runtimeState.currentSavePageNumber
           )?.title
         );
 
-        Object.keys(config).forEach((key) => {
-          if (typeof config[key] === "string") {
-            stringified = stringified.replaceAll(
-              `{{ config.${key} }}`,
-              config[key]
-            );
-          } else {
-            if ((skipMode || completedStep) && key === "textSpeed") {
-              stringified = stringified.replaceAll(
-                `"{{ config.${key} }}"`,
-                "100"
-                // TODO
-              );
-            } else {
-              stringified = stringified.replaceAll(
-                `"{{ config.${key} }}"`,
-                JSON.stringify(config[key])
-              );
-            }
-            stringified = stringified.replaceAll(
-              `{{ config.${key} }}`,
-              config[key]
-            );
-          }
-        });
-
-        Object.keys(customState).forEach((key) => {
-          if (
-            typeof customState[key] === "number" ||
-            typeof customState[key] === "boolean"
-          ) {
-            stringified = stringified.replaceAll(
-              `"{{ customState.${key} }}"`,
-              customState[key]
-            );
-            stringified = stringified.replaceAll(
-              `{{ customState.${key} }}`,
-              customState[key]
-            );
-          } else if (typeof customState[key] === "object") {
-            stringified = stringified.replaceAll(
-              `"{{ customState.${key} }}"`,
-              JSON.stringify(customState[key])
-            );
-          } else {
-            stringified = stringified.replaceAll(
-              `{{ customState.${key} }}`,
-              customState[key]
-            );
-          }
-        });
-
-        Object.keys(persistentVariables).forEach((key) => {
-          if (typeof persistentVariables[key] === "string") {
-            stringified = stringified.replaceAll(
-              `{{ persistentVariables.${key} }}`,
-              persistentVariables[key]
-            );
-          } else {
-            stringified = stringified.replaceAll(
-              `"{{ persistentVariables.${key} }}"`,
-              persistentVariables[key]
-            );
-          }
-        });
+        stringified = applyTemplate(stringified);
 
         stringified = stringified.replaceAll(
           '"{{ historyDialogue }}"',
@@ -481,23 +382,9 @@ export const generateRenderTree = ({
 
         const screen = JSON.parse(stringified);
 
-        const rawSaveData = saveData || {};
-
         if (condition) {
           let stringifiedCondition = JSON.stringify(condition);
-          Object.keys(persistentVariables).forEach((key) => {
-            if (typeof persistentVariables[key] === "string") {
-              stringifiedCondition = stringifiedCondition.replaceAll(
-                `{{ persistentVariables.${key} }}`,
-                persistentVariables[key]
-              );
-            } else {
-              stringifiedCondition = stringifiedCondition.replaceAll(
-                `"{{ persistentVariables.${key} }}"`,
-                persistentVariables[key]
-              );
-            }
-          });
+          stringifiedCondition = applyTemplate(stringifiedCondition);
           const parsedCondition = JSON.parse(stringifiedCondition);
 
           const { op, value1, value2 } = parsedCondition;
@@ -505,38 +392,6 @@ export const generateRenderTree = ({
             continue;
           }
         }
-
-        const newSaveData = [0, 1, 2]
-          .map((x) => 3 * (Number(customState.currentSavePageNumber) || 0) + x)
-          .map((slot) => {
-            const res = rawSaveData[slot];
-            if (res) {
-              res.id = `saveSlot-${slot}`;
-              return {
-                index: slot,
-                ...res,
-              };
-            }
-            return {
-              index: slot,
-            };
-          });
-
-        const replaceSaveData = (obj) => {
-          if (obj.data === "$saveData") {
-            obj.data = newSaveData;
-          }
-          if (obj.children && Array.isArray(obj.children)) {
-            obj.children.forEach((child) => replaceSaveData(child));
-          }
-          if (obj.layout && Array.isArray(obj.layout)) {
-            obj.layout.forEach((item) => replaceSaveData(item));
-          }
-          if (Array.isArray(obj)) {
-            obj.forEach((item) => replaceSaveData(item));
-          }
-        };
-        replaceSaveData(screen);
 
         if (config.muteAll) {
           removeClickSoundUrl(screen);
@@ -656,9 +511,78 @@ export const generateRenderTree = ({
     ],
   });
 
+  console.log({
+    finalElements,
+  });
+
   return {
     elements: finalElements,
     transitions:
       (skipMode && config.skipTransitions) || completedStep ? [] : transitions,
   };
+};
+
+const saveDataFilter = (target, variables) => {
+  const numOfSaveSlots = 3;
+  const newSaveData = [0, 1, 2]
+    .map(
+      (x) =>
+        numOfSaveSlots *
+          (Number(variables.runtimeState.currentSavePageNumber) || 0) +
+        x
+    )
+    .map((slot) => {
+      const res = target[slot];
+      if (res) {
+        res.id = `saveSlot-${slot}`;
+        return {
+          index: slot,
+          ...res,
+        };
+      }
+      return {
+        index: slot,
+      };
+    });
+
+  return newSaveData;
+};
+
+const templatingEngine = (filters = {}, variables = {}) => {
+  const applyTemplate = (string) => {
+
+    // TODO remove hardcoded
+    Object.keys(filters).forEach((filterKey) => {
+      const filter = filters[filterKey];
+      if (string.indexOf(`{{ persistentState.saveData | ${filterKey} }}`) !== -1) {
+        string = string.replaceAll(
+          `"{{ persistentState.saveData | ${filterKey} }}"`,
+          JSON.stringify(filter(variables.persistentState.saveData, variables))
+        );
+      }
+    });
+
+    Object.keys(variables).forEach((rootname) => {
+      Object.keys(variables[rootname]).forEach((key) => {
+        const value = variables[rootname][key];
+        if (typeof value === "number" || typeof value === "boolean") {
+          string = string.replaceAll(`"{{ ${rootname}.${key} }}"`, value);
+          string = string.replaceAll(`{{ ${rootname}.${key} }}`, value);
+        } else if (typeof value === "object") {
+          string = string.replaceAll(
+            `"{{ ${rootname}.${key} }}"`,
+            JSON.stringify(value)
+          );
+          string = string.replaceAll(
+            `{{ ${rootname}.${key} }}`,
+            JSON.stringify(value)
+          );
+        } else {
+          string = string.replaceAll(`{{ ${rootname}.${key} }}`, value);
+        }
+      });
+    });
+    return string;
+  };
+  return applyTemplate;
 };

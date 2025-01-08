@@ -7,7 +7,7 @@ import History from "./History.js";
 /**
  * The rvn engine.
  * We want to bring out the best of Visual Novels
- * 
+ *
  * May you do good and not evil.
  * May you find forgiveness for yourself and forgive others.
  * May you share freely, never taking more than you give.
@@ -17,7 +17,18 @@ class RvnEngine {
     sectionId: undefined,
     mode: undefined,
     presetId: undefined,
+    runtimeState: undefined,
+    deviceState: undefined,
+    persistentState: undefined,
   };
+
+  _runtimeState;
+  _readthroughState;
+  _deviceState;
+  _persistentState;
+
+  deviceStateInterface;
+  persistentStateInterface;
 
   _rootElement;
 
@@ -26,32 +37,6 @@ class RvnEngine {
    * of the step without revealing text, animations etc...
    */
   _completedStep = false;
-
-  /**
-   * @type {Record<string, any>}
-   * Temporary state that is not persisted
-   */
-  _customState = {};
-
-  _initialCustomState = {};
-
-  /**
-   * @type {Record<string, any>}
-   * Persistent save data
-   */
-  _persistentSaveData = {};
-
-  /**
-   * @type {Record<string, any>}
-   * Initial persistent config
-   */
-  _initialPersistentConfig = {};
-
-  /**
-   * @type {Record<string, any>}
-   * Persisted config
-   */
-  _persistentConfig = {};
 
   /**
    * @type {Record<string, Section>}
@@ -77,8 +62,6 @@ class RvnEngine {
   _skipMode = false;
 
   _skipModeInterval;
-
-  _persistentVariables = {};
 
   /**
    * contains all content of internationalization such as translations
@@ -157,15 +140,20 @@ class RvnEngine {
   init() {
     this._mode = this._initial.mode;
     this._selectedPresetId = this._initial.presetId;
+
+    this._runtimeState = this._initial.runtimeState;
+    this._deviceState = {
+      ...this._initial.deviceState,
+      ...this.deviceStateInterface.getAll(),
+    };
+    this._persistentState = {
+      ...this._initial.persistentState,
+      ...this.persistentStateInterface.getAll(),
+    };
+
     const stepId = this._sections[this._initial.sectionId].steps[0].id;
     this._currentStepPointer().set(this._initial.sectionId, stepId);
     this._seenSections.addStepId(this._initial.sectionId, this._initial.stepId);
-    this._persistentConfig =
-      this.persistentConfigInterface.getAll() || this._initialPersistentConfig;
-    this._persistentSaveData = this.persistentSaveInterface.getAll() || {};
-    this._persistentVariables =
-      this.persistentVariablesInterface.getAll() || {};
-    this._customState = this._initialCustomState;
     this._render();
   }
 
@@ -260,21 +248,19 @@ class RvnEngine {
         fill: "#000000",
       },
       mode: "read",
-      customState: this._customState,
-      config: {
-        ...this._initialPersistentConfig,
-        ...this._persistentConfig,
-      },
-      saveData: this._persistentSaveData,
       canSkip: this._hasNextStep,
       autoMode: this._autoMode,
       skipMode: this._skipMode,
-      persistentVariables: this._persistentVariables,
       // completedStep: this._completedStep,
       pointerMode: this._mode,
       i18n: this._i18n,
       rootElement: this._rootElement,
       historyDialogue: this.historyDialogue,
+
+      runtimeState: this._runtimeState,
+      readthroughState: this._readthroughState,
+      deviceState: this._deviceState,
+      persistentState: this._persistentState,
     });
 
     return {
@@ -300,8 +286,8 @@ class RvnEngine {
 
     const lastStep = this._currentSteps[this._currentSteps.length - 1];
 
-    if (lastStep.actions && lastStep.actions.setPersistentVariables) {
-      this.setPersistentVariables(lastStep.actions.setPersistentVariables);
+    if (lastStep.actions && lastStep.actions.setPersistentState) {
+      this.setPersistentState(lastStep.actions.setPersistentState);
     }
 
     if (!lastStep) {
@@ -466,12 +452,13 @@ class RvnEngine {
       stepId: gameData.initial.stepId,
       presetId: gameData.initial.presetId,
       mode: gameData.initial.mode,
+      runtimeState: gameData.initial.runtimeState,
+      deviceState: gameData.initial.deviceState,
+      persistentState: gameData.initial.persistentState,
     };
     this._sections = gameData.story.sections;
     this._presets = gameData.presets;
     this._resources = gameData.resources;
-    this._initialPersistentConfig = gameData.initialPersistentConfig;
-    this._initialCustomState = gameData.initialCustomState;
     this._i18n = gameData.i18n;
     this._rootElement = gameData.rootElement;
   }
@@ -494,26 +481,25 @@ class RvnEngine {
     this._render();
   }
 
-  setCustomState(payload) {
-    this._customState = {
-      ...this._customState,
+  setRuntimeState(payload) {
+    this._runtimeState = {
+      ...this._runtimeState,
       ...payload,
     };
     this._render();
   }
 
-  setPersistentConfig(payload) {
-    const config = this.persistentConfigInterface.getAll();
+  setDeviceState(payload) {
     Object.entries(payload).forEach(([key, value]) => {
       if (typeof value === "object" && value.op === "toggle") {
-        const val = config[key];
-        config[key] = !val;
+        const val = this._deviceState[key];
+        this._deviceState[key] = !val;
+        this.deviceStateInterface.set(key, !val);
       } else {
-        config[key] = value;
+        this._deviceState[key] = value;
+        this.deviceStateInterface.set(key, value);
       }
     });
-    this.persistentConfigInterface.setAll(config);
-    this._persistentConfig = config;
     this._render();
   }
 
@@ -522,7 +508,7 @@ class RvnEngine {
       const { index } = payload;
       const time = Date.now();
 
-      this._persistentSaveData[index] = {
+      this._persistentState.saveData[index] = {
         sectionId: this._stepPointers.read._sectionId,
         stepId: this._stepPointers.read._stepId,
         date: time,
@@ -532,8 +518,7 @@ class RvnEngine {
         url,
       };
 
-      this.persistentSaveInterface.setAll(this._persistentSaveData);
-      this._customState.saveDataCommitId = Date.now();
+      this.persistentStateInterface.set('saveData', this._persistentState.saveData)
 
       this._render();
     });
@@ -541,7 +526,7 @@ class RvnEngine {
 
   load(payload) {
     const { index } = payload;
-    const data = this._persistentSaveData[index];
+    const data = this._persistentState.saveData[index];
     this._history = new History(data.history);
     this._seenSections = new SeenSections(data.seenSections);
     this.exitMenu({
@@ -552,14 +537,13 @@ class RvnEngine {
     });
   }
 
-
   /**
    * Start auto mode
    */
   startAutoMode() {
     this._autoMode = true;
 
-    const intervalTime = (1 / this._persistentConfig.autoForwardTime) * 100000;
+    const intervalTime = (1 / this._deviceState.autoForwardTime) * 100000;
 
     setTimeout(() => {
       this.nextStep();
@@ -622,9 +606,9 @@ class RvnEngine {
     this._render();
   }
 
-  setPersistentVariables(payload) {
+  setPersistentState(payload) {
     Object.entries(payload).forEach(([key, value]) => {
-      this.persistentVariablesInterface.set(key, value);
+      this.persistentStateInterface.set(key, value);
     });
   }
 
@@ -653,11 +637,11 @@ class RvnEngine {
     } else if (action === "exitMenu") {
       // TODO test
       this.exitMenu(payload);
-    } else if (action === "setCustomState") {
+    } else if (action === "setRuntimeState") {
       // TODO test
-      this.setCustomState(payload);
-    } else if (action === "setPersistentConfig") {
-      this.setPersistentConfig(payload);
+      this.setRuntimeState(payload);
+    } else if (action === "setDeviceState") {
+      this.setDeviceState(payload);
     } else if (action === "save") {
       this.save(payload);
     } else if (action === "load") {
@@ -674,8 +658,8 @@ class RvnEngine {
       this.stopSkipMode();
     } else if (action === "toggleSkipMode") {
       this.toggleSkipMode();
-    } else if (action === "setPersistentVariables") {
-      this.setPersistentVariables(payload);
+    } else if (action === "setPersistentState") {
+      this.setPersistentState(payload);
     } else if (action === "triggerStepEvent") {
       this.triggerStepEvent(payload);
     }
@@ -701,8 +685,7 @@ class RvnEngine {
     }
 
     if (this._autoMode) {
-      const intervalTime =
-        (1 / this._persistentConfig.autoForwardTime) * 100000;
+      const intervalTime = (1 / this._deviceState.autoForwardTime) * 100000;
       setTimeout(() => {
         this.nextStep();
       }, intervalTime);
