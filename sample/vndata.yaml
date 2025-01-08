@@ -57,12 +57,38 @@ initial:
     rollbackSide: "left"
     skipTransitions: false
     skipUnseenText: false
+    muteAll: false
     language: en_default
 
   persistentState:
     novelCompleted: false
     saveData: []
 
+  rootElement:
+    id: root
+    type: container
+    animated: true
+    animation:
+      out:
+        type: keyframes
+        event: remove
+        animationProperties:
+          - property: alpha
+            initialValue: 0.8
+            keyframes:
+              - duration: 600
+                value: 0
+                easing: linear
+      in:
+        type: keyframes
+        event: add
+        animationProperties:
+          - property: alpha
+            initialValue: 0.2
+            keyframes:
+              - duration: 600
+                value: 1
+                easing: linear
 
 # initial persistent configuration for first time visual novel is opened
 # next time, it will load from persistent save data
@@ -74,7 +100,6 @@ initialPersistentConfig:
   skipTransitions: false
   skipUnseenText: false
   language: en_default
-
 
 # visual novel resources that inlcudes all assets etc...
 resources:
@@ -1656,8 +1681,7 @@ resources:
                         y: 200
                         width: 780
                         height: 1000
-                        # TODO t100290: change save data to use standarding templating variables with {{ }} 
-                        data: "{{ persistentState.saveData | saveDataFilter }}"
+                        ata: "{{ persistentState.saveData | saveDataFilter }}"
                         template:
                           mapping:
                             cases:
@@ -2456,9 +2480,7 @@ resources:
                 width: 43
                 height: 48
                 displaySpeed: "{{ deviceState.textSpeed }}"
-                # text: "This is the text content"
                 text: "{{ dialogue.text }}"
-                # contentSource: "dialogueContent"
                 style:
                   fill: "white"
                   fontSize: 30
@@ -2589,9 +2611,7 @@ resources:
                 type: text-revealing
                 width: 100
                 height: 48
-                # text: "This is the text content"
                 text: "{{ dialogue.text }}"
-                # contentSource: "dialogueContent"
                 style:
                   fill: "white"
                   fontSize: 30
@@ -2679,10 +2699,9 @@ resources:
                   - id: "title14123"
                     width: 580
                     type: "text"
-                    text: ""
+                    text: "{{ dialogue.text }}"
                     x: -10
                     # TODO t100292: improve dialogue content templating, maybe use {}
-                    contentSource: "dialogueContent"
                     style:
                       fill: "#cccccc"
                       fontSize: 34
@@ -2693,8 +2712,7 @@ resources:
                       align: right
             children: []
 
-# TODO t100293: review root element
-# rootElement:
+
 #   id: "root"
 #   type: "container"
 #   animated: true
@@ -2722,15 +2740,15 @@ resources:
 #               easing: linear
 #   children: []
 
-# TODO t100294: review presets
 presets:
   title:
-    events:
-      history: false
-    configuration:
-      recordHistory: false
+    listeners: {}
+    # onEnter:
+    #   actions:
+    #     setRuntimeState:
+    #       currentPage: "options"
   read:
-    events:
+    listeners:
       LeftClick:
         actions:
           nextStep: {}
@@ -2751,19 +2769,22 @@ presets:
       ControlUp:
         action:
           stopSkipMode: {}
-    configuration:
-      recordHistory: true
+    # onEnter:
+    #   actions:
+    #     setRuntimeState:
+    #       currentPage: "options"
   menu:
-    events:
+    listeners:
       RightClick:
         action: "exitMenu"
         payload:
           presetId: "read"
           mode: "read"
-    configuration:
-      recordHistory: true
+    # onEnter:
+    #   actions:
+    #     setRuntimeState:
+    #       currentPage: "options"
 
-# TODO t100295: review presets. whether to add scenes
 story:
   sections:
     section1:
@@ -3093,7 +3114,7 @@ story:
               character:
                 characterId: "kamilla"
               # text: "...The book you asked for."
-              text: "{{ i18n.en_default.a1 }}"
+              text: "{{ i18n.s1.a1 }}"
         - id: s2step11
           actions:
             bgm:
@@ -3133,7 +3154,7 @@ story:
             dialogue:
               character:
                 characterId: "eleni"
-              text: "{{ i18n.en_default.a2 }}"
+              text: "{{ i18n.s1.a2 }}"
         - id: "step14"
           actions:
             character:
@@ -5146,16 +5167,21 @@ story:
             moveToSection:
               sectionId: section0
 
-# TODO t100296: review i18n
 i18n:
   en_default:
+    name: "English"
+    description: "..."
+    version: "1.0.0"
+    compatibility: "..."
     language: en
     keys:
-      a1: sss ...The book you asked for.
-      a2: sss EEEEEEE show me, show me!
+      s1:
+        a1: sss ...The book you asked for.
+        a2: sss EEEEEEE show me, show me!
   it:
     language: it
     keys:
-      a1: sss ...Il libro che hai chiesto.
-      a2: sss EEEEEEE mostrami, mostrami!
+      s1:
+        a1: sss ...Il libro che hai chiesto.
+        a2: sss EEEEEEE mostrami, mostrami!
 

@@ -22,13 +22,6 @@ export const generateRenderTree = ({
   state,
   resources,
   screen,
-  mode,
-  config = {
-    clickSoundVolume: 1,
-    soundVolume: 1,
-    musicVolume: 1,
-    language: "en_default",
-  },
   historyDialogue = [],
   skipMode = false,
   autoMode = false,
@@ -38,22 +31,22 @@ export const generateRenderTree = ({
   rootElement,
   i18n = {},
   runtimeState,
+  readthroughState,
   deviceState,
   persistentState,
 }) => {
   const transitions = [];
 
-  const applyTemplate = templatingEngine({
-    saveDataFilter
-  }, {
-    runtimeState,
-    deviceState,
-    persistentState,
-  });
-
-  console.log("render", {
-    runtimeState,
-  });
+  const applyTemplate = templatingEngine(
+    {
+      saveDataFilter,
+    },
+    {
+      runtimeState,
+      deviceState,
+      persistentState,
+    }
+  );
 
   const generateElements = (state) => {
     const elements = [];
@@ -228,7 +221,7 @@ export const generateRenderTree = ({
 
         const dialogueBox = JSON.parse(stringified);
 
-        if (config.muteAll) {
+        if (deviceState.muteAll) {
           removeClickSoundUrl(dialogueBox);
         }
 
@@ -258,13 +251,19 @@ export const generateRenderTree = ({
                 text,
               };
 
-              if (childItem.contentSource === "dialogueContent") {
+              if (childItem.text === "{{ dialogue.text }}") {
                 if (text.startsWith("{{ i18n.")) {
-                  const [__, ___, k] = text
+                  const [__, group, k] = text
                     .replace("{{ ", "")
                     .replace(" }}", "")
                     .split(".");
-                  child.text = i18n[config.language].keys[k];
+                  console.log({
+                    __,
+                    group,
+                    k,
+                    deviceState
+                  });
+                  child.text = i18n[deviceState.language].keys[group][k];
                 } else {
                   child.text = text;
                 }
@@ -272,13 +271,20 @@ export const generateRenderTree = ({
 
               if (child.children) {
                 for (const childItem of child.children) {
-                  if (childItem.contentSource === "dialogueContent") {
+                  if (childItem.text === "{{ dialogue.text }}") {
                     if (text.startsWith("{{ i18n.")) {
-                      const [__, ___, k] = text
+                      const [__, group, k] = text
                         .replace("{{ ", "")
                         .replace(" }}", "")
                         .split(".");
-                      childItem.text = i18n[config.language].keys[k];
+                      console.log({
+                        __,
+                        group,
+                        k,
+                        deviceState
+                      });
+                      childItem.text =
+                        i18n[deviceState.language].keys[group][k];
                     } else {
                       childItem.text = text;
                     }
@@ -301,13 +307,13 @@ export const generateRenderTree = ({
                   delete child.text;
                 } else {
                   if (state.dialogue.text.startsWith("{{ i18n.")) {
-                    const [__, ___, k] = state.dialogue.text
+                    const [__, group, k] = state.dialogue.text
                       .replace("{{ ", "")
                       .replace(" }}", "")
                       .split(".");
                     child.text = child.text.replaceAll(
                       "{{ dialogue.text }}",
-                      i18n[config.language].keys[k]
+                      i18n[deviceState.language].keys[group][k]
                     );
                   } else {
                     child.text = child.text.replaceAll(
@@ -325,7 +331,7 @@ export const generateRenderTree = ({
       }
     }
 
-    if (!config.muteAll && state.sfx) {
+    if (!deviceState.muteAll && state.sfx) {
       for (const item of state.sfx.items) {
         const sfx = resources.sfx.items[item.sfxId];
         if (sfx) {
@@ -334,7 +340,7 @@ export const generateRenderTree = ({
             type: "sound",
             url: sfx.src,
             delay: item.delay,
-            volume: (config.soundVolume ?? 50) / 100,
+            volume: (deviceState.soundVolume ?? 50) / 100,
           });
         }
       }
@@ -393,7 +399,7 @@ export const generateRenderTree = ({
           }
         }
 
-        if (config.muteAll) {
+        if (deviceState.muteAll) {
           removeClickSoundUrl(screen);
         }
 
@@ -454,47 +460,9 @@ export const generateRenderTree = ({
   const finalElements = [];
 
   finalElements.push({
-    id: "root",
-    type: "container",
+    ...rootElement,
     selectedTabId: pointerMode === "menu" ? "menu" : "read",
     animationKey: pointerMode === "menu" ? "menu" : "read",
-    animated: true,
-    animation: {
-      out: {
-        type: "keyframes",
-        event: "remove",
-        animationProperties: [
-          {
-            property: "alpha",
-            initialValue: 0.8,
-            keyframes: [
-              {
-                duration: 600,
-                value: 0,
-                easing: "linear",
-              },
-            ],
-          },
-        ],
-      },
-      in: {
-        type: "keyframes",
-        event: "add",
-        animationProperties: [
-          {
-            property: "alpha",
-            initialValue: 0.2,
-            keyframes: [
-              {
-                duration: 600,
-                value: 1,
-                easing: "linear",
-              },
-            ],
-          },
-        ],
-      },
-    },
     children: [
       {
         id: "asdeadk3f",
@@ -511,14 +479,12 @@ export const generateRenderTree = ({
     ],
   });
 
-  console.log({
-    finalElements,
-  });
-
   return {
     elements: finalElements,
     transitions:
-      (skipMode && config.skipTransitions) || completedStep ? [] : transitions,
+      (skipMode && deviceState.skipTransitions) || completedStep
+        ? []
+        : transitions,
   };
 };
 
@@ -550,11 +516,12 @@ const saveDataFilter = (target, variables) => {
 
 const templatingEngine = (filters = {}, variables = {}) => {
   const applyTemplate = (string) => {
-
     // TODO remove hardcoded
     Object.keys(filters).forEach((filterKey) => {
       const filter = filters[filterKey];
-      if (string.indexOf(`{{ persistentState.saveData | ${filterKey} }}`) !== -1) {
+      if (
+        string.indexOf(`{{ persistentState.saveData | ${filterKey} }}`) !== -1
+      ) {
         string = string.replaceAll(
           `"{{ persistentState.saveData | ${filterKey} }}"`,
           JSON.stringify(filter(variables.persistentState.saveData, variables))

@@ -85,11 +85,53 @@
       "rollbackSide": "left",
       "skipTransitions": false,
       "skipUnseenText": false,
+      "muteAll": false,
       "language": "en_default"
     },
     "persistentState": {
       "novelCompleted": false,
       "saveData": []
+    },
+    "rootElement": {
+      "id": "root",
+      "type": "container",
+      "animated": true,
+      "animation": {
+        "out": {
+          "type": "keyframes",
+          "event": "remove",
+          "animationProperties": [
+            {
+              "property": "alpha",
+              "initialValue": 0.8,
+              "keyframes": [
+                {
+                  "duration": 600,
+                  "value": 0,
+                  "easing": "linear"
+                }
+              ]
+            }
+          ]
+        },
+        "in": {
+          "type": "keyframes",
+          "event": "add",
+          "animationProperties": [
+            {
+              "property": "alpha",
+              "initialValue": 0.2,
+              "keyframes": [
+                {
+                  "duration": 600,
+                  "value": 1,
+                  "easing": "linear"
+                }
+              ]
+            }
+          ]
+        }
+      }
     }
   },
   "initialPersistentConfig": {
@@ -2373,7 +2415,7 @@
                           "y": 200,
                           "width": 780,
                           "height": 1000,
-                          "data": "{{ persistentState.saveData | saveDataFilter }}",
+                          "ata": "{{ persistentState.saveData | saveDataFilter }}",
                           "template": {
                             "mapping": {
                               "cases": [
@@ -3776,9 +3818,8 @@
                       "id": "title14123",
                       "width": 580,
                       "type": "text",
-                      "text": "",
+                      "text": "{{ dialogue.text }}",
                       "x": -10,
-                      "contentSource": "dialogueContent",
                       "style": {
                         "fill": "#cccccc",
                         "fontSize": 34,
@@ -3801,15 +3842,10 @@
   },
   "presets": {
     "title": {
-      "events": {
-        "history": false
-      },
-      "configuration": {
-        "recordHistory": false
-      }
+      "listeners": {}
     },
     "read": {
-      "events": {
+      "listeners": {
         "LeftClick": {
           "actions": {
             "nextStep": {}
@@ -3842,13 +3878,10 @@
             "stopSkipMode": {}
           }
         }
-      },
-      "configuration": {
-        "recordHistory": true
       }
     },
     "menu": {
-      "events": {
+      "listeners": {
         "RightClick": {
           "action": "exitMenu",
           "payload": {
@@ -3856,9 +3889,6 @@
             "mode": "read"
           }
         }
-      },
-      "configuration": {
-        "recordHistory": true
       }
     }
   },
@@ -4433,7 +4463,7 @@
                 "character": {
                   "characterId": "kamilla"
                 },
-                "text": "{{ i18n.en_default.a1 }}"
+                "text": "{{ i18n.s1.a1 }}"
               }
             }
           },
@@ -4509,7 +4539,7 @@
                 "character": {
                   "characterId": "eleni"
                 },
-                "text": "{{ i18n.en_default.a2 }}"
+                "text": "{{ i18n.s1.a2 }}"
               }
             }
           },
@@ -8378,17 +8408,25 @@
   },
   "i18n": {
     "en_default": {
+      "name": "English",
+      "description": "...",
+      "version": "1.0.0",
+      "compatibility": "...",
       "language": "en",
       "keys": {
-        "a1": "sss ...The book you asked for.",
-        "a2": "sss EEEEEEE show me, show me!"
+        "s1": {
+          "a1": "sss ...The book you asked for.",
+          "a2": "sss EEEEEEE show me, show me!"
+        }
       }
     },
     "it": {
       "language": "it",
       "keys": {
-        "a1": "sss ...Il libro che hai chiesto.",
-        "a2": "sss EEEEEEE mostrami, mostrami!"
+        "s1": {
+          "a1": "sss ...Il libro che hai chiesto.",
+          "a2": "sss EEEEEEE mostrami, mostrami!"
+        }
       }
     }
   }

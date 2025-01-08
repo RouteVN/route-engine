@@ -20,6 +20,7 @@ class RvnEngine {
     runtimeState: undefined,
     deviceState: undefined,
     persistentState: undefined,
+    rootElement: undefined
   };
 
   _runtimeState;
@@ -29,8 +30,6 @@ class RvnEngine {
 
   deviceStateInterface;
   persistentStateInterface;
-
-  _rootElement;
 
   /**
    * Used so that when returning from menu to read, it will show the final state
@@ -247,14 +246,13 @@ class RvnEngine {
         height: 720,
         fill: "#000000",
       },
-      mode: "read",
       canSkip: this._hasNextStep,
       autoMode: this._autoMode,
       skipMode: this._skipMode,
       // completedStep: this._completedStep,
       pointerMode: this._mode,
       i18n: this._i18n,
-      rootElement: this._rootElement,
+      rootElement: this._initial.rootElement,
       historyDialogue: this.historyDialogue,
 
       runtimeState: this._runtimeState,
@@ -455,12 +453,12 @@ class RvnEngine {
       runtimeState: gameData.initial.runtimeState,
       deviceState: gameData.initial.deviceState,
       persistentState: gameData.initial.persistentState,
+      rootElement: gameData.initial.rootElement
     };
     this._sections = gameData.story.sections;
     this._presets = gameData.presets;
     this._resources = gameData.resources;
     this._i18n = gameData.i18n;
-    this._rootElement = gameData.rootElement;
   }
 
   exitMenu({ presetId, sectionId, stepId, mode }) {
@@ -663,7 +661,6 @@ class RvnEngine {
     } else if (action === "triggerStepEvent") {
       this.triggerStepEvent(payload);
     }
-    // this._render();
   }
 
   /**
@@ -713,11 +710,11 @@ class RvnEngine {
       return;
     }
 
-    if (!this._selectedPreset.events[event]) {
+    if (!this._selectedPreset.listeners[event]) {
       return;
     }
 
-    Object.entries(this._selectedPreset.events[event].actions).forEach(
+    Object.entries(this._selectedPreset.listeners[event].actions).forEach(
       ([action, payload2]) => {
         this.handleAction(action, payload || payload2);
       }
