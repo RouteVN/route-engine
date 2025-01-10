@@ -38015,9 +38015,6 @@ var ContainerRendererPlugin = class {
       if (element.selectedTabId) {
         return child.tabId === element.selectedTabId;
       }
-      if (child.id === "adgeaer") {
-        console.log("YYYYYYYYYYYYYYYYYYYYYYYYYYYYYY");
-      }
       if (child.hidden) {
         return false;
       }
@@ -38087,25 +38084,6 @@ var ContainerRendererPlugin = class {
       return;
       throw new Error(`Container with id ${element.id} not found`);
     }
-    const removeModalElements = (element2) => {
-      element2.children.forEach((child) => {
-        if (child.type === "modal") {
-          const modalRenderer = getRendererByElement(child);
-          modalRenderer.remove(app, {
-            parent: app.stage.getChildByName("modalContainer"),
-            element: child,
-            transitions,
-            getTransitionByType,
-            getRendererByElement,
-            eventHandler
-          });
-        }
-        if (child.children) {
-          removeModalElements(child);
-        }
-      });
-    };
-    removeModalElements(element);
     container.destroy();
   };
   /**
@@ -38134,7 +38112,7 @@ var ContainerRendererPlugin = class {
       console.warn(`Container with id ${prevElement.id} not found`);
       return;
     }
-    if (nextElement.animated && nextElement.animationKey !== prevElement.animationKey) {
+    if (nextElement.animation && nextElement.animation?.key !== prevElement.animation?.key) {
       const nextContainer = parent.getChildByName(nextElement.id);
       if (nextContainer) {
         nextContainer.destroy();
@@ -38432,7 +38410,11 @@ var KeyframeTransitionPlugin = class {
   transitionType = "keyframes";
   _transition = (app, sprite, transition) => {
     return new Promise((resolve) => {
-      const { animationProperties } = transition;
+      const { animationProperties: animationPropertiesArrayOrObject } = transition;
+      const animationProperties = Array.isArray(animationPropertiesArrayOrObject) ? animationPropertiesArrayOrObject : Object.entries(animationPropertiesArrayOrObject).map(([property, value]) => ({
+        ...value,
+        property
+      }));
       const accumulatedDurations = animationProperties.map((animationProperty) => {
         return animationProperty.keyframes.reduce((acc, item) => {
           return acc + item.duration || 0;
@@ -38455,14 +38437,14 @@ var KeyframeTransitionPlugin = class {
         animationProperties.forEach((animationProperty) => {
           let input = [];
           if (animationProperty.initialValue !== void 0) {
-            input = [
-              { value: animationProperty.initialValue, duration: 0 }
-            ];
+            input = [{ value: animationProperty.initialValue, duration: 0 }];
           } else {
-            input = [{
-              value: initialProperties[animationProperty.property],
-              duration: 0
-            }];
+            input = [
+              {
+                value: initialProperties[animationProperty.property],
+                duration: 0
+              }
+            ];
           }
           input = input.concat(animationProperty.keyframes);
           set(output, animationProperty.property, processInput(input, currentTimDelta));

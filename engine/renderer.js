@@ -37,6 +37,10 @@ export const generateRenderTree = ({
 }) => {
   const transitions = [];
 
+  console.log('XXXXXXXXXx', {
+    runtimeState
+  })
+
   const applyTemplate = templatingEngine(
     {
       saveDataFilter,
@@ -462,7 +466,10 @@ export const generateRenderTree = ({
   finalElements.push({
     ...rootElement,
     selectedTabId: pointerMode === "menu" ? "menu" : "read",
-    animationKey: pointerMode === "menu" ? "menu" : "read",
+    animation: {
+      ...rootElement.animation,
+      key: pointerMode === "menu" ? "menu" : "read",
+    },
     children: [
       {
         id: "asdeadk3f",

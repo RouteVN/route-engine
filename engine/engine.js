@@ -20,7 +20,7 @@ class RvnEngine {
     runtimeState: undefined,
     deviceState: undefined,
     persistentState: undefined,
-    rootElement: undefined
+    rootElement: undefined,
   };
 
   _runtimeState;
@@ -140,13 +140,42 @@ class RvnEngine {
     this._mode = this._initial.mode;
     this._selectedPresetId = this._initial.presetId;
 
-    this._runtimeState = this._initial.runtimeState;
+    this._runtimeState = Object.entries(this._resources.variables)
+      .filter(([key, value]) => {
+        return value.scope === "runtime";
+      })
+      .reduce((acc, next) => {
+        const [key, value] = next;
+        acc[key] = value.default;
+        return acc;
+      }, {});
+    
+    const intialDeviceState = Object.entries(this._resources.variables)
+    .filter(([key, value]) => {
+      return value.scope === "device";
+    })
+    .reduce((acc, next) => {
+      const [key, value] = next;
+      acc[key] = value.default;
+      return acc;
+    }, {});
+
+    const intialPersistentState = Object.entries(this._resources.variables)
+    .filter(([key, value]) => {
+      return value.scope === "persistent";
+    })
+    .reduce((acc, next) => {
+      const [key, value] = next;
+      acc[key] = value.default;
+      return acc;
+    }, {});
+
     this._deviceState = {
-      ...this._initial.deviceState,
+      ...intialDeviceState,
       ...this.deviceStateInterface.getAll(),
     };
     this._persistentState = {
-      ...this._initial.persistentState,
+      ...intialPersistentState,
       ...this.persistentStateInterface.getAll(),
     };
 
@@ -453,7 +482,7 @@ class RvnEngine {
       runtimeState: gameData.initial.runtimeState,
       deviceState: gameData.initial.deviceState,
       persistentState: gameData.initial.persistentState,
-      rootElement: gameData.initial.rootElement
+      rootElement: gameData.initial.rootElement,
     };
     this._sections = gameData.story.sections;
     this._presets = gameData.presets;
@@ -516,7 +545,10 @@ class RvnEngine {
         url,
       };
 
-      this.persistentStateInterface.set('saveData', this._persistentState.saveData)
+      this.persistentStateInterface.set(
+        "saveData",
+        this._persistentState.saveData
+      );
 
       this._render();
     });

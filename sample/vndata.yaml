@@ -3,67 +3,7 @@ initial:
   sectionId: "section3"
   presetId: "title"
   mode: "read"
-
-  runtimeState:
-    currentPage: about
-    currentSavePageNumber: 0
-    hideExitMenuConfirmationModal: true
-    saveLoadSlots:
-      - text: "<"
-        value: -1
-      - text: "A"
-        value: 0
-        title: Auto Save
-      - text: "Q"
-        value: 1
-        title: Quick Save
-      - text: "1"
-        value: 2
-        title: Page 1
-      - text: "2"
-        value: 3
-        title: Page 2
-      - text: "3"
-        value: 4
-        title: Page 3
-      - text: "4"
-        value: 5
-        title: Page 4
-      - text: "5"
-        value: 6
-        title: Page 5
-      - text: "6"
-        value: 7
-        title: Page 6
-      - text: "7"
-        value: 8
-        title: Page 8
-      - text: "8"
-        value: 9
-        title: Page 9
-      - text: "9"
-        value: 10
-        title: Page 10
-      - text: "10"
-        value: 11
-        title: Page 11
-      - text: ">"
-        value: 12
-
-  deviceState:
-    musicVolume: 1
-    soundVolume: 1
-    clickSoundVolume: 1
-    rollbackSide: "left"
-    skipTransitions: false
-    skipUnseenText: false
-    muteAll: false
-    language: en_default
-
-  persistentState:
-    novelCompleted: false
-    saveData: []
-
+ 
   rootElement:
     id: root
     type: container
@@ -73,7 +13,7 @@ initial:
         type: keyframes
         event: remove
         animationProperties:
-          - property: alpha
+          alpha:
             initialValue: 0.8
             keyframes:
               - duration: 600
@@ -83,26 +23,156 @@ initial:
         type: keyframes
         event: add
         animationProperties:
-          - property: alpha
+          alpha:
             initialValue: 0.2
             keyframes:
               - duration: 600
                 value: 1
                 easing: linear
 
-# initial persistent configuration for first time visual novel is opened
-# next time, it will load from persistent save data
-initialPersistentConfig:
-  musicVolume: 1
-  soundVolume: 1
-  clickSoundVolume: 1
-  rollbackSide: "left"
-  skipTransitions: false
-  skipUnseenText: false
-  language: en_default
-
 # visual novel resources that inlcudes all assets etc...
 resources:
+  variables:
+    currentPage:
+      scope: runtime
+      type: enum
+      values:
+        about: About
+        main: Main
+      editable: true
+      default: about
+
+    currentSavePageNumber:
+      scope: runtime
+      type: number
+      min: 0
+      max: 10
+      editable: true
+      default: 0
+    
+    saveLoadSlots:
+      scope: runtime
+      type: array
+      editable: false
+      default:
+        - text: "<"
+          value: -1
+        - text: "A"
+          value: 0
+          title: Auto Save
+        - text: "Q"
+          value: 1
+          title: Quick Save
+        - text: "1"
+          value: 2
+          title: Page 1
+        - text: "2"
+          value: 3
+          title: Page 2
+        - text: "3"
+          value: 4
+          title: Page 3
+        - text: "4"
+          value: 5
+          title: Page 4
+        - text: "5"
+          value: 6
+          title: Page 5
+        - text: "6"
+          value: 7
+          title: Page 6
+        - text: "7"
+          value: 8
+          title: Page 8
+        - text: "8"
+          value: 9
+          title: Page 9
+        - text: "9"
+          value: 10
+          title: Page 10
+        - text: "10"
+          value: 11
+          title: Page 11
+        - text: ">"
+          value: 12
+
+    hideExitMenuConfirmationModal:
+      scope: runtime
+      type: boolean
+      editable: true
+      default: true
+    
+    musicVolume:
+      scope: device
+      type: number
+      min: 0
+      max: 1
+      editable: true
+      default: 1
+
+    soundVolume:
+      scope: device
+      type: number
+      min: 0
+      max: 1
+      editable: true
+      default: 1
+
+    clickSoundVolume:
+      scope: device
+      type: number
+      min: 0
+      max: 1
+      editable: true
+      default: 1
+
+    rollbackSide:
+      scope: device
+      type: enum
+      values:
+        left: Left
+        right: Right
+      editable: true
+      default: left
+
+    skipTransitions:
+      scope: device
+      type: boolean
+      editable: true
+      default: false
+
+    skipUnseenText:
+      scope: device
+      type: boolean
+      editable: true
+      default: false
+
+    muteAll:
+      scope: device
+      type: boolean
+      editable: true
+      default: false
+
+    language:
+      scope: device
+      type: enum
+      values:
+        en_default: English
+      editable: true
+      default: en_default
+
+    novelCompleted:
+      scope: persistent
+      type: boolean
+      editable: true
+      default: false
+
+    saveData:
+      scope: persistent
+      type: array
+      editable: true
+      default: []
+
   background:
     items:
       bg1:
@@ -417,7 +487,7 @@ resources:
       ani1:
         name: "Fade In"
         properties:
-          - property: alpha
+          alpha:
             initialValue: 0
             keyframes:
               - duration: 700
@@ -426,7 +496,7 @@ resources:
       ani2:
         name: "Delayed Fade In"
         properties:
-          - property: alpha
+          alpha:
             initialValue: 0
             keyframes:
               - duration: 700
@@ -438,7 +508,7 @@ resources:
       extraFadeIn:
         name: "Extra Fade In"
         properties:
-          - property: alpha
+          alpha:
             initialValue: 0
             keyframes:
               - duration: 2000
@@ -450,7 +520,7 @@ resources:
       ani3:
         name: "Long Delayed Fade In"
         properties:
-          - property: alpha
+          alpha:
             initialValue: 0
             keyframes:
               - duration: 1400
@@ -462,7 +532,7 @@ resources:
       ani4:
         name: "Fade Out"
         properties:
-          - property: alpha
+          alpha:
             initialValue: 1
             keyframes:
               - duration: 1000
@@ -471,13 +541,13 @@ resources:
       ani5:
         name: "Slide Left and Flip"
         properties:
-          - property: x
+          x:
             keyframes:
               - duration: 600
                 relative: true
                 value: -600
                 easing: linear
-          - property: scale.x
+          'scale.x':
             keyframes:
               - duration: 0
                 value: -1
@@ -486,7 +556,7 @@ resources:
         name: "Slide Right"
         properties:
           # TODO t100285:make properties from array to object?
-          - property: x
+          x:
             keyframes:
               - duration: 0
                 relative: true
@@ -496,7 +566,7 @@ resources:
                 relative: true
                 value: 600
                 easing: linear
-          - property: scale.x
+          'scale.x':
             keyframes:
               - duration: 0
                 value: 1
@@ -504,7 +574,7 @@ resources:
       ani6:
         name: "Shake"
         properties:
-          - property: y
+          y:
             keyframes:
               - duration: 100
                 relative: true
@@ -521,7 +591,7 @@ resources:
       ani8:
         name: Title splash
         properties:
-          - property: alpha
+          alpha:
             initialValue: 0
             keyframes:
               - duration: 1000
@@ -536,13 +606,13 @@ resources:
       titleLogo:
         name: Title Logo
         properties:
-          - property: alpha
+          alpha:
             initialValue: 0
             keyframes:
               - duration: 500
                 value: 1
                 easing: linear
-          - property: y
+          y:
             keyframes:
               - duration: 0
                 relative: true
@@ -555,7 +625,7 @@ resources:
       titleBg:
         name: Title Background
         properties:
-          - property: alpha
+          alpha:
             initialValue: 0
             keyframes:
               - duration: 1000
@@ -567,7 +637,7 @@ resources:
       aniButtonFrame:
         name: Button Frame
         properties:
-          - property: alpha
+          alpha:
             initialValue: 0
             keyframes:
               - duration: 2000
@@ -579,7 +649,7 @@ resources:
       aniFadeInScreen:
         name: Fade In Screen
         properties:
-          - property: alpha
+          alpha:
             initialValue: 0
             keyframes:
               - duration: 500
@@ -588,7 +658,7 @@ resources:
       aniFadeOutScreen:
         name: Fade Out Screen
         properties:
-          - property: alpha
+          alpha:
             initialValue: 1
             keyframes:
               - duration: 2000
@@ -1002,7 +1072,7 @@ resources:
             elementId: 'labi-0'
             event: add
             animationProperties:
-              - property: alpha
+              alpha:
                 initialValue: 0
                 keyframes:
                   - duration: 0
@@ -1016,7 +1086,7 @@ resources:
             elementId: 'labi-1'
             event: add
             animationProperties:
-              - property: alpha
+              alpha:
                 initialValue: 0
                 keyframes:
                   - duration: 300
@@ -1030,7 +1100,7 @@ resources:
             elementId: 'labi-2'
             event: add
             animationProperties:
-              - property: alpha
+              alpha:
                 initialValue: 0
                 keyframes:
                   - duration: 600
@@ -1044,7 +1114,7 @@ resources:
             elementId: 'labi-3'
             event: add
             animationProperties:
-              - property: alpha
+              alpha:
                 initialValue: 0
                 keyframes:
                   - duration: 900
@@ -1163,14 +1233,13 @@ resources:
             type: "container"
             selectedTabId: "{{ runtimeState.currentPage }}"
             # TODO t100289: improve container animation properties API
-            animationKey: "{{ runtimeState.currentPage }}"
-            animated: true
             animation:
+              key: "{{ runtimeState.currentPage }}"
               out:
                 type: keyframes
                 event: remove
                 animationProperties:
-                  - property: alpha
+                  alpha:
                     initialValue: 0.8
                     keyframes:
                       - duration: 600
@@ -1180,7 +1249,7 @@ resources:
                 type: keyframes
                 event: add
                 animationProperties:
-                  - property: alpha
+                  alpha:
                     initialValue: 0.2
                     keyframes:
                       - duration: 600
@@ -1681,7 +1750,7 @@ resources:
                         y: 200
                         width: 780
                         height: 1000
-                        ata: "{{ persistentState.saveData | saveDataFilter }}"
+                        data: "{{ persistentState.saveData | saveDataFilter }}"
                         template:
                           mapping:
                             cases:
@@ -2712,34 +2781,6 @@ resources:
                       align: right
             children: []
 
-
-#   id: "root"
-#   type: "container"
-#   animated: true
-#   animation:
-#     out:
-#       type: keyframes
-#       event: remove
-#       animationProperties:
-#         - property: alpha
-#           initialValue: 0.8
-#           keyframes:
-#             - duration: 600
-#               value: 0
-#               easing: linear
-#     in:
-#       type: keyframes
-#       elementId: 'root'
-#       event: add
-#       animationProperties:
-#         - property: alpha
-#           initialValue: 0.2
-#           keyframes:
-#             - duration: 600
-#               value: 1
-#               easing: linear
-#   children: []
-
 presets:
   title:
     listeners: {}
@@ -2786,9 +2827,14 @@ presets:
     #       currentPage: "options"
 
 story:
+  scenes:
+    scene1:
+      sections:
+        - id: section1
+        - id: section2
+        # ...
   sections:
     section1:
-      id: "section2"
       steps:
         - id: step0
           actions: {}
@@ -5175,6 +5221,9 @@ i18n:
     compatibility: "..."
     language: en
     keys:
+      r_bg:
+        fkjeawlkj31: bg1
+
       s1:
         a1: sss ...The book you asked for.
         a2: sss EEEEEEE show me, show me!
