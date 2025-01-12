@@ -194,6 +194,16 @@ const initializeVnPlayer = async (element) => {
     getAll: () => {
       const config = localStorage.getItem(persistentStateKey);
       const configObj = config ? JSON.parse(config) : {};
+      const fileUrls = getAllValuesByPropertyName(configObj, [
+        "url",
+        "src",
+        "idleThumb",
+        "hoverThumb",
+        "idleBar",
+        "hoverBar",
+        "hoverUrl",
+      ]).filter((url) => !!url);
+      app.loadAssets(fileUrls);
       return configObj;
     },
   }

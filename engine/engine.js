@@ -492,10 +492,21 @@ class RvnEngine {
   }
 
   setRuntimeState(payload) {
-    this._runtimeState = {
-      ...this._runtimeState,
-      ...payload,
-    };
+    Object.entries(payload).forEach(([key, value]) => {
+      if (typeof value === "object") {
+        if (value.op === "inc") {
+          const currentValue = this._runtimeState[key] || 0;
+          const newValue = Math.min(currentValue + value.value, value.max);
+          this._runtimeState[key] = newValue;
+        } else if (value.op === "dec") {
+          const currentValue = this._runtimeState[key] || 0;
+          const newValue = Math.max(currentValue - value.value, 0);
+          this._runtimeState[key] = newValue;
+        }
+      } else {
+        this._runtimeState[key] = value;
+      }
+    });
     this._render();
   }
 
