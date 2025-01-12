@@ -7,7 +7,6 @@ initial:
   rootElement:
     id: root
     type: container
-    animated: true
     animation:
       out:
         type: keyframes
@@ -555,7 +554,6 @@ resources:
       ani7:
         name: "Slide Right"
         properties:
-          # TODO t100285:make properties from array to object?
           x:
             keyframes:
               - duration: 0
@@ -680,21 +678,21 @@ resources:
             height: 720
             width: 1280
           - id: "about3-{{ runtimeState.currentPage }}"
-            type: "anchor-layout-container"
+            type: "container"
             anchor: "CenterLeft"
             direction: "vertical"
             width: 200
             height: 300
             x: 20
             y: 360
-            # TODO t100286: improve data and templating for anchor-layout-container
+            # TODO t100286: improve data and templating for container
             data:
               - text: Start
                 page: start
                 eventPayload:
                   actions:
                     moveToSection:
-                      sectionId: section2
+                      sectionId: section20
                       mode: read
                       presetId: read
                       addToSection: true
@@ -812,7 +810,7 @@ resources:
 
           # TODO t100288: find better way to handle diffs and id
           - id: "about3-{{ runtimeState.currentPage }}"
-            type: "anchor-layout-container"
+            type: "container"
             anchor: "CenterLeft"
             direction: "vertical"
             width: 200
@@ -905,7 +903,7 @@ resources:
                     strokeWidth: 6
 
           - id: "about3412x"
-            type: "anchor-layout-container"
+            type: "container"
             anchor: "CenterLeft"
             direction: "vertical"
             width: 200
@@ -981,7 +979,7 @@ resources:
                   wordWrapWidth: 600
                   align: center
               - id: "ladfkj42dxi3"
-                type: anchor-layout-container
+                type: container
                 anchor: "CenterCenter"
                 direction: "horizontal"
                 zIndex: 1002
@@ -1033,7 +1031,7 @@ resources:
       mainMenuExtra:
         layout:
           - id: "mainMef32nuextra"
-            type: "anchor-layout-container"
+            type: "container"
             anchor: "CenterLeft"
             direction: "horizontal"
             x: 60
@@ -1125,7 +1123,7 @@ resources:
                     easing: linear
         layout:
           - id: "mainMenu"
-            type: "anchor-layout-container"
+            type: "container"
             anchor: "CenterCenter"
             direction: "horizontal"
             x: 640
@@ -1202,7 +1200,7 @@ resources:
       skipMenu:
         layout:
           - id: "skipMifeakjefkljenu"
-            type: "anchor-layout-container"
+            type: "container"
             anchor: "TopLeft"
             direction: "horizontal"
             x: 0
@@ -1278,7 +1276,7 @@ resources:
                           strokeColor: black
                           strokeWidth: 6
                       - id: "about32fs2-{{ deviceState.rollbackSide }}"
-                        type: "anchor-layout-container"
+                        type: "container"
                         anchor: "TopLeft"
                         direction: "vertical"
                         x: 360
@@ -1300,7 +1298,7 @@ resources:
                               strokeColor: black
                               strokeWidth: 6
                           - id: df3kk323
-                            type: anchor-layout-container
+                            type: container
                             anchor: "TopLeft"
                             direction: "vertical"
                             gap: 12
@@ -1365,7 +1363,7 @@ resources:
                                         wordWrapWidth: 1740
 
                       - id: "about325fs2-{{ deviceState.skipUnseenText }}-{{ deviceState.skipTransitions }}"
-                        type: "anchor-layout-container"
+                        type: "container"
                         anchor: "TopLeft"
                         direction: "vertical"
                         x: 660
@@ -1387,7 +1385,7 @@ resources:
                               strokeColor: black
                               strokeWidth: 6
                           - id: df3kgeawdf3erk3
-                            type: anchor-layout-container
+                            type: container
                             anchor: "TopLeft"
                             direction: "vertical"
                             gap: 12
@@ -1460,7 +1458,7 @@ resources:
                             children: []
                         
                       - id: "about32e2fcss232-{{ deviceState.textSpeed }}"
-                        type: "anchor-layout-container"
+                        type: "container"
                         anchor: "TopLeft"
                         direction: "vertical"
                         x: 360
@@ -1495,7 +1493,7 @@ resources:
                             idleBar: "/public/first-contract/gui/slider/horizontal_idle_bar.png"
                             hoverBar: "/public/first-contract/gui/slider/horizontal_hover_bar.png"
                       - id: "about32e2fsfes232-{{ deviceState.autoForwardTime }}"
-                        type: "anchor-layout-container"
+                        type: "container"
                         anchor: "TopLeft"
                         direction: "vertical"
                         x: 360
@@ -1530,7 +1528,7 @@ resources:
                             idleBar: "/public/first-contract/gui/slider/horizontal_idle_bar.png"
                             hoverBar: "/public/first-contract/gui/slider/horizontal_hover_bar.png"
                       - id: "about32e2fs2-{{ deviceState.musicVolume }}"
-                        type: "anchor-layout-container"
+                        type: "container"
                         anchor: "TopLeft"
                         direction: "vertical"
                         x: 860
@@ -1565,7 +1563,7 @@ resources:
                             idleBar: "/public/first-contract/gui/slider/horizontal_idle_bar.png"
                             hoverBar: "/public/first-contract/gui/slider/horizontal_hover_bar.png"
                       - id: "about32e422af23wefs2-{{ deviceState.soundVolume }}"
-                        type: "anchor-layout-container"
+                        type: "container"
                         anchor: "TopLeft"
                         direction: "vertical"
                         x: 860
@@ -1600,7 +1598,7 @@ resources:
                             idleBar: "/public/first-contract/gui/slider/horizontal_idle_bar.png"
                             hoverBar: "/public/first-contract/gui/slider/horizontal_hover_bar.png"
                       - id: "ladfwkj3d3"
-                        type: "anchor-layout-container"
+                        type: "container"
                         children: []
                         x: 860
                         y: 640
@@ -1666,7 +1664,7 @@ resources:
                                     strokeColor: black
                                     strokeWidth: 6
                       - id: "aboutf341d2x"
-                        type: "anchor-layout-container"
+                        type: "container"
                         anchor: "CenterLeft"
                         direction: "vertical"
                         width: 300
@@ -1721,7 +1719,7 @@ resources:
                           strokeColor: black
                           strokeWidth: 6
                       - id: "about32fs2-{{ runtimeState.currentSavePageNumber }}"
-                        type: "anchor-layout-container"
+                        type: "container"
                         anchor: "TopLeft"
                         direction: "vertical"
                         x: 640
@@ -1742,7 +1740,7 @@ resources:
                               strokeColor: black
                               strokeWidth: 6
                       - id: "abosut32fs2-{{ runtimeState.currentSavePageNumber }}"
-                        type: "anchor-layout-container"
+                        type: "container"
                         anchor: "TopLeft"
                         direction: "horizontal"
                         gap: 50
@@ -1813,7 +1811,7 @@ resources:
                                   width: 280
                                   height: 200
                       - id: "cmi2x3x23233-{{ runtimeState.currentSavePageNumber }}"
-                        type: anchor-layout-container
+                        type: container
                         anchor: "CenterCenter"
                         direction: "horizontal"
                         x: 800
@@ -1931,7 +1929,7 @@ resources:
                       strokeColor: black
                       strokeWidth: 6
                   - id: "about32fs2"
-                    type: "anchor-layout-container"
+                    type: "container"
                     anchor: "TopLeft"
                     direction: "vertical"
                     x: 360
@@ -2021,7 +2019,7 @@ resources:
                 type: container
                 children:
                   - id: "about312312"
-                    type: "anchor-layout-container"
+                    type: "container"
                     anchor: "TopLeft"
                     direction: "vertical"
                     width: 200
@@ -2062,7 +2060,7 @@ resources:
                       fontFamily: "NomnomNami2"
                       wordWrapWidth: 200
                   - id: "about312312"
-                    type: "anchor-layout-container"
+                    type: "container"
                     anchor: "TopLeft"
                     direction: "horizontal"
                     gap: 20
@@ -2126,7 +2124,7 @@ resources:
                 type: "container"
                 children:
                   - id: "abos3ut3123312"
-                    type: "anchor-layout-container"
+                    type: "container"
                     anchor: "TopLeft"
                     direction: "vertical"
                     width: 200
@@ -2147,7 +2145,7 @@ resources:
                           strokeColor: black
                           strokeWidth: 6
                   - id: "history"
-                    type: "anchor-layout-container"
+                    type: "container"
                     scrollable: true
                     anchor: "TopLeft"
                     direction: "vertical"
@@ -2164,7 +2162,7 @@ resources:
                       items:
                         - template: default
                           id: "ladfkj33d"
-                          type: "anchor-layout-container"
+                          type: "container"
                           anchor: "TopLeft"
                           direction: "horizontal"
                           gap: 40
@@ -2211,7 +2209,7 @@ resources:
                 type: container
                 children:
                   - id: "abos3ut3123312"
-                    type: "anchor-layout-container"
+                    type: "container"
                     anchor: "TopLeft"
                     direction: "vertical"
                     width: 200
@@ -2232,7 +2230,7 @@ resources:
                           strokeColor: black
                           strokeWidth: 6
                   - id: "abouft32fs2"
-                    type: "anchor-layout-container"
+                    type: "container"
                     anchor: "TopLeft"
                     direction: "vertical"
                     x: 640
@@ -2253,7 +2251,7 @@ resources:
                           strokeColor: black
                           strokeWidth: 6
                   - id: "abosute32fs2-{{ runtimeState.currentSavePageNumber }}"
-                    type: "anchor-layout-container"
+                    type: "container"
                     anchor: "TopLeft"
                     direction: "horizontal"
                     gap: 50
@@ -2355,7 +2353,7 @@ resources:
                                 wordWrapWidth: 1740
 
                   - id: "cmi2x3x23233-{{ runtimeState.currentSavePageNumber }}"
-                    type: anchor-layout-container
+                    type: container
                     anchor: "CenterCenter"
                     direction: "horizontal"
                     x: 800
@@ -2412,7 +2410,6 @@ resources:
             children:
               - id: overlayConfirm3d
                 type: "container"
-                anchor: "TopLeft"
                 zIndex: 2005
                 x: 0
                 y: 0
@@ -2451,7 +2448,7 @@ resources:
                       wordWrapWidth: 600
                       align: center
                   - id: "ladfkj42dxi3"
-                    type: anchor-layout-container
+                    type: container
                     anchor: "CenterCenter"
                     direction: "horizontal"
                     zIndex: 1002
@@ -2507,38 +2504,30 @@ resources:
       dialogueBox1:
         name: "Dialogue Box 1"
         layout:
-          - id: "asxxdf3f"
-            type: "anchor-layout-container"
-            anchor: "BottomLeft"
-            direction: "horizontal"
+          - id: "askldjfetitle"
+            type: "sprite"
+            xa: 0
+            ya: 1
             x: 0
             y: 720
-            children:
-              - id: "title"
-                type: "sprite"
-                url: "/public/first-contract/gui/textbox.png"
-                direction: horizontal
-          - id: aweff3g
-            type: anchor-layout-container
-            anchor: TopLeft
-            direction: horizontal
+            url: "/public/first-contract/gui/textbox.png"
+          - id: "name"
+            type: text
             x: 220
             y: 530
-            children:
-              - id: "name"
-                type: text
-                width: 43
-                height: 48
-                text: "{{ character.name }}"
-                style:
-                  fill: "{{ character.variables.mainColor }}"
-                  fontSize: 40
-                  fontFamily: "NomnomNami2"
-                  wordWrapWidth: 1740
-                  strokeColor: black
-                  strokeWidth: 6
+            width: 43
+            height: 48
+            text: "{{ character.name }}"
+            style:
+              fill: "{{ character.variables.mainColor }}"
+              fontSize: 40
+              fontFamily: "NomnomNami2"
+              wordWrapWidth: 1740
+              strokeColor: black
+              strokeWidth: 6
+          # fix templating and remove container
           - id: awefgsgf3
-            type: anchor-layout-container
+            type: container
             anchor: TopLeft
             direction: horizontal
             x: 240
@@ -2558,7 +2547,7 @@ resources:
                   strokeColor: black
                   strokeWidth: 3
           - id: dife3i33kd
-            type: anchor-layout-container
+            type: container
             anchor: TopLeft
             direction: horizontal
             gap: 20
@@ -2670,7 +2659,7 @@ resources:
         name: "Dialogue Box 2"
         layout:
           - id: "as323f3dfa3a3"
-            type: "anchor-layout-container"
+            type: "container"
             anchor: "CenterCenter"
             direction: "horizontal"
             x: 640
@@ -2691,19 +2680,15 @@ resources:
       dialogueBox3:
         name: "Dialogue Box 3"
         layout:
-          - id: "asdf3df"
-            type: "anchor-layout-container"
-            anchor: "BottomLeft"
-            direction: "horizontal"
+          - id: "title"
+            type: "sprite"
             x: 0
             y: 720
-            children:
-              - id: "title"
-                type: "sprite"
-                url: "/public/first-contract/gui/nvl.png"
-                direction: horizontal
+            xa: 0
+            ya: 1
+            url: "/public/first-contract/gui/nvl.png"
           - id: "f34af3afeja"
-            type: "anchor-layout-container"
+            type: "container"
             anchor: "TopLeft"
             direction: "horizontal"
             x: 700
@@ -2719,9 +2704,8 @@ resources:
                   wordWrapWidth: 1740
                   strokeColor: "black"
                   strokeWidth: 6
-          - id: "f3asd4afeja231"
-            type: "anchor-layout-container"
-            incremental: true
+          - id: "f3asd4afeja231{{ stepId }}"
+            type: "container"
             anchor: "TopLeft"
             direction: "vertical"
             gap: 20
@@ -2729,56 +2713,69 @@ resources:
             y: 120
             height: 500
             width: 1200
-            # TODO t100297: use more standard templating for incremental dialogue box
-            childItems:
-              - id: "left"
-                type: "anchor-layout-container"
-                x: 0
-                width: 550
-                radius: 8
-                anchor: "TopLeft"
-                direction: "horizontal"
-                fill:
-                  color: "#ff74b2"
-                children:
-                  - id: "lefte2"
-                    type: "text"
-                    fill:
-                      color: "#ff74b2"
-                    text: "{{ dialogue.text }}"
-                    x: 10
-                    style:
-                      fill: "white"
-                      fontSize: 34
-                      fontFamily: "NomnomNami2"
-                      wordWrapWidth: 530
-                      strokeColor: "black"
-                      strokeWidth: 6
-                      align: left
-              - id: "right"
-                type: "anchor-layout-container"
-                x: 600
-                width: 550
-                radius: 8
-                anchor: "TopRight"
-                direction: "horizontal"
-                fill:
-                  color: "#cc005b"
-                children:
-                  - id: "title14123"
-                    width: 580
-                    type: "text"
-                    text: "{{ dialogue.text }}"
-                    x: -10
-                    # TODO t100292: improve dialogue content templating, maybe use {}
-                    style:
-                      fill: "#cccccc"
-                      fontSize: 34
-                      fontFamily: "NomnomNami2"
-                      wordWrapWidth: 530
-                      strokeColor: "black"
-                      strokeWidth: 6
-                      align: right
+            data: "{{ state.dialogue.texts }}"
+            template:
+              mapping:
+                cases:
+                  - case:
+                      property: template
+                      op: eq
+                      value: right
+                    then: right
+                default: left
+              items:
+                - template: "left"
+                  type: "container"
+                  x: 0
+                  width: 550
+                  radius: 8
+                  anchor: "TopLeft"
+                  direction: "horizontal"
+                  height: 100
+                  fill:
+                    color: "#ff74b2"
+                  children:
+                    - id: "lefte2"
+                      type: "text"
+                      fill:
+                        color: "#ff74b2"
+                      text: "{{ text }}"
+                      x: 10
+                      height: 100
+                      style:
+                        fill: "white"
+                        fontSize: 34
+                        fontFamily: "NomnomNami2"
+                        wordWrapWidth: 530
+                        strokeColor: "black"
+                        strokeWidth: 6
+                        align: left
+                - template: "right"
+                  type: "container"
+                  x: 600
+                  width: 550
+                  radius: 8
+                  anchor: "TopRight"
+                  direction: "horizontal"
+                  height: 100
+                  fill:
+                    color: "#cc005b"
+                  children:
+                    - id: "title14123"
+                      width: 580
+                      type: "text"
+                      text: "{{ text }}"
+                      height: 100
+                      x: -10
+                      # TODO t100292: improve dialogue content templating, maybe use {}
+                      style:
+                        fill: "#cccccc"
+                        fontSize: 34
+                        fontFamily: "NomnomNami2"
+                        wordWrapWidth: 530
+                        strokeColor: "black"
+                        strokeWidth: 6
+                        align: right
             children: []
 
 presets:
@@ -5162,7 +5159,7 @@ story:
             dialogue:
               incremental: true
               dialogueBoxId: "dialogueBox3"
-              childItemId: right
+              template: right
               text: "New contract has a time obligation, be back tomorrow"
             setPersistentState:
               gameStarted: true
@@ -5170,42 +5167,42 @@ story:
           actions:
             dialogue:
               incremental: true
-              childItemId: left
+              template: left
               text: "OK, no lasagna for you tonight"
         - id: step2
           actions:
             dialogue:
-              childItemId: right
+              template: right
               incremental: true
               text: "I'll have the left overs"
         - id: step3
           actions:
             dialogue:
-              childItemId: left
+              template: left
               incremental: true
               text: "Not if I eat it all"
         - id: step53
           actions:
             dialogue:
-              childItemId: right
+              template: right
               incremental: true
               text: "BROTHER..."
         - id: step54
           actions:
             dialogue:
-              childItemId: right
+              template: right
               incremental: true
               text: "You are truly a demon among demons. If only I could learn from your evil ways."
         - id: step55
           actions:
             dialogue:
-              childItemId: left
+              template: left
               incremental: true
               text: Such praise. I'll leave you my scraps out of mercy
         - id: step56
           actions:
             dialogue:
-              childItemId: right
+              template: right
               incremental: true
               text: Wow, I'm grateful
         - id: step57

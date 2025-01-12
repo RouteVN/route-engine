@@ -37,10 +37,6 @@ export const generateRenderTree = ({
 }) => {
   const transitions = [];
 
-  console.log('XXXXXXXXXx', {
-    runtimeState
-  })
-
   const applyTemplate = templatingEngine(
     {
       saveDataFilter,
@@ -206,11 +202,23 @@ export const generateRenderTree = ({
       if (_dialogueBox) {
         let stringified = JSON.stringify(_dialogueBox);
 
+
+
         stringified = applyTemplate(stringified);
+
+        stringified = stringified.replaceAll(
+          `"{{ state.dialogue.texts }}"`,
+          JSON.stringify(state.dialogue.texts)
+        );
 
         stringified = stringified.replaceAll(
           `"{{ skipMode }}"`,
           skipMode || false
+        );
+
+        stringified = stringified.replaceAll(
+          `{{ stepId }}`,
+          Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
         );
 
         stringified = stringified.replaceAll(
@@ -261,12 +269,7 @@ export const generateRenderTree = ({
                     .replace("{{ ", "")
                     .replace(" }}", "")
                     .split(".");
-                  console.log({
-                    __,
-                    group,
-                    k,
-                    deviceState
-                  });
+
                   child.text = i18n[deviceState.language].keys[group][k];
                 } else {
                   child.text = text;
@@ -281,12 +284,6 @@ export const generateRenderTree = ({
                         .replace("{{ ", "")
                         .replace(" }}", "")
                         .split(".");
-                      console.log({
-                        __,
-                        group,
-                        k,
-                        deviceState
-                      });
                       childItem.text =
                         i18n[deviceState.language].keys[group][k];
                     } else {
@@ -298,7 +295,7 @@ export const generateRenderTree = ({
 
               item.children.push(child);
             }
-          } else {
+          } else if (item.children) {
             for (const child of item.children) {
               if (child.text) {
                 if (state.dialogue.segments) {

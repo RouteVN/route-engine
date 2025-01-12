@@ -3,106 +3,15 @@
     "sectionId": "section3",
     "presetId": "title",
     "mode": "read",
-    "runtimeState": {
-      "currentPage": "about",
-      "currentSavePageNumber": 0,
-      "hideExitMenuConfirmationModal": true,
-      "saveLoadSlots": [
-        {
-          "text": "<",
-          "value": -1
-        },
-        {
-          "text": "A",
-          "value": 0,
-          "title": "Auto Save"
-        },
-        {
-          "text": "Q",
-          "value": 1,
-          "title": "Quick Save"
-        },
-        {
-          "text": "1",
-          "value": 2,
-          "title": "Page 1"
-        },
-        {
-          "text": "2",
-          "value": 3,
-          "title": "Page 2"
-        },
-        {
-          "text": "3",
-          "value": 4,
-          "title": "Page 3"
-        },
-        {
-          "text": "4",
-          "value": 5,
-          "title": "Page 4"
-        },
-        {
-          "text": "5",
-          "value": 6,
-          "title": "Page 5"
-        },
-        {
-          "text": "6",
-          "value": 7,
-          "title": "Page 6"
-        },
-        {
-          "text": "7",
-          "value": 8,
-          "title": "Page 8"
-        },
-        {
-          "text": "8",
-          "value": 9,
-          "title": "Page 9"
-        },
-        {
-          "text": "9",
-          "value": 10,
-          "title": "Page 10"
-        },
-        {
-          "text": "10",
-          "value": 11,
-          "title": "Page 11"
-        },
-        {
-          "text": ">",
-          "value": 12
-        }
-      ]
-    },
-    "deviceState": {
-      "musicVolume": 1,
-      "soundVolume": 1,
-      "clickSoundVolume": 1,
-      "rollbackSide": "left",
-      "skipTransitions": false,
-      "skipUnseenText": false,
-      "muteAll": false,
-      "language": "en_default"
-    },
-    "persistentState": {
-      "novelCompleted": false,
-      "saveData": []
-    },
     "rootElement": {
       "id": "root",
       "type": "container",
-      "animated": true,
       "animation": {
         "out": {
           "type": "keyframes",
           "event": "remove",
-          "animationProperties": [
-            {
-              "property": "alpha",
+          "animationProperties": {
+            "alpha": {
               "initialValue": 0.8,
               "keyframes": [
                 {
@@ -112,14 +21,13 @@
                 }
               ]
             }
-          ]
+          }
         },
         "in": {
           "type": "keyframes",
           "event": "add",
-          "animationProperties": [
-            {
-              "property": "alpha",
+          "animationProperties": {
+            "alpha": {
               "initialValue": 0.2,
               "keyframes": [
                 {
@@ -129,21 +37,186 @@
                 }
               ]
             }
-          ]
+          }
         }
       }
     }
   },
-  "initialPersistentConfig": {
-    "musicVolume": 1,
-    "soundVolume": 1,
-    "clickSoundVolume": 1,
-    "rollbackSide": "left",
-    "skipTransitions": false,
-    "skipUnseenText": false,
-    "language": "en_default"
-  },
   "resources": {
+    "variables": {
+      "currentPage": {
+        "scope": "runtime",
+        "type": "enum",
+        "values": {
+          "about": "About",
+          "main": "Main"
+        },
+        "editable": true,
+        "default": "about"
+      },
+      "currentSavePageNumber": {
+        "scope": "runtime",
+        "type": "number",
+        "min": 0,
+        "max": 10,
+        "editable": true,
+        "default": 0
+      },
+      "saveLoadSlots": {
+        "scope": "runtime",
+        "type": "array",
+        "editable": false,
+        "default": [
+          {
+            "text": "<",
+            "value": -1
+          },
+          {
+            "text": "A",
+            "value": 0,
+            "title": "Auto Save"
+          },
+          {
+            "text": "Q",
+            "value": 1,
+            "title": "Quick Save"
+          },
+          {
+            "text": "1",
+            "value": 2,
+            "title": "Page 1"
+          },
+          {
+            "text": "2",
+            "value": 3,
+            "title": "Page 2"
+          },
+          {
+            "text": "3",
+            "value": 4,
+            "title": "Page 3"
+          },
+          {
+            "text": "4",
+            "value": 5,
+            "title": "Page 4"
+          },
+          {
+            "text": "5",
+            "value": 6,
+            "title": "Page 5"
+          },
+          {
+            "text": "6",
+            "value": 7,
+            "title": "Page 6"
+          },
+          {
+            "text": "7",
+            "value": 8,
+            "title": "Page 8"
+          },
+          {
+            "text": "8",
+            "value": 9,
+            "title": "Page 9"
+          },
+          {
+            "text": "9",
+            "value": 10,
+            "title": "Page 10"
+          },
+          {
+            "text": "10",
+            "value": 11,
+            "title": "Page 11"
+          },
+          {
+            "text": ">",
+            "value": 12
+          }
+        ]
+      },
+      "hideExitMenuConfirmationModal": {
+        "scope": "runtime",
+        "type": "boolean",
+        "editable": true,
+        "default": true
+      },
+      "musicVolume": {
+        "scope": "device",
+        "type": "number",
+        "min": 0,
+        "max": 1,
+        "editable": true,
+        "default": 1
+      },
+      "soundVolume": {
+        "scope": "device",
+        "type": "number",
+        "min": 0,
+        "max": 1,
+        "editable": true,
+        "default": 1
+      },
+      "clickSoundVolume": {
+        "scope": "device",
+        "type": "number",
+        "min": 0,
+        "max": 1,
+        "editable": true,
+        "default": 1
+      },
+      "rollbackSide": {
+        "scope": "device",
+        "type": "enum",
+        "values": {
+          "left": "Left",
+          "right": "Right"
+        },
+        "editable": true,
+        "default": "left"
+      },
+      "skipTransitions": {
+        "scope": "device",
+        "type": "boolean",
+        "editable": true,
+        "default": false
+      },
+      "skipUnseenText": {
+        "scope": "device",
+        "type": "boolean",
+        "editable": true,
+        "default": false
+      },
+      "muteAll": {
+        "scope": "device",
+        "type": "boolean",
+        "editable": true,
+        "default": false
+      },
+      "language": {
+        "scope": "device",
+        "type": "enum",
+        "values": {
+          "en_default": "English"
+        },
+        "editable": true,
+        "default": "en_default"
+      },
+      "novelCompleted": {
+        "scope": "persistent",
+        "type": "boolean",
+        "editable": true,
+        "default": false
+      },
+      "saveData": {
+        "scope": "persistent",
+        "type": "array",
+        "editable": true,
+        "default": []
+      }
+    },
     "background": {
       "items": {
         "bg1": {
@@ -579,9 +652,8 @@
       "items": {
         "ani1": {
           "name": "Fade In",
-          "properties": [
-            {
-              "property": "alpha",
+          "properties": {
+            "alpha": {
               "initialValue": 0,
               "keyframes": [
                 {
@@ -591,13 +663,12 @@
                 }
               ]
             }
-          ]
+          }
         },
         "ani2": {
           "name": "Delayed Fade In",
-          "properties": [
-            {
-              "property": "alpha",
+          "properties": {
+            "alpha": {
               "initialValue": 0,
               "keyframes": [
                 {
@@ -612,13 +683,12 @@
                 }
               ]
             }
-          ]
+          }
         },
         "extraFadeIn": {
           "name": "Extra Fade In",
-          "properties": [
-            {
-              "property": "alpha",
+          "properties": {
+            "alpha": {
               "initialValue": 0,
               "keyframes": [
                 {
@@ -633,13 +703,12 @@
                 }
               ]
             }
-          ]
+          }
         },
         "ani3": {
           "name": "Long Delayed Fade In",
-          "properties": [
-            {
-              "property": "alpha",
+          "properties": {
+            "alpha": {
               "initialValue": 0,
               "keyframes": [
                 {
@@ -654,13 +723,12 @@
                 }
               ]
             }
-          ]
+          }
         },
         "ani4": {
           "name": "Fade Out",
-          "properties": [
-            {
-              "property": "alpha",
+          "properties": {
+            "alpha": {
               "initialValue": 1,
               "keyframes": [
                 {
@@ -670,13 +738,12 @@
                 }
               ]
             }
-          ]
+          }
         },
         "ani5": {
           "name": "Slide Left and Flip",
-          "properties": [
-            {
-              "property": "x",
+          "properties": {
+            "x": {
               "keyframes": [
                 {
                   "duration": 600,
@@ -686,8 +753,7 @@
                 }
               ]
             },
-            {
-              "property": "scale.x",
+            "scale.x": {
               "keyframes": [
                 {
                   "duration": 0,
@@ -696,13 +762,12 @@
                 }
               ]
             }
-          ]
+          }
         },
         "ani7": {
           "name": "Slide Right",
-          "properties": [
-            {
-              "property": "x",
+          "properties": {
+            "x": {
               "keyframes": [
                 {
                   "duration": 0,
@@ -718,8 +783,7 @@
                 }
               ]
             },
-            {
-              "property": "scale.x",
+            "scale.x": {
               "keyframes": [
                 {
                   "duration": 0,
@@ -728,13 +792,12 @@
                 }
               ]
             }
-          ]
+          }
         },
         "ani6": {
           "name": "Shake",
-          "properties": [
-            {
-              "property": "y",
+          "properties": {
+            "y": {
               "keyframes": [
                 {
                   "duration": 100,
@@ -756,13 +819,12 @@
                 }
               ]
             }
-          ]
+          }
         },
         "ani8": {
           "name": "Title splash",
-          "properties": [
-            {
-              "property": "alpha",
+          "properties": {
+            "alpha": {
               "initialValue": 0,
               "keyframes": [
                 {
@@ -782,13 +844,12 @@
                 }
               ]
             }
-          ]
+          }
         },
         "titleLogo": {
           "name": "Title Logo",
-          "properties": [
-            {
-              "property": "alpha",
+          "properties": {
+            "alpha": {
               "initialValue": 0,
               "keyframes": [
                 {
@@ -798,8 +859,7 @@
                 }
               ]
             },
-            {
-              "property": "y",
+            "y": {
               "keyframes": [
                 {
                   "duration": 0,
@@ -815,13 +875,12 @@
                 }
               ]
             }
-          ]
+          }
         },
         "titleBg": {
           "name": "Title Background",
-          "properties": [
-            {
-              "property": "alpha",
+          "properties": {
+            "alpha": {
               "initialValue": 0,
               "keyframes": [
                 {
@@ -836,13 +895,12 @@
                 }
               ]
             }
-          ]
+          }
         },
         "aniButtonFrame": {
           "name": "Button Frame",
-          "properties": [
-            {
-              "property": "alpha",
+          "properties": {
+            "alpha": {
               "initialValue": 0,
               "keyframes": [
                 {
@@ -857,13 +915,12 @@
                 }
               ]
             }
-          ]
+          }
         },
         "aniFadeInScreen": {
           "name": "Fade In Screen",
-          "properties": [
-            {
-              "property": "alpha",
+          "properties": {
+            "alpha": {
               "initialValue": 0,
               "keyframes": [
                 {
@@ -873,13 +930,12 @@
                 }
               ]
             }
-          ]
+          }
         },
         "aniFadeOutScreen": {
           "name": "Fade Out Screen",
-          "properties": [
-            {
-              "property": "alpha",
+          "properties": {
+            "alpha": {
               "initialValue": 1,
               "keyframes": [
                 {
@@ -889,7 +945,7 @@
                 }
               ]
             }
-          ]
+          }
         }
       }
     },
@@ -914,7 +970,7 @@
             },
             {
               "id": "about3-{{ runtimeState.currentPage }}",
-              "type": "anchor-layout-container",
+              "type": "container",
               "anchor": "CenterLeft",
               "direction": "vertical",
               "width": 200,
@@ -928,7 +984,7 @@
                   "eventPayload": {
                     "actions": {
                       "moveToSection": {
-                        "sectionId": "section2",
+                        "sectionId": "section20",
                         "mode": "read",
                         "presetId": "read",
                         "addToSection": true
@@ -1095,7 +1151,7 @@
             },
             {
               "id": "about3-{{ runtimeState.currentPage }}",
-              "type": "anchor-layout-container",
+              "type": "container",
               "anchor": "CenterLeft",
               "direction": "vertical",
               "width": 200,
@@ -1236,7 +1292,7 @@
             },
             {
               "id": "about3412x",
-              "type": "anchor-layout-container",
+              "type": "container",
               "anchor": "CenterLeft",
               "direction": "vertical",
               "width": 200,
@@ -1331,7 +1387,7 @@
                 },
                 {
                   "id": "ladfkj42dxi3",
-                  "type": "anchor-layout-container",
+                  "type": "container",
                   "anchor": "CenterCenter",
                   "direction": "horizontal",
                   "zIndex": 1002,
@@ -1402,7 +1458,7 @@
           "layout": [
             {
               "id": "mainMef32nuextra",
-              "type": "anchor-layout-container",
+              "type": "container",
               "anchor": "CenterLeft",
               "direction": "horizontal",
               "x": 60,
@@ -1452,9 +1508,8 @@
               "type": "keyframes",
               "elementId": "labi-0",
               "event": "add",
-              "animationProperties": [
-                {
-                  "property": "alpha",
+              "animationProperties": {
+                "alpha": {
                   "initialValue": 0,
                   "keyframes": [
                     {
@@ -1469,16 +1524,15 @@
                     }
                   ]
                 }
-              ]
+              }
             },
             {
               "id": "f34afeja1",
               "type": "keyframes",
               "elementId": "labi-1",
               "event": "add",
-              "animationProperties": [
-                {
-                  "property": "alpha",
+              "animationProperties": {
+                "alpha": {
                   "initialValue": 0,
                   "keyframes": [
                     {
@@ -1493,16 +1547,15 @@
                     }
                   ]
                 }
-              ]
+              }
             },
             {
               "id": "f34afeja2",
               "type": "keyframes",
               "elementId": "labi-2",
               "event": "add",
-              "animationProperties": [
-                {
-                  "property": "alpha",
+              "animationProperties": {
+                "alpha": {
                   "initialValue": 0,
                   "keyframes": [
                     {
@@ -1517,16 +1570,15 @@
                     }
                   ]
                 }
-              ]
+              }
             },
             {
               "id": "f34afeja3",
               "type": "keyframes",
               "elementId": "labi-3",
               "event": "add",
-              "animationProperties": [
-                {
-                  "property": "alpha",
+              "animationProperties": {
+                "alpha": {
                   "initialValue": 0,
                   "keyframes": [
                     {
@@ -1541,13 +1593,13 @@
                     }
                   ]
                 }
-              ]
+              }
             }
           ],
           "layout": [
             {
               "id": "mainMenu",
-              "type": "anchor-layout-container",
+              "type": "container",
               "anchor": "CenterCenter",
               "direction": "horizontal",
               "x": 640,
@@ -1661,7 +1713,7 @@
           "layout": [
             {
               "id": "skipMifeakjefkljenu",
-              "type": "anchor-layout-container",
+              "type": "container",
               "anchor": "TopLeft",
               "direction": "horizontal",
               "x": 0,
@@ -1701,15 +1753,13 @@
               "id": "menuTabs",
               "type": "container",
               "selectedTabId": "{{ runtimeState.currentPage }}",
-              "animationKey": "{{ runtimeState.currentPage }}",
-              "animated": true,
               "animation": {
+                "key": "{{ runtimeState.currentPage }}",
                 "out": {
                   "type": "keyframes",
                   "event": "remove",
-                  "animationProperties": [
-                    {
-                      "property": "alpha",
+                  "animationProperties": {
+                    "alpha": {
                       "initialValue": 0.8,
                       "keyframes": [
                         {
@@ -1719,14 +1769,13 @@
                         }
                       ]
                     }
-                  ]
+                  }
                 },
                 "in": {
                   "type": "keyframes",
                   "event": "add",
-                  "animationProperties": [
-                    {
-                      "property": "alpha",
+                  "animationProperties": {
+                    "alpha": {
                       "initialValue": 0.2,
                       "keyframes": [
                         {
@@ -1736,7 +1785,7 @@
                         }
                       ]
                     }
-                  ]
+                  }
                 }
               },
               "children": [
@@ -1768,7 +1817,7 @@
                         },
                         {
                           "id": "about32fs2-{{ deviceState.rollbackSide }}",
-                          "type": "anchor-layout-container",
+                          "type": "container",
                           "anchor": "TopLeft",
                           "direction": "vertical",
                           "x": 360,
@@ -1794,7 +1843,7 @@
                             },
                             {
                               "id": "df3kk323",
-                              "type": "anchor-layout-container",
+                              "type": "container",
                               "anchor": "TopLeft",
                               "direction": "vertical",
                               "gap": 12,
@@ -1891,7 +1940,7 @@
                         },
                         {
                           "id": "about325fs2-{{ deviceState.skipUnseenText }}-{{ deviceState.skipTransitions }}",
-                          "type": "anchor-layout-container",
+                          "type": "container",
                           "anchor": "TopLeft",
                           "direction": "vertical",
                           "x": 660,
@@ -1917,7 +1966,7 @@
                             },
                             {
                               "id": "df3kgeawdf3erk3",
-                              "type": "anchor-layout-container",
+                              "type": "container",
                               "anchor": "TopLeft",
                               "direction": "vertical",
                               "gap": 12,
@@ -2025,7 +2074,7 @@
                         },
                         {
                           "id": "about32e2fcss232-{{ deviceState.textSpeed }}",
-                          "type": "anchor-layout-container",
+                          "type": "container",
                           "anchor": "TopLeft",
                           "direction": "vertical",
                           "x": 360,
@@ -2071,7 +2120,7 @@
                         },
                         {
                           "id": "about32e2fsfes232-{{ deviceState.autoForwardTime }}",
-                          "type": "anchor-layout-container",
+                          "type": "container",
                           "anchor": "TopLeft",
                           "direction": "vertical",
                           "x": 360,
@@ -2117,7 +2166,7 @@
                         },
                         {
                           "id": "about32e2fs2-{{ deviceState.musicVolume }}",
-                          "type": "anchor-layout-container",
+                          "type": "container",
                           "anchor": "TopLeft",
                           "direction": "vertical",
                           "x": 860,
@@ -2163,7 +2212,7 @@
                         },
                         {
                           "id": "about32e422af23wefs2-{{ deviceState.soundVolume }}",
-                          "type": "anchor-layout-container",
+                          "type": "container",
                           "anchor": "TopLeft",
                           "direction": "vertical",
                           "x": 860,
@@ -2209,7 +2258,7 @@
                         },
                         {
                           "id": "ladfwkj3d3",
-                          "type": "anchor-layout-container",
+                          "type": "container",
                           "children": [],
                           "x": 860,
                           "y": 640,
@@ -2307,7 +2356,7 @@
                         },
                         {
                           "id": "aboutf341d2x",
-                          "type": "anchor-layout-container",
+                          "type": "container",
                           "anchor": "CenterLeft",
                           "direction": "vertical",
                           "width": 300,
@@ -2380,7 +2429,7 @@
                         },
                         {
                           "id": "about32fs2-{{ runtimeState.currentSavePageNumber }}",
-                          "type": "anchor-layout-container",
+                          "type": "container",
                           "anchor": "TopLeft",
                           "direction": "vertical",
                           "x": 640,
@@ -2407,7 +2456,7 @@
                         },
                         {
                           "id": "abosut32fs2-{{ runtimeState.currentSavePageNumber }}",
-                          "type": "anchor-layout-container",
+                          "type": "container",
                           "anchor": "TopLeft",
                           "direction": "horizontal",
                           "gap": 50,
@@ -2415,7 +2464,7 @@
                           "y": 200,
                           "width": 780,
                           "height": 1000,
-                          "ata": "{{ persistentState.saveData | saveDataFilter }}",
+                          "data": "{{ persistentState.saveData | saveDataFilter }}",
                           "template": {
                             "mapping": {
                               "cases": [
@@ -2506,7 +2555,7 @@
                         },
                         {
                           "id": "cmi2x3x23233-{{ runtimeState.currentSavePageNumber }}",
-                          "type": "anchor-layout-container",
+                          "type": "container",
                           "anchor": "CenterCenter",
                           "direction": "horizontal",
                           "x": 800,
@@ -2673,7 +2722,7 @@
                     },
                     {
                       "id": "about32fs2",
-                      "type": "anchor-layout-container",
+                      "type": "container",
                       "anchor": "TopLeft",
                       "direction": "vertical",
                       "x": 360,
@@ -2789,7 +2838,7 @@
                   "children": [
                     {
                       "id": "about312312",
-                      "type": "anchor-layout-container",
+                      "type": "container",
                       "anchor": "TopLeft",
                       "direction": "vertical",
                       "width": 200,
@@ -2843,7 +2892,7 @@
                     },
                     {
                       "id": "about312312",
-                      "type": "anchor-layout-container",
+                      "type": "container",
                       "anchor": "TopLeft",
                       "direction": "horizontal",
                       "gap": 20,
@@ -2941,7 +2990,7 @@
                   "children": [
                     {
                       "id": "abos3ut3123312",
-                      "type": "anchor-layout-container",
+                      "type": "container",
                       "anchor": "TopLeft",
                       "direction": "vertical",
                       "width": 200,
@@ -2968,7 +3017,7 @@
                     },
                     {
                       "id": "history",
-                      "type": "anchor-layout-container",
+                      "type": "container",
                       "scrollable": true,
                       "anchor": "TopLeft",
                       "direction": "vertical",
@@ -2987,7 +3036,7 @@
                           {
                             "template": "default",
                             "id": "ladfkj33d",
-                            "type": "anchor-layout-container",
+                            "type": "container",
                             "anchor": "TopLeft",
                             "direction": "horizontal",
                             "gap": 40,
@@ -3053,7 +3102,7 @@
                   "children": [
                     {
                       "id": "abos3ut3123312",
-                      "type": "anchor-layout-container",
+                      "type": "container",
                       "anchor": "TopLeft",
                       "direction": "vertical",
                       "width": 200,
@@ -3080,7 +3129,7 @@
                     },
                     {
                       "id": "abouft32fs2",
-                      "type": "anchor-layout-container",
+                      "type": "container",
                       "anchor": "TopLeft",
                       "direction": "vertical",
                       "x": 640,
@@ -3107,7 +3156,7 @@
                     },
                     {
                       "id": "abosute32fs2-{{ runtimeState.currentSavePageNumber }}",
-                      "type": "anchor-layout-container",
+                      "type": "container",
                       "anchor": "TopLeft",
                       "direction": "horizontal",
                       "gap": 50,
@@ -3246,7 +3295,7 @@
                     },
                     {
                       "id": "cmi2x3x23233-{{ runtimeState.currentSavePageNumber }}",
-                      "type": "anchor-layout-container",
+                      "type": "container",
                       "anchor": "CenterCenter",
                       "direction": "horizontal",
                       "x": 800,
@@ -3327,7 +3376,6 @@
                 {
                   "id": "overlayConfirm3d",
                   "type": "container",
-                  "anchor": "TopLeft",
                   "zIndex": 2005,
                   "x": 0,
                   "y": 0,
@@ -3374,7 +3422,7 @@
                     },
                     {
                       "id": "ladfkj42dxi3",
-                      "type": "anchor-layout-container",
+                      "type": "container",
                       "anchor": "CenterCenter",
                       "direction": "horizontal",
                       "zIndex": 1002,
@@ -3455,49 +3503,34 @@
           "name": "Dialogue Box 1",
           "layout": [
             {
-              "id": "asxxdf3f",
-              "type": "anchor-layout-container",
-              "anchor": "BottomLeft",
-              "direction": "horizontal",
+              "id": "askldjfetitle",
+              "type": "sprite",
+              "xa": 0,
+              "ya": 1,
               "x": 0,
               "y": 720,
-              "children": [
-                {
-                  "id": "title",
-                  "type": "sprite",
-                  "url": "/public/first-contract/gui/textbox.png",
-                  "direction": "horizontal"
-                }
-              ]
+              "url": "/public/first-contract/gui/textbox.png"
             },
             {
-              "id": "aweff3g",
-              "type": "anchor-layout-container",
-              "anchor": "TopLeft",
-              "direction": "horizontal",
+              "id": "name",
+              "type": "text",
               "x": 220,
               "y": 530,
-              "children": [
-                {
-                  "id": "name",
-                  "type": "text",
-                  "width": 43,
-                  "height": 48,
-                  "text": "{{ character.name }}",
-                  "style": {
-                    "fill": "{{ character.variables.mainColor }}",
-                    "fontSize": 40,
-                    "fontFamily": "NomnomNami2",
-                    "wordWrapWidth": 1740,
-                    "strokeColor": "black",
-                    "strokeWidth": 6
-                  }
-                }
-              ]
+              "width": 43,
+              "height": 48,
+              "text": "{{ character.name }}",
+              "style": {
+                "fill": "{{ character.variables.mainColor }}",
+                "fontSize": 40,
+                "fontFamily": "NomnomNami2",
+                "wordWrapWidth": 1740,
+                "strokeColor": "black",
+                "strokeWidth": 6
+              }
             },
             {
               "id": "awefgsgf3",
-              "type": "anchor-layout-container",
+              "type": "container",
               "anchor": "TopLeft",
               "direction": "horizontal",
               "x": 240,
@@ -3523,7 +3556,7 @@
             },
             {
               "id": "dife3i33kd",
-              "type": "anchor-layout-container",
+              "type": "container",
               "anchor": "TopLeft",
               "direction": "horizontal",
               "gap": 20,
@@ -3691,7 +3724,7 @@
           "layout": [
             {
               "id": "as323f3dfa3a3",
-              "type": "anchor-layout-container",
+              "type": "container",
               "anchor": "CenterCenter",
               "direction": "horizontal",
               "x": 640,
@@ -3720,24 +3753,17 @@
           "name": "Dialogue Box 3",
           "layout": [
             {
-              "id": "asdf3df",
-              "type": "anchor-layout-container",
-              "anchor": "BottomLeft",
-              "direction": "horizontal",
+              "id": "title",
+              "type": "sprite",
               "x": 0,
               "y": 720,
-              "children": [
-                {
-                  "id": "title",
-                  "type": "sprite",
-                  "url": "/public/first-contract/gui/nvl.png",
-                  "direction": "horizontal"
-                }
-              ]
+              "xa": 0,
+              "ya": 1,
+              "url": "/public/first-contract/gui/nvl.png"
             },
             {
               "id": "f34af3afeja",
-              "type": "anchor-layout-container",
+              "type": "container",
               "anchor": "TopLeft",
               "direction": "horizontal",
               "x": 700,
@@ -3759,9 +3785,8 @@
               ]
             },
             {
-              "id": "f3asd4afeja231",
-              "type": "anchor-layout-container",
-              "incremental": true,
+              "id": "f3asd4afeja231{{ stepId }}",
+              "type": "container",
               "anchor": "TopLeft",
               "direction": "vertical",
               "gap": 20,
@@ -3769,70 +3794,90 @@
               "y": 120,
               "height": 500,
               "width": 1200,
-              "childItems": [
-                {
-                  "id": "left",
-                  "type": "anchor-layout-container",
-                  "x": 0,
-                  "width": 550,
-                  "radius": 8,
-                  "anchor": "TopLeft",
-                  "direction": "horizontal",
-                  "fill": {
-                    "color": "#ff74b2"
-                  },
-                  "children": [
+              "data": "{{ state.dialogue.texts }}",
+              "template": {
+                "mapping": {
+                  "cases": [
                     {
-                      "id": "lefte2",
-                      "type": "text",
-                      "fill": {
-                        "color": "#ff74b2"
+                      "case": {
+                        "property": "template",
+                        "op": "eq",
+                        "value": "right"
                       },
-                      "text": "{{ dialogue.text }}",
-                      "x": 10,
-                      "style": {
-                        "fill": "white",
-                        "fontSize": 34,
-                        "fontFamily": "NomnomNami2",
-                        "wordWrapWidth": 530,
-                        "strokeColor": "black",
-                        "strokeWidth": 6,
-                        "align": "left"
-                      }
+                      "then": "right"
                     }
-                  ]
+                  ],
+                  "default": "left"
                 },
-                {
-                  "id": "right",
-                  "type": "anchor-layout-container",
-                  "x": 600,
-                  "width": 550,
-                  "radius": 8,
-                  "anchor": "TopRight",
-                  "direction": "horizontal",
-                  "fill": {
-                    "color": "#cc005b"
-                  },
-                  "children": [
-                    {
-                      "id": "title14123",
-                      "width": 580,
-                      "type": "text",
-                      "text": "{{ dialogue.text }}",
-                      "x": -10,
-                      "style": {
-                        "fill": "#cccccc",
-                        "fontSize": 34,
-                        "fontFamily": "NomnomNami2",
-                        "wordWrapWidth": 530,
-                        "strokeColor": "black",
-                        "strokeWidth": 6,
-                        "align": "right"
+                "items": [
+                  {
+                    "template": "left",
+                    "type": "container",
+                    "x": 0,
+                    "width": 550,
+                    "radius": 8,
+                    "anchor": "TopLeft",
+                    "direction": "horizontal",
+                    "height": 100,
+                    "fill": {
+                      "color": "#ff74b2"
+                    },
+                    "children": [
+                      {
+                        "id": "lefte2",
+                        "type": "text",
+                        "fill": {
+                          "color": "#ff74b2"
+                        },
+                        "text": "{{ text }}",
+                        "x": 10,
+                        "height": 100,
+                        "style": {
+                          "fill": "white",
+                          "fontSize": 34,
+                          "fontFamily": "NomnomNami2",
+                          "wordWrapWidth": 530,
+                          "strokeColor": "black",
+                          "strokeWidth": 6,
+                          "align": "left"
+                        }
                       }
-                    }
-                  ]
-                }
-              ],
+                    ]
+                  },
+                  {
+                    "template": "right",
+                    "type": "container",
+                    "x": 600,
+                    "width": 550,
+                    "radius": 8,
+                    "anchor": "TopRight",
+                    "direction": "horizontal",
+                    "height": 100,
+                    "fill": {
+                      "color": "#cc005b"
+                    },
+                    "children": [
+                      {
+                        "id": "title14123",
+                        "width": 580,
+                        "type": "text",
+                        "text": "{{ text }}",
+                        "height": 100,
+                        "x": -10,
+                        "style": {
+                          "fill": "#cccccc",
+                          "fontSize": 34,
+                          "fontFamily": "NomnomNami2",
+                          "wordWrapWidth": 530,
+                          "strokeColor": "black",
+                          "strokeWidth": 6,
+                          "align": "right"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
               "children": []
             }
           ]
@@ -3893,9 +3938,20 @@
     }
   },
   "story": {
+    "scenes": {
+      "scene1": {
+        "sections": [
+          {
+            "id": "section1"
+          },
+          {
+            "id": "section2"
+          }
+        ]
+      }
+    },
     "sections": {
       "section1": {
-        "id": "section2",
         "steps": [
           {
             "id": "step0",
@@ -8316,7 +8372,7 @@
               "dialogue": {
                 "incremental": true,
                 "dialogueBoxId": "dialogueBox3",
-                "childItemId": "right",
+                "template": "right",
                 "text": "New contract has a time obligation, be back tomorrow"
               },
               "setPersistentState": {
@@ -8329,7 +8385,7 @@
             "actions": {
               "dialogue": {
                 "incremental": true,
-                "childItemId": "left",
+                "template": "left",
                 "text": "OK, no lasagna for you tonight"
               }
             }
@@ -8338,7 +8394,7 @@
             "id": "step2",
             "actions": {
               "dialogue": {
-                "childItemId": "right",
+                "template": "right",
                 "incremental": true,
                 "text": "I'll have the left overs"
               }
@@ -8348,7 +8404,7 @@
             "id": "step3",
             "actions": {
               "dialogue": {
-                "childItemId": "left",
+                "template": "left",
                 "incremental": true,
                 "text": "Not if I eat it all"
               }
@@ -8358,7 +8414,7 @@
             "id": "step53",
             "actions": {
               "dialogue": {
-                "childItemId": "right",
+                "template": "right",
                 "incremental": true,
                 "text": "BROTHER..."
               }
@@ -8368,7 +8424,7 @@
             "id": "step54",
             "actions": {
               "dialogue": {
-                "childItemId": "right",
+                "template": "right",
                 "incremental": true,
                 "text": "You are truly a demon among demons. If only I could learn from your evil ways."
               }
@@ -8378,7 +8434,7 @@
             "id": "step55",
             "actions": {
               "dialogue": {
-                "childItemId": "left",
+                "template": "left",
                 "incremental": true,
                 "text": "Such praise. I'll leave you my scraps out of mercy"
               }
@@ -8388,7 +8444,7 @@
             "id": "step56",
             "actions": {
               "dialogue": {
-                "childItemId": "right",
+                "template": "right",
                 "incremental": true,
                 "text": "Wow, I'm grateful"
               }
@@ -8414,6 +8470,9 @@
       "compatibility": "...",
       "language": "en",
       "keys": {
+        "r_bg": {
+          "fkjeawlkj31": "bg1"
+        },
         "s1": {
           "a1": "sss ...The book you asked for.",
           "a2": "sss EEEEEEE show me, show me!"

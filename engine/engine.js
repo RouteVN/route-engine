@@ -4,6 +4,18 @@ import StepPointer from "./StepPointer.js";
 import SeenSections from "./SeenSections.js";
 import History from "./History.js";
 
+const extractDefaultValues = (variables, scope) => {
+  return Object.entries(variables)
+  .filter(([key, value]) => {
+    return value.scope === scope;
+  })
+  .reduce((acc, next) => {
+    const [key, value] = next;
+    acc[key] = value.default;
+    return acc;
+  }, {});
+}
+
 /**
  * The rvn engine.
  * We want to bring out the best of Visual Novels
@@ -140,42 +152,13 @@ class RvnEngine {
     this._mode = this._initial.mode;
     this._selectedPresetId = this._initial.presetId;
 
-    this._runtimeState = Object.entries(this._resources.variables)
-      .filter(([key, value]) => {
-        return value.scope === "runtime";
-      })
-      .reduce((acc, next) => {
-        const [key, value] = next;
-        acc[key] = value.default;
-        return acc;
-      }, {});
-    
-    const intialDeviceState = Object.entries(this._resources.variables)
-    .filter(([key, value]) => {
-      return value.scope === "device";
-    })
-    .reduce((acc, next) => {
-      const [key, value] = next;
-      acc[key] = value.default;
-      return acc;
-    }, {});
-
-    const intialPersistentState = Object.entries(this._resources.variables)
-    .filter(([key, value]) => {
-      return value.scope === "persistent";
-    })
-    .reduce((acc, next) => {
-      const [key, value] = next;
-      acc[key] = value.default;
-      return acc;
-    }, {});
-
+    this._runtimeState = extractDefaultValues(this._resources.variables, "runtime");
     this._deviceState = {
-      ...intialDeviceState,
+      ...extractDefaultValues(this._resources.variables, "device"),
       ...this.deviceStateInterface.getAll(),
     };
     this._persistentState = {
-      ...intialPersistentState,
+      ...extractDefaultValues(this._resources.variables, "persistent"),
       ...this.persistentStateInterface.getAll(),
     };
 

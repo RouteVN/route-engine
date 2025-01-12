@@ -79,7 +79,7 @@ export const applyState = (state, step) => {
         state.dialogue.texts = [];
       }
       state.dialogue.texts.push({
-        childItemId: step.actions.dialogue.childItemId,
+        template: step.actions.dialogue.template,
         text: step.actions.dialogue.text,
       });
     }
