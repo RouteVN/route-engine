@@ -69,7 +69,8 @@
         "default": [
           {
             "text": "<",
-            "value": -1
+            "value": -1,
+            "disabledValue": 0
           },
           {
             "text": "A",
@@ -133,7 +134,8 @@
           },
           {
             "text": ">",
-            "value": 12
+            "value": 12,
+            "disabledValue": 11
           }
         ]
       },
@@ -984,7 +986,7 @@
                   "eventPayload": {
                     "actions": {
                       "moveToSection": {
-                        "sectionId": "section20",
+                        "sectionId": "sectionc1",
                         "mode": "read",
                         "presetId": "read",
                         "addToSection": true
@@ -1053,7 +1055,7 @@
                     "text": "{{ text }}",
                     "eventName": "Actions",
                     "eventPayload": "{{ eventPayload }}",
-                    "type": "text-interactive",
+                    "type": "text",
                     "width": 120,
                     "height": 40,
                     "style": {
@@ -1080,7 +1082,7 @@
                     "id": "c94k2ladfkj3",
                     "text": "{{ text }}",
                     "eventName": "{{ eventName }}",
-                    "type": "text-interactive",
+                    "type": "text",
                     "width": 120,
                     "height": 40,
                     "style": {
@@ -1097,7 +1099,7 @@
             },
             {
               "id": "ladf421k4dd2j3",
-              "type": "text-interactive",
+              "type": "text",
               "x": 20,
               "y": 640,
               "width": 120,
@@ -1250,7 +1252,7 @@
                     "text": "{{ text }}",
                     "eventName": "Actions",
                     "eventPayload": "{{ eventPayload }}",
-                    "type": "text-interactive",
+                    "type": "text",
                     "width": 120,
                     "height": 40,
                     "style": {
@@ -1275,7 +1277,7 @@
                     "id": "cdk3ladfkj3",
                     "text": "{{ text }}",
                     "eventName": "{{ eventName }}",
-                    "type": "text-interactive",
+                    "type": "text",
                     "width": 120,
                     "height": 40,
                     "style": {
@@ -1302,7 +1304,7 @@
               "children": [
                 {
                   "id": "ladf421k4dd2j3",
-                  "type": "text-interactive",
+                  "type": "text",
                   "width": 120,
                   "height": 40,
                   "text": "Return",
@@ -1397,7 +1399,7 @@
                   "children": [
                     {
                       "id": "ladfkj42dxi3",
-                      "type": "text-interactive",
+                      "type": "text",
                       "text": "Yes",
                       "zIndex": 1005,
                       "eventName": "Actions",
@@ -1426,7 +1428,7 @@
                     },
                     {
                       "id": "ladfkj42dxi3",
-                      "type": "text-interactive",
+                      "type": "text",
                       "text": "No",
                       "zIndex": 1005,
                       "eventName": "Actions",
@@ -1467,7 +1469,7 @@
                 {
                   "id": "90fkl34ladfkj3",
                   "text": "Extra features: Bonus gallery unlocked",
-                  "type": "text-interactive",
+                  "type": "text",
                   "eventName": "Actions",
                   "eventPayload": {
                     "actions": {
@@ -1614,7 +1616,7 @@
                         "currentPage": "start"
                       },
                       "moveToSection": {
-                        "sectionId": "section2",
+                        "sectionId": "sectionc1",
                         "presetId": "read",
                         "mode": "read",
                         "addToSection": true
@@ -1684,7 +1686,7 @@
                     "text": "{{ text }}",
                     "eventName": "Actions",
                     "eventPayload": "{{ eventPayload }}",
-                    "type": "text-interactive",
+                    "type": "text",
                     "style": {
                       "fill": "#ccc",
                       "fontSize": 40,
@@ -1750,7 +1752,7 @@
         "menuTabs": {
           "layout": [
             {
-              "id": "menuTabs",
+              "id": "menuTabs-{{ persistentState.saveData | hashFilter }}",
               "type": "container",
               "selectedTabId": "{{ runtimeState.currentPage }}",
               "animation": {
@@ -1803,7 +1805,7 @@
                           "text": "Options",
                           "x": 20,
                           "y": 20,
-                          "type": "text-interactive",
+                          "type": "text",
                           "width": 120,
                           "height": 40,
                           "style": {
@@ -1881,7 +1883,7 @@
                                   {
                                     "template": "default",
                                     "id": "ladfkf1d22j3-{{ value }}",
-                                    "type": "text-interactive",
+                                    "type": "text",
                                     "text": "{{ text }}",
                                     "x": 28,
                                     "eventName": "Actions",
@@ -2018,7 +2020,7 @@
                                   {
                                     "template": "default",
                                     "id": "ladfkf1jc3d-{{ value }}",
-                                    "type": "text-interactive",
+                                    "type": "text",
                                     "text": "{{ text }}",
                                     "x": 28,
                                     "eventName": "Actions",
@@ -2051,7 +2053,7 @@
                                       },
                                       {
                                         "id": "df3kgxeawdf3erk3-{{ value }}",
-                                        "type": "text-interactive",
+                                        "type": "text",
                                         "eventName": "Actions",
                                         "eventPayload": "{{ eventPayload }}",
                                         "x": 28,
@@ -2286,7 +2288,7 @@
                                 "template": "default",
                                 "id": "ladfkj3",
                                 "text": "Mute All",
-                                "type": "text-interactive",
+                                "type": "text",
                                 "x": 28,
                                 "eventName": "Actions",
                                 "eventPayload": {
@@ -2328,7 +2330,7 @@
                                   {
                                     "id": "ladfkj3",
                                     "text": "Mute All",
-                                    "type": "text-interactive",
+                                    "type": "text",
                                     "x": 28,
                                     "eventName": "Actions",
                                     "eventPayload": {
@@ -2366,7 +2368,7 @@
                           "children": [
                             {
                               "id": "ladf421k4dd2j3",
-                              "type": "text-interactive",
+                              "type": "text",
                               "width": 120,
                               "height": 40,
                               "text": "Language...",
@@ -2415,7 +2417,7 @@
                           "text": "Load",
                           "x": 20,
                           "y": 20,
-                          "type": "text-interactive",
+                          "type": "text",
                           "width": 120,
                           "height": 40,
                           "style": {
@@ -2460,6 +2462,7 @@
                           "anchor": "TopLeft",
                           "direction": "horizontal",
                           "gap": 50,
+                          "gridItemNumber": 3,
                           "x": 360,
                           "y": 200,
                           "width": 780,
@@ -2489,7 +2492,7 @@
                                 "children": [
                                   {
                                     "id": "ladseefkj3",
-                                    "type": "sprite-interactive",
+                                    "type": "sprite",
                                     "url": "/public/first-contract/gui/button/slot_idle_background.png",
                                     "hoverUrl": "/public/first-contract/gui/button/slot_hover_background.png",
                                     "width": 280,
@@ -2514,7 +2517,7 @@
                                   },
                                   {
                                     "id": "kekjx3f322",
-                                    "type": "text-interactive",
+                                    "type": "text",
                                     "text": "10/10/2024 10:10:10",
                                     "x": 150,
                                     "y": 160,
@@ -2569,6 +2572,42 @@
                               "cases": [
                                 {
                                   "case": {
+                                    "op": "and",
+                                    "value": [
+                                      {
+                                        "property": "value",
+                                        "op": "eq",
+                                        "value": -1
+                                      },
+                                      {
+                                        "property": "disabledValue",
+                                        "op": "eq",
+                                        "value": "{{ runtimeState.currentSavePageNumber }}"
+                                      }
+                                    ]
+                                  },
+                                  "then": "prev_disabled"
+                                },
+                                {
+                                  "case": {
+                                    "op": "and",
+                                    "value": [
+                                      {
+                                        "property": "value",
+                                        "op": "eq",
+                                        "value": 12
+                                      },
+                                      {
+                                        "property": "disabledValue",
+                                        "op": "eq",
+                                        "value": "{{ runtimeState.currentSavePageNumber }}"
+                                      }
+                                    ]
+                                  },
+                                  "then": "prev_disabled"
+                                },
+                                {
+                                  "case": {
                                     "property": "value",
                                     "op": "eq",
                                     "value": -1
@@ -2596,8 +2635,19 @@
                             },
                             "items": [
                               {
+                                "template": "prev_disabled",
+                                "type": "text",
+                                "text": "{{ text }}",
+                                "style": {
+                                  "fill": "#aaa",
+                                  "fontSize": 32,
+                                  "fontFamily": "NomnomNami2",
+                                  "wordWrapWidth": 100
+                                }
+                              },
+                              {
                                 "template": "prev",
-                                "type": "text-interactive",
+                                "type": "text",
                                 "text": "{{ text }}",
                                 "style": {
                                   "fill": "white",
@@ -2625,8 +2675,19 @@
                                 }
                               },
                               {
+                                "template": "next_disabled",
+                                "type": "text",
+                                "text": "{{ text }}",
+                                "style": {
+                                  "fill": "#aaa",
+                                  "fontSize": 32,
+                                  "fontFamily": "NomnomNami2",
+                                  "wordWrapWidth": 100
+                                }
+                              },
+                              {
                                 "template": "next",
-                                "type": "text-interactive",
+                                "type": "text",
                                 "text": "{{ text }}",
                                 "style": {
                                   "fill": "white",
@@ -2666,7 +2727,7 @@
                               },
                               {
                                 "template": "default",
-                                "type": "text-interactive",
+                                "type": "text",
                                 "text": "{{ text }}",
                                 "eventName": "Actions",
                                 "eventPayload": {
@@ -2832,7 +2893,7 @@
                   ]
                 },
                 {
-                  "id": "cong2tao323421piawefkj",
+                  "id": "cong2tao323421piawefkj-{{ deviceState.language }}",
                   "tabId": "language",
                   "type": "container",
                   "children": [
@@ -2849,7 +2910,7 @@
                         {
                           "id": "ladfkj3",
                           "text": "Language",
-                          "type": "text-interactive",
+                          "type": "text",
                           "width": 120,
                           "height": 40,
                           "style": {
@@ -2866,7 +2927,7 @@
                     {
                       "id": "ladfbackkj3",
                       "text": "Back",
-                      "type": "text-interactive",
+                      "type": "text",
                       "x": 980,
                       "y": 30,
                       "eventName": "Actions",
@@ -2943,7 +3004,7 @@
                             "template": "default",
                             "id": "ladfkj3",
                             "text": "{{ text }}",
-                            "type": "text-interactive",
+                            "type": "text",
                             "eventName": "Actions",
                             "eventPayload": {
                               "actions": {
@@ -2969,7 +3030,7 @@
                             "template": "selected",
                             "id": "ladfkj3233",
                             "text": "{{ text }}",
-                            "type": "text-interactive",
+                            "type": "text",
                             "style": {
                               "fill": "white",
                               "fontSize": 40,
@@ -3001,7 +3062,7 @@
                         {
                           "id": "laedfkj3x3",
                           "text": "History",
-                          "type": "text-interactive",
+                          "type": "text",
                           "width": 120,
                           "height": 40,
                           "style": {
@@ -3045,7 +3106,7 @@
                               {
                                 "id": "23kf323c",
                                 "text": "{{ characterName }}",
-                                "type": "text-interactive",
+                                "type": "text",
                                 "height": 100,
                                 "style": {
                                   "fill": "#ccc",
@@ -3078,7 +3139,7 @@
                               {
                                 "id": "23kffeww323c",
                                 "text": "{{ content }}",
-                                "type": "text-interactive",
+                                "type": "text",
                                 "style": {
                                   "fill": "white",
                                   "fontSize": 40,
@@ -3096,7 +3157,7 @@
                   ]
                 },
                 {
-                  "id": "feafkl23423",
+                  "id": "feafkl23423-{{ persistentState.saveData | hashFilter }}",
                   "tabId": "save",
                   "type": "container",
                   "children": [
@@ -3113,7 +3174,7 @@
                         {
                           "id": "laedfkj3x3",
                           "text": "Save",
-                          "type": "text-interactive",
+                          "type": "text",
                           "width": 120,
                           "height": 40,
                           "style": {
@@ -3155,11 +3216,12 @@
                       ]
                     },
                     {
-                      "id": "abosute32fs2-{{ runtimeState.currentSavePageNumber }}",
+                      "id": "abosute32fs2-{{ runtimeState.currentSavePageNumber }}-{{ persistentState.saveData | hashFilter }}",
                       "type": "container",
                       "anchor": "TopLeft",
                       "direction": "horizontal",
                       "gap": 50,
+                      "gridItemNumber": 3,
                       "x": 360,
                       "y": 200,
                       "width": 780,
@@ -3180,6 +3242,7 @@
                         },
                         "items": [
                           {
+                            "id": "slot-{{ index }}-{{ persistentState.saveData | hashFilter }}",
                             "template": "slot",
                             "type": "container",
                             "width": 240,
@@ -3188,14 +3251,14 @@
                             "children": [
                               {
                                 "id": "ladsfkj3",
-                                "type": "sprite-interactive",
+                                "type": "sprite",
                                 "url": "/public/first-contract/gui/button/slot_idle_background.png",
                                 "hoverUrl": "/public/first-contract/gui/button/slot_hover_background.png",
                                 "width": 280,
                                 "height": 200
                               },
                               {
-                                "id": "cjk3ladfkj3",
+                                "id": "cjk3ladfkaej3-{{ persistentState.saveData | hashFilter }}",
                                 "x": 10,
                                 "y": 8,
                                 "type": "sprite",
@@ -3213,7 +3276,7 @@
                               },
                               {
                                 "id": "kekjx3def322",
-                                "type": "text-interactive",
+                                "type": "text",
                                 "text": "10/10/2024 10:10:10",
                                 "x": 150,
                                 "y": 160,
@@ -3243,7 +3306,7 @@
                             "children": [
                               {
                                 "id": "ladsfkj3",
-                                "type": "sprite-interactive",
+                                "type": "sprite",
                                 "url": "/public/first-contract/gui/button/slot_idle_background.png",
                                 "hoverUrl": "/public/first-contract/gui/button/slot_hover_background.png",
                                 "eventName": "Actions",
@@ -3259,7 +3322,7 @@
                               },
                               {
                                 "id": "kekj3f2",
-                                "type": "text-interactive",
+                                "type": "text",
                                 "text": "Empty Slot",
                                 "eventName": "Actions",
                                 "eventPayload": {
@@ -3309,6 +3372,58 @@
                           "cases": [
                             {
                               "case": {
+                                "op": "and",
+                                "value": [
+                                  {
+                                    "property": "value",
+                                    "op": "eq",
+                                    "value": -1
+                                  },
+                                  {
+                                    "property": "disabledValue",
+                                    "op": "eq",
+                                    "value": "{{ runtimeState.currentSavePageNumber }}"
+                                  }
+                                ]
+                              },
+                              "then": "prev_disabled"
+                            },
+                            {
+                              "case": {
+                                "op": "and",
+                                "value": [
+                                  {
+                                    "property": "value",
+                                    "op": "eq",
+                                    "value": 12
+                                  },
+                                  {
+                                    "property": "disabledValue",
+                                    "op": "eq",
+                                    "value": "{{ runtimeState.currentSavePageNumber }}"
+                                  }
+                                ]
+                              },
+                              "then": "prev_disabled"
+                            },
+                            {
+                              "case": {
+                                "property": "value",
+                                "op": "eq",
+                                "value": -1
+                              },
+                              "then": "prev"
+                            },
+                            {
+                              "case": {
+                                "property": "value",
+                                "op": "eq",
+                                "value": 12
+                              },
+                              "then": "next"
+                            },
+                            {
+                              "case": {
                                 "property": "value",
                                 "op": "eq",
                                 "value": "{{ runtimeState.currentSavePageNumber }}"
@@ -3319,6 +3434,86 @@
                           "default": "default"
                         },
                         "items": [
+                          {
+                            "template": "prev_disabled",
+                            "type": "text",
+                            "text": "{{ text }}",
+                            "style": {
+                              "fill": "#aaa",
+                              "fontSize": 32,
+                              "fontFamily": "NomnomNami2",
+                              "wordWrapWidth": 100
+                            }
+                          },
+                          {
+                            "template": "prev",
+                            "type": "text",
+                            "text": "{{ text }}",
+                            "style": {
+                              "fill": "white",
+                              "fontSize": 32,
+                              "fontFamily": "NomnomNami2",
+                              "wordWrapWidth": 100
+                            },
+                            "hoverStyle": {
+                              "fill": "yellow",
+                              "fontSize": 32,
+                              "fontFamily": "NomnomNami2",
+                              "wordWrapWidth": 100
+                            },
+                            "eventName": "Actions",
+                            "eventPayload": {
+                              "actions": {
+                                "setRuntimeState": {
+                                  "currentSavePageNumber": {
+                                    "op": "dec",
+                                    "value": 1,
+                                    "min": 0
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          {
+                            "template": "next_disabled",
+                            "type": "text",
+                            "text": "{{ text }}",
+                            "style": {
+                              "fill": "#aaa",
+                              "fontSize": 32,
+                              "fontFamily": "NomnomNami2",
+                              "wordWrapWidth": 100
+                            }
+                          },
+                          {
+                            "template": "next",
+                            "type": "text",
+                            "text": "{{ text }}",
+                            "style": {
+                              "fill": "white",
+                              "fontSize": 32,
+                              "fontFamily": "NomnomNami2",
+                              "wordWrapWidth": 100
+                            },
+                            "hoverStyle": {
+                              "fill": "yellow",
+                              "fontSize": 32,
+                              "fontFamily": "NomnomNami2",
+                              "wordWrapWidth": 100
+                            },
+                            "eventName": "Actions",
+                            "eventPayload": {
+                              "actions": {
+                                "setRuntimeState": {
+                                  "currentSavePageNumber": {
+                                    "op": "inc",
+                                    "value": 1,
+                                    "max": 11
+                                  }
+                                }
+                              }
+                            }
+                          },
                           {
                             "template": "selected",
                             "type": "text",
@@ -3332,7 +3527,7 @@
                           },
                           {
                             "template": "default",
-                            "type": "text-interactive",
+                            "type": "text",
                             "text": "{{ text }}",
                             "eventName": "Actions",
                             "eventPayload": {
@@ -3432,7 +3627,7 @@
                       "children": [
                         {
                           "id": "ladfkj42dxi3",
-                          "type": "text-interactive",
+                          "type": "text",
                           "text": "Yes",
                           "zIndex": 1005,
                           "eventName": "Actions",
@@ -3463,7 +3658,7 @@
                         },
                         {
                           "id": "ladfkj42dxi3",
-                          "type": "text-interactive",
+                          "type": "text",
                           "text": "No",
                           "zIndex": 1005,
                           "eventName": "Actions",
@@ -3662,7 +3857,7 @@
                   {
                     "template": "active",
                     "id": "active-{{ index }}",
-                    "type": "text-interactive",
+                    "type": "text",
                     "text": "{{ label }}",
                     "eventName": "Actions",
                     "eventPayload": "{{ eventPayload }}",
@@ -3694,7 +3889,7 @@
                   {
                     "template": "default",
                     "id": "labi-{{ index }}",
-                    "type": "text-interactive",
+                    "type": "text",
                     "text": "{{ label }}",
                     "eventName": "Actions",
                     "eventPayload": "{{ eventPayload }}",
@@ -3879,6 +4074,68 @@
                 ]
               },
               "children": []
+            }
+          ]
+        }
+      }
+    },
+    "choices": {
+      "items": {
+        "choices1": {
+          "name": "Choices 1",
+          "layout": [
+            {
+              "id": "choicesaf3521",
+              "type": "container",
+              "anchor": "TopLeft",
+              "direction": "vertical",
+              "x": 640,
+              "y": 360,
+              "data": "{{ dialogue.choices }}",
+              "template": {
+                "mapping": {
+                  "cases": [],
+                  "default": "item"
+                },
+                "items": [
+                  {
+                    "template": "item",
+                    "type": "container",
+                    "height": 35,
+                    "width": 790,
+                    "propagateEvents": true,
+                    "children": [
+                      {
+                        "id": "backf34adfground",
+                        "type": "sprite",
+                        "url": "/public/first-contract/gui/button/choice_idle_background.png",
+                        "hoverUrl": "/public/first-contract/gui/button/choice_hover_background.png",
+                        "width": 790,
+                        "height": 35,
+                        "x": 0,
+                        "y": 0,
+                        "xa": 0.5,
+                        "ya": 0.5,
+                        "eventName": "Actions",
+                        "eventPayload": "{{ eventPayload }}"
+                      },
+                      {
+                        "id": "texfaw343t",
+                        "type": "text",
+                        "text": "{{ text }}",
+                        "xa": 0.5,
+                        "ya": 0.5,
+                        "style": {
+                          "fill": "white",
+                          "fontSize": 30,
+                          "fontFamily": "NomnomNami2",
+                          "wordWrapWidth": 780
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
             }
           ]
         }
@@ -4158,6 +4415,172 @@
                   {
                     "id": "fkje4aeffeawk2kl",
                     "screenId": "menuTabs"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "sectionc1": {
+        "name": "Choice 1",
+        "steps": [
+          {
+            "id": "s1c1",
+            "actions": {
+              "background": {
+                "backgroundId": "bg3"
+              },
+              "dialogue": {
+                "dialogueBoxId": "dialogueBox1",
+                "text": "Choice 1"
+              }
+            }
+          },
+          {
+            "id": "s1c2",
+            "actions": {
+              "dialogue": {
+                "dialogueBoxId": "dialogueBox1",
+                "text": "Choice 2"
+              }
+            }
+          },
+          {
+            "id": "s1c3",
+            "actions": {
+              "dialogue": {
+                "dialogueBoxId": "dialogueBox1",
+                "text": "Choice 3"
+              },
+              "choices": {
+                "choicesId": "choices1",
+                "items": [
+                  {
+                    "id": "choices1",
+                    "item": "default",
+                    "text": "I'm choice one",
+                    "eventPayload": {
+                      "actions": {
+                        "moveToSection": {
+                          "sectionId": "section16",
+                          "presetId": "menu",
+                          "mode": "menu"
+                        },
+                        "setRuntimeState": {
+                          "currentPage": "about"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "choices2",
+                    "item": "default",
+                    "text": "I'm choice two",
+                    "eventPayload": {
+                      "actions": {
+                        "moveToSection": {
+                          "sectionId": "sectionc2",
+                          "presetId": "read",
+                          "mode": "read"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "choices3",
+                    "item": "default",
+                    "text": "I'm choice three",
+                    "eventPayload": {
+                      "actions": {
+                        "moveToSection": {
+                          "sectionId": "section2",
+                          "presetId": "read",
+                          "mode": "read"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "sectionc2": {
+        "name": "Choice 2",
+        "steps": [
+          {
+            "id": "s2c1",
+            "actions": {
+              "background": {
+                "backgroundId": "bg5"
+              },
+              "dialogue": {
+                "dialogueBoxId": "dialogueBox1",
+                "text": "Choice klawjeflk wejakl 1"
+              }
+            }
+          },
+          {
+            "id": "s222",
+            "actions": {
+              "dialogue": {
+                "dialogueBoxId": "dialogueBox1",
+                "text": "Loremklawe faulk3uk2l"
+              }
+            }
+          },
+          {
+            "id": "s2c3",
+            "actions": {
+              "choices": {
+                "choicesId": "choices1",
+                "items": [
+                  {
+                    "id": "choices1",
+                    "item": "default",
+                    "text": "I'm choice one",
+                    "eventPayload": {
+                      "actions": {
+                        "moveToSection": {
+                          "sectionId": "section16",
+                          "presetId": "menu",
+                          "mode": "menu"
+                        },
+                        "setRuntimeState": {
+                          "currentPage": "about"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "choices2",
+                    "item": "default",
+                    "text": "I'm choice two",
+                    "eventPayload": {
+                      "actions": {
+                        "moveToSection": {
+                          "sectionId": "sectionc1",
+                          "presetId": "read",
+                          "mode": "read"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "id": "choices3",
+                    "item": "default",
+                    "text": "I'm choice three",
+                    "eventPayload": {
+                      "actions": {
+                        "moveToSection": {
+                          "sectionId": "section2",
+                          "presetId": "read",
+                          "mode": "read"
+                        }
+                      }
+                    }
                   }
                 ]
               }

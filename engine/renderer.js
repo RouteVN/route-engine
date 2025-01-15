@@ -40,6 +40,7 @@ export const generateRenderTree = ({
   const applyTemplate = templatingEngine(
     {
       saveDataFilter,
+      hashFilter,
     },
     {
       runtimeState,
@@ -202,8 +203,6 @@ export const generateRenderTree = ({
       if (_dialogueBox) {
         let stringified = JSON.stringify(_dialogueBox);
 
-
-
         stringified = applyTemplate(stringified);
 
         stringified = stringified.replaceAll(
@@ -218,7 +217,8 @@ export const generateRenderTree = ({
 
         stringified = stringified.replaceAll(
           `{{ stepId }}`,
-          Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+          Math.random().toString(36).substring(2, 15) +
+            Math.random().toString(36).substring(2, 15)
         );
 
         stringified = stringified.replaceAll(
@@ -445,6 +445,23 @@ export const generateRenderTree = ({
       }
     }
 
+    if (state.choices) {
+      let choicesUi = resources.choices.items[state.choices.choicesId];
+      if (choicesUi) {
+        choicesUi = JSON.stringify(choicesUi).replaceAll(
+          '"{{ dialogue.choices }}"',
+          JSON.stringify(state.choices.items)
+        );
+        choicesUi = JSON.parse(choicesUi);
+
+        elements.push({
+          id: "choices-feaf4ec3",
+          type: "container",
+          children: choicesUi.layout,
+        });
+      }
+    }
+
     // TODO don't make it hardcoded
     if (skipMode) {
       const skipGui = resources.screen.items["skipMenu"];
@@ -492,9 +509,29 @@ export const generateRenderTree = ({
   };
 };
 
+function hashFilter(target) {
+  // Helper function to serialize the object into a JSON string
+  const serialize = (obj) => {
+    return JSON.stringify(obj, Object.keys(obj).sort());
+  };
+
+  // Simple hash function (e.g., DJB2 hash algorithm)
+  const hashString = (str) => {
+    let hash = 5381;
+    for (let i = 0; i < str.length; i++) {
+      hash = (hash * 33) ^ str.charCodeAt(i);
+    }
+    return hash >>> 0; // Convert to unsigned 32-bit integer
+  };
+
+  const serializedObject = serialize(target);
+  return hashString(serializedObject).toString(16); // Return as hexadecimal string
+}
+
 const saveDataFilter = (target, variables) => {
-  const numOfSaveSlots = 3;
-  const newSaveData = [0, 1, 2]
+  const numOfSaveSlots = 6;
+  const saveSlotRange = Array.from({ length: numOfSaveSlots }, (_, i) => i);
+  const newSaveData = saveSlotRange
     .map(
       (x) =>
         numOfSaveSlots *
@@ -523,13 +560,26 @@ const templatingEngine = (filters = {}, variables = {}) => {
     // TODO remove hardcoded
     Object.keys(filters).forEach((filterKey) => {
       const filter = filters[filterKey];
-      if (
-        string.indexOf(`{{ persistentState.saveData | ${filterKey} }}`) !== -1
-      ) {
-        string = string.replaceAll(
-          `"{{ persistentState.saveData | ${filterKey} }}"`,
-          JSON.stringify(filter(variables.persistentState.saveData, variables))
-        );
+      if (filterKey === "saveDataFilter") {
+        if (
+          string.indexOf(`{{ persistentState.saveData | ${filterKey} }}`) !== -1
+        ) {
+          string = string.replaceAll(
+            `"{{ persistentState.saveData | ${filterKey} }}"`,
+            JSON.stringify(
+              filter(variables.persistentState.saveData, variables)
+            )
+          );
+        }
+      } else if (filterKey === "hashFilter") {
+        if (
+          string.indexOf(`{{ persistentState.saveData | ${filterKey} }}`) !== -1
+        ) {
+          string = string.replaceAll(
+            `{{ persistentState.saveData | ${filterKey} }}`,
+            hashFilter(variables.persistentState.saveData)
+          );
+        }
       }
     });
 

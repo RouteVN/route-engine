@@ -139,6 +139,14 @@ export const applyState = (state, step) => {
     }
   }
 
+  if (step.actions.choices) {
+    state.choices = step.actions.choices;
+  } else {
+    if (state.choices) {
+      delete state.choices;
+    }
+  }
+
   if (step.actions.cleanAll) {
     state = {};
   }
