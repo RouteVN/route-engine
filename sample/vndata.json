@@ -4176,7 +4176,7 @@
           }
         },
         "ControlUp": {
-          "action": {
+          "actions": {
             "stopSkipMode": {}
           }
         }

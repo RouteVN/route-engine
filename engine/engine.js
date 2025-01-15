@@ -6,15 +6,15 @@ import History from "./History.js";
 
 const extractDefaultValues = (variables, scope) => {
   return Object.entries(variables)
-  .filter(([key, value]) => {
-    return value.scope === scope;
-  })
-  .reduce((acc, next) => {
-    const [key, value] = next;
-    acc[key] = value.default;
-    return acc;
-  }, {});
-}
+    .filter(([key, value]) => {
+      return value.scope === scope;
+    })
+    .reduce((acc, next) => {
+      const [key, value] = next;
+      acc[key] = value.default;
+      return acc;
+    }, {});
+};
 
 /**
  * The rvn engine.
@@ -152,7 +152,10 @@ class RvnEngine {
     this._mode = this._initial.mode;
     this._selectedPresetId = this._initial.presetId;
 
-    this._runtimeState = extractDefaultValues(this._resources.variables, "runtime");
+    this._runtimeState = extractDefaultValues(
+      this._resources.variables,
+      "runtime"
+    );
     this._deviceState = {
       ...extractDefaultValues(this._resources.variables, "device"),
       ...this.deviceStateInterface.getAll(),
@@ -261,7 +264,7 @@ class RvnEngine {
       canSkip: this._hasNextStep,
       autoMode: this._autoMode,
       skipMode: this._skipMode,
-      // completedStep: this._completedStep,
+      completedStep: this._completedStep,
       pointerMode: this._mode,
       i18n: this._i18n,
       rootElement: this._initial.rootElement,
@@ -417,7 +420,9 @@ class RvnEngine {
         section.steps[nextIndex].id
       );
     }
-    this._completedStep = false;
+    if (!this._skipMode) {
+      this._completedStep = false;
+    }
     this._render();
   }
 
@@ -439,7 +444,9 @@ class RvnEngine {
     }
     pointer.set(pointer._sectionId, nextStep.id);
     this._seenSections.addStepId(pointer._sectionId, pointer._stepId);
-    this._completedStep = false;
+    if (!this._skipMode) {
+      this._completedStep = false;
+    }
     this._render();
   }
 
@@ -487,7 +494,6 @@ class RvnEngine {
         stepId || this._sections[sectionId].steps[0].id
       );
     }
-    this._completedStep = true;
     this._render();
   }
 
@@ -553,6 +559,7 @@ class RvnEngine {
     const data = this._persistentState.saveData[index];
     this._history = new History(data.history);
     this._seenSections = new SeenSections(data.seenSections);
+    this._completedStep = false;
     this.exitMenu({
       mode: "read",
       presetId: "read",
@@ -698,6 +705,8 @@ class RvnEngine {
     const section = this._sections[pointer._sectionId];
     const step = section.steps.find((step) => step.id === pointer._stepId);
 
+    this._completedStep = true;
+
     if (!step) {
       return;
     }
@@ -736,7 +745,7 @@ class RvnEngine {
       return;
     }
 
-    if (!this._selectedPreset.listeners[event]) {
+    if (!this._selectedPreset?.listeners[event]) {
       return;
     }
 

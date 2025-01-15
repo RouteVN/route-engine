@@ -207,10 +207,9 @@ const initializeVnPlayer = async (element) => {
   };
 
   engine.onGetScreenShot = async () => {
-
     const { elements } = engine._generateRenderTree(
       engine._currentReadSteps.reduce(applyState, {}),
-      {}
+      {},
     );
 
     const root1 = elements[0].children[0]

@@ -2981,7 +2981,7 @@ presets:
         actions:
           startSkipMode: {}
       ControlUp:
-        action:
+        actions:
           stopSkipMode: {}
     # onEnter:
     #   actions:

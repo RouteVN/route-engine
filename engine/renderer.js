@@ -46,6 +46,9 @@ export const generateRenderTree = ({
       runtimeState,
       deviceState,
       persistentState,
+    },
+    {
+      completedStep
     }
   );
 
@@ -503,7 +506,7 @@ export const generateRenderTree = ({
   return {
     elements: finalElements,
     transitions:
-      (skipMode && deviceState.skipTransitions) || completedStep
+      (skipMode && deviceState.skipTransitions)
         ? []
         : transitions,
   };
@@ -555,7 +558,8 @@ const saveDataFilter = (target, variables) => {
   return newSaveData;
 };
 
-const templatingEngine = (filters = {}, variables = {}) => {
+const templatingEngine = (filters = {}, variables = {}, options = {}) => {
+  const { completedStep } = options;
   const applyTemplate = (string) => {
     // TODO remove hardcoded
     Object.keys(filters).forEach((filterKey) => {
@@ -586,7 +590,11 @@ const templatingEngine = (filters = {}, variables = {}) => {
     Object.keys(variables).forEach((rootname) => {
       Object.keys(variables[rootname]).forEach((key) => {
         const value = variables[rootname][key];
-        if (typeof value === "number" || typeof value === "boolean") {
+        // TODO think of better solution other than hardcoding
+        if (rootname === 'deviceState' && key === 'textSpeed') {
+          string = string.replaceAll(`"{{ ${rootname}.${key} }}"`, completedStep ? 100 : value);
+          string = string.replaceAll(`{{ ${rootname}.${key} }}`, completedStep ? 100 : value);
+        } else if (typeof value === "number" || typeof value === "boolean") {
           string = string.replaceAll(`"{{ ${rootname}.${key} }}"`, value);
           string = string.replaceAll(`{{ ${rootname}.${key} }}`, value);
         } else if (typeof value === "object") {
