@@ -668,7 +668,7 @@ resources:
     items:
       menuBase:
         layout:
-          - id: "abou3t"
+          - id: "aboufef3f2gd3t"
             type: "sprite"
             url: "/public/first-contract/gui/game_menu.png"
             alpha: 0.3
@@ -1484,7 +1484,7 @@ resources:
                             direction: horizontal
                             x: 0
                             y: 0
-                            dragEventName: "Actions"
+                            dragEndEventName: "Actions"
                             dragEventPayload:
                               actions:
                                 setDeviceState:
@@ -1519,7 +1519,7 @@ resources:
                             direction: horizontal
                             x: 0
                             y: 0
-                            dragEventName: "Actions"
+                            dragEndEventName: "Actions"
                             dragEventPayload:
                               actions:
                                 setDeviceState:
@@ -1554,7 +1554,7 @@ resources:
                             direction: horizontal
                             x: 0
                             y: 0
-                            dragEventName: "Actions"
+                            dragEndEventName: "Actions"
                             dragEventPayload:
                               actions:
                                 setDeviceState:
@@ -1589,7 +1589,7 @@ resources:
                             direction: horizontal
                             x: 0
                             y: 0
-                            dragEventName: "Actions"
+                            dragEndEventName: "Actions"
                             dragEventPayload:
                               actions:
                                 setDeviceState:
@@ -1599,7 +1599,7 @@ resources:
                             hoverThumb: "/public/first-contract/gui/slider/horizontal_hover_thumb.png"
                             idleBar: "/public/first-contract/gui/slider/horizontal_idle_bar.png"
                             hoverBar: "/public/first-contract/gui/slider/horizontal_hover_bar.png"
-                      - id: "ladfwkj3d3"
+                      - id: "ladfwkj3d3-{{ deviceState.muteAll }}"
                         type: "container"
                         children: []
                         x: 860
@@ -1774,7 +1774,7 @@ resources:
                                   hoverUrl: "/public/first-contract/gui/button/slot_hover_background.png"
                                   width: 280
                                   height: 200
-                                - id: "ladfxkj3"
+                                - id: "ladfxkj3-{{ persistentState.saveData | saveDataFilter }}"
                                   x: 10
                                   y: 8
                                   type: "sprite"
@@ -2191,9 +2191,19 @@ resources:
                     direction: "vertical"
                     x: 340
                     y: 220
-                    gap: 40
-                    height: 600
-                    width: 1000
+                    gap: 30
+                    height: 400
+                    width: 960
+                    scrollBar:
+                      id: slider-vertical-2
+                      type: slider
+                      direction: vertical
+                      idleThumb: /public/first-contract/gui/slider/vertical_idle_thumb.png
+                      hoverThumb: /public/first-contract/gui/slider/vertical_hover_thumb.png
+                      idleBar: /public/first-contract/gui/slider/vertical_idle_bar.png
+                      hoverBar: /public/first-contract/gui/slider/vertical_hover_bar.png
+                      # x: 180
+                      # y: 300
                     data: '{{ historyDialogue }}'
                     template:
                       mapping:
@@ -2208,40 +2218,46 @@ resources:
                           gap: 40
                           height: 120
                           children:
-                            - id: 23kf323c
-                              text: "{{ characterName }}"
-                              type: "text"
-                              height: 100
-                              style:
-                                fill: "#ccc"
-                                fontSize: 40
-                                fontFamily: "NomnomNami2"
-                                wordWrapWidth: 700
-                                strokeColor: black
-                                strokeWidth: 6
-                              hoverStyle:
-                                fill: "yellow"
-                                fontSize: 40
-                                fontFamily: "NomnomNami2"
-                                wordWrapWidth: 700
-                                strokeColor: black
-                                strokeWidth: 6
-                              eventName: Actions
-                              eventPayload:
-                                actions:
-                                  exitMenu:
-                                    sectionId: "{{ sectionId }}"
-                                    stepId: "{{ stepId }}"
-                                    presetId: read
-                                    mode: read # TODO change to history
+                            - id: f3kajldfkja
+                              type: container
+                              width: 120
+                              children:
+                                - id: 23kf323c
+                                  text: "{{ characterName }}"
+                                  type: "text"
+                                  xa: 1
+                                  x: 120
+                                  width: 120
+                                  style:
+                                    fill: "#ccc"
+                                    fontSize: 32
+                                    fontFamily: "NomnomNami2"
+                                    wordWrapWidth: 600
+                                    strokeColor: black
+                                    strokeWidth: 6
+                                  hoverStyle:
+                                    fill: "yellow"
+                                    fontSize: 32
+                                    fontFamily: "NomnomNami2"
+                                    wordWrapWidth: 700
+                                    strokeColor: black
+                                    strokeWidth: 6
+                                  eventName: Actions
+                                  eventPayload:
+                                    actions:
+                                      exitMenu:
+                                        sectionId: "{{ sectionId }}"
+                                        stepId: "{{ stepId }}"
+                                        presetId: read
+                                        mode: read # TODO change to history
                             - id: 23kffeww323c
                               text: "{{ content }}"
                               type: "text"
                               style:
                                 fill: "white"
-                                fontSize: 40
+                                fontSize: 28
                                 fontFamily: "NomnomNami2"
-                                wordWrapWidth: 700
+                                wordWrapWidth: 600
                                 strokeColor: black
                                 strokeWidth: 6
               - id: feafkl23423-{{ persistentState.saveData | hashFilter }}
@@ -2669,6 +2685,7 @@ resources:
                 width: 43
                 height: 48
                 displaySpeed: "{{ deviceState.textSpeed }}"
+                hasEnded: "{{ completedStep }}"
                 text: "{{ dialogue.text }}"
                 style:
                   fill: "white"
@@ -2926,24 +2943,21 @@ resources:
                 default: "item"
               items:
                 - template: "item"
+                  id: "choice-item-{{ index }}"
                   type: "container"
                   height: 35
-                  width: 790
-                  propagateEvents: true
                   children:
-                    - id: "backf34adfground"
+                    - id: "backf34adfground-{{ index }}"
                       type: "sprite"
                       url: "/public/first-contract/gui/button/choice_idle_background.png"
                       hoverUrl: "/public/first-contract/gui/button/choice_hover_background.png"
-                      width: 790
-                      height: 35
                       x: 0
                       y: 0
                       xa: 0.5
                       ya: 0.5
                       eventName: "Actions"
                       eventPayload: "{{ eventPayload }}"
-                    - id: "texfaw343t"
+                    - id: "texfaw343t-{{ index }}"
                       type: "text"
                       text: "{{ text }}"
                       xa: 0.5
@@ -2952,15 +2966,11 @@ resources:
                         fill: "white"
                         fontSize: 30
                         fontFamily: "NomnomNami2"
-                        wordWrapWidth: 780
+                        wordWrapWidth: 400
     
 presets:
   title:
     listeners: {}
-    # onEnter:
-    #   actions:
-    #     setRuntimeState:
-    #       currentPage: "options"
   read:
     listeners:
       LeftClick:
@@ -2990,10 +3000,10 @@ presets:
   menu:
     listeners:
       RightClick:
-        action: "exitMenu"
-        payload:
-          presetId: "read"
-          mode: "read"
+        actions:
+          exitMenu:
+            presetId: "read"
+            mode: "read"
     # onEnter:
     #   actions:
     #     setRuntimeState:

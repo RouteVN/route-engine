@@ -229,6 +229,7 @@ const initializeVnPlayer = async (element) => {
     );
     const screenShot = app._app.stage.getChildByName("root000");
     app._app.stage.setChildIndex(screenShot, 0);
+
     const base64 = await app._app.renderer.extract.base64(screenShot);
     screenShot.destroy();
     const downsizedBase64 = await downsizeBase64Image(base64, 4);
@@ -236,16 +237,22 @@ const initializeVnPlayer = async (element) => {
     return downsizedBase64;
   };
 
+  app._app.stage.on('rightclick', (e) => {
+    // TODO: find alternative way other than this hacky solution
+    const rootContainer = app._app.stage.getChildByName('root')
+    const rootTabRead = rootContainer.getChildByName('root-tab-read')
+    const bgScreen = rootTabRead.getChildByName('bg-screen')
+    bgScreen.emit('rightclick', e)
+  })
+
   window.addEventListener("keydown", (e) => {
     if (e.key === "Control") {
-      console.log("ctrl");
       engine.handleEvent("ControlDown");
     }
   });
 
   window.addEventListener("keyup", (e) => {
     if (e.key === "Control") {
-      console.log("ctrl up");
       engine.handleEvent("ControlUp");
     }
   });

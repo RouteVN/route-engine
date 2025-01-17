@@ -249,7 +249,7 @@ export const generateRenderTree = ({
             .replaceAll("{{ character.name }}", character?.name || "")
             .replaceAll(
               "{{ character.variables.mainColor }}",
-              character?.variables?.mainColor
+              character?.variables?.mainColor || "#000000"
             )
         );
 
@@ -489,7 +489,7 @@ export const generateRenderTree = ({
     },
     children: [
       {
-        id: "asdeadk3f",
+        id: "root-tab-read",
         type: "container",
         tabId: "read",
         children: generateElements(readState),
@@ -591,10 +591,11 @@ const templatingEngine = (filters = {}, variables = {}, options = {}) => {
       Object.keys(variables[rootname]).forEach((key) => {
         const value = variables[rootname][key];
         // TODO think of better solution other than hardcoding
-        if (rootname === 'deviceState' && key === 'textSpeed') {
-          string = string.replaceAll(`"{{ ${rootname}.${key} }}"`, completedStep ? 100 : value);
-          string = string.replaceAll(`{{ ${rootname}.${key} }}`, completedStep ? 100 : value);
-        } else if (typeof value === "number" || typeof value === "boolean") {
+        // if (rootname === 'deviceState' && key === 'textSpeed') {
+        //   string = string.replaceAll(`"{{ ${rootname}.${key} }}"`, completedStep ? 100 : value);
+        //   string = string.replaceAll(`{{ ${rootname}.${key} }}`, completedStep ? 100 : value);
+        // } else
+        if (typeof value === "number" || typeof value === "boolean") {
           string = string.replaceAll(`"{{ ${rootname}.${key} }}"`, value);
           string = string.replaceAll(`{{ ${rootname}.${key} }}`, value);
         } else if (typeof value === "object") {
@@ -611,6 +612,8 @@ const templatingEngine = (filters = {}, variables = {}, options = {}) => {
         }
       });
     });
+
+    string = string.replaceAll('"{{ completedStep }}"', completedStep);
     return string;
   };
   return applyTemplate;

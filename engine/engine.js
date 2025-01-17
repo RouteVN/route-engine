@@ -237,11 +237,27 @@ class RvnEngine {
       (step) => step.id === this._stepPointers.read._stepId
     );
     const seenSteps = steps.slice(0, lastIndex);
-    const stepsWithDialogue = seenSteps.filter((step) => step.actions.dialogue);
+    const stepsWithDialogue = seenSteps.filter((step) => step.actions.dialogue && !!step.actions.dialogue.text);
     return stepsWithDialogue.map((step) => {
       const dialogue = step?.actions?.dialogue;
-      const characterName = dialogue?.character?.characterId;
-      const content = dialogue?.text;
+      let characterName = dialogue?.character?.name
+      if (!characterName) {
+        if (dialogue?.character?.characterId) {
+          characterName = this._resources.character.items[dialogue?.character?.characterId]?.name
+        }
+      }
+      if (!characterName) {
+        characterName = ''
+      }
+      let content = dialogue?.text;
+
+      if (content?.startsWith("{{ i18n.")) {
+        const [__, group, k] = content
+          .replace("{{ ", "")
+          .replace(" }}", "")
+          .split(".");
+        content = this._i18n[this._deviceState.language].keys[group][k];
+      }
       return {
         characterName,
         content,
@@ -340,6 +356,7 @@ class RvnEngine {
         clearHistory: true,
       });
     }
+    this._completedStep = false;
     this._render();
   }
 
@@ -451,6 +468,16 @@ class RvnEngine {
   }
 
   nextStep() {
+    if (!this._hasNextStep) {
+      if (this._skipModeInterval) {
+        clearInterval(this._skipModeInterval);
+      }
+      if (this._skipMode) {
+        this._skipMode = false;
+        this._render();
+      }
+      return;
+    }
     if (this._mode === "history") {
       this._nextStepHistory();
     } else {
@@ -607,6 +634,10 @@ class RvnEngine {
    * Start skip mode
    */
   startSkipMode() {
+    if (!this._hasNextStep) {
+      return;
+    }
+
     this._skipMode = true;
     this._autoMode = false;
 
@@ -620,6 +651,14 @@ class RvnEngine {
    * Stop skip mode
    */
   stopSkipMode() {
+    if (!this._hasNextStep) {
+      if (this._skipMode) {
+        this._skipMode = false;
+        clearInterval(this._skipModeInterval);
+        this._render();
+      }
+      return;
+    }
     this._skipMode = false;
     clearInterval(this._skipModeInterval);
     this._render();
@@ -634,7 +673,6 @@ class RvnEngine {
     } else {
       this.startSkipMode();
     }
-    this._render();
   }
 
   setPersistentState(payload) {
