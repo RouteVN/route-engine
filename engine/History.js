@@ -51,6 +51,10 @@ class History {
     return this._historySections[this._historyModeSectionIndex].sectionId;
   }
 
+  clear() {
+    this._historySections = [];
+  }
+
   /**
    * Adds a section to the history
    * @param {HistorySection} historySection

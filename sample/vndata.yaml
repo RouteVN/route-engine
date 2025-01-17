@@ -2614,6 +2614,7 @@ resources:
                               sectionId: section3
                               presetId: title
                               mode: read
+                              resetHistory: true
                             setRuntimeState:
                               hideExitMenuConfirmationModal: true
                         style:
@@ -2669,7 +2670,7 @@ resources:
               fill: "{{ character.variables.mainColor }}"
               fontSize: 40
               fontFamily: "NomnomNami2"
-              wordWrapWidth: 1740
+              wordWrapWidth: 500 
               strokeColor: black
               strokeWidth: 6
           # fix templating and remove container
@@ -3169,9 +3170,10 @@ story:
                   eventPayload:
                     actions:
                       moveToSection:
-                        sectionId: "section16"
-                        presetId: "menu"
-                        mode: "menu"
+                        sectionId: "section20"
+                        presetId: "read"
+                        mode: "read"
+                        addToSection: true
                       setRuntimeState:
                         currentPage: "about"
                 - id: "choices2"
@@ -3183,6 +3185,7 @@ story:
                         sectionId: "sectionc2"
                         presetId: "read"
                         mode: "read"
+                        addToSection: true
                 - id: "choices3"
                   item: default
                   text: I'm choice three
@@ -3192,6 +3195,7 @@ story:
                         sectionId: "section2"
                         presetId: "read"
                         mode: "read"
+                        addToSection: true
 
     sectionc2:
       name: "Choice 2"
@@ -3219,9 +3223,10 @@ story:
                   eventPayload:
                     actions:
                       moveToSection:
-                        sectionId: "section16"
-                        presetId: "menu"
-                        mode: "menu"
+                        sectionId: "section20"
+                        presetId: "read"
+                        mode: "read"
+                        addToSection: true
                       setRuntimeState:
                         currentPage: "about"
                 - id: "choices2"
@@ -3233,6 +3238,7 @@ story:
                         sectionId: "sectionc1"
                         presetId: "read"
                         mode: "read"
+                        addToSection: true
                 - id: "choices3"
                   item: default
                   text: I'm choice three
@@ -3242,6 +3248,7 @@ story:
                         sectionId: "section2"
                         presetId: "read"
                         mode: "read"
+                        addToSection: true
 
     section2:
       id: "section1"
@@ -5360,6 +5367,7 @@ story:
               sectionId: "section3"
               pointerMode: "read"
               presetId: "step1"
+              resetHistory: true
 
     section14:
       steps:
@@ -5497,7 +5505,9 @@ story:
         - id: step57
           actions:
             moveToSection:
-              sectionId: section0
+              sectionId: section2
+              addToSection: true
+
 
 i18n:
   en_default:

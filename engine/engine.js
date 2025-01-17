@@ -299,6 +299,11 @@ class RvnEngine {
   }
 
   _render() {
+
+    console.log({
+      history: this._history._historySections,
+    })
+
     const { elements, transitions } = this._generateRenderTree(
       this._mode === "read"
         ? this._currentReadSteps.reduce(applyState, {})
@@ -327,7 +332,10 @@ class RvnEngine {
     }
   }
 
-  moveToSection({ sectionId, stepId, mode, presetId, addToSection }) {
+  moveToSection({ sectionId, stepId, mode, presetId, addToSection, resetHistory }) {
+    if (resetHistory) {
+      this._history.clear();
+    }
     if (mode) {
       this._mode = mode;
       if (mode === "read") {
@@ -361,6 +369,7 @@ class RvnEngine {
   }
 
   _prevStepHistory() {
+    console.log('AAAAAAAAAAAAAAA')
     const historyPointer = this._stepPointers.history;
 
     let section = this._sections[historyPointer._sectionId];
@@ -370,6 +379,9 @@ class RvnEngine {
     let prevIndex = index - 1;
 
     if (index === 0) {
+      if (this._history._historyModeSectionIndex === 0) {
+        return;
+      }
       this._history._historyModeSectionIndex -= 1;
       section = this._sections[this._history.historyModeSectionId];
       index = section.steps.length - 1;
@@ -405,6 +417,7 @@ class RvnEngine {
     historyPointer.set(readPointer._sectionId, prevStep.id);
     this._mode = "history";
     this._history.setLastStepId(readPointer._stepId);
+    this._render();
   }
 
   prevStep() {
@@ -507,7 +520,7 @@ class RvnEngine {
     this._i18n = gameData.i18n;
   }
 
-  exitMenu({ presetId, sectionId, stepId, mode }) {
+  exitMenu({ presetId, sectionId, stepId, mode, resetHistory }) {
     if (mode) {
       this._mode = mode;
     } else {
@@ -520,6 +533,9 @@ class RvnEngine {
         sectionId,
         stepId || this._sections[sectionId].steps[0].id
       );
+    }
+    if (resetHistory) {
+      this._history.clear();
     }
     this._render();
   }
