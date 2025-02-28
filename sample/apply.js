@@ -12,6 +12,7 @@ import {
 
 import RvnEngine from "./../engine/engine.js";
 import { applyState } from "./../engine/state.js";
+import { unbundleAssets } from "../engine/bundler.js";
 
 /**
  * Downsize a base64 image
@@ -81,42 +82,36 @@ const getAllValuesByPropertyName = (obj, propertyNames) => {
 /**
  * Initialize the Visual Novel Player
  * @param {HTMLElement} element - The element to initialize the player in
- * @param {function} onClose - The function to call when the player is closed
+ * @param {string} dataUrl - The URL of the data to load
+ * @param {object} options - The options for the player
+ * @param {function} options.onClose - The function to call when the player is closed
  */
-const initializeVnPlayer = async (element) => {
+const initializeVnPlayer = async (element, dataUrl, { onClose } = {}) => {
+  const resp = await unbundleAssets(dataUrl);
   const app = new PixiTDR();
 
-  const res = await fetch(`/sample/vndata.json`);
-  const gameData = await res.json();
+  const assetKeys = Object.keys(resp.assets);
 
-  const fileUrls = getAllValuesByPropertyName(gameData.resources, [
-    "url",
-    "src",
-    "idleThumb",
-    "hoverThumb",
-    "idleBar",
-    "hoverBar",
-    "hoverUrl",
-  ]).filter((url) => !!url);
-  const imageUrls = fileUrls.filter(
-    (url) => !url.endsWith(".wav") && !url.endsWith(".ogg")
-  );
-
-  await app.loadAssets(imageUrls);
-  const soundUrls = fileUrls.filter(
-    (url) => url.endsWith(".wav") || url.endsWith(".ogg")
-  );
-  await app.loadSoundAssets(
-    soundUrls.concat([
-      "/public/first-contract/audio/sfx_button1.wav",
-      "/public/first-contract/audio/sfx_button2.wav",
-    ])
-  );
+  const imageAssets = Object.keys(resp.assets)
+    .filter(
+      (key) =>
+        key.endsWith(".png") ||
+        key.endsWith(".jpg") ||
+        key.endsWith(".jpeg") ||
+        key.endsWith(".gif") ||
+        key.endsWith(".svg") ||
+        key.endsWith(".webp")
+    )
+    .reduce((acc, key) => {
+      acc[key] = resp.assets[key];
+      return acc;
+    }, {});
 
   await app.init({
-    width: 1280,
-    height: 720,
+    width: resp.instructions.screen.width,
+    height: resp.instructions.screen.height,
     backgroundColor: "#000000",
+    assetBufferMap: imageAssets,
     plugins: [
       new SpriteRendererPlugin(),
       new TextRendererPlugin(),
@@ -128,9 +123,22 @@ const initializeVnPlayer = async (element) => {
       new SliderRendererPlugin(),
     ],
     eventHandler: (event, payload) => {
+      console.log("eventHandler", event, payload);
       engine.handleEvent(event, payload);
     },
   });
+
+  await app.loadAssets(
+    assetKeys.filter(
+      (key) =>
+        key.endsWith(".png") ||
+        key.endsWith(".jpg") ||
+        key.endsWith(".jpeg") ||
+        key.endsWith(".gif") ||
+        key.endsWith(".svg") ||
+        key.endsWith(".webp")
+    )
+  );
 
   element.appendChild(app.canvas);
 
@@ -139,10 +147,13 @@ const initializeVnPlayer = async (element) => {
   });
 
   const engine = new RvnEngine();
-  engine.loadGameData(gameData);
+  engine.loadGameData(resp.instructions);
 
+  if (onClose) {
+    engine.onClose = onClose;
+  }
 
-  const deviceStateKey = "rvn_device_state";  
+  const deviceStateKey = "rvn_device_state";
   engine.deviceStateInterface = {
     setAll: (config) => {
       localStorage.setItem(deviceStateKey, JSON.stringify(config));
@@ -163,7 +174,7 @@ const initializeVnPlayer = async (element) => {
       const configObj = config ? JSON.parse(config) : {};
       return configObj;
     },
-  }
+  };
 
   const persistentStateKey = "rvn_persistent_state";
   engine.persistentStateInterface = {
@@ -196,7 +207,7 @@ const initializeVnPlayer = async (element) => {
       app.loadAssets(fileUrls);
       return configObj;
     },
-  }
+  };
 
   engine.onTriggerRender = ({ elements, transitions }) => {
     app.render({
@@ -209,20 +220,22 @@ const initializeVnPlayer = async (element) => {
   engine.onGetScreenShot = async () => {
     const { elements } = engine._generateRenderTree(
       engine._currentReadSteps.reduce(applyState, {}),
-      {},
+      {}
     );
 
-    const root1 = elements[0].children[0]
+    const root1 = elements[0].children[0];
 
     app._render(
       app._app,
       app._app.stage,
       {},
       {
-        elements: [{
-          ...root1,
-          id: 'root000',
-        }],
+        elements: [
+          {
+            ...root1,
+            id: "root000",
+          },
+        ],
         transitions: [],
       },
       () => {}
@@ -237,13 +250,13 @@ const initializeVnPlayer = async (element) => {
     return downsizedBase64;
   };
 
-  app._app.stage.on('rightclick', (e) => {
+  app._app.stage.on("rightclick", (e) => {
     // TODO: find alternative way other than this hacky solution
-    const rootContainer = app._app.stage.getChildByName('root')
-    const rootTabRead = rootContainer.getChildByName('root-tab-read')
-    const bgScreen = rootTabRead.getChildByName('bg-screen')
-    bgScreen.emit('rightclick', e)
-  })
+    const rootContainer = app._app.stage.getChildByName("root");
+    const rootTabRead = rootContainer.getChildByName("root-tab-read");
+    const bgScreen = rootTabRead.getChildByName("bg-screen");
+    bgScreen.emit("rightclick", e);
+  });
 
   window.addEventListener("keydown", (e) => {
     if (e.key === "Control") {

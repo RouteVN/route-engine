@@ -44,6 +44,17 @@ class RvnEngine {
   persistentStateInterface;
 
   /**
+   * @type {function | undefined}
+   * The function to call when the engine is closed
+   */
+  onClose;
+
+  _screen = {
+    width: undefined,
+    height: undefined,
+  }
+
+  /**
    * Used so that when returning from menu to read, it will show the final state
    * of the step without revealing text, animations etc...
    */
@@ -153,15 +164,15 @@ class RvnEngine {
     this._selectedPresetId = this._initial.presetId;
 
     this._runtimeState = extractDefaultValues(
-      this._resources.variables,
+      this._resources.variables.items,
       "runtime"
     );
     this._deviceState = {
-      ...extractDefaultValues(this._resources.variables, "device"),
+      ...extractDefaultValues(this._resources.variables.items, "device"),
       ...this.deviceStateInterface.getAll(),
     };
     this._persistentState = {
-      ...extractDefaultValues(this._resources.variables, "persistent"),
+      ...extractDefaultValues(this._resources.variables.items, "persistent"),
       ...this.persistentStateInterface.getAll(),
     };
 
@@ -273,8 +284,8 @@ class RvnEngine {
       state: menuState,
       resources: this._resources,
       screen: {
-        width: 1280,
-        height: 720,
+        width: this._screen.width,
+        height: this._screen.height,
         fill: "#000000",
       },
       canSkip: this._hasNextStep,
@@ -369,7 +380,6 @@ class RvnEngine {
   }
 
   _prevStepHistory() {
-    console.log('AAAAAAAAAAAAAAA')
     const historyPointer = this._stepPointers.history;
 
     let section = this._sections[historyPointer._sectionId];
@@ -504,6 +514,10 @@ class RvnEngine {
   }
 
   loadGameData(gameData) {
+    this._screen = {
+      width: gameData.screen.width,
+      height: gameData.screen.height,
+    }
     this._initial = {
       sectionId: gameData.initial.sectionId,
       stepId: gameData.initial.stepId,
@@ -691,6 +705,10 @@ class RvnEngine {
     }
   }
 
+  exitVisualNovel() {
+    this.onClose?.();
+  }
+
   setPersistentState(payload) {
     Object.entries(payload).forEach(([key, value]) => {
       this.persistentStateInterface.set(key, value);
@@ -747,6 +765,8 @@ class RvnEngine {
       this.setPersistentState(payload);
     } else if (action === "triggerStepEvent") {
       this.triggerStepEvent(payload);
+    } else if (action === "exitVisualNovel") {
+      this.exitVisualNovel();
     }
   }
 
