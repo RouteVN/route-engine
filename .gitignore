@@ -2,3 +2,4 @@ node_modules/
 dist/
 sample/vndata.json
 sample/renderer.js
+.DS_Store

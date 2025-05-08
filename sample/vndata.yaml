@@ -232,28 +232,16 @@ resources:
   background:
     items:
       bg1:
-        src: /public/demo-assets-1/bg livingroom.webp
+        src: SwIUkACG
       bg2:
-        src: /public/demo-assets-1/bg forest.webp
-      cg1:
-        src: /public/demo-assets-1/cg pick flowers.webp
-
+        src: 2zVY29qG
+     
   visual:
-    items:
-      candle:
-        src: "/public/first-contract/images/candle.webp"
+    items: {}
   bgm:
-    items:
-      bgm1:
-        src: "/public/first-contract/audio/friend ritual.ogg"
-      bgm2:
-        src: "/public/first-contract/audio/play together.ogg"
-      title:
-        src: "/public/first-contract/audio/title.ogg"
+    items: {}
   sfx:
-    items:
-      candle:
-        src: "/public/first-contract/audio/sfx_candle.wav"
+    items: {}
   character:
     items:
       red:
@@ -268,10 +256,10 @@ resources:
           items:
             red_base:
               name: "Red Base"
-              src: "/public/demo-assets-1/char red.webp"
+              src: QllEIQYw
             red_base_2:
               name: "Red Base"
-              src: "/public/demo-assets-1/char red 2.webp"
+              src: mYfTU0uN
       mom:
         id: mom
         name: Mom
@@ -284,7 +272,7 @@ resources:
           items:
             mom_base:
               name: "Mom Base"
-              src: "/public/demo-assets-1/mom.webp"
+              src: gRLJkGoy
       wolf:
         id: wolf
         name: Wolf
@@ -297,7 +285,7 @@ resources:
           items:
             wolf_base:
               name: "Wolf Base"
-              src: "/public/demo-assets-1/wolf.webp"
+              src: MRh4LTRg
 
   position:
     items:
@@ -519,7 +507,7 @@ resources:
           - id: "aboufef3f2gd3t"
             type: "sprite"
             alpha: 0.3
-            url: "/public/demo-assets-1/menu.webp"
+            url: WF6CXQdB
           - id: "about3-{{ runtimeState.currentPage }}"
             type: "container"
             anchor: "CenterLeft"
@@ -579,7 +567,7 @@ resources:
                     wordWrapWidth: 1740
                     strokeColor: black
                     strokeWidth: 6
-                  clickSoundUrl: "/public/first-contract/audio/sfx_button1.wav"
+                  # clickSoundUrl: "/sfx_button1.wav"
                   clickSoundVolume: "{{ deviceState.soundVolume }}"
                 - template: selected
                   id: "c94k2ladfkj3"
@@ -622,13 +610,13 @@ resources:
               wordWrapWidth: 1740
               strokeColor: black
               strokeWidth: 6
-            clickSoundUrl: "/public/first-contract/audio/sfx_button1.wav"
+            # clickSoundUrl: "/sfx_button1.wav"
             clickSoundVolume: "{{ deviceState.soundVolume }}"
       menuGame:
         layout:
           - id: "abosdfeut"
             type: "sprite"
-            url: /public/demo-assets-1/menu.webp
+            url: WF6CXQdB
             alpha: 0.3
 
           # TODO t100288: find better way to handle diffs and id
@@ -796,12 +784,12 @@ resources:
         layout:
           - id: "efaboufef3f2gd3sfet"
             type: "sprite"
-            url: "/public/demo-assets-1/Title.webp"
+            url: Q9qYOV1q
             alpha: 0.8
           - id: "efaboufef3f2gd3t"
             type: "sprite"
             alpha: 0.5
-            url: "/public/demo-assets-1/menu.webp"
+            url: WF6CXQdB
           - id: "mainMenu"
             type: "container"
             anchor: "CenterCenter"
@@ -858,7 +846,7 @@ resources:
                     wordWrapWidth: 1740
                     strokeColor: black
                     strokeWidth: 6
-                  clickSoundUrl: "/public/first-contract/audio/sfx_button1.wav"
+                  # clickSoundUrl: "/sfx_button1.wav"
                   clickSoundVolume: "{{ deviceState.soundVolume }}"
       skipMenu:
         layout:
@@ -1030,7 +1018,7 @@ resources:
                     y: 540
                     width: 960
                     height: 280
-                    url: "/public/demo-assets-1/frame.webp"
+                    url: CtvV3FpE
                   - id: "ladfkj42d3"
                     type: text
                     zIndex: 1005
@@ -1109,7 +1097,7 @@ resources:
             ya: 1
             x: 50
             y: 1100
-            url: "/public/demo-assets-1/saybox.png"
+            url: lbSD5Tgx
           - id: "name"
             type: text
             x: 320

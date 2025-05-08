@@ -1,0 +1,19 @@
+type: object
+description: Configuration for the display screen.
+required:
+  - width
+  - height
+  - backgroundColor
+properties:
+  width:
+    type: integer
+    description: Width of the game screen in pixels.
+    example: 1920
+  height:
+    type: integer
+    description: Height of the game screen in pixels.
+    example: 1080
+  backgroundColor:
+    type: string
+    description: Default background color in hex format.
+    example: '#000000' 

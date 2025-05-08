@@ -2,6 +2,16 @@
 
 # rvn
 
+
+## Scripts
+
+```shell
+yq eval ./sample/vndata.yaml -o=json -P > ./sample/vndata.json
+```
+
+
+
+
 rvn is a Visual Novel specification
 
 ## Motivation

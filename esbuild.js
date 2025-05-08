@@ -19,7 +19,7 @@ esbuild
   esbuild
     .build({
       bundle: true,
-      minify: false,
+      minify: true,
       sourcemap: false,
       format: "esm",
       outfile: `dist/apply.js`,

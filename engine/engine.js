@@ -310,11 +310,6 @@ class RvnEngine {
   }
 
   _render() {
-
-    console.log({
-      history: this._history._historySections,
-    })
-
     const { elements, transitions } = this._generateRenderTree(
       this._mode === "read"
         ? this._currentReadSteps.reduce(applyState, {})

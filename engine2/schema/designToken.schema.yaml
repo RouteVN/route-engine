@@ -1,0 +1,44 @@
+type: object
+description: Set of named design tokens for theme and style customization.
+additionalProperties:
+  type: object
+  required: [name, type, description, value]
+  properties:
+    name:
+      type: string
+      description: Human-readable name of the design token.
+    type:
+      type: string
+      description: Type of the design token.
+      enum: [color, fontFamily, fontSize, spacing, textStyle]
+    description:
+      type: string
+      description: Description of what this token controls in the UI.
+    value:
+      description: Value of the token, type depends on the token type.
+      oneOf:
+        - type: string
+        - type: number
+        - type: object
+          properties:
+            fontFamily:
+              type: object
+              properties:
+                $eval:
+                  type: string
+            fontSize:
+              type: object
+              properties:
+                $eval:
+                  type: string
+            color:
+              type: object
+              properties:
+                $eval:
+                  type: string
+            fontWeight:
+              type: integer
+            lineHeight:
+              type: number
+            letterSpacing:
+              type: number 

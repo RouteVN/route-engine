@@ -90,18 +90,8 @@ const initializeVnPlayer = async (element, dataUrl, { onClose } = {}) => {
   const resp = await unbundleAssets(dataUrl);
   const app = new PixiTDR();
 
-  const assetKeys = Object.keys(resp.assets);
-
   const imageAssets = Object.keys(resp.assets)
-    .filter(
-      (key) =>
-        key.endsWith(".png") ||
-        key.endsWith(".jpg") ||
-        key.endsWith(".jpeg") ||
-        key.endsWith(".gif") ||
-        key.endsWith(".svg") ||
-        key.endsWith(".webp")
-    )
+
     .reduce((acc, key) => {
       acc[key] = resp.assets[key];
       return acc;
@@ -123,22 +113,11 @@ const initializeVnPlayer = async (element, dataUrl, { onClose } = {}) => {
       new SliderRendererPlugin(),
     ],
     eventHandler: (event, payload) => {
-      console.log("eventHandler", event, payload);
       engine.handleEvent(event, payload);
     },
   });
 
-  await app.loadAssets(
-    assetKeys.filter(
-      (key) =>
-        key.endsWith(".png") ||
-        key.endsWith(".jpg") ||
-        key.endsWith(".jpeg") ||
-        key.endsWith(".gif") ||
-        key.endsWith(".svg") ||
-        key.endsWith(".webp")
-    )
-  );
+  await app.loadAssets(Object.keys(imageAssets));
 
   element.appendChild(app.canvas);
 

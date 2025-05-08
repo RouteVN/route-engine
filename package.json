@@ -7,5 +7,9 @@
   "scripts": {
     "test": "vitest engine3.test.js",
     "coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0",
+    "json-e": "^4.8.0"
   }
 }
