@@ -13,7 +13,9 @@
 const nextStep = (payload, deps) => {
   deps.stepManager.nextStep();
   const renderObject = deps.generateRender();
-  deps.dispatchEvent("render", renderObject);
+  if (renderObject) {
+    deps.dispatchEvent("render", renderObject);
+  }
 };
 
 /**
@@ -26,7 +28,24 @@ const prevStep = (payload, deps) => {
   deps.stepManager.prevStep();
 };
 
+/**
+ * TODO check if to split actions that affect state and actios that don't affect state
+ * @param {Object} payload 
+ * 
+ * @param {string} payload.sceneId
+ * @param {string} payload.sectionId
+ * 
+ * @param {*} deps 
+ */
+const goToSectionScene = (payload, deps) => {
+  const { sectionId, sceneId } = payload;
+  deps.stepManager.goToSectionScene(sectionId, sceneId);
+  const renderObject = deps.generateRender();
+  deps.dispatchEvent("render", renderObject);
+};
+
 export default {
   nextStep,
   prevStep,
+  goToSectionScene,
 };

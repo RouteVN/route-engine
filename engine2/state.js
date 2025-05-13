@@ -149,6 +149,10 @@ export const applyState = (state, step) => {
   if (step.actions.cleanAll) {
     state = {};
   }
+  
+  if (step.actions.goToSectionScene) {
+    state.goToSectionScene = step.actions.goToSectionScene;
+  }
 
   return state;
 }

@@ -98,6 +98,8 @@ resources:
       fileId: lakjf3lka
     8a3lkja:
       fileId: dmni32
+    3ljdasfjlk32:
+      fileId: 23jkfa893
 
 story:
   initialSceneId: ajfl3a
@@ -120,7 +122,7 @@ story:
             - id: step3
               actions:
                 background:
-                  backgroundId: alkejf3la
+                  backgroundId: 3ljdasfjlk32
         ogk3mdi:
           name: Section 2
           steps:

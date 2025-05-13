@@ -16,21 +16,32 @@ class Engine {
       stepManager: new StepManager(this.vnData),
       generateRender: this.generateRender,
       dispatchEvent: this.dispatchEvent,
+      _dialogueContent: [],
     };
     this.on = callback;
 
     const renderObject = this.generateRender();
+    console.log('renderObject', renderObject)
     this.dispatchEvent("render", renderObject);
   };
 
   generateRender = () => {
     const steps = this.deps.stepManager.getCurrentSteps();
     const state = steps.reduce(applyState, {});
+
+    console.log('state', state)
+
+    if (state.goToSectionScene) {
+      this.handleAction("goToSectionScene", state.goToSectionScene);
+      return;
+    }
+
     const resources = this.vnData.resources;
     const resolveFile = (fileId) => {
       return `file:${fileId}`;
     }
-    return generateRenderElements({state, resources, resolveFile, screen: this.vnData.screen});
+    const result = generateRenderElements({state, resources, resolveFile, screen: this.vnData.screen});
+    return result;
   }
 
   handleAction = (action, payload) => {

@@ -74,6 +74,15 @@ class StepManager {
     const currentStepIndex = steps.findIndex(step => step.id === this._stepPointers.read._stepId);
     return steps.slice(0, currentStepIndex + 1);
   }
+
+  goToSectionScene = (sectionId, sceneId) => {
+    const steps = this._vnData.getSectionSteps(sectionId);
+    if (sceneId) {
+      this._stepPointers.read.set(sectionId, steps[0].id);
+    } else {
+      this._stepPointers.read.set(sectionId, steps[0].id);
+    }
+  }
 }
 
 export default StepManager;

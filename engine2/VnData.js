@@ -1,4 +1,3 @@
-
 class VnData {
   constructor(data) {
     this.data = data;
@@ -17,15 +16,19 @@ class VnData {
     const section = initialScene.sections[initialScene.initialSectionId];
     return {
       sceneId: initialScene.id,
-      sectionId: section.id,
+      sectionId: initialScene.initialSectionId,
       stepId: section.steps[0].id,
     };
   }
 
   getSectionSteps(sectionId) {
     const sections = Object.values(this.data.story.scenes)
-      .map((scene) => Object.values(scene.sections))
-      .flat()
+      .flatMap((scene) => {
+        return Object.entries(scene.sections).map(([id, section]) => ({
+          ...section,
+          id
+        }));
+      });
     const currentSection = sections.find((section) => section.id === sectionId);
     return currentSection.steps;
   }
