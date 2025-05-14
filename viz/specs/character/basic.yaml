@@ -1,0 +1,68 @@
+---
+title: 'Sample'
+---
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: '#000000'
+
+presets: {}
+
+resources:
+  backgrounds:
+    alkejf3la:
+      fileId: lakjf3lka
+  positions:
+    iasdlf:
+      x: 100
+      y: 80%
+      xa: 0
+      ya: 0
+      anchor: BottomCenter
+    a32kf3:
+      x: 100
+      y: 100%
+      xa: 0%
+      ya: 0%
+  characters:
+    alkjf3ia:
+      variables:
+        name: 'Abc'
+      spriteParts:
+        fk4jla893:
+          fileId: la3lka
+        3fjaklj34:
+          fileId: x342fga
+    # 9823l31:
+    #   variables:
+    #     name: 'Abc'
+    #   spriteParts:
+    #     398fasdfj3:
+    #       fileId: fk4jla893
+    #     39023ixdf:
+    #       fileId: 3fjaklj34
+
+story:
+  initialSceneId: ajfl3a
+  scenes:
+    ajfl3a:
+      name: Scene 1
+      initialSectionId: l3kjfawelf
+      sections:
+        l3kjfawelf:
+          name: Section 1
+          steps:
+            - id: step1
+              actions:
+                background:
+                  backgroundId: alkejf3la
+                character:
+                  items:
+                    - id: "laj389d"
+                      positionId: iasdlf
+                      spriteParts:
+                        - id: base
+                          spritePartId: fk4jla893
+                        - id: outfit
+                          spritePartId: 3fjaklj34

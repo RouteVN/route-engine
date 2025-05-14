@@ -1,0 +1,56 @@
+---
+title: 'Sample'
+---
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: '#000000'
+
+presets: {}
+
+ui:
+  screens:
+    fi3l:
+      name: Dialogue Screen
+      elements:
+        - type: 'container'
+          x: 100
+          y: 100
+          children:
+            - type: text
+              text:
+                $eval: 'dialogue.character.name'
+              style:
+                fontSize: 24
+                fill: "white"
+            - type: 'text'
+              y: 100
+              text:
+                $eval: 'dialogue.text'
+              style:
+                fontSize: 24
+                fill: "white"
+
+resources:
+  characters:
+    ajf34a:
+      name: Character Name
+
+story:
+  initialSceneId: ajfl3a
+  scenes:
+    ajfl3a:
+      name: Scene 1
+      initialSectionId: l3kjfawelf
+      sections:
+        l3kjfawelf:
+          name: Section 1
+          steps:
+            - id: step1
+              actions:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                  characterId: ajf34a

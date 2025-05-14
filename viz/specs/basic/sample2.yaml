@@ -1,0 +1,34 @@
+---
+title: 'Sample 2'
+---
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: '#000000'
+
+presets: {}
+
+resources:
+  backgrounds:
+    alkejf3la:
+      fileId: lakjf3lka
+    8a3lkja:
+      fileId: dmni32
+    3ljdasfjlk32:
+      fileId: 23jkfa893
+
+story:
+  initialSceneId: ajfl3a
+  scenes:
+    ajfl3a:
+      name: Scene 1
+      initialSectionId: l3kjfawelf
+      sections:
+        l3kjfawelf:
+          name: Section 1
+          steps:
+            - id: step2
+              actions:
+                background:
+                  backgroundId: 8a3lkja

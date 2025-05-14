@@ -7,6 +7,10 @@ class VnData {
     return this.data.resources;
   }
 
+  get ui() {
+    return this.data.ui;
+  }
+
   get screen() {
     return this.data.screen;
   }

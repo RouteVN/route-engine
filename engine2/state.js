@@ -10,18 +10,13 @@ export const applyState = (state, step) => {
     return {}
   }
   if (step.actions.background) {
-    if (step.actions.background.backgroundId) {
+    if (step.actions.background) {
       state.background = step.actions.background;
     } else {
       delete state.background;
     }
-  } else {
-    if (state.background) {
-      if (state.background.inAnimation) {
-        state.background.inAnimation = undefined;
-      }
-    }
   }
+
   if (step.actions.sfx) {
     state.sfx = step.actions.sfx;
   } else {

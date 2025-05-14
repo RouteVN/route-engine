@@ -11,7 +11,14 @@
  * @param {*} deps 
  */
 const nextStep = (payload, deps) => {
+  if (deps.autoNext) {
+    if (deps.autoNext.preventManual) {
+      return;
+    }
+  }
+
   deps.stepManager.nextStep();
+
   const renderObject = deps.generateRender();
   if (renderObject) {
     deps.dispatchEvent("render", renderObject);

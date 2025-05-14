@@ -1,0 +1,52 @@
+---
+title: 'Sample'
+---
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: '#000000'
+
+presets: {}
+
+resources:
+  visuals:
+    alkejf3la:
+      fileId: la3lka
+    8a3lkja:
+      fileId: a32kf3
+  positions:
+    iasdlf:
+      x: 500
+      y: 500
+      xa: 100%
+      ya: 100%
+    a32kf3:
+      x: 500
+      y: 500
+      xa: 0%
+      ya: 0%
+story:
+  initialSceneId: ajfl3a
+  scenes:
+    ajfl3a:
+      name: Scene 1
+      initialSectionId: l3kjfawelf
+      sections:
+        l3kjfawelf:
+          name: Section 1
+          steps:
+            - id: step1
+              actions:
+                visual:
+                  items:
+                    - visualId: alkejf3la
+                      positionId: iasdlf
+            - id: step2
+              actions:
+                visual:
+                  items:
+                    - visualId: alkejf3la
+                      positionId: iasdlf
+                    - visualId: 8a3lkja
+                      positionId: a32kf3
