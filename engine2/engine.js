@@ -17,10 +17,17 @@ class Engine {
     this.vnData = new VnData(vnData);
     this.deps = {
       stepManager: new StepManager(this.vnData),
+      vnData: this.vnData,
       generateRender: this.generateRender,
       dispatchEvent: this.dispatchEvent,
       _dialogueContent: [],
       autoNext: undefined,
+      variables: {
+        runtime: {
+          currentMenuTabId: "options",
+        },
+      },
+      currentPreset: this.vnData.initialPreset,
     };
     this.on = callback;
 
@@ -41,7 +48,6 @@ class Engine {
       let stepId = lastStep.id;
 
       const effect = (time) => {
-
         const currentSteps = this.deps.stepManager.getCurrentSteps();
         if (currentSteps[currentSteps.length - 1].id !== stepId) {
           this._ticker.remove(effect);
@@ -66,10 +72,15 @@ class Engine {
 
     console.log("state", state);
 
-    if (state.goToSectionScene) {
+    if (lastStep.actions.goToSectionScene) {
       this.handleAction("goToSectionScene", state.goToSectionScene);
       return;
     }
+
+    if (lastStep.actions.preset) {
+      this.handleAction("setPreset", lastStep.actions.preset);
+    }
+
 
     const resources = this.vnData.resources;
     const resolveFile = (fileId) => {
@@ -81,8 +92,41 @@ class Engine {
       resolveFile,
       screen: this.vnData.screen,
       ui: this.vnData.ui,
+      variables: this.deps.variables,
     });
     return result;
+  };
+
+  // event from pixijs 2drender
+  handleEvent = (event, payload) => {
+
+    if (event === "Actions") {
+      const { actions } = payload;
+      if (actions.goToSectionScene) {
+        this.handleAction("goToSectionScene", actions.goToSectionScene);
+      }
+      if (actions.setRuntimeVariable) {
+        this.handleAction("setRuntimeVariable", actions.setRuntimeVariable);
+      }
+      return;
+    }
+
+    const { currentPreset } = this.deps;
+    const { eventsMap } = currentPreset;
+
+    const matchedMap = eventsMap[event];
+
+    if (!matchedMap) {
+      return;
+    }
+
+    const { actions } = matchedMap;
+
+    Object.keys(actions).forEach((action) => {
+      const payload = actions[action];
+      this.handleAction(action, payload);
+    });
+
   };
 
   handleAction = (action, payload) => {

@@ -51,8 +51,21 @@ const goToSectionScene = (payload, deps) => {
   deps.dispatchEvent("render", renderObject);
 };
 
+const setRuntimeVariable = (payload, deps) => {
+  Object.assign(deps.variables.runtime, payload);
+  const renderObject = deps.generateRender();
+  deps.dispatchEvent("render", renderObject);
+};
+
+const setPreset = (payload, deps) => {
+  const preset = deps.vnData.presets[payload.presetId];
+  deps.currentPreset = preset;
+};
+
 export default {
   nextStep,
   prevStep,
   goToSectionScene,
+  setRuntimeVariable,
+  setPreset,
 };

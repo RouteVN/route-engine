@@ -242,11 +242,11 @@ var require_eventemitter3 = __commonJS({
       this.context = context3;
       this.once = once || false;
     }
-    function addListener(emitter, event, fn, context3, once) {
+    function addListener(emitter, event2, fn, context3, once) {
       if (typeof fn !== "function") {
         throw new TypeError("The listener must be a function");
       }
-      var listener = new EE(fn, context3 || emitter, once), evt = prefix ? prefix + event : event;
+      var listener = new EE(fn, context3 || emitter, once), evt = prefix ? prefix + event2 : event2;
       if (!emitter._events[evt])
         emitter._events[evt] = listener, emitter._eventsCount++;
       else if (!emitter._events[evt].fn)
@@ -278,8 +278,8 @@ var require_eventemitter3 = __commonJS({
       }
       return names;
     };
-    EventEmitter2.prototype.listeners = function listeners(event) {
-      var evt = prefix ? prefix + event : event, handlers = this._events[evt];
+    EventEmitter2.prototype.listeners = function listeners(event2) {
+      var evt = prefix ? prefix + event2 : event2, handlers = this._events[evt];
       if (!handlers)
         return [];
       if (handlers.fn)
@@ -289,22 +289,22 @@ var require_eventemitter3 = __commonJS({
       }
       return ee;
     };
-    EventEmitter2.prototype.listenerCount = function listenerCount(event) {
-      var evt = prefix ? prefix + event : event, listeners = this._events[evt];
+    EventEmitter2.prototype.listenerCount = function listenerCount(event2) {
+      var evt = prefix ? prefix + event2 : event2, listeners = this._events[evt];
       if (!listeners)
         return 0;
       if (listeners.fn)
         return 1;
       return listeners.length;
     };
-    EventEmitter2.prototype.emit = function emit(event, a1, a2, a3, a4, a5) {
-      var evt = prefix ? prefix + event : event;
+    EventEmitter2.prototype.emit = function emit(event2, a1, a2, a3, a4, a5) {
+      var evt = prefix ? prefix + event2 : event2;
       if (!this._events[evt])
         return false;
       var listeners = this._events[evt], len = arguments.length, args, i2;
       if (listeners.fn) {
         if (listeners.once)
-          this.removeListener(event, listeners.fn, void 0, true);
+          this.removeListener(event2, listeners.fn, void 0, true);
         switch (len) {
           case 1:
             return listeners.fn.call(listeners.context), true;
@@ -327,7 +327,7 @@ var require_eventemitter3 = __commonJS({
         var length = listeners.length, j2;
         for (i2 = 0; i2 < length; i2++) {
           if (listeners[i2].once)
-            this.removeListener(event, listeners[i2].fn, void 0, true);
+            this.removeListener(event2, listeners[i2].fn, void 0, true);
           switch (len) {
             case 1:
               listeners[i2].fn.call(listeners[i2].context);
@@ -352,14 +352,14 @@ var require_eventemitter3 = __commonJS({
       }
       return true;
     };
-    EventEmitter2.prototype.on = function on(event, fn, context3) {
-      return addListener(this, event, fn, context3, false);
+    EventEmitter2.prototype.on = function on(event2, fn, context3) {
+      return addListener(this, event2, fn, context3, false);
     };
-    EventEmitter2.prototype.once = function once(event, fn, context3) {
-      return addListener(this, event, fn, context3, true);
+    EventEmitter2.prototype.once = function once(event2, fn, context3) {
+      return addListener(this, event2, fn, context3, true);
     };
-    EventEmitter2.prototype.removeListener = function removeListener(event, fn, context3, once) {
-      var evt = prefix ? prefix + event : event;
+    EventEmitter2.prototype.removeListener = function removeListener(event2, fn, context3, once) {
+      var evt = prefix ? prefix + event2 : event2;
       if (!this._events[evt])
         return this;
       if (!fn) {
@@ -384,10 +384,10 @@ var require_eventemitter3 = __commonJS({
       }
       return this;
     };
-    EventEmitter2.prototype.removeAllListeners = function removeAllListeners(event) {
+    EventEmitter2.prototype.removeAllListeners = function removeAllListeners(event2) {
       var evt;
-      if (event) {
-        evt = prefix ? prefix + event : event;
+      if (event2) {
+        evt = prefix ? prefix + event2 : event2;
         if (this._events[evt])
           clearEvent(this, evt);
       } else {
@@ -6543,9 +6543,9 @@ var init_AccessibilitySystem = __esm({
       _dispatchEvent(e2, type) {
         const { container: target } = e2.target;
         const boundary = this._renderer.events.rootBoundary;
-        const event = Object.assign(new FederatedEvent(boundary), { target });
+        const event2 = Object.assign(new FederatedEvent(boundary), { target });
         boundary.rootTarget = this._renderer.lastObjectRendered;
-        type.forEach((type2) => boundary.dispatchEvent(event, type2));
+        type.forEach((type2) => boundary.dispatchEvent(event2, type2));
       }
       /**
        * Maps the div button press to pixi's EventSystem (click)
@@ -7806,9 +7806,9 @@ var init_EventBoundary = __esm({
         e2.eventPhase = e2.BUBBLING_PHASE;
         const events = Array.isArray(type) ? type : [type];
         for (let i2 = targets.length - 1; i2 >= 0; i2--) {
-          events.forEach((event) => {
+          events.forEach((event2) => {
             e2.currentTarget = targets[i2];
-            this.notifyTarget(e2, event);
+            this.notifyTarget(e2, event2);
           });
         }
       }
@@ -8338,17 +8338,17 @@ var init_EventBoundary = __esm({
        * @param target - The target of the returned event.
        */
       createPointerEvent(from2, type, target) {
-        const event = this.allocateEvent(FederatedPointerEvent);
-        this.copyPointerData(from2, event);
-        this.copyMouseData(from2, event);
-        this.copyData(from2, event);
-        event.nativeEvent = from2.nativeEvent;
-        event.originalEvent = from2;
-        event.target = target ?? this.hitTest(event.global.x, event.global.y) ?? this._hitElements[0];
+        const event2 = this.allocateEvent(FederatedPointerEvent);
+        this.copyPointerData(from2, event2);
+        this.copyMouseData(from2, event2);
+        this.copyData(from2, event2);
+        event2.nativeEvent = from2.nativeEvent;
+        event2.originalEvent = from2;
+        event2.target = target ?? this.hitTest(event2.global.x, event2.global.y) ?? this._hitElements[0];
         if (typeof type === "string") {
-          event.type = type;
+          event2.type = type;
         }
-        return event;
+        return event2;
       }
       /**
        * Creates a wheel event whose {@code originalEvent} is {@code from}.
@@ -8357,14 +8357,14 @@ var init_EventBoundary = __esm({
        * @param from - The upstream wheel event.
        */
       createWheelEvent(from2) {
-        const event = this.allocateEvent(FederatedWheelEvent);
-        this.copyWheelData(from2, event);
-        this.copyMouseData(from2, event);
-        this.copyData(from2, event);
-        event.nativeEvent = from2.nativeEvent;
-        event.originalEvent = from2;
-        event.target = this.hitTest(event.global.x, event.global.y);
-        return event;
+        const event2 = this.allocateEvent(FederatedWheelEvent);
+        this.copyWheelData(from2, event2);
+        this.copyMouseData(from2, event2);
+        this.copyData(from2, event2);
+        event2.nativeEvent = from2.nativeEvent;
+        event2.originalEvent = from2;
+        event2.target = this.hitTest(event2.global.x, event2.global.y);
+        return event2;
       }
       /**
        * Clones the event {@code from}, with an optional {@code type} override.
@@ -8374,16 +8374,16 @@ var init_EventBoundary = __esm({
        * @param [type=from.type] - The type of the returned event.
        */
       clonePointerEvent(from2, type) {
-        const event = this.allocateEvent(FederatedPointerEvent);
-        event.nativeEvent = from2.nativeEvent;
-        event.originalEvent = from2.originalEvent;
-        this.copyPointerData(from2, event);
-        this.copyMouseData(from2, event);
-        this.copyData(from2, event);
-        event.target = from2.target;
-        event.path = from2.composedPath().slice();
-        event.type = type ?? event.type;
-        return event;
+        const event2 = this.allocateEvent(FederatedPointerEvent);
+        event2.nativeEvent = from2.nativeEvent;
+        event2.originalEvent = from2.originalEvent;
+        this.copyPointerData(from2, event2);
+        this.copyMouseData(from2, event2);
+        this.copyData(from2, event2);
+        event2.target = from2.target;
+        event2.path = from2.composedPath().slice();
+        event2.type = type ?? event2.type;
+        return event2;
       }
       /**
        * Copies wheel {@link FederatedWheelEvent} data from {@code from} into {@code to}.
@@ -8516,13 +8516,13 @@ var init_EventBoundary = __esm({
         if (!this.eventPool.has(constructor)) {
           this.eventPool.set(constructor, []);
         }
-        const event = this.eventPool.get(constructor).pop() || new constructor(this);
-        event.eventPhase = event.NONE;
-        event.currentTarget = null;
-        event.defaultPrevented = false;
-        event.path = null;
-        event.target = null;
-        return event;
+        const event2 = this.eventPool.get(constructor).pop() || new constructor(this);
+        event2.eventPhase = event2.NONE;
+        event2.currentTarget = null;
+        event2.defaultPrevented = false;
+        event2.path = null;
+        event2.target = null;
+        return event2;
       }
       /**
        * Frees the event and puts it back into the event pool.
@@ -8535,14 +8535,14 @@ var init_EventBoundary = __esm({
        * @param event - The event to be freed.
        * @throws Error if the event is managed by another event boundary.
        */
-      freeEvent(event) {
-        if (event.manager !== this)
+      freeEvent(event2) {
+        if (event2.manager !== this)
           throw new Error("It is illegal to free an event not managed by this EventBoundary!");
-        const constructor = event.constructor;
+        const constructor = event2.constructor;
         if (!this.eventPool.has(constructor)) {
           this.eventPool.set(constructor, []);
         }
-        this.eventPool.get(constructor).push(event);
+        this.eventPool.get(constructor).push(event2);
       }
       /**
        * Similar to {@link EventEmitter.emit}, except it stops if the `propagationImmediatelyStopped` flag
@@ -8733,8 +8733,8 @@ var init_EventSystem = __esm({
         EventsTicker.pointerMoved();
         const normalizedEvents = this._normalizeToPointerData(nativeEvent);
         for (let i2 = 0, j2 = normalizedEvents.length; i2 < j2; i2++) {
-          const event = this._bootstrapEvent(this._rootPointerEvent, normalizedEvents[i2]);
-          this.rootBoundary.mapEvent(event);
+          const event2 = this._bootstrapEvent(this._rootPointerEvent, normalizedEvents[i2]);
+          this.rootBoundary.mapEvent(event2);
         }
         this.setCursor(this.rootBoundary.cursor);
       }
@@ -8753,9 +8753,9 @@ var init_EventSystem = __esm({
         const outside = target !== this.domElement ? "outside" : "";
         const normalizedEvents = this._normalizeToPointerData(nativeEvent);
         for (let i2 = 0, j2 = normalizedEvents.length; i2 < j2; i2++) {
-          const event = this._bootstrapEvent(this._rootPointerEvent, normalizedEvents[i2]);
-          event.type += outside;
-          this.rootBoundary.mapEvent(event);
+          const event2 = this._bootstrapEvent(this._rootPointerEvent, normalizedEvents[i2]);
+          event2.type += outside;
+          this.rootBoundary.mapEvent(event2);
         }
         this.setCursor(this.rootBoundary.cursor);
       }
@@ -8769,8 +8769,8 @@ var init_EventSystem = __esm({
         this.rootBoundary.rootTarget = this.renderer.lastObjectRendered;
         const normalizedEvents = this._normalizeToPointerData(nativeEvent);
         for (let i2 = 0, j2 = normalizedEvents.length; i2 < j2; i2++) {
-          const event = this._bootstrapEvent(this._rootPointerEvent, normalizedEvents[i2]);
-          this.rootBoundary.mapEvent(event);
+          const event2 = this._bootstrapEvent(this._rootPointerEvent, normalizedEvents[i2]);
+          this.rootBoundary.mapEvent(event2);
         }
         this.setCursor(this.rootBoundary.cursor);
       }
@@ -8900,17 +8900,17 @@ var init_EventSystem = __esm({
        * @returns An array containing a single normalized pointer event, in the case of a pointer
        *  or mouse event, or a multiple normalized pointer events if there are multiple changed touches
        */
-      _normalizeToPointerData(event) {
+      _normalizeToPointerData(event2) {
         const normalizedEvents = [];
-        if (this.supportsTouchEvents && event instanceof TouchEvent) {
-          for (let i2 = 0, li = event.changedTouches.length; i2 < li; i2++) {
-            const touch = event.changedTouches[i2];
+        if (this.supportsTouchEvents && event2 instanceof TouchEvent) {
+          for (let i2 = 0, li = event2.changedTouches.length; i2 < li; i2++) {
+            const touch = event2.changedTouches[i2];
             if (typeof touch.button === "undefined")
               touch.button = 0;
             if (typeof touch.buttons === "undefined")
               touch.buttons = 1;
             if (typeof touch.isPrimary === "undefined") {
-              touch.isPrimary = event.touches.length === 1 && event.type === "touchstart";
+              touch.isPrimary = event2.touches.length === 1 && event2.type === "touchstart";
             }
             if (typeof touch.width === "undefined")
               touch.width = touch.radiusX || 1;
@@ -8935,11 +8935,11 @@ var init_EventSystem = __esm({
             if (typeof touch.layerY === "undefined")
               touch.layerY = touch.offsetY = touch.clientY;
             touch.isNormalized = true;
-            touch.type = event.type;
+            touch.type = event2.type;
             normalizedEvents.push(touch);
           }
-        } else if (!globalThis.MouseEvent || event instanceof MouseEvent && (!this.supportsPointerEvents || !(event instanceof globalThis.PointerEvent))) {
-          const tempEvent = event;
+        } else if (!globalThis.MouseEvent || event2 instanceof MouseEvent && (!this.supportsPointerEvents || !(event2 instanceof globalThis.PointerEvent))) {
+          const tempEvent = event2;
           if (typeof tempEvent.isPrimary === "undefined")
             tempEvent.isPrimary = true;
           if (typeof tempEvent.width === "undefined")
@@ -8963,7 +8963,7 @@ var init_EventSystem = __esm({
           tempEvent.isNormalized = true;
           normalizedEvents.push(tempEvent);
         } else {
-          normalizedEvents.push(event);
+          normalizedEvents.push(event2);
         }
         return normalizedEvents;
       }
@@ -8976,76 +8976,76 @@ var init_EventSystem = __esm({
        * @returns A federated wheel event.
        */
       normalizeWheelEvent(nativeEvent) {
-        const event = this._rootWheelEvent;
-        this._transferMouseData(event, nativeEvent);
-        event.deltaX = nativeEvent.deltaX;
-        event.deltaY = nativeEvent.deltaY;
-        event.deltaZ = nativeEvent.deltaZ;
-        event.deltaMode = nativeEvent.deltaMode;
-        this.mapPositionToPoint(event.screen, nativeEvent.clientX, nativeEvent.clientY);
-        event.global.copyFrom(event.screen);
-        event.offset.copyFrom(event.screen);
-        event.nativeEvent = nativeEvent;
-        event.type = nativeEvent.type;
-        return event;
+        const event2 = this._rootWheelEvent;
+        this._transferMouseData(event2, nativeEvent);
+        event2.deltaX = nativeEvent.deltaX;
+        event2.deltaY = nativeEvent.deltaY;
+        event2.deltaZ = nativeEvent.deltaZ;
+        event2.deltaMode = nativeEvent.deltaMode;
+        this.mapPositionToPoint(event2.screen, nativeEvent.clientX, nativeEvent.clientY);
+        event2.global.copyFrom(event2.screen);
+        event2.offset.copyFrom(event2.screen);
+        event2.nativeEvent = nativeEvent;
+        event2.type = nativeEvent.type;
+        return event2;
       }
       /**
        * Normalizes the `nativeEvent` into a federateed {@link FederatedPointerEvent}.
        * @param event
        * @param nativeEvent
        */
-      _bootstrapEvent(event, nativeEvent) {
-        event.originalEvent = null;
-        event.nativeEvent = nativeEvent;
-        event.pointerId = nativeEvent.pointerId;
-        event.width = nativeEvent.width;
-        event.height = nativeEvent.height;
-        event.isPrimary = nativeEvent.isPrimary;
-        event.pointerType = nativeEvent.pointerType;
-        event.pressure = nativeEvent.pressure;
-        event.tangentialPressure = nativeEvent.tangentialPressure;
-        event.tiltX = nativeEvent.tiltX;
-        event.tiltY = nativeEvent.tiltY;
-        event.twist = nativeEvent.twist;
-        this._transferMouseData(event, nativeEvent);
-        this.mapPositionToPoint(event.screen, nativeEvent.clientX, nativeEvent.clientY);
-        event.global.copyFrom(event.screen);
-        event.offset.copyFrom(event.screen);
-        event.isTrusted = nativeEvent.isTrusted;
-        if (event.type === "pointerleave") {
-          event.type = "pointerout";
+      _bootstrapEvent(event2, nativeEvent) {
+        event2.originalEvent = null;
+        event2.nativeEvent = nativeEvent;
+        event2.pointerId = nativeEvent.pointerId;
+        event2.width = nativeEvent.width;
+        event2.height = nativeEvent.height;
+        event2.isPrimary = nativeEvent.isPrimary;
+        event2.pointerType = nativeEvent.pointerType;
+        event2.pressure = nativeEvent.pressure;
+        event2.tangentialPressure = nativeEvent.tangentialPressure;
+        event2.tiltX = nativeEvent.tiltX;
+        event2.tiltY = nativeEvent.tiltY;
+        event2.twist = nativeEvent.twist;
+        this._transferMouseData(event2, nativeEvent);
+        this.mapPositionToPoint(event2.screen, nativeEvent.clientX, nativeEvent.clientY);
+        event2.global.copyFrom(event2.screen);
+        event2.offset.copyFrom(event2.screen);
+        event2.isTrusted = nativeEvent.isTrusted;
+        if (event2.type === "pointerleave") {
+          event2.type = "pointerout";
         }
-        if (event.type.startsWith("mouse")) {
-          event.type = event.type.replace("mouse", "pointer");
+        if (event2.type.startsWith("mouse")) {
+          event2.type = event2.type.replace("mouse", "pointer");
         }
-        if (event.type.startsWith("touch")) {
-          event.type = TOUCH_TO_POINTER[event.type] || event.type;
+        if (event2.type.startsWith("touch")) {
+          event2.type = TOUCH_TO_POINTER[event2.type] || event2.type;
         }
-        return event;
+        return event2;
       }
       /**
        * Transfers base & mouse event data from the {@code nativeEvent} to the federated event.
        * @param event
        * @param nativeEvent
        */
-      _transferMouseData(event, nativeEvent) {
-        event.isTrusted = nativeEvent.isTrusted;
-        event.srcElement = nativeEvent.srcElement;
-        event.timeStamp = performance.now();
-        event.type = nativeEvent.type;
-        event.altKey = nativeEvent.altKey;
-        event.button = nativeEvent.button;
-        event.buttons = nativeEvent.buttons;
-        event.client.x = nativeEvent.clientX;
-        event.client.y = nativeEvent.clientY;
-        event.ctrlKey = nativeEvent.ctrlKey;
-        event.metaKey = nativeEvent.metaKey;
-        event.movement.x = nativeEvent.movementX;
-        event.movement.y = nativeEvent.movementY;
-        event.page.x = nativeEvent.pageX;
-        event.page.y = nativeEvent.pageY;
-        event.relatedTarget = null;
-        event.shiftKey = nativeEvent.shiftKey;
+      _transferMouseData(event2, nativeEvent) {
+        event2.isTrusted = nativeEvent.isTrusted;
+        event2.srcElement = nativeEvent.srcElement;
+        event2.timeStamp = performance.now();
+        event2.type = nativeEvent.type;
+        event2.altKey = nativeEvent.altKey;
+        event2.button = nativeEvent.button;
+        event2.buttons = nativeEvent.buttons;
+        event2.client.x = nativeEvent.clientX;
+        event2.client.y = nativeEvent.clientY;
+        event2.ctrlKey = nativeEvent.ctrlKey;
+        event2.metaKey = nativeEvent.metaKey;
+        event2.movement.x = nativeEvent.movementX;
+        event2.movement.y = nativeEvent.movementY;
+        event2.page.x = nativeEvent.pageX;
+        event2.page.y = nativeEvent.pageY;
+        event2.relatedTarget = null;
+        event2.shiftKey = nativeEvent.shiftKey;
       }
     };
     _EventSystem.extension = {
@@ -11904,11 +11904,11 @@ var init_VideoSource = __esm({
        * Handle video error events.
        * @param event - The error event
        */
-      _onError(event) {
+      _onError(event2) {
         this.resource.removeEventListener("error", this._onError, true);
-        this.emit("error", event);
+        this.emit("error", event2);
         if (this._reject) {
-          this._reject(event);
+          this._reject(event2);
           this._reject = null;
           this._resolve = null;
         }
@@ -34211,8 +34211,8 @@ var init_GlContextSystem = __esm({
        * Handles a lost webgl context
        * @param {WebGLContextEvent} event - The context lost event.
        */
-      handleContextLost(event) {
-        event.preventDefault();
+      handleContextLost(event2) {
+        event2.preventDefault();
         if (this._contextLossForced) {
           this._contextLossForced = false;
           setTimeout(() => {
@@ -38891,10 +38891,10 @@ var WorkerManagerClass = class {
       return this._isImageBitmapSupported;
     this._isImageBitmapSupported = new Promise((resolve) => {
       const { worker } = new WorkerInstance();
-      worker.addEventListener("message", (event) => {
+      worker.addEventListener("message", (event2) => {
         worker.terminate();
         WorkerInstance.revokeObjectURL();
-        resolve(event.data);
+        resolve(event2.data);
       });
     });
     return this._isImageBitmapSupported;
@@ -38915,9 +38915,9 @@ var WorkerManagerClass = class {
     if (!worker && this._createdWorkers < MAX_WORKERS) {
       this._createdWorkers++;
       worker = new WorkerInstance2().worker;
-      worker.addEventListener("message", (event) => {
-        this._complete(event.data);
-        this._returnWorker(event.target);
+      worker.addEventListener("message", (event2) => {
+        this._complete(event2.data);
+        this._returnWorker(event2.target);
         this._next();
       });
     }
@@ -41807,7 +41807,6 @@ var SpriteRendererPlugin = class extends BaseRendererPlugin {
    */
   add = (app, options) => {
     return new Observable((observer) => {
-      console.log("aaaaaaaaaaaaaaa");
       const { parent, element, transitions = [], getTransitionByType, eventHandler } = options;
       const textureButton = Texture.from(element.url);
       let textureButtonHover;
@@ -41883,17 +41882,21 @@ var SpriteRendererPlugin = class extends BaseRendererPlugin {
       }
       sprite.on("pointerup", (e2) => {
         e2.stopPropagation();
-        eventHandler && eventHandler(element.eventName, element.eventPayload);
-      });
-      sprite.on("rightclick", (event) => {
-        if (element.rightClickEventName && eventHandler) {
-          eventHandler(element.rightClickEventName);
-        } else {
-          app.stage.emit("rightclick", event);
+        const button = e2.button;
+        console.log("e.button", e2.button);
+        if (button === 0) {
+          console.log("Left click 111111");
+          eventHandler && eventHandler(element.eventName, element.eventPayload);
+        } else if (button === 2) {
+          console.log("Right click 11111");
+          if (element.rightClickEventName && eventHandler) {
+            eventHandler(element.rightClickEventName);
+          } else {
+            app.stage.emit("rightclick", event);
+          }
         }
       });
       const transitionObservables = [];
-      console.log("transitions", transitions);
       for (const transition of transitions) {
         if (transition.elementId === element.id && transition.event === TransitionEvent.Add) {
           const transitionClass = getTransitionByType(transition.type);
@@ -42006,8 +42009,32 @@ var SpriteRendererPlugin = class extends BaseRendererPlugin {
         return () => {
           subscription.unsubscribe();
         };
+      } else {
+        if (nextElement.x !== void 0) {
+          if (typeof nextElement.x === "string" && nextElement.x.endsWith("%")) {
+            sprite.x = Number(nextElement.x.replace("%", "")) * app.screen.width / 100;
+          } else {
+            sprite.x = nextElement.x;
+          }
+        }
+        if (nextElement.y !== void 0) {
+          if (typeof nextElement.y === "string" && nextElement.y.endsWith("%")) {
+            sprite.y = Number(nextElement.y.replace("%", "")) * app.screen.height / 100;
+          } else {
+            sprite.y = nextElement.y;
+          }
+        }
+        if (nextElement.width !== void 0 && nextElement.width !== prevElement.width) {
+          sprite.width = nextElement.width;
+        }
+        if (nextElement.height !== void 0 && nextElement.height !== prevElement.height) {
+          sprite.height = nextElement.height;
+        }
+        if (nextElement.alpha !== void 0 && nextElement.alpha !== prevElement.alpha) {
+          sprite.alpha = nextElement.alpha;
+        }
+        observer.complete();
       }
-      observer.complete();
       return () => {
       };
     });
@@ -42036,164 +42063,232 @@ var TextRendererPlugin = class {
   rendererName = "pixi";
   rendererType = "text";
   /**
-   * @param {Application} app
+   * @param {ApplicationWithSoundStage} app
    * @param {Object} options
    * @param {Container} options.parent
    * @param {TextElement} options.element
    * @param {BaseTransition[]} [options.transitions=[]]
    * @param {Function} options.getTransitionByType
-   * @returns {Promise<undefined>}
+   * @param {Function} [options.eventHandler]
+   * @returns {Observable<any>}
    */
-  add = async (app, options) => {
-    const { parent, element, eventHandler, transitions = [], getTransitionByType } = options;
-    const textStyle = createTextStyle(element.style);
-    const newText = new Text({ text: element.text, style: textStyle });
-    let hoverTextStyle;
-    if (element.hoverStyle) {
-      hoverTextStyle = createTextStyle(element.hoverStyle);
-    }
-    let clickedTextStyle;
-    if (element.clickedStyle) {
-      clickedTextStyle = createTextStyle(element.clickedStyle);
-    }
-    if (element.eventName || element.clickedStyle || element.hoverStyle) {
-      newText.cursor = "pointer";
-      newText.eventMode = "static";
-    }
-    newText.label = element.id;
-    if (element.x !== void 0) {
-      newText.x = element.x;
-    }
-    if (element.y !== void 0) {
-      newText.y = element.y;
-    }
-    if (element.xa !== void 0) {
-      newText.anchor.x = element.xa;
-    }
-    if (element.ya !== void 0) {
-      newText.anchor.y = element.ya;
-    }
-    if (element.xa !== void 0 || element.ya !== void 0) {
-      const bounds = newText.getLocalBounds();
-      newText.hitArea = new Rectangle(
-        -bounds.width * newText.anchor.x,
-        -bounds.height * newText.anchor.y,
-        bounds.width,
-        bounds.height
-      );
-    }
-    newText.on("pointerupoutside", () => {
-      newText.style = textStyle;
-    }).on("pointerup", () => {
-      newText.style = textStyle;
-    }).on("pointerleave", () => {
-      newText.style = textStyle;
-    });
-    newText.on("pointerup", (e2) => {
-      if (element.clickSoundUrl) {
-        app.soundStage.add({
-          id: `${element.id}-click-${Math.random()}`,
-          url: element.clickSoundUrl,
-          loop: false,
-          volume: element.clickSoundVolume ?? 50 / 100
-        });
+  add = (app, options) => {
+    return new Observable((observer) => {
+      const { parent, element, transitions = [], getTransitionByType, eventHandler } = options;
+      const textStyle = createTextStyle(element.style);
+      const newText = new Text({ text: element.text, style: textStyle });
+      let hoverTextStyle;
+      if (element.hoverStyle) {
+        hoverTextStyle = createTextStyle(element.hoverStyle);
       }
-      e2.stopPropagation();
-      eventHandler && eventHandler(element.eventName, element.eventPayload);
-    });
-    if (clickedTextStyle) {
-      newText.on("pointerdown", () => {
-        newText.style = clickedTextStyle;
+      let clickedTextStyle;
+      if (element.clickedStyle) {
+        clickedTextStyle = createTextStyle(element.clickedStyle);
+      }
+      if (element.eventName || element.clickedStyle || element.hoverStyle) {
+        newText.cursor = "pointer";
+        newText.eventMode = "static";
+      }
+      newText.label = element.id;
+      if (element.x !== void 0) {
+        newText.x = element.x;
+      }
+      if (element.y !== void 0) {
+        newText.y = element.y;
+      }
+      if (element.xa !== void 0) {
+        newText.anchor.x = element.xa;
+      }
+      if (element.ya !== void 0) {
+        newText.anchor.y = element.ya;
+      }
+      if (element.xa !== void 0 || element.ya !== void 0) {
+        const bounds = newText.getLocalBounds();
+        newText.hitArea = new Rectangle(
+          -bounds.width * newText.anchor.x,
+          -bounds.height * newText.anchor.y,
+          bounds.width,
+          bounds.height
+        );
+      }
+      newText.on("pointerupoutside", () => {
+        newText.style = textStyle;
+      }).on("pointerup", () => {
+        newText.style = textStyle;
+      }).on("pointerleave", () => {
+        newText.style = textStyle;
       });
-    }
-    if (hoverTextStyle) {
-      newText.on("pointerenter", () => {
-        newText.style = hoverTextStyle;
-        if (element.hoverSoundUrl) {
+      newText.on("pointerup", (e2) => {
+        if (element.clickSoundUrl && app.soundStage) {
           app.soundStage.add({
-            id: `${element.id}-hover-${Math.random()}`,
-            url: element.hoverSoundUrl,
+            id: `${element.id}-click-${Math.random()}`,
+            url: element.clickSoundUrl,
             loop: false,
-            volume: element.hoverSoundVolume / 100
+            volume: element.clickSoundVolume ?? 50 / 100
           });
         }
+        e2.stopPropagation();
+        eventHandler && eventHandler(element.eventName, element.eventPayload);
       });
-    }
-    const transitionPromises = [];
-    for (const transition of transitions) {
-      if (transition.elementId === element.id && transition.event === TransitionEvent.Add) {
-        const transitionClass = getTransitionByType(transition.type);
-        if (!transitionClass) {
-          throw new Error(`Transition class not found for type ${transition.type}`);
-        }
-        transitionPromises.push(transitionClass.add(app, newText, transition));
+      if (clickedTextStyle) {
+        newText.on("pointerdown", () => {
+          newText.style = clickedTextStyle;
+        });
       }
-    }
-    parent.addChild(newText);
-    await Promise.all(transitionPromises);
+      if (hoverTextStyle) {
+        newText.on("pointerenter", () => {
+          newText.style = hoverTextStyle;
+          if (element.hoverSoundUrl && app.soundStage && element.hoverSoundVolume !== void 0) {
+            app.soundStage.add({
+              id: `${element.id}-hover-${Math.random()}`,
+              url: element.hoverSoundUrl,
+              loop: false,
+              volume: element.hoverSoundVolume / 100
+            });
+          }
+        });
+      }
+      const transitionObservables = [];
+      for (const transition of transitions) {
+        if (transition.elementId === element.id && transition.event === TransitionEvent.Add) {
+          const transitionClass = getTransitionByType(transition.type);
+          if (!transitionClass) {
+            throw new Error(`Transition class not found for type ${transition.type}`);
+          }
+          transitionObservables.push(transitionClass.add(app, newText, transition));
+        }
+      }
+      parent.addChild(newText);
+      const subscription = from(transitionObservables).pipe(
+        mergeMap((task$) => task$)
+        // Runs all in parallel
+      ).subscribe({
+        error: (err) => {
+          console.error("Error:", err);
+          observer.error(err);
+        },
+        complete: () => observer.complete()
+      });
+      return () => {
+        subscription.unsubscribe();
+      };
+    });
   };
   /**
-   * @param {Application} app
+   * @param {ApplicationWithSoundStage} app
    * @param {Object} options
    * @param {Container} options.parent
    * @param {TextElement} options.element
    * @param {BaseTransition[]} [options.transitions=[]]
    * @param {Function} options.getTransitionByType
-   * @returns {Promise<undefined>}
+   * @returns {Observable<any>}
    */
-  remove = async (app, options) => {
-    const { parent, element, transitions = [], getTransitionByType } = options;
-    const text = parent.getChildByName(element.id);
-    if (!text) {
-      console.warn(`Text with id ${element.id} not found`);
-      return;
-    }
-    let transitionPromises = [];
-    for (const transition of transitions) {
-      if (transition.elementId === element.id && transition.event === TransitionEvent.Remove) {
-        const transitionClass = getTransitionByType(transition.type);
-        if (!transitionClass) {
-          throw new Error(`Transition class not found for type ${transition.type}`);
-        }
-        transitionPromises.push(transitionClass.remove(app, text, transition));
+  remove = (app, options) => {
+    return new Observable((observer) => {
+      const { parent, element, transitions = [], getTransitionByType } = options;
+      const text = parent.getChildByName(element.id);
+      if (!text) {
+        console.warn(`Text with id ${element.id} not found`);
+        observer.complete();
+        return;
       }
-    }
-    await Promise.all(transitionPromises);
-    text.destroy();
+      let transitionObservables = [];
+      for (const transition of transitions) {
+        if (transition.elementId === element.id && transition.event === TransitionEvent.Remove) {
+          const transitionClass = getTransitionByType(transition.type);
+          if (!transitionClass) {
+            throw new Error(`Transition class not found for type ${transition.type}`);
+          }
+          transitionObservables.push(transitionClass.remove(app, text, transition));
+        }
+      }
+      const subscription = from(transitionObservables).pipe(
+        mergeMap((task$) => task$)
+        // Runs all in parallel
+      ).subscribe({
+        error: (err) => {
+          console.error("Error:", err);
+          observer.error(err);
+        },
+        complete: () => {
+          text.destroy();
+          observer.complete();
+        }
+      });
+      return () => {
+        subscription.unsubscribe();
+        if (text) {
+          text.destroy();
+        }
+      };
+    });
   };
   /**
-   * @param {Application} app
+   * @param {ApplicationWithSoundStage} app
    * @param {Object} options
    * @param {Container} options.parent
    * @param {TextElement} options.prevElement
    * @param {TextElement} options.nextElement
    * @param {BaseTransition[]} [options.transitions=[]]
    * @param {Function} options.getTransitionByType
-   * @returns {Promise<undefined>}
+   * @param {Function} [options.eventHandler]
+   * @returns {Observable<undefined>}
    */
-  update = async (app, options) => {
-    const { parent, prevElement, nextElement } = options;
-    const text = (
-      /** @type {Text | null} */
-      parent.getChildByName(prevElement.id)
-    );
-    if (!text) {
-      console.warn(`Text with id ${prevElement.id} not found`);
-      return;
-    }
-    if (prevElement.text !== nextElement.text) {
-      text.text = nextElement.text;
-    } else {
-    }
-    if (JSON.stringify(prevElement.style) !== JSON.stringify(nextElement.style)) {
-      text.style = createTextStyle(nextElement?.style);
-    }
-    if (nextElement.x !== void 0) {
-      text.x = nextElement.x;
-    }
-    if (nextElement.y !== void 0) {
-      text.y = nextElement.y;
-    }
+  update = (app, options) => {
+    return new Observable((observer) => {
+      const { parent, prevElement, nextElement, transitions, getTransitionByType, eventHandler } = options;
+      const text = (
+        /** @type {Text | null} */
+        parent.getChildByName(prevElement.id)
+      );
+      if (!text) {
+        console.warn(`Text with id ${prevElement.id} not found`);
+        observer.complete();
+        return;
+      }
+      if (JSON.stringify(prevElement) !== JSON.stringify(nextElement)) {
+        const tasks = [
+          this.add(app, {
+            parent,
+            element: nextElement,
+            transitions,
+            getTransitionByType,
+            eventHandler
+          }),
+          this.remove(app, { parent, element: prevElement, transitions, getTransitionByType })
+        ];
+        const subscription = from(tasks).pipe(
+          mergeMap((task$) => task$)
+          // Runs all in parallel
+        ).subscribe({
+          error: (err) => {
+            console.error("Error:", err);
+            observer.error(err);
+          },
+          complete: () => observer.complete()
+        });
+        return () => {
+          subscription.unsubscribe();
+        };
+      } else {
+        if (prevElement.text !== nextElement.text) {
+          text.text = nextElement.text;
+        } else {
+        }
+        if (JSON.stringify(prevElement.style) !== JSON.stringify(nextElement.style)) {
+          text.style = createTextStyle(nextElement?.style);
+        }
+        if (nextElement.x !== void 0) {
+          text.x = nextElement.x;
+        }
+        if (nextElement.y !== void 0) {
+          text.y = nextElement.y;
+        }
+        observer.complete();
+      }
+      return () => {
+      };
+    });
   };
 };
 
@@ -42487,6 +42582,7 @@ var ContainerRendererPlugin = class {
    * @returns {Observable<undefined>}
    */
   add = (app, options) => {
+    console.log("add container 11111111111");
     return new Observable((observer) => {
       const {
         parent,
@@ -42571,7 +42667,14 @@ var ContainerRendererPlugin = class {
             scroll: element.scroll
           });
         }
-        this.setupScrolling({ container, element, totalHeight, totalWidth, eventHandler, sliderRef });
+        this.setupScrolling({
+          container,
+          element,
+          totalHeight,
+          totalWidth,
+          eventHandler,
+          sliderRef
+        });
         graphic = this.createContainerGraphic(element, totalWidth, totalHeight, anchor);
       }
       graphic.label = `${element.id}-container-background`;
@@ -42630,7 +42733,8 @@ var ContainerRendererPlugin = class {
    * @param {Function} options.getTransitionByType
    * @returns {Observable<any>}
    */
-  remove = async (app, options) => {
+  remove = (app, options) => {
+    console.log("remove container 11111111111");
     return new Observable((observer) => {
       const { parent, element } = options;
       const container = parent.getChildByName(element.id);
@@ -42655,7 +42759,7 @@ var ContainerRendererPlugin = class {
    * @param {Function} options.getTransitionByType
    * @returns {Observable<any>}
    */
-  update = async (app, options) => {
+  update = (app, options) => {
     return new Observable((observer) => {
       const {
         parent,
@@ -42677,99 +42781,122 @@ var ContainerRendererPlugin = class {
       if (nextElement.y !== void 0 && nextElement.y !== prevElement.y) {
         container.y = nextElement.y;
       }
-      if (nextElement.animation && nextElement.animation?.key !== prevElement.animation?.key) {
-        const nextContainer = parent.getChildByName(nextElement.id);
-        if (nextContainer) {
-          nextContainer.destroy();
+      if (nextElement.direction) {
+        const gap = nextElement.gap || 0;
+        let totalWidth;
+        let totalHeight;
+        if (nextElement.direction === "horizontal") {
+          totalWidth = nextElement.children.reduce((p2, c2) => p2 + c2.width + gap, 0);
+          totalHeight = nextElement.children.reduce((p2, c2) => Math.max(p2, c2.height || 0), 0);
+        } else if (nextElement.direction === "vertical") {
+          totalWidth = nextElement.children.reduce((p2, c2) => Math.max(p2, c2.width || 0), 0);
+          totalHeight = nextElement.children.reduce((p2, c2) => p2 + c2.height + gap, 0);
         }
-        const transitionClass = getTransitionByType("keyframes");
-        if (container && container.destroy) {
-          container.destroy();
+        const anchor = AnchorLayoutAnchorMapping[nextElement.anchor || AnchorLayoutValues.TopLeft];
+        if (nextElement.direction === "horizontal") {
+          this.layoutChildren({
+            element: nextElement,
+            anchor,
+            totalWidth,
+            totalHeight,
+            gap,
+            direction: "horizontal",
+            scroll: nextElement.scroll
+          });
+        } else if (nextElement.direction === "vertical") {
+          this.layoutChildren({
+            element: nextElement,
+            anchor,
+            totalWidth,
+            totalHeight,
+            gap,
+            direction: "vertical",
+            scroll: nextElement.scroll
+          });
         }
-        return;
+        const backgroundGraphic = container.children.find((child) => child.label === `${nextElement.id}-container-background`);
+        if (backgroundGraphic) {
+          backgroundGraphic.destroy();
+          const newGraphic = this.createContainerGraphic(nextElement, totalWidth, totalHeight, anchor);
+          newGraphic.label = `${nextElement.id}-container-background`;
+          container.addChildAt(newGraphic, 0);
+        }
+        if (prevElement.scroll !== nextElement.scroll) {
+          this.setupScrolling({
+            container,
+            element: nextElement,
+            totalHeight,
+            totalWidth,
+            eventHandler,
+            sliderRef: {}
+          });
+        }
       }
-      const renderPromises = [];
-      if (nextElement.data && nextElement.template) {
-        const children = compileChildren(nextElement.data, nextElement.template);
-        for (const element of children) {
-          const renderer = getRendererByElement(element);
-          renderPromises.push(
-            renderer.update(app, {
-              parent: container,
-              // TODO fix diff
-              prevElement: element,
-              nextElement: element,
-              transitions,
-              getTransitionByType,
-              getRendererByElement,
-              eventHandler
-            })
-          );
-        }
-      } else {
-        const { toAddElements, toUpdateElements, toDeleteElements } = diffElements(
-          prevElement.children.filter((childElement) => {
-            if (prevElement.selectedTabId) {
-              return childElement.tabId === prevElement.selectedTabId;
-            }
-            return true;
-          }),
-          nextElement.children.filter((childElement) => {
-            if (nextElement.selectedTabId) {
-              return childElement.tabId === nextElement.selectedTabId;
-            }
-            return true;
+      const $updates = [];
+      const { toAddElements, toUpdateElements, toDeleteElements } = diffElements(
+        prevElement.children,
+        nextElement.children
+      );
+      for (const element of toDeleteElements) {
+        const renderer = getRendererByElement(element);
+        $updates.push(
+          renderer.remove(app, {
+            parent: container,
+            element,
+            transitions,
+            getTransitionByType,
+            getRendererByElement,
+            eventHandler
           })
         );
-        for (const element of toDeleteElements) {
-          const renderer = getRendererByElement(element);
-          renderPromises.push(
-            renderer.remove(app, {
-              parent: container,
-              element,
-              transitions,
-              getTransitionByType,
-              getRendererByElement,
-              eventHandler
-            })
-          );
-        }
-        for (const element of toAddElements) {
-          const renderer = getRendererByElement(element);
-          renderPromises.push(
-            renderer.add(app, {
-              parent: container,
-              element,
-              transitions,
-              getTransitionByType,
-              getRendererByElement,
-              eventHandler
-            })
-          );
-        }
-        for (const element of toUpdateElements) {
-          const renderer = getRendererByElement(element.next);
-          renderPromises.push(
-            renderer.update(app, {
-              parent: container,
-              // TODO fix diff
-              prevElement: element.prev,
-              nextElement: element.next,
-              transitions,
-              getTransitionByType,
-              getRendererByElement,
-              eventHandler
-            })
-          );
-        }
+      }
+      for (const element of toAddElements) {
+        const renderer = getRendererByElement(element);
+        $updates.push(
+          renderer.add(app, {
+            parent: container,
+            element,
+            transitions,
+            getTransitionByType,
+            getRendererByElement,
+            eventHandler
+          })
+        );
+      }
+      for (const element of toUpdateElements) {
+        const renderer = getRendererByElement(element.next);
+        $updates.push(
+          renderer.update(app, {
+            parent: container,
+            // TODO fix diff
+            prevElement: element.prev,
+            nextElement: element.next,
+            transitions,
+            getTransitionByType,
+            getRendererByElement,
+            eventHandler
+          })
+        );
       }
       container.children.sort((a2, b2) => {
         const aIndex = nextElement.children?.findIndex((element) => element.id === a2.label);
         const bIndex = nextElement.children?.findIndex((element) => element.id === b2.label);
         return aIndex - bIndex;
       });
+      this._currentSubscription = from($updates).pipe(
+        mergeMap((task$) => task$),
+        // Runs all in parallel (or use mergeMap(task$, concurrency))
+        finalize(() => {
+          observer.complete();
+        })
+      ).subscribe({
+        error: (err) => {
+          observer.error(err);
+          console.error("Error:", err);
+        }
+      });
       return () => {
-        container.destroy();
+        this._currentSubscription?.unsubscribe();
       };
     });
   };
@@ -43140,16 +43267,14 @@ var GraphicsRendererPlugin = class {
     }
     graphics.rect(element.x1, element.y1, element.x2, element.y2);
     graphics.fill(element.fill);
-    if (element.clickEventName && eventHandler) {
+    if ((element.clickEventName || element.rightClickEventName) && eventHandler) {
       graphics.eventMode = "static";
-      graphics.on("pointerup", () => {
-        eventHandler(element.clickEventName);
-      });
-    }
-    if (element.rightClickEventName && eventHandler) {
-      graphics.eventMode = "static";
-      graphics.on("rightclick", (e2) => {
-        eventHandler(element.rightClickEventName);
+      graphics.on("pointerup", (e2) => {
+        if (e2.button === 0) {
+          eventHandler(element.clickEventName);
+        } else if (e2.button === 2) {
+          eventHandler(element.rightClickEventName);
+        }
       });
     }
     if (element.wheelEventName && eventHandler) {

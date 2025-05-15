@@ -1,0 +1,67 @@
+---
+title: 'Sample'
+---
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: '#000000'
+
+presets: {}
+
+ui:
+  screens:
+    j3i8dk32:
+      name: Title Screen
+      elements:
+        - id: bg
+          type: sprite
+          url: file:lakjf3lka
+          x: 0
+          y: 0
+        - id: container
+          type: container
+          direction: horizontal
+          anchor: BottomCenter
+          x: 50%
+          y: 80%
+          children:
+            $map:
+              - text: Start
+              - text: Load
+              - text: Options
+              - text: Exit
+            each(v,k):
+              id:
+                $eval: 'v.text'
+              type: text
+              text:
+                $eval: 'v.text'
+              height: 40
+              width: 200
+              x: 0
+              y: 0
+              style: 
+                fontSize: 48
+                fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+
+resources: {}
+
+story:
+  initialSceneId: ajfl3a
+  scenes:
+    ajfl3a:
+      name: Scene 1
+      initialSectionId: l3kjfawelf
+      sections:
+        l3kjfawelf:
+          name: Section 1
+          steps:
+            - id: step1
+              actions:
+                screen:
+                  id: 3k3k38
+                  screenId: j3i8dk32

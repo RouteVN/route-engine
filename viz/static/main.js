@@ -64,10 +64,9 @@ const init = async () => {
     width: 1920,
     height: 1080,
     assetBufferMap,
-    eventHandler: (e, f) => {
-      if (e === "LeftClick") {
-        engine.handleAction("nextStep", {});
-      }
+    eventHandler: (event, payload) => {
+      engine.handleEvent(event, payload);
+
     },
     plugins: [
       new SpriteRendererPlugin(),
@@ -100,6 +99,9 @@ const init = async () => {
     // "/public/sfx-3.ogg",
   ]);
   document.getElementById("canvas").appendChild(app.canvas);
+  document.getElementById("canvas").addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+  });
   const engine = new Engine();
   const callback = (event, payload) => {
     console.log({

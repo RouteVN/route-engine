@@ -18,3 +18,5 @@ sections:
     files: 'viz/specs/animation'
   - title: 'Complete'
     files: 'viz/specs/complete'
+  - title: 'Screen'
+    files: 'viz/specs/screen'

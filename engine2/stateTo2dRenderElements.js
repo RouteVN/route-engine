@@ -217,17 +217,15 @@ const addDialogue = ({ elements, transitions, state, ui, resources }) => {
   return [newElements, transitions];
 };
 
-const addScreens = ({ elements, transitions, state }) => {
+const addScreens = ({ elements, transitions, state, ui, resources, variables }) => {
   let newElements = elements.concat([]);
-  if (state.screens) {
-    newElements = newElements.concat([
-      {
-        id: "bg-cg",
-        type: "sprite",
-        x: 0,
-        y: 0,
-      },
-    ]);
+  if (state.screen) {
+    const screen = ui.screens[state.screen.screenId];
+    newElements = newElements.concat(
+      jsone(screen.elements, {
+        variables,
+      })
+    );
   }
   return [newElements, transitions];
 };
@@ -254,6 +252,7 @@ const generateRenderElements = ({
   resolveFile,
   screen,
   ui,
+  variables,
 }) => {
   let elements = [];
   let transitions = [];
@@ -293,7 +292,14 @@ const generateRenderElements = ({
     resources,
     ui,
   });
-  [elements, transitions] = addScreens({ elements, transitions, state });
+  [elements, transitions] = addScreens({
+    elements,
+    transitions,
+    state,
+    ui,
+    resources,
+    variables,
+  });
   [elements, transitions] = addChoices({
     elements,
     transitions,

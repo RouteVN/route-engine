@@ -1706,17 +1706,15 @@ var addDialogue = ({ elements, transitions, state, ui, resources }) => {
   }
   return [newElements, transitions];
 };
-var addScreens = ({ elements, transitions, state }) => {
+var addScreens = ({ elements, transitions, state, ui, resources, variables }) => {
   let newElements = elements.concat([]);
-  if (state.screens) {
-    newElements = newElements.concat([
-      {
-        id: "bg-cg",
-        type: "sprite",
-        x: 0,
-        y: 0
-      }
-    ]);
+  if (state.screen) {
+    const screen = ui.screens[state.screen.screenId];
+    newElements = newElements.concat(
+      (0, import_json_e.default)(screen.elements, {
+        variables
+      })
+    );
   }
   return [newElements, transitions];
 };
@@ -1739,7 +1737,8 @@ var generateRenderElements = ({
   resources,
   resolveFile,
   screen,
-  ui
+  ui,
+  variables
 }) => {
   let elements = [];
   let transitions = [];
@@ -1778,7 +1777,14 @@ var generateRenderElements = ({
     resources,
     ui
   });
-  [elements, transitions] = addScreens({ elements, transitions, state });
+  [elements, transitions] = addScreens({
+    elements,
+    transitions,
+    state,
+    ui,
+    resources,
+    variables
+  });
   [elements, transitions] = addChoices({
     elements,
     transitions,
@@ -1815,10 +1821,21 @@ var goToSectionScene = (payload, deps) => {
   const renderObject = deps.generateRender();
   deps.dispatchEvent("render", renderObject);
 };
+var setRuntimeVariable = (payload, deps) => {
+  Object.assign(deps.variables.runtime, payload);
+  const renderObject = deps.generateRender();
+  deps.dispatchEvent("render", renderObject);
+};
+var setPreset = (payload, deps) => {
+  const preset = deps.vnData.presets[payload.presetId];
+  deps.currentPreset = preset;
+};
 var actions_default = {
   nextStep,
   prevStep,
-  goToSectionScene
+  goToSectionScene,
+  setRuntimeVariable,
+  setPreset
 };
 
 // engine/SeenSections.js
@@ -2215,6 +2232,12 @@ var VnData = class {
   constructor(data) {
     this.data = data;
   }
+  get presets() {
+    return this.data.presets;
+  }
+  get initialPreset() {
+    return this.data.presets[this.data.story.initialPresetId];
+  }
   get resources() {
     return this.data.resources;
   }
@@ -2259,10 +2282,17 @@ var Engine = class {
     this.vnData = new VnData_default(vnData);
     this.deps = {
       stepManager: new StepManager_default(this.vnData),
+      vnData: this.vnData,
       generateRender: this.generateRender,
       dispatchEvent: this.dispatchEvent,
       _dialogueContent: [],
-      autoNext: void 0
+      autoNext: void 0,
+      variables: {
+        runtime: {
+          currentMenuTabId: "options"
+        }
+      },
+      currentPreset: this.vnData.initialPreset
     };
     this.on = callback;
     const renderObject = this.generateRender();
@@ -2296,9 +2326,12 @@ var Engine = class {
     }
     const state = steps.reduce(applyState, {});
     console.log("state", state);
-    if (state.goToSectionScene) {
+    if (lastStep.actions.goToSectionScene) {
       this.handleAction("goToSectionScene", state.goToSectionScene);
       return;
+    }
+    if (lastStep.actions.preset) {
+      this.handleAction("setPreset", lastStep.actions.preset);
     }
     const resources = this.vnData.resources;
     const resolveFile = (fileId) => {
@@ -2309,9 +2342,34 @@ var Engine = class {
       resources,
       resolveFile,
       screen: this.vnData.screen,
-      ui: this.vnData.ui
+      ui: this.vnData.ui,
+      variables: this.deps.variables
     });
     return result;
+  };
+  // event from pixijs 2drender
+  handleEvent = (event, payload) => {
+    if (event === "Actions") {
+      const { actions: actions2 } = payload;
+      if (actions2.goToSectionScene) {
+        this.handleAction("goToSectionScene", actions2.goToSectionScene);
+      }
+      if (actions2.setRuntimeVariable) {
+        this.handleAction("setRuntimeVariable", actions2.setRuntimeVariable);
+      }
+      return;
+    }
+    const { currentPreset } = this.deps;
+    const { eventsMap } = currentPreset;
+    const matchedMap = eventsMap[event];
+    if (!matchedMap) {
+      return;
+    }
+    const { actions } = matchedMap;
+    Object.keys(actions).forEach((action) => {
+      const payload2 = actions[action];
+      this.handleAction(action, payload2);
+    });
   };
   handleAction = (action, payload) => {
     const foundAction = actions_default[action];

@@ -3,6 +3,14 @@ class VnData {
     this.data = data;
   }
 
+  get presets() {
+    return this.data.presets;
+  }
+
+  get initialPreset() {
+    return this.data.presets[this.data.story.initialPresetId];
+  }
+
   get resources() {
     return this.data.resources;
   }
