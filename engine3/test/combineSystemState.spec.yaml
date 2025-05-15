@@ -1,0 +1,24 @@
+file: './combineSystemState.js'
+cases:
+  - name: basic screen background
+    in:
+      - template:
+          screen:
+            width: 1280
+            height: 720
+            backgroundColor: "#000000"
+        state: {}
+        data: {}
+    out:
+      elements:
+        - id: "bg-screen"
+          type: "graphics"
+          x1: 0
+          x2: 1280
+          y1: 0
+          y2: 720
+          fill: "#000000"
+          clickEventName: "LeftClick"
+          rightClickEventName: "RightClick"
+          wheelEventName: "ScrollUp"
+      transitions: []

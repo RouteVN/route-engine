@@ -1,0 +1,26 @@
+file: './applyPresentationInstructions.js'
+suites:
+  - name: visual group
+    cases:
+      - name: visual
+        in:
+          - - visual:
+                items:
+                  - visualId: '123'
+            - background:
+                backgroundId: abc
+        out:
+          visual:
+            items:
+              - visualId: '123'
+          background:
+            backgroundId: abc
+  - name: background group
+    cases:
+      - name: background basic
+        in:
+          - - background:
+                backgroundId: abc
+        out:
+          background:
+            backgroundId: abc

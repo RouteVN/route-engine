@@ -1,0 +1,19 @@
+file: './applySystemInstructions.js'
+cases:
+  - name: setRuntimeVariable
+    in:
+      - systemInstructions:
+          setRuntimeVariable:
+            testVar: "testValue"
+        setRuntimeVariable:
+          testVar: "testValue"
+        systemState:
+          variables:
+            runtime: {}
+        vnData: {}
+    out:
+      systemState:
+        variables:
+          runtime:
+            testVar: "testValue"
+      effects: []

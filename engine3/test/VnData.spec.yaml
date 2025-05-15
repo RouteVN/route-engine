@@ -1,0 +1,37 @@
+file: './VnData.js'
+suites:
+  - name: initialIds
+    class:
+      classConstructor:
+        - !include ./testVnData.yaml
+      method: initialIds
+      isProperty: true
+    cases:
+      - name: basic
+        out:
+          sceneId: "ajfl3a"
+          sectionId: "l3kjfawelf"
+          stepId: "step1"
+          presetId: "bj342s"
+  - name: getSectionSteps
+    class:
+      classConstructor:
+        - !include ./testVnData.yaml
+      method: getSectionSteps
+    cases:
+      - name: basic
+        in:
+          - "l3kjfawelf"
+          - "step1"
+        out:
+          - id: step1
+            autoNext:
+              delay: 1000
+            presentation:
+              visual:
+                items:
+                  - animations:
+                      in: 3lkj289
+                    id: 39kdfj231
+                    positionId: iasdlf
+                    visualId: alkejf3la
