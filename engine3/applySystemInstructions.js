@@ -84,12 +84,14 @@ const prevStep = ({ systemState, effects }) => {
  *
  * @param {ApplyParams} params
  */
-const goToSectionScene = ({ payload, systemState, effects }) => {
+const goToSectionScene = ({ payload, systemState, effects, vnData }) => {
   const { sectionId, sceneId, mode } = payload;
   // let mode = payload.mode || systemState.mode;
 
   // const mode = systemStateSelectors.selectPointerMode(systemState);
   const _mode = mode || systemStateSelectors.selectPointerMode(systemState);
+
+  const steps = vnDataSelectors.selectSectionSteps(vnData, sectionId)
 
   return [
     {
@@ -99,7 +101,7 @@ const goToSectionScene = ({ payload, systemState, effects }) => {
         currentPointer: _mode,
         pointers: {
           ...systemState.story.pointers,
-          [_mode]: { sectionId, sceneId },
+          [_mode]: { sectionId, sceneId, stepId: steps[0].id },
         },
       },
     },
@@ -130,7 +132,10 @@ const setPreset = ({ payload, systemState, effects }) => {
   return [
     {
       ...systemState,
-      currentPresetId: payload.presetId,
+      story: {
+        ...systemState.story,
+        currentPresetId: payload.presetId,
+      }
     },
     effects,
   ];

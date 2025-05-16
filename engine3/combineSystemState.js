@@ -226,21 +226,21 @@ const addVisuals = ({
  * 
  * @param {TransformParams} params 
  */
-const addDialogue = ({ elements, transitions, state, ui, resources }) => {
+const addDialogue = ({ elements, transitions, template, ui, resources }) => {
   let newElements = elements.concat([]);
-  if (state.dialogue) {
-    const dialogueBoxScreen = ui.screens[state.dialogue.dialogueBoxId];
+  if (template.dialogue) {
+    const dialogueBoxScreen = ui.screens[template.dialogue.dialogueBoxId];
 
     let character;
 
-    if (state.dialogue.characterId) {
-      character = resources.characters[state.dialogue.characterId];
+    if (template.dialogue.characterId) {
+      character = resources.characters[template.dialogue.characterId];
     }
 
     newElements = newElements.concat(
       jsone(dialogueBoxScreen.elements, {
         dialogue: {
-          text: state.dialogue.text,
+          text: template.dialogue.text,
           character: {
             name: character?.name,
           },

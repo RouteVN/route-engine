@@ -36,7 +36,7 @@ class RouteEngine {
 
   systemEventHandler = (event, payload) => {
     // use presets to map event to system instructions
-    if (event === 'systemInstructions') {
+    if (event === "systemInstructions") {
       const { systemState, effects } = applySystemInstructions({
         systemInstructions: payload.systemInstructions,
         systemState: this._systemState,
@@ -52,12 +52,12 @@ class RouteEngine {
       systemStateSelectors.selectCurrentPresetId(this._systemState)
     );
 
-    const foundEvent = preset.eventsMap[event]
+    const foundEvent = preset.eventsMap[event];
     if (!foundEvent) {
-      console.log('no event found', {event, preset})
+      console.log("no event found", { event, preset });
       return;
     }
-    const { systemInstruction } = foundEvent
+    const { systemInstruction } = foundEvent;
 
     const { systemState, effects } = applySystemInstructions({
       systemInstructions: systemInstruction,
@@ -82,6 +82,7 @@ class RouteEngine {
    * @see engine3/design.md
    */
   render = () => {
+    console.log('this._systemState', this._systemState)
     const currentPointer = systemStateSelectors.selectCurrentPointer(
       this._systemState
     );
@@ -92,7 +93,7 @@ class RouteEngine {
     );
 
     const lastStep = currentSteps[currentSteps.length - 1];
-    
+
     // TODO figure out how to order this and put this properly
     if (lastStep.systemInstructions) {
       const { systemState, effects } = applySystemInstructions({
@@ -113,11 +114,16 @@ class RouteEngine {
       presentationInstructions
     );
 
-
     const presentationState = combineSystemState({
       template: presentationTemplate,
       state: this._systemState,
       data: this._vnData,
+    });
+
+    console.log({
+      currentSteps,
+      presentationTemplate,
+      presentationState,
     });
 
     this._render(presentationState);

@@ -19,6 +19,8 @@ presets:
             mode: menu
             sceneId: 93jkal3
             sectionId: asdkjl32
+          setPreset:
+            presetId: 3ijasdk3
       LeftClick:
         systemInstruction:
           nextStep: {}
@@ -27,10 +29,10 @@ presets:
     eventsMap:
       RightClick:
         systemInstruction:
-          clearCurrentMode:
-            newMode: read
-          preset:
+          setPreset:
             presetId: bj342s
+          clearCurrentMode:
+            mode: read
 
 variables:
   runtime:
@@ -86,10 +88,21 @@ ui:
                   systemInstructions:
                     setRuntimeVariable:
                       currentMenuTabId: options
+              - text: Main
+                eventName: "systemInstructions"
+                eventPayload:
+                  systemInstructions:
+                    setPreset:
+                      presetId: bj342s
+                    goToSectionScene:
+                      mode: read
+                      sectionId: l3kjfawelf
               - text: Exit
                 eventName: "systemInstructions"
                 eventPayload:
                   systemInstructions:
+                    setPreset:
+                      presetId: bj342s
                     clearCurrentMode:
                       mode: read
             each(v,k):
@@ -162,6 +175,8 @@ ui:
                 eventName: "systemInstructions"
                 eventPayload:
                   systemInstructions:
+                    setPreset:
+                      presetId: 3ijasdk3
                     goToSectionScene:
                       sceneId: 93jkal3
                       sectionId: asdkjl32
@@ -172,6 +187,8 @@ ui:
                 eventName: "systemInstructions"
                 eventPayload:
                   systemInstructions:
+                    setPreset:
+                      presetId: 3ijasdk3
                     goToSectionScene:
                       sceneId: 93jkal3
                       sectionId: asdkjl32

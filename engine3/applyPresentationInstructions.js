@@ -102,12 +102,6 @@ const applyDialogue = ({ state, instruction }) => {
     ...instruction.dialogue,
   };
 
-  // Handle segments/text mutual exclusivity
-  if (instruction.dialogue.segments) {
-    const { text, ...dialogueWithoutText } = newDialogue;
-    newDialogue = dialogueWithoutText;
-  }
-
   if (instruction.dialogue.text) {
     const { segments, ...dialogueWithoutSegments } = newDialogue;
     newDialogue = dialogueWithoutSegments;
@@ -125,21 +119,6 @@ const applyDialogue = ({ state, instruction }) => {
         character: characterWithoutName,
       };
     }
-  }
-
-  // Handle incremental text
-  if (instruction.dialogue.incremental) {
-    const existingTexts = newDialogue.texts || [];
-    newDialogue = {
-      ...newDialogue,
-      texts: [
-        ...existingTexts,
-        {
-          template: instruction.dialogue.template,
-          text: instruction.dialogue.text,
-        },
-      ],
-    };
   }
 
   return {

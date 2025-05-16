@@ -5,3 +5,4 @@ sample/renderer.js
 viz/_site/
 .DS_Store
 engine3/coverage
+viz/static/RouteEngine.js
