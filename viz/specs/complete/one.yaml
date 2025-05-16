@@ -16,6 +16,7 @@ presets:
           setRuntimeVariable:
             currentMenuTabId: options
           goToSectionScene:
+            mode: menu
             sceneId: 93jkal3
             sectionId: asdkjl32
       LeftClick:
@@ -26,9 +27,11 @@ presets:
     eventsMap:
       RightClick:
         actions:
-          goToSectionScene:
-            sceneId: ajfl3a
-            sectionId: l3kjfawelf
+          clearCurrentMode:
+            newMode: read
+          preset:
+            presetId: bj342s
+
 variables:
   runtime:
     currentMenuTabId:
@@ -245,7 +248,6 @@ story:
           name: Section 1
           steps:
             - id: step1
-
               autoNext:
                 delay: 1000
                 # preventManual: true
@@ -259,16 +261,16 @@ story:
                       positionId: iasdlf
                       animations:
                         in: 3lkj289
-            # - id: step2
-            #   autoNext:
-            #     delay: 1000
-            #     # preventManual: true
-            #   actions:
-            #     visual:
-            #       items:
-            #         - id: 39kdfj231
-            #           animations:
-            #             out: 8h3js
+            - id: step2
+              autoNext:
+                delay: 1000
+                # preventManual: true
+              actions:
+                visual:
+                  items:
+                    - id: 39kdfj231
+                      animations:
+                        out: 8h3js
             - id: step3
               actions:
                 screen:

@@ -6,6 +6,14 @@ class SystemState {
     currentPointer: 'read',
     currentPresetId: undefined,
 
+    autoNext: {
+      delay: undefined,
+      disableManual: false,
+    },
+
+    autoMode: false,
+    skipMode: false,
+
     pointers: {
       read: {
         sectionId: undefined,
@@ -37,6 +45,7 @@ class SystemState {
   setCurrentPointer = ({ sectionId, stepId }) => {
     this.story.pointers[this.story.currentPointer].sectionId = sectionId;
     this.story.pointers[this.story.currentPointer].stepId = stepId;
+    // return this.story.pointers[this.story.currentPointer];
   }
 
 }

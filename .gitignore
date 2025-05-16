@@ -4,3 +4,4 @@ sample/vndata.json
 sample/renderer.js
 viz/_site/
 .DS_Store
+engine3/coverage
