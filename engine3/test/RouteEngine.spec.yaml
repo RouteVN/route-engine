@@ -7,7 +7,7 @@ suites:
     cases:
       - name: basic
         in: 
-          - vnData: !include ./testVnData.yaml
+          - vnData: !include ./data/testVnData.yaml
             render:
               $mock: mock1
         mocks:
@@ -15,18 +15,18 @@ suites:
             - in: 
                 - elements:
                     - clickEventName: LeftClick
-                      # fill: !undefined
+                      fill: "#000000"
                       id: bg-screen
                       rightClickEventName: RightClick
                       type: graphics
                       wheelEventName: ScrollUp
                       x1: 0
-                      # x2: !undefined
+                      x2: 1920
                       y1: 0
-                      # y2: !undefined
+                      y2: 1080
                     - id: visual-39kdfj231
                       type: sprite
-                      url: 94lkj289
+                      url: file:94lkj289
                       x: 50%
                       xa: 50%
                       y: 50%

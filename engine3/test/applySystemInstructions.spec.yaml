@@ -1,19 +1,157 @@
 file: './applySystemInstructions.js'
-cases:
-  - name: setRuntimeVariable
-    in:
-      - systemInstructions:
-          setRuntimeVariable:
-            testVar: "testValue"
-        setRuntimeVariable:
-          testVar: "testValue"
-        systemState:
-          variables:
-            runtime: {}
-        vnData: {}
-    out:
-      systemState:
-        variables:
-          runtime:
-            testVar: "testValue"
-      effects: []
+suites:
+  - name: set runtime variable
+    exportName: setRuntimeVariable
+    cases:
+      - name: basic
+        in:
+          - systemInstructions:
+              setRuntimeVariable:
+                testVar: "testValue"
+            systemState:
+              runtimeState: {}
+            vnData: {}
+        out:
+          systemState:
+            runtimeState:
+              testVar: "testValue"
+          effects:
+            - name: render
+  
+  - name: start auto mode
+    exportName: startAutoMode
+    cases:
+      - name: basic
+        in:
+          - systemInstructions:
+              startAutoMode: {}
+            systemState:
+              story:
+                autoMode: false
+            vnData: {}
+        out:
+          systemState:
+            story:
+              autoMode: true
+          effects:
+            - name: render
+      
+  - name: stop auto mode
+    exportName: stopAutoMode
+    cases:
+      - name: basic
+        in:
+          - systemInstructions:
+              stopAutoMode: {}
+            systemState:
+              story:
+                autoMode: true
+            vnData: {}
+        out:
+          systemState:
+            story:
+              autoMode: false
+          effects:
+            - name: render
+      
+  - name: toggle auto mode
+    exportName: toggleAutoMode
+    cases:
+      - name: true to false
+        in:
+          - systemInstructions:
+              toggleAutoMode: {}
+            systemState:
+              story:
+                autoMode: true
+            vnData: {}
+        out:
+          systemState:
+            story:
+              autoMode: false
+          effects:
+            - name: render
+      
+      - name: false to true
+        in:
+          - systemInstructions:
+              toggleAutoMode: {}
+            systemState:
+              story:
+                autoMode: false
+            vnData: {}
+        out:
+          systemState:
+            story:
+              autoMode: true
+          effects:
+            - name: render
+
+  - name: start skip mode
+    exportName: startSkipMode
+    cases:
+      - name: basic
+        in:
+          - systemInstructions:
+              startSkipMode: {}
+            systemState:
+              story:
+                skipMode: false
+            vnData: {}
+        out:
+          systemState:
+            story:
+              skipMode: true
+          effects:
+            - name: render
+      
+  - name: stop skip mode
+    exportName: stopSkipMode
+    cases:
+      - name: basic
+        in:
+          - systemInstructions:
+              stopSkipMode: {}
+            systemState:
+              story:
+                skipMode: true
+            vnData: {}
+        out:
+          systemState:
+            story:
+              skipMode: false
+          effects:
+            - name: render
+      
+  - name: toggle skip mode
+    exportName: toggleSkipMode
+    cases:
+      - name: true to false
+        in:
+          - systemInstructions:
+              toggleSkipMode: {}
+            systemState:
+              story:
+                skipMode: true
+            vnData: {}
+        out:
+          systemState:
+            story:
+              skipMode: false
+          effects:
+            - name: render
+      
+      - name: false to true
+        in:
+          - systemInstructions:
+              toggleSkipMode: {}
+            systemState:
+              story:
+                skipMode: false
+            vnData: {}
+        out:
+          systemState:
+            story:
+              skipMode: true
+          effects:
+            - name: render

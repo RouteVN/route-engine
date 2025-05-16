@@ -1,5 +1,5 @@
 import yaml from "https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/+esm";
-import Engine from "./rvn.js";
+import RouteEngine from "./RouteEngine.js";
 import {
   PixiTDR,
   SpriteRendererPlugin,
@@ -65,8 +65,9 @@ const init = async () => {
     height: 1080,
     assetBufferMap,
     eventHandler: (event, payload) => {
-      engine.handleEvent(event, payload);
-
+      // engine.handleEvent(event, payload);
+      // console.log('eventHandler', event, payload)
+      engine.systemEventHandler(event, payload)
     },
     plugins: [
       new SpriteRendererPlugin(),
@@ -102,19 +103,20 @@ const init = async () => {
   document.getElementById("canvas").addEventListener("contextmenu", (e) => {
     e.preventDefault();
   });
-  const engine = new Engine();
-  const callback = (event, payload) => {
+  const engine = new RouteEngine();
+  const callback = (payload) => {
     console.log({
-      event,
       payload,
     });
-    if (event === "render") {
+    // if (event === "render") {
       app.render(payload);
-    }
+    // }
   };
-  engine.init(jsonData, {
-    callback,
-    ticker: app._app.ticker,
+  engine.init({
+    vnData: jsonData,
+    render: callback,
+    // callback,
+    // ticker: app._app.ticker,
   });
 };
 

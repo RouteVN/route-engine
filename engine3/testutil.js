@@ -303,7 +303,9 @@ export const setupTestSuiteFromYaml = async () => {
   for (const file of testYamlFiles) {
     const test = loadYamlFile(file);
 
-    const originalFun = (await import(test.file)).default;
+    const exportName = test.exportName || 'default';
+    const imported = await import(test.file);
+    const originalFun = imported[exportName];
     let fun = originalFun;
     let testClass;
 
@@ -324,18 +326,18 @@ export const setupTestSuiteFromYaml = async () => {
       }
     }
 
-    if (!fun) {
-      throw new Error("fun is not defined");
-    }
-
     if (test.cases) {
+      if (!fun) {
+        throw new Error(`fun is not defined in ${test.name || test.file}`);
+      }
       setupTestSuite(test.name || test.file, test.cases, fun, testClass);
     }
 
     if (test.suites) {
-      describe(test.name || test.file, () => {
-        test.suites.forEach((suite) => {
-          let suiteFun = originalFun;
+      describe(test.name || test.file, async () => {
+        for (const suite of test.suites) {
+          const suiteExportedName = suite.exportName || test.exportName || 'default';
+          let suiteFun = imported[suiteExportedName] || originalFun;
           let suiteTestClass;
 
           if (suite.class) {
@@ -358,7 +360,7 @@ export const setupTestSuiteFromYaml = async () => {
           }
 
           setupTestSuite(suite.name, suite.cases, suiteFun, suiteTestClass);
-        });
+        }
       });
     }
   }

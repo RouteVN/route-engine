@@ -1,3 +1,6 @@
+import * as vnDataSelectors from "./vnDataSelectors";
+import * as systemStateSelectors from "./systemStateSelectors";
+
 /**
  * Actions are performed on the engine to change state or cause side effects
  * All changes should be triggered by actions
@@ -13,26 +16,55 @@
  */
 
 /**
- * 
- * @param {ApplyParams} params 
+ *
+ * @param {ApplyParams} params
  */
-const nextStep = ({systemState, effects }) => {
+const nextStep = ({ systemState, effects, vnData }) => {
   if (systemState.autoNext) {
     if (systemState.autoNext.preventManual) {
       return {
         systemState,
-        effects
-      }
+        effects,
+      };
     }
   }
-  return [{
+
+  const currentPointer = systemStateSelectors.selectCurrentPointer(systemState);
+  const pointerMode = systemStateSelectors.selectPointerMode(systemState);
+  const steps = vnDataSelectors.selectSectionSteps(
+    vnData,
+    currentPointer.sectionId
+  );
+
+  const currentStepIndex = steps.findIndex(
+    (step) => step.id === currentPointer.stepId
+  );
+  const nextStep = steps[currentStepIndex + 1];
+
+  if (!nextStep) {
+    return [systemState, effects];
+  }
+
+  const newState = {
     ...systemState,
-  }, effects]
+    story: {
+      ...systemState.story,
+      pointers: {
+        ...systemState.story.pointers,
+        [pointerMode]: {
+          sectionId: currentPointer.sectionId,
+          stepId: nextStep.id,
+        },
+      },
+    },
+  };
+
+  return [newState, effects];
 };
 
 /**
- * 
- * @param {ApplyParams} params 
+ *
+ * @param {ApplyParams} params
  */
 const prevStep = ({ systemState, effects }) => {
   // to all the things you need to do
@@ -41,73 +73,159 @@ const prevStep = ({ systemState, effects }) => {
       ...systemState,
       stepPointers: {
         ...systemState.stepPointers,
-      }
+      },
     },
-    effects
-  ]
+    effects,
+  ];
 };
 
 /**
  * TODO check if to split actions that affect state and actios that don't affect state
- *    
- * @param {ApplyParams} params 
+ *
+ * @param {ApplyParams} params
  */
-const goToSectionScene = ({payload, systemState, effects }) => {
-  const { sectionId, sceneId } = payload;
-  let mode = payload.mode || systemState.mode;
+const goToSectionScene = ({ payload, systemState, effects }) => {
+  const { sectionId, sceneId, mode } = payload;
+  // let mode = payload.mode || systemState.mode;
+
+  // const mode = systemStateSelectors.selectPointerMode(systemState);
+  const _mode = mode || systemStateSelectors.selectPointerMode(systemState);
+
   return [
     {
       ...systemState,
-      mode,
-      stepPointers: { ...systemState.stepPointers, [mode]: { sectionId, sceneId } }
+      story: {
+        ...systemState.story,
+        currentPointer: _mode,
+        pointers: {
+          ...systemState.story.pointers,
+          [_mode]: { sectionId, sceneId },
+        },
+      },
     },
-    effects
-  ]
+    effects,
+  ];
 };
 
 /**
- * @param {ApplyParams} params 
+ * @param {ApplyParams} params
  */
 const setRuntimeVariable = ({ payload, systemState, effects }) => {
   return [
     {
       ...systemState,
-      variables: {
-        ...systemState.variables,
-        runtime: { ...systemState.variables.runtime, ...payload }
-      }
+      runtimeState: {
+        ...systemState.runtimeState,
+        ...payload,
+      },
     },
-    effects
-  ]
+    effects,
+  ];
 };
 
 /**
- * @param {ApplyParams} params 
+ * @param {ApplyParams} params
  */
-const setPreset = ({payload, systemState, effects }) => {
+const setPreset = ({ payload, systemState, effects }) => {
   return [
     {
       ...systemState,
-      currentPresetId: payload.presetId
+      currentPresetId: payload.presetId,
     },
-    effects
-  ]
+    effects,
+  ];
 };
 
 /**
- * @param {ApplyParams} params 
+ * @param {ApplyParams} params
  */
-const clearCurrentMode = ({payload, systemState, effects }) => {
+const clearCurrentMode = ({ payload, systemState, effects }) => {
   const newSystemState = {
     ...systemState,
-    mode: payload.mode,
-    currentPresetId: undefined,
+    story: {
+      ...systemState.story,
+      currentPointer: payload.mode,
+    }
   };
-  newSystemState.stepPointers[systemState.mode] = {};
+  return [newSystemState, effects];
+};
+
+const startAutoMode = ({ systemState, effects }) => {
   return [
-    newSystemState,
-    effects
-  ]
+    {
+      ...systemState,
+      story: {
+        ...systemState.story,
+        autoMode: true,
+      },
+    },
+    effects,
+  ];
+};
+
+const stopAutoMode = ({ systemState, effects }) => {
+  return [
+    {
+      ...systemState,
+      story: {
+        ...systemState.story,
+        autoMode: false,
+      },
+    },
+    effects,
+  ];
+};
+
+const toggleAutoMode = ({ systemState, effects }) => {
+  return [
+    {
+      ...systemState,
+      story: {
+        ...systemState.story,
+        autoMode: !systemState.story.autoMode,
+      },
+    },
+    effects,
+  ];
+};
+
+const startSkipMode = ({ systemState, effects }) => {
+  return [
+    {
+      ...systemState,
+      story: {
+        ...systemState.story,
+        skipMode: true,
+      },
+    },
+    effects,
+  ];
+};
+
+const stopSkipMode = ({ systemState, effects }) => {
+  return [
+    {
+      ...systemState,
+      story: {
+        ...systemState.story,
+        skipMode: false,
+      },
+    },
+    effects,
+  ];
+};
+
+const toggleSkipMode = ({ systemState, effects }) => {
+  return [
+    {
+      ...systemState,
+      story: {
+        ...systemState.story,
+        skipMode: !systemState.story.skipMode,
+      },
+    },
+    effects,
+  ];
 };
 
 const instructions = {
@@ -117,27 +235,41 @@ const instructions = {
   setRuntimeVariable,
   setPreset,
   clearCurrentMode,
+  startAutoMode,
+  stopAutoMode,
+  toggleAutoMode,
+  startSkipMode,
+  stopSkipMode,
+  toggleSkipMode,
 };
 
 /**
  * Applies system instructions to the current state
- * @param {ApplyParams} params
+ * @param {Object} params
  * @returns {Object} Object containing new system state and effects
  */
-const applySystemInstructions = ({ systemInstructions, systemState, vnData }) => {
+const applySystemInstructions = ({
+  systemInstructions,
+  systemState,
+  vnData,
+}) => {
   let newSystemState = { ...systemState };
-  let effects = [];
+  let effects = [
+    {
+      name: "render",
+    },
+  ];
   Object.entries(systemInstructions).forEach(([instructionName, payload]) => {
     [newSystemState, effects] = instructions[instructionName]({
       payload,
       systemState: newSystemState,
       vnData,
-      effects
+      effects,
     });
   });
   return {
     systemState: newSystemState,
-    effects
+    effects,
   };
 };
 

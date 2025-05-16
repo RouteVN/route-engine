@@ -1,8 +1,8 @@
 import applyPresentationInstructions from "./applyPresentationInstructions";
 import applySystemInstructions from "./applySystemInstructions";
 import combineSystemState from "./combineSystemState";
-import SystemState from "./SystemState";
-import VnData from "./VnData";
+import * as systemStateSelectors from "./systemStateSelectors";
+import * as vnDataSelectors from "./vnDataSelectors";
 
 class RouteEngine {
   _effects = [];
@@ -12,17 +12,17 @@ class RouteEngine {
   constructor() {}
 
   init = ({ vnData, render }) => {
-    this._vnData = new VnData(vnData);
+    this._vnData = vnData;
 
-    const initialIds = this._vnData.initialIds;
+    const initialIds = vnDataSelectors.selectInitialIds(vnData);
     const { sectionId, stepId } = initialIds;
     if (!sectionId || !stepId) {
       throw new Error("No sectionId found");
     }
-    this._systemState = new SystemState({
+    this._systemState = systemStateSelectors.createSystemState({
       sectionId,
       stepId,
-      presetId: this._vnData.initialIds.presetId,
+      presetId: initialIds.presetId,
     });
 
     this._render = render;
@@ -34,10 +34,30 @@ class RouteEngine {
     this.render();
   };
 
-  systemEventHandler = (event) => {
+  systemEventHandler = (event, payload) => {
     // use presets to map event to system instructions
+    if (event === 'systemInstructions') {
+      const { systemState, effects } = applySystemInstructions({
+        systemInstructions: payload.systemInstructions,
+        systemState: this._systemState,
+        vnData: this._vnData,
+      });
+      this._systemState = systemState;
+      this.render();
+      return;
+    }
 
-    const { systemInstruction } = {};
+    const preset = vnDataSelectors.selectPreset(
+      this._vnData,
+      systemStateSelectors.selectCurrentPresetId(this._systemState)
+    );
+
+    const foundEvent = preset.eventsMap[event]
+    if (!foundEvent) {
+      console.log('no event found', {event, preset})
+      return;
+    }
+    const { systemInstruction } = foundEvent
 
     const { systemState, effects } = applySystemInstructions({
       systemInstructions: systemInstruction,
@@ -62,10 +82,29 @@ class RouteEngine {
    * @see engine3/design.md
    */
   render = () => {
-    const currentSteps = this._vnData.getSectionSteps(
-      this._systemState.currentPointer.sectionId,
-      this._systemState.currentPointer.stepId
+    const currentPointer = systemStateSelectors.selectCurrentPointer(
+      this._systemState
     );
+    const currentSteps = vnDataSelectors.selectSectionSteps(
+      this._vnData,
+      currentPointer.sectionId,
+      currentPointer.stepId
+    );
+
+    const lastStep = currentSteps[currentSteps.length - 1];
+    
+    // TODO figure out how to order this and put this properly
+    if (lastStep.systemInstructions) {
+      const { systemState, effects } = applySystemInstructions({
+        systemInstructions: lastStep.systemInstructions,
+        systemState: this._systemState,
+        vnData: this._vnData,
+      });
+      this._systemState = systemState;
+      this.render();
+      return;
+    }
+
     const presentationInstructions = currentSteps.map((step) => {
       return step.presentation || {};
     });
@@ -73,6 +112,7 @@ class RouteEngine {
     const presentationTemplate = applyPresentationInstructions(
       presentationInstructions
     );
+
 
     const presentationState = combineSystemState({
       template: presentationTemplate,

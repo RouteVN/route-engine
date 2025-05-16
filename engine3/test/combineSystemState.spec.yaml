@@ -2,23 +2,23 @@ file: './combineSystemState.js'
 cases:
   - name: basic screen background
     in:
-      - template:
+      - template: {}
+        state: {}
+        data:
           screen:
             width: 1280
             height: 720
             backgroundColor: "#000000"
-        state: {}
-        data: {}
     out:
       elements:
-        - id: "bg-screen"
-          type: "graphics"
+        - clickEventName: LeftClick
+          fill: "#000000"
+          id: bg-screen
+          rightClickEventName: RightClick
+          type: graphics
+          wheelEventName: ScrollUp
           x1: 0
           x2: 1280
           y1: 0
           y2: 720
-          fill: "#000000"
-          clickEventName: "LeftClick"
-          rightClickEventName: "RightClick"
-          wheelEventName: "ScrollUp"
       transitions: []

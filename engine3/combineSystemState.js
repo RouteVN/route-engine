@@ -1,4 +1,6 @@
 import jsone from "json-e";
+import * as vnDataSelectors from "./vnDataSelectors";
+import * as systemStateSelectors from './systemStateSelectors';
 
 /**
  * @typedef {Object} TransformParams
@@ -9,7 +11,7 @@ import jsone from "json-e";
  * @property {Object} screen
  * @property {Object} template
  * @property {Object} ui
- * @property {Object} variables
+ * @property {Object} runtimeState
  * @property {Function} resolveFile
  */
 
@@ -256,16 +258,16 @@ const addDialogue = ({ elements, transitions, state, ui, resources }) => {
 const addScreens = ({
   elements,
   transitions,
-  state,
+  template,
   ui,
-  variables,
+  runtimeState,
 }) => {
   let newElements = elements.concat([]);
-  if (state.screen) {
-    const screen = ui.screens[state.screen.screenId];
+  if (template.screen) {
+    const screen = ui.screens[template.screen.screenId];
     newElements = newElements.concat(
       jsone(screen.elements, {
-        variables,
+        runtimeState,
       })
     );
   }
@@ -307,16 +309,16 @@ const transformers = [
  * 
  * @param {Object} params 
  */
-const combineSystemState = ({ template, state, data }) => {
+const combineSystemState = ({ template, state: systemState, data }) => {
   let elements = [];
   let transitions = [];
 
   // Extract required resources from data
   const resources = data.resources || {};
   const ui = data.ui || {};
-  const variables = state.variables || {};
-  const resolveFile = data.resolveFile || ((path) => path);
-  const screen = template?.screen || {};
+  const runtimeState = systemStateSelectors.selectRuntimeState(systemState) || {};
+  const resolveFile = (path) => `file:${path}`;
+  const screen = vnDataSelectors.selectScreen(data);
 
   // Initial state
   const initialResult = [elements, transitions];
@@ -327,13 +329,13 @@ const combineSystemState = ({ template, state, data }) => {
       transformer({
         elements: result[0],
         transitions: result[1],
-        state,
+        state: systemState,
         template,
         resources,
         resolveFile,
         ui,
         screen,
-        variables,
+        runtimeState,
       }),
     initialResult
   );

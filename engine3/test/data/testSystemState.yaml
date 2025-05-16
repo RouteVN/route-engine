@@ -1,0 +1,20 @@
+runtimeState: {}
+story:
+  currentPointer: 'read'
+  currentPresetId: "test-preset"
+  autoNext:
+    delay: undefined
+    disableManual: false
+  autoMode: false
+  skipMode: false
+  pointers:
+    read:
+      sectionId: "test-section"
+      stepId: "test-step"
+    menu:
+      sectionId: undefined
+      stepId: undefined
+    title:
+      sectionId: undefined
+      stepId: undefined
+  history: {} 

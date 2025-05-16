@@ -12,7 +12,7 @@ presets:
     name: Read
     eventsMap:
       RightClick:
-        actions:
+        systemInstruction:
           setRuntimeVariable:
             currentMenuTabId: options
           goToSectionScene:
@@ -20,13 +20,13 @@ presets:
             sceneId: 93jkal3
             sectionId: asdkjl32
       LeftClick:
-        actions:
+        systemInstruction:
           nextStep: {}
   3ijasdk3:
     name: Menu
     eventsMap:
       RightClick:
-        actions:
+        systemInstruction:
           clearCurrentMode:
             newMode: read
           preset:
@@ -48,13 +48,13 @@ ui:
           y: 100
           children:
             $switch:
-              'variables.runtime.currentMenuTabId == "options"':
+              'runtimeState.currentMenuTabId == "options"':
                 - type: text
                   text: "Options"
                   style:
                     fontSize: 64
                     fill: "white"
-              'variables.runtime.currentMenuTabId == "load"':
+              'runtimeState.currentMenuTabId == "load"':
                 - type: text
                   text: "Load"
                   style:
@@ -69,30 +69,29 @@ ui:
           children:
             $map:
               - text: Start
-                eventName: "Actions"
+                eventName: "systemInstructions"
                 eventPayload:
-                  actions:
+                  systemInstructions:
                     goToSectionScene:
                       sectionId: 3k3s9sd
               - text: Load
-                eventName: "Actions"
+                eventName: "systemInstructions"
                 eventPayload:
-                  actions:
+                  systemInstructions:
                     setRuntimeVariable:
                       currentMenuTabId: load
               - text: Options
-                eventName: "Actions"
+                eventName: "systemInstructions"
                 eventPayload:
-                  actions:
+                  systemInstructions:
                     setRuntimeVariable:
                       currentMenuTabId: options
               - text: Exit
-                eventName: "Actions"
+                eventName: "systemInstructions"
                 eventPayload:
-                  actions:
-                    goToSectionScene:
-                      sceneId: ajfl3a
-                      sectionId: l3kjfawelf
+                  systemInstructions:
+                    clearCurrentMode:
+                      mode: read
             each(v,k):
               id:
                 $eval: 'v.text'
@@ -154,32 +153,35 @@ ui:
           children:
             $map:
               - text: Start
-                eventName: "Actions"
+                eventName: "systemInstructions"
                 eventPayload:
-                  actions:
+                  systemInstructions:
                     goToSectionScene:
                       sectionId: 3k3s9sd
               - text: Load
-                eventName: "Actions"
+                eventName: "systemInstructions"
                 eventPayload:
-                  actions:
+                  systemInstructions:
                     goToSectionScene:
                       sceneId: 93jkal3
                       sectionId: asdkjl32
+                      mode: menu
                     setRuntimeVariable:
                       currentMenuTabId: load
               - text: Options
-                eventName: "Actions"
+                eventName: "systemInstructions"
                 eventPayload:
-                  actions:
+                  systemInstructions:
                     goToSectionScene:
                       sceneId: 93jkal3
                       sectionId: asdkjl32
+                      mode: menu
                     setRuntimeVariable:
                       currentMenuTabId: options
               - text: Exit
-                eventName: "Actions"
-                eventPayload: {}
+                eventName: "systemInstructions"
+                eventPayload:
+                  systemInstructions: {}
             each(v,k):
               id:
                 $eval: 'v.text'
@@ -251,9 +253,9 @@ story:
               autoNext:
                 delay: 1000
                 # preventManual: true
-              actions:
-                preset:
-                  presetId: bj342s
+              presentation:
+                # preset:
+                #   presetId: bj342s
                 visual:
                   items:
                     - id: 39kdfj231
@@ -265,14 +267,14 @@ story:
               autoNext:
                 delay: 1000
                 # preventManual: true
-              actions:
+              presentation:
                 visual:
                   items:
                     - id: 39kdfj231
                       animations:
                         out: 8h3js
             - id: step3
-              actions:
+              presentation:
                 screen:
                   id: 3k3k38
                   screenId: j3i8dk32
@@ -280,21 +282,21 @@ story:
           name: Section 2
           steps:
             - id: step1
-              actions:
+              presentation:
                 dialogue:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
                   characterId: ajf34a
             - id: step2
-              actions:
+              presentation:
                 dialogue:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: Two and a half sentences.
                   characterId: ajf34a
             - id: step3
-              actions:
+              presentation:
                 dialogue:
                   dialogueBoxId: fi3l
                   mode: dialogue
@@ -306,9 +308,9 @@ story:
         asdkjl32:
           steps:
             - id: step1
-              actions:
+              presentation:
                 screen:
                   id: 34ik
                   screenId: dafkjkl3
-                preset:
-                  presetId: 3ijasdk3
+                # preset:
+                #   presetId: 3ijasdk3
