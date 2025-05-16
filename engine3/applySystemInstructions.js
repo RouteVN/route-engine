@@ -1,19 +1,22 @@
-
 /**
  * Actions are performed on the engine to change state or cause side effects
  * All changes should be triggered by actions
  */
 
+/**
+ * @typedef {Object} ApplyParams
+ * @property {Object} payload - The input data for the action
+ * @property {Object} systemState - The current state of the system
+ * @property {Object} vnData - The visual novel data
+ * @property {Object} effects - Side effects to be applied
+ * @property {Object} systemInstructions - Instructions to apply
+ */
 
 /**
  * 
- * @param {Object} params 
- * @param {Object} params.payload 
- * @param {Object} params.systemState 
- * @param {Object} params.vnData 
- * @param {Object} params.effects 
+ * @param {ApplyParams} params 
  */
-const nextStep = ({payload, systemState, vnData, effects }) => {
+const nextStep = ({systemState, effects }) => {
   if (systemState.autoNext) {
     if (systemState.autoNext.preventManual) {
       return {
@@ -29,13 +32,9 @@ const nextStep = ({payload, systemState, vnData, effects }) => {
 
 /**
  * 
- * @param {Object} params 
- * @param {Object} params.payload 
- * @param {Object} params.systemState 
- * @param {Object} params.vnData 
- * @param {Object} params.effects 
+ * @param {ApplyParams} params 
  */
-const prevStep = ({payload, systemState, vnData, effects }) => {
+const prevStep = ({ systemState, effects }) => {
   // to all the things you need to do
   return [
     {
@@ -51,13 +50,9 @@ const prevStep = ({payload, systemState, vnData, effects }) => {
 /**
  * TODO check if to split actions that affect state and actios that don't affect state
  *    
- * @param {Object} params 
- * @param {Object} params.payload 
- * @param {Object} params.systemState 
- * @param {Object} params.vnData 
- * @param {Object} params.effects 
+ * @param {ApplyParams} params 
  */
-const goToSectionScene = ({payload, systemState, vnData, effects }) => {
+const goToSectionScene = ({payload, systemState, effects }) => {
   const { sectionId, sceneId } = payload;
   let mode = payload.mode || systemState.mode;
   return [
@@ -70,7 +65,10 @@ const goToSectionScene = ({payload, systemState, vnData, effects }) => {
   ]
 };
 
-const setRuntimeVariable = ({ payload, systemState, vnData, effects }) => {
+/**
+ * @param {ApplyParams} params 
+ */
+const setRuntimeVariable = ({ payload, systemState, effects }) => {
   return [
     {
       ...systemState,
@@ -83,7 +81,10 @@ const setRuntimeVariable = ({ payload, systemState, vnData, effects }) => {
   ]
 };
 
-const setPreset = ({payload, systemState, vnData, effects }) => {
+/**
+ * @param {ApplyParams} params 
+ */
+const setPreset = ({payload, systemState, effects }) => {
   return [
     {
       ...systemState,
@@ -93,7 +94,10 @@ const setPreset = ({payload, systemState, vnData, effects }) => {
   ]
 };
 
-const clearCurrentMode = ({payload, systemState, vnData, effects }) => {
+/**
+ * @param {ApplyParams} params 
+ */
+const clearCurrentMode = ({payload, systemState, effects }) => {
   const newSystemState = {
     ...systemState,
     mode: payload.mode,
@@ -116,12 +120,9 @@ const instructions = {
 };
 
 /**
- * 
- * @param {Object} params 
- * @param {Object} params.systemInstructions 
- * @param {Object} params.systemState 
- * @param {Object} params.vnData 
- * @returns new system state
+ * Applies system instructions to the current state
+ * @param {ApplyParams} params
+ * @returns {Object} Object containing new system state and effects
  */
 const applySystemInstructions = ({ systemInstructions, systemState, vnData }) => {
   let newSystemState = { ...systemState };

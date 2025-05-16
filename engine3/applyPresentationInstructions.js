@@ -1,10 +1,16 @@
 /**
+ * @typedef {Object} ApplyParams
+ * @property {Object} state - The current state of the system
+ * @property {Object} instruction - The instruction to apply
+ */
+
+/**
+ * 
  * Applies background from instruction to state
- * @param {*} state
- * @param {*} instruction
+ * @param {ApplyParams} params
  * @returns state
  */
-const applyBackground = (state, instruction) => {
+const applyBackground = ({ state, instruction }) => {
   if (instruction.background) {
     return {
       ...state,
@@ -19,11 +25,10 @@ const applyBackground = (state, instruction) => {
 
 /**
  * Applies sound effects from instruction to state
- * @param {*} state
- * @param {*} instruction
+ * @param {ApplyParams} params
  * @returns state
  */
-const applySfx = (state, instruction) => {
+const applySfx = ({ state, instruction }) => {
   if (instruction.sfx) {
     return {
       ...state,
@@ -38,11 +43,10 @@ const applySfx = (state, instruction) => {
 
 /**
  * Applies background music from instruction to state
- * @param {*} state
- * @param {*} instruction
+ * @param {ApplyParams} params
  * @returns state
  */
-const applyBgm = (state, instruction) => {
+const applyBgm = ({ state, instruction }) => {
   if (instruction.bgm) {
     return {
       ...state,
@@ -57,11 +61,10 @@ const applyBgm = (state, instruction) => {
 
 /**
  * Applies visual items from instruction to state
- * @param {*} state
- * @param {*} instruction
+ * @param {ApplyParams} params
  * @returns state
  */
-const applyVisual = (state, instruction) => {
+const applyVisual = ({ state, instruction }) => {
   if (instruction.visual) {
     return {
       ...state,
@@ -81,11 +84,10 @@ const applyVisual = (state, instruction) => {
 
 /**
  * Applies dialogue from instruction to state
- * @param {*} state
- * @param {*} instruction
+ * @param {ApplyParams} params
  * @returns state
  */
-const applyDialogue = (state, instruction) => {
+const applyDialogue = ({ state, instruction }) => {
   if (!instruction.dialogue) {
     return state;
   }
@@ -148,11 +150,10 @@ const applyDialogue = (state, instruction) => {
 
 /**
  * Applies character from instruction to state
- * @param {*} state
- * @param {*} instruction
+ * @param {ApplyParams} params
  * @returns state
  */
-const applyCharacter = (state, instruction) => {
+const applyCharacter = ({ state, instruction }) => {
   if (!instruction.character) {
     return state;
   }
@@ -220,11 +221,10 @@ const applyCharacter = (state, instruction) => {
 
 /**
  * Applies animation from instruction to state
- * @param {*} state
- * @param {*} instruction
+ * @param {ApplyParams} params
  * @returns state
  */
-const applyAnimation = (state, instruction) => {
+const applyAnimation = ({ state, instruction }) => {
   if (instruction.animation) {
     return {
       ...state,
@@ -239,11 +239,10 @@ const applyAnimation = (state, instruction) => {
 
 /**
  * Applies screen from instruction to state
- * @param {*} state
- * @param {*} instruction
+ * @param {ApplyParams} params
  * @returns state
  */
-const applyScreen = (state, instruction) => {
+const applyScreen = ({ state, instruction }) => {
   if (instruction.screen) {
     return {
       ...state,
@@ -258,11 +257,10 @@ const applyScreen = (state, instruction) => {
 
 /**
  * Applies choices from instruction to state
- * @param {*} state
- * @param {*} instruction
+ * @param {ApplyParams} params
  * @returns state
  */
-const applyChoices = (state, instruction) => {
+const applyChoices = ({ state, instruction }) => {
   if (instruction.choices) {
     return {
       ...state,
@@ -277,11 +275,10 @@ const applyChoices = (state, instruction) => {
 
 /**
  * Cleans all state if cleanAll is true
- * @param {*} state
- * @param {*} instruction
+ * @param {ApplyParams} params
  * @returns state
  */
-const applyCleanAll = (state, instruction) => {
+const applyCleanAll = ({ state, instruction }) => {
   if (instruction.cleanAll) {
     return {};
   }
@@ -308,7 +305,7 @@ const INITIAL_STATE = Object.freeze({});
 
 /**
  * Takes presentation instructions and applies them to the state
- * @param {*} presentationInstructions
+ * @param {Object} presentationInstructions
  * @returns presentation template
  */
 const applyPresentationInstructions = (presentationInstructions) => {
@@ -320,7 +317,7 @@ const applyPresentationInstructions = (presentationInstructions) => {
   return presentationInstructions.reduce((state, instruction) => {
     let newState = {...state}
     for (const handler of instructionHandlers) {
-      newState = handler(newState, instruction);
+      newState = handler({ state: newState, instruction });
     }
     return newState;
   }, INITIAL_STATE);

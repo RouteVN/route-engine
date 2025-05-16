@@ -1,10 +1,26 @@
 import jsone from "json-e";
 
+/**
+ * @typedef {Object} TransformParams
+ * @property {Object} elements
+ * @property {Object} transitions
+ * @property {Object} state
+ * @property {Object} resources
+ * @property {Object} screen
+ * @property {Object} template
+ * @property {Object} ui
+ * @property {Object} variables
+ * @property {Function} resolveFile
+ */
+
+
+/**
+ * @param {TransformParams} params
+ * @returns
+ */
 const generateScreenBackgroundElement = ({
   elements,
   transitions,
-  state,
-  resources,
   screen,
 }) => {
   const newElements = elements.concat([
@@ -24,6 +40,10 @@ const generateScreenBackgroundElement = ({
   return [newElements, transitions];
 };
 
+/**
+ * 
+ * @param {TransformParams} params 
+ */
 const addBackgrundOrCg = ({
   elements,
   transitions,
@@ -78,6 +98,10 @@ const addBackgrundOrCg = ({
   return [newElements, newTransitions];
 };
 
+/**
+ * 
+ * @param {TransformParams} params 
+ */
 const addCharacters = ({
   elements,
   transitions,
@@ -132,6 +156,10 @@ const addCharacters = ({
   return [newElements, transitions];
 };
 
+/**
+ * 
+ * @param {TransformParams} params 
+ */
 const addVisuals = ({
   elements,
   transitions,
@@ -192,6 +220,10 @@ const addVisuals = ({
   return [newElements, newTransitions];
 };
 
+/**
+ * 
+ * @param {TransformParams} params 
+ */
 const addDialogue = ({ elements, transitions, state, ui, resources }) => {
   let newElements = elements.concat([]);
   if (state.dialogue) {
@@ -217,12 +249,15 @@ const addDialogue = ({ elements, transitions, state, ui, resources }) => {
   return [newElements, transitions];
 };
 
+/**
+ * 
+ * @param {TransformParams} params 
+ */
 const addScreens = ({
   elements,
   transitions,
   state,
   ui,
-  resources,
   variables,
 }) => {
   let newElements = elements.concat([]);
@@ -237,6 +272,10 @@ const addScreens = ({
   return [newElements, transitions];
 };
 
+/**
+ * 
+ * @param {Object} params 
+ */
 const addChoices = ({ elements, transitions, state, resources, ui }) => {
   let newElements = elements.concat([]);
   if (state.choices) {
@@ -264,6 +303,10 @@ const transformers = [
   addChoices,
 ];
 
+/**
+ * 
+ * @param {Object} params 
+ */
 const combineSystemState = ({ template, state, data }) => {
   let elements = [];
   let transitions = [];
