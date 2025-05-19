@@ -161,7 +161,7 @@ class RouteEngine {
       return;
     }
     
-    this.applySystemInstructions(eventMapping.systemInstruction);
+    this.applySystemInstructions(eventMapping.systemInstructions);
   };
 
   /**
@@ -184,7 +184,17 @@ class RouteEngine {
 
     // Apply system instructions from the last step if present
     if (lastStep.systemInstructions) {
-      this.applySystemInstructions(lastStep.systemInstructions);
+      if (this._systemState.story.lastStepAction === 'nextStep') {
+        console.log('running apply system instructions from last step')
+        this.applySystemInstructions(lastStep.systemInstructions);
+      } else {
+        console.log('skipping because history mode')
+        if (!lastStep.presentation) {
+          this.applySystemInstructions({
+            prevStep: {}
+          });
+        }
+      }
       return;
     }
 

@@ -62,6 +62,7 @@ const stepCompleted = ({ systemState, effects, vnData }) => {
 
   const { nextTrigger, delay } = autoNext;
 
+
   switch (nextTrigger) {
     case "onComplete":
       // Clear autoNext state and immediately proceed to next step
@@ -101,8 +102,8 @@ const stepCompleted = ({ systemState, effects, vnData }) => {
  * @param {ApplyParams} params
  */
 const nextStep = ({ systemState, effects, vnData, payload = {} }) => {
-
-  const dialogueUIHidden = systemStateSelectors.selectDialogueUIHidden(systemState);
+  const dialogueUIHidden =
+    systemStateSelectors.selectDialogueUIHidden(systemState);
 
   if (dialogueUIHidden) {
     toggleDialogueUIHidden({ systemState, effects });
@@ -156,6 +157,8 @@ const nextStep = ({ systemState, effects, vnData, payload = {} }) => {
     delete systemState.story.autoNext;
   }
 
+  systemState.story.lastStepAction = 'nextStep'
+
   // Trigger render effect
   effects.push({
     name: "render",
@@ -165,8 +168,67 @@ const nextStep = ({ systemState, effects, vnData, payload = {} }) => {
 /**
  * @param {ApplyParams} params
  */
-const prevStep = ({ systemState, effects }) => {
-  // to all the things you need to do
+const prevStep = ({ systemState, effects, vnData }) => {
+  const pointerMode = systemStateSelectors.selectPointerMode(systemState);
+  const currentPointer = systemStateSelectors.selectCurrentPointer(systemState);
+
+  const steps = vnDataSelectors.selectSectionSteps(
+    vnData,
+    currentPointer.sectionId
+  );
+  const currentStepIndex = steps.findIndex(
+    (step) => step.id === currentPointer.stepId
+  );
+  const prevStep = steps[currentStepIndex - 1];
+
+  if (!prevStep) {
+    console.log({pointerMode, 'systemState.story.historyEntryIndex': systemState.story.historyEntryIndex});
+    if (pointerMode === "history") {
+      if (systemState.story.historyEntryIndex > 0) {
+        systemState.story.historyEntryIndex--;
+      } else {
+        return;
+      }
+      console.log('systemState.story.historyEntryIndex', systemState.story.historyEntryIndex)
+      systemState.story.pointers["history"].sectionId =
+        systemState.story.history.entries[
+          systemState.story.historyEntryIndex
+        ].sectionId;
+      const prevSectionSteps = vnDataSelectors.selectSectionSteps(
+        vnData,
+        systemState.story.pointers["history"].sectionId
+      );
+      console.log('prevSectionSteps', prevSectionSteps)
+      systemState.story.pointers["history"].stepId =
+        prevSectionSteps[prevSectionSteps.length - 1].id;
+      console.log({
+        stepId: systemState.story.pointers["history"].stepId,
+        sectionId: systemState.story.pointers["history"].sectionId,
+      })
+
+      systemState.story.lastStepAction = 'prevStep'
+
+      effects.push({
+        name: "render",
+      });
+    }
+
+    return;
+  }
+
+  if (pointerMode === "read") {
+    systemState.story.currentPointer = "history";
+    systemState.story.historyEntryIndex =
+      systemState.story.history.entries.length - 1;
+  }
+
+  systemState.story.pointers["history"].stepId = prevStep.id;
+  systemState.story.pointers["history"].sectionId = currentPointer.sectionId;
+  systemState.story.lastStepAction = 'prevStep'
+
+  effects.push({
+    name: "render",
+  });
 };
 
 /**
@@ -181,6 +243,19 @@ const goToSectionScene = ({ payload, systemState, effects, vnData }) => {
   }
 
   const currentMode = systemStateSelectors.selectPointerMode(systemState);
+
+  if (currentMode === "read") {
+    systemState.story.history.entries.push({
+      sectionId,
+    });
+  } else if (currentMode === "history") {
+    // TODO: check if the next section is same as history next section
+    if (sectionId === systemState.story.history.entries[systemState.story.historyEntryIndex + 1].sectionId) {
+      systemState.story.historyEntryIndex++;
+    } else {
+      // exit history mode
+    }
+  }
 
   systemState.story.pointers[currentMode].sectionId = sectionId;
   systemState.story.pointers[currentMode].sceneId = sceneId;

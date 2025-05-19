@@ -35,9 +35,10 @@ export const selectDialogueUIHidden = (systemState) => {
 };
 
 export const createSystemState = ({ sectionId, stepId, presetId, autoNext }) => {
-  return {
+  const state = {
     runtimeState: {},
     story: {
+      lastStepAction: undefined,
       dialogueUIHidden: false,
       currentPointer: 'read',
       autoNext: autoNext,
@@ -55,13 +56,36 @@ export const createSystemState = ({ sectionId, stepId, presetId, autoNext }) => 
           sectionId: undefined,
           stepId: undefined
         },
+        history: {
+          presetId,
+          sectionId: undefined,
+          stepId: undefined,
+          historyEntryIndex: undefined
+        }
         // title: {
         //   presetId: undefined,
         //   sectionId: undefined,
         //   stepId: undefined
         // },
       },
-      history: {}
+      history: {
+        entries: [],
+        // entries: [{
+        //   sectionId: 'asdkjl32',
+        // }, {
+        //   sectionId: '3jd3kd'
+        // }, {
+        //   sectionId: '39fk32'
+        // }, {
+        //   sectionId: '39cksk3',
+        //   // this is current actual stepId the user is lastest on
+        //   stepId: 'step3'
+        // }]
+      }
     }
   };
+  state.story.history.entries.push({
+    sectionId,
+  });
+  return state;
 };

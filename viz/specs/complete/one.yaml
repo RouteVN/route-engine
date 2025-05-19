@@ -12,7 +12,7 @@ presets:
     name: Read
     eventsMap:
       RightClick:
-        systemInstruction:
+        systemInstructions:
           setRuntimeVariable:
             currentMenuTabId: options
           goToSectionScene:
@@ -20,13 +20,13 @@ presets:
             sceneId: 93jkal3
             sectionId: asdkjl32
       LeftClick:
-        systemInstruction:
+        systemInstructions:
           nextStep: {}
   3ijasdk3:
     name: Menu
     eventsMap:
       RightClick:
-        systemInstruction:
+        systemInstructions:
           clearCurrentMode:
             mode: read
 
@@ -212,7 +212,19 @@ ui:
               eventPayload:
                 systemInstructions:
                   toggleDialogueUIHidden: {}
-                
+            - id: dialogue-action-back
+              type: text
+              text: "Back"
+              width: 120
+              height: 40
+              style:
+                fontSize: 24
+                fill: "white"
+              eventName: "systemInstructions"
+              eventPayload:
+                systemInstructions:
+                  prevStep: {}
+
     j3i8dk32:
       name: Title Screen
       elements:
@@ -459,6 +471,55 @@ story:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: "Fourteen sentences. Fourteen sentences. Fourteen sentences. Fourteen sentences."
+                  characterId: ajf34a 
+            - id: step15
+              systemInstructions:
+                goToSectionScene:
+                  sectionId: 934kjfa3
+        934kjfa3:
+          name: Section 3
+          steps:
+            - id: step1
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: Section Three
+                  characterId: ajf34a
+            - id: step2
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: Wooooooooo
+                  characterId: ajf34a
+            - id: step3
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: Fooooooooo
+                  characterId: ajf34a
+            - id: step4
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: Gooooooooo
+                  characterId: ajf34a
+            - id: step5
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: GlGooooooooo
+                  characterId: ajf34a
+            - id: step6
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: XGooooooooo
                   characterId: ajf34a 
     93jkal3:
       name: Menu Scene
