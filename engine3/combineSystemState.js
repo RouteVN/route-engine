@@ -226,9 +226,13 @@ const addVisuals = ({
  * 
  * @param {TransformParams} params 
  */
-const addDialogue = ({ elements, transitions, template, ui, resources }) => {
+const addDialogue = ({ elements, transitions, template, ui, resources, state }) => {
+
   let newElements = elements.concat([]);
-  if (template.dialogue) {
+
+  const dialogueUIHidden = systemStateSelectors.selectDialogueUIHidden(state);
+
+  if (!dialogueUIHidden && template.dialogue) {
     const dialogueBoxScreen = ui.screens[template.dialogue.dialogueBoxId];
 
     let character;

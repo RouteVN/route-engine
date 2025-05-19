@@ -19,8 +19,6 @@ presets:
             mode: menu
             sceneId: 93jkal3
             sectionId: asdkjl32
-          setPreset:
-            presetId: 3ijasdk3
       LeftClick:
         systemInstruction:
           nextStep: {}
@@ -29,8 +27,6 @@ presets:
     eventsMap:
       RightClick:
         systemInstruction:
-          setPreset:
-            presetId: bj342s
           clearCurrentMode:
             mode: read
 
@@ -92,8 +88,6 @@ ui:
                 eventName: "systemInstructions"
                 eventPayload:
                   systemInstructions:
-                    setPreset:
-                      presetId: bj342s
                     goToSectionScene:
                       mode: read
                       sectionId: l3kjfawelf
@@ -101,8 +95,6 @@ ui:
                 eventName: "systemInstructions"
                 eventPayload:
                   systemInstructions:
-                    setPreset:
-                      presetId: bj342s
                     clearCurrentMode:
                       mode: read
             each(v,k):
@@ -149,6 +141,78 @@ ui:
               style:
                 fontSize: 24
                 fill: "white"
+        - id: dialogue-actions
+          type: container
+          x: 100
+          y: 600
+          direction: horizontal
+          gap: 20
+          children:
+            - id: dialogue-action-button
+              type: text
+              text: "Auto"
+              width: 120
+              height: 40
+              style:
+                fontSize: 24
+                fill: "white"
+              hoverStyle:
+                fontSize: 24
+                fill: yellow
+              eventName: "systemInstructions"
+              eventPayload:
+                systemInstructions:
+                  toggleAutoMode: {}
+            - id: dialogue-action-skip
+              type: text
+              text: "Skip"
+              width: 120
+              height: 40
+              style:
+                fontSize: 24
+                fill: "white"
+              hoverStyle:
+                fontSize: 24
+                fill: yellow
+              eventName: "systemInstructions"
+              eventPayload:
+                systemInstructions:
+                  toggleSkipMode: {}
+            - id: dialogue-action-options
+              type: text
+              text: "Options"
+              width: 120
+              height: 40
+              style:
+                fontSize: 24
+                fill: "white"
+              hoverStyle:
+                fontSize: 24
+                fill: yellow
+              eventName: "systemInstructions"
+              eventPayload:
+                systemInstructions:
+                  setRuntimeVariable:
+                    currentMenuTabId: options
+                  goToSectionScene:
+                    mode: menu
+                    sectionId: asdkjl32
+            - id: dialogue-action-hide
+              type: text
+              text: "Hide"
+              width: 120
+              height: 40
+              style:
+                fontSize: 24
+                fill: "white"
+              hoverStyle:
+                fontSize: 24
+                fill: yellow
+              eventName: "systemInstructions"
+              eventPayload:
+                systemInstructions:
+                  toggleDialogueUIHidden: {}
+                
     j3i8dk32:
       name: Title Screen
       elements:
@@ -175,8 +239,6 @@ ui:
                 eventName: "systemInstructions"
                 eventPayload:
                   systemInstructions:
-                    setPreset:
-                      presetId: 3ijasdk3
                     goToSectionScene:
                       sceneId: 93jkal3
                       sectionId: asdkjl32
@@ -187,8 +249,6 @@ ui:
                 eventName: "systemInstructions"
                 eventPayload:
                   systemInstructions:
-                    setPreset:
-                      presetId: 3ijasdk3
                     goToSectionScene:
                       sceneId: 93jkal3
                       sectionId: asdkjl32
@@ -261,18 +321,22 @@ story:
   scenes:
     ajfl3a:
       name: Scene 1
-      initialSectionId: l3kjfawelf
+      # initialSectionId: l3kjfawelf
+      initialSectionId: 3k3s9sd
       sections:
         l3kjfawelf:
           name: Section 1
           steps:
             - id: step1
               autoNext:
-                delay: 1000
-                # preventManual: true
+                # nextTrigger: 'onComplete'
+                # nextTrigger: 'manual'
+                nextTrigger: 'fromComplete'
+                # type: 'complete' | 'fromStart' | 'fromComplete'
+                delay: 1000 # will call next after 1000ms from start
+                # delayAfterComplete: 1000 # will call next after 1000ms from completion
+                preventManual: true
               presentation:
-                # preset:
-                #   presetId: bj342s
                 visual:
                   items:
                     - id: 39kdfj231
@@ -283,7 +347,7 @@ story:
             - id: step2
               autoNext:
                 delay: 1000
-                # preventManual: true
+                preventManual: true
               presentation:
                 visual:
                   items:
@@ -319,6 +383,83 @@ story:
                   mode: dialogue
                   text: "Three sentences. Three sentences. Three sentences."
                   characterId: ajf34a
+            - id: step4
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: "Four sentences. Four sentences. Four sentences. Four sentences."
+                  characterId: ajf34a
+            - id: step5
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: "Five sentences. Five sentences. Five sentences. Five sentences."
+                  characterId: ajf34a
+            - id: step6
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: "Six sentences. Six sentences. Six sentences. Six sentences."
+                  characterId: ajf34a
+            - id: step7
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: "Seven sentences. Seven sentences. Seven sentences. Seven sentences."
+                  characterId: ajf34a
+            - id: step8
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: "Eight sentences. Eight sentences. Eight sentences. Eight sentences."
+                  characterId: ajf34a
+            - id: step9
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: "Nine sentences. Nine sentences. Nine sentences. Nine sentences."
+                  characterId: ajf34a 
+            - id: step10
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: "Ten sentences. Ten sentences. Ten sentences. Ten sentences."
+                  characterId: ajf34a
+            - id: step11
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: "Eleven sentences. Eleven sentences. Eleven sentences. Eleven sentences."
+                  characterId: ajf34a 
+            - id: step12
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: "Twelve sentences. Twelve sentences. Twelve sentences. Twelve sentences."
+                  characterId: ajf34a
+            - id: step13
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: "Thirteen sentences. Thirteen sentences. Thirteen sentences. Thirteen sentences."
+                  characterId: ajf34a
+            - id: step14
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: "Fourteen sentences. Fourteen sentences. Fourteen sentences. Fourteen sentences."
+                  characterId: ajf34a 
     93jkal3:
       name: Menu Scene
       sections:

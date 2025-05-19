@@ -31,6 +31,7 @@ export const selectInitialIds = (vnData) => {
     sectionId: initialScene.initialSectionId,
     presetId: vnData.story.initialPresetId,
     stepId: initialSection.steps[0].id,
+    autoNext: initialSection.steps[0].autoNext,
   };
 };
 

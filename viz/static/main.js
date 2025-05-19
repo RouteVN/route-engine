@@ -116,7 +116,7 @@ const init = async () => {
     vnData: jsonData,
     render: callback,
     // callback,
-    // ticker: app._app.ticker,
+    ticker: app._app.ticker,
   });
 };
 

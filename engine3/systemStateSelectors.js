@@ -30,15 +30,17 @@ export const selectPointerMode = (systemState) => {
   return systemState.story.currentPointer;
 };
 
-export const createSystemState = ({ sectionId, stepId, presetId }) => {
+export const selectDialogueUIHidden = (systemState) => {
+  return systemState.story.dialogueUIHidden;
+};
+
+export const createSystemState = ({ sectionId, stepId, presetId, autoNext }) => {
   return {
     runtimeState: {},
     story: {
+      dialogueUIHidden: false,
       currentPointer: 'read',
-      autoNext: {
-        delay: undefined,
-        disableManual: false,
-      },
+      autoNext: autoNext,
       autoMode: false,
       skipMode: false,
       pointers: {
@@ -48,15 +50,16 @@ export const createSystemState = ({ sectionId, stepId, presetId }) => {
           stepId
         },
         menu: {
-          presetId: undefined,
+          // TODO remove hardcode
+          presetId: '3ijasdk3',
           sectionId: undefined,
           stepId: undefined
         },
-        title: {
-          presetId: undefined,
-          sectionId: undefined,
-          stepId: undefined
-        },
+        // title: {
+        //   presetId: undefined,
+        //   sectionId: undefined,
+        //   stepId: undefined
+        // },
       },
       history: {}
     }
