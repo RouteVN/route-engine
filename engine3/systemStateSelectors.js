@@ -3,7 +3,7 @@ export const selectCurrentPointer = (systemState) => {
 };
 
 export const selectCurrentPresetId = (systemState) => {
-  return systemState.story.currentPresetId;
+  return systemState.story.pointers[systemState.story.currentPointer].presetId;
 };
 
 export const selectSkipMode = (systemState) => {
@@ -35,7 +35,6 @@ export const createSystemState = ({ sectionId, stepId, presetId }) => {
     runtimeState: {},
     story: {
       currentPointer: 'read',
-      currentPresetId: presetId,
       autoNext: {
         delay: undefined,
         disableManual: false,
@@ -44,14 +43,17 @@ export const createSystemState = ({ sectionId, stepId, presetId }) => {
       skipMode: false,
       pointers: {
         read: {
+          presetId,
           sectionId,
           stepId
         },
         menu: {
+          presetId: undefined,
           sectionId: undefined,
           stepId: undefined
         },
         title: {
+          presetId: undefined,
           sectionId: undefined,
           stepId: undefined
         },

@@ -1,3 +1,4 @@
+import { produce } from "immer";
 import * as vnDataSelectors from "./vnDataSelectors";
 import * as systemStateSelectors from "./systemStateSelectors";
 
@@ -20,13 +21,8 @@ import * as systemStateSelectors from "./systemStateSelectors";
  * @param {ApplyParams} params
  */
 const nextStep = ({ systemState, effects, vnData }) => {
-  if (systemState.autoNext) {
-    if (systemState.autoNext.preventManual) {
-      return {
-        systemState,
-        effects,
-      };
-    }
+  if (systemState.autoNext && systemState.autoNext.preventManual) {
+    return;
   }
 
   const currentPointer = systemStateSelectors.selectCurrentPointer(systemState);
@@ -42,24 +38,11 @@ const nextStep = ({ systemState, effects, vnData }) => {
   const nextStep = steps[currentStepIndex + 1];
 
   if (!nextStep) {
-    return [systemState, effects];
+    return;
   }
 
-  const newState = {
-    ...systemState,
-    story: {
-      ...systemState.story,
-      pointers: {
-        ...systemState.story.pointers,
-        [pointerMode]: {
-          sectionId: currentPointer.sectionId,
-          stepId: nextStep.id,
-        },
-      },
-    },
-  };
-
-  return [newState, effects];
+  systemState.story.pointers[pointerMode].stepId = nextStep.id;
+  systemState.story.pointers[pointerMode].presetId = systemStateSelectors.selectCurrentPresetId(systemState);
 };
 
 /**
@@ -68,15 +51,6 @@ const nextStep = ({ systemState, effects, vnData }) => {
  */
 const prevStep = ({ systemState, effects }) => {
   // to all the things you need to do
-  return [
-    {
-      ...systemState,
-      stepPointers: {
-        ...systemState.stepPointers,
-      },
-    },
-    effects,
-  ];
 };
 
 /**
@@ -85,152 +59,63 @@ const prevStep = ({ systemState, effects }) => {
  * @param {ApplyParams} params
  */
 const goToSectionScene = ({ payload, systemState, effects, vnData }) => {
-  const { sectionId, sceneId, mode } = payload;
-  // let mode = payload.mode || systemState.mode;
-
-  // const mode = systemStateSelectors.selectPointerMode(systemState);
+  const { sectionId, sceneId, mode, presetId } = payload;
+  const _presetId = presetId || systemStateSelectors.selectCurrentPresetId(systemState);
   const _mode = mode || systemStateSelectors.selectPointerMode(systemState);
+  const steps = vnDataSelectors.selectSectionSteps(vnData, sectionId);
 
-  const steps = vnDataSelectors.selectSectionSteps(vnData, sectionId)
-
-  return [
-    {
-      ...systemState,
-      story: {
-        ...systemState.story,
-        currentPointer: _mode,
-        pointers: {
-          ...systemState.story.pointers,
-          [_mode]: { sectionId, sceneId, stepId: steps[0].id },
-        },
-      },
-    },
-    effects,
-  ];
+  systemState.story.currentPointer = _mode;
+  systemState.story.pointers[_mode] = { 
+    sectionId, 
+    sceneId, 
+    stepId: steps[0].id,
+    presetId: _presetId
+  };
 };
 
 /**
  * @param {ApplyParams} params
  */
 const setRuntimeVariable = ({ payload, systemState, effects }) => {
-  return [
-    {
-      ...systemState,
-      runtimeState: {
-        ...systemState.runtimeState,
-        ...payload,
-      },
-    },
-    effects,
-  ];
+  Object.assign(systemState.runtimeState, payload);
 };
 
 /**
  * @param {ApplyParams} params
  */
 const setPreset = ({ payload, systemState, effects }) => {
-  return [
-    {
-      ...systemState,
-      story: {
-        ...systemState.story,
-        currentPresetId: payload.presetId,
-      }
-    },
-    effects,
-  ];
+  systemState.story.pointers[systemState.story.currentPointer].presetId = payload.presetId;
 };
 
 /**
  * @param {ApplyParams} params
  */
 const clearCurrentMode = ({ payload, systemState, effects }) => {
-  const newSystemState = {
-    ...systemState,
-    story: {
-      ...systemState.story,
-      currentPointer: payload.mode,
-    }
-  };
-  return [newSystemState, effects];
+  systemState.story.currentPointer = payload.mode;
 };
 
 const startAutoMode = ({ systemState, effects }) => {
-  return [
-    {
-      ...systemState,
-      story: {
-        ...systemState.story,
-        autoMode: true,
-      },
-    },
-    effects,
-  ];
+  systemState.story.autoMode = true;
 };
 
 const stopAutoMode = ({ systemState, effects }) => {
-  return [
-    {
-      ...systemState,
-      story: {
-        ...systemState.story,
-        autoMode: false,
-      },
-    },
-    effects,
-  ];
+  systemState.story.autoMode = false;
 };
 
 const toggleAutoMode = ({ systemState, effects }) => {
-  return [
-    {
-      ...systemState,
-      story: {
-        ...systemState.story,
-        autoMode: !systemState.story.autoMode,
-      },
-    },
-    effects,
-  ];
+  systemState.story.autoMode = !systemState.story.autoMode;
 };
 
 const startSkipMode = ({ systemState, effects }) => {
-  return [
-    {
-      ...systemState,
-      story: {
-        ...systemState.story,
-        skipMode: true,
-      },
-    },
-    effects,
-  ];
+  systemState.story.skipMode = true;
 };
 
 const stopSkipMode = ({ systemState, effects }) => {
-  return [
-    {
-      ...systemState,
-      story: {
-        ...systemState.story,
-        skipMode: false,
-      },
-    },
-    effects,
-  ];
+  systemState.story.skipMode = false;
 };
 
 const toggleSkipMode = ({ systemState, effects }) => {
-  return [
-    {
-      ...systemState,
-      story: {
-        ...systemState.story,
-        skipMode: !systemState.story.skipMode,
-      },
-    },
-    effects,
-  ];
+  systemState.story.skipMode = !systemState.story.skipMode;
 };
 
 const instructions = {
@@ -258,24 +143,22 @@ const applySystemInstructions = ({
   systemState,
   vnData,
 }) => {
-  let newSystemState = { ...systemState };
   let effects = [
     {
       name: "render",
     },
   ];
-  Object.entries(systemInstructions).forEach(([instructionName, payload]) => {
-    [newSystemState, effects] = instructions[instructionName]({
-      payload,
-      systemState: newSystemState,
-      vnData,
-      effects,
-    });
+
+  return produce({ systemState, effects }, (draft) => {
+    for (const instructionName of Object.keys(systemInstructions)) {
+      instructions[instructionName]({
+        payload: systemInstructions[instructionName],
+        systemState: draft.systemState,
+        vnData,
+        effects: draft.effects,
+      });
+    }
   });
-  return {
-    systemState: newSystemState,
-    effects,
-  };
 };
 
 export default applySystemInstructions;

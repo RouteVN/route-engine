@@ -82,7 +82,7 @@ class RouteEngine {
    * @see engine3/design.md
    */
   render = () => {
-    console.log('this._systemState', this._systemState)
+    console.log("this._systemState", this._systemState);
     const currentPointer = systemStateSelectors.selectCurrentPointer(
       this._systemState
     );
@@ -120,11 +120,11 @@ class RouteEngine {
       data: this._vnData,
     });
 
-    console.log({
-      currentSteps,
-      presentationTemplate,
-      presentationState,
-    });
+    // console.log({
+    //   currentSteps,
+    //   presentationTemplate,
+    //   presentationState,
+    // });
 
     this._render(presentationState);
   };

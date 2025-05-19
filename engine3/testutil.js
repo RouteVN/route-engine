@@ -6,6 +6,15 @@ import fs from "node:fs";
 import yaml from "js-yaml";
 import { expect, test, describe } from "vitest";
 
+
+
+const wrappers = {};
+
+export const registerWrapper = (name, implementation) => {
+  wrappers[name] = implementation;
+}
+
+
 const get = (obj, path) => {
   return path.split(".").reduce((acc, part) => acc && acc[part], obj);
 };
@@ -326,6 +335,10 @@ export const setupTestSuiteFromYaml = async () => {
       }
     }
 
+    if (test.wrapper) {
+      fun = wrappers[test.wrapper](fun);
+    }
+
     if (test.cases) {
       if (!fun) {
         throw new Error(`fun is not defined in ${test.name || test.file}`);
@@ -357,6 +370,10 @@ export const setupTestSuiteFromYaml = async () => {
             }
           } else if (test.class) {
             suiteFun = fun;
+          }
+
+          if (suite.wrapper) {
+            suiteFun = wrappers[suite.wrapper](suiteFun);
           }
 
           setupTestSuite(suite.name, suite.cases, suiteFun, suiteTestClass);
