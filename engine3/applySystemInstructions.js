@@ -254,6 +254,7 @@ const goToSectionScene = ({ payload, systemState, effects, vnData }) => {
       systemState.story.historyEntryIndex++;
     } else {
       // exit history mode
+      // update read pointer
     }
   }
 
@@ -379,6 +380,39 @@ const toggleDialogueUIHidden = ({ systemState, effects }) => {
   });
 };
 
+const saveVnData = ({ systemState, effects, payload }) => {
+  systemState.saveData.push({
+    id: Date.now().toString().slice(4, 10),
+    slotIndex: payload.slotIndex,
+    pointer: systemStateSelectors.selectSpecificPointer(systemState, 'read'),
+    history: systemStateSelectors.selectHistory(systemState),
+  })
+  effects.push({
+    name: 'saveVnData',
+    options: {
+      saveData: [...systemState.saveData],
+    }
+  })
+}
+
+const loadVnData = ({ systemState, effects, payload }) => {
+  const { slotIndex } = payload;
+  console.log('systemState.saveData', systemState.saveData)
+  const saveData = systemStateSelectors.selectSaveData(systemState);
+  const matchedSlotSaveData = saveData.filter(save => save.slotIndex === slotIndex);
+  if (matchedSlotSaveData.length === 0) {
+    console.warn(`No save data found for slot index ${slotIndex}`);
+    return;
+  }
+  const { pointer, history } = matchedSlotSaveData[matchedSlotSaveData.length - 1];
+  systemState.story.currentPointer = 'read';
+  systemState.story.pointers['read'] = pointer;
+  systemState.story.history = history;
+  effects.push({
+    name: 'render',
+  })
+}
+
 const instructions = {
   nextStep,
   prevStep,
@@ -394,6 +428,8 @@ const instructions = {
   toggleSkipMode,
   stepCompleted,
   toggleDialogueUIHidden,
+  saveVnData,
+  loadVnData,
 };
 
 /**

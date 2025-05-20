@@ -34,9 +34,22 @@ export const selectDialogueUIHidden = (systemState) => {
   return systemState.story.dialogueUIHidden;
 };
 
-export const createSystemState = ({ sectionId, stepId, presetId, autoNext }) => {
+export const selectHistory = (systemState) => {
+  return systemState.story.history;
+};
+
+export const selectSpecificPointer = (systemState, mode) => {
+  return systemState.story.pointers[mode];
+}
+
+export const selectSaveData = (systemState) => {
+  return systemState.saveData;
+}
+
+export const createSystemState = ({ sectionId, stepId, presetId, autoNext, saveData }) => {
   const state = {
     runtimeState: {},
+    saveData,
     story: {
       lastStepAction: undefined,
       dialogueUIHidden: false,

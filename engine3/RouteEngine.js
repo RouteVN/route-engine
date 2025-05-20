@@ -28,12 +28,16 @@ class RouteEngine {
     if (!sectionId || !stepId) {
       throw new Error("No initial sectionId found");
     }
+
+    const saveDataString = localStorage.getItem('saveData');
+    const saveData = saveDataString ? JSON.parse(saveDataString) : [];
     
     this._systemState = systemStateSelectors.createSystemState({
       sectionId,
       stepId,
       presetId: initialIds.presetId,
       autoNext: initialIds.autoNext,
+      saveData,
     });
 
     // Register effect handlers
@@ -52,8 +56,18 @@ class RouteEngine {
       effect: this.cancelTimerEffect,
     })
 
+    this.registerEffects({
+      name: 'saveVnData',
+      effect: this.saveVnData,
+    })
+
     this.render();
   };
+
+  saveVnData = (_, options) => {
+    const { saveData } = options;
+    localStorage.setItem('saveData', JSON.stringify(saveData));
+  }
 
   /**
    * Handles delayed execution of system instructions
