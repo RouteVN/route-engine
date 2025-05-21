@@ -46,9 +46,13 @@ export const selectSaveData = (systemState) => {
   return systemState.saveData;
 }
 
-export const createSystemState = ({ sectionId, stepId, presetId, autoNext, saveData }) => {
+export const selectVariables = (systemState) => {
+  return systemState.variables;
+}
+
+export const createSystemState = ({ sectionId, stepId, presetId, autoNext, saveData, variables }) => {
   const state = {
-    runtimeState: {},
+    variables,
     saveData,
     story: {
       lastStepAction: undefined,

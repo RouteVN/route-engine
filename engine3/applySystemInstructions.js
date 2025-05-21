@@ -62,7 +62,6 @@ const stepCompleted = ({ systemState, effects, vnData }) => {
 
   const { nextTrigger, delay } = autoNext;
 
-
   switch (nextTrigger) {
     case "onComplete":
       // Clear autoNext state and immediately proceed to next step
@@ -157,7 +156,7 @@ const nextStep = ({ systemState, effects, vnData, payload = {} }) => {
     delete systemState.story.autoNext;
   }
 
-  systemState.story.lastStepAction = 'nextStep'
+  systemState.story.lastStepAction = "nextStep";
 
   // Trigger render effect
   effects.push({
@@ -182,14 +181,21 @@ const prevStep = ({ systemState, effects, vnData }) => {
   const prevStep = steps[currentStepIndex - 1];
 
   if (!prevStep) {
-    console.log({pointerMode, 'systemState.story.historyEntryIndex': systemState.story.historyEntryIndex});
+    console.log({
+      pointerMode,
+      "systemState.story.historyEntryIndex":
+        systemState.story.historyEntryIndex,
+    });
     if (pointerMode === "history") {
       if (systemState.story.historyEntryIndex > 0) {
         systemState.story.historyEntryIndex--;
       } else {
         return;
       }
-      console.log('systemState.story.historyEntryIndex', systemState.story.historyEntryIndex)
+      console.log(
+        "systemState.story.historyEntryIndex",
+        systemState.story.historyEntryIndex
+      );
       systemState.story.pointers["history"].sectionId =
         systemState.story.history.entries[
           systemState.story.historyEntryIndex
@@ -198,15 +204,15 @@ const prevStep = ({ systemState, effects, vnData }) => {
         vnData,
         systemState.story.pointers["history"].sectionId
       );
-      console.log('prevSectionSteps', prevSectionSteps)
+      console.log("prevSectionSteps", prevSectionSteps);
       systemState.story.pointers["history"].stepId =
         prevSectionSteps[prevSectionSteps.length - 1].id;
       console.log({
         stepId: systemState.story.pointers["history"].stepId,
         sectionId: systemState.story.pointers["history"].sectionId,
-      })
+      });
 
-      systemState.story.lastStepAction = 'prevStep'
+      systemState.story.lastStepAction = "prevStep";
 
       effects.push({
         name: "render",
@@ -224,7 +230,7 @@ const prevStep = ({ systemState, effects, vnData }) => {
 
   systemState.story.pointers["history"].stepId = prevStep.id;
   systemState.story.pointers["history"].sectionId = currentPointer.sectionId;
-  systemState.story.lastStepAction = 'prevStep'
+  systemState.story.lastStepAction = "prevStep";
 
   effects.push({
     name: "render",
@@ -250,7 +256,11 @@ const goToSectionScene = ({ payload, systemState, effects, vnData }) => {
     });
   } else if (currentMode === "history") {
     // TODO: check if the next section is same as history next section
-    if (sectionId === systemState.story.history.entries[systemState.story.historyEntryIndex + 1].sectionId) {
+    if (
+      sectionId ===
+      systemState.story.history.entries[systemState.story.historyEntryIndex + 1]
+        .sectionId
+    ) {
       systemState.story.historyEntryIndex++;
     } else {
       // exit history mode
@@ -274,10 +284,34 @@ const goToSectionScene = ({ payload, systemState, effects, vnData }) => {
 /**
  * @param {ApplyParams} params
  */
-const setRuntimeVariable = ({ payload, systemState, effects }) => {
-  Object.assign(systemState.runtimeState, payload);
+const updateVariable = ({ payload, systemState, effects, vnData }) => {
+  const { operations } = payload;
+  for (const operation of operations) {
+    const { variableId, op, value } = operation;
+    if (op === "set") {
+      systemState.variables[variableId] = value;
+    } else if (op === "increment") {
+      systemState.variables[variableId] += value;
+    } else if (op === "decrement") {
+      systemState.variables[variableId] -= value;
+    }
+  }
+  const vnDataVariables = vnDataSelectors.selectVariables(vnData);
+  const localVariableKeys = Object.keys(systemState.variables).filter(
+    (key) => vnDataVariables[key].persistence === "local"
+  );
+  const localVariables = localVariableKeys.reduce((acc, key) => {
+    acc[key] = systemState.variables[key];
+    return acc;
+  }, {});
   effects.push({
     name: "render",
+  });
+  effects.push({
+    name: "updateLocalVariables",
+    options: {
+      variables: localVariables,
+    },
   });
 };
 
@@ -384,40 +418,43 @@ const saveVnData = ({ systemState, effects, payload }) => {
   systemState.saveData.push({
     id: Date.now().toString().slice(4, 10),
     slotIndex: payload.slotIndex,
-    pointer: systemStateSelectors.selectSpecificPointer(systemState, 'read'),
+    pointer: systemStateSelectors.selectSpecificPointer(systemState, "read"),
     history: systemStateSelectors.selectHistory(systemState),
-  })
+  });
   effects.push({
-    name: 'saveVnData',
+    name: "saveVnData",
     options: {
       saveData: [...systemState.saveData],
-    }
-  })
-}
+    },
+  });
+};
 
 const loadVnData = ({ systemState, effects, payload }) => {
   const { slotIndex } = payload;
-  console.log('systemState.saveData', systemState.saveData)
+  console.log("systemState.saveData", systemState.saveData);
   const saveData = systemStateSelectors.selectSaveData(systemState);
-  const matchedSlotSaveData = saveData.filter(save => save.slotIndex === slotIndex);
+  const matchedSlotSaveData = saveData.filter(
+    (save) => save.slotIndex === slotIndex
+  );
   if (matchedSlotSaveData.length === 0) {
     console.warn(`No save data found for slot index ${slotIndex}`);
     return;
   }
-  const { pointer, history } = matchedSlotSaveData[matchedSlotSaveData.length - 1];
-  systemState.story.currentPointer = 'read';
-  systemState.story.pointers['read'] = pointer;
+  const { pointer, history } =
+    matchedSlotSaveData[matchedSlotSaveData.length - 1];
+  systemState.story.currentPointer = "read";
+  systemState.story.pointers["read"] = pointer;
   systemState.story.history = history;
   effects.push({
-    name: 'render',
-  })
-}
+    name: "render",
+  });
+};
 
 const instructions = {
   nextStep,
   prevStep,
   goToSectionScene,
-  setRuntimeVariable,
+  updateVariable,
   setPreset,
   clearCurrentMode,
   startAutoMode,

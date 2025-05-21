@@ -44,7 +44,40 @@ const init = async () => {
     "file:94lkj289": {
       url: '/public/logo1.png',
       type: 'image/png',
-    }
+    },
+    'file:horizontal_hover_bar': {
+      url: '/public/horizontal_hover_bar.png',
+      type: 'image/png'
+    },
+    'file:horizontal_hover_thumb': {
+      url: '/public/horizontal_hover_thumb.png',
+      type: 'image/png'
+    },
+    'file:horizontal_idle_bar': {
+      url: '/public/horizontal_idle_bar.png',
+      type: 'image/png'
+    }, 
+    'file:horizontal_idle_thumb': {
+      url: '/public/horizontal_idle_thumb.png',
+      type: 'image/png'
+    },
+    'file:vertical_hover_bar': {
+      url: '/public/vertical_hover_bar.png',
+      type: 'image/png'
+    },
+    'file:vertical_hover_thumb': {
+      url: '/public/vertical_hover_thumb.png',
+      type: 'image/png'
+    },
+    'file:vertical_idle_bar': {
+      url: '/public/vertical_idle_bar.png',
+      type: 'image/png'
+    },
+    'file:vertical_idle_thumb': {
+      url: '/public/vertical_idle_thumb.png',
+      type: 'image/png'
+    },
+
   };
 
   const assetBufferMap = {};
@@ -89,6 +122,14 @@ const init = async () => {
     "file:a32kf3",
     "file:x342fga",
     "file:94lkj289",
+    "file:horizontal_hover_bar",
+    "file:horizontal_hover_thumb",
+    "file:horizontal_idle_bar",
+    "file:horizontal_idle_thumb",
+    "file:vertical_idle_bar",
+    "file:vertical_idle_thumb",
+    "file:vertical_hover_bar",
+    "file:vertical_hover_thumb",
   ]);
 
   await app.loadSoundAssets([

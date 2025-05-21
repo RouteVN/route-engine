@@ -13,8 +13,11 @@ presets:
     eventsMap:
       RightClick:
         systemInstructions:
-          setRuntimeVariable:
-            currentMenuTabId: options
+          updateVariable:
+            operations:
+              - variableId: currentMenuTabId
+                op: 'set'
+                value: 'options'
           goToSectionScene:
             mode: menu
             sceneId: 93jkal3
@@ -31,10 +34,32 @@ presets:
             mode: read
 
 variables:
-  runtime:
-    currentMenuTabId:
-      type: string
-      default: options
+# 🔧 persistence Types
+
+# • runtime – temporary; resets when game restarts
+# Example: Currently selected menu tab, temporary UI state, or animation step
+# Use when the value is only needed while the game is running and should not persist across restarts.
+
+# • local – saved on this device only
+# Example: Text speed, sound/music volume, accessibility preferences
+# Use for user preferences that should persist on the current device, but don’t need syncing or save/load.
+
+# • global – synced across all devices
+# Example: Whether the game is completed, unlocked bonus content, claimed daily rewards
+# Use when the value should follow the player across multiple devices (via cloud sync).
+
+# • saveData – saved only in game saves
+# Example: Player progress, inventory items, story flags
+# Use for values that are tied to save/load and shouldn’t change unless the player loads a saved game.
+
+  currentMenuTabId:
+    type: string
+    default: options
+    persistence: runtime
+  textSpeed:
+    type: number
+    default: 50
+    persistence: local
 
 ui:
   screens:
@@ -46,18 +71,154 @@ ui:
           y: 100
           children:
             $switch:
-              'runtimeState.currentMenuTabId == "options"':
+              'variables.currentMenuTabId == "options"':
                 - type: text
                   text: "Options"
                   style:
                     fontSize: 64
                     fill: "white"
-              'runtimeState.currentMenuTabId == "load"':
-                - type: text
+                - id: 39jfkal21
+                  type: container
+                  x: 200
+                  y: 100
+                  width: 1400
+                  height: 300
+                  children:
+                    - id: textspeed-id
+                      type: text
+                      x: 20
+                      y: 0
+                      text:
+                        $eval: 'variables.textSpeed'
+                      # "Text Speed"
+                      style:
+                        fontSize: 24
+                        fill: "white"
+                    - id: 'a'
+                      type: "slider"
+                      x: 20
+                      y: 50
+                      direction: "horizontal"
+                      idleThumb: "file:horizontal_idle_thumb"
+                      hoverThumb: "file:horizontal_hover_thumb"
+                      idleBar: "file:horizontal_idle_bar"
+                      hoverBar: "file:horizontal_hover_bar"
+                    - id: 'b'
+                      type: "slider"
+                      x: 20
+                      y: 170
+                      direction: "vertical"
+                      idleThumb: "file:vertical_idle_thumb"
+                      hoverThumb: "file:vertical_hover_thumb"
+                      idleBar: "file:vertical_idle_bar"
+                      hoverBar: "file:vertical_hover_bar"
+                      dragEventName: systemInstructions
+                      dragEndEventName: systemInstructions
+                      dragEventPayload:
+                        systemInstructions:
+                          updateVariable:
+                            operations:
+                              - variableId: textSpeed
+                                op: 'set'
+                                value: '{{ value }}'
+              'variables.currentMenuTabId == "load"':
+                - id: load-title
+                  type: text
                   text: "Load"
                   style:
                     fontSize: 64
                     fill: "white"
+                - id: load-container
+                  type: container
+                  x: 300
+                  y: 100
+                  width: 1400
+                  direction: horizontal
+                  gap: 20
+                  children:
+                    $map:
+                      - id: 1
+                        date: '2025-01-01'
+                      - id: 2
+                        date: '2025-01-02'
+                      - id: 3
+                        date: '2025-01-03'
+                      - id: 4
+                        date: '2025-01-04'
+                      - id: 5
+                        date: '2025-01-05'
+                      - id: 6
+                        date: '2025-01-06'
+                    each(v,i):
+                      type: container
+                      width: 400
+                      height: 300
+                      children:
+                        - id:
+                            $eval: 'i'
+                          type: sprite
+                          url: file:lakjf3lka
+                          width: 400
+                          height: 300
+                          eventName: "systemInstructions"
+                          eventPayload:
+                            systemInstructions:
+                              loadVnData:
+                                slotIndex:
+                                  $eval: 'i'
+                        - type: text
+                          text:
+                            $eval: 'v.date'
+                          x: 100
+                          y: 200
+                          style:
+                            fontSize: 32
+                            fill: "white"
+              'variables.currentMenuTabId == "save"':
+                - id: save-title
+                  type: text
+                  text: "Save"
+                  style:
+                    fontSize: 64
+                    fill: "white"
+                - id: save-container
+                  type: container
+                  x: 300
+                  y: 100
+                  width: 1400
+                  direction: horizontal
+                  gap: 20
+                  children:
+                    $map:
+                      - id: 1
+                        date: '2025-01-01'
+                      - id: 2
+                        date: '2025-01-02'
+                      - id: 3
+                        date: '2025-01-03'
+                      - id: 4
+                        date: '2025-01-04'
+                      - id: 5
+                        date: '2025-01-05'
+                      - id: 6
+                        date: '2025-01-06'
+                    each(v,i):
+                      type: container
+                      width: 400
+                      height: 300
+                      children:
+                        - id:
+                            $eval: 'i'
+                          type: sprite
+                          url: file:lakjf3lka
+                          width: 400
+                          height: 300
+                          eventName: "systemInstructions"
+                          eventPayload:
+                            systemInstructions:
+                              saveVnData:
+                                slotIndex:
+                                  $eval: 'i'
         - id: menu-container
           direction: vertical
           gap: 20
@@ -72,18 +233,33 @@ ui:
                   systemInstructions:
                     goToSectionScene:
                       sectionId: 3k3s9sd
+              - text: Save
+                eventName: "systemInstructions"
+                eventPayload:
+                  systemInstructions:
+                    updateVariable:
+                      operations:
+                        - variableId: currentMenuTabId
+                          op: 'set'
+                          value: 'save'
               - text: Load
                 eventName: "systemInstructions"
                 eventPayload:
                   systemInstructions:
-                    setRuntimeVariable:
-                      currentMenuTabId: load
+                    updateVariable:
+                      operations:
+                        - variableId: currentMenuTabId
+                          op: 'set'
+                          value: 'load'
               - text: Options
                 eventName: "systemInstructions"
                 eventPayload:
                   systemInstructions:
-                    setRuntimeVariable:
-                      currentMenuTabId: options
+                    updateVariable:
+                      operations:
+                        - variableId: currentMenuTabId
+                          op: 'set'
+                          value: 'options'
               - text: Main
                 eventName: "systemInstructions"
                 eventPayload:
@@ -192,8 +368,11 @@ ui:
               eventName: "systemInstructions"
               eventPayload:
                 systemInstructions:
-                  setRuntimeVariable:
-                    currentMenuTabId: options
+                  updateVariable:
+                    operations:
+                      - variableId: currentMenuTabId
+                        op: 'set'
+                        value: 'options'
                   goToSectionScene:
                     mode: menu
                     sectionId: asdkjl32
@@ -255,8 +434,11 @@ ui:
                       sceneId: 93jkal3
                       sectionId: asdkjl32
                       mode: menu
-                    setRuntimeVariable:
-                      currentMenuTabId: load
+                    updateVariable:
+                      operations:
+                        - variableId: currentMenuTabId
+                          op: 'set'
+                          value: 'load'
               - text: Options
                 eventName: "systemInstructions"
                 eventPayload:
@@ -265,8 +447,11 @@ ui:
                       sceneId: 93jkal3
                       sectionId: asdkjl32
                       mode: menu
-                    setRuntimeVariable:
-                      currentMenuTabId: options
+                    updateVariable:
+                      operations:
+                        - variableId: currentMenuTabId
+                          op: 'set'
+                          value: 'options'
               - text: Exit
                 eventName: "systemInstructions"
                 eventPayload:

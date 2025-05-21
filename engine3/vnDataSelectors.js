@@ -35,6 +35,10 @@ export const selectInitialIds = (vnData) => {
   };
 };
 
+export const selectVariables = (vnData) => {
+  return vnData.variables;
+};
+
 export const selectSectionSteps = (vnData, sectionId, stepId) => {
   const sections = Object.values(vnData.story.scenes)
     .flatMap((scene) => {

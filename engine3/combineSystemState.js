@@ -11,7 +11,7 @@ import * as systemStateSelectors from './systemStateSelectors';
  * @property {Object} screen
  * @property {Object} template
  * @property {Object} ui
- * @property {Object} runtimeState
+ * @property {Object} variables
  * @property {Function} resolveFile
  */
 
@@ -264,14 +264,15 @@ const addScreens = ({
   transitions,
   template,
   ui,
-  runtimeState,
+  variables,
 }) => {
   let newElements = elements.concat([]);
+  console.log('variables', variables);
   if (template.screen) {
     const screen = ui.screens[template.screen.screenId];
     newElements = newElements.concat(
       jsone(screen.elements, {
-        runtimeState,
+        variables,
       })
     );
   }
@@ -320,8 +321,8 @@ const combineSystemState = ({ template, state: systemState, data }) => {
   // Extract required resources from data
   const resources = data.resources || {};
   const ui = data.ui || {};
-  const runtimeState = systemStateSelectors.selectRuntimeState(systemState) || {};
   const resolveFile = (path) => `file:${path}`;
+  const variables = systemStateSelectors.selectVariables(systemState) || {};
   const screen = vnDataSelectors.selectScreen(data);
 
   // Initial state
@@ -339,7 +340,7 @@ const combineSystemState = ({ template, state: systemState, data }) => {
         resolveFile,
         ui,
         screen,
-        runtimeState,
+        variables,
       }),
     initialResult
   );

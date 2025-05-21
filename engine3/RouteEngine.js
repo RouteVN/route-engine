@@ -29,15 +29,25 @@ class RouteEngine {
       throw new Error("No initial sectionId found");
     }
 
-    const saveDataString = localStorage.getItem('saveData');
+    const saveDataString = localStorage.getItem("saveData");
     const saveData = saveDataString ? JSON.parse(saveDataString) : [];
-    
+
+    const variablesString = localStorage.getItem("variables");
+    const variables = variablesString ? JSON.parse(variablesString) : {};
+    const vnDataVariables = vnDataSelectors.selectVariables(vnData);
+    Object.keys(vnDataVariables).forEach((key) => {
+      if (variables[key] === undefined) {
+        variables[key] = vnDataVariables[key].default;
+      }
+    });
+
     this._systemState = systemStateSelectors.createSystemState({
       sectionId,
       stepId,
       presetId: initialIds.presetId,
       autoNext: initialIds.autoNext,
       saveData,
+      variables,
     });
 
     // Register effect handlers
@@ -47,27 +57,37 @@ class RouteEngine {
     });
 
     this.registerEffects({
-      name: 'systemInstructions',
+      name: "systemInstructions",
       effect: this.systemInstructionsHandler,
     });
 
     this.registerEffects({
-      name: 'cancelTimerEffect',
+      name: "cancelTimerEffect",
       effect: this.cancelTimerEffect,
-    })
+    });
 
     this.registerEffects({
-      name: 'saveVnData',
+      name: "saveVnData",
       effect: this.saveVnData,
-    })
+    });
+
+    this.registerEffects({
+      name: "updateLocalVariables",
+      effect: this.updateLocalVariables,
+    });
 
     this.render();
   };
 
+  updateLocalVariables = (_, options) => {
+    const { variables } = options;
+    localStorage.setItem("variables", JSON.stringify(variables));
+  };
+
   saveVnData = (_, options) => {
     const { saveData } = options;
-    localStorage.setItem('saveData', JSON.stringify(saveData));
-  }
+    localStorage.setItem("saveData", JSON.stringify(saveData));
+  };
 
   /**
    * Handles delayed execution of system instructions
@@ -78,7 +98,7 @@ class RouteEngine {
       callback();
       return;
     }
-    
+
     let elapsedInMs = 0;
     const timerEffect = (time) => {
       elapsedInMs += time.deltaMS;
@@ -87,7 +107,7 @@ class RouteEngine {
         callback();
       }
     };
-    
+
     this._ticker.add(timerEffect);
     this._currentTimerEffect = timerEffect;
   };
@@ -119,7 +139,7 @@ class RouteEngine {
     });
 
     this._systemState = systemState;
-    
+
     // Handle all resulting effects
     this.processEffects(effects);
   };
@@ -131,11 +151,11 @@ class RouteEngine {
     if (!effects || !effects.length) {
       return;
     }
-    
+
     for (const effect of effects) {
       const { name, options } = effect;
       const effectHandler = this._effects[name];
-      
+
       if (effectHandler) {
         effectHandler(name, options);
       } else {
@@ -148,12 +168,14 @@ class RouteEngine {
    * Handles user input events by mapping them to system instructions
    */
   systemEventHandler = (event, payload = {}) => {
+    console.log("system event handler", event, payload);
+
     // Handle step completion event
-    if (event === 'completed') {
+    if (event === "completed") {
       this.applySystemInstructions({ stepCompleted: {} });
       return;
     }
-    
+
     // Direct system instruction execution
     if (event === "systemInstructions") {
       this.systemInstructionsHandler(event, payload);
@@ -161,20 +183,24 @@ class RouteEngine {
     }
 
     // Map events to system instructions using the current preset
-    const presetId = systemStateSelectors.selectCurrentPresetId(this._systemState);
+    const presetId = systemStateSelectors.selectCurrentPresetId(
+      this._systemState
+    );
     const preset = vnDataSelectors.selectPreset(this._vnData, presetId);
-    
+
     if (!preset) {
       console.warn(`No preset found with ID: ${presetId}`);
       return;
     }
-    
+
     const eventMapping = preset.eventsMap[event];
     if (!eventMapping) {
-      console.warn(`No mapping found for event: ${event} in preset: ${presetId}`);
+      console.warn(
+        `No mapping found for event: ${event} in preset: ${presetId}`
+      );
       return;
     }
-    
+
     this.applySystemInstructions(eventMapping.systemInstructions);
   };
 
@@ -182,7 +208,9 @@ class RouteEngine {
    * Renders the current state of the visual novel
    */
   render = () => {
-    const currentPointer = systemStateSelectors.selectCurrentPointer(this._systemState);
+    const currentPointer = systemStateSelectors.selectCurrentPointer(
+      this._systemState
+    );
     const currentSteps = vnDataSelectors.selectSectionSteps(
       this._vnData,
       currentPointer.sectionId,
@@ -190,7 +218,9 @@ class RouteEngine {
     );
 
     if (!currentSteps.length) {
-      console.warn(`No steps found for section: ${currentPointer.sectionId}, step: ${currentPointer.stepId}`);
+      console.warn(
+        `No steps found for section: ${currentPointer.sectionId}, step: ${currentPointer.stepId}`
+      );
       return;
     }
 
@@ -198,14 +228,14 @@ class RouteEngine {
 
     // Apply system instructions from the last step if present
     if (lastStep.systemInstructions) {
-      if (this._systemState.story.lastStepAction === 'nextStep') {
-        console.log('running apply system instructions from last step')
+      if (this._systemState.story.lastStepAction === "nextStep") {
+        console.log("running apply system instructions from last step");
         this.applySystemInstructions(lastStep.systemInstructions);
       } else {
-        console.log('skipping because history mode')
+        console.log("skipping because history mode");
         if (!lastStep.presentation) {
           this.applySystemInstructions({
-            prevStep: {}
+            prevStep: {},
           });
         }
       }
@@ -213,8 +243,12 @@ class RouteEngine {
     }
 
     // Create presentation state
-    const presentationInstructions = currentSteps.map((step) => step.presentation || {});
-    const presentationTemplate = applyPresentationInstructions(presentationInstructions);
+    const presentationInstructions = currentSteps.map(
+      (step) => step.presentation || {}
+    );
+    const presentationTemplate = applyPresentationInstructions(
+      presentationInstructions
+    );
     const presentationState = combineSystemState({
       template: presentationTemplate,
       state: this._systemState,
