@@ -10,7 +10,13 @@ screen:
   height: 1080
   backgroundColor: '#000000'
 
-presets: {}
+presets:
+  bj342s:
+    name: Read
+    eventsMap:
+      LeftClick:
+        systemInstructions:
+          nextStep: {}
 
 resources:
   backgrounds:
@@ -23,6 +29,7 @@ resources:
 
 story:
   initialSceneId: ajfl3a
+  initialPresetId: bj342s
   scenes:
     ajfl3a:
       name: Scene 1
@@ -32,17 +39,17 @@ story:
           name: Section 1
           steps:
             - id: step1
-              actions:
+              presentation:
                 background:
                   backgroundId: alkejf3la
             - id: step2
-              actions:
+              presentation:
                 goToSectionScene:
                   sectionId: 3k3s9sd
         3k3s9sd:
           name: Section 2
           steps:
             - id: step1
-              actions:
+              presentation:
                 background:
                   backgroundId: 8a3lkja

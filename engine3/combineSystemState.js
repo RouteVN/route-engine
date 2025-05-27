@@ -49,15 +49,15 @@ const generateScreenBackgroundElement = ({
 const addBackgrundOrCg = ({
   elements,
   transitions,
-  state,
+  template,
   resources,
   resolveFile,
 }) => {
   let newElements = elements.concat([]);
   let newTransitions = transitions.concat([]);
-  if (state.background) {
-    if (state.background.backgroundId) {
-      const background = resources.backgrounds[state.background.backgroundId];
+  if (template.background) {
+    if (template.background.backgroundId) {
+      const background = resources.backgrounds[template.background.backgroundId];
       newElements = newElements.concat([
         {
           id: "bg-cg",
@@ -69,9 +69,9 @@ const addBackgrundOrCg = ({
       ]);
     }
 
-    if (state.background.animations) {
-      if (state.background.animations.in) {
-        const animation = resources.animations[state.background.animations.in];
+    if (template.background.animations) {
+      if (template.background.animations.in) {
+        const animation = resources.animations[template.background.animations.in];
         newTransitions = newTransitions.concat([
           {
             id: "bg-cg-animation",
@@ -83,8 +83,8 @@ const addBackgrundOrCg = ({
         ]);
       }
 
-      if (state.background.animations.out) {
-        const animation = resources.animations[state.background.animations.out];
+      if (template.background.animations.out) {
+        const animation = resources.animations[template.background.animations.out];
         newTransitions = newTransitions.concat([
           {
             id: "bg-cg-animation-2",
@@ -107,13 +107,13 @@ const addBackgrundOrCg = ({
 const addCharacters = ({
   elements,
   transitions,
-  state,
+  template,
   resources,
   resolveFile,
 }) => {
   let newElements = elements.concat([]);
-  if (state.character) {
-    const items = state.character.items;
+  if (template.character) {
+    const items = template.character.items;
 
     for (const item of items) {
       const { positionId, spriteParts } = item;
@@ -283,15 +283,15 @@ const addScreens = ({
  * 
  * @param {Object} params 
  */
-const addChoices = ({ elements, transitions, state, resources, ui }) => {
+const addChoices = ({ elements, transitions, template, resources, ui }) => {
   let newElements = elements.concat([]);
-  if (state.choices) {
-    const screen = ui.screens[state.choices.choiceScreenId];
+  if (template.choices) {
+    const screen = ui.screens[template.choices.choiceScreenId];
 
     newElements = newElements.concat(
       jsone(screen.elements, {
         choices: {
-          items: state.choices.items,
+          items: template.choices.items,
         },
       })
     );

@@ -36,7 +36,7 @@ export const selectInitialIds = (vnData) => {
 };
 
 export const selectVariables = (vnData) => {
-  return vnData.variables;
+  return vnData.variables || {};
 };
 
 export const selectSectionSteps = (vnData, sectionId, stepId) => {

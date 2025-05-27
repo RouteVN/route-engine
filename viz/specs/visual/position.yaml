@@ -37,13 +37,13 @@ story:
           name: Section 1
           steps:
             - id: step1
-              actions:
+              presentation:
                 visual:
                   items:
                     - visualId: alkejf3la
                       positionId: iasdlf
             - id: step2
-              actions:
+              presentation:
                 visual:
                   items:
                     - visualId: alkejf3la

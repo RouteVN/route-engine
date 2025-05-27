@@ -81,7 +81,6 @@ class Engine {
       this.handleAction("setPreset", lastStep.actions.preset);
     }
 
-
     const resources = this.vnData.resources;
     const resolveFile = (fileId) => {
       return `file:${fileId}`;

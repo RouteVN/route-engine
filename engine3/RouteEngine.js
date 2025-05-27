@@ -193,7 +193,7 @@ class RouteEngine {
       return;
     }
 
-    const eventMapping = preset.eventsMap[event];
+    const eventMapping = preset?.eventsMap?.[event];
     if (!eventMapping) {
       console.warn(
         `No mapping found for event: ${event} in preset: ${presetId}`
@@ -201,13 +201,16 @@ class RouteEngine {
       return;
     }
 
-    this.applySystemInstructions(eventMapping.systemInstructions);
+    if (eventMapping) {
+      this.applySystemInstructions(eventMapping.systemInstructions);
+    }
   };
 
   /**
    * Renders the current state of the visual novel
    */
   render = () => {
+    console.log("RENDER RENDER")
     const currentPointer = systemStateSelectors.selectCurrentPointer(
       this._systemState
     );
@@ -225,6 +228,8 @@ class RouteEngine {
     }
 
     const lastStep = currentSteps[currentSteps.length - 1];
+
+    console.log('lastStep', lastStep)
 
     // Apply system instructions from the last step if present
     if (lastStep.systemInstructions) {
@@ -249,11 +254,14 @@ class RouteEngine {
     const presentationTemplate = applyPresentationInstructions(
       presentationInstructions
     );
+    console.log('presentationTemplate', presentationTemplate)
     const presentationState = combineSystemState({
       template: presentationTemplate,
       state: this._systemState,
       data: this._vnData,
     });
+
+    console.log('presentationState', presentationState)
 
     // Render the presentation state
     this._render(presentationState);
