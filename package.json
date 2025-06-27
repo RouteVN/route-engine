@@ -3,15 +3,18 @@
   "devDependencies": {
     "@vitest/coverage-v8": "^2.1.3",
     "@vitest/ui": "^2.1.3",
-    "vitest": "^2.1.3"
+    "vitest": "^3.2.4"
   },
   "scripts": {
-    "test": "vitest engine3.test.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
     "immer": "^10.1.1",
+    "jempl": "^0.0.7",
     "js-yaml": "^4.1.0",
-    "json-e": "^4.8.0"
+    "json-e": "^4.8.0",
+    "puty": "^0.0.4-rc2"
   }
 }

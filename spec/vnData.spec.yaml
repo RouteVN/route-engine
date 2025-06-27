@@ -1,0 +1,54 @@
+file: '../src/vnData.store.js'
+group: vnData
+--- # ------------------------------------------------------------
+suite: selectPresets
+exportName: selectPresets
+---
+case: basic
+in:
+  - !include data/testVnData.yaml
+out:
+  bj342s:
+    name: Read
+    eventsMap:
+      RightClick:
+        actions:
+          setRuntimeVariable:
+            currentMenuTabId: options
+          goToSectionScene:
+            mode: menu
+            sceneId: 93jkal3
+            sectionId: asdkjl32
+      LeftClick:
+        actions:
+          nextStep: {}
+  3ijasdk3:
+    name: Menu
+    eventsMap:
+      RightClick:
+        actions:
+          clearCurrentMode:
+            newMode: read
+          preset:
+            presetId: bj342s
+--- # ------------------------------------------------------------
+suite: selectInitialPreset
+exportName: selectInitialPreset
+---
+case: basic
+in:
+  - !include data/testVnData.yaml
+out:
+  name: Read
+  eventsMap:
+    RightClick:
+      actions:
+        setRuntimeVariable:
+          currentMenuTabId: options
+        goToSectionScene:
+          mode: menu
+          sceneId: 93jkal3
+          sectionId: asdkjl32
+    LeftClick:
+      actions:
+        nextStep: {}
