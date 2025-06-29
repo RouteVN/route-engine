@@ -40,10 +40,10 @@ mocks:
                 - id: bg-screen
                   type: graphics
                   x1: 0
-                  x2: 100
+                  x2: 1920
                   y1: 0
-                  y2: 100
-                  fill: red
+                  y2: 1080
+                  fill: '#000000'
                   clickEventName: LeftClick
                   rightClickEventName: RightClick
                   wheelEventName: ScrollUp

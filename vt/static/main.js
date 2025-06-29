@@ -45,38 +45,38 @@ const init = async () => {
       url: '/public/logo1.png',
       type: 'image/png',
     },
-    'file:horizontal_hover_bar': {
-      url: '/public/horizontal_hover_bar.png',
-      type: 'image/png'
-    },
-    'file:horizontal_hover_thumb': {
-      url: '/public/horizontal_hover_thumb.png',
-      type: 'image/png'
-    },
-    'file:horizontal_idle_bar': {
-      url: '/public/horizontal_idle_bar.png',
-      type: 'image/png'
-    }, 
-    'file:horizontal_idle_thumb': {
-      url: '/public/horizontal_idle_thumb.png',
-      type: 'image/png'
-    },
-    'file:vertical_hover_bar': {
-      url: '/public/vertical_hover_bar.png',
-      type: 'image/png'
-    },
-    'file:vertical_hover_thumb': {
-      url: '/public/vertical_hover_thumb.png',
-      type: 'image/png'
-    },
-    'file:vertical_idle_bar': {
-      url: '/public/vertical_idle_bar.png',
-      type: 'image/png'
-    },
-    'file:vertical_idle_thumb': {
-      url: '/public/vertical_idle_thumb.png',
-      type: 'image/png'
-    },
+    // 'file:horizontal_hover_bar': {
+    //   url: '/public/horizontal_hover_bar.png',
+    //   type: 'image/png'
+    // },
+    // 'file:horizontal_hover_thumb': {
+    //   url: '/public/horizontal_hover_thumb.png',
+    //   type: 'image/png'
+    // },
+    // 'file:horizontal_idle_bar': {
+    //   url: '/public/horizontal_idle_bar.png',
+    //   type: 'image/png'
+    // }, 
+    // 'file:horizontal_idle_thumb': {
+    //   url: '/public/horizontal_idle_thumb.png',
+    //   type: 'image/png'
+    // },
+    // 'file:vertical_hover_bar': {
+    //   url: '/public/vertical_hover_bar.png',
+    //   type: 'image/png'
+    // },
+    // 'file:vertical_hover_thumb': {
+    //   url: '/public/vertical_hover_thumb.png',
+    //   type: 'image/png'
+    // },
+    // 'file:vertical_idle_bar': {
+    //   url: '/public/vertical_idle_bar.png',
+    //   type: 'image/png'
+    // },
+    // 'file:vertical_idle_thumb': {
+    //   url: '/public/vertical_idle_thumb.png',
+    //   type: 'image/png'
+    // },
 
   };
 
@@ -97,10 +97,12 @@ const init = async () => {
     width: 1920,
     height: 1080,
     assetBufferMap,
-    eventHandler: (event, payload) => {
+    eventHandler: (eventType, payload) => {
+      console.log('2d renderer eventHandler', eventType, payload)
+      engine.handleEvent({eventType, payload});
       // engine.handleEvent(event, payload);
       // console.log('eventHandler', event, payload)
-      engine.systemEventHandler(event, payload)
+      // engine.systemEventHandler(event, payload)
     },
     plugins: [
       new SpriteRendererPlugin(),
@@ -122,14 +124,14 @@ const init = async () => {
     "file:a32kf3",
     "file:x342fga",
     "file:94lkj289",
-    "file:horizontal_hover_bar",
-    "file:horizontal_hover_thumb",
-    "file:horizontal_idle_bar",
-    "file:horizontal_idle_thumb",
-    "file:vertical_idle_bar",
-    "file:vertical_idle_thumb",
-    "file:vertical_hover_bar",
-    "file:vertical_hover_thumb",
+    // "file:horizontal_hover_bar",
+    // "file:horizontal_hover_thumb",
+    // "file:horizontal_idle_bar",
+    // "file:horizontal_idle_thumb",
+    // "file:vertical_idle_bar",
+    // "file:vertical_idle_thumb",
+    // "file:vertical_hover_bar",
+    // "file:vertical_hover_thumb",
   ]);
 
   await app.loadSoundAssets([
@@ -145,19 +147,30 @@ const init = async () => {
     e.preventDefault();
   });
   const engine = new RouteEngine();
-  const callback = (payload) => {
+  // const callback = (payload) => {
+  //   console.log({
+  //     payload,
+  //   });
+  //   // if (event === "render") {
+  //     app.render(payload);
+  //   // }
+  // };
+
+  engine.onEvent(({eventType, payload}) => {
     console.log({
+      eventType,
       payload,
     });
-    // if (event === "render") {
+    if (eventType === "render") {
       app.render(payload);
-    // }
-  };
+    }
+  });
+
   engine.init({
     vnData: jsonData,
-    render: callback,
+    // render: callback,
     // callback,
-    ticker: app._app.ticker,
+    // ticker: app._app.ticker,
   });
 };
 

@@ -51,6 +51,16 @@ export const selectVariables = (state) => {
   return state.variables;
 }
 
+export const updateCurrentPointerStepId = (state, stepId) => {
+  console.log('zzzzzzzzzzzzzzzzzzzzzz', {
+    state, stepId, currentPointer: state.story.currentPointer
+})
+  state.story.pointers[state.story.currentPointer].stepId = stepId;
+  console.log('yyyyyyyyyyyyyyyyyy', state.story.pointers[state.story.currentPointer].stepId)
+  // state.story.pointers[pointerMode].presetId =
+  //   systemStore.selectCurrentPresetId();
+}
+
 export const createInitialState = ({ sectionId, stepId, presetId, autoNext, saveData, variables }) => {
   const state = {
     variables,

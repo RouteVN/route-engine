@@ -117,9 +117,32 @@ class RouteEngine {
    */
   handleEvent = (event) => {
     const { eventType, payload } = event;
+
+    // TODO get it dynamically
+    const eventTypeToInstructionMap = {
+      'LeftClick': 'nextStep'
+    }
+
+    const instructionType = eventTypeToInstructionMap[eventType];
+
+    console.log('aaaaaaaaaaaa', {
+      instructionType,
+      payload,
+    })
+
     const { effects } = this._applySystemInstruction({
-      [eventType]: payload,
-    });
+      [instructionType]: payload,
+    })
+
+    effects.forEach((effect) => {
+      if (effect.name === 'render') {
+        this._render();
+      }
+    })
+
+    // const { effects } = this._applySystemInstruction({
+    //   [eventType]: payload,
+    // });
 
   }
 
@@ -179,6 +202,12 @@ class RouteEngine {
       currentPointer.stepId
     );
 
+    console.log('dddddddddddd', {
+      currentPointerMode: this._systemStore.selectPointerMode(),
+      currentPointer,
+      currentSteps
+    })
+
     if (!currentSteps.length) {
       console.warn(
         `No steps found for section: ${currentPointer.sectionId}, step: ${currentPointer.stepId}`
@@ -214,11 +243,7 @@ class RouteEngine {
     const presentationState = this._constructPresentationState({
       // TODO
       template: presentationTemplate,
-      screen: {
-        width: 100,
-        height: 100,
-        backgroundColor: 'red'
-      },
+      screen: this._vnDataStore.selectScreen(),
       resolveFile: (f) => `file:${f}`,
       resources: this._vnDataStore.selectResources(),
       ui: this._vnDataStore.selectUi()

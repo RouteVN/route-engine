@@ -97,30 +97,40 @@ export const stepCompleted = ({ systemState, effects, vnData }) => {
  * Advances to the next step in the story
  * @param {ApplyParams} params
  */
-export const nextStep = ({ systemState, effects, vnData, payload = {} }) => {
-  const dialogueUIHidden =
-    systemStateSelectors.selectDialogueUIHidden(systemState);
+// export const nextStep = ({ systemState, effects, vnData, payload = {} }) => {
+export const nextStep = (state, deps, payload) => {
+  const {
+    effects
+  } = state;
 
-  if (dialogueUIHidden) {
-    toggleDialogueUIHidden({ systemState, effects });
-    return;
-  }
+  console.log('bbbbbbbbbbbb', {
+    state,
+    deps,
+  })
+
+  const { systemStore, vnDataStore } = deps;
+
+  // const dialogueUIHidden = systemStore.selectDialogueUIHidden();
+
+  // if (dialogueUIHidden) {
+  //   toggleDialogueUIHidden({ systemState, effects });
+  //   return;
+  // }
 
   // Early return if manual advance is prevented
-  const { forceSkipAutonext = false } = payload;
-  if (
-    !forceSkipAutonext &&
-    systemState.story.autoNext &&
-    systemState.story.autoNext.preventManual
-  ) {
-    return;
-  }
+  // const { forceSkipAutonext = false } = payload;
+  // if (
+  //   !forceSkipAutonext &&
+  //   state.story.autoNext &&
+  //   state.story.autoNext.preventManual
+  // ) {
+  //   return;
+  // }
 
   // Get current position
-  const currentPointer = systemStateSelectors.selectCurrentPointer(systemState);
-  const pointerMode = systemStateSelectors.selectPointerMode(systemState);
-  const steps = vnDataSelectors.selectSectionSteps(
-    vnData,
+  const currentPointer = systemStore.selectCurrentPointer();
+  const pointerMode = systemStore.selectPointerMode();
+  const steps = vnDataStore.selectSectionSteps(
     currentPointer.sectionId
   );
 
@@ -130,30 +140,34 @@ export const nextStep = ({ systemState, effects, vnData, payload = {} }) => {
   );
   const nextStep = steps[currentStepIndex + 1];
 
+  console.log('cccccccccccc', nextStep);
+
   // No next step available
-  if (!nextStep) {
-    if (systemStateSelectors.selectAutoMode(systemState)) {
-      systemState.story.autoMode = false;
-    }
-    if (systemStateSelectors.selectSkipMode(systemState)) {
-      systemState.story.skipMode = false;
-    }
-    return;
-  }
+  // if (!nextStep) {
+  //   if (systemStore.selectAutoMode()) {
+  //     state.story.autoMode = false;
+  //   }
+  //   if (systemStore.selectSkipMode()) {
+  //     state.story.skipMode = false;
+  //   }
+  //   return;
+  // }
+
+  systemStore.updateCurrentPointerStepId(nextStep.id);
 
   // Update pointer state
-  systemState.story.pointers[pointerMode].stepId = nextStep.id;
-  systemState.story.pointers[pointerMode].presetId =
-    systemStateSelectors.selectCurrentPresetId(systemState);
+  // state.story.pointers[pointerMode].stepId = nextStep.id;
+  // state.story.pointers[pointerMode].presetId =
+  //   systemStore.selectCurrentPresetId();
 
   // Manage autoNext state
-  if (payload.autoNext) {
-    systemState.story.autoNext = payload.autoNext;
-  } else {
-    delete systemState.story.autoNext;
-  }
+  // if (payload.autoNext) {
+  //   state.story.autoNext = payload.autoNext;
+  // } else {
+  //   delete state.story.autoNext;
+  // }
 
-  systemState.story.lastStepAction = "nextStep";
+  // systemState.story.lastStepAction = "nextStep";
 
   // Trigger render effect
   effects.push({

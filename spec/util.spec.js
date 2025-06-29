@@ -47,7 +47,7 @@ describe('createStore', () => {
     expect(store.selectUserWithDefault(3, 'Unknown')).toBe('Unknown');
   });
 
-  it('should execute actions without mutating state due to missing produce assignment', () => {
+  it('should execute actions and properly update state', () => {
     const initialState = { count: 0 };
     const selectorsAndActions = {
       selectCount: (state) => state.count,
@@ -57,15 +57,15 @@ describe('createStore', () => {
 
     const store = createStore(selectorsAndActions, initialState);
 
-    // Due to the bug in createStore, actions don't actually update the state
+    // Actions should now properly update the state
     store.increment();
-    expect(store.selectCount()).toBe(0); // State remains unchanged
+    expect(store.selectCount()).toBe(1); // State is updated
 
     store.addValue(5);
-    expect(store.selectCount()).toBe(0); // State still unchanged
+    expect(store.selectCount()).toBe(6); // State continues to update
   });
 
-  it('should not handle complex state mutations in actions due to implementation bug', () => {
+  it('should handle complex state mutations in actions properly', () => {
     const initialState = { 
       todos: [],
       counter: 0
@@ -86,12 +86,16 @@ describe('createStore', () => {
     const store = createStore(selectorsAndActions, initialState);
 
     store.addTodo({ id: 1, text: 'Test todo' });
-    // Actions don't work due to the bug
+    // Actions should now work properly
+    expect(store.selectTodos()).toHaveLength(1);
+    expect(store.selectCounter()).toBe(1);
+    
+    store.removeTodo(0);
     expect(store.selectTodos()).toHaveLength(0);
     expect(store.selectCounter()).toBe(0);
   });
 
-  it('should preserve original state structure after cloning', () => {
+  it('should preserve original state structure after cloning and update store state', () => {
     const initialState = { 
       nested: { value: 1 },
       array: [1, 2, 3]
@@ -107,10 +111,10 @@ describe('createStore', () => {
     expect(initialState.nested.value).toBe(1);
     
     store.updateNested(5);
-    // Due to the bug, state doesn't actually update
-    expect(store.selectNested().value).toBe(1);
+    // Store state should now update properly
+    expect(store.selectNested().value).toBe(5);
     
-    // Original remains unchanged (which is expected)
+    // Original remains unchanged (which is expected due to structuredClone)
     expect(initialState.nested.value).toBe(1);
   });
 

@@ -61,7 +61,9 @@ export const createStore = (selectorsAndActions, initialState) => {
       selectors[name] = (...args) => func(state, ...args);
     } else {
       actions[name] = (...args) => {
-        produce(state, (draft) => func(draft, ...args));
+        const newState = produce(state, (draft) => func(draft, ...args));
+        Object.assign(state, newState);
+        return newState;
       };
     }
   }

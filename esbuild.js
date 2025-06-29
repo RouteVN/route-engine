@@ -11,8 +11,8 @@ esbuild
     sourcemap: false,
     format: "esm",
     // outfile: `./viz/_site/rvn.js`,
-    outfile: `./viz/static/RouteEngine.js`,
-    entryPoints: [`engine3/RouteEngine.js`],
+    outfile: `./vt/static/RouteEngine.js`,
+    entryPoints: [`src/RouteEngine.js`],
   })
   .then(() => console.log("Build completed"))
   .catch(() => {
