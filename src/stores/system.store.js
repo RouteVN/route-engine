@@ -1,26 +1,143 @@
 
-/**
- * Actions are performed on the engine to change state or cause side effects
- * All changes should be triggered by actions
- */
 
-/**
- * @typedef {Object} ApplyParams
- * @property {Object} payload - The input data for the action
- * @property {Object} systemState - The current state of the system
- * @property {Object} vnData - The visual novel data
- * @property {Object} effects - Side effects to be applied
- */
+export const createInitialState = ({ sectionId, stepId, presetId, autoNext, saveData, variables }) => {
+  const state = {
+    pendingEffects: [],
+    variables,
+    saveData,
+    story: {
+      lastStepAction: undefined,
+      dialogueUIHidden: false,
+      currentPointer: 'read',
+      autoNext: autoNext,
+      autoMode: false,
+      skipMode: false,
+      pointers: {
+        read: {
+          presetId,
+          sectionId,
+          stepId
+        },
+        menu: {
+          // TODO remove hardcode
+          presetId: '3ijasdk3',
+          sectionId: undefined,
+          stepId: undefined
+        },
+        history: {
+          presetId,
+          sectionId: undefined,
+          stepId: undefined,
+          historyEntryIndex: undefined
+        }
+        // title: {
+        //   presetId: undefined,
+        //   sectionId: undefined,
+        //   stepId: undefined
+        // },
+      },
+      history: {
+        entries: [],
+        // entries: [{
+        //   sectionId: 'asdkjl32',
+        // }, {
+        //   sectionId: '3jd3kd'
+        // }, {
+        //   sectionId: '39fk32'
+        // }, {
+        //   sectionId: '39cksk3',
+        //   // this is current actual stepId the user is lastest on
+        //   stepId: 'step3'
+        // }]
+      }
+    }
+  };
+  state.story.history.entries.push({
+    sectionId,
+  });
+  return state;
+};
+
+
+/**************************
+ * Selectors
+ *************************/
+
+export const selectPendingEffects = (state) => {
+  return state.pendingEffects;
+}
+
+export const selectCurrentPointer = (state) => {
+  return state.story.pointers[state.story.currentPointer];
+};
+
+export const selectCurrentPresetId = (state) => {
+  return state.story.pointers[state.story.currentPointer].presetId;
+};
+
+export const selectSkipMode = (state) => {
+  return state.story.skipMode;
+};
+
+export const selectAutoMode = (state) => {
+  return state.story.autoMode;
+};
+
+export const selectPointers = (state) => {
+  return state.story.pointers;
+};
+
+export const selectAutoNext = (state) => {
+  return state.story.autoNext;
+};
+
+export const selectRuntimeState = (state) => {
+  return state.runtimeState;
+};
+
+export const selectPointerMode = (state) => {
+  return state.story.currentPointer;
+};
+
+export const selectDialogueUIHidden = (state) => {
+  return state.story.dialogueUIHidden;
+};
+
+export const selectHistory = (state) => {
+  return state.story.history;
+};
+
+export const selectSpecificPointer = (state, mode) => {
+  return state.story.pointers[mode];
+}
+
+export const selectSaveData = (state) => {
+  return state.saveData;
+}
+
+export const selectVariables = (state) => {
+  return state.variables;
+}
+
+
+/*************************
+ * Actions
+ *************************/
+
+export const clearPendingEffects = ({ state }) => {
+  state.pendingEffects = [];
+}
 
 /**
  * Handles step completion and manages auto-next behavior
- * @param {ApplyParams} params
  */
-export const stepCompleted = ({ systemState, effects, vnData }) => {
-  const autoMode = systemStateSelectors.selectAutoMode(systemState);
+export const stepCompleted = ({ state, projectDataStore }) => {
+  const autoMode = selectAutoMode(state);
+
+  const { pendingEffects } = state;
 
   if (autoMode) {
-    effects.push({
+    pendingEffects.push({
       name: "systemInstructions",
       options: {
         delay: 1000,
@@ -34,10 +151,10 @@ export const stepCompleted = ({ systemState, effects, vnData }) => {
     return;
   }
 
-  const skipMode = systemStateSelectors.selectSkipMode(systemState);
+  const skipMode = selectSkipMode(state);
 
   if (skipMode) {
-    effects.push({
+    pendingEffects.push({
       name: "systemInstructions",
       options: {
         delay: 300,
@@ -51,7 +168,7 @@ export const stepCompleted = ({ systemState, effects, vnData }) => {
     return;
   }
 
-  const autoNext = systemStateSelectors.selectAutoNext(systemState);
+  const autoNext = selectAutoNext(state);
 
   if (!autoNext) {
     return;
@@ -62,13 +179,13 @@ export const stepCompleted = ({ systemState, effects, vnData }) => {
   switch (nextTrigger) {
     case "onComplete":
       // Clear autoNext state and immediately proceed to next step
-      delete systemState.story.autoNext;
-      nextStep({ systemState, effects, vnData, payload: {} });
+      delete state.story.autoNext;
+      // nextStep({ state, effects, projectDataStore, payload: {} });
       break;
 
     case "fromComplete":
       // Schedule next step to occur after delay
-      effects.push({
+      pendingEffects.push({
         name: "systemInstructions",
         options: {
           delay: delay,
@@ -83,12 +200,12 @@ export const stepCompleted = ({ systemState, effects, vnData }) => {
 
     case "manual":
       // Just clear autoNext state in manual mode
-      delete systemState.story.autoNext;
+      delete state.story.autoNext;
       break;
 
     default:
       // Clear unknown autoNext states
-      delete systemState.story.autoNext;
+      delete state.story.autoNext;
       break;
   }
 };
@@ -98,17 +215,11 @@ export const stepCompleted = ({ systemState, effects, vnData }) => {
  * @param {ApplyParams} params
  */
 // export const nextStep = ({ systemState, effects, vnData, payload = {} }) => {
-export const nextStep = (state, deps, payload) => {
+export const nextStep = ({ state, projectDataStore }) => {
   const {
-    effects
+    pendingEffects
   } = state;
 
-  console.log('bbbbbbbbbbbb', {
-    state,
-    deps,
-  })
-
-  const { systemStore, vnDataStore } = deps;
 
   // const dialogueUIHidden = systemStore.selectDialogueUIHidden();
 
@@ -128,9 +239,9 @@ export const nextStep = (state, deps, payload) => {
   // }
 
   // Get current position
-  const currentPointer = systemStore.selectCurrentPointer();
-  const pointerMode = systemStore.selectPointerMode();
-  const steps = vnDataStore.selectSectionSteps(
+  const currentPointer = selectCurrentPointer(state);
+  const pointerMode = selectPointerMode(state);
+  const steps = projectDataStore.selectSectionSteps(
     currentPointer.sectionId
   );
 
@@ -143,17 +254,17 @@ export const nextStep = (state, deps, payload) => {
   console.log('cccccccccccc', nextStep);
 
   // No next step available
-  // if (!nextStep) {
+  if (!nextStep) {
   //   if (systemStore.selectAutoMode()) {
   //     state.story.autoMode = false;
   //   }
   //   if (systemStore.selectSkipMode()) {
   //     state.story.skipMode = false;
   //   }
-  //   return;
-  // }
+    return;
+  }
 
-  systemStore.updateCurrentPointerStepId(nextStep.id);
+  state.story.pointers[state.story.currentPointer].stepId = nextStep.id;
 
   // Update pointer state
   // state.story.pointers[pointerMode].stepId = nextStep.id;
@@ -170,20 +281,18 @@ export const nextStep = (state, deps, payload) => {
   // systemState.story.lastStepAction = "nextStep";
 
   // Trigger render effect
-  effects.push({
+  pendingEffects.push({
     name: "render",
   });
 };
 
 /**
- * @param {ApplyParams} params
  */
-export const prevStep = ({ systemState, effects, vnData }) => {
-  const pointerMode = systemStateSelectors.selectPointerMode(systemState);
-  const currentPointer = systemStateSelectors.selectCurrentPointer(systemState);
+export const prevStep = ({ state, projectDataStore }) => {
+  const pointerMode = selectPointerMode(state);
+  const currentPointer = selectCurrentPointer(state);
 
-  const steps = vnDataSelectors.selectSectionSteps(
-    vnData,
+  const steps = projectDataStore.selectSectionSteps(
     currentPointer.sectionId
   );
   const currentStepIndex = steps.findIndex(
@@ -194,22 +303,22 @@ export const prevStep = ({ systemState, effects, vnData }) => {
   if (!prevStep) {
     console.log({
       pointerMode,
-      "systemState.story.historyEntryIndex":
-        systemState.story.historyEntryIndex,
+      "state.story.historyEntryIndex":
+        state.story.historyEntryIndex,
     });
     if (pointerMode === "history") {
-      if (systemState.story.historyEntryIndex > 0) {
-        systemState.story.historyEntryIndex--;
+      if (state.story.historyEntryIndex > 0) {
+        state.story.historyEntryIndex--;
       } else {
         return;
       }
       console.log(
-        "systemState.story.historyEntryIndex",
-        systemState.story.historyEntryIndex
+        "state.story.historyEntryIndex",
+        state.story.historyEntryIndex
       );
-      systemState.story.pointers["history"].sectionId =
-        systemState.story.history.entries[
-          systemState.story.historyEntryIndex
+      state.story.pointers["history"].sectionId =
+        state.story.history.entries[
+          state.story.historyEntryIndex
         ].sectionId;
       const prevSectionSteps = vnDataSelectors.selectSectionSteps(
         vnData,
@@ -461,8 +570,4 @@ export const loadVnData = ({ systemState, effects, payload }) => {
   });
 };
 
-export const createInitialState = () => {
-  return {
-    effects: [],
-  }
-}
+

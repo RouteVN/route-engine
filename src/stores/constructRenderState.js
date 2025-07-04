@@ -1,5 +1,12 @@
 import jsone from "json-e";
 
+export const createInitialState = () => {
+  return {
+    elements: [],
+    transitions: [],
+  }
+}
+
 /**
  * @param {Object} params
  * @returns
@@ -240,9 +247,12 @@ export const addChoices = ({ elements, transitions }, { template, resources, ui 
   }
 };
 
-export const createInitialState = () => {
-  return {
-    elements: [],
-    transitions: [],
-  }
-}
+export default [
+  generateScreenBackgroundElement,
+  addBackgrundOrCg,
+  addCharacters,
+  addVisuals,
+  addDialogue,
+  addScreens,
+  addChoices,
+]

@@ -167,10 +167,7 @@ const init = async () => {
   });
 
   engine.init({
-    vnData: jsonData,
-    // render: callback,
-    // callback,
-    // ticker: app._app.ticker,
+    projectData: jsonData,
   });
 };
 

@@ -1,19 +1,35 @@
-import { createStore, createSequentialActionsExecutor, createSelectiveActionsExecutor } from "./util.js";
-import * as constructPresentationTempalteSelectorsAndActions from "./constructPresentationTemplate.js";
-import * as constructPresentationStateSelectorsAndActions from "./constructPresentationState.js";
-import * as systemInstructionsSelectorsAndActions from "./systemInstructions.store.js";
-import * as systemStateSelectorsAndActions from "./system.store.js";
-import * as vnDataSelectorsAndActions from "./vnData.store.js";
+import { createStore, createSequentialActionsExecutor } from "./util.js";
+import * as constructPresentationStateStore from "./stores/constructPresentationState.js";
+import constructRenderStateSelectorsAndActions, {
+  createInitialState as createConstructRenderStateInitialState,
+} from "./stores/constructRenderState.js";
+import * as systemStore from "./stores/system.store.js";
+import * as projectDataStore from "./stores/projectData.store.js";
+
+const {
+  createInitialState: createConstructPresentationStateInitialState,
+  ...constructPresentationStateSelectorsAndActions
+} = constructPresentationStateStore;
+
+const {
+  createInitialState: createSystemInitialState,
+  ...systemStateSelectorsAndActions
+} = systemStore;
+
+const {
+  createInitialState: createProjectDataInitialState,
+  ...projectDataSelectorsAndActions
+} = projectDataStore;
 
 /**
  * RouteEngine is the main class for the engine.
  * Look at ../docs/RouteEngine.md for more information.
  */
 class RouteEngine {
-  _vnDataStore;
+  _projectDataStore;
   _systemStore;
+  _constructRenderState;
   _constructPresentationState;
-  _constructPresentationTemplate;
   _applySystemInstruction;
 
   _eventCallback = (event) => {};
@@ -23,50 +39,38 @@ class RouteEngine {
   /**
    * Initialize the engine with visual novel data and rendering functions
    */
-  init = ({ vnData }) => {
-    this._vnDataStore = createStore(vnDataSelectorsAndActions, vnData);
-    const initialIds = this._vnDataStore.selectInitialIds();
+  init = ({ projectData }) => {
+    this._projectDataStore = createStore(
+      projectData,
+      projectDataSelectorsAndActions
+    );
+    const initialIds = this._projectDataStore.selectInitialIds();
     this._systemStore = createStore(
-      systemStateSelectorsAndActions,
-      systemStateSelectorsAndActions.createInitialState({
+      createSystemInitialState({
         sectionId: initialIds.sectionId,
         stepId: initialIds.stepId,
         presetId: initialIds.presetId,
         autoNext: initialIds.autoNext,
         saveData: {},
         variables: {},
-      })
-    );
-    this._constructPresentationState = createSequentialActionsExecutor(
-      constructPresentationStateSelectorsAndActions.createInitialState,
-      constructPresentationStateSelectorsAndActions
-    );
-
-    // const saveDataString = localStorage.getItem("saveData");
-    // const saveData = saveDataString ? JSON.parse(saveDataString) : [];
-
-    // const variablesString = localStorage.getItem("variables");
-    // const variables = variablesString ? JSON.parse(variablesString) : {};
-    // const vnDataVariables = vnDataSelectorsAndActions.selectVariables(vnData);
-    // Object.keys(vnDataVariables).forEach((key) => {
-    //   if (variables[key] === undefined) {
-    //     variables[key] = vnDataVariables[key].default;
-    //   }
-    // });
-
-
-    this._applySystemInstruction = createSelectiveActionsExecutor(
+      }),
+      systemStateSelectorsAndActions,
       {
-        systemStore: this._systemStore,
-        vnDataStore: this._vnDataStore,
-      },
-      systemInstructionsSelectorsAndActions,
-      systemInstructionsSelectorsAndActions.createInitialState
+        transformActionFirstArgument: (state) => ({
+          state,
+          projectDataStore: this._projectDataStore,
+        }),
+      }
     );
 
-    this._constructPresentationTemplate = createSequentialActionsExecutor(
-      constructPresentationTempalteSelectorsAndActions.createInitialState,
-      constructPresentationTempalteSelectorsAndActions
+    this._constructRenderState = createSequentialActionsExecutor(
+      createConstructRenderStateInitialState,
+      constructRenderStateSelectorsAndActions
+    );
+
+    this._constructPresentationState = createSequentialActionsExecutor(
+      createConstructPresentationStateInitialState,
+      constructPresentationStateSelectorsAndActions
     );
 
     this._render();
@@ -75,12 +79,12 @@ class RouteEngine {
   onEvent = (callback) => {
     this._eventCallback = callback;
     return this;
-  }
+  };
 
   offEvent = () => {
     this._eventCallback = () => {};
     return this;
-  }
+  };
 
   // /**
   //  * Handles delayed execution of system instructions
@@ -120,93 +124,39 @@ class RouteEngine {
 
     // TODO get it dynamically
     const eventTypeToInstructionMap = {
-      'LeftClick': 'nextStep'
-    }
+      LeftClick: "nextStep",
+    };
 
     const instructionType = eventTypeToInstructionMap[eventType];
 
-    console.log('aaaaaaaaaaaa', {
+    console.log("aaaaaaaaaaaa", {
       instructionType,
       payload,
-    })
+    });
 
-    const { effects } = this._applySystemInstruction({
-      [instructionType]: payload,
-    })
+    this._systemStore[instructionType](payload);
 
-    effects.forEach((effect) => {
-      if (effect.name === 'render') {
+    const pendingEffects = this._systemStore.selectPendingEffects();
+
+    // TODO de duplicate
+    pendingEffects.forEach((effect) => {
+      if (effect.name === "render") {
         this._render();
       }
-    })
+    });
 
-    // const { effects } = this._applySystemInstruction({
-    //   [eventType]: payload,
-    // });
-
-  }
-
-
-  // /**
-  //  * Handles user input events by mapping them to system instructions
-  //  */
-  // systemEventHandler = (event, payload = {}) => {
-  //   console.log("system event handler", event, payload);
-
-  //   // Handle step completion event
-  //   if (event === "completed") {
-  //     this.applySystemInstructions({ stepCompleted: {} });
-  //     return;
-  //   }
-
-  //   // Direct system instruction execution
-  //   if (event === "systemInstructions") {
-  //     this.systemInstructionsHandler(event, payload);
-  //     return;
-  //   }
-
-  //   // Map events to system instructions using the current preset
-  //   const presetId = systemStateSelectorsAndActions.selectCurrentPresetId(
-  //     this._systemState
-  //   );
-  //   const preset = vnDataSelectorsAndActions.selectPreset(
-  //     this._vnData,
-  //     presetId
-  //   );
-
-  //   if (!preset) {
-  //     console.warn(`No preset found with ID: ${presetId}`);
-  //     return;
-  //   }
-
-  //   const eventMapping = preset?.eventsMap?.[event];
-  //   if (!eventMapping) {
-  //     console.warn(
-  //       `No mapping found for event: ${event} in preset: ${presetId}`
-  //     );
-  //     return;
-  //   }
-
-  //   if (eventMapping) {
-  //     this.applySystemInstructions(eventMapping.systemInstructions);
-  //   }
-  // };
+    this._systemStore.clearPendingEffects();
+  };
 
   /**
    * Renders the current state of the visual novel
    */
   _render = () => {
-    const currentPointer = this._systemStore.selectCurrentPointer()
-    const currentSteps = this._vnDataStore.selectSectionSteps(
+    const currentPointer = this._systemStore.selectCurrentPointer();
+    const currentSteps = this._projectDataStore.selectSectionSteps(
       currentPointer.sectionId,
       currentPointer.stepId
     );
-
-    console.log('dddddddddddd', {
-      currentPointerMode: this._systemStore.selectPointerMode(),
-      currentPointer,
-      currentSteps
-    })
 
     if (!currentSteps.length) {
       console.warn(
@@ -217,42 +167,26 @@ class RouteEngine {
 
     // const lastStep = currentSteps[currentSteps.length - 1];
 
-    // Apply system instructions from the last step if present
-    // TODO
-    // if (lastStep.systemInstructions) {
-    //   if (this._systemState.story.lastStepAction === "nextStep") {
-    //     console.log("running apply system instructions from last step");
-    //     this.applySystemInstructions(lastStep.systemInstructions);
-    //   } else {
-    //     console.log("skipping because history mode");
-    //     if (!lastStep.presentation) {
-    //       this.applySystemInstructions({
-    //         prevStep: {},
-    //       });
-    //     }
-    //   }
-    //   return;
-    // }
-
     // Create presentation state
-    const presentationInstructions = currentSteps.map(
+    const presentationActions = currentSteps.map(
       (step) => step.presentation || {}
     );
 
-    const presentationTemplate = this._constructPresentationTemplate(presentationInstructions);
-    const presentationState = this._constructPresentationState({
+    const presentationState =
+      this._constructPresentationState(presentationActions);
+    const renderState = this._constructRenderState({
       // TODO
-      template: presentationTemplate,
-      screen: this._vnDataStore.selectScreen(),
+      template: presentationState,
+      screen: this._projectDataStore.selectScreen(),
       resolveFile: (f) => `file:${f}`,
-      resources: this._vnDataStore.selectResources(),
-      ui: this._vnDataStore.selectUi()
+      resources: this._projectDataStore.selectResources(),
+      ui: this._projectDataStore.selectUi(),
     });
 
     this._eventCallback({
       eventType: "render",
-      payload: presentationState,
-    })
+      payload: renderState,
+    });
   };
 }
 

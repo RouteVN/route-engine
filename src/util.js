@@ -48,22 +48,26 @@ import { produce } from "immer";
  * // createInitialState is not included in the store
  * console.log(store.createInitialState); // undefined
  */
-export const createStore = (selectorsAndActions, initialState) => {
-  const state = structuredClone(initialState);
+export const createStore = (initialState, selectorsAndActions, options = {}) => {
+  let state = structuredClone(initialState);
   const selectors = {};
   const actions = {};
+
+  const {
+    transformSelectorFirstArgument = (state) => state,
+    transformActionFirstArgument = (state) => state,
+  } = options
 
   for (const [name, func] of Object.entries(selectorsAndActions)) {
     if (name === "createInitialState") {
       // Skip createInitialState - it's a special function
       continue;
     } else if (name.startsWith("select")) {
-      selectors[name] = (...args) => func(state, ...args);
+      selectors[name] = (...args) => func(transformSelectorFirstArgument(state), ...args);
     } else {
       actions[name] = (...args) => {
-        const newState = produce(state, (draft) => func(draft, ...args));
-        Object.assign(state, newState);
-        return newState;
+        const newState = produce(state, (draft) => func(transformActionFirstArgument(draft), ...args));
+        state = newState;
       };
     }
   }
@@ -143,10 +147,11 @@ export const createSequentialActionsExecutor = (createInitialState, actions) => 
     const payloads = Array.isArray(payloadOrPayloads) 
       ? payloadOrPayloads 
       : [payloadOrPayloads];
-    
+
     return produce(initialState, (draft) => {
       payloads.forEach((payload) => {
-        Object.values(actions).forEach((action) => {
+        const actionsArray = Array.isArray(actions) ? actions : Object.values(actions);
+        actionsArray.forEach((action) => {
           action(draft, payload);
         });
       });

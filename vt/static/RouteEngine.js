@@ -2178,20 +2178,23 @@ var createDraft = immer.createDraft.bind(immer);
 var finishDraft = immer.finishDraft.bind(immer);
 
 // src/util.js
-var createStore = (selectorsAndActions, initialState) => {
-  const state = structuredClone(initialState);
+var createStore = (initialState, selectorsAndActions, options = {}) => {
+  let state = structuredClone(initialState);
   const selectors = {};
   const actions = {};
+  const {
+    transformSelectorFirstArgument = (state2) => state2,
+    transformActionFirstArgument = (state2) => state2
+  } = options;
   for (const [name, func] of Object.entries(selectorsAndActions)) {
     if (name === "createInitialState") {
       continue;
     } else if (name.startsWith("select")) {
-      selectors[name] = (...args) => func(state, ...args);
+      selectors[name] = (...args) => func(transformSelectorFirstArgument(state), ...args);
     } else {
       actions[name] = (...args) => {
-        const newState = produce(state, (draft) => func(draft, ...args));
-        Object.assign(state, newState);
-        return newState;
+        const newState = produce(state, (draft) => func(transformActionFirstArgument(draft), ...args));
+        state = newState;
       };
     }
   }
@@ -2200,35 +2203,24 @@ var createStore = (selectorsAndActions, initialState) => {
     ...actions
   };
 };
-var createSequentialActionsExecutor = (createInitialState6, actions) => {
+var createSequentialActionsExecutor = (createInitialState5, actions) => {
   return (payloadOrPayloads) => {
-    const initialState = createInitialState6();
+    const initialState = createInitialState5();
     const payloads = Array.isArray(payloadOrPayloads) ? payloadOrPayloads : [payloadOrPayloads];
     return produce(initialState, (draft) => {
       payloads.forEach((payload) => {
-        Object.values(actions).forEach((action) => {
+        const actionsArray = Array.isArray(actions) ? actions : Object.values(actions);
+        actionsArray.forEach((action) => {
           action(draft, payload);
         });
       });
     });
   };
 };
-var createSelectiveActionsExecutor = (deps, actions, createInitialState6) => {
-  return (payloads) => {
-    const initialState = createInitialState6();
-    return produce(initialState, (draft) => {
-      for (const [name, action] of Object.entries(actions)) {
-        if (name in payloads) {
-          action(draft, deps, payloads[name]);
-        }
-      }
-    });
-  };
-};
 
-// src/constructPresentationTemplate.js
-var constructPresentationTemplate_exports = {};
-__export(constructPresentationTemplate_exports, {
+// src/stores/constructPresentationState.js
+var constructPresentationState_exports = {};
+__export(constructPresentationState_exports, {
   applyAnimation: () => applyAnimation,
   applyBackground: () => applyBackground,
   applyBgm: () => applyBgm,
@@ -2352,19 +2344,14 @@ var createInitialState = () => {
   return {};
 };
 
-// src/constructPresentationState.js
-var constructPresentationState_exports = {};
-__export(constructPresentationState_exports, {
-  addBackgrundOrCg: () => addBackgrundOrCg,
-  addCharacters: () => addCharacters,
-  addChoices: () => addChoices,
-  addDialogue: () => addDialogue,
-  addScreens: () => addScreens,
-  addVisuals: () => addVisuals,
-  createInitialState: () => createInitialState2,
-  generateScreenBackgroundElement: () => generateScreenBackgroundElement
-});
+// src/stores/constructRenderState.js
 var import_json_e = __toESM(require_dist(), 1);
+var createInitialState2 = () => {
+  return {
+    elements: [],
+    transitions: []
+  };
+};
 var generateScreenBackgroundElement = ({ elements, transitions }, { screen }) => {
   elements.push({
     id: "bg-screen",
@@ -2536,23 +2523,41 @@ var addChoices = ({ elements, transitions }, { template, resources, ui }) => {
     elements.push(...choiceElements);
   }
 };
-var createInitialState2 = () => {
-  return {
-    elements: [],
-    transitions: []
-  };
-};
+var constructRenderState_default = [
+  generateScreenBackgroundElement,
+  addBackgrundOrCg,
+  addCharacters,
+  addVisuals,
+  addDialogue,
+  addScreens,
+  addChoices
+];
 
-// src/systemInstructions.store.js
-var systemInstructions_store_exports = {};
-__export(systemInstructions_store_exports, {
+// src/stores/system.store.js
+var system_store_exports = {};
+__export(system_store_exports, {
   clearCurrentMode: () => clearCurrentMode,
+  clearPendingEffects: () => clearPendingEffects,
   createInitialState: () => createInitialState3,
   goToSectionScene: () => goToSectionScene,
   loadVnData: () => loadVnData,
   nextStep: () => nextStep,
   prevStep: () => prevStep,
   saveVnData: () => saveVnData,
+  selectAutoMode: () => selectAutoMode,
+  selectAutoNext: () => selectAutoNext,
+  selectCurrentPointer: () => selectCurrentPointer,
+  selectCurrentPresetId: () => selectCurrentPresetId,
+  selectDialogueUIHidden: () => selectDialogueUIHidden,
+  selectHistory: () => selectHistory,
+  selectPendingEffects: () => selectPendingEffects,
+  selectPointerMode: () => selectPointerMode,
+  selectPointers: () => selectPointers,
+  selectRuntimeState: () => selectRuntimeState,
+  selectSaveData: () => selectSaveData,
+  selectSkipMode: () => selectSkipMode,
+  selectSpecificPointer: () => selectSpecificPointer,
+  selectVariables: () => selectVariables,
   setPreset: () => setPreset,
   startAutoMode: () => startAutoMode,
   startSkipMode: () => startSkipMode,
@@ -2563,390 +2568,9 @@ __export(systemInstructions_store_exports, {
   toggleSkipMode: () => toggleSkipMode,
   updateVariable: () => updateVariable
 });
-var stepCompleted = ({ systemState, effects, vnData }) => {
-  const autoMode = systemStateSelectors.selectAutoMode(systemState);
-  if (autoMode) {
-    effects.push({
-      name: "systemInstructions",
-      options: {
-        delay: 1e3,
-        systemInstructions: {
-          nextStep: {
-            forceSkipAutonext: true
-          }
-        }
-      }
-    });
-    return;
-  }
-  const skipMode = systemStateSelectors.selectSkipMode(systemState);
-  if (skipMode) {
-    effects.push({
-      name: "systemInstructions",
-      options: {
-        delay: 300,
-        systemInstructions: {
-          nextStep: {
-            forceSkipAutonext: true
-          }
-        }
-      }
-    });
-    return;
-  }
-  const autoNext = systemStateSelectors.selectAutoNext(systemState);
-  if (!autoNext) {
-    return;
-  }
-  const { nextTrigger, delay } = autoNext;
-  switch (nextTrigger) {
-    case "onComplete":
-      delete systemState.story.autoNext;
-      nextStep({ systemState, effects, vnData, payload: {} });
-      break;
-    case "fromComplete":
-      effects.push({
-        name: "systemInstructions",
-        options: {
-          delay,
-          systemInstructions: {
-            nextStep: {
-              forceSkipAutonext: true
-            }
-          }
-        }
-      });
-      break;
-    case "manual":
-      delete systemState.story.autoNext;
-      break;
-    default:
-      delete systemState.story.autoNext;
-      break;
-  }
-};
-var nextStep = (state, deps, payload) => {
-  const {
-    effects
-  } = state;
-  console.log("bbbbbbbbbbbb", {
-    state,
-    deps
-  });
-  const { systemStore, vnDataStore } = deps;
-  const currentPointer = systemStore.selectCurrentPointer();
-  const pointerMode = systemStore.selectPointerMode();
-  const steps = vnDataStore.selectSectionSteps(
-    currentPointer.sectionId
-  );
-  const currentStepIndex = steps.findIndex(
-    (step) => step.id === currentPointer.stepId
-  );
-  const nextStep2 = steps[currentStepIndex + 1];
-  console.log("cccccccccccc", nextStep2);
-  systemStore.updateCurrentPointerStepId(nextStep2.id);
-  effects.push({
-    name: "render"
-  });
-};
-var prevStep = ({ systemState, effects, vnData }) => {
-  const pointerMode = systemStateSelectors.selectPointerMode(systemState);
-  const currentPointer = systemStateSelectors.selectCurrentPointer(systemState);
-  const steps = vnDataSelectors.selectSectionSteps(
-    vnData,
-    currentPointer.sectionId
-  );
-  const currentStepIndex = steps.findIndex(
-    (step) => step.id === currentPointer.stepId
-  );
-  const prevStep2 = steps[currentStepIndex - 1];
-  if (!prevStep2) {
-    console.log({
-      pointerMode,
-      "systemState.story.historyEntryIndex": systemState.story.historyEntryIndex
-    });
-    if (pointerMode === "history") {
-      if (systemState.story.historyEntryIndex > 0) {
-        systemState.story.historyEntryIndex--;
-      } else {
-        return;
-      }
-      console.log(
-        "systemState.story.historyEntryIndex",
-        systemState.story.historyEntryIndex
-      );
-      systemState.story.pointers["history"].sectionId = systemState.story.history.entries[systemState.story.historyEntryIndex].sectionId;
-      const prevSectionSteps = vnDataSelectors.selectSectionSteps(
-        vnData,
-        systemState.story.pointers["history"].sectionId
-      );
-      console.log("prevSectionSteps", prevSectionSteps);
-      systemState.story.pointers["history"].stepId = prevSectionSteps[prevSectionSteps.length - 1].id;
-      console.log({
-        stepId: systemState.story.pointers["history"].stepId,
-        sectionId: systemState.story.pointers["history"].sectionId
-      });
-      systemState.story.lastStepAction = "prevStep";
-      effects.push({
-        name: "render"
-      });
-    }
-    return;
-  }
-  if (pointerMode === "read") {
-    systemState.story.currentPointer = "history";
-    systemState.story.historyEntryIndex = systemState.story.history.entries.length - 1;
-  }
-  systemState.story.pointers["history"].stepId = prevStep2.id;
-  systemState.story.pointers["history"].sectionId = currentPointer.sectionId;
-  systemState.story.lastStepAction = "prevStep";
-  effects.push({
-    name: "render"
-  });
-};
-var goToSectionScene = ({ payload, systemState, effects, vnData }) => {
-  const { sectionId, sceneId, mode, presetId } = payload;
-  const steps = vnDataSelectors.selectSectionSteps(vnData, sectionId);
-  if (mode) {
-    systemState.story.currentPointer = mode;
-  }
-  const currentMode = systemStateSelectors.selectPointerMode(systemState);
-  if (currentMode === "read") {
-    systemState.story.history.entries.push({
-      sectionId
-    });
-  } else if (currentMode === "history") {
-    if (sectionId === systemState.story.history.entries[systemState.story.historyEntryIndex + 1].sectionId) {
-      systemState.story.historyEntryIndex++;
-    } else {
-    }
-  }
-  systemState.story.pointers[currentMode].sectionId = sectionId;
-  systemState.story.pointers[currentMode].sceneId = sceneId;
-  systemState.story.pointers[currentMode].stepId = steps[0].id;
-  systemState.story.autoNext = steps[0].autoNext;
-  if (presetId) {
-    systemState.story.pointers[currentMode].presetId = presetId;
-  }
-  effects.push({
-    name: "render"
-  });
-};
-var updateVariable = ({ payload, systemState, effects, vnData }) => {
-  const { operations } = payload;
-  for (const operation of operations) {
-    const { variableId, op, value } = operation;
-    if (op === "set") {
-      systemState.variables[variableId] = value;
-    } else if (op === "increment") {
-      systemState.variables[variableId] += value;
-    } else if (op === "decrement") {
-      systemState.variables[variableId] -= value;
-    }
-  }
-  const vnDataVariables = vnDataSelectors.selectVariables(vnData);
-  const localVariableKeys = Object.keys(systemState.variables).filter(
-    (key) => vnDataVariables[key].persistence === "local"
-  );
-  const localVariables = localVariableKeys.reduce((acc, key) => {
-    acc[key] = systemState.variables[key];
-    return acc;
-  }, {});
-  effects.push({
-    name: "render"
-  });
-  effects.push({
-    name: "updateLocalVariables",
-    options: {
-      variables: localVariables
-    }
-  });
-};
-var setPreset = ({ payload, systemState, effects }) => {
-  systemState.story.pointers[systemState.story.currentPointer].presetId = payload.presetId;
-};
-var clearCurrentMode = ({ payload, systemState, effects }) => {
-  systemState.story.currentPointer = payload.mode;
-  effects.push({
-    name: "render"
-  });
-};
-var startAutoMode = ({ systemState, effects }) => {
-  if (systemStateSelectors.selectSkipMode(systemState)) {
-    systemState.story.skipMode = false;
-  }
-  systemState.story.autoMode = true;
-  effects.push({
-    name: "cancelTimerEffect"
-  });
-  effects.push({
-    name: "systemInstructions",
-    options: {
-      delay: 1e3,
-      systemInstructions: {
-        nextStep: {
-          forceSkipAutonext: true
-        }
-      }
-    }
-  });
-};
-var stopAutoMode = ({ systemState, effects }) => {
-  systemState.story.autoMode = false;
-  effects.push({
-    name: "cancelTimerEffect"
-  });
-};
-var toggleAutoMode = ({ systemState, effects }) => {
-  const autoMode = systemStateSelectors.selectAutoMode(systemState);
-  if (autoMode) {
-    stopAutoMode({ systemState, effects });
-  } else {
-    startAutoMode({ systemState, effects });
-  }
-};
-var startSkipMode = ({ systemState, effects }) => {
-  if (systemStateSelectors.selectAutoMode(systemState)) {
-    systemState.story.autoMode = false;
-  }
-  systemState.story.skipMode = true;
-  effects.push({
-    name: "cancelTimerEffect"
-  });
-  effects.push({
-    name: "systemInstructions",
-    options: {
-      delay: 300,
-      systemInstructions: {
-        nextStep: {
-          forceSkipAutonext: true
-        }
-      }
-    }
-  });
-};
-var stopSkipMode = ({ systemState, effects }) => {
-  systemState.story.skipMode = false;
-  effects.push({
-    name: "cancelTimerEffect"
-  });
-};
-var toggleSkipMode = ({ systemState, effects }) => {
-  const skipMode = systemStateSelectors.selectSkipMode(systemState);
-  if (skipMode) {
-    stopSkipMode({ systemState, effects });
-  } else {
-    startSkipMode({ systemState, effects });
-  }
-};
-var saveVnData = ({ systemState, effects, payload }) => {
-  systemState.saveData.push({
-    id: Date.now().toString().slice(4, 10),
-    slotIndex: payload.slotIndex,
-    pointer: systemStateSelectors.selectSpecificPointer(systemState, "read"),
-    history: systemStateSelectors.selectHistory(systemState)
-  });
-  effects.push({
-    name: "saveVnData",
-    options: {
-      saveData: [...systemState.saveData]
-    }
-  });
-};
-var loadVnData = ({ systemState, effects, payload }) => {
-  const { slotIndex } = payload;
-  console.log("systemState.saveData", systemState.saveData);
-  const saveData = systemStateSelectors.selectSaveData(systemState);
-  const matchedSlotSaveData = saveData.filter(
-    (save) => save.slotIndex === slotIndex
-  );
-  if (matchedSlotSaveData.length === 0) {
-    console.warn(`No save data found for slot index ${slotIndex}`);
-    return;
-  }
-  const { pointer, history } = matchedSlotSaveData[matchedSlotSaveData.length - 1];
-  systemState.story.currentPointer = "read";
-  systemState.story.pointers["read"] = pointer;
-  systemState.story.history = history;
-  effects.push({
-    name: "render"
-  });
-};
-var createInitialState3 = () => {
-  return {
-    effects: []
-  };
-};
-
-// src/system.store.js
-var system_store_exports = {};
-__export(system_store_exports, {
-  createInitialState: () => createInitialState4,
-  selectAutoMode: () => selectAutoMode,
-  selectAutoNext: () => selectAutoNext,
-  selectCurrentPointer: () => selectCurrentPointer,
-  selectCurrentPresetId: () => selectCurrentPresetId,
-  selectDialogueUIHidden: () => selectDialogueUIHidden,
-  selectHistory: () => selectHistory,
-  selectPointerMode: () => selectPointerMode,
-  selectPointers: () => selectPointers,
-  selectRuntimeState: () => selectRuntimeState,
-  selectSaveData: () => selectSaveData,
-  selectSkipMode: () => selectSkipMode,
-  selectSpecificPointer: () => selectSpecificPointer,
-  selectVariables: () => selectVariables,
-  updateCurrentPointerStepId: () => updateCurrentPointerStepId
-});
-var selectCurrentPointer = (state) => {
-  return state.story.pointers[state.story.currentPointer];
-};
-var selectCurrentPresetId = (state) => {
-  return state.story.pointers[state.story.currentPointer].presetId;
-};
-var selectSkipMode = (state) => {
-  return state.story.skipMode;
-};
-var selectAutoMode = (state) => {
-  return state.story.autoMode;
-};
-var selectPointers = (state) => {
-  return state.story.pointers;
-};
-var selectAutoNext = (state) => {
-  return state.story.autoNext;
-};
-var selectRuntimeState = (state) => {
-  return state.runtimeState;
-};
-var selectPointerMode = (state) => {
-  return state.story.currentPointer;
-};
-var selectDialogueUIHidden = (state) => {
-  return state.story.dialogueUIHidden;
-};
-var selectHistory = (state) => {
-  return state.story.history;
-};
-var selectSpecificPointer = (state, mode) => {
-  return state.story.pointers[mode];
-};
-var selectSaveData = (state) => {
-  return state.saveData;
-};
-var selectVariables = (state) => {
-  return state.variables;
-};
-var updateCurrentPointerStepId = (state, stepId) => {
-  console.log("zzzzzzzzzzzzzzzzzzzzzz", {
-    state,
-    stepId,
-    currentPointer: state.story.currentPointer
-  });
-  state.story.pointers[state.story.currentPointer].stepId = stepId;
-  console.log("yyyyyyyyyyyyyyyyyy", state.story.pointers[state.story.currentPointer].stepId);
-};
-var createInitialState4 = ({ sectionId, stepId, presetId, autoNext, saveData, variables }) => {
+var createInitialState3 = ({ sectionId, stepId, presetId, autoNext, saveData, variables }) => {
   const state = {
+    pendingEffects: [],
     variables,
     saveData,
     story: {
@@ -3001,11 +2625,362 @@ var createInitialState4 = ({ sectionId, stepId, presetId, autoNext, saveData, va
   });
   return state;
 };
+var selectPendingEffects = (state) => {
+  return state.pendingEffects;
+};
+var selectCurrentPointer = (state) => {
+  return state.story.pointers[state.story.currentPointer];
+};
+var selectCurrentPresetId = (state) => {
+  return state.story.pointers[state.story.currentPointer].presetId;
+};
+var selectSkipMode = (state) => {
+  return state.story.skipMode;
+};
+var selectAutoMode = (state) => {
+  return state.story.autoMode;
+};
+var selectPointers = (state) => {
+  return state.story.pointers;
+};
+var selectAutoNext = (state) => {
+  return state.story.autoNext;
+};
+var selectRuntimeState = (state) => {
+  return state.runtimeState;
+};
+var selectPointerMode = (state) => {
+  return state.story.currentPointer;
+};
+var selectDialogueUIHidden = (state) => {
+  return state.story.dialogueUIHidden;
+};
+var selectHistory = (state) => {
+  return state.story.history;
+};
+var selectSpecificPointer = (state, mode) => {
+  return state.story.pointers[mode];
+};
+var selectSaveData = (state) => {
+  return state.saveData;
+};
+var selectVariables = (state) => {
+  return state.variables;
+};
+var clearPendingEffects = ({ state }) => {
+  state.pendingEffects = [];
+};
+var stepCompleted = ({ state, projectDataStore }) => {
+  const autoMode = selectAutoMode(state);
+  const { pendingEffects } = state;
+  if (autoMode) {
+    pendingEffects.push({
+      name: "systemInstructions",
+      options: {
+        delay: 1e3,
+        systemInstructions: {
+          nextStep: {
+            forceSkipAutonext: true
+          }
+        }
+      }
+    });
+    return;
+  }
+  const skipMode = selectSkipMode(state);
+  if (skipMode) {
+    pendingEffects.push({
+      name: "systemInstructions",
+      options: {
+        delay: 300,
+        systemInstructions: {
+          nextStep: {
+            forceSkipAutonext: true
+          }
+        }
+      }
+    });
+    return;
+  }
+  const autoNext = selectAutoNext(state);
+  if (!autoNext) {
+    return;
+  }
+  const { nextTrigger, delay } = autoNext;
+  switch (nextTrigger) {
+    case "onComplete":
+      delete state.story.autoNext;
+      break;
+    case "fromComplete":
+      pendingEffects.push({
+        name: "systemInstructions",
+        options: {
+          delay,
+          systemInstructions: {
+            nextStep: {
+              forceSkipAutonext: true
+            }
+          }
+        }
+      });
+      break;
+    case "manual":
+      delete state.story.autoNext;
+      break;
+    default:
+      delete state.story.autoNext;
+      break;
+  }
+};
+var nextStep = ({ state, projectDataStore }) => {
+  const {
+    pendingEffects
+  } = state;
+  const currentPointer = selectCurrentPointer(state);
+  const pointerMode = selectPointerMode(state);
+  const steps = projectDataStore.selectSectionSteps(
+    currentPointer.sectionId
+  );
+  const currentStepIndex = steps.findIndex(
+    (step) => step.id === currentPointer.stepId
+  );
+  const nextStep2 = steps[currentStepIndex + 1];
+  console.log("cccccccccccc", nextStep2);
+  if (!nextStep2) {
+    return;
+  }
+  state.story.pointers[state.story.currentPointer].stepId = nextStep2.id;
+  pendingEffects.push({
+    name: "render"
+  });
+};
+var prevStep = ({ state, projectDataStore }) => {
+  const pointerMode = selectPointerMode(state);
+  const currentPointer = selectCurrentPointer(state);
+  const steps = projectDataStore.selectSectionSteps(
+    currentPointer.sectionId
+  );
+  const currentStepIndex = steps.findIndex(
+    (step) => step.id === currentPointer.stepId
+  );
+  const prevStep2 = steps[currentStepIndex - 1];
+  if (!prevStep2) {
+    console.log({
+      pointerMode,
+      "state.story.historyEntryIndex": state.story.historyEntryIndex
+    });
+    if (pointerMode === "history") {
+      if (state.story.historyEntryIndex > 0) {
+        state.story.historyEntryIndex--;
+      } else {
+        return;
+      }
+      console.log(
+        "state.story.historyEntryIndex",
+        state.story.historyEntryIndex
+      );
+      state.story.pointers["history"].sectionId = state.story.history.entries[state.story.historyEntryIndex].sectionId;
+      const prevSectionSteps = vnDataSelectors.selectSectionSteps(
+        vnData,
+        systemState.story.pointers["history"].sectionId
+      );
+      console.log("prevSectionSteps", prevSectionSteps);
+      systemState.story.pointers["history"].stepId = prevSectionSteps[prevSectionSteps.length - 1].id;
+      console.log({
+        stepId: systemState.story.pointers["history"].stepId,
+        sectionId: systemState.story.pointers["history"].sectionId
+      });
+      systemState.story.lastStepAction = "prevStep";
+      effects.push({
+        name: "render"
+      });
+    }
+    return;
+  }
+  if (pointerMode === "read") {
+    systemState.story.currentPointer = "history";
+    systemState.story.historyEntryIndex = systemState.story.history.entries.length - 1;
+  }
+  systemState.story.pointers["history"].stepId = prevStep2.id;
+  systemState.story.pointers["history"].sectionId = currentPointer.sectionId;
+  systemState.story.lastStepAction = "prevStep";
+  effects.push({
+    name: "render"
+  });
+};
+var goToSectionScene = ({ payload, systemState: systemState2, effects: effects2, vnData: vnData2 }) => {
+  const { sectionId, sceneId, mode, presetId } = payload;
+  const steps = vnDataSelectors.selectSectionSteps(vnData2, sectionId);
+  if (mode) {
+    systemState2.story.currentPointer = mode;
+  }
+  const currentMode = systemStateSelectors.selectPointerMode(systemState2);
+  if (currentMode === "read") {
+    systemState2.story.history.entries.push({
+      sectionId
+    });
+  } else if (currentMode === "history") {
+    if (sectionId === systemState2.story.history.entries[systemState2.story.historyEntryIndex + 1].sectionId) {
+      systemState2.story.historyEntryIndex++;
+    } else {
+    }
+  }
+  systemState2.story.pointers[currentMode].sectionId = sectionId;
+  systemState2.story.pointers[currentMode].sceneId = sceneId;
+  systemState2.story.pointers[currentMode].stepId = steps[0].id;
+  systemState2.story.autoNext = steps[0].autoNext;
+  if (presetId) {
+    systemState2.story.pointers[currentMode].presetId = presetId;
+  }
+  effects2.push({
+    name: "render"
+  });
+};
+var updateVariable = ({ payload, systemState: systemState2, effects: effects2, vnData: vnData2 }) => {
+  const { operations } = payload;
+  for (const operation of operations) {
+    const { variableId, op, value } = operation;
+    if (op === "set") {
+      systemState2.variables[variableId] = value;
+    } else if (op === "increment") {
+      systemState2.variables[variableId] += value;
+    } else if (op === "decrement") {
+      systemState2.variables[variableId] -= value;
+    }
+  }
+  const vnDataVariables = vnDataSelectors.selectVariables(vnData2);
+  const localVariableKeys = Object.keys(systemState2.variables).filter(
+    (key) => vnDataVariables[key].persistence === "local"
+  );
+  const localVariables = localVariableKeys.reduce((acc, key) => {
+    acc[key] = systemState2.variables[key];
+    return acc;
+  }, {});
+  effects2.push({
+    name: "render"
+  });
+  effects2.push({
+    name: "updateLocalVariables",
+    options: {
+      variables: localVariables
+    }
+  });
+};
+var setPreset = ({ payload, systemState: systemState2, effects: effects2 }) => {
+  systemState2.story.pointers[systemState2.story.currentPointer].presetId = payload.presetId;
+};
+var clearCurrentMode = ({ payload, systemState: systemState2, effects: effects2 }) => {
+  systemState2.story.currentPointer = payload.mode;
+  effects2.push({
+    name: "render"
+  });
+};
+var startAutoMode = ({ systemState: systemState2, effects: effects2 }) => {
+  if (systemStateSelectors.selectSkipMode(systemState2)) {
+    systemState2.story.skipMode = false;
+  }
+  systemState2.story.autoMode = true;
+  effects2.push({
+    name: "cancelTimerEffect"
+  });
+  effects2.push({
+    name: "systemInstructions",
+    options: {
+      delay: 1e3,
+      systemInstructions: {
+        nextStep: {
+          forceSkipAutonext: true
+        }
+      }
+    }
+  });
+};
+var stopAutoMode = ({ systemState: systemState2, effects: effects2 }) => {
+  systemState2.story.autoMode = false;
+  effects2.push({
+    name: "cancelTimerEffect"
+  });
+};
+var toggleAutoMode = ({ systemState: systemState2, effects: effects2 }) => {
+  const autoMode = systemStateSelectors.selectAutoMode(systemState2);
+  if (autoMode) {
+    stopAutoMode({ systemState: systemState2, effects: effects2 });
+  } else {
+    startAutoMode({ systemState: systemState2, effects: effects2 });
+  }
+};
+var startSkipMode = ({ systemState: systemState2, effects: effects2 }) => {
+  if (systemStateSelectors.selectAutoMode(systemState2)) {
+    systemState2.story.autoMode = false;
+  }
+  systemState2.story.skipMode = true;
+  effects2.push({
+    name: "cancelTimerEffect"
+  });
+  effects2.push({
+    name: "systemInstructions",
+    options: {
+      delay: 300,
+      systemInstructions: {
+        nextStep: {
+          forceSkipAutonext: true
+        }
+      }
+    }
+  });
+};
+var stopSkipMode = ({ systemState: systemState2, effects: effects2 }) => {
+  systemState2.story.skipMode = false;
+  effects2.push({
+    name: "cancelTimerEffect"
+  });
+};
+var toggleSkipMode = ({ systemState: systemState2, effects: effects2 }) => {
+  const skipMode = systemStateSelectors.selectSkipMode(systemState2);
+  if (skipMode) {
+    stopSkipMode({ systemState: systemState2, effects: effects2 });
+  } else {
+    startSkipMode({ systemState: systemState2, effects: effects2 });
+  }
+};
+var saveVnData = ({ systemState: systemState2, effects: effects2, payload }) => {
+  systemState2.saveData.push({
+    id: Date.now().toString().slice(4, 10),
+    slotIndex: payload.slotIndex,
+    pointer: systemStateSelectors.selectSpecificPointer(systemState2, "read"),
+    history: systemStateSelectors.selectHistory(systemState2)
+  });
+  effects2.push({
+    name: "saveVnData",
+    options: {
+      saveData: [...systemState2.saveData]
+    }
+  });
+};
+var loadVnData = ({ systemState: systemState2, effects: effects2, payload }) => {
+  const { slotIndex } = payload;
+  console.log("systemState.saveData", systemState2.saveData);
+  const saveData = systemStateSelectors.selectSaveData(systemState2);
+  const matchedSlotSaveData = saveData.filter(
+    (save) => save.slotIndex === slotIndex
+  );
+  if (matchedSlotSaveData.length === 0) {
+    console.warn(`No save data found for slot index ${slotIndex}`);
+    return;
+  }
+  const { pointer, history } = matchedSlotSaveData[matchedSlotSaveData.length - 1];
+  systemState2.story.currentPointer = "read";
+  systemState2.story.pointers["read"] = pointer;
+  systemState2.story.history = history;
+  effects2.push({
+    name: "render"
+  });
+};
 
-// src/vnData.store.js
-var vnData_store_exports = {};
-__export(vnData_store_exports, {
-  createInitialState: () => createInitialState5,
+// src/stores/projectData.store.js
+var projectData_store_exports = {};
+__export(projectData_store_exports, {
+  createInitialState: () => createInitialState4,
   selectInitialIds: () => selectInitialIds,
   selectInitialPreset: () => selectInitialPreset,
   selectPreset: () => selectPreset,
@@ -3062,21 +3037,33 @@ var selectSectionSteps = (state, sectionId, stepId) => {
   }
   return currentSection.steps;
 };
-var createInitialState5 = (vnData) => {
-  const initialIds = selectInitialIds(vnData);
+var createInitialState4 = (vnData2) => {
+  const initialIds = selectInitialIds(vnData2);
   const { sectionId, stepId } = initialIds;
   if (!sectionId || !stepId) {
     throw new Error("No initial sectionId found");
   }
-  return vnData;
+  return vnData2;
 };
 
 // src/RouteEngine.js
+var {
+  createInitialState: createConstructPresentationStateInitialState,
+  ...constructPresentationStateSelectorsAndActions
+} = constructPresentationState_exports;
+var {
+  createInitialState: createSystemInitialState,
+  ...systemStateSelectorsAndActions
+} = system_store_exports;
+var {
+  createInitialState: createProjectDataInitialState,
+  ...projectDataSelectorsAndActions
+} = projectData_store_exports;
 var RouteEngine = class {
-  _vnDataStore;
+  _projectDataStore;
   _systemStore;
+  _constructRenderState;
   _constructPresentationState;
-  _constructPresentationTemplate;
   _applySystemInstruction;
   _eventCallback = (event) => {
   };
@@ -3085,35 +3072,36 @@ var RouteEngine = class {
   /**
    * Initialize the engine with visual novel data and rendering functions
    */
-  init = ({ vnData }) => {
-    this._vnDataStore = createStore(vnData_store_exports, vnData);
-    const initialIds = this._vnDataStore.selectInitialIds();
+  init = ({ projectData }) => {
+    this._projectDataStore = createStore(
+      projectData,
+      projectDataSelectorsAndActions
+    );
+    const initialIds = this._projectDataStore.selectInitialIds();
     this._systemStore = createStore(
-      system_store_exports,
-      createInitialState4({
+      createSystemInitialState({
         sectionId: initialIds.sectionId,
         stepId: initialIds.stepId,
         presetId: initialIds.presetId,
         autoNext: initialIds.autoNext,
         saveData: {},
         variables: {}
-      })
+      }),
+      systemStateSelectorsAndActions,
+      {
+        transformActionFirstArgument: (state) => ({
+          state,
+          projectDataStore: this._projectDataStore
+        })
+      }
+    );
+    this._constructRenderState = createSequentialActionsExecutor(
+      createInitialState2,
+      constructRenderState_default
     );
     this._constructPresentationState = createSequentialActionsExecutor(
-      createInitialState2,
-      constructPresentationState_exports
-    );
-    this._applySystemInstruction = createSelectiveActionsExecutor(
-      {
-        systemStore: this._systemStore,
-        vnDataStore: this._vnDataStore
-      },
-      systemInstructions_store_exports,
-      createInitialState3
-    );
-    this._constructPresentationTemplate = createSequentialActionsExecutor(
-      createInitialState,
-      constructPresentationTemplate_exports
+      createConstructPresentationStateInitialState,
+      constructPresentationStateSelectorsAndActions
     );
     this._render();
   };
@@ -3158,95 +3146,52 @@ var RouteEngine = class {
   handleEvent = (event) => {
     const { eventType, payload } = event;
     const eventTypeToInstructionMap = {
-      "LeftClick": "nextStep"
+      LeftClick: "nextStep"
     };
     const instructionType = eventTypeToInstructionMap[eventType];
     console.log("aaaaaaaaaaaa", {
       instructionType,
       payload
     });
-    const { effects } = this._applySystemInstruction({
-      [instructionType]: payload
-    });
-    effects.forEach((effect) => {
+    this._systemStore[instructionType](payload);
+    const pendingEffects = this._systemStore.selectPendingEffects();
+    pendingEffects.forEach((effect) => {
       if (effect.name === "render") {
         this._render();
       }
     });
+    this._systemStore.clearPendingEffects();
   };
-  // /**
-  //  * Handles user input events by mapping them to system instructions
-  //  */
-  // systemEventHandler = (event, payload = {}) => {
-  //   console.log("system event handler", event, payload);
-  //   // Handle step completion event
-  //   if (event === "completed") {
-  //     this.applySystemInstructions({ stepCompleted: {} });
-  //     return;
-  //   }
-  //   // Direct system instruction execution
-  //   if (event === "systemInstructions") {
-  //     this.systemInstructionsHandler(event, payload);
-  //     return;
-  //   }
-  //   // Map events to system instructions using the current preset
-  //   const presetId = systemStateSelectorsAndActions.selectCurrentPresetId(
-  //     this._systemState
-  //   );
-  //   const preset = vnDataSelectorsAndActions.selectPreset(
-  //     this._vnData,
-  //     presetId
-  //   );
-  //   if (!preset) {
-  //     console.warn(`No preset found with ID: ${presetId}`);
-  //     return;
-  //   }
-  //   const eventMapping = preset?.eventsMap?.[event];
-  //   if (!eventMapping) {
-  //     console.warn(
-  //       `No mapping found for event: ${event} in preset: ${presetId}`
-  //     );
-  //     return;
-  //   }
-  //   if (eventMapping) {
-  //     this.applySystemInstructions(eventMapping.systemInstructions);
-  //   }
-  // };
   /**
    * Renders the current state of the visual novel
    */
   _render = () => {
     const currentPointer = this._systemStore.selectCurrentPointer();
-    const currentSteps = this._vnDataStore.selectSectionSteps(
+    const currentSteps = this._projectDataStore.selectSectionSteps(
       currentPointer.sectionId,
       currentPointer.stepId
     );
-    console.log("dddddddddddd", {
-      currentPointerMode: this._systemStore.selectPointerMode(),
-      currentPointer,
-      currentSteps
-    });
     if (!currentSteps.length) {
       console.warn(
         `No steps found for section: ${currentPointer.sectionId}, step: ${currentPointer.stepId}`
       );
       return;
     }
-    const presentationInstructions = currentSteps.map(
+    const presentationActions = currentSteps.map(
       (step) => step.presentation || {}
     );
-    const presentationTemplate = this._constructPresentationTemplate(presentationInstructions);
-    const presentationState = this._constructPresentationState({
+    const presentationState = this._constructPresentationState(presentationActions);
+    const renderState = this._constructRenderState({
       // TODO
-      template: presentationTemplate,
-      screen: this._vnDataStore.selectScreen(),
+      template: presentationState,
+      screen: this._projectDataStore.selectScreen(),
       resolveFile: (f) => `file:${f}`,
-      resources: this._vnDataStore.selectResources(),
-      ui: this._vnDataStore.selectUi()
+      resources: this._projectDataStore.selectResources(),
+      ui: this._projectDataStore.selectUi()
     });
     this._eventCallback({
       eventType: "render",
-      payload: presentationState
+      payload: renderState
     });
   };
 };
