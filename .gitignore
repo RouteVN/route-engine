@@ -2,9 +2,10 @@ node_modules/
 dist/
 sample/vndata.json
 sample/renderer.js
-viz/_site/
 .DS_Store
 engine3/coverage
-viz/static/RouteEngine.js
+vt/static/RouteEngine.js
+vt/static/RouteEngine.js.map
 .claude
 .rettangoli
+
