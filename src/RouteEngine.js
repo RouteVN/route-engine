@@ -60,6 +60,10 @@ class RouteEngine {
           state,
           projectDataStore: this._projectDataStore,
         }),
+        transformSelectorFirstArgument: (state) => ({
+          state,
+          projectDataStore: this._projectDataStore,
+        }),
       }
     );
 
@@ -120,6 +124,9 @@ class RouteEngine {
    * Use this for sending events to the engine
    */
   handleEvent = (event) => {
+
+    console.log('currentPreset', this._systemStore.selectCurrentPreset())
+
     const { eventType, payload } = event;
 
     // TODO get it dynamically

@@ -63,59 +63,64 @@ export const createInitialState = ({ sectionId, stepId, presetId, autoNext, save
  * Selectors
  *************************/
 
-export const selectPendingEffects = (state) => {
+export const selectPendingEffects = ({ state }) => {
   return state.pendingEffects;
 }
 
-export const selectCurrentPointer = (state) => {
+export const selectCurrentPointer = ({ state }) => {
   return state.story.pointers[state.story.currentPointer];
 };
 
-export const selectCurrentPresetId = (state) => {
+export const selectCurrentPresetId = ({ state }) => {
   return state.story.pointers[state.story.currentPointer].presetId;
 };
 
-export const selectSkipMode = (state) => {
+export const selectCurrentPreset = ({ state, projectDataStore }) => {
+  const currentPresetId = selectCurrentPresetId({ state });
+  return projectDataStore.selectPreset(currentPresetId);
+};
+
+export const selectSkipMode = ({ state }) => {
   return state.story.skipMode;
 };
 
-export const selectAutoMode = (state) => {
+export const selectAutoMode = ({ state }) => {
   return state.story.autoMode;
 };
 
-export const selectPointers = (state) => {
+export const selectPointers = ({ state }) => {
   return state.story.pointers;
 };
 
-export const selectAutoNext = (state) => {
+export const selectAutoNext = ({ state }) => {
   return state.story.autoNext;
 };
 
-export const selectRuntimeState = (state) => {
+export const selectRuntimeState = ({ state }) => {
   return state.runtimeState;
 };
 
-export const selectPointerMode = (state) => {
+export const selectPointerMode = ({ state }) => {
   return state.story.currentPointer;
 };
 
-export const selectDialogueUIHidden = (state) => {
+export const selectDialogueUIHidden = ({ state }) => {
   return state.story.dialogueUIHidden;
 };
 
-export const selectHistory = (state) => {
+export const selectHistory = ({ state }) => {
   return state.story.history;
 };
 
-export const selectSpecificPointer = (state, mode) => {
+export const selectSpecificPointer = ({ state, mode }) => {
   return state.story.pointers[mode];
 }
 
-export const selectSaveData = (state) => {
+export const selectSaveData = ({ state }) => {
   return state.saveData;
 }
 
-export const selectVariables = (state) => {
+export const selectVariables = ({ state }) => {
   return state.variables;
 }
 
@@ -239,8 +244,8 @@ export const nextStep = ({ state, projectDataStore }) => {
   // }
 
   // Get current position
-  const currentPointer = selectCurrentPointer(state);
-  const pointerMode = selectPointerMode(state);
+  const currentPointer = selectCurrentPointer({ state });
+  const pointerMode = selectPointerMode({ state });
   const steps = projectDataStore.selectSectionSteps(
     currentPointer.sectionId
   );

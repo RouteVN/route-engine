@@ -5,7 +5,7 @@ esbuild
   .build({
     bundle: true,
     minify: false,
-    sourcemap: false,
+    sourcemap: true,
     format: "esm",
     // outfile: `./viz/_site/rvn.js`,
     outfile: `./vt/static/RouteEngine.js`,
