@@ -1,0 +1,34 @@
+$schema: http://json-schema.org/draft-07/schema#
+title: Section Schema
+description: Schema for sections within scenes in visual novel engine
+type: object
+properties:
+  name:
+    type: string
+    description: Display name for the section
+  
+  lines:
+    type: array
+    description: Array of story lines/steps within this section
+    items:
+      $ref: "line.yaml"
+    minItems: 1
+  
+  steps:
+    type: array
+    description: Alternative name for lines - array of story steps within this section
+    items:
+      $ref: "line.yaml"
+    minItems: 1
+
+required: [name]
+additionalProperties: false
+
+# Either lines or steps must be present, but not both
+oneOf:
+  - required: [lines]
+    not:
+      required: [steps]
+  - required: [steps]
+    not:
+      required: [lines]

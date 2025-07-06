@@ -17,7 +17,7 @@ presets:
             sectionId: asdkjl32
       LeftClick:
         actions:
-          nextStep: {}
+          nextLine: {}
   3ijasdk3:
     name: Menu
     eventsMap:
@@ -242,8 +242,8 @@ story:
       sections:
         l3kjfawelf:
           name: Section 1
-          steps:
-            - id: step1
+          lines:
+            - id: line1
               autoNext:
                 delay: 1000
                 # preventManual: true
@@ -257,7 +257,7 @@ story:
                       positionId: iasdlf
                       animations:
                         in: 3lkj289
-            - id: step2
+            - id: line2
               autoNext:
                 delay: 1000
                 # preventManual: true
@@ -267,29 +267,29 @@ story:
                     - id: 39kdfj231
                       animations:
                         out: 8h3js
-            - id: step3
+            - id: line3
               presentation:
                 screen:
                   id: 3k3k38
                   screenId: j3i8dk32
         3k3s9sd:
           name: Section 2
-          steps:
-            - id: step1
+          lines:
+            - id: line1
               presentation:
                 dialogue:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
                   characterId: ajf34a
-            - id: step2
+            - id: line2
               presentation:
                 dialogue:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: Two and a half sentences.
                   characterId: ajf34a
-            - id: step3
+            - id: line3
               presentation:
                 dialogue:
                   dialogueBoxId: fi3l
@@ -300,8 +300,8 @@ story:
       name: Menu Scene
       sections:
         asdkjl32:
-          steps:
-            - id: step1
+          lines:
+            - id: line1
               presentation:
                 screen:
                   id: 34ik

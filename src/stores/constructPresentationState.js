@@ -1,66 +1,64 @@
-import { produce } from 'immer';
-
 /**
  * 
- * Applies background from instruction to state
+ * Applies background from presentation to state
  * @param {Object} state - The current state of the system
- * @param {Object} instruction - The instruction to apply
+ * @param {Object} presentation - The presentation to apply
  */
-export const applyBackground = (state, instruction) => {
-  if (instruction.background) {
-    if (!instruction.background?.backgroundId) {
+export const applyBackground = (state, presentation) => {
+  if (presentation.background) {
+    if (!presentation.background?.backgroundId) {
       delete state.background;
     } else {
-      state.background = instruction.background;
+      state.background = presentation.background;
     }
   }
 };
 
 /**
- * Applies sound effects from instruction to state
+ * Applies sound effects from presentation to state
  * @param {Object} state - The current state of the system
- * @param {Object} instruction - The instruction to apply
+ * @param {Object} presentation - The presentation to apply
  */
-export const applySfx = (state, instruction) => {
-  if (instruction.sfx) {
-    state.sfx = instruction.sfx;
+export const applySfx = (state, presentation) => {
+  if (presentation.sfx) {
+    state.sfx = presentation.sfx;
   } else if (state.sfx) {
     delete state.sfx;
   }
 };
 
 /**
- * Applies background music from instruction to state
+ * Applies background music from presentation to state
  * @param {Object} state - The current state of the system
- * @param {Object} instruction - The instruction to apply
+ * @param {Object} presentation - The presentation to apply
  */
-export const applyBgm = (state, instruction) => {
-  if (instruction.bgm) {
+export const applyBgm = (state, presentation) => {
+  if (presentation.bgm) {
     state.bgm = {
-      ...instruction.bgm,
-      loop: instruction.bgm.loop || instruction.bgm.loop === undefined,
+      ...presentation.bgm,
+      loop: presentation.bgm.loop || presentation.bgm.loop === undefined,
     };
   }
 };
 
 /**
- * Applies visual items from instruction to state
+ * Applies visual items from presentation to state
  * @param {Object} state - The current state of the system
- * @param {Object} instruction - The instruction to apply
+ * @param {Object} presentation - The presentation to apply
  */
-export const applyVisual = (state, instruction) => {
-  if (instruction.visual) {
-    state.visual = instruction.visual;
+export const applyVisual = (state, presentation) => {
+  if (presentation.visual) {
+    state.visual = presentation.visual;
   }
 };
 
 /**
- * Applies dialogue from instruction to state
+ * Applies dialogue from presentation to state
  * @param {Object} state - The current state of the system
- * @param {Object} instruction - The instruction to apply
+ * @param {Object} presentation - The presentation to apply
  */
-export const applyDialogue = (state, instruction) => {
-  if (!instruction.dialogue) {
+export const applyDialogue = (state, presentation) => {
+  if (!presentation.dialogue) {
     return;
   }
 
@@ -69,18 +67,18 @@ export const applyDialogue = (state, instruction) => {
     state.dialogue = {};
   }
 
-  // Apply instruction dialogue properties
-  Object.assign(state.dialogue, instruction.dialogue);
+  // Apply presentation dialogue properties
+  Object.assign(state.dialogue, presentation.dialogue);
 
-  if (instruction.dialogue.text) {
+  if (presentation.dialogue.text) {
     // Remove segments if text is provided
     delete state.dialogue.segments;
   }
 
   // Handle character name
   if (
-    instruction.dialogue.character &&
-    !instruction.dialogue.character.characterName &&
+    presentation.dialogue.character &&
+    !presentation.dialogue.character.characterName &&
     state.dialogue.character
   ) {
     delete state.dialogue.character.characterName;
@@ -88,43 +86,43 @@ export const applyDialogue = (state, instruction) => {
 };
 
 /**
- * Applies character from instruction to state
+ * Applies character from presentation to state
  * @param {Object} state - The current state of the system
- * @param {Object} instruction - The instruction to apply
+ * @param {Object} presentation - The presentation to apply
  */
-export const applyCharacter = (state, instruction) => {
-  if (!instruction.character) {
+export const applyCharacter = (state, presentation) => {
+  if (!presentation.character) {
     return;
   }
 
   // Handle case where there is no existing character
   if (!state.character) {
-    state.character = JSON.parse(JSON.stringify(instruction.character));
+    state.character = JSON.parse(JSON.stringify(presentation.character));
     return;
   }
 
   // Update existing character properties
-  Object.assign(state.character, instruction.character);
-  
-  // Keep existing items that aren't in the instruction
+  Object.assign(state.character, presentation.character);
+
+  // Keep existing items that aren't in the presentation
   if (!state.character.items) {
     state.character.items = [];
   }
-  
+
   // Process each existing item
   for (let i = 0; i < state.character.items.length; i++) {
     const existingItem = state.character.items[i];
-    const matchingItem = instruction.character.items.find(
+    const matchingItem = presentation.character.items.find(
       (item) => item.id === existingItem.id
     );
 
     if (!matchingItem) {
-      // Item not in instruction, remove inAnimation
+      // Item not in presentation, remove inAnimation
       delete existingItem.inAnimation;
     } else {
-      // Item is in instruction, update it
+      // Item is in presentation, update it
       Object.assign(existingItem, matchingItem);
-      
+
       // Handle animations
       if (!matchingItem.inAnimation) {
         delete existingItem.inAnimation;
@@ -136,47 +134,47 @@ export const applyCharacter = (state, instruction) => {
   }
 
   // Add new items that aren't already in the state
-  instruction.character.items.forEach((instructionItem) => {
-    if (!state.character.items.some((item) => item.id === instructionItem.id)) {
-      state.character.items.push(instructionItem);
+  presentation.character.items.forEach((presentationItem) => {
+    if (!state.character.items.some((item) => item.id === presentationItem.id)) {
+      state.character.items.push(presentationItem);
     }
   });
 };
 
 /**
- * Applies animation from instruction to state
+ * Applies animation from presentation to state
  * @param {Object} state - The current state of the system
- * @param {Object} instruction - The instruction to apply
+ * @param {Object} presentation - The presentation to apply
  */
-export const applyAnimation = (state, instruction) => {
-  if (instruction.animation) {
-    state.animation = instruction.animation;
+export const applyAnimation = (state, presentation) => {
+  if (presentation.animation) {
+    state.animation = presentation.animation;
   } else if (state.animation) {
     delete state.animation;
   }
 };
 
 /**
- * Applies screen from instruction to state
+ * Applies screen from presentation to state
  * @param {Object} state - The current state of the system
- * @param {Object} instruction - The instruction to apply
+ * @param {Object} presentation - The presentation to apply
  */
-export const applyScreen = (state, instruction) => {
-  if (instruction.screen) {
-    state.screen = instruction.screen;
+export const applyScreen = (state, presentation) => {
+  if (presentation.screen) {
+    state.screen = presentation.screen;
   } else if (state.screen) {
     delete state.screen;
   }
 };
 
 /**
- * Applies choices from instruction to state
+ * Applies choices from presentation to state
  * @param {Object} state - The current state of the system
- * @param {Object} instruction - The instruction to apply
+ * @param {Object} presentation - The presentation to apply
  */
-export const applyChoices = (state, instruction) => {
-  if (instruction.choices) {
-    state.choices = instruction.choices;
+export const applyChoices = (state, presentation) => {
+  if (presentation.choices) {
+    state.choices = presentation.choices;
   } else if (state.choices) {
     delete state.choices;
   }
@@ -185,10 +183,10 @@ export const applyChoices = (state, instruction) => {
 /**
  * Cleans all state if cleanAll is true
  * @param {Object} state - The current state of the system
- * @param {Object} instruction - The instruction to apply
+ * @param {Object} presentation - The presentation to apply
  */
-export const applyCleanAll = (state, instruction) => {
-  if (instruction.cleanAll) {
+export const applyCleanAll = (state, presentation) => {
+  if (presentation.cleanAll) {
     // Clear all properties
     Object.keys(state).forEach(key => {
       delete state[key];
@@ -199,4 +197,17 @@ export const applyCleanAll = (state, instruction) => {
 export const createInitialState = () => {
   return {}
 }
+
+export default [
+  applyBackground,
+  applySfx,
+  applyBgm,
+  applyVisual,
+  applyDialogue,
+  applyCharacter,
+  applyAnimation,
+  applyScreen,
+  applyChoices,
+  applyCleanAll
+]
 

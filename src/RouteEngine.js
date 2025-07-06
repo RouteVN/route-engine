@@ -1,15 +1,13 @@
 import { createStore, createSequentialActionsExecutor } from "./util.js";
-import * as constructPresentationStateStore from "./stores/constructPresentationState.js";
+import constructPresentationStateStore, {
+  createInitialState as createConstructPresentationStateInitialState,
+} from "./stores/constructPresentationState.js";
 import constructRenderStateSelectorsAndActions, {
   createInitialState as createConstructRenderStateInitialState,
 } from "./stores/constructRenderState.js";
 import * as systemStore from "./stores/system.store.js";
 import * as projectDataStore from "./stores/projectData.store.js";
 
-const {
-  createInitialState: createConstructPresentationStateInitialState,
-  ...constructPresentationStateSelectorsAndActions
-} = constructPresentationStateStore;
 
 const {
   createInitialState: createSystemInitialState,
@@ -27,14 +25,15 @@ const {
  */
 class RouteEngine {
   _projectDataStore;
+
   _systemStore;
   _constructRenderState;
   _constructPresentationState;
   _applySystemInstruction;
 
-  _eventCallback = (event) => {};
+  _eventCallback = (event) => { };
 
-  constructor() {}
+  constructor() { }
 
   /**
    * Initialize the engine with visual novel data and rendering functions
@@ -48,7 +47,7 @@ class RouteEngine {
     this._systemStore = createStore(
       createSystemInitialState({
         sectionId: initialIds.sectionId,
-        stepId: initialIds.stepId,
+        lineId: initialIds.lineId,
         presetId: initialIds.presetId,
         autoNext: initialIds.autoNext,
         saveData: {},
@@ -74,7 +73,7 @@ class RouteEngine {
 
     this._constructPresentationState = createSequentialActionsExecutor(
       createConstructPresentationStateInitialState,
-      constructPresentationStateSelectorsAndActions
+      constructPresentationStateStore
     );
 
     this._render();
@@ -86,39 +85,9 @@ class RouteEngine {
   };
 
   offEvent = () => {
-    this._eventCallback = () => {};
+    this._eventCallback = () => { };
     return this;
   };
-
-  // /**
-  //  * Handles delayed execution of system instructions
-  //  */
-  // handleDelayedExecution = (options, callback) => {
-  //   const { delay } = options;
-  //   if (!delay) {
-  //     callback();
-  //     return;
-  //   }
-
-  //   let elapsedInMs = 0;
-  //   const timerEffect = (time) => {
-  //     elapsedInMs += time.deltaMS;
-  //     if (elapsedInMs >= delay) {
-  //       this._ticker.remove(timerEffect);
-  //       callback();
-  //     }
-  //   };
-
-  //   this._ticker.add(timerEffect);
-  //   this._currentTimerEffect = timerEffect;
-  // };
-
-  // cancelTimerEffect = () => {
-  //   if (this._currentTimerEffect) {
-  //     this._ticker.remove(this._currentTimerEffect);
-  //     this._currentTimerEffect = undefined;
-  //   }
-  // };
 
   /**
    * Use this for sending events to the engine
@@ -131,7 +100,7 @@ class RouteEngine {
 
     // TODO get it dynamically
     const eventTypeToInstructionMap = {
-      LeftClick: "nextStep",
+      LeftClick: "nextLine",
     };
 
     const instructionType = eventTypeToInstructionMap[eventType];
@@ -160,23 +129,23 @@ class RouteEngine {
    */
   _render = () => {
     const currentPointer = this._systemStore.selectCurrentPointer();
-    const currentSteps = this._projectDataStore.selectSectionSteps(
+    const currentLines = this._projectDataStore.selectSectionLines(
       currentPointer.sectionId,
-      currentPointer.stepId
+      currentPointer.lineId
     );
 
-    if (!currentSteps.length) {
+    if (!currentLines.length) {
       console.warn(
-        `No steps found for section: ${currentPointer.sectionId}, step: ${currentPointer.stepId}`
+        `No lines found for section: ${currentPointer.sectionId}, line: ${currentPointer.lineId}`
       );
       return;
     }
 
-    // const lastStep = currentSteps[currentSteps.length - 1];
+    // const lastLine = currentLines[currentLines.length - 1];
 
     // Create presentation state
-    const presentationActions = currentSteps.map(
-      (step) => step.presentation || {}
+    const presentationActions = currentLines.map(
+      (line) => line.presentation || {}
     );
 
     const presentationState =

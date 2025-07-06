@@ -1,0 +1,254 @@
+$schema: http://json-schema.org/draft-07/schema#
+title: Presentation Schema
+description: Schema for presentation objects in visual novel engine
+type: object
+properties:
+  background:
+    type: object
+    description: Background management and display
+    properties:
+      backgroundId:
+        type: string
+        description: ID of the background resource to display
+      animations:
+        type: object
+        description: Animation effects for background transitions
+        properties:
+          in:
+            type: string
+            description: Animation ID for background entrance
+          out:
+            type: string
+            description: Animation ID for background exit
+        additionalProperties: false
+    additionalProperties: false
+  
+  dialogue:
+    type: object
+    description: Dialogue display configuration
+    properties:
+      dialogueBoxId:
+        type: string
+        description: ID of the dialogue box UI element
+      mode:
+        type: string
+        description: Dialogue display mode
+        enum: [dialogue, narration]
+      text:
+        type: string
+        description: The dialogue text content
+      characterId:
+        type: string
+        description: ID of the character speaking
+      character:
+        type: object
+        description: Character information for dialogue
+        properties:
+          characterName:
+            type: string
+            description: Name of the character
+        additionalProperties: false
+      segments:
+        type: array
+        description: Text segments for complex dialogue
+        items:
+          type: object
+          properties:
+            text:
+              type: string
+            style:
+              type: string
+          additionalProperties: false
+    additionalProperties: false
+  
+  character:
+    type: object
+    description: Character display and management
+    properties:
+      items:
+        type: array
+        description: Array of character items to display
+        items:
+          type: object
+          properties:
+            id:
+              type: string
+              description: Unique identifier for the character item
+            positionId:
+              type: string
+              description: ID of the position where character appears
+            spriteParts:
+              type: array
+              description: Array of sprite parts that make up the character
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Identifier for the sprite part
+                  spritePartId:
+                    type: string
+                    description: ID of the sprite part resource
+                additionalProperties: false
+            inAnimation:
+              type: string
+              description: Animation ID for character entrance
+            outAnimation:
+              type: string
+              description: Animation ID for character exit
+          required: [id]
+          additionalProperties: false
+    additionalProperties: false
+  
+  visual:
+    type: object
+    description: Visual elements and effects
+    properties:
+      items:
+        type: array
+        description: Array of visual items to display
+        items:
+          type: object
+          properties:
+            id:
+              type: string
+              description: Unique identifier for the visual item
+            visualId:
+              type: string
+              description: ID of the visual resource
+            positionId:
+              type: string
+              description: ID of the position where visual appears
+            animations:
+              type: object
+              description: Animation effects for visual transitions
+              properties:
+                in:
+                  type: string
+                  description: Animation ID for visual entrance
+                out:
+                  type: string
+                  description: Animation ID for visual exit
+              additionalProperties: false
+          required: [id]
+          additionalProperties: false
+    additionalProperties: false
+  
+  screen:
+    type: object
+    description: Screen management and transitions
+    properties:
+      id:
+        type: string
+        description: Unique identifier for the screen instance
+      screenId:
+        type: string
+        description: ID of the screen resource
+    additionalProperties: false
+  
+  choices:
+    type: object
+    description: Choice system configuration
+    properties:
+      choiceScreenId:
+        type: string
+        description: ID of the choice screen UI element
+      items:
+        type: array
+        description: Array of choice options
+        items:
+          type: object
+          properties:
+            text:
+              type: string
+              description: Text content of the choice option
+            value:
+              type: string
+              description: Value associated with the choice
+            enabled:
+              type: boolean
+              description: Whether the choice is selectable
+              default: true
+          required: [text]
+          additionalProperties: false
+    additionalProperties: false
+  
+  goToSectionScene:
+    type: object
+    description: Scene navigation configuration
+    properties:
+      sectionId:
+        type: string
+        description: ID of the section to navigate to
+      sceneId:
+        type: string
+        description: ID of the scene to navigate to
+    additionalProperties: false
+  
+  sfx:
+    type: object
+    description: Sound effects configuration
+    properties:
+      soundId:
+        type: string
+        description: ID of the sound effect resource
+      volume:
+        type: number
+        description: Volume level for the sound effect
+        minimum: 0
+        maximum: 1
+      loop:
+        type: boolean
+        description: Whether the sound effect should loop
+        default: false
+    additionalProperties: false
+  
+  bgm:
+    type: object
+    description: Background music configuration
+    properties:
+      musicId:
+        type: string
+        description: ID of the background music resource
+      volume:
+        type: number
+        description: Volume level for the background music
+        minimum: 0
+        maximum: 1
+      loop:
+        type: boolean
+        description: Whether the background music should loop
+        default: true
+      fadeIn:
+        type: number
+        description: Fade-in duration in milliseconds
+      fadeOut:
+        type: number
+        description: Fade-out duration in milliseconds
+    additionalProperties: false
+  
+  animation:
+    type: object
+    description: Direct animation effects
+    properties:
+      animationId:
+        type: string
+        description: ID of the animation resource
+      target:
+        type: string
+        description: Target element for the animation
+      duration:
+        type: number
+        description: Animation duration in milliseconds
+      easing:
+        type: string
+        description: Animation easing function
+        enum: [linear, ease-in, ease-out, ease-in-out]
+    additionalProperties: false
+  
+  cleanAll:
+    type: boolean
+    description: Whether to clean/clear all existing state
+    default: false
+
+additionalProperties: false

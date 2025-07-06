@@ -30,8 +30,8 @@ export const selectInitialIds = (state) => {
     sceneId: state.story.initialSceneId,
     sectionId: initialScene.initialSectionId,
     presetId: state.story.initialPresetId,
-    stepId: initialSection.steps[0].id,
-    autoNext: initialSection.steps[0].autoNext,
+    lineId: initialSection.lines[0].id,
+    autoNext: initialSection.lines[0].autoNext,
   };
 };
 
@@ -39,7 +39,7 @@ export const selectVariables = (state) => {
   return state.variables || {};
 };
 
-export const selectSectionSteps = (state, sectionId, stepId) => {
+export const selectSectionLines = (state, sectionId, lineId) => {
   const sections = Object.values(state.story.scenes)
     .flatMap((scene) => {
       return Object.entries(scene.sections).map(([id, section]) => ({
@@ -48,19 +48,19 @@ export const selectSectionSteps = (state, sectionId, stepId) => {
       }));
     });
   const currentSection = sections.find((section) => section.id === sectionId);
-  if (stepId) {
-    const currentStepIndex = currentSection.steps.findIndex((step) => step.id === stepId);
-    return currentSection.steps.slice(0, currentStepIndex + 1);
+  if (lineId) {
+    const currentLineIndex = currentSection.lines.findIndex((line) => line.id === lineId);
+    return currentSection.lines.slice(0, currentLineIndex + 1);
   }
-  return currentSection.steps;
+  return currentSection.lines;
 }; 
 
 export const createInitialState = (vnData) => {
 
   // Set up initial state
   const initialIds = selectInitialIds(vnData);
-  const { sectionId, stepId } = initialIds;
-  if (!sectionId || !stepId) {
+  const { sectionId, lineId } = initialIds;
+  if (!sectionId || !lineId) {
     throw new Error("No initial sectionId found");
   }
 

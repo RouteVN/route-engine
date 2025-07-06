@@ -21,7 +21,7 @@ out:
             sectionId: asdkjl32
       LeftClick:
         actions:
-          nextStep: {}
+          nextLine: {}
   3ijasdk3:
     name: Menu
     eventsMap:
@@ -51,4 +51,4 @@ out:
           sectionId: asdkjl32
     LeftClick:
       actions:
-        nextStep: {}
+        nextLine: {}

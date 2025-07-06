@@ -1,12 +1,12 @@
 
 
-export const createInitialState = ({ sectionId, stepId, presetId, autoNext, saveData, variables }) => {
+export const createInitialState = ({ sectionId, lineId, presetId, autoNext, saveData, variables }) => {
   const state = {
     pendingEffects: [],
     variables,
     saveData,
     story: {
-      lastStepAction: undefined,
+      lastLineAction: undefined,
       dialogueUIHidden: false,
       currentPointer: 'read',
       autoNext: autoNext,
@@ -16,24 +16,24 @@ export const createInitialState = ({ sectionId, stepId, presetId, autoNext, save
         read: {
           presetId,
           sectionId,
-          stepId
+          lineId
         },
         menu: {
           // TODO remove hardcode
           presetId: '3ijasdk3',
           sectionId: undefined,
-          stepId: undefined
+          lineId: undefined
         },
         history: {
           presetId,
           sectionId: undefined,
-          stepId: undefined,
+          lineId: undefined,
           historyEntryIndex: undefined
         }
         // title: {
         //   presetId: undefined,
         //   sectionId: undefined,
-        //   stepId: undefined
+        //   lineId: undefined
         // },
       },
       history: {
@@ -46,8 +46,8 @@ export const createInitialState = ({ sectionId, stepId, presetId, autoNext, save
         //   sectionId: '39fk32'
         // }, {
         //   sectionId: '39cksk3',
-        //   // this is current actual stepId the user is lastest on
-        //   stepId: 'step3'
+        //   // this is current actual lineId the user is lastest on
+        //   lineId: 'line3'
         // }]
       }
     }
@@ -134,9 +134,9 @@ export const clearPendingEffects = ({ state }) => {
 }
 
 /**
- * Handles step completion and manages auto-next behavior
+ * Handles line completion and manages auto-next behavior
  */
-export const stepCompleted = ({ state, projectDataStore }) => {
+export const lineCompleted = ({ state, projectDataStore }) => {
   const autoMode = selectAutoMode(state);
 
   const { pendingEffects } = state;
@@ -147,7 +147,7 @@ export const stepCompleted = ({ state, projectDataStore }) => {
       options: {
         delay: 1000,
         systemInstructions: {
-          nextStep: {
+          nextLine: {
             forceSkipAutonext: true,
           },
         },
@@ -164,7 +164,7 @@ export const stepCompleted = ({ state, projectDataStore }) => {
       options: {
         delay: 300,
         systemInstructions: {
-          nextStep: {
+          nextLine: {
             forceSkipAutonext: true,
           },
         },
@@ -183,19 +183,19 @@ export const stepCompleted = ({ state, projectDataStore }) => {
 
   switch (nextTrigger) {
     case "onComplete":
-      // Clear autoNext state and immediately proceed to next step
+      // Clear autoNext state and immediately proceed to next line
       delete state.story.autoNext;
-      // nextStep({ state, effects, projectDataStore, payload: {} });
+      // nextLine({ state, effects, projectDataStore, payload: {} });
       break;
 
     case "fromComplete":
-      // Schedule next step to occur after delay
+      // Schedule next line to occur after delay
       pendingEffects.push({
         name: "systemInstructions",
         options: {
           delay: delay,
           systemInstructions: {
-            nextStep: {
+            nextLine: {
               forceSkipAutonext: true,
             },
           },
@@ -216,11 +216,11 @@ export const stepCompleted = ({ state, projectDataStore }) => {
 };
 
 /**
- * Advances to the next step in the story
+ * Advances to the next line in the story
  * @param {ApplyParams} params
  */
-// export const nextStep = ({ systemState, effects, vnData, payload = {} }) => {
-export const nextStep = ({ state, projectDataStore }) => {
+// export const nextLine = ({ systemState, effects, vnData, payload = {} }) => {
+export const nextLine = ({ state, projectDataStore }) => {
   const {
     pendingEffects
   } = state;
@@ -246,20 +246,20 @@ export const nextStep = ({ state, projectDataStore }) => {
   // Get current position
   const currentPointer = selectCurrentPointer({ state });
   const pointerMode = selectPointerMode({ state });
-  const steps = projectDataStore.selectSectionSteps(
+  const lines = projectDataStore.selectSectionLines(
     currentPointer.sectionId
   );
 
-  // Find next step
-  const currentStepIndex = steps.findIndex(
-    (step) => step.id === currentPointer.stepId
+  // Find next line
+  const currentLineIndex = lines.findIndex(
+    (line) => line.id === currentPointer.lineId
   );
-  const nextStep = steps[currentStepIndex + 1];
+  const nextLine = lines[currentLineIndex + 1];
 
-  console.log('cccccccccccc', nextStep);
+  console.log('cccccccccccc', nextLine);
 
-  // No next step available
-  if (!nextStep) {
+  // No next line available
+  if (!nextLine) {
   //   if (systemStore.selectAutoMode()) {
   //     state.story.autoMode = false;
   //   }
@@ -269,10 +269,10 @@ export const nextStep = ({ state, projectDataStore }) => {
     return;
   }
 
-  state.story.pointers[state.story.currentPointer].stepId = nextStep.id;
+  state.story.pointers[state.story.currentPointer].lineId = nextLine.id;
 
   // Update pointer state
-  // state.story.pointers[pointerMode].stepId = nextStep.id;
+  // state.story.pointers[pointerMode].lineId = nextLine.id;
   // state.story.pointers[pointerMode].presetId =
   //   systemStore.selectCurrentPresetId();
 
@@ -283,7 +283,7 @@ export const nextStep = ({ state, projectDataStore }) => {
   //   delete state.story.autoNext;
   // }
 
-  // systemState.story.lastStepAction = "nextStep";
+  // systemState.story.lastLineAction = "nextLine";
 
   // Trigger render effect
   pendingEffects.push({
@@ -293,19 +293,19 @@ export const nextStep = ({ state, projectDataStore }) => {
 
 /**
  */
-export const prevStep = ({ state, projectDataStore }) => {
+export const prevLine = ({ state, projectDataStore }) => {
   const pointerMode = selectPointerMode(state);
   const currentPointer = selectCurrentPointer(state);
 
-  const steps = projectDataStore.selectSectionSteps(
+  const lines = projectDataStore.selectSectionLines(
     currentPointer.sectionId
   );
-  const currentStepIndex = steps.findIndex(
-    (step) => step.id === currentPointer.stepId
+  const currentLineIndex = lines.findIndex(
+    (line) => line.id === currentPointer.lineId
   );
-  const prevStep = steps[currentStepIndex - 1];
+  const prevLine = lines[currentLineIndex - 1];
 
-  if (!prevStep) {
+  if (!prevLine) {
     console.log({
       pointerMode,
       "state.story.historyEntryIndex":
@@ -325,19 +325,19 @@ export const prevStep = ({ state, projectDataStore }) => {
         state.story.history.entries[
           state.story.historyEntryIndex
         ].sectionId;
-      const prevSectionSteps = vnDataSelectors.selectSectionSteps(
+      const prevSectionLines = vnDataSelectors.selectSectionLines(
         vnData,
         systemState.story.pointers["history"].sectionId
       );
-      console.log("prevSectionSteps", prevSectionSteps);
-      systemState.story.pointers["history"].stepId =
-        prevSectionSteps[prevSectionSteps.length - 1].id;
+      console.log("prevSectionLines", prevSectionLines);
+      systemState.story.pointers["history"].lineId =
+        prevSectionLines[prevSectionLines.length - 1].id;
       console.log({
-        stepId: systemState.story.pointers["history"].stepId,
+        lineId: systemState.story.pointers["history"].lineId,
         sectionId: systemState.story.pointers["history"].sectionId,
       });
 
-      systemState.story.lastStepAction = "prevStep";
+      systemState.story.lastLineAction = "prevLine";
 
       effects.push({
         name: "render",
@@ -353,9 +353,9 @@ export const prevStep = ({ state, projectDataStore }) => {
       systemState.story.history.entries.length - 1;
   }
 
-  systemState.story.pointers["history"].stepId = prevStep.id;
+  systemState.story.pointers["history"].lineId = prevLine.id;
   systemState.story.pointers["history"].sectionId = currentPointer.sectionId;
-  systemState.story.lastStepAction = "prevStep";
+  systemState.story.lastLineAction = "prevLine";
 
   effects.push({
     name: "render",
@@ -367,7 +367,7 @@ export const prevStep = ({ state, projectDataStore }) => {
  */
 export const goToSectionScene = ({ payload, systemState, effects, vnData }) => {
   const { sectionId, sceneId, mode, presetId } = payload;
-  const steps = vnDataSelectors.selectSectionSteps(vnData, sectionId);
+  const lines = vnDataSelectors.selectSectionLines(vnData, sectionId);
 
   if (mode) {
     systemState.story.currentPointer = mode;
@@ -395,8 +395,8 @@ export const goToSectionScene = ({ payload, systemState, effects, vnData }) => {
 
   systemState.story.pointers[currentMode].sectionId = sectionId;
   systemState.story.pointers[currentMode].sceneId = sceneId;
-  systemState.story.pointers[currentMode].stepId = steps[0].id;
-  systemState.story.autoNext = steps[0].autoNext;
+  systemState.story.pointers[currentMode].lineId = lines[0].id;
+  systemState.story.autoNext = lines[0].autoNext;
   if (presetId) {
     systemState.story.pointers[currentMode].presetId = presetId;
   }
@@ -471,7 +471,7 @@ export const startAutoMode = ({ systemState, effects }) => {
     options: {
       delay: 1000,
       systemInstructions: {
-        nextStep: {
+        nextLine: {
           forceSkipAutonext: true,
         },
       },
@@ -508,7 +508,7 @@ export const startSkipMode = ({ systemState, effects }) => {
     options: {
       delay: 300,
       systemInstructions: {
-        nextStep: {
+        nextLine: {
           forceSkipAutonext: true,
         },
       },

@@ -9,7 +9,7 @@ suites:
         out:
           presetId: "test-preset"
           sectionId: "test-section"
-          stepId: "test-step"
+          lineId: "test-line"
   
   - name: selectCurrentPresetId
     exportName: selectCurrentPresetId

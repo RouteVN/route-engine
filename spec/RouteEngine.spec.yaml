@@ -19,7 +19,7 @@ executions:
         out:
           sceneId: ajfl3a
           sectionId: l3kjfawelf
-          stepId: step1
+          lineId: line1
           presetId: bj342s
           autoNext:
             delay: 1000

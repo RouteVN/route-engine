@@ -1,0 +1,217 @@
+$schema: http://json-schema.org/draft-07/schema#
+title: Resources Schema
+description: Schema for resources in visual novel project data
+type: object
+properties:
+  backgrounds:
+    type: object
+    description: Background image resources
+    patternProperties:
+      "^[a-zA-Z0-9_-]+$":
+        type: object
+        properties:
+          fileId:
+            type: string
+            description: Reference to the background file resource
+        required: [fileId]
+        additionalProperties: false
+    additionalProperties: false
+  
+  characters:
+    type: object
+    description: Character sprite resources
+    patternProperties:
+      "^[a-zA-Z0-9_-]+$":
+        type: object
+        properties:
+          name:
+            type: string
+            description: Display name for the character
+          variables:
+            type: object
+            description: Character-specific variables
+            properties:
+              name:
+                type: string
+                description: Character name variable
+            additionalProperties: true
+          spriteParts:
+            type: object
+            description: Sprite parts that make up the character
+            patternProperties:
+              "^[a-zA-Z0-9_-]+$":
+                type: object
+                properties:
+                  fileId:
+                    type: string
+                    description: Reference to the sprite part file
+                required: [fileId]
+                additionalProperties: false
+            additionalProperties: false
+        additionalProperties: false
+    additionalProperties: false
+  
+  visuals:
+    type: object
+    description: Visual effect and UI element resources
+    patternProperties:
+      "^[a-zA-Z0-9_-]+$":
+        type: object
+        properties:
+          fileId:
+            type: string
+            description: Reference to the visual file resource
+        required: [fileId]
+        additionalProperties: false
+    additionalProperties: false
+  
+  positions:
+    type: object
+    description: Position configurations for placing elements
+    patternProperties:
+      "^[a-zA-Z0-9_-]+$":
+        type: object
+        properties:
+          x:
+            description: X coordinate position
+            oneOf:
+              - type: number
+                description: Absolute pixel position
+              - type: string
+                pattern: "^\\d+(\\.\\d+)?%$"
+                description: Percentage position (e.g., "50%")
+          y:
+            description: Y coordinate position
+            oneOf:
+              - type: number
+                description: Absolute pixel position
+              - type: string
+                pattern: "^\\d+(\\.\\d+)?%$"
+                description: Percentage position (e.g., "50%")
+          xa:
+            description: X anchor point
+            oneOf:
+              - type: number
+                description: Absolute pixel anchor
+              - type: string
+                pattern: "^\\d+(\\.\\d+)?%$"
+                description: Percentage anchor (e.g., "50%")
+          ya:
+            description: Y anchor point
+            oneOf:
+              - type: number
+                description: Absolute pixel anchor
+              - type: string
+                pattern: "^\\d+(\\.\\d+)?%$"
+                description: Percentage anchor (e.g., "50%")
+          anchor:
+            type: string
+            description: Named anchor point
+            enum: [TopLeft, TopCenter, TopRight, MiddleLeft, MiddleCenter, MiddleRight, BottomLeft, BottomCenter, BottomRight]
+        additionalProperties: false
+    additionalProperties: false
+  
+  animations:
+    type: object
+    description: Animation definitions for various effects
+    patternProperties:
+      "^[a-zA-Z0-9_-]+$":
+        type: object
+        properties:
+          name:
+            type: string
+            description: Display name for the animation
+          properties:
+            type: object
+            description: Animation properties and keyframes
+            patternProperties:
+              "^[a-zA-Z0-9_-]+$":
+                type: object
+                properties:
+                  initialValue:
+                    type: number
+                    description: Starting value for the animated property
+                  keyframes:
+                    type: array
+                    description: Array of keyframe definitions
+                    items:
+                      type: object
+                      properties:
+                        duration:
+                          type: number
+                          description: Duration of this keyframe in milliseconds
+                          minimum: 0
+                        value:
+                          type: number
+                          description: Target value for this keyframe
+                        easing:
+                          type: string
+                          description: Easing function for the animation
+                          enum: [linear, ease-in, ease-out, ease-in-out, cubic-bezier]
+                      required: [duration, value]
+                      additionalProperties: false
+                    minItems: 1
+                required: [initialValue, keyframes]
+                additionalProperties: false
+            additionalProperties: false
+        required: [name, properties]
+        additionalProperties: false
+    additionalProperties: false
+  
+  sounds:
+    type: object
+    description: Sound effect resources
+    patternProperties:
+      "^[a-zA-Z0-9_-]+$":
+        type: object
+        properties:
+          fileId:
+            type: string
+            description: Reference to the sound file resource
+          volume:
+            type: number
+            description: Default volume level
+            minimum: 0
+            maximum: 1
+            default: 1
+          loop:
+            type: boolean
+            description: Whether the sound should loop by default
+            default: false
+        required: [fileId]
+        additionalProperties: false
+    additionalProperties: false
+  
+  music:
+    type: object
+    description: Background music resources
+    patternProperties:
+      "^[a-zA-Z0-9_-]+$":
+        type: object
+        properties:
+          fileId:
+            type: string
+            description: Reference to the music file resource
+          volume:
+            type: number
+            description: Default volume level
+            minimum: 0
+            maximum: 1
+            default: 1
+          loop:
+            type: boolean
+            description: Whether the music should loop by default
+            default: true
+          fadeIn:
+            type: number
+            description: Default fade-in duration in milliseconds
+            minimum: 0
+          fadeOut:
+            type: number
+            description: Default fade-out duration in milliseconds
+            minimum: 0
+        required: [fileId]
+        additionalProperties: false
+    additionalProperties: false
+
+additionalProperties: false

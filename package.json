@@ -8,6 +8,7 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
+    "build": "bun run esbuild.js",
     "coverage": "vitest run --coverage",
     "vt:generate": "rtgl vt generate --skip-screenshots"
   },

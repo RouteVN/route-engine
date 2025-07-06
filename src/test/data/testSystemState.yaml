@@ -10,13 +10,13 @@ story:
     read:
       presetId: "test-preset"
       sectionId: "test-section"
-      stepId: "test-step"
+      lineId: "test-line"
     menu:
       presetId: undefined
       sectionId: undefined
-      stepId: undefined
+      lineId: undefined
     title:
       presetId: undefined
       sectionId: undefined
-      stepId: undefined
+      lineId: undefined
   history: {} 

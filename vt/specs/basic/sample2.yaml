@@ -13,7 +13,7 @@ presets:
     eventsMap:
       LeftClick:
         systemInstructions:
-          nextStep: {}
+          nextLine: {}
 
 resources:
   backgrounds:
@@ -34,8 +34,8 @@ story:
       sections:
         l3kjfawelf:
           name: Section 1
-          steps:
-            - id: step2
+          lines:
+            - id: line2
               presentation:
                 background:
                   backgroundId: 8a3lkja

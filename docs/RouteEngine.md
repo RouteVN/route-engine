@@ -1,7 +1,6 @@
 
 Class that handles logic for the Visual Novel.
 
-
 ## Usage
 
 ```js
@@ -26,20 +25,19 @@ engine.init({
 });
 
 engine.handleEvent({
-  eventType: "nextStep",
+  eventType: "nextLine",
   payload: {
     // ...
   }
 })
 ```
 
-
 ## List of onEvent eventTypes
 
 This is events sent from engine to the outside world
 
 - `render` - when the engine wants to render the current state of the visual novel
-example:
+  example:
 
 ```js
 {
@@ -54,8 +52,6 @@ example:
 
 - `save`
 
-
-
 ## List of handleEvent eventTypes
 
 This is events sent from the outside world to the engine
@@ -63,7 +59,7 @@ This is events sent from the outside world to the engine
 - `ClickLeftScreen`: when the user left clicks the screen
 - `ClickRightScreen`: when the user right clicks the screen
 - `ScrollUpScreen`
-- `KeyboardSpace`: 
+- `KeyboardSpace`:
 - `KeyboardEnter`:
-- `KeyboardEsc`: 
+- `KeyboardEsc`:
 - `SaveDataUpdate`:

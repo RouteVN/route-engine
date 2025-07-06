@@ -150,8 +150,7 @@ export const createSequentialActionsExecutor = (createInitialState, actions) => 
 
     return produce(initialState, (draft) => {
       payloads.forEach((payload) => {
-        const actionsArray = Array.isArray(actions) ? actions : Object.values(actions);
-        actionsArray.forEach((action) => {
+        actions.forEach((action) => {
           action(draft, payload);
         });
       });

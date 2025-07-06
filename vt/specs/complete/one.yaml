@@ -24,7 +24,7 @@ presets:
             sectionId: asdkjl32
       LeftClick:
         systemInstructions:
-          nextStep: {}
+          nextLine: {}
   3ijasdk3:
     name: Menu
     eventsMap:
@@ -37,7 +37,7 @@ variables:
 # 🔧 persistence Types
 
 # • runtime – temporary; resets when game restarts
-# Example: Currently selected menu tab, temporary UI state, or animation step
+# Example: Currently selected menu tab, temporary UI state, or animation line
 # Use when the value is only needed while the game is running and should not persist across restarts.
 
 # • local – saved on this device only
@@ -402,7 +402,7 @@ ui:
               eventName: "systemInstructions"
               eventPayload:
                 systemInstructions:
-                  prevStep: {}
+                  prevLine: {}
 
     j3i8dk32:
       name: Title Screen
@@ -523,8 +523,8 @@ story:
       sections:
         l3kjfawelf:
           name: Section 1
-          steps:
-            - id: step1
+          lines:
+            - id: line1
               autoNext:
                 # nextTrigger: 'onComplete'
                 # nextTrigger: 'manual'
@@ -541,7 +541,7 @@ story:
                       positionId: iasdlf
                       animations:
                         in: 3lkj289
-            - id: step2
+            - id: line2
               autoNext:
                 delay: 1000
                 preventManual: true
@@ -551,155 +551,155 @@ story:
                     - id: 39kdfj231
                       animations:
                         out: 8h3js
-            - id: step3
+            - id: line3
               presentation:
                 screen:
                   id: 3k3k38
                   screenId: j3i8dk32
         3k3s9sd:
           name: Section 2
-          steps:
-            - id: step1
+          lines:
+            - id: line1
               presentation:
                 dialogue:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
                   characterId: ajf34a
-            - id: step2
+            - id: line2
               presentation:
                 dialogue:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: Two and a half sentences.
                   characterId: ajf34a
-            - id: step3
+            - id: line3
               presentation:
                 dialogue:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: "Three sentences. Three sentences. Three sentences."
                   characterId: ajf34a
-            - id: step4
+            - id: line4
               presentation:
                 dialogue:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: "Four sentences. Four sentences. Four sentences. Four sentences."
                   characterId: ajf34a
-            - id: step5
+            - id: line5
               presentation:
                 dialogue:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: "Five sentences. Five sentences. Five sentences. Five sentences."
                   characterId: ajf34a
-            - id: step6
+            - id: line6
               presentation:
                 dialogue:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: "Six sentences. Six sentences. Six sentences. Six sentences."
                   characterId: ajf34a
-            - id: step7
+            - id: line7
               presentation:
                 dialogue:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: "Seven sentences. Seven sentences. Seven sentences. Seven sentences."
                   characterId: ajf34a
-            - id: step8
+            - id: line8
               presentation:
                 dialogue:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: "Eight sentences. Eight sentences. Eight sentences. Eight sentences."
                   characterId: ajf34a
-            - id: step9
+            - id: line9
               presentation:
                 dialogue:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: "Nine sentences. Nine sentences. Nine sentences. Nine sentences."
                   characterId: ajf34a 
-            - id: step10
+            - id: line10
               presentation:
                 dialogue:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: "Ten sentences. Ten sentences. Ten sentences. Ten sentences."
                   characterId: ajf34a
-            - id: step11
+            - id: line11
               presentation:
                 dialogue:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: "Eleven sentences. Eleven sentences. Eleven sentences. Eleven sentences."
                   characterId: ajf34a 
-            - id: step12
+            - id: line12
               presentation:
                 dialogue:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: "Twelve sentences. Twelve sentences. Twelve sentences. Twelve sentences."
                   characterId: ajf34a
-            - id: step13
+            - id: line13
               presentation:
                 dialogue:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: "Thirteen sentences. Thirteen sentences. Thirteen sentences. Thirteen sentences."
                   characterId: ajf34a
-            - id: step14
+            - id: line14
               presentation:
                 dialogue:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: "Fourteen sentences. Fourteen sentences. Fourteen sentences. Fourteen sentences."
                   characterId: ajf34a 
-            - id: step15
+            - id: line15
               systemInstructions:
                 goToSectionScene:
                   sectionId: 934kjfa3
         934kjfa3:
           name: Section 3
-          steps:
-            - id: step1
+          lines:
+            - id: line1
               presentation:
                 dialogue:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: Section Three
                   characterId: ajf34a
-            - id: step2
+            - id: line2
               presentation:
                 dialogue:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: Wooooooooo
                   characterId: ajf34a
-            - id: step3
+            - id: line3
               presentation:
                 dialogue:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: Fooooooooo
                   characterId: ajf34a
-            - id: step4
+            - id: line4
               presentation:
                 dialogue:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: Gooooooooo
                   characterId: ajf34a
-            - id: step5
+            - id: line5
               presentation:
                 dialogue:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: GlGooooooooo
                   characterId: ajf34a
-            - id: step6
+            - id: line6
               presentation:
                 dialogue:
                   dialogueBoxId: fi3l
@@ -710,8 +710,8 @@ story:
       name: Menu Scene
       sections:
         asdkjl32:
-          steps:
-            - id: step1
+          lines:
+            - id: line1
               presentation:
                 screen:
                   id: 34ik

@@ -9,19 +9,19 @@ suites:
         out:
           sceneId: "ajfl3a"
           sectionId: "l3kjfawelf"
-          stepId: "step1"
+          lineId: "line1"
           presetId: "bj342s"
   
-  - name: selectSectionSteps
-    exportName: selectSectionSteps
+  - name: selectSectionLines
+    exportName: selectSectionLines
     cases:
       - name: basic
         in:
           - !include ./data/testVnData.yaml
           - "l3kjfawelf"
-          - "step1"
+          - "line1"
         out:
-          - id: step1
+          - id: line1
             autoNext:
               delay: 1000
             presentation:
@@ -53,7 +53,7 @@ suites:
                     sectionId: asdkjl32
               LeftClick:
                 actions:
-                  nextStep: {}
+                  nextLine: {}
           3ijasdk3:
             name: Menu
             eventsMap:
@@ -83,7 +83,7 @@ suites:
                   sectionId: asdkjl32
             LeftClick:
               actions:
-                nextStep: {}
+                nextLine: {}
 
   - name: selectResources
     exportName: selectResources
