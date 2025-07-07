@@ -1,13 +1,18 @@
 ---
-title: 'Sample'
+title: "Sample"
 ---
-
 screen:
   width: 1920
   height: 1080
-  backgroundColor: '#000000'
+  backgroundColor: "#000000"
 
-presets: {}
+presets:
+  bj342s:
+    name: Read
+    eventsMap:
+      LeftClick:
+        systemActions:
+          nextLine: {}
 
 resources:
   visuals:
@@ -19,14 +24,11 @@ resources:
     iasdlf:
       x: 500
       y: 500
-      xa: 100%
-      ya: 100%
     a32kf3:
-      x: 500
-      y: 500
-      xa: 0%
-      ya: 0%
+      x: 200
+      y: 200
 story:
+  initialPresetId: bj342s
   initialSceneId: ajfl3a
   scenes:
     ajfl3a:

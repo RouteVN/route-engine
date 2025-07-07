@@ -1,14 +1,13 @@
 ---
-title: 'Sample'
+title: "Sample"
 instructions:
   - lc 10 10
   - ss 1
 ---
-
 screen:
   width: 1920
   height: 1080
-  backgroundColor: '#000000'
+  backgroundColor: "#000000"
 
 presets:
   bj342s:
@@ -43,7 +42,7 @@ story:
                 background:
                   backgroundId: alkejf3la
             - id: line2
-              presentation:
+              system:
                 goToSectionScene:
                   sectionId: 3k3s9sd
         3k3s9sd:

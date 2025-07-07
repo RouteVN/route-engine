@@ -32,7 +32,7 @@ class RouteEngine {
   _constructPresentationState;
   _applySystemInstruction;
 
-  _eventCallback = (event) => { };
+  _eventCallback = () => { };
 
   constructor() { }
 
@@ -112,11 +112,40 @@ class RouteEngine {
     // TODO de duplicate
     pendingEffects.forEach((effect) => {
       if (effect.name === "render") {
+        this._processSystemActions();
         this._render();
       }
     });
 
     this._systemStore.clearPendingEffects();
+  };
+
+  /**
+   * Processes system actions from current lines
+   */
+  _processSystemActions = () => {
+    const currentPointer = this._systemStore.selectCurrentPointer();
+    const currentLines = this._projectDataStore.selectSectionLines(
+      currentPointer.sectionId,
+      currentPointer.lineId
+    );
+
+    if (!currentLines.length) {
+      return;
+    }
+
+    // Process system actions from current lines
+    currentLines.forEach((line) => {
+      if (line.system) {
+        Object.keys(line.system).forEach((actionType) => {
+          if (typeof this._systemStore[actionType] === 'function') {
+            this._systemStore[actionType](line.system[actionType]);
+          } else {
+            console.error(`System action ${actionType} not found on system store`);
+          }
+        });
+      }
+    });
   };
 
   /**
@@ -136,15 +165,18 @@ class RouteEngine {
       return;
     }
 
-    // const lastLine = currentLines[currentLines.length - 1];
-
     // Create presentation state
     const presentationActions = currentLines.map(
       (line) => line.presentation || {}
     );
 
+    console.log('🔍 RENDER DEBUG - currentLines:', currentLines);
+    console.log('🔍 RENDER DEBUG - presentationActions:', presentationActions);
+
     const presentationState =
       this._constructPresentationState(presentationActions);
+
+    console.log('🔍 RENDER DEBUG - presentationState:', presentationState);
 
     const renderState = this._constructRenderState({
       presentationState: presentationState,
@@ -153,6 +185,8 @@ class RouteEngine {
       resources: this._projectDataStore.selectResources(),
       ui: this._projectDataStore.selectUi(),
     });
+
+    console.log('🔍 RENDER DEBUG - renderState:', renderState);
 
     this._eventCallback({
       eventType: "render",

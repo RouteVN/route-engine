@@ -125,6 +125,8 @@ export const addCharacters = (
           type: "sprite",
           id: `${item.id}-${spritePart.partId}`,
           url: resolveFile(spritePart.fileId),
+          x: 0,
+          y: 0,
         });
       }
 
@@ -148,7 +150,7 @@ export const addVisuals = (
         const visual = resources.visuals[item.visualId];
         const position = resources.positions[item.positionId];
         elements.push({
-          id: `visual-${item.id}`,
+          id: `visual-${item.visualId}`,
           type: "sprite",
           url: resolveFile(visual.fileId),
           x: position.x,

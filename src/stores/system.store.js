@@ -283,6 +283,9 @@ export const nextLine = ({ state, projectDataStore }) => {
 
   // systemState.story.lastLineAction = "nextLine";
 
+  // Process system actions first, then render
+  // Note: This will be called from RouteEngine's _processSystemActions
+  
   // Trigger render effect
   pendingEffects.push({
     name: "render",
@@ -358,43 +361,43 @@ export const prevLine = ({ state, projectDataStore }) => {
 /**
  * @param {ApplyParams} params
  */
-export const goToSectionScene = ({ payload, systemState, effects, vnData }) => {
+export const goToSectionScene = ({ state, projectDataStore }, payload) => {
   const { sectionId, sceneId, mode, presetId } = payload;
-  const lines = vnDataSelectors.selectSectionLines(vnData, sectionId);
+  const lines = projectDataStore.selectSectionLines(sectionId);
 
   if (mode) {
-    systemState.story.currentPointer = mode;
+    state.story.currentPointer = mode;
   }
 
-  const currentMode = systemStateSelectors.selectPointerMode(systemState);
+  const currentMode = selectPointerMode({ state });
 
   if (currentMode === "read") {
-    systemState.story.history.entries.push({
+    state.story.history.entries.push({
       sectionId,
     });
   } else if (currentMode === "history") {
     // TODO: check if the next section is same as history next section
     if (
       sectionId ===
-      systemState.story.history.entries[systemState.story.historyEntryIndex + 1]
+      state.story.history.entries[state.story.historyEntryIndex + 1]
         .sectionId
     ) {
-      systemState.story.historyEntryIndex++;
+      state.story.historyEntryIndex++;
     } else {
       // exit history mode
       // update read pointer
     }
   }
 
-  systemState.story.pointers[currentMode].sectionId = sectionId;
-  systemState.story.pointers[currentMode].sceneId = sceneId;
-  systemState.story.pointers[currentMode].lineId = lines[0].id;
-  systemState.story.autoNext = lines[0].autoNext;
+  state.story.pointers[currentMode].sectionId = sectionId;
+  state.story.pointers[currentMode].sceneId = sceneId;
+  state.story.pointers[currentMode].lineId = lines[0].id;
+  state.story.autoNext = lines[0].autoNext;
   if (presetId) {
-    systemState.story.pointers[currentMode].presetId = presetId;
+    state.story.pointers[currentMode].presetId = presetId;
   }
 
-  effects.push({
+  state.pendingEffects.push({
     name: "render",
   });
 };

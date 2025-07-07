@@ -1,11 +1,13 @@
 ---
-title: 'Sample'
+title: "Sample 1"
+description: >
+  Test the very basic.
+  Show an image, clicking will move to next image
 ---
-
 screen:
   width: 1920
   height: 1080
-  backgroundColor: '#000000'
+  backgroundColor: "#000000"
 
 presets:
   bj342s:
@@ -47,3 +49,4 @@ story:
               presentation:
                 background:
                   backgroundId: 3ljdasfjlk32
+

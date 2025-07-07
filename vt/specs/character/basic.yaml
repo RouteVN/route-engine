@@ -22,15 +22,16 @@ resources:
   positions:
     iasdlf:
       x: 100
-      y: 80%
+      y: 300
       xa: 0
       ya: 0
       anchor: BottomCenter
     a32kf3:
-      x: 100
-      y: 100%
-      xa: 0%
-      ya: 0%
+      x: 500
+      y: 300
+      xa: 0
+      ya: 0
+      anchor: BottomCenter
   characters:
     alkjf3ia:
       variables:
@@ -68,6 +69,19 @@ story:
                   items:
                     - id: "laj389d"
                       positionId: iasdlf
+                      spriteParts:
+                        - id: base
+                          spritePartId: fk4jla893
+                        - id: outfit
+                          spritePartId: 3fjaklj34
+            - id: line2
+              presentation:
+                background:
+                  backgroundId: alkejf3la
+                character:
+                  items:
+                    - id: "laj389d"
+                      positionId: a32kf3
                       spriteParts:
                         - id: base
                           spritePartId: fk4jla893
