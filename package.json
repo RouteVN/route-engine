@@ -9,6 +9,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "build": "bun run esbuild.js",
+    "lint": "bunx prettier src tests -c",
+    "lint:fix": "bunx prettier src tests -w",
     "coverage": "vitest run --coverage",
     "vt:generate": "bun run esbuild.js && rtgl vt generate --skip-screenshots"
   },

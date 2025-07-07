@@ -16,7 +16,7 @@ properties:
         required: [fileId]
         additionalProperties: false
     additionalProperties: false
-  
+
   characters:
     type: object
     description: Character sprite resources
@@ -50,7 +50,7 @@ properties:
             additionalProperties: false
         additionalProperties: false
     additionalProperties: false
-  
+
   visuals:
     type: object
     description: Visual effect and UI element resources
@@ -64,7 +64,7 @@ properties:
         required: [fileId]
         additionalProperties: false
     additionalProperties: false
-  
+
   positions:
     type: object
     description: Position configurations for placing elements
@@ -107,10 +107,21 @@ properties:
           anchor:
             type: string
             description: Named anchor point
-            enum: [TopLeft, TopCenter, TopRight, MiddleLeft, MiddleCenter, MiddleRight, BottomLeft, BottomCenter, BottomRight]
+            enum:
+              [
+                TopLeft,
+                TopCenter,
+                TopRight,
+                MiddleLeft,
+                MiddleCenter,
+                MiddleRight,
+                BottomLeft,
+                BottomCenter,
+                BottomRight,
+              ]
         additionalProperties: false
     additionalProperties: false
-  
+
   animations:
     type: object
     description: Animation definitions for various effects
@@ -147,7 +158,14 @@ properties:
                         easing:
                           type: string
                           description: Easing function for the animation
-                          enum: [linear, ease-in, ease-out, ease-in-out, cubic-bezier]
+                          enum:
+                            [
+                              linear,
+                              ease-in,
+                              ease-out,
+                              ease-in-out,
+                              cubic-bezier,
+                            ]
                       required: [duration, value]
                       additionalProperties: false
                     minItems: 1
@@ -157,7 +175,7 @@ properties:
         required: [name, properties]
         additionalProperties: false
     additionalProperties: false
-  
+
   sounds:
     type: object
     description: Sound effect resources
@@ -181,7 +199,7 @@ properties:
         required: [fileId]
         additionalProperties: false
     additionalProperties: false
-  
+
   music:
     type: object
     description: Background music resources

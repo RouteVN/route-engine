@@ -40,4 +40,3 @@ properties:
 
 required: [id]
 additionalProperties: false
-

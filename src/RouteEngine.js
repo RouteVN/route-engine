@@ -145,7 +145,7 @@ class RouteEngine {
 
     const presentationState =
       this._constructPresentationState(presentationActions);
-    
+
     const renderState = this._constructRenderState({
       presentationState: presentationState,
       screen: this._projectDataStore.selectScreen(),

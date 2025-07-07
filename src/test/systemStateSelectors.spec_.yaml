@@ -1,4 +1,4 @@
-file: './systemStateSelectors.js'
+file: "./systemStateSelectors.js"
 suites:
   - name: selectCurrentPointer
     exportName: selectCurrentPointer
@@ -10,7 +10,7 @@ suites:
           presetId: "test-preset"
           sectionId: "test-section"
           lineId: "test-line"
-  
+
   - name: selectCurrentPresetId
     exportName: selectCurrentPresetId
     cases:
@@ -18,7 +18,7 @@ suites:
         in:
           - !include ./data/testSystemState.yaml
         out: "test-preset"
-  
+
   - name: selectSkipMode
     exportName: selectSkipMode
     cases:
@@ -26,7 +26,7 @@ suites:
         in:
           - !include ./data/testSystemState.yaml
         out: false
-  
+
   - name: selectAutoMode
     exportName: selectAutoMode
     cases:
@@ -34,4 +34,3 @@ suites:
         in:
           - !include ./data/testSystemState.yaml
         out: false
-  

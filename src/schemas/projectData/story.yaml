@@ -6,11 +6,11 @@ properties:
   initialPresetId:
     type: string
     description: ID of the preset to start with for event handling
-  
+
   initialSceneId:
     type: string
     description: ID of the scene to start with
-  
+
   scenes:
     type: object
     description: Collection of scenes in the story

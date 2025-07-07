@@ -1,6 +1,3 @@
+import RouteEngine from "./RouteEngine";
 
-import RouteEngine from './RouteEngine'
-
-export {
-  RouteEngine
-}
+export { RouteEngine };

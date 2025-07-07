@@ -6,11 +6,11 @@ properties:
   name:
     type: string
     description: Display name for the scene
-  
+
   initialSectionId:
     type: string
     description: ID of the section to start with when entering this scene
-  
+
   sections:
     type: object
     description: Collection of sections within this scene

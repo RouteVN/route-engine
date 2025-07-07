@@ -8,12 +8,12 @@ properties:
         description: Force skip auto-next behavior
         default: false
     additionalProperties: false
-  
+
   prevLine:
     type: object
     description: Go to previous line
     additionalProperties: false
-  
+
   goToSectionScene:
     type: object
     description: Navigate to specific scene/section
@@ -32,7 +32,7 @@ properties:
         type: string
         description: Preset to use after navigation
     additionalProperties: false
-  
+
   updateVariable:
     type: object
     description: Update game variables
@@ -61,7 +61,7 @@ properties:
         minItems: 1
     required: [operations]
     additionalProperties: false
-  
+
   setPreset:
     type: object
     description: Set the current preset for event handling
@@ -71,7 +71,7 @@ properties:
         description: ID of the preset to activate
     required: [presetId]
     additionalProperties: false
-  
+
   clearCurrentMode:
     type: object
     description: Clear current mode and switch to a new one
@@ -82,42 +82,42 @@ properties:
         enum: [read, menu, history, title]
     required: [mode]
     additionalProperties: false
-  
+
   startAutoMode:
     type: object
     description: Start auto-advance mode
     additionalProperties: false
-  
+
   stopAutoMode:
     type: object
     description: Stop auto-advance mode
     additionalProperties: false
-  
+
   toggleAutoMode:
     type: object
     description: Toggle auto-advance mode on/off
     additionalProperties: false
-  
+
   startSkipMode:
     type: object
     description: Start skip mode for fast-forwarding
     additionalProperties: false
-  
+
   stopSkipMode:
     type: object
     description: Stop skip mode
     additionalProperties: false
-  
+
   toggleSkipMode:
     type: object
     description: Toggle skip mode on/off
     additionalProperties: false
-  
+
   toggleDialogueUIHidden:
     type: object
     description: Toggle visibility of dialogue UI elements
     additionalProperties: false
-  
+
   saveVnData:
     type: object
     description: Save current game state to a slot
@@ -128,7 +128,7 @@ properties:
         minimum: 0
     required: [slotIndex]
     additionalProperties: false
-  
+
   loadVnData:
     type: object
     description: Load game state from a save slot
@@ -139,12 +139,12 @@ properties:
         minimum: 0
     required: [slotIndex]
     additionalProperties: false
-  
+
   lineCompleted:
     type: object
     description: Handle completion of a line (internal action)
     additionalProperties: false
-  
+
   clearPendingEffects:
     type: object
     description: Clear all pending effects (internal action)

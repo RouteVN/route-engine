@@ -48,7 +48,11 @@ import { produce } from "immer";
  * // createInitialState is not included in the store
  * console.log(store.createInitialState); // undefined
  */
-export const createStore = (initialState, selectorsAndActions, options = {}) => {
+export const createStore = (
+  initialState,
+  selectorsAndActions,
+  options = {},
+) => {
   let state = structuredClone(initialState);
   const selectors = {};
   const actions = {};
@@ -56,17 +60,20 @@ export const createStore = (initialState, selectorsAndActions, options = {}) => 
   const {
     transformSelectorFirstArgument = (state) => state,
     transformActionFirstArgument = (state) => state,
-  } = options
+  } = options;
 
   for (const [name, func] of Object.entries(selectorsAndActions)) {
     if (name === "createInitialState") {
       // Skip createInitialState - it's a special function
       continue;
     } else if (name.startsWith("select")) {
-      selectors[name] = (...args) => func(transformSelectorFirstArgument(state), ...args);
+      selectors[name] = (...args) =>
+        func(transformSelectorFirstArgument(state), ...args);
     } else {
       actions[name] = (...args) => {
-        const newState = produce(state, (draft) => func(transformActionFirstArgument(draft), ...args));
+        const newState = produce(state, (draft) =>
+          func(transformActionFirstArgument(draft), ...args),
+        );
         state = newState;
       };
     }
@@ -141,11 +148,14 @@ export const createStore = (initialState, selectorsAndActions, options = {}) => 
  * // Result: { orders: [...], totalRevenue: 40, processedCount: 3 }
  *
  */
-export const createSequentialActionsExecutor = (createInitialState, actions) => {
+export const createSequentialActionsExecutor = (
+  createInitialState,
+  actions,
+) => {
   return (payloadOrPayloads) => {
     const initialState = createInitialState();
-    const payloads = Array.isArray(payloadOrPayloads) 
-      ? payloadOrPayloads 
+    const payloads = Array.isArray(payloadOrPayloads)
+      ? payloadOrPayloads
       : [payloadOrPayloads];
 
     return produce(initialState, (draft) => {
@@ -265,7 +275,11 @@ export const createSequentialActionsExecutor = (createInitialState, actions) => 
  * });
  * // Result: { a: 'updated', b: 'initial', c: 'updated' }
  */
-export const createSelectiveActionsExecutor = (deps, actions, createInitialState) => {
+export const createSelectiveActionsExecutor = (
+  deps,
+  actions,
+  createInitialState,
+) => {
   return (payloads) => {
     const initialState = createInitialState();
     return produce(initialState, (draft) => {
@@ -277,4 +291,3 @@ export const createSelectiveActionsExecutor = (deps, actions, createInitialState
     });
   };
 };
-

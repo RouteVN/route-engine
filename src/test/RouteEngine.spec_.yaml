@@ -1,4 +1,4 @@
-file: './RouteEngine.js'
+file: "./RouteEngine.js"
 suites:
   - name: constructor
     class:
@@ -6,13 +6,13 @@ suites:
       method: init
     cases:
       - name: basic
-        in: 
+        in:
           - vnData: !include ./data/testVnData.yaml
             render:
               $mock: mock1
         mocks:
           mock1:
-            - in: 
+            - in:
                 - elements:
                     - clickEventName: LeftClick
                       fill: "#000000"

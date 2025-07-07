@@ -1,4 +1,4 @@
-file: './applySystemInstructions.js'
+file: "./applySystemInstructions.js"
 suites:
   - name: set runtime variable
     exportName: setRuntimeVariable
@@ -17,7 +17,7 @@ suites:
               testVar: "testValue"
           effects:
             - name: render
-  
+
   - name: start auto mode
     exportName: startAutoMode
     cases:
@@ -35,7 +35,7 @@ suites:
               autoMode: true
           effects:
             - name: render
-      
+
   - name: stop auto mode
     exportName: stopAutoMode
     cases:
@@ -53,7 +53,7 @@ suites:
               autoMode: false
           effects:
             - name: render
-      
+
   - name: toggle auto mode
     exportName: toggleAutoMode
     cases:
@@ -71,7 +71,7 @@ suites:
               autoMode: false
           effects:
             - name: render
-      
+
       - name: false to true
         in:
           - systemInstructions:
@@ -104,7 +104,7 @@ suites:
               skipMode: true
           effects:
             - name: render
-      
+
   - name: stop skip mode
     exportName: stopSkipMode
     cases:
@@ -122,7 +122,7 @@ suites:
               skipMode: false
           effects:
             - name: render
-      
+
   - name: toggle skip mode
     exportName: toggleSkipMode
     cases:
@@ -140,7 +140,7 @@ suites:
               skipMode: false
           effects:
             - name: render
-      
+
       - name: false to true
         in:
           - systemInstructions:

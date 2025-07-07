@@ -1,4 +1,4 @@
-file: './combineSystemState.js'
+file: "./combineSystemState.js"
 cases:
   - name: basic screen background
     in:

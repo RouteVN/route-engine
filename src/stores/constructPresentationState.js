@@ -1,5 +1,5 @@
 /**
- * 
+ *
  * Applies background from presentation to state
  * @param {Object} state - The current state of the system
  * @param {Object} presentation - The presentation to apply
@@ -109,7 +109,7 @@ export const applyCharacter = (state, presentation) => {
   for (let i = 0; i < state.character.items.length; i++) {
     const existingItem = state.character.items[i];
     const matchingItem = presentation.character.items.find(
-      (item) => item.id === existingItem.id
+      (item) => item.id === existingItem.id,
     );
 
     if (!matchingItem) {
@@ -131,7 +131,9 @@ export const applyCharacter = (state, presentation) => {
 
   // Add new items that aren't already in the state
   presentation.character.items.forEach((presentationItem) => {
-    if (!state.character.items.some((item) => item.id === presentationItem.id)) {
+    if (
+      !state.character.items.some((item) => item.id === presentationItem.id)
+    ) {
       state.character.items.push(presentationItem);
     }
   });
@@ -184,15 +186,15 @@ export const applyChoices = (state, presentation) => {
 export const applyCleanAll = (state, presentation) => {
   if (presentation.cleanAll) {
     // Clear all properties
-    Object.keys(state).forEach(key => {
+    Object.keys(state).forEach((key) => {
       delete state[key];
     });
   }
 };
 
 export const createInitialState = () => {
-  return {}
-}
+  return {};
+};
 
 export default [
   applyBackground,
@@ -204,6 +206,5 @@ export default [
   applyAnimation,
   applyScreen,
   applyChoices,
-  applyCleanAll
-]
-
+  applyCleanAll,
+];

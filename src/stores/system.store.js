@@ -1,6 +1,11 @@
-
-
-export const createInitialState = ({ sectionId, lineId, presetId, autoNext, saveData, variables }) => {
+export const createInitialState = ({
+  sectionId,
+  lineId,
+  presetId,
+  autoNext,
+  saveData,
+  variables,
+}) => {
   const state = {
     pendingEffects: [],
     variables,
@@ -8,7 +13,7 @@ export const createInitialState = ({ sectionId, lineId, presetId, autoNext, save
     story: {
       lastLineAction: undefined,
       dialogueUIHidden: false,
-      currentPointer: 'read',
+      currentPointer: "read",
       autoNext: autoNext,
       autoMode: false,
       skipMode: false,
@@ -16,20 +21,20 @@ export const createInitialState = ({ sectionId, lineId, presetId, autoNext, save
         read: {
           presetId,
           sectionId,
-          lineId
+          lineId,
         },
         menu: {
           // TODO remove hardcode
-          presetId: '3ijasdk3',
+          presetId: "3ijasdk3",
           sectionId: undefined,
-          lineId: undefined
+          lineId: undefined,
         },
         history: {
           presetId,
           sectionId: undefined,
           lineId: undefined,
-          historyEntryIndex: undefined
-        }
+          historyEntryIndex: undefined,
+        },
         // title: {
         //   presetId: undefined,
         //   sectionId: undefined,
@@ -49,8 +54,8 @@ export const createInitialState = ({ sectionId, lineId, presetId, autoNext, save
         //   // this is current actual lineId the user is lastest on
         //   lineId: 'line3'
         // }]
-      }
-    }
+      },
+    },
   };
   state.story.history.entries.push({
     sectionId,
@@ -58,14 +63,13 @@ export const createInitialState = ({ sectionId, lineId, presetId, autoNext, save
   return state;
 };
 
-
 /**************************
  * Selectors
  *************************/
 
 export const selectPendingEffects = ({ state }) => {
   return state.pendingEffects;
-}
+};
 
 export const selectCurrentPointer = ({ state }) => {
   return state.story.pointers[state.story.currentPointer];
@@ -114,16 +118,15 @@ export const selectHistory = ({ state }) => {
 
 export const selectSpecificPointer = ({ state, mode }) => {
   return state.story.pointers[mode];
-}
+};
 
 export const selectSaveData = ({ state }) => {
   return state.saveData;
-}
+};
 
 export const selectVariables = ({ state }) => {
   return state.variables;
-}
-
+};
 
 /*************************
  * Actions
@@ -131,7 +134,7 @@ export const selectVariables = ({ state }) => {
 
 export const clearPendingEffects = ({ state }) => {
   state.pendingEffects = [];
-}
+};
 
 /**
  * Handles line completion and manages auto-next behavior
@@ -221,10 +224,7 @@ export const lineCompleted = ({ state, projectDataStore }) => {
  */
 // export const nextLine = ({ systemState, effects, vnData, payload = {} }) => {
 export const nextLine = ({ state, projectDataStore }) => {
-  const {
-    pendingEffects
-  } = state;
-
+  const { pendingEffects } = state;
 
   // const dialogueUIHidden = systemStore.selectDialogueUIHidden();
 
@@ -246,26 +246,24 @@ export const nextLine = ({ state, projectDataStore }) => {
   // Get current position
   const currentPointer = selectCurrentPointer({ state });
   const pointerMode = selectPointerMode({ state });
-  const lines = projectDataStore.selectSectionLines(
-    currentPointer.sectionId
-  );
+  const lines = projectDataStore.selectSectionLines(currentPointer.sectionId);
 
   // Find next line
   const currentLineIndex = lines.findIndex(
-    (line) => line.id === currentPointer.lineId
+    (line) => line.id === currentPointer.lineId,
   );
   const nextLine = lines[currentLineIndex + 1];
 
-  console.log('cccccccccccc', nextLine);
+  console.log("cccccccccccc", nextLine);
 
   // No next line available
   if (!nextLine) {
-  //   if (systemStore.selectAutoMode()) {
-  //     state.story.autoMode = false;
-  //   }
-  //   if (systemStore.selectSkipMode()) {
-  //     state.story.skipMode = false;
-  //   }
+    //   if (systemStore.selectAutoMode()) {
+    //     state.story.autoMode = false;
+    //   }
+    //   if (systemStore.selectSkipMode()) {
+    //     state.story.skipMode = false;
+    //   }
     return;
   }
 
@@ -297,19 +295,16 @@ export const prevLine = ({ state, projectDataStore }) => {
   const pointerMode = selectPointerMode(state);
   const currentPointer = selectCurrentPointer(state);
 
-  const lines = projectDataStore.selectSectionLines(
-    currentPointer.sectionId
-  );
+  const lines = projectDataStore.selectSectionLines(currentPointer.sectionId);
   const currentLineIndex = lines.findIndex(
-    (line) => line.id === currentPointer.lineId
+    (line) => line.id === currentPointer.lineId,
   );
   const prevLine = lines[currentLineIndex - 1];
 
   if (!prevLine) {
     console.log({
       pointerMode,
-      "state.story.historyEntryIndex":
-        state.story.historyEntryIndex,
+      "state.story.historyEntryIndex": state.story.historyEntryIndex,
     });
     if (pointerMode === "history") {
       if (state.story.historyEntryIndex > 0) {
@@ -319,15 +314,13 @@ export const prevLine = ({ state, projectDataStore }) => {
       }
       console.log(
         "state.story.historyEntryIndex",
-        state.story.historyEntryIndex
+        state.story.historyEntryIndex,
       );
       state.story.pointers["history"].sectionId =
-        state.story.history.entries[
-          state.story.historyEntryIndex
-        ].sectionId;
+        state.story.history.entries[state.story.historyEntryIndex].sectionId;
       const prevSectionLines = vnDataSelectors.selectSectionLines(
         vnData,
-        systemState.story.pointers["history"].sectionId
+        systemState.story.pointers["history"].sectionId,
       );
       console.log("prevSectionLines", prevSectionLines);
       systemState.story.pointers["history"].lineId =
@@ -423,7 +416,7 @@ export const updateVariable = ({ payload, systemState, effects, vnData }) => {
   }
   const vnDataVariables = vnDataSelectors.selectVariables(vnData);
   const localVariableKeys = Object.keys(systemState.variables).filter(
-    (key) => vnDataVariables[key].persistence === "local"
+    (key) => vnDataVariables[key].persistence === "local",
   );
   const localVariables = localVariableKeys.reduce((acc, key) => {
     acc[key] = systemState.variables[key];
@@ -559,7 +552,7 @@ export const loadVnData = ({ systemState, effects, payload }) => {
   console.log("systemState.saveData", systemState.saveData);
   const saveData = systemStateSelectors.selectSaveData(systemState);
   const matchedSlotSaveData = saveData.filter(
-    (save) => save.slotIndex === slotIndex
+    (save) => save.slotIndex === slotIndex,
   );
   if (matchedSlotSaveData.length === 0) {
     console.warn(`No save data found for slot index ${slotIndex}`);
@@ -574,5 +567,3 @@ export const loadVnData = ({ systemState, effects, payload }) => {
     name: "render",
   });
 };
-
-

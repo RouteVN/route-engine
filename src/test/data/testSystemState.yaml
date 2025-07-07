@@ -1,6 +1,6 @@
 runtimeState: {}
 story:
-  currentPointer: 'read'
+  currentPointer: "read"
   autoNext:
     delay: undefined
     disableManual: false
@@ -19,4 +19,4 @@ story:
       presetId: undefined
       sectionId: undefined
       lineId: undefined
-  history: {} 
+  history: {}

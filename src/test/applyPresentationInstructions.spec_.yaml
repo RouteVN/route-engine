@@ -1,6 +1,5 @@
-file: './applyPresentationInstructions.js'
+file: "./applyPresentationInstructions.js"
 suites:
-
   - name: background immer
     exportName: applyBackground
     wrapper: immerProduce
@@ -9,46 +8,46 @@ suites:
         in:
           - {}
           - background:
-              backgroundId: 'test'
+              backgroundId: "test"
         out:
           background:
-            backgroundId: 'test'
+            backgroundId: "test"
       - name: don't remove background if there is no background instruction
         in:
           - background:
-              backgroundId: 'test'
+              backgroundId: "test"
           - {}
         out:
           background:
-            backgroundId: 'test'
+            backgroundId: "test"
       - name: remove background if background instruction exists but backgroundId is not set
         in:
           - background:
-              backgroundId: 'test'
+              backgroundId: "test"
           - background: {}
-        out: {} 
+        out: {}
       - name: update background replaces the whole background object
         in:
           - background:
-              backgroundId: 'test'
+              backgroundId: "test"
           - background:
-              backgroundId: 'test2'
+              backgroundId: "test2"
         out:
           background:
-            backgroundId: 'test2'
+            backgroundId: "test2"
   - name: visual group
     cases:
       - name: visual
         in:
           - - visual:
                 items:
-                  - visualId: '123'
+                  - visualId: "123"
             - background:
                 backgroundId: abc
         out:
           visual:
             items:
-              - visualId: '123'
+              - visualId: "123"
           background:
             backgroundId: abc
   - name: background group

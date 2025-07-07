@@ -1,4 +1,3 @@
-
 export const selectPresets = (state) => {
   return state.presets;
 };
@@ -40,23 +39,23 @@ export const selectVariables = (state) => {
 };
 
 export const selectSectionLines = (state, sectionId, lineId) => {
-  const sections = Object.values(state.story.scenes)
-    .flatMap((scene) => {
-      return Object.entries(scene.sections).map(([id, section]) => ({
-        ...section,
-        id
-      }));
-    });
+  const sections = Object.values(state.story.scenes).flatMap((scene) => {
+    return Object.entries(scene.sections).map(([id, section]) => ({
+      ...section,
+      id,
+    }));
+  });
   const currentSection = sections.find((section) => section.id === sectionId);
   if (lineId) {
-    const currentLineIndex = currentSection.lines.findIndex((line) => line.id === lineId);
+    const currentLineIndex = currentSection.lines.findIndex(
+      (line) => line.id === lineId,
+    );
     return currentSection.lines.slice(0, currentLineIndex + 1);
   }
   return currentSection.lines;
-}; 
+};
 
 export const createInitialState = (vnData) => {
-
   // Set up initial state
   const initialIds = selectInitialIds(vnData);
   const { sectionId, lineId } = initialIds;
@@ -65,4 +64,4 @@ export const createInitialState = (vnData) => {
   }
 
   return vnData;
-}
+};

@@ -12,7 +12,14 @@ properties:
         name:
           type: string
           description: Name of the effect
-          enum: [render, systemInstructions, cancelTimerEffect, updateLocalVariables, saveVnData]
+          enum:
+            [
+              render,
+              systemInstructions,
+              cancelTimerEffect,
+              updateLocalVariables,
+              saveVnData,
+            ]
         options:
           type: object
           description: Options for the effect
@@ -37,12 +44,12 @@ properties:
           additionalProperties: false
       required: [name]
       additionalProperties: false
-  
+
   variables:
     type: object
     description: Runtime variables storage
     additionalProperties: true
-  
+
   saveData:
     type: array
     description: Game save data
@@ -64,7 +71,7 @@ properties:
           description: History state at time of save
       required: [id, slotIndex, pointer, history]
       additionalProperties: false
-  
+
   story:
     type: object
     description: Main story state
@@ -73,18 +80,18 @@ properties:
         type: string
         description: Last action performed on a line
         enum: [nextLine, prevLine]
-      
+
       dialogueUIHidden:
         type: boolean
         description: Whether dialogue UI is hidden
         default: false
-      
+
       currentPointer:
         type: string
         description: Currently active pointer mode
         enum: [read, menu, history, title]
         default: read
-      
+
       autoNext:
         type: object
         description: Auto-next configuration
@@ -107,22 +114,22 @@ properties:
             default: false
         required: [nextTrigger]
         additionalProperties: false
-      
+
       autoMode:
         type: boolean
         description: Whether auto mode is enabled
         default: false
-      
+
       skipMode:
         type: boolean
         description: Whether skip mode is enabled
         default: false
-      
+
       historyEntryIndex:
         type: number
         description: Current index in history entries
         minimum: 0
-      
+
       pointers:
         type: object
         description: Collection of navigation pointers
@@ -148,12 +155,13 @@ properties:
             description: Title screen pointer
         required: [read, menu, history]
         additionalProperties: false
-      
+
       history:
         $ref: "#/definitions/History"
         description: Story progression history
-    
-    required: [dialogueUIHidden, currentPointer, autoMode, skipMode, pointers, history]
+
+    required:
+      [dialogueUIHidden, currentPointer, autoMode, skipMode, pointers, history]
     additionalProperties: false
 
 required: [pendingEffects, variables, saveData, story]
@@ -177,7 +185,7 @@ definitions:
         type: string
         description: Current scene ID (optional)
     additionalProperties: false
-  
+
   History:
     type: object
     description: Story progression history

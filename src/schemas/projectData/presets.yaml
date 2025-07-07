@@ -9,7 +9,7 @@ patternProperties:
       name:
         type: string
         description: Display name for the preset
-      
+
       eventsMap:
         type: object
         description: Event handling configuration
@@ -30,12 +30,12 @@ patternProperties:
                         description: Force skip auto-next behavior
                         default: false
                     additionalProperties: false
-                  
+
                   prevLine:
                     type: object
                     description: Go to previous line
                     additionalProperties: false
-                  
+
                   goToSectionScene:
                     type: object
                     description: Navigate to specific scene/section
@@ -54,7 +54,7 @@ patternProperties:
                         type: string
                         description: Preset to use after navigation
                     additionalProperties: false
-                  
+
                   updateVariable:
                     type: object
                     description: Update game variables
@@ -71,7 +71,16 @@ patternProperties:
                             op:
                               type: string
                               description: Operation to perform
-                              enum: [set, add, subtract, multiply, divide, increment, decrement]
+                              enum:
+                                [
+                                  set,
+                                  add,
+                                  subtract,
+                                  multiply,
+                                  divide,
+                                  increment,
+                                  decrement,
+                                ]
                             value:
                               description: Value for the operation
                               oneOf:
@@ -83,7 +92,7 @@ patternProperties:
                         minItems: 1
                     required: [operations]
                     additionalProperties: false
-                  
+
                   clearCurrentMode:
                     type: object
                     description: Clear current mode and switch to new one
@@ -94,42 +103,42 @@ patternProperties:
                         enum: [read, menu, history, title]
                     required: [mode]
                     additionalProperties: false
-                  
+
                   toggleAutoMode:
                     type: object
                     description: Toggle auto-advance mode
                     additionalProperties: false
-                  
+
                   toggleSkipMode:
                     type: object
                     description: Toggle skip mode
                     additionalProperties: false
-                  
+
                   toggleDialogueUIHidden:
                     type: object
                     description: Toggle dialogue UI visibility
                     additionalProperties: false
-                  
+
                   startAutoMode:
                     type: object
                     description: Start auto-advance mode
                     additionalProperties: false
-                  
+
                   stopAutoMode:
                     type: object
                     description: Stop auto-advance mode
                     additionalProperties: false
-                  
+
                   startSkipMode:
                     type: object
                     description: Start skip mode
                     additionalProperties: false
-                  
+
                   stopSkipMode:
                     type: object
                     description: Stop skip mode
                     additionalProperties: false
-                  
+
                   setPreset:
                     type: object
                     description: Set the current preset
@@ -139,7 +148,7 @@ patternProperties:
                         description: Preset ID to switch to
                     required: [presetId]
                     additionalProperties: false
-                  
+
                   saveVnData:
                     type: object
                     description: Save game data
@@ -150,7 +159,7 @@ patternProperties:
                         minimum: 0
                     required: [slotIndex]
                     additionalProperties: false
-                  
+
                   loadVnData:
                     type: object
                     description: Load game data
@@ -161,22 +170,22 @@ patternProperties:
                         minimum: 0
                     required: [slotIndex]
                     additionalProperties: false
-                  
+
                   lineCompleted:
                     type: object
                     description: Handle line completion
                     additionalProperties: false
-                
+
                 additionalProperties: false
-              
+
               customInstructions:
                 type: object
                 description: Custom game-specific instructions
                 additionalProperties: true
-            
+
             additionalProperties: false
         additionalProperties: false
-    
+
     required: [name, eventsMap]
     additionalProperties: false
 

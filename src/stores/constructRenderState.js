@@ -4,8 +4,8 @@ export const createInitialState = () => {
   return {
     elements: [],
     transitions: [],
-  }
-}
+  };
+};
 
 /**
  * @param {Object} params
@@ -13,7 +13,7 @@ export const createInitialState = () => {
  */
 export const generateScreenBackgroundElement = (
   { elements, transitions },
-  { screen }
+  { screen },
 ) => {
   elements.push({
     id: "bg-screen",
@@ -35,7 +35,7 @@ export const generateScreenBackgroundElement = (
  */
 export const addBackgrundOrCg = (
   { elements, transitions },
-  { presentationState, resources, resolveFile }
+  { presentationState, resources, resolveFile },
 ) => {
   if (presentationState.background) {
     if (presentationState.background.backgroundId) {
@@ -86,7 +86,7 @@ export const addBackgrundOrCg = (
  */
 export const addCharacters = (
   { elements, transitions },
-  { presentationState, resources, resolveFile }
+  { presentationState, resources, resolveFile },
 ) => {
   if (presentationState.character) {
     const items = presentationState.character.items;
@@ -139,7 +139,7 @@ export const addCharacters = (
  */
 export const addVisuals = (
   { elements, transitions },
-  { presentationState, resources, resolveFile }
+  { presentationState, resources, resolveFile },
 ) => {
   if (presentationState.visual) {
     const items = presentationState.visual.items;
@@ -191,10 +191,11 @@ export const addVisuals = (
  */
 export const addDialogue = (
   { elements, transitions },
-  { presentationState, ui, resources, dialogueUIHidden }
+  { presentationState, ui, resources, dialogueUIHidden },
 ) => {
   if (!dialogueUIHidden && presentationState.dialogue) {
-    const dialogueBoxScreen = ui.screens[presentationState.dialogue.dialogueBoxId];
+    const dialogueBoxScreen =
+      ui.screens[presentationState.dialogue.dialogueBoxId];
 
     let character;
 
@@ -210,7 +211,7 @@ export const addDialogue = (
         },
       },
     });
-    
+
     elements.push(...dialogueElements);
   }
 };
@@ -219,13 +220,16 @@ export const addDialogue = (
  *
  * @param {Object} params
  */
-export const addScreens = ({ elements, transitions }, { presentationState, ui, variables }) => {
+export const addScreens = (
+  { elements, transitions },
+  { presentationState, ui, variables },
+) => {
   if (presentationState.screen) {
     const screen = ui.screens[presentationState.screen.screenId];
     const screenElements = jsone(screen.elements, {
       variables,
     });
-    
+
     elements.push(...screenElements);
   }
 };
@@ -234,7 +238,10 @@ export const addScreens = ({ elements, transitions }, { presentationState, ui, v
  *
  * @param {Object} params
  */
-export const addChoices = ({ elements, transitions }, { presentationState, resources, ui }) => {
+export const addChoices = (
+  { elements, transitions },
+  { presentationState, resources, ui },
+) => {
   if (presentationState.choices) {
     const screen = ui.screens[presentationState.choices.choiceScreenId];
 
@@ -243,7 +250,7 @@ export const addChoices = ({ elements, transitions }, { presentationState, resou
         items: presentationState.choices.items,
       },
     });
-    
+
     elements.push(...choiceElements);
   }
 };
@@ -256,4 +263,4 @@ export default [
   addDialogue,
   addScreens,
   addChoices,
-]
+];

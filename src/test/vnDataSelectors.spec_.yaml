@@ -1,4 +1,4 @@
-file: './vnDataSelectors.js'
+file: "./vnDataSelectors.js"
 suites:
   - name: selectInitialIds
     exportName: selectInitialIds
@@ -11,7 +11,7 @@ suites:
           sectionId: "l3kjfawelf"
           lineId: "line1"
           presetId: "bj342s"
-  
+
   - name: selectSectionLines
     exportName: selectSectionLines
     cases:
@@ -135,7 +135,7 @@ suites:
             dafkjkl3:
               name: Menu Screen
               elements:
-                - type: 'container'
+                - type: "container"
                   x: 100
                   y: 100
                   children:
@@ -187,19 +187,19 @@ suites:
                               sectionId: l3kjfawelf
                     each(v,k):
                       id:
-                        $eval: 'v.text'
+                        $eval: "v.text"
                       type: text
                       text:
-                        $eval: 'v.text'
+                        $eval: "v.text"
                       height: 40
                       width: 200
                       eventName:
-                        $eval: 'v.eventName'
+                        $eval: "v.eventName"
                       eventPayload:
-                        $eval: 'v.eventPayload'
+                        $eval: "v.eventPayload"
                       x: 0
                       y: 0
-                      style: 
+                      style:
                         fontSize: 48
                         fill: "white"
                       hoverStyle:
@@ -209,22 +209,22 @@ suites:
               name: Dialogue Screen
               elements:
                 - id: dialogue-container
-                  type: 'container'
+                  type: "container"
                   x: 100
                   y: 100
                   children:
                     - id: dialogue-character-name
                       type: text
                       text:
-                        $eval: 'dialogue.character.name'
+                        $eval: "dialogue.character.name"
                       style:
                         fontSize: 24
                         fill: "white"
                     - id: dialogue-text
-                      type: 'text'
+                      type: "text"
                       y: 100
                       text:
-                        $eval: 'dialogue.text'
+                        $eval: "dialogue.text"
                       style:
                         fontSize: 24
                         fill: "white"
@@ -273,19 +273,19 @@ suites:
                         eventPayload: {}
                     each(v,k):
                       id:
-                        $eval: 'v.text'
+                        $eval: "v.text"
                       type: text
                       text:
-                        $eval: 'v.text'
+                        $eval: "v.text"
                       height: 40
                       width: 200
                       eventName:
-                        $eval: 'v.eventName'
+                        $eval: "v.eventName"
                       eventPayload:
-                        $eval: 'v.eventPayload'
+                        $eval: "v.eventPayload"
                       x: 0
                       y: 0
-                      style: 
+                      style:
                         fontSize: 48
                         fill: "white"
                       hoverStyle:
@@ -301,4 +301,4 @@ suites:
         out:
           width: 1920
           height: 1080
-          backgroundColor: '#000000' 
+          backgroundColor: "#000000"
