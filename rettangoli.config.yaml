@@ -1,22 +1,38 @@
 # TODO a way to configure dev and prod
 # all rtgl fe configuration
 fe:
-   dirs: ['fe/components', 'fe/pages'] # directories that contain components
-   setup: 'fe/setup.js' # path to setup.js file
-   outfile: 'vt/static/public/main.js' # output this is separate from rettangoli file
+  dirs: ["fe/components", "fe/pages"] # directories that contain components
+  setup: "fe/setup.js" # path to setup.js file
+  outfile: "vt/static/public/main.js" # output this is separate from rettangoli file
   #  watchPort: 3001
-
-# all sites configuration
-# sites:
-#   path: 'sites'
-#   templateFolder: '..'
 
 # all visual testing configuration
 vt:
-  path: 'vt'
-  name: "Example1 Visual Tests"
+  path: "vt"
+  name: "ok"
   description: "Visual testing for example1 project"
+
   sections:
-    - title: "Background"
-      files: "backgrounds"
-      description: "Background"
+    - title: "Element Types"
+      type: "groupLabel"
+      items:
+        - title: "Basic"
+          files: "basic"
+        - title: "Background"
+          files: "background"
+        - title: "GoToSectionScene"
+          files: "goToSceneSection"
+        - title: "Visual"
+          files: "visual"
+        - title: "Character"
+          files: "character"
+        - title: "Dialogue"
+          files: "dialogue"
+        - title: "Choice"
+          files: "choice"
+        - title: "Animation"
+          files: "animation"
+        - title: "Complete"
+          files: "complete"
+        - title: "Screen"
+          files: "screen"
