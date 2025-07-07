@@ -12,7 +12,7 @@ presets:
     name: Read
     eventsMap:
       LeftClick:
-        systemInstructions:
+        systemActions:
           nextLine: {}
 
 

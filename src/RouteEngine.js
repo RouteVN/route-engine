@@ -1,13 +1,14 @@
 import { createStore, createSequentialActionsExecutor } from "./util.js";
-import constructPresentationStateStore, {
-  createInitialState as createConstructPresentationStateInitialState,
-} from "./stores/constructPresentationState.js";
+import constructPresentationStateActions, * as constructPresentationStateStore from "./stores/constructPresentationState.js";
 import constructRenderStateSelectorsAndActions, {
   createInitialState as createConstructRenderStateInitialState,
 } from "./stores/constructRenderState.js";
 import * as systemStore from "./stores/system.store.js";
 import * as projectDataStore from "./stores/projectData.store.js";
 
+const {
+  createInitialState: createConstructPresentationStateInitialState,
+} = constructPresentationStateStore;
 
 const {
   createInitialState: createSystemInitialState,
@@ -73,7 +74,7 @@ class RouteEngine {
 
     this._constructPresentationState = createSequentialActionsExecutor(
       createConstructPresentationStateInitialState,
-      constructPresentationStateStore
+      constructPresentationStateActions
     );
 
     this._render();
@@ -94,23 +95,17 @@ class RouteEngine {
    */
   handleEvent = (event) => {
 
-    console.log('currentPreset', this._systemStore.selectCurrentPreset())
-
     const { eventType, payload } = event;
+    const currentPreset = this._systemStore.selectCurrentPreset();
+    const eventsMap = currentPreset?.eventsMap || {};
+    const systemActions = eventsMap[eventType]?.systemActions;
+    const actionType = systemActions ? Object.keys(systemActions)[0] : null;
 
-    // TODO get it dynamically
-    const eventTypeToInstructionMap = {
-      LeftClick: "nextLine",
-    };
-
-    const instructionType = eventTypeToInstructionMap[eventType];
-
-    console.log("aaaaaaaaaaaa", {
-      instructionType,
-      payload,
-    });
-
-    this._systemStore[instructionType](payload);
+    if (actionType && typeof this._systemStore[actionType] === 'function') {
+      this._systemStore[actionType](payload);
+    } else if (actionType) {
+      console.error(`Method ${actionType} not found on system store`);
+    }
 
     const pendingEffects = this._systemStore.selectPendingEffects();
 
@@ -150,9 +145,9 @@ class RouteEngine {
 
     const presentationState =
       this._constructPresentationState(presentationActions);
+    
     const renderState = this._constructRenderState({
-      // TODO
-      template: presentationState,
+      presentationState: presentationState,
       screen: this._projectDataStore.selectScreen(),
       resolveFile: (f) => `file:${f}`,
       resources: this._projectDataStore.selectResources(),

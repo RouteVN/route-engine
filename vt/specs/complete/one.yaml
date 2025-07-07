@@ -12,7 +12,7 @@ presets:
     name: Read
     eventsMap:
       RightClick:
-        systemInstructions:
+        systemActions:
           updateVariable:
             operations:
               - variableId: currentMenuTabId
@@ -23,13 +23,13 @@ presets:
             sceneId: 93jkal3
             sectionId: asdkjl32
       LeftClick:
-        systemInstructions:
+        systemActions:
           nextLine: {}
   3ijasdk3:
     name: Menu
     eventsMap:
       RightClick:
-        systemInstructions:
+        systemActions:
           clearCurrentMode:
             mode: read
 
@@ -112,10 +112,10 @@ ui:
                       hoverThumb: "file:vertical_hover_thumb"
                       idleBar: "file:vertical_idle_bar"
                       hoverBar: "file:vertical_hover_bar"
-                      dragEventName: systemInstructions
-                      dragEndEventName: systemInstructions
+                      dragEventName: systemActions
+                      dragEndEventName: systemActions
                       dragEventPayload:
-                        systemInstructions:
+                        systemActions:
                           updateVariable:
                             operations:
                               - variableId: textSpeed
@@ -160,9 +160,9 @@ ui:
                           url: file:lakjf3lka
                           width: 400
                           height: 300
-                          eventName: "systemInstructions"
+                          eventName: "systemActions"
                           eventPayload:
-                            systemInstructions:
+                            systemActions:
                               loadVnData:
                                 slotIndex:
                                   $eval: 'i'
@@ -213,9 +213,9 @@ ui:
                           url: file:lakjf3lka
                           width: 400
                           height: 300
-                          eventName: "systemInstructions"
+                          eventName: "systemActions"
                           eventPayload:
-                            systemInstructions:
+                            systemActions:
                               saveVnData:
                                 slotIndex:
                                   $eval: 'i'
@@ -228,49 +228,49 @@ ui:
           children:
             $map:
               - text: Start
-                eventName: "systemInstructions"
+                eventName: "systemActions"
                 eventPayload:
-                  systemInstructions:
+                  systemActions:
                     goToSectionScene:
                       sectionId: 3k3s9sd
               - text: Save
-                eventName: "systemInstructions"
+                eventName: "systemActions"
                 eventPayload:
-                  systemInstructions:
+                  systemActions:
                     updateVariable:
                       operations:
                         - variableId: currentMenuTabId
                           op: 'set'
                           value: 'save'
               - text: Load
-                eventName: "systemInstructions"
+                eventName: "systemActions"
                 eventPayload:
-                  systemInstructions:
+                  systemActions:
                     updateVariable:
                       operations:
                         - variableId: currentMenuTabId
                           op: 'set'
                           value: 'load'
               - text: Options
-                eventName: "systemInstructions"
+                eventName: "systemActions"
                 eventPayload:
-                  systemInstructions:
+                  systemActions:
                     updateVariable:
                       operations:
                         - variableId: currentMenuTabId
                           op: 'set'
                           value: 'options'
               - text: Main
-                eventName: "systemInstructions"
+                eventName: "systemActions"
                 eventPayload:
-                  systemInstructions:
+                  systemActions:
                     goToSectionScene:
                       mode: read
                       sectionId: l3kjfawelf
               - text: Exit
-                eventName: "systemInstructions"
+                eventName: "systemActions"
                 eventPayload:
-                  systemInstructions:
+                  systemActions:
                     clearCurrentMode:
                       mode: read
             each(v,k):
@@ -335,9 +335,9 @@ ui:
               hoverStyle:
                 fontSize: 24
                 fill: yellow
-              eventName: "systemInstructions"
+              eventName: "systemActions"
               eventPayload:
-                systemInstructions:
+                systemActions:
                   toggleAutoMode: {}
             - id: dialogue-action-skip
               type: text
@@ -350,9 +350,9 @@ ui:
               hoverStyle:
                 fontSize: 24
                 fill: yellow
-              eventName: "systemInstructions"
+              eventName: "systemActions"
               eventPayload:
-                systemInstructions:
+                systemActions:
                   toggleSkipMode: {}
             - id: dialogue-action-options
               type: text
@@ -365,9 +365,9 @@ ui:
               hoverStyle:
                 fontSize: 24
                 fill: yellow
-              eventName: "systemInstructions"
+              eventName: "systemActions"
               eventPayload:
-                systemInstructions:
+                systemActions:
                   updateVariable:
                     operations:
                       - variableId: currentMenuTabId
@@ -387,9 +387,9 @@ ui:
               hoverStyle:
                 fontSize: 24
                 fill: yellow
-              eventName: "systemInstructions"
+              eventName: "systemActions"
               eventPayload:
-                systemInstructions:
+                systemActions:
                   toggleDialogueUIHidden: {}
             - id: dialogue-action-back
               type: text
@@ -399,9 +399,9 @@ ui:
               style:
                 fontSize: 24
                 fill: "white"
-              eventName: "systemInstructions"
+              eventName: "systemActions"
               eventPayload:
-                systemInstructions:
+                systemActions:
                   prevLine: {}
 
     j3i8dk32:
@@ -421,15 +421,15 @@ ui:
           children:
             $map:
               - text: Start
-                eventName: "systemInstructions"
+                eventName: "systemActions"
                 eventPayload:
-                  systemInstructions:
+                  systemActions:
                     goToSectionScene:
                       sectionId: 3k3s9sd
               - text: Load
-                eventName: "systemInstructions"
+                eventName: "systemActions"
                 eventPayload:
-                  systemInstructions:
+                  systemActions:
                     goToSectionScene:
                       sceneId: 93jkal3
                       sectionId: asdkjl32
@@ -440,9 +440,9 @@ ui:
                           op: 'set'
                           value: 'load'
               - text: Options
-                eventName: "systemInstructions"
+                eventName: "systemActions"
                 eventPayload:
-                  systemInstructions:
+                  systemActions:
                     goToSectionScene:
                       sceneId: 93jkal3
                       sectionId: asdkjl32
@@ -453,9 +453,9 @@ ui:
                           op: 'set'
                           value: 'options'
               - text: Exit
-                eventName: "systemInstructions"
+                eventName: "systemActions"
                 eventPayload:
-                  systemInstructions: {}
+                  systemActions: {}
             each(v,k):
               id:
                 $eval: 'v.text'
@@ -658,7 +658,7 @@ story:
                   text: "Fourteen sentences. Fourteen sentences. Fourteen sentences. Fourteen sentences."
                   characterId: ajf34a 
             - id: line15
-              systemInstructions:
+              systemActions:
                 goToSectionScene:
                   sectionId: 934kjfa3
         934kjfa3:

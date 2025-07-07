@@ -35,12 +35,12 @@ export const generateScreenBackgroundElement = (
  */
 export const addBackgrundOrCg = (
   { elements, transitions },
-  { template, resources, resolveFile }
+  { presentationState, resources, resolveFile }
 ) => {
-  if (template.background) {
-    if (template.background.backgroundId) {
+  if (presentationState.background) {
+    if (presentationState.background.backgroundId) {
       const background =
-        resources.backgrounds[template.background.backgroundId];
+        resources.backgrounds[presentationState.background.backgroundId];
       elements.push({
         id: "bg-cg",
         type: "sprite",
@@ -50,10 +50,10 @@ export const addBackgrundOrCg = (
       });
     }
 
-    if (template.background.animations) {
-      if (template.background.animations.in) {
+    if (presentationState.background.animations) {
+      if (presentationState.background.animations.in) {
         const animation =
-          resources.animations[template.background.animations.in];
+          resources.animations[presentationState.background.animations.in];
         transitions.push({
           id: "bg-cg-animation",
           type: "keyframes",
@@ -63,16 +63,18 @@ export const addBackgrundOrCg = (
         });
       }
 
-      if (template.background.animations.out) {
+      if (presentationState.background.animations.out) {
         const animation =
-          resources.animations[template.background.animations.out];
-        transitions.push({
-          id: "bg-cg-animation-2",
-          type: "keyframes",
-          event: "remove",
-          elementId: "bg-cg",
-          animationProperties: animation.properties,
-        });
+          resources.animations[presentationState.background.animations.out];
+        if (animation) {
+          transitions.push({
+            id: "bg-cg-animation-2",
+            type: "keyframes",
+            event: "remove",
+            elementId: "bg-cg",
+            animationProperties: animation.properties,
+          });
+        }
       }
     }
   }
@@ -84,10 +86,10 @@ export const addBackgrundOrCg = (
  */
 export const addCharacters = (
   { elements, transitions },
-  { template, resources, resolveFile }
+  { presentationState, resources, resolveFile }
 ) => {
-  if (template.character) {
-    const items = template.character.items;
+  if (presentationState.character) {
+    const items = presentationState.character.items;
 
     for (const item of items) {
       const { positionId, spriteParts } = item;
@@ -137,10 +139,10 @@ export const addCharacters = (
  */
 export const addVisuals = (
   { elements, transitions },
-  { template, resources, resolveFile }
+  { presentationState, resources, resolveFile }
 ) => {
-  if (template.visual) {
-    const items = template.visual.items;
+  if (presentationState.visual) {
+    const items = presentationState.visual.items;
     for (const item of items) {
       if (item.visualId) {
         const visual = resources.visuals[item.visualId];
@@ -189,20 +191,20 @@ export const addVisuals = (
  */
 export const addDialogue = (
   { elements, transitions },
-  { template, ui, resources, dialogueUIHidden }
+  { presentationState, ui, resources, dialogueUIHidden }
 ) => {
-  if (!dialogueUIHidden && template.dialogue) {
-    const dialogueBoxScreen = ui.screens[template.dialogue.dialogueBoxId];
+  if (!dialogueUIHidden && presentationState.dialogue) {
+    const dialogueBoxScreen = ui.screens[presentationState.dialogue.dialogueBoxId];
 
     let character;
 
-    if (template.dialogue.characterId) {
-      character = resources.characters[template.dialogue.characterId];
+    if (presentationState.dialogue.characterId) {
+      character = resources.characters[presentationState.dialogue.characterId];
     }
 
     const dialogueElements = jsone(dialogueBoxScreen.elements, {
       dialogue: {
-        text: template.dialogue.text,
+        text: presentationState.dialogue.text,
         character: {
           name: character?.name,
         },
@@ -217,10 +219,9 @@ export const addDialogue = (
  *
  * @param {Object} params
  */
-export const addScreens = ({ elements, transitions }, { template, ui, variables }) => {
-  console.log("variables", variables);
-  if (template.screen) {
-    const screen = ui.screens[template.screen.screenId];
+export const addScreens = ({ elements, transitions }, { presentationState, ui, variables }) => {
+  if (presentationState.screen) {
+    const screen = ui.screens[presentationState.screen.screenId];
     const screenElements = jsone(screen.elements, {
       variables,
     });
@@ -233,13 +234,13 @@ export const addScreens = ({ elements, transitions }, { template, ui, variables 
  *
  * @param {Object} params
  */
-export const addChoices = ({ elements, transitions }, { template, resources, ui }) => {
-  if (template.choices) {
-    const screen = ui.screens[template.choices.choiceScreenId];
+export const addChoices = ({ elements, transitions }, { presentationState, resources, ui }) => {
+  if (presentationState.choices) {
+    const screen = ui.screens[presentationState.choices.choiceScreenId];
 
     const choiceElements = jsone(screen.elements, {
       choices: {
-        items: template.choices.items,
+        items: presentationState.choices.items,
       },
     });
     

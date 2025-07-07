@@ -6,11 +6,7 @@
  */
 export const applyBackground = (state, presentation) => {
   if (presentation.background) {
-    if (!presentation.background?.backgroundId) {
-      delete state.background;
-    } else {
-      state.background = presentation.background;
-    }
+    state.background = { ...presentation.background };
   }
 };
 
