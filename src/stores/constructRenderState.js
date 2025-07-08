@@ -253,10 +253,7 @@ export const addScreens = (
   if (presentationState.screen) {
     const screen = ui.screens[presentationState.screen.screenId];
     const wrappedTemplate = { elements: screen.elements };
-    const result = parseAndRender({
-      template: wrappedTemplate,
-      data: { variables }
-    });
+    const result = parseAndRender(wrappedTemplate, { variables });
     const screenElements = result?.elements;
 
     if (Array.isArray(screenElements)) {
@@ -281,13 +278,10 @@ export const addChoices = (
     const screen = ui.screens[presentationState.choices.choiceScreenId];
 
     const wrappedTemplate = { elements: screen.elements };
-    const result = parseAndRender({
-      template: wrappedTemplate,
-      data: {
-        choices: {
-          items: presentationState.choices.items,
-        },
-      }
+    const result = parseAndRender(wrappedTemplate, {
+      choices: {
+        items: presentationState.choices.items,
+      },
     });
     const choiceElements = result?.elements;
 
