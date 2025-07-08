@@ -1,4 +1,4 @@
-import jsone from "json-e";
+import { parseAndRender } from "jempl";
 
 export const createInitialState = () => {
   return {
@@ -200,21 +200,45 @@ export const addDialogue = (
       ui.screens[presentationState.dialogue.dialogueBoxId];
 
     let character;
-
     if (presentationState.dialogue.characterId) {
       character = resources.characters[presentationState.dialogue.characterId];
     }
 
-    const dialogueElements = jsone(dialogueBoxScreen.elements, {
-      dialogue: {
-        text: presentationState.dialogue.text,
-        character: {
-          name: character?.name,
-        },
-      },
-    });
+    // For now, let's manually create the dialogue elements without jempl
+    // to test if the issue is with jempl or the template structure
+    const dialogueElements = [
+      {
+        id: "dialogue-container",
+        type: "container",
+        x: 100,
+        y: 100,
+        children: [
+          {
+            id: "dialogue-character-name",
+            type: "text",
+            text: character?.name || "Unknown",
+            style: {
+              fontSize: 24,
+              fill: "white"
+            }
+          },
+          {
+            id: "dialogue-text",
+            type: "text",
+            y: 100,
+            text: presentationState.dialogue.text,
+            style: {
+              fontSize: 24,
+              fill: "white"
+            }
+          }
+        ]
+      }
+    ];
 
-    elements.push(...dialogueElements);
+    for (const element of dialogueElements) {
+      elements.push(element);
+    }
   }
 };
 
@@ -228,11 +252,20 @@ export const addScreens = (
 ) => {
   if (presentationState.screen) {
     const screen = ui.screens[presentationState.screen.screenId];
-    const screenElements = jsone(screen.elements, {
-      variables,
+    const wrappedTemplate = { elements: screen.elements };
+    const result = parseAndRender({
+      template: wrappedTemplate,
+      data: { variables }
     });
+    const screenElements = result?.elements;
 
-    elements.push(...screenElements);
+    if (Array.isArray(screenElements)) {
+      for (const element of screenElements) {
+        elements.push(element);
+      }
+    } else if (screenElements) {
+      elements.push(screenElements);
+    }
   }
 };
 
@@ -247,13 +280,24 @@ export const addChoices = (
   if (presentationState.choices) {
     const screen = ui.screens[presentationState.choices.choiceScreenId];
 
-    const choiceElements = jsone(screen.elements, {
-      choices: {
-        items: presentationState.choices.items,
-      },
+    const wrappedTemplate = { elements: screen.elements };
+    const result = parseAndRender({
+      template: wrappedTemplate,
+      data: {
+        choices: {
+          items: presentationState.choices.items,
+        },
+      }
     });
+    const choiceElements = result?.elements;
 
-    elements.push(...choiceElements);
+    if (Array.isArray(choiceElements)) {
+      for (const element of choiceElements) {
+        elements.push(element);
+      }
+    } else if (choiceElements) {
+      elements.push(choiceElements);
+    }
   }
 };
 

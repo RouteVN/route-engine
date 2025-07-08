@@ -1,11 +1,10 @@
 ---
-title: 'Sample'
+title: "Sample"
 ---
-
 screen:
   width: 1920
   height: 1080
-  backgroundColor: '#000000'
+  backgroundColor: "#000000"
 
 presets:
   bj342s:
@@ -16,8 +15,8 @@ presets:
           updateVariable:
             operations:
               - variableId: currentMenuTabId
-                op: 'set'
-                value: 'options'
+                op: "set"
+                value: "options"
           goToSectionScene:
             mode: menu
             sceneId: 93jkal3
@@ -34,23 +33,23 @@ presets:
             mode: read
 
 variables:
-# 🔧 persistence Types
+  # 🔧 persistence Types
 
-# • runtime – temporary; resets when game restarts
-# Example: Currently selected menu tab, temporary UI state, or animation line
-# Use when the value is only needed while the game is running and should not persist across restarts.
+  # • runtime – temporary; resets when game restarts
+  # Example: Currently selected menu tab, temporary UI state, or animation line
+  # Use when the value is only needed while the game is running and should not persist across restarts.
 
-# • local – saved on this device only
-# Example: Text speed, sound/music volume, accessibility preferences
-# Use for user preferences that should persist on the current device, but don’t need syncing or save/load.
+  # • local – saved on this device only
+  # Example: Text speed, sound/music volume, accessibility preferences
+  # Use for user preferences that should persist on the current device, but don’t need syncing or save/load.
 
-# • global – synced across all devices
-# Example: Whether the game is completed, unlocked bonus content, claimed daily rewards
-# Use when the value should follow the player across multiple devices (via cloud sync).
+  # • global – synced across all devices
+  # Example: Whether the game is completed, unlocked bonus content, claimed daily rewards
+  # Use when the value should follow the player across multiple devices (via cloud sync).
 
-# • saveData – saved only in game saves
-# Example: Player progress, inventory items, story flags
-# Use for values that are tied to save/load and shouldn’t change unless the player loads a saved game.
+  # • saveData – saved only in game saves
+  # Example: Player progress, inventory items, story flags
+  # Use for values that are tied to save/load and shouldn’t change unless the player loads a saved game.
 
   currentMenuTabId:
     type: string
@@ -66,14 +65,16 @@ ui:
     dafkjkl3:
       name: Menu Screen
       elements:
-        - type: 'container'
+        - type: "container"
           x: 100
           y: 100
           children:
-            $switch:
-              'variables.currentMenuTabId == "options"':
+            - $if#1: variables.currentMenuTabId == "options"
+              $then#1:
                 - type: text
                   text: "Options"
+                  x: 0
+                  y: 0
                   style:
                     fontSize: 64
                     fill: "white"
@@ -88,13 +89,11 @@ ui:
                       type: text
                       x: 20
                       y: 0
-                      text:
-                        $eval: 'variables.textSpeed'
-                      # "Text Speed"
+                      text: "${variables.textSpeed}"
                       style:
                         fontSize: 24
                         fill: "white"
-                    - id: 'a'
+                    - id: "a"
                       type: "slider"
                       x: 20
                       y: 50
@@ -103,7 +102,7 @@ ui:
                       hoverThumb: "file:horizontal_hover_thumb"
                       idleBar: "file:horizontal_idle_bar"
                       hoverBar: "file:horizontal_hover_bar"
-                    - id: 'b'
+                    - id: "b"
                       type: "slider"
                       x: 20
                       y: 170
@@ -119,12 +118,15 @@ ui:
                           updateVariable:
                             operations:
                               - variableId: textSpeed
-                                op: 'set'
-                                value: '{{ value }}'
-              'variables.currentMenuTabId == "load"':
+                                op: "set"
+                                value: "{{ value }}"
+              $if#2: variables.currentMenuTabId == "load"
+              $then#2:
                 - id: load-title
                   type: text
                   text: "Load"
+                  x: 0
+                  y: 0
                   style:
                     fontSize: 64
                     fill: "white"
@@ -136,48 +138,63 @@ ui:
                   direction: horizontal
                   gap: 20
                   children:
-                    $map:
-                      - id: 1
-                        date: '2025-01-01'
-                      - id: 2
-                        date: '2025-01-02'
-                      - id: 3
-                        date: '2025-01-03'
-                      - id: 4
-                        date: '2025-01-04'
-                      - id: 5
-                        date: '2025-01-05'
-                      - id: 6
-                        date: '2025-01-06'
-                    each(v,i):
-                      type: container
+                    - type: container
+                      x: 0
+                      y: 0
                       width: 400
                       height: 300
                       children:
-                        - id:
-                            $eval: 'i'
+                        - id: "1"
                           type: sprite
                           url: file:lakjf3lka
+                          x: 0
+                          y: 0
                           width: 400
                           height: 300
                           eventName: "systemActions"
                           eventPayload:
                             systemActions:
                               loadVnData:
-                                slotIndex:
-                                  $eval: 'i'
+                                slotIndex: "1"
                         - type: text
-                          text:
-                            $eval: 'v.date'
+                          text: "2025-01-01"
                           x: 100
                           y: 200
                           style:
                             fontSize: 32
                             fill: "white"
-              'variables.currentMenuTabId == "save"':
+                    - type: container
+                      x: 0
+                      y: 0
+                      width: 400
+                      height: 300
+                      children:
+                        - id: "2"
+                          type: sprite
+                          url: file:lakjf3lka
+                          x: 0
+                          y: 0
+                          width: 400
+                          height: 300
+                          eventName: "systemActions"
+                          eventPayload:
+                            systemActions:
+                              loadVnData:
+                                slotIndex: "2"
+                        - type: text
+                          text: "2025-01-02"
+                          x: 100
+                          y: 200
+                          style:
+                            fontSize: 32
+                            fill: "white"
+              $if#3: variables.currentMenuTabId == "save"
+              $then#3:
                 - id: save-title
                   type: text
                   text: "Save"
+                  x: 0
+                  y: 0
                   style:
                     fontSize: 64
                     fill: "white"
@@ -189,36 +206,42 @@ ui:
                   direction: horizontal
                   gap: 20
                   children:
-                    $map:
-                      - id: 1
-                        date: '2025-01-01'
-                      - id: 2
-                        date: '2025-01-02'
-                      - id: 3
-                        date: '2025-01-03'
-                      - id: 4
-                        date: '2025-01-04'
-                      - id: 5
-                        date: '2025-01-05'
-                      - id: 6
-                        date: '2025-01-06'
-                    each(v,i):
-                      type: container
+                    - type: container
+                      x: 0
+                      y: 0
                       width: 400
                       height: 300
                       children:
-                        - id:
-                            $eval: 'i'
+                        - id: "1"
                           type: sprite
                           url: file:lakjf3lka
+                          x: 0
+                          y: 0
                           width: 400
                           height: 300
                           eventName: "systemActions"
                           eventPayload:
                             systemActions:
                               saveVnData:
-                                slotIndex:
-                                  $eval: 'i'
+                                slotIndex: "1"
+                    - type: container
+                      x: 0
+                      y: 0
+                      width: 400
+                      height: 300
+                      children:
+                        - id: "2"
+                          type: sprite
+                          url: file:lakjf3lka
+                          x: 0
+                          y: 0
+                          width: 400
+                          height: 300
+                          eventName: "systemActions"
+                          eventPayload:
+                            systemActions:
+                              saveVnData:
+                                slotIndex: "2"
         - id: menu-container
           direction: vertical
           gap: 20
@@ -226,68 +249,119 @@ ui:
           x: 100
           y: 50%
           children:
-            $map:
-              - text: Start
-                eventName: "systemActions"
-                eventPayload:
-                  systemActions:
-                    goToSectionScene:
-                      sectionId: 3k3s9sd
-              - text: Save
-                eventName: "systemActions"
-                eventPayload:
-                  systemActions:
-                    updateVariable:
-                      operations:
-                        - variableId: currentMenuTabId
-                          op: 'set'
-                          value: 'save'
-              - text: Load
-                eventName: "systemActions"
-                eventPayload:
-                  systemActions:
-                    updateVariable:
-                      operations:
-                        - variableId: currentMenuTabId
-                          op: 'set'
-                          value: 'load'
-              - text: Options
-                eventName: "systemActions"
-                eventPayload:
-                  systemActions:
-                    updateVariable:
-                      operations:
-                        - variableId: currentMenuTabId
-                          op: 'set'
-                          value: 'options'
-              - text: Main
-                eventName: "systemActions"
-                eventPayload:
-                  systemActions:
-                    goToSectionScene:
-                      mode: read
-                      sectionId: l3kjfawelf
-              - text: Exit
-                eventName: "systemActions"
-                eventPayload:
-                  systemActions:
-                    clearCurrentMode:
-                      mode: read
-            each(v,k):
-              id:
-                $eval: 'v.text'
+            - id: "Start"
               type: text
-              text:
-                $eval: 'v.text'
+              text: "Start"
               height: 40
               width: 200
-              eventName:
-                $eval: 'v.eventName'
+              eventName: "systemActions"
               eventPayload:
-                $eval: 'v.eventPayload'
+                systemActions:
+                  goToSectionScene:
+                    sectionId: "3k3s9sd"
               x: 0
               y: 0
-              style: 
+              style:
+                fontSize: 48
+                fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+            - id: "Save"
+              type: text
+              text: "Save"
+              height: 40
+              width: 200
+              eventName: "systemActions"
+              eventPayload:
+                systemActions:
+                  updateVariable:
+                    operations:
+                      - variableId: "currentMenuTabId"
+                        op: "set"
+                        value: "save"
+              x: 0
+              y: 0
+              style:
+                fontSize: 48
+                fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+            - id: "Load"
+              type: text
+              text: "Load"
+              height: 40
+              width: 200
+              eventName: "systemActions"
+              eventPayload:
+                systemActions:
+                  updateVariable:
+                    operations:
+                      - variableId: "currentMenuTabId"
+                        op: "set"
+                        value: "load"
+              x: 0
+              y: 0
+              style:
+                fontSize: 48
+                fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+            - id: "Options"
+              type: text
+              text: "Options"
+              height: 40
+              width: 200
+              eventName: "systemActions"
+              eventPayload:
+                systemActions:
+                  updateVariable:
+                    operations:
+                      - variableId: "currentMenuTabId"
+                        op: "set"
+                        value: "options"
+              x: 0
+              y: 0
+              style:
+                fontSize: 48
+                fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+            - id: "Main"
+              type: text
+              text: "Main"
+              height: 40
+              width: 200
+              eventName: "systemActions"
+              eventPayload:
+                systemActions:
+                  goToSectionScene:
+                    mode: "read"
+                    sectionId: "l3kjfawelf"
+              x: 0
+              y: 0
+              style:
+                fontSize: 48
+                fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+            - id: "Exit"
+              type: text
+              text: "Exit"
+              height: 40
+              width: 200
+              eventName: "systemActions"
+              eventPayload:
+                systemActions:
+                  clearCurrentMode:
+                    mode: "read"
+              x: 0
+              y: 0
+              style:
                 fontSize: 48
                 fill: "white"
               hoverStyle:
@@ -298,22 +372,22 @@ ui:
       name: Dialogue Screen
       elements:
         - id: dialogue-container
-          type: 'container'
+          type: "container"
           x: 100
           y: 100
           children:
             - id: dialogue-character-name
               type: text
-              text:
-                $eval: 'dialogue.character.name'
+              text: "${dialogue.character.name}"
+              x: 0
+              y: 0
               style:
                 fontSize: 24
                 fill: "white"
             - id: dialogue-text
-              type: 'text'
+              type: "text"
               y: 100
-              text:
-                $eval: 'dialogue.text'
+              text: "Sample dialogue text"
               style:
                 fontSize: 24
                 fill: "white"
@@ -327,6 +401,8 @@ ui:
             - id: dialogue-action-button
               type: text
               text: "Auto"
+              x: 0
+              y: 0
               width: 120
               height: 40
               style:
@@ -342,6 +418,8 @@ ui:
             - id: dialogue-action-skip
               type: text
               text: "Skip"
+              x: 0
+              y: 0
               width: 120
               height: 40
               style:
@@ -357,6 +435,8 @@ ui:
             - id: dialogue-action-options
               type: text
               text: "Options"
+              x: 0
+              y: 0
               width: 120
               height: 40
               style:
@@ -371,14 +451,16 @@ ui:
                   updateVariable:
                     operations:
                       - variableId: currentMenuTabId
-                        op: 'set'
-                        value: 'options'
+                        op: "set"
+                        value: "options"
                   goToSectionScene:
                     mode: menu
                     sectionId: asdkjl32
             - id: dialogue-action-hide
               type: text
               text: "Hide"
+              x: 0
+              y: 0
               width: 120
               height: 40
               style:
@@ -394,6 +476,8 @@ ui:
             - id: dialogue-action-back
               type: text
               text: "Back"
+              x: 0
+              y: 0
               width: 120
               height: 40
               style:
@@ -419,58 +503,85 @@ ui:
           x: 50%
           y: 80%
           children:
-            $map:
-              - text: Start
-                eventName: "systemActions"
-                eventPayload:
-                  systemActions:
-                    goToSectionScene:
-                      sectionId: 3k3s9sd
-              - text: Load
-                eventName: "systemActions"
-                eventPayload:
-                  systemActions:
-                    goToSectionScene:
-                      sceneId: 93jkal3
-                      sectionId: asdkjl32
-                      mode: menu
-                    updateVariable:
-                      operations:
-                        - variableId: currentMenuTabId
-                          op: 'set'
-                          value: 'load'
-              - text: Options
-                eventName: "systemActions"
-                eventPayload:
-                  systemActions:
-                    goToSectionScene:
-                      sceneId: 93jkal3
-                      sectionId: asdkjl32
-                      mode: menu
-                    updateVariable:
-                      operations:
-                        - variableId: currentMenuTabId
-                          op: 'set'
-                          value: 'options'
-              - text: Exit
-                eventName: "systemActions"
-                eventPayload:
-                  systemActions: {}
-            each(v,k):
-              id:
-                $eval: 'v.text'
+            - id: "Start"
               type: text
-              text:
-                $eval: 'v.text'
+              text: "Start"
               height: 40
               width: 200
-              eventName:
-                $eval: 'v.eventName'
+              eventName: "systemActions"
               eventPayload:
-                $eval: 'v.eventPayload'
+                systemActions:
+                  goToSectionScene:
+                    sectionId: "3k3s9sd"
               x: 0
               y: 0
-              style: 
+              style:
+                fontSize: 48
+                fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+            - id: "Load"
+              type: text
+              text: "Load"
+              height: 40
+              width: 200
+              eventName: "systemActions"
+              eventPayload:
+                systemActions:
+                  goToSectionScene:
+                    sceneId: "93jkal3"
+                    sectionId: "asdkjl32"
+                    mode: "menu"
+                  updateVariable:
+                    operations:
+                      - variableId: "currentMenuTabId"
+                        op: "set"
+                        value: "load"
+              x: 0
+              y: 0
+              style:
+                fontSize: 48
+                fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+            - id: "Options"
+              type: text
+              text: "Options"
+              height: 40
+              width: 200
+              eventName: "systemActions"
+              eventPayload:
+                systemActions:
+                  goToSectionScene:
+                    sceneId: "93jkal3"
+                    sectionId: "asdkjl32"
+                    mode: "menu"
+                  updateVariable:
+                    operations:
+                      - variableId: "currentMenuTabId"
+                        op: "set"
+                        value: "options"
+              x: 0
+              y: 0
+              style:
+                fontSize: 48
+                fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+            - id: "Exit"
+              type: text
+              text: "Exit"
+              height: 40
+              width: 200
+              eventName: "systemActions"
+              eventPayload:
+                systemActions: {}
+              x: 0
+              y: 0
+              style:
                 fontSize: 48
                 fill: "white"
               hoverStyle:
@@ -519,7 +630,7 @@ story:
     ajfl3a:
       name: Scene 1
       # initialSectionId: l3kjfawelf
-      initialSectionId: 3k3s9sd
+      initialSectionId: l3kjfawelf
       sections:
         l3kjfawelf:
           name: Section 1
@@ -528,7 +639,7 @@ story:
               autoNext:
                 # nextTrigger: 'onComplete'
                 # nextTrigger: 'manual'
-                nextTrigger: 'fromComplete'
+                nextTrigger: "fromComplete"
                 # type: 'complete' | 'fromStart' | 'fromComplete'
                 delay: 1000 # will call next after 1000ms from start
                 # delayAfterComplete: 1000 # will call next after 1000ms from completion
@@ -621,7 +732,7 @@ story:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: "Nine sentences. Nine sentences. Nine sentences. Nine sentences."
-                  characterId: ajf34a 
+                  characterId: ajf34a
             - id: line10
               presentation:
                 dialogue:
@@ -635,7 +746,7 @@ story:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: "Eleven sentences. Eleven sentences. Eleven sentences. Eleven sentences."
-                  characterId: ajf34a 
+                  characterId: ajf34a
             - id: line12
               presentation:
                 dialogue:
@@ -656,7 +767,7 @@ story:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: "Fourteen sentences. Fourteen sentences. Fourteen sentences. Fourteen sentences."
-                  characterId: ajf34a 
+                  characterId: ajf34a
             - id: line15
               systemActions:
                 goToSectionScene:
@@ -705,7 +816,7 @@ story:
                   dialogueBoxId: fi3l
                   mode: dialogue
                   text: XGooooooooo
-                  characterId: ajf34a 
+                  characterId: ajf34a
     93jkal3:
       name: Menu Scene
       sections:

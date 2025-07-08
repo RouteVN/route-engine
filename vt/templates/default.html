@@ -13,7 +13,7 @@
     <div id="canvas"></div>
   </body>
   <script>
-    window.yamlContent = `{{ content }}`
+    window.yamlContent = {{ content | json }}
   </script>
   <script src="/main.js" type="module">
   </script>

@@ -20,20 +20,21 @@ ui:
     fi3l:
       name: Dialogue Screen
       elements:
-        - type: 'container'
+        - id: dialogue-container
+          type: 'container'
           x: 100
           y: 100
           children:
-            - type: text
-              text:
-                $eval: 'dialogue.character.name'
+            - id: dialogue-character-name
+              type: text
+              text: "${dialogue.character.name}"
               style:
                 fontSize: 24
                 fill: "white"
-            - type: 'text'
+            - id: dialogue-text
+              type: 'text'
               y: 100
-              text:
-                $eval: 'dialogue.text'
+              text: "${dialogue.text}"
               style:
                 fontSize: 24
                 fill: "white"
@@ -59,5 +60,26 @@ story:
                 dialogue:
                   dialogueBoxId: fi3l
                   mode: dialogue
-                  text: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                  text: Hello! Welcome to this visual novel.
+                  characterId: ajf34a
+            - id: line2
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: This is the second line of dialogue. Click to continue.
+                  characterId: ajf34a
+            - id: line3
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: Here we are on the third line. The dialogue system is working!
+                  characterId: ajf34a
+            - id: line4
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: This is the final line. Thank you for testing the dialogue feature.
                   characterId: ajf34a

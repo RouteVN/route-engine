@@ -187,6 +187,7 @@ class RouteEngine {
     });
 
     console.log('🔍 RENDER DEBUG - renderState:', renderState);
+    console.log('🔍 RENDER DEBUG - renderState.elements:', JSON.stringify(renderState.elements, null, 2));
 
     this._eventCallback({
       eventType: "render",
