@@ -7,7 +7,7 @@ properties:
     type: object
     description: Background management and display
     properties:
-      backgroundId:
+      imageId:
         type: string
         description: ID of the background resource to display
       animations:

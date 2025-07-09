@@ -1,5 +1,5 @@
 import yaml from "https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/+esm";
-import RouteEngine from "./RouteEngine.js";
+import { RouteEngine } from "./RouteEngine.js";
 import {
   PixiTDR,
   SpriteRendererPlugin,

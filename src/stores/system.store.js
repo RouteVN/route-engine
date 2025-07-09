@@ -254,8 +254,6 @@ export const nextLine = ({ state, projectDataStore }) => {
   );
   const nextLine = lines[currentLineIndex + 1];
 
-  console.log("cccccccccccc", nextLine);
-
   // No next line available
   if (!nextLine) {
     //   if (systemStore.selectAutoMode()) {

@@ -35,12 +35,12 @@ export const generateScreenBackgroundElement = (
  */
 export const addBackgrundOrCg = (
   { elements, transitions },
-  { presentationState, resources, resolveFile },
+  { presentationState, assets, resolveFile },
 ) => {
   if (presentationState.background) {
-    if (presentationState.background.backgroundId) {
+    if (presentationState.background.imageId) {
       const background =
-        resources.backgrounds[presentationState.background.backgroundId];
+        assets.images[presentationState.background.imageId];
       elements.push({
         id: "bg-cg",
         type: "sprite",
@@ -53,7 +53,7 @@ export const addBackgrundOrCg = (
     if (presentationState.background.animations) {
       if (presentationState.background.animations.in) {
         const animation =
-          resources.animations[presentationState.background.animations.in];
+          assets.animations[presentationState.background.animations.in];
         transitions.push({
           id: "bg-cg-animation",
           type: "keyframes",
@@ -65,7 +65,7 @@ export const addBackgrundOrCg = (
 
       if (presentationState.background.animations.out) {
         const animation =
-          resources.animations[presentationState.background.animations.out];
+          assets.animations[presentationState.background.animations.out];
         if (animation) {
           transitions.push({
             id: "bg-cg-animation-2",
@@ -86,7 +86,7 @@ export const addBackgrundOrCg = (
  */
 export const addCharacters = (
   { elements, transitions },
-  { presentationState, resources, resolveFile },
+  { presentationState, assets, resolveFile },
 ) => {
   if (presentationState.character) {
     const items = presentationState.character.items;
@@ -94,7 +94,7 @@ export const addCharacters = (
     for (const item of items) {
       const { positionId, spriteParts } = item;
       const spritePartIds = spriteParts.map(({ spritePartId }) => spritePartId);
-      const position = resources.positions[positionId];
+      const position = assets.positions[positionId];
       const characterContainer = {
         type: "container",
         id: `character-container-${item.id}`,
@@ -107,7 +107,7 @@ export const addCharacters = (
       };
 
       const matchedSpriteParts = [];
-      Object.entries(resources.characters).flatMap(([key, character]) => {
+      Object.entries(assets.characters).flatMap(([key, character]) => {
         const { spriteParts } = character;
         Object.entries(spriteParts).map(([partId, part]) => {
           if (spritePartIds.includes(partId)) {
@@ -141,14 +141,14 @@ export const addCharacters = (
  */
 export const addVisuals = (
   { elements, transitions },
-  { presentationState, resources, resolveFile },
+  { presentationState, assets, resolveFile },
 ) => {
   if (presentationState.visual) {
     const items = presentationState.visual.items;
     for (const item of items) {
       if (item.visualId) {
-        const visual = resources.visuals[item.visualId];
-        const position = resources.positions[item.positionId];
+        const visual = assets.visuals[item.visualId];
+        const position = assets.positions[item.positionId];
         elements.push({
           id: `visual-${item.visualId}`,
           type: "sprite",
@@ -162,7 +162,7 @@ export const addVisuals = (
 
       if (item.animations) {
         if (item.animations.in) {
-          const animation = resources.animations[item.animations.in];
+          const animation = assets.animations[item.animations.in];
           transitions.push({
             id: `${item.id}-animation`,
             type: "keyframes",
@@ -173,7 +173,7 @@ export const addVisuals = (
         }
 
         if (item.animations.out) {
-          const animation = resources.animations[item.animations.out];
+          const animation = assets.animations[item.animations.out];
           transitions.push({
             id: `${item.id}-animation-2`,
             type: "keyframes",
@@ -193,7 +193,7 @@ export const addVisuals = (
  */
 export const addDialogue = (
   { elements, transitions },
-  { presentationState, ui, resources, dialogueUIHidden },
+  { presentationState, ui, assets, dialogueUIHidden },
 ) => {
   if (!dialogueUIHidden && presentationState.dialogue) {
     const dialogueBoxScreen =
@@ -201,7 +201,7 @@ export const addDialogue = (
 
     let character;
     if (presentationState.dialogue.characterId) {
-      character = resources.characters[presentationState.dialogue.characterId];
+      character = assets.characters[presentationState.dialogue.characterId];
     }
 
     // For now, let's manually create the dialogue elements without jempl
@@ -272,7 +272,7 @@ export const addScreens = (
  */
 export const addChoices = (
   { elements, transitions },
-  { presentationState, resources, ui },
+  { presentationState, assets, ui },
 ) => {
   if (presentationState.choices) {
     const screen = ui.screens[presentationState.choices.choiceScreenId];

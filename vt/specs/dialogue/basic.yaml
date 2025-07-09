@@ -39,7 +39,7 @@ ui:
                 fontSize: 24
                 fill: "white"
 
-resources:
+assets:
   characters:
     ajf34a:
       name: Character Name

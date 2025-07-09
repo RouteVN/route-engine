@@ -14,7 +14,7 @@ presets:
         systemActions:
           nextLine: {}
 
-resources:
+assets:
   visuals:
     alkejf3la:
       fileId: la3lka

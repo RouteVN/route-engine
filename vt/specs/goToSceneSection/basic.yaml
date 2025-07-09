@@ -17,8 +17,8 @@ presets:
         systemActions:
           nextLine: {}
 
-resources:
-  backgrounds:
+assets:
+  images:
     alkejf3la:
       fileId: lakjf3lka
     8a3lkja:
@@ -40,7 +40,7 @@ story:
             - id: line1
               presentation:
                 background:
-                  backgroundId: alkejf3la
+                  imageId: alkejf3la
             - id: line2
               system:
                 goToSectionScene:
@@ -51,4 +51,4 @@ story:
             - id: line1
               presentation:
                 background:
-                  backgroundId: 8a3lkja
+                  imageId: 8a3lkja

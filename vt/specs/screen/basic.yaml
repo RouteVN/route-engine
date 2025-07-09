@@ -54,7 +54,7 @@ ui:
                 fontSize: 48
                 fill: yellow
 
-resources: {}
+assets: {}
 
 story:
   initialSceneId: ajfl3a

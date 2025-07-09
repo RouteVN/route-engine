@@ -197,7 +197,7 @@ ui:
                 fontSize: 48
                 fill: yellow
 
-resources:
+assets:
   characters:
     ajf34a:
       name: Character One

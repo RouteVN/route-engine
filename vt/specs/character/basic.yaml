@@ -15,8 +15,8 @@ presets:
         systemActions:
           nextLine: {}
 
-resources:
-  backgrounds:
+assets:
+  images:
     alkejf3la:
       fileId: lakjf3lka
   positions:
@@ -64,7 +64,7 @@ story:
             - id: line1
               presentation:
                 background:
-                  backgroundId: alkejf3la
+                  imageId: alkejf3la
                 character:
                   items:
                     - id: "laj389d"
@@ -77,7 +77,7 @@ story:
             - id: line2
               presentation:
                 background:
-                  backgroundId: alkejf3la
+                  imageId: alkejf3la
                 character:
                   items:
                     - id: "laj389d"

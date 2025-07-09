@@ -8,33 +8,33 @@ suites:
         in:
           - {}
           - background:
-              backgroundId: "test"
+              imageId: "test"
         out:
           background:
-            backgroundId: "test"
+            imageId: "test"
       - name: don't remove background if there is no background instruction
         in:
           - background:
-              backgroundId: "test"
+              imageId: "test"
           - {}
         out:
           background:
-            backgroundId: "test"
-      - name: remove background if background instruction exists but backgroundId is not set
+            imageId: "test"
+      - name: remove background if background instruction exists but imageId is not set
         in:
           - background:
-              backgroundId: "test"
+              imageId: "test"
           - background: {}
         out: {}
       - name: update background replaces the whole background object
         in:
           - background:
-              backgroundId: "test"
+              imageId: "test"
           - background:
-              backgroundId: "test2"
+              imageId: "test2"
         out:
           background:
-            backgroundId: "test2"
+            imageId: "test2"
   - name: visual group
     cases:
       - name: visual
@@ -43,19 +43,19 @@ suites:
                 items:
                   - visualId: "123"
             - background:
-                backgroundId: abc
+                imageId: abc
         out:
           visual:
             items:
               - visualId: "123"
           background:
-            backgroundId: abc
+            imageId: abc
   - name: background group
     cases:
       - name: background basic
         in:
           - - background:
-                backgroundId: abc
+                imageId: abc
         out:
           background:
-            backgroundId: abc
+            imageId: abc

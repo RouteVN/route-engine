@@ -16,8 +16,8 @@ presets:
           nextLine: {}
 
 
-resources:
-  backgrounds:
+assets:
+  images:
     alkejf3la:
       fileId: lakjf3lka
     8a3lkja:
@@ -58,7 +58,7 @@ story:
             - id: line1
               presentation:
                 background:
-                  backgroundId: alkejf3la
+                  imageId: alkejf3la
                   animations:
                     in: 3lkj289
             - id: line2

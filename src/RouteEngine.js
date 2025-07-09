@@ -1,24 +1,9 @@
-import { createStore, createSequentialActionsExecutor } from "./util.js";
-import constructPresentationStateActions, * as constructPresentationStateStore from "./stores/constructPresentationState.js";
-import constructRenderStateSelectorsAndActions, {
-  createInitialState as createConstructRenderStateInitialState,
-} from "./stores/constructRenderState.js";
-import * as systemStore from "./stores/system.store.js";
-import * as projectDataStore from "./stores/projectData.store.js";
-
-const {
-  createInitialState: createConstructPresentationStateInitialState,
-} = constructPresentationStateStore;
-
-const {
-  createInitialState: createSystemInitialState,
-  ...systemStateSelectorsAndActions
-} = systemStore;
-
-const {
-  createInitialState: createProjectDataInitialState,
-  ...projectDataSelectorsAndActions
-} = projectDataStore;
+import {
+  createProjectDataStore,
+  createSystemStore,
+  constructPresentationState,
+  constructRenderState,
+} from "./stores/index.js";
 
 /**
  * RouteEngine is the main class for the engine.
@@ -40,42 +25,11 @@ class RouteEngine {
    * Initialize the engine with visual novel data and rendering functions
    */
   init = ({ projectData }) => {
-    this._projectDataStore = createStore(
-      projectData,
-      projectDataSelectorsAndActions
-    );
+    this._projectDataStore = createProjectDataStore(projectData);
     const initialIds = this._projectDataStore.selectInitialIds();
-    this._systemStore = createStore(
-      createSystemInitialState({
-        sectionId: initialIds.sectionId,
-        lineId: initialIds.lineId,
-        presetId: initialIds.presetId,
-        autoNext: initialIds.autoNext,
-        saveData: {},
-        variables: {},
-      }),
-      systemStateSelectorsAndActions,
-      {
-        transformActionFirstArgument: (state) => ({
-          state,
-          projectDataStore: this._projectDataStore,
-        }),
-        transformSelectorFirstArgument: (state) => ({
-          state,
-          projectDataStore: this._projectDataStore,
-        }),
-      }
-    );
-
-    this._constructRenderState = createSequentialActionsExecutor(
-      createConstructRenderStateInitialState,
-      constructRenderStateSelectorsAndActions
-    );
-
-    this._constructPresentationState = createSequentialActionsExecutor(
-      createConstructPresentationStateInitialState,
-      constructPresentationStateActions
-    );
+    this._systemStore = createSystemStore(initialIds, this._projectDataStore);
+    this._constructPresentationState = constructPresentationState;
+    this._constructRenderState = constructRenderState;
 
     this._render();
   };
@@ -170,24 +124,18 @@ class RouteEngine {
       (line) => line.presentation || {}
     );
 
-    console.log('🔍 RENDER DEBUG - currentLines:', currentLines);
-    console.log('🔍 RENDER DEBUG - presentationActions:', presentationActions);
-
     const presentationState =
       this._constructPresentationState(presentationActions);
-
-    console.log('🔍 RENDER DEBUG - presentationState:', presentationState);
 
     const renderState = this._constructRenderState({
       presentationState: presentationState,
       screen: this._projectDataStore.selectScreen(),
       resolveFile: (f) => `file:${f}`,
-      resources: this._projectDataStore.selectResources(),
+      assets: this._projectDataStore.selectassets(),
       ui: this._projectDataStore.selectUi(),
     });
 
     console.log('🔍 RENDER DEBUG - renderState:', renderState);
-    console.log('🔍 RENDER DEBUG - renderState.elements:', JSON.stringify(renderState.elements, null, 2));
 
     this._eventCallback({
       eventType: "render",

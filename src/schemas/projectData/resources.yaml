@@ -1,11 +1,11 @@
 $schema: http://json-schema.org/draft-07/schema#
-title: Resources Schema
-description: Schema for resources in visual novel project data
+title: assets Schema
+description: Schema for assets in visual novel project data
 type: object
 properties:
   backgrounds:
     type: object
-    description: Background image resources
+    description: Background image assets
     patternProperties:
       "^[a-zA-Z0-9_-]+$":
         type: object
@@ -19,7 +19,7 @@ properties:
 
   characters:
     type: object
-    description: Character sprite resources
+    description: Character sprite assets
     patternProperties:
       "^[a-zA-Z0-9_-]+$":
         type: object
@@ -53,7 +53,7 @@ properties:
 
   visuals:
     type: object
-    description: Visual effect and UI element resources
+    description: Visual effect and UI element assets
     patternProperties:
       "^[a-zA-Z0-9_-]+$":
         type: object
@@ -178,7 +178,7 @@ properties:
 
   sounds:
     type: object
-    description: Sound effect resources
+    description: Sound effect assets
     patternProperties:
       "^[a-zA-Z0-9_-]+$":
         type: object
@@ -202,7 +202,7 @@ properties:
 
   music:
     type: object
-    description: Background music resources
+    description: Background music assets
     patternProperties:
       "^[a-zA-Z0-9_-]+$":
         type: object
