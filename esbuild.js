@@ -4,11 +4,11 @@ import esbuild from "esbuild";
 esbuild
   .build({
     bundle: true,
-    minify: false,
-    sourcemap: true,
+    minify: true,
+    sourcemap: false,
     format: "esm",
-    // outfile: `./viz/_site/rvn.js`,
-    outfile: `./vt/static/RouteEngine.js`,
+    outfile: `./dist/RouteEngine.js`,
+    // outfile: `./vt/static/RouteEngine.js`,
     entryPoints: [`src/index.js`],
   })
   .then(() => console.log("Build completed"))
@@ -16,3 +16,4 @@ esbuild
     console.log("Build failed");
     process.exit(1);
   });
+

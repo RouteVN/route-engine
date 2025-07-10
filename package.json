@@ -1,10 +1,15 @@
 {
+  "name": "route-engine",
+  "version": "0.0.1",
   "type": "module",
-  "devDependencies": {
-    "@vitest/coverage-v8": "^3.2.4",
-    "@vitest/ui": "^3.2.4",
-    "vitest": "^3.2.4"
+  "main": "dist/RouteEngine.js",
+  "exports": {
+    ".": "./dist/RouteEngine.js"
   },
+  "files": [
+    "dist/",
+    "README.md"
+  ],
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
@@ -12,12 +17,19 @@
     "lint": "bunx prettier src tests -c",
     "lint:fix": "bunx prettier src tests -w",
     "coverage": "vitest run --coverage",
-    "vt:generate": "bun run esbuild.js && rtgl vt generate --skip-screenshots"
+    "vt:generate": "bun run esbuild.js && rtgl vt generate --skip-screenshots",
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
     "immer": "^10.1.1",
     "jempl": "^0.1.0-rc1",
     "js-yaml": "^4.1.0",
-    "puty": "^0.0.4-rc2"
+    "puty": "^0.0.4-rc2",
+    "route-graphics": "^0.0.1"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^3.2.4",
+    "@vitest/ui": "^3.2.4",
+    "vitest": "^3.2.4"
   }
 }

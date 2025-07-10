@@ -1,7 +1,6 @@
 import yaml from "https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/+esm";
 import { RouteEngine } from "./RouteEngine.js";
-import {
-  PixiTDR,
+import RouteGraphics, {
   SpriteRendererPlugin,
   TextRendererPlugin,
   ContainerRendererPlugin,
@@ -10,7 +9,7 @@ import {
   SoundPlugin,
   SliderRendererPlugin,
   KeyframeTransitionPlugin,
-} from "./renderer.js";
+} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.1/+esm";
 
 // Convert YAML to JSON
 const jsonData = yaml.load(window.yamlContent);
@@ -92,14 +91,14 @@ const init = async () => {
     })
   );
 
-  const app = new PixiTDR();
+  const app = new RouteGraphics();
   await app.init({
     width: 1920,
     height: 1080,
     assetBufferMap,
     eventHandler: (eventType, payload) => {
       console.log('2d renderer eventHandler', eventType, payload)
-      engine.handleEvent({eventType, payload});
+      engine.handleEvent({ eventType, payload });
       // engine.handleEvent(event, payload);
       // console.log('eventHandler', event, payload)
       // engine.systemEventHandler(event, payload)
@@ -156,7 +155,7 @@ const init = async () => {
   //   // }
   // };
 
-  engine.onEvent(({eventType, payload}) => {
+  engine.onEvent(({ eventType, payload }) => {
     console.log({
       eventType,
       payload,
