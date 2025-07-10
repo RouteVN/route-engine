@@ -1,0 +1,20 @@
+<html>
+  <head>
+    <style>
+      body {
+        margin: 0;
+        display: flex;
+        flex-wrap: unset;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="canvas"></div>
+  </body>
+  <script>
+    window.yamlContent = {{ content | json }}
+  </script>
+  <script src="/main.js" type="module">
+  </script>
+</html>

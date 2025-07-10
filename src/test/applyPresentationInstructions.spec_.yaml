@@ -1,0 +1,61 @@
+file: "./applyPresentationInstructions.js"
+suites:
+  - name: background immer
+    exportName: applyBackground
+    wrapper: immerProduce
+    cases:
+      - name: add background
+        in:
+          - {}
+          - background:
+              imageId: "test"
+        out:
+          background:
+            imageId: "test"
+      - name: don't remove background if there is no background instruction
+        in:
+          - background:
+              imageId: "test"
+          - {}
+        out:
+          background:
+            imageId: "test"
+      - name: remove background if background instruction exists but imageId is not set
+        in:
+          - background:
+              imageId: "test"
+          - background: {}
+        out: {}
+      - name: update background replaces the whole background object
+        in:
+          - background:
+              imageId: "test"
+          - background:
+              imageId: "test2"
+        out:
+          background:
+            imageId: "test2"
+  - name: visual group
+    cases:
+      - name: visual
+        in:
+          - - visual:
+                items:
+                  - visualId: "123"
+            - background:
+                imageId: abc
+        out:
+          visual:
+            items:
+              - visualId: "123"
+          background:
+            imageId: abc
+  - name: background group
+    cases:
+      - name: background basic
+        in:
+          - - background:
+                imageId: abc
+        out:
+          background:
+            imageId: abc

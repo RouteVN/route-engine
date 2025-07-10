@@ -1,0 +1,45 @@
+file: "./RouteEngine.js"
+suites:
+  - name: constructor
+    class:
+      classConstructor: []
+      method: init
+    cases:
+      - name: basic
+        in:
+          - vnData: !include ./data/testVnData.yaml
+            render:
+              $mock: mock1
+        mocks:
+          mock1:
+            - in:
+                - elements:
+                    - clickEventName: LeftClick
+                      fill: "#000000"
+                      id: bg-screen
+                      rightClickEventName: RightClick
+                      type: graphics
+                      wheelEventName: ScrollUp
+                      x1: 0
+                      x2: 1920
+                      y1: 0
+                      y2: 1080
+                    - id: visual-39kdfj231
+                      type: sprite
+                      url: file:94lkj289
+                      x: 50%
+                      xa: 50%
+                      y: 50%
+                      ya: 50%
+                  transitions:
+                    - animationProperties:
+                        alpha:
+                          initialValue: 0
+                          keyframes:
+                            - duration: 1000
+                              easing: linear
+                              value: 1
+                      elementId: visual-39kdfj231
+                      event: add
+                      id: 39kdfj231-animation
+                      type: keyframes

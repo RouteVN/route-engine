@@ -1,0 +1,831 @@
+---
+title: "Sample"
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+presets:
+  bj342s:
+    name: Read
+    eventsMap:
+      RightClick:
+        systemActions:
+          updateVariable:
+            operations:
+              - variableId: currentMenuTabId
+                op: "set"
+                value: "options"
+          goToSectionScene:
+            mode: menu
+            sceneId: 93jkal3
+            sectionId: asdkjl32
+      LeftClick:
+        systemActions:
+          nextLine: {}
+  3ijasdk3:
+    name: Menu
+    eventsMap:
+      RightClick:
+        systemActions:
+          clearCurrentMode:
+            mode: read
+
+variables:
+  # 🔧 persistence Types
+
+  # • runtime – temporary; resets when game restarts
+  # Example: Currently selected menu tab, temporary UI state, or animation line
+  # Use when the value is only needed while the game is running and should not persist across restarts.
+
+  # • local – saved on this device only
+  # Example: Text speed, sound/music volume, accessibility preferences
+  # Use for user preferences that should persist on the current device, but don’t need syncing or save/load.
+
+  # • global – synced across all devices
+  # Example: Whether the game is completed, unlocked bonus content, claimed daily rewards
+  # Use when the value should follow the player across multiple devices (via cloud sync).
+
+  # • saveData – saved only in game saves
+  # Example: Player progress, inventory items, story flags
+  # Use for values that are tied to save/load and shouldn’t change unless the player loads a saved game.
+
+  currentMenuTabId:
+    type: string
+    default: options
+    persistence: runtime
+  textSpeed:
+    type: number
+    default: 50
+    persistence: local
+
+ui:
+  screens:
+    dafkjkl3:
+      name: Menu Screen
+      elements:
+        - type: "container"
+          x: 100
+          y: 100
+          children:
+            - $if#1: variables.currentMenuTabId == "options"
+              $then#1:
+                - type: text
+                  text: "Options"
+                  x: 0
+                  y: 0
+                  style:
+                    fontSize: 64
+                    fill: "white"
+                - id: 39jfkal21
+                  type: container
+                  x: 200
+                  y: 100
+                  width: 1400
+                  height: 300
+                  children:
+                    - id: textspeed-id
+                      type: text
+                      x: 20
+                      y: 0
+                      text: "${variables.textSpeed}"
+                      style:
+                        fontSize: 24
+                        fill: "white"
+                    - id: "a"
+                      type: "slider"
+                      x: 20
+                      y: 50
+                      direction: "horizontal"
+                      idleThumb: "file:horizontal_idle_thumb"
+                      hoverThumb: "file:horizontal_hover_thumb"
+                      idleBar: "file:horizontal_idle_bar"
+                      hoverBar: "file:horizontal_hover_bar"
+                    - id: "b"
+                      type: "slider"
+                      x: 20
+                      y: 170
+                      direction: "vertical"
+                      idleThumb: "file:vertical_idle_thumb"
+                      hoverThumb: "file:vertical_hover_thumb"
+                      idleBar: "file:vertical_idle_bar"
+                      hoverBar: "file:vertical_hover_bar"
+                      dragEventName: systemActions
+                      dragEndEventName: systemActions
+                      dragEventPayload:
+                        systemActions:
+                          updateVariable:
+                            operations:
+                              - variableId: textSpeed
+                                op: "set"
+                                value: "{{ value }}"
+              $if#2: variables.currentMenuTabId == "load"
+              $then#2:
+                - id: load-title
+                  type: text
+                  text: "Load"
+                  x: 0
+                  y: 0
+                  style:
+                    fontSize: 64
+                    fill: "white"
+                - id: load-container
+                  type: container
+                  x: 300
+                  y: 100
+                  width: 1400
+                  direction: horizontal
+                  gap: 20
+                  children:
+                    - type: container
+                      x: 0
+                      y: 0
+                      width: 400
+                      height: 300
+                      children:
+                        - id: "1"
+                          type: sprite
+                          url: file:lakjf3lka
+                          x: 0
+                          y: 0
+                          width: 400
+                          height: 300
+                          eventName: "systemActions"
+                          eventPayload:
+                            systemActions:
+                              loadVnData:
+                                slotIndex: "1"
+                        - type: text
+                          text: "2025-01-01"
+                          x: 100
+                          y: 200
+                          style:
+                            fontSize: 32
+                            fill: "white"
+                    - type: container
+                      x: 0
+                      y: 0
+                      width: 400
+                      height: 300
+                      children:
+                        - id: "2"
+                          type: sprite
+                          url: file:lakjf3lka
+                          x: 0
+                          y: 0
+                          width: 400
+                          height: 300
+                          eventName: "systemActions"
+                          eventPayload:
+                            systemActions:
+                              loadVnData:
+                                slotIndex: "2"
+                        - type: text
+                          text: "2025-01-02"
+                          x: 100
+                          y: 200
+                          style:
+                            fontSize: 32
+                            fill: "white"
+              $if#3: variables.currentMenuTabId == "save"
+              $then#3:
+                - id: save-title
+                  type: text
+                  text: "Save"
+                  x: 0
+                  y: 0
+                  style:
+                    fontSize: 64
+                    fill: "white"
+                - id: save-container
+                  type: container
+                  x: 300
+                  y: 100
+                  width: 1400
+                  direction: horizontal
+                  gap: 20
+                  children:
+                    - type: container
+                      x: 0
+                      y: 0
+                      width: 400
+                      height: 300
+                      children:
+                        - id: "1"
+                          type: sprite
+                          url: file:lakjf3lka
+                          x: 0
+                          y: 0
+                          width: 400
+                          height: 300
+                          eventName: "systemActions"
+                          eventPayload:
+                            systemActions:
+                              saveVnData:
+                                slotIndex: "1"
+                    - type: container
+                      x: 0
+                      y: 0
+                      width: 400
+                      height: 300
+                      children:
+                        - id: "2"
+                          type: sprite
+                          url: file:lakjf3lka
+                          x: 0
+                          y: 0
+                          width: 400
+                          height: 300
+                          eventName: "systemActions"
+                          eventPayload:
+                            systemActions:
+                              saveVnData:
+                                slotIndex: "2"
+        - id: menu-container
+          direction: vertical
+          gap: 20
+          type: container
+          x: 100
+          y: 50%
+          children:
+            - id: "Start"
+              type: text
+              text: "Start"
+              height: 40
+              width: 200
+              eventName: "systemActions"
+              eventPayload:
+                systemActions:
+                  goToSectionScene:
+                    sectionId: "3k3s9sd"
+              x: 0
+              y: 0
+              style:
+                fontSize: 48
+                fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+            - id: "Save"
+              type: text
+              text: "Save"
+              height: 40
+              width: 200
+              eventName: "systemActions"
+              eventPayload:
+                systemActions:
+                  updateVariable:
+                    operations:
+                      - variableId: "currentMenuTabId"
+                        op: "set"
+                        value: "save"
+              x: 0
+              y: 0
+              style:
+                fontSize: 48
+                fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+            - id: "Load"
+              type: text
+              text: "Load"
+              height: 40
+              width: 200
+              eventName: "systemActions"
+              eventPayload:
+                systemActions:
+                  updateVariable:
+                    operations:
+                      - variableId: "currentMenuTabId"
+                        op: "set"
+                        value: "load"
+              x: 0
+              y: 0
+              style:
+                fontSize: 48
+                fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+            - id: "Options"
+              type: text
+              text: "Options"
+              height: 40
+              width: 200
+              eventName: "systemActions"
+              eventPayload:
+                systemActions:
+                  updateVariable:
+                    operations:
+                      - variableId: "currentMenuTabId"
+                        op: "set"
+                        value: "options"
+              x: 0
+              y: 0
+              style:
+                fontSize: 48
+                fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+            - id: "Main"
+              type: text
+              text: "Main"
+              height: 40
+              width: 200
+              eventName: "systemActions"
+              eventPayload:
+                systemActions:
+                  goToSectionScene:
+                    mode: "read"
+                    sectionId: "l3kjfawelf"
+              x: 0
+              y: 0
+              style:
+                fontSize: 48
+                fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+            - id: "Exit"
+              type: text
+              text: "Exit"
+              height: 40
+              width: 200
+              eventName: "systemActions"
+              eventPayload:
+                systemActions:
+                  clearCurrentMode:
+                    mode: "read"
+              x: 0
+              y: 0
+              style:
+                fontSize: 48
+                fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+
+    fi3l:
+      name: Dialogue Screen
+      elements:
+        - id: dialogue-container
+          type: "container"
+          x: 100
+          y: 100
+          children:
+            - id: dialogue-character-name
+              type: text
+              text: "${dialogue.character.name}"
+              x: 0
+              y: 0
+              style:
+                fontSize: 24
+                fill: "white"
+            - id: dialogue-text
+              type: "text"
+              y: 100
+              text: "Sample dialogue text"
+              style:
+                fontSize: 24
+                fill: "white"
+        - id: dialogue-actions
+          type: container
+          x: 100
+          y: 600
+          direction: horizontal
+          gap: 20
+          children:
+            - id: dialogue-action-button
+              type: text
+              text: "Auto"
+              x: 0
+              y: 0
+              width: 120
+              height: 40
+              style:
+                fontSize: 24
+                fill: "white"
+              hoverStyle:
+                fontSize: 24
+                fill: yellow
+              eventName: "systemActions"
+              eventPayload:
+                systemActions:
+                  toggleAutoMode: {}
+            - id: dialogue-action-skip
+              type: text
+              text: "Skip"
+              x: 0
+              y: 0
+              width: 120
+              height: 40
+              style:
+                fontSize: 24
+                fill: "white"
+              hoverStyle:
+                fontSize: 24
+                fill: yellow
+              eventName: "systemActions"
+              eventPayload:
+                systemActions:
+                  toggleSkipMode: {}
+            - id: dialogue-action-options
+              type: text
+              text: "Options"
+              x: 0
+              y: 0
+              width: 120
+              height: 40
+              style:
+                fontSize: 24
+                fill: "white"
+              hoverStyle:
+                fontSize: 24
+                fill: yellow
+              eventName: "systemActions"
+              eventPayload:
+                systemActions:
+                  updateVariable:
+                    operations:
+                      - variableId: currentMenuTabId
+                        op: "set"
+                        value: "options"
+                  goToSectionScene:
+                    mode: menu
+                    sectionId: asdkjl32
+            - id: dialogue-action-hide
+              type: text
+              text: "Hide"
+              x: 0
+              y: 0
+              width: 120
+              height: 40
+              style:
+                fontSize: 24
+                fill: "white"
+              hoverStyle:
+                fontSize: 24
+                fill: yellow
+              eventName: "systemActions"
+              eventPayload:
+                systemActions:
+                  toggleDialogueUIHidden: {}
+            - id: dialogue-action-back
+              type: text
+              text: "Back"
+              x: 0
+              y: 0
+              width: 120
+              height: 40
+              style:
+                fontSize: 24
+                fill: "white"
+              eventName: "systemActions"
+              eventPayload:
+                systemActions:
+                  prevLine: {}
+
+    j3i8dk32:
+      name: Title Screen
+      elements:
+        - id: bg
+          type: sprite
+          url: file:lakjf3lka
+          x: 0
+          y: 0
+        - id: container
+          type: container
+          direction: horizontal
+          anchor: BottomCenter
+          x: 50%
+          y: 80%
+          children:
+            - id: "Start"
+              type: text
+              text: "Start"
+              height: 40
+              width: 200
+              eventName: "systemActions"
+              eventPayload:
+                systemActions:
+                  goToSectionScene:
+                    sectionId: "3k3s9sd"
+              x: 0
+              y: 0
+              style:
+                fontSize: 48
+                fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+            - id: "Load"
+              type: text
+              text: "Load"
+              height: 40
+              width: 200
+              eventName: "systemActions"
+              eventPayload:
+                systemActions:
+                  goToSectionScene:
+                    sceneId: "93jkal3"
+                    sectionId: "asdkjl32"
+                    mode: "menu"
+                  updateVariable:
+                    operations:
+                      - variableId: "currentMenuTabId"
+                        op: "set"
+                        value: "load"
+              x: 0
+              y: 0
+              style:
+                fontSize: 48
+                fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+            - id: "Options"
+              type: text
+              text: "Options"
+              height: 40
+              width: 200
+              eventName: "systemActions"
+              eventPayload:
+                systemActions:
+                  goToSectionScene:
+                    sceneId: "93jkal3"
+                    sectionId: "asdkjl32"
+                    mode: "menu"
+                  updateVariable:
+                    operations:
+                      - variableId: "currentMenuTabId"
+                        op: "set"
+                        value: "options"
+              x: 0
+              y: 0
+              style:
+                fontSize: 48
+                fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+            - id: "Exit"
+              type: text
+              text: "Exit"
+              height: 40
+              width: 200
+              eventName: "systemActions"
+              eventPayload:
+                systemActions: {}
+              x: 0
+              y: 0
+              style:
+                fontSize: 48
+                fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+
+assets:
+  characters:
+    ajf34a:
+      name: Character One
+
+  visuals:
+    alkejf3la:
+      fileId: 94lkj289
+
+  positions:
+    iasdlf:
+      x: 50%
+      y: 50%
+      xa: 50%
+      ya: 50%
+
+  animations:
+    3lkj289:
+      name: "Fade In"
+      properties:
+        alpha:
+          initialValue: 0
+          keyframes:
+            - duration: 1000
+              value: 1
+              easing: linear
+    8h3js:
+      name: "Fade Out"
+      properties:
+        alpha:
+          initialValue: 1
+          keyframes:
+            - duration: 1000
+              value: 0
+              easing: linear
+story:
+  initialPresetId: bj342s
+  initialSceneId: ajfl3a
+  scenes:
+    ajfl3a:
+      name: Scene 1
+      # initialSectionId: l3kjfawelf
+      initialSectionId: l3kjfawelf
+      sections:
+        l3kjfawelf:
+          name: Section 1
+          lines:
+            - id: line1
+              autoNext:
+                # nextTrigger: 'onComplete'
+                # nextTrigger: 'manual'
+                nextTrigger: "fromComplete"
+                # type: 'complete' | 'fromStart' | 'fromComplete'
+                delay: 1000 # will call next after 1000ms from start
+                # delayAfterComplete: 1000 # will call next after 1000ms from completion
+                preventManual: true
+              presentation:
+                visual:
+                  items:
+                    - id: 39kdfj231
+                      visualId: alkejf3la
+                      positionId: iasdlf
+                      animations:
+                        in: 3lkj289
+            - id: line2
+              autoNext:
+                delay: 1000
+                preventManual: true
+              presentation:
+                visual:
+                  items:
+                    - id: 39kdfj231
+                      animations:
+                        out: 8h3js
+            - id: line3
+              presentation:
+                screen:
+                  id: 3k3k38
+                  screenId: j3i8dk32
+        3k3s9sd:
+          name: Section 2
+          lines:
+            - id: line1
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                  characterId: ajf34a
+            - id: line2
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: Two and a half sentences.
+                  characterId: ajf34a
+            - id: line3
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: "Three sentences. Three sentences. Three sentences."
+                  characterId: ajf34a
+            - id: line4
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: "Four sentences. Four sentences. Four sentences. Four sentences."
+                  characterId: ajf34a
+            - id: line5
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: "Five sentences. Five sentences. Five sentences. Five sentences."
+                  characterId: ajf34a
+            - id: line6
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: "Six sentences. Six sentences. Six sentences. Six sentences."
+                  characterId: ajf34a
+            - id: line7
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: "Seven sentences. Seven sentences. Seven sentences. Seven sentences."
+                  characterId: ajf34a
+            - id: line8
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: "Eight sentences. Eight sentences. Eight sentences. Eight sentences."
+                  characterId: ajf34a
+            - id: line9
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: "Nine sentences. Nine sentences. Nine sentences. Nine sentences."
+                  characterId: ajf34a
+            - id: line10
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: "Ten sentences. Ten sentences. Ten sentences. Ten sentences."
+                  characterId: ajf34a
+            - id: line11
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: "Eleven sentences. Eleven sentences. Eleven sentences. Eleven sentences."
+                  characterId: ajf34a
+            - id: line12
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: "Twelve sentences. Twelve sentences. Twelve sentences. Twelve sentences."
+                  characterId: ajf34a
+            - id: line13
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: "Thirteen sentences. Thirteen sentences. Thirteen sentences. Thirteen sentences."
+                  characterId: ajf34a
+            - id: line14
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: "Fourteen sentences. Fourteen sentences. Fourteen sentences. Fourteen sentences."
+                  characterId: ajf34a
+            - id: line15
+              systemActions:
+                goToSectionScene:
+                  sectionId: 934kjfa3
+        934kjfa3:
+          name: Section 3
+          lines:
+            - id: line1
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: Section Three
+                  characterId: ajf34a
+            - id: line2
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: Wooooooooo
+                  characterId: ajf34a
+            - id: line3
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: Fooooooooo
+                  characterId: ajf34a
+            - id: line4
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: Gooooooooo
+                  characterId: ajf34a
+            - id: line5
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: GlGooooooooo
+                  characterId: ajf34a
+            - id: line6
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: XGooooooooo
+                  characterId: ajf34a
+    93jkal3:
+      name: Menu Scene
+      sections:
+        asdkjl32:
+          lines:
+            - id: line1
+              presentation:
+                screen:
+                  id: 34ik
+                  screenId: dafkjkl3
+                # preset:
+                #   presetId: 3ijasdk3

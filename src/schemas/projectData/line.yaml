@@ -1,0 +1,42 @@
+$schema: http://json-schema.org/draft-07/schema#
+title: Line Schema
+description: Schema for individual story lines/steps in visual novel engine
+type: object
+properties:
+  id:
+    type: string
+    description: Unique identifier for the line
+
+  autoNext:
+    type: object
+    description: Auto-advancement behavior configuration
+    properties:
+      nextTrigger:
+        type: string
+        description: When to automatically advance
+        enum: [onComplete, manual, fromComplete]
+      delay:
+        type: number
+        description: Delay in milliseconds before auto-advance
+        minimum: 0
+      delayAfterComplete:
+        type: number
+        description: Delay after completion before auto-advance
+        minimum: 0
+      preventManual:
+        type: boolean
+        description: Whether to prevent manual advancement
+        default: false
+    additionalProperties: false
+
+  presentation:
+    $ref: "presentation.yaml"
+    description: What to display/present for this line
+
+  system:
+    type: object
+    description: System commands to execute for this line
+    $ref: "../systemActions.yaml"
+
+required: [id]
+additionalProperties: false

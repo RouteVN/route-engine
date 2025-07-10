@@ -1,0 +1,89 @@
+---
+title: 'Sample'
+---
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: '#000000'
+
+presets:
+  bj342s:
+    name: Read
+    eventsMap:
+      LeftClick:
+        systemActions:
+          nextLine: {}
+
+assets:
+  images:
+    alkejf3la:
+      fileId: lakjf3lka
+  positions:
+    iasdlf:
+      x: 100
+      y: 300
+      xa: 0
+      ya: 0
+      anchor: BottomCenter
+    a32kf3:
+      x: 500
+      y: 300
+      xa: 0
+      ya: 0
+      anchor: BottomCenter
+  characters:
+    alkjf3ia:
+      variables:
+        name: 'Abc'
+      spriteParts:
+        fk4jla893:
+          fileId: la3lka
+        3fjaklj34:
+          fileId: x342fga
+    # 9823l31:
+    #   variables:
+    #     name: 'Abc'
+    #   spriteParts:
+    #     398fasdfj3:
+    #       fileId: fk4jla893
+    #     39023ixdf:
+    #       fileId: 3fjaklj34
+
+story:
+  initialSceneId: ajfl3a
+  initialPresetId: bj342s
+  scenes:
+    ajfl3a:
+      name: Scene 1
+      initialSectionId: l3kjfawelf
+      sections:
+        l3kjfawelf:
+          name: Section 1
+          lines:
+            - id: line1
+              presentation:
+                background:
+                  imageId: alkejf3la
+                character:
+                  items:
+                    - id: "laj389d"
+                      positionId: iasdlf
+                      spriteParts:
+                        - id: base
+                          spritePartId: fk4jla893
+                        - id: outfit
+                          spritePartId: 3fjaklj34
+            - id: line2
+              presentation:
+                background:
+                  imageId: alkejf3la
+                character:
+                  items:
+                    - id: "laj389d"
+                      positionId: a32kf3
+                      spriteParts:
+                        - id: base
+                          spritePartId: fk4jla893
+                        - id: outfit
+                          spritePartId: 3fjaklj34

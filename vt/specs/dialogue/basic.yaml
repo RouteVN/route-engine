@@ -1,0 +1,85 @@
+---
+title: 'Sample'
+---
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: '#000000'
+
+presets:
+  bj342s:
+    name: Read
+    eventsMap:
+      LeftClick:
+        systemActions:
+          nextLine: {}
+
+ui:
+  screens:
+    fi3l:
+      name: Dialogue Screen
+      elements:
+        - id: dialogue-container
+          type: 'container'
+          x: 100
+          y: 100
+          children:
+            - id: dialogue-character-name
+              type: text
+              text: "${dialogue.character.name}"
+              style:
+                fontSize: 24
+                fill: "white"
+            - id: dialogue-text
+              type: 'text'
+              y: 100
+              text: "${dialogue.text}"
+              style:
+                fontSize: 24
+                fill: "white"
+
+assets:
+  characters:
+    ajf34a:
+      name: Character Name
+
+story:
+  initialSceneId: ajfl3a
+  initialPresetId: bj342s
+  scenes:
+    ajfl3a:
+      name: Scene 1
+      initialSectionId: l3kjfawelf
+      sections:
+        l3kjfawelf:
+          name: Section 1
+          lines:
+            - id: line1
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: Hello! Welcome to this visual novel.
+                  characterId: ajf34a
+            - id: line2
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: This is the second line of dialogue. Click to continue.
+                  characterId: ajf34a
+            - id: line3
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: Here we are on the third line. The dialogue system is working!
+                  characterId: ajf34a
+            - id: line4
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: This is the final line. Thank you for testing the dialogue feature.
+                  characterId: ajf34a

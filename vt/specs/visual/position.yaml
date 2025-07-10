@@ -1,0 +1,54 @@
+---
+title: "Sample"
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+presets:
+  bj342s:
+    name: Read
+    eventsMap:
+      LeftClick:
+        systemActions:
+          nextLine: {}
+
+assets:
+  visuals:
+    alkejf3la:
+      fileId: la3lka
+    8a3lkja:
+      fileId: a32kf3
+  positions:
+    iasdlf:
+      x: 500
+      y: 500
+    a32kf3:
+      x: 200
+      y: 200
+story:
+  initialPresetId: bj342s
+  initialSceneId: ajfl3a
+  scenes:
+    ajfl3a:
+      name: Scene 1
+      initialSectionId: l3kjfawelf
+      sections:
+        l3kjfawelf:
+          name: Section 1
+          lines:
+            - id: line1
+              presentation:
+                visual:
+                  items:
+                    - visualId: alkejf3la
+                      positionId: iasdlf
+            - id: line2
+              presentation:
+                visual:
+                  items:
+                    - visualId: alkejf3la
+                      positionId: iasdlf
+                    - visualId: 8a3lkja
+                      positionId: a32kf3

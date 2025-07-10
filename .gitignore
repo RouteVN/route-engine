@@ -1,3 +1,13 @@
 node_modules/
+dist/
 sample/vndata.json
 sample/renderer.js
+.DS_Store
+engine3/coverage
+vt/static/RouteEngine.js
+vt/static/RouteEngine.js.map
+vt/static/renderer.js
+.claude
+.rettangoli
+
+

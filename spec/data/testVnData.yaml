@@ -1,0 +1,310 @@
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: '#000000'
+
+presets:
+  bj342s:
+    name: Read
+    eventsMap:
+      RightClick:
+        actions:
+          setRuntimeVariable:
+            currentMenuTabId: options
+          goToSectionScene:
+            mode: menu
+            sceneId: 93jkal3
+            sectionId: asdkjl32
+      LeftClick:
+        actions:
+          nextLine: {}
+  3ijasdk3:
+    name: Menu
+    eventsMap:
+      RightClick:
+        actions:
+          clearCurrentMode:
+            newMode: read
+          preset:
+            presetId: bj342s
+
+variables:
+  runtime:
+    currentMenuTabId:
+      type: string
+      default: options
+
+ui:
+  screens:
+    dafkjkl3:
+      name: Menu Screen
+      elements:
+        - type: 'container'
+          x: 100
+          y: 100
+          children:
+            $switch:
+              'variables.runtime.currentMenuTabId == "options"':
+                - type: text
+                  text: "Options"
+                  style:
+                    fontSize: 64
+                    fill: "white"
+              'variables.runtime.currentMenuTabId == "load"':
+                - type: text
+                  text: "Load"
+                  style:
+                    fontSize: 64
+                    fill: "white"
+        - id: menu-container
+          direction: vertical
+          gap: 20
+          type: container
+          x: 100
+          y: 50%
+          children:
+            $map:
+              - text: Start
+                eventName: "Actions"
+                eventPayload:
+                  actions:
+                    goToSectionScene:
+                      sectionId: 3k3s9sd
+              - text: Load
+                eventName: "Actions"
+                eventPayload:
+                  actions:
+                    setRuntimeVariable:
+                      currentMenuTabId: load
+              - text: Options
+                eventName: "Actions"
+                eventPayload:
+                  actions:
+                    setRuntimeVariable:
+                      currentMenuTabId: options
+              - text: Exit
+                eventName: "Actions"
+                eventPayload:
+                  actions:
+                    goToSectionScene:
+                      sceneId: ajfl3a
+                      sectionId: l3kjfawelf
+            each(v,k):
+              id:
+                $eval: 'v.text'
+              type: text
+              text:
+                $eval: 'v.text'
+              height: 40
+              width: 200
+              eventName:
+                $eval: 'v.eventName'
+              eventPayload:
+                $eval: 'v.eventPayload'
+              x: 0
+              y: 0
+              style: 
+                fontSize: 48
+                fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+
+    fi3l:
+      name: Dialogue Screen
+      elements:
+        - id: dialogue-container
+          type: 'container'
+          x: 100
+          y: 100
+          children:
+            - id: dialogue-character-name
+              type: text
+              text:
+                $eval: 'dialogue.character.name'
+              style:
+                fontSize: 24
+                fill: "white"
+            - id: dialogue-text
+              type: 'text'
+              y: 100
+              text:
+                $eval: 'dialogue.text'
+              style:
+                fontSize: 24
+                fill: "white"
+    j3i8dk32:
+      name: Title Screen
+      elements:
+        - id: bg
+          type: sprite
+          url: file:lakjf3lka
+          x: 0
+          y: 0
+        - id: container
+          type: container
+          direction: horizontal
+          anchor: BottomCenter
+          x: 50%
+          y: 80%
+          children:
+            $map:
+              - text: Start
+                eventName: "Actions"
+                eventPayload:
+                  actions:
+                    goToSectionScene:
+                      sectionId: 3k3s9sd
+              - text: Load
+                eventName: "Actions"
+                eventPayload:
+                  actions:
+                    goToSectionScene:
+                      sceneId: 93jkal3
+                      sectionId: asdkjl32
+                    setRuntimeVariable:
+                      currentMenuTabId: load
+              - text: Options
+                eventName: "Actions"
+                eventPayload:
+                  actions:
+                    goToSectionScene:
+                      sceneId: 93jkal3
+                      sectionId: asdkjl32
+                    setRuntimeVariable:
+                      currentMenuTabId: options
+              - text: Exit
+                eventName: "Actions"
+                eventPayload: {}
+            each(v,k):
+              id:
+                $eval: 'v.text'
+              type: text
+              text:
+                $eval: 'v.text'
+              height: 40
+              width: 200
+              eventName:
+                $eval: 'v.eventName'
+              eventPayload:
+                $eval: 'v.eventPayload'
+              x: 0
+              y: 0
+              style: 
+                fontSize: 48
+                fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+
+assets:
+  characters:
+    ajf34a:
+      name: Character One
+
+  visuals:
+    alkejf3la:
+      fileId: 94lkj289
+
+  positions:
+    iasdlf:
+      x: 50%
+      y: 50%
+      xa: 50%
+      ya: 50%
+
+  animations:
+    3lkj289:
+      name: "Fade In"
+      properties:
+        alpha:
+          initialValue: 0
+          keyframes:
+            - duration: 1000
+              value: 1
+              easing: linear
+    8h3js:
+      name: "Fade Out"
+      properties:
+        alpha:
+          initialValue: 1
+          keyframes:
+            - duration: 1000
+              value: 0
+              easing: linear
+story:
+  initialPresetId: bj342s
+  initialSceneId: ajfl3a
+  scenes:
+    ajfl3a:
+      name: Scene 1
+      initialSectionId: l3kjfawelf
+      sections:
+        l3kjfawelf:
+          name: Section 1
+          lines:
+            - id: line1
+              autoNext:
+                delay: 1000
+                # preventManual: true
+              presentation:
+                # preset:
+                #   presetId: bj342s
+                visual:
+                  items:
+                    - id: 39kdfj231
+                      visualId: alkejf3la
+                      positionId: iasdlf
+                      animations:
+                        in: 3lkj289
+            - id: line2
+              autoNext:
+                delay: 1000
+                # preventManual: true
+              presentation:
+                visual:
+                  items:
+                    - id: 39kdfj231
+                      animations:
+                        out: 8h3js
+            - id: line3
+              presentation:
+                screen:
+                  id: 3k3k38
+                  screenId: j3i8dk32
+        3k3s9sd:
+          name: Section 2
+          lines:
+            - id: line1
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                  characterId: ajf34a
+            - id: line2
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: Two and a half sentences.
+                  characterId: ajf34a
+            - id: line3
+              presentation:
+                dialogue:
+                  dialogueBoxId: fi3l
+                  mode: dialogue
+                  text: "Three sentences. Three sentences. Three sentences."
+                  characterId: ajf34a
+    93jkal3:
+      name: Menu Scene
+      sections:
+        asdkjl32:
+          lines:
+            - id: line1
+              presentation:
+                screen:
+                  id: 34ik
+                  screenId: dafkjkl3
+                # preset:
+                #   presetId: 3ijasdk3

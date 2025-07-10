@@ -1,0 +1,69 @@
+---
+title: 'Sample'
+---
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: '#000000'
+
+presets:
+  bj342s:
+    name: Read
+    eventsMap:
+      LeftClick:
+        systemActions:
+          nextLine: {}
+
+
+assets:
+  images:
+    alkejf3la:
+      fileId: lakjf3lka
+    8a3lkja:
+      fileId: dmni32
+    3ljdasfjlk32:
+      fileId: 23jkfa893
+
+  animations:
+    3lkj289:
+      name: "Fade In"
+      properties:
+        alpha:
+          initialValue: 0
+          keyframes:
+            - duration: 700
+              value: 1
+              easing: linear
+    8h3js:
+      name: "Fade Out"
+      properties:
+        alpha:
+          initialValue: 1
+          keyframes:
+            - duration: 700
+              value: 0
+              easing: linear
+story:
+  initialPresetId: bj342s
+  initialSceneId: ajfl3a
+  scenes:
+    ajfl3a:
+      name: Scene 1
+      initialSectionId: l3kjfawelf
+      sections:
+        l3kjfawelf:
+          name: Section 1
+          lines:
+            - id: line1
+              presentation:
+                background:
+                  imageId: alkejf3la
+                  animations:
+                    in: 3lkj289
+            - id: line2
+              presentation:
+                background:
+                  animations:
+                    out: 8h3js
+

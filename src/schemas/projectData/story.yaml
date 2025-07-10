@@ -1,0 +1,24 @@
+$schema: http://json-schema.org/draft-07/schema#
+title: Story Schema
+description: Schema for the main story structure in visual novel engine
+type: object
+properties:
+  initialPresetId:
+    type: string
+    description: ID of the preset to start with for event handling
+
+  initialSceneId:
+    type: string
+    description: ID of the scene to start with
+
+  scenes:
+    type: object
+    description: Collection of scenes in the story
+    patternProperties:
+      "^[a-zA-Z0-9_-]+$":
+        $ref: "scene.yaml"
+    additionalProperties: false
+    minProperties: 1
+
+required: [initialPresetId, initialSceneId, scenes]
+additionalProperties: false

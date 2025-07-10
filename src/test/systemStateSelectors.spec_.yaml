@@ -1,0 +1,36 @@
+file: "./systemStateSelectors.js"
+suites:
+  - name: selectCurrentPointer
+    exportName: selectCurrentPointer
+    cases:
+      - name: basic
+        in:
+          - !include ./data/testSystemState.yaml
+        out:
+          presetId: "test-preset"
+          sectionId: "test-section"
+          lineId: "test-line"
+
+  - name: selectCurrentPresetId
+    exportName: selectCurrentPresetId
+    cases:
+      - name: basic
+        in:
+          - !include ./data/testSystemState.yaml
+        out: "test-preset"
+
+  - name: selectSkipMode
+    exportName: selectSkipMode
+    cases:
+      - name: basic
+        in:
+          - !include ./data/testSystemState.yaml
+        out: false
+
+  - name: selectAutoMode
+    exportName: selectAutoMode
+    cases:
+      - name: basic
+        in:
+          - !include ./data/testSystemState.yaml
+        out: false
