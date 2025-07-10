@@ -1,5 +1,5 @@
 {
-  "name": "route-engine",
+  "name": "route-engine-js",
   "version": "0.0.1",
   "type": "module",
   "main": "dist/RouteEngine.js",
@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "immer": "^10.1.1",
-    "jempl": "^0.1.0-rc1",
+    "jempl": "^0.1.0",
     "js-yaml": "^4.1.0",
     "puty": "^0.0.4-rc2",
     "route-graphics": "^0.0.1"
