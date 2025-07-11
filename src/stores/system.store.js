@@ -283,7 +283,7 @@ export const nextLine = ({ state, projectDataStore }) => {
 
   // Process system actions first, then render
   // Note: This will be called from RouteEngine's _processSystemActions
-  
+
   // Trigger render effect
   pendingEffects.push({
     name: "render",
@@ -377,8 +377,7 @@ export const goToSectionScene = ({ state, projectDataStore }, payload) => {
     // TODO: check if the next section is same as history next section
     if (
       sectionId ===
-      state.story.history.entries[state.story.historyEntryIndex + 1]
-        .sectionId
+      state.story.history.entries[state.story.historyEntryIndex + 1].sectionId
     ) {
       state.story.historyEntryIndex++;
     } else {
