@@ -597,7 +597,7 @@ assets:
     alkejf3la:
       fileId: 94lkj289
 
-  positions:
+  placements:
     iasdlf:
       x: 50%
       y: 50%
@@ -649,7 +649,7 @@ story:
                   items:
                     - id: 39kdfj231
                       visualId: alkejf3la
-                      positionId: iasdlf
+                      placementId: iasdlf
                       animations:
                         in: 3lkj289
             - id: line2

@@ -30,7 +30,7 @@ suites:
                   - animations:
                       in: 3lkj289
                     id: 39kdfj231
-                    positionId: iasdlf
+                    placementId: iasdlf
                     visualId: alkejf3la
 
   - name: selectPresets
@@ -98,7 +98,7 @@ suites:
           visuals:
             alkejf3la:
               fileId: 94lkj289
-          positions:
+          placements:
             iasdlf:
               x: 50%
               y: 50%

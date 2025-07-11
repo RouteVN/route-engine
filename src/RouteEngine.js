@@ -17,9 +17,9 @@ class RouteEngine {
   _constructPresentationState;
   _applySystemInstruction;
 
-  _eventCallback = () => { };
+  _eventCallback = () => {};
 
-  constructor() { }
+  constructor() {}
 
   /**
    * Initialize the engine with visual novel data and rendering functions
@@ -40,7 +40,7 @@ class RouteEngine {
   };
 
   offEvent = () => {
-    this._eventCallback = () => { };
+    this._eventCallback = () => {};
     return this;
   };
 
@@ -48,14 +48,13 @@ class RouteEngine {
    * Use this for sending events to the engine
    */
   handleEvent = (event) => {
-
     const { eventType, payload } = event;
     const currentPreset = this._systemStore.selectCurrentPreset();
     const eventsMap = currentPreset?.eventsMap || {};
     const systemActions = eventsMap[eventType]?.systemActions;
     const actionType = systemActions ? Object.keys(systemActions)[0] : null;
 
-    if (actionType && typeof this._systemStore[actionType] === 'function') {
+    if (actionType && typeof this._systemStore[actionType] === "function") {
       this._systemStore[actionType](payload);
     } else if (actionType) {
       console.error(`Method ${actionType} not found on system store`);
@@ -81,7 +80,7 @@ class RouteEngine {
     const currentPointer = this._systemStore.selectCurrentPointer();
     const currentLines = this._projectDataStore.selectSectionLines(
       currentPointer.sectionId,
-      currentPointer.lineId
+      currentPointer.lineId,
     );
 
     if (!currentLines.length) {
@@ -92,10 +91,12 @@ class RouteEngine {
     currentLines.forEach((line) => {
       if (line.system) {
         Object.keys(line.system).forEach((actionType) => {
-          if (typeof this._systemStore[actionType] === 'function') {
+          if (typeof this._systemStore[actionType] === "function") {
             this._systemStore[actionType](line.system[actionType]);
           } else {
-            console.error(`System action ${actionType} not found on system store`);
+            console.error(
+              `System action ${actionType} not found on system store`,
+            );
           }
         });
       }
@@ -109,19 +110,19 @@ class RouteEngine {
     const currentPointer = this._systemStore.selectCurrentPointer();
     const currentLines = this._projectDataStore.selectSectionLines(
       currentPointer.sectionId,
-      currentPointer.lineId
+      currentPointer.lineId,
     );
 
     if (!currentLines.length) {
       console.warn(
-        `No lines found for section: ${currentPointer.sectionId}, line: ${currentPointer.lineId}`
+        `No lines found for section: ${currentPointer.sectionId}, line: ${currentPointer.lineId}`,
       );
       return;
     }
 
     // Create presentation state
     const presentationActions = currentLines.map(
-      (line) => line.presentation || {}
+      (line) => line.presentation || {},
     );
 
     const presentationState =
@@ -135,7 +136,7 @@ class RouteEngine {
       ui: this._projectDataStore.selectUi(),
     });
 
-    console.log('🔍 RENDER DEBUG - renderState:', renderState);
+    console.log("🔍 RENDER DEBUG - renderState:", renderState);
 
     this._eventCallback({
       eventType: "render",

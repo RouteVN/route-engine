@@ -20,7 +20,7 @@ assets:
       fileId: la3lka
     8a3lkja:
       fileId: a32kf3
-  positions:
+  placements:
     iasdlf:
       x: 500
       y: 500
@@ -43,12 +43,12 @@ story:
                 visual:
                   items:
                     - visualId: alkejf3la
-                      positionId: iasdlf
+                      placementId: iasdlf
             - id: line2
               presentation:
                 visual:
                   items:
                     - visualId: alkejf3la
-                      positionId: iasdlf
+                      placementId: iasdlf
                     - visualId: 8a3lkja
-                      positionId: a32kf3
+                      placementId: a32kf3

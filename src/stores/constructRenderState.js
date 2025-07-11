@@ -39,8 +39,7 @@ export const addBackgrundOrCg = (
 ) => {
   if (presentationState.background) {
     if (presentationState.background.imageId) {
-      const background =
-        assets.images[presentationState.background.imageId];
+      const background = assets.images[presentationState.background.imageId];
       elements.push({
         id: "bg-cg",
         type: "sprite",
@@ -92,17 +91,17 @@ export const addCharacters = (
     const items = presentationState.character.items;
 
     for (const item of items) {
-      const { positionId, spriteParts } = item;
+      const { placementId, spriteParts } = item;
       const spritePartIds = spriteParts.map(({ spritePartId }) => spritePartId);
-      const position = assets.positions[positionId];
+      const placement = assets.placements[placementId];
       const characterContainer = {
         type: "container",
         id: `character-container-${item.id}`,
-        x: position.x,
-        y: position.y,
-        xa: position.xa,
-        ya: position.ya,
-        anchor: position.anchor,
+        x: placement.x,
+        y: placement.y,
+        xa: placement.xa,
+        ya: placement.ya,
+        anchor: placement.anchor,
         children: [],
       };
 
@@ -148,15 +147,15 @@ export const addVisuals = (
     for (const item of items) {
       if (item.visualId) {
         const visual = assets.visuals[item.visualId];
-        const position = assets.positions[item.positionId];
+        const placement = assets.placements[item.placementId];
         elements.push({
           id: `visual-${item.visualId}`,
           type: "sprite",
           url: resolveFile(visual.fileId),
-          x: position.x,
-          y: position.y,
-          xa: position.xa,
-          ya: position.ya,
+          x: placement.x,
+          y: placement.y,
+          xa: placement.xa,
+          ya: placement.ya,
         });
       }
 
@@ -219,8 +218,8 @@ export const addDialogue = (
             text: character?.name || "Unknown",
             style: {
               fontSize: 24,
-              fill: "white"
-            }
+              fill: "white",
+            },
           },
           {
             id: "dialogue-text",
@@ -229,11 +228,11 @@ export const addDialogue = (
             text: presentationState.dialogue.text,
             style: {
               fontSize: 24,
-              fill: "white"
-            }
-          }
-        ]
-      }
+              fill: "white",
+            },
+          },
+        ],
+      },
     ];
 
     for (const element of dialogueElements) {

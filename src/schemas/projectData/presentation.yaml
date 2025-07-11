@@ -74,9 +74,9 @@ properties:
             id:
               type: string
               description: Unique identifier for the character item
-            positionId:
+            placementId:
               type: string
-              description: ID of the position where character appears
+              description: ID of the placement where character appears
             spriteParts:
               type: array
               description: Array of sprite parts that make up the character
@@ -116,9 +116,9 @@ properties:
             visualId:
               type: string
               description: ID of the visual resource
-            positionId:
+            placementId:
               type: string
-              description: ID of the position where visual appears
+              description: ID of the placement where visual appears
             animations:
               type: object
               description: Animation effects for visual transitions
