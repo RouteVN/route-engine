@@ -35,7 +35,7 @@ variables:
       default: options
 
 ui:
-  screens:
+  layouts:
     dafkjkl3:
       name: Menu Screen
       elements:
@@ -269,9 +269,9 @@ story:
                         out: 8h3js
             - id: line3
               presentation:
-                screen:
+                layout:
                   id: 3k3k38
-                  screenId: j3i8dk32
+                  layoutId: j3i8dk32
         3k3s9sd:
           name: Section 2
           lines:
@@ -303,8 +303,8 @@ story:
           lines:
             - id: line1
               presentation:
-                screen:
+                layout:
                   id: 34ik
-                  screenId: dafkjkl3
+                  layoutId: dafkjkl3
                 # preset:
                 #   presetId: 3ijasdk3

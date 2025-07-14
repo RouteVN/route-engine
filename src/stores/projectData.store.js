@@ -18,8 +18,8 @@ export const selectUi = (state) => {
   return state.ui;
 };
 
-export const selectScreen = (state) => {
-  return state.screen;
+export const selectLayout = (state) => {
+  return state.layout;
 };
 
 export const selectInitialIds = (state) => {

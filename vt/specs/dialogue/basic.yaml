@@ -16,7 +16,7 @@ presets:
           nextLine: {}
 
 ui:
-  screens:
+  layouts:
     fi3l:
       name: Dialogue Screen
       elements:
