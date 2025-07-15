@@ -19,7 +19,7 @@ assets:
   images:
     alkejf3la:
       fileId: lakjf3lka
-  placements:
+  transforms:
     iasdlf:
       x: 100
       y: 300
@@ -68,7 +68,7 @@ story:
                 character:
                   items:
                     - id: "laj389d"
-                      placementId: iasdlf
+                      transformId: iasdlf
                       spriteParts:
                         - id: base
                           spritePartId: fk4jla893
@@ -81,7 +81,7 @@ story:
                 character:
                   items:
                     - id: "laj389d"
-                      placementId: a32kf3
+                      transformId: a32kf3
                       spriteParts:
                         - id: base
                           spritePartId: fk4jla893
