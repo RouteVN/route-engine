@@ -134,25 +134,25 @@ properties:
           additionalProperties: false
     additionalProperties: false
 
-  screen:
+  layout:
     type: object
-    description: Screen management and transitions
+    description: Layout management and transitions
     properties:
       id:
         type: string
-        description: Unique identifier for the screen instance
-      screenId:
+        description: Unique identifier for the layout instance
+      layoutId:
         type: string
-        description: ID of the screen resource
+        description: ID of the layout resource
     additionalProperties: false
 
   choices:
     type: object
     description: Choice system configuration
     properties:
-      choiceScreenId:
+      layoutId:
         type: string
-        description: ID of the choice screen UI element
+        description: ID of the choice layout UI element
       items:
         type: array
         description: Array of choice options

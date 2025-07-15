@@ -153,15 +153,15 @@ export const applyAnimation = (state, presentation) => {
 };
 
 /**
- * Applies screen from presentation to state
+ * Applies layout from presentation to state
  * @param {Object} state - The current state of the system
  * @param {Object} presentation - The presentation to apply
  */
-export const applyScreen = (state, presentation) => {
-  if (presentation.screen) {
-    state.screen = presentation.screen;
-  } else if (state.screen) {
-    delete state.screen;
+export const applyLayout = (state, presentation) => {
+  if (presentation.layout) {
+    state.layout = presentation.layout;
+  } else if (state.layout) {
+    delete state.layout;
   }
 };
 
@@ -204,7 +204,7 @@ export default [
   applyDialogue,
   applyCharacter,
   applyAnimation,
-  applyScreen,
+  applyLayout,
   applyChoices,
   applyCleanAll,
 ];

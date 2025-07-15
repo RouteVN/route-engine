@@ -195,8 +195,8 @@ export const addDialogue = (
   { presentationState, ui, assets, dialogueUIHidden },
 ) => {
   if (!dialogueUIHidden && presentationState.dialogue) {
-    const dialogueBoxScreen =
-      ui.screens[presentationState.dialogue.dialogueBoxId];
+    const dialogueBoxLayout =
+      ui.layouts[presentationState.dialogue.dialogueBoxId];
 
     let character;
     if (presentationState.dialogue.characterId) {
@@ -245,22 +245,22 @@ export const addDialogue = (
  *
  * @param {Object} params
  */
-export const addScreens = (
+export const addLayouts = (
   { elements, transitions },
   { presentationState, ui, variables },
 ) => {
-  if (presentationState.screen) {
-    const screen = ui.screens[presentationState.screen.screenId];
-    const wrappedTemplate = { elements: screen.elements };
+  if (presentationState.layout) {
+    const layout = ui.layouts[presentationState.layout.layoutId];
+    const wrappedTemplate = { elements: layout.elements };
     const result = parseAndRender(wrappedTemplate, { variables });
-    const screenElements = result?.elements;
+    const layoutElements = result?.elements;
 
-    if (Array.isArray(screenElements)) {
-      for (const element of screenElements) {
+    if (Array.isArray(layoutElements)) {
+      for (const element of layoutElements) {
         elements.push(element);
       }
-    } else if (screenElements) {
-      elements.push(screenElements);
+    } else if (layoutElements) {
+      elements.push(layoutElements);
     }
   }
 };
@@ -274,9 +274,9 @@ export const addChoices = (
   { presentationState, assets, ui },
 ) => {
   if (presentationState.choices) {
-    const screen = ui.screens[presentationState.choices.choiceScreenId];
+    const layout = ui.layouts[presentationState.choices.layoutId];
 
-    const wrappedTemplate = { elements: screen.elements };
+    const wrappedTemplate = { elements: layout.elements };
     const result = parseAndRender(wrappedTemplate, {
       choices: {
         items: presentationState.choices.items,
@@ -300,6 +300,6 @@ export default [
   addCharacters,
   addVisuals,
   addDialogue,
-  addScreens,
+  addLayouts,
   addChoices,
 ];
