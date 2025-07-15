@@ -10,7 +10,11 @@ export const selectPreset = (state, presetId) => {
   return state.presets[presetId];
 };
 
-export const selectassets = (state) => {
+export const selectScreen = (state) => {
+  return state.screen;
+};
+
+export const selectAssets = (state) => {
   return state.assets;
 };
 

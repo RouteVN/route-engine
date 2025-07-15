@@ -85,8 +85,8 @@ suites:
               actions:
                 nextLine: {}
 
-  - name: selectassets
-    exportName: selectassets
+  - name: selectAssets
+    exportName: selectAssets
     cases:
       - name: basic
         in:

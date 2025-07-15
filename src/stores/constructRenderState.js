@@ -195,47 +195,30 @@ export const addDialogue = (
   { presentationState, ui, assets, dialogueUIHidden },
 ) => {
   if (!dialogueUIHidden && presentationState.dialogue) {
-    const dialogueBoxLayout = ui.layouts[presentationState.dialogue.layoutId];
+    const layout = ui.layouts[presentationState.dialogue.layoutId];
 
     let character;
     if (presentationState.dialogue.characterId) {
       character = assets.characters[presentationState.dialogue.characterId];
     }
 
-    // For now, let's manually create the dialogue elements without jempl
-    // to test if the issue is with jempl or the template structure
-    const dialogueElements = [
-      {
-        id: "dialogue-container",
-        type: "container",
-        x: 100,
-        y: 100,
-        children: [
-          {
-            id: "dialogue-character-name",
-            type: "text",
-            text: character?.name || "Unknown",
-            style: {
-              fontSize: 24,
-              fill: "white",
-            },
-          },
-          {
-            id: "dialogue-text",
-            type: "text",
-            y: 100,
-            text: presentationState.dialogue.text,
-            style: {
-              fontSize: 24,
-              fill: "white",
-            },
-          },
-        ],
+    const wrappedTemplate = { elements: layout.elements };
+    const result = parseAndRender(wrappedTemplate, {
+      dialogue: {
+        character: {
+          name: character?.name || "",
+        },
+        text: presentationState.dialogue.text,
       },
-    ];
+    });
+    const dialogueElements = result?.elements;
 
-    for (const element of dialogueElements) {
-      elements.push(element);
+    if (Array.isArray(dialogueElements)) {
+      for (const element of dialogueElements) {
+        elements.push(element);
+      }
+    } else if (dialogueElements) {
+      elements.push(dialogueElements);
     }
   }
 };

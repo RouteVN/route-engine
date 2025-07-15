@@ -132,11 +132,10 @@ class RouteEngine {
       presentationState: presentationState,
       screen: this._projectDataStore.selectScreen(),
       resolveFile: (f) => `file:${f}`,
-      assets: this._projectDataStore.selectassets(),
+      assets: this._projectDataStore.selectAssets(),
       ui: this._projectDataStore.selectUi(),
     });
 
-    console.log("🔍 RENDER DEBUG - renderState:", renderState);
 
     this._eventCallback({
       eventType: "render",

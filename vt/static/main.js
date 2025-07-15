@@ -97,7 +97,6 @@ const init = async () => {
     height: 1080,
     assetBufferMap,
     eventHandler: (eventType, payload) => {
-      console.log('2d renderer eventHandler', eventType, payload)
       engine.handleEvent({ eventType, payload });
       // engine.handleEvent(event, payload);
       // console.log('eventHandler', event, payload)
@@ -156,10 +155,6 @@ const init = async () => {
   // };
 
   engine.onEvent(({ eventType, payload }) => {
-    console.log({
-      eventType,
-      payload,
-    });
     if (eventType === "render") {
       app.render(payload);
     }

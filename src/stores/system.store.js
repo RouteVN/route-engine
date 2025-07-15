@@ -303,33 +303,20 @@ export const prevLine = ({ state, projectDataStore }) => {
   const prevLine = lines[currentLineIndex - 1];
 
   if (!prevLine) {
-    console.log({
-      pointerMode,
-      "state.story.historyEntryIndex": state.story.historyEntryIndex,
-    });
     if (pointerMode === "history") {
       if (state.story.historyEntryIndex > 0) {
         state.story.historyEntryIndex--;
       } else {
         return;
       }
-      console.log(
-        "state.story.historyEntryIndex",
-        state.story.historyEntryIndex,
-      );
       state.story.pointers["history"].sectionId =
         state.story.history.entries[state.story.historyEntryIndex].sectionId;
       const prevSectionLines = vnDataSelectors.selectSectionLines(
         vnData,
         systemState.story.pointers["history"].sectionId,
       );
-      console.log("prevSectionLines", prevSectionLines);
       systemState.story.pointers["history"].lineId =
         prevSectionLines[prevSectionLines.length - 1].id;
-      console.log({
-        lineId: systemState.story.pointers["history"].lineId,
-        sectionId: systemState.story.pointers["history"].sectionId,
-      });
 
       systemState.story.lastLineAction = "prevLine";
 
@@ -549,7 +536,6 @@ export const saveVnData = ({ systemState, effects, payload }) => {
 
 export const loadVnData = ({ systemState, effects, payload }) => {
   const { slotIndex } = payload;
-  console.log("systemState.saveData", systemState.saveData);
   const saveData = systemStateSelectors.selectSaveData(systemState);
   const matchedSlotSaveData = saveData.filter(
     (save) => save.slotIndex === slotIndex,
