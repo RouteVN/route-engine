@@ -6,10 +6,11 @@ import RouteGraphics, {
   ContainerRendererPlugin,
   TextRevealingRendererPlugin,
   GraphicsRendererPlugin,
-  SoundPlugin,
+  AudioPlugin,
   SliderRendererPlugin,
   KeyframeTransitionPlugin,
-} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.1/+esm";
+  createAssetBufferManager,
+} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.2-rc2/+esm";
 
 // Convert YAML to JSON
 const jsonData = yaml.load(window.yamlContent);
@@ -41,8 +42,16 @@ const init = async () => {
       type: "image/png",
     },
     "file:94lkj289": {
-      url: '/public/logo1.png',
-      type: 'image/png',
+      url: "/public/logo1.png",
+      type: "image/png",
+    },
+    "file:3ka3s": {
+      url: "/public/bgm-1.mp3",
+      type: "audio/mpeg",
+    },
+    "file:xk393": {
+      url: "/public/bgm-2.mp3",
+      type: "audio/mpeg",
     },
     // 'file:horizontal_hover_bar': {
     //   url: '/public/horizontal_hover_bar.png',
@@ -55,7 +64,7 @@ const init = async () => {
     // 'file:horizontal_idle_bar': {
     //   url: '/public/horizontal_idle_bar.png',
     //   type: 'image/png'
-    // }, 
+    // },
     // 'file:horizontal_idle_thumb': {
     //   url: '/public/horizontal_idle_thumb.png',
     //   type: 'image/png'
@@ -76,20 +85,22 @@ const init = async () => {
     //   url: '/public/vertical_idle_thumb.png',
     //   type: 'image/png'
     // },
-
   };
 
-  const assetBufferMap = {};
-  await Promise.all(
-    Object.entries(assets).map(async ([key, value]) => {
-      const resp = await fetch(value.url);
-      const buffer = await resp.arrayBuffer();
-      assetBufferMap[key] = {
-        buffer,
-        type: value.type,
-      };
-    })
-  );
+  // const assetBufferMap = {};
+  // await Promise.all(
+  //   Object.entries(assets).map(async ([key, value]) => {
+  //     const resp = await fetch(value.url);
+  //     const buffer = await resp.arrayBuffer();
+  //     assetBufferMap[key] = {
+  //       buffer,
+  //       type: value.type,
+  //     };
+  //   }),
+  // );
+  const assetBufferManager = createAssetBufferManager();
+  await assetBufferManager.load(assets);
+  const assetBufferMap = assetBufferManager.getBufferMap();
 
   const app = new RouteGraphics();
   await app.init({
@@ -108,38 +119,13 @@ const init = async () => {
       new ContainerRendererPlugin(),
       new TextRevealingRendererPlugin(),
       new GraphicsRendererPlugin(),
-      new SoundPlugin(),
+      new AudioPlugin(),
       new SliderRendererPlugin(),
       new KeyframeTransitionPlugin(),
     ],
   });
+  await app.loadAssets(assetBufferMap);
 
-  await app.loadAssets([
-    "file:lakjf3lka",
-    "file:dmni32",
-    "file:23jkfa893",
-    "file:la3lka",
-    "file:a32kf3",
-    "file:x342fga",
-    "file:94lkj289",
-    // "file:horizontal_hover_bar",
-    // "file:horizontal_hover_thumb",
-    // "file:horizontal_idle_bar",
-    // "file:horizontal_idle_thumb",
-    // "file:vertical_idle_bar",
-    // "file:vertical_idle_thumb",
-    // "file:vertical_hover_bar",
-    // "file:vertical_hover_thumb",
-  ]);
-
-  await app.loadSoundAssets([
-    // "/public/bgm-1.mp3",
-    // "/public/bgm-2.mp3",
-    // "/public/bgm-3.mp3",
-    // "/public/sfx-1.ogg",
-    // "/public/sfx-2.ogg",
-    // "/public/sfx-3.ogg",
-  ]);
   document.getElementById("canvas").appendChild(app.canvas);
   document.getElementById("canvas").addEventListener("contextmenu", (e) => {
     e.preventDefault();

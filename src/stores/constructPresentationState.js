@@ -30,6 +30,11 @@ export const applySfx = (state, presentation) => {
  */
 export const applyBgm = (state, presentation) => {
   if (presentation.bgm) {
+    if (!presentation.bgm.audioId) {
+      state.bgm = undefined;
+      return;
+    }
+
     state.bgm = {
       ...presentation.bgm,
       loop: presentation.bgm.loop || presentation.bgm.loop === undefined,
