@@ -58,28 +58,28 @@ story:
             - id: line1
               presentation:
                 dialogue:
-                  dialogueBoxId: fi3l
+                  layoutId: fi3l
                   mode: dialogue
                   text: Hello! Welcome to this visual novel.
                   characterId: ajf34a
             - id: line2
               presentation:
                 dialogue:
-                  dialogueBoxId: fi3l
+                  layoutId: fi3l
                   mode: dialogue
                   text: This is the second line of dialogue. Click to continue.
                   characterId: ajf34a
             - id: line3
               presentation:
                 dialogue:
-                  dialogueBoxId: fi3l
+                  layoutId: fi3l
                   mode: dialogue
                   text: Here we are on the third line. The dialogue system is working!
                   characterId: ajf34a
             - id: line4
               presentation:
                 dialogue:
-                  dialogueBoxId: fi3l
+                  layoutId: fi3l
                   mode: dialogue
                   text: This is the final line. Thank you for testing the dialogue feature.
                   characterId: ajf34a
