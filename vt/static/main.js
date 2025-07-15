@@ -12,7 +12,6 @@ import RouteGraphics, {
   createAssetBufferManager,
 } from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.2-rc2/+esm";
 
-// Convert YAML to JSON
 const jsonData = yaml.load(window.yamlContent);
 
 const init = async () => {
@@ -87,17 +86,6 @@ const init = async () => {
     // },
   };
 
-  // const assetBufferMap = {};
-  // await Promise.all(
-  //   Object.entries(assets).map(async ([key, value]) => {
-  //     const resp = await fetch(value.url);
-  //     const buffer = await resp.arrayBuffer();
-  //     assetBufferMap[key] = {
-  //       buffer,
-  //       type: value.type,
-  //     };
-  //   }),
-  // );
   const assetBufferManager = createAssetBufferManager();
   await assetBufferManager.load(assets);
   const assetBufferMap = assetBufferManager.getBufferMap();
