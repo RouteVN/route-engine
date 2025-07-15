@@ -54,7 +54,7 @@ story:
             - id: line1
               presentation:
                 choices:
-                  choiceLayoutId: fi3l
+                  layoutId: fi3l
                   items:
                     - text: Choice 1 a
                     - text: Choice 2 b

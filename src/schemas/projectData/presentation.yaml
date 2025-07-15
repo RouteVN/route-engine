@@ -150,7 +150,7 @@ properties:
     type: object
     description: Choice system configuration
     properties:
-      choiceLayoutId:
+      layoutId:
         type: string
         description: ID of the choice layout UI element
       items:

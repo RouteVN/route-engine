@@ -274,7 +274,7 @@ export const addChoices = (
   { presentationState, assets, ui },
 ) => {
   if (presentationState.choices) {
-    const layout = ui.layouts[presentationState.choices.choiceLayoutId];
+    const layout = ui.layouts[presentationState.choices.layoutId];
 
     const wrappedTemplate = { elements: layout.elements };
     const result = parseAndRender(wrappedTemplate, {
