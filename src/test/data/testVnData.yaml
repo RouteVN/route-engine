@@ -278,21 +278,21 @@ story:
             - id: line1
               presentation:
                 dialogue:
-                  dialogueBoxId: fi3l
+                  layoutId: fi3l
                   mode: dialogue
                   text: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
                   characterId: ajf34a
             - id: line2
               presentation:
                 dialogue:
-                  dialogueBoxId: fi3l
+                  layoutId: fi3l
                   mode: dialogue
                   text: Two and a half sentences.
                   characterId: ajf34a
             - id: line3
               presentation:
                 dialogue:
-                  dialogueBoxId: fi3l
+                  layoutId: fi3l
                   mode: dialogue
                   text: "Three sentences. Three sentences. Three sentences."
                   characterId: ajf34a

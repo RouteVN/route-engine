@@ -195,8 +195,7 @@ export const addDialogue = (
   { presentationState, ui, assets, dialogueUIHidden },
 ) => {
   if (!dialogueUIHidden && presentationState.dialogue) {
-    const dialogueBoxLayout =
-      ui.layouts[presentationState.dialogue.dialogueBoxId];
+    const dialogueBoxLayout = ui.layouts[presentationState.dialogue.layoutId];
 
     let character;
     if (presentationState.dialogue.characterId) {

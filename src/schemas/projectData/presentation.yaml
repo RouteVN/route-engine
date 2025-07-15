@@ -27,7 +27,7 @@ properties:
     type: object
     description: Dialogue display configuration
     properties:
-      dialogueBoxId:
+      layoutId:
         type: string
         description: ID of the dialogue box UI element
       mode:
