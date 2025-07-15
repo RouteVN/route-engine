@@ -65,9 +65,9 @@ properties:
         additionalProperties: false
     additionalProperties: false
 
-  placements:
+  transforms:
     type: object
-    description: Placement configurations for placing elements
+    description: Transform configurations for positioning elements
     patternProperties:
       "^[a-zA-Z0-9_-]+$":
         type: object

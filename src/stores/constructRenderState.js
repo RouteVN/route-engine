@@ -91,17 +91,17 @@ export const addCharacters = (
     const items = presentationState.character.items;
 
     for (const item of items) {
-      const { placementId, spriteParts } = item;
+      const { transformId, spriteParts } = item;
       const spritePartIds = spriteParts.map(({ spritePartId }) => spritePartId);
-      const placement = assets.placements[placementId];
+      const transform = assets.transforms[transformId];
       const characterContainer = {
         type: "container",
         id: `character-container-${item.id}`,
-        x: placement.x,
-        y: placement.y,
-        xa: placement.xa,
-        ya: placement.ya,
-        anchor: placement.anchor,
+        x: transform.x,
+        y: transform.y,
+        xa: transform.xa,
+        ya: transform.ya,
+        anchor: transform.anchor,
         children: [],
       };
 
@@ -147,15 +147,15 @@ export const addVisuals = (
     for (const item of items) {
       if (item.visualId) {
         const visual = assets.visuals[item.visualId];
-        const placement = assets.placements[item.placementId];
+        const transform = assets.transforms[item.transformId];
         elements.push({
           id: `visual-${item.visualId}`,
           type: "sprite",
           url: resolveFile(visual.fileId),
-          x: placement.x,
-          y: placement.y,
-          xa: placement.xa,
-          ya: placement.ya,
+          x: transform.x,
+          y: transform.y,
+          xa: transform.xa,
+          ya: transform.ya,
         });
       }
 
