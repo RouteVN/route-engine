@@ -276,6 +276,20 @@ export const addChoices = (
   }
 };
 
+export const addBgm = (
+  { elements },
+  { presentationState, assets, resolveFile },
+) => {
+  if (presentationState.bgm) {
+    const audio = assets.audios[presentationState.bgm.audioId];
+    elements.push({
+      id: "bgm",
+      type: "audio",
+      url: resolveFile(audio.fileId),
+    });
+  }
+};
+
 export default [
   generateScreenBackgroundElement,
   addBackgrundOrCg,
@@ -284,4 +298,5 @@ export default [
   addDialogue,
   addLayouts,
   addChoices,
+  addBgm,
 ];

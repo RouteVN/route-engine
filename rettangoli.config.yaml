@@ -36,3 +36,5 @@ vt:
           files: "complete"
         - title: "Layout"
           files: "layout"
+        - title: "BGM"
+          files: "bgm"

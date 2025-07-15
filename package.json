@@ -1,6 +1,6 @@
 {
   "name": "route-engine-js",
-  "version": "0.0.2-rc3",
+  "version": "0.0.2-rc4",
   "type": "module",
   "main": "dist/RouteEngine.js",
   "exports": {
@@ -23,8 +23,7 @@
     "immer": "^10.1.1",
     "jempl": "^0.1.0",
     "js-yaml": "^4.1.0",
-    "puty": "^0.0.4-rc2",
-    "route-graphics": "^0.0.1"
+    "puty": "^0.0.4-rc2"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^3.2.4",

@@ -14,6 +14,13 @@ presets:
         systemActions:
           nextLine: {}
 
+assets:
+  audios:
+    dk392:
+      fileId: 3ka3s
+    93k22:
+      fileId: xk393
+
 ui:
   layouts:
     fi3l:
@@ -24,12 +31,6 @@ ui:
           x: 100
           y: 100
           children:
-            - id: dialogue-character-name
-              type: text
-              text: "${dialogue.character.name}"
-              style:
-                fontSize: 24
-                fill: "white"
             - id: dialogue-text
               type: "text"
               y: 100
@@ -38,14 +39,9 @@ ui:
                 fontSize: 24
                 fill: "white"
 
-assets:
-  characters:
-    ajf34a:
-      name: Character A
-
 story:
-  initialSceneId: ajfl3a
   initialPresetId: bj342s
+  initialSceneId: ajfl3a
   scenes:
     ajfl3a:
       name: Scene 1
@@ -56,26 +52,33 @@ story:
           lines:
             - id: line1
               presentation:
+                bgm:
+                  audioId: dk392
                 dialogue:
                   layoutId: fi3l
-                  mode: dialogue
-                  text: Hello! Welcome to this visual novel.
-                  characterId: ajf34a
+                  text: 111111111111111
+
             - id: line2
               presentation:
+                bgm:
+                  audioId: 93k22
                 dialogue:
-                  mode: dialogue
-                  text: This is the second line of dialogue. Click to continue.
-                  characterId: ajf34a
+                  layoutId: fi3l
+                  text: 2222222222222222222
+
             - id: line3
               presentation:
                 dialogue:
-                  mode: dialogue
-                  text: Here we are on the third line. The dialogue system is working!
-                  characterId: ajf34a
+                  layoutId: fi3l
+                  text: 33333333333333333
             - id: line4
               presentation:
                 dialogue:
-                  mode: dialogue
-                  text: This is the final line. Thank you for testing the dialogue feature.
-                  characterId: ajf34a
+                  layoutId: fi3l
+                  text: 4444444444444444444
+            - id: line5
+              presentation:
+                bgm: {}
+                dialogue:
+                  layoutId: fi3l
+                  text: 5555555555555

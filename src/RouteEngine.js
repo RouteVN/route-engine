@@ -136,7 +136,6 @@ class RouteEngine {
       ui: this._projectDataStore.selectUi(),
     });
 
-
     this._eventCallback({
       eventType: "render",
       payload: renderState,
