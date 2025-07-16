@@ -1,0 +1,83 @@
+---
+title: "Sample"
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+presets:
+  bj342s:
+    name: Read
+    eventsMap:
+      LeftClick:
+        systemActions:
+          nextLine: {}
+
+assets:
+  audios:
+    dk392:
+      fileId: xj323
+    93k22:
+      fileId: 39csl
+
+ui:
+  layouts:
+    fi3l:
+      name: Dialogue Screen
+      elements:
+        - id: dialogue-container
+          type: "container"
+          x: 100
+          y: 100
+          children:
+            - id: dialogue-text
+              type: "text"
+              y: 100
+              text: "${dialogue.text}"
+              style:
+                fontSize: 24
+                fill: "white"
+
+story:
+  initialPresetId: bj342s
+  initialSceneId: ajfl3a
+  scenes:
+    ajfl3a:
+      name: Scene 1
+      initialSectionId: l3kjfawelf
+      sections:
+        l3kjfawelf:
+          name: Section 1
+          lines:
+            - id: line0
+              presentation:
+                dialogue:
+                  layoutId: fi3l
+                  text: Click to play sfx
+
+            - id: line1
+              presentation:
+                sfx:
+                  items:
+                    - id: sfx-1
+                      audioId: dk392
+                dialogue:
+                  layoutId: fi3l
+                  text: Playing multiple SFX sounds
+
+            - id: line2
+              presentation:
+                sfx:
+                  items:
+                    - id: sfx-2
+                      audioId: 93k22
+                dialogue:
+                  layoutId: fi3l
+                  text: Playing single SFX sound
+
+            - id: line3
+              presentation:
+                dialogue:
+                  layoutId: fi3l
+                  text: No SFX playing

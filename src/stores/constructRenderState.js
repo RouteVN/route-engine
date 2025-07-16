@@ -290,6 +290,23 @@ export const addBgm = (
   }
 };
 
+export const addSfx = (
+  { elements },
+  { presentationState, assets, resolveFile },
+) => {
+  if (presentationState.sfx) {
+    const items = presentationState.sfx.items;
+    for (const item of items) {
+      const audio = assets.audios[item.audioId];
+      elements.push({
+        id: item.id,
+        type: "audio",
+        url: resolveFile(audio.fileId),
+      });
+    }
+  }
+};
+
 export default [
   generateScreenBackgroundElement,
   addBackgrundOrCg,
@@ -299,4 +316,5 @@ export default [
   addLayouts,
   addChoices,
   addBgm,
+  addSfx,
 ];

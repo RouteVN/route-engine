@@ -52,38 +52,14 @@ const init = async () => {
       url: "/public/bgm-2.mp3",
       type: "audio/mpeg",
     },
-    // 'file:horizontal_hover_bar': {
-    //   url: '/public/horizontal_hover_bar.png',
-    //   type: 'image/png'
-    // },
-    // 'file:horizontal_hover_thumb': {
-    //   url: '/public/horizontal_hover_thumb.png',
-    //   type: 'image/png'
-    // },
-    // 'file:horizontal_idle_bar': {
-    //   url: '/public/horizontal_idle_bar.png',
-    //   type: 'image/png'
-    // },
-    // 'file:horizontal_idle_thumb': {
-    //   url: '/public/horizontal_idle_thumb.png',
-    //   type: 'image/png'
-    // },
-    // 'file:vertical_hover_bar': {
-    //   url: '/public/vertical_hover_bar.png',
-    //   type: 'image/png'
-    // },
-    // 'file:vertical_hover_thumb': {
-    //   url: '/public/vertical_hover_thumb.png',
-    //   type: 'image/png'
-    // },
-    // 'file:vertical_idle_bar': {
-    //   url: '/public/vertical_idle_bar.png',
-    //   type: 'image/png'
-    // },
-    // 'file:vertical_idle_thumb': {
-    //   url: '/public/vertical_idle_thumb.png',
-    //   type: 'image/png'
-    // },
+    "file:xj323": {
+      url: "/public/sfx-1.mp3",
+      type: "audio/mpeg",
+    },
+    "file:39csl": {
+      url: "/public/sfx-2.wav",
+      type: "audio/wav",
+    },
   };
 
   const assetBufferManager = createAssetBufferManager();
