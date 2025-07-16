@@ -38,3 +38,5 @@ vt:
           files: "layout"
         - title: "BGM"
           files: "bgm"
+        - title: "SFX"
+          files: "sfx"
