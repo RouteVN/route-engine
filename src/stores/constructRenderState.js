@@ -191,35 +191,45 @@ export const addVisuals = (
  * @param {Object} params
  */
 export const addDialogue = (
-  { elements, transitions },
+  { elements },
   { presentationState, ui, assets, dialogueUIHidden },
 ) => {
-  if (!dialogueUIHidden && presentationState.dialogue) {
-    const layout = ui.layouts[presentationState.dialogue.layoutId];
+  if (!presentationState.dialogue) {
+    return;
+  }
 
-    let character;
-    if (presentationState.dialogue.characterId) {
-      character = assets.characters[presentationState.dialogue.characterId];
-    }
+  if (dialogueUIHidden) {
+    return;
+  }
 
-    const wrappedTemplate = { elements: layout.elements };
-    const result = parseAndRender(wrappedTemplate, {
-      dialogue: {
-        character: {
-          name: character?.name || "",
-        },
-        text: presentationState.dialogue.text,
+  const layout = ui.layouts[presentationState.dialogue.layoutId];
+
+  if (!layout) {
+    return;
+  }
+
+  let character;
+  if (presentationState.dialogue.characterId) {
+    character = assets.characters[presentationState.dialogue.characterId];
+  }
+
+  const wrappedTemplate = { elements: layout.elements };
+  const result = parseAndRender(wrappedTemplate, {
+    dialogue: {
+      character: {
+        name: character?.name || "",
       },
-    });
-    const dialogueElements = result?.elements;
+      text: presentationState.dialogue.text,
+    },
+  });
+  const dialogueElements = result?.elements;
 
-    if (Array.isArray(dialogueElements)) {
-      for (const element of dialogueElements) {
-        elements.push(element);
-      }
-    } else if (dialogueElements) {
-      elements.push(dialogueElements);
+  if (Array.isArray(dialogueElements)) {
+    for (const element of dialogueElements) {
+      elements.push(element);
     }
+  } else if (dialogueElements) {
+    elements.push(dialogueElements);
   }
 };
 
