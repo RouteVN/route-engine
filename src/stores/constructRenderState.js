@@ -11,17 +11,14 @@ export const createInitialState = () => {
  * @param {Object} params
  * @returns
  */
-export const generateScreenBackgroundElement = (
-  { elements, transitions },
-  { screen },
-) => {
+export const generateScreenBackgroundElement = ({ elements }, { screen }) => {
   elements.push({
     id: "bg-screen",
-    type: "graphics",
-    x1: 0,
-    x2: screen.width,
-    y1: 0,
-    y2: screen.height,
+    type: "rect",
+    x: 0,
+    width: screen.width,
+    y: 0,
+    height: screen.height,
     fill: screen.backgroundColor,
     clickEventName: "LeftClick",
     rightClickEventName: "RightClick",

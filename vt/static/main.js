@@ -5,12 +5,12 @@ import RouteGraphics, {
   TextRendererPlugin,
   ContainerRendererPlugin,
   TextRevealingRendererPlugin,
-  GraphicsRendererPlugin,
+  RectRendererPlugin,
   AudioPlugin,
   SliderRendererPlugin,
   KeyframeTransitionPlugin,
   createAssetBufferManager,
-} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.2-rc2/+esm";
+} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.2-rc3/+esm";
 
 const jsonData = yaml.load(window.yamlContent);
 
@@ -82,7 +82,7 @@ const init = async () => {
       new TextRendererPlugin(),
       new ContainerRendererPlugin(),
       new TextRevealingRendererPlugin(),
-      new GraphicsRendererPlugin(),
+      new RectRendererPlugin(),
       new AudioPlugin(),
       new SliderRendererPlugin(),
       new KeyframeTransitionPlugin(),
