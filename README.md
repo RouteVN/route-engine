@@ -1,6 +1,6 @@
 # Route Engine
 
-A Visual Novels built in JavaScript
+A Visual Novel engine built in JavaScript
 
 ## Overview
 
@@ -26,4 +26,3 @@ spec/                       # Test specifications
 vt/                         # Visual testing files
 docs/                       # Documentation
 ```
-
