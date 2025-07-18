@@ -1,11 +1,10 @@
 ---
-title: 'Sample'
+title: "Sample"
 ---
-
 screen:
   width: 1920
   height: 1080
-  backgroundColor: '#000000'
+  backgroundColor: "#000000"
 
 presets:
   bj342s:
@@ -23,19 +22,13 @@ assets:
     iasdlf:
       x: 100
       y: 300
-      xa: 0
-      ya: 0
-      anchor: BottomCenter
     a32kf3:
       x: 500
       y: 300
-      xa: 0
-      ya: 0
-      anchor: BottomCenter
   characters:
     alkjf3ia:
       variables:
-        name: 'Abc'
+        name: "Abc"
       spriteParts:
         fk4jla893:
           fileId: la3lka

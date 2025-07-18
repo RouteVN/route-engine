@@ -247,7 +247,7 @@ ui:
           gap: 20
           type: container
           x: 100
-          y: 50%
+          y: 540
           children:
             - id: "Start"
               type: text
@@ -500,8 +500,8 @@ ui:
           type: container
           direction: horizontal
           anchor: BottomCenter
-          x: 50%
-          y: 80%
+          x: 960
+          y: 540
           children:
             - id: "Start"
               type: text
@@ -599,10 +599,10 @@ assets:
 
   transforms:
     iasdlf:
-      x: 50%
-      y: 50%
-      xa: 50%
-      ya: 50%
+      x: 960
+      y: 540
+      anchorX: 0.5
+      anchorY: 0.5
 
   animations:
     3lkj289:

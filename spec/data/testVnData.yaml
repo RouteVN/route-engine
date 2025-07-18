@@ -1,7 +1,7 @@
 screen:
   width: 1920
   height: 1080
-  backgroundColor: '#000000'
+  backgroundColor: "#000000"
 
 presets:
   bj342s:
@@ -39,7 +39,7 @@ ui:
     dafkjkl3:
       name: Menu Screen
       elements:
-        - type: 'container'
+        - type: "container"
           x: 100
           y: 100
           children:
@@ -61,7 +61,7 @@ ui:
           gap: 20
           type: container
           x: 100
-          y: 50%
+          y: 540
           children:
             $map:
               - text: Start
@@ -91,19 +91,19 @@ ui:
                       sectionId: l3kjfawelf
             each(v,k):
               id:
-                $eval: 'v.text'
+                $eval: "v.text"
               type: text
               text:
-                $eval: 'v.text'
+                $eval: "v.text"
               height: 40
               width: 200
               eventName:
-                $eval: 'v.eventName'
+                $eval: "v.eventName"
               eventPayload:
-                $eval: 'v.eventPayload'
+                $eval: "v.eventPayload"
               x: 0
               y: 0
-              style: 
+              style:
                 fontSize: 48
                 fill: "white"
               hoverStyle:
@@ -114,22 +114,22 @@ ui:
       name: Dialogue Screen
       elements:
         - id: dialogue-container
-          type: 'container'
+          type: "container"
           x: 100
           y: 100
           children:
             - id: dialogue-character-name
               type: text
               text:
-                $eval: 'dialogue.character.name'
+                $eval: "dialogue.character.name"
               style:
                 fontSize: 24
                 fill: "white"
             - id: dialogue-text
-              type: 'text'
+              type: "text"
               y: 100
               text:
-                $eval: 'dialogue.text'
+                $eval: "dialogue.text"
               style:
                 fontSize: 24
                 fill: "white"
@@ -145,8 +145,8 @@ ui:
           type: container
           direction: horizontal
           anchor: BottomCenter
-          x: 50%
-          y: 80%
+          x: 960
+          y: 540
           children:
             $map:
               - text: Start
@@ -178,19 +178,19 @@ ui:
                 eventPayload: {}
             each(v,k):
               id:
-                $eval: 'v.text'
+                $eval: "v.text"
               type: text
               text:
-                $eval: 'v.text'
+                $eval: "v.text"
               height: 40
               width: 200
               eventName:
-                $eval: 'v.eventName'
+                $eval: "v.eventName"
               eventPayload:
-                $eval: 'v.eventPayload'
+                $eval: "v.eventPayload"
               x: 0
               y: 0
-              style: 
+              style:
                 fontSize: 48
                 fill: "white"
               hoverStyle:
@@ -208,10 +208,10 @@ assets:
 
   transforms:
     iasdlf:
-      x: 50%
-      y: 50%
-      xa: 50%
-      ya: 50%
+      x: 960
+      y: 540
+      anchorX: 0.5
+      anchorY: 0.5
 
   animations:
     3lkj289:

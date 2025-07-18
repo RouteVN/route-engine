@@ -96,9 +96,11 @@ export const addCharacters = (
         id: `character-container-${item.id}`,
         x: transform.x,
         y: transform.y,
-        xa: transform.xa,
-        ya: transform.ya,
-        anchor: transform.anchor,
+        anchorX: transform.anchorX,
+        anchorY: transform.anchorY,
+        rotation: transform.rotation,
+        scaleX: transform.scaleX,
+        scaleY: transform.scaleY,
         children: [],
       };
 
@@ -151,8 +153,11 @@ export const addVisuals = (
           url: resolveFile(visual.fileId),
           x: transform.x,
           y: transform.y,
-          xa: transform.xa,
-          ya: transform.ya,
+          anchorX: transform.anchorX,
+          anchorY: transform.anchorY,
+          rotation: transform.rotation,
+          scaleX: transform.scaleX,
+          scaleY: transform.scaleY,
         });
       }
 
@@ -223,10 +228,10 @@ export const addDialogue = (
 
   if (Array.isArray(dialogueElements)) {
     for (const element of dialogueElements) {
-      elements.push(element);
+      elements.push(structuredClone(element));
     }
   } else if (dialogueElements) {
-    elements.push(dialogueElements);
+    elements.push(structuredClone(dialogueElements));
   }
 };
 
@@ -275,10 +280,10 @@ export const addChoices = (
 
     if (Array.isArray(choiceElements)) {
       for (const element of choiceElements) {
-        elements.push(element);
+        elements.push(structuredClone(element));
       }
     } else if (choiceElements) {
-      elements.push(choiceElements);
+      elements.push(structuredClone(choiceElements));
     }
   }
 };
