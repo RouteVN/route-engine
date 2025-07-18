@@ -1,11 +1,10 @@
 ---
-title: 'Sample'
+title: "Sample"
 ---
-
 screen:
   width: 1920
   height: 1080
-  backgroundColor: '#000000'
+  backgroundColor: "#000000"
 
 presets:
   bj342s:
@@ -27,32 +26,33 @@ ui:
           y: 0
         - id: container
           type: container
-          direction: horizontal
-          anchor: BottomCenter
-          x: 50%
-          y: 80%
+          x: 400
+          y: 400
           children:
-            $map:
-              - text: Start
-              - text: Load
-              - text: Options
-              - text: Exit
-            each(v,k):
-              id:
-                $eval: 'v.text'
+            - id: start23R
               type: text
-              text:
-                $eval: 'v.text'
-              height: 40
-              width: 200
+              text: Start
               x: 0
               y: 0
-              style: 
+              style:
                 fontSize: 48
                 fill: "white"
               hoverStyle:
                 fontSize: 48
                 fill: yellow
+            # - id: load
+            #   type: text
+            #   text: Load
+            #   height: 40
+            #   width: 200
+            #   x: 0
+            #   y: 0
+            #   style:
+            #     fontSize: 48
+            #     fill: "white"
+            #   hoverStyle:
+            #     fontSize: 48
+            #     fill: yellow
 
 assets: {}
 

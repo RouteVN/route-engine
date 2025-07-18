@@ -1,4 +1,4 @@
-file: '../src/RouteEngine.js'
+file: "../src/RouteEngine.js"
 group: RouteEngine
 ---
 suite: RouteEngine
@@ -33,17 +33,17 @@ mocks:
                 - id: visual-39kdfj231
                   type: sprite
                   url: file:94lkj289
-                  x: 50%
-                  y: 50%
-                  xa: 50%
-                  ya: 50%
+                  x: 960
+                  y: 540
+                  xa: 0.5
+                  ya: 0.5
                 - id: bg-screen
                   type: graphics
                   x1: 0
                   x2: 1920
                   y1: 0
                   y2: 1080
-                  fill: '#000000'
+                  fill: "#000000"
                   clickEventName: LeftClick
                   rightClickEventName: RightClick
                   wheelEventName: ScrollUp
