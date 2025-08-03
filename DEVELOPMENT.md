@@ -52,5 +52,4 @@ vt/                            # Visual tests (Rettangoli framework)
 └── templates/default.html      # Test rendering template
 
 docs/                          # Technical documentation
-task/                          # Development task management
 ```
