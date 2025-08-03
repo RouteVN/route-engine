@@ -40,7 +40,8 @@ story:
             - id: line1
               presentation:
                 background:
-                  imageId: alkejf3la
+                  resourceId: alkejf3la
+                  resourceType: image
             - id: line2
               system:
                 goToSectionScene:
@@ -51,4 +52,5 @@ story:
             - id: line1
               presentation:
                 background:
-                  imageId: 8a3lkja
+                  resourceId: 8a3lkja
+                  resourceType: image

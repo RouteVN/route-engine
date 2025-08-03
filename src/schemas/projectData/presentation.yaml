@@ -7,9 +7,13 @@ properties:
     type: object
     description: Background management and display
     properties:
-      imageId:
+      resourceId:
         type: string
         description: ID of the background resource to display
+      resourceType:
+        type: string
+        description: Type of the background resource
+        enum: [image]
       animations:
         type: object
         description: Animation effects for background transitions

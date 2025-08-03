@@ -35,8 +35,8 @@ export const addBackgrundOrCg = (
   { presentationState, assets, resolveFile },
 ) => {
   if (presentationState.background) {
-    if (presentationState.background.imageId) {
-      const background = assets.images[presentationState.background.imageId];
+    if (presentationState.background.resourceId && presentationState.background.resourceType === "image") {
+      const background = assets.images[presentationState.background.resourceId];
       elements.push({
         id: "bg-cg",
         type: "sprite",
