@@ -34,11 +34,7 @@ properties:
       layoutId:
         type: string
         description: ID of the dialogue box UI element
-      mode:
-        type: string
-        description: Dialogue display mode
-        enum: [dialogue, narration]
-      text:
+      content:
         type: string
         description: The dialogue text content
       characterId:
@@ -46,23 +42,12 @@ properties:
         description: ID of the character speaking
       character:
         type: object
-        description: Character information for dialogue
+        description: Character information for dialogue. This will overwrite characterId values
         properties:
-          characterName:
+          name:
             type: string
             description: Name of the character
         additionalProperties: false
-      segments:
-        type: array
-        description: Text segments for complex dialogue
-        items:
-          type: object
-          properties:
-            text:
-              type: string
-            style:
-              type: string
-          additionalProperties: false
     additionalProperties: false
 
   character:
@@ -117,9 +102,12 @@ properties:
             id:
               type: string
               description: Unique identifier for the visual item
-            visualId:
+            resourceId:
               type: string
-              description: ID of the visual resource
+              description: ID of the resource
+            resourceType:
+              type: string
+              description: Type of the resource
             transformId:
               type: string
               description: ID of the transform where visual appears
@@ -136,18 +124,6 @@ properties:
               additionalProperties: false
           required: [id]
           additionalProperties: false
-    additionalProperties: false
-
-  layout:
-    type: object
-    description: Layout management and transitions
-    properties:
-      id:
-        type: string
-        description: Unique identifier for the layout instance
-      layoutId:
-        type: string
-        description: ID of the layout resource
     additionalProperties: false
 
   choices:

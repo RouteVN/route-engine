@@ -42,13 +42,19 @@ story:
               presentation:
                 visual:
                   items:
-                    - visualId: alkejf3la
+                    - id: visual-1
+                      resourceId: alkejf3la
+                      resourceType: visual
                       transformId: iasdlf
             - id: line2
               presentation:
                 visual:
                   items:
-                    - visualId: alkejf3la
+                    - id: visual-1
+                      resourceId: alkejf3la
+                      resourceType: visual
                       transformId: iasdlf
-                    - visualId: 8a3lkja
+                    - id: visual-2
+                      resourceId: 8a3lkja
+                      resourceType: visual
                       transformId: a32kf3
