@@ -37,12 +37,15 @@ story:
             - id: line1
               presentation:
                 background:
-                  imageId: alkejf3la
+                  resourceId: alkejf3la
+                  resourceType: image
             - id: line2
               presentation:
                 background:
-                  imageId: 8a3lkja
+                  resourceId: 8a3lkja
+                  resourceType: image
             - id: line3
               presentation:
                 background:
-                  imageId: 3ljdasfjlk32
+                  resourceId: 3ljdasfjlk32
+                  resourceType: image
