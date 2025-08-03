@@ -17,7 +17,7 @@ presets:
         systemActions:
           nextLine: {}
 
-assets:
+resources:
   images:
     alkejf3la:
       fileId: lakjf3lka

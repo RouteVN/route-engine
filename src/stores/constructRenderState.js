@@ -32,11 +32,11 @@ export const generateScreenBackgroundElement = ({ elements }, { screen }) => {
  */
 export const addBackgrundOrCg = (
   { elements, transitions },
-  { presentationState, assets, resolveFile },
+  { presentationState, resources, resolveFile },
 ) => {
   if (presentationState.background) {
     if (presentationState.background.resourceId && presentationState.background.resourceType === "image") {
-      const background = assets.images[presentationState.background.resourceId];
+      const background = resources.images[presentationState.background.resourceId];
       elements.push({
         id: "bg-cg",
         type: "sprite",
@@ -49,7 +49,7 @@ export const addBackgrundOrCg = (
     if (presentationState.background.animations) {
       if (presentationState.background.animations.in) {
         const animation =
-          assets.animations[presentationState.background.animations.in];
+          resources.animations[presentationState.background.animations.in];
         transitions.push({
           id: "bg-cg-animation",
           type: "keyframes",
@@ -61,7 +61,7 @@ export const addBackgrundOrCg = (
 
       if (presentationState.background.animations.out) {
         const animation =
-          assets.animations[presentationState.background.animations.out];
+          resources.animations[presentationState.background.animations.out];
         if (animation) {
           transitions.push({
             id: "bg-cg-animation-2",
@@ -82,15 +82,15 @@ export const addBackgrundOrCg = (
  */
 export const addCharacters = (
   { elements, transitions },
-  { presentationState, assets, resolveFile },
+  { presentationState, resources, resolveFile },
 ) => {
   if (presentationState.character) {
     const items = presentationState.character.items;
 
     for (const item of items) {
-      const { transformId, spriteParts } = item;
-      const spritePartIds = spriteParts.map(({ spritePartId }) => spritePartId);
-      const transform = assets.transforms[transformId];
+      const { transformId, sprites } = item;
+      const spritePartIds = sprites.map(({ imageId }) => imageId);
+      const transform = resources.transforms[transformId];
       const characterContainer = {
         type: "container",
         id: `character-container-${item.id}`,
@@ -105,9 +105,9 @@ export const addCharacters = (
       };
 
       const matchedSpriteParts = [];
-      Object.entries(assets.characters).flatMap(([key, character]) => {
-        const { spriteParts } = character;
-        Object.entries(spriteParts).map(([partId, part]) => {
+      Object.entries(resources.characters).flatMap(([key, character]) => {
+        const { sprites: characterSprites } = character;
+        Object.entries(characterSprites).map(([partId, part]) => {
           if (spritePartIds.includes(partId)) {
             matchedSpriteParts.push({
               partId,
@@ -139,7 +139,7 @@ export const addCharacters = (
  */
 export const addVisuals = (
   { elements, transitions },
-  { presentationState, assets, resolveFile },
+  { presentationState, resources, resolveFile },
 ) => {
   if (presentationState.visual) {
     const items = presentationState.visual.items;
@@ -147,14 +147,14 @@ export const addVisuals = (
       if (item.resourceId && item.resourceType) {
         let resource;
         if (item.resourceType === "image") {
-          resource = assets.images[item.resourceId];
+          resource = resources.images[item.resourceId];
         } else {
           // Placeholder for other resource types
           continue;
         }
         
         if (resource) {
-          const transform = assets.transforms[item.transformId];
+          const transform = resources.transforms[item.transformId];
           elements.push({
             id: `visual-${item.id}`,
             type: "sprite",
@@ -172,7 +172,7 @@ export const addVisuals = (
 
       if (item.animations) {
         if (item.animations.in) {
-          const animation = assets.animations[item.animations.in];
+          const animation = resources.animations[item.animations.in];
           transitions.push({
             id: `${item.id}-animation`,
             type: "keyframes",
@@ -183,7 +183,7 @@ export const addVisuals = (
         }
 
         if (item.animations.out) {
-          const animation = assets.animations[item.animations.out];
+          const animation = resources.animations[item.animations.out];
           transitions.push({
             id: `${item.id}-animation-2`,
             type: "keyframes",
@@ -203,7 +203,7 @@ export const addVisuals = (
  */
 export const addDialogue = (
   { elements },
-  { presentationState, ui, assets, dialogueUIHidden },
+  { presentationState, ui, resources, dialogueUIHidden },
 ) => {
   if (!presentationState.dialogue) {
     return;
@@ -221,7 +221,7 @@ export const addDialogue = (
 
   let character;
   if (presentationState.dialogue.characterId) {
-    character = assets.characters[presentationState.dialogue.characterId];
+    character = resources.characters[presentationState.dialogue.characterId];
   }
 
   // Check if there's a character object override
@@ -238,7 +238,7 @@ export const addDialogue = (
       character: {
         name: character?.name || "",
       },
-      text: presentationState.dialogue.content,
+      content: presentationState.dialogue.content,
     },
   });
   const dialogueElements = result?.elements;
@@ -259,15 +259,15 @@ export const addDialogue = (
  */
 export const addChoices = (
   { elements, transitions },
-  { presentationState, assets, ui },
+  { presentationState, resources, ui },
 ) => {
-  if (presentationState.choices) {
-    const layout = ui.layouts[presentationState.choices.layoutId];
+  if (presentationState.choice) {
+    const layout = ui.layouts[presentationState.choice.layoutId];
 
     const wrappedTemplate = { elements: layout.elements };
     const result = parseAndRender(wrappedTemplate, {
       choices: {
-        items: presentationState.choices.items,
+        items: presentationState.choice.items,
       },
     });
     const choiceElements = result?.elements;
@@ -284,10 +284,10 @@ export const addChoices = (
 
 export const addBgm = (
   { elements },
-  { presentationState, assets, resolveFile },
+  { presentationState, resources, resolveFile },
 ) => {
   if (presentationState.bgm) {
-    const audio = assets.audios[presentationState.bgm.audioId];
+    const audio = resources.audio[presentationState.bgm.audioId];
     elements.push({
       id: "bgm",
       type: "audio",
@@ -298,12 +298,12 @@ export const addBgm = (
 
 export const addSfx = (
   { elements },
-  { presentationState, assets, resolveFile },
+  { presentationState, resources, resolveFile },
 ) => {
   if (presentationState.sfx) {
     const items = presentationState.sfx.items;
     for (const item of items) {
-      const audio = assets.audios[item.audioId];
+      const audio = resources.audio[item.audioId];
       elements.push({
         id: item.id,
         type: "audio",

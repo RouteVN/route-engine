@@ -14,7 +14,7 @@ presets:
         systemActions:
           nextLine: {}
 
-assets:
+resources:
   images:
     alkejf3la:
       fileId: lakjf3lka
@@ -29,7 +29,7 @@ assets:
     alkjf3ia:
       variables:
         name: "Abc"
-      spriteParts:
+      sprites:
         fk4jla893:
           fileId: la3lka
         3fjaklj34:
@@ -63,11 +63,11 @@ story:
                   items:
                     - id: "laj389d"
                       transformId: iasdlf
-                      spriteParts:
+                      sprites:
                         - id: base
-                          spritePartId: fk4jla893
+                          imageId: fk4jla893
                         - id: outfit
-                          spritePartId: 3fjaklj34
+                          imageId: 3fjaklj34
             - id: line2
               presentation:
                 background:
@@ -77,8 +77,8 @@ story:
                   items:
                     - id: "laj389d"
                       transformId: a32kf3
-                      spriteParts:
+                      sprites:
                         - id: base
-                          spritePartId: fk4jla893
+                          imageId: fk4jla893
                         - id: outfit
-                          spritePartId: 3fjaklj34
+                          imageId: 3fjaklj34

@@ -14,8 +14,8 @@ export const selectScreen = (state) => {
   return state.screen;
 };
 
-export const selectAssets = (state) => {
-  return state.assets;
+export const selectResources = (state) => {
+  return state.resources;
 };
 
 export const selectUi = (state) => {

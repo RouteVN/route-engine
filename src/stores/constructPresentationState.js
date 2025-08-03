@@ -71,8 +71,8 @@ export const applyDialogue = (state, presentation) => {
   // Apply presentation dialogue properties
   Object.assign(state.dialogue, presentation.dialogue);
 
-  if (presentation.dialogue.text) {
-    // Remove segments if text is provided
+  if (presentation.dialogue.content) {
+    // Remove segments if content is provided
     delete state.dialogue.segments;
   }
 
@@ -171,20 +171,20 @@ export const applyLayout = (state, presentation) => {
 };
 
 /**
- * Applies choices from presentation to state
+ * Applies choice from presentation to state
  * @param {Object} state - The current state of the system
  * @param {Object} presentation - The presentation to apply
  */
-export const applyChoices = (state, presentation) => {
-  if (presentation.choices) {
-    state.choices = presentation.choices;
-  } else if (state.choices) {
-    delete state.choices;
+export const applyChoice = (state, presentation) => {
+  if (presentation.choice) {
+    state.choice = presentation.choice;
+  } else if (state.choice) {
+    delete state.choice;
   }
 };
 
 /**
- * Cleans all state if cleanAll is true
+ * Cleans all state if cleanAll is provided
  * @param {Object} state - The current state of the system
  * @param {Object} presentation - The presentation to apply
  */
@@ -202,6 +202,7 @@ export const createInitialState = () => {
 };
 
 export default [
+  applyCleanAll,
   applyBackground,
   applySfx,
   applyBgm,
@@ -210,6 +211,5 @@ export default [
   applyCharacter,
   applyAnimation,
   applyLayout,
-  applyChoices,
-  applyCleanAll,
+  applyChoice,
 ];

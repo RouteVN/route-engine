@@ -1,9 +1,9 @@
 $schema: http://json-schema.org/draft-07/schema#
-title: assets Schema
-description: Schema for assets in visual novel project data
+title: Resources Schema
+description: Schema for resources in visual novel project data
 type: object
 properties:
-  backgrounds:
+  images:
     type: object
     description: Background image assets
     patternProperties:
@@ -13,7 +13,13 @@ properties:
           fileId:
             type: string
             description: Reference to the background file resource
-        required: [fileId]
+          width:
+            type: integer
+            description: Width of the background image
+          height:
+            type: integer
+            description: Height of the background image
+        required: [fileId, width, height]
         additionalProperties: false
     additionalProperties: false
 
@@ -27,41 +33,26 @@ properties:
           name:
             type: string
             description: Display name for the character
-          variables:
-            type: object
-            description: Character-specific variables
-            properties:
-              name:
-                type: string
-                description: Character name variable
-            additionalProperties: true
-          spriteParts:
-            type: object
-            description: Sprite parts that make up the character
-            patternProperties:
-              "^[a-zA-Z0-9_-]+$":
-                type: object
-                properties:
-                  fileId:
-                    type: string
-                    description: Reference to the sprite part file
-                required: [fileId]
-                additionalProperties: false
-            additionalProperties: false
         additionalProperties: false
     additionalProperties: false
 
-  visuals:
+  videos:
     type: object
-    description: Visual effect and UI element assets
+    description: Video assets
     patternProperties:
       "^[a-zA-Z0-9_-]+$":
         type: object
         properties:
           fileId:
             type: string
-            description: Reference to the visual file resource
-        required: [fileId]
+            description: Reference to the video file resource
+          width:
+            type: integer
+            description: Width of the video
+          height:
+            type: integer
+            description: Height of the video
+        required: [fileId, width, height]
         additionalProperties: false
     additionalProperties: false
 
@@ -74,51 +65,25 @@ properties:
         properties:
           x:
             description: X coordinate position
-            oneOf:
-              - type: number
-                description: Absolute pixel position
-              - type: string
-                pattern: "^\\d+(\\.\\d+)?%$"
-                description: Percentage position (e.g., "50%")
+            type: integer
           y:
             description: Y coordinate position
-            oneOf:
-              - type: number
-                description: Absolute pixel position
-              - type: string
-                pattern: "^\\d+(\\.\\d+)?%$"
-                description: Percentage position (e.g., "50%")
-          xa:
+            type: integer
+          anchorX:
             description: X anchor point
-            oneOf:
-              - type: number
-                description: Absolute pixel anchor
-              - type: string
-                pattern: "^\\d+(\\.\\d+)?%$"
-                description: Percentage anchor (e.g., "50%")
-          ya:
+            type: number
+          anchorY:
             description: Y anchor point
-            oneOf:
-              - type: number
-                description: Absolute pixel anchor
-              - type: string
-                pattern: "^\\d+(\\.\\d+)?%$"
-                description: Percentage anchor (e.g., "50%")
-          anchor:
-            type: string
-            description: Named anchor point
-            enum:
-              [
-                TopLeft,
-                TopCenter,
-                TopRight,
-                MiddleLeft,
-                MiddleCenter,
-                MiddleRight,
-                BottomLeft,
-                BottomCenter,
-                BottomRight,
-              ]
+            type: number
+          scaleX:
+            description: X scale factor
+            type: number
+          scaleY:
+            description: Y scale factor
+            type: number
+          rotation:
+            description: Rotation angle in degrees
+            type: number
         additionalProperties: false
     additionalProperties: false
 
@@ -158,14 +123,6 @@ properties:
                         easing:
                           type: string
                           description: Easing function for the animation
-                          enum:
-                            [
-                              linear,
-                              ease-in,
-                              ease-out,
-                              ease-in-out,
-                              cubic-bezier,
-                            ]
                       required: [duration, value]
                       additionalProperties: false
                     minItems: 1
@@ -176,9 +133,9 @@ properties:
         additionalProperties: false
     additionalProperties: false
 
-  sounds:
+  audio:
     type: object
-    description: Sound effect assets
+    description: Audio, including bgm and sound effects
     patternProperties:
       "^[a-zA-Z0-9_-]+$":
         type: object
@@ -186,50 +143,92 @@ properties:
           fileId:
             type: string
             description: Reference to the sound file resource
-          volume:
-            type: number
-            description: Default volume level
-            minimum: 0
-            maximum: 1
-            default: 1
-          loop:
-            type: boolean
-            description: Whether the sound should loop by default
-            default: false
         required: [fileId]
         additionalProperties: false
     additionalProperties: false
 
-  music:
+  colors:
     type: object
-    description: Background music assets
+    description: Color palette for the project
+    patternProperties:
+      "^[a-zA-Z0-9_-]+$":
+        type: object
+        properties:
+          hex:
+            type: string
+            description: Hexadecimal color code
+        required: [hex]
+        additionalProperties: false
+    additionalProperties: false
+
+  fonts:
+    type: object
+    description: Font file for the project
     patternProperties:
       "^[a-zA-Z0-9_-]+$":
         type: object
         properties:
           fileId:
             type: string
-            description: Reference to the music file resource
-          volume:
-            type: number
-            description: Default volume level
-            minimum: 0
-            maximum: 1
-            default: 1
-          loop:
-            type: boolean
-            description: Whether the music should loop by default
-            default: true
-          fadeIn:
-            type: number
-            description: Default fade-in duration in milliseconds
-            minimum: 0
-          fadeOut:
-            type: number
-            description: Default fade-out duration in milliseconds
-            minimum: 0
+            description: Reference to the font file resource
         required: [fileId]
         additionalProperties: false
     additionalProperties: false
+
+  typography:
+    type: object
+    patternProperties:
+      "^[a-zA-Z0-9_-]+$":
+        type: object
+        properties:
+          fontId:
+            type: string
+            description: Font file
+          fontSize:
+            type: number
+            description: Font size in pixels
+          fontWeight:
+            type: string
+            description: Font weight
+            enum: [100, 200, 300, 400, 500, 600, 700, 800, 900]
+          fontStyle:
+            type: string
+            description: Font style
+            enum: [normal, italic, oblique]
+          lineHeight:
+            type: number
+            description: Line height. 1 = font size pixels
+        required: [fontId, fontSize, fontWeight, fontStyle, lineHeight]
+        additionalProperties: false
+    additionalProperties: false
+
+  layouts:
+    type: object
+    description: Layouts for the project
+    patternProperties:
+      "^[a-zA-Z0-9_-]+$":
+        type: object
+        properties:
+          layout:
+            type: object
+            properties:
+              layoutType:
+                type: string
+                description: Layout type
+                enum: [layout, dialogue, choice]
+              elements:
+                type: array
+              transitions:
+                type: array
+            required: [width, height]
+            additionalProperties: false
+          width:
+            type: number
+            description: Width of the layout in pixels
+          height:
+            type: number
+            description: Height of the layout in pixels
+        required: [layoutId, width, height]
+        additionalProperties: falsec
 
 additionalProperties: false
