@@ -33,12 +33,12 @@ ui:
             - id: dialogue-text
               type: "text"
               y: 100
-              text: "${dialogue.text}"
+              text: "${dialogue.content}"
               style:
                 fontSize: 24
                 fill: "white"
 
-assets:
+resources:
   characters:
     ajf34a:
       name: Character A

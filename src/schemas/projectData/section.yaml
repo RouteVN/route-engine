@@ -14,21 +14,5 @@ properties:
       $ref: "line.yaml"
     minItems: 1
 
-  steps:
-    type: array
-    description: Alternative name for lines - array of story steps within this section
-    items:
-      $ref: "line.yaml"
-    minItems: 1
-
 required: [name]
 additionalProperties: false
-
-# Either lines or steps must be present, but not both
-oneOf:
-  - required: [lines]
-    not:
-      required: [steps]
-  - required: [steps]
-    not:
-      required: [lines]

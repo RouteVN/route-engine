@@ -1,8 +1,16 @@
 $schema: http://json-schema.org/draft-07/schema#
 title: Presentation Schema
-description: Schema for presentation objects in visual novel engine
+description: Schema for presentation objects in visual novel engine. All properties are singular
 type: object
 properties:
+  cleanAll:
+    type: object
+    description: Whether to clean/clear all existing state
+    properties:
+      mode:
+        type: string
+        description: Mode of cleaning/clearing all existing state
+
   background:
     type: object
     description: Background management and display
@@ -40,14 +48,14 @@ properties:
       characterId:
         type: string
         description: ID of the character speaking
-      character:
-        type: object
-        description: Character information for dialogue. This will overwrite characterId values
-        properties:
-          name:
-            type: string
-            description: Name of the character
-        additionalProperties: false
+      # character:
+      #   type: object
+      #   description: Character information for dialogue. This will overwrite characterId values
+      #   properties:
+      #     name:
+      #       type: string
+      #       description: Name of the character
+      #   additionalProperties: false
     additionalProperties: false
 
   character:
@@ -66,7 +74,7 @@ properties:
             transformId:
               type: string
               description: ID of the transform where character appears
-            spriteParts:
+            sprites:
               type: array
               description: Array of sprite parts that make up the character
               items:
@@ -75,23 +83,23 @@ properties:
                   id:
                     type: string
                     description: Identifier for the sprite part
-                  spritePartId:
+                  imageId:
                     type: string
                     description: ID of the sprite part resource
                 additionalProperties: false
-            inAnimation:
-              type: string
-              description: Animation ID for character entrance
-            outAnimation:
-              type: string
-              description: Animation ID for character exit
+            # inAnimation:
+            #   type: string
+            #   description: Animation ID for character entrance
+            # outAnimation:
+            #   type: string
+            #   description: Animation ID for character exit
           required: [id]
           additionalProperties: false
     additionalProperties: false
 
   visual:
     type: object
-    description: Visual elements and effects
+    description: Visual elements and effects technically same as background but different z index
     properties:
       items:
         type: array
@@ -111,22 +119,22 @@ properties:
             transformId:
               type: string
               description: ID of the transform where visual appears
-            animations:
-              type: object
-              description: Animation effects for visual transitions
-              properties:
-                in:
-                  type: string
-                  description: Animation ID for visual entrance
-                out:
-                  type: string
-                  description: Animation ID for visual exit
-              additionalProperties: false
+            # animations:
+            #   type: object
+            #   description: Animation effects for visual transitions
+            #   properties:
+            #     in:
+            #       type: string
+            #       description: Animation ID for visual entrance
+            #     out:
+            #       type: string
+            #       description: Animation ID for visual exit
+            #   additionalProperties: false
           required: [id]
           additionalProperties: false
     additionalProperties: false
 
-  choices:
+  choice:
     type: object
     description: Choice system configuration
     properties:
@@ -139,72 +147,73 @@ properties:
         items:
           type: object
           properties:
-            text:
+            id:
+              type: string
+              description: Unique identifier for the choice option
+            content:
               type: string
               description: Text content of the choice option
-            value:
-              type: string
-              description: Value associated with the choice
-            enabled:
-              type: boolean
-              description: Whether the choice is selectable
-              default: true
+            # value:
+            #   type: string
+            #   description: Value associated with the choice
+            # enabled:
+            #   type: boolean
+            #   description: Whether the choice is selectable
+            #   default: true
           required: [text]
           additionalProperties: false
-    additionalProperties: false
-
-  goToSectionScene:
-    type: object
-    description: Scene navigation configuration
-    properties:
-      sectionId:
-        type: string
-        description: ID of the section to navigate to
-      sceneId:
-        type: string
-        description: ID of the scene to navigate to
     additionalProperties: false
 
   sfx:
     type: object
     description: Sound effects configuration
     properties:
-      soundId:
-        type: string
-        description: ID of the sound effect resource
-      volume:
-        type: number
-        description: Volume level for the sound effect
-        minimum: 0
-        maximum: 1
-      loop:
-        type: boolean
-        description: Whether the sound effect should loop
-        default: false
+      items:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: string
+              description: Unique identifier for the sound effect
+            audioId:
+              type: string
+              description: ID of the sound effect resource
+            # volume:
+            #   type: number
+            #   description: Volume level for the sound effect
+            #   minimum: 0
+            #   maximum: 1
+            # loop:
+            #   type: boolean
+            #   description: Whether the sound effect should loop
+            #   default: false
+          required: [id, audioId]
+          additionalProperties: false
     additionalProperties: false
 
   bgm:
     type: object
     description: Background music configuration
     properties:
-      musicId:
+      audioId:
         type: string
         description: ID of the background music resource
-      volume:
-        type: number
-        description: Volume level for the background music
-        minimum: 0
-        maximum: 1
-      loop:
-        type: boolean
-        description: Whether the background music should loop
-        default: true
-      fadeIn:
-        type: number
-        description: Fade-in duration in milliseconds
-      fadeOut:
-        type: number
-        description: Fade-out duration in milliseconds
+      # volume:
+      #   type: number
+      #   description: Volume level for the background music
+      #   minimum: 0
+      #   maximum: 1
+      # loop:
+      #   type: boolean
+      #   description: Whether the background music should loop
+      #   default: true
+      # fadeIn:
+      #   type: number
+      #   description: Fade-in duration in milliseconds
+      # fadeOut:
+      #   type: number
+      #   description: Fade-out duration in milliseconds
     additionalProperties: false
 
   animation:
@@ -225,10 +234,5 @@ properties:
         description: Animation easing function
         enum: [linear, ease-in, ease-out, ease-in-out]
     additionalProperties: false
-
-  cleanAll:
-    type: boolean
-    description: Whether to clean/clear all existing state
-    default: false
 
 additionalProperties: false

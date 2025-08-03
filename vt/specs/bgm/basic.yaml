@@ -14,8 +14,8 @@ presets:
         systemActions:
           nextLine: {}
 
-assets:
-  audios:
+resources:
+  audio:
     dk392:
       fileId: 3ka3s
     93k22:
@@ -34,7 +34,7 @@ ui:
             - id: dialogue-text
               type: "text"
               y: 100
-              text: "${dialogue.text}"
+              text: "${dialogue.content}"
               style:
                 fontSize: 24
                 fill: "white"
@@ -56,7 +56,7 @@ story:
                   audioId: dk392
                 dialogue:
                   layoutId: fi3l
-                  text: 111111111111111
+                  content: 111111111111111
 
             - id: line2
               presentation:
@@ -64,21 +64,21 @@ story:
                   audioId: 93k22
                 dialogue:
                   layoutId: fi3l
-                  text: 2222222222222222222
+                  content: 2222222222222222222
 
             - id: line3
               presentation:
                 dialogue:
                   layoutId: fi3l
-                  text: 33333333333333333
+                  content: 33333333333333333
             - id: line4
               presentation:
                 dialogue:
                   layoutId: fi3l
-                  text: 4444444444444444444
+                  content: 4444444444444444444
             - id: line5
               presentation:
                 bgm: {}
                 dialogue:
                   layoutId: fi3l
-                  text: 5555555555555
+                  content: 5555555555555

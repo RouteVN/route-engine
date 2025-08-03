@@ -293,8 +293,8 @@ export const nextLine = ({ state, projectDataStore }) => {
 /**
  */
 export const prevLine = ({ state, projectDataStore }) => {
-  const pointerMode = selectPointerMode(state);
-  const currentPointer = selectCurrentPointer(state);
+  const pointerMode = selectPointerMode({ state });
+  const currentPointer = selectCurrentPointer({ state });
 
   const lines = projectDataStore.selectSectionLines(currentPointer.sectionId);
   const currentLineIndex = lines.findIndex(
@@ -311,16 +311,15 @@ export const prevLine = ({ state, projectDataStore }) => {
       }
       state.story.pointers["history"].sectionId =
         state.story.history.entries[state.story.historyEntryIndex].sectionId;
-      const prevSectionLines = vnDataSelectors.selectSectionLines(
-        vnData,
-        systemState.story.pointers["history"].sectionId,
+      const prevSectionLines = projectDataStore.selectSectionLines(
+        state.story.pointers["history"].sectionId,
       );
-      systemState.story.pointers["history"].lineId =
+      state.story.pointers["history"].lineId =
         prevSectionLines[prevSectionLines.length - 1].id;
 
-      systemState.story.lastLineAction = "prevLine";
+      state.story.lastLineAction = "prevLine";
 
-      effects.push({
+      state.pendingEffects.push({
         name: "render",
       });
     }
@@ -329,16 +328,16 @@ export const prevLine = ({ state, projectDataStore }) => {
   }
 
   if (pointerMode === "read") {
-    systemState.story.currentPointer = "history";
-    systemState.story.historyEntryIndex =
-      systemState.story.history.entries.length - 1;
+    state.story.currentPointer = "history";
+    state.story.historyEntryIndex =
+      state.story.history.entries.length - 1;
   }
 
-  systemState.story.pointers["history"].lineId = prevLine.id;
-  systemState.story.pointers["history"].sectionId = currentPointer.sectionId;
-  systemState.story.lastLineAction = "prevLine";
+  state.story.pointers["history"].lineId = prevLine.id;
+  state.story.pointers["history"].sectionId = currentPointer.sectionId;
+  state.story.lastLineAction = "prevLine";
 
-  effects.push({
+  state.pendingEffects.push({
     name: "render",
   });
 };
@@ -389,64 +388,59 @@ export const goToSectionScene = ({ state, projectDataStore }, payload) => {
 /**
  * @param {ApplyParams} params
  */
-export const updateVariable = ({ payload, systemState, effects, vnData }) => {
+export const updateVariable = ({ state, projectDataStore }, payload) => {
   const { operations } = payload;
   for (const operation of operations) {
     const { variableId, op, value } = operation;
     if (op === "set") {
-      systemState.variables[variableId] = value;
+      state.variables[variableId] = value;
+    } else if (op === "add") {
+      state.variables[variableId] = (state.variables[variableId] || 0) + value;
+    } else if (op === "subtract") {
+      state.variables[variableId] = (state.variables[variableId] || 0) - value;
+    } else if (op === "multiply") {
+      state.variables[variableId] = (state.variables[variableId] || 0) * value;
+    } else if (op === "divide") {
+      state.variables[variableId] = (state.variables[variableId] || 0) / value;
     } else if (op === "increment") {
-      systemState.variables[variableId] += value;
+      state.variables[variableId] = (state.variables[variableId] || 0) + 1;
     } else if (op === "decrement") {
-      systemState.variables[variableId] -= value;
+      state.variables[variableId] = (state.variables[variableId] || 0) - 1;
     }
   }
-  const vnDataVariables = vnDataSelectors.selectVariables(vnData);
-  const localVariableKeys = Object.keys(systemState.variables).filter(
-    (key) => vnDataVariables[key].persistence === "local",
-  );
-  const localVariables = localVariableKeys.reduce((acc, key) => {
-    acc[key] = systemState.variables[key];
-    return acc;
-  }, {});
-  effects.push({
+  
+  state.pendingEffects.push({
     name: "render",
-  });
-  effects.push({
-    name: "updateLocalVariables",
-    options: {
-      variables: localVariables,
-    },
   });
 };
 
 /**
  * @param {ApplyParams} params
  */
-export const setPreset = ({ payload, systemState, effects }) => {
-  systemState.story.pointers[systemState.story.currentPointer].presetId =
+export const setPreset = ({ state }, payload) => {
+  state.story.pointers[state.story.currentPointer].presetId =
     payload.presetId;
 };
 
 /**
  * @param {ApplyParams} params
  */
-export const clearCurrentMode = ({ payload, systemState, effects }) => {
-  systemState.story.currentPointer = payload.mode;
-  effects.push({
+export const clearCurrentMode = ({ state }, payload) => {
+  state.story.currentPointer = payload.mode;
+  state.pendingEffects.push({
     name: "render",
   });
 };
 
-export const startAutoMode = ({ systemState, effects }) => {
-  if (systemStateSelectors.selectSkipMode(systemState)) {
-    systemState.story.skipMode = false;
+export const startAutoMode = ({ state }) => {
+  if (selectSkipMode({ state })) {
+    state.story.skipMode = false;
   }
-  systemState.story.autoMode = true;
-  effects.push({
+  state.story.autoMode = true;
+  state.pendingEffects.push({
     name: "cancelTimerEffect",
   });
-  effects.push({
+  state.pendingEffects.push({
     name: "systemInstructions",
     options: {
       delay: 1000,
@@ -459,31 +453,31 @@ export const startAutoMode = ({ systemState, effects }) => {
   });
 };
 
-export const stopAutoMode = ({ systemState, effects }) => {
-  systemState.story.autoMode = false;
-  effects.push({
+export const stopAutoMode = ({ state }) => {
+  state.story.autoMode = false;
+  state.pendingEffects.push({
     name: "cancelTimerEffect",
   });
 };
 
-export const toggleAutoMode = ({ systemState, effects }) => {
-  const autoMode = systemStateSelectors.selectAutoMode(systemState);
+export const toggleAutoMode = ({ state }) => {
+  const autoMode = selectAutoMode({ state });
   if (autoMode) {
-    stopAutoMode({ systemState, effects });
+    stopAutoMode({ state });
   } else {
-    startAutoMode({ systemState, effects });
+    startAutoMode({ state });
   }
 };
 
-export const startSkipMode = ({ systemState, effects }) => {
-  if (systemStateSelectors.selectAutoMode(systemState)) {
-    systemState.story.autoMode = false;
+export const startSkipMode = ({ state }) => {
+  if (selectAutoMode({ state })) {
+    state.story.autoMode = false;
   }
-  systemState.story.skipMode = true;
-  effects.push({
+  state.story.skipMode = true;
+  state.pendingEffects.push({
     name: "cancelTimerEffect",
   });
-  effects.push({
+  state.pendingEffects.push({
     name: "systemInstructions",
     options: {
       delay: 300,
@@ -496,47 +490,47 @@ export const startSkipMode = ({ systemState, effects }) => {
   });
 };
 
-export const stopSkipMode = ({ systemState, effects }) => {
-  systemState.story.skipMode = false;
-  effects.push({
+export const stopSkipMode = ({ state }) => {
+  state.story.skipMode = false;
+  state.pendingEffects.push({
     name: "cancelTimerEffect",
   });
 };
 
-export const toggleSkipMode = ({ systemState, effects }) => {
-  const skipMode = systemStateSelectors.selectSkipMode(systemState);
+export const toggleSkipMode = ({ state }) => {
+  const skipMode = selectSkipMode({ state });
   if (skipMode) {
-    stopSkipMode({ systemState, effects });
+    stopSkipMode({ state });
   } else {
-    startSkipMode({ systemState, effects });
+    startSkipMode({ state });
   }
 };
 
-const toggleDialogueUIHidden = ({ systemState, effects }) => {
-  systemState.story.dialogueUIHidden = !systemState.story.dialogueUIHidden;
-  effects.push({
+export const toggleDialogueUIHidden = ({ state }) => {
+  state.story.dialogueUIHidden = !state.story.dialogueUIHidden;
+  state.pendingEffects.push({
     name: "render",
   });
 };
 
-export const saveVnData = ({ systemState, effects, payload }) => {
-  systemState.saveData.push({
+export const saveVnData = ({ state }, payload) => {
+  state.saveData.push({
     id: Date.now().toString().slice(4, 10),
     slotIndex: payload.slotIndex,
-    pointer: systemStateSelectors.selectSpecificPointer(systemState, "read"),
-    history: systemStateSelectors.selectHistory(systemState),
+    pointer: selectSpecificPointer({ state, mode: "read" }),
+    history: selectHistory({ state }),
   });
-  effects.push({
+  state.pendingEffects.push({
     name: "saveVnData",
     options: {
-      saveData: [...systemState.saveData],
+      saveData: [...state.saveData],
     },
   });
 };
 
-export const loadVnData = ({ systemState, effects, payload }) => {
+export const loadVnData = ({ state }, payload) => {
   const { slotIndex } = payload;
-  const saveData = systemStateSelectors.selectSaveData(systemState);
+  const saveData = selectSaveData({ state });
   const matchedSlotSaveData = saveData.filter(
     (save) => save.slotIndex === slotIndex,
   );
@@ -546,10 +540,10 @@ export const loadVnData = ({ systemState, effects, payload }) => {
   }
   const { pointer, history } =
     matchedSlotSaveData[matchedSlotSaveData.length - 1];
-  systemState.story.currentPointer = "read";
-  systemState.story.pointers["read"] = pointer;
-  systemState.story.history = history;
-  effects.push({
+  state.story.currentPointer = "read";
+  state.story.pointers["read"] = pointer;
+  state.story.history = history;
+  state.pendingEffects.push({
     name: "render",
   });
 };

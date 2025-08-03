@@ -14,8 +14,8 @@ presets:
         systemActions:
           nextLine: {}
 
-assets:
-  audios:
+resources:
+  audio:
     dk392:
       fileId: xj323
     93k22:
@@ -34,7 +34,7 @@ ui:
             - id: dialogue-text
               type: "text"
               y: 100
-              text: "${dialogue.text}"
+              text: "${dialogue.content}"
               style:
                 fontSize: 24
                 fill: "white"
@@ -54,7 +54,7 @@ story:
               presentation:
                 dialogue:
                   layoutId: fi3l
-                  text: Click to play sfx
+                  content: Click to play sfx
 
             - id: line1
               presentation:
@@ -64,7 +64,7 @@ story:
                       audioId: dk392
                 dialogue:
                   layoutId: fi3l
-                  text: Playing multiple SFX sounds
+                  content: Playing multiple SFX sounds
 
             - id: line2
               presentation:
@@ -74,10 +74,10 @@ story:
                       audioId: 93k22
                 dialogue:
                   layoutId: fi3l
-                  text: Playing single SFX sound
+                  content: Playing single SFX sound
 
             - id: line3
               presentation:
                 dialogue:
                   layoutId: fi3l
-                  text: No SFX playing
+                  content: No SFX playing

@@ -132,7 +132,7 @@ class RouteEngine {
       presentationState: presentationState,
       screen: this._projectDataStore.selectScreen(),
       resolveFile: (f) => `file:${f}`,
-      assets: this._projectDataStore.selectAssets(),
+      resources: this._projectDataStore.selectResources(),
       ui: this._projectDataStore.selectUi(),
     });
 
