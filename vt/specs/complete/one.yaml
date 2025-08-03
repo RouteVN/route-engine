@@ -648,7 +648,8 @@ story:
                 visual:
                   items:
                     - id: 39kdfj231
-                      visualId: alkejf3la
+                      resourceId: alkejf3la
+                      resourceType: visual
                       transformId: iasdlf
                       animations:
                         in: 3lkj289
@@ -663,10 +664,7 @@ story:
                       animations:
                         out: 8h3js
             - id: line3
-              presentation:
-                layout:
-                  id: 3k3k38
-                  layoutId: j3i8dk32
+              presentation: {}
         3k3s9sd:
           name: Section 2
           lines:
@@ -674,99 +672,85 @@ story:
               presentation:
                 dialogue:
                   layoutId: fi3l
-                  mode: dialogue
-                  text: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                  content: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
                   characterId: ajf34a
             - id: line2
               presentation:
                 dialogue:
                   layoutId: fi3l
-                  mode: dialogue
-                  text: Two and a half sentences.
+                  content: Two and a half sentences.
                   characterId: ajf34a
             - id: line3
               presentation:
                 dialogue:
                   layoutId: fi3l
-                  mode: dialogue
-                  text: "Three sentences. Three sentences. Three sentences."
+                  content: "Three sentences. Three sentences. Three sentences."
                   characterId: ajf34a
             - id: line4
               presentation:
                 dialogue:
                   layoutId: fi3l
-                  mode: dialogue
-                  text: "Four sentences. Four sentences. Four sentences. Four sentences."
+                  content: "Four sentences. Four sentences. Four sentences. Four sentences."
                   characterId: ajf34a
             - id: line5
               presentation:
                 dialogue:
                   layoutId: fi3l
-                  mode: dialogue
-                  text: "Five sentences. Five sentences. Five sentences. Five sentences."
+                  content: "Five sentences. Five sentences. Five sentences. Five sentences."
                   characterId: ajf34a
             - id: line6
               presentation:
                 dialogue:
                   layoutId: fi3l
-                  mode: dialogue
-                  text: "Six sentences. Six sentences. Six sentences. Six sentences."
+                  content: "Six sentences. Six sentences. Six sentences. Six sentences."
                   characterId: ajf34a
             - id: line7
               presentation:
                 dialogue:
                   layoutId: fi3l
-                  mode: dialogue
-                  text: "Seven sentences. Seven sentences. Seven sentences. Seven sentences."
+                  content: "Seven sentences. Seven sentences. Seven sentences. Seven sentences."
                   characterId: ajf34a
             - id: line8
               presentation:
                 dialogue:
                   layoutId: fi3l
-                  mode: dialogue
-                  text: "Eight sentences. Eight sentences. Eight sentences. Eight sentences."
+                  content: "Eight sentences. Eight sentences. Eight sentences. Eight sentences."
                   characterId: ajf34a
             - id: line9
               presentation:
                 dialogue:
                   layoutId: fi3l
-                  mode: dialogue
-                  text: "Nine sentences. Nine sentences. Nine sentences. Nine sentences."
+                  content: "Nine sentences. Nine sentences. Nine sentences. Nine sentences."
                   characterId: ajf34a
             - id: line10
               presentation:
                 dialogue:
                   layoutId: fi3l
-                  mode: dialogue
-                  text: "Ten sentences. Ten sentences. Ten sentences. Ten sentences."
+                  content: "Ten sentences. Ten sentences. Ten sentences. Ten sentences."
                   characterId: ajf34a
             - id: line11
               presentation:
                 dialogue:
                   layoutId: fi3l
-                  mode: dialogue
-                  text: "Eleven sentences. Eleven sentences. Eleven sentences. Eleven sentences."
+                  content: "Eleven sentences. Eleven sentences. Eleven sentences. Eleven sentences."
                   characterId: ajf34a
             - id: line12
               presentation:
                 dialogue:
                   layoutId: fi3l
-                  mode: dialogue
-                  text: "Twelve sentences. Twelve sentences. Twelve sentences. Twelve sentences."
+                  content: "Twelve sentences. Twelve sentences. Twelve sentences. Twelve sentences."
                   characterId: ajf34a
             - id: line13
               presentation:
                 dialogue:
                   layoutId: fi3l
-                  mode: dialogue
-                  text: "Thirteen sentences. Thirteen sentences. Thirteen sentences. Thirteen sentences."
+                  content: "Thirteen sentences. Thirteen sentences. Thirteen sentences. Thirteen sentences."
                   characterId: ajf34a
             - id: line14
               presentation:
                 dialogue:
                   layoutId: fi3l
-                  mode: dialogue
-                  text: "Fourteen sentences. Fourteen sentences. Fourteen sentences. Fourteen sentences."
+                  content: "Fourteen sentences. Fourteen sentences. Fourteen sentences. Fourteen sentences."
                   characterId: ajf34a
             - id: line15
               systemActions:
@@ -779,43 +763,37 @@ story:
               presentation:
                 dialogue:
                   layoutId: fi3l
-                  mode: dialogue
-                  text: Section Three
+                  content: Section Three
                   characterId: ajf34a
             - id: line2
               presentation:
                 dialogue:
                   layoutId: fi3l
-                  mode: dialogue
-                  text: Wooooooooo
+                  content: Wooooooooo
                   characterId: ajf34a
             - id: line3
               presentation:
                 dialogue:
                   layoutId: fi3l
-                  mode: dialogue
-                  text: Fooooooooo
+                  content: Fooooooooo
                   characterId: ajf34a
             - id: line4
               presentation:
                 dialogue:
                   layoutId: fi3l
-                  mode: dialogue
-                  text: Gooooooooo
+                  content: Gooooooooo
                   characterId: ajf34a
             - id: line5
               presentation:
                 dialogue:
                   layoutId: fi3l
-                  mode: dialogue
-                  text: GlGooooooooo
+                  content: GlGooooooooo
                   characterId: ajf34a
             - id: line6
               presentation:
                 dialogue:
                   layoutId: fi3l
-                  mode: dialogue
-                  text: XGooooooooo
+                  content: XGooooooooo
                   characterId: ajf34a
     93jkal3:
       name: Menu Scene
@@ -823,9 +801,6 @@ story:
         asdkjl32:
           lines:
             - id: line1
-              presentation:
-                layout:
-                  id: 34ik
-                  layoutId: dafkjkl3
+              presentation: {}
                 # preset:
                 #   presetId: 3ijasdk3

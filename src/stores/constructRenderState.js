@@ -144,21 +144,30 @@ export const addVisuals = (
   if (presentationState.visual) {
     const items = presentationState.visual.items;
     for (const item of items) {
-      if (item.visualId) {
-        const visual = assets.visuals[item.visualId];
-        const transform = assets.transforms[item.transformId];
-        elements.push({
-          id: `visual-${item.visualId}`,
-          type: "sprite",
-          url: resolveFile(visual.fileId),
-          x: transform.x,
-          y: transform.y,
-          anchorX: transform.anchorX,
-          anchorY: transform.anchorY,
-          rotation: transform.rotation,
-          scaleX: transform.scaleX,
-          scaleY: transform.scaleY,
-        });
+      if (item.resourceId && item.resourceType) {
+        let resource;
+        if (item.resourceType === "image") {
+          resource = assets.images[item.resourceId];
+        } else {
+          // Placeholder for other resource types
+          continue;
+        }
+        
+        if (resource) {
+          const transform = assets.transforms[item.transformId];
+          elements.push({
+            id: `visual-${item.id}`,
+            type: "sprite",
+            url: resolveFile(resource.fileId),
+            x: transform.x,
+            y: transform.y,
+            anchorX: transform.anchorX,
+            anchorY: transform.anchorY,
+            rotation: transform.rotation,
+            scaleX: transform.scaleX,
+            scaleY: transform.scaleY,
+          });
+        }
       }
 
       if (item.animations) {
@@ -215,13 +224,21 @@ export const addDialogue = (
     character = assets.characters[presentationState.dialogue.characterId];
   }
 
+  // Check if there's a character object override
+  if (presentationState.dialogue.character) {
+    character = { 
+      ...character, 
+      name: presentationState.dialogue.character.name 
+    };
+  }
+
   const wrappedTemplate = { elements: layout.elements };
   const result = parseAndRender(wrappedTemplate, {
     dialogue: {
       character: {
         name: character?.name || "",
       },
-      text: presentationState.dialogue.text,
+      text: presentationState.dialogue.content,
     },
   });
   const dialogueElements = result?.elements;
@@ -235,29 +252,6 @@ export const addDialogue = (
   }
 };
 
-/**
- *
- * @param {Object} params
- */
-export const addLayouts = (
-  { elements, transitions },
-  { presentationState, ui, variables },
-) => {
-  if (presentationState.layout) {
-    const layout = ui.layouts[presentationState.layout.layoutId];
-    const wrappedTemplate = { elements: layout.elements };
-    const result = parseAndRender(wrappedTemplate, { variables });
-    const layoutElements = result?.elements;
-
-    if (Array.isArray(layoutElements)) {
-      for (const element of layoutElements) {
-        elements.push(element);
-      }
-    } else if (layoutElements) {
-      elements.push(layoutElements);
-    }
-  }
-};
 
 /**
  *
@@ -325,7 +319,6 @@ export default [
   addCharacters,
   addVisuals,
   addDialogue,
-  addLayouts,
   addChoices,
   addBgm,
   addSfx,
