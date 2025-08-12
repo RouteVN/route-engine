@@ -35,8 +35,12 @@ export const addBackgrundOrCg = (
   { presentationState, resources, resolveFile },
 ) => {
   if (presentationState.background) {
-    if (presentationState.background.resourceId && presentationState.background.resourceType === "image") {
-      const background = resources.images[presentationState.background.resourceId];
+    if (
+      presentationState.background.resourceId &&
+      presentationState.background.resourceType === "image"
+    ) {
+      const background =
+        resources.images[presentationState.background.resourceId];
       elements.push({
         id: "bg-cg",
         type: "sprite",
@@ -228,7 +232,7 @@ export const addDialogue = (
   if (presentationState.dialogue.character) {
     character = {
       ...character,
-      name: presentationState.dialogue.character.name
+      name: presentationState.dialogue.character.name,
     };
   }
 
@@ -251,7 +255,6 @@ export const addDialogue = (
     elements.push(structuredClone(dialogueElements));
   }
 };
-
 
 /**
  *

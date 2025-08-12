@@ -329,8 +329,7 @@ export const prevLine = ({ state, projectDataStore }) => {
 
   if (pointerMode === "read") {
     state.story.currentPointer = "history";
-    state.story.historyEntryIndex =
-      state.story.history.entries.length - 1;
+    state.story.historyEntryIndex = state.story.history.entries.length - 1;
   }
 
   state.story.pointers["history"].lineId = prevLine.id;
@@ -408,7 +407,7 @@ export const updateVariable = ({ state, projectDataStore }, payload) => {
       state.variables[variableId] = (state.variables[variableId] || 0) - 1;
     }
   }
-  
+
   state.pendingEffects.push({
     name: "render",
   });
@@ -418,8 +417,7 @@ export const updateVariable = ({ state, projectDataStore }, payload) => {
  * @param {ApplyParams} params
  */
 export const setPreset = ({ state }, payload) => {
-  state.story.pointers[state.story.currentPointer].presetId =
-    payload.presetId;
+  state.story.pointers[state.story.currentPointer].presetId = payload.presetId;
 };
 
 /**
