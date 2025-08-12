@@ -1,11 +1,10 @@
 ---
-title: 'Sample'
+title: "Sample"
 ---
-
 screen:
   width: 1920
   height: 1080
-  backgroundColor: '#000000'
+  backgroundColor: "#000000"
 
 presets:
   bj342s:
@@ -18,24 +17,21 @@ presets:
 ui:
   layouts:
     fi3l:
-      name: Choices 
+      name: Choices
       elements:
-        - type: 'container'
+        - type: "container"
           x: 100
           y: 100
           direction: vertical
           children:
-            $map:
-              $eval: 'choice.items'
-            each(v,k):
+            $for choice in choice.items:
               type: container
               x: 0
               y: 0
               height: 40
               children:
                 - type: text
-                  text:
-                    $eval: 'v.text'
+                  text: "${choice.content}"
                   style:
                     fontSize: 24
                     fill: "white"
@@ -56,7 +52,7 @@ story:
                 choice:
                   layoutId: fi3l
                   items:
-                    - text: Choice 1 a
-                    - text: Choice 2 b
-                    - text: Choice 3 c
-                    - text: Choice 4 d
+                    - content: Choice 1 a
+                    - content: Choice 2 b
+                    - content: Choice 3 c
+                    - content: Choice 4 d

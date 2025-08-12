@@ -152,7 +152,7 @@ export const addVisuals = (
           // Placeholder for other resource types
           continue;
         }
-        
+
         if (resource) {
           const transform = resources.transforms[item.transformId];
           elements.push({
@@ -226,9 +226,9 @@ export const addDialogue = (
 
   // Check if there's a character object override
   if (presentationState.dialogue.character) {
-    character = { 
-      ...character, 
-      name: presentationState.dialogue.character.name 
+    character = {
+      ...character,
+      name: presentationState.dialogue.character.name
     };
   }
 
@@ -266,7 +266,7 @@ export const addChoices = (
 
     const wrappedTemplate = { elements: layout.elements };
     const result = parseAndRender(wrappedTemplate, {
-      choices: {
+      choice: {
         items: presentationState.choice.items,
       },
     });
