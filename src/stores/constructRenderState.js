@@ -72,7 +72,7 @@ export const addBackgrundOrCg = (
           type: "keyframes",
           event: "add",
           elementId: "bg-cg",
-          animationProperties: animation.properties,
+          properties: animation.properties,
         });
       }
 
@@ -85,7 +85,7 @@ export const addBackgrundOrCg = (
             type: "keyframes",
             event: "remove",
             elementId: "bg-cg",
-            animationProperties: animation.properties,
+            properties: animation.properties,
           });
         }
       }
@@ -195,7 +195,7 @@ export const addVisuals = (
             type: "keyframes",
             event: "add",
             elementId: `visual-${item.id}`,
-            animationProperties: animation.properties,
+            properties: animation.properties,
           });
         }
 
@@ -206,7 +206,7 @@ export const addVisuals = (
             type: "keyframes",
             event: "remove",
             elementId: `visual-${item.id}`,
-            animationProperties: animation.properties,
+            properties: animation.properties,
           });
         }
       }

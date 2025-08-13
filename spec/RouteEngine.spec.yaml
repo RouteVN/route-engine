@@ -52,7 +52,7 @@ mocks:
                   type: keyframes
                   event: add
                   elementId: visual-39kdfj231
-                  animationProperties:
+                  properties:
                     alpha:
                       initialValue: 0
                       keyframes:
