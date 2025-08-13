@@ -1,0 +1,68 @@
+---
+title: "Layout background"
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+presets:
+  bj342s:
+    name: Read
+    eventsMap:
+      LeftClick:
+        systemActions:
+          nextLine: {}
+
+resources:
+  images:
+    alkejf3la:
+      fileId: lakjf3lka
+    8a3lkja:
+      fileId: dmni32
+    3ljdasfjlk32:
+      fileId: 23jkfa893
+
+ui:
+  layouts:
+    j3i8dk32:
+      name: Title Screen
+      elements:
+        - id: bg
+          type: sprite
+          url: file:lakjf3lka
+          x: 0
+          y: 0
+        - id: container
+          type: container
+          x: 400
+          y: 400
+          children:
+            - id: start23R
+              type: text
+              text: Start
+              x: 0
+              y: 0
+              style:
+                fontSize: 48
+                fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+
+story:
+  initialPresetId: bj342s
+  initialSceneId: ajfl3a
+  scenes:
+    ajfl3a:
+      name: Scene 1
+      initialSectionId: l3kjfawelf
+      sections:
+        l3kjfawelf:
+          name: Section 1
+          lines:
+            - id: line1
+              presentation:
+                background:
+                  resourceId: j3i8dk32
+                  resourceType: layout

@@ -1,6 +1,6 @@
 {
   "name": "route-engine-js",
-  "version": "0.0.2-rc12",
+  "version": "0.0.2-rc13",
   "type": "module",
   "main": "dist/RouteEngine.js",
   "exports": {
@@ -14,8 +14,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "build": "bun run esbuild.js",
-    "lint": "bunx prettier src tests -c",
-    "lint:fix": "bunx prettier src tests -w",
+    "lint": "bunx prettier src -c",
+    "lint:fix": "bunx prettier src -w",
     "coverage": "vitest run --coverage",
     "vt:generate": "bun run esbuild.js && rtgl vt generate --skip-screenshots",
     "serve": "bun run esbuild.js && bunx serve -p 3004 .rettangoli/vt/_site"
