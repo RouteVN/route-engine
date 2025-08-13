@@ -32,17 +32,34 @@ export const generateScreenBackgroundElement = ({ elements }, { screen }) => {
  */
 export const addBackgrundOrCg = (
   { elements, transitions },
-  { presentationState, resources, resolveFile },
+  { presentationState, resources, ui, resolveFile },
 ) => {
   if (presentationState.background) {
-    if (presentationState.background.resourceId && presentationState.background.resourceType === "image") {
-      const background = resources.images[presentationState.background.resourceId];
+    if (
+      presentationState.background.resourceId &&
+      presentationState.background.resourceType === "image"
+    ) {
+      const background =
+        resources.images[presentationState.background.resourceId];
       elements.push({
         id: "bg-cg",
         type: "sprite",
         x: 0,
         y: 0,
         url: resolveFile(background.fileId),
+      });
+    }
+
+    if (
+      presentationState.background.resourceId &&
+      presentationState.background.resourceType === "layout"
+    ) {
+      const layout = ui.layouts[presentationState.background.resourceId];
+
+      elements.push({
+        id: "bg-cg",
+        type: "container",
+        children: layout.elements,
       });
     }
 
@@ -152,7 +169,7 @@ export const addVisuals = (
           // Placeholder for other resource types
           continue;
         }
-        
+
         if (resource) {
           const transform = resources.transforms[item.transformId];
           elements.push({
@@ -226,9 +243,9 @@ export const addDialogue = (
 
   // Check if there's a character object override
   if (presentationState.dialogue.character) {
-    character = { 
-      ...character, 
-      name: presentationState.dialogue.character.name 
+    character = {
+      ...character,
+      name: presentationState.dialogue.character.name,
     };
   }
 
@@ -252,7 +269,6 @@ export const addDialogue = (
   }
 };
 
-
 /**
  *
  * @param {Object} params
@@ -266,7 +282,7 @@ export const addChoices = (
 
     const wrappedTemplate = { elements: layout.elements };
     const result = parseAndRender(wrappedTemplate, {
-      choices: {
+      choice: {
         items: presentationState.choice.items,
       },
     });
