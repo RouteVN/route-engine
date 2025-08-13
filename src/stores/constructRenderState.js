@@ -32,7 +32,7 @@ export const generateScreenBackgroundElement = ({ elements }, { screen }) => {
  */
 export const addBackgrundOrCg = (
   { elements, transitions },
-  { presentationState, resources, resolveFile },
+  { presentationState, resources, ui, resolveFile },
 ) => {
   if (presentationState.background) {
     if (
@@ -47,6 +47,19 @@ export const addBackgrundOrCg = (
         x: 0,
         y: 0,
         url: resolveFile(background.fileId),
+      });
+    }
+
+    if (
+      presentationState.background.resourceId &&
+      presentationState.background.resourceType === "layout"
+    ) {
+      const layout = ui.layouts[presentationState.background.resourceId];
+
+      elements.push({
+        id: "bg-cg",
+        type: "container",
+        children: layout.elements,
       });
     }
 
