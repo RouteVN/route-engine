@@ -277,6 +277,7 @@ export const addChoices = (
   { elements, transitions },
   { presentationState, resources, ui },
 ) => {
+
   if (presentationState.choice) {
     const layout = ui.layouts[presentationState.choice.layoutId];
 
