@@ -60,6 +60,12 @@ export const applyVisual = (state, presentation) => {
  */
 export const applyDialogue = (state, presentation) => {
   if (!presentation.dialogue) {
+
+    if (state.dialogue) {
+      state.dialogue.content = undefined;
+      state.dialogue.characterId = undefined;
+    }
+
     return;
   }
 
@@ -67,6 +73,9 @@ export const applyDialogue = (state, presentation) => {
   if (!state.dialogue) {
     state.dialogue = {};
   }
+
+  state.dialogue.content = undefined;
+  state.dialogue.characterId = undefined;
 
   // Apply presentation dialogue properties
   Object.assign(state.dialogue, presentation.dialogue);

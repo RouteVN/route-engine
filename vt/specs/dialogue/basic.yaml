@@ -21,17 +21,25 @@ ui:
       elements:
         - id: dialogue-container
           type: "container"
-          x: 100
-          y: 100
+          x: 50
+          y: 300
           children:
+            - id: "bfeawjk2g"
+              type: sprite
+              url: file:3kda832 # url: file:3kda832
+              x: 0
+              y: 0
             - id: dialogue-character-name
               type: text
               text: "${dialogue.character.name}"
+              x: 20
+              y: 40
               style:
                 fontSize: 24
                 fill: "white"
             - id: dialogue-text
               type: "text"
+              x: 20
               y: 100
               text: "${dialogue.content}"
               style:
@@ -61,17 +69,17 @@ story:
                   content: Hello! Welcome to this visual novel.
                   characterId: ajf34a
             - id: line2
-              presentation:
-                dialogue:
-                  content: This is the second line of dialogue. Click to continue.
-                  characterId: ajf34a
+              presentation: {}
             - id: line3
               presentation:
                 dialogue:
                   content: Here we are on the third line. The dialogue system is working!
-                  characterId: ajf34a
             - id: line4
               presentation:
                 dialogue:
-                  content: This is the final line. Thank you for testing the dialogue feature.
+                  characterId: ajf34a
+            - id: line5
+              presentation:
+                dialogue:
+                  content: Hello! Welcome to this visual novel.
                   characterId: ajf34a

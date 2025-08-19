@@ -1,6 +1,6 @@
 {
   "name": "route-engine-js",
-  "version": "0.0.2-rc15",
+  "version": "0.0.2-rc16",
   "type": "module",
   "main": "dist/RouteEngine.js",
   "exports": {
