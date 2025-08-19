@@ -1,10 +1,10 @@
 ---
-title: "Basic"
+title: "With background"
 ---
 screen:
   width: 1920
   height: 1080
-  backgroundColor: "#000000"
+  backgroundColor: "#cccccc"
 
 presets:
   bj342s:
@@ -21,17 +21,25 @@ ui:
       elements:
         - id: dialogue-container
           type: "container"
-          x: 100
-          y: 100
+          x: 50
+          y: 300
           children:
+            - id: "bfeawjk2g"
+              type: sprite
+              url: file:3kda832 # url: file:3kda832
+              x: 0
+              y: 0
             - id: dialogue-character-name
               type: text
               text: "${dialogue.character.name}"
+              x: 20
+              y: 40
               style:
                 fontSize: 24
                 fill: "white"
             - id: dialogue-text
               type: "text"
+              x: 20
               y: 100
               text: "${dialogue.content}"
               style:
@@ -39,9 +47,26 @@ ui:
                 fill: "white"
 
 resources:
+  animations:
+    3lkj289:
+      name: "Fade In"
+      properties:
+        alpha:
+          initialValue: 0
+          keyframes:
+            - duration: 700
+              value: 1
+              easing: linear
   characters:
     ajf34a:
       name: Character A
+  images:
+    alkejf3la:
+      fileId: lakjf3lka
+    8a3lkja:
+      fileId: dmni32
+    3ljdasfjlk32:
+      fileId: 23jkfa893
 
 story:
   initialSceneId: ajfl3a
@@ -62,15 +87,22 @@ story:
                   characterId: ajf34a
             - id: line2
               presentation:
+                background:
+                  resourceId: alkejf3la
+                  resourceType: image
+                  animations:
+                    in: 3lkj289
+            - id: line3
+              presentation:
                 dialogue:
                   content: This is the second line of dialogue. Click to continue.
                   characterId: ajf34a
-            - id: line3
+            - id: line4
               presentation:
                 dialogue:
                   content: Here we are on the third line. The dialogue system is working!
                   characterId: ajf34a
-            - id: line4
+            - id: line5
               presentation:
                 dialogue:
                   content: This is the final line. Thank you for testing the dialogue feature.
