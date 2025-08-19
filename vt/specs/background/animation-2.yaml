@@ -1,5 +1,5 @@
 ---
-title: "Image Background"
+title: "Animation 2"
 ---
 screen:
   width: 1920
@@ -23,6 +23,25 @@ resources:
     3ljdasfjlk32:
       fileId: 23jkfa893
 
+  animations:
+    3lkj289:
+      name: "Fade In"
+      properties:
+        alpha:
+          initialValue: 0
+          keyframes:
+            - duration: 700
+              value: 1
+              easing: linear
+    8h3js:
+      name: "Fade Out"
+      properties:
+        alpha:
+          initialValue: 1
+          keyframes:
+            - duration: 700
+              value: 0
+              easing: linear
 story:
   initialPresetId: bj342s
   initialSceneId: ajfl3a
@@ -39,13 +58,15 @@ story:
                 background:
                   resourceId: alkejf3la
                   resourceType: image
+                  animations:
+                    in: 3lkj289
             - id: line2
               presentation:
                 background:
-                  resourceId: 8a3lkja
+                  resourceId: alkejf3la
                   resourceType: image
             - id: line3
               presentation:
                 background:
-                  resourceId: 3ljdasfjlk32
+                  resourceId: alkejf3la
                   resourceType: image

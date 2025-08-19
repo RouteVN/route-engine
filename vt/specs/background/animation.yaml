@@ -1,11 +1,10 @@
 ---
-title: 'Sample'
+title: "Animation 1"
 ---
-
 screen:
   width: 1920
   height: 1080
-  backgroundColor: '#000000'
+  backgroundColor: "#000000"
 
 presets:
   bj342s:
@@ -14,7 +13,6 @@ presets:
       LeftClick:
         systemActions:
           nextLine: {}
-
 
 resources:
   images:
@@ -67,4 +65,3 @@ story:
                 background:
                   animations:
                     out: 8h3js
-

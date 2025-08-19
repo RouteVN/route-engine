@@ -10,7 +10,7 @@ import RouteGraphics, {
   SliderRendererPlugin,
   KeyframeTransitionPlugin,
   createAssetBufferManager,
-} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.2-rc19/+esm";
+} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.2-rc22/+esm";
 
 const jsonData = yaml.load(window.yamlContent);
 
@@ -42,6 +42,10 @@ const init = async () => {
     },
     "file:94lkj289": {
       url: "/public/logo1.png",
+      type: "image/png",
+    },
+    "file:3kda832": {
+      url: "/public/dialogue-box.png",
       type: "image/png",
     },
     "file:3ka3s": {
