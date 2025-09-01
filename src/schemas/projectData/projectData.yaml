@@ -1,0 +1,40 @@
+$schema: http://json-schema.org/draft-07/schema#
+title: Project Data Schema
+description: Main schema for visual novel project data that references all other schemas
+type: object
+properties:
+  screen:
+    type: object
+    description: Screen configuration for the project
+    properties:
+      width:
+        type: integer
+        description: Screen width in pixels
+      height:
+        type: integer
+        description: Screen height in pixels
+      backgroundColor:
+        type: string
+        description: Background color for the screen
+        default: "#000000"
+    required: [width, height]
+    additionalProperties: false
+
+  presets:
+    type: object
+    description: Collection of event handling presets
+    patternProperties:
+      "^[a-zA-Z0-9_-]+$":
+        $ref: "presets.yaml"
+    additionalProperties: false
+
+  resources:
+    $ref: "resources.yaml"
+    description: All project resources including images, audio, characters, etc.
+
+  story:
+    $ref: "story.yaml"
+    description: Main story structure with scenes and sections
+
+required: [screen, presets, resources, story]
+additionalProperties: false

@@ -1,6 +1,6 @@
 $schema: http://json-schema.org/draft-07/schema#
 title: Story Schema
-description: Schema for the main story structure in visual novel engine
+description: Schema for the complete story structure in visual novel engine
 type: object
 properties:
   initialPresetId:
@@ -16,7 +16,59 @@ properties:
     description: Collection of scenes in the story
     patternProperties:
       "^[a-zA-Z0-9_-]+$":
-        $ref: "scene.yaml"
+        type: object
+        description: Scene definition
+        properties:
+          name:
+            type: string
+            description: Display name for the scene
+          
+          initialSectionId:
+            type: string
+            description: ID of the section to start with when entering this scene
+          
+          sections:
+            type: object
+            description: Collection of sections within this scene
+            patternProperties:
+              "^[a-zA-Z0-9_-]+$":
+                type: object
+                description: Section definition
+                properties:
+                  name:
+                    type: string
+                    description: Display name for the section
+                  
+                  lines:
+                    type: array
+                    description: Array of story lines/steps within this section
+                    items:
+                      type: object
+                      description: Individual story line/step
+                      properties:
+                        id:
+                          type: string
+                          description: Unique identifier for the line
+                        
+                        presentation:
+                          $ref: "../presentation.yaml"
+                          description: Describes what to visually and audibly present
+                        
+                        system:
+                          type: object
+                          description: System commands to execute for this line that update the system state
+                          $ref: "../system.yaml"
+                      
+                      required: [id, presentation]
+                      additionalProperties: false
+                    minItems: 1
+                
+                required: [name]
+                additionalProperties: false
+            additionalProperties: false
+        
+        required: [name, initialSectionId, sections]
+        additionalProperties: false
     additionalProperties: false
     minProperties: 1
 
