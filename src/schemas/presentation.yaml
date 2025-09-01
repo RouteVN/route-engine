@@ -10,6 +10,7 @@ properties:
       mode:
         type: string
         description: Mode of cleaning/clearing all existing state
+    additionalProperties: false
 
   background:
     type: object
@@ -48,14 +49,6 @@ properties:
       characterId:
         type: string
         description: ID of the character speaking
-      # character:
-      #   type: object
-      #   description: Character information for dialogue. This will overwrite characterId values
-      #   properties:
-      #     name:
-      #       type: string
-      #       description: Name of the character
-      #   additionalProperties: false
     additionalProperties: false
 
   character:
@@ -87,12 +80,6 @@ properties:
                     type: string
                     description: ID of the sprite part resource
                 additionalProperties: false
-            # inAnimation:
-            #   type: string
-            #   description: Animation ID for character entrance
-            # outAnimation:
-            #   type: string
-            #   description: Animation ID for character exit
           required: [id]
           additionalProperties: false
     additionalProperties: false
@@ -119,17 +106,6 @@ properties:
             transformId:
               type: string
               description: ID of the transform where visual appears
-            # animations:
-            #   type: object
-            #   description: Animation effects for visual transitions
-            #   properties:
-            #     in:
-            #       type: string
-            #       description: Animation ID for visual entrance
-            #     out:
-            #       type: string
-            #       description: Animation ID for visual exit
-            #   additionalProperties: false
           required: [id]
           additionalProperties: false
     additionalProperties: false
@@ -153,14 +129,7 @@ properties:
             content:
               type: string
               description: Text content of the choice option
-            # value:
-            #   type: string
-            #   description: Value associated with the choice
-            # enabled:
-            #   type: boolean
-            #   description: Whether the choice is selectable
-            #   default: true
-          required: [text]
+          required: [id, content]
           additionalProperties: false
     additionalProperties: false
 
@@ -179,15 +148,6 @@ properties:
             audioId:
               type: string
               description: ID of the sound effect resource
-            # volume:
-            #   type: number
-            #   description: Volume level for the sound effect
-            #   minimum: 0
-            #   maximum: 1
-            # loop:
-            #   type: boolean
-            #   description: Whether the sound effect should loop
-            #   default: false
           required: [id, audioId]
           additionalProperties: false
     additionalProperties: false
@@ -199,40 +159,6 @@ properties:
       audioId:
         type: string
         description: ID of the background music resource
-      # volume:
-      #   type: number
-      #   description: Volume level for the background music
-      #   minimum: 0
-      #   maximum: 1
-      # loop:
-      #   type: boolean
-      #   description: Whether the background music should loop
-      #   default: true
-      # fadeIn:
-      #   type: number
-      #   description: Fade-in duration in milliseconds
-      # fadeOut:
-      #   type: number
-      #   description: Fade-out duration in milliseconds
-    additionalProperties: false
-
-  animation:
-    type: object
-    description: Direct animation effects
-    properties:
-      animationId:
-        type: string
-        description: ID of the animation resource
-      target:
-        type: string
-        description: Target element for the animation
-      duration:
-        type: number
-        description: Animation duration in milliseconds
-      easing:
-        type: string
-        description: Animation easing function
-        enum: [linear, ease-in, ease-out, ease-in-out]
     additionalProperties: false
 
 additionalProperties: false

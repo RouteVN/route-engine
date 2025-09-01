@@ -32,35 +32,35 @@ presets:
           clearCurrentMode:
             mode: read
 
-variables:
-  # 🔧 persistence Types
+resources:
+  variables:
+    # 🔧 persistence Types
 
-  # • runtime – temporary; resets when game restarts
-  # Example: Currently selected menu tab, temporary UI state, or animation line
-  # Use when the value is only needed while the game is running and should not persist across restarts.
+    # • runtime – temporary; resets when game restarts
+    # Example: Currently selected menu tab, temporary UI state, or animation line
+    # Use when the value is only needed while the game is running and should not persist across restarts.
 
-  # • local – saved on this device only
-  # Example: Text speed, sound/music volume, accessibility preferences
-  # Use for user preferences that should persist on the current device, but don’t need syncing or save/load.
+    # • local – saved on this device only
+    # Example: Text speed, sound/music volume, accessibility preferences
+    # Use for user preferences that should persist on the current device, but don’t need syncing or save/load.
 
-  # • global – synced across all devices
-  # Example: Whether the game is completed, unlocked bonus content, claimed daily rewards
-  # Use when the value should follow the player across multiple devices (via cloud sync).
+    # • global – synced across all devices
+    # Example: Whether the game is completed, unlocked bonus content, claimed daily rewards
+    # Use when the value should follow the player across multiple devices (via cloud sync).
 
-  # • saveData – saved only in game saves
-  # Example: Player progress, inventory items, story flags
-  # Use for values that are tied to save/load and shouldn’t change unless the player loads a saved game.
+    # • saveData – saved only in game saves
+    # Example: Player progress, inventory items, story flags
+    # Use for values that are tied to save/load and shouldn’t change unless the player loads a saved game.
 
-  currentMenuTabId:
-    type: string
-    default: options
-    persistence: runtime
-  textSpeed:
-    type: number
-    default: 50
-    persistence: local
+    currentMenuTabId:
+      type: string
+      default: options
+      persistence: runtime
+    textSpeed:
+      type: number
+      default: 50
+      persistence: local
 
-ui:
   layouts:
     dafkjkl3:
       name: Menu Screen
@@ -588,7 +588,6 @@ ui:
                 fontSize: 48
                 fill: yellow
 
-resources:
   characters:
     ajf34a:
       name: Character One

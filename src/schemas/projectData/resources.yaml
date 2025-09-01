@@ -1,6 +1,6 @@
 $schema: http://json-schema.org/draft-07/schema#
 title: Resources Schema
-description: Schema for resources in visual novel project data
+description: Schema for all project resources including images, audio, characters, etc.
 type: object
 properties:
   images:
@@ -9,6 +9,7 @@ properties:
     patternProperties:
       "^[a-zA-Z0-9_-]+$":
         type: object
+        description: Image resource
         properties:
           fileId:
             type: string
@@ -22,26 +23,28 @@ properties:
         required: [fileId, width, height]
         additionalProperties: false
     additionalProperties: false
-
+  
   characters:
     type: object
     description: Character sprite assets
     patternProperties:
       "^[a-zA-Z0-9_-]+$":
         type: object
+        description: Character resource
         properties:
           name:
             type: string
             description: Display name for the character
         additionalProperties: false
     additionalProperties: false
-
+  
   videos:
     type: object
     description: Video assets
     patternProperties:
       "^[a-zA-Z0-9_-]+$":
         type: object
+        description: Video resource
         properties:
           fileId:
             type: string
@@ -55,13 +58,14 @@ properties:
         required: [fileId, width, height]
         additionalProperties: false
     additionalProperties: false
-
+  
   transforms:
     type: object
     description: Transform configurations for positioning elements
     patternProperties:
       "^[a-zA-Z0-9_-]+$":
         type: object
+        description: Transform configuration
         properties:
           x:
             description: X coordinate position
@@ -86,13 +90,14 @@ properties:
             type: number
         additionalProperties: false
     additionalProperties: false
-
+  
   animations:
     type: object
     description: Animation definitions for various effects
     patternProperties:
       "^[a-zA-Z0-9_-]+$":
         type: object
+        description: Animation definition
         properties:
           name:
             type: string
@@ -132,13 +137,14 @@ properties:
         required: [name, properties]
         additionalProperties: false
     additionalProperties: false
-
+  
   audio:
     type: object
     description: Audio, including bgm and sound effects
     patternProperties:
       "^[a-zA-Z0-9_-]+$":
         type: object
+        description: Audio resource
         properties:
           fileId:
             type: string
@@ -146,13 +152,14 @@ properties:
         required: [fileId]
         additionalProperties: false
     additionalProperties: false
-
+  
   colors:
     type: object
     description: Color palette for the project
     patternProperties:
       "^[a-zA-Z0-9_-]+$":
         type: object
+        description: Color resource
         properties:
           hex:
             type: string
@@ -160,13 +167,14 @@ properties:
         required: [hex]
         additionalProperties: false
     additionalProperties: false
-
+  
   fonts:
     type: object
     description: Font file for the project
     patternProperties:
       "^[a-zA-Z0-9_-]+$":
         type: object
+        description: Font resource
         properties:
           fileId:
             type: string
@@ -174,12 +182,13 @@ properties:
         required: [fileId]
         additionalProperties: false
     additionalProperties: false
-
+  
   typography:
     type: object
     patternProperties:
       "^[a-zA-Z0-9_-]+$":
         type: object
+        description: Typography configuration
         properties:
           fontId:
             type: string
@@ -190,7 +199,7 @@ properties:
           fontWeight:
             type: string
             description: Font weight
-            enum: [100, 200, 300, 400, 500, 600, 700, 800, 900]
+            enum: ["100", "200", "300", "400", "500", "600", "700", "800", "900"]
           fontStyle:
             type: string
             description: Font style
@@ -201,34 +210,37 @@ properties:
         required: [fontId, fontSize, fontWeight, fontStyle, lineHeight]
         additionalProperties: false
     additionalProperties: false
-
+  
   layouts:
     type: object
-    description: Layouts for the project
+    description: Layout configurations for UI elements
     patternProperties:
       "^[a-zA-Z0-9_-]+$":
         type: object
+        description: Layout configuration
         properties:
-          layout:
-            type: object
-            properties:
-              layoutType:
-                type: string
-                description: Layout type
-                enum: [layout, dialogue, choice]
-              elements:
-                type: array
-              transitions:
-                type: array
-            required: [width, height]
-            additionalProperties: false
-          width:
-            type: number
-            description: Width of the layout in pixels
-          height:
-            type: number
-            description: Height of the layout in pixels
-        required: [layoutId, width, height]
-        additionalProperties: falsec
+          name:
+            type: string
+            description: Display name for the layout
+          elements:
+            type: array
+            description: Array of UI elements in this layout
+            items:
+              type: object
+              additionalProperties: true
+        additionalProperties: false
+    additionalProperties: false
+  
+  variables:
+    type: object
+    description: Game variables and their initial values
+    patternProperties:
+      "^[a-zA-Z0-9_-]+$":
+        description: Variable value
+        oneOf:
+          - type: string
+          - type: number
+          - type: boolean
+    additionalProperties: false
 
 additionalProperties: false

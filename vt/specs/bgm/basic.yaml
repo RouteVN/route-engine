@@ -20,8 +20,6 @@ resources:
       fileId: 3ka3s
     93k22:
       fileId: xk393
-
-ui:
   layouts:
     fi3l:
       name: Dialogue Screen

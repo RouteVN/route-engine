@@ -14,7 +14,7 @@ presets:
         systemActions:
           nextLine: {}
 
-ui:
+resources:
   layouts:
     j3i8dk32:
       name: Title Screen
@@ -53,8 +53,6 @@ ui:
             #   hoverStyle:
             #     fontSize: 48
             #     fill: yellow
-
-resources: {}
 
 story:
   initialSceneId: ajfl3a

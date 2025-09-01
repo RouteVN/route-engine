@@ -14,7 +14,7 @@ presets:
         systemActions:
           nextLine: {}
 
-ui:
+resources:
   layouts:
     fi3l:
       name: Dialogue Screen
@@ -45,8 +45,6 @@ ui:
               style:
                 fontSize: 24
                 fill: "white"
-
-resources:
   characters:
     ajf34a:
       name: Character A
