@@ -1,5 +1,6 @@
 ---
 title: "Image Background"
+description: standard image background transition without animation
 ---
 screen:
   width: 1920

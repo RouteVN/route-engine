@@ -28,11 +28,35 @@ properties:
         description: Animation effects for background transitions
         properties:
           in:
-            type: string
-            description: Animation ID for background entrance
+            type: object
+            description: Animation configuration for background entrance
+            properties:
+              animationId:
+                type: string
+                description: ID of the animation to use
+            required: [animationId]
+            additionalProperties: false
           out:
-            type: string
-            description: Animation ID for background exit
+            type: object
+            description: Animation configuration for background exit
+            properties:
+              animationId:
+                type: string
+                description: ID of the animation to use
+              resourceId:
+                type: string
+                description: ID of the resource to animate out
+            required: [animationId, resourceId]
+            additionalProperties: false
+          update:
+            type: object
+            description: Animation configuration for background update
+            properties:
+              animationId:
+                type: string
+                description: ID of the animation to use
+            required: [animationId]
+            additionalProperties: false
         additionalProperties: false
     additionalProperties: false
 
@@ -106,6 +130,41 @@ properties:
             transformId:
               type: string
               description: ID of the transform where visual appears
+            animations:
+              type: object
+              description: Animation effects for visual transitions
+              properties:
+                in:
+                  type: object
+                  description: Animation configuration for visual entrance
+                  properties:
+                    animationId:
+                      type: string
+                      description: ID of the animation to use
+                  required: [animationId]
+                  additionalProperties: false
+                out:
+                  type: object
+                  description: Animation configuration for visual exit
+                  properties:
+                    animationId:
+                      type: string
+                      description: ID of the animation to use
+                    resourceId:
+                      type: string
+                      description: ID of the resource to animate out
+                  required: [animationId, resourceId]
+                  additionalProperties: false
+                update:
+                  type: object
+                  description: Animation configuration for visual update
+                  properties:
+                    animationId:
+                      type: string
+                      description: ID of the animation to use
+                  required: [animationId]
+                  additionalProperties: false
+              additionalProperties: false
           required: [id]
           additionalProperties: false
     additionalProperties: false

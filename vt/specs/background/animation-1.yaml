@@ -1,5 +1,6 @@
 ---
 title: "Animation 1"
+description: Test animaton in , update, out
 ---
 screen:
   width: 1920
@@ -33,11 +34,19 @@ resources:
             - duration: 700
               value: 1
               easing: linear
+    k38df:
+      name: "Fade to half"
+      properties:
+        alpha:
+          keyframes:
+            - duration: 700
+              value: 0.5
+              easing: linear
+
     8h3js:
       name: "Fade Out"
       properties:
         alpha:
-          initialValue: 1
           keyframes:
             - duration: 700
               value: 0
@@ -59,9 +68,20 @@ story:
                   resourceId: alkejf3la
                   resourceType: image
                   animations:
-                    in: 3lkj289
+                    in:
+                      animationId: 3lkj289
             - id: line2
               presentation:
                 background:
+                  resourceId: alkejf3la
+                  resourceType: image
                   animations:
-                    out: 8h3js
+                    update:
+                      animationId: k38df
+            - id: line3
+              presentation:
+                background:
+                  animations:
+                    out:
+                      animationId: 8h3js
+                      resourceId: alkejf3la
