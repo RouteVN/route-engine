@@ -1,0 +1,214 @@
+---
+title: "Character Animation 2"
+description: Test both in and out animation at same time for character transitions
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+presets:
+  bj342s:
+    name: Read
+    eventsMap:
+      LeftClick:
+        systemActions:
+          nextLine: {}
+
+resources:
+  images:
+    alkejf3la:
+      fileId: lakjf3lka
+    8a3lkja:
+      fileId: dmni32
+
+  characters:
+    alkjf3ia:
+      variables:
+        name: "Abc"
+      sprites:
+        fk4jla893:
+          fileId: la3lka
+        3fjaklj34:
+          fileId: x342fga
+    char2:
+      variables:
+        name: "Def"
+      sprites:
+        spr1:
+          fileId: file1
+        spr2:
+          fileId: file2
+
+  transforms:
+    iasdlf:
+      x: 100
+      y: 300
+    a32kf3:
+      x: 500
+      y: 300
+    t_right:
+      x: 1400
+      y: 300
+
+  animations:
+    slide_in_left:
+      name: "Slide In From Left"
+      properties:
+        x:
+          initialValue: -500
+          keyframes:
+            - duration: 1500
+              value: 100
+              easing: easeOutCubic
+        alpha:
+          initialValue: 0
+          keyframes:
+            - duration: 1500
+              value: 1
+              easing: linear
+    slide_in_right:
+      name: "Slide In From Right"
+      properties:
+        x:
+          initialValue: 2420
+          keyframes:
+            - duration: 1500
+              value: 1400
+              easing: easeOutCubic
+        alpha:
+          initialValue: 0
+          keyframes:
+            - duration: 1500
+              value: 1
+              easing: linear
+    slide_out_left:
+      name: "Slide Out To Left"
+      properties:
+        x:
+          keyframes:
+            - duration: 1500
+              value: -500
+              easing: easeInCubic
+        alpha:
+          keyframes:
+            - duration: 1500
+              value: 0
+              easing: linear
+    slide_out_right:
+      name: "Slide Out To Right"
+      properties:
+        x:
+          keyframes:
+            - duration: 1500
+              value: 2420
+              easing: easeInCubic
+        alpha:
+          keyframes:
+            - duration: 1500
+              value: 0
+              easing: linear
+
+story:
+  initialPresetId: bj342s
+  initialSceneId: ajfl3a
+  scenes:
+    ajfl3a:
+      name: Scene 1
+      initialSectionId: l3kjfawelf
+      sections:
+        l3kjfawelf:
+          name: Section 1
+          lines:
+            - id: line1
+              presentation:
+                background:
+                  resourceId: alkejf3la
+                  resourceType: image
+                character:
+                  items:
+                    - id: "laj389d"
+                      transformId: iasdlf
+                      sprites:
+                        - id: base
+                          imageId: fk4jla893
+                        - id: outfit
+                          imageId: 3fjaklj34
+                      animations:
+                        in:
+                          animationId: slide_in_left
+            - id: line2
+              presentation:
+                background:
+                  resourceId: alkejf3la
+                  resourceType: image
+                character:
+                  items:
+                    - id: "laj389d"
+                      transformId: iasdlf
+                      sprites:
+                        - id: base
+                          imageId: fk4jla893
+                        - id: outfit
+                          imageId: 3fjaklj34
+                    - id: "char2id"
+                      transformId: t_right
+                      sprites:
+                        - id: base
+                          imageId: spr1
+                        - id: outfit
+                          imageId: spr2
+                      animations:
+                        in:
+                          animationId: slide_in_right
+            - id: line3
+              presentation:
+                background:
+                  resourceId: 8a3lkja
+                  resourceType: image
+                character:
+                  items:
+                    - id: "laj389d"
+                      transformId: iasdlf
+                      sprites:
+                        - id: base
+                          imageId: fk4jla893
+                        - id: outfit
+                          imageId: 3fjaklj34
+                      animations:
+                        out:
+                          animationId: slide_out_left
+                    - id: "newchar"
+                      transformId: a32kf3
+                      sprites:
+                        - id: base
+                          imageId: fk4jla893
+                        - id: outfit
+                          imageId: 3fjaklj34
+                      animations:
+                        in:
+                          animationId: slide_in_left
+            - id: line4
+              presentation:
+                background:
+                  resourceId: 8a3lkja
+                  resourceType: image
+                character:
+                  items:
+                    - id: "char2id"
+                      transformId: t_right
+                      sprites:
+                        - id: base
+                          imageId: spr1
+                        - id: outfit
+                          imageId: spr2
+                      animations:
+                        out:
+                          animationId: slide_out_right
+                    - id: "newchar"
+                      transformId: a32kf3
+                      sprites:
+                        - id: base
+                          imageId: fk4jla893
+                        - id: outfit
+                          imageId: 3fjaklj34
