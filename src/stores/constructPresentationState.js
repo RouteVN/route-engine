@@ -105,52 +105,8 @@ export const applyCharacter = (state, presentation) => {
     return;
   }
 
-  // Handle case where there is no existing character
-  if (!state.character) {
-    state.character = JSON.parse(JSON.stringify(presentation.character));
-    return;
-  }
-
-  // Update existing character properties
-  Object.assign(state.character, presentation.character);
-
-  // Keep existing items that aren't in the presentation
-  if (!state.character.items) {
-    state.character.items = [];
-  }
-
-  // Process each existing item
-  for (let i = 0; i < state.character.items.length; i++) {
-    const existingItem = state.character.items[i];
-    const matchingItem = presentation.character.items.find(
-      (item) => item.id === existingItem.id,
-    );
-
-    if (!matchingItem) {
-      // Item not in presentation, remove inAnimation
-      delete existingItem.inAnimation;
-    } else {
-      // Item is in presentation, update it
-      Object.assign(existingItem, matchingItem);
-
-      // Handle animations
-      if (!matchingItem.inAnimation) {
-        delete existingItem.inAnimation;
-      }
-      if (!matchingItem.outAnimation) {
-        delete existingItem.outAnimation;
-      }
-    }
-  }
-
-  // Add new items that aren't already in the state
-  presentation.character.items.forEach((presentationItem) => {
-    if (
-      !state.character.items.some((item) => item.id === presentationItem.id)
-    ) {
-      state.character.items.push(presentationItem);
-    }
-  });
+  // Simply replace the entire character state
+  state.character = JSON.parse(JSON.stringify(presentation.character));
 };
 
 /**

@@ -1,0 +1,137 @@
+---
+title: "Character Animation 1"
+description: Test animation in, update, out for character containers
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+presets:
+  bj342s:
+    name: Read
+    eventsMap:
+      LeftClick:
+        systemActions:
+          nextLine: {}
+
+resources:
+  images:
+    alkejf3la:
+      fileId: lakjf3lka
+
+  characters:
+    alkjf3ia:
+      variables:
+        name: "Abc"
+      sprites:
+        fk4jla893:
+          fileId: la3lka
+        3fjaklj34:
+          fileId: x342fga
+
+  transforms:
+    iasdlf:
+      x: 100
+      y: 300
+    a32kf3:
+      x: 500
+      y: 300
+    t_center:
+      x: 960
+      y: 540
+
+  animations:
+    slide_in:
+      name: "Slide In From Left"
+      properties:
+        x:
+          keyframes:
+            - duration: 1000
+              relative: true
+              value: 600
+              easing: linear
+        alpha:
+          initialValue: 0
+          keyframes:
+            - duration: 1000
+              value: 1
+              easing: linear
+    scale_update:
+      name: "Scale Up"
+      properties:
+        "scale.x":
+          keyframes:
+            - duration: 2000
+              value: 2.2
+              easing: linear
+        "scale.y":
+          keyframes:
+            - duration: 2000
+              value: 2.2
+              easing: linear
+    fade_out:
+      name: "Fade Out"
+      properties:
+        alpha:
+          keyframes:
+            - duration: 800
+              value: 0
+              easing: linear
+
+story:
+  initialPresetId: bj342s
+  initialSceneId: ajfl3a
+  scenes:
+    ajfl3a:
+      name: Scene 1
+      initialSectionId: l3kjfawelf
+      sections:
+        l3kjfawelf:
+          name: Section 1
+          lines:
+            - id: line1
+              presentation:
+                background:
+                  resourceId: alkejf3la
+                  resourceType: image
+                character:
+                  items:
+                    - id: "laj389d"
+                      transformId: iasdlf
+                      sprites:
+                        - id: base
+                          imageId: fk4jla893
+                        - id: outfit
+                          imageId: 3fjaklj34
+                      animations:
+                        in:
+                          animationId: slide_in
+            - id: line2
+              presentation:
+                background:
+                  resourceId: alkejf3la
+                  resourceType: image
+                character:
+                  items:
+                    - id: "laj389d"
+                      transformId: iasdlf
+                      sprites:
+                        - id: base
+                          imageId: fk4jla893
+                        - id: outfit
+                          imageId: 3fjaklj34
+                      animations:
+                        update:
+                          animationId: scale_update
+            - id: line3
+              presentation:
+                background:
+                  resourceId: alkejf3la
+                  resourceType: image
+                character:
+                  items:
+                    - id: "laj389d"
+                      animations:
+                        out:
+                          animationId: fade_out

@@ -17,9 +17,9 @@ class RouteEngine {
   _constructPresentationState;
   _applySystemInstruction;
 
-  _eventCallback = () => {};
+  _eventCallback = () => { };
 
-  constructor() {}
+  constructor() { }
 
   /**
    * Initialize the engine with visual novel data and rendering functions
@@ -40,7 +40,7 @@ class RouteEngine {
   };
 
   offEvent = () => {
-    this._eventCallback = () => {};
+    this._eventCallback = () => { };
     return this;
   };
 
@@ -134,6 +134,12 @@ class RouteEngine {
       resolveFile: (f) => `file:${f}`,
       resources: this._projectDataStore.selectResources(),
       ui: this._projectDataStore.selectUi(),
+    });
+
+    console.log('Render state:', {
+      presentationState: presentationState,
+      currentPointer: currentPointer,
+      renderState
     });
 
     this._eventCallback({

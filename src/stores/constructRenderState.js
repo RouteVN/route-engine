@@ -123,6 +123,31 @@ export const addCharacters = (
 
     for (const item of items) {
       const { transformId, sprites } = item;
+
+      // For out animations only, we don't need to create a container
+      if (item.animations && item.animations.out && !sprites && !transformId) {
+        // Just add the out animation transition, container should already exist
+        const animationId = item.animations.out.animationId;
+        const animation = resources.animations[animationId];
+        if (animation) {
+          const outTransition = {
+            id: `character-animation-out`,
+            type: "keyframes",
+            event: "remove",
+            elementId: `character-container-${item.id}`,
+            properties: animation.properties,
+          };
+          transitions.push(outTransition);
+        }
+        continue;
+      }
+
+      // Skip items without required properties for creating containers
+      if (!sprites || !transformId) {
+        console.warn('Character item missing sprites or transformId:', item);
+        continue;
+      }
+
       const spritePartIds = sprites.map(({ imageId }) => imageId);
       const transform = resources.transforms[transformId];
       const characterContainer = {
@@ -163,6 +188,38 @@ export const addCharacters = (
       }
 
       elements.push(characterContainer);
+
+      // Add animation support (except out, which is handled above)
+      if (item.animations) {
+        if (item.animations.in) {
+          const animationId = item.animations.in.animationId;
+          const animation = resources.animations[animationId];
+          if (animation) {
+            transitions.push({
+              id: `character-animation-in`,
+              type: "keyframes",
+              event: "add",
+              elementId: `character-container-${item.id}`,
+              properties: animation.properties,
+            });
+          }
+        }
+
+        if (item.animations.update) {
+          const animationId = item.animations.update.animationId;
+          const animation = resources.animations[animationId];
+          if (animation) {
+            const updateTransition = {
+              id: `character-animation-update`,
+              type: "keyframes",
+              event: "update",
+              elementId: `character-container-${item.id}`,
+              properties: animation.properties,
+            };
+            transitions.push(updateTransition);
+          }
+        }
+      }
     }
   }
 };

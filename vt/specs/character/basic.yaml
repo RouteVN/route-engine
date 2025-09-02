@@ -34,6 +34,18 @@ resources:
           fileId: la3lka
         3fjaklj34:
           fileId: x342fga
+      layered:
+        jf3iaslj2:
+          name: "eafh"
+          layers:
+            - name: base
+              default: ...
+              sprites:
+                - spriteId: iefjkeal
+                - spriteId: ...
+            - name: head
+              default: ...
+
     # 9823l31:
     #   variables:
     #     name: 'Abc'
