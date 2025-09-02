@@ -42,7 +42,7 @@ export const addBackgrundOrCg = (
       const background =
         resources.images[presentationState.background.resourceId];
       elements.push({
-        id: "bg-cg",
+        id: `bg-cg-${presentationState.background.resourceId}`,
         type: "sprite",
         x: 0,
         y: 0,
@@ -54,10 +54,10 @@ export const addBackgrundOrCg = (
       presentationState.background.resourceId &&
       presentationState.background.resourceType === "layout"
     ) {
-      const layout = ui.layouts[presentationState.background.resourceId];
+      const layout = resources.layouts[presentationState.background.resourceId];
 
       elements.push({
-        id: "bg-cg",
+        id: `bg-cg-${presentationState.background.resourceId}`,
         type: "container",
         children: layout.elements,
       });
@@ -65,26 +65,43 @@ export const addBackgrundOrCg = (
 
     if (presentationState.background.animations) {
       if (presentationState.background.animations.in) {
-        const animation =
-          resources.animations[presentationState.background.animations.in];
-        transitions.push({
-          id: "bg-cg-animation",
-          type: "keyframes",
-          event: "add",
-          elementId: "bg-cg",
-          properties: animation.properties,
-        });
+        const animationId = presentationState.background.animations.in.animationId;
+        const animation = resources.animations[animationId];
+        if (animation) {
+          transitions.push({
+            id: "bg-cg-animation-in",
+            type: "keyframes",
+            event: "add",
+            elementId: `bg-cg-${presentationState.background.resourceId}`,
+            properties: animation.properties,
+          });
+        }
       }
 
       if (presentationState.background.animations.out) {
-        const animation =
-          resources.animations[presentationState.background.animations.out];
+        const animationId = presentationState.background.animations.out.animationId;
+        const resourceId = presentationState.background.animations.out.resourceId;
+        const animation = resources.animations[animationId];
         if (animation) {
           transitions.push({
-            id: "bg-cg-animation-2",
+            id: "bg-cg-animation-out",
             type: "keyframes",
             event: "remove",
-            elementId: "bg-cg",
+            elementId: `bg-cg-${resourceId}`,
+            properties: animation.properties,
+          });
+        }
+      }
+
+      if (presentationState.background.animations.update) {
+        const animationId = presentationState.background.animations.update.animationId;
+        const animation = resources.animations[animationId];
+        if (animation) {
+          transitions.push({
+            id: "bg-cg-animation-update",
+            type: "keyframes",
+            event: "update",
+            elementId: `bg-cg-${presentationState.background.resourceId}`,
             properties: animation.properties,
           });
         }
@@ -189,25 +206,31 @@ export const addVisuals = (
 
       if (item.animations) {
         if (item.animations.in) {
-          const animation = resources.animations[item.animations.in];
-          transitions.push({
-            id: `${item.id}-animation`,
-            type: "keyframes",
-            event: "add",
-            elementId: `visual-${item.id}`,
-            properties: animation.properties,
-          });
+          const animationId = item.animations.in.animationId || item.animations.in;
+          const animation = resources.animations[animationId];
+          if (animation) {
+            transitions.push({
+              id: `${item.id}-animation`,
+              type: "keyframes",
+              event: "add",
+              elementId: `visual-${item.id}`,
+              properties: animation.properties,
+            });
+          }
         }
 
         if (item.animations.out) {
-          const animation = resources.animations[item.animations.out];
-          transitions.push({
-            id: `${item.id}-animation-2`,
-            type: "keyframes",
-            event: "remove",
-            elementId: `visual-${item.id}`,
-            properties: animation.properties,
-          });
+          const animationId = item.animations.out.animationId || item.animations.out;
+          const animation = resources.animations[animationId];
+          if (animation) {
+            transitions.push({
+              id: `${item.id}-animation-2`,
+              type: "keyframes",
+              event: "remove",
+              elementId: `visual-${item.id}`,
+              properties: animation.properties,
+            });
+          }
         }
       }
     }
@@ -230,7 +253,7 @@ export const addDialogue = (
     return;
   }
 
-  const layout = ui.layouts[presentationState.dialogue.layoutId];
+  const layout = resources.layouts[presentationState.dialogue.layoutId];
 
   if (!layout) {
     return;
@@ -279,7 +302,7 @@ export const addChoices = (
 ) => {
 
   if (presentationState.choice) {
-    const layout = ui.layouts[presentationState.choice.layoutId];
+    const layout = resources.layouts[presentationState.choice.layoutId];
 
     const wrappedTemplate = { elements: layout.elements };
     const result = parseAndRender(wrappedTemplate, {
