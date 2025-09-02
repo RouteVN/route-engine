@@ -120,22 +120,15 @@ export const addCharacters = (
 ) => {
   if (presentationState.character) {
     const items = presentationState.character.items;
-    console.log('Processing characters:', items);
 
     for (const item of items) {
       const { transformId, sprites } = item;
-      
+
       // For out animations only, we don't need to create a container
       if (item.animations && item.animations.out && !sprites && !transformId) {
         // Just add the out animation transition, container should already exist
         const animationId = item.animations.out.animationId;
         const animation = resources.animations[animationId];
-        console.log('Processing OUT animation:', {
-          itemId: item.id,
-          animationId,
-          animation,
-          elementId: `character-container-${item.id}`
-        });
         if (animation) {
           const outTransition = {
             id: `character-animation-out`,
@@ -144,18 +137,17 @@ export const addCharacters = (
             elementId: `character-container-${item.id}`,
             properties: animation.properties,
           };
-          console.log('Adding OUT transition:', outTransition);
           transitions.push(outTransition);
         }
         continue;
       }
-      
+
       // Skip items without required properties for creating containers
       if (!sprites || !transformId) {
         console.warn('Character item missing sprites or transformId:', item);
         continue;
       }
-      
+
       const spritePartIds = sprites.map(({ imageId }) => imageId);
       const transform = resources.transforms[transformId];
       const characterContainer = {
@@ -195,7 +187,6 @@ export const addCharacters = (
         });
       }
 
-      console.log('Adding character container:', characterContainer);
       elements.push(characterContainer);
 
       // Add animation support (except out, which is handled above)
@@ -225,13 +216,6 @@ export const addCharacters = (
               elementId: `character-container-${item.id}`,
               properties: animation.properties,
             };
-            console.log('Character update animation:', {
-              itemId: item.id,
-              elementId: `character-container-${item.id}`,
-              animationId,
-              animation,
-              updateTransition
-            });
             transitions.push(updateTransition);
           }
         }
