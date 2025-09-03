@@ -13,7 +13,7 @@ src/
 ├── schemas/                # YAML schemas for project data
 │   ├── projectData/        # Individual data schemas
 │   ├── system.yaml         # System state schema
-│   └── systemActions.yaml  # System actions schema
+│   └── system.yaml  # System actions schema
 ├── stores/                 # State management stores
 │   ├── constructPresentationState.js
 │   ├── constructRenderState.js

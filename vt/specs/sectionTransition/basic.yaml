@@ -1,0 +1,80 @@
+---
+title: "Section Transitions"
+description: >
+  Demonstrates section transitions within and across scenes.
+  Scene 1 has two sections - first section transitions to the second section.
+  Second section transitions to Scene 2.
+  Scene 2 then transitions back to Scene 1, Section 2, showing cross-scene section targeting.
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+presets:
+  bj342s:
+    name: Read
+    eventsMap:
+      LeftClick:
+        system:
+          nextLine: {}
+
+resources:
+  images:
+    alkejf3la:
+      fileId: lakjf3lka
+    8a3lkja:
+      fileId: dmni32
+    img3:
+      fileId: 23jkfa893
+
+story:
+  initialSceneId: ajfl3a
+  initialPresetId: bj342s
+  scenes:
+    ajfl3a:
+      name: Scene 1
+      initialSectionId: l3kjfawelf
+      sections:
+        l3kjfawelf:
+          name: Section 1
+          lines:
+            - id: line1
+              presentation:
+                background:
+                  resourceId: alkejf3la
+                  resourceType: image
+            - id: line2
+              system:
+                sectionTransition:
+                  sectionId: 3k3s9sd
+        3k3s9sd:
+          name: Section 2
+          lines:
+            - id: line1
+              presentation:
+                background:
+                  resourceId: 8a3lkja
+                  resourceType: image
+            - id: line2
+              system:
+                sectionTransition:
+                  sceneId: scene2
+                  sectionId: s2s1
+    scene2:
+      name: Scene 2
+      initialSectionId: s2s1
+      sections:
+        s2s1:
+          name: Section 1 Scene 2
+          lines:
+            - id: line1
+              presentation:
+                background:
+                  resourceId: img3
+                  resourceType: image
+            - id: line2
+              system:
+                sectionTransition:
+                  sceneId: ajfl3a
+                  sectionId: 3k3s9sd

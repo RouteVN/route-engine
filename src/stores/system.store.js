@@ -344,7 +344,7 @@ export const prevLine = ({ state, projectDataStore }) => {
 /**
  * @param {ApplyParams} params
  */
-export const goToSectionScene = ({ state, projectDataStore }, payload) => {
+export const sectionTransition = ({ state, projectDataStore }, payload) => {
   const { sectionId, sceneId, mode, presetId } = payload;
   const lines = projectDataStore.selectSectionLines(sectionId);
 
@@ -374,7 +374,7 @@ export const goToSectionScene = ({ state, projectDataStore }, payload) => {
   state.story.pointers[currentMode].sectionId = sectionId;
   state.story.pointers[currentMode].sceneId = sceneId;
   state.story.pointers[currentMode].lineId = lines[0].id;
-  state.story.autoNext = lines[0].autoNext;
+  state.story.autoNext = lines[0].system?.autoNext;
   if (presetId) {
     state.story.pointers[currentMode].presetId = presetId;
   }
@@ -509,6 +509,14 @@ export const toggleDialogueUIHidden = ({ state }) => {
   state.pendingEffects.push({
     name: "render",
   });
+};
+
+/**
+ * Sets autoNext configuration for the current line
+ * @param {ApplyParams} params
+ */
+export const autoNext = ({ state }, payload) => {
+  state.story.autoNext = payload;
 };
 
 export const saveVnData = ({ state }, payload) => {

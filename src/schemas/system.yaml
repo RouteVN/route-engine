@@ -18,7 +18,7 @@ properties:
     description: Go to previous line
     additionalProperties: false
 
-  goToSectionScene:
+  sectionTransition:
     type: object
     description: Navigate to specific scene/section
     properties:

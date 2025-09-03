@@ -15,7 +15,7 @@ out:
         actions:
           setRuntimeVariable:
             currentMenuTabId: options
-          goToSectionScene:
+          sectionTransition:
             mode: menu
             sceneId: 93jkal3
             sectionId: asdkjl32
@@ -45,7 +45,7 @@ out:
       actions:
         setRuntimeVariable:
           currentMenuTabId: options
-        goToSectionScene:
+        sectionTransition:
           mode: menu
           sceneId: 93jkal3
           sectionId: asdkjl32

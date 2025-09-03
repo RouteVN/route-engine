@@ -11,24 +11,24 @@ presets:
     name: Read
     eventsMap:
       RightClick:
-        systemActions:
+        system:
           updateVariable:
             operations:
               - variableId: currentMenuTabId
                 op: "set"
                 value: "options"
-          goToSectionScene:
+          sectionTransition:
             mode: menu
             sceneId: 93jkal3
             sectionId: asdkjl32
       LeftClick:
-        systemActions:
+        system:
           nextLine: {}
   3ijasdk3:
     name: Menu
     eventsMap:
       RightClick:
-        systemActions:
+        system:
           clearCurrentMode:
             mode: read
 
@@ -111,10 +111,10 @@ resources:
                       hoverThumb: "file:vertical_hover_thumb"
                       idleBar: "file:vertical_idle_bar"
                       hoverBar: "file:vertical_hover_bar"
-                      dragEventName: systemActions
-                      dragEndEventName: systemActions
+                      dragEventName: system
+                      dragEndEventName: system
                       dragEventPayload:
-                        systemActions:
+                        system:
                           updateVariable:
                             operations:
                               - variableId: textSpeed
@@ -151,9 +151,9 @@ resources:
                           y: 0
                           width: 400
                           height: 300
-                          eventName: "systemActions"
+                          eventName: "system"
                           eventPayload:
-                            systemActions:
+                            system:
                               loadVnData:
                                 slotIndex: "1"
                         - type: text
@@ -176,9 +176,9 @@ resources:
                           y: 0
                           width: 400
                           height: 300
-                          eventName: "systemActions"
+                          eventName: "system"
                           eventPayload:
-                            systemActions:
+                            system:
                               loadVnData:
                                 slotIndex: "2"
                         - type: text
@@ -219,9 +219,9 @@ resources:
                           y: 0
                           width: 400
                           height: 300
-                          eventName: "systemActions"
+                          eventName: "system"
                           eventPayload:
-                            systemActions:
+                            system:
                               saveVnData:
                                 slotIndex: "1"
                     - type: container
@@ -237,9 +237,9 @@ resources:
                           y: 0
                           width: 400
                           height: 300
-                          eventName: "systemActions"
+                          eventName: "system"
                           eventPayload:
-                            systemActions:
+                            system:
                               saveVnData:
                                 slotIndex: "2"
         - id: menu-container
@@ -254,10 +254,10 @@ resources:
               text: "Start"
               height: 40
               width: 200
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
-                  goToSectionScene:
+                system:
+                  sectionTransition:
                     sectionId: "3k3s9sd"
               x: 0
               y: 0
@@ -272,9 +272,9 @@ resources:
               text: "Save"
               height: 40
               width: 200
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
+                system:
                   updateVariable:
                     operations:
                       - variableId: "currentMenuTabId"
@@ -293,9 +293,9 @@ resources:
               text: "Load"
               height: 40
               width: 200
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
+                system:
                   updateVariable:
                     operations:
                       - variableId: "currentMenuTabId"
@@ -314,9 +314,9 @@ resources:
               text: "Options"
               height: 40
               width: 200
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
+                system:
                   updateVariable:
                     operations:
                       - variableId: "currentMenuTabId"
@@ -335,10 +335,10 @@ resources:
               text: "Main"
               height: 40
               width: 200
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
-                  goToSectionScene:
+                system:
+                  sectionTransition:
                     mode: "read"
                     sectionId: "l3kjfawelf"
               x: 0
@@ -354,9 +354,9 @@ resources:
               text: "Exit"
               height: 40
               width: 200
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
+                system:
                   clearCurrentMode:
                     mode: "read"
               x: 0
@@ -387,7 +387,7 @@ resources:
             - id: dialogue-text
               type: "text"
               y: 100
-              text: "Sample dialogue text"
+              text: ${dialogue.content}
               style:
                 fontSize: 24
                 fill: "white"
@@ -411,9 +411,9 @@ resources:
               hoverStyle:
                 fontSize: 24
                 fill: yellow
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
+                system:
                   toggleAutoMode: {}
             - id: dialogue-action-skip
               type: text
@@ -428,9 +428,9 @@ resources:
               hoverStyle:
                 fontSize: 24
                 fill: yellow
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
+                system:
                   toggleSkipMode: {}
             - id: dialogue-action-options
               type: text
@@ -445,15 +445,15 @@ resources:
               hoverStyle:
                 fontSize: 24
                 fill: yellow
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
+                system:
                   updateVariable:
                     operations:
                       - variableId: currentMenuTabId
                         op: "set"
                         value: "options"
-                  goToSectionScene:
+                  sectionTransition:
                     mode: menu
                     sectionId: asdkjl32
             - id: dialogue-action-hide
@@ -469,9 +469,9 @@ resources:
               hoverStyle:
                 fontSize: 24
                 fill: yellow
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
+                system:
                   toggleDialogueUIHidden: {}
             - id: dialogue-action-back
               type: text
@@ -483,9 +483,9 @@ resources:
               style:
                 fontSize: 24
                 fill: "white"
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
+                system:
                   prevLine: {}
 
     j3i8dk32:
@@ -508,10 +508,10 @@ resources:
               text: "Start"
               height: 40
               width: 200
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
-                  goToSectionScene:
+                system:
+                  sectionTransition:
                     sectionId: "3k3s9sd"
               x: 0
               y: 0
@@ -526,10 +526,10 @@ resources:
               text: "Load"
               height: 40
               width: 200
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
-                  goToSectionScene:
+                system:
+                  sectionTransition:
                     sceneId: "93jkal3"
                     sectionId: "asdkjl32"
                     mode: "menu"
@@ -551,10 +551,10 @@ resources:
               text: "Options"
               height: 40
               width: 200
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
-                  goToSectionScene:
+                system:
+                  sectionTransition:
                     sceneId: "93jkal3"
                     sectionId: "asdkjl32"
                     mode: "menu"
@@ -576,9 +576,9 @@ resources:
               text: "Exit"
               height: 40
               width: 200
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions: {}
+                system: {}
               x: 0
               y: 0
               style:
@@ -592,7 +592,7 @@ resources:
     ajf34a:
       name: Character One
 
-  visuals:
+  images:
     alkejf3la:
       fileId: 94lkj289
 
@@ -635,27 +635,29 @@ story:
           name: Section 1
           lines:
             - id: line1
-              autoNext:
-                # nextTrigger: 'onComplete'
-                # nextTrigger: 'manual'
-                nextTrigger: "fromComplete"
-                # type: 'complete' | 'fromStart' | 'fromComplete'
-                delay: 1000 # will call next after 1000ms from start
-                # delayAfterComplete: 1000 # will call next after 1000ms from completion
-                preventManual: true
+              system:
+                autoNext:
+                  # nextTrigger: 'onComplete'
+                  # nextTrigger: 'manual'
+                  nextTrigger: "fromComplete"
+                  # type: 'complete' | 'fromStart' | 'fromComplete'
+                  delay: 1000 # will call next after 1000ms from start
+                  # delayAfterComplete: 1000 # will call next after 1000ms from completion
+                  preventManual: true
               presentation:
                 visual:
                   items:
                     - id: 39kdfj231
                       resourceId: alkejf3la
-                      resourceType: visual
+                      resourceType: image
                       transformId: iasdlf
                       animations:
                         in: 3lkj289
             - id: line2
-              autoNext:
-                delay: 1000
-                preventManual: true
+              system:
+                autoNext:
+                  delay: 1000
+                  preventManual: true
               presentation:
                 visual:
                   items:
@@ -663,6 +665,9 @@ story:
                       animations:
                         out: 8h3js
             - id: line3
+              system:
+                sectionTransition:
+                  sectionId: 3k3s9sd
               presentation: {}
         3k3s9sd:
           name: Section 2
@@ -752,8 +757,8 @@ story:
                   content: "Fourteen sentences. Fourteen sentences. Fourteen sentences. Fourteen sentences."
                   characterId: ajf34a
             - id: line15
-              systemActions:
-                goToSectionScene:
+              system:
+                sectionTransition:
                   sectionId: 934kjfa3
         934kjfa3:
           name: Section 3

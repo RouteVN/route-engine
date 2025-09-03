@@ -11,7 +11,7 @@ presets:
     name: Read
     eventsMap:
       LeftClick:
-        systemActions:
+        system:
           nextLine: {}
 
 resources:
@@ -36,7 +36,7 @@ resources:
               y: 0
               style:
                 fontSize: 48
-                fill: "white"
+                fill: "black"
               hoverStyle:
                 fontSize: 48
                 fill: yellow
@@ -66,4 +66,6 @@ story:
           name: Section 1
           lines:
             - id: line1
-              presentation: {}
+              presentation:
+                layout:
+                  layoutId: j3i8dk32

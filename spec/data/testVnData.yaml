@@ -11,7 +11,7 @@ presets:
         actions:
           setRuntimeVariable:
             currentMenuTabId: options
-          goToSectionScene:
+          sectionTransition:
             mode: menu
             sceneId: 93jkal3
             sectionId: asdkjl32
@@ -68,7 +68,7 @@ ui:
                 eventName: "Actions"
                 eventPayload:
                   actions:
-                    goToSectionScene:
+                    sectionTransition:
                       sectionId: 3k3s9sd
               - text: Load
                 eventName: "Actions"
@@ -86,7 +86,7 @@ ui:
                 eventName: "Actions"
                 eventPayload:
                   actions:
-                    goToSectionScene:
+                    sectionTransition:
                       sceneId: ajfl3a
                       sectionId: l3kjfawelf
             each(v,k):
@@ -153,13 +153,13 @@ ui:
                 eventName: "Actions"
                 eventPayload:
                   actions:
-                    goToSectionScene:
+                    sectionTransition:
                       sectionId: 3k3s9sd
               - text: Load
                 eventName: "Actions"
                 eventPayload:
                   actions:
-                    goToSectionScene:
+                    sectionTransition:
                       sceneId: 93jkal3
                       sectionId: asdkjl32
                     setRuntimeVariable:
@@ -168,7 +168,7 @@ ui:
                 eventName: "Actions"
                 eventPayload:
                   actions:
-                    goToSectionScene:
+                    sectionTransition:
                       sceneId: 93jkal3
                       sectionId: asdkjl32
                     setRuntimeVariable:

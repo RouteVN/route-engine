@@ -51,8 +51,8 @@ class RouteEngine {
     const { eventType, payload } = event;
     const currentPreset = this._systemStore.selectCurrentPreset();
     const eventsMap = currentPreset?.eventsMap || {};
-    const systemActions = eventsMap[eventType]?.systemActions;
-    const actionType = systemActions ? Object.keys(systemActions)[0] : null;
+    const system = eventsMap[eventType]?.system;
+    const actionType = system ? Object.keys(system)[0] : null;
 
     if (actionType && typeof this._systemStore[actionType] === "function") {
       this._systemStore[actionType](payload);

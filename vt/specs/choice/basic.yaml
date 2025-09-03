@@ -11,64 +11,63 @@ presets:
     name: Read
     eventsMap:
       LeftClick:
-        systemActions:
+        system:
           nextLine: {}
 
 resources:
-    ui:
   layouts:
     fi3l:
-    name: Choices
-    elements:
-      - type: "container"
-        x: 100
-        y: 100
-        direction: vertical
-        children:
-          - $when: choice.items[0]
-            type: container
-            x: 0
-            y: 0
-            height: 40
-            children:
-              - type: text
-                text: "${choice.items[0].content}"
-                style:
-                  fontSize: 24
-                  fill: "white"
-          - $when: choice.items[1]
-            type: container
-            x: 0
-            y: 0
-            height: 40
-            children:
-              - type: text
-                text: "${choice.items[1].content}"
-                style:
-                  fontSize: 24
-                  fill: "white"
-          - $when: choice.items[2]
-            type: container
-            x: 0
-            y: 0
-            height: 40
-            children:
-              - type: text
-                text: "${choice.items[2].content}"
-                style:
-                  fontSize: 24
-                  fill: "white"
-          - $when: choice.items[3]
-            type: container
-            x: 0
-            y: 0
-            height: 40
-            children:
-              - type: text
-                text: "${choice.items[3].content}"
-                style:
-                  fontSize: 24
-                  fill: "white"
+      name: Choices
+      elements:
+        - type: "container"
+          x: 100
+          y: 100
+          direction: vertical
+          children:
+            - $when: choice.items[0]
+              type: container
+              x: 0
+              y: 0
+              height: 40
+              children:
+                - type: text
+                  text: "${choice.items[0].content}"
+                  style:
+                    fontSize: 24
+                    fill: "white"
+            - $when: choice.items[1]
+              type: container
+              x: 0
+              y: 0
+              height: 40
+              children:
+                - type: text
+                  text: "${choice.items[1].content}"
+                  style:
+                    fontSize: 24
+                    fill: "white"
+            - $when: choice.items[2]
+              type: container
+              x: 0
+              y: 0
+              height: 40
+              children:
+                - type: text
+                  text: "${choice.items[2].content}"
+                  style:
+                    fontSize: 24
+                    fill: "white"
+            - $when: choice.items[3]
+              type: container
+              x: 0
+              y: 0
+              height: 40
+              children:
+                - type: text
+                  text: "${choice.items[3].content}"
+                  style:
+                    fontSize: 24
+                    fill: "white"
 
 story:
   initialSceneId: ajfl3a

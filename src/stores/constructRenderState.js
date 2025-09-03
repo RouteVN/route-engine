@@ -410,6 +410,48 @@ export const addSfx = (
   }
 };
 
+/**
+ * Adds layout elements from presentation to state
+ * @param {Object} params
+ */
+export const addLayout = (
+  { elements },
+  { presentationState, resources, resolveFile },
+) => {
+  if (presentationState.layout) {
+    const layout = resources.layouts[presentationState.layout.layoutId];
+    
+    if (!layout) {
+      return;
+    }
+
+    // Process layout elements and add them to render state
+    const processElement = (element) => {
+      const processedElement = { ...element };
+      
+      // Handle file references in layout elements
+      if (element.url && element.url.startsWith('file:')) {
+        const fileId = element.url.replace('file:', '');
+        processedElement.url = resolveFile(fileId);
+      }
+      
+      // Recursively process children if they exist
+      if (element.children && Array.isArray(element.children)) {
+        processedElement.children = element.children.map(processElement);
+      }
+      
+      return processedElement;
+    };
+
+    // Add all layout elements
+    if (Array.isArray(layout.elements)) {
+      for (const element of layout.elements) {
+        elements.push(processElement(element));
+      }
+    }
+  }
+};
+
 export default [
   generateScreenBackgroundElement,
   addBackgrundOrCg,
@@ -417,6 +459,7 @@ export default [
   addVisuals,
   addDialogue,
   addChoices,
+  addLayout,
   addBgm,
   addSfx,
 ];

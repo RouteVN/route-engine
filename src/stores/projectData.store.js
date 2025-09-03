@@ -34,7 +34,7 @@ export const selectInitialIds = (state) => {
     sectionId: initialScene.initialSectionId,
     presetId: state.story.initialPresetId,
     lineId: initialSection.lines[0].id,
-    autoNext: initialSection.lines[0].autoNext,
+    autoNext: initialSection.lines[0].system?.autoNext,
   };
 };
 

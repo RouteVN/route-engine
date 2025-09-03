@@ -11,7 +11,7 @@ presets:
     name: Read
     eventsMap:
       LeftClick:
-        systemActions:
+        system:
           nextLine: {}
 
 resources:
