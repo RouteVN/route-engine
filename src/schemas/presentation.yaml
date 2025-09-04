@@ -12,6 +12,18 @@ properties:
         description: Mode of cleaning/clearing all existing state
     additionalProperties: false
 
+  screen:
+    type: object
+    description: Screen behind the background
+    properties:
+      resourceId:
+        type: string
+        description: ID of the screen resource to display
+      resourceType:
+        type: string
+        description: Type of the screen resource
+        enum: [layout]
+
   background:
     type: object
     description: Background management and display
@@ -22,7 +34,7 @@ properties:
       resourceType:
         type: string
         description: Type of the background resource
-        enum: [image]
+        enum: [image, layout]
       animations:
         type: object
         description: Animation effects for background transitions
@@ -221,3 +233,4 @@ properties:
     additionalProperties: false
 
 additionalProperties: false
+

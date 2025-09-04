@@ -1,7 +1,6 @@
 export const createInitialState = ({
   sectionId,
   lineId,
-  presetId,
   autoNext,
   saveData,
   variables,
@@ -20,24 +19,19 @@ export const createInitialState = ({
       skipMode: false,
       pointers: {
         read: {
-          presetId,
           sectionId,
           lineId,
         },
         menu: {
-          // TODO remove hardcode
-          presetId: "3ijasdk3",
           sectionId: undefined,
           lineId: undefined,
         },
         history: {
-          presetId,
           sectionId: undefined,
           lineId: undefined,
           historyEntryIndex: undefined,
         },
         // title: {
-        //   presetId: undefined,
         //   sectionId: undefined,
         //   lineId: undefined
         // },
@@ -82,12 +76,13 @@ export const selectCurrentPointer = ({ state }) => {
 };
 
 export const selectCurrentPresetId = ({ state }) => {
-  return state.story.pointers[state.story.currentPointer].presetId;
+  // Presets are no longer used
+  return null;
 };
 
 export const selectCurrentPreset = ({ state, projectDataStore }) => {
-  const currentPresetId = selectCurrentPresetId({ state });
-  return projectDataStore.selectPreset(currentPresetId);
+  // Presets are no longer used
+  return null;
 };
 
 export const selectSkipMode = ({ state }) => {
@@ -277,8 +272,6 @@ export const nextLine = ({ state, projectDataStore }) => {
 
   // Update pointer state
   // state.story.pointers[pointerMode].lineId = nextLine.id;
-  // state.story.pointers[pointerMode].presetId =
-  //   systemStore.selectCurrentPresetId();
 
   // Manage autoNext state
   // if (payload.autoNext) {
@@ -353,7 +346,7 @@ export const prevLine = ({ state, projectDataStore }) => {
  * @param {ApplyParams} params
  */
 export const sectionTransition = ({ state, projectDataStore }, payload) => {
-  const { sectionId, sceneId, mode, presetId } = payload;
+  const { sectionId, sceneId, mode } = payload;
   const lines = projectDataStore.selectSectionLines(sectionId);
 
   if (mode) {
@@ -383,9 +376,6 @@ export const sectionTransition = ({ state, projectDataStore }, payload) => {
   state.story.pointers[currentMode].sceneId = sceneId;
   state.story.pointers[currentMode].lineId = lines[0].id;
   state.story.autoNext = lines[0].system?.autoNext;
-  if (presetId) {
-    state.story.pointers[currentMode].presetId = presetId;
-  }
 
   state.pendingEffects.push({
     name: "render",
@@ -421,12 +411,6 @@ export const updateVariable = ({ state, projectDataStore }, payload) => {
   });
 };
 
-/**
- * @param {ApplyParams} params
- */
-export const setPreset = ({ state }, payload) => {
-  state.story.pointers[state.story.currentPointer].presetId = payload.presetId;
-};
 
 /**
  * @param {ApplyParams} params

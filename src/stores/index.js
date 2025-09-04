@@ -30,7 +30,6 @@ export const createSystemStore = (initialIds, projectDataStore) => {
     createSystemInitialState({
       sectionId: initialIds.sectionId,
       lineId: initialIds.lineId,
-      presetId: initialIds.presetId,
       autoNext: initialIds.autoNext,
       saveData: {},
       variables: {},

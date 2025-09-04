@@ -6,31 +6,6 @@ screen:
   height: 1080
   backgroundColor: "#000000"
 
-presets:
-  bj342s:
-    name: Read
-    eventsMap:
-      RightClick:
-        system:
-          updateVariable:
-            operations:
-              - variableId: currentMenuTabId
-                op: "set"
-                value: "options"
-
-          addModal:
-            resourceId: dafkjkl3
-      LeftClick:
-        system:
-          nextLine: {}
-  3ijasdk3:
-    name: Menu
-    eventsMap:
-      RightClick:
-        system:
-          clearCurrentMode:
-            mode: read
-
 resources:
   variables:
     # 🔧 persistence Types
@@ -61,6 +36,58 @@ resources:
       persistence: local
 
   layouts:
+    titleScreenLayout:
+      name: Title Screen Background
+      elements:
+        - id: title-screen-bg
+          type: rect
+          x: 0
+          y: 0
+          width: 1920
+          height: 1080
+          fill: "#000000"
+          clickEventName: "system"
+          clickEventPayload:
+            system:
+              nextLine: {}
+          rightClickEventName: "system"
+          rightClickEventPayload:
+            system:
+              addModal:
+                resourceId: dafkjkl3
+                resourceType: layout
+              updateVariable:
+                operations:
+                  - variableId: "isMainMenu"
+                    op: "set"
+                    value: true
+
+    storyScreenLayout:
+      name: Story Screen Background
+      elements:
+        - id: story-screen-bg
+          type: rect
+          x: 0
+          y: 0
+          width: 1920
+          height: 1080
+          fill: "#000000"
+          clickEventName: "system"
+          clickEventPayload:
+            system:
+              nextLine: {}
+          rightClickEventName: "system"
+          rightClickEventPayload:
+            system:
+              addModal:
+                resourceId: dafkjkl3
+                resourceType: layout
+              updateVariable:
+                operations:
+                  - variableId: "isMainMenu"
+                    op: "set"
+                    value: false
+
     dafkjkl3:
       name: Menu Screen
       elements:
@@ -71,6 +98,10 @@ resources:
               width: 1920
               height: 1080
               fill: black
+              rightClickEventName: "system"
+              rightClickEventPayload:
+                system:
+                  clearLastModal: {}
             - id: "9fdadf"
               $when: 'variables.currentMenuTabId == "options"'
               type: "container"
@@ -550,6 +581,19 @@ resources:
           url: file:lakjf3lka
           x: 0
           y: 0
+          rightClickEventName: "system"
+          rightClickEventPayload:
+            system:
+              addModal:
+                resourceId: dafkjkl3
+              updateVariable:
+                operations:
+                  - variableId: "currentMenuTabId"
+                    op: "set"
+                    value: "load"
+                  - variableId: "isMainMenu"
+                    op: "set"
+                    value: true
         - id: container
           type: container
           direction: horizontal
@@ -690,7 +734,6 @@ resources:
               value: 0
               easing: linear
 story:
-  initialPresetId: bj342s
   initialSceneId: 93jkal3
   scenes:
     ajfl3a:
@@ -712,6 +755,9 @@ story:
                   # delayAfterComplete: 1000 # will call next after 1000ms from completion
                   preventManual: true
               presentation:
+                screen:
+                  resourceId: storyScreenLayout
+                  resourceType: layout
                 visual:
                   items:
                     - id: 39kdfj231
@@ -742,6 +788,9 @@ story:
           lines:
             - id: line1
               presentation:
+                screen:
+                  resourceId: storyScreenLayout
+                  resourceType: layout
                 dialogue:
                   layoutId: fi3l
                   content: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
@@ -833,6 +882,9 @@ story:
           lines:
             - id: line1
               presentation:
+                screen:
+                  resourceId: storyScreenLayout
+                  resourceType: layout
                 dialogue:
                   layoutId: fi3l
                   content: Section Three
@@ -876,5 +928,8 @@ story:
           lines:
             - id: line1
               presentation:
+                screen:
+                  resourceId: titleScreenLayout
+                  resourceType: layout
                 layout:
                   layoutId: j3i8dk32

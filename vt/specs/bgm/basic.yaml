@@ -6,14 +6,6 @@ screen:
   height: 1080
   backgroundColor: "#000000"
 
-presets:
-  bj342s:
-    name: Read
-    eventsMap:
-      LeftClick:
-        system:
-          nextLine: {}
-
 resources:
   audio:
     dk392:
@@ -21,6 +13,20 @@ resources:
     93k22:
       fileId: xk393
   layouts:
+    storyScreenLayout:
+      name: Story Screen Background
+      elements:
+        - id: story-screen-bg
+          type: rect
+          x: 0
+          y: 0
+          width: 1920
+          height: 1080
+          fill: "#000000"
+          clickEventName: "system"
+          clickEventPayload:
+            system:
+              nextLine: {}
     fi3l:
       name: Dialogue Screen
       elements:
@@ -38,7 +44,6 @@ resources:
                 fill: "white"
 
 story:
-  initialPresetId: bj342s
   initialSceneId: ajfl3a
   scenes:
     ajfl3a:
@@ -50,6 +55,9 @@ story:
           lines:
             - id: line1
               presentation:
+                screen:
+                  resourceId: storyScreenLayout
+                  resourceType: layout
                 bgm:
                   audioId: dk392
                 dialogue:

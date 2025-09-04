@@ -9,21 +9,27 @@ export const createInitialState = () => {
 
 /**
  * @param {Object} params
- * @returns
  */
-export const generateScreenBackgroundElement = ({ elements }, { screen }) => {
-  elements.push({
-    id: "bg-screen",
-    type: "rect",
-    x: 0,
-    width: screen.width,
-    y: 0,
-    height: screen.height,
-    fill: screen.backgroundColor,
-    clickEventName: "LeftClick",
-    rightClickEventName: "RightClick",
-    wheelEventName: "ScrollUp",
-  });
+export const addScreen = (
+  { elements },
+  { presentationState, resources },
+) => {
+  if (presentationState.screen) {
+    if (
+      presentationState.screen.resourceId &&
+      presentationState.screen.resourceType === "layout"
+    ) {
+      const layout = resources.layouts[presentationState.screen.resourceId];
+
+      if (layout) {
+        elements.push({
+          id: `screen-${presentationState.screen.resourceId}`,
+          type: "container",
+          children: layout.elements,
+        });
+      }
+    }
+  }
 };
 
 /**
@@ -510,7 +516,7 @@ export const addModals = (
 }
 
 export default [
-  generateScreenBackgroundElement,
+  addScreen,
   addBackgrundOrCg,
   addCharacters,
   addVisuals,

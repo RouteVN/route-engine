@@ -60,21 +60,6 @@ class RouteEngine {
           console.error(`System action ${actionType} not found on system store`);
         }
       });
-    } else {
-      // Handle preset-based events (e.g., LeftClick, RightClick)
-      const currentPreset = this._systemStore.selectCurrentPreset();
-      const eventsMap = currentPreset?.eventsMap || {};
-      const system = eventsMap[eventType]?.system;
-
-      if (system) {
-        Object.keys(system).forEach((actionType) => {
-          if (typeof this._systemStore[actionType] === "function") {
-            this._systemStore[actionType](system[actionType]);
-          } else {
-            console.error(`Method ${actionType} not found on system store`);
-          }
-        });
-      }
     }
 
     const pendingEffects = this._systemStore.selectPendingEffects();
