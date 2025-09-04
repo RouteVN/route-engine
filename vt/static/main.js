@@ -10,7 +10,7 @@ import RouteGraphics, {
   SliderRendererPlugin,
   KeyframeTransitionPlugin,
   createAssetBufferManager,
-} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.2-rc22/+esm";
+} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.2-rc29/+esm";
 
 const jsonData = yaml.load(window.yamlContent);
 
@@ -64,6 +64,38 @@ const init = async () => {
       url: "/public/sfx-2.wav",
       type: "audio/wav",
     },
+    "file:vertical_hover_bar": {
+      url: "/public/vertical_hover_bar.png",
+      type: "image/png"
+    },
+    "file:vertical_hover_thumb": {
+      url: "/public/vertical_hover_thumb.png",
+      type: "image/png"
+    },
+    "file:vertical_idle_bar": {
+      url: "/public/vertical_idle_bar.png",
+      type: "image/png"
+    },
+    "file:vertical_idle_thumb": {
+      url: "/public/vertical_idle_thumb.png",
+      type: "image/png"
+    },
+    "file:horizontal_hover_bar": {
+      url: "/public/horizontal_hover_bar.png",
+      type: "image/png"
+    },
+    "file:horizontal_hover_thumb": {
+      url: "/public/horizontal_hover_thumb.png",
+      type: "image/png"
+    },
+    "file:horizontal_idle_bar": {
+      url: "/public/horizontal_idle_bar.png",
+      type: "image/png"
+    },
+    "file:horizontal_idle_thumb": {
+      url: "/public/horizontal_idle_thumb.png",
+      type: "image/png"
+    }
   };
 
   const assetBufferManager = createAssetBufferManager();
@@ -76,6 +108,7 @@ const init = async () => {
     height: 1080,
     assetBufferMap,
     eventHandler: (eventType, payload) => {
+      console.log('eventHandler', { eventType, payload })
       engine.handleEvent({ eventType, payload });
       // engine.handleEvent(event, payload);
       // console.log('eventHandler', event, payload)
@@ -109,6 +142,7 @@ const init = async () => {
   // };
 
   engine.onEvent(({ eventType, payload }) => {
+    console.log('onEvent', { eventType, payload })
     if (eventType === "render") {
       app.render(payload);
     }

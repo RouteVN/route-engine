@@ -1,4 +1,15 @@
 /**
+ * Applies screen from presentation to state
+ * @param {Object} state - The current state of the system
+ * @param {Object} presentation - The presentation to apply
+ */
+export const applyScreen = (state, presentation) => {
+  if (presentation.screen) {
+    state.screen = { ...presentation.screen };
+  }
+};
+
+/**
  *
  * Applies background from presentation to state
  * @param {Object} state - The current state of the system
@@ -168,6 +179,7 @@ export const createInitialState = () => {
 
 export default [
   applyCleanAll,
+  applyScreen,
   applyBackground,
   applySfx,
   applyBgm,

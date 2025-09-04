@@ -25,7 +25,7 @@ src/
 ├── index.js                    # Library exports and public API
 ├── schemas/                    # YAML validation schemas
 │   ├── system.yaml             # Runtime state validation schema
-│   ├── systemActions.yaml      # System action definitions and validation
+│   ├── system.yaml      # System action definitions and validation
 │   └── projectData/            # Game data schemas (scenes, lines, presets, etc.)
 │       ├── scene.yaml          # Scene structure and validation
 │       ├── line.yaml           # Dialogue line and content validation

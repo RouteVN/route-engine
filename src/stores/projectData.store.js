@@ -1,15 +1,3 @@
-export const selectPresets = (state) => {
-  return state.presets;
-};
-
-export const selectInitialPreset = (state) => {
-  return state.presets[state.story.initialPresetId];
-};
-
-export const selectPreset = (state, presetId) => {
-  return state.presets[presetId];
-};
-
 export const selectScreen = (state) => {
   return state.screen;
 };
@@ -32,9 +20,8 @@ export const selectInitialIds = (state) => {
   return {
     sceneId: state.story.initialSceneId,
     sectionId: initialScene.initialSectionId,
-    presetId: state.story.initialPresetId,
     lineId: initialSection.lines[0].id,
-    autoNext: initialSection.lines[0].autoNext,
+    autoNext: initialSection.lines[0].system?.autoNext,
   };
 };
 

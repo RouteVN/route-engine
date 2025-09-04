@@ -9,21 +9,27 @@ export const createInitialState = () => {
 
 /**
  * @param {Object} params
- * @returns
  */
-export const generateScreenBackgroundElement = ({ elements }, { screen }) => {
-  elements.push({
-    id: "bg-screen",
-    type: "rect",
-    x: 0,
-    width: screen.width,
-    y: 0,
-    height: screen.height,
-    fill: screen.backgroundColor,
-    clickEventName: "LeftClick",
-    rightClickEventName: "RightClick",
-    wheelEventName: "ScrollUp",
-  });
+export const addScreen = (
+  { elements },
+  { presentationState, resources },
+) => {
+  if (presentationState.screen) {
+    if (
+      presentationState.screen.resourceId &&
+      presentationState.screen.resourceType === "layout"
+    ) {
+      const layout = resources.layouts[presentationState.screen.resourceId];
+
+      if (layout) {
+        elements.push({
+          id: `screen-${presentationState.screen.resourceId}`,
+          type: "container",
+          children: layout.elements,
+        });
+      }
+    }
+  }
 };
 
 /**
@@ -300,13 +306,13 @@ export const addVisuals = (
  */
 export const addDialogue = (
   { elements },
-  { presentationState, ui, resources, dialogueUIHidden },
+  { presentationState, ui, resources, systemState },
 ) => {
   if (!presentationState.dialogue) {
     return;
   }
 
-  if (dialogueUIHidden) {
+  if (systemState?.story?.dialogueUIHidden) {
     return;
   }
 
@@ -410,13 +416,114 @@ export const addSfx = (
   }
 };
 
+/**
+ * Adds layout elements from presentation to state
+ * @param {Object} params
+ */
+export const addLayout = (
+  { elements },
+  { presentationState, resources, resolveFile },
+) => {
+  if (presentationState.layout) {
+    const layout = resources.layouts[presentationState.layout.layoutId];
+
+    if (!layout) {
+      return;
+    }
+
+    // Process layout elements and add them to render state
+    const processElement = (element) => {
+      const processedElement = { ...element };
+
+      // Handle file references in layout elements
+      if (element.url && element.url.startsWith('file:')) {
+        const fileId = element.url.replace('file:', '');
+        processedElement.url = resolveFile(fileId);
+      }
+
+      // Recursively process children if they exist
+      if (element.children && Array.isArray(element.children)) {
+        processedElement.children = element.children.map(processElement);
+      }
+
+      return processedElement;
+    };
+
+    // Add all layout elements
+    if (Array.isArray(layout.elements)) {
+      for (const element of layout.elements) {
+        elements.push(processElement(element));
+      }
+    }
+  }
+};
+
+export const addModals = (
+  { elements },
+  { systemState, resources, resolveFile },
+) => {
+  if (systemState?.modals && systemState.modals.length > 0) {
+    // Add each modal as an overlay
+    systemState.modals.forEach((modal, index) => {
+      if (modal.resourceType === 'layout') {
+        const layout = resources.layouts[modal.resourceId];
+
+        if (!layout) {
+          console.warn(`Modal layout not found: ${modal.resourceId}`);
+          return;
+        }
+
+        // Process layout elements similar to addLayout
+        const processElement = (element) => {
+          const processedElement = { ...element };
+
+          // Handle file references in layout elements
+          if (element.url && element.url.startsWith('file:')) {
+            const fileId = element.url.replace('file:', '');
+            processedElement.url = resolveFile(fileId);
+          }
+
+          // Recursively process children if they exist
+          if (element.children && Array.isArray(element.children)) {
+            processedElement.children = element.children.map(processElement);
+          }
+
+          return processedElement;
+        };
+
+        // Create a container for this modal
+        const modalContainer = {
+          id: `modal-${index}`,
+          type: 'container',
+          x: 0,
+          y: 0,
+          children: []
+        };
+
+        // Add all layout elements to the modal container
+        if (Array.isArray(layout.elements)) {
+          for (const element of layout.elements) {
+            modalContainer.children.push(processElement(element));
+          }
+        }
+
+        elements.push(parseAndRender(modalContainer, {
+          variables: systemState.variables,
+        }));
+      }
+    });
+  }
+}
+
 export default [
-  generateScreenBackgroundElement,
+  addScreen,
   addBackgrundOrCg,
   addCharacters,
   addVisuals,
   addDialogue,
   addChoices,
+  addLayout,
   addBgm,
   addSfx,
+  addModals,
 ];

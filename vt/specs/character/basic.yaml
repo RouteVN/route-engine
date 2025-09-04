@@ -6,14 +6,6 @@ screen:
   height: 1080
   backgroundColor: "#000000"
 
-presets:
-  bj342s:
-    name: Read
-    eventsMap:
-      LeftClick:
-        systemActions:
-          nextLine: {}
-
 resources:
   images:
     alkejf3la:
@@ -57,7 +49,6 @@ resources:
 
 story:
   initialSceneId: ajfl3a
-  initialPresetId: bj342s
   scenes:
     ajfl3a:
       name: Scene 1

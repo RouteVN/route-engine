@@ -6,32 +6,6 @@ screen:
   height: 1080
   backgroundColor: "#000000"
 
-presets:
-  bj342s:
-    name: Read
-    eventsMap:
-      RightClick:
-        systemActions:
-          updateVariable:
-            operations:
-              - variableId: currentMenuTabId
-                op: "set"
-                value: "options"
-          goToSectionScene:
-            mode: menu
-            sceneId: 93jkal3
-            sectionId: asdkjl32
-      LeftClick:
-        systemActions:
-          nextLine: {}
-  3ijasdk3:
-    name: Menu
-    eventsMap:
-      RightClick:
-        systemActions:
-          clearCurrentMode:
-            mode: read
-
 resources:
   variables:
     # 🔧 persistence Types
@@ -62,26 +36,87 @@ resources:
       persistence: local
 
   layouts:
+    titleScreenLayout:
+      name: Title Screen Background
+      elements:
+        - id: title-screen-bg
+          type: rect
+          x: 0
+          y: 0
+          width: 1920
+          height: 1080
+          fill: "#000000"
+          clickEventName: "system"
+          clickEventPayload:
+            system:
+              nextLine: {}
+          rightClickEventName: "system"
+          rightClickEventPayload:
+            system:
+              addModal:
+                resourceId: dafkjkl3
+                resourceType: layout
+              updateVariable:
+                operations:
+                  - variableId: "isMainMenu"
+                    op: "set"
+                    value: true
+
+    storyScreenLayout:
+      name: Story Screen Background
+      elements:
+        - id: story-screen-bg
+          type: rect
+          x: 0
+          y: 0
+          width: 1920
+          height: 1080
+          fill: "#000000"
+          clickEventName: "system"
+          clickEventPayload:
+            system:
+              nextLine: {}
+          rightClickEventName: "system"
+          rightClickEventPayload:
+            system:
+              addModal:
+                resourceId: dafkjkl3
+                resourceType: layout
+              updateVariable:
+                operations:
+                  - variableId: "isMainMenu"
+                    op: "set"
+                    value: false
+
     dafkjkl3:
       name: Menu Screen
       elements:
         - type: "container"
-          x: 100
-          y: 100
           children:
-            - $if#1: variables.currentMenuTabId == "options"
-              $then#1:
+            - id: k3jl2rj
+              type: rect
+              width: 1920
+              height: 1080
+              fill: black
+              rightClickEventName: "system"
+              rightClickEventPayload:
+                system:
+                  clearLastModal: {}
+            - id: "9fdadf"
+              $when: 'variables.currentMenuTabId == "options"'
+              type: "container"
+              children:
                 - type: text
                   text: "Options"
-                  x: 0
-                  y: 0
+                  x: 100
+                  y: 100
                   style:
                     fontSize: 64
                     fill: "white"
                 - id: 39jfkal21
                   type: container
-                  x: 200
-                  y: 100
+                  x: 300
+                  y: 200
                   width: 1400
                   height: 300
                   children:
@@ -89,7 +124,7 @@ resources:
                       type: text
                       x: 20
                       y: 0
-                      text: "${variables.textSpeed}"
+                      text: "Text speed: ${variables.textSpeed}"
                       style:
                         fontSize: 24
                         fill: "white"
@@ -102,31 +137,24 @@ resources:
                       hoverThumb: "file:horizontal_hover_thumb"
                       idleBar: "file:horizontal_idle_bar"
                       hoverBar: "file:horizontal_hover_bar"
-                    - id: "b"
-                      type: "slider"
-                      x: 20
-                      y: 170
-                      direction: "vertical"
-                      idleThumb: "file:vertical_idle_thumb"
-                      hoverThumb: "file:vertical_hover_thumb"
-                      idleBar: "file:vertical_idle_bar"
-                      hoverBar: "file:vertical_hover_bar"
-                      dragEventName: systemActions
-                      dragEndEventName: systemActions
+                      dragEventName: system
+                      dragEndEventName: system
                       dragEventPayload:
-                        systemActions:
+                        system:
                           updateVariable:
                             operations:
                               - variableId: textSpeed
                                 op: "set"
                                 value: "{{ value }}"
-              $if#2: variables.currentMenuTabId == "load"
-              $then#2:
+            - id: "9fdadf"
+              $when: 'variables.currentMenuTabId == "load"'
+              type: "container"
+              children:
                 - id: load-title
                   type: text
                   text: "Load"
-                  x: 0
-                  y: 0
+                  x: 100
+                  y: 100
                   style:
                     fontSize: 64
                     fill: "white"
@@ -151,9 +179,9 @@ resources:
                           y: 0
                           width: 400
                           height: 300
-                          eventName: "systemActions"
+                          eventName: "system"
                           eventPayload:
-                            systemActions:
+                            system:
                               loadVnData:
                                 slotIndex: "1"
                         - type: text
@@ -176,9 +204,9 @@ resources:
                           y: 0
                           width: 400
                           height: 300
-                          eventName: "systemActions"
+                          eventName: "system"
                           eventPayload:
-                            systemActions:
+                            system:
                               loadVnData:
                                 slotIndex: "2"
                         - type: text
@@ -188,13 +216,16 @@ resources:
                           style:
                             fontSize: 32
                             fill: "white"
-              $if#3: variables.currentMenuTabId == "save"
-              $then#3:
+
+            - id: "9fdadf"
+              $when: 'variables.currentMenuTabId == "save"'
+              type: "container"
+              children:
                 - id: save-title
                   type: text
                   text: "Save"
-                  x: 0
-                  y: 0
+                  x: 100
+                  y: 100
                   style:
                     fontSize: 64
                     fill: "white"
@@ -219,9 +250,9 @@ resources:
                           y: 0
                           width: 400
                           height: 300
-                          eventName: "systemActions"
+                          eventName: "system"
                           eventPayload:
-                            systemActions:
+                            system:
                               saveVnData:
                                 slotIndex: "1"
                     - type: container
@@ -237,9 +268,9 @@ resources:
                           y: 0
                           width: 400
                           height: 300
-                          eventName: "systemActions"
+                          eventName: "system"
                           eventPayload:
-                            systemActions:
+                            system:
                               saveVnData:
                                 slotIndex: "2"
         - id: menu-container
@@ -250,14 +281,16 @@ resources:
           y: 540
           children:
             - id: "Start"
+              $when: "variables.isMainMenu == true"
               type: text
               text: "Start"
               height: 40
               width: 200
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
-                  goToSectionScene:
+                system:
+                  clearLastModal: {}
+                  sectionTransition:
                     sectionId: "3k3s9sd"
               x: 0
               y: 0
@@ -268,13 +301,14 @@ resources:
                 fontSize: 48
                 fill: yellow
             - id: "Save"
+              $when: "variables.isMainMenu == false"
               type: text
               text: "Save"
               height: 40
               width: 200
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
+                system:
                   updateVariable:
                     operations:
                       - variableId: "currentMenuTabId"
@@ -293,9 +327,9 @@ resources:
               text: "Load"
               height: 40
               width: 200
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
+                system:
                   updateVariable:
                     operations:
                       - variableId: "currentMenuTabId"
@@ -314,9 +348,9 @@ resources:
               text: "Options"
               height: 40
               width: 200
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
+                system:
                   updateVariable:
                     operations:
                       - variableId: "currentMenuTabId"
@@ -331,14 +365,16 @@ resources:
                 fontSize: 48
                 fill: yellow
             - id: "Main"
+              $when: "variables.isMainMenu == false"
               type: text
               text: "Main"
               height: 40
               width: 200
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
-                  goToSectionScene:
+                system:
+                  clearLastModal: {}
+                  sectionTransition:
                     mode: "read"
                     sectionId: "l3kjfawelf"
               x: 0
@@ -349,16 +385,15 @@ resources:
               hoverStyle:
                 fontSize: 48
                 fill: yellow
-            - id: "Exit"
+            - id: "back"
               type: text
-              text: "Exit"
+              text: "Back"
               height: 40
               width: 200
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
-                  clearCurrentMode:
-                    mode: "read"
+                system:
+                  clearLastModal: {}
               x: 0
               y: 0
               style:
@@ -387,7 +422,7 @@ resources:
             - id: dialogue-text
               type: "text"
               y: 100
-              text: "Sample dialogue text"
+              text: ${dialogue.content}
               style:
                 fontSize: 24
                 fill: "white"
@@ -411,9 +446,9 @@ resources:
               hoverStyle:
                 fontSize: 24
                 fill: yellow
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
+                system:
                   toggleAutoMode: {}
             - id: dialogue-action-skip
               type: text
@@ -428,9 +463,9 @@ resources:
               hoverStyle:
                 fontSize: 24
                 fill: yellow
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
+                system:
                   toggleSkipMode: {}
             - id: dialogue-action-options
               type: text
@@ -445,17 +480,19 @@ resources:
               hoverStyle:
                 fontSize: 24
                 fill: yellow
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
+                system:
                   updateVariable:
                     operations:
                       - variableId: currentMenuTabId
                         op: "set"
                         value: "options"
-                  goToSectionScene:
-                    mode: menu
-                    sectionId: asdkjl32
+                      - variableId: "isMainMenu"
+                        op: "set"
+                        value: false
+                  addModal:
+                    resourceId: dafkjkl3
             - id: dialogue-action-hide
               type: text
               text: "Hide"
@@ -469,9 +506,9 @@ resources:
               hoverStyle:
                 fontSize: 24
                 fill: yellow
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
+                system:
                   toggleDialogueUIHidden: {}
             - id: dialogue-action-back
               type: text
@@ -483,10 +520,58 @@ resources:
               style:
                 fontSize: 24
                 fill: "white"
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
+                system:
                   prevLine: {}
+
+    f3jik32isdf:
+      name: Exit Application Modal
+      elements:
+        - id: 23kjrasdf
+          type: container
+          x: 500
+          y: 300
+          children:
+            - id: "efawkl3"
+              type: "rect"
+              width: 800
+              height: 300
+              fill: "#ccc"
+            - id: "32sadfj"
+              type: text
+              x: 20
+              y: 20
+              text: Are you sure to exit the application?
+              style:
+                fontSize: 48
+                fill: "white"
+            - id: "38sdfa2"
+              type: text
+              text: Yes
+              y: 120
+              x: 50
+              style:
+                fontSize: 48
+                fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+            - id: "e83a"
+              type: text
+              text: No
+              y: 120
+              x: 250
+              eventName: "system"
+              eventPayload:
+                system:
+                  clearLastModal: {}
+              style:
+                fontSize: 48
+                fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
 
     j3i8dk32:
       name: Title Screen
@@ -496,11 +581,24 @@ resources:
           url: file:lakjf3lka
           x: 0
           y: 0
+          rightClickEventName: "system"
+          rightClickEventPayload:
+            system:
+              addModal:
+                resourceId: dafkjkl3
+              updateVariable:
+                operations:
+                  - variableId: "currentMenuTabId"
+                    op: "set"
+                    value: "load"
+                  - variableId: "isMainMenu"
+                    op: "set"
+                    value: true
         - id: container
           type: container
           direction: horizontal
           anchor: BottomCenter
-          x: 960
+          x: 560
           y: 540
           children:
             - id: "Start"
@@ -508,10 +606,10 @@ resources:
               text: "Start"
               height: 40
               width: 200
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
-                  goToSectionScene:
+                system:
+                  sectionTransition:
                     sectionId: "3k3s9sd"
               x: 0
               y: 0
@@ -526,18 +624,28 @@ resources:
               text: "Load"
               height: 40
               width: 200
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
-                  goToSectionScene:
-                    sceneId: "93jkal3"
-                    sectionId: "asdkjl32"
-                    mode: "menu"
+                system:
+                  addModal:
+                    resourceId: dafkjkl3
                   updateVariable:
                     operations:
                       - variableId: "currentMenuTabId"
                         op: "set"
                         value: "load"
+                      - variableId: "isMainMenu"
+                        op: "set"
+                        value: true
+                  # sectionTransition:
+                  #   sceneId: "93jkal3"
+                  #   sectionId: "asdkjl32"
+                  #   mode: "menu"
+                  # updateVariable:
+                  #   operations:
+                  #     - variableId: "currentMenuTabId"
+                  #       op: "set"
+                  #       value: "load"
               x: 0
               y: 0
               style:
@@ -551,18 +659,19 @@ resources:
               text: "Options"
               height: 40
               width: 200
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions:
-                  goToSectionScene:
-                    sceneId: "93jkal3"
-                    sectionId: "asdkjl32"
-                    mode: "menu"
+                system:
+                  addModal:
+                    resourceId: dafkjkl3
                   updateVariable:
                     operations:
                       - variableId: "currentMenuTabId"
                         op: "set"
                         value: "options"
+                      - variableId: "isMainMenu"
+                        op: "set"
+                        value: true
               x: 0
               y: 0
               style:
@@ -576,9 +685,11 @@ resources:
               text: "Exit"
               height: 40
               width: 200
-              eventName: "systemActions"
+              eventName: "system"
               eventPayload:
-                systemActions: {}
+                system:
+                  addModal:
+                    resourceId: f3jik32isdf
               x: 0
               y: 0
               style:
@@ -592,7 +703,7 @@ resources:
     ajf34a:
       name: Character One
 
-  visuals:
+  images:
     alkejf3la:
       fileId: 94lkj289
 
@@ -623,8 +734,7 @@ resources:
               value: 0
               easing: linear
 story:
-  initialPresetId: bj342s
-  initialSceneId: ajfl3a
+  initialSceneId: 93jkal3
   scenes:
     ajfl3a:
       name: Scene 1
@@ -635,27 +745,32 @@ story:
           name: Section 1
           lines:
             - id: line1
-              autoNext:
-                # nextTrigger: 'onComplete'
-                # nextTrigger: 'manual'
-                nextTrigger: "fromComplete"
-                # type: 'complete' | 'fromStart' | 'fromComplete'
-                delay: 1000 # will call next after 1000ms from start
-                # delayAfterComplete: 1000 # will call next after 1000ms from completion
-                preventManual: true
+              system:
+                autoNext:
+                  # nextTrigger: 'onComplete'
+                  # nextTrigger: 'manual'
+                  nextTrigger: "fromComplete"
+                  # type: 'complete' | 'fromStart' | 'fromComplete'
+                  delay: 1000 # will call next after 1000ms from start
+                  # delayAfterComplete: 1000 # will call next after 1000ms from completion
+                  preventManual: true
               presentation:
+                screen:
+                  resourceId: storyScreenLayout
+                  resourceType: layout
                 visual:
                   items:
                     - id: 39kdfj231
                       resourceId: alkejf3la
-                      resourceType: visual
+                      resourceType: image
                       transformId: iasdlf
                       animations:
                         in: 3lkj289
             - id: line2
-              autoNext:
-                delay: 1000
-                preventManual: true
+              system:
+                autoNext:
+                  delay: 1000
+                  preventManual: true
               presentation:
                 visual:
                   items:
@@ -663,12 +778,19 @@ story:
                       animations:
                         out: 8h3js
             - id: line3
+              system:
+                sectionTransition:
+                  sceneId: 93jkal3
+                  sectionId: asdkjl32
               presentation: {}
         3k3s9sd:
           name: Section 2
           lines:
             - id: line1
               presentation:
+                screen:
+                  resourceId: storyScreenLayout
+                  resourceType: layout
                 dialogue:
                   layoutId: fi3l
                   content: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
@@ -752,14 +874,17 @@ story:
                   content: "Fourteen sentences. Fourteen sentences. Fourteen sentences. Fourteen sentences."
                   characterId: ajf34a
             - id: line15
-              systemActions:
-                goToSectionScene:
+              system:
+                sectionTransition:
                   sectionId: 934kjfa3
         934kjfa3:
           name: Section 3
           lines:
             - id: line1
               presentation:
+                screen:
+                  resourceId: storyScreenLayout
+                  resourceType: layout
                 dialogue:
                   layoutId: fi3l
                   content: Section Three
@@ -795,11 +920,16 @@ story:
                   content: XGooooooooo
                   characterId: ajf34a
     93jkal3:
-      name: Menu Scene
+      initialSectionId: asdkjl32
+      name: Title Scene
       sections:
         asdkjl32:
+          name: Title Section
           lines:
             - id: line1
-              presentation: {}
-                # preset:
-                #   presetId: 3ijasdk3
+              presentation:
+                screen:
+                  resourceId: titleScreenLayout
+                  resourceType: layout
+                layout:
+                  layoutId: j3i8dk32

@@ -1,7 +1,6 @@
 export const createInitialState = ({
   sectionId,
   lineId,
-  presetId,
   autoNext,
   saveData,
   variables,
@@ -10,6 +9,7 @@ export const createInitialState = ({
     pendingEffects: [],
     variables,
     saveData,
+    modals: [],
     story: {
       lastLineAction: undefined,
       dialogueUIHidden: false,
@@ -19,24 +19,19 @@ export const createInitialState = ({
       skipMode: false,
       pointers: {
         read: {
-          presetId,
           sectionId,
           lineId,
         },
         menu: {
-          // TODO remove hardcode
-          presetId: "3ijasdk3",
           sectionId: undefined,
           lineId: undefined,
         },
         history: {
-          presetId,
           sectionId: undefined,
           lineId: undefined,
           historyEntryIndex: undefined,
         },
         // title: {
-        //   presetId: undefined,
         //   sectionId: undefined,
         //   lineId: undefined
         // },
@@ -67,6 +62,11 @@ export const createInitialState = ({
  * Selectors
  *************************/
 
+
+export const selectState = ({ state }) => {
+  return state;
+}
+
 export const selectPendingEffects = ({ state }) => {
   return state.pendingEffects;
 };
@@ -76,12 +76,13 @@ export const selectCurrentPointer = ({ state }) => {
 };
 
 export const selectCurrentPresetId = ({ state }) => {
-  return state.story.pointers[state.story.currentPointer].presetId;
+  // Presets are no longer used
+  return null;
 };
 
 export const selectCurrentPreset = ({ state, projectDataStore }) => {
-  const currentPresetId = selectCurrentPresetId({ state });
-  return projectDataStore.selectPreset(currentPresetId);
+  // Presets are no longer used
+  return null;
 };
 
 export const selectSkipMode = ({ state }) => {
@@ -226,12 +227,14 @@ export const lineCompleted = ({ state, projectDataStore }) => {
 export const nextLine = ({ state, projectDataStore }) => {
   const { pendingEffects } = state;
 
-  // const dialogueUIHidden = systemStore.selectDialogueUIHidden();
-
-  // if (dialogueUIHidden) {
-  //   toggleDialogueUIHidden({ systemState, effects });
-  //   return;
-  // }
+  // If dialogue is hidden, show it instead of advancing
+  if (state.story.dialogueUIHidden) {
+    state.story.dialogueUIHidden = false;
+    pendingEffects.push({
+      name: "render",
+    });
+    return;
+  }
 
   // Early return if manual advance is prevented
   // const { forceSkipAutonext = false } = payload;
@@ -269,8 +272,6 @@ export const nextLine = ({ state, projectDataStore }) => {
 
   // Update pointer state
   // state.story.pointers[pointerMode].lineId = nextLine.id;
-  // state.story.pointers[pointerMode].presetId =
-  //   systemStore.selectCurrentPresetId();
 
   // Manage autoNext state
   // if (payload.autoNext) {
@@ -344,8 +345,8 @@ export const prevLine = ({ state, projectDataStore }) => {
 /**
  * @param {ApplyParams} params
  */
-export const goToSectionScene = ({ state, projectDataStore }, payload) => {
-  const { sectionId, sceneId, mode, presetId } = payload;
+export const sectionTransition = ({ state, projectDataStore }, payload) => {
+  const { sectionId, sceneId, mode } = payload;
   const lines = projectDataStore.selectSectionLines(sectionId);
 
   if (mode) {
@@ -374,10 +375,7 @@ export const goToSectionScene = ({ state, projectDataStore }, payload) => {
   state.story.pointers[currentMode].sectionId = sectionId;
   state.story.pointers[currentMode].sceneId = sceneId;
   state.story.pointers[currentMode].lineId = lines[0].id;
-  state.story.autoNext = lines[0].autoNext;
-  if (presetId) {
-    state.story.pointers[currentMode].presetId = presetId;
-  }
+  state.story.autoNext = lines[0].system?.autoNext;
 
   state.pendingEffects.push({
     name: "render",
@@ -413,12 +411,6 @@ export const updateVariable = ({ state, projectDataStore }, payload) => {
   });
 };
 
-/**
- * @param {ApplyParams} params
- */
-export const setPreset = ({ state }, payload) => {
-  state.story.pointers[state.story.currentPointer].presetId = payload.presetId;
-};
 
 /**
  * @param {ApplyParams} params
@@ -511,6 +503,14 @@ export const toggleDialogueUIHidden = ({ state }) => {
   });
 };
 
+/**
+ * Sets autoNext configuration for the current line
+ * @param {ApplyParams} params
+ */
+export const autoNext = ({ state }, payload) => {
+  state.story.autoNext = payload;
+};
+
 export const saveVnData = ({ state }, payload) => {
   state.saveData.push({
     id: Date.now().toString().slice(4, 10),
@@ -545,3 +545,25 @@ export const loadVnData = ({ state }, payload) => {
     name: "render",
   });
 };
+
+
+export const addModal = ({ state }, payload) => {
+  state.modals.push({
+    resourceId: payload.resourceId,
+    resourceType: 'layout'
+  })
+  state.pendingEffects.push({
+    name: "render",
+  });
+}
+
+export const clearLastModal = ({ state }, payload) => {
+  if (state.modals.length > 0) {
+    state.modals.pop();
+    state.pendingEffects.push({
+      name: "render",
+    });
+  }
+}
+
+

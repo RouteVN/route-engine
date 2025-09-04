@@ -6,14 +6,6 @@ screen:
   height: 1080
   backgroundColor: "#000000"
 
-presets:
-  bj342s:
-    name: Read
-    eventsMap:
-      LeftClick:
-        systemActions:
-          nextLine: {}
-
 resources:
   layouts:
     j3i8dk32:
@@ -36,7 +28,7 @@ resources:
               y: 0
               style:
                 fontSize: 48
-                fill: "white"
+                fill: "black"
               hoverStyle:
                 fontSize: 48
                 fill: yellow
@@ -56,7 +48,6 @@ resources:
 
 story:
   initialSceneId: ajfl3a
-  initialPresetId: bj342s
   scenes:
     ajfl3a:
       name: Scene 1
@@ -66,4 +57,6 @@ story:
           name: Section 1
           lines:
             - id: line1
-              presentation: {}
+              presentation:
+                layout:
+                  layoutId: j3i8dk32
