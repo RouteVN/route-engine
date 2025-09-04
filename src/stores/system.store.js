@@ -10,6 +10,7 @@ export const createInitialState = ({
     pendingEffects: [],
     variables,
     saveData,
+    modals: [],
     story: {
       lastLineAction: undefined,
       dialogueUIHidden: false,
@@ -66,6 +67,11 @@ export const createInitialState = ({
 /**************************
  * Selectors
  *************************/
+
+
+export const selectState = ({ state }) => {
+  return state;
+}
 
 export const selectPendingEffects = ({ state }) => {
   return state.pendingEffects;
@@ -226,12 +232,14 @@ export const lineCompleted = ({ state, projectDataStore }) => {
 export const nextLine = ({ state, projectDataStore }) => {
   const { pendingEffects } = state;
 
-  // const dialogueUIHidden = systemStore.selectDialogueUIHidden();
-
-  // if (dialogueUIHidden) {
-  //   toggleDialogueUIHidden({ systemState, effects });
-  //   return;
-  // }
+  // If dialogue is hidden, show it instead of advancing
+  if (state.story.dialogueUIHidden) {
+    state.story.dialogueUIHidden = false;
+    pendingEffects.push({
+      name: "render",
+    });
+    return;
+  }
 
   // Early return if manual advance is prevented
   // const { forceSkipAutonext = false } = payload;
@@ -553,3 +561,25 @@ export const loadVnData = ({ state }, payload) => {
     name: "render",
   });
 };
+
+
+export const addModal = ({ state }, payload) => {
+  state.modals.push({
+    resourceId: payload.resourceId,
+    resourceType: 'layout'
+  })
+  state.pendingEffects.push({
+    name: "render",
+  });
+}
+
+export const clearLastModal = ({ state }, payload) => {
+  if (state.modals.length > 0) {
+    state.modals.pop();
+    state.pendingEffects.push({
+      name: "render",
+    });
+  }
+}
+
+

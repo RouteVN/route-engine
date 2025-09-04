@@ -300,13 +300,13 @@ export const addVisuals = (
  */
 export const addDialogue = (
   { elements },
-  { presentationState, ui, resources, dialogueUIHidden },
+  { presentationState, ui, resources, systemState },
 ) => {
   if (!presentationState.dialogue) {
     return;
   }
 
-  if (dialogueUIHidden) {
+  if (systemState?.story?.dialogueUIHidden) {
     return;
   }
 
@@ -420,7 +420,7 @@ export const addLayout = (
 ) => {
   if (presentationState.layout) {
     const layout = resources.layouts[presentationState.layout.layoutId];
-    
+
     if (!layout) {
       return;
     }
@@ -428,18 +428,18 @@ export const addLayout = (
     // Process layout elements and add them to render state
     const processElement = (element) => {
       const processedElement = { ...element };
-      
+
       // Handle file references in layout elements
       if (element.url && element.url.startsWith('file:')) {
         const fileId = element.url.replace('file:', '');
         processedElement.url = resolveFile(fileId);
       }
-      
+
       // Recursively process children if they exist
       if (element.children && Array.isArray(element.children)) {
         processedElement.children = element.children.map(processElement);
       }
-      
+
       return processedElement;
     };
 
@@ -452,6 +452,63 @@ export const addLayout = (
   }
 };
 
+export const addModals = (
+  { elements },
+  { systemState, resources, resolveFile },
+) => {
+  if (systemState?.modals && systemState.modals.length > 0) {
+    // Add each modal as an overlay
+    systemState.modals.forEach((modal, index) => {
+      if (modal.resourceType === 'layout') {
+        const layout = resources.layouts[modal.resourceId];
+
+        if (!layout) {
+          console.warn(`Modal layout not found: ${modal.resourceId}`);
+          return;
+        }
+
+        // Process layout elements similar to addLayout
+        const processElement = (element) => {
+          const processedElement = { ...element };
+
+          // Handle file references in layout elements
+          if (element.url && element.url.startsWith('file:')) {
+            const fileId = element.url.replace('file:', '');
+            processedElement.url = resolveFile(fileId);
+          }
+
+          // Recursively process children if they exist
+          if (element.children && Array.isArray(element.children)) {
+            processedElement.children = element.children.map(processElement);
+          }
+
+          return processedElement;
+        };
+
+        // Create a container for this modal
+        const modalContainer = {
+          id: `modal-${index}`,
+          type: 'container',
+          x: 0,
+          y: 0,
+          children: []
+        };
+
+        // Add all layout elements to the modal container
+        if (Array.isArray(layout.elements)) {
+          for (const element of layout.elements) {
+            modalContainer.children.push(processElement(element));
+          }
+        }
+
+        elements.push(parseAndRender(modalContainer, {
+          variables: systemState.variables,
+        }));
+      }
+    });
+  }
+}
+
 export default [
   generateScreenBackgroundElement,
   addBackgrundOrCg,
@@ -462,4 +519,5 @@ export default [
   addLayout,
   addBgm,
   addSfx,
+  addModals,
 ];

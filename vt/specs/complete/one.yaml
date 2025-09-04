@@ -17,10 +17,9 @@ presets:
               - variableId: currentMenuTabId
                 op: "set"
                 value: "options"
-          sectionTransition:
-            mode: menu
-            sceneId: 93jkal3
-            sectionId: asdkjl32
+
+          addModal:
+            resourceId: dafkjkl3
       LeftClick:
         system:
           nextLine: {}
@@ -66,22 +65,27 @@ resources:
       name: Menu Screen
       elements:
         - type: "container"
-          x: 100
-          y: 100
           children:
-            - $if#1: variables.currentMenuTabId == "options"
-              $then#1:
+            - id: k3jl2rj
+              type: rect
+              width: 1920
+              height: 1080
+              fill: black
+            - id: "9fdadf"
+              $when: 'variables.currentMenuTabId == "options"'
+              type: "container"
+              children:
                 - type: text
                   text: "Options"
-                  x: 0
-                  y: 0
+                  x: 100
+                  y: 100
                   style:
                     fontSize: 64
                     fill: "white"
                 - id: 39jfkal21
                   type: container
-                  x: 200
-                  y: 100
+                  x: 300
+                  y: 200
                   width: 1400
                   height: 300
                   children:
@@ -89,7 +93,7 @@ resources:
                       type: text
                       x: 20
                       y: 0
-                      text: "${variables.textSpeed}"
+                      text: "Text speed: ${variables.textSpeed}"
                       style:
                         fontSize: 24
                         fill: "white"
@@ -102,15 +106,6 @@ resources:
                       hoverThumb: "file:horizontal_hover_thumb"
                       idleBar: "file:horizontal_idle_bar"
                       hoverBar: "file:horizontal_hover_bar"
-                    - id: "b"
-                      type: "slider"
-                      x: 20
-                      y: 170
-                      direction: "vertical"
-                      idleThumb: "file:vertical_idle_thumb"
-                      hoverThumb: "file:vertical_hover_thumb"
-                      idleBar: "file:vertical_idle_bar"
-                      hoverBar: "file:vertical_hover_bar"
                       dragEventName: system
                       dragEndEventName: system
                       dragEventPayload:
@@ -120,13 +115,15 @@ resources:
                               - variableId: textSpeed
                                 op: "set"
                                 value: "{{ value }}"
-              $if#2: variables.currentMenuTabId == "load"
-              $then#2:
+            - id: "9fdadf"
+              $when: 'variables.currentMenuTabId == "load"'
+              type: "container"
+              children:
                 - id: load-title
                   type: text
                   text: "Load"
-                  x: 0
-                  y: 0
+                  x: 100
+                  y: 100
                   style:
                     fontSize: 64
                     fill: "white"
@@ -188,13 +185,16 @@ resources:
                           style:
                             fontSize: 32
                             fill: "white"
-              $if#3: variables.currentMenuTabId == "save"
-              $then#3:
+
+            - id: "9fdadf"
+              $when: 'variables.currentMenuTabId == "save"'
+              type: "container"
+              children:
                 - id: save-title
                   type: text
                   text: "Save"
-                  x: 0
-                  y: 0
+                  x: 100
+                  y: 100
                   style:
                     fontSize: 64
                     fill: "white"
@@ -250,6 +250,7 @@ resources:
           y: 540
           children:
             - id: "Start"
+              $when: "variables.isMainMenu == true"
               type: text
               text: "Start"
               height: 40
@@ -257,6 +258,7 @@ resources:
               eventName: "system"
               eventPayload:
                 system:
+                  clearLastModal: {}
                   sectionTransition:
                     sectionId: "3k3s9sd"
               x: 0
@@ -268,6 +270,7 @@ resources:
                 fontSize: 48
                 fill: yellow
             - id: "Save"
+              $when: "variables.isMainMenu == false"
               type: text
               text: "Save"
               height: 40
@@ -331,6 +334,7 @@ resources:
                 fontSize: 48
                 fill: yellow
             - id: "Main"
+              $when: "variables.isMainMenu == false"
               type: text
               text: "Main"
               height: 40
@@ -338,6 +342,7 @@ resources:
               eventName: "system"
               eventPayload:
                 system:
+                  clearLastModal: {}
                   sectionTransition:
                     mode: "read"
                     sectionId: "l3kjfawelf"
@@ -349,16 +354,15 @@ resources:
               hoverStyle:
                 fontSize: 48
                 fill: yellow
-            - id: "Exit"
+            - id: "back"
               type: text
-              text: "Exit"
+              text: "Back"
               height: 40
               width: 200
               eventName: "system"
               eventPayload:
                 system:
-                  clearCurrentMode:
-                    mode: "read"
+                  clearLastModal: {}
               x: 0
               y: 0
               style:
@@ -453,9 +457,11 @@ resources:
                       - variableId: currentMenuTabId
                         op: "set"
                         value: "options"
-                  sectionTransition:
-                    mode: menu
-                    sectionId: asdkjl32
+                      - variableId: "isMainMenu"
+                        op: "set"
+                        value: false
+                  addModal:
+                    resourceId: dafkjkl3
             - id: dialogue-action-hide
               type: text
               text: "Hide"
@@ -488,6 +494,54 @@ resources:
                 system:
                   prevLine: {}
 
+    f3jik32isdf:
+      name: Exit Application Modal
+      elements:
+        - id: 23kjrasdf
+          type: container
+          x: 500
+          y: 300
+          children:
+            - id: "efawkl3"
+              type: "rect"
+              width: 800
+              height: 300
+              fill: "#ccc"
+            - id: "32sadfj"
+              type: text
+              x: 20
+              y: 20
+              text: Are you sure to exit the application?
+              style:
+                fontSize: 48
+                fill: "white"
+            - id: "38sdfa2"
+              type: text
+              text: Yes
+              y: 120
+              x: 50
+              style:
+                fontSize: 48
+                fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+            - id: "e83a"
+              type: text
+              text: No
+              y: 120
+              x: 250
+              eventName: "system"
+              eventPayload:
+                system:
+                  clearLastModal: {}
+              style:
+                fontSize: 48
+                fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+
     j3i8dk32:
       name: Title Screen
       elements:
@@ -500,7 +554,7 @@ resources:
           type: container
           direction: horizontal
           anchor: BottomCenter
-          x: 960
+          x: 560
           y: 540
           children:
             - id: "Start"
@@ -529,15 +583,25 @@ resources:
               eventName: "system"
               eventPayload:
                 system:
-                  sectionTransition:
-                    sceneId: "93jkal3"
-                    sectionId: "asdkjl32"
-                    mode: "menu"
+                  addModal:
+                    resourceId: dafkjkl3
                   updateVariable:
                     operations:
                       - variableId: "currentMenuTabId"
                         op: "set"
                         value: "load"
+                      - variableId: "isMainMenu"
+                        op: "set"
+                        value: true
+                  # sectionTransition:
+                  #   sceneId: "93jkal3"
+                  #   sectionId: "asdkjl32"
+                  #   mode: "menu"
+                  # updateVariable:
+                  #   operations:
+                  #     - variableId: "currentMenuTabId"
+                  #       op: "set"
+                  #       value: "load"
               x: 0
               y: 0
               style:
@@ -554,15 +618,16 @@ resources:
               eventName: "system"
               eventPayload:
                 system:
-                  sectionTransition:
-                    sceneId: "93jkal3"
-                    sectionId: "asdkjl32"
-                    mode: "menu"
+                  addModal:
+                    resourceId: dafkjkl3
                   updateVariable:
                     operations:
                       - variableId: "currentMenuTabId"
                         op: "set"
                         value: "options"
+                      - variableId: "isMainMenu"
+                        op: "set"
+                        value: true
               x: 0
               y: 0
               style:
@@ -578,7 +643,9 @@ resources:
               width: 200
               eventName: "system"
               eventPayload:
-                system: {}
+                system:
+                  addModal:
+                    resourceId: f3jik32isdf
               x: 0
               y: 0
               style:
@@ -624,7 +691,7 @@ resources:
               easing: linear
 story:
   initialPresetId: bj342s
-  initialSceneId: ajfl3a
+  initialSceneId: 93jkal3
   scenes:
     ajfl3a:
       name: Scene 1
@@ -667,7 +734,8 @@ story:
             - id: line3
               system:
                 sectionTransition:
-                  sectionId: 3k3s9sd
+                  sceneId: 93jkal3
+                  sectionId: asdkjl32
               presentation: {}
         3k3s9sd:
           name: Section 2
@@ -800,11 +868,13 @@ story:
                   content: XGooooooooo
                   characterId: ajf34a
     93jkal3:
-      name: Menu Scene
+      initialSectionId: asdkjl32
+      name: Title Scene
       sections:
         asdkjl32:
+          name: Title Section
           lines:
             - id: line1
-              presentation: {}
-                # preset:
-                #   presetId: 3ijasdk3
+              presentation:
+                layout:
+                  layoutId: j3i8dk32

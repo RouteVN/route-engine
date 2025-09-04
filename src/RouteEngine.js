@@ -49,15 +49,32 @@ class RouteEngine {
    */
   handleEvent = (event) => {
     const { eventType, payload } = event;
-    const currentPreset = this._systemStore.selectCurrentPreset();
-    const eventsMap = currentPreset?.eventsMap || {};
-    const system = eventsMap[eventType]?.system;
-    const actionType = system ? Object.keys(system)[0] : null;
 
-    if (actionType && typeof this._systemStore[actionType] === "function") {
-      this._systemStore[actionType](payload);
-    } else if (actionType) {
-      console.error(`Method ${actionType} not found on system store`);
+    // Handle direct system events (e.g., from UI elements)
+    if (eventType === "system" && payload?.system) {
+      const systemActions = payload.system;
+      Object.keys(systemActions).forEach((actionType) => {
+        if (typeof this._systemStore[actionType] === "function") {
+          this._systemStore[actionType](systemActions[actionType]);
+        } else {
+          console.error(`System action ${actionType} not found on system store`);
+        }
+      });
+    } else {
+      // Handle preset-based events (e.g., LeftClick, RightClick)
+      const currentPreset = this._systemStore.selectCurrentPreset();
+      const eventsMap = currentPreset?.eventsMap || {};
+      const system = eventsMap[eventType]?.system;
+
+      if (system) {
+        Object.keys(system).forEach((actionType) => {
+          if (typeof this._systemStore[actionType] === "function") {
+            this._systemStore[actionType](system[actionType]);
+          } else {
+            console.error(`Method ${actionType} not found on system store`);
+          }
+        });
+      }
     }
 
     const pendingEffects = this._systemStore.selectPendingEffects();
@@ -130,6 +147,7 @@ class RouteEngine {
 
     const renderState = this._constructRenderState({
       presentationState: presentationState,
+      systemState: this._systemStore.selectState(),
       screen: this._projectDataStore.selectScreen(),
       resolveFile: (f) => `file:${f}`,
       resources: this._projectDataStore.selectResources(),
@@ -137,6 +155,7 @@ class RouteEngine {
     });
 
     console.log('Render state:', {
+      systemState: this._systemStore.selectState(),
       presentationState: presentationState,
       currentPointer: currentPointer,
       renderState
