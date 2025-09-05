@@ -21,7 +21,6 @@ export const selectInitialIds = (state) => {
     sceneId: state.story.initialSceneId,
     sectionId: initialScene.initialSectionId,
     lineId: initialSection.lines[0].id,
-    autoNext: initialSection.lines[0].system?.autoNext,
   };
 };
 

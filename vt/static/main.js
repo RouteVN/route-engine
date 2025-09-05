@@ -150,6 +150,7 @@ const init = async () => {
 
   engine.init({
     projectData: jsonData,
+    ticker: app._app.ticker
   });
 };
 
