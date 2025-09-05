@@ -8,7 +8,7 @@ export const createInitialState = ({
   const state = {
     pendingEffects: [],
     variables,
-    saveData,
+    saveData: saveData || {},
     modals: [],
     story: {
       lastLineAction: undefined,
@@ -125,8 +125,44 @@ export const selectSaveData = ({ state }) => {
   return state.saveData;
 };
 
+export const selectSaveDataPage = ({ state }, payload) => {
+  const { page, numberPerPage } = payload;
+
+  const start = page * numberPerPage;
+
+  let items = [];
+  for (let i = start; i < start + numberPerPage; i++) {
+    const item = state.saveData[i] ? {
+      id: i,
+      label: new Date(state.saveData[i].date).toISOString().split('T')[0],
+      hasData: true
+    } : {
+      id: i,
+      label: 'No Data',
+      hasData: false,
+    }
+    items.push(item)
+  }
+
+  return items;
+}
+
 export const selectVariables = ({ state }) => {
   return state.variables;
+};
+
+export const selectDeviceVariables = ({ state, projectDataStore }) => {
+  const variableDefinitions = projectDataStore.selectVariables();
+  const currentVariables = state.variables;
+
+  const deviceVariables = {};
+  Object.entries(variableDefinitions).forEach(([key, definition]) => {
+    if (definition.persistence === 'device' && currentVariables.hasOwnProperty(key)) {
+      deviceVariables[key] = currentVariables[key];
+    }
+  });
+
+  return deviceVariables;
 };
 
 /*************************
@@ -409,6 +445,9 @@ export const updateVariable = ({ state, projectDataStore }, payload) => {
   state.pendingEffects.push({
     name: "render",
   });
+  state.pendingEffects.push({
+    name: 'saveVariables'
+  })
 };
 
 
@@ -511,17 +550,34 @@ export const autoNext = ({ state }, payload) => {
   state.story.autoNext = payload;
 };
 
+export const setSaveData = ({ state }, payload) => {
+  const { saveData } = payload;
+  state.saveData = saveData;
+}
+
+export const setDeviceVariables = ({ state }, payload) => {
+  const { variables } = payload;
+  // Merge device variables into state
+  Object.entries(variables).forEach(([key, value]) => {
+    state.variables[key] = value;
+  });
+}
+
 export const saveVnData = ({ state }, payload) => {
-  state.saveData.push({
-    id: Date.now().toString().slice(4, 10),
-    slotIndex: payload.slotIndex,
+  const { slotIndex } = payload;
+  state.saveData[slotIndex] = {
+    id: String(slotIndex),
     pointer: selectSpecificPointer({ state, mode: "read" }),
     history: selectHistory({ state }),
-  });
+    date: Date.now()
+  };
+  state.pendingEffects.push({
+    name: 'render'
+  })
   state.pendingEffects.push({
     name: "saveVnData",
     options: {
-      saveData: [...state.saveData],
+      saveData: { ...state.saveData },
     },
   });
 };
@@ -529,18 +585,18 @@ export const saveVnData = ({ state }, payload) => {
 export const loadVnData = ({ state }, payload) => {
   const { slotIndex } = payload;
   const saveData = selectSaveData({ state });
-  const matchedSlotSaveData = saveData.filter(
-    (save) => save.slotIndex === slotIndex,
-  );
-  if (matchedSlotSaveData.length === 0) {
+  const slotData = saveData[slotIndex];
+
+  if (!slotData) {
     console.warn(`No save data found for slot index ${slotIndex}`);
     return;
   }
-  const { pointer, history } =
-    matchedSlotSaveData[matchedSlotSaveData.length - 1];
+
+  const { pointer, history } = slotData;
   state.story.currentPointer = "read";
   state.story.pointers["read"] = pointer;
   state.story.history = history;
+  state.modals = [];
   state.pendingEffects.push({
     name: "render",
   });

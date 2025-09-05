@@ -422,7 +422,7 @@ export const addSfx = (
  */
 export const addLayout = (
   { elements },
-  { presentationState, resources, resolveFile },
+  { presentationState, resources, resolveFile, systemState, systemStore },
 ) => {
   if (presentationState.layout) {
     const layout = resources.layouts[presentationState.layout.layoutId];
@@ -431,17 +431,14 @@ export const addLayout = (
       return;
     }
 
-    // Process layout elements and add them to render state
     const processElement = (element) => {
       const processedElement = { ...element };
 
-      // Handle file references in layout elements
       if (element.url && element.url.startsWith('file:')) {
         const fileId = element.url.replace('file:', '');
         processedElement.url = resolveFile(fileId);
       }
 
-      // Recursively process children if they exist
       if (element.children && Array.isArray(element.children)) {
         processedElement.children = element.children.map(processElement);
       }
@@ -449,18 +446,46 @@ export const addLayout = (
       return processedElement;
     };
 
-    // Add all layout elements
-    if (Array.isArray(layout.elements)) {
-      for (const element of layout.elements) {
-        elements.push(processElement(element));
-      }
+    const layoutContainer = {
+      id: `layout-${presentationState.layout.layoutId}`,
+      type: 'container',
+      x: 0,
+      y: 0,
+      children: layout.elements || []
+    };
+
+    const templateData = {
+      variables: systemState?.variables || {},
+      saveDataArray: systemStore.selectSaveDataPage({
+        page: 0,
+        numberPerPage: 6
+      })
     }
+
+    const processedContainer = parseAndRender(layoutContainer, templateData);
+    const processElementAfterRender = (element) => {
+      const processedElement = { ...element };
+
+      if (element.url && element.url.startsWith('file:')) {
+        const fileId = element.url.replace('file:', '');
+        processedElement.url = resolveFile(fileId);
+      }
+
+      if (element.children && Array.isArray(element.children)) {
+        processedElement.children = element.children.map(processElementAfterRender);
+      }
+
+      return processedElement;
+    };
+
+    // Push the processed container
+    elements.push(processElementAfterRender(processedContainer));
   }
 };
 
 export const addModals = (
   { elements },
-  { systemState, resources, resolveFile },
+  { systemState, resources, resolveFile, systemStore },
 ) => {
   if (systemState?.modals && systemState.modals.length > 0) {
     // Add each modal as an overlay
@@ -497,19 +522,36 @@ export const addModals = (
           type: 'container',
           x: 0,
           y: 0,
-          children: []
+          children: layout.elements || []
         };
 
-        // Add all layout elements to the modal container
-        if (Array.isArray(layout.elements)) {
-          for (const element of layout.elements) {
-            modalContainer.children.push(processElement(element));
-          }
+        const templateData = {
+          variables: systemState.variables || {},
+          saveDataArray: systemStore.selectSaveDataPage({
+            page: 0,
+            numberPerPage: 6
+          })
         }
 
-        elements.push(parseAndRender(modalContainer, {
-          variables: systemState.variables,
-        }));
+        const processedModal = parseAndRender(modalContainer, templateData);
+
+        // Then process file references in the result
+        const processElementAfterRender = (element) => {
+          const processedElement = { ...element };
+
+          if (element.url && element.url.startsWith('file:')) {
+            const fileId = element.url.replace('file:', '');
+            processedElement.url = resolveFile(fileId);
+          }
+
+          if (element.children && Array.isArray(element.children)) {
+            processedElement.children = element.children.map(processElementAfterRender);
+          }
+
+          return processedElement;
+        };
+
+        elements.push(processElementAfterRender(processedModal));
       }
     });
   }

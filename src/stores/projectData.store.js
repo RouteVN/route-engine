@@ -26,7 +26,7 @@ export const selectInitialIds = (state) => {
 };
 
 export const selectVariables = (state) => {
-  return state.variables || {};
+  return state.resources.variables || {};
 };
 
 export const selectSectionLines = (state, sectionId, lineId) => {

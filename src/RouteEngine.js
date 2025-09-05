@@ -31,6 +31,45 @@ class RouteEngine {
     this._constructPresentationState = constructPresentationState;
     this._constructRenderState = constructRenderState;
 
+    const saveVnData = localStorage.getItem('saveData') || '{}';
+    this._systemStore.setSaveData({
+      saveData: JSON.parse(saveVnData),
+    })
+
+    // Initialize and load device variables
+    const variableDefinitions = this._projectDataStore.selectVariables();
+    const deviceVariables = {};
+
+    // First, set all device variable defaults
+    Object.entries(variableDefinitions).forEach(([key, definition]) => {
+      if (definition.persistence === 'device' && definition.hasOwnProperty('default')) {
+        deviceVariables[key] = definition.default;
+      }
+    });
+
+    // Then, override with saved values if they exist
+    const savedDeviceVariables = localStorage.getItem('deviceVariables');
+    if (savedDeviceVariables) {
+      try {
+        const parsedVariables = JSON.parse(savedDeviceVariables);
+        // Only override values that exist in variable definitions
+        Object.entries(parsedVariables).forEach(([key, value]) => {
+          if (variableDefinitions[key] && variableDefinitions[key].persistence === 'device') {
+            deviceVariables[key] = value;
+          }
+        });
+      } catch (e) {
+        console.error('Failed to load device variables:', e);
+      }
+    }
+
+    // Apply all device variables to the store
+    if (Object.keys(deviceVariables).length > 0) {
+      this._systemStore.setDeviceVariables({ variables: deviceVariables });
+      // Save the initialized device variables
+      localStorage.setItem('deviceVariables', JSON.stringify(deviceVariables));
+    }
+
     this._render();
   };
 
@@ -64,13 +103,29 @@ class RouteEngine {
 
     const pendingEffects = this._systemStore.selectPendingEffects();
 
+    let needsToRender = false;
+
     // TODO de duplicate
     pendingEffects.forEach((effect) => {
       if (effect.name === "render") {
-        this._processSystemActions();
-        this._render();
+        needsToRender = true;
+      }
+
+      if (effect.name === "saveVnData") {
+        const { saveData } = effect.options;
+        localStorage.setItem('saveData', JSON.stringify(saveData));
+      }
+
+      if (effect.name === "saveVariables") {
+        const deviceVariables = this._systemStore.selectDeviceVariables();
+        localStorage.setItem('deviceVariables', JSON.stringify(deviceVariables));
       }
     });
+
+    if (needsToRender) {
+      this._processSystemActions();
+      this._render();
+    }
 
     this._systemStore.clearPendingEffects();
   };
@@ -133,6 +188,7 @@ class RouteEngine {
     const renderState = this._constructRenderState({
       presentationState: presentationState,
       systemState: this._systemStore.selectState(),
+      systemStore: this._systemStore,
       screen: this._projectDataStore.selectScreen(),
       resolveFile: (f) => `file:${f}`,
       resources: this._projectDataStore.selectResources(),

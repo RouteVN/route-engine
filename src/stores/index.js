@@ -26,13 +26,22 @@ export const createProjectDataStore = (projectData) => {
 };
 
 export const createSystemStore = (initialIds, projectDataStore) => {
+  // Get variable definitions and initialize with defaults
+  const variableDefinitions = projectDataStore.selectVariables();
+  const initialVariables = {};
+  Object.entries(variableDefinitions).forEach(([key, definition]) => {
+    if (definition.hasOwnProperty('default')) {
+      initialVariables[key] = definition.default;
+    }
+  });
+  
   return createStore(
     createSystemInitialState({
       sectionId: initialIds.sectionId,
       lineId: initialIds.lineId,
       autoNext: initialIds.autoNext,
       saveData: {},
-      variables: {},
+      variables: initialVariables,
     }),
     systemStateSelectorsAndActions,
     {

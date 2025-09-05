@@ -14,7 +14,7 @@ resources:
     # Example: Currently selected menu tab, temporary UI state, or animation line
     # Use when the value is only needed while the game is running and should not persist across restarts.
 
-    # • local – saved on this device only
+    # • device – saved on this device only
     # Example: Text speed, sound/music volume, accessibility preferences
     # Use for user preferences that should persist on the current device, but don’t need syncing or save/load.
 
@@ -33,7 +33,7 @@ resources:
     textSpeed:
       type: number
       default: 50
-      persistence: local
+      persistence: device
 
   layouts:
     titleScreenLayout:
@@ -87,7 +87,20 @@ resources:
                   - variableId: "isMainMenu"
                     op: "set"
                     value: false
-
+    extraScreenLayout:
+      name: ExtraScreen Background
+      elements:
+        - id: extra-screen-bg
+          type: rect
+          x: 0
+          y: 0
+          width: 1920
+          height: 1080
+          fill: "#000000"
+          clickEventName: "system"
+          clickEventPayload:
+            system:
+              nextLine: {}
     dafkjkl3:
       name: Menu Screen
       elements:
@@ -166,56 +179,43 @@ resources:
                   direction: horizontal
                   gap: 20
                   children:
-                    - type: container
-                      x: 0
-                      y: 0
-                      width: 400
-                      height: 300
-                      children:
-                        - id: "1"
-                          type: sprite
-                          url: file:lakjf3lka
-                          x: 0
-                          y: 0
-                          width: 400
-                          height: 300
-                          eventName: "system"
-                          eventPayload:
-                            system:
-                              loadVnData:
-                                slotIndex: "1"
-                        - type: text
-                          text: "2025-01-01"
-                          x: 100
-                          y: 200
-                          style:
-                            fontSize: 32
-                            fill: "white"
-                    - type: container
-                      x: 0
-                      y: 0
-                      width: 400
-                      height: 300
-                      children:
-                        - id: "2"
-                          type: sprite
-                          url: file:lakjf3lka
-                          x: 0
-                          y: 0
-                          width: 400
-                          height: 300
-                          eventName: "system"
-                          eventPayload:
-                            system:
-                              loadVnData:
-                                slotIndex: "2"
-                        - type: text
-                          text: "2025-01-02"
-                          x: 100
-                          y: 200
-                          style:
-                            fontSize: 32
-                            fill: "white"
+                    $for item in saveDataArray:
+                      - id: feakjl-${item.id}
+                        type: container
+                        x: 0
+                        y: 0
+                        width: 400
+                        height: 300
+                        children:
+                          - id: "1-${item.id}"
+                            $when: "item.hasData"
+                            type: sprite
+                            url: file:lakjf3lka
+                            x: 0
+                            y: 0
+                            width: 400
+                            height: 300
+                            eventName: "system"
+                            eventPayload:
+                              system:
+                                loadVnData:
+                                  slotIndex: ${item.id}
+                          - id: "2-${item.id}"
+                            $when: "!item.hasData"
+                            type: sprite
+                            url: file:lakjf3lka
+                            x: 0
+                            y: 0
+                            width: 400
+                            height: 300
+                          - id: "3-${item.id}"
+                            type: text
+                            x: 20
+                            y: 20
+                            style:
+                              fontSize: 48
+                              fill: "white"
+                            text: ${item.id} - ${item.label}
 
             - id: "9fdadf"
               $when: 'variables.currentMenuTabId == "save"'
@@ -237,42 +237,33 @@ resources:
                   direction: horizontal
                   gap: 20
                   children:
-                    - type: container
-                      x: 0
-                      y: 0
-                      width: 400
-                      height: 300
-                      children:
-                        - id: "1"
-                          type: sprite
-                          url: file:lakjf3lka
-                          x: 0
-                          y: 0
-                          width: 400
-                          height: 300
-                          eventName: "system"
-                          eventPayload:
-                            system:
-                              saveVnData:
-                                slotIndex: "1"
-                    - type: container
-                      x: 0
-                      y: 0
-                      width: 400
-                      height: 300
-                      children:
-                        - id: "2"
-                          type: sprite
-                          url: file:lakjf3lka
-                          x: 0
-                          y: 0
-                          width: 400
-                          height: 300
-                          eventName: "system"
-                          eventPayload:
-                            system:
-                              saveVnData:
-                                slotIndex: "2"
+                    $for item in saveDataArray:
+                      - type: container
+                        x: 0
+                        y: 0
+                        width: 400
+                        height: 300
+                        children:
+                          - id: "1"
+                            type: sprite
+                            url: file:lakjf3lka
+                            x: 0
+                            y: 0
+                            width: 400
+                            height: 300
+                            eventName: "system"
+                            eventPayload:
+                              system:
+                                saveVnData:
+                                  slotIndex: ${item.id}
+                          - id: "3fadj"
+                            type: text
+                            x: 20
+                            y: 20
+                            style:
+                              fontSize: 48
+                              fill: "white"
+                            text: ${item.id} - ${item.label}
         - id: menu-container
           direction: vertical
           gap: 20
@@ -698,6 +689,25 @@ resources:
               hoverStyle:
                 fontSize: 48
                 fill: yellow
+        - id: "extra"
+          type: text
+          text: "Extra"
+          height: 40
+          width: 200
+          eventName: "system"
+          eventPayload:
+            system:
+              sectionTransition:
+                sceneId: ajfl3a
+                sectionId: k3nfgdsai34
+          x: 100
+          y: 800
+          style:
+            fontSize: 48
+            fill: "white"
+          hoverStyle:
+            fontSize: 48
+            fill: yellow
 
   characters:
     ajf34a:
@@ -919,6 +929,31 @@ story:
                   layoutId: fi3l
                   content: XGooooooooo
                   characterId: ajf34a
+        k3nfgdsai34:
+          name: Section Extra
+          lines:
+            - id: line1
+              presentation:
+                screen:
+                  resourceId: extraScreenLayout
+                  resourceType: layout
+                dialogue:
+                  layoutId: fi3l
+                  content: Extra 1
+            - id: line2
+              presentation:
+                dialogue:
+                  content: Extra 2
+            - id: line3
+              presentation:
+                dialogue:
+                  content: Extra 3
+            - id: line4
+              system:
+                sectionTransition:
+                  sceneId: 93jkal3
+                  sectionId: asdkjl32
+
     93jkal3:
       initialSectionId: asdkjl32
       name: Title Scene
