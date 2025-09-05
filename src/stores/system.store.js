@@ -1,7 +1,6 @@
 export const createInitialState = ({
   sectionId,
   lineId,
-  autoNext,
   saveData,
   variables,
 }) => {
@@ -14,7 +13,7 @@ export const createInitialState = ({
       lastLineAction: undefined,
       dialogueUIHidden: false,
       currentPointer: "read",
-      autoNext: autoNext,
+      nextConfig: {},
       autoMode: false,
       skipMode: false,
       pointers: {
@@ -97,8 +96,8 @@ export const selectPointers = ({ state }) => {
   return state.story.pointers;
 };
 
-export const selectAutoNext = ({ state }) => {
-  return state.story.autoNext;
+export const selectNextConfig = ({ state }) => {
+  return state.story.nextConfig;
 };
 
 export const selectRuntimeState = ({ state }) => {
@@ -213,23 +212,17 @@ export const lineCompleted = ({ state, projectDataStore }) => {
     return;
   }
 
-  const autoNext = selectAutoNext(state);
+  const nextConfig = selectNextConfig(state);
 
-  if (!autoNext) {
+  if (!nextConfig || !nextConfig.auto) {
     return;
   }
 
-  const { nextTrigger, delay } = autoNext;
+  const { trigger, delay } = nextConfig.auto;
 
-  switch (nextTrigger) {
-    case "onComplete":
-      // Clear autoNext state and immediately proceed to next line
-      delete state.story.autoNext;
-      // nextLine({ state, effects, projectDataStore, payload: {} });
-      break;
-
+  switch (trigger) {
     case "fromComplete":
-      // Schedule next line to occur after delay
+      // Schedule next line to occur after delay from completion
       pendingEffects.push({
         name: "systemInstructions",
         options: {
@@ -243,14 +236,15 @@ export const lineCompleted = ({ state, projectDataStore }) => {
       });
       break;
 
-    case "manual":
-      // Just clear autoNext state in manual mode
-      delete state.story.autoNext;
+    case "fromStart":
+      // For fromStart, the delay should have been scheduled at line start
+      // This is handled elsewhere, so we just clear the config here
+      delete state.story.nextConfig;
       break;
 
     default:
-      // Clear unknown autoNext states
-      delete state.story.autoNext;
+      // Clear unknown nextConfig states
+      delete state.story.nextConfig;
       break;
   }
 };
@@ -259,8 +253,7 @@ export const lineCompleted = ({ state, projectDataStore }) => {
  * Advances to the next line in the story
  * @param {ApplyParams} params
  */
-// export const nextLine = ({ systemState, effects, vnData, payload = {} }) => {
-export const nextLine = ({ state, projectDataStore }) => {
+export const nextLine = ({ state, projectDataStore }, payload = {}) => {
   const { pendingEffects } = state;
 
   // If dialogue is hidden, show it instead of advancing
@@ -272,56 +265,44 @@ export const nextLine = ({ state, projectDataStore }) => {
     return;
   }
 
-  // Early return if manual advance is prevented
-  // const { forceSkipAutonext = false } = payload;
-  // if (
-  //   !forceSkipAutonext &&
-  //   state.story.autoNext &&
-  //   state.story.autoNext.preventManual
-  // ) {
-  //   return;
-  // }
+  const { forceSkipAutonext = false } = payload;
+  const nextConfig = selectNextConfig({ state });
 
-  // Get current position
+  if (!forceSkipAutonext && nextConfig && nextConfig.manual) {
+    // Check if manual advance is disabled
+    if (!nextConfig.manual.enabled) {
+      return;
+    }
+    // Check if line must be complete before manual advance
+    if (nextConfig.manual.requireComplete && !state.lineComplete) {
+      return;
+    }
+  }
+
   const currentPointer = selectCurrentPointer({ state });
-  const pointerMode = selectPointerMode({ state });
   const lines = projectDataStore.selectSectionLines(currentPointer.sectionId);
 
-  // Find next line
   const currentLineIndex = lines.findIndex(
     (line) => line.id === currentPointer.lineId,
   );
   const nextLine = lines[currentLineIndex + 1];
 
-  // No next line available
   if (!nextLine) {
-    //   if (systemStore.selectAutoMode()) {
-    //     state.story.autoMode = false;
-    //   }
-    //   if (systemStore.selectSkipMode()) {
-    //     state.story.skipMode = false;
-    //   }
+    state.story.skipMode = false;
+    state.story.autoMode = false;
+    pendingEffects.push({
+      name: 'clearAutoNextTimer'
+    })
+    pendingEffects.push({
+      name: 'clearSkipNextTimer'
+    })
     return;
   }
 
   state.story.pointers[state.story.currentPointer].lineId = nextLine.id;
 
-  // Update pointer state
-  // state.story.pointers[pointerMode].lineId = nextLine.id;
+  delete state.story.nextConfig;
 
-  // Manage autoNext state
-  // if (payload.autoNext) {
-  //   state.story.autoNext = payload.autoNext;
-  // } else {
-  //   delete state.story.autoNext;
-  // }
-
-  // systemState.story.lastLineAction = "nextLine";
-
-  // Process system actions first, then render
-  // Note: This will be called from RouteEngine's _processSystemActions
-
-  // Trigger render effect
   pendingEffects.push({
     name: "render",
   });
@@ -411,7 +392,7 @@ export const sectionTransition = ({ state, projectDataStore }, payload) => {
   state.story.pointers[currentMode].sectionId = sectionId;
   state.story.pointers[currentMode].sceneId = sceneId;
   state.story.pointers[currentMode].lineId = lines[0].id;
-  state.story.autoNext = lines[0].system?.autoNext;
+  state.story.nextConfig = lines[0].system?.nextConfig;
 
   state.pendingEffects.push({
     name: "render",
@@ -464,28 +445,23 @@ export const clearCurrentMode = ({ state }, payload) => {
 export const startAutoMode = ({ state }) => {
   if (selectSkipMode({ state })) {
     state.story.skipMode = false;
+    state.pendingEffects.push({
+      name: "clearSkipNextTimer",
+    });
   }
   state.story.autoMode = true;
   state.pendingEffects.push({
-    name: "cancelTimerEffect",
+    name: "clearAutoNextTimer",
   });
   state.pendingEffects.push({
-    name: "systemInstructions",
-    options: {
-      delay: 1000,
-      systemInstructions: {
-        nextLine: {
-          forceSkipAutonext: true,
-        },
-      },
-    },
+    name: "startAutoNextTimer",
   });
 };
 
 export const stopAutoMode = ({ state }) => {
   state.story.autoMode = false;
   state.pendingEffects.push({
-    name: "cancelTimerEffect",
+    name: "clearAutoNextTimer",
   });
 };
 
@@ -501,28 +477,23 @@ export const toggleAutoMode = ({ state }) => {
 export const startSkipMode = ({ state }) => {
   if (selectAutoMode({ state })) {
     state.story.autoMode = false;
+    state.pendingEffects.push({
+      name: "clearAutoNextTimer",
+    });
   }
   state.story.skipMode = true;
   state.pendingEffects.push({
-    name: "cancelTimerEffect",
+    name: "clearSkipNextTimer",
   });
   state.pendingEffects.push({
-    name: "systemInstructions",
-    options: {
-      delay: 300,
-      systemInstructions: {
-        nextLine: {
-          forceSkipAutonext: true,
-        },
-      },
-    },
+    name: "startSkipNextTimer",
   });
 };
 
 export const stopSkipMode = ({ state }) => {
   state.story.skipMode = false;
   state.pendingEffects.push({
-    name: "cancelTimerEffect",
+    name: "clearSkipNextTimer",
   });
 };
 
@@ -543,11 +514,11 @@ export const toggleDialogueUIHidden = ({ state }) => {
 };
 
 /**
- * Sets autoNext configuration for the current line
+ * Sets nextConfig for the current line
  * @param {ApplyParams} params
  */
-export const autoNext = ({ state }, payload) => {
-  state.story.autoNext = payload;
+export const nextConfig = ({ state }, payload) => {
+  state.story.nextConfig = payload;
 };
 
 export const setSaveData = ({ state }, payload) => {

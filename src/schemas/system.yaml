@@ -154,4 +154,38 @@ properties:
     description: Clear all pending effects (internal action)
     additionalProperties: false
 
+  nextConfig:
+    type: object
+    description: Control how the line can be advanced
+    properties:
+      manual:
+        type: object
+        properties:
+          enabled:
+            type: boolean
+            default: true
+            description: Allow manual advance via user input
+          requireComplete:
+            type: boolean
+            default: false
+            description: Only allow manual advance after line completes
+        additionalProperties: false
+      auto:
+        type: object
+        description: Auto-advance configuration (presence enables it)
+        properties:
+          trigger:
+            type: string
+            enum: [fromStart, fromComplete]
+            default: fromComplete
+            description: When to start timing for auto advance
+          delay:
+            type: number
+            minimum: 0
+            default: 1000
+            description: Delay in milliseconds before advancing
+        required: [trigger, delay]
+        additionalProperties: false
+    additionalProperties: false
+
 additionalProperties: false

@@ -5,6 +5,8 @@ import {
   constructRenderState,
 } from "./stores/index.js";
 
+import createTimer from './createTimer.js';
+
 /**
  * RouteEngine is the main class for the engine.
  * Look at ../docs/RouteEngine.md for more information.
@@ -17,6 +19,8 @@ class RouteEngine {
   _constructPresentationState;
   _applySystemInstruction;
 
+  _timer;
+
   _eventCallback = () => { };
 
   constructor() { }
@@ -24,12 +28,16 @@ class RouteEngine {
   /**
    * Initialize the engine with visual novel data and rendering functions
    */
-  init = ({ projectData }) => {
+  init = ({ projectData, ticker }) => {
     this._projectDataStore = createProjectDataStore(projectData);
     const initialIds = this._projectDataStore.selectInitialIds();
     this._systemStore = createSystemStore(initialIds, this._projectDataStore);
     this._constructPresentationState = constructPresentationState;
     this._constructRenderState = constructRenderState;
+
+    this._timer = createTimer(ticker)
+    this._timer.onEvent(this._handleTimerEvent)
+
 
     const saveVnData = localStorage.getItem('saveData') || '{}';
     this._systemStore.setSaveData({
@@ -70,8 +78,23 @@ class RouteEngine {
       localStorage.setItem('deviceVariables', JSON.stringify(deviceVariables));
     }
 
+    this._processSystemActions();
     this._render();
   };
+
+  _handleTimerEvent = ({ eventType, payload }) => {
+    Object.keys(payload.payload).forEach((actionType) => {
+      if (typeof this._systemStore[actionType] === "function") {
+        this._systemStore[actionType](payload.payload[actionType]);
+      } else {
+        console.error(
+          `System action ${actionType} not found on system store`,
+        );
+      }
+    });
+    this._processSystemActions();
+    this._render();
+  }
 
   onEvent = (callback) => {
     this._eventCallback = callback;
@@ -99,35 +122,85 @@ class RouteEngine {
           console.error(`System action ${actionType} not found on system store`);
         }
       });
+      const pendingEffects = this._systemStore.selectPendingEffects();
+
+      let needsToRender = false;
+
+      // TODO de duplicate
+      pendingEffects.forEach((effect) => {
+        if (effect.name === "render") {
+          needsToRender = true;
+        }
+
+        if (effect.name === "saveVnData") {
+          const { saveData } = effect.options;
+          localStorage.setItem('saveData', JSON.stringify(saveData));
+        }
+
+        if (effect.name === "saveVariables") {
+          const deviceVariables = this._systemStore.selectDeviceVariables();
+          localStorage.setItem('deviceVariables', JSON.stringify(deviceVariables));
+        }
+
+        if (effect.name === "startAutoNextTimer") {
+          this._timer.setTimeout('autoMode', {
+            nextLine: {
+              forceSkipAutonext: true
+            }
+          }, 1000)
+        }
+
+        if (effect.name === "clearAutoNextTimer") {
+          this._timer.clear('autoMode')
+        }
+
+        if (effect.name === "startSkipNextTimer") {
+          this._timer.setTimeout('skipMode', {
+            nextLine: {
+              forceSkipAutonext: true
+            }
+          }, 300)
+        }
+
+        if (effect.name === "clearSkipNextTimer") {
+          this._timer.clear('skipMode')
+        }
+      });
+
+      if (needsToRender) {
+        this._processSystemActions();
+        this._render();
+      }
+
+      this._systemStore.clearPendingEffects();
+    } else if (eventType === "completed") {
+
+      const nextConfig = this._systemStore.selectNextConfig();
+      if (nextConfig) {
+        if (nextConfig.auto && nextConfig.auto.trigger === 'fromComplete') {
+          this._timer.setTimeout('nextConfig', {
+            nextLine: {
+              forceSkipAutonext: true
+            }
+          }, nextConfig.auto.delay ?? 1000)
+        }
+        return;
+      }
+      if (this._systemStore.selectAutoMode()) {
+        this._timer.setTimeout('autoMode', {
+          nextLine: {
+            forceSkipAutonext: true
+          }
+        }, 1000)
+      } else if (this._systemStore.selectSkipMode()) {
+        this._timer.setTimeout('skipMode', {
+          nextLine: {
+            forceSkipAutonext: true
+          }
+        }, 300)
+      }
     }
 
-    const pendingEffects = this._systemStore.selectPendingEffects();
-
-    let needsToRender = false;
-
-    // TODO de duplicate
-    pendingEffects.forEach((effect) => {
-      if (effect.name === "render") {
-        needsToRender = true;
-      }
-
-      if (effect.name === "saveVnData") {
-        const { saveData } = effect.options;
-        localStorage.setItem('saveData', JSON.stringify(saveData));
-      }
-
-      if (effect.name === "saveVariables") {
-        const deviceVariables = this._systemStore.selectDeviceVariables();
-        localStorage.setItem('deviceVariables', JSON.stringify(deviceVariables));
-      }
-    });
-
-    if (needsToRender) {
-      this._processSystemActions();
-      this._render();
-    }
-
-    this._systemStore.clearPendingEffects();
   };
 
   /**

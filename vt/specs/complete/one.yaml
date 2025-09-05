@@ -744,11 +744,10 @@ resources:
               value: 0
               easing: linear
 story:
-  initialSceneId: 93jkal3
+  initialSceneId: ajfl3a
   scenes:
     ajfl3a:
       name: Scene 1
-      # initialSectionId: l3kjfawelf
       initialSectionId: l3kjfawelf
       sections:
         l3kjfawelf:
@@ -756,14 +755,12 @@ story:
           lines:
             - id: line1
               system:
-                autoNext:
-                  # nextTrigger: 'onComplete'
-                  # nextTrigger: 'manual'
-                  nextTrigger: "fromComplete"
-                  # type: 'complete' | 'fromStart' | 'fromComplete'
-                  delay: 1000 # will call next after 1000ms from start
-                  # delayAfterComplete: 1000 # will call next after 1000ms from completion
-                  preventManual: true
+                nextConfig:
+                  manual:
+                    enabled: false
+                  auto:
+                    trigger: fromComplete
+                    delay: 1000
               presentation:
                 screen:
                   resourceId: storyScreenLayout
@@ -778,9 +775,12 @@ story:
                         in: 3lkj289
             - id: line2
               system:
-                autoNext:
-                  delay: 1000
-                  preventManual: true
+                nextConfig:
+                  manual:
+                    enabled: false
+                  auto:
+                    trigger: fromComplete
+                    delay: 1000
               presentation:
                 visual:
                   items:
