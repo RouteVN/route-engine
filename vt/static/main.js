@@ -109,10 +109,17 @@ const init = async () => {
     assetBufferMap,
     eventHandler: (eventType, payload) => {
       console.log('eventHandler', { eventType, payload })
-      engine.handleEvent({ eventType, payload });
-      // engine.handleEvent(event, payload);
-      // console.log('eventHandler', event, payload)
-      // engine.systemEventHandler(event, payload)
+      if (eventType === "completed") {
+        engine.handleEvent({
+          payload: {
+            actions: {
+              handleCompleted: {}
+            }
+          }
+        });
+      } else if (eventType === "system") {
+        engine.handleEvent({ payload });
+      }
     },
     plugins: [
       new SpriteRendererPlugin(),

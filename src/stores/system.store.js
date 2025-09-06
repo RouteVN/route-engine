@@ -70,6 +70,18 @@ export const selectPendingEffects = ({ state }) => {
   return state.pendingEffects;
 };
 
+export const selectSortedPendingEffects = ({ state }) => {
+  const effects = state.pendingEffects;
+  const effectMap = new Map();
+  
+  // Keep only the last effect with each name
+  effects.forEach(effect => {
+    effectMap.set(effect.name, effect);
+  });
+  
+  return Array.from(effectMap.values());
+};
+
 export const selectCurrentPointer = ({ state }) => {
   return state.story.pointers[state.story.currentPointer];
 };
@@ -592,5 +604,54 @@ export const clearLastModal = ({ state }, payload) => {
     });
   }
 }
+
+export const handleCompleted = ({ state }) => {
+  const nextConfig = selectNextConfig({ state });
+  if (nextConfig) {
+    if (nextConfig.auto && nextConfig.auto.trigger === 'fromComplete') {
+      state.pendingEffects.push({
+        name: "startTimer",
+        options: {
+          timerId: 'nextConfig',
+          payload: {
+            nextLine: {
+              forceSkipAutonext: true
+            }
+          },
+          delay: nextConfig.auto.delay ?? 1000
+        }
+      });
+    }
+    return;
+  }
+  
+  if (selectAutoMode({ state })) {
+    state.pendingEffects.push({
+      name: "startTimer",
+      options: {
+        timerId: 'autoMode',
+        payload: {
+          nextLine: {
+            forceSkipAutonext: true
+          }
+        },
+        delay: 1000
+      }
+    });
+  } else if (selectSkipMode({ state })) {
+    state.pendingEffects.push({
+      name: "startTimer",
+      options: {
+        timerId: 'skipMode',
+        payload: {
+          nextLine: {
+            forceSkipAutonext: true
+          }
+        },
+        delay: 300
+      }
+    });
+  }
+};
 
 

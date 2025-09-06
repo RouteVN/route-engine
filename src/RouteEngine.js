@@ -8,6 +8,7 @@ import * as presentationHandlers from "./stores/constructPresentationState.js";
 import * as systemHandlers from "./stores/system.store.js";
 
 import createTimer from './createTimer.js';
+import * as effectHandlers from './stores/effectHandlers.js';
 
 // Action categorization constants
 const PRESENTATION_ACTIONS = Object.keys(presentationHandlers).filter(key => key !== 'default' && key !== 'createInitialState');
@@ -86,7 +87,7 @@ export default function createRouteEngine() {
       if (typeof _systemStore[actionType] === "function") {
         _systemStore[actionType](payload.payload[actionType]);
       } else {
-        console.error(
+        throw new Error(
           `System action ${actionType} not found on system store`,
         );
       }
@@ -106,96 +107,36 @@ export default function createRouteEngine() {
    * Use this for sending events to the engine
    */
   const handleEvent = (event) => {
-    const { eventType, payload } = event;
-
+    const { payload } = event;
     // Handle direct system events (e.g., from UI elements)
-    if (eventType === "system" && payload?.actions) {
-      const systemActions = payload.actions;
-      Object.keys(systemActions).forEach((actionType) => {
-        if (typeof _systemStore[actionType] === "function") {
-          _systemStore[actionType](systemActions[actionType]);
-        } else {
-          console.error(`System action ${actionType} not found on system store`);
-        }
-      });
-      const pendingEffects = _systemStore.selectPendingEffects();
-
-      let needsToRender = false;
-
-      // TODO de duplicate
-      pendingEffects.forEach((effect) => {
-        if (effect.name === "render") {
-          needsToRender = true;
-        }
-
-        if (effect.name === "saveVnData") {
-          const { saveData } = effect.options;
-          localStorage.setItem('saveData', JSON.stringify(saveData));
-        }
-
-        if (effect.name === "saveVariables") {
-          const deviceVariables = _systemStore.selectDeviceVariables();
-          localStorage.setItem('deviceVariables', JSON.stringify(deviceVariables));
-        }
-
-        if (effect.name === "startAutoNextTimer") {
-          _timer.setTimeout('autoMode', {
-            nextLine: {
-              forceSkipAutonext: true
-            }
-          }, 1000)
-        }
-
-        if (effect.name === "clearAutoNextTimer") {
-          _timer.clear('autoMode')
-        }
-
-        if (effect.name === "startSkipNextTimer") {
-          _timer.setTimeout('skipMode', {
-            nextLine: {
-              forceSkipAutonext: true
-            }
-          }, 300)
-        }
-
-        if (effect.name === "clearSkipNextTimer") {
-          _timer.clear('skipMode')
-        }
-      });
-
-      if (needsToRender) {
-        _processAndRender();
+    const systemActions = payload.actions;
+    Object.keys(systemActions).forEach((actionType) => {
+      if (typeof _systemStore[actionType] === "function") {
+        _systemStore[actionType](systemActions[actionType]);
+      } else {
+        throw new Error(`System action ${actionType} not found on system store`);
       }
+    });
+    // Process any pending effects from actions
+    const pendingEffects = _systemStore.selectSortedPendingEffects();
+    if (pendingEffects.length > 0) {
+      const dependencies = {
+        processAndRender: _processAndRender,
+        timer: _timer,
+        localStorage: localStorage,
+        systemStore: _systemStore
+      };
+
+      pendingEffects.forEach((effect) => {
+        const handler = effectHandlers[effect.name];
+        if (!handler) {
+          throw new Error(`No handler found for effect: ${effect.name}`);
+        }
+        handler(dependencies, effect);
+      });
 
       _systemStore.clearPendingEffects();
-    } else if (eventType === "completed") {
-
-      const nextConfig = _systemStore.selectNextConfig();
-      if (nextConfig) {
-        if (nextConfig.auto && nextConfig.auto.trigger === 'fromComplete') {
-          _timer.setTimeout('nextConfig', {
-            nextLine: {
-              forceSkipAutonext: true
-            }
-          }, nextConfig.auto.delay ?? 1000)
-        }
-        return;
-      }
-      if (_systemStore.selectAutoMode()) {
-        _timer.setTimeout('autoMode', {
-          nextLine: {
-            forceSkipAutonext: true
-          }
-        }, 1000)
-      } else if (_systemStore.selectSkipMode()) {
-        _timer.setTimeout('skipMode', {
-          nextLine: {
-            forceSkipAutonext: true
-          }
-        }, 300)
-      }
     }
-
   };
 
   /**
@@ -203,7 +144,7 @@ export default function createRouteEngine() {
    */
   const _processAndRender = () => {
     _processSystemActions();
-    _render();
+    _renderLine();
   };
 
   /**
@@ -224,25 +165,18 @@ export default function createRouteEngine() {
     currentLines.forEach((line) => {
       const actions = line.actions || {};
 
-      // Process system actions only (presentation actions are handled in _render)
-      Object.keys(actions).forEach((actionType) => {
-        if (SYSTEM_ACTIONS.includes(actionType)) {
-          if (typeof _systemStore[actionType] === "function") {
-            _systemStore[actionType](actions[actionType]);
-          } else {
-            console.error(
-              `System action ${actionType} not found on system store`,
-            );
-          }
-        }
+      // Process system actions only (presentation actions are handled in _renderLine)
+      const systemActions = SYSTEM_ACTIONS.filter(actionType => actionType in actions)
+      systemActions.forEach(actionType => {
+        _systemStore[actionType](actions[actionType]);
       });
     });
   };
 
   /**
-   * Renders the current state of the visual novel
+   * Renders the current line of the visual novel
    */
-  const _render = () => {
+  const _renderLine = () => {
     const currentPointer = _systemStore.selectCurrentPointer();
     const currentLines = _projectDataStore.selectSectionLines(
       currentPointer.sectionId,
@@ -250,10 +184,9 @@ export default function createRouteEngine() {
     );
 
     if (!currentLines.length) {
-      console.warn(
+      throw new Error(
         `No lines found for section: ${currentPointer.sectionId}, line: ${currentPointer.lineId}`,
       );
-      return;
     }
 
     // Create presentation state from unified actions
