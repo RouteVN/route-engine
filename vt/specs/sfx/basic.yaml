@@ -25,7 +25,7 @@ resources:
           fill: "#000000"
           clickEventName: "system"
           clickEventPayload:
-            system:
+            actions:
               nextLine: {}
     fi3l:
       name: Dialogue Screen
@@ -54,7 +54,7 @@ story:
           name: Section 1
           lines:
             - id: line0
-              presentation:
+              actions:
                 screen:
                   resourceId: storyScreenLayout
                   resourceType: layout
@@ -63,7 +63,7 @@ story:
                   content: Click to play sfx
 
             - id: line1
-              presentation:
+              actions:
                 sfx:
                   items:
                     - id: sfx-1
@@ -73,7 +73,7 @@ story:
                   content: Playing multiple SFX sounds
 
             - id: line2
-              presentation:
+              actions:
                 sfx:
                   items:
                     - id: sfx-2
@@ -83,7 +83,7 @@ story:
                   content: Playing single SFX sound
 
             - id: line3
-              presentation:
+              actions:
                 dialogue:
                   layoutId: fi3l
                   content: No SFX playing

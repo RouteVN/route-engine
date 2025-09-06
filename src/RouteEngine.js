@@ -4,48 +4,49 @@ import {
   constructPresentationState,
   constructRenderState,
 } from "./stores/index.js";
+import * as presentationHandlers from "./stores/constructPresentationState.js";
+import * as systemHandlers from "./stores/system.store.js";
 
 import createTimer from './createTimer.js';
+import * as effectHandlers from './stores/effectHandlers.js';
+
+// Action categorization constants
+const PRESENTATION_ACTIONS = Object.keys(presentationHandlers).filter(key => key !== 'default' && key !== 'createInitialState');
+const SYSTEM_ACTIONS = Object.keys(systemHandlers).filter(key => !key.startsWith('select') && key !== 'createInitialState');
 
 /**
- * RouteEngine is the main class for the engine.
+ * Creates a RouteEngine instance.
  * Look at ../docs/RouteEngine.md for more information.
  */
-class RouteEngine {
-  _projectDataStore;
-
-  _systemStore;
-  _constructRenderState;
-  _constructPresentationState;
-  _applySystemInstruction;
-
-  _timer;
-
-  _eventCallback = () => { };
-
-  constructor() { }
+export default function createRouteEngine() {
+  let _projectDataStore;
+  let _systemStore;
+  let _constructRenderState;
+  let _constructPresentationState;
+  let _timer;
+  let _eventCallback = () => { };
 
   /**
    * Initialize the engine with visual novel data and rendering functions
    */
-  init = ({ projectData, ticker }) => {
-    this._projectDataStore = createProjectDataStore(projectData);
-    const initialIds = this._projectDataStore.selectInitialIds();
-    this._systemStore = createSystemStore(initialIds, this._projectDataStore);
-    this._constructPresentationState = constructPresentationState;
-    this._constructRenderState = constructRenderState;
+  const init = ({ projectData, ticker }) => {
+    _projectDataStore = createProjectDataStore(projectData);
+    const initialIds = _projectDataStore.selectInitialIds();
+    _systemStore = createSystemStore(initialIds, _projectDataStore);
+    _constructPresentationState = constructPresentationState;
+    _constructRenderState = constructRenderState;
 
-    this._timer = createTimer(ticker)
-    this._timer.onEvent(this._handleTimerEvent)
+    _timer = createTimer(ticker)
+    _timer.onEvent(_handleTimerEvent)
 
 
     const saveVnData = localStorage.getItem('saveData') || '{}';
-    this._systemStore.setSaveData({
+    _systemStore.setSaveData({
       saveData: JSON.parse(saveVnData),
     })
 
     // Initialize and load device variables
-    const variableDefinitions = this._projectDataStore.selectVariables();
+    const variableDefinitions = _projectDataStore.selectVariables();
     const deviceVariables = {};
 
     // First, set all device variable defaults
@@ -73,142 +74,85 @@ class RouteEngine {
 
     // Apply all device variables to the store
     if (Object.keys(deviceVariables).length > 0) {
-      this._systemStore.setDeviceVariables({ variables: deviceVariables });
+      _systemStore.setDeviceVariables({ variables: deviceVariables });
       // Save the initialized device variables
       localStorage.setItem('deviceVariables', JSON.stringify(deviceVariables));
     }
 
-    this._processSystemActions();
-    this._render();
+    _processAndRender();
   };
 
-  _handleTimerEvent = ({ eventType, payload }) => {
+  const _handleTimerEvent = ({ eventType, payload }) => {
     Object.keys(payload.payload).forEach((actionType) => {
-      if (typeof this._systemStore[actionType] === "function") {
-        this._systemStore[actionType](payload.payload[actionType]);
+      if (typeof _systemStore[actionType] === "function") {
+        _systemStore[actionType](payload.payload[actionType]);
       } else {
-        console.error(
+        throw new Error(
           `System action ${actionType} not found on system store`,
         );
       }
     });
-    this._processSystemActions();
-    this._render();
+    _processAndRender();
   }
 
-  onEvent = (callback) => {
-    this._eventCallback = callback;
-    return this;
+  const onEvent = (callback) => {
+    _eventCallback = callback;
   };
 
-  offEvent = () => {
-    this._eventCallback = () => { };
-    return this;
+  const offEvent = () => {
+    _eventCallback = () => { };
   };
 
   /**
    * Use this for sending events to the engine
    */
-  handleEvent = (event) => {
-    const { eventType, payload } = event;
-
+  const handleEvent = (event) => {
+    const { payload } = event;
     // Handle direct system events (e.g., from UI elements)
-    if (eventType === "system" && payload?.system) {
-      const systemActions = payload.system;
-      Object.keys(systemActions).forEach((actionType) => {
-        if (typeof this._systemStore[actionType] === "function") {
-          this._systemStore[actionType](systemActions[actionType]);
-        } else {
-          console.error(`System action ${actionType} not found on system store`);
-        }
-      });
-      const pendingEffects = this._systemStore.selectPendingEffects();
+    const systemActions = payload.actions;
+    Object.keys(systemActions).forEach((actionType) => {
+      if (typeof _systemStore[actionType] === "function") {
+        _systemStore[actionType](systemActions[actionType]);
+      } else {
+        throw new Error(`System action ${actionType} not found on system store`);
+      }
+    });
+    // Process any pending effects from actions
+    const pendingEffects = _systemStore.selectSortedPendingEffects();
+    if (pendingEffects.length > 0) {
+      const dependencies = {
+        processAndRender: _processAndRender,
+        timer: _timer,
+        localStorage: localStorage,
+        systemStore: _systemStore
+      };
 
-      let needsToRender = false;
-
-      // TODO de duplicate
       pendingEffects.forEach((effect) => {
-        if (effect.name === "render") {
-          needsToRender = true;
+        const handler = effectHandlers[effect.name];
+        if (!handler) {
+          throw new Error(`No handler found for effect: ${effect.name}`);
         }
-
-        if (effect.name === "saveVnData") {
-          const { saveData } = effect.options;
-          localStorage.setItem('saveData', JSON.stringify(saveData));
-        }
-
-        if (effect.name === "saveVariables") {
-          const deviceVariables = this._systemStore.selectDeviceVariables();
-          localStorage.setItem('deviceVariables', JSON.stringify(deviceVariables));
-        }
-
-        if (effect.name === "startAutoNextTimer") {
-          this._timer.setTimeout('autoMode', {
-            nextLine: {
-              forceSkipAutonext: true
-            }
-          }, 1000)
-        }
-
-        if (effect.name === "clearAutoNextTimer") {
-          this._timer.clear('autoMode')
-        }
-
-        if (effect.name === "startSkipNextTimer") {
-          this._timer.setTimeout('skipMode', {
-            nextLine: {
-              forceSkipAutonext: true
-            }
-          }, 300)
-        }
-
-        if (effect.name === "clearSkipNextTimer") {
-          this._timer.clear('skipMode')
-        }
+        handler(dependencies, effect);
       });
 
-      if (needsToRender) {
-        this._processSystemActions();
-        this._render();
-      }
-
-      this._systemStore.clearPendingEffects();
-    } else if (eventType === "completed") {
-
-      const nextConfig = this._systemStore.selectNextConfig();
-      if (nextConfig) {
-        if (nextConfig.auto && nextConfig.auto.trigger === 'fromComplete') {
-          this._timer.setTimeout('nextConfig', {
-            nextLine: {
-              forceSkipAutonext: true
-            }
-          }, nextConfig.auto.delay ?? 1000)
-        }
-        return;
-      }
-      if (this._systemStore.selectAutoMode()) {
-        this._timer.setTimeout('autoMode', {
-          nextLine: {
-            forceSkipAutonext: true
-          }
-        }, 1000)
-      } else if (this._systemStore.selectSkipMode()) {
-        this._timer.setTimeout('skipMode', {
-          nextLine: {
-            forceSkipAutonext: true
-          }
-        }, 300)
-      }
+      _systemStore.clearPendingEffects();
     }
+  };
 
+  /**
+   * Processes system actions and renders the current state
+   */
+  const _processAndRender = () => {
+    _processSystemActions();
+    _renderLine();
   };
 
   /**
    * Processes system actions from current lines
    */
-  _processSystemActions = () => {
-    const currentPointer = this._systemStore.selectCurrentPointer();
-    const currentLines = this._projectDataStore.selectSectionLines(
+  const _processSystemActions = () => {
+    const currentPointer = _systemStore.selectCurrentPointer();
+    const currentLines = _projectDataStore.selectSectionLines(
       currentPointer.sectionId,
       currentPointer.lineId,
     );
@@ -217,69 +161,79 @@ class RouteEngine {
       return;
     }
 
-    // Process system actions from current lines
+    // Process unified actions from current lines
     currentLines.forEach((line) => {
-      if (line.system) {
-        Object.keys(line.system).forEach((actionType) => {
-          if (typeof this._systemStore[actionType] === "function") {
-            this._systemStore[actionType](line.system[actionType]);
-          } else {
-            console.error(
-              `System action ${actionType} not found on system store`,
-            );
-          }
-        });
-      }
+      const actions = line.actions || {};
+
+      // Process system actions only (presentation actions are handled in _renderLine)
+      const systemActions = SYSTEM_ACTIONS.filter(actionType => actionType in actions)
+      systemActions.forEach(actionType => {
+        _systemStore[actionType](actions[actionType]);
+      });
     });
   };
 
   /**
-   * Renders the current state of the visual novel
+   * Renders the current line of the visual novel
    */
-  _render = () => {
-    const currentPointer = this._systemStore.selectCurrentPointer();
-    const currentLines = this._projectDataStore.selectSectionLines(
+  const _renderLine = () => {
+    const currentPointer = _systemStore.selectCurrentPointer();
+    const currentLines = _projectDataStore.selectSectionLines(
       currentPointer.sectionId,
       currentPointer.lineId,
     );
 
     if (!currentLines.length) {
-      console.warn(
+      throw new Error(
         `No lines found for section: ${currentPointer.sectionId}, line: ${currentPointer.lineId}`,
       );
-      return;
     }
 
-    // Create presentation state
-    const presentationActions = currentLines.map(
-      (line) => line.presentation || {},
-    );
+    // Create presentation state from unified actions
+    const presentationActions = currentLines.map((line) => {
+      const actions = line.actions || {};
+      const presentationData = {};
+
+      // Extract only presentation-related actions
+      Object.keys(actions).forEach((actionType) => {
+        if (PRESENTATION_ACTIONS.includes(actionType)) {
+          presentationData[actionType] = actions[actionType];
+        }
+      });
+
+      return presentationData;
+    });
 
     const presentationState =
-      this._constructPresentationState(presentationActions);
+      _constructPresentationState(presentationActions);
 
-    const renderState = this._constructRenderState({
+    const renderState = _constructRenderState({
       presentationState: presentationState,
-      systemState: this._systemStore.selectState(),
-      systemStore: this._systemStore,
-      screen: this._projectDataStore.selectScreen(),
+      systemState: _systemStore.selectState(),
+      systemStore: _systemStore,
+      screen: _projectDataStore.selectScreen(),
       resolveFile: (f) => `file:${f}`,
-      resources: this._projectDataStore.selectResources(),
-      ui: this._projectDataStore.selectUi(),
+      resources: _projectDataStore.selectResources(),
+      ui: _projectDataStore.selectUi(),
     });
 
     console.log('Render state:', {
-      systemState: this._systemStore.selectState(),
+      systemState: _systemStore.selectState(),
       presentationState: presentationState,
       currentPointer: currentPointer,
       renderState
     });
 
-    this._eventCallback({
+    _eventCallback({
       eventType: "render",
       payload: renderState,
     });
   };
-}
 
-export default RouteEngine;
+  return {
+    init,
+    onEvent,
+    offEvent,
+    handleEvent
+  };
+}

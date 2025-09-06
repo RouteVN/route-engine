@@ -1,5 +1,5 @@
 import yaml from "https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/+esm";
-import { RouteEngine } from "./RouteEngine.js";
+import createRouteEngine from "./RouteEngine.js";
 import RouteGraphics, {
   SpriteRendererPlugin,
   TextRendererPlugin,
@@ -109,10 +109,17 @@ const init = async () => {
     assetBufferMap,
     eventHandler: (eventType, payload) => {
       console.log('eventHandler', { eventType, payload })
-      engine.handleEvent({ eventType, payload });
-      // engine.handleEvent(event, payload);
-      // console.log('eventHandler', event, payload)
-      // engine.systemEventHandler(event, payload)
+      if (eventType === "completed") {
+        engine.handleEvent({
+          payload: {
+            actions: {
+              handleCompleted: {}
+            }
+          }
+        });
+      } else if (eventType === "system") {
+        engine.handleEvent({ payload });
+      }
     },
     plugins: [
       new SpriteRendererPlugin(),
@@ -131,16 +138,7 @@ const init = async () => {
   document.getElementById("canvas").addEventListener("contextmenu", (e) => {
     e.preventDefault();
   });
-  const engine = new RouteEngine();
-  // const callback = (payload) => {
-  //   console.log({
-  //     payload,
-  //   });
-  //   // if (event === "render") {
-  //     app.render(payload);
-  //   // }
-  // };
-
+  const engine = createRouteEngine();
   engine.onEvent(({ eventType, payload }) => {
     console.log('onEvent', { eventType, payload })
     if (eventType === "render") {

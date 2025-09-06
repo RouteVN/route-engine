@@ -3,7 +3,7 @@
  * @param {Object} state - The current state of the system
  * @param {Object} presentation - The presentation to apply
  */
-export const applyScreen = (state, presentation) => {
+export const screen = (state, presentation) => {
   if (presentation.screen) {
     state.screen = { ...presentation.screen };
   }
@@ -15,7 +15,7 @@ export const applyScreen = (state, presentation) => {
  * @param {Object} state - The current state of the system
  * @param {Object} presentation - The presentation to apply
  */
-export const applyBackground = (state, presentation) => {
+export const background = (state, presentation) => {
   if (presentation.background) {
     state.background = { ...presentation.background };
   }
@@ -26,7 +26,7 @@ export const applyBackground = (state, presentation) => {
  * @param {Object} state - The current state of the system
  * @param {Object} presentation - The presentation to apply
  */
-export const applySfx = (state, presentation) => {
+export const sfx = (state, presentation) => {
   if (presentation.sfx) {
     state.sfx = presentation.sfx;
   } else if (state.sfx) {
@@ -39,7 +39,7 @@ export const applySfx = (state, presentation) => {
  * @param {Object} state - The current state of the system
  * @param {Object} presentation - The presentation to apply
  */
-export const applyBgm = (state, presentation) => {
+export const bgm = (state, presentation) => {
   if (presentation.bgm) {
     if (!presentation.bgm.audioId) {
       state.bgm = undefined;
@@ -58,7 +58,7 @@ export const applyBgm = (state, presentation) => {
  * @param {Object} state - The current state of the system
  * @param {Object} presentation - The presentation to apply
  */
-export const applyVisual = (state, presentation) => {
+export const visual = (state, presentation) => {
   if (presentation.visual) {
     state.visual = presentation.visual;
   }
@@ -69,7 +69,7 @@ export const applyVisual = (state, presentation) => {
  * @param {Object} state - The current state of the system
  * @param {Object} presentation - The presentation to apply
  */
-export const applyDialogue = (state, presentation) => {
+export const dialogue = (state, presentation) => {
   if (!presentation.dialogue) {
 
     if (state.dialogue) {
@@ -111,7 +111,7 @@ export const applyDialogue = (state, presentation) => {
  * @param {Object} state - The current state of the system
  * @param {Object} presentation - The presentation to apply
  */
-export const applyCharacter = (state, presentation) => {
+export const character = (state, presentation) => {
   if (!presentation.character) {
     return;
   }
@@ -125,7 +125,7 @@ export const applyCharacter = (state, presentation) => {
  * @param {Object} state - The current state of the system
  * @param {Object} presentation - The presentation to apply
  */
-export const applyAnimation = (state, presentation) => {
+export const animation = (state, presentation) => {
   if (presentation.animation) {
     state.animation = presentation.animation;
   } else if (state.animation) {
@@ -138,7 +138,7 @@ export const applyAnimation = (state, presentation) => {
  * @param {Object} state - The current state of the system
  * @param {Object} presentation - The presentation to apply
  */
-export const applyLayout = (state, presentation) => {
+export const layout = (state, presentation) => {
   if (presentation.layout) {
     state.layout = presentation.layout;
   } else if (state.layout) {
@@ -151,7 +151,7 @@ export const applyLayout = (state, presentation) => {
  * @param {Object} state - The current state of the system
  * @param {Object} presentation - The presentation to apply
  */
-export const applyChoice = (state, presentation) => {
+export const choice = (state, presentation) => {
   if (presentation.choice) {
     state.choice = presentation.choice;
   } else if (state.choice) {
@@ -164,7 +164,7 @@ export const applyChoice = (state, presentation) => {
  * @param {Object} state - The current state of the system
  * @param {Object} presentation - The presentation to apply
  */
-export const applyCleanAll = (state, presentation) => {
+export const cleanAll = (state, presentation) => {
   if (presentation.cleanAll) {
     // Clear all properties
     Object.keys(state).forEach((key) => {
@@ -178,15 +178,15 @@ export const createInitialState = () => {
 };
 
 export default [
-  applyCleanAll,
-  applyScreen,
-  applyBackground,
-  applySfx,
-  applyBgm,
-  applyVisual,
-  applyDialogue,
-  applyCharacter,
-  applyAnimation,
-  applyLayout,
-  applyChoice,
+  cleanAll,
+  screen,
+  background,
+  sfx,
+  bgm,
+  visual,
+  dialogue,
+  character,
+  animation,
+  layout,
+  choice,
 ];

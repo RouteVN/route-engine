@@ -7,10 +7,6 @@ export const createTimer = (ticker) => {
   // Internal state
   const timers = new Map();
   const listeners = new Set();
-  let nextId = 0;
-
-  // Generate unique ID if not provided
-  const generateId = () => `timer_${nextId++}`;
 
   // Emit event to all listeners
   const emit = (eventType, payload) => {

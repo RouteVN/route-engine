@@ -48,11 +48,11 @@ resources:
           fill: "#000000"
           clickEventName: "system"
           clickEventPayload:
-            system:
+            actions:
               nextLine: {}
           rightClickEventName: "system"
           rightClickEventPayload:
-            system:
+            actions:
               addModal:
                 resourceId: dafkjkl3
                 resourceType: layout
@@ -74,11 +74,11 @@ resources:
           fill: "#000000"
           clickEventName: "system"
           clickEventPayload:
-            system:
+            actions:
               nextLine: {}
           rightClickEventName: "system"
           rightClickEventPayload:
-            system:
+            actions:
               addModal:
                 resourceId: dafkjkl3
                 resourceType: layout
@@ -99,7 +99,7 @@ resources:
           fill: "#000000"
           clickEventName: "system"
           clickEventPayload:
-            system:
+            actions:
               nextLine: {}
     dafkjkl3:
       name: Menu Screen
@@ -113,7 +113,7 @@ resources:
               fill: black
               rightClickEventName: "system"
               rightClickEventPayload:
-                system:
+                actions:
                   clearLastModal: {}
             - id: "9fdadf"
               $when: 'variables.currentMenuTabId == "options"'
@@ -153,7 +153,7 @@ resources:
                       dragEventName: system
                       dragEndEventName: system
                       dragEventPayload:
-                        system:
+                        actions:
                           updateVariable:
                             operations:
                               - variableId: textSpeed
@@ -197,7 +197,7 @@ resources:
                             height: 300
                             eventName: "system"
                             eventPayload:
-                              system:
+                              actions:
                                 loadVnData:
                                   slotIndex: ${item.id}
                           - id: "2-${item.id}"
@@ -253,7 +253,7 @@ resources:
                             height: 300
                             eventName: "system"
                             eventPayload:
-                              system:
+                              actions:
                                 saveVnData:
                                   slotIndex: ${item.id}
                           - id: "3fadj"
@@ -279,7 +279,7 @@ resources:
               width: 200
               eventName: "system"
               eventPayload:
-                system:
+                actions:
                   clearLastModal: {}
                   sectionTransition:
                     sectionId: "3k3s9sd"
@@ -299,7 +299,7 @@ resources:
               width: 200
               eventName: "system"
               eventPayload:
-                system:
+                actions:
                   updateVariable:
                     operations:
                       - variableId: "currentMenuTabId"
@@ -320,7 +320,7 @@ resources:
               width: 200
               eventName: "system"
               eventPayload:
-                system:
+                actions:
                   updateVariable:
                     operations:
                       - variableId: "currentMenuTabId"
@@ -341,7 +341,7 @@ resources:
               width: 200
               eventName: "system"
               eventPayload:
-                system:
+                actions:
                   updateVariable:
                     operations:
                       - variableId: "currentMenuTabId"
@@ -363,7 +363,7 @@ resources:
               width: 200
               eventName: "system"
               eventPayload:
-                system:
+                actions:
                   clearLastModal: {}
                   sectionTransition:
                     mode: "read"
@@ -383,7 +383,7 @@ resources:
               width: 200
               eventName: "system"
               eventPayload:
-                system:
+                actions:
                   clearLastModal: {}
               x: 0
               y: 0
@@ -439,7 +439,7 @@ resources:
                 fill: yellow
               eventName: "system"
               eventPayload:
-                system:
+                actions:
                   toggleAutoMode: {}
             - id: dialogue-action-skip
               type: text
@@ -456,7 +456,7 @@ resources:
                 fill: yellow
               eventName: "system"
               eventPayload:
-                system:
+                actions:
                   toggleSkipMode: {}
             - id: dialogue-action-options
               type: text
@@ -473,7 +473,7 @@ resources:
                 fill: yellow
               eventName: "system"
               eventPayload:
-                system:
+                actions:
                   updateVariable:
                     operations:
                       - variableId: currentMenuTabId
@@ -499,7 +499,7 @@ resources:
                 fill: yellow
               eventName: "system"
               eventPayload:
-                system:
+                actions:
                   toggleDialogueUIHidden: {}
             - id: dialogue-action-back
               type: text
@@ -513,7 +513,7 @@ resources:
                 fill: "white"
               eventName: "system"
               eventPayload:
-                system:
+                actions:
                   prevLine: {}
 
     f3jik32isdf:
@@ -555,7 +555,7 @@ resources:
               x: 250
               eventName: "system"
               eventPayload:
-                system:
+                actions:
                   clearLastModal: {}
               style:
                 fontSize: 48
@@ -574,7 +574,7 @@ resources:
           y: 0
           rightClickEventName: "system"
           rightClickEventPayload:
-            system:
+            actions:
               addModal:
                 resourceId: dafkjkl3
               updateVariable:
@@ -599,7 +599,7 @@ resources:
               width: 200
               eventName: "system"
               eventPayload:
-                system:
+                actions:
                   sectionTransition:
                     sectionId: "3k3s9sd"
               x: 0
@@ -617,7 +617,7 @@ resources:
               width: 200
               eventName: "system"
               eventPayload:
-                system:
+                actions:
                   addModal:
                     resourceId: dafkjkl3
                   updateVariable:
@@ -652,7 +652,7 @@ resources:
               width: 200
               eventName: "system"
               eventPayload:
-                system:
+                actions:
                   addModal:
                     resourceId: dafkjkl3
                   updateVariable:
@@ -678,7 +678,7 @@ resources:
               width: 200
               eventName: "system"
               eventPayload:
-                system:
+                actions:
                   addModal:
                     resourceId: f3jik32isdf
               x: 0
@@ -696,7 +696,7 @@ resources:
           width: 200
           eventName: "system"
           eventPayload:
-            system:
+            actions:
               sectionTransition:
                 sceneId: ajfl3a
                 sectionId: k3nfgdsai34
@@ -754,14 +754,13 @@ story:
           name: Section 1
           lines:
             - id: line1
-              system:
+              actions:
                 nextConfig:
                   manual:
                     enabled: false
                   auto:
                     trigger: fromComplete
                     delay: 1000
-              presentation:
                 screen:
                   resourceId: storyScreenLayout
                   resourceType: layout
@@ -774,30 +773,28 @@ story:
                       animations:
                         in: 3lkj289
             - id: line2
-              system:
+              actions:
                 nextConfig:
                   manual:
                     enabled: false
                   auto:
                     trigger: fromComplete
                     delay: 1000
-              presentation:
                 visual:
                   items:
                     - id: 39kdfj231
                       animations:
                         out: 8h3js
             - id: line3
-              system:
+              actions:
                 sectionTransition:
                   sceneId: 93jkal3
                   sectionId: asdkjl32
-              presentation: {}
         3k3s9sd:
           name: Section 2
           lines:
             - id: line1
-              presentation:
+              actions:
                 screen:
                   resourceId: storyScreenLayout
                   resourceType: layout
@@ -806,92 +803,92 @@ story:
                   content: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
                   characterId: ajf34a
             - id: line2
-              presentation:
+              actions:
                 dialogue:
                   layoutId: fi3l
                   content: Two and a half sentences.
                   characterId: ajf34a
             - id: line3
-              presentation:
+              actions:
                 dialogue:
                   layoutId: fi3l
                   content: "Three sentences. Three sentences. Three sentences."
                   characterId: ajf34a
             - id: line4
-              presentation:
+              actions:
                 dialogue:
                   layoutId: fi3l
                   content: "Four sentences. Four sentences. Four sentences. Four sentences."
                   characterId: ajf34a
             - id: line5
-              presentation:
+              actions:
                 dialogue:
                   layoutId: fi3l
                   content: "Five sentences. Five sentences. Five sentences. Five sentences."
                   characterId: ajf34a
             - id: line6
-              presentation:
+              actions:
                 dialogue:
                   layoutId: fi3l
                   content: "Six sentences. Six sentences. Six sentences. Six sentences."
                   characterId: ajf34a
             - id: line7
-              presentation:
+              actions:
                 dialogue:
                   layoutId: fi3l
                   content: "Seven sentences. Seven sentences. Seven sentences. Seven sentences."
                   characterId: ajf34a
             - id: line8
-              presentation:
+              actions:
                 dialogue:
                   layoutId: fi3l
                   content: "Eight sentences. Eight sentences. Eight sentences. Eight sentences."
                   characterId: ajf34a
             - id: line9
-              presentation:
+              actions:
                 dialogue:
                   layoutId: fi3l
                   content: "Nine sentences. Nine sentences. Nine sentences. Nine sentences."
                   characterId: ajf34a
             - id: line10
-              presentation:
+              actions:
                 dialogue:
                   layoutId: fi3l
                   content: "Ten sentences. Ten sentences. Ten sentences. Ten sentences."
                   characterId: ajf34a
             - id: line11
-              presentation:
+              actions:
                 dialogue:
                   layoutId: fi3l
                   content: "Eleven sentences. Eleven sentences. Eleven sentences. Eleven sentences."
                   characterId: ajf34a
             - id: line12
-              presentation:
+              actions:
                 dialogue:
                   layoutId: fi3l
                   content: "Twelve sentences. Twelve sentences. Twelve sentences. Twelve sentences."
                   characterId: ajf34a
             - id: line13
-              presentation:
+              actions:
                 dialogue:
                   layoutId: fi3l
                   content: "Thirteen sentences. Thirteen sentences. Thirteen sentences. Thirteen sentences."
                   characterId: ajf34a
             - id: line14
-              presentation:
+              actions:
                 dialogue:
                   layoutId: fi3l
                   content: "Fourteen sentences. Fourteen sentences. Fourteen sentences. Fourteen sentences."
                   characterId: ajf34a
             - id: line15
-              system:
+              actions:
                 sectionTransition:
                   sectionId: 934kjfa3
         934kjfa3:
           name: Section 3
           lines:
             - id: line1
-              presentation:
+              actions:
                 screen:
                   resourceId: storyScreenLayout
                   resourceType: layout
@@ -900,31 +897,31 @@ story:
                   content: Section Three
                   characterId: ajf34a
             - id: line2
-              presentation:
+              actions:
                 dialogue:
                   layoutId: fi3l
                   content: Wooooooooo
                   characterId: ajf34a
             - id: line3
-              presentation:
+              actions:
                 dialogue:
                   layoutId: fi3l
                   content: Fooooooooo
                   characterId: ajf34a
             - id: line4
-              presentation:
+              actions:
                 dialogue:
                   layoutId: fi3l
                   content: Gooooooooo
                   characterId: ajf34a
             - id: line5
-              presentation:
+              actions:
                 dialogue:
                   layoutId: fi3l
                   content: GlGooooooooo
                   characterId: ajf34a
             - id: line6
-              presentation:
+              actions:
                 dialogue:
                   layoutId: fi3l
                   content: XGooooooooo
@@ -933,7 +930,7 @@ story:
           name: Section Extra
           lines:
             - id: line1
-              presentation:
+              actions:
                 screen:
                   resourceId: extraScreenLayout
                   resourceType: layout
@@ -941,15 +938,15 @@ story:
                   layoutId: fi3l
                   content: Extra 1
             - id: line2
-              presentation:
+              actions:
                 dialogue:
                   content: Extra 2
             - id: line3
-              presentation:
+              actions:
                 dialogue:
                   content: Extra 3
             - id: line4
-              system:
+              actions:
                 sectionTransition:
                   sceneId: 93jkal3
                   sectionId: asdkjl32
@@ -962,7 +959,7 @@ story:
           name: Title Section
           lines:
             - id: line1
-              presentation:
+              actions:
                 screen:
                   resourceId: titleScreenLayout
                   resourceType: layout
