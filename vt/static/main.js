@@ -1,5 +1,5 @@
 import yaml from "https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/+esm";
-import { RouteEngine } from "./RouteEngine.js";
+import createRouteEngine from "./RouteEngine.js";
 import RouteGraphics, {
   SpriteRendererPlugin,
   TextRendererPlugin,
@@ -131,7 +131,7 @@ const init = async () => {
   document.getElementById("canvas").addEventListener("contextmenu", (e) => {
     e.preventDefault();
   });
-  const engine = new RouteEngine();
+  const engine = createRouteEngine();
   engine.onEvent(({ eventType, payload }) => {
     console.log('onEvent', { eventType, payload })
     if (eventType === "render") {

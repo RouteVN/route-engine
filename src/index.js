@@ -1,7 +1,8 @@
-import RouteEngine from "./RouteEngine";
+import createRouteEngine from "./RouteEngine";
 import {
   constructPresentationState,
   constructRenderState,
 } from "./stores/index.js";
 
-export { RouteEngine, constructPresentationState, constructRenderState };
+export default createRouteEngine;
+export { constructPresentationState, constructRenderState };
