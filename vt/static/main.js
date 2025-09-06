@@ -132,15 +132,6 @@ const init = async () => {
     e.preventDefault();
   });
   const engine = new RouteEngine();
-  // const callback = (payload) => {
-  //   console.log({
-  //     payload,
-  //   });
-  //   // if (event === "render") {
-  //     app.render(payload);
-  //   // }
-  // };
-
   engine.onEvent(({ eventType, payload }) => {
     console.log('onEvent', { eventType, payload })
     if (eventType === "render") {

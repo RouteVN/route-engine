@@ -20,7 +20,7 @@ resources:
           fill: "#000000"
           clickEventName: "system"
           clickEventPayload:
-            system:
+            actions:
               nextLine: {}
     fi3l:
       name: Dialogue Screen
@@ -83,7 +83,7 @@ story:
           name: Section 1
           lines:
             - id: line1
-              presentation:
+              actions:
                 screen:
                   resourceId: storyScreenLayout
                   resourceType: layout
@@ -92,24 +92,24 @@ story:
                   content: Hello! Welcome to this visual novel.
                   characterId: ajf34a
             - id: line2
-              presentation:
+              actions:
                 background:
                   resourceId: alkejf3la
                   resourceType: image
                   animations:
                     in: 3lkj289
             - id: line3
-              presentation:
+              actions:
                 dialogue:
                   content: This is the second line of dialogue. Click to continue.
                   characterId: ajf34a
             - id: line4
-              presentation:
+              actions:
                 dialogue:
                   content: Here we are on the third line. The dialogue system is working!
                   characterId: ajf34a
             - id: line5
-              presentation:
+              actions:
                 dialogue:
                   content: This is the final line. Thank you for testing the dialogue feature.
                   characterId: ajf34a

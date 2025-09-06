@@ -4,8 +4,14 @@ import {
   constructPresentationState,
   constructRenderState,
 } from "./stores/index.js";
+import * as presentationHandlers from "./stores/constructPresentationState.js";
+import * as systemHandlers from "./stores/system.store.js";
 
 import createTimer from './createTimer.js';
+
+// Action categorization constants
+const PRESENTATION_ACTIONS = Object.keys(presentationHandlers).filter(key => key !== 'default' && key !== 'createInitialState');
+const SYSTEM_ACTIONS = Object.keys(systemHandlers).filter(key => !key.startsWith('select') && key !== 'createInitialState');
 
 /**
  * RouteEngine is the main class for the engine.
@@ -113,8 +119,8 @@ class RouteEngine {
     const { eventType, payload } = event;
 
     // Handle direct system events (e.g., from UI elements)
-    if (eventType === "system" && payload?.system) {
-      const systemActions = payload.system;
+    if (eventType === "system" && payload?.actions) {
+      const systemActions = payload.actions;
       Object.keys(systemActions).forEach((actionType) => {
         if (typeof this._systemStore[actionType] === "function") {
           this._systemStore[actionType](systemActions[actionType]);
@@ -217,19 +223,22 @@ class RouteEngine {
       return;
     }
 
-    // Process system actions from current lines
+    // Process unified actions from current lines
     currentLines.forEach((line) => {
-      if (line.system) {
-        Object.keys(line.system).forEach((actionType) => {
+      const actions = line.actions || {};
+      
+      // Process system actions only (presentation actions are handled in _render)
+      Object.keys(actions).forEach((actionType) => {
+        if (SYSTEM_ACTIONS.includes(actionType)) {
           if (typeof this._systemStore[actionType] === "function") {
-            this._systemStore[actionType](line.system[actionType]);
+            this._systemStore[actionType](actions[actionType]);
           } else {
             console.error(
               `System action ${actionType} not found on system store`,
             );
           }
-        });
-      }
+        }
+      });
     });
   };
 
@@ -250,10 +259,20 @@ class RouteEngine {
       return;
     }
 
-    // Create presentation state
-    const presentationActions = currentLines.map(
-      (line) => line.presentation || {},
-    );
+    // Create presentation state from unified actions
+    const presentationActions = currentLines.map((line) => {
+      const actions = line.actions || {};
+      const presentationData = {};
+      
+      // Extract only presentation-related actions
+      Object.keys(actions).forEach((actionType) => {
+        if (PRESENTATION_ACTIONS.includes(actionType)) {
+          presentationData[actionType] = actions[actionType];
+        }
+      });
+      
+      return presentationData;
+    });
 
     const presentationState =
       this._constructPresentationState(presentationActions);

@@ -25,7 +25,7 @@ resources:
           fill: "#000000"
           clickEventName: "system"
           clickEventPayload:
-            system:
+            actions:
               nextLine: {}
     fi3l:
       name: Dialogue Screen
@@ -54,7 +54,7 @@ story:
           name: Section 1
           lines:
             - id: line1
-              presentation:
+              actions:
                 screen:
                   resourceId: storyScreenLayout
                   resourceType: layout
@@ -65,7 +65,7 @@ story:
                   content: 111111111111111
 
             - id: line2
-              presentation:
+              actions:
                 bgm:
                   audioId: 93k22
                 dialogue:
@@ -73,17 +73,17 @@ story:
                   content: 2222222222222222222
 
             - id: line3
-              presentation:
+              actions:
                 dialogue:
                   layoutId: fi3l
                   content: 33333333333333333
             - id: line4
-              presentation:
+              actions:
                 dialogue:
                   layoutId: fi3l
                   content: 4444444444444444444
             - id: line5
-              presentation:
+              actions:
                 bgm: {}
                 dialogue:
                   layoutId: fi3l

@@ -392,7 +392,7 @@ export const sectionTransition = ({ state, projectDataStore }, payload) => {
   state.story.pointers[currentMode].sectionId = sectionId;
   state.story.pointers[currentMode].sceneId = sceneId;
   state.story.pointers[currentMode].lineId = lines[0].id;
-  state.story.nextConfig = lines[0].system?.nextConfig;
+  state.story.nextConfig = lines[0].actions?.nextConfig;
 
   state.pendingEffects.push({
     name: "render",

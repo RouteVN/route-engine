@@ -58,7 +58,7 @@ story:
           name: Section 1
           lines:
             - id: line1
-              presentation:
+              actions:
                 background:
                   resourceId: alkejf3la
                   resourceType: image
@@ -72,7 +72,7 @@ story:
                         - id: outfit
                           imageId: 3fjaklj34
             - id: line2
-              presentation:
+              actions:
                 background:
                   resourceId: alkejf3la
                   resourceType: image
