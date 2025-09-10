@@ -475,8 +475,6 @@ export const addLayout = (
       skipMode: systemStore.selectSkipMode(),
     }
 
-    console.log('templateData', templateData);
-
     const processedContainer = parseAndRender(layoutContainer, templateData);
     const processElementAfterRender = (element) => {
       const processedElement = { ...element };
