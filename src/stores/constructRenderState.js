@@ -306,7 +306,7 @@ export const addVisuals = (
  */
 export const addDialogue = (
   { elements },
-  { presentationState, ui, resources, systemState },
+  { presentationState, ui, resources, systemState, systemStore },
 ) => {
   if (!presentationState.dialogue) {
     return;
@@ -336,14 +336,25 @@ export const addDialogue = (
   }
 
   const wrappedTemplate = { elements: layout.elements };
-  const result = parseAndRender(wrappedTemplate, {
+
+
+  const templateData = {
+    variables: systemState?.variables || {},
+    saveDataArray: systemStore.selectSaveDataPage({
+      page: systemState?.variables.currentSavePageIndex,
+      numberPerPage: 6
+    }),
+    autoMode: systemStore.selectAutoMode(),
+    skipMode: systemStore.selectSkipMode(),
     dialogue: {
       character: {
         name: character?.name || "",
       },
       content: presentationState.dialogue.content,
     },
-  });
+  }
+
+  const result = parseAndRender(wrappedTemplate, templateData);
   const dialogueElements = result?.elements;
 
   if (Array.isArray(dialogueElements)) {
@@ -457,10 +468,14 @@ export const addLayout = (
     const templateData = {
       variables: systemState?.variables || {},
       saveDataArray: systemStore.selectSaveDataPage({
-        page: 0,
+        page: systemState?.variables.currentSavePageIndex,
         numberPerPage: 6
-      })
+      }),
+      autoMode: systemStore.selectAutoMode(),
+      skipMode: systemStore.selectSkipMode(),
     }
+
+    console.log('templateData', templateData);
 
     const processedContainer = parseAndRender(layoutContainer, templateData);
     const processElementAfterRender = (element) => {
@@ -528,9 +543,11 @@ export const addModals = (
         const templateData = {
           variables: systemState.variables || {},
           saveDataArray: systemStore.selectSaveDataPage({
-            page: 0,
+            page: systemState?.variables.currentSavePageIndex,
             numberPerPage: 6
-          })
+          }),
+          autoMode: systemStore.selectAutoMode(),
+          skipMode: systemStore.selectSkipMode(),
         }
 
         const processedModal = parseAndRender(modalContainer, templateData);
