@@ -26,6 +26,25 @@ resources:
     # Example: Player progress, inventory items, story flags
     # Use for values that are tied to save/load and shouldn’t change unless the player loads a saved game.
 
+    savePages:
+      type: string
+      readonly: true
+      default:
+        items:
+          - label: 1
+          - label: 2
+          - label: 3
+          - label: 4
+          - label: 5
+          - label: 6
+          - label: 7
+          - label: 8
+          - label: 9
+
+    currentSavePageIndex:
+      type: number
+      default: 0
+
     currentMenuTabId:
       type: string
       default: options
@@ -216,6 +235,34 @@ resources:
                               fontSize: 48
                               fill: "white"
                             text: ${item.id} - ${item.label}
+                - id: load-container-page-nums
+                  type: container
+                  x: 300
+                  y: 800
+                  direction: horizontal
+                  gap: 20
+                  children:
+                    $for item, i in variables.savePages.items:
+                      - id: id-${item.label}
+                        type: text
+                        text: "${item.label}"
+                        width: 80
+                        $if i == variables.currentSavePageIndex:
+                          style:
+                            fontSize: 48
+                            fill: "yellow"
+                        $else:
+                          style:
+                            fontSize: 48
+                            fill: "white"
+                          eventName: "system"
+                          eventPayload:
+                            actions:
+                              updateVariable:
+                                operations:
+                                  - variableId: "currentSavePageIndex"
+                                    op: "set"
+                                    value: "${i}"
 
             - id: "9fdadf"
               $when: 'variables.currentMenuTabId == "save"'
@@ -238,7 +285,8 @@ resources:
                   gap: 20
                   children:
                     $for item in saveDataArray:
-                      - type: container
+                      - id: "${item.id}"
+                        type: container
                         x: 0
                         y: 0
                         width: 400
@@ -264,6 +312,34 @@ resources:
                               fontSize: 48
                               fill: "white"
                             text: ${item.id} - ${item.label}
+                - id: save-container-page-nums
+                  type: container
+                  x: 300
+                  y: 800
+                  direction: horizontal
+                  gap: 20
+                  children:
+                    $for item, i in variables.savePages.items:
+                      - id: id-${item.label}
+                        type: text
+                        text: "${item.label}"
+                        width: 80
+                        $if i == variables.currentSavePageIndex:
+                          style:
+                            fontSize: 48
+                            fill: "yellow"
+                        $else:
+                          style:
+                            fontSize: 48
+                            fill: "white"
+                          eventName: "system"
+                          eventPayload:
+                            actions:
+                              updateVariable:
+                                operations:
+                                  - variableId: "currentSavePageIndex"
+                                    op: "set"
+                                    value: "${i}"
         - id: menu-container
           direction: vertical
           gap: 20
@@ -309,7 +385,10 @@ resources:
               y: 0
               style:
                 fontSize: 48
-                fill: "white"
+                $if variables.currentMenuTabId == "save":
+                  fill: "yellow"
+                $else:
+                  fill: "white"
               hoverStyle:
                 fontSize: 48
                 fill: yellow
@@ -330,7 +409,10 @@ resources:
               y: 0
               style:
                 fontSize: 48
-                fill: "white"
+                $if variables.currentMenuTabId == "load":
+                  fill: "yellow"
+                $else:
+                  fill: "white"
               hoverStyle:
                 fontSize: 48
                 fill: yellow
@@ -351,7 +433,10 @@ resources:
               y: 0
               style:
                 fontSize: 48
-                fill: "white"
+                $if variables.currentMenuTabId == "options":
+                  fill: "yellow"
+                $else:
+                  fill: "white"
               hoverStyle:
                 fontSize: 48
                 fill: yellow
@@ -433,7 +518,10 @@ resources:
               height: 40
               style:
                 fontSize: 24
-                fill: "white"
+                $if autoMode:
+                  fill: yellow
+                $else:
+                  fill: "white"
               hoverStyle:
                 fontSize: 24
                 fill: yellow
@@ -450,7 +538,10 @@ resources:
               height: 40
               style:
                 fontSize: 24
-                fill: "white"
+                $if skipMode:
+                  fill: yellow
+                $else:
+                  fill: "white"
               hoverStyle:
                 fontSize: 24
                 fill: yellow
@@ -744,7 +835,8 @@ resources:
               value: 0
               easing: linear
 story:
-  initialSceneId: ajfl3a
+  # initialSceneId: ajfl3a
+  initialSceneId: 93jkal3
   scenes:
     ajfl3a:
       name: Scene 1

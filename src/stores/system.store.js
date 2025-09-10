@@ -73,12 +73,12 @@ export const selectPendingEffects = ({ state }) => {
 export const selectSortedPendingEffects = ({ state }) => {
   const effects = state.pendingEffects;
   const effectMap = new Map();
-  
+
   // Keep only the last effect with each name
   effects.forEach(effect => {
     effectMap.set(effect.name, effect);
   });
-  
+
   return Array.from(effectMap.values());
 };
 
@@ -468,10 +468,16 @@ export const startAutoMode = ({ state }) => {
   state.pendingEffects.push({
     name: "startAutoNextTimer",
   });
+  state.pendingEffects.push({
+    name: "render",
+  });
 };
 
 export const stopAutoMode = ({ state }) => {
   state.story.autoMode = false;
+  state.pendingEffects.push({
+    name: "render",
+  });
   state.pendingEffects.push({
     name: "clearAutoNextTimer",
   });
@@ -500,12 +506,20 @@ export const startSkipMode = ({ state }) => {
   state.pendingEffects.push({
     name: "startSkipNextTimer",
   });
+
+  state.pendingEffects.push({
+    name: "render",
+  });
 };
 
 export const stopSkipMode = ({ state }) => {
   state.story.skipMode = false;
   state.pendingEffects.push({
     name: "clearSkipNextTimer",
+  });
+
+  state.pendingEffects.push({
+    name: "render",
   });
 };
 
@@ -624,7 +638,7 @@ export const handleCompleted = ({ state }) => {
     }
     return;
   }
-  
+
   if (selectAutoMode({ state })) {
     state.pendingEffects.push({
       name: "startTimer",
