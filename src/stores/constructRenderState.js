@@ -432,7 +432,7 @@ export const addSfx = (
  * @param {Object} params
  */
 export const addLayout = (
-  { elements },
+  { elements, transitions },
   { presentationState, resources, resolveFile, systemState, systemStore },
 ) => {
   if (presentationState.layout) {
@@ -440,6 +440,14 @@ export const addLayout = (
 
     if (!layout) {
       return;
+    }
+
+    console.log('ZZZ layout', layout)
+
+    if (Array.isArray(layout.transitions)) {
+      layout.transitions.forEach((transition) => {
+        transitions.push(transition);
+      })
     }
 
     const processElement = (element) => {
@@ -497,7 +505,7 @@ export const addLayout = (
 };
 
 export const addModals = (
-  { elements },
+  { elements, transitions },
   { systemState, resources, resolveFile, systemStore },
 ) => {
   if (systemState?.modals && systemState.modals.length > 0) {
@@ -509,6 +517,12 @@ export const addModals = (
         if (!layout) {
           console.warn(`Modal layout not found: ${modal.resourceId}`);
           return;
+        }
+
+        if (Array.isArray(layout.transitions)) {
+          layout.transitions.forEach((transition) => {
+            transitions.push(transition);
+          })
         }
 
         // Process layout elements similar to addLayout

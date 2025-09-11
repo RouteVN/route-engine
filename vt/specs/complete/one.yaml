@@ -55,6 +55,167 @@ resources:
       persistence: device
 
   layouts:
+    creditsLayout:
+      transitions:
+        - id: 932fsdf
+          type: keyframes
+          event: add
+          elementId: kjf32alk32
+          properties:
+            y:
+              relative: true
+              keyframes:
+                - duration: 20000
+                  value: -1600
+                  easing: linear
+      elements:
+        - id: kjf32alk32
+          type: container
+          direction: vertical
+          x: 300
+          y: 800
+          children:
+            - id: x23f329fa
+              type: text
+              text: Credits
+              height: 100
+              style:
+                fontSize: 48
+                fill: "white"
+            - id: f33h429fa
+              type: text
+              text: Credits Content 2
+              height: 100
+              style:
+                fontSize: 48
+                fill: "white"
+            - id: iasdkj32
+              type: text
+              text: Credits Content 3
+              height: 100
+              style:
+                fontSize: 48
+                fill: "white"
+            - id: credit4
+              type: text
+              text: Credits Content 4
+              height: 100
+              style:
+                fontSize: 48
+                fill: "white"
+            - id: credit5
+              type: text
+              text: Credits Content 5
+              height: 100
+              style:
+                fontSize: 48
+                fill: "white"
+            - id: credit6
+              type: text
+              text: Credits Content 6
+              height: 100
+              style:
+                fontSize: 48
+                fill: "white"
+            - id: credit7
+              type: text
+              text: Credits Content 7
+              height: 100
+              style:
+                fontSize: 48
+                fill: "white"
+            - id: credit8
+              type: text
+              text: Credits Content 8
+              height: 100
+              style:
+                fontSize: 48
+                fill: "white"
+            - id: credit9
+              type: text
+              text: Credits Content 9
+              height: 100
+              style:
+                fontSize: 48
+                fill: "white"
+            - id: credit10
+              type: text
+              text: Credits Content 10
+              height: 100
+              style:
+                fontSize: 48
+                fill: "white"
+            - id: credit11
+              type: text
+              text: Credits Content 11
+              height: 100
+              style:
+                fontSize: 48
+                fill: "white"
+            - id: credit12
+              type: text
+              text: Credits Content 12
+              height: 100
+              style:
+                fontSize: 48
+                fill: "white"
+            - id: credit13
+              type: text
+              text: Credits Content 13
+              height: 100
+              style:
+                fontSize: 48
+                fill: "white"
+            - id: credit14
+              type: text
+              text: Credits Content 14
+              height: 100
+              style:
+                fontSize: 48
+                fill: "white"
+            - id: credit15
+              type: text
+              text: Credits Content 15
+              height: 100
+              style:
+                fontSize: 48
+                fill: "white"
+            - id: credit16
+              type: text
+              text: Credits Content 16
+              height: 100
+              style:
+                fontSize: 48
+                fill: "white"
+            - id: credit17
+              type: text
+              text: Credits Content 17
+              height: 100
+              style:
+                fontSize: 48
+                fill: "white"
+            - id: credit18
+              type: text
+              text: Credits Content 18
+              height: 100
+              style:
+                fontSize: 48
+                fill: "white"
+            - id: credit19
+              type: text
+              text: Credits Content 19
+              height: 100
+              style:
+                fontSize: 48
+                fill: "white"
+            - id: credit20
+              type: text
+              text: Credits Content 20
+              height: 100
+              style:
+                fontSize: 48
+                fill: "white"
+
     titleScreenLayout:
       name: Title Screen Background
       elements:
@@ -235,34 +396,87 @@ resources:
                               fontSize: 48
                               fill: "white"
                             text: ${item.id} - ${item.label}
-                - id: load-container-page-nums
+                - id: save-container-page-nums
                   type: container
                   x: 300
                   y: 800
                   direction: horizontal
                   gap: 20
                   children:
-                    $for item, i in variables.savePages.items:
-                      - id: id-${item.label}
-                        type: text
-                        text: "${item.label}"
-                        width: 80
-                        $if i == variables.currentSavePageIndex:
-                          style:
-                            fontSize: 48
-                            fill: "yellow"
-                        $else:
-                          style:
-                            fontSize: 48
-                            fill: "white"
-                          eventName: "system"
-                          eventPayload:
-                            actions:
-                              updateVariable:
-                                operations:
-                                  - variableId: "currentSavePageIndex"
-                                    op: "set"
-                                    value: "${i}"
+                    - id: page-prev
+                      type: text
+                      text: "<"
+                      width: 80
+                      $if variables.currentSavePageIndex > 0:
+                        style:
+                          fontSize: 48
+                          fill: "white"
+                        hoverStyle:
+                          fontSize: 48
+                          fill: "yellow"
+                        eventName: "system"
+                        eventPayload:
+                          actions:
+                            updateVariable:
+                              operations:
+                                - variableId: "currentSavePageIndex"
+                                  op: "decrement"
+                                  min: 0
+                      $else:
+                        style:
+                          fontSize: 48
+                          fill: "#ccc"
+                    # TODO: how to make it work without adding nextra container
+                    - id: save-container-page-nums-container
+                      type: container
+                      direction: horizontal
+                      gap: 20
+                      width: 900
+                      children:
+                        $for item, i in variables.savePages.items:
+                          - id: id-${item.label}
+                            type: text
+                            text: "${item.label}"
+                            width: 80
+                            $if i == variables.currentSavePageIndex:
+                              style:
+                                fontSize: 48
+                                fill: "yellow"
+                            $else:
+                              style:
+                                fontSize: 48
+                                fill: "white"
+                              eventName: "system"
+                              eventPayload:
+                                actions:
+                                  updateVariable:
+                                    operations:
+                                      - variableId: "currentSavePageIndex"
+                                        op: "set"
+                                        value: "${i}"
+                    - id: page-next
+                      type: text
+                      text: ">"
+                      width: 80
+                      $if variables.currentSavePageIndex < 8:
+                        style:
+                          fontSize: 48
+                          fill: "white"
+                        hoverStyle:
+                          fontSize: 48
+                          fill: "yellow"
+                        eventName: "system"
+                        eventPayload:
+                          actions:
+                            updateVariable:
+                              operations:
+                                - variableId: "currentSavePageIndex"
+                                  op: "increment"
+                                  max: 8
+                      $else:
+                        style:
+                          fontSize: 48
+                          fill: "#ccc"
 
             - id: "9fdadf"
               $when: 'variables.currentMenuTabId == "save"'
@@ -888,8 +1102,9 @@ resources:
               value: 0
               easing: linear
 story:
-  # initialSceneId: ajfl3a
-  initialSceneId: 93jkal3
+  initialSceneId: ajfl3a
+  # initialSceneId: 93jkal3
+  # initialSceneId: 39kd932
   scenes:
     ajfl3a:
       name: Scene 1
@@ -1071,6 +1286,12 @@ story:
                   layoutId: fi3l
                   content: XGooooooooo
                   characterId: ajf34a
+            - id: line7
+              actions:
+                sectionTransition:
+                  scenedId: 39kd932
+                  sectionId: 2dk302s
+
         k3nfgdsai34:
           name: Section Extra
           lines:
@@ -1096,6 +1317,27 @@ story:
                   sceneId: 93jkal3
                   sectionId: asdkjl32
 
+    39kd932:
+      initialSectionId: 2dk302s
+      name: Credits
+      sections:
+        2dk302s:
+          lines:
+            - id: line1
+              actions:
+                layout:
+                  layoutId: creditsLayout
+                nextConfig:
+                  manual:
+                    enabled: false
+                  auto:
+                    trigger: fromComplete
+                    delay: 1000
+            - id: line2
+              actions:
+                sectionTransition:
+                  sceneId: 93jkal3
+                  sectionId: asdkjl32
     93jkal3:
       initialSectionId: asdkjl32
       name: Title Scene
