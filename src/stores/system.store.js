@@ -429,9 +429,17 @@ export const updateVariable = ({ state, projectDataStore }, payload) => {
     } else if (op === "divide") {
       state.variables[variableId] = (state.variables[variableId] || 0) / value;
     } else if (op === "increment") {
-      state.variables[variableId] = (state.variables[variableId] || 0) + 1;
+      const { max } = operation;
+      const nextValue = (state.variables[variableId] || 0) + 1;
+      if (max === undefined || nextValue <= max) {
+        state.variables[variableId] = (state.variables[variableId] || 0) + 1;
+      }
     } else if (op === "decrement") {
-      state.variables[variableId] = (state.variables[variableId] || 0) - 1;
+      const { min } = operation;
+      const nextValue = (state.variables[variableId] || 0) - 1;
+      if (min !== undefined && nextValue >= min) {
+        state.variables[variableId] = (state.variables[variableId] || 0) - 1;
+      }
     }
   }
 
