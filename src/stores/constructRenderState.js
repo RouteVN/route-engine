@@ -442,7 +442,6 @@ export const addLayout = (
       return;
     }
 
-    console.log('ZZZ layout', layout)
 
     if (Array.isArray(layout.transitions)) {
       layout.transitions.forEach((transition) => {
