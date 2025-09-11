@@ -6,9 +6,15 @@ export const render = ({ processAndRender }) => {
   processAndRender();
 };
 
-export const saveVnData = ({ localStorage }, effect) => {
-  const { saveData } = effect.options;
+export const saveVnData = async ({ timer, localStorage, captureElement }, effect) => {
+  const { saveData: _saveData, slotIndex } = effect.options;
+  const saveData = structuredClone(_saveData);
+  const url = await captureElement('story');
+  console.log('saveData', saveData);
+  console.log('slotindex', slotIndex);
+  saveData[slotIndex].image = url;
   localStorage.setItem('saveData', JSON.stringify(saveData));
+  timer.setTimeout('saveData', {}, 0);
 };
 
 export const saveVariables = ({ localStorage, systemStore }) => {

@@ -371,6 +371,7 @@ resources:
                             $when: "item.hasData"
                             type: sprite
                             url: file:lakjf3lka
+                            hoverUrl: file:dmni32
                             x: 0
                             y: 0
                             width: 400
@@ -384,6 +385,7 @@ resources:
                             $when: "!item.hasData"
                             type: sprite
                             url: file:lakjf3lka
+                            hoverUrl: file:dmni32
                             x: 0
                             y: 0
                             width: 400
@@ -509,6 +511,7 @@ resources:
                           - id: "1"
                             type: sprite
                             url: file:lakjf3lka
+                            hoverUrl: file:dmni32
                             x: 0
                             y: 0
                             width: 400
@@ -927,7 +930,7 @@ resources:
       elements:
         - id: bg
           type: sprite
-          url: file:lakjf3lka
+          url: file:dmni32
           x: 0
           y: 0
           rightClickEventName: "system"
@@ -1102,8 +1105,8 @@ resources:
               value: 0
               easing: linear
 story:
-  initialSceneId: ajfl3a
-  # initialSceneId: 93jkal3
+  # initialSceneId: ajfl3a
+  initialSceneId: 93jkal3
   # initialSceneId: 39kd932
   scenes:
     ajfl3a:

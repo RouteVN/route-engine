@@ -583,6 +583,7 @@ export const saveVnData = ({ state }, payload) => {
     name: "saveVnData",
     options: {
       saveData: { ...state.saveData },
+      slotIndex,
     },
   });
 };

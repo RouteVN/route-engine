@@ -25,16 +25,18 @@ export default function createRouteEngine() {
   let _constructPresentationState;
   let _timer;
   let _eventCallback = () => { };
+  let _captureElemement;
 
   /**
    * Initialize the engine with visual novel data and rendering functions
    */
-  const init = ({ projectData, ticker }) => {
+  const init = ({ projectData, ticker, captureElement }) => {
     _projectDataStore = createProjectDataStore(projectData);
     const initialIds = _projectDataStore.selectInitialIds();
     _systemStore = createSystemStore(initialIds, _projectDataStore);
     _constructPresentationState = constructPresentationState;
     _constructRenderState = constructRenderState;
+    _captureElemement = captureElement;
 
     _timer = createTimer(ticker)
     _timer.onEvent(_handleTimerEvent)
@@ -124,7 +126,8 @@ export default function createRouteEngine() {
         processAndRender: _processAndRender,
         timer: _timer,
         localStorage: localStorage,
-        systemStore: _systemStore
+        systemStore: _systemStore,
+        captureElement: _captureElemement,
       };
 
       pendingEffects.forEach((effect) => {

@@ -2,7 +2,15 @@ import { parseAndRender } from "jempl";
 
 export const createInitialState = () => {
   return {
-    elements: [],
+    elements: [
+      {
+        id: 'story',
+        type: 'container',
+        x: 0,
+        y: 0,
+        children: []
+      }
+    ],
     transitions: [],
   };
 };
@@ -15,6 +23,10 @@ export const addScreen = (
   { presentationState, resources },
 ) => {
   if (presentationState.screen) {
+    // Find the story container
+    const storyContainer = elements.find(el => el.id === 'story');
+    if (!storyContainer) return;
+
     if (
       presentationState.screen.resourceId &&
       presentationState.screen.resourceType === "layout"
@@ -22,8 +34,9 @@ export const addScreen = (
       const layout = resources.layouts[presentationState.screen.resourceId];
 
       if (layout) {
-        elements.push({
-          id: `screen-${presentationState.screen.resourceId}`,
+        // Add screen as the first child of story container
+        storyContainer.children.unshift({
+          id: 'screen',
           type: "container",
           children: layout.elements,
         });
@@ -41,13 +54,17 @@ export const addBackgrundOrCg = (
   { presentationState, resources, ui, resolveFile },
 ) => {
   if (presentationState.background) {
+    // Find the story container
+    const storyContainer = elements.find(el => el.id === 'story');
+    if (!storyContainer) return;
+
     if (
       presentationState.background.resourceId &&
       presentationState.background.resourceType === "image"
     ) {
       const background =
         resources.images[presentationState.background.resourceId];
-      elements.push({
+      storyContainer.children.push({
         id: `bg-cg-${presentationState.background.resourceId}`,
         type: "sprite",
         x: 0,
@@ -62,7 +79,7 @@ export const addBackgrundOrCg = (
     ) {
       const layout = resources.layouts[presentationState.background.resourceId];
 
-      elements.push({
+      storyContainer.children.push({
         id: `bg-cg-${presentationState.background.resourceId}`,
         type: "container",
         children: layout.elements,
@@ -125,6 +142,10 @@ export const addCharacters = (
   { presentationState, resources, resolveFile },
 ) => {
   if (presentationState.character) {
+    // Find the story container
+    const storyContainer = elements.find(el => el.id === 'story');
+    if (!storyContainer) return;
+
     const items = presentationState.character.items;
 
     for (const item of items) {
@@ -193,7 +214,7 @@ export const addCharacters = (
         });
       }
 
-      elements.push(characterContainer);
+      storyContainer.children.push(characterContainer);
 
       // Add animation support (except out, which is handled above)
       if (item.animations) {
@@ -239,6 +260,10 @@ export const addVisuals = (
   { presentationState, resources, resolveFile },
 ) => {
   if (presentationState.visual) {
+    // Find the story container
+    const storyContainer = elements.find(el => el.id === 'story');
+    if (!storyContainer) return;
+
     const items = presentationState.visual.items;
     for (const item of items) {
       if (item.resourceId && item.resourceType) {
@@ -252,7 +277,7 @@ export const addVisuals = (
 
         if (resource) {
           const transform = resources.transforms[item.transformId];
-          elements.push({
+          storyContainer.children.push({
             id: `visual-${item.id}`,
             type: "sprite",
             url: resolveFile(resource.fileId),
@@ -316,6 +341,10 @@ export const addDialogue = (
     return;
   }
 
+  // Find the story container
+  const storyContainer = elements.find(el => el.id === 'story');
+  if (!storyContainer) return;
+
   const layout = resources.layouts[presentationState.dialogue.layoutId];
 
   if (!layout) {
@@ -359,10 +388,10 @@ export const addDialogue = (
 
   if (Array.isArray(dialogueElements)) {
     for (const element of dialogueElements) {
-      elements.push(structuredClone(element));
+      storyContainer.children.push(structuredClone(element));
     }
   } else if (dialogueElements) {
-    elements.push(structuredClone(dialogueElements));
+    storyContainer.children.push(structuredClone(dialogueElements));
   }
 };
 
@@ -376,6 +405,10 @@ export const addChoices = (
 ) => {
 
   if (presentationState.choice) {
+    // Find the story container
+    const storyContainer = elements.find(el => el.id === 'story');
+    if (!storyContainer) return;
+
     const layout = resources.layouts[presentationState.choice.layoutId];
 
     const wrappedTemplate = { elements: layout.elements };
@@ -388,10 +421,10 @@ export const addChoices = (
 
     if (Array.isArray(choiceElements)) {
       for (const element of choiceElements) {
-        elements.push(structuredClone(element));
+        storyContainer.children.push(structuredClone(element));
       }
     } else if (choiceElements) {
-      elements.push(structuredClone(choiceElements));
+      storyContainer.children.push(structuredClone(choiceElements));
     }
   }
 };
@@ -401,8 +434,12 @@ export const addBgm = (
   { presentationState, resources, resolveFile },
 ) => {
   if (presentationState.bgm) {
+    // Find the story container
+    const storyContainer = elements.find(el => el.id === 'story');
+    if (!storyContainer) return;
+
     const audio = resources.audio[presentationState.bgm.audioId];
-    elements.push({
+    storyContainer.children.push({
       id: "bgm",
       type: "audio",
       url: resolveFile(audio.fileId),
@@ -415,10 +452,14 @@ export const addSfx = (
   { presentationState, resources, resolveFile },
 ) => {
   if (presentationState.sfx) {
+    // Find the story container
+    const storyContainer = elements.find(el => el.id === 'story');
+    if (!storyContainer) return;
+
     const items = presentationState.sfx.items;
     for (const item of items) {
       const audio = resources.audio[item.audioId];
-      elements.push({
+      storyContainer.children.push({
         id: item.id,
         type: "audio",
         url: resolveFile(audio.fileId),
@@ -436,6 +477,10 @@ export const addLayout = (
   { presentationState, resources, resolveFile, systemState, systemStore },
 ) => {
   if (presentationState.layout) {
+    // Find the story container
+    const storyContainer = elements.find(el => el.id === 'story');
+    if (!storyContainer) return;
+
     const layout = resources.layouts[presentationState.layout.layoutId];
 
     if (!layout) {
@@ -499,7 +544,7 @@ export const addLayout = (
     };
 
     // Push the processed container
-    elements.push(processElementAfterRender(processedContainer));
+    storyContainer.children.push(processElementAfterRender(processedContainer));
   }
 };
 
