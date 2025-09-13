@@ -1,3 +1,5 @@
+import { base64ToArrayBuffer } from "../util";
+
 /**
  * Pure functions for handling effects with injected dependencies
  */
@@ -6,9 +8,24 @@ export const render = ({ processAndRender }) => {
   processAndRender();
 };
 
-export const saveVnData = ({ localStorage }, effect) => {
-  const { saveData } = effect.options;
+export const saveVnData = async ({ timer, localStorage, captureElement, loadAssets }, effect) => {
+  const { saveData: _saveData, slotIndex } = effect.options;
+  const saveData = structuredClone(_saveData);
+  const url = await captureElement('story');
+  console.log('saveData', saveData);
+  console.log('slotindex', slotIndex);
+  saveData[slotIndex].image = url;
+  const assets = {
+    [`saveImage:${slotIndex}`]: {
+      buffer: base64ToArrayBuffer(url),
+      type: "image/png"
+    }
+  }
+  await loadAssets(assets);
   localStorage.setItem('saveData', JSON.stringify(saveData));
+  timer.setTimeout('saveData', {
+    render: {}
+  }, 100);
 };
 
 export const saveVariables = ({ localStorage, systemStore }) => {
