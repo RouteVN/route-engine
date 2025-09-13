@@ -370,8 +370,7 @@ resources:
                           - id: "1-${item.id}"
                             $when: "item.hasData"
                             type: sprite
-                            url: file:lakjf3lka
-                            hoverUrl: file:dmni32
+                            url: "saveImage:${item.id}"
                             x: 0
                             y: 0
                             width: 400
@@ -508,9 +507,10 @@ resources:
                         width: 400
                         height: 300
                         children:
-                          - id: "1"
+                          - id: "ef31-${item.id}-${item.hasData}"
+                            $when: "item.hasData"
                             type: sprite
-                            url: file:lakjf3lka
+                            url: "saveImage:${item.id}"
                             hoverUrl: file:dmni32
                             x: 0
                             y: 0
@@ -521,7 +521,20 @@ resources:
                               actions:
                                 saveVnData:
                                   slotIndex: ${item.id}
-                          - id: "3fadj"
+                          - id: "afe1jjef31-${item.id}-${item.hasData}"
+                            $when: "!item.hasData"
+                            type: sprite
+                            url: "file:lakjf3lka"
+                            x: 0
+                            y: 0
+                            width: 400
+                            height: 300
+                            eventName: "system"
+                            eventPayload:
+                              actions:
+                                saveVnData:
+                                  slotIndex: ${item.id}
+                          - id: "3fadj-${item.id}"
                             type: text
                             x: 20
                             y: 20
@@ -1077,6 +1090,10 @@ resources:
   images:
     alkejf3la:
       fileId: 94lkj289
+    f3wklajf32:
+      fileId: dmni32
+    32rka331:
+      fileId: 23jkfa893
 
   transforms:
     iasdlf:
@@ -1161,6 +1178,9 @@ story:
                 screen:
                   resourceId: storyScreenLayout
                   resourceType: layout
+                background:
+                  resourceId: f3wklajf32
+                  resourceType: image
                 dialogue:
                   layoutId: fi3l
                   content: Lorem ipsum dolor sit amet, consectetur adipiscing elit.

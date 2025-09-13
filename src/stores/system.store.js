@@ -577,9 +577,6 @@ export const saveVnData = ({ state }, payload) => {
     date: Date.now()
   };
   state.pendingEffects.push({
-    name: 'render'
-  })
-  state.pendingEffects.push({
     name: "saveVnData",
     options: {
       saveData: { ...state.saveData },
@@ -608,6 +605,11 @@ export const loadVnData = ({ state }, payload) => {
   });
 };
 
+export const render = ({ state }) => {
+  state.pendingEffects.push({
+    name: "render",
+  });
+}
 
 export const addModal = ({ state }, payload) => {
   state.modals.push({

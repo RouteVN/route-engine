@@ -4,6 +4,7 @@ import {
   constructPresentationState,
   constructRenderState,
 } from "./stores/index.js";
+import { base64ToArrayBuffer } from "./util.js";
 import * as presentationHandlers from "./stores/constructPresentationState.js";
 import * as systemHandlers from "./stores/system.store.js";
 
@@ -26,25 +27,48 @@ export default function createRouteEngine() {
   let _timer;
   let _eventCallback = () => { };
   let _captureElemement;
+  let _loadAssets;
 
   /**
    * Initialize the engine with visual novel data and rendering functions
    */
-  const init = ({ projectData, ticker, captureElement }) => {
+  const init = ({ projectData, ticker, captureElement, loadAssets }) => {
     _projectDataStore = createProjectDataStore(projectData);
     const initialIds = _projectDataStore.selectInitialIds();
     _systemStore = createSystemStore(initialIds, _projectDataStore);
     _constructPresentationState = constructPresentationState;
     _constructRenderState = constructRenderState;
     _captureElemement = captureElement;
+    _loadAssets = loadAssets;
 
     _timer = createTimer(ticker)
     _timer.onEvent(_handleTimerEvent)
 
 
-    const saveVnData = localStorage.getItem('saveData') || '{}';
+    const _saveVnData = localStorage.getItem('saveData') || '{}';
+    const saveVnData = JSON.parse(_saveVnData);
+    const saveImageAssets = Object.entries(saveVnData).filter(([key, data]) => !!data.image).map(([key, data]) => {
+      const finalKey = `saveImage:${key}`
+      const buffer = base64ToArrayBuffer(data.image);
+      return {
+        [finalKey]: {
+          buffer: buffer,
+          type: "image/png"
+        }
+      }
+    }).reduce(
+      (acc, curr) => ({ ...acc, ...curr }),
+      {}
+    )
+
+    loadAssets(saveImageAssets).then(() => {
+      console.log('All save images loaded');
+    }).catch((e) => {
+      console.log('Error loading save images', e);
+    });
+
     _systemStore.setSaveData({
-      saveData: JSON.parse(saveVnData),
+      saveData: saveVnData
     })
 
     // Initialize and load device variables
@@ -128,6 +152,7 @@ export default function createRouteEngine() {
         localStorage: localStorage,
         systemStore: _systemStore,
         captureElement: _captureElemement,
+        loadAssets: _loadAssets,
       };
 
       pendingEffects.forEach((effect) => {

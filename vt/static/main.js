@@ -214,6 +214,7 @@ const init = async () => {
     projectData: jsonData,
     ticker: app._app.ticker,
     captureElement,
+    loadAssets: app.loadAssets
   });
 
 };
