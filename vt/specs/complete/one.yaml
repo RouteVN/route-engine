@@ -27,7 +27,7 @@ resources:
     # Use for values that are tied to save/load and shouldn’t change unless the player loads a saved game.
 
     savePages:
-      type: string
+      type: object
       readonly: true
       default:
         items:
@@ -40,6 +40,31 @@ resources:
           - label: 7
           - label: 8
           - label: 9
+
+    gallery:
+      type: object
+      default:
+        items:
+          - label: CG1
+            resourceId: alkejf3l
+            fileIds: [94lkj289, 23jkfa893, dmni32]
+          - label: CG2
+            resourceId: f3wklajf32
+            fileIds: [23jkfa893]
+          - label: CG3
+            resourceId: 32rka331
+            fileIds: [dmni32]
+
+    activeGalleryIndex:
+      type: number
+
+    activeGalleryFileIndex:
+      type: number
+      default: 0
+
+    exploredResourceIds:
+      default:
+        items: []
 
     currentSavePageIndex:
       type: number
@@ -55,6 +80,35 @@ resources:
       persistence: device
 
   layouts:
+    modalGalleryItemLayout:
+      elements:
+        - id: afk2lkas
+          type: container
+          children:
+            - id: k9ka3lk-${isLastFileIdIndex}
+              type: sprite
+              url: file:${currentActiveGalleryFileId}
+              x: 0
+              y: 0
+              width: 1920
+              height: 1080
+              eventName: "system"
+              eventPayload:
+                $if !isLastFileIdIndex:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: "activeGalleryFileIndex"
+                          op: "increment"
+                $else:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: "activeGalleryFileIndex"
+                          op: set
+                          value: 0
+                    clearLastModal: {}
+
     creditsLayout:
       transitions:
         - id: 932fsdf
@@ -623,6 +677,70 @@ resources:
                         style:
                           fontSize: 48
                           fill: "#ccc"
+            - id: "9fe23fdadf"
+              $when: 'variables.currentMenuTabId == "gallery"'
+              type: "container"
+              children:
+                - id: gallery-title
+                  type: text
+                  text: "Gallery"
+                  x: 100
+                  y: 100
+                  style:
+                    fontSize: 64
+                    fill: "white"
+                - id: gallery-container
+                  type: container
+                  x: 300
+                  y: 100
+                  width: 1400
+                  direction: horizontal
+                  gap: 20
+                  children:
+                    $for item, i in variables.gallery.items:
+                      - id: "32fe-${item.label}"
+                        type: container
+                        x: 0
+                        y: 0
+                        width: 400
+                        height: 300
+                        children:
+                          - id: "ef3ef1-${item.label}"
+                            type: sprite
+                            url: "file:dmni32"
+                            x: 0
+                            y: 0
+                            width: 400
+                            height: 300
+                            eventName: "system"
+                            eventPayload:
+                              actions:
+                                updateVariable:
+                                  operations:
+                                    - variableId: "activeGalleryIndex"
+                                      op: "set"
+                                      value: "${i}"
+                                    - variableId: "activeGalleryFileIndex"
+                                      op: set
+                                      value: 0
+                                addModal:
+                                  resourceId: "modalGalleryItemLayout"
+                          - id: "3fadje2-${item.label}"
+                            type: text
+                            x: 20
+                            y: 20
+                            style:
+                              fontSize: 48
+                              fill: "white"
+                            text: ${item.label}
+                          - id: "3fa93224dje2-${item.label}"
+                            type: text
+                            x: 20
+                            y: 80
+                            style:
+                              fontSize: 48
+                              fill: "white"
+                            text: ${item.fileIds.length}
         - id: menu-container
           direction: vertical
           gap: 20
@@ -717,6 +835,30 @@ resources:
               style:
                 fontSize: 48
                 $if variables.currentMenuTabId == "options":
+                  fill: "yellow"
+                $else:
+                  fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+            - id: "Gallery"
+              type: text
+              text: "Gallery"
+              height: 40
+              width: 200
+              eventName: "system"
+              eventPayload:
+                actions:
+                  updateVariable:
+                    operations:
+                      - variableId: "currentMenuTabId"
+                        op: "set"
+                        value: "gallery"
+              x: 0
+              y: 0
+              style:
+                fontSize: 48
+                $if variables.currentMenuTabId == "gallery":
                   fill: "yellow"
                 $else:
                   fill: "white"
