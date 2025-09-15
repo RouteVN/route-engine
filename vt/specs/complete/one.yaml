@@ -26,14 +26,6 @@ resources:
     # Example: Player progress, inventory items, story flags
     # Use for values that are tied to save/load and shouldn’t change unless the player loads a saved game.
 
-    # images:
-    #   alkejf3la:
-    #     fileId: 94lkj289
-    #   f3wklajf32:
-    #     fileId: dmni32
-    #   32rka331:
-    #     fileId: 23jkfa893
-    #
     savePages:
       type: object
       readonly: true
