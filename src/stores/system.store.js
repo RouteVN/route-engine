@@ -9,49 +9,51 @@ export const createInitialState = ({
     variables,
     saveData: saveData || {},
     modals: [],
-    story: {
-      lastLineAction: undefined,
-      dialogueUIHidden: false,
-      currentPointer: "read",
-      nextConfig: {},
-      autoMode: false,
-      skipMode: false,
-      pointers: {
-        read: {
-          sectionId,
-          lineId,
-        },
-        menu: {
-          sectionId: undefined,
-          lineId: undefined,
-        },
-        history: {
-          sectionId: undefined,
-          lineId: undefined,
-          historyEntryIndex: undefined,
-        },
-        // title: {
-        //   sectionId: undefined,
-        //   lineId: undefined
-        // },
+    lastLineAction: undefined,
+    dialogueUIHidden: false,
+    autoMode: false,
+    skipMode: false,
+    history: {
+      entries: [],
+      // entries: [{
+      //   sectionId: 'asdkjl32',
+      // }, {
+      //   sectionId: '3jd3kd'
+      // }, {
+      //   sectionId: '39fk32'
+      // }, {
+      //   sectionId: '39cksk3',
+      //   // this is current actual lineId the user is lastest on
+      //   lineId: 'line3'
+      // }]
+    },
+    historyEntryIndex: undefined,
+    currentPointer: "read",
+    nextConfig: {},
+    mainPointers: {
+      read: {
+        sectionId,
+        lineId,
       },
       history: {
-        entries: [],
-        // entries: [{
-        //   sectionId: 'asdkjl32',
-        // }, {
-        //   sectionId: '3jd3kd'
-        // }, {
-        //   sectionId: '39fk32'
-        // }, {
-        //   sectionId: '39cksk3',
-        //   // this is current actual lineId the user is lastest on
-        //   lineId: 'line3'
-        // }]
+        sectionId: undefined,
+        lineId: undefined,
+        historyEntryIndex: undefined,
       },
     },
+    replayPointers: {
+      read: {
+        sectionId: undefined,
+        lineId: undefined,
+      },
+      history: {
+        sectionId: undefined,
+        lineId: undefined,
+        historyEntryIndex: undefined,
+      }
+    }
   };
-  state.story.history.entries.push({
+  state.history.entries.push({
     sectionId,
   });
   return state;
@@ -83,7 +85,7 @@ export const selectSortedPendingEffects = ({ state }) => {
 };
 
 export const selectCurrentPointer = ({ state }) => {
-  return state.story.pointers[state.story.currentPointer];
+  return state.mainPointers[state.currentPointer];
 };
 
 export const selectCurrentPresetId = ({ state }) => {
@@ -97,19 +99,19 @@ export const selectCurrentPreset = ({ state, projectDataStore }) => {
 };
 
 export const selectSkipMode = ({ state }) => {
-  return state.story.skipMode;
+  return state.skipMode;
 };
 
 export const selectAutoMode = ({ state }) => {
-  return state.story.autoMode;
+  return state.autoMode;
 };
 
 export const selectPointers = ({ state }) => {
-  return state.story.pointers;
+  return state.mainPointers;
 };
 
 export const selectNextConfig = ({ state }) => {
-  return state.story.nextConfig;
+  return state.nextConfig;
 };
 
 export const selectRuntimeState = ({ state }) => {
@@ -117,19 +119,28 @@ export const selectRuntimeState = ({ state }) => {
 };
 
 export const selectPointerMode = ({ state }) => {
-  return state.story.currentPointer;
+  return state.currentPointer;
 };
 
 export const selectDialogueUIHidden = ({ state }) => {
-  return state.story.dialogueUIHidden;
+  return state.dialogueUIHidden;
 };
 
 export const selectHistory = ({ state }) => {
-  return state.story.history;
+  return state.history;
 };
 
 export const selectSpecificPointer = ({ state, mode }) => {
-  return state.story.pointers[mode];
+  return state.mainPointers[mode];
+};
+
+export const selectReplayPointer = ({ state, mode }) => {
+  return state.replayPointers[mode];
+};
+
+export const selectCurrentReplayPointer = ({ state }) => {
+  // Assuming we use the same currentPointer mode for replay
+  return state.replayPointers[state.currentPointer];
 };
 
 export const selectSaveData = ({ state }) => {
@@ -251,12 +262,12 @@ export const lineCompleted = ({ state, projectDataStore }) => {
     case "fromStart":
       // For fromStart, the delay should have been scheduled at line start
       // This is handled elsewhere, so we just clear the config here
-      delete state.story.nextConfig;
+      delete state.nextConfig;
       break;
 
     default:
       // Clear unknown nextConfig states
-      delete state.story.nextConfig;
+      delete state.nextConfig;
       break;
   }
 };
@@ -269,8 +280,8 @@ export const nextLine = ({ state, projectDataStore }, payload = {}) => {
   const { pendingEffects } = state;
 
   // If dialogue is hidden, show it instead of advancing
-  if (state.story.dialogueUIHidden) {
-    state.story.dialogueUIHidden = false;
+  if (state.dialogueUIHidden) {
+    state.dialogueUIHidden = false;
     pendingEffects.push({
       name: "render",
     });
@@ -300,8 +311,8 @@ export const nextLine = ({ state, projectDataStore }, payload = {}) => {
   const nextLine = lines[currentLineIndex + 1];
 
   if (!nextLine) {
-    state.story.skipMode = false;
-    state.story.autoMode = false;
+    state.skipMode = false;
+    state.autoMode = false;
     pendingEffects.push({
       name: 'clearAutoNextTimer'
     })
@@ -311,9 +322,9 @@ export const nextLine = ({ state, projectDataStore }, payload = {}) => {
     return;
   }
 
-  state.story.pointers[state.story.currentPointer].lineId = nextLine.id;
+  state.mainPointers[state.currentPointer].lineId = nextLine.id;
 
-  delete state.story.nextConfig;
+  delete state.nextConfig;
 
   pendingEffects.push({
     name: "render",
@@ -334,20 +345,20 @@ export const prevLine = ({ state, projectDataStore }) => {
 
   if (!prevLine) {
     if (pointerMode === "history") {
-      if (state.story.historyEntryIndex > 0) {
-        state.story.historyEntryIndex--;
+      if (state.historyEntryIndex > 0) {
+        state.historyEntryIndex--;
       } else {
         return;
       }
-      state.story.pointers["history"].sectionId =
-        state.story.history.entries[state.story.historyEntryIndex].sectionId;
+      state.mainPointers["history"].sectionId =
+        state.history.entries[state.historyEntryIndex].sectionId;
       const prevSectionLines = projectDataStore.selectSectionLines(
-        state.story.pointers["history"].sectionId,
+        state.mainPointers["history"].sectionId,
       );
-      state.story.pointers["history"].lineId =
+      state.mainPointers["history"].lineId =
         prevSectionLines[prevSectionLines.length - 1].id;
 
-      state.story.lastLineAction = "prevLine";
+      state.lastLineAction = "prevLine";
 
       state.pendingEffects.push({
         name: "render",
@@ -358,13 +369,13 @@ export const prevLine = ({ state, projectDataStore }) => {
   }
 
   if (pointerMode === "read") {
-    state.story.currentPointer = "history";
-    state.story.historyEntryIndex = state.story.history.entries.length - 1;
+    state.currentPointer = "history";
+    state.historyEntryIndex = state.history.entries.length - 1;
   }
 
-  state.story.pointers["history"].lineId = prevLine.id;
-  state.story.pointers["history"].sectionId = currentPointer.sectionId;
-  state.story.lastLineAction = "prevLine";
+  state.mainPointers["history"].lineId = prevLine.id;
+  state.mainPointers["history"].sectionId = currentPointer.sectionId;
+  state.lastLineAction = "prevLine";
 
   state.pendingEffects.push({
     name: "render",
@@ -379,32 +390,32 @@ export const sectionTransition = ({ state, projectDataStore }, payload) => {
   const lines = projectDataStore.selectSectionLines(sectionId);
 
   if (mode) {
-    state.story.currentPointer = mode;
+    state.currentPointer = mode;
   }
 
   const currentMode = selectPointerMode({ state });
 
   if (currentMode === "read") {
-    state.story.history.entries.push({
+    state.history.entries.push({
       sectionId,
     });
   } else if (currentMode === "history") {
     // TODO: check if the next section is same as history next section
     if (
       sectionId ===
-      state.story.history.entries[state.story.historyEntryIndex + 1].sectionId
+      state.history.entries[state.historyEntryIndex + 1].sectionId
     ) {
-      state.story.historyEntryIndex++;
+      state.historyEntryIndex++;
     } else {
       // exit history mode
       // update read pointer
     }
   }
 
-  state.story.pointers[currentMode].sectionId = sectionId;
-  state.story.pointers[currentMode].sceneId = sceneId;
-  state.story.pointers[currentMode].lineId = lines[0].id;
-  state.story.nextConfig = lines[0].actions?.nextConfig;
+  state.mainPointers[currentMode].sectionId = sectionId;
+  state.mainPointers[currentMode].sceneId = sceneId;
+  state.mainPointers[currentMode].lineId = lines[0].id;
+  state.nextConfig = lines[0].actions?.nextConfig;
 
   state.pendingEffects.push({
     name: "render",
@@ -456,7 +467,7 @@ export const updateVariable = ({ state, projectDataStore }, payload) => {
  * @param {ApplyParams} params
  */
 export const clearCurrentMode = ({ state }, payload) => {
-  state.story.currentPointer = payload.mode;
+  state.currentPointer = payload.mode;
   state.pendingEffects.push({
     name: "render",
   });
@@ -464,12 +475,12 @@ export const clearCurrentMode = ({ state }, payload) => {
 
 export const startAutoMode = ({ state }) => {
   if (selectSkipMode({ state })) {
-    state.story.skipMode = false;
+    state.skipMode = false;
     state.pendingEffects.push({
       name: "clearSkipNextTimer",
     });
   }
-  state.story.autoMode = true;
+  state.autoMode = true;
   state.pendingEffects.push({
     name: "clearAutoNextTimer",
   });
@@ -482,7 +493,7 @@ export const startAutoMode = ({ state }) => {
 };
 
 export const stopAutoMode = ({ state }) => {
-  state.story.autoMode = false;
+  state.autoMode = false;
   state.pendingEffects.push({
     name: "render",
   });
@@ -502,12 +513,12 @@ export const toggleAutoMode = ({ state }) => {
 
 export const startSkipMode = ({ state }) => {
   if (selectAutoMode({ state })) {
-    state.story.autoMode = false;
+    state.autoMode = false;
     state.pendingEffects.push({
       name: "clearAutoNextTimer",
     });
   }
-  state.story.skipMode = true;
+  state.skipMode = true;
   state.pendingEffects.push({
     name: "clearSkipNextTimer",
   });
@@ -521,7 +532,7 @@ export const startSkipMode = ({ state }) => {
 };
 
 export const stopSkipMode = ({ state }) => {
-  state.story.skipMode = false;
+  state.skipMode = false;
   state.pendingEffects.push({
     name: "clearSkipNextTimer",
   });
@@ -541,7 +552,7 @@ export const toggleSkipMode = ({ state }) => {
 };
 
 export const toggleDialogueUIHidden = ({ state }) => {
-  state.story.dialogueUIHidden = !state.story.dialogueUIHidden;
+  state.dialogueUIHidden = !state.dialogueUIHidden;
   state.pendingEffects.push({
     name: "render",
   });
@@ -552,7 +563,7 @@ export const toggleDialogueUIHidden = ({ state }) => {
  * @param {ApplyParams} params
  */
 export const nextConfig = ({ state }, payload) => {
-  state.story.nextConfig = payload;
+  state.nextConfig = payload;
 };
 
 export const setSaveData = ({ state }, payload) => {
@@ -596,9 +607,9 @@ export const loadVnData = ({ state }, payload) => {
   }
 
   const { pointer, history } = slotData;
-  state.story.currentPointer = "read";
-  state.story.pointers["read"] = pointer;
-  state.story.history = history;
+  state.currentPointer = "read";
+  state.mainPointers["read"] = pointer;
+  state.history = history;
   state.modals = [];
   state.pendingEffects.push({
     name: "render",
