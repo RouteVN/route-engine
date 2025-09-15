@@ -596,8 +596,29 @@ export const addModals = (
           children: layout.elements || []
         };
 
+        let currentActiveGalleryFileId;
+        let isLastFileIdIndex = false;
+
+        if (systemState.variables.activeGalleryIndex !== undefined) {
+          const gallery = systemState.variables.gallery.items;
+          if (gallery && Array.isArray(gallery) && systemState.variables.activeGalleryIndex < gallery.length) {
+            currentActiveGalleryFileId = gallery[systemState.variables.activeGalleryIndex]?.fileIds[systemState.variables.activeGalleryFileIndex];
+          }
+
+          console.log('systemState.variables.activeGalleryFileIndex', systemState.variables.activeGalleryFileIndex)
+          console.log('gallery[systemState.variables.activeGalleryIndex]?.fileIds', gallery[systemState.variables.activeGalleryIndex]?.fileIds)
+          if (systemState.variables.activeGalleryFileIndex < gallery[systemState.variables.activeGalleryIndex]?.fileIds.length - 1) {
+            isLastFileIdIndex = false;
+          } else {
+            isLastFileIdIndex = true;
+          }
+        }
+        console.log('isLastFileIdIndex', isLastFileIdIndex)
+
         const templateData = {
           variables: systemState.variables || {},
+          currentActiveGalleryFileId,
+          isLastFileIdIndex,
           saveDataArray: systemStore.selectSaveDataPage({
             page: systemState?.variables.currentSavePageIndex,
             numberPerPage: 6
