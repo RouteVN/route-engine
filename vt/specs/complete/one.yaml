@@ -741,6 +741,41 @@ resources:
                               fontSize: 48
                               fill: "white"
                             text: ${item.fileIds.length}
+
+            - id: "9fedf2323fdadf"
+              $when: 'variables.currentMenuTabId == "replay"'
+              type: "container"
+              children:
+                - id: replay-title
+                  type: text
+                  text: "Replay"
+                  x: 100
+                  y: 100
+                  style:
+                    fontSize: 64
+                    fill: "white"
+                - id: replay-container
+                  type: container
+                  x: 300
+                  y: 100
+                  width: 1400
+                  direction: horizontal
+                  gap: 20
+                  children:
+                    - id: "ef3ef13k1"
+                      type: sprite
+                      url: "file:dmni32"
+                      x: 0
+                      y: 0
+                      width: 400
+                      height: 300
+                      eventName: "system"
+                      eventPayload:
+                        actions:
+                          sectionTransition:
+                            mode: replay
+                            sceneId: ajfl3a
+                            sectionId: k3nfgdsai34
         - id: menu-container
           direction: vertical
           gap: 20
@@ -859,6 +894,30 @@ resources:
               style:
                 fontSize: 48
                 $if variables.currentMenuTabId == "gallery":
+                  fill: "yellow"
+                $else:
+                  fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+            - id: "Replay"
+              type: text
+              text: "Replay"
+              height: 40
+              width: 200
+              eventName: "system"
+              eventPayload:
+                actions:
+                  updateVariable:
+                    operations:
+                      - variableId: "currentMenuTabId"
+                        op: "set"
+                        value: "replay"
+              x: 0
+              y: 0
+              style:
+                fontSize: 48
+                $if variables.currentMenuTabId == "replay":
                   fill: "yellow"
                 $else:
                   fill: "white"
@@ -1479,6 +1538,7 @@ story:
             - id: line4
               actions:
                 sectionTransition:
+                  endReplay: true
                   sceneId: 93jkal3
                   sectionId: asdkjl32
 

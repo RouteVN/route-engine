@@ -138,7 +138,20 @@ export default function createRouteEngine() {
     const systemActions = payload.actions;
     Object.keys(systemActions).forEach((actionType) => {
       if (typeof _systemStore[actionType] === "function") {
-        _systemStore[actionType](systemActions[actionType]);
+        let actionPayload = systemActions[actionType];
+
+        // Auto-detect replay context for nextLine actions
+        if (actionType === 'nextLine' && !actionPayload.targetMode) {
+          const currentState = _systemStore.selectState();
+          const replayPointer = currentState.modes.replay.read;
+
+          // If replay has active content (sectionId exists), auto-target replay mode
+          if (replayPointer.sectionId) {
+            actionPayload = { ...actionPayload, targetMode: 'replay' };
+          }
+        }
+
+        _systemStore[actionType](actionPayload);
       } else {
         throw new Error(`System action ${actionType} not found on system store`);
       }
@@ -240,7 +253,7 @@ export default function createRouteEngine() {
     // Process replay pointer if it exists
     let replayPresentationState = null;
     const currentReplayPointer = _systemStore.selectCurrentReplayPointer();
-    
+
     if (currentReplayPointer && currentReplayPointer.sectionId && currentReplayPointer.lineId) {
       const replayLines = _projectDataStore.selectSectionLines(
         currentReplayPointer.sectionId,
@@ -268,9 +281,10 @@ export default function createRouteEngine() {
     }
 
     // Create main render state
+    const systemState = _systemStore.selectState();
     const mainRenderState = _constructRenderState({
       presentationState: mainPresentationState,
-      systemState: _systemStore.selectState(),
+      systemState: systemState,
       systemStore: _systemStore,
       screen: _projectDataStore.selectScreen(),
       resolveFile: (f) => `file:${f}`,
@@ -281,9 +295,12 @@ export default function createRouteEngine() {
     // Create replay render state if replay presentation state exists
     let replayRenderState = null;
     if (replayPresentationState) {
+      // Create a deep copy of system state and set currentMode to "replay"
+      const replaySystemState = structuredClone(systemState);
+
       replayRenderState = _constructRenderState({
         presentationState: replayPresentationState,
-        systemState: _systemStore.selectState(),
+        systemState: replaySystemState,
         systemStore: _systemStore,
         screen: _projectDataStore.selectScreen(),
         resolveFile: (f) => `file:${f}`,
@@ -291,16 +308,6 @@ export default function createRouteEngine() {
         ui: _projectDataStore.selectUi(),
       });
     }
-
-    console.log('Render states:', {
-      systemState: _systemStore.selectState(),
-      mainPresentationState: mainPresentationState,
-      replayPresentationState: replayPresentationState,
-      currentMainPointer: currentMainPointer,
-      currentReplayPointer: currentReplayPointer,
-      mainRenderState,
-      replayRenderState
-    });
 
     _eventCallback({
       eventType: "render",
