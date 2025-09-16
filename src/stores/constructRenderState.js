@@ -525,6 +525,7 @@ export const addLayout = (
       }),
       autoMode: systemStore.selectAutoMode(),
       skipMode: systemStore.selectSkipMode(),
+      globalAudios: systemStore.selectGlobalAudios() || [],
     }
 
     const processedContainer = parseAndRender(layoutContainer, templateData);
@@ -624,6 +625,7 @@ export const addModals = (
           }),
           autoMode: systemStore.selectAutoMode(),
           skipMode: systemStore.selectSkipMode(),
+          globalAudios: systemStore.selectGlobalAudios() || [],
         }
 
         const processedModal = parseAndRender(modalContainer, templateData);
@@ -650,6 +652,24 @@ export const addModals = (
   }
 }
 
+export const addGlobalAudios = (
+  { elements },
+  { systemState, resources, resolveFile },
+) => {
+  // Get global audios directly from the passed systemState instead of using systemStore
+  const globalAudios = systemState.globalAudios;
+  if (globalAudios && globalAudios.length > 0) {
+    // Add each global audio
+    globalAudios.forEach((audioItem, i) => {
+      elements.push({
+        id: `global-audio-${i}-${audioItem.audioId}`,
+        type: "audio",
+        url: resolveFile(audioItem.fileId),
+      });
+    });
+  }
+}
+
 export default [
   addScreen,
   addBackgrundOrCg,
@@ -661,4 +681,5 @@ export default [
   addBgm,
   addSfx,
   addModals,
+  addGlobalAudios
 ];

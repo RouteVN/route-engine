@@ -788,7 +788,7 @@ resources:
                   style:
                     fontSize: 64
                     fill: "white"
-                - id: gallery-container
+                - id: music-room-container
                   type: container
                   x: 600
                   y: 100
@@ -803,13 +803,32 @@ resources:
                       style:
                         fontSize: 32
                         fill: "white"
-                    - id: fjkl2jk
+                      eventName: "system"
+                      eventPayload:
+                        actions:
+                          addGlobalAudio:
+                            fileId: "3ka3s"
+                    - id: fjkl2fe23jk
                       type: "text"
                       text: "Track 2 - Sample Music"
                       height: 100
                       style:
                         fontSize: 32
                         fill: "white"
+                - id: "music-room-stop"
+                  $when: globalAudios.length > 0
+                  type: "text"
+                  text: "Stop Music"
+                  x: 500
+                  y: 500
+                  height: 100
+                  style:
+                    fontSize: 32
+                    fill: "white"
+                  eventName: "system"
+                  eventPayload:
+                    actions:
+                      clearAllGlobalAudio: {}
         - id: menu-container
           direction: vertical
           gap: 20
