@@ -776,6 +776,40 @@ resources:
                             mode: replay
                             sceneId: ajfl3a
                             sectionId: k3nfgdsai34
+            - id: "399324jd"
+              $when: 'variables.currentMenuTabId == "music-room"'
+              type: "container"
+              children:
+                - id: music-room-title
+                  type: text
+                  text: "Music Room"
+                  x: 100
+                  y: 100
+                  style:
+                    fontSize: 64
+                    fill: "white"
+                - id: gallery-container
+                  type: container
+                  x: 600
+                  y: 100
+                  width: 1400
+                  direction: vertical
+                  gap: 20
+                  children:
+                    - id: fjkl2jk
+                      type: "text"
+                      text: "Track 1 - Sample Music"
+                      height: 100
+                      style:
+                        fontSize: 32
+                        fill: "white"
+                    - id: fjkl2jk
+                      type: "text"
+                      text: "Track 2 - Sample Music"
+                      height: 100
+                      style:
+                        fontSize: 32
+                        fill: "white"
         - id: menu-container
           direction: vertical
           gap: 20
@@ -918,6 +952,30 @@ resources:
               style:
                 fontSize: 48
                 $if variables.currentMenuTabId == "replay":
+                  fill: "yellow"
+                $else:
+                  fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+            - id: "Music Room"
+              type: text
+              text: "Music Room"
+              height: 40
+              width: 200
+              eventName: "system"
+              eventPayload:
+                actions:
+                  updateVariable:
+                    operations:
+                      - variableId: "currentMenuTabId"
+                        op: "set"
+                        value: "music-room"
+              x: 0
+              y: 0
+              style:
+                fontSize: 48
+                $if variables.currentMenuTabId == "music-room":
                   fill: "yellow"
                 $else:
                   fill: "white"
