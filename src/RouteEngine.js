@@ -138,7 +138,20 @@ export default function createRouteEngine() {
     const systemActions = payload.actions;
     Object.keys(systemActions).forEach((actionType) => {
       if (typeof _systemStore[actionType] === "function") {
-        _systemStore[actionType](systemActions[actionType]);
+        let actionPayload = systemActions[actionType];
+
+        // Auto-detect replay context for nextLine actions
+        if (actionType === 'nextLine' && !actionPayload.targetMode) {
+          const currentState = _systemStore.selectState();
+          const replayPointer = currentState.modes.replay.read;
+
+          // If replay has active content (sectionId exists), auto-target replay mode
+          if (replayPointer.sectionId) {
+            actionPayload = { ...actionPayload, targetMode: 'replay' };
+          }
+        }
+
+        _systemStore[actionType](actionPayload);
       } else {
         throw new Error(`System action ${actionType} not found on system store`);
       }
@@ -179,10 +192,11 @@ export default function createRouteEngine() {
    * Processes system actions from current lines
    */
   const _processSystemActions = () => {
-    const currentPointer = _systemStore.selectCurrentPointer();
+    // Get the current pointer from mainPointers (not replay)
+    const currentMainPointer = _systemStore.selectCurrentPointer();
     const currentLines = _projectDataStore.selectSectionLines(
-      currentPointer.sectionId,
-      currentPointer.lineId,
+      currentMainPointer.sectionId,
+      currentMainPointer.lineId,
     );
 
     if (!currentLines.length) {
@@ -205,15 +219,16 @@ export default function createRouteEngine() {
    * Renders the current line of the visual novel
    */
   const _renderLine = () => {
-    const currentPointer = _systemStore.selectCurrentPointer();
+    // Get the current pointer from mainPointers (not replay)
+    const currentMainPointer = _systemStore.selectCurrentPointer();
     const currentLines = _projectDataStore.selectSectionLines(
-      currentPointer.sectionId,
-      currentPointer.lineId,
+      currentMainPointer.sectionId,
+      currentMainPointer.lineId,
     );
 
     if (!currentLines.length) {
       throw new Error(
-        `No lines found for section: ${currentPointer.sectionId}, line: ${currentPointer.lineId}`,
+        `No lines found for section: ${currentMainPointer.sectionId}, line: ${currentMainPointer.lineId}`,
       );
     }
 
@@ -232,12 +247,44 @@ export default function createRouteEngine() {
       return presentationData;
     });
 
-    const presentationState =
+    const mainPresentationState =
       _constructPresentationState(presentationActions);
 
-    const renderState = _constructRenderState({
-      presentationState: presentationState,
-      systemState: _systemStore.selectState(),
+    // Process replay pointer if it exists
+    let replayPresentationState = null;
+    const currentReplayPointer = _systemStore.selectCurrentReplayPointer();
+
+    if (currentReplayPointer && currentReplayPointer.sectionId && currentReplayPointer.lineId) {
+      const replayLines = _projectDataStore.selectSectionLines(
+        currentReplayPointer.sectionId,
+        currentReplayPointer.lineId,
+      );
+
+      if (replayLines.length) {
+        // Create replay presentation state
+        const replayPresentationActions = replayLines.map((line) => {
+          const actions = line.actions || {};
+          const presentationData = {};
+
+          // Extract only presentation-related actions
+          Object.keys(actions).forEach((actionType) => {
+            if (PRESENTATION_ACTIONS.includes(actionType)) {
+              presentationData[actionType] = actions[actionType];
+            }
+          });
+
+          return presentationData;
+        });
+
+        replayPresentationState = _constructPresentationState(replayPresentationActions);
+      }
+    }
+
+    // Create main render state
+    const systemState = _systemStore.selectState();
+    const mainRenderState = _constructRenderState({
+      presentationState: mainPresentationState,
+      systemState: systemState,
       systemStore: _systemStore,
       screen: _projectDataStore.selectScreen(),
       resolveFile: (f) => `file:${f}`,
@@ -245,16 +292,26 @@ export default function createRouteEngine() {
       ui: _projectDataStore.selectUi(),
     });
 
-    console.log('Render state:', {
-      systemState: _systemStore.selectState(),
-      presentationState: presentationState,
-      currentPointer: currentPointer,
-      renderState
-    });
+    // Create replay render state if replay presentation state exists
+    let replayRenderState = null;
+    if (replayPresentationState) {
+      // Create a deep copy of system state and set currentMode to "replay"
+      const replaySystemState = structuredClone(systemState);
+
+      replayRenderState = _constructRenderState({
+        presentationState: replayPresentationState,
+        systemState: replaySystemState,
+        systemStore: _systemStore,
+        screen: _projectDataStore.selectScreen(),
+        resolveFile: (f) => `file:${f}`,
+        resources: _projectDataStore.selectResources(),
+        ui: _projectDataStore.selectUi(),
+      });
+    }
 
     _eventCallback({
       eventType: "render",
-      payload: renderState,
+      payload: replayRenderState || mainRenderState,
     });
   };
 

@@ -337,7 +337,7 @@ export const addDialogue = (
     return;
   }
 
-  if (systemState?.story?.dialogueUIHidden) {
+  if (systemState?.dialogueUIHidden) {
     return;
   }
 
@@ -552,9 +552,11 @@ export const addModals = (
   { elements, transitions },
   { systemState, resources, resolveFile, systemStore },
 ) => {
-  if (systemState?.modals && systemState.modals.length > 0) {
+  // Get modals directly from the passed systemState instead of using systemStore
+  const modals = systemState.modes[systemState.currentMode].modals;
+  if (modals && modals.length > 0) {
     // Add each modal as an overlay
-    systemState.modals.forEach((modal, index) => {
+    modals.forEach((modal, index) => {
       if (modal.resourceType === 'layout') {
         const layout = resources.layouts[modal.resourceId];
 
@@ -605,15 +607,12 @@ export const addModals = (
             currentActiveGalleryFileId = gallery[systemState.variables.activeGalleryIndex]?.fileIds[systemState.variables.activeGalleryFileIndex];
           }
 
-          console.log('systemState.variables.activeGalleryFileIndex', systemState.variables.activeGalleryFileIndex)
-          console.log('gallery[systemState.variables.activeGalleryIndex]?.fileIds', gallery[systemState.variables.activeGalleryIndex]?.fileIds)
           if (systemState.variables.activeGalleryFileIndex < gallery[systemState.variables.activeGalleryIndex]?.fileIds.length - 1) {
             isLastFileIdIndex = false;
           } else {
             isLastFileIdIndex = true;
           }
         }
-        console.log('isLastFileIdIndex', isLastFileIdIndex)
 
         const templateData = {
           variables: systemState.variables || {},
