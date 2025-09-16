@@ -26,6 +26,10 @@ export const createInitialState = ({
       //   lineId: 'line3'
       // }]
     },
+    /**
+     *  fileId: ...
+     */
+    globalAudios: [],
     historyEntryIndex: undefined,
     currentMode: "main",
     nextConfig: {},
@@ -177,6 +181,10 @@ export const selectSaveDataPage = ({ state }, payload) => {
 
 export const selectVariables = ({ state }) => {
   return state.variables;
+};
+
+export const selectGlobalAudios = ({ state }) => {
+  return state.globalAudios;
 };
 
 export const selectDeviceVariables = ({ state, projectDataStore }) => {
@@ -401,7 +409,7 @@ export const prevLine = ({ state, projectDataStore }) => {
  */
 export const sectionTransition = ({ state, projectDataStore }, payload) => {
   const { sectionId, sceneId, mode, targetMode, endReplay } = payload;
-  
+
   // Handle endReplay option
   if (state.currentMode === "replay" && endReplay) {
     state.currentMode = "main";
@@ -422,7 +430,7 @@ export const sectionTransition = ({ state, projectDataStore }, payload) => {
     });
     return;
   }
-  
+
   const lines = projectDataStore.selectSectionLines(sectionId);
 
   // Determine which mode to update
@@ -673,6 +681,21 @@ export const loadVnData = ({ state }, payload) => {
 };
 
 export const render = ({ state }) => {
+  state.pendingEffects.push({
+    name: "render",
+  });
+}
+
+export const addGlobalAudio = ({ state }, payload) => {
+  const { fileId } = payload;
+  state.globalAudios.push({ fileId });
+  state.pendingEffects.push({
+    name: "render",
+  });
+}
+
+export const clearAllGlobalAudio = ({ state }) => {
+  state.globalAudios = [];
   state.pendingEffects.push({
     name: "render",
   });
