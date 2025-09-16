@@ -8,7 +8,6 @@ export const createInitialState = ({
     pendingEffects: [],
     variables,
     saveData: saveData || {},
-    modals: [],
     lastLineAction: undefined,
     dialogueUIHidden: false,
     autoMode: false,
@@ -28,28 +27,34 @@ export const createInitialState = ({
       // }]
     },
     historyEntryIndex: undefined,
-    currentPointer: "read",
+    currentMode: "main",
     nextConfig: {},
-    mainPointers: {
-      read: {
-        sectionId,
-        lineId,
+    modes: {
+      main: {
+        currentPointer: "read",
+        modals: [],
+        read: {
+          sectionId,
+          lineId,
+        },
+        history: {
+          sectionId: undefined,
+          lineId: undefined,
+          historyEntryIndex: undefined,
+        },
       },
-      history: {
-        sectionId: undefined,
-        lineId: undefined,
-        historyEntryIndex: undefined,
-      },
-    },
-    replayPointers: {
-      read: {
-        sectionId: undefined,
-        lineId: undefined,
-      },
-      history: {
-        sectionId: undefined,
-        lineId: undefined,
-        historyEntryIndex: undefined,
+      replay: {
+        currentPointer: "read",
+        modals: [],
+        read: {
+          sectionId: undefined,
+          lineId: undefined,
+        },
+        history: {
+          sectionId: undefined,
+          lineId: undefined,
+          historyEntryIndex: undefined,
+        }
       }
     }
   };
@@ -85,7 +90,8 @@ export const selectSortedPendingEffects = ({ state }) => {
 };
 
 export const selectCurrentPointer = ({ state }) => {
-  return state.mainPointers[state.currentPointer];
+  const currentMode = state.modes[state.currentMode];
+  return currentMode[currentMode.currentPointer];
 };
 
 export const selectCurrentPresetId = ({ state }) => {
@@ -107,7 +113,7 @@ export const selectAutoMode = ({ state }) => {
 };
 
 export const selectPointers = ({ state }) => {
-  return state.mainPointers;
+  return state.modes[state.currentMode];
 };
 
 export const selectNextConfig = ({ state }) => {
@@ -119,7 +125,7 @@ export const selectRuntimeState = ({ state }) => {
 };
 
 export const selectPointerMode = ({ state }) => {
-  return state.currentPointer;
+  return state.modes[state.currentMode].currentPointer;
 };
 
 export const selectDialogueUIHidden = ({ state }) => {
@@ -131,16 +137,16 @@ export const selectHistory = ({ state }) => {
 };
 
 export const selectSpecificPointer = ({ state, mode }) => {
-  return state.mainPointers[mode];
+  return state.modes[state.currentMode][mode];
 };
 
 export const selectReplayPointer = ({ state, mode }) => {
-  return state.replayPointers[mode];
+  return state.modes.replay[mode];
 };
 
 export const selectCurrentReplayPointer = ({ state }) => {
-  // Assuming we use the same currentPointer mode for replay
-  return state.replayPointers[state.currentPointer];
+  const replayMode = state.modes.replay;
+  return replayMode[replayMode.currentPointer];
 };
 
 export const selectSaveData = ({ state }) => {
@@ -185,6 +191,10 @@ export const selectDeviceVariables = ({ state, projectDataStore }) => {
   });
 
   return deviceVariables;
+};
+
+export const selectModals = ({ state }) => {
+  return state.modes[state.currentMode].modals;
 };
 
 /*************************
@@ -288,7 +298,8 @@ export const nextLine = ({ state, projectDataStore }, payload = {}) => {
     return;
   }
 
-  const { forceSkipAutonext = false } = payload;
+  const { forceSkipAutonext = false, targetMode } = payload;
+  const modeToUpdate = targetMode || state.currentMode;
   const nextConfig = selectNextConfig({ state });
 
   if (!forceSkipAutonext && nextConfig && nextConfig.manual) {
@@ -302,7 +313,9 @@ export const nextLine = ({ state, projectDataStore }, payload = {}) => {
     }
   }
 
-  const currentPointer = selectCurrentPointer({ state });
+  // Get the pointer for the target mode
+  const targetModeData = state.modes[modeToUpdate];
+  const currentPointer = targetModeData[targetModeData.currentPointer];
   const lines = projectDataStore.selectSectionLines(currentPointer.sectionId);
 
   const currentLineIndex = lines.findIndex(
@@ -322,7 +335,8 @@ export const nextLine = ({ state, projectDataStore }, payload = {}) => {
     return;
   }
 
-  state.mainPointers[state.currentPointer].lineId = nextLine.id;
+  // Update the line for the target mode
+  targetModeData[targetModeData.currentPointer].lineId = nextLine.id;
 
   delete state.nextConfig;
 
@@ -350,12 +364,12 @@ export const prevLine = ({ state, projectDataStore }) => {
       } else {
         return;
       }
-      state.mainPointers["history"].sectionId =
+      state.modes[state.currentMode]["history"].sectionId =
         state.history.entries[state.historyEntryIndex].sectionId;
       const prevSectionLines = projectDataStore.selectSectionLines(
-        state.mainPointers["history"].sectionId,
+        state.modes[state.currentMode]["history"].sectionId,
       );
-      state.mainPointers["history"].lineId =
+      state.modes[state.currentMode]["history"].lineId =
         prevSectionLines[prevSectionLines.length - 1].id;
 
       state.lastLineAction = "prevLine";
@@ -369,12 +383,12 @@ export const prevLine = ({ state, projectDataStore }) => {
   }
 
   if (pointerMode === "read") {
-    state.currentPointer = "history";
+    state.modes[state.currentMode].currentPointer = "history";
     state.historyEntryIndex = state.history.entries.length - 1;
   }
 
-  state.mainPointers["history"].lineId = prevLine.id;
-  state.mainPointers["history"].sectionId = currentPointer.sectionId;
+  state.modes[state.currentMode]["history"].lineId = prevLine.id;
+  state.modes[state.currentMode]["history"].sectionId = currentPointer.sectionId;
   state.lastLineAction = "prevLine";
 
   state.pendingEffects.push({
@@ -386,20 +400,58 @@ export const prevLine = ({ state, projectDataStore }) => {
  * @param {ApplyParams} params
  */
 export const sectionTransition = ({ state, projectDataStore }, payload) => {
-  const { sectionId, sceneId, mode } = payload;
+  const { sectionId, sceneId, mode, targetMode, endReplay } = payload;
+  
+  // Handle endReplay option
+  if (state.currentMode === "replay" && endReplay) {
+    state.currentMode = "main";
+    // Clear all replay pointers
+    state.modes.replay.currentPointer = "read";
+    state.modes.replay.modals = [];
+    state.modes.replay.read = {
+      sectionId: undefined,
+      lineId: undefined,
+    };
+    state.modes.replay.history = {
+      sectionId: undefined,
+      lineId: undefined,
+      historyEntryIndex: undefined,
+    };
+    state.pendingEffects.push({
+      name: "render",
+    });
+    return;
+  }
+  
   const lines = projectDataStore.selectSectionLines(sectionId);
 
-  if (mode) {
-    state.currentPointer = mode;
+  // Determine which mode to update
+  const modeToUpdate = targetMode || (mode && state.modes[mode] ? mode : state.currentMode);
+
+  // Clear modals when updating a mode that's not current
+  if (mode && state.modes[mode] && mode !== state.currentMode && !targetMode) {
+    state.modes[mode].modals = [];
   }
 
-  const currentMode = selectPointerMode({ state });
+  // Update currentMode if switching modes
+  if (targetMode && targetMode !== state.currentMode) {
+    state.currentMode = targetMode;
+  } else if (mode && state.modes[mode] && mode !== state.currentMode) {
+    state.currentMode = mode;
+  }
 
-  if (currentMode === "read") {
+  // If mode is a pointer mode (not a mode in state.modes), update the currentPointer
+  if (mode && !state.modes[mode]) {
+    state.modes[modeToUpdate].currentPointer = mode;
+  }
+
+  const currentPointerMode = state.modes[modeToUpdate].currentPointer;
+
+  if (currentPointerMode === "read" && modeToUpdate === state.currentMode) {
     state.history.entries.push({
       sectionId,
     });
-  } else if (currentMode === "history") {
+  } else if (currentPointerMode === "history") {
     // TODO: check if the next section is same as history next section
     if (
       sectionId ===
@@ -412,10 +464,14 @@ export const sectionTransition = ({ state, projectDataStore }, payload) => {
     }
   }
 
-  state.mainPointers[currentMode].sectionId = sectionId;
-  state.mainPointers[currentMode].sceneId = sceneId;
-  state.mainPointers[currentMode].lineId = lines[0].id;
-  state.nextConfig = lines[0].actions?.nextConfig;
+  state.modes[modeToUpdate][currentPointerMode].sectionId = sectionId;
+  state.modes[modeToUpdate][currentPointerMode].sceneId = sceneId;
+  state.modes[modeToUpdate][currentPointerMode].lineId = lines[0].id;
+
+  // Only update nextConfig for the current active mode
+  if (modeToUpdate === state.currentMode) {
+    state.nextConfig = lines[0].actions?.nextConfig;
+  }
 
   state.pendingEffects.push({
     name: "render",
@@ -467,7 +523,7 @@ export const updateVariable = ({ state, projectDataStore }, payload) => {
  * @param {ApplyParams} params
  */
 export const clearCurrentMode = ({ state }, payload) => {
-  state.currentPointer = payload.mode;
+  state.modes[state.currentMode].currentPointer = payload.mode;
   state.pendingEffects.push({
     name: "render",
   });
@@ -607,10 +663,10 @@ export const loadVnData = ({ state }, payload) => {
   }
 
   const { pointer, history } = slotData;
-  state.currentPointer = "read";
-  state.mainPointers["read"] = pointer;
+  state.modes[state.currentMode].currentPointer = "read";
+  state.modes[state.currentMode]["read"] = pointer;
   state.history = history;
-  state.modals = [];
+  state.modes[state.currentMode].modals = [];
   state.pendingEffects.push({
     name: "render",
   });
@@ -623,7 +679,8 @@ export const render = ({ state }) => {
 }
 
 export const addModal = ({ state }, payload) => {
-  state.modals.push({
+  const targetMode = state.currentMode;
+  state.modes[targetMode].modals.push({
     resourceId: payload.resourceId,
     resourceType: 'layout'
   })
@@ -633,8 +690,9 @@ export const addModal = ({ state }, payload) => {
 }
 
 export const clearLastModal = ({ state }, payload) => {
-  if (state.modals.length > 0) {
-    state.modals.pop();
+  const currentModals = state.modes[state.currentMode].modals;
+  if (currentModals.length > 0) {
+    currentModals.pop();
     state.pendingEffects.push({
       name: "render",
     });

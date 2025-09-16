@@ -552,9 +552,11 @@ export const addModals = (
   { elements, transitions },
   { systemState, resources, resolveFile, systemStore },
 ) => {
-  if (systemState?.modals && systemState.modals.length > 0) {
+  // Get modals directly from the passed systemState instead of using systemStore
+  const modals = systemState.modes[systemState.currentMode].modals;
+  if (modals && modals.length > 0) {
     // Add each modal as an overlay
-    systemState.modals.forEach((modal, index) => {
+    modals.forEach((modal, index) => {
       if (modal.resourceType === 'layout') {
         const layout = resources.layouts[modal.resourceId];
 
