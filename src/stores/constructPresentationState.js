@@ -71,38 +71,53 @@ export const visual = (state, presentation) => {
  */
 export const dialogue = (state, presentation) => {
   if (!presentation.dialogue) {
-
-    if (state.dialogue) {
+    if (state.dialogue && state.dialogue.mode === 'adv') {
       state.dialogue.content = undefined;
       state.dialogue.characterId = undefined;
     }
-
     return;
   }
 
   // Start with existing dialogue or empty object
   if (!state.dialogue) {
-    state.dialogue = {};
+    if (presentation.dialogue.mode === 'adv') {
+      state.dialogue = {
+        layoutId: presentation.dialogue.layoutId,
+        content: undefined,
+        characterId: undefined,
+        mode: 'adv'
+      }
+    }
+    if (presentation.dialogue.mode === 'nvl') {
+      if (state.dialogue?.mode !== 'nvl') {
+        state.dialogue = {
+          layoutId: presentation.dialogue.layoutId,
+          lines: [],
+          mode: 'nvl'
+        };
+      }
+    }
   }
 
-  state.dialogue.content = undefined;
-  state.dialogue.characterId = undefined;
-
-  // Apply presentation dialogue properties
-  Object.assign(state.dialogue, presentation.dialogue);
-
-  if (presentation.dialogue.content) {
-    // Remove segments if content is provided
-    delete state.dialogue.segments;
+  if (state.dialogue.mode === 'adv') {
+    Object.assign(state.dialogue, presentation.dialogue);
+    if (
+      presentation.dialogue.character &&
+      !presentation.dialogue.character.characterName &&
+      state.dialogue.character
+    ) {
+      delete state.dialogue.character.characterName;
+    }
   }
 
-  // Handle character name
-  if (
-    presentation.dialogue.character &&
-    !presentation.dialogue.character.characterName &&
-    state.dialogue.character
-  ) {
-    delete state.dialogue.character.characterName;
+  if (presentation.dialogue.mode === 'nvl') {
+    if (presentation.dialogue.clear) {
+      state.dialogue.lines = [];
+    }
+    state.dialogue.lines.push({
+      content: presentation.dialogue.content
+    })
+    return;
   }
 };
 
