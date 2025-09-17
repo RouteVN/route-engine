@@ -1469,12 +1469,18 @@ story:
                   layoutId: fi3l
                   content: Two and a half sentences.
                   characterId: ajf34a
+                voice:
+                  fileId: xj323
+                  loop: true
             - id: line3
               actions:
                 dialogue:
                   layoutId: fi3l
                   content: "Three sentences. Three sentences. Three sentences."
                   characterId: ajf34a
+                voice:
+                  fileId: 39csl
+                  volume: 0.5
             - id: line4
               actions:
                 dialogue:
