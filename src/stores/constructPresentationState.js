@@ -159,6 +159,14 @@ export const choice = (state, presentation) => {
   }
 };
 
+export const voice = (state, presentation) => {
+  if (presentation.voice) {
+    state.voice = presentation.voice;
+  } else if (state.voice) {
+    delete state.voice;
+  }
+};
+
 /**
  * Cleans all state if cleanAll is provided
  * @param {Object} state - The current state of the system
@@ -189,4 +197,5 @@ export default [
   animation,
   layout,
   choice,
+  voice,
 ];

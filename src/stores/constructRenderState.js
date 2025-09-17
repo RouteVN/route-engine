@@ -468,6 +468,30 @@ export const addSfx = (
   }
 };
 
+export const addVoice = (
+  { elements }, { presentationState, resolveFile }) => {
+
+  if (
+    !presentationState.voice
+  ) {
+    return;
+  }
+
+  const storyContainer = elements.find(el => el.id === 'story');
+  if (!storyContainer) return;
+
+  const { fileId, volume, loop } = presentationState.voice;
+
+  storyContainer.children.push({
+    id: `voice-${fileId}`,
+    type: "audio",
+    url: resolveFile(fileId),
+    volume,
+    loop
+  });
+};
+
+
 /**
  * Adds layout elements from presentation to state
  * @param {Object} params
@@ -680,6 +704,7 @@ export default [
   addLayout,
   addBgm,
   addSfx,
+  addVoice,
   addModals,
   addGlobalAudios
 ];
