@@ -1074,6 +1074,10 @@ resources:
                   - id: dialogue-text-${i}
                     type: "text-revealing"
                     y: 100
+                    $if i == dialogue.lines.length - 1:
+                      displaySpeed: 50
+                    $else:
+                      displaySpeed: 100
                     height: 100
                     content: ${line.content}
                     style:
