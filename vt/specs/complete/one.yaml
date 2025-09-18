@@ -114,6 +114,10 @@ resources:
             - id: 32kljfsf3
               type: container
               direction: vertical
+              height: 500
+              width: 500
+              scroll: true
+              gap: 10
               y: 120
               children:
                 $for item, i in historyDialogue:
@@ -121,6 +125,7 @@ resources:
                   type: text
                   text: ${item.content}
                   height: 80
+                  width: 500
                   style:
                     fontSize: 24
                     fill: "white"

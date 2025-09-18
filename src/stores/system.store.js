@@ -201,6 +201,29 @@ export const selectDeviceVariables = ({ state, projectDataStore }) => {
   return deviceVariables;
 };
 
+export const selectHistoryDialogue = ({ state, projectDataStore }) => {
+  const currentPointer = selectCurrentPointer({ state });
+  const { sectionId, lineId } = currentPointer;
+  if (!sectionId || !lineId) {
+    return [];
+  }
+  const lines = projectDataStore.selectSectionLines(sectionId);
+  const currentLineIndex = lines.findIndex(line => line.id === lineId);
+  if (currentLineIndex === -1) {
+    return [];
+  }
+  const historyLines = lines.slice(0, currentLineIndex + 1);
+  const dialogue = [];
+  historyLines.forEach((line, index) => {
+    if (line.actions?.dialogue?.content && Array.isArray(line.actions.dialogue.content)) {
+      line.actions.dialogue.content.forEach(textItem => {
+        dialogue.push({ content: textItem.text });
+      });
+    }
+  });
+  return dialogue;
+}
+
 export const selectModals = ({ state }) => {
   return state.modes[state.currentMode].modals;
 };
