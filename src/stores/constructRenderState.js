@@ -653,6 +653,7 @@ export const addModals = (
           autoMode: systemStore.selectAutoMode(),
           skipMode: systemStore.selectSkipMode(),
           globalAudios: systemStore.selectGlobalAudios() || [],
+          historyDialogue: systemStore.selectHistoryDialogue() || [],
         }
 
         const processedModal = parseAndRender(modalContainer, templateData);
