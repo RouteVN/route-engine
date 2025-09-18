@@ -80,6 +80,51 @@ resources:
       persistence: device
 
   layouts:
+    historyDialogueLayout:
+      elements:
+        - id: k3jfald
+          type: rect
+          x: 100
+          y: 100
+          width: 800
+          height: 800
+          fill: "#ccc"
+        - id: afk2lkas
+          type: container
+          x: 120
+          y: 120
+          children:
+            - id: fkjl233
+              type: text
+              text: History
+              style:
+                fontSize: 48
+                fill: "white"
+            - id: fkjaefewfl233
+              type: text
+              text: Back
+              y: 700
+              style:
+                fontSize: 48
+                fill: "white"
+              eventName: "system"
+              eventPayload:
+                actions:
+                  clearLastModal: {}
+            - id: 32kljfsf3
+              type: container
+              direction: vertical
+              y: 120
+              children:
+                $for item, i in historyDialogue:
+                  id: kl2j3flk23-${i}
+                  type: text
+                  text: ${item.content}
+                  height: 80
+                  style:
+                    fontSize: 24
+                    fill: "white"
+
     modalGalleryItemLayout:
       elements:
         - id: afk2lkas
@@ -1110,6 +1155,27 @@ resources:
               eventPayload:
                 actions:
                   toggleSkipMode: {}
+            - id: dialogue-action-history
+              type: text
+              text: "History"
+              x: 0
+              y: 0
+              width: 120
+              height: 40
+              style:
+                fontSize: 24
+                $if showDialogueHistory:
+                  fill: yellow
+                $else:
+                  fill: "white"
+              hoverStyle:
+                fontSize: 24
+                fill: yellow
+              eventName: "system"
+              eventPayload:
+                actions:
+                  addModal:
+                    resourceId: historyDialogueLayout
             - id: dialogue-action-options
               type: text
               text: "Options"

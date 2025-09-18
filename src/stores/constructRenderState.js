@@ -650,7 +650,22 @@ export const addModals = (
           autoMode: systemStore.selectAutoMode(),
           skipMode: systemStore.selectSkipMode(),
           globalAudios: systemStore.selectGlobalAudios() || [],
+          historyDialogue: [{
+            character: { name: "Character Name" },
+            content: "This is a sample dialogue line for history."
+          }, {
+            character: { name: "Another Character" },
+            content: "This is another sample dialogue line for history."
+          }, {
+            character: { name: "Character Name" },
+            content: "This is a sample dialogue line for history."
+          }, {
+            character: { name: "Another Character" },
+            content: "This is another sample dialogue line for history."
+          }]
         }
+
+        console.log('systemStore.selectHistory()', systemStore.selectHistory());
 
         const processedModal = parseAndRender(modalContainer, templateData);
 
