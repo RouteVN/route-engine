@@ -10,7 +10,7 @@ import RouteGraphics, {
   SliderRendererPlugin,
   KeyframeTransitionPlugin,
   createAssetBufferManager,
-} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.2-rc29/+esm";
+} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.2-rc30/+esm";
 
 const jsonData = yaml.load(window.yamlContent);
 

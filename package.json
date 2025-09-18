@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "immer": "^10.1.1",
-    "jempl": "0.2.0-rc1",
+    "jempl": "0.3.2-rc1",
     "js-yaml": "^4.1.0",
     "puty": "^0.0.4-rc2"
   },
