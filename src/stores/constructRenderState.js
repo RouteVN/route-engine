@@ -380,8 +380,11 @@ export const addDialogue = (
         name: character?.name || "",
       },
       content: presentationState.dialogue.content,
+      lines: presentationState.dialogue.lines
     },
   }
+
+  console.log('templateData', templateData)
 
   const result = parseAndRender(wrappedTemplate, templateData);
   const dialogueElements = result?.elements;

@@ -309,6 +309,14 @@ export default function createRouteEngine() {
       });
     }
 
+    console.log({
+      systemState,
+      mainPresentationState,
+      mainRenderState,
+      replayPresentationState,
+      replayRenderState
+    })
+
     _eventCallback({
       eventType: "render",
       payload: replayRenderState || mainRenderState,

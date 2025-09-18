@@ -1085,8 +1085,52 @@ resources:
                 fontSize: 48
                 fill: yellow
 
+    3jfksdjkadf:
+      name: Dialogue NVL
+      mode: nvl
+      elements:
+        - id: 3kjfafj32
+          type: rect
+          x: 40
+          y: 40
+          width: 1720
+          height: 880
+          fill: "#ccc"
+          opacity: 0.5
+        - id: dialogue-contaef32iner
+          type: "container"
+          x: 100
+          y: 100
+          children:
+            - id: dialogue-character-name
+              type: text
+              text: "${dialogue.character.name}"
+              x: 0
+              y: 0
+              style:
+                fontSize: 24
+                fill: "white"
+            - id: "3kjfasdkfj"
+              type: container
+              direction: vertical
+              gap: 20
+              children:
+                $for line, i in dialogue.lines:
+                  - id: dialogue-text-${i}
+                    type: "text-revealing"
+                    y: 100
+                    $if i == dialogue.lines.length - 1:
+                      displaySpeed: 50
+                    $else:
+                      displaySpeed: 100
+                    height: 100
+                    content: ${line.content}
+                    style:
+                      fontSize: 24
+                      fill: "white"
     fi3l:
       name: Dialogue Screen
+      mode: adv
       elements:
         - id: dialogue-container
           type: "container"
@@ -1102,9 +1146,9 @@ resources:
                 fontSize: 24
                 fill: "white"
             - id: dialogue-text
-              type: "text"
+              type: "text-revealing"
               y: 100
-              text: ${dialogue.content}
+              content: ${dialogue.content}
               style:
                 fontSize: 24
                 fill: "white"
@@ -1346,15 +1390,6 @@ resources:
                       - variableId: "isMainMenu"
                         op: "set"
                         value: true
-                  # sectionTransition:
-                  #   sceneId: "93jkal3"
-                  #   sectionId: "asdkjl32"
-                  #   mode: "menu"
-                  # updateVariable:
-                  #   operations:
-                  #     - variableId: "currentMenuTabId"
-                  #       op: "set"
-                  #       value: "load"
               x: 0
               y: 0
               style:
@@ -1526,14 +1561,17 @@ story:
                   resourceId: f3wklajf32
                   resourceType: image
                 dialogue:
+                  mode: adv
                   layoutId: fi3l
-                  content: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                  content:
+                    - text: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
                   characterId: ajf34a
             - id: line2
               actions:
                 dialogue:
                   layoutId: fi3l
-                  content: Two and a half sentences.
+                  content:
+                    - text: Two and a half sentences.
                   characterId: ajf34a
                 voice:
                   fileId: xj323
@@ -1542,7 +1580,8 @@ story:
               actions:
                 dialogue:
                   layoutId: fi3l
-                  content: "Three sentences. Three sentences. Three sentences."
+                  content:
+                    - text: "Three sentences. Three sentences. Three sentences."
                   characterId: ajf34a
                 voice:
                   fileId: 39csl
@@ -1551,67 +1590,78 @@ story:
               actions:
                 dialogue:
                   layoutId: fi3l
-                  content: "Four sentences. Four sentences. Four sentences. Four sentences."
+                  content:
+                    - text: "Four sentences. Four sentences. Four sentences. Four sentences."
                   characterId: ajf34a
             - id: line5
               actions:
                 dialogue:
                   layoutId: fi3l
-                  content: "Five sentences. Five sentences. Five sentences. Five sentences."
+                  content:
+                    - text: "Five sentences. Five sentences. Five sentences. Five sentences."
                   characterId: ajf34a
             - id: line6
               actions:
                 dialogue:
                   layoutId: fi3l
-                  content: "Six sentences. Six sentences. Six sentences. Six sentences."
+                  content:
+                    - text: "Six sentences. Six sentences. Six sentences. Six sentences."
                   characterId: ajf34a
             - id: line7
               actions:
                 dialogue:
                   layoutId: fi3l
-                  content: "Seven sentences. Seven sentences. Seven sentences. Seven sentences."
+                  content:
+                    - text: "Seven sentences. Seven sentences. Seven sentences. Seven sentences."
                   characterId: ajf34a
             - id: line8
               actions:
                 dialogue:
                   layoutId: fi3l
-                  content: "Eight sentences. Eight sentences. Eight sentences. Eight sentences."
+                  content:
+                    - text: "Eight sentences. Eight sentences. Eight sentences. Eight sentences."
                   characterId: ajf34a
             - id: line9
               actions:
                 dialogue:
                   layoutId: fi3l
-                  content: "Nine sentences. Nine sentences. Nine sentences. Nine sentences."
+                  content:
+                    - text: "Nine sentences. Nine sentences. Nine sentences. Nine sentences."
                   characterId: ajf34a
             - id: line10
               actions:
                 dialogue:
                   layoutId: fi3l
-                  content: "Ten sentences. Ten sentences. Ten sentences. Ten sentences."
+                  content:
+                    - text: "Ten sentences. Ten sentences. Ten sentences. Ten sentences."
                   characterId: ajf34a
             - id: line11
               actions:
                 dialogue:
                   layoutId: fi3l
-                  content: "Eleven sentences. Eleven sentences. Eleven sentences. Eleven sentences."
+                  content:
+                    - text: "Eleven sentences. Eleven sentences. Eleven sentences. Eleven sentences."
                   characterId: ajf34a
             - id: line12
               actions:
                 dialogue:
                   layoutId: fi3l
-                  content: "Twelve sentences. Twelve sentences. Twelve sentences. Twelve sentences."
+                  content:
+                    - text: "Twelve sentences. Twelve sentences. Twelve sentences. Twelve sentences."
                   characterId: ajf34a
             - id: line13
               actions:
                 dialogue:
                   layoutId: fi3l
-                  content: "Thirteen sentences. Thirteen sentences. Thirteen sentences. Thirteen sentences."
+                  content:
+                    - text: "Thirteen sentences. Thirteen sentences. Thirteen sentences. Thirteen sentences."
                   characterId: ajf34a
             - id: line14
               actions:
                 dialogue:
                   layoutId: fi3l
-                  content: "Fourteen sentences. Fourteen sentences. Fourteen sentences. Fourteen sentences."
+                  content:
+                    - text: "Fourteen sentences. Fourteen sentences. Fourteen sentences. Fourteen sentences."
                   characterId: ajf34a
             - id: line15
               actions:
@@ -1626,38 +1676,45 @@ story:
                   resourceId: storyScreenLayout
                   resourceType: layout
                 dialogue:
+                  mode: adv
                   layoutId: fi3l
-                  content: Section Three
+                  content:
+                    - text: Section Three
                   characterId: ajf34a
             - id: line2
               actions:
                 dialogue:
                   layoutId: fi3l
-                  content: Wooooooooo
+                  content:
+                    - text: Wooooooooo
                   characterId: ajf34a
             - id: line3
               actions:
                 dialogue:
                   layoutId: fi3l
-                  content: Fooooooooo
+                  content:
+                    - text: Fooooooooo
                   characterId: ajf34a
             - id: line4
               actions:
                 dialogue:
                   layoutId: fi3l
-                  content: Gooooooooo
+                  content:
+                    - text: Gooooooooo
                   characterId: ajf34a
             - id: line5
               actions:
                 dialogue:
                   layoutId: fi3l
-                  content: GlGooooooooo
+                  content:
+                    - text: GlGooooooooo
                   characterId: ajf34a
             - id: line6
               actions:
                 dialogue:
                   layoutId: fi3l
-                  content: XGooooooooo
+                  content:
+                    - text: XGooooooooo
                   characterId: ajf34a
             - id: line7
               actions:
@@ -1674,17 +1731,38 @@ story:
                   resourceId: extraScreenLayout
                   resourceType: layout
                 dialogue:
-                  layoutId: fi3l
-                  content: Extra 1
+                  layoutId: 3jfksdjkadf
+                  mode: nvl
+                  content:
+                    - text: Extra 1
             - id: line2
               actions:
                 dialogue:
-                  content: Extra 2
+                  mode: nvl
+                  content:
+                    - text: Extra 2
             - id: line3
               actions:
                 dialogue:
-                  content: Extra 3
+                  mode: nvl
+                  content:
+                    - text: Extra 3
+
             - id: line4
+              actions:
+                dialogue:
+                  mode: nvl
+                  clear: true
+                  content:
+                    - text: Extra 4
+
+            - id: line5
+              actions:
+                dialogue:
+                  mode: nvl
+                  content:
+                    - text: Extra 5
+            - id: line6
               actions:
                 sectionTransition:
                   endReplay: true
