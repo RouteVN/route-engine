@@ -331,7 +331,7 @@ export const addVisuals = (
  */
 export const addDialogue = (
   { elements },
-  { presentationState, ui, resources, systemState, systemStore },
+  { presentationState, i18n, resources, systemState, systemStore },
 ) => {
   if (!presentationState.dialogue) {
     return;
@@ -366,6 +366,7 @@ export const addDialogue = (
 
   const wrappedTemplate = { elements: layout.elements };
 
+  const { defaultPackId, packs } = i18n;
 
   const templateData = {
     variables: systemState?.variables || {},
@@ -384,9 +385,10 @@ export const addDialogue = (
     },
   }
 
-  console.log('templateData', templateData)
-
-  const result = parseAndRender(wrappedTemplate, templateData);
+  let result = parseAndRender(wrappedTemplate, templateData);
+  result = parseAndRender(result, {
+    i18n: packs[defaultPackId].keys || {},
+  });
   const dialogueElements = result?.elements;
 
   if (Array.isArray(dialogueElements)) {

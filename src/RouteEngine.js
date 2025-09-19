@@ -290,6 +290,7 @@ export default function createRouteEngine() {
       resolveFile: (f) => `file:${f}`,
       resources: _projectDataStore.selectResources(),
       ui: _projectDataStore.selectUi(),
+      i18n: _projectDataStore.selectI18n(),
     });
 
     // Create replay render state if replay presentation state exists
@@ -306,6 +307,7 @@ export default function createRouteEngine() {
         resolveFile: (f) => `file:${f}`,
         resources: _projectDataStore.selectResources(),
         ui: _projectDataStore.selectUi(),
+        i18n: _projectDataStore.selectI18n(),
       });
     }
 

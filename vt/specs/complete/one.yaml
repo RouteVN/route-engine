@@ -6,6 +6,146 @@ screen:
   height: 1080
   backgroundColor: "#000000"
 
+i18n:
+  defaultPackId: eklekfjwalefj
+  packs:
+    eklekfjwalefj:
+      label: asdfj
+      lang: en
+      keys:
+        layout:
+          historyDialogueLayout:
+            fkjl233: "History"
+            fkjaefewfl233: "Back"
+          creditsLayout:
+            x23f329fa: "Credits"
+            f33h429fa: "Credits Content 2"
+            iasdkj32: "Credits Content 3"
+            credit4: "Credits Content 4"
+            credit5: "Credits Content 5"
+            credit6: "Credits Content 6"
+            credit7: "Credits Content 7"
+            credit8: "Credits Content 8"
+            credit9: "Credits Content 9"
+            credit10: "Credits Content 10"
+            credit11: "Credits Content 11"
+            credit12: "Credits Content 12"
+            credit13: "Credits Content 13"
+            credit14: "Credits Content 14"
+            credit15: "Credits Content 15"
+            credit16: "Credits Content 16"
+            credit17: "Credits Content 17"
+            credit18: "Credits Content 18"
+            credit19: "Credits Content 19"
+            credit20: "Credits Content 20"
+          dafkjkl3:
+            "9fdadf-options": "Options"
+            "textspeed-id": "Text speed: ${variables.textSpeed}"
+            "load-title": "Load"
+            "save-title": "Save"
+            "gallery-title": "Gallery"
+            "replay-title": "Replay"
+            "music-room-title": "Music Room"
+            "music-room-stop": "Stop Music"
+            fjkl2jk: "Track 1 - Sample Music"
+            fjkl2fe23jk: "Track 2 - Sample Music"
+            "Start": "Start"
+            "Save": "Save"
+            "Load": "Load"
+            "Options": "Options"
+            "Gallery": "Gallery"
+            "Replay": "Replay"
+            "Music Room": "Music Room"
+            "Main": "Main"
+            "back": "Back"
+            "page-prev": "<"
+            "page-next": ">"
+          f3jik32isdf:
+            "32sadfj": "Are you sure to exit the application?"
+            "38sdfa2": "Yes"
+            "e83a": "No"
+          j3i8dk32:
+            "Start": "Start"
+            "Load": "Load"
+            "Options": "Options"
+            "Exit": "Exit"
+            "extra": "Extra"
+          fi3l:
+            "dialogue-action-button": "Auto"
+            "dialogue-action-skip": "Skip"
+            "dialogue-action-history": "History"
+            "dialogue-action-options": "Options"
+            "dialogue-action-hide": "Hide"
+            "dialogue-action-back": "Back"
+        scene:
+          ajfl3a:
+            k3nfgdsai34:
+              line1:
+                fkjl23ras: "Extra 1"
+              line2:
+                afjk293s: "Extra 2"
+              line3:
+                kl4j3sf9: "Extra 3"
+              line4:
+                m2k4jfs8: "Extra 4"
+              line5:
+                p9sj2k3f: "Extra 5"
+            3k3s9sd:
+              line1:
+                qw8r4j2k: "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+              line2:
+                xm3k9s2d: "Two and a half sentences."
+              line3:
+                zn5k8w3r: "Three sentences. Three sentences. Three sentences."
+              line4:
+                cv7j2k9s: "Four sentences. Four sentences. Four sentences. Four sentences."
+              line5:
+                bnm4k3s8: "Five sentences. Five sentences. Five sentences. Five sentences."
+              line6:
+                lkj9s3d2: "Six sentences. Six sentences. Six sentences. Six sentences."
+              line7:
+                poi8k3s7: "Seven sentences. Seven sentences. Seven sentences. Seven sentences."
+              line8:
+                mnb6k2s9: "Eight sentences. Eight sentences. Eight sentences. Eight sentences."
+              line9:
+                vxc4k7s3: "Nine sentences. Nine sentences. Nine sentences. Nine sentences."
+              line10:
+                qaz3k8s2: "Ten sentences. Ten sentences. Ten sentences. Ten sentences."
+              line11:
+                wsx4k9s1: "Eleven sentences. Eleven sentences. Eleven sentences. Eleven sentences."
+              line12:
+                edc5k2s7: "Twelve sentences. Twelve sentences. Twelve sentences. Twelve sentences."
+              line13:
+                rfv6k3s8: "Thirteen sentences. Thirteen sentences. Thirteen sentences. Thirteen sentences."
+              line14:
+                tgb7k4s9: "Fourteen sentences. Fourteen sentences. Fourteen sentences. Fourteen sentences."
+            934kjfa3:
+              line1:
+                yhn8k5s1: "Section Three"
+              line2:
+                ujm9k6s2: "Wooooooooo"
+              line3:
+                ik0k7s3: "Fooooooooo"
+              line4:
+                ol1k8s4: "Gooooooooo"
+              line5:
+                p2k9s5: "GlGooooooooo"
+              line6:
+                a3k0s6: "XGooooooooo"
+        character:
+          ajf34a:
+            name: "Character One"
+      # files:
+      #   kfej2: ...
+      # patch:
+      #   images:
+      #     alkejf3la:
+      #       fileId: 94lkj289
+      #     f3wklajf32:
+      #       fileId: dmni32
+      #     32rka331:
+      #       fileId: 23jkfa893
+
 resources:
   variables:
     # 🔧 persistence Types
@@ -96,13 +236,13 @@ resources:
           children:
             - id: fkjl233
               type: text
-              text: History
+              text: ${i18n.layout.historyDialogueLayout.fkjl233}
               style:
                 fontSize: 48
                 fill: "white"
             - id: fkjaefewfl233
               type: text
-              text: Back
+              text: ${i18n.layout.historyDialogueLayout.fkjaefewfl233}
               y: 700
               style:
                 fontSize: 48
@@ -1569,14 +1709,14 @@ story:
                   mode: adv
                   layoutId: fi3l
                   content:
-                    - text: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line1.qw8r4j2k}
                   characterId: ajf34a
             - id: line2
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: Two and a half sentences.
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line2.xm3k9s2d}
                   characterId: ajf34a
                 voice:
                   fileId: xj323
@@ -1586,7 +1726,7 @@ story:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: "Three sentences. Three sentences. Three sentences."
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line3.zn5k8w3r}
                   characterId: ajf34a
                 voice:
                   fileId: 39csl
@@ -1596,77 +1736,77 @@ story:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: "Four sentences. Four sentences. Four sentences. Four sentences."
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line4.cv7j2k9s}
                   characterId: ajf34a
             - id: line5
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: "Five sentences. Five sentences. Five sentences. Five sentences."
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line5.bnm4k3s8}
                   characterId: ajf34a
             - id: line6
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: "Six sentences. Six sentences. Six sentences. Six sentences."
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line6.lkj9s3d2}
                   characterId: ajf34a
             - id: line7
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: "Seven sentences. Seven sentences. Seven sentences. Seven sentences."
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line7.poi8k3s7}
                   characterId: ajf34a
             - id: line8
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: "Eight sentences. Eight sentences. Eight sentences. Eight sentences."
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line8.mnb6k2s9}
                   characterId: ajf34a
             - id: line9
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: "Nine sentences. Nine sentences. Nine sentences. Nine sentences."
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line9.vxc4k7s3}
                   characterId: ajf34a
             - id: line10
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: "Ten sentences. Ten sentences. Ten sentences. Ten sentences."
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line10.qaz3k8s2}
                   characterId: ajf34a
             - id: line11
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: "Eleven sentences. Eleven sentences. Eleven sentences. Eleven sentences."
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line11.wsx4k9s1}
                   characterId: ajf34a
             - id: line12
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: "Twelve sentences. Twelve sentences. Twelve sentences. Twelve sentences."
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line12.edc5k2s7}
                   characterId: ajf34a
             - id: line13
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: "Thirteen sentences. Thirteen sentences. Thirteen sentences. Thirteen sentences."
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line13.rfv6k3s8}
                   characterId: ajf34a
             - id: line14
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: "Fourteen sentences. Fourteen sentences. Fourteen sentences. Fourteen sentences."
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line14.tgb7k4s9}
                   characterId: ajf34a
             - id: line15
               actions:
@@ -1684,42 +1824,42 @@ story:
                   mode: adv
                   layoutId: fi3l
                   content:
-                    - text: Section Three
+                    - text: ${i18n.scene.ajfl3a.934kjfa3.line1.yhn8k5s1}
                   characterId: ajf34a
             - id: line2
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: Wooooooooo
+                    - text: ${i18n.scene.ajfl3a.934kjfa3.line2.ujm9k6s2}
                   characterId: ajf34a
             - id: line3
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: Fooooooooo
+                    - text: ${i18n.scene.ajfl3a.934kjfa3.line3.ik0k7s3}
                   characterId: ajf34a
             - id: line4
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: Gooooooooo
+                    - text: ${i18n.scene.ajfl3a.934kjfa3.line4.ol1k8s4}
                   characterId: ajf34a
             - id: line5
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: GlGooooooooo
+                    - text: ${i18n.scene.ajfl3a.934kjfa3.line5.p2k9s5}
                   characterId: ajf34a
             - id: line6
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: XGooooooooo
+                    - text: ${i18n.scene.ajfl3a.934kjfa3.line6.a3k0s6}
                   characterId: ajf34a
             - id: line7
               actions:
@@ -1739,19 +1879,19 @@ story:
                   layoutId: 3jfksdjkadf
                   mode: nvl
                   content:
-                    - text: Extra 1
+                    - text: ${i18n.scene.ajfl3a.k3nfgdsai34.line1.fkjl23ras}
             - id: line2
               actions:
                 dialogue:
                   mode: nvl
                   content:
-                    - text: Extra 2
+                    - text: ${i18n.scene.ajfl3a.k3nfgdsai34.line2.afjk293s}
             - id: line3
               actions:
                 dialogue:
                   mode: nvl
                   content:
-                    - text: Extra 3
+                    - text: ${i18n.scene.ajfl3a.k3nfgdsai34.line3.kl4j3sf9}
 
             - id: line4
               actions:
@@ -1759,14 +1899,14 @@ story:
                   mode: nvl
                   clear: true
                   content:
-                    - text: Extra 4
+                    - text: ${i18n.scene.ajfl3a.k3nfgdsai34.line4.m2k4jfs8}
 
             - id: line5
               actions:
                 dialogue:
                   mode: nvl
                   content:
-                    - text: Extra 5
+                    - text: ${i18n.scene.ajfl3a.k3nfgdsai34.line5.p9sj2k3f}
             - id: line6
               actions:
                 sectionTransition:

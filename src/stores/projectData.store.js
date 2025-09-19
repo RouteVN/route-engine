@@ -14,6 +14,10 @@ export const selectLayout = (state) => {
   return state.layout;
 };
 
+export const selectI18n = (state) => {
+  return state.i18n;
+}
+
 export const selectInitialIds = (state) => {
   const initialScene = state.story.scenes[state.story.initialSceneId];
   const initialSection = initialScene.sections[initialScene.initialSectionId];
