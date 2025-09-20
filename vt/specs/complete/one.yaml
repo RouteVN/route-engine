@@ -49,26 +49,29 @@ i18n:
             "music-room-stop": "Stop Music"
             fjkl2jk: "Track 1 - Sample Music"
             fjkl2fe23jk: "Track 2 - Sample Music"
-            "Start": "Start"
-            "Save": "Save"
-            "Load": "Load"
-            "Options": "Options"
-            "Gallery": "Gallery"
-            "Replay": "Replay"
-            "Music Room": "Music Room"
-            "Main": "Main"
+            "start": "Start"
+            "save": "Save"
+            "load": "Load"
+            "options": "Options"
+            "gallery": "Gallery"
+            "replay": "Replay"
+            "music-room": "Music Room"
+            "main": "Main"
             "back": "Back"
             "page-prev": "<"
             "page-next": ">"
+            "languages": "Languages"
+            "english": "English"
+            "italian": "Italian"
           f3jik32isdf:
             "32sadfj": "Are you sure to exit the application?"
             "38sdfa2": "Yes"
             "e83a": "No"
           j3i8dk32:
-            "Start": "Start"
-            "Load": "Load"
-            "Options": "Options"
-            "Exit": "Exit"
+            "start": "Start"
+            "load": "Load"
+            "options": "Options"
+            "exit": "Exit"
             "extra": "Extra"
           fi3l:
             "dialogue-action-button": "Auto"
@@ -175,26 +178,29 @@ i18n:
             "music-room-stop": "Ferma Musica"
             fjkl2jk: "Traccia 1 - Musica di Esempio"
             fjkl2fe23jk: "Traccia 2 - Musica di Esempio"
-            "Start": "Inizia"
-            "Save": "Salva"
-            "Load": "Carica"
-            "Options": "Opzioni"
-            "Gallery": "Galleria"
-            "Replay": "Replay"
-            "Music Room": "Sala Musica"
-            "Main": "Principale"
+            "start": "Inizia"
+            "save": "Salva"
+            "load": "Carica"
+            "options": "Opzioni"
+            "gallery": "Galleria"
+            "replay": "Replay"
+            "music-room": "Sala Musica"
+            "main": "Principale"
             "back": "Indietro"
             "page-prev": "<"
             "page-next": ">"
+            "languages": "Lingue"
+            "english": "Inglese"
+            "italian": "Italiano"
           f3jik32isdf:
             "32sadfj": "Sei sicuro di voler uscire dall'applicazione?"
             "38sdfa2": "Sì"
             "e83a": "No"
           j3i8dk32:
-            "Start": "Inizia"
-            "Load": "Carica"
-            "Options": "Opzioni"
-            "Exit": "Esci"
+            "start": "Inizia"
+            "load": "Carica"
+            "options": "Opzioni"
+            "exit": "Esci"
             "extra": "Extra"
           fi3l:
             "dialogue-action-button": "Auto"
@@ -447,140 +453,140 @@ resources:
           children:
             - id: x23f329fa
               type: text
-              text: Credits
+              text: ${i18n.layout.creditsLayout.x23f329fa}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: f33h429fa
               type: text
-              text: Credits Content 2
+              text: ${i18n.layout.creditsLayout.f33h429fa}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: iasdkj32
               type: text
-              text: Credits Content 3
+              text: ${i18n.layout.creditsLayout.iasdkj32}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit4
               type: text
-              text: Credits Content 4
+              text: ${i18n.layout.creditsLayout.credit4}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit5
               type: text
-              text: Credits Content 5
+              text: ${i18n.layout.creditsLayout.credit5}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit6
               type: text
-              text: Credits Content 6
+              text: ${i18n.layout.creditsLayout.credit6}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit7
               type: text
-              text: Credits Content 7
+              text: ${i18n.layout.creditsLayout.credit7}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit8
               type: text
-              text: Credits Content 8
+              text: ${i18n.layout.creditsLayout.credit8}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit9
               type: text
-              text: Credits Content 9
+              text: ${i18n.layout.creditsLayout.credit9}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit10
               type: text
-              text: Credits Content 10
+              text: ${i18n.layout.creditsLayout.credit10}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit11
               type: text
-              text: Credits Content 11
+              text: ${i18n.layout.creditsLayout.credit11}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit12
               type: text
-              text: Credits Content 12
+              text: ${i18n.layout.creditsLayout.credit12}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit13
               type: text
-              text: Credits Content 13
+              text: ${i18n.layout.creditsLayout.credit13}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit14
               type: text
-              text: Credits Content 14
+              text: ${i18n.layout.creditsLayout.credit14}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit15
               type: text
-              text: Credits Content 15
+              text: ${i18n.layout.creditsLayout.credit15}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit16
               type: text
-              text: Credits Content 16
+              text: ${i18n.layout.creditsLayout.credit16}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit17
               type: text
-              text: Credits Content 17
+              text: ${i18n.layout.creditsLayout.credit17}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit18
               type: text
-              text: Credits Content 18
+              text: ${i18n.layout.creditsLayout.credit18}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit19
               type: text
-              text: Credits Content 19
+              text: ${i18n.layout.creditsLayout.credit19}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit20
               type: text
-              text: Credits Content 20
+              text: ${i18n.layout.creditsLayout.credit20}
               height: 100
               style:
                 fontSize: 48
@@ -670,7 +676,7 @@ resources:
               type: "container"
               children:
                 - type: text
-                  text: "Options"
+                  text: ${i18n.layout.dafkjkl3["9fdadf-options"]}
                   x: 100
                   y: 100
                   style:
@@ -687,7 +693,7 @@ resources:
                       type: text
                       x: 20
                       y: 0
-                      text: "Text speed: ${variables.textSpeed}"
+                      text: ${i18n.layout.dafkjkl3["textspeed-id"]}
                       style:
                         fontSize: 24
                         fill: "white"
@@ -715,7 +721,7 @@ resources:
               children:
                 - id: load-title
                   type: text
-                  text: "Load"
+                  text: ${i18n.layout.dafkjkl3["load-title"]}
                   x: 100
                   y: 100
                   style:
@@ -776,7 +782,7 @@ resources:
                   children:
                     - id: page-prev
                       type: text
-                      text: "<"
+                      text: ${i18n.layout.dafkjkl3["page-prev"]}
                       width: 80
                       $if variables.currentSavePageIndex > 0:
                         style:
@@ -827,7 +833,7 @@ resources:
                                         value: "${i}"
                     - id: page-next
                       type: text
-                      text: ">"
+                      text: ${i18n.layout.dafkjkl3["page-next"]}
                       width: 80
                       $if variables.currentSavePageIndex < 8:
                         style:
@@ -855,7 +861,7 @@ resources:
               children:
                 - id: save-title
                   type: text
-                  text: "Save"
+                  text: ${i18n.layout.dafkjkl3["save-title"]}
                   x: 100
                   y: 100
                   style:
@@ -921,7 +927,7 @@ resources:
                   children:
                     - id: page-prev
                       type: text
-                      text: "<"
+                      text: ${i18n.layout.dafkjkl3["page-prev"]}
                       width: 80
                       $if variables.currentSavePageIndex > 0:
                         style:
@@ -972,7 +978,7 @@ resources:
                                         value: "${i}"
                     - id: page-next
                       type: text
-                      text: ">"
+                      text: ${i18n.layout.dafkjkl3["page-next"]}
                       width: 80
                       $if variables.currentSavePageIndex < 8:
                         style:
@@ -999,7 +1005,7 @@ resources:
               children:
                 - id: languages-title
                   type: text
-                  text: "Languages"
+                  text: ${i18n.layout.dafkjkl3.languages}
                   x: 100
                   y: 100
                   style:
@@ -1013,50 +1019,34 @@ resources:
                   direction: vertical
                   gap: 30
                   children:
-                    - id: languages-item
-                      type: text
-                      text: "English"
-                      height: 40
-                      style:
-                        fontSize: 26
-                        fill: "white"
-                      $if currentLanguagePackId == "eklekfjwalefj":
-                        style:
-                          fontSize: 26
-                          fill: "yellow"
-                      $else:
+                    $for languagePack in objectValues(languagePacks):
+                      - id: languages-item-${languagePack.id}
+                        type: text
+                        text: 123 ${languagePack.label}
+                        height: 40
                         style:
                           fontSize: 26
                           fill: "white"
-                      eventName: "system"
-                      eventPayload:
-                        actions:
-                          setLanguagePackId:
-                            languagePackId: "eklekfjwalefj"
-                    - id: languages-item-32
-                      type: text
-                      text: "Italian"
-                      height: 40
-                      $if currentLanguagePackId == "italianopack":
-                        style:
-                          fontSize: 26
-                          fill: "yellow"
-                      $else:
-                        style:
-                          fontSize: 26
-                          fill: "white"
-                      eventName: "system"
-                      eventPayload:
-                        actions:
-                          setLanguagePackId:
-                            languagePackId: "italianopack"
+                        $if currentLanguagePackId == languagePack.id:
+                          style:
+                            fontSize: 26
+                            fill: "yellow"
+                        $else:
+                          style:
+                            fontSize: 26
+                            fill: "white"
+                        eventName: "system"
+                        eventPayload:
+                          actions:
+                            setLanguagePackId:
+                              languagePackId: "${languagePack.id}"
             - id: "9fe23fdadf"
               $when: 'variables.currentMenuTabId == "gallery"'
               type: "container"
               children:
                 - id: gallery-title
                   type: text
-                  text: "Gallery"
+                  text: ${i18n.layout.dafkjkl3["gallery-title"]}
                   x: 100
                   y: 100
                   style:
@@ -1121,7 +1111,7 @@ resources:
               children:
                 - id: replay-title
                   type: text
-                  text: "Replay"
+                  text: ${i18n.layout.dafkjkl3["replay-title"]}
                   x: 100
                   y: 100
                   style:
@@ -1155,7 +1145,7 @@ resources:
               children:
                 - id: music-room-title
                   type: text
-                  text: "Music Room"
+                  text: ${i18n.layout.dafkjkl3["music-room-title"]}
                   x: 100
                   y: 100
                   style:
@@ -1171,7 +1161,7 @@ resources:
                   children:
                     - id: fjkl2jk
                       type: "text"
-                      text: "Track 1 - Sample Music"
+                      text: ${i18n.layout.dafkjkl3.fjkl2jk}
                       height: 100
                       style:
                         fontSize: 32
@@ -1183,7 +1173,7 @@ resources:
                             fileId: "3ka3s"
                     - id: fjkl2fe23jk
                       type: "text"
-                      text: "Track 2 - Sample Music"
+                      text: ${i18n.layout.dafkjkl3.fjkl2fe23jk}
                       height: 100
                       style:
                         fontSize: 32
@@ -1191,7 +1181,7 @@ resources:
                 - id: "music-room-stop"
                   $when: globalAudios.length > 0
                   type: "text"
-                  text: "Stop Music"
+                  text: ${i18n.layout.dafkjkl3["music-room-stop"]}
                   x: 500
                   y: 500
                   height: 100
@@ -1212,7 +1202,7 @@ resources:
             - id: "Start"
               $when: "variables.isMainMenu == true"
               type: text
-              text: "${i18n.dafkjkl3.Start}"
+              text: ${i18n.layout.dafkjkl3.start}
               height: 40
               width: 200
               eventName: "system"
@@ -1232,7 +1222,7 @@ resources:
             - id: "Save"
               $when: "variables.isMainMenu == false"
               type: text
-              text: "Save"
+              text: ${i18n.layout.dafkjkl3.save}
               height: 40
               width: 200
               eventName: "system"
@@ -1256,7 +1246,7 @@ resources:
                 fill: yellow
             - id: "Load"
               type: text
-              text: "Load"
+              text: ${i18n.layout.dafkjkl3.load}
               height: 40
               width: 200
               eventName: "system"
@@ -1280,7 +1270,7 @@ resources:
                 fill: yellow
             - id: "Options"
               type: text
-              text: "Options"
+              text: ${i18n.layout.dafkjkl3.options}
               height: 40
               width: 200
               eventName: "system"
@@ -1304,7 +1294,7 @@ resources:
                 fill: yellow
             - id: Languages
               type: text
-              text: Languages
+              text: ${i18n.layout.dafkjkl3.languages}
               height: 40
               width: 200
               eventName: "system"
@@ -1328,7 +1318,7 @@ resources:
                 fill: yellow
             - id: "Gallery"
               type: text
-              text: "Gallery"
+              text: ${i18n.layout.dafkjkl3.gallery}
               height: 40
               width: 200
               eventName: "system"
@@ -1352,7 +1342,7 @@ resources:
                 fill: yellow
             - id: "Replay"
               type: text
-              text: "Replay"
+              text: ${i18n.layout.dafkjkl3.replay}
               height: 40
               width: 200
               eventName: "system"
@@ -1376,7 +1366,7 @@ resources:
                 fill: yellow
             - id: "Music Room"
               type: text
-              text: "Music Room"
+              text: ${i18n.layout.dafkjkl3["music-room"]}
               height: 40
               width: 200
               eventName: "system"
@@ -1401,7 +1391,7 @@ resources:
             - id: "Main"
               $when: "variables.isMainMenu == false"
               type: text
-              text: "Main"
+              text: ${i18n.layout.dafkjkl3.main}
               height: 40
               width: 200
               eventName: "system"
@@ -1421,7 +1411,7 @@ resources:
                 fill: yellow
             - id: "back"
               type: text
-              text: "Back"
+              text: ${i18n.layout.dafkjkl3.back}
               height: 40
               width: 200
               eventName: "system"
@@ -1513,7 +1503,7 @@ resources:
           children:
             - id: dialogue-action-button
               type: text
-              text: "Auto"
+              text: ${i18n.layout.fi3l["dialogue-action-button"]}
               x: 0
               y: 0
               width: 120
@@ -1533,7 +1523,7 @@ resources:
                   toggleAutoMode: {}
             - id: dialogue-action-skip
               type: text
-              text: "Skip"
+              text: ${i18n.layout.fi3l["dialogue-action-skip"]}
               x: 0
               y: 0
               width: 120
@@ -1553,7 +1543,7 @@ resources:
                   toggleSkipMode: {}
             - id: dialogue-action-history
               type: text
-              text: "History"
+              text: ${i18n.layout.fi3l["dialogue-action-history"]}
               x: 0
               y: 0
               width: 120
@@ -1574,7 +1564,7 @@ resources:
                     resourceId: historyDialogueLayout
             - id: dialogue-action-options
               type: text
-              text: "Options"
+              text: ${i18n.layout.fi3l["dialogue-action-options"]}
               x: 0
               y: 0
               width: 120
@@ -1600,7 +1590,7 @@ resources:
                     resourceId: dafkjkl3
             - id: dialogue-action-hide
               type: text
-              text: "Hide"
+              text: ${i18n.layout.fi3l["dialogue-action-hide"]}
               x: 0
               y: 0
               width: 120
@@ -1617,7 +1607,7 @@ resources:
                   toggleDialogueUIHidden: {}
             - id: dialogue-action-back
               type: text
-              text: "Back"
+              text: ${i18n.layout.fi3l["dialogue-action-back"]}
               x: 0
               y: 0
               width: 120
@@ -1647,13 +1637,13 @@ resources:
               type: text
               x: 20
               y: 20
-              text: Are you sure to exit the application?
+              text: ${i18n.layout.f3jik32isdf["32sadfj"]}
               style:
                 fontSize: 48
                 fill: "white"
             - id: "38sdfa2"
               type: text
-              text: Yes
+              text: ${i18n.layout.f3jik32isdf["38sdfa2"]}
               y: 120
               x: 50
               style:
@@ -1664,7 +1654,7 @@ resources:
                 fill: yellow
             - id: "e83a"
               type: text
-              text: No
+              text: ${i18n.layout.f3jik32isdf.e83a}
               y: 120
               x: 250
               eventName: "system"
@@ -1708,7 +1698,7 @@ resources:
           children:
             - id: "Start"
               type: text
-              text: "Start"
+              text: ${i18n.layout.j3i8dk32.start}
               height: 40
               width: 200
               eventName: "system"
@@ -1726,7 +1716,7 @@ resources:
                 fill: yellow
             - id: "Load"
               type: text
-              text: "Load"
+              text: ${i18n.layout.j3i8dk32.load}
               height: 40
               width: 200
               eventName: "system"
@@ -1752,7 +1742,7 @@ resources:
                 fill: yellow
             - id: "Options"
               type: text
-              text: "Options"
+              text: ${i18n.layout.j3i8dk32.options}
               height: 40
               width: 200
               eventName: "system"
@@ -1778,7 +1768,7 @@ resources:
                 fill: yellow
             - id: "Exit"
               type: text
-              text: "Exit"
+              text: ${i18n.layout.j3i8dk32.exit}
               height: 40
               width: 200
               eventName: "system"
@@ -1796,7 +1786,7 @@ resources:
                 fill: yellow
         - id: "extra"
           type: text
-          text: "Extra"
+          text: ${i18n.layout.j3i8dk32.extra}
           height: 40
           width: 200
           eventName: "system"

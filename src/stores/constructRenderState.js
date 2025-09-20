@@ -1,5 +1,9 @@
 import { parseAndRender } from "jempl";
 
+const jemplFunctions = {
+  objectValues: (obj) => Object.entries(obj).map(([id, value]) => ({ id, ...value })),
+}
+
 export const createInitialState = () => {
   return {
     elements: [
@@ -381,9 +385,12 @@ export const addDialogue = (
       content: presentationState.dialogue.content,
       lines: presentationState.dialogue.lines
     },
+    i18n: systemStore.selectCurrentLanguagePackKeys(),
   }
 
-  let result = parseAndRender(wrappedTemplate, templateData);
+  let result = parseAndRender(wrappedTemplate, templateData, {
+    functions: jemplFunctions
+  });
   result = parseAndRender(result, {
     i18n: systemStore.selectCurrentLanguagePackKeys(),
   });
@@ -554,9 +561,17 @@ export const addLayout = (
       skipMode: systemStore.selectSkipMode(),
       globalAudios: systemStore.selectGlobalAudios() || [],
       currentLanguagePackId: systemStore.selectCurrentLanguagePackId(),
+      i18n: systemStore.selectCurrentLanguagePackKeys(),
+      languagePacks: systemStore.selectLanguagePacks(),
     }
 
-    let processedContainer = parseAndRender(layoutContainer, templateData);
+    console.log('templateData', templateData);
+
+    let processedContainer = parseAndRender(layoutContainer, templateData, {
+      functions: jemplFunctions
+    });
+    console.log('processedContainer', processedContainer);
+    console.log('systemStore.selectCurrentLanguagePackKeys()', systemStore.selectCurrentLanguagePackKeys());
     processedContainer = parseAndRender(processedContainer, {
       i18n: systemStore.selectCurrentLanguagePackKeys(),
     });
@@ -660,9 +675,16 @@ export const addModals = (
           globalAudios: systemStore.selectGlobalAudios() || [],
           historyDialogue: systemStore.selectHistoryDialogue() || [],
           currentLanguagePackId: systemStore.selectCurrentLanguagePackId(),
+          i18n: systemStore.selectCurrentLanguagePackKeys(),
+          languagePacks: systemStore.selectLanguagePacks(),
         }
 
-        let processedModal = parseAndRender(modalContainer, templateData);
+        console.log('templateData', templateData);
+        console.log('modalContainer', modalContainer);
+
+        let processedModal = parseAndRender(modalContainer, templateData, {
+          functions: jemplFunctions
+        });
         processedModal = parseAndRender(processedModal, {
           i18n: systemStore.selectCurrentLanguagePackKeys(),
         });
