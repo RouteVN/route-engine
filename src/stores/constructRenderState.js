@@ -366,8 +366,6 @@ export const addDialogue = (
 
   const wrappedTemplate = { elements: layout.elements };
 
-  const { defaultPackId, packs } = i18n;
-
   const templateData = {
     variables: systemState?.variables || {},
     saveDataArray: systemStore.selectSaveDataPage({
@@ -387,7 +385,7 @@ export const addDialogue = (
 
   let result = parseAndRender(wrappedTemplate, templateData);
   result = parseAndRender(result, {
-    i18n: packs[defaultPackId].keys || {},
+    i18n: systemStore.selectCurrentLanguagePackKeys(),
   });
   const dialogueElements = result?.elements;
 
@@ -555,9 +553,14 @@ export const addLayout = (
       autoMode: systemStore.selectAutoMode(),
       skipMode: systemStore.selectSkipMode(),
       globalAudios: systemStore.selectGlobalAudios() || [],
+      currentLanguagePackId: systemStore.selectCurrentLanguagePackId(),
     }
 
-    const processedContainer = parseAndRender(layoutContainer, templateData);
+    let processedContainer = parseAndRender(layoutContainer, templateData);
+    processedContainer = parseAndRender(processedContainer, {
+      i18n: systemStore.selectCurrentLanguagePackKeys(),
+    });
+
     const processElementAfterRender = (element) => {
       const processedElement = { ...element };
 
@@ -656,9 +659,13 @@ export const addModals = (
           skipMode: systemStore.selectSkipMode(),
           globalAudios: systemStore.selectGlobalAudios() || [],
           historyDialogue: systemStore.selectHistoryDialogue() || [],
+          currentLanguagePackId: systemStore.selectCurrentLanguagePackId(),
         }
 
-        const processedModal = parseAndRender(modalContainer, templateData);
+        let processedModal = parseAndRender(modalContainer, templateData);
+        processedModal = parseAndRender(processedModal, {
+          i18n: systemStore.selectCurrentLanguagePackKeys(),
+        });
 
         // Then process file references in the result
         const processElementAfterRender = (element) => {

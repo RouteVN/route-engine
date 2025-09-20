@@ -135,6 +135,132 @@ i18n:
         character:
           ajf34a:
             name: "Character One"
+    italianopack:
+      label: Italiano
+      lang: it
+      keys:
+        layout:
+          historyDialogueLayout:
+            fkjl233: "Cronologia"
+            fkjaefewfl233: "Indietro"
+          creditsLayout:
+            x23f329fa: "Crediti"
+            f33h429fa: "Contenuto Crediti 2"
+            iasdkj32: "Contenuto Crediti 3"
+            credit4: "Contenuto Crediti 4"
+            credit5: "Contenuto Crediti 5"
+            credit6: "Contenuto Crediti 6"
+            credit7: "Contenuto Crediti 7"
+            credit8: "Contenuto Crediti 8"
+            credit9: "Contenuto Crediti 9"
+            credit10: "Contenuto Crediti 10"
+            credit11: "Contenuto Crediti 11"
+            credit12: "Contenuto Crediti 12"
+            credit13: "Contenuto Crediti 13"
+            credit14: "Contenuto Crediti 14"
+            credit15: "Contenuto Crediti 15"
+            credit16: "Contenuto Crediti 16"
+            credit17: "Contenuto Crediti 17"
+            credit18: "Contenuto Crediti 18"
+            credit19: "Contenuto Crediti 19"
+            credit20: "Contenuto Crediti 20"
+          dafkjkl3:
+            "9fdadf-options": "Opzioni"
+            "textspeed-id": "Velocità testo: ${variables.textSpeed}"
+            "load-title": "Carica"
+            "save-title": "Salva"
+            "gallery-title": "Galleria"
+            "replay-title": "Replay"
+            "music-room-title": "Sala Musica"
+            "music-room-stop": "Ferma Musica"
+            fjkl2jk: "Traccia 1 - Musica di Esempio"
+            fjkl2fe23jk: "Traccia 2 - Musica di Esempio"
+            "Start": "Inizia"
+            "Save": "Salva"
+            "Load": "Carica"
+            "Options": "Opzioni"
+            "Gallery": "Galleria"
+            "Replay": "Replay"
+            "Music Room": "Sala Musica"
+            "Main": "Principale"
+            "back": "Indietro"
+            "page-prev": "<"
+            "page-next": ">"
+          f3jik32isdf:
+            "32sadfj": "Sei sicuro di voler uscire dall'applicazione?"
+            "38sdfa2": "Sì"
+            "e83a": "No"
+          j3i8dk32:
+            "Start": "Inizia"
+            "Load": "Carica"
+            "Options": "Opzioni"
+            "Exit": "Esci"
+            "extra": "Extra"
+          fi3l:
+            "dialogue-action-button": "Auto"
+            "dialogue-action-skip": "Salta"
+            "dialogue-action-history": "Cronologia"
+            "dialogue-action-options": "Opzioni"
+            "dialogue-action-hide": "Nascondi"
+            "dialogue-action-back": "Indietro"
+        scene:
+          ajfl3a:
+            k3nfgdsai34:
+              line1:
+                fkjl23ras: "Extra 1"
+              line2:
+                afjk293s: "Extra 2"
+              line3:
+                kl4j3sf9: "Extra 3"
+              line4:
+                m2k4jfs8: "Extra 4"
+              line5:
+                p9sj2k3f: "Extra 5"
+            3k3s9sd:
+              line1:
+                qw8r4j2k: "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+              line2:
+                xm3k9s2d: "Due frasi e mezza."
+              line3:
+                zn5k8w3r: "Tre frasi. Tre frasi. Tre frasi."
+              line4:
+                cv7j2k9s: "Quattro frasi. Quattro frasi. Quattro frasi. Quattro frasi."
+              line5:
+                bnm4k3s8: "Cinque frasi. Cinque frasi. Cinque frasi. Cinque frasi."
+              line6:
+                lkj9s3d2: "Sei frasi. Sei frasi. Sei frasi. Sei frasi."
+              line7:
+                poi8k3s7: "Sette frasi. Sette frasi. Sette frasi. Sette frasi."
+              line8:
+                mnb6k2s9: "Otto frasi. Otto frasi. Otto frasi. Otto frasi."
+              line9:
+                vxc4k7s3: "Nove frasi. Nove frasi. Nove frasi. Nove frasi."
+              line10:
+                qaz3k8s2: "Dieci frasi. Dieci frasi. Dieci frasi. Dieci frasi."
+              line11:
+                wsx4k9s1: "Undici frasi. Undici frasi. Undici frasi. Undici frasi."
+              line12:
+                edc5k2s7: "Dodici frasi. Dodici frasi. Dodici frasi. Dodici frasi."
+              line13:
+                rfv6k3s8: "Tredici frasi. Tredici frasi. Tredici frasi. Tredici frasi."
+              line14:
+                tgb7k4s9: "Quattordici frasi. Quattordici frasi. Quattordici frasi. Quattordici frasi."
+            934kjfa3:
+              line1:
+                yhn8k5s1: "Sezione Tre"
+              line2:
+                ujm9k6s2: "Wooooooooo"
+              line3:
+                ik0k7s3: "Fooooooooo"
+              line4:
+                ol1k8s4: "Gooooooooo"
+              line5:
+                p2k9s5: "GlGooooooooo"
+              line6:
+                a3k0s6: "XGooooooooo"
+        character:
+          ajf34a:
+            name: "Personaggio Uno"
       # files:
       #   kfej2: ...
       # patch:
@@ -867,6 +993,63 @@ resources:
                         style:
                           fontSize: 48
                           fill: "#ccc"
+            - id: kfewaf3k29fdsk
+              $when: 'variables.currentMenuTabId == "languages"'
+              type: container
+              children:
+                - id: languages-title
+                  type: text
+                  text: "Languages"
+                  x: 100
+                  y: 100
+                  style:
+                    fontSize: 64
+                    fill: "white"
+                - id: languages-container
+                  type: container
+                  x: 400
+                  y: 300
+                  width: 1400
+                  direction: vertical
+                  gap: 30
+                  children:
+                    - id: languages-item
+                      type: text
+                      text: "English"
+                      height: 40
+                      style:
+                        fontSize: 26
+                        fill: "white"
+                      $if currentLanguagePackId == "eklekfjwalefj":
+                        style:
+                          fontSize: 26
+                          fill: "yellow"
+                      $else:
+                        style:
+                          fontSize: 26
+                          fill: "white"
+                      eventName: "system"
+                      eventPayload:
+                        actions:
+                          setLanguagePackId:
+                            languagePackId: "eklekfjwalefj"
+                    - id: languages-item-32
+                      type: text
+                      text: "Italian"
+                      height: 40
+                      $if currentLanguagePackId == "italianopack":
+                        style:
+                          fontSize: 26
+                          fill: "yellow"
+                      $else:
+                        style:
+                          fontSize: 26
+                          fill: "white"
+                      eventName: "system"
+                      eventPayload:
+                        actions:
+                          setLanguagePackId:
+                            languagePackId: "italianopack"
             - id: "9fe23fdadf"
               $when: 'variables.currentMenuTabId == "gallery"'
               type: "container"
@@ -1029,7 +1212,7 @@ resources:
             - id: "Start"
               $when: "variables.isMainMenu == true"
               type: text
-              text: "Start"
+              text: "${i18n.dafkjkl3.Start}"
               height: 40
               width: 200
               eventName: "system"
@@ -1113,6 +1296,30 @@ resources:
               style:
                 fontSize: 48
                 $if variables.currentMenuTabId == "options":
+                  fill: "yellow"
+                $else:
+                  fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
+            - id: Languages
+              type: text
+              text: Languages
+              height: 40
+              width: 200
+              eventName: "system"
+              eventPayload:
+                actions:
+                  updateVariable:
+                    operations:
+                      - variableId: "currentMenuTabId"
+                        op: "set"
+                        value: "languages"
+              x: 0
+              y: 0
+              style:
+                fontSize: 48
+                $if variables.currentMenuTabId == "languages":
                   fill: "yellow"
                 $else:
                   fill: "white"
