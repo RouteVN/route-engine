@@ -565,13 +565,10 @@ export const addLayout = (
       languagePacks: systemStore.selectLanguagePacks(),
     }
 
-    console.log('templateData', templateData);
 
     let processedContainer = parseAndRender(layoutContainer, templateData, {
       functions: jemplFunctions
     });
-    console.log('processedContainer', processedContainer);
-    console.log('systemStore.selectCurrentLanguagePackKeys()', systemStore.selectCurrentLanguagePackKeys());
     processedContainer = parseAndRender(processedContainer, {
       i18n: systemStore.selectCurrentLanguagePackKeys(),
     });
@@ -679,8 +676,6 @@ export const addModals = (
           languagePacks: systemStore.selectLanguagePacks(),
         }
 
-        console.log('templateData', templateData);
-        console.log('modalContainer', modalContainer);
 
         let processedModal = parseAndRender(modalContainer, templateData, {
           functions: jemplFunctions
