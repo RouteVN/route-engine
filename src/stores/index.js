@@ -41,6 +41,7 @@ export const createSystemStore = (initialIds, projectDataStore) => {
       lineId: initialIds.lineId,
       saveData: {},
       variables: initialVariables,
+      projectDataStore,
     }),
     systemStateSelectorsAndActions,
     {

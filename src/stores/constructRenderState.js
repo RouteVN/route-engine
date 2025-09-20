@@ -1,5 +1,9 @@
 import { parseAndRender } from "jempl";
 
+const jemplFunctions = {
+  objectValues: (obj) => Object.entries(obj).map(([id, value]) => ({ id, ...value })),
+}
+
 export const createInitialState = () => {
   return {
     elements: [
@@ -331,7 +335,7 @@ export const addVisuals = (
  */
 export const addDialogue = (
   { elements },
-  { presentationState, ui, resources, systemState, systemStore },
+  { presentationState, i18n, resources, systemState, systemStore },
 ) => {
   if (!presentationState.dialogue) {
     return;
@@ -366,7 +370,6 @@ export const addDialogue = (
 
   const wrappedTemplate = { elements: layout.elements };
 
-
   const templateData = {
     variables: systemState?.variables || {},
     saveDataArray: systemStore.selectSaveDataPage({
@@ -382,11 +385,15 @@ export const addDialogue = (
       content: presentationState.dialogue.content,
       lines: presentationState.dialogue.lines
     },
+    i18n: systemStore.selectCurrentLanguagePackKeys(),
   }
 
-  console.log('templateData', templateData)
-
-  const result = parseAndRender(wrappedTemplate, templateData);
+  let result = parseAndRender(wrappedTemplate, templateData, {
+    functions: jemplFunctions
+  });
+  result = parseAndRender(result, {
+    i18n: systemStore.selectCurrentLanguagePackKeys(),
+  });
   const dialogueElements = result?.elements;
 
   if (Array.isArray(dialogueElements)) {
@@ -553,9 +560,19 @@ export const addLayout = (
       autoMode: systemStore.selectAutoMode(),
       skipMode: systemStore.selectSkipMode(),
       globalAudios: systemStore.selectGlobalAudios() || [],
+      currentLanguagePackId: systemStore.selectCurrentLanguagePackId(),
+      i18n: systemStore.selectCurrentLanguagePackKeys(),
+      languagePacks: systemStore.selectLanguagePacks(),
     }
 
-    const processedContainer = parseAndRender(layoutContainer, templateData);
+
+    let processedContainer = parseAndRender(layoutContainer, templateData, {
+      functions: jemplFunctions
+    });
+    processedContainer = parseAndRender(processedContainer, {
+      i18n: systemStore.selectCurrentLanguagePackKeys(),
+    });
+
     const processElementAfterRender = (element) => {
       const processedElement = { ...element };
 
@@ -654,9 +671,18 @@ export const addModals = (
           skipMode: systemStore.selectSkipMode(),
           globalAudios: systemStore.selectGlobalAudios() || [],
           historyDialogue: systemStore.selectHistoryDialogue() || [],
+          currentLanguagePackId: systemStore.selectCurrentLanguagePackId(),
+          i18n: systemStore.selectCurrentLanguagePackKeys(),
+          languagePacks: systemStore.selectLanguagePacks(),
         }
 
-        const processedModal = parseAndRender(modalContainer, templateData);
+
+        let processedModal = parseAndRender(modalContainer, templateData, {
+          functions: jemplFunctions
+        });
+        processedModal = parseAndRender(processedModal, {
+          i18n: systemStore.selectCurrentLanguagePackKeys(),
+        });
 
         // Then process file references in the result
         const processElementAfterRender = (element) => {

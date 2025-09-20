@@ -6,6 +6,278 @@ screen:
   height: 1080
   backgroundColor: "#000000"
 
+i18n:
+  defaultPackId: eklekfjwalefj
+  packs:
+    eklekfjwalefj:
+      label: asdfj
+      lang: en
+      keys:
+        layout:
+          historyDialogueLayout:
+            fkjl233: "History"
+            fkjaefewfl233: "Back"
+          creditsLayout:
+            x23f329fa: "Credits"
+            f33h429fa: "Credits Content 2"
+            iasdkj32: "Credits Content 3"
+            credit4: "Credits Content 4"
+            credit5: "Credits Content 5"
+            credit6: "Credits Content 6"
+            credit7: "Credits Content 7"
+            credit8: "Credits Content 8"
+            credit9: "Credits Content 9"
+            credit10: "Credits Content 10"
+            credit11: "Credits Content 11"
+            credit12: "Credits Content 12"
+            credit13: "Credits Content 13"
+            credit14: "Credits Content 14"
+            credit15: "Credits Content 15"
+            credit16: "Credits Content 16"
+            credit17: "Credits Content 17"
+            credit18: "Credits Content 18"
+            credit19: "Credits Content 19"
+            credit20: "Credits Content 20"
+          dafkjkl3:
+            "9fdadf-options": "Options"
+            "textspeed-id": "Text speed: ${variables.textSpeed}"
+            "load-title": "Load"
+            "save-title": "Save"
+            "gallery-title": "Gallery"
+            "replay-title": "Replay"
+            "music-room-title": "Music Room"
+            "music-room-stop": "Stop Music"
+            fjkl2jk: "Track 1 - Sample Music"
+            fjkl2fe23jk: "Track 2 - Sample Music"
+            "start": "Start"
+            "save": "Save"
+            "load": "Load"
+            "options": "Options"
+            "gallery": "Gallery"
+            "replay": "Replay"
+            "music-room": "Music Room"
+            "main": "Main"
+            "back": "Back"
+            "page-prev": "<"
+            "page-next": ">"
+            "languages": "Languages"
+            "english": "English"
+            "italian": "Italian"
+          f3jik32isdf:
+            "32sadfj": "Are you sure to exit the application?"
+            "38sdfa2": "Yes"
+            "e83a": "No"
+          j3i8dk32:
+            "start": "Start"
+            "load": "Load"
+            "options": "Options"
+            "exit": "Exit"
+            "extra": "Extra"
+          fi3l:
+            "dialogue-action-button": "Auto"
+            "dialogue-action-skip": "Skip"
+            "dialogue-action-history": "History"
+            "dialogue-action-options": "Options"
+            "dialogue-action-hide": "Hide"
+            "dialogue-action-back": "Back"
+        scene:
+          ajfl3a:
+            k3nfgdsai34:
+              line1:
+                fkjl23ras: "Extra 1"
+              line2:
+                afjk293s: "Extra 2"
+              line3:
+                kl4j3sf9: "Extra 3"
+              line4:
+                m2k4jfs8: "Extra 4"
+              line5:
+                p9sj2k3f: "Extra 5"
+            3k3s9sd:
+              line1:
+                qw8r4j2k: "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+              line2:
+                xm3k9s2d: "Two and a half sentences."
+              line3:
+                zn5k8w3r: "Three sentences. Three sentences. Three sentences."
+              line4:
+                cv7j2k9s: "Four sentences. Four sentences. Four sentences. Four sentences."
+              line5:
+                bnm4k3s8: "Five sentences. Five sentences. Five sentences. Five sentences."
+              line6:
+                lkj9s3d2: "Six sentences. Six sentences. Six sentences. Six sentences."
+              line7:
+                poi8k3s7: "Seven sentences. Seven sentences. Seven sentences. Seven sentences."
+              line8:
+                mnb6k2s9: "Eight sentences. Eight sentences. Eight sentences. Eight sentences."
+              line9:
+                vxc4k7s3: "Nine sentences. Nine sentences. Nine sentences. Nine sentences."
+              line10:
+                qaz3k8s2: "Ten sentences. Ten sentences. Ten sentences. Ten sentences."
+              line11:
+                wsx4k9s1: "Eleven sentences. Eleven sentences. Eleven sentences. Eleven sentences."
+              line12:
+                edc5k2s7: "Twelve sentences. Twelve sentences. Twelve sentences. Twelve sentences."
+              line13:
+                rfv6k3s8: "Thirteen sentences. Thirteen sentences. Thirteen sentences. Thirteen sentences."
+              line14:
+                tgb7k4s9: "Fourteen sentences. Fourteen sentences. Fourteen sentences. Fourteen sentences."
+            934kjfa3:
+              line1:
+                yhn8k5s1: "Section Three"
+              line2:
+                ujm9k6s2: "Wooooooooo"
+              line3:
+                ik0k7s3: "Fooooooooo"
+              line4:
+                ol1k8s4: "Gooooooooo"
+              line5:
+                p2k9s5: "GlGooooooooo"
+              line6:
+                a3k0s6: "XGooooooooo"
+        character:
+          ajf34a:
+            name: "Character One"
+    italianopack:
+      label: Italiano
+      lang: it
+      keys:
+        layout:
+          historyDialogueLayout:
+            fkjl233: "Cronologia"
+            fkjaefewfl233: "Indietro"
+          creditsLayout:
+            x23f329fa: "Crediti"
+            f33h429fa: "Contenuto Crediti 2"
+            iasdkj32: "Contenuto Crediti 3"
+            credit4: "Contenuto Crediti 4"
+            credit5: "Contenuto Crediti 5"
+            credit6: "Contenuto Crediti 6"
+            credit7: "Contenuto Crediti 7"
+            credit8: "Contenuto Crediti 8"
+            credit9: "Contenuto Crediti 9"
+            credit10: "Contenuto Crediti 10"
+            credit11: "Contenuto Crediti 11"
+            credit12: "Contenuto Crediti 12"
+            credit13: "Contenuto Crediti 13"
+            credit14: "Contenuto Crediti 14"
+            credit15: "Contenuto Crediti 15"
+            credit16: "Contenuto Crediti 16"
+            credit17: "Contenuto Crediti 17"
+            credit18: "Contenuto Crediti 18"
+            credit19: "Contenuto Crediti 19"
+            credit20: "Contenuto Crediti 20"
+          dafkjkl3:
+            "9fdadf-options": "Opzioni"
+            "textspeed-id": "Velocità testo: ${variables.textSpeed}"
+            "load-title": "Carica"
+            "save-title": "Salva"
+            "gallery-title": "Galleria"
+            "replay-title": "Replay"
+            "music-room-title": "Sala Musica"
+            "music-room-stop": "Ferma Musica"
+            fjkl2jk: "Traccia 1 - Musica di Esempio"
+            fjkl2fe23jk: "Traccia 2 - Musica di Esempio"
+            "start": "Inizia"
+            "save": "Salva"
+            "load": "Carica"
+            "options": "Opzioni"
+            "gallery": "Galleria"
+            "replay": "Replay"
+            "music-room": "Sala Musica"
+            "main": "Principale"
+            "back": "Indietro"
+            "page-prev": "<"
+            "page-next": ">"
+            "languages": "Lingue"
+            "english": "Inglese"
+            "italian": "Italiano"
+          f3jik32isdf:
+            "32sadfj": "Sei sicuro di voler uscire dall'applicazione?"
+            "38sdfa2": "Sì"
+            "e83a": "No"
+          j3i8dk32:
+            "start": "Inizia"
+            "load": "Carica"
+            "options": "Opzioni"
+            "exit": "Esci"
+            "extra": "Extra"
+          fi3l:
+            "dialogue-action-button": "Auto"
+            "dialogue-action-skip": "Salta"
+            "dialogue-action-history": "Cronologia"
+            "dialogue-action-options": "Opzioni"
+            "dialogue-action-hide": "Nascondi"
+            "dialogue-action-back": "Indietro"
+        scene:
+          ajfl3a:
+            k3nfgdsai34:
+              line1:
+                fkjl23ras: "Extra 1"
+              line2:
+                afjk293s: "Extra 2"
+              line3:
+                kl4j3sf9: "Extra 3"
+              line4:
+                m2k4jfs8: "Extra 4"
+              line5:
+                p9sj2k3f: "Extra 5"
+            3k3s9sd:
+              line1:
+                qw8r4j2k: "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+              line2:
+                xm3k9s2d: "Due frasi e mezza."
+              line3:
+                zn5k8w3r: "Tre frasi. Tre frasi. Tre frasi."
+              line4:
+                cv7j2k9s: "Quattro frasi. Quattro frasi. Quattro frasi. Quattro frasi."
+              line5:
+                bnm4k3s8: "Cinque frasi. Cinque frasi. Cinque frasi. Cinque frasi."
+              line6:
+                lkj9s3d2: "Sei frasi. Sei frasi. Sei frasi. Sei frasi."
+              line7:
+                poi8k3s7: "Sette frasi. Sette frasi. Sette frasi. Sette frasi."
+              line8:
+                mnb6k2s9: "Otto frasi. Otto frasi. Otto frasi. Otto frasi."
+              line9:
+                vxc4k7s3: "Nove frasi. Nove frasi. Nove frasi. Nove frasi."
+              line10:
+                qaz3k8s2: "Dieci frasi. Dieci frasi. Dieci frasi. Dieci frasi."
+              line11:
+                wsx4k9s1: "Undici frasi. Undici frasi. Undici frasi. Undici frasi."
+              line12:
+                edc5k2s7: "Dodici frasi. Dodici frasi. Dodici frasi. Dodici frasi."
+              line13:
+                rfv6k3s8: "Tredici frasi. Tredici frasi. Tredici frasi. Tredici frasi."
+              line14:
+                tgb7k4s9: "Quattordici frasi. Quattordici frasi. Quattordici frasi. Quattordici frasi."
+            934kjfa3:
+              line1:
+                yhn8k5s1: "Sezione Tre"
+              line2:
+                ujm9k6s2: "Wooooooooo"
+              line3:
+                ik0k7s3: "Fooooooooo"
+              line4:
+                ol1k8s4: "Gooooooooo"
+              line5:
+                p2k9s5: "GlGooooooooo"
+              line6:
+                a3k0s6: "XGooooooooo"
+        character:
+          ajf34a:
+            name: "Personaggio Uno"
+      # files:
+      #   kfej2: ...
+      # patch:
+      #   images:
+      #     alkejf3la:
+      #       fileId: 94lkj289
+      #     f3wklajf32:
+      #       fileId: dmni32
+      #     32rka331:
+      #       fileId: 23jkfa893
+
 resources:
   variables:
     # 🔧 persistence Types
@@ -96,13 +368,13 @@ resources:
           children:
             - id: fkjl233
               type: text
-              text: History
+              text: ${i18n.layout.historyDialogueLayout.fkjl233}
               style:
                 fontSize: 48
                 fill: "white"
             - id: fkjaefewfl233
               type: text
-              text: Back
+              text: ${i18n.layout.historyDialogueLayout.fkjaefewfl233}
               y: 700
               style:
                 fontSize: 48
@@ -181,140 +453,140 @@ resources:
           children:
             - id: x23f329fa
               type: text
-              text: Credits
+              text: ${i18n.layout.creditsLayout.x23f329fa}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: f33h429fa
               type: text
-              text: Credits Content 2
+              text: ${i18n.layout.creditsLayout.f33h429fa}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: iasdkj32
               type: text
-              text: Credits Content 3
+              text: ${i18n.layout.creditsLayout.iasdkj32}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit4
               type: text
-              text: Credits Content 4
+              text: ${i18n.layout.creditsLayout.credit4}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit5
               type: text
-              text: Credits Content 5
+              text: ${i18n.layout.creditsLayout.credit5}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit6
               type: text
-              text: Credits Content 6
+              text: ${i18n.layout.creditsLayout.credit6}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit7
               type: text
-              text: Credits Content 7
+              text: ${i18n.layout.creditsLayout.credit7}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit8
               type: text
-              text: Credits Content 8
+              text: ${i18n.layout.creditsLayout.credit8}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit9
               type: text
-              text: Credits Content 9
+              text: ${i18n.layout.creditsLayout.credit9}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit10
               type: text
-              text: Credits Content 10
+              text: ${i18n.layout.creditsLayout.credit10}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit11
               type: text
-              text: Credits Content 11
+              text: ${i18n.layout.creditsLayout.credit11}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit12
               type: text
-              text: Credits Content 12
+              text: ${i18n.layout.creditsLayout.credit12}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit13
               type: text
-              text: Credits Content 13
+              text: ${i18n.layout.creditsLayout.credit13}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit14
               type: text
-              text: Credits Content 14
+              text: ${i18n.layout.creditsLayout.credit14}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit15
               type: text
-              text: Credits Content 15
+              text: ${i18n.layout.creditsLayout.credit15}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit16
               type: text
-              text: Credits Content 16
+              text: ${i18n.layout.creditsLayout.credit16}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit17
               type: text
-              text: Credits Content 17
+              text: ${i18n.layout.creditsLayout.credit17}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit18
               type: text
-              text: Credits Content 18
+              text: ${i18n.layout.creditsLayout.credit18}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit19
               type: text
-              text: Credits Content 19
+              text: ${i18n.layout.creditsLayout.credit19}
               height: 100
               style:
                 fontSize: 48
                 fill: "white"
             - id: credit20
               type: text
-              text: Credits Content 20
+              text: ${i18n.layout.creditsLayout.credit20}
               height: 100
               style:
                 fontSize: 48
@@ -404,7 +676,7 @@ resources:
               type: "container"
               children:
                 - type: text
-                  text: "Options"
+                  text: ${i18n.layout.dafkjkl3["9fdadf-options"]}
                   x: 100
                   y: 100
                   style:
@@ -421,7 +693,7 @@ resources:
                       type: text
                       x: 20
                       y: 0
-                      text: "Text speed: ${variables.textSpeed}"
+                      text: ${i18n.layout.dafkjkl3["textspeed-id"]}
                       style:
                         fontSize: 24
                         fill: "white"
@@ -449,7 +721,7 @@ resources:
               children:
                 - id: load-title
                   type: text
-                  text: "Load"
+                  text: ${i18n.layout.dafkjkl3["load-title"]}
                   x: 100
                   y: 100
                   style:
@@ -510,7 +782,7 @@ resources:
                   children:
                     - id: page-prev
                       type: text
-                      text: "<"
+                      text: ${i18n.layout.dafkjkl3["page-prev"]}
                       width: 80
                       $if variables.currentSavePageIndex > 0:
                         style:
@@ -561,7 +833,7 @@ resources:
                                         value: "${i}"
                     - id: page-next
                       type: text
-                      text: ">"
+                      text: ${i18n.layout.dafkjkl3["page-next"]}
                       width: 80
                       $if variables.currentSavePageIndex < 8:
                         style:
@@ -589,7 +861,7 @@ resources:
               children:
                 - id: save-title
                   type: text
-                  text: "Save"
+                  text: ${i18n.layout.dafkjkl3["save-title"]}
                   x: 100
                   y: 100
                   style:
@@ -655,7 +927,7 @@ resources:
                   children:
                     - id: page-prev
                       type: text
-                      text: "<"
+                      text: ${i18n.layout.dafkjkl3["page-prev"]}
                       width: 80
                       $if variables.currentSavePageIndex > 0:
                         style:
@@ -706,7 +978,7 @@ resources:
                                         value: "${i}"
                     - id: page-next
                       type: text
-                      text: ">"
+                      text: ${i18n.layout.dafkjkl3["page-next"]}
                       width: 80
                       $if variables.currentSavePageIndex < 8:
                         style:
@@ -727,13 +999,54 @@ resources:
                         style:
                           fontSize: 48
                           fill: "#ccc"
+            - id: kfewaf3k29fdsk
+              $when: 'variables.currentMenuTabId == "languages"'
+              type: container
+              children:
+                - id: languages-title
+                  type: text
+                  text: ${i18n.layout.dafkjkl3.languages}
+                  x: 100
+                  y: 100
+                  style:
+                    fontSize: 64
+                    fill: "white"
+                - id: languages-container
+                  type: container
+                  x: 400
+                  y: 300
+                  width: 1400
+                  direction: vertical
+                  gap: 30
+                  children:
+                    $for languagePack in objectValues(languagePacks):
+                      - id: languages-item-${languagePack.id}
+                        type: text
+                        text: 123 ${languagePack.label}
+                        height: 40
+                        style:
+                          fontSize: 26
+                          fill: "white"
+                        $if currentLanguagePackId == languagePack.id:
+                          style:
+                            fontSize: 26
+                            fill: "yellow"
+                        $else:
+                          style:
+                            fontSize: 26
+                            fill: "white"
+                        eventName: "system"
+                        eventPayload:
+                          actions:
+                            setLanguagePackId:
+                              languagePackId: "${languagePack.id}"
             - id: "9fe23fdadf"
               $when: 'variables.currentMenuTabId == "gallery"'
               type: "container"
               children:
                 - id: gallery-title
                   type: text
-                  text: "Gallery"
+                  text: ${i18n.layout.dafkjkl3["gallery-title"]}
                   x: 100
                   y: 100
                   style:
@@ -798,7 +1111,7 @@ resources:
               children:
                 - id: replay-title
                   type: text
-                  text: "Replay"
+                  text: ${i18n.layout.dafkjkl3["replay-title"]}
                   x: 100
                   y: 100
                   style:
@@ -832,7 +1145,7 @@ resources:
               children:
                 - id: music-room-title
                   type: text
-                  text: "Music Room"
+                  text: ${i18n.layout.dafkjkl3["music-room-title"]}
                   x: 100
                   y: 100
                   style:
@@ -848,7 +1161,7 @@ resources:
                   children:
                     - id: fjkl2jk
                       type: "text"
-                      text: "Track 1 - Sample Music"
+                      text: ${i18n.layout.dafkjkl3.fjkl2jk}
                       height: 100
                       style:
                         fontSize: 32
@@ -860,7 +1173,7 @@ resources:
                             fileId: "3ka3s"
                     - id: fjkl2fe23jk
                       type: "text"
-                      text: "Track 2 - Sample Music"
+                      text: ${i18n.layout.dafkjkl3.fjkl2fe23jk}
                       height: 100
                       style:
                         fontSize: 32
@@ -868,7 +1181,7 @@ resources:
                 - id: "music-room-stop"
                   $when: globalAudios.length > 0
                   type: "text"
-                  text: "Stop Music"
+                  text: ${i18n.layout.dafkjkl3["music-room-stop"]}
                   x: 500
                   y: 500
                   height: 100
@@ -889,7 +1202,7 @@ resources:
             - id: "Start"
               $when: "variables.isMainMenu == true"
               type: text
-              text: "Start"
+              text: ${i18n.layout.dafkjkl3.start}
               height: 40
               width: 200
               eventName: "system"
@@ -909,7 +1222,7 @@ resources:
             - id: "Save"
               $when: "variables.isMainMenu == false"
               type: text
-              text: "Save"
+              text: ${i18n.layout.dafkjkl3.save}
               height: 40
               width: 200
               eventName: "system"
@@ -933,7 +1246,7 @@ resources:
                 fill: yellow
             - id: "Load"
               type: text
-              text: "Load"
+              text: ${i18n.layout.dafkjkl3.load}
               height: 40
               width: 200
               eventName: "system"
@@ -957,7 +1270,7 @@ resources:
                 fill: yellow
             - id: "Options"
               type: text
-              text: "Options"
+              text: ${i18n.layout.dafkjkl3.options}
               height: 40
               width: 200
               eventName: "system"
@@ -979,9 +1292,33 @@ resources:
               hoverStyle:
                 fontSize: 48
                 fill: yellow
+            - id: Languages
+              type: text
+              text: ${i18n.layout.dafkjkl3.languages}
+              height: 40
+              width: 200
+              eventName: "system"
+              eventPayload:
+                actions:
+                  updateVariable:
+                    operations:
+                      - variableId: "currentMenuTabId"
+                        op: "set"
+                        value: "languages"
+              x: 0
+              y: 0
+              style:
+                fontSize: 48
+                $if variables.currentMenuTabId == "languages":
+                  fill: "yellow"
+                $else:
+                  fill: "white"
+              hoverStyle:
+                fontSize: 48
+                fill: yellow
             - id: "Gallery"
               type: text
-              text: "Gallery"
+              text: ${i18n.layout.dafkjkl3.gallery}
               height: 40
               width: 200
               eventName: "system"
@@ -1005,7 +1342,7 @@ resources:
                 fill: yellow
             - id: "Replay"
               type: text
-              text: "Replay"
+              text: ${i18n.layout.dafkjkl3.replay}
               height: 40
               width: 200
               eventName: "system"
@@ -1029,7 +1366,7 @@ resources:
                 fill: yellow
             - id: "Music Room"
               type: text
-              text: "Music Room"
+              text: ${i18n.layout.dafkjkl3["music-room"]}
               height: 40
               width: 200
               eventName: "system"
@@ -1054,7 +1391,7 @@ resources:
             - id: "Main"
               $when: "variables.isMainMenu == false"
               type: text
-              text: "Main"
+              text: ${i18n.layout.dafkjkl3.main}
               height: 40
               width: 200
               eventName: "system"
@@ -1074,7 +1411,7 @@ resources:
                 fill: yellow
             - id: "back"
               type: text
-              text: "Back"
+              text: ${i18n.layout.dafkjkl3.back}
               height: 40
               width: 200
               eventName: "system"
@@ -1166,7 +1503,7 @@ resources:
           children:
             - id: dialogue-action-button
               type: text
-              text: "Auto"
+              text: ${i18n.layout.fi3l["dialogue-action-button"]}
               x: 0
               y: 0
               width: 120
@@ -1186,7 +1523,7 @@ resources:
                   toggleAutoMode: {}
             - id: dialogue-action-skip
               type: text
-              text: "Skip"
+              text: ${i18n.layout.fi3l["dialogue-action-skip"]}
               x: 0
               y: 0
               width: 120
@@ -1206,7 +1543,7 @@ resources:
                   toggleSkipMode: {}
             - id: dialogue-action-history
               type: text
-              text: "History"
+              text: ${i18n.layout.fi3l["dialogue-action-history"]}
               x: 0
               y: 0
               width: 120
@@ -1227,7 +1564,7 @@ resources:
                     resourceId: historyDialogueLayout
             - id: dialogue-action-options
               type: text
-              text: "Options"
+              text: ${i18n.layout.fi3l["dialogue-action-options"]}
               x: 0
               y: 0
               width: 120
@@ -1253,7 +1590,7 @@ resources:
                     resourceId: dafkjkl3
             - id: dialogue-action-hide
               type: text
-              text: "Hide"
+              text: ${i18n.layout.fi3l["dialogue-action-hide"]}
               x: 0
               y: 0
               width: 120
@@ -1270,7 +1607,7 @@ resources:
                   toggleDialogueUIHidden: {}
             - id: dialogue-action-back
               type: text
-              text: "Back"
+              text: ${i18n.layout.fi3l["dialogue-action-back"]}
               x: 0
               y: 0
               width: 120
@@ -1300,13 +1637,13 @@ resources:
               type: text
               x: 20
               y: 20
-              text: Are you sure to exit the application?
+              text: ${i18n.layout.f3jik32isdf["32sadfj"]}
               style:
                 fontSize: 48
                 fill: "white"
             - id: "38sdfa2"
               type: text
-              text: Yes
+              text: ${i18n.layout.f3jik32isdf["38sdfa2"]}
               y: 120
               x: 50
               style:
@@ -1317,7 +1654,7 @@ resources:
                 fill: yellow
             - id: "e83a"
               type: text
-              text: No
+              text: ${i18n.layout.f3jik32isdf.e83a}
               y: 120
               x: 250
               eventName: "system"
@@ -1361,7 +1698,7 @@ resources:
           children:
             - id: "Start"
               type: text
-              text: "Start"
+              text: ${i18n.layout.j3i8dk32.start}
               height: 40
               width: 200
               eventName: "system"
@@ -1379,7 +1716,7 @@ resources:
                 fill: yellow
             - id: "Load"
               type: text
-              text: "Load"
+              text: ${i18n.layout.j3i8dk32.load}
               height: 40
               width: 200
               eventName: "system"
@@ -1405,7 +1742,7 @@ resources:
                 fill: yellow
             - id: "Options"
               type: text
-              text: "Options"
+              text: ${i18n.layout.j3i8dk32.options}
               height: 40
               width: 200
               eventName: "system"
@@ -1431,7 +1768,7 @@ resources:
                 fill: yellow
             - id: "Exit"
               type: text
-              text: "Exit"
+              text: ${i18n.layout.j3i8dk32.exit}
               height: 40
               width: 200
               eventName: "system"
@@ -1449,7 +1786,7 @@ resources:
                 fill: yellow
         - id: "extra"
           type: text
-          text: "Extra"
+          text: ${i18n.layout.j3i8dk32.extra}
           height: 40
           width: 200
           eventName: "system"
@@ -1569,14 +1906,14 @@ story:
                   mode: adv
                   layoutId: fi3l
                   content:
-                    - text: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line1.qw8r4j2k}
                   characterId: ajf34a
             - id: line2
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: Two and a half sentences.
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line2.xm3k9s2d}
                   characterId: ajf34a
                 voice:
                   fileId: xj323
@@ -1586,7 +1923,7 @@ story:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: "Three sentences. Three sentences. Three sentences."
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line3.zn5k8w3r}
                   characterId: ajf34a
                 voice:
                   fileId: 39csl
@@ -1596,77 +1933,77 @@ story:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: "Four sentences. Four sentences. Four sentences. Four sentences."
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line4.cv7j2k9s}
                   characterId: ajf34a
             - id: line5
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: "Five sentences. Five sentences. Five sentences. Five sentences."
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line5.bnm4k3s8}
                   characterId: ajf34a
             - id: line6
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: "Six sentences. Six sentences. Six sentences. Six sentences."
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line6.lkj9s3d2}
                   characterId: ajf34a
             - id: line7
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: "Seven sentences. Seven sentences. Seven sentences. Seven sentences."
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line7.poi8k3s7}
                   characterId: ajf34a
             - id: line8
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: "Eight sentences. Eight sentences. Eight sentences. Eight sentences."
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line8.mnb6k2s9}
                   characterId: ajf34a
             - id: line9
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: "Nine sentences. Nine sentences. Nine sentences. Nine sentences."
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line9.vxc4k7s3}
                   characterId: ajf34a
             - id: line10
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: "Ten sentences. Ten sentences. Ten sentences. Ten sentences."
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line10.qaz3k8s2}
                   characterId: ajf34a
             - id: line11
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: "Eleven sentences. Eleven sentences. Eleven sentences. Eleven sentences."
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line11.wsx4k9s1}
                   characterId: ajf34a
             - id: line12
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: "Twelve sentences. Twelve sentences. Twelve sentences. Twelve sentences."
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line12.edc5k2s7}
                   characterId: ajf34a
             - id: line13
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: "Thirteen sentences. Thirteen sentences. Thirteen sentences. Thirteen sentences."
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line13.rfv6k3s8}
                   characterId: ajf34a
             - id: line14
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: "Fourteen sentences. Fourteen sentences. Fourteen sentences. Fourteen sentences."
+                    - text: ${i18n.scene.ajfl3a.3k3s9sd.line14.tgb7k4s9}
                   characterId: ajf34a
             - id: line15
               actions:
@@ -1684,42 +2021,42 @@ story:
                   mode: adv
                   layoutId: fi3l
                   content:
-                    - text: Section Three
+                    - text: ${i18n.scene.ajfl3a.934kjfa3.line1.yhn8k5s1}
                   characterId: ajf34a
             - id: line2
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: Wooooooooo
+                    - text: ${i18n.scene.ajfl3a.934kjfa3.line2.ujm9k6s2}
                   characterId: ajf34a
             - id: line3
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: Fooooooooo
+                    - text: ${i18n.scene.ajfl3a.934kjfa3.line3.ik0k7s3}
                   characterId: ajf34a
             - id: line4
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: Gooooooooo
+                    - text: ${i18n.scene.ajfl3a.934kjfa3.line4.ol1k8s4}
                   characterId: ajf34a
             - id: line5
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: GlGooooooooo
+                    - text: ${i18n.scene.ajfl3a.934kjfa3.line5.p2k9s5}
                   characterId: ajf34a
             - id: line6
               actions:
                 dialogue:
                   layoutId: fi3l
                   content:
-                    - text: XGooooooooo
+                    - text: ${i18n.scene.ajfl3a.934kjfa3.line6.a3k0s6}
                   characterId: ajf34a
             - id: line7
               actions:
@@ -1739,19 +2076,19 @@ story:
                   layoutId: 3jfksdjkadf
                   mode: nvl
                   content:
-                    - text: Extra 1
+                    - text: ${i18n.scene.ajfl3a.k3nfgdsai34.line1.fkjl23ras}
             - id: line2
               actions:
                 dialogue:
                   mode: nvl
                   content:
-                    - text: Extra 2
+                    - text: ${i18n.scene.ajfl3a.k3nfgdsai34.line2.afjk293s}
             - id: line3
               actions:
                 dialogue:
                   mode: nvl
                   content:
-                    - text: Extra 3
+                    - text: ${i18n.scene.ajfl3a.k3nfgdsai34.line3.kl4j3sf9}
 
             - id: line4
               actions:
@@ -1759,14 +2096,14 @@ story:
                   mode: nvl
                   clear: true
                   content:
-                    - text: Extra 4
+                    - text: ${i18n.scene.ajfl3a.k3nfgdsai34.line4.m2k4jfs8}
 
             - id: line5
               actions:
                 dialogue:
                   mode: nvl
                   content:
-                    - text: Extra 5
+                    - text: ${i18n.scene.ajfl3a.k3nfgdsai34.line5.p9sj2k3f}
             - id: line6
               actions:
                 sectionTransition:

@@ -3,7 +3,10 @@ export const createInitialState = ({
   lineId,
   saveData,
   variables,
+  projectDataStore,
 }) => {
+  const i18nData = projectDataStore.selectI18n();
+
   const state = {
     pendingEffects: [],
     variables,
@@ -12,6 +15,7 @@ export const createInitialState = ({
     dialogueUIHidden: false,
     autoMode: false,
     skipMode: false,
+    currentLanguagePackId: i18nData?.defaultPackId,
     history: {
       entries: [],
       // entries: [{
@@ -185,6 +189,21 @@ export const selectVariables = ({ state }) => {
 
 export const selectGlobalAudios = ({ state }) => {
   return state.globalAudios;
+};
+
+export const selectCurrentLanguagePackId = ({ state }) => {
+  return state.currentLanguagePackId;
+};
+
+export const selectLanguagePacks = ({ state, projectDataStore }) => {
+  const i18nData = projectDataStore.selectI18n();
+  return i18nData.packs;
+};
+
+export const selectCurrentLanguagePackKeys = ({ state, projectDataStore }) => {
+  const i18nData = projectDataStore.selectI18n();
+  const currentPackId = state.currentLanguagePackId;
+  return i18nData.packs[currentPackId].keys;
 };
 
 export const selectDeviceVariables = ({ state, projectDataStore }) => {
@@ -744,6 +763,14 @@ export const clearLastModal = ({ state }, payload) => {
     });
   }
 }
+
+export const setLanguagePackId = ({ state }, payload) => {
+  const { languagePackId } = payload;
+  state.currentLanguagePackId = languagePackId;
+  state.pendingEffects.push({
+    name: "render",
+  });
+};
 
 export const handleCompleted = ({ state }) => {
   const nextConfig = selectNextConfig({ state });
