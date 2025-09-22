@@ -11,92 +11,139 @@ import RouteGraphics, {
   KeyframeTransitionPlugin,
   createAssetBufferManager,
 } from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.2-rc30/+esm";
+import { fileTypeFromBuffer } from 'https://cdn.jsdelivr.net/npm/file-type@19/+esm';
+
+async function parseVNBundle(arrayBuffer) {
+  const uint8View = new Uint8Array(arrayBuffer);
+  const headerSize = 9 + Number(new DataView(uint8View.buffer, 1, 8).getBigUint64(0));
+  const index = JSON.parse(new TextDecoder().decode(uint8View.subarray(9, headerSize)));
+  const assets = {};
+  let instructions = null;
+  for (const [id, metadata] of Object.entries(index)) {
+    const content = uint8View.subarray(metadata.start + headerSize, metadata.end + headerSize + 1);
+    if (id === 'instructions') {
+      instructions = JSON.parse(new TextDecoder().decode(content));
+    } else {
+      const fileType = await fileTypeFromBuffer(content);
+      const detectedType = fileType?.mime;
+      assets[`file:${id}`] = {
+        url: URL.createObjectURL(new Blob([content], { type: detectedType })),
+        type: detectedType,
+        size: content.byteLength
+      };
+    }
+  }
+  return { assets, instructions };
+}
 
 const jsonData = yaml.load(window.yamlContent);
 
 const init = async () => {
-  const assets = {
-    "file:lakjf3lka": {
-      url: "/public/background-1-1.png",
-      type: "image/png",
-    },
-    "file:dmni32": {
-      url: "/public/background-1-2.png",
-      type: "image/png",
-    },
-    "file:23jkfa893": {
-      url: "/public/background-2-1.png",
-      type: "image/png",
-    },
-    "file:la3lka": {
-      url: "/public/circle-blue.png",
-      type: "image/png",
-    },
-    "file:a32kf3": {
-      url: "/public/circle-green.png",
-      type: "image/png",
-    },
-    "file:x342fga": {
-      url: "/public/circle-green-small.png",
-      type: "image/png",
-    },
-    "file:94lkj289": {
-      url: "/public/logo1.png",
-      type: "image/png",
-    },
-    "file:3kda832": {
-      url: "/public/dialogue-box.png",
-      type: "image/png",
-    },
-    "file:3ka3s": {
-      url: "/public/bgm-1.mp3",
-      type: "audio/mpeg",
-    },
-    "file:xk393": {
-      url: "/public/bgm-2.mp3",
-      type: "audio/mpeg",
-    },
-    "file:xj323": {
-      url: "/public/sfx-1.mp3",
-      type: "audio/mpeg",
-    },
-    "file:39csl": {
-      url: "/public/sfx-2.wav",
-      type: "audio/wav",
-    },
-    "file:vertical_hover_bar": {
-      url: "/public/vertical_hover_bar.png",
-      type: "image/png"
-    },
-    "file:vertical_hover_thumb": {
-      url: "/public/vertical_hover_thumb.png",
-      type: "image/png"
-    },
-    "file:vertical_idle_bar": {
-      url: "/public/vertical_idle_bar.png",
-      type: "image/png"
-    },
-    "file:vertical_idle_thumb": {
-      url: "/public/vertical_idle_thumb.png",
-      type: "image/png"
-    },
-    "file:horizontal_hover_bar": {
-      url: "/public/horizontal_hover_bar.png",
-      type: "image/png"
-    },
-    "file:horizontal_hover_thumb": {
-      url: "/public/horizontal_hover_thumb.png",
-      type: "image/png"
-    },
-    "file:horizontal_idle_bar": {
-      url: "/public/horizontal_idle_bar.png",
-      type: "image/png"
-    },
-    "file:horizontal_idle_thumb": {
-      url: "/public/horizontal_idle_thumb.png",
-      type: "image/png"
+  // Load and parse VNBundle file
+  const response = await fetch('/public/test.vnbundle');
+  if (!response.ok) throw new Error(`Failed to fetch VNBundle: ${response.statusText}`);
+  const { assets: vnbundleAssets, instructions: vnbundleInstructions } = await parseVNBundle(await response.arrayBuffer());
+  
+  // Merge VNBundle instructions into existing jsonData structure
+  // This handles the conversion from VNBundle's nested format to the flat format expected by the engine
+  if (vnbundleInstructions && jsonData.resources) {
+    // Helper function to process and flatten nested VNBundle items
+    // VNBundle uses {items: {id: data}} structure, we need flat {id: data} structure
+    const processItems = (source, target, filter, mapper) => {
+      if (!source?.items || !target) return;
+      Object.entries(source.items).forEach(([id, data]) => {
+        if (filter(data)) target[id] = mapper(id, data);
+      });
+    };
+    
+    // Process images: filter out non-image types (like folders) and map to simple {fileId} structure
+    processItems(vnbundleInstructions.images, jsonData.resources.images,
+      d => d.type === 'image' && d.fileId,
+      (_, d) => ({ fileId: d.fileId }));
+    
+    // Process characters: handle nested sprites structure
+    // VNBundle sprites can be either {items: {...}} or direct object
+    processItems(vnbundleInstructions.characters, jsonData.resources.characters,
+      d => d.type !== 'folder',
+      (_, d) => {
+        const sprites = {};
+        if (d.sprites?.items) {
+          // Flatten nested sprites.items structure
+          Object.entries(d.sprites.items).forEach(([sid, sd]) => {
+            if (sd.type === 'image') sprites[sid] = { fileId: sd.fileId };
+          });
+        } else if (d.sprites) Object.assign(sprites, d.sprites);
+        return { variables: d.variables, sprites };
+      });
+    
+    // Process transforms: extract x,y coordinates only
+    processItems(vnbundleInstructions.transforms, jsonData.resources.transforms,
+      d => d.type !== 'folder',
+      (_, d) => ({ x: d.x, y: d.y }));
+    
+    // Process animations: keep name and properties
+    processItems(vnbundleInstructions.animations, jsonData.resources.animations,
+      d => d.type !== 'folder',
+      (_, d) => ({ name: d.name, properties: d.properties }));
+    
+    // Process layouts: complex conversion from tree structure to flat array
+    // VNBundle uses {items: {id: data}, tree: [{id, children}]} structure
+    // Engine expects flat array with nested children
+    if (vnbundleInstructions.layouts?.items) {
+      if (!jsonData.resources.layouts) jsonData.resources.layouts = {};
+      Object.entries(vnbundleInstructions.layouts.items).forEach(([layoutId, layoutData]) => {
+        if (layoutData.type === 'layout') {
+          let elements = [];
+          if (layoutData.elements?.tree && layoutData.elements.items) {
+            // Recursively build element tree from VNBundle's split tree/items structure
+            const buildElements = (node) => {
+              const itemData = layoutData.elements.items[node.id];
+              if (!itemData) return null;
+              const element = { id: node.id, ...itemData };
+              if (node.children?.length) element.children = node.children.map(buildElements).filter(Boolean);
+              return element;
+            };
+            elements = layoutData.elements.tree.map(buildElements).filter(Boolean);
+          } else if (Array.isArray(layoutData.elements)) elements = layoutData.elements;
+          jsonData.resources.layouts[layoutId] = {
+            name: layoutData.name,
+            mode: layoutData.layoutType === 'dialogue' ? 'adv' : layoutData.layoutType,
+            elements
+          };
+        }
+      });
     }
-  };
+  }
+  // Process scenes: convert VNBundle's nested scene/section/line structure
+  // VNBundle: scenes.items -> sections.items -> lines.tree/items
+  // Engine: scenes -> sections -> lines array
+  if (jsonData.story?.scenes && vnbundleInstructions.scenes?.items) {
+    Object.entries(vnbundleInstructions.scenes.items).forEach(([sceneId, sceneData]) => {
+      const scene = { name: sceneData.name, initialSectionId: null, sections: {} };
+      if (sceneData.sections?.items) Object.entries(sceneData.sections.items).forEach(([sectionId, sectionData]) => {
+        scene.sections[sectionId] = { name: sectionData.name, lines: [] };
+        // Convert lines from tree/items structure to flat array
+        // tree contains order, items contains data
+        sectionData.lines?.tree?.forEach(item => {
+          const line = sectionData.lines.items[item.id];
+          if (line) {
+            // line.presentation contains the actual actions
+            const actions = line.presentation;
+            // Ensure dialogue has mode field (defaults to 'adv' if missing)
+            if (actions?.dialogue && !actions.dialogue.mode) actions.dialogue.mode = 'adv';
+            scene.sections[sectionId].lines.push({ id: item.id, actions });
+          }
+        });
+        // Set first section as initial if not already set
+        if (!scene.initialSectionId) scene.initialSectionId = sectionId;
+      });
+      jsonData.story.scenes[sceneId] = scene;
+    });
+    // Set scene-prologue as initial scene if it exists
+    if (jsonData.story.scenes['scene-prologue']) jsonData.story.initialSceneId = 'scene-prologue';
+  }
+
+  const assets = vnbundleAssets;
 
   const assetBufferManager = createAssetBufferManager();
   await assetBufferManager.load(assets);
@@ -217,6 +264,12 @@ const init = async () => {
     loadAssets: app.loadAssets
   });
 
+  console.log({
+    projectData: jsonData,
+    ticker: app._app.ticker,
+    captureElement,
+    loadAssets: app.loadAssets
+  })
 };
 
 await init();
