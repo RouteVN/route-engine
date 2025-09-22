@@ -76,15 +76,28 @@ const init = async () => {
         return { variables: d.variables, sprites };
       });
     
-    // Process transforms: extract x,y coordinates only
+    // Process transforms: extract x,y coordinates only, ensure they are numbers
     processItems(vnbundleInstructions.transforms, jsonData.resources.transforms,
       d => d.type !== 'folder',
-      (_, d) => ({ x: d.x, y: d.y }));
+      (_, d) => ({ 
+        x: typeof d.x === 'string' ? parseFloat(d.x) : d.x, 
+        y: typeof d.y === 'string' ? parseFloat(d.y) : d.y 
+      }));
     
     // Process animations: keep name and properties
     processItems(vnbundleInstructions.animations, jsonData.resources.animations,
       d => d.type !== 'folder',
       (_, d) => ({ name: d.name, properties: d.properties }));
+    
+    // Process audio/bgm/sfx resources
+    ['audio', 'bgm', 'sfx'].forEach(resourceType => {
+      if (vnbundleInstructions[resourceType]?.items && jsonData.resources[resourceType]) {
+        processItems(vnbundleInstructions[resourceType], jsonData.resources[resourceType],
+          d => d.type !== 'folder' && d.fileId,
+          (_, d) => ({ fileId: d.fileId }));
+      }
+    });
+    
     
     // Process layouts: complex conversion from tree structure to flat array
     // VNBundle uses {items: {id: data}, tree: [{id, children}]} structure
@@ -128,9 +141,10 @@ const init = async () => {
           const line = sectionData.lines.items[item.id];
           if (line) {
             // line.presentation contains the actual actions
-            const actions = line.presentation;
+            const actions = line.presentation || {};
             // Ensure dialogue has mode field (defaults to 'adv' if missing)
-            if (actions?.dialogue && !actions.dialogue.mode) actions.dialogue.mode = 'adv';
+            if (actions.dialogue && !actions.dialogue.mode) actions.dialogue.mode = 'adv';
+            
             scene.sections[sectionId].lines.push({ id: item.id, actions });
           }
         });
@@ -143,7 +157,95 @@ const init = async () => {
     if (jsonData.story.scenes['scene-prologue']) jsonData.story.initialSceneId = 'scene-prologue';
   }
 
+  // Add screen layout if missing (needed for click events to work)
+  if (!jsonData.resources) jsonData.resources = {};
+  if (!jsonData.resources.layouts) jsonData.resources.layouts = {};
+  if (!jsonData.resources.layouts.storyScreenLayout) {
+    jsonData.resources.layouts.storyScreenLayout = {
+      name: "Story Screen Background",
+      elements: [{
+        id: "story-screen-bg",
+        type: "rect",
+        x: 0,
+        y: 0,
+        width: 1920,
+        height: 1080,
+        fill: "#000000",
+        clickEventName: "system",
+        clickEventPayload: { actions: { nextLine: {} } }
+      }]
+    };
+  }
+  
+  // Convert layout sprite imageId to url format and text typographyId to style
+  // VNBundle uses imageId: "xxx", engine expects url: "file:xxx"
+  // VNBundle uses typographyId for text, engine expects inline style object
+  if (jsonData.resources?.layouts) {
+    const convertElements = (element) => {
+      if (element.type === 'sprite' && element.imageId) {
+        // Find the fileId for this imageId
+        const imageResource = jsonData.resources.images?.[element.imageId];
+        if (imageResource?.fileId) {
+          element.url = `file:${imageResource.fileId}`;
+          delete element.imageId;
+        }
+      }
+      // Also handle hoverImageId
+      if (element.type === 'sprite' && element.hoverImageId) {
+        const hoverImageResource = jsonData.resources.images?.[element.hoverImageId];
+        if (hoverImageResource?.fileId) {
+          element.hoverUrl = `file:${hoverImageResource.fileId}`;
+          delete element.hoverImageId;
+        }
+      }
+      if (element.children) {
+        element.children.forEach(convertElements);
+      }
+    };
+    
+    Object.values(jsonData.resources.layouts).forEach(layout => {
+      if (layout.elements) {
+        layout.elements.forEach(convertElements);
+      }
+    });
+  }
+  
+  // Add screen action to first line if missing
+  if (jsonData.story?.scenes) {
+    Object.values(jsonData.story.scenes).forEach(scene => {
+      if (scene.sections) {
+        Object.values(scene.sections).forEach(section => {
+          if (section.lines?.length > 0 && section.lines[0].actions) {
+            // Add screen layout to first line if not present
+            if (!section.lines[0].actions.screen) {
+              section.lines[0].actions.screen = {
+                resourceId: "storyScreenLayout",
+                resourceType: "layout"
+              };
+            }
+          }
+        });
+      }
+    });
+  }
+  
   const assets = vnbundleAssets;
+  
+  
+  // Process audio/bgm/sfx resources from VNBundle
+  if (vnbundleInstructions) {
+    // Process audio resources
+    ['audio', 'bgm', 'sfx'].forEach(resourceType => {
+      if (vnbundleInstructions[resourceType]?.items) {
+        if (!jsonData.resources[resourceType]) jsonData.resources[resourceType] = {};
+        Object.entries(vnbundleInstructions[resourceType].items).forEach(([audioId, audioData]) => {
+          if (audioData.type !== 'folder' && audioData.fileId) {
+            jsonData.resources[resourceType][audioId] = { fileId: audioData.fileId };
+          }
+        });
+      }
+    });
+  }
 
   const assetBufferManager = createAssetBufferManager();
   await assetBufferManager.load(assets);
