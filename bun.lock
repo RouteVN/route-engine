@@ -4,7 +4,7 @@
     "": {
       "dependencies": {
         "immer": "^10.1.1",
-        "jempl": "0.3.2-rc2",
+        "jempl": "1.0.0-rc1",
         "js-yaml": "^4.1.0",
         "puty": "^0.0.4-rc2",
       },
@@ -222,7 +222,7 @@
 
     "jackspeak": ["jackspeak@3.4.3", "", { "dependencies": { "@isaacs/cliui": "^8.0.2" }, "optionalDependencies": { "@pkgjs/parseargs": "^0.11.0" } }, "sha512-OGlZQpz2yfahA/Rd1Y8Cd9SIEsqvXkLVoSw/cgwhnhFMDbsQFeZYoJJ7bIZBS9BcamUW96asq/npPWugM+RQBw=="],
 
-    "jempl": ["jempl@0.3.2-rc2", "", {}, "sha512-8t6P7vO46Er0cpG00nYlmBIZw/5MhKCNnE0WBm+ZWMaGqi/MCexe1/Bl7SlbFQjgKsFXVC3cdT/K+4PD0XHUVg=="],
+    "jempl": ["jempl@1.0.0-rc1", "", {}, "sha512-dCZmzGaut1fnnbmZRxfMBS+eCD8l6YiJymk1tm0sf4YIEqts9bx46E09TmB9t8dEZ8IBzdS470yT+3wDJhKHDw=="],
 
     "js-tokens": ["js-tokens@9.0.1", "", {}, "sha512-mxa9E9ITFOt0ban3j6L5MpjwegGz6lBQmM1IJkWeBZGcMxto50+eWdjC/52xDbS2vy0k7vIMK0Fe2wfL9OQSpQ=="],
 
