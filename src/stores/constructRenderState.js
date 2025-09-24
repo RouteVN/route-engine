@@ -335,7 +335,7 @@ export const addVisuals = (
  */
 export const addDialogue = (
   { elements },
-  { presentationState, i18n, resources, systemState, systemStore },
+  { presentationState, resources, systemState, systemStore },
 ) => {
   if (!presentationState.dialogue) {
     return;
@@ -385,6 +385,7 @@ export const addDialogue = (
       content: presentationState.dialogue.content,
       lines: presentationState.dialogue.lines
     },
+    currentLanguagePackId: systemStore.selectCurrentLanguagePackId(),
     i18n: systemStore.selectCurrentLanguagePackKeys(),
   }
 
