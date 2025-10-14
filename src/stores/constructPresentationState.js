@@ -132,7 +132,11 @@ export const character = (state, presentation) => {
   }
 
   // Simply replace the entire character state
-  state.character = JSON.parse(JSON.stringify(presentation.character));
+  if (!presentation.character.items) {
+    delete state.character;
+  }
+
+  state.character = structuredClone(presentation.character);
 };
 
 /**
