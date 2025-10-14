@@ -55,7 +55,7 @@ export const addScreen = (
  */
 export const addBackgrundOrCg = (
   { elements, transitions },
-  { presentationState, resources, ui, resolveFile },
+  { presentationState, resources, resolveFile },
 ) => {
   if (presentationState.background) {
     // Find the story container
@@ -150,7 +150,7 @@ export const addCharacters = (
     const storyContainer = elements.find(el => el.id === 'story');
     if (!storyContainer) return;
 
-    const items = presentationState.character.items;
+    const items = presentationState.character.items || [];
 
     for (const item of items) {
       const { transformId, sprites } = item;
@@ -382,8 +382,8 @@ export const addDialogue = (
       character: {
         name: character?.name || "",
       },
-      content: presentationState.dialogue.content,
-      lines: presentationState.dialogue.lines
+      content: presentationState.dialogue?.content || [],
+      lines: presentationState.dialogue?.lines || []
     },
     currentLanguagePackId: systemStore.selectCurrentLanguagePackId(),
     i18n: systemStore.selectCurrentLanguagePackKeys(),
