@@ -454,6 +454,9 @@ export const addBgm = (
       id: "bgm",
       type: "audio",
       url: resolveFile(audio.fileId),
+      loop: audio.loop ?? true,
+      volume: audio.volume ?? 0.5,
+      delay: audio.delay
     });
   }
 };
@@ -474,6 +477,9 @@ export const addSfx = (
         id: item.id,
         type: "audio",
         url: resolveFile(audio.fileId),
+        loop: item.loop ?? false,
+        volume: item.volume ?? 0.5,
+        delay: item.delay
       });
     }
   }
