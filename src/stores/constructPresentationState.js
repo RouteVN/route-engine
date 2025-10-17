@@ -100,13 +100,10 @@ export const dialogue = (state, presentation) => {
   }
 
   if (state.dialogue.mode === 'adv') {
-    Object.assign(state.dialogue, presentation.dialogue);
-    if (
-      presentation.dialogue.character &&
-      !presentation.dialogue.character.characterName &&
-      state.dialogue.character
-    ) {
-      delete state.dialogue.character.characterName;
+    state.dialogue.content = presentation.dialogue.content;
+    state.dialogue.characterId = presentation.dialogue.characterId;
+    if (state.dialogue.clear) {
+      delete state.dialogue;
     }
   }
 
