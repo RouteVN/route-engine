@@ -97,12 +97,13 @@ export const dialogue = (state, presentation) => {
         };
       }
     }
+    return;
   }
 
   if (state.dialogue.mode === 'adv') {
     state.dialogue.content = presentation.dialogue.content;
     state.dialogue.characterId = presentation.dialogue.characterId;
-    if (state.dialogue.clear) {
+    if (presentation.dialogue.clear) {
       delete state.dialogue;
     }
   }
