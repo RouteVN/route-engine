@@ -8,12 +8,16 @@ import { base64ToArrayBuffer } from "./util.js";
 import * as presentationHandlers from "./stores/constructPresentationState.js";
 import * as systemHandlers from "./stores/system.store.js";
 
-import createTimer from './createTimer.js';
-import * as effectHandlers from './stores/effectHandlers.js';
+import createTimer from "./createTimer.js";
+import * as effectHandlers from "./stores/effectHandlers.js";
 
 // Action categorization constants
-const PRESENTATION_ACTIONS = Object.keys(presentationHandlers).filter(key => key !== 'default' && key !== 'createInitialState');
-const SYSTEM_ACTIONS = Object.keys(systemHandlers).filter(key => !key.startsWith('select') && key !== 'createInitialState');
+const PRESENTATION_ACTIONS = Object.keys(presentationHandlers).filter(
+  (key) => key !== "default" && key !== "createInitialState",
+);
+const SYSTEM_ACTIONS = Object.keys(systemHandlers).filter(
+  (key) => !key.startsWith("select") && key !== "createInitialState",
+);
 
 /**
  * Creates a RouteEngine instance.
@@ -25,7 +29,7 @@ export default function createRouteEngine() {
   let _constructRenderState;
   let _constructPresentationState;
   let _timer;
-  let _eventCallback = () => { };
+  let _eventCallback = () => {};
   let _captureElemement;
   let _loadAssets;
 
@@ -41,35 +45,36 @@ export default function createRouteEngine() {
     _captureElemement = captureElement;
     _loadAssets = loadAssets;
 
-    _timer = createTimer(ticker)
-    _timer.onEvent(_handleTimerEvent)
+    _timer = createTimer(ticker);
+    _timer.onEvent(_handleTimerEvent);
 
-
-    const _saveVnData = localStorage.getItem('saveData') || '{}';
+    const _saveVnData = localStorage.getItem("saveData") || "{}";
     const saveVnData = JSON.parse(_saveVnData);
-    const saveImageAssets = Object.entries(saveVnData).filter(([key, data]) => !!data.image).map(([key, data]) => {
-      const finalKey = `saveImage:${key}`
-      const buffer = base64ToArrayBuffer(data.image);
-      return {
-        [finalKey]: {
-          buffer: buffer,
-          type: "image/png"
-        }
-      }
-    }).reduce(
-      (acc, curr) => ({ ...acc, ...curr }),
-      {}
-    )
+    const saveImageAssets = Object.entries(saveVnData)
+      .filter(([key, data]) => !!data.image)
+      .map(([key, data]) => {
+        const finalKey = `saveImage:${key}`;
+        const buffer = base64ToArrayBuffer(data.image);
+        return {
+          [finalKey]: {
+            buffer: buffer,
+            type: "image/png",
+          },
+        };
+      })
+      .reduce((acc, curr) => ({ ...acc, ...curr }), {});
 
-    loadAssets(saveImageAssets).then(() => {
-      console.log('All save images loaded');
-    }).catch((e) => {
-      console.log('Error loading save images', e);
-    });
+    loadAssets(saveImageAssets)
+      .then(() => {
+        console.log("All save images loaded");
+      })
+      .catch((e) => {
+        console.log("Error loading save images", e);
+      });
 
     _systemStore.setSaveData({
-      saveData: saveVnData
-    })
+      saveData: saveVnData,
+    });
 
     // Initialize and load device variables
     const variableDefinitions = _projectDataStore.selectVariables();
@@ -77,24 +82,30 @@ export default function createRouteEngine() {
 
     // First, set all device variable defaults
     Object.entries(variableDefinitions).forEach(([key, definition]) => {
-      if (definition.persistence === 'device' && definition.hasOwnProperty('default')) {
+      if (
+        definition.persistence === "device" &&
+        definition.hasOwnProperty("default")
+      ) {
         deviceVariables[key] = definition.default;
       }
     });
 
     // Then, override with saved values if they exist
-    const savedDeviceVariables = localStorage.getItem('deviceVariables');
+    const savedDeviceVariables = localStorage.getItem("deviceVariables");
     if (savedDeviceVariables) {
       try {
         const parsedVariables = JSON.parse(savedDeviceVariables);
         // Only override values that exist in variable definitions
         Object.entries(parsedVariables).forEach(([key, value]) => {
-          if (variableDefinitions[key] && variableDefinitions[key].persistence === 'device') {
+          if (
+            variableDefinitions[key] &&
+            variableDefinitions[key].persistence === "device"
+          ) {
             deviceVariables[key] = value;
           }
         });
       } catch (e) {
-        console.error('Failed to load device variables:', e);
+        console.error("Failed to load device variables:", e);
       }
     }
 
@@ -102,7 +113,7 @@ export default function createRouteEngine() {
     if (Object.keys(deviceVariables).length > 0) {
       _systemStore.setDeviceVariables({ variables: deviceVariables });
       // Save the initialized device variables
-      localStorage.setItem('deviceVariables', JSON.stringify(deviceVariables));
+      localStorage.setItem("deviceVariables", JSON.stringify(deviceVariables));
     }
 
     _processAndRender();
@@ -119,14 +130,14 @@ export default function createRouteEngine() {
       }
     });
     _processAndRender();
-  }
+  };
 
   const onEvent = (callback) => {
     _eventCallback = callback;
   };
 
   const offEvent = () => {
-    _eventCallback = () => { };
+    _eventCallback = () => {};
   };
 
   /**
@@ -141,19 +152,21 @@ export default function createRouteEngine() {
         let actionPayload = systemActions[actionType];
 
         // Auto-detect replay context for nextLine actions
-        if (actionType === 'nextLine' && !actionPayload.targetMode) {
+        if (actionType === "nextLine" && !actionPayload.targetMode) {
           const currentState = _systemStore.selectState();
           const replayPointer = currentState.modes.replay.read;
 
           // If replay has active content (sectionId exists), auto-target replay mode
           if (replayPointer.sectionId) {
-            actionPayload = { ...actionPayload, targetMode: 'replay' };
+            actionPayload = { ...actionPayload, targetMode: "replay" };
           }
         }
 
         _systemStore[actionType](actionPayload);
       } else {
-        throw new Error(`System action ${actionType} not found on system store`);
+        throw new Error(
+          `System action ${actionType} not found on system store`,
+        );
       }
     });
     // Process any pending effects from actions
@@ -208,8 +221,10 @@ export default function createRouteEngine() {
       const actions = line.actions || {};
 
       // Process system actions only (presentation actions are handled in _renderLine)
-      const systemActions = SYSTEM_ACTIONS.filter(actionType => actionType in actions)
-      systemActions.forEach(actionType => {
+      const systemActions = SYSTEM_ACTIONS.filter(
+        (actionType) => actionType in actions,
+      );
+      systemActions.forEach((actionType) => {
         _systemStore[actionType](actions[actionType]);
       });
     });
@@ -254,7 +269,11 @@ export default function createRouteEngine() {
     let replayPresentationState = null;
     const currentReplayPointer = _systemStore.selectCurrentReplayPointer();
 
-    if (currentReplayPointer && currentReplayPointer.sectionId && currentReplayPointer.lineId) {
+    if (
+      currentReplayPointer &&
+      currentReplayPointer.sectionId &&
+      currentReplayPointer.lineId
+    ) {
       const replayLines = _projectDataStore.selectSectionLines(
         currentReplayPointer.sectionId,
         currentReplayPointer.lineId,
@@ -276,7 +295,9 @@ export default function createRouteEngine() {
           return presentationData;
         });
 
-        replayPresentationState = _constructPresentationState(replayPresentationActions);
+        replayPresentationState = _constructPresentationState(
+          replayPresentationActions,
+        );
       }
     }
 
@@ -316,8 +337,8 @@ export default function createRouteEngine() {
       mainPresentationState,
       mainRenderState,
       replayPresentationState,
-      replayRenderState
-    })
+      replayRenderState,
+    });
 
     _eventCallback({
       eventType: "render",
@@ -329,6 +350,6 @@ export default function createRouteEngine() {
     init,
     onEvent,
     offEvent,
-    handleEvent
+    handleEvent,
   };
 }

@@ -71,7 +71,7 @@ export const visual = (state, presentation) => {
  */
 export const dialogue = (state, presentation) => {
   if (!presentation.dialogue) {
-    if (state.dialogue && state.dialogue.mode === 'adv') {
+    if (state.dialogue && state.dialogue.mode === "adv") {
       state.dialogue.content = undefined;
       state.dialogue.characterId = undefined;
     }
@@ -80,41 +80,43 @@ export const dialogue = (state, presentation) => {
 
   // Start with existing dialogue or empty object
   if (!state.dialogue) {
-    if (presentation.dialogue.mode === 'adv') {
+    if (presentation.dialogue.mode === "adv") {
       state.dialogue = {
         layoutId: presentation.dialogue.layoutId,
         content: undefined,
         characterId: undefined,
-        mode: 'adv'
-      }
+        mode: "adv",
+      };
     }
-    if (presentation.dialogue.mode === 'nvl') {
-      if (state.dialogue?.mode !== 'nvl') {
+    if (presentation.dialogue.mode === "nvl") {
+      if (state.dialogue?.mode !== "nvl") {
         state.dialogue = {
           layoutId: presentation.dialogue.layoutId,
           lines: [],
-          mode: 'nvl'
+          mode: "nvl",
         };
       }
     }
-    return;
   }
 
-  if (state.dialogue.mode === 'adv') {
+  if (state.dialogue?.mode === "adv") {
     state.dialogue.content = presentation.dialogue.content;
     state.dialogue.characterId = presentation.dialogue.characterId;
+    if (presentation.dialogue.layoutId) {
+      state.dialogue.layoutId = presentation.dialogue.layoutId;
+    }
     if (presentation.dialogue.clear) {
       delete state.dialogue;
     }
   }
 
-  if (presentation.dialogue.mode === 'nvl') {
+  if (presentation.dialogue?.mode === "nvl") {
     if (presentation.dialogue.clear) {
       state.dialogue.lines = [];
     }
     state.dialogue.lines.push({
-      content: presentation.dialogue.content
-    })
+      content: presentation.dialogue.content,
+    });
     return;
   }
 };

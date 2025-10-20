@@ -8,53 +8,68 @@ export const render = ({ processAndRender }) => {
   processAndRender();
 };
 
-export const saveVnData = async ({ timer, localStorage, captureElement, loadAssets }, effect) => {
+export const saveVnData = async (
+  { timer, localStorage, captureElement, loadAssets },
+  effect,
+) => {
   const { saveData: _saveData, slotIndex } = effect.options;
   const saveData = structuredClone(_saveData);
-  const url = await captureElement('story');
-  console.log('saveData', saveData);
-  console.log('slotindex', slotIndex);
+  const url = await captureElement("story");
+  console.log("saveData", saveData);
+  console.log("slotindex", slotIndex);
   saveData[slotIndex].image = url;
   const assets = {
     [`saveImage:${slotIndex}`]: {
       buffer: base64ToArrayBuffer(url),
-      type: "image/png"
-    }
-  }
+      type: "image/png",
+    },
+  };
   await loadAssets(assets);
-  localStorage.setItem('saveData', JSON.stringify(saveData));
-  timer.setTimeout('saveData', {
-    render: {}
-  }, 100);
+  localStorage.setItem("saveData", JSON.stringify(saveData));
+  timer.setTimeout(
+    "saveData",
+    {
+      render: {},
+    },
+    100,
+  );
 };
 
 export const saveVariables = ({ localStorage, systemStore }) => {
   const deviceVariables = systemStore.selectDeviceVariables();
-  localStorage.setItem('deviceVariables', JSON.stringify(deviceVariables));
+  localStorage.setItem("deviceVariables", JSON.stringify(deviceVariables));
 };
 
 export const startAutoNextTimer = ({ timer }) => {
-  timer.setTimeout('autoMode', {
-    nextLine: {
-      forceSkipAutonext: true
-    }
-  }, 1000);
+  timer.setTimeout(
+    "autoMode",
+    {
+      nextLine: {
+        forceSkipAutonext: true,
+      },
+    },
+    1000,
+  );
 };
 
 export const clearAutoNextTimer = ({ timer }) => {
-  timer.clear('autoMode');
+  timer.clear("autoMode");
 };
 
 export const startSkipNextTimer = ({ timer }) => {
-  timer.setTimeout('skipMode', {
-    nextLine: {
-      forceSkipAutonext: true
-    }
-  }, 300);
+  timer.setTimeout(
+    "skipMode",
+    {
+      nextLine: {
+        forceSkipAutonext: true,
+      },
+    },
+    300,
+  );
 };
 
 export const clearSkipNextTimer = ({ timer }) => {
-  timer.clear('skipMode');
+  timer.clear("skipMode");
 };
 
 export const startTimer = ({ timer }, effect) => {
