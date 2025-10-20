@@ -195,15 +195,18 @@ export const selectCurrentLanguagePackId = ({ state }) => {
   return state.currentLanguagePackId;
 };
 
-export const selectLanguagePacks = ({ state, projectDataStore }) => {
+export const selectLanguagePacks = ({ projectDataStore }) => {
   const i18nData = projectDataStore.selectI18n();
-  return i18nData.packs;
+  return i18nData?.packs;
 };
 
 export const selectCurrentLanguagePackKeys = ({ state, projectDataStore }) => {
   const i18nData = projectDataStore.selectI18n();
   const currentPackId = state.currentLanguagePackId;
-  return i18nData.packs[currentPackId].keys;
+  if (!i18nData?.packs) {
+    return;
+  }
+  return i18nData?.packs[currentPackId].keys;
 };
 
 export const selectDeviceVariables = ({ state, projectDataStore }) => {

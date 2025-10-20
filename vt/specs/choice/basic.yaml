@@ -30,51 +30,52 @@ resources:
           y: 100
           direction: vertical
           children:
-            - $when: choice.items[0]
+            - "$each": item in choice.items
               type: container
               x: 0
               y: 0
               height: 40
               children:
                 - type: text
-                  text: "${choice.items[0].content}"
-                  style:
-                    fontSize: 24
-                    fill: "white"
-            - $when: choice.items[1]
-              type: container
-              x: 0
-              y: 0
-              height: 40
-              children:
-                - type: text
-                  text: "${choice.items[1].content}"
-                  style:
-                    fontSize: 24
-                    fill: "white"
-            - $when: choice.items[2]
-              type: container
-              x: 0
-              y: 0
-              height: 40
-              children:
-                - type: text
-                  text: "${choice.items[2].content}"
-                  style:
-                    fontSize: 24
-                    fill: "white"
-            - $when: choice.items[3]
-              type: container
-              x: 0
-              y: 0
-              height: 40
-              children:
-                - type: text
-                  text: "${choice.items[3].content}"
+                  text: ${item.content}
+                  eventName: "system"
+                  eventPayload:
+                    actions:
+                      sectionTransition: ${item.events.click.actions.sectionTransition}
                   style:
                     fontSize: 24
                     fill: "white"
 
+    392fsadf:
+      name: Dialogue Screen
+      mode: "adv"
+      elements:
+        - id: dialogue-container
+          type: "container"
+          x: 50
+          y: 300
+          children:
+            - id: "bfeawjk2g"
+              type: sprite
+              url: file:3kda832
+              x: 0
+              y: 0
+            - id: dialogue-character-name
+              type: text
+              text: "${dialogue.character.name}"
+              x: 20
+              y: 40
+              style:
+                fontSize: 24
+                fill: "white"
+            - id: dialogue-text
+              type: "text"
+              x: 20
+              y: 100
+              text: "${dialogue.content}"
+              style:
+                fontSize: 24
+                fill: "white"
 story:
   initialSceneId: ajfl3a
   scenes:
@@ -94,6 +95,57 @@ story:
                   layoutId: fi3l
                   items:
                     - content: Choice 1 a
+                      events:
+                        click:
+                          actions:
+                            sectionTransition:
+                              sceneId: "3ijdfsa23"
+                              sectionId: "fdakjf3aax"
                     - content: Choice 2 b
-                    - content: Choice 3 c
-                    - content: Choice 4 d
+                      events:
+                        click:
+                          actions:
+                            sectionTransition:
+                              sceneId: "fd3j289df"
+                              sectionId: "kdf903a"
+    3ijdfsa23:
+      name: Scene 2
+      initialSectionId: fdakjf3aax
+      sections:
+        fdakjf3aax:
+          name: Section 1
+          lines:
+            - id: line1
+              actions:
+                screen:
+                  resourceId: storyScreenLayout
+                  resourceType: layout
+                dialogue:
+                  mode: adv
+                  layoutId: 392fsadf
+                  content: Hello, this should be choice 1
+            - id: line2
+              actions:
+                dialogue:
+                  content: next line of choice 1
+
+    fd3j289df:
+      name: Scene 3
+      initialSectionId: kdf903a
+      sections:
+        kdf903a:
+          name: Section 1
+          lines:
+            - id: line1
+              actions:
+                screen:
+                  resourceId: storyScreenLayout
+                  resourceType: layout
+                dialogue:
+                  mode: adv
+                  layoutId: 392fsadf
+                  content: Hello, this should be choice 2
+            - id: line2
+              actions:
+                dialogue:
+                  content: Next line of choice 2

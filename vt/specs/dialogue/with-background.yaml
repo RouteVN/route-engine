@@ -24,6 +24,7 @@ resources:
               nextLine: {}
     fi3l:
       name: Dialogue Screen
+      mode: "adv"
       elements:
         - id: dialogue-container
           type: "container"

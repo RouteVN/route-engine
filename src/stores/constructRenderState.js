@@ -411,8 +411,8 @@ export const addDialogue = (
  * @param {Object} params
  */
 export const addChoices = (
-  { elements, transitions },
-  { presentationState, resources, ui },
+  { elements },
+  { presentationState, resources },
 ) => {
 
   if (presentationState.choice) {
