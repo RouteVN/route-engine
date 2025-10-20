@@ -1,19 +1,20 @@
 import { parseAndRender } from "jempl";
 
 const jemplFunctions = {
-  objectValues: (obj) => Object.entries(obj).map(([id, value]) => ({ id, ...value })),
-}
+  objectValues: (obj) =>
+    Object.entries(obj).map(([id, value]) => ({ id, ...value })),
+};
 
 export const createInitialState = () => {
   return {
     elements: [
       {
-        id: 'story',
-        type: 'container',
+        id: "story",
+        type: "container",
         x: 0,
         y: 0,
-        children: []
-      }
+        children: [],
+      },
     ],
     transitions: [],
   };
@@ -22,13 +23,10 @@ export const createInitialState = () => {
 /**
  * @param {Object} params
  */
-export const addScreen = (
-  { elements },
-  { presentationState, resources },
-) => {
+export const addScreen = ({ elements }, { presentationState, resources }) => {
   if (presentationState.screen) {
     // Find the story container
-    const storyContainer = elements.find(el => el.id === 'story');
+    const storyContainer = elements.find((el) => el.id === "story");
     if (!storyContainer) return;
 
     if (
@@ -40,7 +38,7 @@ export const addScreen = (
       if (layout) {
         // Add screen as the first child of story container
         storyContainer.children.unshift({
-          id: 'screen',
+          id: "screen",
           type: "container",
           children: layout.elements,
         });
@@ -59,7 +57,7 @@ export const addBackgrundOrCg = (
 ) => {
   if (presentationState.background) {
     // Find the story container
-    const storyContainer = elements.find(el => el.id === 'story');
+    const storyContainer = elements.find((el) => el.id === "story");
     if (!storyContainer) return;
 
     if (
@@ -92,7 +90,8 @@ export const addBackgrundOrCg = (
 
     if (presentationState.background.animations) {
       if (presentationState.background.animations.in) {
-        const animationId = presentationState.background.animations.in.animationId;
+        const animationId =
+          presentationState.background.animations.in.animationId;
         const animation = resources.animations[animationId];
         if (animation) {
           transitions.push({
@@ -106,8 +105,10 @@ export const addBackgrundOrCg = (
       }
 
       if (presentationState.background.animations.out) {
-        const animationId = presentationState.background.animations.out.animationId;
-        const resourceId = presentationState.background.animations.out.resourceId;
+        const animationId =
+          presentationState.background.animations.out.animationId;
+        const resourceId =
+          presentationState.background.animations.out.resourceId;
         const animation = resources.animations[animationId];
         if (animation) {
           transitions.push({
@@ -121,7 +122,8 @@ export const addBackgrundOrCg = (
       }
 
       if (presentationState.background.animations.update) {
-        const animationId = presentationState.background.animations.update.animationId;
+        const animationId =
+          presentationState.background.animations.update.animationId;
         const animation = resources.animations[animationId];
         if (animation) {
           transitions.push({
@@ -147,7 +149,7 @@ export const addCharacters = (
 ) => {
   if (presentationState.character) {
     // Find the story container
-    const storyContainer = elements.find(el => el.id === 'story');
+    const storyContainer = elements.find((el) => el.id === "story");
     if (!storyContainer) return;
 
     const items = presentationState.character.items || [];
@@ -175,7 +177,7 @@ export const addCharacters = (
 
       // Skip items without required properties for creating containers
       if (!sprites || !transformId) {
-        console.warn('Character item missing sprites or transformId:', item);
+        console.warn("Character item missing sprites or transformId:", item);
         continue;
       }
 
@@ -265,7 +267,7 @@ export const addVisuals = (
 ) => {
   if (presentationState.visual) {
     // Find the story container
-    const storyContainer = elements.find(el => el.id === 'story');
+    const storyContainer = elements.find((el) => el.id === "story");
     if (!storyContainer) return;
 
     const items = presentationState.visual.items;
@@ -298,7 +300,8 @@ export const addVisuals = (
 
       if (item.animations) {
         if (item.animations.in) {
-          const animationId = item.animations.in.animationId || item.animations.in;
+          const animationId =
+            item.animations.in.animationId || item.animations.in;
           const animation = resources.animations[animationId];
           if (animation) {
             transitions.push({
@@ -312,7 +315,8 @@ export const addVisuals = (
         }
 
         if (item.animations.out) {
-          const animationId = item.animations.out.animationId || item.animations.out;
+          const animationId =
+            item.animations.out.animationId || item.animations.out;
           const animation = resources.animations[animationId];
           if (animation) {
             transitions.push({
@@ -346,7 +350,7 @@ export const addDialogue = (
   }
 
   // Find the story container
-  const storyContainer = elements.find(el => el.id === 'story');
+  const storyContainer = elements.find((el) => el.id === "story");
   if (!storyContainer) return;
 
   const layout = resources.layouts[presentationState.dialogue.layoutId];
@@ -374,7 +378,7 @@ export const addDialogue = (
     variables: systemState?.variables || {},
     saveDataArray: systemStore.selectSaveDataPage({
       page: systemState?.variables.currentSavePageIndex,
-      numberPerPage: 6
+      numberPerPage: 6,
     }),
     autoMode: systemStore.selectAutoMode(),
     skipMode: systemStore.selectSkipMode(),
@@ -383,14 +387,14 @@ export const addDialogue = (
         name: character?.name || "",
       },
       content: presentationState.dialogue?.content || [],
-      lines: presentationState.dialogue?.lines || []
+      lines: presentationState.dialogue?.lines || [],
     },
     currentLanguagePackId: systemStore.selectCurrentLanguagePackId(),
     i18n: systemStore.selectCurrentLanguagePackKeys(),
-  }
+  };
 
   let result = parseAndRender(wrappedTemplate, templateData, {
-    functions: jemplFunctions
+    functions: jemplFunctions,
   });
   result = parseAndRender(result, {
     i18n: systemStore.selectCurrentLanguagePackKeys(),
@@ -410,14 +414,10 @@ export const addDialogue = (
  *
  * @param {Object} params
  */
-export const addChoices = (
-  { elements },
-  { presentationState, resources },
-) => {
-
+export const addChoices = ({ elements }, { presentationState, resources }) => {
   if (presentationState.choice) {
     // Find the story container
-    const storyContainer = elements.find(el => el.id === 'story');
+    const storyContainer = elements.find((el) => el.id === "story");
     if (!storyContainer) return;
 
     const layout = resources.layouts[presentationState.choice.layoutId];
@@ -446,7 +446,7 @@ export const addBgm = (
 ) => {
   if (presentationState.bgm) {
     // Find the story container
-    const storyContainer = elements.find(el => el.id === 'story');
+    const storyContainer = elements.find((el) => el.id === "story");
     if (!storyContainer) return;
 
     const audio = resources.audio[presentationState.bgm.audioId];
@@ -456,7 +456,7 @@ export const addBgm = (
       url: resolveFile(audio.fileId),
       loop: audio.loop ?? true,
       volume: audio.volume ?? 0.5,
-      delay: audio.delay
+      delay: audio.delay,
     });
   }
 };
@@ -467,7 +467,7 @@ export const addSfx = (
 ) => {
   if (presentationState.sfx) {
     // Find the story container
-    const storyContainer = elements.find(el => el.id === 'story');
+    const storyContainer = elements.find((el) => el.id === "story");
     if (!storyContainer) return;
 
     const items = presentationState.sfx.items;
@@ -479,22 +479,18 @@ export const addSfx = (
         url: resolveFile(audio.fileId),
         loop: item.loop ?? false,
         volume: item.volume ?? 0.5,
-        delay: item.delay
+        delay: item.delay,
       });
     }
   }
 };
 
-export const addVoice = (
-  { elements }, { presentationState, resolveFile }) => {
-
-  if (
-    !presentationState.voice
-  ) {
+export const addVoice = ({ elements }, { presentationState, resolveFile }) => {
+  if (!presentationState.voice) {
     return;
   }
 
-  const storyContainer = elements.find(el => el.id === 'story');
+  const storyContainer = elements.find((el) => el.id === "story");
   if (!storyContainer) return;
 
   const { fileId, volume, loop } = presentationState.voice;
@@ -504,10 +500,9 @@ export const addVoice = (
     type: "audio",
     url: resolveFile(fileId),
     volume,
-    loop
+    loop,
   });
 };
-
 
 /**
  * Adds layout elements from presentation to state
@@ -519,7 +514,7 @@ export const addLayout = (
 ) => {
   if (presentationState.layout) {
     // Find the story container
-    const storyContainer = elements.find(el => el.id === 'story');
+    const storyContainer = elements.find((el) => el.id === "story");
     if (!storyContainer) return;
 
     const layout = resources.layouts[presentationState.layout.layoutId];
@@ -528,18 +523,17 @@ export const addLayout = (
       return;
     }
 
-
     if (Array.isArray(layout.transitions)) {
       layout.transitions.forEach((transition) => {
         transitions.push(transition);
-      })
+      });
     }
 
     const processElement = (element) => {
       const processedElement = { ...element };
 
-      if (element.url && element.url.startsWith('file:')) {
-        const fileId = element.url.replace('file:', '');
+      if (element.url && element.url.startsWith("file:")) {
+        const fileId = element.url.replace("file:", "");
         processedElement.url = resolveFile(fileId);
       }
 
@@ -552,17 +546,17 @@ export const addLayout = (
 
     const layoutContainer = {
       id: `layout-${presentationState.layout.layoutId}`,
-      type: 'container',
+      type: "container",
       x: 0,
       y: 0,
-      children: layout.elements || []
+      children: layout.elements || [],
     };
 
     const templateData = {
       variables: systemState?.variables || {},
       saveDataArray: systemStore.selectSaveDataPage({
         page: systemState?.variables.currentSavePageIndex,
-        numberPerPage: 6
+        numberPerPage: 6,
       }),
       autoMode: systemStore.selectAutoMode(),
       skipMode: systemStore.selectSkipMode(),
@@ -570,11 +564,10 @@ export const addLayout = (
       currentLanguagePackId: systemStore.selectCurrentLanguagePackId(),
       i18n: systemStore.selectCurrentLanguagePackKeys(),
       languagePacks: systemStore.selectLanguagePacks(),
-    }
-
+    };
 
     let processedContainer = parseAndRender(layoutContainer, templateData, {
-      functions: jemplFunctions
+      functions: jemplFunctions,
     });
     processedContainer = parseAndRender(processedContainer, {
       i18n: systemStore.selectCurrentLanguagePackKeys(),
@@ -583,13 +576,15 @@ export const addLayout = (
     const processElementAfterRender = (element) => {
       const processedElement = { ...element };
 
-      if (element.url && element.url.startsWith('file:')) {
-        const fileId = element.url.replace('file:', '');
+      if (element.url && element.url.startsWith("file:")) {
+        const fileId = element.url.replace("file:", "");
         processedElement.url = resolveFile(fileId);
       }
 
       if (element.children && Array.isArray(element.children)) {
-        processedElement.children = element.children.map(processElementAfterRender);
+        processedElement.children = element.children.map(
+          processElementAfterRender,
+        );
       }
 
       return processedElement;
@@ -609,7 +604,7 @@ export const addModals = (
   if (modals && modals.length > 0) {
     // Add each modal as an overlay
     modals.forEach((modal, index) => {
-      if (modal.resourceType === 'layout') {
+      if (modal.resourceType === "layout") {
         const layout = resources.layouts[modal.resourceId];
 
         if (!layout) {
@@ -620,7 +615,7 @@ export const addModals = (
         if (Array.isArray(layout.transitions)) {
           layout.transitions.forEach((transition) => {
             transitions.push(transition);
-          })
+          });
         }
 
         // Process layout elements similar to addLayout
@@ -628,8 +623,8 @@ export const addModals = (
           const processedElement = { ...element };
 
           // Handle file references in layout elements
-          if (element.url && element.url.startsWith('file:')) {
-            const fileId = element.url.replace('file:', '');
+          if (element.url && element.url.startsWith("file:")) {
+            const fileId = element.url.replace("file:", "");
             processedElement.url = resolveFile(fileId);
           }
 
@@ -644,10 +639,10 @@ export const addModals = (
         // Create a container for this modal
         const modalContainer = {
           id: `modal-${index}`,
-          type: 'container',
+          type: "container",
           x: 0,
           y: 0,
-          children: layout.elements || []
+          children: layout.elements || [],
         };
 
         let currentActiveGalleryFileId;
@@ -655,11 +650,22 @@ export const addModals = (
 
         if (systemState.variables.activeGalleryIndex !== undefined) {
           const gallery = systemState.variables.gallery.items;
-          if (gallery && Array.isArray(gallery) && systemState.variables.activeGalleryIndex < gallery.length) {
-            currentActiveGalleryFileId = gallery[systemState.variables.activeGalleryIndex]?.fileIds[systemState.variables.activeGalleryFileIndex];
+          if (
+            gallery &&
+            Array.isArray(gallery) &&
+            systemState.variables.activeGalleryIndex < gallery.length
+          ) {
+            currentActiveGalleryFileId =
+              gallery[systemState.variables.activeGalleryIndex]?.fileIds[
+                systemState.variables.activeGalleryFileIndex
+              ];
           }
 
-          if (systemState.variables.activeGalleryFileIndex < gallery[systemState.variables.activeGalleryIndex]?.fileIds.length - 1) {
+          if (
+            systemState.variables.activeGalleryFileIndex <
+            gallery[systemState.variables.activeGalleryIndex]?.fileIds.length -
+              1
+          ) {
             isLastFileIdIndex = false;
           } else {
             isLastFileIdIndex = true;
@@ -672,7 +678,7 @@ export const addModals = (
           isLastFileIdIndex,
           saveDataArray: systemStore.selectSaveDataPage({
             page: systemState?.variables.currentSavePageIndex,
-            numberPerPage: 6
+            numberPerPage: 6,
           }),
           autoMode: systemStore.selectAutoMode(),
           skipMode: systemStore.selectSkipMode(),
@@ -681,11 +687,10 @@ export const addModals = (
           currentLanguagePackId: systemStore.selectCurrentLanguagePackId(),
           i18n: systemStore.selectCurrentLanguagePackKeys(),
           languagePacks: systemStore.selectLanguagePacks(),
-        }
-
+        };
 
         let processedModal = parseAndRender(modalContainer, templateData, {
-          functions: jemplFunctions
+          functions: jemplFunctions,
         });
         processedModal = parseAndRender(processedModal, {
           i18n: systemStore.selectCurrentLanguagePackKeys(),
@@ -695,13 +700,15 @@ export const addModals = (
         const processElementAfterRender = (element) => {
           const processedElement = { ...element };
 
-          if (element.url && element.url.startsWith('file:')) {
-            const fileId = element.url.replace('file:', '');
+          if (element.url && element.url.startsWith("file:")) {
+            const fileId = element.url.replace("file:", "");
             processedElement.url = resolveFile(fileId);
           }
 
           if (element.children && Array.isArray(element.children)) {
-            processedElement.children = element.children.map(processElementAfterRender);
+            processedElement.children = element.children.map(
+              processElementAfterRender,
+            );
           }
 
           return processedElement;
@@ -711,7 +718,7 @@ export const addModals = (
       }
     });
   }
-}
+};
 
 export const addGlobalAudios = (
   { elements },
@@ -729,7 +736,7 @@ export const addGlobalAudios = (
       });
     });
   }
-}
+};
 
 export default [
   addScreen,
@@ -743,5 +750,5 @@ export default [
   addSfx,
   addVoice,
   addModals,
-  addGlobalAudios
+  addGlobalAudios,
 ];

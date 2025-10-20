@@ -1,4 +1,3 @@
-
 /**
  * Creates a timer system wrapped around PixiJS ticker
  * @param {PIXI.Ticker} ticker - PixiJS ticker instance
@@ -11,7 +10,7 @@ export const createTimer = (ticker) => {
   // Emit event to all listeners
   const emit = (eventType, payload) => {
     const event = { eventType, payload, timestamp: performance.now() };
-    listeners.forEach(listener => listener(event));
+    listeners.forEach((listener) => listener(event));
   };
 
   // Main update function added to PixiJS ticker
@@ -32,16 +31,16 @@ export const createTimer = (ticker) => {
           type: timer.type,
           triggerCount: timer.triggerCount + 1,
           overshoot: timer.elapsed - timer.delay,
-          payload: timer.payload
+          payload: timer.payload,
         };
 
         emit(id, eventPayload);
         timer.triggerCount++;
 
-        if (timer.type === 'timeout') {
+        if (timer.type === "timeout") {
           // Remove one-time timers
           timers.delete(id);
-        } else if (timer.type === 'interval') {
+        } else if (timer.type === "interval") {
           // Reset interval timers
           timer.elapsed = timer.elapsed - timer.delay;
         }
@@ -67,12 +66,12 @@ export const createTimer = (ticker) => {
       }
 
       timers.set(id, {
-        type: 'timeout',
+        type: "timeout",
         delay,
         payload,
         elapsed: 0,
         triggerCount: 0,
-        paused: false
+        paused: false,
       });
 
       return id;
@@ -91,12 +90,12 @@ export const createTimer = (ticker) => {
       }
 
       timers.set(id, {
-        type: 'interval',
+        type: "interval",
         delay: interval,
         payload,
         elapsed: 0,
         triggerCount: 0,
-        paused: false
+        paused: false,
       });
 
       return id;
@@ -193,7 +192,7 @@ export const createTimer = (ticker) => {
       timers.clear();
       listeners.clear();
       ticker.remove(update);
-    }
+    },
   };
 };
 
@@ -229,4 +228,3 @@ timer.destroy();
 */
 
 export default createTimer;
-

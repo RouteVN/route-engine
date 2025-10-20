@@ -62,9 +62,9 @@ export const createInitialState = ({
           sectionId: undefined,
           lineId: undefined,
           historyEntryIndex: undefined,
-        }
-      }
-    }
+        },
+      },
+    },
   };
   state.history.entries.push({
     sectionId,
@@ -76,10 +76,9 @@ export const createInitialState = ({
  * Selectors
  *************************/
 
-
 export const selectState = ({ state }) => {
   return state;
-}
+};
 
 export const selectPendingEffects = ({ state }) => {
   return state.pendingEffects;
@@ -90,7 +89,7 @@ export const selectSortedPendingEffects = ({ state }) => {
   const effectMap = new Map();
 
   // Keep only the last effect with each name
-  effects.forEach(effect => {
+  effects.forEach((effect) => {
     effectMap.set(effect.name, effect);
   });
 
@@ -168,20 +167,22 @@ export const selectSaveDataPage = ({ state }, payload) => {
 
   let items = [];
   for (let i = start; i < start + numberPerPage; i++) {
-    const item = state.saveData[i] ? {
-      id: i,
-      label: new Date(state.saveData[i].date).toISOString().split('T')[0],
-      hasData: true
-    } : {
-      id: i,
-      label: 'No Data',
-      hasData: false,
-    }
-    items.push(item)
+    const item = state.saveData[i]
+      ? {
+          id: i,
+          label: new Date(state.saveData[i].date).toISOString().split("T")[0],
+          hasData: true,
+        }
+      : {
+          id: i,
+          label: "No Data",
+          hasData: false,
+        };
+    items.push(item);
   }
 
   return items;
-}
+};
 
 export const selectVariables = ({ state }) => {
   return state.variables;
@@ -215,7 +216,10 @@ export const selectDeviceVariables = ({ state, projectDataStore }) => {
 
   const deviceVariables = {};
   Object.entries(variableDefinitions).forEach(([key, definition]) => {
-    if (definition.persistence === 'device' && currentVariables.hasOwnProperty(key)) {
+    if (
+      definition.persistence === "device" &&
+      currentVariables.hasOwnProperty(key)
+    ) {
       deviceVariables[key] = currentVariables[key];
     }
   });
@@ -230,21 +234,24 @@ export const selectHistoryDialogue = ({ state, projectDataStore }) => {
     return [];
   }
   const lines = projectDataStore.selectSectionLines(sectionId);
-  const currentLineIndex = lines.findIndex(line => line.id === lineId);
+  const currentLineIndex = lines.findIndex((line) => line.id === lineId);
   if (currentLineIndex === -1) {
     return [];
   }
   const historyLines = lines.slice(0, currentLineIndex + 1);
   const dialogue = [];
   historyLines.forEach((line, index) => {
-    if (line.actions?.dialogue?.content && Array.isArray(line.actions.dialogue.content)) {
-      line.actions.dialogue.content.forEach(textItem => {
+    if (
+      line.actions?.dialogue?.content &&
+      Array.isArray(line.actions.dialogue.content)
+    ) {
+      line.actions.dialogue.content.forEach((textItem) => {
         dialogue.push({ content: textItem.text });
       });
     }
   });
   return dialogue;
-}
+};
 
 export const selectModals = ({ state }) => {
   return state.modes[state.currentMode].modals;
@@ -380,11 +387,11 @@ export const nextLine = ({ state, projectDataStore }, payload = {}) => {
     state.skipMode = false;
     state.autoMode = false;
     pendingEffects.push({
-      name: 'clearAutoNextTimer'
-    })
+      name: "clearAutoNextTimer",
+    });
     pendingEffects.push({
-      name: 'clearSkipNextTimer'
-    })
+      name: "clearSkipNextTimer",
+    });
     return;
   }
 
@@ -441,7 +448,8 @@ export const prevLine = ({ state, projectDataStore }) => {
   }
 
   state.modes[state.currentMode]["history"].lineId = prevLine.id;
-  state.modes[state.currentMode]["history"].sectionId = currentPointer.sectionId;
+  state.modes[state.currentMode]["history"].sectionId =
+    currentPointer.sectionId;
   state.lastLineAction = "prevLine";
 
   state.pendingEffects.push({
@@ -479,7 +487,8 @@ export const sectionTransition = ({ state, projectDataStore }, payload) => {
   const lines = projectDataStore.selectSectionLines(sectionId);
 
   // Determine which mode to update
-  const modeToUpdate = targetMode || (mode && state.modes[mode] ? mode : state.currentMode);
+  const modeToUpdate =
+    targetMode || (mode && state.modes[mode] ? mode : state.currentMode);
 
   // Clear modals when updating a mode that's not current
   if (mode && state.modes[mode] && mode !== state.currentMode && !targetMode) {
@@ -507,8 +516,7 @@ export const sectionTransition = ({ state, projectDataStore }, payload) => {
   } else if (currentPointerMode === "history") {
     // TODO: check if the next section is same as history next section
     if (
-      sectionId ===
-      state.history.entries[state.historyEntryIndex + 1].sectionId
+      sectionId === state.history.entries[state.historyEntryIndex + 1].sectionId
     ) {
       state.historyEntryIndex++;
     } else {
@@ -567,10 +575,9 @@ export const updateVariable = ({ state, projectDataStore }, payload) => {
     name: "render",
   });
   state.pendingEffects.push({
-    name: 'saveVariables'
-  })
+    name: "saveVariables",
+  });
 };
-
 
 /**
  * @param {ApplyParams} params
@@ -678,7 +685,7 @@ export const nextConfig = ({ state }, payload) => {
 export const setSaveData = ({ state }, payload) => {
   const { saveData } = payload;
   state.saveData = saveData;
-}
+};
 
 export const setDeviceVariables = ({ state }, payload) => {
   const { variables } = payload;
@@ -686,7 +693,7 @@ export const setDeviceVariables = ({ state }, payload) => {
   Object.entries(variables).forEach(([key, value]) => {
     state.variables[key] = value;
   });
-}
+};
 
 export const saveVnData = ({ state }, payload) => {
   const { slotIndex } = payload;
@@ -694,7 +701,7 @@ export const saveVnData = ({ state }, payload) => {
     id: String(slotIndex),
     pointer: selectSpecificPointer({ state, mode: "read" }),
     history: selectHistory({ state }),
-    date: Date.now()
+    date: Date.now(),
   };
   state.pendingEffects.push({
     name: "saveVnData",
@@ -729,7 +736,7 @@ export const render = ({ state }) => {
   state.pendingEffects.push({
     name: "render",
   });
-}
+};
 
 export const addGlobalAudio = ({ state }, payload) => {
   const { fileId } = payload;
@@ -737,25 +744,25 @@ export const addGlobalAudio = ({ state }, payload) => {
   state.pendingEffects.push({
     name: "render",
   });
-}
+};
 
 export const clearAllGlobalAudio = ({ state }) => {
   state.globalAudios = [];
   state.pendingEffects.push({
     name: "render",
   });
-}
+};
 
 export const addModal = ({ state }, payload) => {
   const targetMode = state.currentMode;
   state.modes[targetMode].modals.push({
     resourceId: payload.resourceId,
-    resourceType: 'layout'
-  })
+    resourceType: "layout",
+  });
   state.pendingEffects.push({
     name: "render",
   });
-}
+};
 
 export const clearLastModal = ({ state }, payload) => {
   const currentModals = state.modes[state.currentMode].modals;
@@ -765,7 +772,7 @@ export const clearLastModal = ({ state }, payload) => {
       name: "render",
     });
   }
-}
+};
 
 export const setLanguagePackId = ({ state }, payload) => {
   const { languagePackId } = payload;
@@ -778,18 +785,18 @@ export const setLanguagePackId = ({ state }, payload) => {
 export const handleCompleted = ({ state }) => {
   const nextConfig = selectNextConfig({ state });
   if (nextConfig) {
-    if (nextConfig.auto && nextConfig.auto.trigger === 'fromComplete') {
+    if (nextConfig.auto && nextConfig.auto.trigger === "fromComplete") {
       state.pendingEffects.push({
         name: "startTimer",
         options: {
-          timerId: 'nextConfig',
+          timerId: "nextConfig",
           payload: {
             nextLine: {
-              forceSkipAutonext: true
-            }
+              forceSkipAutonext: true,
+            },
           },
-          delay: nextConfig.auto.delay ?? 1000
-        }
+          delay: nextConfig.auto.delay ?? 1000,
+        },
       });
     }
     return;
@@ -799,29 +806,27 @@ export const handleCompleted = ({ state }) => {
     state.pendingEffects.push({
       name: "startTimer",
       options: {
-        timerId: 'autoMode',
+        timerId: "autoMode",
         payload: {
           nextLine: {
-            forceSkipAutonext: true
-          }
+            forceSkipAutonext: true,
+          },
         },
-        delay: 1000
-      }
+        delay: 1000,
+      },
     });
   } else if (selectSkipMode({ state })) {
     state.pendingEffects.push({
       name: "startTimer",
       options: {
-        timerId: 'skipMode',
+        timerId: "skipMode",
         payload: {
           nextLine: {
-            forceSkipAutonext: true
-          }
+            forceSkipAutonext: true,
+          },
         },
-        delay: 300
-      }
+        delay: 300,
+      },
     });
   }
 };
-
-

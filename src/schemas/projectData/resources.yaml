@@ -23,7 +23,7 @@ properties:
         required: [fileId, width, height]
         additionalProperties: false
     additionalProperties: false
-  
+
   characters:
     type: object
     description: Character sprite assets
@@ -37,7 +37,7 @@ properties:
             description: Display name for the character
         additionalProperties: false
     additionalProperties: false
-  
+
   videos:
     type: object
     description: Video assets
@@ -58,7 +58,7 @@ properties:
         required: [fileId, width, height]
         additionalProperties: false
     additionalProperties: false
-  
+
   transforms:
     type: object
     description: Transform configurations for positioning elements
@@ -90,7 +90,7 @@ properties:
             type: number
         additionalProperties: false
     additionalProperties: false
-  
+
   animations:
     type: object
     description: Animation definitions for various effects
@@ -137,7 +137,7 @@ properties:
         required: [name, properties]
         additionalProperties: false
     additionalProperties: false
-  
+
   audio:
     type: object
     description: Audio, including bgm and sound effects
@@ -152,7 +152,7 @@ properties:
         required: [fileId]
         additionalProperties: false
     additionalProperties: false
-  
+
   colors:
     type: object
     description: Color palette for the project
@@ -167,7 +167,7 @@ properties:
         required: [hex]
         additionalProperties: false
     additionalProperties: false
-  
+
   fonts:
     type: object
     description: Font file for the project
@@ -182,7 +182,7 @@ properties:
         required: [fileId]
         additionalProperties: false
     additionalProperties: false
-  
+
   typography:
     type: object
     patternProperties:
@@ -199,7 +199,8 @@ properties:
           fontWeight:
             type: string
             description: Font weight
-            enum: ["100", "200", "300", "400", "500", "600", "700", "800", "900"]
+            enum:
+              ["100", "200", "300", "400", "500", "600", "700", "800", "900"]
           fontStyle:
             type: string
             description: Font style
@@ -210,7 +211,7 @@ properties:
         required: [fontId, fontSize, fontWeight, fontStyle, lineHeight]
         additionalProperties: false
     additionalProperties: false
-  
+
   layouts:
     type: object
     description: Layout configurations for UI elements
@@ -230,7 +231,7 @@ properties:
               additionalProperties: true
         additionalProperties: false
     additionalProperties: false
-  
+
   variables:
     type: object
     description: Game variables and their initial values

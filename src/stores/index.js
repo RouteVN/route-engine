@@ -30,11 +30,11 @@ export const createSystemStore = (initialIds, projectDataStore) => {
   const variableDefinitions = projectDataStore.selectVariables();
   const initialVariables = {};
   Object.entries(variableDefinitions).forEach(([key, definition]) => {
-    if (definition.hasOwnProperty('default')) {
+    if (definition.hasOwnProperty("default")) {
       initialVariables[key] = definition.default;
     }
   });
-  
+
   return createStore(
     createSystemInitialState({
       sectionId: initialIds.sectionId,

@@ -22,11 +22,11 @@ properties:
           name:
             type: string
             description: Display name for the scene
-          
+
           initialSectionId:
             type: string
             description: ID of the section to start with when entering this scene
-          
+
           sections:
             type: object
             description: Collection of sections within this scene
@@ -38,7 +38,7 @@ properties:
                   name:
                     type: string
                     description: Display name for the section
-                  
+
                   lines:
                     type: array
                     description: Array of story lines/steps within this section
@@ -49,24 +49,24 @@ properties:
                         id:
                           type: string
                           description: Unique identifier for the line
-                        
+
                         presentation:
                           $ref: "../presentation.yaml"
                           description: Describes what to visually and audibly present
-                        
+
                         system:
                           type: object
                           description: System commands to execute for this line that update the system state
                           $ref: "../system.yaml"
-                      
+
                       required: [id, presentation]
                       additionalProperties: false
                     minItems: 1
-                
+
                 required: [name]
                 additionalProperties: false
             additionalProperties: false
-        
+
         required: [name, initialSectionId, sections]
         additionalProperties: false
     additionalProperties: false
