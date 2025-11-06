@@ -1,65 +1,74 @@
+# System State Machine
 
-Class that handles logic for the Visual Novel.
+```mermaid
+flowchart TD
+    Start([Start]) --> projectData[projectData]
+    projectData --> systemState[systemState]
 
-## Usage
+    projectData --> constructPresentationState[[constructPresentationState]]
+    systemState --> constructPresentationState
+    constructPresentationState --> presentationState[presentationState]
 
-```js
-import RouteEngine from "route-engine";
+    presentationState --> constructRenderState[[constructRenderState]]
+    projectData --> constructRenderState
+    systemState --> constructRenderState
+    constructRenderState --> renderState[renderState]
 
-const engine = new RouteEngine();
-
-const callback = (event) => {
-  const { eventType, payload } = event;
-
-}
-
-engine.onEvent(callback);
-
-engine.init({
-  // follows this schema ...
-  vnData: {
-    ...
-  },
-  // does not render automatically
-  preventFirstRender: false
-});
-
-engine.handleEvent({
-  eventType: "nextLine",
-  payload: {
-    // ...
-  }
-})
+    renderState --> browser[browser]
+    user[user] --> browser
+    browser --> user
+    browser --> action[[action]]
+    action --> sideEffect[sideEffect]
+    action --> systemState
+    sideEffect --> browser
 ```
 
-## List of onEvent eventTypes
+## Project Data
 
-This is events sent from engine to the outside world
+This is contains all the content of the Visual Novel. Including:
+- i18n: content and translations
+- resources: including images, audio, UI etc...
+- story: scenes, sections, lines
 
-- `render` - when the engine wants to render the current state of the visual novel
-  example:
+This data is static, meaning that it is loaded into the engine and never changes. is read only.
+
+## System State
+
+This is internal runtime state of the Visual Novel. This data is mutable.
+
+The state is only mutable via system actions
+
+Example of what system state includes is:
+- current scene, section, line
+- whether to hide dialogue box
+- variables
+
+
+## System Actions
+
+System actions can generate 2 things:
+
+- mutations to the system state
+- side effects
+
+Side effects include things like: storing variables, storing save data, taking screenshots etc..
+Render the screen with the latest Render Data is also a side effect.
+
+## Presentation State
 
 ```js
-{
-  eventType: "render",
-  payload: {
-    elements: [...],
-    transitions: [...]
-  }
-}
-
+const presentatioState = constructPresentationState(projectData, systemState);
 ```
 
-- `save`
+Presentation data gives critical information on what should be displayed.
+It works by iterating through lines of a section.
 
-## List of handleEvent eventTypes
+## Render State
 
-This is events sent from the outside world to the engine
+```js
+const renderState = constructRenderState(projectData, systemState, presentationState);
+```
 
-- `ClickLeftScreen`: when the user left clicks the screen
-- `ClickRightScreen`: when the user right clicks the screen
-- `ScrollUpScreen`
-- `KeyboardSpace`:
-- `KeyboardEnter`:
-- `KeyboardEsc`:
-- `SaveDataUpdate`:
+Render state in `route-graphics`. It is a format that is directly rendered into the browser.
+
+
