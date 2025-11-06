@@ -3,10 +3,6 @@ title: Story Schema
 description: Schema for the complete story structure in visual novel engine
 type: object
 properties:
-  initialPresetId:
-    type: string
-    description: ID of the preset to start with for event handling
-
   initialSceneId:
     type: string
     description: ID of the scene to start with
@@ -15,7 +11,7 @@ properties:
     type: object
     description: Collection of scenes in the story
     patternProperties:
-      "^[a-zA-Z0-9_-]+$":
+      "^[a-zA-Z0-9]+$":
         type: object
         description: Scene definition
         properties:
@@ -31,7 +27,7 @@ properties:
             type: object
             description: Collection of sections within this scene
             patternProperties:
-              "^[a-zA-Z0-9_-]+$":
+              "^[a-zA-Z0-9]+$":
                 type: object
                 description: Section definition
                 properties:
@@ -49,19 +45,14 @@ properties:
                         id:
                           type: string
                           description: Unique identifier for the line
+                        actions:
+                          allOf:
+                            - $ref: "../presentationActions.yaml"
+                            - $ref: "../systemActions.yaml"
+                          description: Actions
 
-                        presentation:
-                          $ref: "../presentation.yaml"
-                          description: Describes what to visually and audibly present
-
-                        system:
-                          type: object
-                          description: System commands to execute for this line that update the system state
-                          $ref: "../system.yaml"
-
-                      required: [id, presentation]
+                      required: [id, actions]
                       additionalProperties: false
-                    minItems: 1
 
                 required: [name]
                 additionalProperties: false
@@ -70,7 +61,6 @@ properties:
         required: [name, initialSectionId, sections]
         additionalProperties: false
     additionalProperties: false
-    minProperties: 1
 
 required: [initialPresetId, initialSceneId, scenes]
 additionalProperties: false

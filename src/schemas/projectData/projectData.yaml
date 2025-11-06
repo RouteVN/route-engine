@@ -20,21 +20,17 @@ properties:
     required: [width, height]
     additionalProperties: false
 
-  presets:
-    type: object
-    description: Collection of event handling presets
-    patternProperties:
-      "^[a-zA-Z0-9_-]+$":
-        $ref: "presets.yaml"
-    additionalProperties: false
+  i18n:
+    $ref: "i18n.yaml"
+    description: Internationalization configuration with language packs and translations
 
   resources:
     $ref: "resources.yaml"
-    description: All project resources including images, audio, characters, etc.
+    description: All project resources including images, sounds, characters, etc.
 
   story:
     $ref: "story.yaml"
     description: Main story structure with scenes and sections
 
-required: [screen, presets, resources, story]
+required: [screen, i18n, resources, story]
 additionalProperties: false
