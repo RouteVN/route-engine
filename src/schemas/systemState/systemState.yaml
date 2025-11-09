@@ -50,28 +50,28 @@ properties:
     type: string
     description: ID of the currently active language pack
 
-  history:
-    type: object
-    description: Navigation history
-    properties:
-      entries:
-        type: array
-        description: Array of history entries
-        items:
-          type: object
-          properties:
-            sectionId:
-              type: string
-              description: ID of the section
-            lineId:
-              type: string
-              description: ID of the current line (only on latest entry)
-          additionalProperties: false
-        default: []
-    required: [entries]
-    additionalProperties: false
-    default:
-      entries: []
+  # history:
+  #   type: object
+  #   description: Navigation history
+  #   properties:
+  #     entries:
+  #       type: array
+  #       description: Array of history entries
+  #       items:
+  #         type: object
+  #         properties:
+  #           sectionId:
+  #             type: string
+  #             description: ID of the section
+  #           lineId:
+  #             type: string
+  #             description: ID of the current line (only on latest entry)
+  #         additionalProperties: false
+  #       default: []
+  #   required: [entries]
+  #   additionalProperties: false
+  #   default:
+  #     entries: []
 
   globalAudios:
     type: array
@@ -80,10 +80,10 @@ properties:
       type: string
     default: []
 
-  historyEntryIndex:
-    type: integer
-    description: Current index in history entries
-    minimum: 0
+  # historyEntryIndex:
+  #   type: integer
+  #   description: Current index in history entries
+  #   minimum: 0
 
   currentMode:
     type: string
@@ -200,4 +200,3 @@ properties:
 
 required: [variables, currentLanguagePackId, history, currentMode, modes]
 additionalProperties: false
-
