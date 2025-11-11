@@ -2,200 +2,204 @@ $schema: http://json-schema.org/draft-07/schema#
 title: System State Schema
 description: Schema for the visual novel engine system state
 type: object
-properties:
-  pendingEffects:
-    type: array
-    description: Array of pending effects to be processed
-    items:
-      $ref: "effects.yaml"
-    default: []
 
-  variables:
+defs:
+  linePointer:
     type: object
-    description: Game variables and their current values
-    additionalProperties:
-      oneOf:
-        - type: string
-        - type: number
-        - type: boolean
-    default: {}
-
-  saveData:
-    type: object
-    description: Additional save game data
-    additionalProperties: true
-    default: {}
-
-  lastLineAction:
-    type: object
-    description: The last action executed
-    additionalProperties: true
-
-  dialogueUIHidden:
-    type: boolean
-    description: Whether the dialogue UI is currently hidden
-    default: false
-
-  autoMode:
-    type: boolean
-    description: Whether auto-advance mode is active
-    default: false
-
-  skipMode:
-    type: boolean
-    description: Whether skip mode is active
-    default: false
-
-  currentLanguagePackId:
-    type: string
-    description: ID of the currently active language pack
-
-  # history:
-  #   type: object
-  #   description: Navigation history
-  #   properties:
-  #     entries:
-  #       type: array
-  #       description: Array of history entries
-  #       items:
-  #         type: object
-  #         properties:
-  #           sectionId:
-  #             type: string
-  #             description: ID of the section
-  #           lineId:
-  #             type: string
-  #             description: ID of the current line (only on latest entry)
-  #         additionalProperties: false
-  #       default: []
-  #   required: [entries]
-  #   additionalProperties: false
-  #   default:
-  #     entries: []
-
-  globalAudios:
-    type: array
-    description: Array of global audio file IDs
-    items:
-      type: string
-    default: []
-
-  # historyEntryIndex:
-  #   type: integer
-  #   description: Current index in history entries
-  #   minimum: 0
-
-  currentMode:
-    type: string
-    description: Current game mode
-    enum: ["main", "replay"]
-    default: "main"
-
-  nextConfig:
-    type: object
-    description: Configuration for next line advancement
+    description: Pointer to a specific location in the story
     properties:
-      manual:
-        type: object
-        properties:
-          enabled:
-            type: boolean
-            default: true
-          requireComplete:
-            type: boolean
-            default: false
-        additionalProperties: false
-      auto:
-        type: object
-        properties:
-          trigger:
-            type: string
-            enum: ["fromStart", "fromComplete"]
-            default: "fromComplete"
-          delay:
-            type: number
-            minimum: 0
-            default: 1000
-        required: [trigger, delay]
-        additionalProperties: false
+      sectionId:
+        type: string
+        description: ID of the section
+      lineId:
+        type: string
+        description: ID of the line within the section
+    required: [sectionId, lineId]
     additionalProperties: false
-    default: {}
 
-  modes:
+properties:
+  global:
+    type: object
+    description: global state, regardless of context
+    properties:
+      pendingEffects:
+        type: array
+        description: Array of pending effects to be processed
+        items:
+          $ref: "effects.yaml"
+        default: []
+
+      # TODO: decide what to do with this in terms of context
+      # here we put only device, and global variables
+      # context variables will go to context
+      variables:
+        type: object
+        description: Game variables and their current values
+        properties:
+          "^[a-zA-Z0-9]+$": # variable id
+            type: object
+            description: variable object
+            properties:
+              value: any
+              description: value of the variable
+              additionalProperties: true
+        default: {}
+
+      saveData:
+        type: object
+        description: Additional save game data
+        properties:
+          slot:
+            type: number
+            description: slot number
+          date:
+            type: string
+            description: date
+          image:
+            type: string
+            description: base64 representation of the image
+          state:
+            type: object
+            description: full state
+        additionalProperties: true
+        default: {}
+
+      # TODO: don't remember why we need this for
+      # lastLineAction:
+      #   type: object
+      #   description: The last action executed
+      #   additionalProperties: true
+
+      dialogueUIHidden:
+        type: boolean
+        description: Whether the dialogue UI is currently hidden
+        default: false
+
+      autoMode:
+        type: boolean
+        description: Whether auto-advance mode is active
+        default: false
+
+      skipMode:
+        type: boolean
+        description: Whether skip mode is active
+        default: false
+
+      currentLanguagePackId:
+        type: string
+        description: ID of the currently active language pack
+
+      # history:
+      #   type: object
+      #   description: Navigation history
+      #   properties:
+      #     entries:
+      #       type: array
+      #       description: Array of history entries
+      #       items:
+      #         type: object
+      #         properties:
+      #           sectionId:
+      #             type: string
+      #             description: ID of the section
+      #           lineId:
+      #             type: string
+      #             description: ID of the current line (only on latest entry)
+      #         additionalProperties: false
+      #       default: []
+      #   required: [entries]
+      #   additionalProperties: false
+      #   default:
+      #     entries: []
+
+      # historyEntryIndex:
+      #   type: integer
+      #   description: Current index in history entries
+      #   minimum: 0
+
+      nextLineConfig:
+        type: object
+        description: Configuration for next line advancement
+        properties:
+          manual:
+            type: object
+            properties:
+              enabled:
+                type: boolean
+                default: true
+              requireComplete:
+                type: boolean
+                default: false
+            additionalProperties: false
+          auto:
+            type: object
+            properties:
+              trigger:
+                type: string
+                enum: ["fromStart", "fromComplete"]
+                default: "fromComplete"
+              delay:
+                type: number
+                minimum: 0
+                default: 1000
+            required: [trigger, delay]
+            additionalProperties: false
+        additionalProperties: false
+        default: {}
+      seenSections:
+        type: object
+        properties:
+          sections:
+            type: object
+            properties:
+              sectionId:
+                type: string
+              lastLineId:
+                type: string
+                description: if present that it he last seen line. if no value, means entire section as been seen already.
+
+  contexts:
     type: object
     description: Mode-specific state configurations
     properties:
-      main:
+      "^[a-zA-Z0-9]+$":
         type: object
-        description: Main game mode state
+        description: Context
         properties:
+          currentMode:
+            type: string
+            description: Current game mode
+            enum: ["read", "history"]
+            default: "read"
           currentPointer:
             type: string
             enum: ["read", "history"]
             default: "read"
-          modals:
+          pointers:
+            type: object
+            properties:
+              read:
+                $ref: "#/defs/linePointer"
+              history:
+                $ref: "#/defs/linePointer"
+          layeredViews:
             type: array
-            description: Array of active modals
             items:
-              type: string
-            default: []
-          read:
+              type: object
+              properties:
+                resourceId:
+                  type: string
             type: object
+          bgm:
             properties:
-              sectionId:
+              resourceId:
                 type: string
-              lineId:
-                type: string
-            additionalProperties: false
-          history:
+
+          variables:
             type: object
-            properties:
-              sectionId:
-                type: string
-              lineId:
-                type: string
-              historyEntryIndex:
-                type: integer
-                minimum: 0
-            additionalProperties: false
-        required: [currentPointer, modals, read, history]
+            properties: {}
+
         additionalProperties: false
-      replay:
-        type: object
-        description: Replay mode state
-        properties:
-          currentPointer:
-            type: string
-            enum: ["read", "history"]
-            default: "read"
-          modals:
-            type: array
-            description: Array of active modals
-            items:
-              type: string
-            default: []
-          read:
-            type: object
-            properties:
-              sectionId:
-                type: string
-              lineId:
-                type: string
-            additionalProperties: false
-          history:
-            type: object
-            properties:
-              sectionId:
-                type: string
-              lineId:
-                type: string
-              historyEntryIndex:
-                type: integer
-                minimum: 0
-            additionalProperties: false
-        required: [currentPointer, modals, read, history]
-        additionalProperties: false
-    required: [main, replay]
     additionalProperties: false
 
 required: [variables, currentLanguagePackId, history, currentMode, modes]

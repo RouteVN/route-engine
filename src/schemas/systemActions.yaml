@@ -3,44 +3,75 @@ title: System Actions Schema
 description: Schema for all system actions that handle state management and navigation in visual novel engine
 type: object
 properties:
-  nextLine:
+  #########
+  # Line navigation
+  #########
+  contextNextLine:
     type: object
     description: Advance to next line
     properties:
+      # TODO: not sure if we need this
       forceSkipAutonext:
         type: boolean
         description: Force skip auto-next behavior
         default: false
+      # TODO: not sure if we need this
       targetMode:
         type: string
         description: Target mode for the next line operation
         enum: [main, replay]
     additionalProperties: false
 
-  prevLine:
+  contextPrevLine:
     type: object
-    description: Go to previous line
+    description: Go to previous line, this will usually trigger history mode
     additionalProperties: false
 
-  sectionTransition:
+  # TODO: finalize naming
+  contextLineCompleted:
     type: object
-    description: Navigate to specific scene/section
+    description: Handle completion of a line (internal action)
+    additionalProperties: false
+
+  contextUpdateNextConfig:
+    type: object
+    description: Control how the line can be advanced
     properties:
-      sectionId:
-        type: string
-        description: Target section ID
-      sceneId:
-        type: string
-        description: Target scene ID (optional)
-      mode:
-        type: string
-        description: Navigation mode
-        enum: [read, menu, history, title]
-      presetId:
-        type: string
-        description: Preset to use after navigation
+      manual:
+        type: object
+        properties:
+          enabled:
+            type: boolean
+            default: true
+            description: Allow manual advance via user input
+          requireComplete:
+            type: boolean
+            default: false
+            description: Only allow manual advance after line completes
+        additionalProperties: false
+      auto:
+        type: object
+        description: Auto-advance configuration (presence enables it)
+        properties:
+          delay:
+            type: object
+            properties:
+              trigger:
+                type: string
+                enum: [fromStart, fromComplete]
+                default: fromComplete
+                description: When to start timing for auto advance
+              time:
+                type: number
+                minimum: 0
+                default: 1000
+                description: Delay in milliseconds before advancing
+        additionalProperties: false
     additionalProperties: false
 
+  #####
+  # Misc
+  #####
   updateVariable:
     type: object
     description: Update game variables
@@ -69,146 +100,154 @@ properties:
         minItems: 1
     required: [operations]
     additionalProperties: false
+  # TODO: remove this
+  # clearCurrentMode:
+  #   type: object
+  #   description: Clear current mode and switch to a new one
+  #   properties:
+  #     mode:
+  #       type: string
+  #       description: Mode to switch to
+  #       enum: [read, menu, history, title]
+  #   required: [mode]
+  #   additionalProperties: false
 
-  setPreset:
-    type: object
-    description: Set the current preset for event handling
-    properties:
-      presetId:
-        type: string
-        description: ID of the preset to activate
-    required: [presetId]
-    additionalProperties: false
-
-  clearCurrentMode:
-    type: object
-    description: Clear current mode and switch to a new one
-    properties:
-      mode:
-        type: string
-        description: Mode to switch to
-        enum: [read, menu, history, title]
-    required: [mode]
-    additionalProperties: false
-
-  startAutoMode:
-    type: object
-    description: Start auto-advance mode
-    additionalProperties: false
-
-  stopAutoMode:
-    type: object
-    description: Stop auto-advance mode
-    additionalProperties: false
-
-  toggleAutoMode:
-    type: object
-    description: Toggle auto-advance mode on/off
-    additionalProperties: false
-
-  startSkipMode:
-    type: object
-    description: Start skip mode for fast-forwarding
-    additionalProperties: false
-
-  stopSkipMode:
-    type: object
-    description: Stop skip mode
-    additionalProperties: false
-
-  toggleSkipMode:
-    type: object
-    description: Toggle skip mode on/off
-    additionalProperties: false
-
-  toggleDialogueUIHidden:
-    type: object
-    description: Toggle visibility of dialogue UI elements
-    additionalProperties: false
-
-  saveVnData:
-    type: object
-    description: Save current game state to a slot
-    properties:
-      slotIndex:
-        type: number
-        description: Save slot index to save to
-        minimum: 0
-    required: [slotIndex]
-    additionalProperties: false
-
-  loadVnData:
-    type: object
-    description: Load game state from a save slot
-    properties:
-      slotIndex:
-        type: number
-        description: Save slot index to load from
-        minimum: 0
-    required: [slotIndex]
-    additionalProperties: false
-
-  lineCompleted:
-    type: object
-    description: Handle completion of a line (internal action)
-    additionalProperties: false
-
-  clearPendingEffects:
+  globalClearSideEffects:
     type: object
     description: Clear all pending effects (internal action)
     additionalProperties: false
 
-  nextConfig:
+  ############
+  # Read mode related state
+  ############
+  globalStartAutoMode:
     type: object
-    description: Control how the line can be advanced
-    properties:
-      manual:
-        type: object
-        properties:
-          enabled:
-            type: boolean
-            default: true
-            description: Allow manual advance via user input
-          requireComplete:
-            type: boolean
-            default: false
-            description: Only allow manual advance after line completes
-        additionalProperties: false
-      auto:
-        type: object
-        description: Auto-advance configuration (presence enables it)
-        properties:
-          trigger:
-            type: string
-            enum: [fromStart, fromComplete]
-            default: fromComplete
-            description: When to start timing for auto advance
-          delay:
-            type: number
-            minimum: 0
-            default: 1000
-            description: Delay in milliseconds before advancing
-        required: [trigger, delay]
-        additionalProperties: false
+    description: Start auto-advance mode
     additionalProperties: false
 
-  addModal:
+  globalStopAutoMode:
     type: object
-    description: Add a modal to the display
+    description: Stop auto-advance mode
+    additionalProperties: false
+
+  globalToggleAutoMode:
+    type: object
+    description: Toggle auto-advance mode on/off
+    additionalProperties: false
+
+  globalStartSkipMode:
+    type: object
+    description: Start skip mode for fast-forwarding
+    additionalProperties: false
+
+  globalStopSkipMode:
+    type: object
+    description: Stop skip mode
+    additionalProperties: false
+
+  globalToggleSkipMode:
+    type: object
+    description: Toggle skip mode on/off
+    additionalProperties: false
+
+  globalToggleUIHidden:
+    type: object
+    description: Toggle visibility of UI elements such a dialogue or others
+    additionalProperties: false
+
+  ############
+  # Save and Load
+  ############
+  # TODO: finalize naming
+  globalSaveStory:
+    type: object
+    description: Save current story state. See the side effect for all the data it stores
+    properties:
+      slot:
+        type: number
+        description: Save slot index to save to
+        minimum: 0
+    required: [slot]
+    additionalProperties: false
+
+  # TODO: finalize naming
+  globalLoadStory:
+    type: object
+    description: Load game state from a save slot
+    properties:
+      slot:
+        type: number
+        description: Save slot index to load from
+        minimum: 0
+    required: [slot]
+    additionalProperties: false
+
+  ############
+  # View Layer System
+  ############
+  # The view layer system manages a stack of UI layers that can be pushed, popped, and replaced.
+  # Each layer can be fullscreen, modal (blocks interaction with layers below), or floating (shows layers below).
+  # The system maintains a linear stack where Layer 0 is the base/main view.
+  #
+  # Layer Types:
+  # - fullscreen: Covers entire display, layers below are hidden
+  # - modal: Blocks interaction with layers below but may show them
+  # - floating: Shows on top of layers below, allows interaction with underlying layers
+  #
+  # Common Patterns:
+  # - pushViewLayer() → popViewLayer() for normal navigation with back history
+  # - pushViewLayer() → clearViewLayers() → pushViewLayer() for modal flows
+  # - replaceViewLayer() for form flows where back navigation should be preserved
+  #
+  # Examples:
+  # Main Menu (layer 0) → Settings (layer 1) → Confirmation Dialog (layer 2)
+  # popViewLayer() returns to Settings
+  # clearViewLayers() removes all layers, returns to base
+  #
+  contextSectionTransition:
+    type: object
+    description: Navigate to specific section
+    properties:
+      sectionId:
+        type: string
+        description: Target section ID
+      # sceneId:
+      #   type: string
+      #   description: Target scene ID (optional)
+      # TODO: figure out the main and replay mode
+      mode:
+        type: string
+        description: Navigation mode
+        enum: [main, replay]
+    additionalProperties: false
+  contextPushViewLayer:
+    type: object
+    description: Push a new view layer onto the layer stack (can be modal, fullscreen, or floating)
     properties:
       resourceId:
         type: string
-        description: ID of the modal resource to display
-      resourceType:
-        type: string
-        description: Type of the modal resource
-        default: layout
+        description: ID of the view layer resource to display
     required: [resourceId]
     additionalProperties: false
 
-  clearLastModal:
+  contextPopViewLayer:
     type: object
-    description: Remove the last modal from the display
+    description: Remove the current view layer from the layer stack and return to the previous layer
+    additionalProperties: false
+
+  contextClearViewLayers:
+    type: object
+    description: Remove all view layers from the stack except the base layer (main view)
+    additionalProperties: false
+
+  contextReplaceViewLayer:
+    type: object
+    description: Replace the current view layer with a new one (no back history)
+    properties:
+      resourceId:
+        type: string
+        description: ID of the replacement view layer resource to display
+    required: [resourceId]
     additionalProperties: false
 
 additionalProperties: false

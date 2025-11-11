@@ -20,6 +20,18 @@ properties:
     required: [width, height]
     additionalProperties: false
 
+  # used to manage main and replays, isolated variables
+  contexts:
+    type: object
+    description: Contexts
+    patternProperties:
+      "^[a-zA-Z0-9]+$":
+        type: object
+        description: Context
+        properties:
+        additionalProperties: false
+    additionalProperties: false
+
   i18n:
     $ref: "i18n.yaml"
     description: Internationalization configuration with language packs and translations
