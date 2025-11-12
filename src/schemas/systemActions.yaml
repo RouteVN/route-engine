@@ -11,15 +11,15 @@ properties:
     description: Advance to next line
     properties:
       # TODO: not sure if we need this
-      forceSkipAutonext:
-        type: boolean
-        description: Force skip auto-next behavior
-        default: false
+      # forceSkipAutonext:
+      #   type: boolean
+      #   description: Force skip auto-next behavior
+      #   default: false
       # TODO: not sure if we need this
-      targetMode:
-        type: string
-        description: Target mode for the next line operation
-        enum: [main, replay]
+      # targetMode:
+      #   type: string
+      #   description: Target mode for the next line operation
+      #   enum: [main, replay]
     additionalProperties: false
 
   contextPrevLine:

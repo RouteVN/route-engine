@@ -1,21 +1,30 @@
 
 ## Context
 
-it manages isolation
+it manages isolated environmnts
 
-title screen has a title context
+for example, in the title screen you are in the title screen. 
+when you press new game, it has to create a new context, because in this new game, all game variables needs to be reset.
 
-when start a game/read it starts a new context with reset variables
+so, the title screen will be a context. the game play whether gong there from start game or load game, will be another context.
 
-when reading a replay is a new context
+Replays will also have their own context. In replay mode, we don't want to update again some global variables.
 
-contex can be ephemeral, where it wont update global variables, they are treated as runtime variables
+All context do share global variables.
 
-context can be stacked, but there is always at least 1 context
+## Configuration
+
+Each context has its own config.
+Configuration is informatino about how the system should behave.
+This will be the main place to insert custom behavior that otherwise cannot be done.
+It is expected to get messy and grow indefinitively.
+We will use this untill we figure something need to be so customizable that we need to extractout of config
 
 ## Mode
 
-hardcoded to 2 modes: normal and history
+This is for hardcoded logic. That is too specific to be configured.
+
+Currently we have 2 modes: normal and history
 
 left click and right click behavior are different for normal and history mode
 
@@ -25,7 +34,7 @@ during history mode we need to keep track of current pointer, but also point at 
 
 we keep line pointer and mode separate for flexibility
 
-## LayeredView
+## Layered View
 
 there is always a base view outside of layered view.
 

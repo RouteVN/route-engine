@@ -159,48 +159,48 @@ properties:
                 description: if present that it he last seen line. if no value, means entire section as been seen already.
 
   contexts:
-    type: object
     description: Mode-specific state configurations
-    properties:
-      "^[a-zA-Z0-9]+$":
-        type: object
-        description: Context
-        properties:
-          currentMode:
-            type: string
-            description: Current game mode
-            enum: ["read", "history"]
-            default: "read"
-          currentPointer:
-            type: string
-            enum: ["read", "history"]
-            default: "read"
-          pointers:
+    type: array
+    items:
+      type: object
+      description: Context
+      properties:
+        currentMode:
+          type: string
+          description: Current game mode
+          enum: ["read", "history"]
+          default: "read"
+        currentPointer:
+          type: string
+          enum: ["read", "history"]
+          default: "read"
+        pointers:
+          type: object
+          properties:
+            read:
+              $ref: "#/defs/linePointer"
+            history:
+              $ref: "#/defs/linePointer"
+        layeredViews:
+          type: array
+          items:
             type: object
-            properties:
-              read:
-                $ref: "#/defs/linePointer"
-              history:
-                $ref: "#/defs/linePointer"
-          layeredViews:
-            type: array
-            items:
-              type: object
-              properties:
-                resourceId:
-                  type: string
-            type: object
-          bgm:
             properties:
               resourceId:
                 type: string
+          type: object
+        bgm:
+          properties:
+            resourceId:
+              type: string
 
-          variables:
-            type: object
-            properties: {}
+        variables:
+          type: object
+          properties: {}
 
-        additionalProperties: false
-    additionalProperties: false
+        configuration:
+          $ref: './configuration.yaml'
+
 
 required: [variables, currentLanguagePackId, history, currentMode, modes]
 additionalProperties: false
