@@ -49,18 +49,17 @@ properties:
         type: object
         description: Additional save game data
         properties:
-          slot:
-            type: number
-            description: slot number
-          date:
-            type: string
-            description: date
-          image:
-            type: string
-            description: base64 representation of the image
-          state:
-            type: object
-            description: full state
+          "^d+$": # slot number
+            properties:
+              date:
+                type: string
+                description: date
+              image:
+                type: string
+                description: base64 representation of the image
+              state:
+                type: object
+                description: full state
         additionalProperties: true
         default: {}
 
@@ -146,17 +145,39 @@ properties:
             additionalProperties: false
         additionalProperties: false
         default: {}
-      seenSections:
+      viewedRegistry:
         type: object
+        description: Registry of viewed content
         properties:
           sections:
-            type: object
-            properties:
-              sectionId:
-                type: string
-              lastLineId:
-                type: string
-                description: if present that it he last seen line. if no value, means entire section as been seen already.
+            type: array
+            description: Array of viewed sections and their last viewed lines
+            items:
+              type: object
+              properties:
+                sectionId:
+                  type: string
+                  description: ID of the section
+                lastLineId:
+                  type: [string, null]
+                  description: ID of the last viewed line. If null/undefined, means entire section has been seen
+              required: [sectionId]
+              additionalProperties: false
+            default: []
+          resources:
+            type: array
+            description: Array of viewed resource IDs
+            items:
+              type: object
+              properties:
+                resourceId:
+                  type: [string, number]
+                  description: ID of the viewed resource
+              required: [resourceId]
+              additionalProperties: false
+            default: []
+        required: [sections, resources]
+        additionalProperties: false
 
   contexts:
     description: Mode-specific state configurations

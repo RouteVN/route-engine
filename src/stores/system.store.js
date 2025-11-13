@@ -1,661 +1,198 @@
-export const createInitialState = ({
-  sectionId,
-  lineId,
-  saveData,
-  variables,
-  projectDataStore,
-}) => {
-  const i18nData = projectDataStore.selectI18n();
 
+export const createInitialState = (payload) => {
+  const {
+    global: {
+      currentLocalizationPackageId,
+    }
+  } = payload;
   const state = {
-    pendingEffects: [],
-    variables,
-    saveData: saveData || {},
-    lastLineAction: undefined,
-    dialogueUIHidden: false,
-    autoMode: false,
-    skipMode: false,
-    currentLanguagePackId: i18nData?.defaultPackId,
-    history: {
-      entries: [],
-      // entries: [{
-      //   sectionId: 'asdkjl32',
-      // }, {
-      //   sectionId: '3jd3kd'
-      // }, {
-      //   sectionId: '39fk32'
-      // }, {
-      //   sectionId: '39cksk3',
-      //   // this is current actual lineId the user is lastest on
-      //   lineId: 'line3'
-      // }]
-    },
-    /**
-     *  fileId: ...
-     */
-    globalAudios: [],
-    historyEntryIndex: undefined,
-    currentMode: "main",
-    nextConfig: {},
-    modes: {
-      main: {
-        currentPointer: "read",
-        modals: [],
-        read: {
-          sectionId,
-          lineId,
-        },
-        history: {
-          sectionId: undefined,
-          lineId: undefined,
-          historyEntryIndex: undefined,
-        },
+    global: {
+      pendingEffects: [],
+      autoMode: false,
+      skipMode: false,
+      dialogueUIHidden: false,
+      currentLocalizationPackageId: currentLocalizationPackageId,
+      viewedRegistry: {
+        sections: [],
+        resources: []
       },
-      replay: {
-        currentPointer: "read",
-        modals: [],
-        read: {
-          sectionId: undefined,
-          lineId: undefined,
+      nextLineConfig: {
+        manual: {
+          enabled: true,
+          requireComplete: false,
         },
-        history: {
-          sectionId: undefined,
-          lineId: undefined,
-          historyEntryIndex: undefined,
-        },
+        auto: {
+          enabled: false,
+        }
       },
+      saveSlots: {},
+      // history: [],
     },
+    contexts: [{
+      currentModeId: 'normal',
+      currentPointerId: 'read',
+      configuration: {},
+      pointers: {
+        read: { sectionId: undefined, lineId: undefined },
+        history: { sectionId: undefined, lineId: undefined },
+      },
+      views: [],
+      bgm: {
+        resourceId: undefined,
+      },
+      variables: {},
+    }]
   };
-  state.history.entries.push({
-    sectionId,
-  });
   return state;
 };
 
 /**************************
  * Selectors
  *************************/
-
-export const selectState = ({ state }) => {
-  return state;
-};
-
 export const selectPendingEffects = ({ state }) => {
-  return state.pendingEffects;
-};
-
-export const selectSortedPendingEffects = ({ state }) => {
-  const effects = state.pendingEffects;
-  const effectMap = new Map();
-
-  // Keep only the last effect with each name
-  effects.forEach((effect) => {
-    effectMap.set(effect.name, effect);
-  });
-
-  return Array.from(effectMap.values());
-};
-
-export const selectCurrentPointer = ({ state }) => {
-  const currentMode = state.modes[state.currentMode];
-  return currentMode[currentMode.currentPointer];
-};
-
-export const selectCurrentPresetId = ({ state }) => {
-  // Presets are no longer used
-  return null;
-};
-
-export const selectCurrentPreset = ({ state, projectDataStore }) => {
-  // Presets are no longer used
-  return null;
+  return state.global.pendingEffects;
 };
 
 export const selectSkipMode = ({ state }) => {
-  return state.skipMode;
+  return state.global.skipMode;
 };
 
 export const selectAutoMode = ({ state }) => {
-  return state.autoMode;
-};
-
-export const selectPointers = ({ state }) => {
-  return state.modes[state.currentMode];
-};
-
-export const selectNextConfig = ({ state }) => {
-  return state.nextConfig;
-};
-
-export const selectRuntimeState = ({ state }) => {
-  return state.runtimeState;
-};
-
-export const selectPointerMode = ({ state }) => {
-  return state.modes[state.currentMode].currentPointer;
+  return state.global.autoMode;
 };
 
 export const selectDialogueUIHidden = ({ state }) => {
-  return state.dialogueUIHidden;
+  return state.global.dialogueUIHidden;
 };
 
-export const selectHistory = ({ state }) => {
-  return state.history;
+export const selectCurrentLocalizationPackageId = ({ state }) => {
+  return state.global.currentLocalizationPackageId;
 };
 
-export const selectSpecificPointer = ({ state, mode }) => {
-  return state.modes[state.currentMode][mode];
-};
+export const selectIsLineViewed = ({ state }, payload) => {
+  const { sectionId, lineId } = payload;
+  const section = state.global.viewedRegistry.sections.find(
+    section => section.sectionId === sectionId
+  );
 
-export const selectReplayPointer = ({ state, mode }) => {
-  return state.modes.replay[mode];
-};
-
-export const selectCurrentReplayPointer = ({ state }) => {
-  const replayMode = state.modes.replay;
-  return replayMode[replayMode.currentPointer];
-};
-
-export const selectSaveData = ({ state }) => {
-  return state.saveData;
-};
-
-export const selectSaveDataPage = ({ state }, payload) => {
-  const { page, numberPerPage } = payload;
-
-  const start = page * numberPerPage;
-
-  let items = [];
-  for (let i = start; i < start + numberPerPage; i++) {
-    const item = state.saveData[i]
-      ? {
-          id: i,
-          label: new Date(state.saveData[i].date).toISOString().split("T")[0],
-          hasData: true,
-        }
-      : {
-          id: i,
-          label: "No Data",
-          hasData: false,
-        };
-    items.push(item);
+  if (!section) {
+    return false;
   }
 
-  return items;
-};
-
-export const selectVariables = ({ state }) => {
-  return state.variables;
-};
-
-export const selectGlobalAudios = ({ state }) => {
-  return state.globalAudios;
-};
-
-export const selectCurrentLanguagePackId = ({ state }) => {
-  return state.currentLanguagePackId;
-};
-
-export const selectLanguagePacks = ({ projectDataStore }) => {
-  const i18nData = projectDataStore.selectI18n();
-  return i18nData?.packs;
-};
-
-export const selectCurrentLanguagePackKeys = ({ state, projectDataStore }) => {
-  const i18nData = projectDataStore.selectI18n();
-  const currentPackId = state.currentLanguagePackId;
-  if (!i18nData?.packs) {
-    return;
+  // If section.lastLineId is undefined, it means the entire section is viewed
+  if (section.lastLineId === undefined) {
+    return true;
   }
-  return i18nData?.packs[currentPackId].keys;
-};
 
-export const selectDeviceVariables = ({ state, projectDataStore }) => {
-  const variableDefinitions = projectDataStore.selectVariables();
-  const currentVariables = state.variables;
-
-  const deviceVariables = {};
-  Object.entries(variableDefinitions).forEach(([key, definition]) => {
-    if (
-      definition.persistence === "device" &&
-      currentVariables.hasOwnProperty(key)
-    ) {
-      deviceVariables[key] = currentVariables[key];
-    }
-  });
-
-  return deviceVariables;
-};
-
-export const selectHistoryDialogue = ({ state, projectDataStore }) => {
-  const currentPointer = selectCurrentPointer({ state });
-  const { sectionId, lineId } = currentPointer;
-  if (!sectionId || !lineId) {
-    return [];
+  // If lineId is not provided, check if section exists (which it does at this point)
+  if (lineId === undefined) {
+    return true;
   }
-  const lines = projectDataStore.selectSectionLines(sectionId);
-  const currentLineIndex = lines.findIndex((line) => line.id === lineId);
-  if (currentLineIndex === -1) {
-    return [];
-  }
-  const historyLines = lines.slice(0, currentLineIndex + 1);
-  const dialogue = [];
-  historyLines.forEach((line, index) => {
-    if (
-      line.actions?.dialogue?.content &&
-      Array.isArray(line.actions.dialogue.content)
-    ) {
-      line.actions.dialogue.content.forEach((textItem) => {
-        dialogue.push({ content: textItem.text });
-      });
-    }
-  });
-  return dialogue;
+
+  // If both section.lastLineId and lineId are present, compare them
+  // TODO: need to check the order from presentationData
+  return false;
 };
 
-export const selectModals = ({ state }) => {
-  return state.modes[state.currentMode].modals;
+export const selectIsResourceViewed = ({ state }, payload) => {
+  const { resourceId } = payload;
+  const resource = state.global.viewedRegistry.resources.find(
+    resource => resource.resourceId === resourceId
+  );
+
+  return !!resource;
 };
 
-/*************************
+export const selectNextLineConfig = ({ state }) => {
+  return state.global.nextLineConfig;
+};
+
+export const selectSaveSlots = ({ state }) => {
+  return state.global.saveSlots;
+};
+
+export const selectSaveSlot = ({ state }, payload) => {
+  const { slotKey } = payload;
+  return state.global.saveSlots[slotKey];
+};
+
+
+
+/**************************
  * Actions
  *************************/
-
-export const clearPendingEffects = ({ state }) => {
-  state.pendingEffects = [];
-};
-
-/**
- * Handles line completion and manages auto-next behavior
- */
-export const lineCompleted = ({ state, projectDataStore }) => {
-  const autoMode = selectAutoMode(state);
-
-  const { pendingEffects } = state;
-
-  if (autoMode) {
-    pendingEffects.push({
-      name: "systemInstructions",
-      options: {
-        delay: 1000,
-        systemInstructions: {
-          nextLine: {
-            forceSkipAutonext: true,
-          },
-        },
-      },
-    });
-    return;
-  }
-
-  const skipMode = selectSkipMode(state);
-
-  if (skipMode) {
-    pendingEffects.push({
-      name: "systemInstructions",
-      options: {
-        delay: 300,
-        systemInstructions: {
-          nextLine: {
-            forceSkipAutonext: true,
-          },
-        },
-      },
-    });
-    return;
-  }
-
-  const nextConfig = selectNextConfig(state);
-
-  if (!nextConfig || !nextConfig.auto) {
-    return;
-  }
-
-  const { trigger, delay } = nextConfig.auto;
-
-  switch (trigger) {
-    case "fromComplete":
-      // Schedule next line to occur after delay from completion
-      pendingEffects.push({
-        name: "systemInstructions",
-        options: {
-          delay: delay,
-          systemInstructions: {
-            nextLine: {
-              forceSkipAutonext: true,
-            },
-          },
-        },
-      });
-      break;
-
-    case "fromStart":
-      // For fromStart, the delay should have been scheduled at line start
-      // This is handled elsewhere, so we just clear the config here
-      delete state.nextConfig;
-      break;
-
-    default:
-      // Clear unknown nextConfig states
-      delete state.nextConfig;
-      break;
-  }
-};
-
-/**
- * Advances to the next line in the story
- * @param {ApplyParams} params
- */
-export const nextLine = ({ state, projectDataStore }, payload = {}) => {
-  const { pendingEffects } = state;
-
-  // If dialogue is hidden, show it instead of advancing
-  if (state.dialogueUIHidden) {
-    state.dialogueUIHidden = false;
-    pendingEffects.push({
-      name: "render",
-    });
-    return;
-  }
-
-  const { forceSkipAutonext = false, targetMode } = payload;
-  const modeToUpdate = targetMode || state.currentMode;
-  const nextConfig = selectNextConfig({ state });
-
-  if (!forceSkipAutonext && nextConfig && nextConfig.manual) {
-    // Check if manual advance is disabled
-    if (!nextConfig.manual.enabled) {
-      return;
-    }
-    // Check if line must be complete before manual advance
-    if (nextConfig.manual.requireComplete && !state.lineComplete) {
-      return;
-    }
-  }
-
-  // Get the pointer for the target mode
-  const targetModeData = state.modes[modeToUpdate];
-  const currentPointer = targetModeData[targetModeData.currentPointer];
-  const lines = projectDataStore.selectSectionLines(currentPointer.sectionId);
-
-  const currentLineIndex = lines.findIndex(
-    (line) => line.id === currentPointer.lineId,
-  );
-  const nextLine = lines[currentLineIndex + 1];
-
-  if (!nextLine) {
-    state.skipMode = false;
-    state.autoMode = false;
-    pendingEffects.push({
-      name: "clearAutoNextTimer",
-    });
-    pendingEffects.push({
-      name: "clearSkipNextTimer",
-    });
-    return;
-  }
-
-  // Update the line for the target mode
-  targetModeData[targetModeData.currentPointer].lineId = nextLine.id;
-
-  delete state.nextConfig;
-
-  pendingEffects.push({
-    name: "render",
-  });
-};
-
-/**
- */
-export const prevLine = ({ state, projectDataStore }) => {
-  const pointerMode = selectPointerMode({ state });
-  const currentPointer = selectCurrentPointer({ state });
-
-  const lines = projectDataStore.selectSectionLines(currentPointer.sectionId);
-  const currentLineIndex = lines.findIndex(
-    (line) => line.id === currentPointer.lineId,
-  );
-  const prevLine = lines[currentLineIndex - 1];
-
-  if (!prevLine) {
-    if (pointerMode === "history") {
-      if (state.historyEntryIndex > 0) {
-        state.historyEntryIndex--;
-      } else {
-        return;
-      }
-      state.modes[state.currentMode]["history"].sectionId =
-        state.history.entries[state.historyEntryIndex].sectionId;
-      const prevSectionLines = projectDataStore.selectSectionLines(
-        state.modes[state.currentMode]["history"].sectionId,
-      );
-      state.modes[state.currentMode]["history"].lineId =
-        prevSectionLines[prevSectionLines.length - 1].id;
-
-      state.lastLineAction = "prevLine";
-
-      state.pendingEffects.push({
-        name: "render",
-      });
-    }
-
-    return;
-  }
-
-  if (pointerMode === "read") {
-    state.modes[state.currentMode].currentPointer = "history";
-    state.historyEntryIndex = state.history.entries.length - 1;
-  }
-
-  state.modes[state.currentMode]["history"].lineId = prevLine.id;
-  state.modes[state.currentMode]["history"].sectionId =
-    currentPointer.sectionId;
-  state.lastLineAction = "prevLine";
-
-  state.pendingEffects.push({
-    name: "render",
-  });
-};
-
-/**
- * @param {ApplyParams} params
- */
-export const sectionTransition = ({ state, projectDataStore }, payload) => {
-  const { sectionId, sceneId, mode, targetMode, endReplay } = payload;
-
-  // Handle endReplay option
-  if (state.currentMode === "replay" && endReplay) {
-    state.currentMode = "main";
-    // Clear all replay pointers
-    state.modes.replay.currentPointer = "read";
-    state.modes.replay.modals = [];
-    state.modes.replay.read = {
-      sectionId: undefined,
-      lineId: undefined,
-    };
-    state.modes.replay.history = {
-      sectionId: undefined,
-      lineId: undefined,
-      historyEntryIndex: undefined,
-    };
-    state.pendingEffects.push({
-      name: "render",
-    });
-    return;
-  }
-
-  const lines = projectDataStore.selectSectionLines(sectionId);
-
-  // Determine which mode to update
-  const modeToUpdate =
-    targetMode || (mode && state.modes[mode] ? mode : state.currentMode);
-
-  // Clear modals when updating a mode that's not current
-  if (mode && state.modes[mode] && mode !== state.currentMode && !targetMode) {
-    state.modes[mode].modals = [];
-  }
-
-  // Update currentMode if switching modes
-  if (targetMode && targetMode !== state.currentMode) {
-    state.currentMode = targetMode;
-  } else if (mode && state.modes[mode] && mode !== state.currentMode) {
-    state.currentMode = mode;
-  }
-
-  // If mode is a pointer mode (not a mode in state.modes), update the currentPointer
-  if (mode && !state.modes[mode]) {
-    state.modes[modeToUpdate].currentPointer = mode;
-  }
-
-  const currentPointerMode = state.modes[modeToUpdate].currentPointer;
-
-  if (currentPointerMode === "read" && modeToUpdate === state.currentMode) {
-    state.history.entries.push({
-      sectionId,
-    });
-  } else if (currentPointerMode === "history") {
-    // TODO: check if the next section is same as history next section
-    if (
-      sectionId === state.history.entries[state.historyEntryIndex + 1].sectionId
-    ) {
-      state.historyEntryIndex++;
-    } else {
-      // exit history mode
-      // update read pointer
-    }
-  }
-
-  state.modes[modeToUpdate][currentPointerMode].sectionId = sectionId;
-  state.modes[modeToUpdate][currentPointerMode].sceneId = sceneId;
-  state.modes[modeToUpdate][currentPointerMode].lineId = lines[0].id;
-
-  // Only update nextConfig for the current active mode
-  if (modeToUpdate === state.currentMode) {
-    state.nextConfig = lines[0].actions?.nextConfig;
-  }
-
-  state.pendingEffects.push({
-    name: "render",
-  });
-};
-
-/**
- * @param {ApplyParams} params
- */
-export const updateVariable = ({ state, projectDataStore }, payload) => {
-  const { operations } = payload;
-  for (const operation of operations) {
-    const { variableId, op, value } = operation;
-    if (op === "set") {
-      state.variables[variableId] = value;
-    } else if (op === "add") {
-      state.variables[variableId] = (state.variables[variableId] || 0) + value;
-    } else if (op === "subtract") {
-      state.variables[variableId] = (state.variables[variableId] || 0) - value;
-    } else if (op === "multiply") {
-      state.variables[variableId] = (state.variables[variableId] || 0) * value;
-    } else if (op === "divide") {
-      state.variables[variableId] = (state.variables[variableId] || 0) / value;
-    } else if (op === "increment") {
-      const { max } = operation;
-      const nextValue = (state.variables[variableId] || 0) + 1;
-      if (max === undefined || nextValue <= max) {
-        state.variables[variableId] = (state.variables[variableId] || 0) + 1;
-      }
-    } else if (op === "decrement") {
-      const { min } = operation;
-      const nextValue = (state.variables[variableId] || 0) - 1;
-      if (min !== undefined && nextValue >= min) {
-        state.variables[variableId] = (state.variables[variableId] || 0) - 1;
-      }
-    }
-  }
-
-  state.pendingEffects.push({
-    name: "render",
-  });
-  state.pendingEffects.push({
-    name: "saveVariables",
-  });
-};
-
-/**
- * @param {ApplyParams} params
- */
-export const clearCurrentMode = ({ state }, payload) => {
-  state.modes[state.currentMode].currentPointer = payload.mode;
-  state.pendingEffects.push({
-    name: "render",
-  });
-};
-
 export const startAutoMode = ({ state }) => {
-  if (selectSkipMode({ state })) {
-    state.skipMode = false;
-    state.pendingEffects.push({
+  if (state.global.skipMode) {
+    state.global.skipMode = false;
+    state.global.pendingEffects.push({
       name: "clearSkipNextTimer",
     });
   }
-  state.autoMode = true;
-  state.pendingEffects.push({
+  state.global.autoMode = true;
+  state.global.pendingEffects.push({
     name: "clearAutoNextTimer",
   });
-  state.pendingEffects.push({
+  state.global.pendingEffects.push({
     name: "startAutoNextTimer",
   });
-  state.pendingEffects.push({
+  state.global.pendingEffects.push({
     name: "render",
   });
+  return state;
 };
 
 export const stopAutoMode = ({ state }) => {
-  state.autoMode = false;
-  state.pendingEffects.push({
-    name: "render",
-  });
-  state.pendingEffects.push({
+  state.global.autoMode = false;
+  state.global.pendingEffects.push({
     name: "clearAutoNextTimer",
   });
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+  return state;
 };
 
 export const toggleAutoMode = ({ state }) => {
-  const autoMode = selectAutoMode({ state });
+  const autoMode = state.global.autoMode;
   if (autoMode) {
     stopAutoMode({ state });
   } else {
     startAutoMode({ state });
   }
+  return state;
 };
 
 export const startSkipMode = ({ state }) => {
-  if (selectAutoMode({ state })) {
-    state.autoMode = false;
-    state.pendingEffects.push({
+  if (state.global.autoMode) {
+    state.global.autoMode = false;
+    state.global.pendingEffects.push({
       name: "clearAutoNextTimer",
     });
   }
-  state.skipMode = true;
-  state.pendingEffects.push({
+  state.global.skipMode = true;
+  state.global.pendingEffects.push({
     name: "clearSkipNextTimer",
   });
-  state.pendingEffects.push({
+  state.global.pendingEffects.push({
     name: "startSkipNextTimer",
   });
 
-  state.pendingEffects.push({
+  state.global.pendingEffects.push({
     name: "render",
   });
+  return state;
 };
 
 export const stopSkipMode = ({ state }) => {
-  state.skipMode = false;
-  state.pendingEffects.push({
+  state.global.skipMode = false;
+  state.global.pendingEffects.push({
     name: "clearSkipNextTimer",
   });
 
-  state.pendingEffects.push({
+  state.global.pendingEffects.push({
     name: "render",
   });
+  return state;
 };
 
 export const toggleSkipMode = ({ state }) => {
@@ -665,168 +202,144 @@ export const toggleSkipMode = ({ state }) => {
   } else {
     startSkipMode({ state });
   }
+  return state;
 };
 
-export const toggleDialogueUIHidden = ({ state }) => {
-  state.dialogueUIHidden = !state.dialogueUIHidden;
-  state.pendingEffects.push({
+export const showDialogueUI = ({ state }) => {
+  state.global.dialogueUIHidden = false;
+  state.global.pendingEffects.push({
     name: "render",
   });
+  return state;
+};
+
+export const hideDialogueUI = ({ state }) => {
+  state.global.dialogueUIHidden = true;
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+  return state;
+};
+
+export const toggleDialogueUI = ({ state }) => {
+  const dialogueUIHidden = selectDialogueUIHidden({ state });
+  if (dialogueUIHidden) {
+    showDialogueUI({ state });
+  } else {
+    hideDialogueUI({ state });
+  }
+  return state;
+};
+
+export const setCurrentLocalizationPackageId = ({ state }, payload) => {
+  const { localizationPackageId } = payload;
+  state.global.currentLocalizationPackageId = localizationPackageId;
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+  return state;
+};
+
+export const clearPendingEffects = ({ state }) => {
+  state.global.pendingEffects = [];
+  return state;
+};
+
+export const appendPendingEffect = ({ state }, payload) => {
+  state.global.pendingEffects.push(payload);
+  return state;
+};
+
+export const addViewedLine = ({ state }, payload) => {
+  const { sectionId, lineId } = payload;
+  const section = state.global.viewedRegistry.sections.find(
+    section => section.sectionId === sectionId
+  );
+
+  if (section) {
+    // Update existing section
+    section.lastLineId = lineId;
+  } else {
+    // Add new section
+    state.global.viewedRegistry.sections.push({
+      sectionId,
+      lastLineId: lineId
+    });
+  }
+
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+  return state;
+};
+
+export const addViewedResource = ({ state }, payload) => {
+  const { resourceId } = payload;
+  const existingResource = state.global.viewedRegistry.resources.find(
+    resource => resource.resourceId === resourceId
+  );
+
+  if (!existingResource) {
+    // Add new resource only if it doesn't already exist
+    state.global.viewedRegistry.resources.push({
+      resourceId
+    });
+  }
+
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+  return state;
 };
 
 /**
- * Sets nextConfig for the current line
- * @param {ApplyParams} params
+ * TODO: decide whether to overwrite or deep merge
  */
-export const nextConfig = ({ state }, payload) => {
-  state.nextConfig = payload;
-};
+export const setNextLineConfig = ({ state }, payload) => {
+  const { nextLineConfig } = payload;
 
-export const setSaveData = ({ state }, payload) => {
-  const { saveData } = payload;
-  state.saveData = saveData;
-};
-
-export const setDeviceVariables = ({ state }, payload) => {
-  const { variables } = payload;
-  // Merge device variables into state
-  Object.entries(variables).forEach(([key, value]) => {
-    state.variables[key] = value;
-  });
-};
-
-export const saveVnData = ({ state }, payload) => {
-  const { slotIndex } = payload;
-  state.saveData[slotIndex] = {
-    id: String(slotIndex),
-    pointer: selectSpecificPointer({ state, mode: "read" }),
-    history: selectHistory({ state }),
-    date: Date.now(),
-  };
-  state.pendingEffects.push({
-    name: "saveVnData",
-    options: {
-      saveData: { ...state.saveData },
-      slotIndex,
-    },
-  });
-};
-
-export const loadVnData = ({ state }, payload) => {
-  const { slotIndex } = payload;
-  const saveData = selectSaveData({ state });
-  const slotData = saveData[slotIndex];
-
-  if (!slotData) {
-    console.warn(`No save data found for slot index ${slotIndex}`);
-    return;
-  }
-
-  const { pointer, history } = slotData;
-  state.modes[state.currentMode].currentPointer = "read";
-  state.modes[state.currentMode]["read"] = pointer;
-  state.history = history;
-  state.modes[state.currentMode].modals = [];
-  state.pendingEffects.push({
-    name: "render",
-  });
-};
-
-export const render = ({ state }) => {
-  state.pendingEffects.push({
-    name: "render",
-  });
-};
-
-export const addGlobalAudio = ({ state }, payload) => {
-  const { fileId } = payload;
-  state.globalAudios.push({ fileId });
-  state.pendingEffects.push({
-    name: "render",
-  });
-};
-
-export const clearAllGlobalAudio = ({ state }) => {
-  state.globalAudios = [];
-  state.pendingEffects.push({
-    name: "render",
-  });
-};
-
-export const addModal = ({ state }, payload) => {
-  const targetMode = state.currentMode;
-  state.modes[targetMode].modals.push({
-    resourceId: payload.resourceId,
-    resourceType: "layout",
-  });
-  state.pendingEffects.push({
-    name: "render",
-  });
-};
-
-export const clearLastModal = ({ state }, payload) => {
-  const currentModals = state.modes[state.currentMode].modals;
-  if (currentModals.length > 0) {
-    currentModals.pop();
-    state.pendingEffects.push({
-      name: "render",
-    });
-  }
-};
-
-export const setLanguagePackId = ({ state }, payload) => {
-  const { languagePackId } = payload;
-  state.currentLanguagePackId = languagePackId;
-  state.pendingEffects.push({
-    name: "render",
-  });
-};
-
-export const handleCompleted = ({ state }) => {
-  const nextConfig = selectNextConfig({ state });
-  if (nextConfig) {
-    if (nextConfig.auto && nextConfig.auto.trigger === "fromComplete") {
-      state.pendingEffects.push({
-        name: "startTimer",
-        options: {
-          timerId: "nextConfig",
-          payload: {
-            nextLine: {
-              forceSkipAutonext: true,
-            },
-          },
-          delay: nextConfig.auto.delay ?? 1000,
-        },
-      });
+  // If both manual and auto are provided, do complete replacement
+  if (nextLineConfig.manual && nextLineConfig.auto) {
+    state.global.nextLineConfig = {
+      manual: nextLineConfig.manual,
+      auto: nextLineConfig.auto
+    };
+  } else {
+    // Partial update - merge only provided sections
+    if (nextLineConfig.manual) {
+      state.global.nextLineConfig.manual = {
+        ...state.global.nextLineConfig.manual,
+        ...nextLineConfig.manual
+      };
     }
-    return;
+
+    if (nextLineConfig.auto) {
+      state.global.nextLineConfig.auto = {
+        ...state.global.nextLineConfig.auto,
+        ...nextLineConfig.auto
+      };
+    }
   }
 
-  if (selectAutoMode({ state })) {
-    state.pendingEffects.push({
-      name: "startTimer",
-      options: {
-        timerId: "autoMode",
-        payload: {
-          nextLine: {
-            forceSkipAutonext: true,
-          },
-        },
-        delay: 1000,
-      },
-    });
-  } else if (selectSkipMode({ state })) {
-    state.pendingEffects.push({
-      name: "startTimer",
-      options: {
-        timerId: "skipMode",
-        payload: {
-          nextLine: {
-            forceSkipAutonext: true,
-          },
-        },
-        delay: 300,
-      },
-    });
-  }
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+  return state;
 };
+
+export const replaceSaveSlot = ({ state }, payload) => {
+  const { slotKey, date, image, state: slotState } = payload;
+
+  state.global.saveSlots[slotKey] = {
+    slotKey,
+    date,
+    image,
+    state: slotState
+  };
+
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+  return state;
+};
+

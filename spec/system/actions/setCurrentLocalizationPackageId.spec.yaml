@@ -1,0 +1,115 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.setCurrentLocalizationPackageId
+suites: [setCurrentLocalizationPackageId]
+---
+suite: setCurrentLocalizationPackageId
+exportName: setCurrentLocalizationPackageId
+---
+case: set localization package to english
+in:
+  - state:
+      global:
+        currentLocalizationPackageId: "default"
+        pendingEffects: []
+  - localizationPackageId: "en"
+out:
+  global:
+    currentLocalizationPackageId: "en"
+    pendingEffects:
+      - name: render
+---
+case: set localization package to japanese
+in:
+  - state:
+      global:
+        currentLocalizationPackageId: "en"
+        pendingEffects: []
+  - localizationPackageId: "ja"
+out:
+  global:
+    currentLocalizationPackageId: "ja"
+    pendingEffects:
+      - name: render
+---
+case: set localization package to same value
+in:
+  - state:
+      global:
+        currentLocalizationPackageId: "default"
+        pendingEffects: []
+  - localizationPackageId: "default"
+out:
+  global:
+    currentLocalizationPackageId: "default"
+    pendingEffects:
+      - name: render
+---
+case: set localization package with existing pending effects
+in:
+  - state:
+      global:
+        currentLocalizationPackageId: "en"
+        pendingEffects:
+          - name: existingEffect
+            data: test
+  - localizationPackageId: "fr"
+out:
+  global:
+    currentLocalizationPackageId: "fr"
+    pendingEffects:
+      - name: existingEffect
+        data: test
+      - name: render
+---
+case: set localization package with multiple existing effects
+in:
+  - state:
+      global:
+        currentLocalizationPackageId: "es"
+        pendingEffects:
+          - name: effect1
+            data: value1
+          - name: effect2
+            data: value2
+  - localizationPackageId: "de"
+out:
+  global:
+    currentLocalizationPackageId: "de"
+    pendingEffects:
+      - name: effect1
+        data: value1
+      - name: effect2
+        data: value2
+      - name: render
+---
+case: set localization package with other global properties
+in:
+  - state:
+      global:
+        currentLocalizationPackageId: "en"
+        dialogueUIHidden: true
+        autoMode: false
+        skipMode: true
+        pendingEffects: []
+  - localizationPackageId: "zh"
+out:
+  global:
+    currentLocalizationPackageId: "zh"
+    dialogueUIHidden: true
+    autoMode: false
+    skipMode: true
+    pendingEffects:
+      - name: render
+---
+case: set localization package to empty string
+in:
+  - state:
+      global:
+        currentLocalizationPackageId: "default"
+        pendingEffects: []
+  - localizationPackageId: ""
+out:
+  global:
+    currentLocalizationPackageId: ""
+    pendingEffects:
+      - name: render

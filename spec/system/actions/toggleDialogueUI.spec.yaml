@@ -1,0 +1,98 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.toggleDialogueUI
+suites: [toggleDialogueUI]
+---
+suite: toggleDialogueUI
+exportName: toggleDialogueUI
+---
+case: toggle dialogue UI from hidden to visible
+in:
+  - state:
+      global:
+        dialogueUIHidden: true
+        pendingEffects: []
+out:
+  global:
+    dialogueUIHidden: false
+    pendingEffects:
+      - name: render
+---
+case: toggle dialogue UI from visible to hidden
+in:
+  - state:
+      global:
+        dialogueUIHidden: false
+        pendingEffects: []
+out:
+  global:
+    dialogueUIHidden: true
+    pendingEffects:
+      - name: render
+---
+case: toggle dialogue UI with existing pending effects (hidden to visible)
+in:
+  - state:
+      global:
+        dialogueUIHidden: true
+        pendingEffects:
+          - name: existingEffect
+            data: test
+out:
+  global:
+    dialogueUIHidden: false
+    pendingEffects:
+      - name: existingEffect
+        data: test
+      - name: render
+---
+case: toggle dialogue UI with existing pending effects (visible to hidden)
+in:
+  - state:
+      global:
+        dialogueUIHidden: false
+        pendingEffects:
+          - name: existingEffect
+            data: test
+out:
+  global:
+    dialogueUIHidden: true
+    pendingEffects:
+      - name: existingEffect
+        data: test
+      - name: render
+---
+case: toggle dialogue UI with multiple existing effects (hidden to visible)
+in:
+  - state:
+      global:
+        dialogueUIHidden: true
+        pendingEffects:
+          - name: effect1
+            data: value1
+          - name: effect2
+            data: value2
+out:
+  global:
+    dialogueUIHidden: false
+    pendingEffects:
+      - name: effect1
+        data: value1
+      - name: effect2
+        data: value2
+      - name: render
+---
+case: toggle dialogue UI with other global properties (visible to hidden)
+in:
+  - state:
+      global:
+        dialogueUIHidden: false
+        autoMode: true
+        skipMode: true
+        pendingEffects: []
+out:
+  global:
+    dialogueUIHidden: true
+    autoMode: true
+    skipMode: true
+    pendingEffects:
+      - name: render

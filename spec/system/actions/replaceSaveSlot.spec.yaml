@@ -1,0 +1,281 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.replaceSaveSlot
+suites: [replaceSaveSlot]
+---
+suite: replaceSaveSlot
+exportName: replaceSaveSlot
+---
+case: replace save slot in empty registry
+in:
+  - state:
+      global:
+        saveSlots: {}
+        pendingEffects: []
+  - slotKey: "1"
+    date: 1704110400
+    image: "iVBORw0KGgoAAAANSUhEUgAA..."
+    state:
+      level: 1
+      score: 0
+      playerName: "Hero"
+out:
+  global:
+    saveSlots:
+      "1":
+        slotKey: "1"
+        date: 1704110400
+        image: "iVBORw0KGgoAAAANSUhEUgAA..."
+        state:
+          level: 1
+          score: 0
+          playerName: "Hero"
+    pendingEffects:
+      - name: "render"
+---
+case: replace existing save slot
+in:
+  - state:
+      global:
+        saveSlots:
+          "1":
+            slotKey: "1"
+            date: 1704110400
+            image: "old_image.png"
+            state:
+              level: 5
+              score: 1000
+        pendingEffects: []
+  - slotKey: "1"
+    date: 1704110500
+    image: "new_image.png"
+    state:
+      level: 10
+      score: 2500
+      playerName: "Hero"
+out:
+  global:
+    saveSlots:
+      "1":
+        slotKey: "1"
+        date: 1704110500
+        image: "new_image.png"
+        state:
+          level: 10
+          score: 2500
+          playerName: "Hero"
+    pendingEffects:
+      - name: "render"
+---
+case: replace save slot with string slotKey
+in:
+  - state:
+      global:
+        saveSlots:
+          "1":
+            slotKey: "1"
+            date: 1704110400
+            image: "slot1.png"
+            state:
+              progress: 25
+          "autosave":
+            slotKey: "autosave"
+            date: 1704110300
+            image: "auto_old.png"
+            state:
+              auto: true
+        pendingEffects: []
+  - slotKey: "autosave"
+    date: 1704110600
+    image: "auto_new.png"
+    state:
+      auto: true
+      lastAction: "dialogue"
+      checkpoint: "chapter_3"
+out:
+  global:
+    saveSlots:
+      "1":
+        slotKey: "1"
+        date: 1704110400
+        image: "slot1.png"
+        state:
+          progress: 25
+      "autosave":
+        slotKey: "autosave"
+        date: 1704110600
+        image: "auto_new.png"
+        state:
+          auto: true
+          lastAction: "dialogue"
+          checkpoint: "chapter_3"
+    pendingEffects:
+      - name: "render"
+---
+case: replace save slot with existing pending effects
+in:
+  - state:
+      global:
+        saveSlots:
+          "2":
+            slotKey: "2"
+            date: 1704110400
+            image: "save2.png"
+            state:
+              completed: false
+        pendingEffects:
+          - name: "existingEffect"
+            data: "test"
+  - slotKey: "2"
+    date: 1704110700
+    image: "save2_updated.png"
+    state:
+      completed: true
+      endTime: 1704110800
+out:
+  global:
+    saveSlots:
+      "2":
+        slotKey: "2"
+        date: 1704110700
+        image: "save2_updated.png"
+        state:
+          completed: true
+          endTime: 1704110800
+    pendingEffects:
+      - name: "existingEffect"
+        data: "test"
+      - name: "render"
+---
+case: replace save slot with complex state object
+in:
+  - state:
+      global:
+        saveSlots:
+          "3":
+            slotKey: "3"
+            date: 1704110400
+            image: "old_save.png"
+            state:
+              player:
+                name: "Alice"
+                class: "Warrior"
+                level: 15
+              inventory:
+                - id: "sword_001"
+                  name: "Iron Sword"
+                - id: "potion_001"
+                  name: "Health Potion"
+              questLog:
+                active:
+                  - id: "quest_main"
+                    title: "Save the Kingdom"
+                    progress: 75
+        pendingEffects: []
+  - slotKey: "3"
+    date: 1704110800
+    image: "new_save.png"
+    state:
+      player:
+        name: "Alice"
+        class: "Warrior"
+        level: 20
+        stats:
+          hp: 150
+          mp: 50
+          strength: 25
+      inventory:
+        - id: "sword_001"
+          name: "Iron Sword"
+        - id: "sword_002"
+          name: "Steel Sword"
+        - id: "potion_001"
+          name: "Health Potion"
+      questLog:
+        active:
+          - id: "quest_main"
+            title: "Save the Kingdom"
+            progress: 100
+        completed:
+          - id: "quest_side1"
+            title: "Help the Villagers"
+out:
+  global:
+    saveSlots:
+      "3":
+        slotKey: "3"
+        date: 1704110800
+        image: "new_save.png"
+        state:
+          player:
+            name: "Alice"
+            class: "Warrior"
+            level: 20
+            stats:
+              hp: 150
+              mp: 50
+              strength: 25
+          inventory:
+            - id: "sword_001"
+              name: "Iron Sword"
+            - id: "sword_002"
+              name: "Steel Sword"
+            - id: "potion_001"
+              name: "Health Potion"
+          questLog:
+            active:
+              - id: "quest_main"
+                title: "Save the Kingdom"
+                progress: 100
+            completed:
+              - id: "quest_side1"
+                title: "Help the Villagers"
+    pendingEffects:
+      - name: "render"
+---
+case: replace save slot with other global properties unchanged
+in:
+  - state:
+      global:
+        saveSlots:
+          "1":
+            slotKey: "1"
+            date: 1704110400
+            image: "old.png"
+            state:
+              level: 1
+        autoMode: true
+        skipMode: false
+        dialogueUIHidden: false
+        currentLocalizationPackageId: "en"
+        nextLineConfig:
+          manual:
+            enabled: true
+            requireComplete: false
+        pendingEffects: []
+  - slotKey: "1"
+    date: 1704110900
+    image: "updated.png"
+    state:
+      level: 15
+      newFeature: true
+out:
+  global:
+    saveSlots:
+      "1":
+        slotKey: "1"
+        date: 1704110900
+        image: "updated.png"
+        state:
+          level: 15
+          newFeature: true
+    autoMode: true
+    skipMode: false
+    dialogueUIHidden: false
+    currentLocalizationPackageId: "en"
+    nextLineConfig:
+      manual:
+        enabled: true
+        requireComplete: false
+    pendingEffects:
+      - name: "render"
+

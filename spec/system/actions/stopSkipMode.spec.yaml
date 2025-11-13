@@ -1,0 +1,93 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.stopSkipMode
+suites: [stopSkipMode]
+---
+suite: stopSkipMode
+exportName: stopSkipMode
+---
+case: stop skip mode when enabled
+in:
+  - state:
+      global:
+        skipMode: true
+        autoMode: false
+        pendingEffects: []
+out:
+  global:
+    skipMode: false
+    autoMode: false
+    pendingEffects:
+      - name: clearSkipNextTimer
+      - name: render
+---
+case: stop skip mode when already disabled
+in:
+  - state:
+      global:
+        skipMode: false
+        autoMode: false
+        pendingEffects: []
+out:
+  global:
+    skipMode: false
+    autoMode: false
+    pendingEffects:
+      - name: clearSkipNextTimer
+      - name: render
+---
+case: stop skip mode with existing pending effects
+in:
+  - state:
+      global:
+        skipMode: true
+        autoMode: false
+        pendingEffects:
+          - name: existingEffect
+            data: test
+out:
+  global:
+    skipMode: false
+    autoMode: false
+    pendingEffects:
+      - name: existingEffect
+        data: test
+      - name: clearSkipNextTimer
+      - name: render
+---
+case: stop skip mode with auto mode enabled
+in:
+  - state:
+      global:
+        skipMode: true
+        autoMode: true
+        pendingEffects: []
+out:
+  global:
+    skipMode: false
+    autoMode: true
+    pendingEffects:
+      - name: clearSkipNextTimer
+      - name: render
+---
+case: stop skip mode with multiple existing effects
+in:
+  - state:
+      global:
+        skipMode: true
+        autoMode: false
+        pendingEffects:
+          - name: effect1
+            data: value1
+          - name: effect2
+            data: value2
+out:
+  global:
+    skipMode: false
+    autoMode: false
+    pendingEffects:
+      - name: effect1
+        data: value1
+      - name: effect2
+        data: value2
+      - name: clearSkipNextTimer
+      - name: render

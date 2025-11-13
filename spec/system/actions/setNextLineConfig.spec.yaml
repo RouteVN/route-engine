@@ -1,0 +1,224 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.setNextLineConfig
+suites: [setNextLineConfig]
+---
+suite: setNextLineConfig
+exportName: setNextLineConfig
+---
+case: set complete next line config
+in:
+  - state:
+      global:
+        nextLineConfig:
+          manual:
+            enabled: true
+            requireComplete: false
+          auto:
+            trigger: "fromComplete"
+            delay: 1000
+        pendingEffects: []
+  - nextLineConfig:
+      manual:
+        enabled: false
+        requireComplete: true
+      auto:
+        trigger: "fromStart"
+        delay: 2000
+out:
+  global:
+    nextLineConfig:
+      manual:
+        enabled: false
+        requireComplete: true
+      auto:
+        trigger: "fromStart"
+        delay: 2000
+    pendingEffects:
+      - name: "render"
+---
+case: set partial next line config (only manual)
+in:
+  - state:
+      global:
+        nextLineConfig:
+          manual:
+            enabled: true
+            requireComplete: false
+          auto:
+            trigger: "fromComplete"
+            delay: 1000
+        pendingEffects: []
+  - nextLineConfig:
+      manual:
+        enabled: false
+        requireComplete: true
+out:
+  global:
+    nextLineConfig:
+      manual:
+        enabled: false
+        requireComplete: true
+      auto:
+        trigger: "fromComplete"
+        delay: 1000
+    pendingEffects:
+      - name: "render"
+---
+case: set partial next line config (only auto)
+in:
+  - state:
+      global:
+        nextLineConfig:
+          manual:
+            enabled: true
+            requireComplete: false
+          auto:
+            trigger: "fromComplete"
+            delay: 1000
+        pendingEffects: []
+  - nextLineConfig:
+      auto:
+        trigger: "fromStart"
+        delay: 500
+out:
+  global:
+    nextLineConfig:
+      manual:
+        enabled: true
+        requireComplete: false
+      auto:
+        trigger: "fromStart"
+        delay: 500
+    pendingEffects:
+      - name: "render"
+---
+case: set next line config with existing pending effects
+in:
+  - state:
+      global:
+        nextLineConfig:
+          manual:
+            enabled: true
+            requireComplete: false
+          auto:
+            trigger: "fromComplete"
+            delay: 1000
+        pendingEffects:
+          - name: "existingEffect"
+            data: "test"
+  - nextLineConfig:
+      manual:
+        enabled: false
+        requireComplete: false
+      auto:
+        trigger: "fromComplete"
+        delay: 1500
+out:
+  global:
+    nextLineConfig:
+      manual:
+        enabled: false
+        requireComplete: false
+      auto:
+        trigger: "fromComplete"
+        delay: 1500
+    pendingEffects:
+      - name: "existingEffect"
+        data: "test"
+      - name: "render"
+---
+case: set next line config to same values (idempotent)
+in:
+  - state:
+      global:
+        nextLineConfig:
+          manual:
+            enabled: true
+            requireComplete: true
+          auto:
+            trigger: "fromStart"
+            delay: 3000
+        pendingEffects: []
+  - nextLineConfig:
+      manual:
+        enabled: true
+        requireComplete: true
+      auto:
+        trigger: "fromStart"
+        delay: 3000
+out:
+  global:
+    nextLineConfig:
+      manual:
+        enabled: true
+        requireComplete: true
+      auto:
+        trigger: "fromStart"
+        delay: 3000
+    pendingEffects:
+      - name: "render"
+---
+case: set next line config with minimal values
+in:
+  - state:
+      global:
+        nextLineConfig:
+          manual:
+            enabled: true
+            requireComplete: false
+          auto:
+            trigger: "fromComplete"
+            delay: 1000
+        pendingEffects: []
+  - nextLineConfig:
+      manual:
+        enabled: true
+      auto:
+        delay: 0
+out:
+  global:
+    nextLineConfig:
+      manual:
+        enabled: true
+      auto:
+        delay: 0
+    pendingEffects:
+      - name: "render"
+---
+case: set next line config with other global properties unchanged
+in:
+  - state:
+      global:
+        nextLineConfig:
+          manual:
+            enabled: true
+            requireComplete: false
+          auto:
+            trigger: "fromComplete"
+            delay: 1000
+        autoMode: true
+        skipMode: false
+        dialogueUIHidden: false
+        currentLocalizationPackageId: "en"
+        pendingEffects: []
+  - nextLineConfig:
+      manual:
+        enabled: false
+      auto:
+        trigger: "fromStart"
+        delay: 2000
+out:
+  global:
+    nextLineConfig:
+      manual:
+        enabled: false
+      auto:
+        trigger: "fromStart"
+        delay: 2000
+    autoMode: true
+    skipMode: false
+    dialogueUIHidden: false
+    currentLocalizationPackageId: "en"
+    pendingEffects:
+      - name: "render"
+
