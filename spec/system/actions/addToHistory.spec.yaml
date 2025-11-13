@@ -1,0 +1,173 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.addToHistory
+suites: [addToHistory]
+---
+suite: addToHistory
+exportName: addToHistory
+---
+case: add item to history with empty history
+in:
+  - state:
+      global:
+        pendingEffects: []
+      contexts:
+        - history: []
+  - item:
+      sectionId: "intro"
+      lineId: "1"
+      timestamp: 1704110400
+out:
+  global:
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - history:
+        - sectionId: "intro"
+          lineId: "1"
+          timestamp: 1704110400
+---
+case: add item to history with existing items
+in:
+  - state:
+      global:
+        pendingEffects: []
+      contexts:
+        - history:
+            - sectionId: "intro"
+              lineId: "1"
+              timestamp: 1704110400
+            - sectionId: "intro"
+              lineId: "2"
+              timestamp: 1704110405
+  - item:
+      sectionId: "intro"
+      lineId: "3"
+      timestamp: 1704110410
+out:
+  global:
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - history:
+        - sectionId: "intro"
+          lineId: "1"
+          timestamp: 1704110400
+        - sectionId: "intro"
+          lineId: "2"
+          timestamp: 1704110405
+        - sectionId: "intro"
+          lineId: "3"
+          timestamp: 1704110410
+---
+case: add item to history with multiple contexts (should add to last one)
+in:
+  - state:
+      global:
+        pendingEffects: []
+      contexts:
+        - history:
+            - sectionId: "chapter1"
+              lineId: "1"
+              timestamp: 1704110400
+        - history:
+            - sectionId: "menu"
+              lineId: "options"
+              timestamp: 1704110500
+  - item:
+      sectionId: "menu"
+      lineId: "save"
+      timestamp: 1704110550
+out:
+  global:
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - history:
+        - sectionId: "chapter1"
+          lineId: "1"
+          timestamp: 1704110400
+    - history:
+        - sectionId: "menu"
+          lineId: "options"
+          timestamp: 1704110500
+        - sectionId: "menu"
+          lineId: "save"
+          timestamp: 1704110550
+---
+case: add item to history with existing pending effects
+in:
+  - state:
+      global:
+        pendingEffects:
+          - name: "existingEffect"
+            data: "test"
+      contexts:
+        - history: []
+  - item:
+      sectionId: "intro"
+      lineId: "1"
+      action: "dialogue"
+out:
+  global:
+    pendingEffects:
+      - name: "existingEffect"
+        data: "test"
+      - name: "render"
+  contexts:
+    - history:
+        - sectionId: "intro"
+          lineId: "1"
+          action: "dialogue"
+---
+case: add complex item to history
+in:
+  - state:
+      global:
+        pendingEffects: []
+      contexts:
+        - history:
+            - sectionId: "intro"
+              lineId: "1"
+              timestamp: 1704110400
+  - item:
+      sectionId: "intro"
+      lineId: "2"
+      timestamp: 1704110405
+      type: "choice"
+      choice:
+        text: "Continue story"
+        options:
+          - id: "option1"
+            text: "Yes"
+            nextSection: "branch1"
+          - id: "option2"
+            text: "No"
+            nextSection: "branch2"
+      metadata:
+        musicTrack: "theme1"
+        backgroundImage: "scene1.png"
+out:
+  global:
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - history:
+        - sectionId: "intro"
+          lineId: "1"
+          timestamp: 1704110400
+        - sectionId: "intro"
+          lineId: "2"
+          timestamp: 1704110405
+          type: "choice"
+          choice:
+            text: "Continue story"
+            options:
+              - id: "option1"
+                text: "Yes"
+                nextSection: "branch1"
+              - id: "option2"
+                text: "No"
+                nextSection: "branch2"
+          metadata:
+            musicTrack: "theme1"
+            backgroundImage: "scene1.png"

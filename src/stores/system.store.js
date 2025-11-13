@@ -26,9 +26,15 @@ export const createInitialState = (payload) => {
         }
       },
       saveSlots: {},
-      // history: [],
     },
     contexts: [{
+      history: [{
+        type: 'session',
+        sessiontId: '...'
+      }, {
+        type: 'session',
+        sessionId: '...'
+      }],
       currentModeId: 'normal',
       currentPointerId: 'read',
       configuration: {},
@@ -336,6 +342,22 @@ export const replaceSaveSlot = ({ state }, payload) => {
     image,
     state: slotState
   };
+
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+  return state;
+};
+
+export const addToHistory = ({ state }, payload) => {
+  const { item } = payload;
+
+  // Get the last context (assuming we want to add to the most recent context)
+  const lastContext = state.contexts[state.contexts.length - 1];
+
+  if (lastContext && lastContext.history) {
+    lastContext.history.push(item);
+  }
 
   state.global.pendingEffects.push({
     name: "render",
