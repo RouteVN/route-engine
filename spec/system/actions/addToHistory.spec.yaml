@@ -11,20 +11,16 @@ in:
       global:
         pendingEffects: []
       contexts:
-        - history: []
+        - historySequence: []
   - item:
       sectionId: "intro"
-      lineId: "1"
-      timestamp: 1704110400
 out:
   global:
     pendingEffects:
       - name: "render"
   contexts:
-    - history:
+    - historySequence:
         - sectionId: "intro"
-          lineId: "1"
-          timestamp: 1704110400
 ---
 case: add item to history with existing items
 in:
@@ -32,32 +28,20 @@ in:
       global:
         pendingEffects: []
       contexts:
-        - history:
+        - historySequence:
             - sectionId: "intro"
-              lineId: "1"
-              timestamp: 1704110400
             - sectionId: "intro"
-              lineId: "2"
-              timestamp: 1704110405
   - item:
       sectionId: "intro"
-      lineId: "3"
-      timestamp: 1704110410
 out:
   global:
     pendingEffects:
       - name: "render"
   contexts:
-    - history:
+    - historySequence:
         - sectionId: "intro"
-          lineId: "1"
-          timestamp: 1704110400
         - sectionId: "intro"
-          lineId: "2"
-          timestamp: 1704110405
         - sectionId: "intro"
-          lineId: "3"
-          timestamp: 1704110410
 ---
 case: add item to history with multiple contexts (should add to last one)
 in:
@@ -65,34 +49,22 @@ in:
       global:
         pendingEffects: []
       contexts:
-        - history:
+        - historySequence:
             - sectionId: "chapter1"
-              lineId: "1"
-              timestamp: 1704110400
-        - history:
+        - historySequence:
             - sectionId: "menu"
-              lineId: "options"
-              timestamp: 1704110500
   - item:
       sectionId: "menu"
-      lineId: "save"
-      timestamp: 1704110550
 out:
   global:
     pendingEffects:
       - name: "render"
   contexts:
-    - history:
+    - historySequence:
         - sectionId: "chapter1"
-          lineId: "1"
-          timestamp: 1704110400
-    - history:
+    - historySequence:
         - sectionId: "menu"
-          lineId: "options"
-          timestamp: 1704110500
         - sectionId: "menu"
-          lineId: "save"
-          timestamp: 1704110550
 ---
 case: add item to history with existing pending effects
 in:
@@ -102,10 +74,9 @@ in:
           - name: "existingEffect"
             data: "test"
       contexts:
-        - history: []
+        - historySequence: []
   - item:
       sectionId: "intro"
-      lineId: "1"
       action: "dialogue"
 out:
   global:
@@ -114,9 +85,8 @@ out:
         data: "test"
       - name: "render"
   contexts:
-    - history:
+    - historySequence:
         - sectionId: "intro"
-          lineId: "1"
           action: "dialogue"
 ---
 case: add complex item to history
@@ -125,14 +95,10 @@ in:
       global:
         pendingEffects: []
       contexts:
-        - history:
+        - historySequence:
             - sectionId: "intro"
-              lineId: "1"
-              timestamp: 1704110400
   - item:
       sectionId: "intro"
-      lineId: "2"
-      timestamp: 1704110405
       type: "choice"
       choice:
         text: "Continue story"
@@ -151,13 +117,9 @@ out:
     pendingEffects:
       - name: "render"
   contexts:
-    - history:
+    - historySequence:
         - sectionId: "intro"
-          lineId: "1"
-          timestamp: 1704110400
         - sectionId: "intro"
-          lineId: "2"
-          timestamp: 1704110405
           type: "choice"
           choice:
             text: "Continue story"

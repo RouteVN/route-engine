@@ -53,9 +53,11 @@ export const createInitialState = (payload) => {
       currentPointerMode: 'read',
       pointers: {
         read: initialPointer,
-        history: { sectionId: undefined, lineId: undefined },
+        history: { sectionId: undefined, lineId: undefined, historySequenceIndex: undefined },
       },
-      history: [],
+      historySequence: [{
+        sectionId: '...',
+      }],
       configuration: {},
       views: [],
       bgm: {
@@ -449,10 +451,10 @@ export const replaceSaveSlot = ({ state }, payload) => {
 };
 
 /**
- * Adds an item to the history of the last context
+ * Adds an item to the historySequence of the last context
  * @param {Object} state - Current state object
  * @param {Object} payload - Action payload
- * @param {Object} payload.item - The history item to add (can be any structure)
+ * @param {Object} payload.item - The historySequence item to add (can be any structure)
  * @returns {Object} Updated state object
  */
 export const addToHistory = ({ state }, payload) => {
@@ -461,8 +463,8 @@ export const addToHistory = ({ state }, payload) => {
   // Get the last context (assuming we want to add to the most recent context)
   const lastContext = state.contexts[state.contexts.length - 1];
 
-  if (lastContext && lastContext.history) {
-    lastContext.history.push(item);
+  if (lastContext && lastContext.historySequence) {
+    lastContext.historySequence.push(item);
   }
 
   state.global.pendingEffects.push({
@@ -470,4 +472,112 @@ export const addToHistory = ({ state }, payload) => {
   });
   return state;
 };
+
+export const nextLine = ({ state }, payload) => {
+  const { sectionId } = payload;
+  const section = selectSection({ state }, { sectionId });
+  const pointer = selectCurrentPointer({ state })?.pointer;
+
+  const lines = section?.lines || [];
+
+  const currentLineIndex = lines.findIndex(line => line.id === pointer?.lineId);
+  const nextLineIndex = currentLineIndex + 1;
+
+  if (nextLineIndex < lines.length) {
+    const nextLine = lines[nextLineIndex];
+    const lastContext = state.contexts[state.contexts.length - 1];
+
+    if (lastContext) {
+      lastContext.pointers.read = {
+        sectionId,
+        lineId: nextLine.id
+      };
+    }
+
+    state.global.pendingEffects.push({
+      name: "render",
+    });
+  }
+  return state;
+};
+
+/**
+ * Navigate to the previous line using history pointer
+ * @param {Object} state - Current state object
+ * @param {Object} payload - Action payload
+ * @param {string} payload.sectionId - The section ID to navigate in
+ * @returns {Object} Updated state object
+ */
+export const prevLine = ({ state }, payload) => {
+  const { sectionId } = payload;
+  const section = selectSection({ state }, { sectionId });
+
+  // Return early if section doesn't exist
+  if (!section || !section.lines || section.lines.length === 0) {
+    return state;
+  }
+
+  const lines = section.lines;
+  const lastContext = state.contexts[state.contexts.length - 1];
+
+  if (!lastContext || !lastContext.pointers) {
+    return state;
+  }
+
+  // Get current history pointer or use read pointer as fallback
+  const currentPointer = lastContext.pointers.history || lastContext.pointers.read;
+
+  // If we're already in history mode, keep history pointer and move it back
+  // Otherwise, switch to history mode and initialize it (only if we have a valid currentPointer)
+  if (lastContext.currentPointerId !== 'history' || !lastContext.pointers.history) {
+    // Only switch to history mode if we have a valid current pointer to work with
+    if (!currentPointer) {
+      return state;
+    }
+
+    // Switch to history mode, initialize history pointer with current position
+    lastContext.currentPointerId = 'history';
+    lastContext.pointers.history = {
+      sectionId,
+      lineId: currentPointer?.lineId
+    };
+
+    // Immediately move to previous line after switching to history mode
+    const currentLineIndex = lines.findIndex(line => line.id === currentPointer.lineId);
+    const prevLineIndex = currentLineIndex - 1;
+
+    if (prevLineIndex >= 0 && prevLineIndex < lines.length) {
+      const prevLine = lines[prevLineIndex];
+      lastContext.pointers.history = {
+        sectionId,
+        lineId: prevLine.id
+      };
+    }
+
+    // Add render effect for mode change
+    state.global.pendingEffects.push({
+      name: "render",
+    });
+
+    return state;
+  }
+
+  // Already in history mode, move history pointer to previous line
+  const currentLineIndex = lines.findIndex(line => line.id === lastContext.pointers.history.lineId);
+  const prevLineIndex = currentLineIndex - 1;
+
+  if (prevLineIndex >= 0 && prevLineIndex < lines.length) {
+    const prevLine = lines[prevLineIndex];
+    lastContext.pointers.history = {
+      sectionId,
+      lineId: prevLine.id
+    };
+
+    state.global.pendingEffects.push({
+      name: "render",
+    });
+  }
+
+  return state;
+}
 

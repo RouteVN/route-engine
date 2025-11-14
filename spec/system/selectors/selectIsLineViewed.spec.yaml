@@ -1,0 +1,300 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore selectors
+suites:
+  [
+    selectIsLineViewed,
+  ]
+---
+suite: selectIsLineViewed
+exportName: selectIsLineViewed
+---
+case: section not found
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "abc"
+              lastLineId: "10"
+  - sectionId: "xyz"
+    lineId: "5"
+out: false
+---
+case: section fully viewed (lastLineId undefined) with lineId
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "abc"
+  - sectionId: "abc"
+    lineId: "anyLineId"
+out: true
+---
+case: section fully viewed (lastLineId undefined) without lineId
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "abc"
+  - sectionId: "abc"
+out: true
+---
+case: section exists with lastLineId, no lineId provided
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "abc"
+              lastLineId: "10"
+  - sectionId: "abc"
+out: true
+---
+case: lineId equals lastLineId
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "abc"
+              lastLineId: "10"
+  - sectionId: "abc"
+    lineId: "10"
+out: false
+---
+case: lineId before lastLineId (numeric comparison)
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "abc"
+              lastLineId: "10"
+  - sectionId: "abc"
+    lineId: "5"
+out: false
+---
+case: lineId after lastLineId (numeric comparison)
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "abc"
+              lastLineId: "10"
+  - sectionId: "abc"
+    lineId: "15"
+out: false
+---
+case: lineId before lastLineId with projectData (index comparison)
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "intro"
+              lastLineId: "3"
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                intro:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+                    - id: "3"
+                      actions: {}
+                    - id: "4"
+                      actions: {}
+                    - id: "5"
+                      actions: {}
+  - sectionId: "intro"
+    lineId: "2"
+out: true
+---
+case: lineId equals lastLineId with projectData
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "intro"
+              lastLineId: "3"
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                intro:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+                    - id: "3"
+                      actions: {}
+                    - id: "4"
+                      actions: {}
+  - sectionId: "intro"
+    lineId: "3"
+out: false
+---
+case: lineId after lastLineId with projectData
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "intro"
+              lastLineId: "2"
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                intro:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+                    - id: "3"
+                      actions: {}
+                    - id: "4"
+                      actions: {}
+  - sectionId: "intro"
+    lineId: "4"
+out: false
+---
+case: lineId not found in projectData lines
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "intro"
+              lastLineId: "3"
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                intro:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+                    - id: "3"
+                      actions: {}
+  - sectionId: "intro"
+    lineId: "nonexistent"
+out: false
+---
+case: lastLineId not found in projectData lines
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "intro"
+              lastLineId: "99"
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                intro:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+                    - id: "3"
+                      actions: {}
+  - sectionId: "intro"
+    lineId: "2"
+out: false
+---
+case: section found in projectData but no lines array
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "intro"
+              lastLineId: "2"
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                intro:
+                  {}
+                  # No lines array
+  - sectionId: "intro"
+    lineId: "1"
+out: false
+---
+case: complex section structure with multiple line types
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "section1"
+              lastLineId: "line3"
+      projectData:
+        story:
+          scenes:
+            mainScene:
+              sections:
+                section1:
+                  lines:
+                    - id: "line1"
+                      actions: {}
+                    - id: "line2"
+                      actions: {}
+                    - id: "line3"
+                      actions: {}
+                    - id: "line4"
+                      actions: {}
+                    - id: "line5"
+                      actions: {}
+  - sectionId: "section1"
+    lineId: "line2"
+out: true
+---
+case: multiple sections, check viewed section
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "abc"
+              lastLineId: "10"
+            - sectionId: "xyz"
+            - sectionId: "def"
+              lastLineId: "20"
+  - sectionId: "xyz"
+    lineId: "anyLineId"
+out: true
+---
+case: multiple sections, check unviewed section
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "abc"
+              lastLineId: "10"
+            - sectionId: "xyz"
+              lastLineId: undefined
+  - sectionId: "notfound"
+    lineId: "5"
+out: false

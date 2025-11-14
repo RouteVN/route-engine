@@ -1,0 +1,139 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.nextLine
+suites: [nextLine]
+---
+suite: nextLine
+exportName: nextLine
+---
+case: move to next line
+in:
+  - state:
+      global:
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+                    - id: "3"
+                      actions: {}
+      contexts:
+        - currentPointerId: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+  - sectionId: "section1"
+out:
+  global:
+    pendingEffects:
+      - name: "render"
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions: {}
+                - id: "2"
+                  actions: {}
+                - id: "3"
+                  actions: {}
+  contexts:
+    - currentPointerId: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "2"
+---
+case: already at last line (no change)
+in:
+  - state:
+      global:
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+      contexts:
+        - currentPointerId: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+  - sectionId: "section1"
+out:
+  global:
+    pendingEffects: []
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions: {}
+                - id: "2"
+                  actions: {}
+  contexts:
+    - currentPointerId: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "2"
+---
+case: no section found
+in:
+  - state:
+      global:
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                otherSection:
+                  lines:
+                    - id: "1"
+                      actions: {}
+      contexts:
+        - currentPointerId: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+  - sectionId: "section1"
+out:
+  global:
+    pendingEffects: []
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            otherSection:
+              lines:
+                - id: "1"
+                  actions: {}
+  contexts:
+    - currentPointerId: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "1"

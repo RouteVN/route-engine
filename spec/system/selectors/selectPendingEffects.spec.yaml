@@ -1,0 +1,25 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore selectors
+suites:
+  [
+    selectPendingEffects,
+  ]
+---
+suite: selectPendingEffects
+exportName: selectPendingEffects
+---
+case: empty pending effects
+in:
+  - state:
+      global:
+        pendingEffects: []
+out: []
+---
+case: pending effects with items
+in:
+  - state:
+      global:
+        pendingEffects:
+          - type: "asdf"
+out:
+  - type: "asdf"

@@ -222,6 +222,13 @@ properties:
         configuration:
           $ref: './configuration.yaml'
 
+        historySequence:
+          type: array
+          description: History sequence tracking user interactions
+          items:
+            type: object
+            description: History entry
+          default: []
 
-required: [variables, currentLanguagePackId, history, currentMode, modes]
+required: [variables, currentLanguagePackId, historySequence, currentMode, modes]
 additionalProperties: false

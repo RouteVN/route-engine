@@ -1,0 +1,122 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore selectors
+suites:
+  [
+    selectSection,
+  ]
+---
+suite: selectSection
+exportName: selectSection
+---
+case: section found in first scene
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                intro:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+            scene2:
+              sections:
+                outro:
+                  lines:
+                    - id: "3"
+                      actions: {}
+  - sectionId: "intro"
+out:
+  lines:
+    - id: "1"
+      actions: {}
+    - id: "2"
+      actions: {}
+---
+case: section found in second scene
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                intro:
+                  lines:
+                    - id: "1"
+                      actions: {}
+            scene2:
+              sections:
+                outro:
+                  lines:
+                    - id: "3"
+                      actions: {}
+  - sectionId: "outro"
+out:
+  lines:
+    - id: "3"
+      actions: {}
+---
+case: section not found
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                intro:
+                  lines:
+                    - id: "1"
+                      text: "Hello"
+  - sectionId: "nonexistent"
+out: __undefined__
+---
+case: empty project data
+in:
+  - state:
+      projectData: {}
+  - sectionId: "intro"
+out: __undefined__
+---
+case: empty scenes
+in:
+  - state:
+      projectData:
+        story:
+          scenes: {}
+  - sectionId: "intro"
+out: __undefined__
+---
+case: no scenes in project data
+in:
+  - state:
+      projectData:
+        story: {}
+  - sectionId: "intro"
+out: __undefined__
+---
+case: section with complex data
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            mainScene:
+              sections:
+                section1:
+                  lines:
+                    - id: "line1"
+                      actions: {}
+                    - id: "line2"
+                      actions: {}
+  - sectionId: "section1"
+out:
+  lines:
+    - id: "line1"
+      actions: {}
+    - id: "line2"
+      actions: {}

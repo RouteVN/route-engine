@@ -1,0 +1,202 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.prevLine
+suites: [prevLine]
+---
+suite: prevLine
+exportName: prevLine
+---
+case: switch from read mode to history mode (middle of section)
+in:
+  - state:
+      global:
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+                    - id: "3"
+                      actions: {}
+                    - id: "4"
+                      actions: {}
+      contexts:
+        - currentPointerId: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "3"
+  - sectionId: "section1"
+out:
+  global:
+    pendingEffects:
+      - name: "render"
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions: {}
+                - id: "2"
+                  actions: {}
+                - id: "3"
+                  actions: {}
+                - id: "4"
+                  actions: {}
+  contexts:
+    - currentPointerId: "history"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "3"
+        history:
+          sectionId: "section1"
+          lineId: "2"
+---
+case: switch from read mode to history mode (first line)
+in:
+  - state:
+      global:
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+                    - id: "3"
+                      actions: {}
+      contexts:
+        - currentPointerId: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+  - sectionId: "section1"
+out:
+  global:
+    pendingEffects:
+      - name: "render"
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions: {}
+                - id: "2"
+                  actions: {}
+                - id: "3"
+                  actions: {}
+  contexts:
+    - currentPointerId: "history"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "1"
+        history:
+          sectionId: "section1"
+          lineId: "1"
+---
+case: already at first line in history mode (no change)
+in:
+  - state:
+      global:
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+                    - id: "3"
+                      actions: {}
+      contexts:
+        - currentPointerId: "history"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "3"
+            history:
+              sectionId: "section1"
+              lineId: "1"
+  - sectionId: "section1"
+out:
+  global:
+    pendingEffects: []
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions: {}
+                - id: "2"
+                  actions: {}
+                - id: "3"
+                  actions: {}
+  contexts:
+    - currentPointerId: "history"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "3"
+        history:
+          sectionId: "section1"
+          lineId: "1"
+---
+case: no contexts (no change)
+in:
+  - state:
+      global:
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+      contexts: []
+  - sectionId: "section1"
+out:
+  global:
+    pendingEffects: []
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions: {}
+                - id: "2"
+                  actions: {}
+  contexts: []
