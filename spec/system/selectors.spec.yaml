@@ -9,6 +9,7 @@ suites:
     selectIsResourceViewed,
     selectSaveSlots,
     selectSaveSlot,
+    selectCurrentPointer,
   ]
 ---
 # suite: createInitialState
@@ -159,6 +160,188 @@ in:
   - sectionId: "abc"
     lineId: "15"
 out: false
+---
+case: lineId before lastLineId with projectData (index comparison)
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "intro"
+              lastLineId: "3"
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                intro:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+                    - id: "3"
+                      actions: {}
+                    - id: "4"
+                      actions: {}
+                    - id: "5"
+                      actions: {}
+  - sectionId: "intro"
+    lineId: "2"
+out: true
+---
+case: lineId equals lastLineId with projectData
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "intro"
+              lastLineId: "3"
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                intro:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+                    - id: "3"
+                      actions: {}
+                    - id: "4"
+                      actions: {}
+  - sectionId: "intro"
+    lineId: "3"
+out: false
+---
+case: lineId after lastLineId with projectData
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "intro"
+              lastLineId: "2"
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                intro:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+                    - id: "3"
+                      actions: {}
+                    - id: "4"
+                      actions: {}
+  - sectionId: "intro"
+    lineId: "4"
+out: false
+---
+case: lineId not found in projectData lines
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "intro"
+              lastLineId: "3"
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                intro:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+                    - id: "3"
+                      actions: {}
+  - sectionId: "intro"
+    lineId: "nonexistent"
+out: false
+---
+case: lastLineId not found in projectData lines
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "intro"
+              lastLineId: "99"
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                intro:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+                    - id: "3"
+                      actions: {}
+  - sectionId: "intro"
+    lineId: "2"
+out: false
+---
+case: section found in projectData but no lines array
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "intro"
+              lastLineId: "2"
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                intro:
+                  {}
+                  # No lines array
+  - sectionId: "intro"
+    lineId: "1"
+out: false
+---
+case: complex section structure with multiple line types
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "section1"
+              lastLineId: "line3"
+      projectData:
+        story:
+          scenes:
+            mainScene:
+              sections:
+                section1:
+                  lines:
+                    - id: "line1"
+                      actions: {}
+                    - id: "line2"
+                      actions: {}
+                    - id: "line3"
+                      actions: {}
+                    - id: "line4"
+                      actions: {}
+                    - id: "line5"
+                      actions: {}
+  - sectionId: "section1"
+    lineId: "line2"
+out: true
 ---
 case: multiple sections, check viewed section
 in:
@@ -439,4 +622,225 @@ in:
       global:
         saveSlots: {}
   - slotKey: "1"
-out: "__undefined__"
+out: __undefined__
+
+---
+suite: selectCurrentPointer
+exportName: selectCurrentPointer
+---
+case: no contexts available
+in:
+  - state:
+      global: {}
+      contexts: []
+out: __undefined__
+---
+case: single context with read pointer
+in:
+  - state:
+      global: {}
+      contexts:
+        - currentPointerId: "read"
+          pointers:
+            read: { sectionId: "intro", lineId: "1" }
+            history: { sectionId: "intro", lineId: "1" }
+out:
+  currentPointerMode: "read"
+  pointer:
+    sectionId: "intro"
+    lineId: "1"
+---
+case: single context with history pointer
+in:
+  - state:
+      global: {}
+      contexts:
+        - currentPointerId: "history"
+          pointers:
+            read: { sectionId: "intro", lineId: "1" }
+            history: { sectionId: "chapter1", lineId: "5" }
+out:
+  currentPointerMode: "history"
+  pointer:
+    sectionId: "chapter1"
+    lineId: "5"
+---
+case: multiple contexts (should select last one)
+in:
+  - state:
+      global: {}
+      contexts:
+        - currentPointerId: "read"
+          pointers:
+            read: { sectionId: "intro", lineId: "1" }
+            history: { sectionId: "intro", lineId: "1" }
+        - currentPointerId: "menu"
+          pointers:
+            read: { sectionId: undefined, lineId: undefined }
+            history: { sectionId: "menu", lineId: "save" }
+        - currentPointerId: "history"
+          pointers:
+            read: { sectionId: undefined, lineId: undefined }
+            history: { sectionId: "inventory", lineId: "items" }
+out:
+  currentPointerMode: "history"
+  pointer:
+    sectionId: "inventory"
+    lineId: "items"
+---
+case: context with missing pointer mode
+in:
+  - state:
+      global: {}
+      contexts:
+        - currentPointerId: "nonexistent"
+          pointers:
+            read: { sectionId: "intro", lineId: "1" }
+            history: { sectionId: "intro", lineId: "1" }
+out:
+  currentPointerMode: "nonexistent"
+---
+case: context with missing pointers object
+in:
+  - state:
+      global: {}
+      contexts:
+        - currentPointerId: "read"
+out:
+  currentPointerMode: "read"
+---
+case: context with complex pointer data
+in:
+  - state:
+      global: {}
+      contexts:
+        - currentPointerId: "read"
+          pointers:
+            read:
+              sectionId: "chapter1"
+              lineId: 42
+              metadata: { scene: "dialogue", character: "hero" }
+              flags: ["canSkip", "hasChoices"]
+            history: { sectionId: "intro", lineId: "1" }
+out:
+  currentPointerMode: "read"
+  pointer:
+    sectionId: "chapter1"
+    lineId: 42
+    metadata: { scene: "dialogue", character: "hero" }
+    flags: ["canSkip", "hasChoices"]
+---
+suite: selectSection
+exportName: selectSection
+case: section found in first scene
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                intro:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+            scene2:
+              sections:
+                outro:
+                  lines:
+                    - id: "3"
+                      actions: {}
+  - sectionId: "intro"
+out:
+  lines:
+    - id: "1"
+      actions: {}
+    - id: "2"
+      actions: {}
+---
+case: section found in second scene
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                intro:
+                  lines:
+                    - id: "1"
+                      actions: {}
+            scene2:
+              sections:
+                outro:
+                  lines:
+                    - id: "3"
+                      actions: {}
+  - sectionId: "outro"
+out:
+  lines:
+    - id: "3"
+      actions: {}
+---
+case: section not found
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                intro:
+                  lines:
+                    - id: "1"
+                      text: "Hello"
+  - sectionId: "nonexistent"
+out: __undefined__
+---
+case: empty project data
+in:
+  - state:
+      projectData: {}
+  - sectionId: "intro"
+out: __undefined__
+---
+case: empty scenes
+in:
+  - state:
+      projectData:
+        story:
+          scenes: {}
+  - sectionId: "intro"
+out: __undefined__
+---
+case: no scenes in project data
+in:
+  - state:
+      projectData:
+        story: {}
+  - sectionId: "intro"
+out: __undefined__
+---
+case: section with complex data
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            mainScene:
+              sections:
+                section1:
+                  lines:
+                    - id: "line1"
+                      actions: {}
+                    - id: "line2"
+                      actions: {}
+  - sectionId: "section1"
+out:
+  lines:
+    - id: "line1"
+      actions: {}
+    - id: "line2"
+      actions: {}

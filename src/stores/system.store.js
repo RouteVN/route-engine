@@ -3,9 +3,31 @@ export const createInitialState = (payload) => {
   const {
     global: {
       currentLocalizationPackageId,
-    }
+    },
+    initialPointer,
+    projectData,
   } = payload;
   const state = {
+    // projectData,
+    projectData: {
+      story: {
+        scenes: {
+          somesceneid: {
+            sections: {
+              somesectionid: {
+                lines: [{
+                  id: '3fal',
+                  actions: {}
+                }, {
+                  id: '3fal',
+                  actions: {}
+                }]
+              }
+            }
+          }
+        }
+      }
+    },
     global: {
       pendingEffects: [],
       autoMode: false,
@@ -28,20 +50,13 @@ export const createInitialState = (payload) => {
       saveSlots: {},
     },
     contexts: [{
-      history: [{
-        type: 'session',
-        sessiontId: '...'
-      }, {
-        type: 'session',
-        sessionId: '...'
-      }],
-      currentModeId: 'normal',
-      currentPointerId: 'read',
-      configuration: {},
+      currentPointerMode: 'read',
       pointers: {
-        read: { sectionId: undefined, lineId: undefined },
+        read: initialPointer,
         history: { sectionId: undefined, lineId: undefined },
       },
+      history: [],
+      configuration: {},
       views: [],
       bgm: {
         resourceId: undefined,
@@ -96,8 +111,25 @@ export const selectIsLineViewed = ({ state }, payload) => {
   }
 
   // If both section.lastLineId and lineId are present, compare them
-  // TODO: need to check the order from presentationData
-  return false;
+  // Use selectSection to get the section data
+  const foundSection = selectSection({ state }, { sectionId });
+
+  if (!foundSection || !foundSection.lines || !Array.isArray(foundSection.lines)) {
+    // If we can't find the section or lines, fallback to original behavior
+    return false;
+  }
+
+  // Find indices of both lines in the lines array
+  const lastLineIndex = foundSection.lines.findIndex(line => line.id === section.lastLineId);
+  const currentLineIndex = foundSection.lines.findIndex(line => line.id === lineId);
+
+  // If we can't find either line in the array, fallback to simple comparison
+  if (lastLineIndex === -1 || currentLineIndex === -1) {
+    return section.lastLineId === lineId;
+  }
+
+  // Line is viewed if its index is < last viewed line index
+  return currentLineIndex < lastLineIndex;
 };
 
 export const selectIsResourceViewed = ({ state }, payload) => {
@@ -120,6 +152,50 @@ export const selectSaveSlots = ({ state }) => {
 export const selectSaveSlot = ({ state }, payload) => {
   const { slotKey } = payload;
   return state.global.saveSlots[slotKey];
+};
+
+/**
+ * Selects the current pointer from the last context
+ * @param {Object} state - Current state object
+ * @returns {Object} Current pointer object with currentPointerMode and pointer properties
+ * @returns {string} returns.currentPointerMode - The current pointer mode identifier
+ * @returns {Object} returns.pointer - The pointer configuration for the current mode
+ */
+export const selectCurrentPointer = ({ state }) => {
+  const lastContext = state.contexts[state.contexts.length - 1];
+
+  if (!lastContext) {
+    return undefined;
+  }
+
+  const pointer = lastContext.pointers?.[lastContext.currentPointerId];
+
+  return {
+    currentPointerMode: lastContext.currentPointerId,
+    pointer: pointer !== undefined ? pointer : undefined
+  };
+};
+
+/**
+ * Selects a section from the project data by sectionId
+ * @param {Object} state - Current state object
+ * @param {Object} payload - Payload containing sectionId
+ * @param {string} payload.sectionId - The section ID to find
+ * @returns {Object|undefined} The section object if found, undefined otherwise
+ */
+export const selectSection = ({ state }, payload) => {
+  const { sectionId } = payload;
+  const scenes = state.projectData?.story?.scenes || {};
+
+  // Search through all scenes to find the section
+  for (const sceneId in scenes) {
+    const scene = scenes[sceneId];
+    if (scene.sections && scene.sections[sectionId]) {
+      return scene.sections[sectionId];
+    }
+  }
+
+  return undefined;
 };
 
 
@@ -299,7 +375,20 @@ export const addViewedResource = ({ state }, payload) => {
 };
 
 /**
- * TODO: decide whether to overwrite or deep merge
+ * Sets the next line configuration for advancing to the next line
+ * @param {Object} state - Current state object
+ * @param {Object} payload - Action payload
+ * @param {Object} payload.nextLineConfig - Configuration object
+ * @param {Object} [payload.nextLineConfig.manual] - Manual navigation configuration
+ * @param {boolean} [payload.nextLineConfig.manual.enabled] - Whether manual navigation is enabled
+ * @param {boolean} [payload.nextLineConfig.manual.requireComplete] - Whether completion is required before advancing
+ * @param {Object} [payload.nextLineConfig.auto] - Auto navigation configuration
+ * @param {string} [payload.nextLineConfig.auto.trigger] - When auto navigation triggers ('fromStart' or 'fromComplete')
+ * @param {number} [payload.nextLineConfig.auto.delay] - Delay in milliseconds before auto advancing
+ * @returns {Object} Updated state object
+ * @description
+ * If both manual and auto configurations are provided, performs complete replacement.
+ * If only one configuration is provided, performs partial merge with existing config.
  */
 export const setNextLineConfig = ({ state }, payload) => {
   const { nextLineConfig } = payload;
@@ -333,6 +422,16 @@ export const setNextLineConfig = ({ state }, payload) => {
   return state;
 };
 
+/**
+ * Replaces a save slot with new data
+ * @param {Object} state - Current state object
+ * @param {Object} payload - Action payload
+ * @param {string} payload.slotKey - The key identifying the save slot
+ * @param {number} payload.date - Unix timestamp for when the save was created
+ * @param {string} payload.image - Base64 encoded save image/screenshot
+ * @param {Object} payload.state - The game state to be saved
+ * @returns {Object} Updated state object
+ */
 export const replaceSaveSlot = ({ state }, payload) => {
   const { slotKey, date, image, state: slotState } = payload;
 
@@ -349,6 +448,13 @@ export const replaceSaveSlot = ({ state }, payload) => {
   return state;
 };
 
+/**
+ * Adds an item to the history of the last context
+ * @param {Object} state - Current state object
+ * @param {Object} payload - Action payload
+ * @param {Object} payload.item - The history item to add (can be any structure)
+ * @returns {Object} Updated state object
+ */
 export const addToHistory = ({ state }, payload) => {
   const { item } = payload;
 
