@@ -1,0 +1,537 @@
+file: "../../../src/stores/constructRenderState.js"
+group: constructRenderState.addCharacters
+suites: [addCharacters]
+---
+suite: addCharacters
+exportName: addCharacters
+---
+case: add character container with sprites to story container
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      character:
+        items:
+          - id: "char1"
+            transformId: "transform1"
+            sprites:
+              - imageId: "body"
+              - imageId: "face"
+    resources:
+      transforms:
+        transform1:
+          x: 100
+          y: 200
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      characters:
+        character1:
+          sprites:
+            body:
+              fileId: "body.png"
+            face:
+              fileId: "face.png"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - type: "container"
+          id: "character-container-char1"
+          x: 100
+          y: 200
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - type: "sprite"
+              id: "char1-body"
+              url: "files/body.png"
+              x: 0
+              y: 0
+            - type: "sprite"
+              id: "char1-face"
+              url: "files/face.png"
+              x: 0
+              y: 0
+  transitions: []
+---
+case: add character with in animation
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      character:
+        items:
+          - id: "char1"
+            transformId: "transform1"
+            sprites:
+              - imageId: "body"
+            animations:
+              in:
+                animationId: "fadeIn"
+    resources:
+      transforms:
+        transform1:
+          x: 50
+          y: 100
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      characters:
+        character1:
+          sprites:
+            body:
+              fileId: "body.png"
+      animations:
+        fadeIn:
+          properties:
+            opacity: [0, 1]
+            duration: 500
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - type: "container"
+          id: "character-container-char1"
+          x: 50
+          y: 100
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - type: "sprite"
+              id: "char1-body"
+              url: "files/body.png"
+              x: 0
+              y: 0
+  transitions:
+    - id: "character-animation-in"
+      type: "keyframes"
+      event: "add"
+      elementId: "character-container-char1"
+      properties:
+        opacity: [0, 1]
+        duration: 500
+---
+case: add character with out animation only (no container created)
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      character:
+        items:
+          - id: "char1"
+            animations:
+              out:
+                animationId: "fadeOut"
+    resources:
+      animations:
+        fadeOut:
+          properties:
+            opacity: [1, 0]
+            duration: 300
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions:
+    - id: "character-animation-out"
+      type: "keyframes"
+      event: "remove"
+      elementId: "character-container-char1"
+      properties:
+        opacity: [1, 0]
+        duration: 300
+---
+case: add character with both in and update animations
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      character:
+        items:
+          - id: "char1"
+            transformId: "transform1"
+            sprites:
+              - imageId: "body"
+            animations:
+              in:
+                animationId: "fadeIn"
+              update:
+                animationId: "pulse"
+    resources:
+      transforms:
+        transform1:
+          x: 0
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      characters:
+        character1:
+          sprites:
+            body:
+              fileId: "body.png"
+      animations:
+        fadeIn:
+          properties:
+            opacity: [0, 1]
+            duration: 500
+        pulse:
+          properties:
+            scale: [1, 1.1, 1]
+            duration: 1000
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - type: "container"
+          id: "character-container-char1"
+          x: 0
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - type: "sprite"
+              id: "char1-body"
+              url: "files/body.png"
+              x: 0
+              y: 0
+  transitions:
+    - id: "character-animation-in"
+      type: "keyframes"
+      event: "add"
+      elementId: "character-container-char1"
+      properties:
+        opacity: [0, 1]
+        duration: 500
+    - id: "character-animation-update"
+      type: "keyframes"
+      event: "update"
+      elementId: "character-container-char1"
+      properties:
+        scale: [1, 1.1, 1]
+        duration: 1000
+---
+case: multiple characters with different sprites
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      character:
+        items:
+          - id: "char1"
+            transformId: "transform1"
+            sprites:
+              - imageId: "body"
+              - imageId: "face"
+          - id: "char2"
+            transformId: "transform2"
+            sprites:
+              - imageId: "body2"
+    resources:
+      transforms:
+        transform1:
+          x: 100
+          y: 100
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+        transform2:
+          x: 200
+          y: 100
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      characters:
+        character1:
+          sprites:
+            body:
+              fileId: "char1_body.png"
+            face:
+              fileId: "char1_face.png"
+        character2:
+          sprites:
+            body2:
+              fileId: "char2_body.png"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - type: "container"
+          id: "character-container-char1"
+          x: 100
+          y: 100
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - type: "sprite"
+              id: "char1-body"
+              url: "files/char1_body.png"
+              x: 0
+              y: 0
+            - type: "sprite"
+              id: "char1-face"
+              url: "files/char1_face.png"
+              x: 0
+              y: 0
+        - type: "container"
+          id: "character-container-char2"
+          x: 200
+          y: 100
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - type: "sprite"
+              id: "char2-body2"
+              url: "files/char2_body.png"
+              x: 0
+              y: 0
+  transitions: []
+---
+case: no presentationState.character - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState: {}
+    resources:
+      characters:
+        char1:
+          sprites:
+            body:
+              fileId: "body.png"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []
+---
+case: story container does not exist - return unchanged state
+in:
+  - elements:
+      - id: "notStory"
+        type: "container"
+        children: []
+    transitions: []
+  - presentationState:
+      character:
+        items:
+          - id: "char1"
+            transformId: "transform1"
+            sprites:
+              - imageId: "body"
+    resources:
+      transforms:
+        transform1:
+          x: 0
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      characters:
+        char1:
+          sprites:
+            body:
+              fileId: "body.png"
+out:
+  elements:
+    - id: "notStory"
+      type: "container"
+      children: []
+  transitions: []
+---
+case: character item missing sprites - return unchanged state (skips item)
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      character:
+        items:
+          - id: "char1"
+            transformId: "transform1"
+            sprites: []
+    resources:
+      transforms:
+        transform1:
+          x: 0
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      characters:
+        char1:
+          sprites:
+            body:
+              fileId: "body.png"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []
+---
+case: character item missing transformId - return unchanged state (skips item)
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      character:
+        items:
+          - id: "char1"
+            sprites:
+              - imageId: "body"
+    resources:
+      characters:
+        char1:
+          sprites:
+            body:
+              fileId: "body.png"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []
+---
+case: no character items - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      character:
+        items: []
+    resources:
+      characters:
+        char1:
+          sprites:
+            body:
+              fileId: "body.png"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []
+---
+case: null resources - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      character:
+        items:
+          - id: "char1"
+            transformId: "transform1"
+            sprites:
+              - imageId: "body"
+    resources: null
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []

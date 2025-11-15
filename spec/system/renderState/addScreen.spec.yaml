@@ -1,0 +1,271 @@
+file: "../../../src/stores/constructRenderState.js"
+group: constructRenderState.addScreen
+suites: [addScreen]
+---
+suite: addScreen
+exportName: addScreen
+---
+case: add screen container as first child of story container
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      screen:
+        resourceId: "mainScreen"
+    resources:
+      layouts:
+        mainScreen:
+          elements:
+            - id: "screenElement1"
+              type: "text"
+              content: "Hello"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "screen"
+          type: "container"
+          children:
+            - id: "screenElement1"
+              type: "text"
+              content: "Hello"
+  transitions: []
+---
+case: prepend screen container before existing children
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children:
+          - id: "existingChild1"
+            type: "text"
+          - id: "existingChild2"
+            type: "container"
+    transitions: []
+  - presentationState:
+      screen:
+        resourceId: "newScreen"
+    resources:
+      layouts:
+        newScreen:
+          elements:
+            - id: "screenElement"
+              type: "sprite"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "screen"
+          type: "container"
+          children:
+            - id: "screenElement"
+              type: "sprite"
+        - id: "existingChild1"
+          type: "text"
+        - id: "existingChild2"
+          type: "container"
+  transitions: []
+---
+case: handle complex layout elements with nested children
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      screen:
+        resourceId: "complexScreen"
+    resources:
+      layouts:
+        complexScreen:
+          elements:
+            - id: "container1"
+              type: "container"
+              children:
+                - id: "nested1"
+                  type: "text"
+                - id: "nested2"
+                  type: "sprite"
+            - id: "standalone"
+              type: "image"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "screen"
+          type: "container"
+          children:
+            - id: "container1"
+              type: "container"
+              children:
+                - id: "nested1"
+                  type: "text"
+                - id: "nested2"
+                  type: "sprite"
+            - id: "standalone"
+              type: "image"
+  transitions: []
+---
+case: no presentationState.screen - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState: {}
+    resources:
+      layouts:
+        mainScreen:
+          elements: []
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []
+---
+case: missing resourceId in presentationState.screen - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      screen:
+        someOtherProperty: "value"
+    resources:
+      layouts:
+        mainScreen:
+          elements: []
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []
+---
+case: story container does not exist - return unchanged state
+in:
+  - elements:
+      - id: "notStory"
+        type: "container"
+        children: []
+    transitions: []
+  - presentationState:
+      screen:
+        resourceId: "mainScreen"
+    resources:
+      layouts:
+        mainScreen:
+          elements: []
+out:
+  elements:
+    - id: "notStory"
+      type: "container"
+      children: []
+  transitions: []
+---
+case: layout not found in resources - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      screen:
+        resourceId: "nonExistentScreen"
+    resources:
+      layouts:
+        mainScreen:
+          elements: []
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []
+---
+case: empty layout elements array
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      screen:
+        resourceId: "emptyScreen"
+    resources:
+      layouts:
+        emptyScreen:
+          elements: []
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "screen"
+          type: "container"
+          children: []
+  transitions: []
+---
+case: null resources - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      screen:
+        resourceId: "someScreen"
+    resources: null
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []
+

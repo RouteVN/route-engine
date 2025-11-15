@@ -1,0 +1,202 @@
+file: "../../../src/stores/constructRenderState.js"
+group: constructRenderState.addBgm
+suites: [addBgm]
+---
+suite: addBgm
+exportName: addBgm
+---
+case: add bgm audio to story container
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      bgm:
+        audioId: "backgroundMusic"
+    resources:
+      audio:
+        backgroundMusic:
+          fileId: "bgm.mp3"
+          loop: true
+          volume: 0.7
+          delay: 0
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "bgm"
+          type: "audio"
+          url: "files/bgm.mp3"
+          loop: true
+          volume: 0.7
+          delay: 0
+  transitions: []
+---
+case: add bgm with default values
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      bgm:
+        audioId: "simpleMusic"
+    resources:
+      audio:
+        simpleMusic:
+          fileId: "simple.mp3"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "bgm"
+          type: "audio"
+          url: "files/simple.mp3"
+          loop: true
+          volume: 0.5
+          delay: null
+  transitions: []
+---
+case: add bgm with custom settings
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      bgm:
+        audioId: "customMusic"
+    resources:
+      audio:
+        customMusic:
+          fileId: "custom.mp3"
+          loop: false
+          volume: 0.3
+          delay: 1000
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "bgm"
+          type: "audio"
+          url: "files/custom.mp3"
+          loop: false
+          volume: 0.3
+          delay: 1000
+  transitions: []
+---
+case: no presentationState.bgm - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState: {}
+    resources:
+      audio:
+        backgroundMusic:
+          fileId: "bgm.mp3"
+          loop: true
+          volume: 0.7
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []
+---
+case: story container does not exist - return unchanged state
+in:
+  - elements:
+      - id: "notStory"
+        type: "container"
+        children: []
+    transitions: []
+  - presentationState:
+      bgm:
+        audioId: "backgroundMusic"
+    resources:
+      audio:
+        backgroundMusic:
+          fileId: "bgm.mp3"
+          loop: true
+          volume: 0.7
+out:
+  elements:
+    - id: "notStory"
+      type: "container"
+      children: []
+  transitions: []
+---
+case: audio not found - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      bgm:
+        audioId: "nonExistent"
+    resources:
+      audio:
+        existing:
+          fileId: "existing.mp3"
+          loop: true
+          volume: 0.7
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []
+---
+case: null resources - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      bgm:
+        audioId: "backgroundMusic"
+    resources: null
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []

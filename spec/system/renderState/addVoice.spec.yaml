@@ -1,0 +1,209 @@
+file: "../../../src/stores/constructRenderState.js"
+group: constructRenderState.addVoice
+suites: [addVoice]
+---
+suite: addVoice
+exportName: addVoice
+---
+case: add voice audio to story container
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      voice:
+        fileId: "voice.mp3"
+        volume: 0.8
+        loop: false
+    resources: {}
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "voice-voice.mp3"
+          type: "audio"
+          url: "files/voice.mp3"
+          volume: 0.8
+          loop: false
+  transitions: []
+---
+case: add voice with default values
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      voice:
+        fileId: "simpleVoice.mp3"
+    resources: {}
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "voice-simpleVoice.mp3"
+          type: "audio"
+          url: "files/simpleVoice.mp3"
+          volume: 0.5
+          loop: false
+  transitions: []
+---
+case: add voice with loop enabled
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      voice:
+        fileId: "loopingVoice.mp3"
+        volume: 0.6
+        loop: true
+    resources: {}
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "voice-loopingVoice.mp3"
+          type: "audio"
+          url: "files/loopingVoice.mp3"
+          volume: 0.6
+          loop: true
+  transitions: []
+---
+case: no presentationState.voice - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState: {}
+    resources: {}
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []
+---
+case: story container does not exist - return unchanged state
+in:
+  - elements:
+      - id: "notStory"
+        type: "container"
+        children: []
+    transitions: []
+  - presentationState:
+      voice:
+        fileId: "voice.mp3"
+        volume: 0.7
+        loop: false
+    resources: {}
+out:
+  elements:
+    - id: "notStory"
+      type: "container"
+      children: []
+  transitions: []
+---
+case: null presentationState - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState: null
+    resources: {}
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []
+---
+case: voice with custom volume and loop
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      voice:
+        fileId: "customVoice.mp3"
+        volume: 0.3
+        loop: true
+    resources: {}
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "voice-customVoice.mp3"
+          type: "audio"
+          url: "files/customVoice.mp3"
+          volume: 0.3
+          loop: true
+  transitions: []
+---
+case: null resources - still works (voice doesn't use resources)
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      voice:
+        fileId: "voice.mp3"
+        volume: 0.7
+        loop: false
+    resources: null
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "voice-voice.mp3"
+          type: "audio"
+          url: "files/voice.mp3"
+          volume: 0.7
+          loop: false
+  transitions: []

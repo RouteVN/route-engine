@@ -23,17 +23,19 @@ export const createInitialState = () => {
 /**
  * @param {Object} params
  */
-export const addScreen = ({ elements }, { presentationState, resources }) => {
+export const addScreen = (state, { presentationState, resources }) => {
+  const { elements } = state;
   if (presentationState.screen) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
-    if (!storyContainer) return;
+    if (!storyContainer) {
+      return state;
+    }
 
     if (
-      presentationState.screen.resourceId &&
-      presentationState.screen.resourceType === "layout"
+      presentationState.screen.resourceId
     ) {
-      const layout = resources.layouts[presentationState.screen.resourceId];
+      const layout = resources?.layouts[presentationState.screen.resourceId];
 
       if (layout) {
         // Add screen as the first child of story container
@@ -45,6 +47,7 @@ export const addScreen = ({ elements }, { presentationState, resources }) => {
       }
     }
   }
+  return state;
 };
 
 /**
@@ -52,47 +55,53 @@ export const addScreen = ({ elements }, { presentationState, resources }) => {
  * @param {Object} params
  */
 export const addBackgrundOrCg = (
-  { elements, transitions },
-  { presentationState, resources, resolveFile },
+  state,
+  { presentationState, resources = {} }, // resolveFile
 ) => {
+  const { elements, transitions } = state;
   if (presentationState.background) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
-    if (!storyContainer) return;
-
-    if (
-      presentationState.background.resourceId &&
-      presentationState.background.resourceType === "image"
-    ) {
-      const background =
-        resources.images[presentationState.background.resourceId];
-      storyContainer.children.push({
-        id: `bg-cg-${presentationState.background.resourceId}`,
-        type: "sprite",
-        x: 0,
-        y: 0,
-        url: resolveFile(background.fileId),
-      });
+    if (!storyContainer) {
+      return state;
     }
 
     if (
-      presentationState.background.resourceId &&
-      presentationState.background.resourceType === "layout"
+      presentationState.background.resourceId
     ) {
-      const layout = resources.layouts[presentationState.background.resourceId];
+      const { images = {} } = resources;
+      const background = images[presentationState.background.resourceId];
+      if (background) {
+        storyContainer.children.push({
+          id: `bg-cg-${presentationState.background.resourceId}`,
+          type: "sprite",
+          x: 0,
+          y: 0,
+          url: `files/${background.fileId}`
+          // url: resolveFile(background.fileId),
+        });
+      }
+    }
 
-      storyContainer.children.push({
-        id: `bg-cg-${presentationState.background.resourceId}`,
-        type: "container",
-        children: layout.elements,
-      });
+    if (
+      presentationState.background.resourceId
+    ) {
+      const { layouts = {} } = resources;
+      const layout = layouts[presentationState.background.resourceId];
+      if (layout) {
+        storyContainer.children.push({
+          id: `bg-cg-${presentationState.background.resourceId}`,
+          type: "container",
+          children: layout.elements,
+        });
+      }
     }
 
     if (presentationState.background.animations) {
       if (presentationState.background.animations.in) {
         const animationId =
           presentationState.background.animations.in.animationId;
-        const animation = resources.animations[animationId];
+        const animation = resources?.animations[animationId];
         if (animation) {
           transitions.push({
             id: "bg-cg-animation-in",
@@ -109,7 +118,7 @@ export const addBackgrundOrCg = (
           presentationState.background.animations.out.animationId;
         const resourceId =
           presentationState.background.animations.out.resourceId;
-        const animation = resources.animations[animationId];
+        const animation = resources?.animations[animationId];
         if (animation) {
           transitions.push({
             id: "bg-cg-animation-out",
@@ -124,7 +133,7 @@ export const addBackgrundOrCg = (
       if (presentationState.background.animations.update) {
         const animationId =
           presentationState.background.animations.update.animationId;
-        const animation = resources.animations[animationId];
+        const animation = resources?.animations[animationId];
         if (animation) {
           transitions.push({
             id: "bg-cg-animation-update",
@@ -137,6 +146,7 @@ export const addBackgrundOrCg = (
       }
     }
   }
+  return state;
 };
 
 /**
@@ -144,13 +154,14 @@ export const addBackgrundOrCg = (
  * @param {Object} params
  */
 export const addCharacters = (
-  { elements, transitions },
-  { presentationState, resources, resolveFile },
+  state,
+  { presentationState, resources },
 ) => {
-  if (presentationState.character) {
+  const { elements, transitions } = state;
+  if (presentationState.character && resources) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
-    if (!storyContainer) return;
+    if (!storyContainer) return state;
 
     const items = presentationState.character.items || [];
 
@@ -161,7 +172,7 @@ export const addCharacters = (
       if (item.animations && item.animations.out && !sprites && !transformId) {
         // Just add the out animation transition, container should already exist
         const animationId = item.animations.out.animationId;
-        const animation = resources.animations[animationId];
+        const animation = resources?.animations[animationId];
         if (animation) {
           const outTransition = {
             id: `character-animation-out`,
@@ -176,13 +187,17 @@ export const addCharacters = (
       }
 
       // Skip items without required properties for creating containers
-      if (!sprites || !transformId) {
+      if (!sprites || sprites.length === 0 || !transformId) {
         console.warn("Character item missing sprites or transformId:", item);
         continue;
       }
 
       const spritePartIds = sprites.map(({ imageId }) => imageId);
       const transform = resources.transforms[transformId];
+      if (!transform) {
+        console.warn("Transform not found:", transformId);
+        continue;
+      }
       const characterContainer = {
         type: "container",
         id: `character-container-${item.id}`,
@@ -214,7 +229,7 @@ export const addCharacters = (
         characterContainer.children.push({
           type: "sprite",
           id: `${item.id}-${spritePart.partId}`,
-          url: resolveFile(spritePart.fileId),
+          url: `files/${spritePart.fileId}`,
           x: 0,
           y: 0,
         });
@@ -226,7 +241,7 @@ export const addCharacters = (
       if (item.animations) {
         if (item.animations.in) {
           const animationId = item.animations.in.animationId;
-          const animation = resources.animations[animationId];
+          const animation = resources?.animations[animationId];
           if (animation) {
             transitions.push({
               id: `character-animation-in`,
@@ -240,7 +255,7 @@ export const addCharacters = (
 
         if (item.animations.update) {
           const animationId = item.animations.update.animationId;
-          const animation = resources.animations[animationId];
+          const animation = resources?.animations[animationId];
           if (animation) {
             const updateTransition = {
               id: `character-animation-update`,
@@ -255,6 +270,7 @@ export const addCharacters = (
       }
     }
   }
+  return state;
 };
 
 /**
@@ -262,13 +278,14 @@ export const addCharacters = (
  * @param {Object} params
  */
 export const addVisuals = (
-  { elements, transitions },
-  { presentationState, resources, resolveFile },
+  state,
+  { presentationState, resources },
 ) => {
-  if (presentationState.visual) {
+  const { elements, transitions } = state;
+  if (presentationState.visual && resources) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
-    if (!storyContainer) return;
+    if (!storyContainer) return state;
 
     const items = presentationState.visual.items;
     for (const item of items) {
@@ -286,7 +303,7 @@ export const addVisuals = (
           storyContainer.children.push({
             id: `visual-${item.id}`,
             type: "sprite",
-            url: resolveFile(resource.fileId),
+            url: `files/${resource.fileId}`,
             x: transform.x,
             y: transform.y,
             anchorX: transform.anchorX,
@@ -302,7 +319,7 @@ export const addVisuals = (
         if (item.animations.in) {
           const animationId =
             item.animations.in.animationId || item.animations.in;
-          const animation = resources.animations[animationId];
+          const animation = resources?.animations[animationId];
           if (animation) {
             transitions.push({
               id: `${item.id}-animation`,
@@ -317,7 +334,7 @@ export const addVisuals = (
         if (item.animations.out) {
           const animationId =
             item.animations.out.animationId || item.animations.out;
-          const animation = resources.animations[animationId];
+          const animation = resources?.animations[animationId];
           if (animation) {
             transitions.push({
               id: `${item.id}-animation-2`,
@@ -331,6 +348,7 @@ export const addVisuals = (
       }
     }
   }
+  return state;
 };
 
 /**
@@ -338,15 +356,16 @@ export const addVisuals = (
  * @param {Object} params
  */
 export const addDialogue = (
-  { elements },
-  { presentationState, resources, systemState, systemStore },
+  state,
+  { presentationState, resources = {}, dialogueUIHidden, autoMode, skipMode, currentLocalizationPackageId },
 ) => {
+  const { elements } = state;
   if (!presentationState.dialogue) {
-    return;
+    return state;
   }
 
-  if (systemState?.dialogueUIHidden) {
-    return;
+  if (dialogueUIHidden) {
+    return state;
   }
 
   // Find the story container
@@ -356,7 +375,7 @@ export const addDialogue = (
   const layout = resources.layouts[presentationState.dialogue.layoutId];
 
   if (!layout) {
-    return;
+    return state;
   }
 
   let character;
@@ -380,8 +399,8 @@ export const addDialogue = (
       page: systemState?.variables.currentSavePageIndex,
       numberPerPage: 6,
     }),
-    autoMode: systemStore.selectAutoMode(),
-    skipMode: systemStore.selectSkipMode(),
+    autoMode: autoMode,
+    skipMode: skipMode,
     dialogue: {
       character: {
         name: character?.name || "",
@@ -389,8 +408,8 @@ export const addDialogue = (
       content: presentationState.dialogue?.content || [],
       lines: presentationState.dialogue?.lines || [],
     },
-    currentLanguagePackId: systemStore.selectCurrentLanguagePackId(),
-    i18n: systemStore.selectCurrentLanguagePackKeys(),
+    currentLocalizationPackageId,
+    // i18n: systemStore.selectCurrentLanguagePackKeys(),
   };
 
   let result = parseAndRender(wrappedTemplate, templateData, {
@@ -414,13 +433,15 @@ export const addDialogue = (
  *
  * @param {Object} params
  */
-export const addChoices = ({ elements }, { presentationState, resources }) => {
-  if (presentationState.choice) {
+export const addChoices = (state, { presentationState, resources }) => {
+  const { elements } = state;
+  if (presentationState.choice && resources) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
-    if (!storyContainer) return;
+    if (!storyContainer) return state;
 
-    const layout = resources.layouts[presentationState.choice.layoutId];
+    const layout = resources?.layouts[presentationState.choice.layoutId];
+    if (!layout || !layout.elements) return state;
 
     const wrappedTemplate = { elements: layout.elements };
     const result = parseAndRender(wrappedTemplate, {
@@ -438,70 +459,81 @@ export const addChoices = ({ elements }, { presentationState, resources }) => {
       storyContainer.children.push(structuredClone(choiceElements));
     }
   }
+  return state;
 };
 
 export const addBgm = (
-  { elements },
-  { presentationState, resources, resolveFile },
+  state,
+  { presentationState, resources },
 ) => {
-  if (presentationState.bgm) {
+  const { elements } = state;
+  if (presentationState.bgm && resources) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
-    if (!storyContainer) return;
+    if (!storyContainer) return state;
 
     const audio = resources.audio[presentationState.bgm.audioId];
+    if (!audio) return state;
     storyContainer.children.push({
       id: "bgm",
       type: "audio",
-      url: resolveFile(audio.fileId),
+      url: `files/${audio.fileId}`,
       loop: audio.loop ?? true,
       volume: audio.volume ?? 0.5,
-      delay: audio.delay,
+      delay: audio.delay ?? null,
     });
   }
+  return state;
 };
 
-export const addSfx = (
-  { elements },
-  { presentationState, resources, resolveFile },
-) => {
-  if (presentationState.sfx) {
+export const addSfx = (state, { presentationState, resources }) => {
+  const { elements } = state;
+
+  if (presentationState.sfx && resources) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
-    if (!storyContainer) return;
+    if (!storyContainer) return state;
 
     const items = presentationState.sfx.items;
     for (const item of items) {
-      const audio = resources.audio[item.audioId];
+      const audio = resources.audio?.[item.audioId];
+      if (!audio) continue;
+
       storyContainer.children.push({
         id: item.id,
         type: "audio",
-        url: resolveFile(audio.fileId),
-        loop: item.loop ?? false,
-        volume: item.volume ?? 0.5,
-        delay: item.delay,
+        url: `files/${audio.fileId}`,
+        loop: item.loop ?? audio.loop ?? true,
+        volume: item.volume ?? audio.volume ?? 0.5,
+        delay: item.delay ?? audio.delay ?? null,
       });
     }
   }
+
+  return state;
 };
 
-export const addVoice = ({ elements }, { presentationState, resolveFile }) => {
-  if (!presentationState.voice) {
-    return;
+export const addVoice = (state, { presentationState, resources }) => {
+  const { elements } = state;
+
+  if (!presentationState?.voice) {
+    return state;
   }
 
   const storyContainer = elements.find((el) => el.id === "story");
-  if (!storyContainer) return;
+  if (!storyContainer) return state;
 
   const { fileId, volume, loop } = presentationState.voice;
 
   storyContainer.children.push({
     id: `voice-${fileId}`,
     type: "audio",
-    url: resolveFile(fileId),
-    volume,
-    loop,
+    url: `files/${fileId}`,
+    volume: volume ?? 0.5,
+    loop: loop ?? false,
   });
+
+  return state;
 };
 
 /**
@@ -720,24 +752,6 @@ export const addModals = (
   }
 };
 
-export const addGlobalAudios = (
-  { elements },
-  { systemState, resources, resolveFile },
-) => {
-  // Get global audios directly from the passed systemState instead of using systemStore
-  const globalAudios = systemState.globalAudios;
-  if (globalAudios && globalAudios.length > 0) {
-    // Add each global audio
-    globalAudios.forEach((audioItem, i) => {
-      elements.push({
-        id: `global-audio-${i}-${audioItem.audioId}`,
-        type: "audio",
-        url: resolveFile(audioItem.fileId),
-      });
-    });
-  }
-};
-
 export default [
   addScreen,
   addBackgrundOrCg,
@@ -750,5 +764,4 @@ export default [
   addSfx,
   addVoice,
   addModals,
-  addGlobalAudios,
 ];

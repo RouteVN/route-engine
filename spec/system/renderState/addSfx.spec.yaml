@@ -1,0 +1,285 @@
+file: "../../../src/stores/constructRenderState.js"
+group: constructRenderState.addSfx
+suites: [addSfx]
+---
+suite: addSfx
+exportName: addSfx
+---
+case: add sfx audio to story container
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      sfx:
+        items:
+          - id: "sfx1"
+            audioId: "soundEffect"
+    resources:
+      audio:
+        soundEffect:
+          fileId: "effect.mp3"
+          loop: false
+          volume: 0.7
+          delay: 0
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "sfx1"
+          type: "audio"
+          url: "files/effect.mp3"
+          loop: false
+          volume: 0.7
+          delay: 0
+  transitions: []
+---
+case: add sfx with default values
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      sfx:
+        items:
+          - id: "sfx1"
+            audioId: "simpleSound"
+    resources:
+      audio:
+        simpleSound:
+          fileId: "simple.mp3"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "sfx1"
+          type: "audio"
+          url: "files/simple.mp3"
+          loop: true
+          volume: 0.5
+          delay: null
+  transitions: []
+---
+case: add sfx with custom settings
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      sfx:
+        items:
+          - id: "sfx1"
+            audioId: "customSound"
+            loop: true
+            volume: 0.3
+            delay: 500
+    resources:
+      audio:
+        customSound:
+          fileId: "custom.mp3"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "sfx1"
+          type: "audio"
+          url: "files/custom.mp3"
+          loop: true
+          volume: 0.3
+          delay: 500
+  transitions: []
+---
+case: multiple sfx items
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      sfx:
+        items:
+          - id: "sfx1"
+            audioId: "firstSound"
+          - id: "sfx2"
+            audioId: "secondSound"
+    resources:
+      audio:
+        firstSound:
+          fileId: "first.mp3"
+          volume: 0.6
+        secondSound:
+          fileId: "second.mp3"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "sfx1"
+          type: "audio"
+          url: "files/first.mp3"
+          loop: true
+          volume: 0.6
+          delay: null
+        - id: "sfx2"
+          type: "audio"
+          url: "files/second.mp3"
+          loop: true
+          volume: 0.5
+          delay: null
+  transitions: []
+---
+case: no presentationState.sfx - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState: {}
+    resources:
+      audio:
+        soundEffect:
+          fileId: "effect.mp3"
+          loop: true
+          volume: 0.7
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []
+---
+case: story container does not exist - return unchanged state
+in:
+  - elements:
+      - id: "notStory"
+        type: "container"
+        children: []
+    transitions: []
+  - presentationState:
+      sfx:
+        items:
+          - id: "sfx1"
+            audioId: "soundEffect"
+    resources:
+      audio:
+        soundEffect:
+          fileId: "effect.mp3"
+          loop: true
+          volume: 0.7
+out:
+  elements:
+    - id: "notStory"
+      type: "container"
+      children: []
+  transitions: []
+---
+case: audio not found - skip item
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      sfx:
+        items:
+          - id: "sfx1"
+            audioId: "nonExistent"
+    resources:
+      audio:
+        existing:
+          fileId: "existing.mp3"
+          loop: true
+          volume: 0.7
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []
+---
+case: no sfx items - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      sfx:
+        items: []
+    resources:
+      audio:
+        soundEffect:
+          fileId: "effect.mp3"
+          loop: true
+          volume: 0.7
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []
+---
+case: null resources - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      sfx:
+        items:
+          - id: "sfx1"
+            audioId: "soundEffect"
+    resources: null
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []

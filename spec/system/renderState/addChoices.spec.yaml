@@ -1,0 +1,254 @@
+file: "../../../src/stores/constructRenderState.js"
+group: constructRenderState.addChoices
+suites: [addChoices]
+---
+suite: addChoices
+exportName: addChoices
+---
+case: add choice elements to story container
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      choice:
+        layoutId: "choiceLayout"
+        items:
+          - id: "choice1"
+            text: "Option 1"
+          - id: "choice2"
+            text: "Option 2"
+    resources:
+      layouts:
+        choiceLayout:
+          elements:
+            - type: "button"
+              id: "choice-button"
+              text: "Select an option"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - type: "button"
+          id: "choice-button"
+          text: "Select an option"
+  transitions: []
+---
+case: multiple choice layout elements
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      choice:
+        layoutId: "multiChoiceLayout"
+        items:
+          - id: "choice1"
+            text: "First"
+          - id: "choice2"
+            text: "Second"
+    resources:
+      layouts:
+        multiChoiceLayout:
+          elements:
+            - type: "container"
+              id: "choices"
+              children:
+                - type: "button"
+                  id: "choice-1"
+                  text: "Option 1"
+                - type: "button"
+                  id: "choice-2"
+                  text: "Option 2"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - type: "container"
+          id: "choices"
+          children:
+            - type: "button"
+              id: "choice-1"
+              text: "Option 1"
+            - type: "button"
+              id: "choice-2"
+              text: "Option 2"
+  transitions: []
+---
+case: no presentationState.choice - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState: {}
+    resources:
+      layouts:
+        choiceLayout:
+          elements:
+            - type: "text"
+              content: "No choice"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []
+---
+case: story container does not exist - return unchanged state
+in:
+  - elements:
+      - id: "notStory"
+        type: "container"
+        children: []
+    transitions: []
+  - presentationState:
+      choice:
+        layoutId: "choiceLayout"
+        items:
+          - id: "choice1"
+            text: "Option 1"
+    resources:
+      layouts:
+        choiceLayout:
+          elements:
+            - type: "text"
+              content: "Choice"
+out:
+  elements:
+    - id: "notStory"
+      type: "container"
+      children: []
+  transitions: []
+---
+case: layout not found - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      choice:
+        layoutId: "nonExistent"
+        items:
+          - id: "choice1"
+            text: "Option 1"
+    resources:
+      layouts:
+        otherLayout:
+          elements:
+            - type: "text"
+              content: "Other"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []
+---
+case: layout has no elements - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      choice:
+        layoutId: "emptyLayout"
+        items:
+          - id: "choice1"
+            text: "Option 1"
+    resources:
+      layouts:
+        emptyLayout:
+          elements: []
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []
+---
+case: no choice items - still add layout elements
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      choice:
+        layoutId: "staticLayout"
+        items: []
+    resources:
+      layouts:
+        staticLayout:
+          elements:
+            - type: "text"
+              content: "No choices available"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - type: "text"
+          content: "No choices available"
+  transitions: []
+---
+case: null resources - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - presentationState:
+      choice:
+        layoutId: "choiceLayout"
+        items:
+          - id: "choice1"
+            text: "Option 1"
+    resources: null
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []

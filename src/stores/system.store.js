@@ -253,9 +253,10 @@ export const selectRenderState = ({ state }) => {
       renderState: true
     }
   }
+
+  // prefer to pass in computed state, so it does not have to be computed again
   return constructRenderState({
     presentationState,
-    projectData: state.projectData,
   });
   // replayRenderState = _constructRenderState({
   //   presentationState: replayPresentationState,
