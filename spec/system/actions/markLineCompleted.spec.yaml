@@ -1,0 +1,46 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.markLineCompleted
+suites: [markLineCompleted]
+---
+suite: markLineCompleted
+exportName: markLineCompleted
+---
+case: mark line as completed
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        pendingEffects: []
+out:
+  global:
+    isLineCompleted: true
+    pendingEffects:
+      - name: render
+---
+case: mark line as completed when already completed
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        pendingEffects: []
+out:
+  global:
+    isLineCompleted: true
+    pendingEffects:
+      - name: render
+---
+case: mark line as completed with existing pending effects
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        pendingEffects:
+          - name: existingEffect
+            data: test
+out:
+  global:
+    isLineCompleted: true
+    pendingEffects:
+      - name: existingEffect
+        data: test
+      - name: render

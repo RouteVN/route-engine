@@ -1,4 +1,16 @@
 
+
+import { createSequentialActionsExecutor } from "../util.js";
+import constructPresentationStateActions, * as constructPresentationStateStore from "./constructPresentationState.js";
+
+const { createInitialState: createConstructPresentationStateInitialState } =
+  constructPresentationStateStore;
+
+const constructPresentationState = createSequentialActionsExecutor(
+  createConstructPresentationStateInitialState,
+  constructPresentationStateActions,
+);
+
 export const createInitialState = (payload) => {
   const {
     global: {
@@ -29,6 +41,7 @@ export const createInitialState = (payload) => {
       }
     },
     global: {
+      isLineCompleted: false,
       pendingEffects: [],
       autoMode: false,
       skipMode: false,
@@ -41,7 +54,7 @@ export const createInitialState = (payload) => {
       nextLineConfig: {
         manual: {
           enabled: true,
-          requireComplete: false,
+          requireLineCompleted: false,
         },
         auto: {
           enabled: false,
@@ -200,6 +213,61 @@ export const selectSection = ({ state }, payload) => {
   return undefined;
 };
 
+export const selectPresentationState = ({ state }) => {
+  const { sectionId, lineId } = selectCurrentPointer({ state }).pointer;
+  const section = selectSection({ state }, { sectionId });
+
+  // get all lines up to the current line index, inclusive
+  const lines = section?.lines || [];
+  const currentLineIndex = lines.findIndex(line => line.id === lineId);
+
+  // Return all lines up to and including the current line
+  const currentLines = lines.slice(0, currentLineIndex + 1);
+
+  console.log('currentLines', currentLines);
+
+  // Create presentation state from unified actions
+  const presentationActions = currentLines.map((line) => {
+    const actions = line.actions || {};
+    const presentationData = {};
+
+    // Extract only presentation-related actions
+    Object.keys(actions).forEach((actionType) => {
+      presentationData[actionType] = actions[actionType];
+    });
+
+    return presentationData;
+  });
+
+  const presentationState = constructPresentationState(presentationActions)
+
+  console.log('presentationState', presentationState);
+
+  return presentationState
+}
+
+export const selectRenderState = ({ state }) => {
+  const presentationState = selectPresentationState({ state });
+  const constructRenderState = () => {
+    return {
+      renderState: true
+    }
+  }
+  return constructRenderState({
+    presentationState,
+    projectData: state.projectData,
+  });
+  // replayRenderState = _constructRenderState({
+  //   presentationState: replayPresentationState,
+  //   systemState: replaySystemState,
+  //   systemStore: _systemStore,
+  //   screen: _projectDataStore.selectScreen(),
+  //   resolveFile: (f) => `file:${f}`,
+  //   resources: _projectDataStore.selectResources(),
+  //   ui: _projectDataStore.selectUi(),
+  //   i18n: _projectDataStore.selectI18n(),
+  // });
+}
 
 
 /**************************
@@ -494,6 +562,8 @@ export const nextLine = ({ state }, payload) => {
       };
     }
 
+    state.global.isLineCompleted = false;
+
     state.global.pendingEffects.push({
       name: "render",
     });
@@ -508,6 +578,14 @@ export const nextLine = ({ state }, payload) => {
  * @param {string} payload.sectionId - The section ID to navigate in
  * @returns {Object} Updated state object
  */
+export const markLineCompleted = ({ state }) => {
+  state.global.isLineCompleted = true;
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+  return state;
+};
+
 export const prevLine = ({ state }, payload) => {
   const { sectionId } = payload;
   const section = selectSection({ state }, { sectionId });

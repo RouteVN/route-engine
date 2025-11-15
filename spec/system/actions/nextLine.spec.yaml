@@ -9,6 +9,7 @@ case: move to next line
 in:
   - state:
       global:
+        isLineCompleted: true
         pendingEffects: []
       projectData:
         story:
@@ -32,6 +33,7 @@ in:
   - sectionId: "section1"
 out:
   global:
+    isLineCompleted: false
     pendingEffects:
       - name: "render"
   projectData:
@@ -58,6 +60,7 @@ case: already at last line (no change)
 in:
   - state:
       global:
+        isLineCompleted: true
         pendingEffects: []
       projectData:
         story:
@@ -79,6 +82,7 @@ in:
   - sectionId: "section1"
 out:
   global:
+    isLineCompleted: true
     pendingEffects: []
   projectData:
     story:
@@ -102,6 +106,7 @@ case: no section found
 in:
   - state:
       global:
+        isLineCompleted: true
         pendingEffects: []
       projectData:
         story:
@@ -121,6 +126,7 @@ in:
   - sectionId: "section1"
 out:
   global:
+    isLineCompleted: true
     pendingEffects: []
   projectData:
     story:

@@ -657,14 +657,14 @@ export const addModals = (
           ) {
             currentActiveGalleryFileId =
               gallery[systemState.variables.activeGalleryIndex]?.fileIds[
-                systemState.variables.activeGalleryFileIndex
+              systemState.variables.activeGalleryFileIndex
               ];
           }
 
           if (
             systemState.variables.activeGalleryFileIndex <
             gallery[systemState.variables.activeGalleryIndex]?.fileIds.length -
-              1
+            1
           ) {
             isLastFileIdIndex = false;
           } else {
