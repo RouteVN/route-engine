@@ -33,7 +33,13 @@ in:
               sectionId: "section1"
               lineId: "1"
 out:
-  renderState: true
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []
 ---
 case: multiple lines and actions not last line
 in:
@@ -67,7 +73,13 @@ in:
               sectionId: "section1"
               lineId: "1"
 out:
-  renderState: true
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []
 ---
 case: multiple lines and actions last line
 in:
@@ -101,4 +113,10 @@ in:
               sectionId: "section1"
               lineId: "2"
 out:
-  renderState: true
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []

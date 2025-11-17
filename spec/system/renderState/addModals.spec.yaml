@@ -1,0 +1,47 @@
+file: "../../../src/stores/constructRenderState.js"
+group: constructRenderState.addModals
+suites: [addModals]
+---
+suite: addModals
+exportName: addModals
+---
+case: return unchanged state when modals array is empty
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    transitions: []
+  - resources: {}
+    variables: {}
+    autoMode: false
+    skipMode: false
+    currentLocalizationPackageId: null
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []
+---
+case: return unchanged state with empty elements array
+in:
+  - elements: []
+    transitions: []
+  - resources:
+      layouts:
+        modalLayout:
+          elements:
+            - type: "text"
+              content: "Modal content"
+    variables: {}
+    autoMode: false
+    skipMode: false
+    currentLocalizationPackageId: null
+out:
+  elements: []
+  transitions: []

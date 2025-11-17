@@ -1,12 +1,10 @@
-import { createStore, createSequentialActionsExecutor } from "../util.js";
+import { createStore } from "../util.js";
 
 import constructRenderStateActions, * as constructRenderStateStore from "./constructRenderState.js";
-import constructPresentationStateActions, * as constructPresentationStateStore from "./constructPresentationState.js";
+import { constructPresentationState } from "./constructPresentationState.js";
+import { constructRenderState } from "./constructRenderState.js";
 import * as systemStore from "./system.store";
 import * as projectDataStore from "./projectData.store.js";
-
-const { createInitialState: createConstructPresentationStateInitialState } =
-  constructPresentationStateStore;
 
 const { createInitialState: createConstructRenderStateInitialState } =
   constructRenderStateStore;
@@ -57,12 +55,4 @@ export const createSystemStore = (initialIds, projectDataStore) => {
   );
 };
 
-export const constructPresentationState = createSequentialActionsExecutor(
-  createConstructPresentationStateInitialState,
-  constructPresentationStateActions,
-);
-
-export const constructRenderState = createSequentialActionsExecutor(
-  createConstructRenderStateInitialState,
-  constructRenderStateActions,
-);
+export { constructPresentationState, constructRenderState };

@@ -1,4 +1,5 @@
 import { parseAndRender } from "jempl";
+import { createSequentialActionsExecutor } from "../util.js";
 
 const jemplFunctions = {
   objectValues: (obj) =>
@@ -370,7 +371,7 @@ export const addDialogue = (
 
   // Find the story container
   const storyContainer = elements.find((el) => el.id === "story");
-  if (!storyContainer) return;
+  if (!storyContainer) return state;
 
   const layout = resources.layouts[presentationState.dialogue.layoutId];
 
@@ -394,11 +395,11 @@ export const addDialogue = (
   const wrappedTemplate = { elements: layout.elements };
 
   const templateData = {
-    variables: systemState?.variables || {},
-    saveDataArray: systemStore.selectSaveDataPage({
-      page: systemState?.variables.currentSavePageIndex,
-      numberPerPage: 6,
-    }),
+    variables,
+    // saveDataArray: systemStore.selectSaveDataPage({
+    //   page: systemState?.variables.currentSavePageIndex,
+    //   numberPerPage: 6,
+    // }),
     autoMode: autoMode,
     skipMode: skipMode,
     dialogue: {
@@ -416,7 +417,8 @@ export const addDialogue = (
     functions: jemplFunctions,
   });
   result = parseAndRender(result, {
-    i18n: systemStore.selectCurrentLanguagePackKeys(),
+    // i18n: systemStore.selectCurrentLanguagePackKeys(),
+    i18n: {}
   });
   const dialogueElements = result?.elements;
 
@@ -427,6 +429,7 @@ export const addDialogue = (
   } else if (dialogueElements) {
     storyContainer.children.push(structuredClone(dialogueElements));
   }
+  return state;
 };
 
 /**
@@ -541,18 +544,19 @@ export const addVoice = (state, { presentationState, resources }) => {
  * @param {Object} params
  */
 export const addLayout = (
-  { elements, transitions },
-  { presentationState, resources, resolveFile, systemState, systemStore },
+  state,
+  { presentationState, resources = {}, variables, autoMode, skipMode, currentLocalizationPackageId },
 ) => {
+  const { elements, transitions } = state;
   if (presentationState.layout) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
-    if (!storyContainer) return;
+    if (!storyContainer) return state;
 
     const layout = resources.layouts[presentationState.layout.layoutId];
 
     if (!layout) {
-      return;
+      return state;
     }
 
     if (Array.isArray(layout.transitions)) {
@@ -560,21 +564,6 @@ export const addLayout = (
         transitions.push(transition);
       });
     }
-
-    const processElement = (element) => {
-      const processedElement = { ...element };
-
-      if (element.url && element.url.startsWith("file:")) {
-        const fileId = element.url.replace("file:", "");
-        processedElement.url = resolveFile(fileId);
-      }
-
-      if (element.children && Array.isArray(element.children)) {
-        processedElement.children = element.children.map(processElement);
-      }
-
-      return processedElement;
-    };
 
     const layoutContainer = {
       id: `layout-${presentationState.layout.layoutId}`,
@@ -585,24 +574,25 @@ export const addLayout = (
     };
 
     const templateData = {
-      variables: systemState?.variables || {},
-      saveDataArray: systemStore.selectSaveDataPage({
-        page: systemState?.variables.currentSavePageIndex,
-        numberPerPage: 6,
-      }),
-      autoMode: systemStore.selectAutoMode(),
-      skipMode: systemStore.selectSkipMode(),
-      globalAudios: systemStore.selectGlobalAudios() || [],
-      currentLanguagePackId: systemStore.selectCurrentLanguagePackId(),
-      i18n: systemStore.selectCurrentLanguagePackKeys(),
-      languagePacks: systemStore.selectLanguagePacks(),
+      variables,
+      // saveDataArray: systemStore.selectSaveDataPage({
+      //   page: systemState?.variables.currentSavePageIndex,
+      //   numberPerPage: 6,
+      // }),
+      autoMode,
+      skipMode,
+      // globalAudios: systemStore.selectGlobalAudios() || [],
+      currentLocalizationPackageId,
+      // i18n: systemStore.selectCurrentLanguagePackKeys(),
+      // languagePacks: systemStore.selectLanguagePacks(),
     };
 
     let processedContainer = parseAndRender(layoutContainer, templateData, {
       functions: jemplFunctions,
     });
     processedContainer = parseAndRender(processedContainer, {
-      i18n: systemStore.selectCurrentLanguagePackKeys(),
+      i18n: {}
+      // i18n: systemStore.selectCurrentLanguagePackKeys(),
     });
 
     const processElementAfterRender = (element) => {
@@ -625,14 +615,18 @@ export const addLayout = (
     // Push the processed container
     storyContainer.children.push(processElementAfterRender(processedContainer));
   }
+  return state;
 };
 
 export const addModals = (
-  { elements, transitions },
-  { systemState, resources, resolveFile, systemStore },
+  state,
+  { resources = {}, variables, autoMode, skipMode, currentLocalizationPackageId },
 ) => {
+  const { elements, transitions } = state;
   // Get modals directly from the passed systemState instead of using systemStore
-  const modals = systemState.modes[systemState.currentMode].modals;
+  // const modals = systemState.modes[systemState.currentMode].modals;
+  // TODO: do this
+  const modals = [];
   if (modals && modals.length > 0) {
     // Add each modal as an overlay
     modals.forEach((modal, index) => {
@@ -650,24 +644,6 @@ export const addModals = (
           });
         }
 
-        // Process layout elements similar to addLayout
-        const processElement = (element) => {
-          const processedElement = { ...element };
-
-          // Handle file references in layout elements
-          if (element.url && element.url.startsWith("file:")) {
-            const fileId = element.url.replace("file:", "");
-            processedElement.url = resolveFile(fileId);
-          }
-
-          // Recursively process children if they exist
-          if (element.children && Array.isArray(element.children)) {
-            processedElement.children = element.children.map(processElement);
-          }
-
-          return processedElement;
-        };
-
         // Create a container for this modal
         const modalContainer = {
           id: `modal-${index}`,
@@ -677,55 +653,55 @@ export const addModals = (
           children: layout.elements || [],
         };
 
-        let currentActiveGalleryFileId;
-        let isLastFileIdIndex = false;
-
-        if (systemState.variables.activeGalleryIndex !== undefined) {
-          const gallery = systemState.variables.gallery.items;
-          if (
-            gallery &&
-            Array.isArray(gallery) &&
-            systemState.variables.activeGalleryIndex < gallery.length
-          ) {
-            currentActiveGalleryFileId =
-              gallery[systemState.variables.activeGalleryIndex]?.fileIds[
-              systemState.variables.activeGalleryFileIndex
-              ];
-          }
-
-          if (
-            systemState.variables.activeGalleryFileIndex <
-            gallery[systemState.variables.activeGalleryIndex]?.fileIds.length -
-            1
-          ) {
-            isLastFileIdIndex = false;
-          } else {
-            isLastFileIdIndex = true;
-          }
-        }
+        // let currentActiveGalleryFileId;
+        // let isLastFileIdIndex = false;
+        //
+        // if (systemState.variables.activeGalleryIndex !== undefined) {
+        //   const gallery = systemState.variables.gallery.items;
+        //   if (
+        //     gallery &&
+        //     Array.isArray(gallery) &&
+        //     systemState.variables.activeGalleryIndex < gallery.length
+        //   ) {
+        //     currentActiveGalleryFileId =
+        //       gallery[systemState.variables.activeGalleryIndex]?.fileIds[
+        //       systemState.variables.activeGalleryFileIndex
+        //       ];
+        //   }
+        //
+        //   if (
+        //     systemState.variables.activeGalleryFileIndex <
+        //     gallery[systemState.variables.activeGalleryIndex]?.fileIds.length -
+        //     1
+        //   ) {
+        //     isLastFileIdIndex = false;
+        //   } else {
+        //     isLastFileIdIndex = true;
+        //   }
+        // }
 
         const templateData = {
-          variables: systemState.variables || {},
-          currentActiveGalleryFileId,
-          isLastFileIdIndex,
-          saveDataArray: systemStore.selectSaveDataPage({
-            page: systemState?.variables.currentSavePageIndex,
-            numberPerPage: 6,
-          }),
-          autoMode: systemStore.selectAutoMode(),
-          skipMode: systemStore.selectSkipMode(),
-          globalAudios: systemStore.selectGlobalAudios() || [],
-          historyDialogue: systemStore.selectHistoryDialogue() || [],
-          currentLanguagePackId: systemStore.selectCurrentLanguagePackId(),
-          i18n: systemStore.selectCurrentLanguagePackKeys(),
-          languagePacks: systemStore.selectLanguagePacks(),
+          variables,
+          // currentActiveGalleryFileId,
+          // isLastFileIdIndex,
+          // saveDataArray: systemStore.selectSaveDataPage({
+          //   page: systemState?.variables.currentSavePageIndex,
+          //   numberPerPage: 6,
+          // }),
+          autoMode,
+          skipMode,
+          // globalAudios: systemStore.selectGlobalAudios() || [],
+          // historyDialogue: systemStore.selectHistoryDialogue() || [],
+          currentLocalizationPackageId
+          // i18n: systemStore.selectCurrentLanguagePackKeys(),
+          // languagePacks: systemStore.selectLanguagePacks(),
         };
 
         let processedModal = parseAndRender(modalContainer, templateData, {
           functions: jemplFunctions,
         });
         processedModal = parseAndRender(processedModal, {
-          i18n: systemStore.selectCurrentLanguagePackKeys(),
+          i18n: {}
         });
 
         // Then process file references in the result
@@ -750,18 +726,28 @@ export const addModals = (
       }
     });
   }
+  return state;
 };
 
-export default [
-  addScreen,
-  addBackgrundOrCg,
-  addCharacters,
-  addVisuals,
-  addDialogue,
-  addChoices,
-  addLayout,
-  addBgm,
-  addSfx,
-  addVoice,
-  addModals,
-];
+export const constructRenderState = (params) => {
+  const actions = [
+    addScreen,
+    addBackgrundOrCg,
+    addCharacters,
+    addVisuals,
+    addDialogue,
+    addChoices,
+    addLayout,
+    addBgm,
+    addSfx,
+    addVoice,
+    addModals,
+  ];
+
+  const executeActions = createSequentialActionsExecutor(
+    createInitialState,
+    actions
+  );
+
+  return executeActions(params);
+};

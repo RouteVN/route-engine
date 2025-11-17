@@ -1,0 +1,61 @@
+file: "../../../src/stores/constructRenderState.js"
+group: constructRenderState.createInitialState
+suites: [createInitialState]
+---
+suite: createInitialState
+exportName: createInitialState
+---
+case: create initial state with story container and empty transitions
+in: []
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []
+---
+case: verify story container structure
+in: []
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []
+---
+case: verify transitions array is empty
+in: []
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []
+---
+case: verify elements array contains only one item
+in: []
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []
+---
+case: verify story container has correct default properties
+in: []
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  transitions: []

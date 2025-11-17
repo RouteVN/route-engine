@@ -1,3 +1,13 @@
+import { createSequentialActionsExecutor } from "../util.js";
+
+/**
+ * Creates the initial presentation state
+ * @returns {Object} Empty initial state object
+ */
+export const createInitialState = () => {
+  return {};
+};
+
 /**
  * Applies screen from presentation to state
  * @param {Object} state - The current state of the system
@@ -200,21 +210,32 @@ export const cleanAll = (state, presentation) => {
   }
 };
 
-export const createInitialState = () => {
-  return {};
+/**
+ * Constructs presentation state by applying all presentation actions to initial state
+ * @param {Array} presentations - Array of presentation objects to apply
+ * @returns {Object} Final presentation state
+ */
+export const constructPresentationState = (presentations) => {
+  const actions = [
+    cleanAll,
+    screen,
+    background,
+    sfx,
+    bgm,
+    visual,
+    dialogue,
+    character,
+    animation,
+    layout,
+    choice,
+    voice,
+  ];
+
+  const executeActions = createSequentialActionsExecutor(
+    createInitialState,
+    actions
+  );
+
+  return executeActions(presentations);
 };
 
-export default [
-  cleanAll,
-  screen,
-  background,
-  sfx,
-  bgm,
-  visual,
-  dialogue,
-  character,
-  animation,
-  layout,
-  choice,
-  voice,
-];

@@ -1,15 +1,7 @@
 
 
-import { createSequentialActionsExecutor } from "../util.js";
-import constructPresentationStateActions, * as constructPresentationStateStore from "./constructPresentationState.js";
-
-const { createInitialState: createConstructPresentationStateInitialState } =
-  constructPresentationStateStore;
-
-const constructPresentationState = createSequentialActionsExecutor(
-  createConstructPresentationStateInitialState,
-  constructPresentationStateActions,
-);
+import { constructPresentationState } from "./constructPresentationState.js";
+import { constructRenderState } from "./constructRenderState.js";
 
 export const createInitialState = (payload) => {
   const {
@@ -248,17 +240,12 @@ export const selectPresentationState = ({ state }) => {
 
 export const selectRenderState = ({ state }) => {
   const presentationState = selectPresentationState({ state });
-  const constructRenderState = () => {
-    return {
-      renderState: true
-    }
-  }
 
   // prefer to pass in computed state, so it does not have to be computed again
   return constructRenderState({
     presentationState,
   });
-  // replayRenderState = _constructRenderState({
+  // replayRenderState = constructRenderState({
   //   presentationState: replayPresentationState,
   //   systemState: replaySystemState,
   //   systemStore: _systemStore,
