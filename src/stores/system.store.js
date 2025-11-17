@@ -1,5 +1,6 @@
 
 
+import { createStore } from "../util.js";
 import { constructPresentationState } from "./constructPresentationState.js";
 import { constructRenderState } from "./constructRenderState.js";
 
@@ -186,8 +187,8 @@ export const selectCurrentPointer = ({ state }) => {
 /**
  * Selects a section from the project data by sectionId
  * @param {Object} state - Current state object
- * @param {Object} payload - Payload containing sectionId
- * @param {string} payload.sectionId - The section ID to find
+ * @param {Object} initialState - Payload containing sectionId
+ * @param {string} initialState.sectionId - The section ID to find
  * @returns {Object|undefined} The section object if found, undefined otherwise
  */
 export const selectSection = ({ state }, payload) => {
@@ -232,31 +233,15 @@ export const selectPresentationState = ({ state }) => {
   });
 
   const presentationState = constructPresentationState(presentationActions)
-
-  console.log('presentationState', presentationState);
-
   return presentationState
 }
 
 export const selectRenderState = ({ state }) => {
   const presentationState = selectPresentationState({ state });
-
-  // prefer to pass in computed state, so it does not have to be computed again
   return constructRenderState({
     presentationState,
   });
-  // replayRenderState = constructRenderState({
-  //   presentationState: replayPresentationState,
-  //   systemState: replaySystemState,
-  //   systemStore: _systemStore,
-  //   screen: _projectDataStore.selectScreen(),
-  //   resolveFile: (f) => `file:${f}`,
-  //   resources: _projectDataStore.selectResources(),
-  //   ui: _projectDataStore.selectUi(),
-  //   i18n: _projectDataStore.selectI18n(),
-  // });
 }
-
 
 /**************************
  * Actions
@@ -435,8 +420,8 @@ export const addViewedResource = ({ state }, payload) => {
 /**
  * Sets the next line configuration for advancing to the next line
  * @param {Object} state - Current state object
- * @param {Object} payload - Action payload
- * @param {Object} payload.nextLineConfig - Configuration object
+ * @param {Object} initialState - Action payload
+ * @param {Object} initialState.nextLineConfig - Configuration object
  * @param {Object} [payload.nextLineConfig.manual] - Manual navigation configuration
  * @param {boolean} [payload.nextLineConfig.manual.enabled] - Whether manual navigation is enabled
  * @param {boolean} [payload.nextLineConfig.manual.requireComplete] - Whether completion is required before advancing
@@ -483,11 +468,11 @@ export const setNextLineConfig = ({ state }, payload) => {
 /**
  * Replaces a save slot with new data
  * @param {Object} state - Current state object
- * @param {Object} payload - Action payload
- * @param {string} payload.slotKey - The key identifying the save slot
- * @param {number} payload.date - Unix timestamp for when the save was created
- * @param {string} payload.image - Base64 encoded save image/screenshot
- * @param {Object} payload.state - The game state to be saved
+ * @param {Object} initialState - Action payload
+ * @param {string} initialState.slotKey - The key identifying the save slot
+ * @param {number} initialState.date - Unix timestamp for when the save was created
+ * @param {string} initialState.image - Base64 encoded save image/screenshot
+ * @param {Object} initialState.state - The game state to be saved
  * @returns {Object} Updated state object
  */
 export const replaceSaveSlot = ({ state }, payload) => {
@@ -509,8 +494,8 @@ export const replaceSaveSlot = ({ state }, payload) => {
 /**
  * Adds an item to the historySequence of the last context
  * @param {Object} state - Current state object
- * @param {Object} payload - Action payload
- * @param {Object} payload.item - The historySequence item to add (can be any structure)
+ * @param {Object} initialState - Action payload
+ * @param {Object} initialState.item - The historySequence item to add (can be any structure)
  * @returns {Object} Updated state object
  */
 export const addToHistory = ({ state }, payload) => {
@@ -645,5 +630,60 @@ export const prevLine = ({ state }, payload) => {
   }
 
   return state;
-}
+};
+
+/**************************
+ * Store Export
+ *************************/
+
+// Export the store using createStore from util.js
+export const createSystemStore = (initialState) => {
+  const _initialState = createInitialState(initialState);
+
+  // Gather all selectors and actions for the store
+  const selectorsAndActions = {
+    // Selectors
+    selectPendingEffects,
+    selectSkipMode,
+    selectAutoMode,
+    selectDialogueUIHidden,
+    selectCurrentLocalizationPackageId,
+    selectIsLineViewed,
+    selectIsResourceViewed,
+    selectNextLineConfig,
+    selectSaveSlots,
+    selectSaveSlot,
+    selectCurrentPointer,
+    selectSection,
+    selectPresentationState,
+    selectRenderState,
+
+    // Actions
+    startAutoMode,
+    stopAutoMode,
+    toggleAutoMode,
+    startSkipMode,
+    stopSkipMode,
+    toggleSkipMode,
+    showDialogueUI,
+    hideDialogueUI,
+    toggleDialogueUI,
+    setCurrentLocalizationPackageId,
+    clearPendingEffects,
+    appendPendingEffect,
+    addViewedLine,
+    addViewedResource,
+    setNextLineConfig,
+    replaceSaveSlot,
+    addToHistory,
+    nextLine,
+    markLineCompleted,
+    prevLine,
+  };
+
+  return createStore(_initialState, selectorsAndActions, {
+    transformActionFirstArgument: (state) => state,
+    transformSelectorFirstArgument: (state) => state,
+  });
+};
 
