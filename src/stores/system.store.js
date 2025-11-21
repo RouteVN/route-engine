@@ -9,9 +9,14 @@ export const createInitialState = (payload) => {
     global: {
       currentLocalizationPackageId,
     },
-    initialPointer,
+    // initialPointer,
     projectData,
   } = payload;
+
+  const initialPointer = {
+
+  }
+
   const state = {
     // projectData,
     projectData: {
@@ -172,15 +177,19 @@ export const selectSaveSlot = ({ state }, payload) => {
 export const selectCurrentPointer = ({ state }) => {
   const lastContext = state.contexts[state.contexts.length - 1];
 
+  console.log('lastContext', lastContext);
+
   if (!lastContext) {
     return undefined;
   }
 
   const pointer = lastContext.pointers?.[lastContext.currentPointerId];
 
+  console.log('pointer', pointer)
+
   return {
     currentPointerMode: lastContext.currentPointerId,
-    pointer: pointer !== undefined ? pointer : undefined
+    pointer
   };
 };
 
@@ -682,8 +691,12 @@ export const createSystemStore = (initialState) => {
   };
 
   return createStore(_initialState, selectorsAndActions, {
-    transformActionFirstArgument: (state) => state,
-    transformSelectorFirstArgument: (state) => state,
+    transformActionFirstArgument: (state) => {
+      return { state }
+    },
+    transformSelectorFirstArgument: (state) => {
+      return { state }
+    },
   });
 };
 

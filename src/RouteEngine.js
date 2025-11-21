@@ -8,11 +8,24 @@ import { createSystemStore } from "./stores/system.store.js";
 /**
  * Creates a RouteEngine instance.
  * Look at ../docs/RouteEngine.md for more information.
+ *
+ * @example
+ *
+ * const handlePendingEffects = (effects) => {
+ *
+ * }
+ *
+ *
+ * const engine = createRouteEngine({
+ *   handlePendingEffects,
+ * });
+ *
+ *
  */
 export default function createRouteEngine(options) {
   let _systemStore;
 
-  const { handleEffects } = options;
+  const { handlePendingEffects } = options;
   // let _timer;
   // let _eventCallback = () => { };
   // let _captureElemement;
@@ -104,19 +117,25 @@ export default function createRouteEngine(options) {
   // };
   const init = ({ projectData }) => {
     _systemStore = createSystemStore(projectData);
-    render();
+    _systemStore.appendPendingEffect({ type: 'render' });
+    handlePendingEffects(_systemStore.selectPendingEffects());
+    _systemStore.clearPendingEffects();
   }
 
-  const render = () => {
-    _eventCallback({
-      eventType: "render",
-      payload: _systemStore.selectRenderState(),
-    });
+  const selectRenderState = () => {
+    return _systemStore.selectRenderState();
   }
+
+  // const render = () => {
+  // _eventCallback({
+  //   eventType: "render",
+  //   payload: _systemStore.selectRenderState(),
+  // });
+  // }
 
   const handleAction = (actionType, payload) => {
     _systemStore[actionType](payload);
-    handleEffects(_systemStore.selectPendingEffects())
+    handlePendingEffects(_systemStore.selectPendingEffects())
     _systemStore.clearPendingEffects();
   }
   /**
@@ -169,8 +188,9 @@ export default function createRouteEngine(options) {
 
   return {
     init,
-    render,
+    // render,
     handleAction,
+    selectRenderState,
     // onEvent,
     // offEvent,
     // handleEvent,

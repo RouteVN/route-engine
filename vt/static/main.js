@@ -202,19 +202,34 @@ const init = async () => {
     return resizedBase64;
   };
 
-  const engine = createRouteEngine();
-  engine.onEvent(({ eventType, payload }) => {
-    console.log('onEvent', { eventType, payload })
-    if (eventType === "render") {
-      app.render(payload);
+  const effectsHandler = (effects) => {
+    for (const effect of effects) {
+      if (effect.type === 'render') {
+        const renderState = engine.selectRenderState();
+        app.render(renderState);
+      } else if (effect.type === '') {
+
+      }
     }
-  });
+
+  }
+
+  const engine = createRouteEngine({ handlePendingEffects: effectsHandler });
+  // engine.onEvent(({ eventType, payload }) => {
+  //   console.log('onEvent', { eventType, payload })
+  //   if (eventType === "render") {
+  //     app.render(payload);
+  //   }
+  // });
 
   engine.init({
-    projectData: jsonData,
-    ticker: app._app.ticker,
-    captureElement,
-    loadAssets: app.loadAssets
+    projectData: {
+      global: {},
+      ...jsonData
+    },
+    //  ticker: app._app.ticker,
+    // captureElement,
+    // loadAssets: app.loadAssets
   });
 
 };
