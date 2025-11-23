@@ -55,7 +55,7 @@ export const addScreen = (state, { presentationState, resources }) => {
  *
  * @param {Object} params
  */
-export const addBackgrundOrCg = (
+export const addBackgroundOrCg = (
   state,
   { presentationState, resources = {} }, // resolveFile
 ) => {
@@ -78,8 +78,7 @@ export const addBackgrundOrCg = (
           type: "sprite",
           x: 0,
           y: 0,
-          url: `files/${background.fileId}`
-          // url: resolveFile(background.fileId),
+          url: background.fileId
         });
       }
     }
@@ -230,7 +229,7 @@ export const addCharacters = (
         characterContainer.children.push({
           type: "sprite",
           id: `${item.id}-${spritePart.partId}`,
-          url: `files/${spritePart.fileId}`,
+          url: spritePart.fileId,
           x: 0,
           y: 0,
         });
@@ -304,7 +303,7 @@ export const addVisuals = (
           storyContainer.children.push({
             id: `visual-${item.id}`,
             type: "sprite",
-            url: `files/${resource.fileId}`,
+            url: resource.fileId,
             x: transform.x,
             y: transform.y,
             anchorX: transform.anchorX,
@@ -480,7 +479,7 @@ export const addBgm = (
     storyContainer.children.push({
       id: "bgm",
       type: "audio",
-      url: `files/${audio.fileId}`,
+      url: audio.fileId,
       loop: audio.loop ?? true,
       volume: audio.volume ?? 0.5,
       delay: audio.delay ?? null,
@@ -505,7 +504,7 @@ export const addSfx = (state, { presentationState, resources }) => {
       storyContainer.children.push({
         id: item.id,
         type: "audio",
-        url: `files/${audio.fileId}`,
+        url: audio.fileId,
         loop: item.loop ?? audio.loop ?? true,
         volume: item.volume ?? audio.volume ?? 0.5,
         delay: item.delay ?? audio.delay ?? null,
@@ -531,7 +530,7 @@ export const addVoice = (state, { presentationState, resources }) => {
   storyContainer.children.push({
     id: `voice-${fileId}`,
     type: "audio",
-    url: `files/${fileId}`,
+    url: fileId,
     volume: volume ?? 0.5,
     loop: loop ?? false,
   });
@@ -732,7 +731,7 @@ export const addModals = (
 export const constructRenderState = (params) => {
   const actions = [
     addScreen,
-    addBackgrundOrCg,
+    addBackgroundOrCg,
     addCharacters,
     addVisuals,
     addDialogue,
@@ -750,4 +749,4 @@ export const constructRenderState = (params) => {
   );
 
   return executeActions(params);
-};
+}

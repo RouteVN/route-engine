@@ -115,8 +115,8 @@ export default function createRouteEngine(options) {
   //
   // _processAndRender();
   // };
-  const init = ({ projectData }) => {
-    _systemStore = createSystemStore(projectData);
+  const init = ({ initialState }) => {
+    _systemStore = createSystemStore(initialState);
     _systemStore.appendPendingEffect({ type: 'render' });
     handlePendingEffects(_systemStore.selectPendingEffects());
     _systemStore.clearPendingEffects();
@@ -185,6 +185,9 @@ export default function createRouteEngine(options) {
   //     payload: renderState,
   //   });
   // };
+  const handleEvent = ({ eventType, payload }) => {
+    console.log('RouteEngine handleEvent', { eventType, payload });
+  }
 
   return {
     init,
@@ -193,6 +196,6 @@ export default function createRouteEngine(options) {
     selectRenderState,
     // onEvent,
     // offEvent,
-    // handleEvent,
+    handleEvent,
   };
 }

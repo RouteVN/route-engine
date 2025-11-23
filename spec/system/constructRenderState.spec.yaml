@@ -63,7 +63,7 @@ out:
           type: "sprite"
           x: 0
           y: 0
-          url: "files/background.jpg"
+          url: "background.jpg"
   transitions: []
 ---
 case: construct render state with clean all and multiple presentations
@@ -114,5 +114,5 @@ out:
           type: "sprite"
           x: 0
           y: 0
-          url: "files/new-background.jpg"
+          url: "new-background.jpg"
   transitions: []

@@ -27,7 +27,7 @@ in:
                     - id: "2"
                       actions: {}
       contexts:
-        - currentPointerId: "read"
+        - currentPointerMode: "read"
           pointers:
             read:
               sectionId: "section1"
@@ -62,7 +62,7 @@ in:
                         background:
                           resourceId: "xyz"
       contexts:
-        - currentPointerId: "read"
+        - currentPointerMode: "read"
           pointers:
             read:
               sectionId: "section1"
@@ -100,7 +100,7 @@ in:
                         background:
                           resourceId: "xyz"
       contexts:
-        - currentPointerId: "read"
+        - currentPointerMode: "read"
           pointers:
             read:
               sectionId: "section1"

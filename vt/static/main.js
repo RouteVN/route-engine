@@ -12,87 +12,87 @@ import RouteGraphics, {
   createAssetBufferManager,
 } from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.2-rc30/+esm";
 
-const jsonData = yaml.load(window.yamlContent);
+const projectData = yaml.load(window.yamlContent);
 
 const init = async () => {
   const assets = {
-    "file:lakjf3lka": {
+    "lakjf3lka": {
       url: "/public/background-1-1.png",
       type: "image/png",
     },
-    "file:dmni32": {
+    "dmni32": {
       url: "/public/background-1-2.png",
       type: "image/png",
     },
-    "file:23jkfa893": {
+    "23jkfa893": {
       url: "/public/background-2-1.png",
       type: "image/png",
     },
-    "file:la3lka": {
+    "la3lka": {
       url: "/public/circle-blue.png",
       type: "image/png",
     },
-    "file:a32kf3": {
+    "a32kf3": {
       url: "/public/circle-green.png",
       type: "image/png",
     },
-    "file:x342fga": {
+    "x342fga": {
       url: "/public/circle-green-small.png",
       type: "image/png",
     },
-    "file:94lkj289": {
+    "94lkj289": {
       url: "/public/logo1.png",
       type: "image/png",
     },
-    "file:3kda832": {
+    "3kda832": {
       url: "/public/dialogue-box.png",
       type: "image/png",
     },
-    "file:3ka3s": {
+    "3ka3s": {
       url: "/public/bgm-1.mp3",
       type: "audio/mpeg",
     },
-    "file:xk393": {
+    "xk393": {
       url: "/public/bgm-2.mp3",
       type: "audio/mpeg",
     },
-    "file:xj323": {
+    "xj323": {
       url: "/public/sfx-1.mp3",
       type: "audio/mpeg",
     },
-    "file:39csl": {
+    "39csl": {
       url: "/public/sfx-2.wav",
       type: "audio/wav",
     },
-    "file:vertical_hover_bar": {
+    "vertical_hover_bar": {
       url: "/public/vertical_hover_bar.png",
       type: "image/png"
     },
-    "file:vertical_hover_thumb": {
+    "vertical_hover_thumb": {
       url: "/public/vertical_hover_thumb.png",
       type: "image/png"
     },
-    "file:vertical_idle_bar": {
+    "vertical_idle_bar": {
       url: "/public/vertical_idle_bar.png",
       type: "image/png"
     },
-    "file:vertical_idle_thumb": {
+    "vertical_idle_thumb": {
       url: "/public/vertical_idle_thumb.png",
       type: "image/png"
     },
-    "file:horizontal_hover_bar": {
+    "horizontal_hover_bar": {
       url: "/public/horizontal_hover_bar.png",
       type: "image/png"
     },
-    "file:horizontal_hover_thumb": {
+    "horizontal_hover_thumb": {
       url: "/public/horizontal_hover_thumb.png",
       type: "image/png"
     },
-    "file:horizontal_idle_bar": {
+    "horizontal_idle_bar": {
       url: "/public/horizontal_idle_bar.png",
       type: "image/png"
     },
-    "file:horizontal_idle_thumb": {
+    "horizontal_idle_thumb": {
       url: "/public/horizontal_idle_thumb.png",
       type: "image/png"
     }
@@ -223,10 +223,13 @@ const init = async () => {
   // });
 
   engine.init({
-    projectData: {
-      global: {},
-      ...jsonData
-    },
+
+    initialState: {
+      global: {
+        currentLocalizationPackageId: 'en'
+      },
+      projectData
+    }
     //  ticker: app._app.ticker,
     // captureElement,
     // loadAssets: app.loadAssets

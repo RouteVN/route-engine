@@ -57,7 +57,6 @@ story:
               actions:
                 background:
                   resourceId: alkejf3la
-                  resourceType: image
                   animations:
                     in:
                       animationId: 3lkj289
@@ -65,7 +64,6 @@ story:
               actions:
                 background:
                   resourceId: alkejf3la
-                  resourceType: image
                   animations:
                     update:
                       animationId: k38df

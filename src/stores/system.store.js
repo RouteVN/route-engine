@@ -14,30 +14,15 @@ export const createInitialState = (payload) => {
   } = payload;
 
   const initialPointer = {
-
+    sceneId: projectData.story.initialSceneId,
+    sectionId: projectData.story.scenes[projectData.story.initialSceneId].initialSectionId,
+    lineId: projectData.story.scenes[projectData.story.initialSceneId]
+      .sections[projectData.story.scenes[projectData.story.initialSceneId].initialSectionId]
+      .lines[0].id,
   }
 
   const state = {
-    // projectData,
-    projectData: {
-      story: {
-        scenes: {
-          somesceneid: {
-            sections: {
-              somesectionid: {
-                lines: [{
-                  id: '3fal',
-                  actions: {}
-                }, {
-                  id: '3fal',
-                  actions: {}
-                }]
-              }
-            }
-          }
-        }
-      }
-    },
+    projectData,
     global: {
       isLineCompleted: false,
       pendingEffects: [],
@@ -183,12 +168,14 @@ export const selectCurrentPointer = ({ state }) => {
     return undefined;
   }
 
-  const pointer = lastContext.pointers?.[lastContext.currentPointerId];
+  const pointer = lastContext.pointers?.[lastContext.currentPointerMode];
+  console.log('lastContext.pointers', lastContext.pointers)
+  console.log('lastContext.currentPointerMode', lastContext.currentPointerMode)
 
   console.log('pointer', pointer)
 
   return {
-    currentPointerMode: lastContext.currentPointerId,
+    currentPointerMode: lastContext.currentPointerMode,
     pointer
   };
 };
@@ -249,6 +236,7 @@ export const selectRenderState = ({ state }) => {
   const presentationState = selectPresentationState({ state });
   return constructRenderState({
     presentationState,
+    resources: state.projectData.resources,
   });
 }
 
@@ -589,14 +577,14 @@ export const prevLine = ({ state }, payload) => {
 
   // If we're already in history mode, keep history pointer and move it back
   // Otherwise, switch to history mode and initialize it (only if we have a valid currentPointer)
-  if (lastContext.currentPointerId !== 'history' || !lastContext.pointers.history) {
+  if (lastContext.currentPointerMode !== 'history' || !lastContext.pointers.history) {
     // Only switch to history mode if we have a valid current pointer to work with
     if (!currentPointer) {
       return state;
     }
 
     // Switch to history mode, initialize history pointer with current position
-    lastContext.currentPointerId = 'history';
+    lastContext.currentPointerMode = 'history';
     lastContext.pointers.history = {
       sectionId,
       lineId: currentPointer?.lineId

@@ -20,7 +20,7 @@ in:
   - state:
       global: {}
       contexts:
-        - currentPointerId: "read"
+        - currentPointerMode: "read"
           pointers:
             read: { sectionId: "intro", lineId: "1" }
             history: { sectionId: "intro", lineId: "1" }
@@ -35,7 +35,7 @@ in:
   - state:
       global: {}
       contexts:
-        - currentPointerId: "history"
+        - currentPointerMode: "history"
           pointers:
             read: { sectionId: "intro", lineId: "1" }
             history: { sectionId: "section1", lineId: "5" }
@@ -50,15 +50,15 @@ in:
   - state:
       global: {}
       contexts:
-        - currentPointerId: "read"
+        - currentPointerMode: "read"
           pointers:
             read: { sectionId: "intro", lineId: "1" }
             history: { sectionId: "intro", lineId: "1" }
-        - currentPointerId: "menu"
+        - currentPointerMode: "menu"
           pointers:
             read: { sectionId: undefined, lineId: undefined }
             history: { sectionId: "menu", lineId: "save" }
-        - currentPointerId: "history"
+        - currentPointerMode: "history"
           pointers:
             read: { sectionId: undefined, lineId: undefined }
             history: { sectionId: "inventory", lineId: "items" }
@@ -73,7 +73,7 @@ in:
   - state:
       global: {}
       contexts:
-        - currentPointerId: "nonexistent"
+        - currentPointerMode: "nonexistent"
           pointers:
             read: { sectionId: "intro", lineId: "1" }
             history: { sectionId: "intro", lineId: "1" }
@@ -85,7 +85,7 @@ in:
   - state:
       global: {}
       contexts:
-        - currentPointerId: "read"
+        - currentPointerMode: "read"
 out:
   currentPointerMode: "read"
 ---
@@ -94,7 +94,7 @@ in:
   - state:
       global: {}
       contexts:
-        - currentPointerId: "read"
+        - currentPointerMode: "read"
           pointers:
             read:
               sectionId: "section1"

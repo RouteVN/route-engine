@@ -1,9 +1,9 @@
 file: "../../../src/stores/constructRenderState.js"
-group: constructRenderState.addBackgrundOrCg
-suites: [addBackgrundOrCg]
+group: constructRenderState.addBackgroundOrCg
+suites: [addBackgroundOrCg]
 ---
-suite: addBackgrundOrCg
-exportName: addBackgrundOrCg
+suite: addBackgroundOrCg
+exportName: addBackgroundOrCg
 ---
 case: add background image to story container
 in:
@@ -33,7 +33,7 @@ out:
           type: "sprite"
           x: 0
           y: 0
-          url: "files/image1.png"
+          url: "image1.png"
   transitions: []
 ---
 case: add background with in animation
@@ -72,7 +72,7 @@ out:
           type: "sprite"
           x: 0
           y: 0
-          url: "files/image1.png"
+          url: "image1.png"
   transitions:
     - id: "bg-cg-animation-in"
       type: "keyframes"
@@ -128,7 +128,7 @@ out:
           type: "sprite"
           x: 0
           y: 0
-          url: "files/new.jpg"
+          url: "new.jpg"
   transitions:
     - id: "bg-cg-animation-update"
       type: "keyframes"
@@ -307,7 +307,7 @@ out:
           type: "sprite"
           x: 0
           y: 0
-          url: "files/background.jpg"
+          url: "background.jpg"
   transitions:
     - id: "existingTransition"
       type: "existing"

@@ -26,7 +26,7 @@ in:
                     - id: "4"
                       actions: {}
       contexts:
-        - currentPointerId: "read"
+        - currentPointerMode: "read"
           pointers:
             read:
               sectionId: "section1"
@@ -52,7 +52,7 @@ out:
                 - id: "4"
                   actions: {}
   contexts:
-    - currentPointerId: "history"
+    - currentPointerMode: "history"
       pointers:
         read:
           sectionId: "section1"
@@ -80,7 +80,7 @@ in:
                     - id: "3"
                       actions: {}
       contexts:
-        - currentPointerId: "read"
+        - currentPointerMode: "read"
           pointers:
             read:
               sectionId: "section1"
@@ -104,7 +104,7 @@ out:
                 - id: "3"
                   actions: {}
   contexts:
-    - currentPointerId: "history"
+    - currentPointerMode: "history"
       pointers:
         read:
           sectionId: "section1"
@@ -132,7 +132,7 @@ in:
                     - id: "3"
                       actions: {}
       contexts:
-        - currentPointerId: "history"
+        - currentPointerMode: "history"
           pointers:
             read:
               sectionId: "section1"
@@ -158,7 +158,7 @@ out:
                 - id: "3"
                   actions: {}
   contexts:
-    - currentPointerId: "history"
+    - currentPointerMode: "history"
       pointers:
         read:
           sectionId: "section1"
