@@ -162,17 +162,11 @@ export const selectSaveSlot = ({ state }, payload) => {
 export const selectCurrentPointer = ({ state }) => {
   const lastContext = state.contexts[state.contexts.length - 1];
 
-  console.log('lastContext', lastContext);
-
   if (!lastContext) {
     return undefined;
   }
 
   const pointer = lastContext.pointers?.[lastContext.currentPointerMode];
-  console.log('lastContext.pointers', lastContext.pointers)
-  console.log('lastContext.currentPointerMode', lastContext.currentPointerMode)
-
-  console.log('pointer', pointer)
 
   return {
     currentPointerMode: lastContext.currentPointerMode,
@@ -234,10 +228,13 @@ export const selectPresentationState = ({ state }) => {
 
 export const selectRenderState = ({ state }) => {
   const presentationState = selectPresentationState({ state });
-  return constructRenderState({
+  console.log('presentationState', presentationState);
+  const renderState = constructRenderState({
     presentationState,
     resources: state.projectData.resources,
   });
+  console.log('renderState', renderState);
+  return renderState;
 }
 
 /**************************
@@ -512,15 +509,25 @@ export const addToHistory = ({ state }, payload) => {
 };
 
 export const nextLine = ({ state }, payload) => {
-  const { sectionId } = payload;
-  const section = selectSection({ state }, { sectionId });
   const pointer = selectCurrentPointer({ state })?.pointer;
+  const sectionId = pointer?.sectionId;
+  const section = selectSection({ state }, { sectionId });
+  console.log('section', section)
 
   const lines = section?.lines || [];
+  console.log('pointer', {
+    sectionId: pointer?.sectionId,
+    lineId: pointer?.lineId
+  })
+  console.log('lines', lines)
 
   const currentLineIndex = lines.findIndex(line => line.id === pointer?.lineId);
   const nextLineIndex = currentLineIndex + 1;
 
+  console.log('1111111111111', {
+    nextLineIndex,
+    linesLength: lines.length
+  })
   if (nextLineIndex < lines.length) {
     const nextLine = lines[nextLineIndex];
     const lastContext = state.contexts[state.contexts.length - 1];

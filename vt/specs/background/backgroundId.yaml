@@ -1,6 +1,6 @@
 ---
-title: "Image Background"
-description: standard image background transition without animation
+title: "Background 1"
+description: Test background
 ---
 screen:
   width: 1920
@@ -8,14 +8,60 @@ screen:
   backgroundColor: "#000000"
 
 resources:
+  layouts:
+    screen1:
+      elements:
+        - id: af32
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+
   images:
     alkejf3la:
       fileId: lakjf3lka
+      width: 1920
+      height: 1080
     8a3lkja:
       fileId: dmni32
+      width: 1920
+      height: 1080
     3ljdasfjlk32:
       fileId: 23jkfa893
+      width: 1920
+      height: 1080
 
+  animations:
+    3lkj289:
+      name: "Fade In"
+      properties:
+        alpha:
+          initialValue: 0
+          keyframes:
+            - duration: 700
+              value: 1
+              easing: linear
+    k38df:
+      name: "Fade to half"
+      properties:
+        alpha:
+          keyframes:
+            - duration: 700
+              value: 0.5
+              easing: linear
+
+    8h3js:
+      name: "Fade Out"
+      properties:
+        alpha:
+          keyframes:
+            - duration: 700
+              value: 0
+              easing: linear
 story:
   initialSceneId: ajfl3a
   scenes:
@@ -28,16 +74,15 @@ story:
           lines:
             - id: line1
               actions:
+                screen:
+                  resourceId: screen1
                 background:
                   resourceId: alkejf3la
-                  resourceType: image
             - id: line2
               actions:
                 background:
                   resourceId: 8a3lkja
-                  resourceType: image
             - id: line3
               actions:
                 background:
                   resourceId: 3ljdasfjlk32
-                  resourceType: image

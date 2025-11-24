@@ -117,7 +117,7 @@ export default function createRouteEngine(options) {
   // };
   const init = ({ initialState }) => {
     _systemStore = createSystemStore(initialState);
-    _systemStore.appendPendingEffect({ type: 'render' });
+    _systemStore.appendPendingEffect({ name: 'render' });
     handlePendingEffects(_systemStore.selectPendingEffects());
     _systemStore.clearPendingEffects();
   }
@@ -126,76 +126,30 @@ export default function createRouteEngine(options) {
     return _systemStore.selectRenderState();
   }
 
-  // const render = () => {
-  // _eventCallback({
-  //   eventType: "render",
-  //   payload: _systemStore.selectRenderState(),
-  // });
-  // }
-
   const handleAction = (actionType, payload) => {
+    console.log('RouteEngine handleAction', { actionType, payload });
     _systemStore[actionType](payload);
+    console.log('_systemStore.selectPendingEffects()', _systemStore.selectPendingEffects())
     handlePendingEffects(_systemStore.selectPendingEffects())
     _systemStore.clearPendingEffects();
   }
-  /**
-   * Processes system actions and renders the current state
-   */
-  // const _processAndRender = () => {
-  //   _processSystemActions();
-  //   _renderLine();
-  // };
 
-  // /**
-  //  * Processes system actions from current lines
-  //  */
-  // const _processSystemActions = () => {
-  //   // Get the current pointer from mainPointers (not replay)
-  //   const currentMainPointer = _systemStore.selectCurrentPointer();
-  //   const currentLines = _projectDataStore.selectSectionLines(
-  //     currentMainPointer.sectionId,
-  //     currentMainPointer.lineId,
-  //   );
-  //
-  //   if (!currentLines.length) {
-  //     return;
-  //   }
-  //
-  //   // Process unified actions from current lines
-  //   currentLines.forEach((line) => {
-  //     const actions = line.actions || {};
-  //
-  //     // Process system actions only (presentation actions are handled in _renderLine)
-  //     const systemActions = SYSTEM_ACTIONS.filter(
-  //       (actionType) => actionType in actions,
-  //     );
-  //     systemActions.forEach((actionType) => {
-  //       _systemStore[actionType](actions[actionType]);
-  //     });
-  //   });
-  // };
+  const handleActions = (actions) => {
+    console.log('RouteEngine handleActions', actions);
+    Object.entries(actions).forEach(([actionType, payload]) => {
+      handleAction(actionType, payload);
+    });
+  }
 
-  /**
-   * Renders the current line of the visual novel
-   */
-  // const _renderLine = () => {
-  //   const renderState = _systemStore.selectRenderState();
-  //   _eventCallback({
-  //     eventType: "render",
-  //     payload: renderState,
-  //   });
-  // };
   const handleEvent = ({ eventType, payload }) => {
     console.log('RouteEngine handleEvent', { eventType, payload });
   }
 
   return {
     init,
-    // render,
     handleAction,
+    handleActions,
     selectRenderState,
-    // onEvent,
-    // offEvent,
     handleEvent,
   };
 }

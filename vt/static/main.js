@@ -122,25 +122,26 @@ const init = async () => {
     ]
   };
 
-  console.log('assetBufferMap', assetBufferMap);
-
   await app.init({
     width: 1920,
     height: 1080,
     plugins,
     eventHandler: (eventName, payload) => {
       console.log('eventHandler', eventName, payload);
-      if (eventName === "completed") {
-        engine.handleEvent({
-          payload: {
-            actions: {
-              handleCompleted: {}
-            }
-          }
-        });
-      } else if (eventName === "system") {
-        engine.handleEvent({ payload });
+      if (payload.actions) {
+        engine.handleActions(payload.actions);
       }
+      // if (eventName === "completed") {
+      //   engine.handleEvent({
+      //     payload: {
+      //       actions: {
+      //         handleCompleted: {}
+      //       }
+      //     }
+      //   });
+      // } else if (eventName === "system") {
+      //   engine.handleEvent({ payload });
+      // }
     },
   });
   await app.loadAssets(assetBufferMap)
@@ -151,9 +152,11 @@ const init = async () => {
   });
 
   const effectsHandler = (effects) => {
+    console.log('effects', effects)
     for (const effect of effects) {
-      if (effect.type === 'render') {
+      if (effect.name === 'render') {
         const renderState = engine.selectRenderState();
+        console.log('333333333333 renderState', renderState);
         app.render(renderState);
       }
     }
