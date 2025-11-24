@@ -78,7 +78,9 @@ export const addBackgroundOrCg = (
           type: "sprite",
           x: 0,
           y: 0,
-          url: background.fileId
+          src: background.fileId,
+          width: background.width,
+          height: background.height,
         });
       }
     }

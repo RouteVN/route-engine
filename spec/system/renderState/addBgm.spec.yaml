@@ -33,7 +33,7 @@ out:
       children:
         - id: "bgm"
           type: "audio"
-          url: "files/bgm.mp3"
+          url: "bgm.mp3"
           loop: true
           volume: 0.7
           delay: 0
@@ -64,7 +64,7 @@ out:
       children:
         - id: "bgm"
           type: "audio"
-          url: "files/simple.mp3"
+          url: "simple.mp3"
           loop: true
           volume: 0.5
           delay: null
@@ -98,7 +98,7 @@ out:
       children:
         - id: "bgm"
           type: "audio"
-          url: "files/custom.mp3"
+          url: "custom.mp3"
           loop: false
           volume: 0.3
           delay: 1000

@@ -11,10 +11,16 @@ resources:
   images:
     alkejf3la:
       fileId: lakjf3lka
+      width: 1920
+      height: 1080
     8a3lkja:
       fileId: dmni32
+      width: 1920
+      height: 1080
     3ljdasfjlk32:
       fileId: 23jkfa893
+      width: 1920
+      height: 1080
 
   animations:
     3lkj289:

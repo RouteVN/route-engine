@@ -29,7 +29,7 @@ out:
       children:
         - id: "voice-voice.mp3"
           type: "audio"
-          url: "files/voice.mp3"
+          url: "voice.mp3"
           volume: 0.8
           loop: false
   transitions: []
@@ -56,7 +56,7 @@ out:
       children:
         - id: "voice-simpleVoice.mp3"
           type: "audio"
-          url: "files/simpleVoice.mp3"
+          url: "simpleVoice.mp3"
           volume: 0.5
           loop: false
   transitions: []
@@ -85,7 +85,7 @@ out:
       children:
         - id: "voice-loopingVoice.mp3"
           type: "audio"
-          url: "files/loopingVoice.mp3"
+          url: "loopingVoice.mp3"
           volume: 0.6
           loop: true
   transitions: []
@@ -174,7 +174,7 @@ out:
       children:
         - id: "voice-customVoice.mp3"
           type: "audio"
-          url: "files/customVoice.mp3"
+          url: "customVoice.mp3"
           volume: 0.3
           loop: true
   transitions: []
@@ -203,7 +203,7 @@ out:
       children:
         - id: "voice-voice.mp3"
           type: "audio"
-          url: "files/voice.mp3"
+          url: "voice.mp3"
           volume: 0.7
           loop: false
   transitions: []

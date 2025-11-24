@@ -58,12 +58,12 @@ out:
           children:
             - type: "sprite"
               id: "char1-body"
-              url: "files/body.png"
+              url: "body.png"
               x: 0
               y: 0
             - type: "sprite"
               id: "char1-face"
-              url: "files/face.png"
+              url: "face.png"
               x: 0
               y: 0
   transitions: []
@@ -126,7 +126,7 @@ out:
           children:
             - type: "sprite"
               id: "char1-body"
-              url: "files/body.png"
+              url: "body.png"
               x: 0
               y: 0
   transitions:
@@ -240,7 +240,7 @@ out:
           children:
             - type: "sprite"
               id: "char1-body"
-              url: "files/body.png"
+              url: "body.png"
               x: 0
               y: 0
   transitions:
@@ -328,12 +328,12 @@ out:
           children:
             - type: "sprite"
               id: "char1-body"
-              url: "files/char1_body.png"
+              url: "char1_body.png"
               x: 0
               y: 0
             - type: "sprite"
               id: "char1-face"
-              url: "files/char1_face.png"
+              url: "char1_face.png"
               x: 0
               y: 0
         - type: "container"
@@ -348,7 +348,7 @@ out:
           children:
             - type: "sprite"
               id: "char2-body2"
-              url: "files/char2_body.png"
+              url: "char2_body.png"
               x: 0
               y: 0
   transitions: []

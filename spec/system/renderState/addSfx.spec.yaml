@@ -35,7 +35,7 @@ out:
       children:
         - id: "sfx1"
           type: "audio"
-          url: "files/effect.mp3"
+          url: "effect.mp3"
           loop: false
           volume: 0.7
           delay: 0
@@ -68,7 +68,7 @@ out:
       children:
         - id: "sfx1"
           type: "audio"
-          url: "files/simple.mp3"
+          url: "simple.mp3"
           loop: true
           volume: 0.5
           delay: null
@@ -104,7 +104,7 @@ out:
       children:
         - id: "sfx1"
           type: "audio"
-          url: "files/custom.mp3"
+          url: "custom.mp3"
           loop: true
           volume: 0.3
           delay: 500
@@ -142,13 +142,13 @@ out:
       children:
         - id: "sfx1"
           type: "audio"
-          url: "files/first.mp3"
+          url: "first.mp3"
           loop: true
           volume: 0.6
           delay: null
         - id: "sfx2"
           type: "audio"
-          url: "files/second.mp3"
+          url: "second.mp3"
           loop: true
           volume: 0.5
           delay: null

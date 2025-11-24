@@ -47,6 +47,8 @@ in:
         images:
           bgImage:
             fileId: "background.jpg"
+            width: 1920
+            height: 1080
 out:
   elements:
     - id: "story"
@@ -63,7 +65,9 @@ out:
           type: "sprite"
           x: 0
           y: 0
-          url: "background.jpg"
+          src: "background.jpg"
+          width: 1920
+          height: 1080
   transitions: []
 ---
 case: construct render state with clean all and multiple presentations
@@ -93,6 +97,8 @@ in:
         images:
           newBg:
             fileId: "new-background.jpg"
+            width: 1920
+            height: 1080
 out:
   elements:
     - id: "story"
@@ -114,5 +120,7 @@ out:
           type: "sprite"
           x: 0
           y: 0
-          url: "new-background.jpg"
+          src: "new-background.jpg"
+          width: 1920
+          height: 1080
   transitions: []

@@ -22,6 +22,8 @@ in:
       images:
         bg1:
           fileId: "image1.png"
+          width: 1920
+          height: 1080
 out:
   elements:
     - id: "story"
@@ -33,7 +35,9 @@ out:
           type: "sprite"
           x: 0
           y: 0
-          url: "image1.png"
+          src: "image1.png"
+          width: 1920
+          height: 1080
   transitions: []
 ---
 case: add background with in animation
@@ -56,6 +60,8 @@ in:
       images:
         bg1:
           fileId: "image1.png"
+          width: 1920
+          height: 1080
       animations:
         fadeIn:
           properties:
@@ -72,7 +78,9 @@ out:
           type: "sprite"
           x: 0
           y: 0
-          url: "image1.png"
+          src: "image1.png"
+          width: 1920
+          height: 1080
   transitions:
     - id: "bg-cg-animation-in"
       type: "keyframes"
@@ -94,7 +102,9 @@ in:
             type: "sprite"
             x: 0
             y: 0
-            url: "old.jpg"
+            src: "old.jpg"
+            width: 1920
+            height: 1080
     transitions: []
   - presentationState:
       background:
@@ -107,6 +117,8 @@ in:
       images:
         bg1:
           fileId: "new.jpg"
+          width: 1920
+          height: 1080
       animations:
         crossFade:
           properties:
@@ -123,12 +135,16 @@ out:
           type: "sprite"
           x: 0
           y: 0
-          url: "old.jpg"
+          src: "old.jpg"
+          width: 1920
+          height: 1080
         - id: "bg-cg-bg1"
           type: "sprite"
           x: 0
           y: 0
-          url: "new.jpg"
+          src: "new.jpg"
+          width: 1920
+          height: 1080
   transitions:
     - id: "bg-cg-animation-update"
       type: "keyframes"
@@ -152,6 +168,8 @@ in:
       images:
         bg1:
           fileId: "image1.png"
+          width: 1920
+          height: 1080
 out:
   elements:
     - id: "story"
@@ -177,6 +195,8 @@ in:
       images:
         bg1:
           fileId: "image1.png"
+          width: 1920
+          height: 1080
 out:
   elements:
     - id: "story"
@@ -201,6 +221,8 @@ in:
       images:
         bg1:
           fileId: "image1.png"
+          width: 1920
+          height: 1080
 out:
   elements:
     - id: "notStory"
@@ -225,6 +247,8 @@ in:
       images:
         bg1:
           fileId: "image1.png"
+          width: 1920
+          height: 1080
 out:
   elements:
     - id: "story"
@@ -284,6 +308,8 @@ in:
       images:
         bg2:
           fileId: "background.jpg"
+          width: 1920
+          height: 1080
       animations:
         slideIn:
           properties:
@@ -307,7 +333,9 @@ out:
           type: "sprite"
           x: 0
           y: 0
-          url: "background.jpg"
+          src: "background.jpg"
+          width: 1920
+          height: 1080
   transitions:
     - id: "existingTransition"
       type: "existing"
