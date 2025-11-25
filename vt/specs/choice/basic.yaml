@@ -19,47 +19,43 @@ resources:
             actionPayload:
               actions:
                 nextLine: {}
-    storyScreenLayout:
-      name: Story Screen Background
-      elements:
-        - id: story-screen-bg
-          type: rect
-          x: 0
-          y: 0
-          width: 1920
-          height: 1080
-          fill: "#000000"
-          clickEventName: "system"
-          clickEventPayload:
-            actions:
-              nextLine: {}
     fi3l:
       name: Choices
       elements:
-        - type: "container"
+        - id: 3943ar32jkd
+          type: "container"
           x: 100
           y: 100
+          gap: 80
           direction: vertical
           children:
-            - "$each": item in choice.items
+            - "$each": item, i in choice.items
+              id: choice-item-${i}
               type: container
               x: 0
               y: 0
               height: 40
               children:
-                - type: text
-                  text: ${item.content}
-                  eventName: "system"
-                  eventPayload:
-                    actions:
-                      sectionTransition: ${item.events.click.actions.sectionTransition}
-                  style:
+                - id: 23lksdf3
+                  type: sprite
+                  src: 3kda832
+                  width: 400
+                  height: 60
+                  click:
+                    actionPayload:
+                      actions:
+                        sectionTransition: ${item.events.click.actions.sectionTransition}
+                - id: 39dkk2
+                  x: 40
+                  y: 12
+                  type: text
+                  content: ${item.content}
+                  textStyle:
                     fontSize: 24
                     fill: "white"
 
     392fsadf:
       name: Dialogue Screen
-      mode: "adv"
       elements:
         - id: dialogue-container
           type: "container"
@@ -68,23 +64,25 @@ resources:
           children:
             - id: "bfeawjk2g"
               type: sprite
-              url: file:3kda832
+              src: 3kda832
+              width: 1920
+              height: 1080
               x: 0
               y: 0
             - id: dialogue-character-name
               type: text
-              text: "${dialogue.character.name}"
+              content: "${dialogue.character.name}"
               x: 20
               y: 40
-              style:
+              textStyle:
                 fontSize: 24
                 fill: "white"
             - id: dialogue-text
               type: "text"
               x: 20
               y: 100
-              text: "${dialogue.content}"
-              style:
+              content: "${dialogue.content}"
+              textStyle:
                 fontSize: 24
                 fill: "white"
 story:
@@ -99,24 +97,22 @@ story:
           lines:
             - id: line1
               actions:
-                screen:
-                  resourceId: screen1
+                # screen:
+                #   resourceId: screen1
                 choice:
-                  layoutId: fi3l
+                  resourceId: fi3l
                   items:
                     - content: Choice 1 a
                       events:
                         click:
                           actions:
                             sectionTransition:
-                              sceneId: "3ijdfsa23"
                               sectionId: "fdakjf3aax"
                     - content: Choice 2 b
                       events:
                         click:
                           actions:
                             sectionTransition:
-                              sceneId: "fd3j289df"
                               sectionId: "kdf903a"
     3ijdfsa23:
       name: Scene 2
@@ -128,16 +124,20 @@ story:
             - id: line1
               actions:
                 screen:
-                  resourceId: storyScreenLayout
-                  resourceType: layout
+                  resourceId: screen1
                 dialogue:
                   mode: adv
-                  layoutId: 392fsadf
+                  gui:
+                    resourceId: 392fsadf
                   content: Hello, this should be choice 1
             - id: line2
               actions:
                 dialogue:
                   content: next line of choice 1
+            - id: line3
+              actions:
+                sectionTransition:
+                  sectionId: l3kjfawelf
 
     fd3j289df:
       name: Scene 3
@@ -149,13 +149,17 @@ story:
             - id: line1
               actions:
                 screen:
-                  resourceId: storyScreenLayout
-                  resourceType: layout
+                  resourceId: screen1
                 dialogue:
                   mode: adv
-                  layoutId: 392fsadf
+                  gui:
+                    resourceId: 392fsadf
                   content: Hello, this should be choice 2
             - id: line2
               actions:
                 dialogue:
                   content: Next line of choice 2
+            - id: line3
+              actions:
+                sectionTransition:
+                  sectionId: l3kjfawelf

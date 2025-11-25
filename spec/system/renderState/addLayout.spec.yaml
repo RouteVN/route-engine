@@ -38,7 +38,7 @@ in:
     animations: []
   - presentationState:
       layout:
-        layoutId: "testLayout"
+        resourceId: "testLayout"
     resources:
       layouts:
         testLayout:

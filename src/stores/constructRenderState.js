@@ -100,7 +100,7 @@ export const addBackgroundOrCg = (
       }
     }
 
-    
+
     if (presentationState.background.animations) {
       if (presentationState.background.animations.in) {
         const animationId =
@@ -427,7 +427,7 @@ export const addChoices = (state, { presentationState, resources }) => {
     const storyContainer = elements.find((el) => el.id === "story");
     if (!storyContainer) return state;
 
-    const layout = resources?.layouts[presentationState.choice.layoutId];
+    const layout = resources?.layouts[presentationState.choice.resourceId];
     if (!layout || !layout.elements) return state;
 
     const wrappedTemplate = { elements: layout.elements };
@@ -538,7 +538,7 @@ export const addLayout = (
     const storyContainer = elements.find((el) => el.id === "story");
     if (!storyContainer) return state;
 
-    const layout = resources.layouts[presentationState.layout.layoutId];
+    const layout = resources.layouts[presentationState.layout.resourceId];
 
     if (!layout) {
       return state;
@@ -551,7 +551,7 @@ export const addLayout = (
     }
 
     const layoutContainer = {
-      id: `layout-${presentationState.layout.layoutId}`,
+      id: `layout-${presentationState.layout.resourceId}`,
       type: "container",
       x: 0,
       y: 0,
@@ -585,7 +585,7 @@ export const addLayout = (
 
       if (element.url && element.url.startsWith("file:")) {
         const fileId = element.url.replace("file:", "");
-        processedElement.url = resolveFile(fileId);
+        processedElement.url = fileId;
       }
 
       if (element.children && Array.isArray(element.children)) {

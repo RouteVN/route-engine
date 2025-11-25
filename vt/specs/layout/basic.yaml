@@ -24,7 +24,9 @@ resources:
       elements:
         - id: bg
           type: sprite
-          url: file:lakjf3lka
+          url: dmni32
+          width: 1920
+          height: 1080
           x: 0
           y: 0
         - id: container
@@ -34,28 +36,16 @@ resources:
           children:
             - id: start23R
               type: text
-              text: Start
+              content: Start
               x: 0
               y: 0
-              style:
+              textStyle:
                 fontSize: 48
-                fill: "black"
-              hoverStyle:
-                fontSize: 48
-                fill: yellow
-            # - id: load
-            #   type: text
-            #   text: Load
-            #   height: 40
-            #   width: 200
-            #   x: 0
-            #   y: 0
-            #   style:
-            #     fontSize: 48
-            #     fill: "white"
-            #   hoverStyle:
-            #     fontSize: 48
-            #     fill: yellow
+                fill: "white"
+              hover:
+                textStyle:
+                  fontSize: 48
+                  fill: yellow
 
 story:
   initialSceneId: ajfl3a
@@ -72,4 +62,4 @@ story:
                 screen:
                   resourceId: screen1
                 layout:
-                  layoutId: j3i8dk32
+                  resourceId: j3i8dk32

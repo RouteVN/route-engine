@@ -156,7 +156,6 @@ const init = async () => {
     for (const effect of effects) {
       if (effect.name === 'render') {
         const renderState = engine.selectRenderState();
-        console.log('333333333333 renderState', renderState);
         app.render(renderState);
       } else if (effect.name === 'handleLineActions') {
         console.log('44444444444 handleLineActions');

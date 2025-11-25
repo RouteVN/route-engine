@@ -16,7 +16,7 @@ in:
     animations: []
   - presentationState:
       choice:
-        layoutId: "choiceLayout"
+        resourceId: "choiceLayout"
         items:
           - id: "choice1"
             text: "Option 1"
@@ -52,7 +52,7 @@ in:
     animations: []
   - presentationState:
       choice:
-        layoutId: "multiChoiceLayout"
+        resourceId: "multiChoiceLayout"
         items:
           - id: "choice1"
             text: "First"
@@ -123,7 +123,7 @@ in:
     animations: []
   - presentationState:
       choice:
-        layoutId: "choiceLayout"
+        resourceId: "choiceLayout"
         items:
           - id: "choice1"
             text: "Option 1"
@@ -151,7 +151,7 @@ in:
     animations: []
   - presentationState:
       choice:
-        layoutId: "nonExistent"
+        resourceId: "nonExistent"
         items:
           - id: "choice1"
             text: "Option 1"
@@ -181,7 +181,7 @@ in:
     animations: []
   - presentationState:
       choice:
-        layoutId: "emptyLayout"
+        resourceId: "emptyLayout"
         items:
           - id: "choice1"
             text: "Option 1"
@@ -209,7 +209,7 @@ in:
     animations: []
   - presentationState:
       choice:
-        layoutId: "staticLayout"
+        resourceId: "staticLayout"
         items: []
     resources:
       layouts:
@@ -239,7 +239,7 @@ in:
     animations: []
   - presentationState:
       choice:
-        layoutId: "choiceLayout"
+        resourceId: "choiceLayout"
         items:
           - id: "choice1"
             text: "Option 1"
