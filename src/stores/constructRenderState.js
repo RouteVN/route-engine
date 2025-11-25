@@ -288,14 +288,9 @@ export const addVisuals = (
 
     const items = presentationState.visual.items;
     for (const item of items) {
-      if (item.resourceId && item.resourceType) {
-        let resource;
-        if (item.resourceType === "image") {
-          resource = resources.images[item.resourceId];
-        } else {
-          // Placeholder for other resource types
-          continue;
-        }
+      // Check if both resourceId and resourceType exist, and resourceType is "image"
+      if (item.resourceId && item.resourceType === "image") {
+        let resource = resources.images[item.resourceId];
 
         if (resource) {
           const transform = resources.transforms[item.transformId];
@@ -303,6 +298,8 @@ export const addVisuals = (
             id: `visual-${item.id}`,
             type: "sprite",
             url: resource.fileId,
+            width: resource.width,
+            height: resource.height,
             x: transform.x,
             y: transform.y,
             anchorX: transform.anchorX,
