@@ -18,8 +18,8 @@ resources:
       height: 200
     3fjaklj34:
       fileId: x342fga
-      width: 200
-      height: 200
+      width: 50
+      height: 50
   layouts:
     screen1:
       elements:
@@ -41,28 +41,7 @@ resources:
       y: 300
   characters:
     alkjf3ia:
-      variables:
-        name: "Abc"
-      # layered:
-      #   jf3iaslj2:
-      #     name: "eafh"
-      #     layers:
-      #       - name: base
-      #         default: ...
-      #         sprites:
-      #           - spriteId: iefjkeal
-      #           - spriteId: ...
-      #       - name: head
-      #         default: ...
-
-    # 9823l31:
-    #   variables:
-    #     name: 'Abc'
-    #   spriteParts:
-    #     398fasdfj3:
-    #       fileId: fk4jla893
-    #     39023ixdf:
-    #       fileId: 3fjaklj34
+      name: "Abc"
 
 story:
   initialSceneId: ajfl3a
