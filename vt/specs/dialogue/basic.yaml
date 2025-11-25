@@ -8,6 +8,17 @@ screen:
 
 resources:
   layouts:
+    screen1:
+      elements:
+        - id: af32
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
     storyScreenLayout:
       name: Story Screen Background
       elements:
@@ -69,8 +80,7 @@ story:
             - id: line1
               actions:
                 screen:
-                  resourceId: storyScreenLayout
-                  resourceType: layout
+                  resourceId: screen1
                 dialogue:
                   layoutId: fi3l
                   content: Hello! Welcome to this visual novel.

@@ -8,6 +8,17 @@ screen:
 
 resources:
   layouts:
+    screen1:
+      elements:
+        - id: af32
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
     j3i8dk32:
       name: Title Screen
       elements:
@@ -58,5 +69,7 @@ story:
           lines:
             - id: line1
               actions:
+                screen:
+                  resourceId: screen1
                 layout:
                   layoutId: j3i8dk32

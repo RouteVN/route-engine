@@ -7,6 +7,18 @@ screen:
   backgroundColor: "#000000"
 
 resources:
+  layouts:
+    screen1:
+      elements:
+        - id: af32
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
   visuals:
     alkejf3la:
       fileId: la3lka
@@ -31,6 +43,8 @@ story:
           lines:
             - id: line1
               actions:
+                screen:
+                  resourceId: screen1
                 visual:
                   items:
                     - id: visual-1

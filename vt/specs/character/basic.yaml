@@ -10,6 +10,20 @@ resources:
   images:
     alkejf3la:
       fileId: lakjf3lka
+      width: 1920
+      height: 1080
+  layouts:
+    screen1:
+      elements:
+        - id: af32
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
   transforms:
     iasdlf:
       x: 100
@@ -59,6 +73,8 @@ story:
           lines:
             - id: line1
               actions:
+                screen:
+                  resourceId: screen1
                 background:
                   resourceId: alkejf3la
                   resourceType: image
