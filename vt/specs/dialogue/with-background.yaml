@@ -35,7 +35,6 @@ resources:
               nextLine: {}
     fi3l:
       name: Dialogue Screen
-      mode: "adv"
       elements:
         - id: dialogue-container
           type: "container"
@@ -46,7 +45,7 @@ resources:
               type: sprite
               width: 1400
               height: 300
-              url: 3kda832 # url: file:3kda832
+              url: 3kda832
               x: 0
               y: 0
             - id: dialogue-character-name
@@ -107,7 +106,8 @@ story:
                 screen:
                   resourceId: screen1
                 dialogue:
-                  layoutId: fi3l
+                  gui:
+                    resourceId: fi3l
                   mode: adv
                   content: Hello! Welcome to this visual novel.
                   characterId: ajf34a

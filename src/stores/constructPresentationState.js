@@ -32,6 +32,72 @@ export const background = (state, presentation) => {
 };
 
 /**
+ * Applies dialogue from presentation to state
+ * @param {Object} state - The current state of the system
+ * @param {Object} presentation - The presentation to apply
+ */
+export const dialogue = (state, presentation) => {
+  if (!presentation.dialogue) {
+    if (state.dialogue && state.dialogue.mode === "adv") {
+      state.dialogue.content = undefined;
+      state.dialogue.characterId = undefined;
+    }
+    return;
+  }
+
+  // Start with existing dialogue or empty object
+  if (!state.dialogue) {
+    state.dialogue = {};
+  }
+
+  // Copy all dialogue properties including gui
+  if (presentation.dialogue.gui) {
+    state.dialogue.gui = { ...presentation.dialogue.gui };
+  }
+
+  // Handle mode-specific initialization
+  if (presentation.dialogue.mode === "adv") {
+    state.dialogue.content = state.dialogue.content || undefined;
+    state.dialogue.characterId = state.dialogue.characterId || undefined;
+    state.dialogue.mode = "adv";
+  }
+
+  if (presentation.dialogue.mode === "nvl") {
+    if (state.dialogue?.mode !== "nvl") {
+      state.dialogue.lines = [];
+    }
+    state.dialogue.mode = "nvl";
+  }
+
+  // Update content and character
+  if (presentation.dialogue.content !== undefined) {
+    state.dialogue.content = presentation.dialogue.content;
+  }
+  if (presentation.dialogue.characterId !== undefined) {
+    state.dialogue.characterId = presentation.dialogue.characterId;
+  }
+  if (presentation.dialogue.character) {
+    state.dialogue.character = { ...presentation.dialogue.character };
+  }
+
+  // Handle clear action
+  if (presentation.dialogue.clear) {
+    delete state.dialogue;
+    return;
+  }
+
+  // Handle NVL mode content addition
+  if (presentation.dialogue?.mode === "nvl" && presentation.dialogue.content !== undefined) {
+    if (presentation.dialogue.clear) {
+      state.dialogue.lines = [];
+    }
+    state.dialogue.lines.push({
+      content: presentation.dialogue.content,
+    });
+  }
+};
+
+/**
  * Applies sound effects from presentation to state
  * @param {Object} state - The current state of the system
  * @param {Object} presentation - The presentation to apply
@@ -74,62 +140,6 @@ export const visual = (state, presentation) => {
   }
 };
 
-/**
- * Applies dialogue from presentation to state
- * @param {Object} state - The current state of the system
- * @param {Object} presentation - The presentation to apply
- */
-export const dialogue = (state, presentation) => {
-  if (!presentation.dialogue) {
-    if (state.dialogue && state.dialogue.mode === "adv") {
-      state.dialogue.content = undefined;
-      state.dialogue.characterId = undefined;
-    }
-    return;
-  }
-
-  // Start with existing dialogue or empty object
-  if (!state.dialogue) {
-    if (presentation.dialogue.mode === "adv") {
-      state.dialogue = {
-        layoutId: presentation.dialogue.layoutId,
-        content: undefined,
-        characterId: undefined,
-        mode: "adv",
-      };
-    }
-    if (presentation.dialogue.mode === "nvl") {
-      if (state.dialogue?.mode !== "nvl") {
-        state.dialogue = {
-          layoutId: presentation.dialogue.layoutId,
-          lines: [],
-          mode: "nvl",
-        };
-      }
-    }
-  }
-
-  if (state.dialogue?.mode === "adv") {
-    state.dialogue.content = presentation.dialogue.content;
-    state.dialogue.characterId = presentation.dialogue.characterId;
-    if (presentation.dialogue.layoutId) {
-      state.dialogue.layoutId = presentation.dialogue.layoutId;
-    }
-    if (presentation.dialogue.clear) {
-      delete state.dialogue;
-    }
-  }
-
-  if (presentation.dialogue?.mode === "nvl") {
-    if (presentation.dialogue.clear) {
-      state.dialogue.lines = [];
-    }
-    state.dialogue.lines.push({
-      content: presentation.dialogue.content,
-    });
-    return;
-  }
-};
 
 /**
  * Applies character from presentation to state

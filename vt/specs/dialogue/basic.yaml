@@ -84,7 +84,8 @@ story:
                 screen:
                   resourceId: screen1
                 dialogue:
-                  layoutId: fi3l
+                  gui:
+                    resourceId: fi3l
                   mode: adv
                   content: Hello! Welcome to this visual novel.
                   characterId: ajf34a

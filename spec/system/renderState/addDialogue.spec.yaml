@@ -16,7 +16,8 @@ in:
     animations: []
   - presentationState:
       dialogue:
-        layoutId: "dialogueLayout"
+        gui:
+          resourceId: "dialogueLayout"
         content: ["Hello world"]
     resources:
       layouts:

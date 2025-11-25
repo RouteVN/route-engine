@@ -57,7 +57,7 @@ export const addScreen = (state, { presentationState, resources }) => {
  */
 export const addBackgroundOrCg = (
   state,
-  { presentationState, resources = {} }, // resolveFile
+  { presentationState, resources = {}, variables, autoMode, skipMode, currentLocalizationPackageId }, // resolveFile
 ) => {
   const { elements } = state;
   const animations = state.animations || [];
@@ -100,6 +100,7 @@ export const addBackgroundOrCg = (
       }
     }
 
+    
     if (presentationState.background.animations) {
       if (presentationState.background.animations.in) {
         const animationId =
@@ -360,62 +361,58 @@ export const addDialogue = (
   const storyContainer = elements.find((el) => el.id === "story");
   if (!storyContainer) return state;
 
-  const layout = resources.layouts[presentationState.dialogue.layoutId];
+  // Handle GUI elements (dialogue layouts) from dialogue.gui.resourceId
+  if (presentationState.dialogue.gui && presentationState.dialogue.gui.resourceId) {
+    const { layouts = {} } = resources;
+    const guiLayout = layouts[presentationState.dialogue.gui.resourceId];
+    if (guiLayout) {
+      let character;
+      if (presentationState.dialogue.characterId) {
+        character = resources.characters[presentationState.dialogue.characterId];
+      }
 
-  if (!layout) {
-    return state;
-  }
+      // Check if there's a character object override
+      if (presentationState.dialogue.character) {
+        character = {
+          ...character,
+          name: presentationState.dialogue.character.name,
+        };
+      }
 
-  let character;
-  if (presentationState.dialogue.characterId) {
-    character = resources.characters[presentationState.dialogue.characterId];
-  }
+      const wrappedTemplate = { elements: guiLayout.elements };
 
-  // Check if there's a character object override
-  if (presentationState.dialogue.character) {
-    character = {
-      ...character,
-      name: presentationState.dialogue.character.name,
-    };
-  }
+      const templateData = {
+        variables,
+        autoMode,
+        skipMode,
+        dialogue: {
+          character: {
+            name: character?.name || "",
+          },
+          content: presentationState.dialogue?.content || [],
+          lines: presentationState.dialogue?.lines || [],
+        },
+        currentLocalizationPackageId,
+      };
 
-  const wrappedTemplate = { elements: layout.elements };
+      let result = parseAndRender(wrappedTemplate, templateData, {
+        functions: jemplFunctions,
+      });
+      result = parseAndRender(result, {
+        i18n: {}
+      });
+      const guiElements = result?.elements;
 
-  const templateData = {
-    variables,
-    // saveDataArray: systemStore.selectSaveDataPage({
-    //   page: systemState?.variables.currentSavePageIndex,
-    //   numberPerPage: 6,
-    // }),
-    autoMode: autoMode,
-    skipMode: skipMode,
-    dialogue: {
-      character: {
-        name: character?.name || "",
-      },
-      content: presentationState.dialogue?.content || [],
-      lines: presentationState.dialogue?.lines || [],
-    },
-    currentLocalizationPackageId,
-    // i18n: systemStore.selectCurrentLanguagePackKeys(),
-  };
-
-  let result = parseAndRender(wrappedTemplate, templateData, {
-    functions: jemplFunctions,
-  });
-  result = parseAndRender(result, {
-    // i18n: systemStore.selectCurrentLanguagePackKeys(),
-    i18n: {}
-  });
-  const dialogueElements = result?.elements;
-
-  if (Array.isArray(dialogueElements)) {
-    for (const element of dialogueElements) {
-      storyContainer.children.push(structuredClone(element));
+      if (Array.isArray(guiElements)) {
+        for (const element of guiElements) {
+          storyContainer.children.push(structuredClone(element));
+        }
+      } else if (guiElements) {
+        storyContainer.children.push(structuredClone(guiElements));
+      }
     }
-  } else if (dialogueElements) {
-    storyContainer.children.push(structuredClone(dialogueElements));
   }
+
   return state;
 };
 
