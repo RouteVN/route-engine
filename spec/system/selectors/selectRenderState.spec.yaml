@@ -39,7 +39,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: multiple lines and actions not last line
 in:
@@ -79,7 +79,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: multiple lines and actions last line
 in:
@@ -119,4 +119,4 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []

@@ -54,7 +54,6 @@ story:
                   resourceId: screen1
                 background:
                   resourceId: alkejf3la
-                  resourceType: image
             - id: line2
               actions:
                 sectionTransition:
@@ -64,13 +63,13 @@ story:
           lines:
             - id: line1
               actions:
+                screen:
+                  resourceId: screen1
                 background:
                   resourceId: 8a3lkja
-                  resourceType: image
             - id: line2
               actions:
                 sectionTransition:
-                  sceneId: scene2
                   sectionId: s2s1
     scene2:
       name: Scene 2
@@ -81,11 +80,11 @@ story:
           lines:
             - id: line1
               actions:
+                screen:
+                  resourceId: screen1
                 background:
                   resourceId: img3
-                  resourceType: image
             - id: line2
               actions:
                 sectionTransition:
-                  sceneId: ajfl3a
-                  sectionId: 3k3s9sd
+                  sectionId: l3kjfawelf

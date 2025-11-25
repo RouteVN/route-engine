@@ -13,7 +13,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       dialogue:
         layoutId: "dialogueLayout"
@@ -35,7 +35,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: no presentationState.dialogue - return unchanged state
 in:
@@ -45,7 +45,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState: {}
     resources: {}
     dialogueUIHidden: false
@@ -59,4 +59,4 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []

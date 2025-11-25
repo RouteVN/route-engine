@@ -14,7 +14,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: verify story container structure
 in: []
@@ -25,7 +25,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: verify transitions array is empty
 in: []
@@ -36,7 +36,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: verify elements array contains only one item
 in: []
@@ -47,7 +47,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: verify story container has correct default properties
 in: []
@@ -58,4 +58,4 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []

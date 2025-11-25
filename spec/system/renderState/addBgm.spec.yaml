@@ -13,7 +13,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       bgm:
         audioId: "backgroundMusic"
@@ -37,7 +37,7 @@ out:
           loop: true
           volume: 0.7
           delay: 0
-  transitions: []
+  animations: []
 ---
 case: add bgm with default values
 in:
@@ -47,7 +47,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       bgm:
         audioId: "simpleMusic"
@@ -68,7 +68,7 @@ out:
           loop: true
           volume: 0.5
           delay: null
-  transitions: []
+  animations: []
 ---
 case: add bgm with custom settings
 in:
@@ -78,7 +78,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       bgm:
         audioId: "customMusic"
@@ -102,7 +102,7 @@ out:
           loop: false
           volume: 0.3
           delay: 1000
-  transitions: []
+  animations: []
 ---
 case: no presentationState.bgm - return unchanged state
 in:
@@ -112,7 +112,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState: {}
     resources:
       audio:
@@ -127,7 +127,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: story container does not exist - return unchanged state
 in:
@@ -135,7 +135,7 @@ in:
       - id: "notStory"
         type: "container"
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       bgm:
         audioId: "backgroundMusic"
@@ -150,7 +150,7 @@ out:
     - id: "notStory"
       type: "container"
       children: []
-  transitions: []
+  animations: []
 ---
 case: audio not found - return unchanged state
 in:
@@ -160,7 +160,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       bgm:
         audioId: "nonExistent"
@@ -177,7 +177,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: null resources - return unchanged state
 in:
@@ -187,7 +187,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       bgm:
         audioId: "backgroundMusic"
@@ -199,4 +199,4 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []

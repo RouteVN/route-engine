@@ -13,7 +13,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - resources: {}
     variables: {}
     autoMode: false
@@ -26,12 +26,12 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: return unchanged state with empty elements array
 in:
   - elements: []
-    transitions: []
+    animations: []
   - resources:
       layouts:
         modalLayout:
@@ -44,4 +44,4 @@ in:
     currentLocalizationPackageId: null
 out:
   elements: []
-  transitions: []
+  animations: []

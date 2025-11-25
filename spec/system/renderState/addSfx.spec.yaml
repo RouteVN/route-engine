@@ -13,7 +13,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       sfx:
         items:
@@ -39,7 +39,7 @@ out:
           loop: false
           volume: 0.7
           delay: 0
-  transitions: []
+  animations: []
 ---
 case: add sfx with default values
 in:
@@ -49,7 +49,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       sfx:
         items:
@@ -72,7 +72,7 @@ out:
           loop: true
           volume: 0.5
           delay: null
-  transitions: []
+  animations: []
 ---
 case: add sfx with custom settings
 in:
@@ -82,7 +82,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       sfx:
         items:
@@ -108,7 +108,7 @@ out:
           loop: true
           volume: 0.3
           delay: 500
-  transitions: []
+  animations: []
 ---
 case: multiple sfx items
 in:
@@ -118,7 +118,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       sfx:
         items:
@@ -152,7 +152,7 @@ out:
           loop: true
           volume: 0.5
           delay: null
-  transitions: []
+  animations: []
 ---
 case: no presentationState.sfx - return unchanged state
 in:
@@ -162,7 +162,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState: {}
     resources:
       audio:
@@ -177,7 +177,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: story container does not exist - return unchanged state
 in:
@@ -185,7 +185,7 @@ in:
       - id: "notStory"
         type: "container"
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       sfx:
         items:
@@ -202,7 +202,7 @@ out:
     - id: "notStory"
       type: "container"
       children: []
-  transitions: []
+  animations: []
 ---
 case: audio not found - skip item
 in:
@@ -212,7 +212,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       sfx:
         items:
@@ -231,7 +231,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: no sfx items - return unchanged state
 in:
@@ -241,7 +241,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       sfx:
         items: []
@@ -258,7 +258,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: null resources - return unchanged state
 in:
@@ -268,7 +268,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       sfx:
         items:
@@ -282,4 +282,4 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []

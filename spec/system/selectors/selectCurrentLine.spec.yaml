@@ -1,0 +1,308 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore selectors
+suites: [selectCurrentLine]
+---
+suite: selectCurrentLine
+exportName: selectCurrentLine
+---
+case: no contexts available
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: false
+        skipMode: false
+        isDialogueUIVisible: true
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+      contexts: []
+out: __undefined__
+---
+case: no current pointer
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: false
+        skipMode: false
+        isDialogueUIVisible: true
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read: null
+out: __undefined__
+---
+case: valid current line with actions
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: false
+        skipMode: false
+        isDialogueUIVisible: true
+      projectData:
+        story:
+          initialSceneId: "scene1"
+          scenes:
+            scene1:
+              initialSectionId: "section1"
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "bg1"
+                        dialogue:
+                          characterId: "char1"
+                          content: ["Hello world"]
+                    - id: "2"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  id: "1"
+  actions:
+    background:
+      resourceId: "bg1"
+    dialogue:
+      characterId: "char1"
+      content: ["Hello world"]
+---
+case: valid current line with no actions
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: false
+        skipMode: false
+        isDialogueUIVisible: true
+      projectData:
+        story:
+          initialSceneId: "scene1"
+          scenes:
+            scene1:
+              initialSectionId: "section1"
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions:
+                        background:
+                          resourceId: "bg2"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  id: "1"
+  actions: {}
+---
+case: line not found in section
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: false
+        skipMode: false
+        isDialogueUIVisible: true
+      projectData:
+        story:
+          initialSceneId: "scene1"
+          scenes:
+            scene1:
+              initialSectionId: "section1"
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "nonexistent"
+out: __undefined__
+---
+case: section not found
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: false
+        skipMode: false
+        isDialogueUIVisible: true
+      projectData:
+        story:
+          initialSceneId: "scene1"
+          scenes:
+            scene1:
+              initialSectionId: "section1"
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "nonexistent"
+              lineId: "1"
+out: __undefined__
+---
+case: multiple contexts (should use last one)
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: false
+        skipMode: false
+        isDialogueUIVisible: true
+      projectData:
+        story:
+          initialSceneId: "scene1"
+          scenes:
+            scene1:
+              initialSectionId: "section1"
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions:
+                        background:
+                          resourceId: "bg2"
+                section2:
+                  lines:
+                    - id: "3"
+                      actions:
+                        dialogue:
+                          content: ["Different section"]
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section2"
+              lineId: "3"
+out:
+  id: "3"
+  actions:
+    dialogue:
+      content: ["Different section"]
+---
+case: history mode pointer
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: false
+        skipMode: false
+        isDialogueUIVisible: true
+      projectData:
+        story:
+          initialSceneId: "scene1"
+          scenes:
+            scene1:
+              initialSectionId: "section1"
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          content: ["First line"]
+                    - id: "2"
+                      actions:
+                        dialogue:
+                          content: ["Second line"]
+      contexts:
+        - currentPointerMode: "history"
+          pointers:
+            history:
+              sectionId: "section1"
+              lineId: "1"
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  id: "1"
+  actions:
+    dialogue:
+      content: ["First line"]
+---
+case: pointer without lineId
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: false
+        skipMode: false
+        isDialogueUIVisible: true
+      projectData:
+        story:
+          initialSceneId: "scene1"
+          scenes:
+            scene1:
+              initialSectionId: "section1"
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+out: __undefined__
+---
+case: empty project data
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: false
+        skipMode: false
+        isDialogueUIVisible: true
+      projectData: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out: __undefined__

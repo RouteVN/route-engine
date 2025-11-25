@@ -13,7 +13,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       background:
         resourceId: "bg1"
@@ -38,7 +38,7 @@ out:
           src: "image1.png"
           width: 1920
           height: 1080
-  transitions: []
+  animations: []
 ---
 case: add background with in animation
 in:
@@ -48,7 +48,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       background:
         resourceId: "bg1"
@@ -81,9 +81,9 @@ out:
           src: "image1.png"
           width: 1920
           height: 1080
-  transitions:
+  animations:
     - id: "bg-cg-animation-in"
-      type: "keyframes"
+      type: "tween"
       event: "add"
       elementId: "bg-cg-bg1"
       properties:
@@ -105,7 +105,7 @@ in:
             src: "old.jpg"
             width: 1920
             height: 1080
-    transitions: []
+    animations: []
   - presentationState:
       background:
         resourceId: "bg1"
@@ -145,9 +145,9 @@ out:
           src: "new.jpg"
           width: 1920
           height: 1080
-  transitions:
+  animations:
     - id: "bg-cg-animation-update"
-      type: "keyframes"
+      type: "tween"
       event: "update"
       elementId: "bg-cg-bg1"
       properties:
@@ -162,7 +162,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState: {}
     resources:
       images:
@@ -177,7 +177,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: no resourceId in presentationState.background - return unchanged state
 in:
@@ -187,7 +187,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       background:
         someOtherProperty: "value"
@@ -204,7 +204,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: story container does not exist - return unchanged state
 in:
@@ -212,7 +212,7 @@ in:
       - id: "notStory"
         type: "container"
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       background:
         resourceId: "bg1"
@@ -228,7 +228,7 @@ out:
     - id: "notStory"
       type: "container"
       children: []
-  transitions: []
+  animations: []
 ---
 case: background image not found in resources - return unchanged state
 in:
@@ -238,7 +238,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       background:
         resourceId: "nonExistent"
@@ -256,7 +256,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: null resources - return unchanged state
 in:
@@ -266,7 +266,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       background:
         resourceId: "bg1"
@@ -279,7 +279,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: multiple backgrounds and animations
 in:
@@ -292,7 +292,7 @@ in:
           - id: "existingChild"
             type: "text"
             content: "Hello"
-    transitions:
+    animations:
       - id: "existingTransition"
         type: "existing"
   - presentationState:
@@ -336,18 +336,18 @@ out:
           src: "background.jpg"
           width: 1920
           height: 1080
-  transitions:
+  animations:
     - id: "existingTransition"
       type: "existing"
     - id: "bg-cg-animation-in"
-      type: "keyframes"
+      type: "tween"
       event: "add"
       elementId: "bg-cg-bg2"
       properties:
         x: [-100, 0]
         duration: 300
     - id: "bg-cg-animation-update"
-      type: "keyframes"
+      type: "tween"
       event: "update"
       elementId: "bg-cg-bg2"
       properties:

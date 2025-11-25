@@ -17,7 +17,7 @@ export const createInitialState = () => {
         children: [],
       },
     ],
-    transitions: [],
+    animations: [],
   };
 };
 
@@ -59,7 +59,8 @@ export const addBackgroundOrCg = (
   state,
   { presentationState, resources = {} }, // resolveFile
 ) => {
-  const { elements, transitions } = state;
+  const { elements } = state;
+  const animations = state.animations || [];
   if (presentationState.background) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
@@ -105,9 +106,9 @@ export const addBackgroundOrCg = (
           presentationState.background.animations.in.animationId;
         const animation = resources?.animations[animationId];
         if (animation) {
-          transitions.push({
+          animations.push({
             id: "bg-cg-animation-in",
-            type: "keyframes",
+            type: "tween",
             event: "add",
             elementId: `bg-cg-${presentationState.background.resourceId}`,
             properties: animation.properties,
@@ -122,9 +123,9 @@ export const addBackgroundOrCg = (
           presentationState.background.animations.out.resourceId;
         const animation = resources?.animations[animationId];
         if (animation) {
-          transitions.push({
+          animations.push({
             id: "bg-cg-animation-out",
-            type: "keyframes",
+            type: "tween",
             event: "remove",
             elementId: `bg-cg-${resourceId}`,
             properties: animation.properties,
@@ -137,9 +138,9 @@ export const addBackgroundOrCg = (
           presentationState.background.animations.update.animationId;
         const animation = resources?.animations[animationId];
         if (animation) {
-          transitions.push({
+          animations.push({
             id: "bg-cg-animation-update",
-            type: "keyframes",
+            type: "tween",
             event: "update",
             elementId: `bg-cg-${presentationState.background.resourceId}`,
             properties: animation.properties,
@@ -159,7 +160,8 @@ export const addCharacters = (
   state,
   { presentationState, resources },
 ) => {
-  const { elements, transitions } = state;
+  const { elements } = state;
+  const animations = state.animations || [];
   if (presentationState.character && resources) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
@@ -178,12 +180,12 @@ export const addCharacters = (
         if (animation) {
           const outTransition = {
             id: `character-animation-out`,
-            type: "keyframes",
+            type: "tween",
             event: "remove",
             elementId: `character-container-${item.id}`,
             properties: animation.properties,
           };
-          transitions.push(outTransition);
+          animations.push(outTransition);
         }
         continue;
       }
@@ -245,9 +247,9 @@ export const addCharacters = (
           const animationId = item.animations.in.animationId;
           const animation = resources?.animations[animationId];
           if (animation) {
-            transitions.push({
+            animations.push({
               id: `character-animation-in`,
-              type: "keyframes",
+              type: "tween",
               event: "add",
               elementId: `character-container-${item.id}`,
               properties: animation.properties,
@@ -261,12 +263,12 @@ export const addCharacters = (
           if (animation) {
             const updateTransition = {
               id: `character-animation-update`,
-              type: "keyframes",
+              type: "tween",
               event: "update",
               elementId: `character-container-${item.id}`,
               properties: animation.properties,
             };
-            transitions.push(updateTransition);
+            animations.push(updateTransition);
           }
         }
       }
@@ -283,7 +285,8 @@ export const addVisuals = (
   state,
   { presentationState, resources },
 ) => {
-  const { elements, transitions } = state;
+  const { elements } = state;
+  const animations = state.animations || [];
   if (presentationState.visual && resources) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
@@ -323,9 +326,9 @@ export const addVisuals = (
             item.animations.in.animationId || item.animations.in;
           const animation = resources?.animations[animationId];
           if (animation) {
-            transitions.push({
+            animations.push({
               id: `${item.id}-animation`,
-              type: "keyframes",
+              type: "tween",
               event: "add",
               elementId: `visual-${item.id}`,
               properties: animation.properties,
@@ -338,9 +341,9 @@ export const addVisuals = (
             item.animations.out.animationId || item.animations.out;
           const animation = resources?.animations[animationId];
           if (animation) {
-            transitions.push({
+            animations.push({
               id: `${item.id}-animation-2`,
-              type: "keyframes",
+              type: "tween",
               event: "remove",
               elementId: `visual-${item.id}`,
               properties: animation.properties,
@@ -548,7 +551,8 @@ export const addLayout = (
   state,
   { presentationState, resources = {}, variables, autoMode, skipMode, currentLocalizationPackageId },
 ) => {
-  const { elements, transitions } = state;
+  const { elements } = state;
+  const animations = state.animations || [];
   if (presentationState.layout) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
@@ -562,7 +566,7 @@ export const addLayout = (
 
     if (Array.isArray(layout.transitions)) {
       layout.transitions.forEach((transition) => {
-        transitions.push(transition);
+        animations.push(transition);
       });
     }
 
@@ -623,7 +627,8 @@ export const addModals = (
   state,
   { resources = {}, variables, autoMode, skipMode, currentLocalizationPackageId },
 ) => {
-  const { elements, transitions } = state;
+  const { elements } = state;
+  const animations = state.animations || [];
   // Get modals directly from the passed systemState instead of using systemStore
   // const modals = systemState.modes[systemState.currentMode].modals;
   // TODO: do this
@@ -641,7 +646,7 @@ export const addModals = (
 
         if (Array.isArray(layout.transitions)) {
           layout.transitions.forEach((transition) => {
-            transitions.push(transition);
+            animations.push(transition);
           });
         }
 

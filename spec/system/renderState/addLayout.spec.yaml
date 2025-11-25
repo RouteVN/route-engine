@@ -13,7 +13,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState: {}
     resources: {}
     variables: {}
@@ -27,7 +27,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: story container does not exist - return unchanged state
 in:
@@ -35,7 +35,7 @@ in:
       - id: "notStory"
         type: "container"
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       layout:
         layoutId: "testLayout"
@@ -54,4 +54,4 @@ out:
     - id: "notStory"
       type: "container"
       children: []
-  transitions: []
+  animations: []

@@ -13,7 +13,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       visual:
         items:
@@ -51,7 +51,7 @@ out:
           rotation: 45
           scaleX: 1.5
           scaleY: 1.5
-  transitions: []
+  animations: []
 ---
 case: add visual with in animation
 in:
@@ -61,7 +61,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       visual:
         items:
@@ -107,9 +107,9 @@ out:
           rotation: 0
           scaleX: 1
           scaleY: 1
-  transitions:
+  animations:
     - id: "visual1-animation"
-      type: "keyframes"
+      type: "tween"
       event: "add"
       elementId: "visual-visual1"
       properties:
@@ -124,7 +124,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       visual:
         items:
@@ -169,9 +169,9 @@ out:
           rotation: 0
           scaleX: 1
           scaleY: 1
-  transitions:
+  animations:
     - id: "visual1-animation-2"
-      type: "keyframes"
+      type: "tween"
       event: "remove"
       elementId: "visual-visual1"
       properties:
@@ -186,7 +186,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       visual:
         items:
@@ -238,16 +238,16 @@ out:
           rotation: 0
           scaleX: 1
           scaleY: 1
-  transitions:
+  animations:
     - id: "visual1-animation"
-      type: "keyframes"
+      type: "tween"
       event: "add"
       elementId: "visual-visual1"
       properties:
         x: [-50, 150]
         duration: 400
     - id: "visual1-animation-2"
-      type: "keyframes"
+      type: "tween"
       event: "remove"
       elementId: "visual-visual1"
       properties:
@@ -262,7 +262,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       visual:
         items:
@@ -324,7 +324,7 @@ out:
           rotation: 0
           scaleX: 1
           scaleY: 1
-  transitions: []
+  animations: []
 ---
 case: no presentationState.visual - return unchanged state
 in:
@@ -334,7 +334,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState: {}
     resources:
       images:
@@ -356,7 +356,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: story container does not exist - return unchanged state
 in:
@@ -364,7 +364,7 @@ in:
       - id: "notStory"
         type: "container"
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       visual:
         items:
@@ -390,7 +390,7 @@ out:
     - id: "notStory"
       type: "container"
       children: []
-  transitions: []
+  animations: []
 ---
 case: visual item missing resourceId - skip item
 in:
@@ -400,7 +400,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       visual:
         items:
@@ -427,7 +427,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: visual item missing resourceType - skip item
 in:
@@ -437,7 +437,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       visual:
         items:
@@ -464,7 +464,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: unsupported resourceType - skip item
 in:
@@ -474,7 +474,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       visual:
         items:
@@ -502,7 +502,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: resource not found - skip item
 in:
@@ -512,7 +512,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       visual:
         items:
@@ -540,7 +540,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: no visual items - return unchanged state
 in:
@@ -550,7 +550,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       visual:
         items: []
@@ -574,7 +574,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: null resources - return unchanged state
 in:
@@ -584,7 +584,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       visual:
         items:
@@ -600,4 +600,4 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []

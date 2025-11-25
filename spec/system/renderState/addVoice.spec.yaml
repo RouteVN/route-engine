@@ -13,7 +13,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       voice:
         fileId: "voice.mp3"
@@ -32,7 +32,7 @@ out:
           url: "voice.mp3"
           volume: 0.8
           loop: false
-  transitions: []
+  animations: []
 ---
 case: add voice with default values
 in:
@@ -42,7 +42,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       voice:
         fileId: "simpleVoice.mp3"
@@ -59,7 +59,7 @@ out:
           url: "simpleVoice.mp3"
           volume: 0.5
           loop: false
-  transitions: []
+  animations: []
 ---
 case: add voice with loop enabled
 in:
@@ -69,7 +69,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       voice:
         fileId: "loopingVoice.mp3"
@@ -88,7 +88,7 @@ out:
           url: "loopingVoice.mp3"
           volume: 0.6
           loop: true
-  transitions: []
+  animations: []
 ---
 case: no presentationState.voice - return unchanged state
 in:
@@ -98,7 +98,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState: {}
     resources: {}
 out:
@@ -108,7 +108,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: story container does not exist - return unchanged state
 in:
@@ -116,7 +116,7 @@ in:
       - id: "notStory"
         type: "container"
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       voice:
         fileId: "voice.mp3"
@@ -128,7 +128,7 @@ out:
     - id: "notStory"
       type: "container"
       children: []
-  transitions: []
+  animations: []
 ---
 case: null presentationState - return unchanged state
 in:
@@ -138,7 +138,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState: null
     resources: {}
 out:
@@ -148,7 +148,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: voice with custom volume and loop
 in:
@@ -158,7 +158,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       voice:
         fileId: "customVoice.mp3"
@@ -177,7 +177,7 @@ out:
           url: "customVoice.mp3"
           volume: 0.3
           loop: true
-  transitions: []
+  animations: []
 ---
 case: null resources - still works (voice doesn't use resources)
 in:
@@ -187,7 +187,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       voice:
         fileId: "voice.mp3"
@@ -206,4 +206,4 @@ out:
           url: "voice.mp3"
           volume: 0.7
           loop: false
-  transitions: []
+  animations: []

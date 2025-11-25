@@ -196,6 +196,28 @@ export const selectSection = ({ state }, payload) => {
   return undefined;
 };
 
+/**
+ * Selects the current line from the project data based on the current pointer
+ * @param {Object} state - Current state object
+ * @returns {Object|undefined} The current line object if found, undefined otherwise
+ */
+export const selectCurrentLine = ({ state }) => {
+  const currentPointerData = selectCurrentPointer({ state });
+
+  if (!currentPointerData?.pointer) {
+    return undefined;
+  }
+
+  const { sectionId, lineId } = currentPointerData.pointer;
+  const section = selectSection({ state }, { sectionId });
+
+  if (!section?.lines || !Array.isArray(section.lines)) {
+    return undefined;
+  }
+
+  return section.lines.find(line => line.id === lineId);
+};
+
 export const selectPresentationState = ({ state }) => {
   const { sectionId, lineId } = selectCurrentPointer({ state }).pointer;
   const section = selectSection({ state }, { sectionId });
@@ -295,7 +317,6 @@ export const startSkipMode = ({ state }) => {
   state.global.pendingEffects.push({
     name: "startSkipNextTimer",
   });
-
   state.global.pendingEffects.push({
     name: "render",
   });
@@ -307,7 +328,6 @@ export const stopSkipMode = ({ state }) => {
   state.global.pendingEffects.push({
     name: "clearSkipNextTimer",
   });
-
   state.global.pendingEffects.push({
     name: "render",
   });
@@ -512,22 +532,11 @@ export const nextLine = ({ state }, payload) => {
   const pointer = selectCurrentPointer({ state })?.pointer;
   const sectionId = pointer?.sectionId;
   const section = selectSection({ state }, { sectionId });
-  console.log('section', section)
 
   const lines = section?.lines || [];
-  console.log('pointer', {
-    sectionId: pointer?.sectionId,
-    lineId: pointer?.lineId
-  })
-  console.log('lines', lines)
-
   const currentLineIndex = lines.findIndex(line => line.id === pointer?.lineId);
   const nextLineIndex = currentLineIndex + 1;
 
-  console.log('1111111111111', {
-    nextLineIndex,
-    linesLength: lines.length
-  })
   if (nextLineIndex < lines.length) {
     const nextLine = lines[nextLineIndex];
     const lastContext = state.contexts[state.contexts.length - 1];
@@ -544,6 +553,9 @@ export const nextLine = ({ state }, payload) => {
     state.global.pendingEffects.push({
       name: "render",
     });
+    state.global.pendingEffects.push({
+      name: 'handleLineActions'
+    })
   }
   return state;
 };
@@ -636,6 +648,59 @@ export const prevLine = ({ state }, payload) => {
   return state;
 };
 
+/**
+ * Transitions to a different section and positions at the first line
+ * @param {Object} state - Current state object
+ * @param {Object} payload - Action payload
+ * @param {string} payload.sectionId - The section ID to transition to
+ * @returns {Object} Updated state object
+ * @description
+ * - Finds target section across all scenes
+ * - Positions pointer at first line of target section
+ * - Resets line completion state
+ * - Triggers render and line action processing
+ * - Logs warnings if section or lines not found
+ */
+export const sectionTransition = ({ state }, payload) => {
+  const { sectionId } = payload;
+
+  // Validate section exists
+  const targetSection = selectSection({ state }, { sectionId });
+  if (!targetSection) {
+    console.warn(`Section not found: ${sectionId}`);
+    return state;
+  }
+
+  // Get first line of target section
+  const firstLine = targetSection.lines?.[0];
+  if (!firstLine) {
+    console.warn(`Section ${sectionId} has no lines`);
+    return state;
+  }
+
+  // Update current pointer to new section's first line
+  const lastContext = state.contexts[state.contexts.length - 1];
+  if (lastContext) {
+    lastContext.pointers.read = {
+      sectionId,
+      lineId: firstLine.id
+    };
+  }
+
+  // Reset line completion state
+  state.global.isLineCompleted = false;
+
+  // Add appropriate pending effects
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+  state.global.pendingEffects.push({
+    name: "handleLineActions"
+  });
+
+  return state;
+};
+
 /**************************
  * Store Export
  *************************/
@@ -659,6 +724,7 @@ export const createSystemStore = (initialState) => {
     selectSaveSlot,
     selectCurrentPointer,
     selectSection,
+    selectCurrentLine,
     selectPresentationState,
     selectRenderState,
 
@@ -683,6 +749,7 @@ export const createSystemStore = (initialState) => {
     nextLine,
     markLineCompleted,
     prevLine,
+    sectionTransition,
   };
 
   return createStore(_initialState, selectorsAndActions, {

@@ -13,7 +13,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       character:
         items:
@@ -66,7 +66,7 @@ out:
               url: "face.png"
               x: 0
               y: 0
-  transitions: []
+  animations: []
 ---
 case: add character with in animation
 in:
@@ -76,7 +76,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       character:
         items:
@@ -129,9 +129,9 @@ out:
               url: "body.png"
               x: 0
               y: 0
-  transitions:
+  animations:
     - id: "character-animation-in"
-      type: "keyframes"
+      type: "tween"
       event: "add"
       elementId: "character-container-char1"
       properties:
@@ -146,7 +146,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       character:
         items:
@@ -167,9 +167,9 @@ out:
       x: 0
       y: 0
       children: []
-  transitions:
+  animations:
     - id: "character-animation-out"
-      type: "keyframes"
+      type: "tween"
       event: "remove"
       elementId: "character-container-char1"
       properties:
@@ -184,7 +184,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       character:
         items:
@@ -243,16 +243,16 @@ out:
               url: "body.png"
               x: 0
               y: 0
-  transitions:
+  animations:
     - id: "character-animation-in"
-      type: "keyframes"
+      type: "tween"
       event: "add"
       elementId: "character-container-char1"
       properties:
         opacity: [0, 1]
         duration: 500
     - id: "character-animation-update"
-      type: "keyframes"
+      type: "tween"
       event: "update"
       elementId: "character-container-char1"
       properties:
@@ -267,7 +267,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       character:
         items:
@@ -351,7 +351,7 @@ out:
               url: "char2_body.png"
               x: 0
               y: 0
-  transitions: []
+  animations: []
 ---
 case: no presentationState.character - return unchanged state
 in:
@@ -361,7 +361,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState: {}
     resources:
       characters:
@@ -376,7 +376,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: story container does not exist - return unchanged state
 in:
@@ -384,7 +384,7 @@ in:
       - id: "notStory"
         type: "container"
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       character:
         items:
@@ -412,7 +412,7 @@ out:
     - id: "notStory"
       type: "container"
       children: []
-  transitions: []
+  animations: []
 ---
 case: character item missing sprites - return unchanged state (skips item)
 in:
@@ -422,7 +422,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       character:
         items:
@@ -451,7 +451,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: character item missing transformId - return unchanged state (skips item)
 in:
@@ -461,7 +461,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       character:
         items:
@@ -481,7 +481,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: no character items - return unchanged state
 in:
@@ -491,7 +491,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       character:
         items: []
@@ -508,7 +508,7 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []
 ---
 case: null resources - return unchanged state
 in:
@@ -518,7 +518,7 @@ in:
         x: 0
         y: 0
         children: []
-    transitions: []
+    animations: []
   - presentationState:
       character:
         items:
@@ -534,4 +534,4 @@ out:
       x: 0
       y: 0
       children: []
-  transitions: []
+  animations: []

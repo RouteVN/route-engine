@@ -128,6 +128,12 @@ export default function createRouteEngine(options) {
 
   const handleAction = (actionType, payload) => {
     console.log('RouteEngine handleAction', { actionType, payload });
+
+    console.log('found action handler', _systemStore[actionType])
+
+    if (!_systemStore[actionType]) {
+      return;
+    }
     _systemStore[actionType](payload);
     console.log('_systemStore.selectPendingEffects()', _systemStore.selectPendingEffects())
     handlePendingEffects(_systemStore.selectPendingEffects())
@@ -145,11 +151,19 @@ export default function createRouteEngine(options) {
     console.log('RouteEngine handleEvent', { eventType, payload });
   }
 
+  const handleLineActions = () => {
+    const line = _systemStore.selectCurrentLine();
+    if (line && line.actions) {
+      handleActions(line.actions);
+    }
+  }
+
   return {
     init,
     handleAction,
     handleActions,
     selectRenderState,
     handleEvent,
+    handleLineActions
   };
 }
