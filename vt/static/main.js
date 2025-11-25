@@ -11,7 +11,7 @@ import createRouteGraphics, {
   textRevealingPlugin,
   tweenPlugin,
   soundPlugin,
-} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.8/+esm"
+} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.9/+esm"
 
 const projectData = parse(window.yamlContent);
 

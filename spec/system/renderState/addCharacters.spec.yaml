@@ -132,8 +132,7 @@ out:
   animations:
     - id: "character-animation-in"
       type: "tween"
-      event: "add"
-      elementId: "character-container-char1"
+      targetId: "character-container-char1"
       properties:
         opacity: [0, 1]
         duration: 500
@@ -170,8 +169,7 @@ out:
   animations:
     - id: "character-animation-out"
       type: "tween"
-      event: "remove"
-      elementId: "character-container-char1"
+      targetId: "character-container-char1"
       properties:
         opacity: [1, 0]
         duration: 300
@@ -246,15 +244,13 @@ out:
   animations:
     - id: "character-animation-in"
       type: "tween"
-      event: "add"
-      elementId: "character-container-char1"
+      targetId: "character-container-char1"
       properties:
         opacity: [0, 1]
         duration: 500
     - id: "character-animation-update"
       type: "tween"
-      event: "update"
-      elementId: "character-container-char1"
+      targetId: "character-container-char1"
       properties:
         scale: [1, 1.1, 1]
         duration: 1000

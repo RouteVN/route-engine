@@ -109,8 +109,7 @@ export const addBackgroundOrCg = (
           animations.push({
             id: "bg-cg-animation-in",
             type: "tween",
-            event: "add",
-            elementId: `bg-cg-${presentationState.background.resourceId}`,
+            targetId: `bg-cg-${presentationState.background.resourceId}`,
             properties: animation.properties,
           });
         }
@@ -126,8 +125,7 @@ export const addBackgroundOrCg = (
           animations.push({
             id: "bg-cg-animation-out",
             type: "tween",
-            event: "remove",
-            elementId: `bg-cg-${resourceId}`,
+            targetId: `bg-cg-${resourceId}`,
             properties: animation.properties,
           });
         }
@@ -141,8 +139,7 @@ export const addBackgroundOrCg = (
           animations.push({
             id: "bg-cg-animation-update",
             type: "tween",
-            event: "update",
-            elementId: `bg-cg-${presentationState.background.resourceId}`,
+            targetId: `bg-cg-${presentationState.background.resourceId}`,
             properties: animation.properties,
           });
         }
@@ -181,8 +178,7 @@ export const addCharacters = (
           const outTransition = {
             id: `character-animation-out`,
             type: "tween",
-            event: "remove",
-            elementId: `character-container-${item.id}`,
+            targetId: `character-container-${item.id}`,
             properties: animation.properties,
           };
           animations.push(outTransition);
@@ -250,8 +246,7 @@ export const addCharacters = (
             animations.push({
               id: `character-animation-in`,
               type: "tween",
-              event: "add",
-              elementId: `character-container-${item.id}`,
+              targetId: `character-container-${item.id}`,
               properties: animation.properties,
             });
           }
@@ -264,8 +259,7 @@ export const addCharacters = (
             const updateTransition = {
               id: `character-animation-update`,
               type: "tween",
-              event: "update",
-              elementId: `character-container-${item.id}`,
+              targetId: `character-container-${item.id}`,
               properties: animation.properties,
             };
             animations.push(updateTransition);
@@ -329,8 +323,7 @@ export const addVisuals = (
             animations.push({
               id: `${item.id}-animation`,
               type: "tween",
-              event: "add",
-              elementId: `visual-${item.id}`,
+              targetId: `visual-${item.id}`,
               properties: animation.properties,
             });
           }
@@ -344,8 +337,7 @@ export const addVisuals = (
             animations.push({
               id: `${item.id}-animation-2`,
               type: "tween",
-              event: "remove",
-              elementId: `visual-${item.id}`,
+              targetId: `visual-${item.id}`,
               properties: animation.properties,
             });
           }

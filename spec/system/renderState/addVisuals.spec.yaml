@@ -110,8 +110,7 @@ out:
   animations:
     - id: "visual1-animation"
       type: "tween"
-      event: "add"
-      elementId: "visual-visual1"
+      targetId: "visual-visual1"
       properties:
         opacity: [0, 1]
         duration: 500
@@ -172,8 +171,7 @@ out:
   animations:
     - id: "visual1-animation-2"
       type: "tween"
-      event: "remove"
-      elementId: "visual-visual1"
+      targetId: "visual-visual1"
       properties:
         opacity: [1, 0]
         duration: 300
@@ -241,15 +239,13 @@ out:
   animations:
     - id: "visual1-animation"
       type: "tween"
-      event: "add"
-      elementId: "visual-visual1"
+      targetId: "visual-visual1"
       properties:
         x: [-50, 150]
         duration: 400
     - id: "visual1-animation-2"
       type: "tween"
-      event: "remove"
-      elementId: "visual-visual1"
+      targetId: "visual-visual1"
       properties:
         x: [150, 350]
         duration: 400

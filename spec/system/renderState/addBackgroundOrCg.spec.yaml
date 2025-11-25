@@ -84,8 +84,7 @@ out:
   animations:
     - id: "bg-cg-animation-in"
       type: "tween"
-      event: "add"
-      elementId: "bg-cg-bg1"
+      targetId: "bg-cg-bg1"
       properties:
         opacity: [0, 1]
         duration: 500
@@ -148,8 +147,7 @@ out:
   animations:
     - id: "bg-cg-animation-update"
       type: "tween"
-      event: "update"
-      elementId: "bg-cg-bg1"
+      targetId: "bg-cg-bg1"
       properties:
         opacity: [1, 0]
         duration: 1000
@@ -341,15 +339,13 @@ out:
       type: "existing"
     - id: "bg-cg-animation-in"
       type: "tween"
-      event: "add"
-      elementId: "bg-cg-bg2"
+      targetId: "bg-cg-bg2"
       properties:
         x: [-100, 0]
         duration: 300
     - id: "bg-cg-animation-update"
       type: "tween"
-      event: "update"
-      elementId: "bg-cg-bg2"
+      targetId: "bg-cg-bg2"
       properties:
         scale: [1, 1.1, 1]
         duration: 1000
