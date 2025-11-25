@@ -44,23 +44,25 @@ resources:
           children:
             - id: "bfeawjk2g"
               type: sprite
-              url: file:3kda832 # url: file:3kda832
+              width: 1400
+              height: 300
+              url: 3kda832 # url: file:3kda832
               x: 0
               y: 0
             - id: dialogue-character-name
               type: text
-              text: "${dialogue.character.name}"
+              content: "${dialogue.character.name}"
               x: 20
               y: 40
-              style:
+              textStyle:
                 fontSize: 24
                 fill: "white"
             - id: dialogue-text
               type: "text"
               x: 20
               y: 100
-              text: "${dialogue.content}"
-              style:
+              content: "${dialogue.content}"
+              textStyle:
                 fontSize: 24
                 fill: "white"
   animations:
@@ -106,13 +108,13 @@ story:
                   resourceId: screen1
                 dialogue:
                   layoutId: fi3l
+                  mode: adv
                   content: Hello! Welcome to this visual novel.
                   characterId: ajf34a
             - id: line2
               actions:
                 background:
                   resourceId: alkejf3la
-                  resourceType: image
                   animations:
                     in: 3lkj289
             - id: line3

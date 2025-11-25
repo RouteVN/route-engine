@@ -345,7 +345,7 @@ export const addVisuals = (
  */
 export const addDialogue = (
   state,
-  { presentationState, resources = {}, dialogueUIHidden, autoMode, skipMode, currentLocalizationPackageId },
+  { presentationState, resources = {}, dialogueUIHidden, autoMode, skipMode, currentLocalizationPackageId, variables },
 ) => {
   const { elements } = state;
   if (!presentationState.dialogue) {
