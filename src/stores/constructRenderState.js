@@ -192,7 +192,7 @@ export const addCharacters = (
         continue;
       }
 
-      const spritePartIds = sprites.map(({ imageId }) => imageId);
+      const spritePartIds = sprites.map(({ resourceId }) => resourceId);
       const transform = resources.transforms[transformId];
       if (!transform) {
         console.warn("Transform not found:", transformId);
@@ -211,25 +211,19 @@ export const addCharacters = (
         children: [],
       };
 
-      const matchedSpriteParts = [];
-      Object.entries(resources.characters).flatMap(([key, character]) => {
-        const { sprites: characterSprites } = character;
-        Object.entries(characterSprites).map(([partId, part]) => {
-          if (spritePartIds.includes(partId)) {
-            matchedSpriteParts.push({
-              partId,
-              fileId: part.fileId,
-            });
-          }
-        });
-      });
+      for (const sprite of sprites) {
+        const imageResource = resources.images[sprite.resourceId];
+        if (!imageResource) {
+          console.warn(`Image resource not found: ${sprite.resourceId}`);
+          continue;
+        }
 
-      for (const spritePart of matchedSpriteParts) {
-        // @ts-ignore
         characterContainer.children.push({
           type: "sprite",
-          id: `${item.id}-${spritePart.partId}`,
-          url: spritePart.fileId,
+          id: `${item.id}-${sprite.id}`,
+          url: imageResource.fileId,
+          width: imageResource.width,
+          height: imageResource.height,
           x: 0,
           y: 0,
         });

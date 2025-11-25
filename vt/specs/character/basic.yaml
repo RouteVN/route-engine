@@ -12,6 +12,14 @@ resources:
       fileId: lakjf3lka
       width: 1920
       height: 1080
+    fk4jla893:
+      fileId: la3lka
+      width: 200
+      height: 200
+    3fjaklj34:
+      fileId: x342fga
+      width: 200
+      height: 200
   layouts:
     screen1:
       elements:
@@ -35,22 +43,17 @@ resources:
     alkjf3ia:
       variables:
         name: "Abc"
-      sprites:
-        fk4jla893:
-          fileId: la3lka
-        3fjaklj34:
-          fileId: x342fga
-      layered:
-        jf3iaslj2:
-          name: "eafh"
-          layers:
-            - name: base
-              default: ...
-              sprites:
-                - spriteId: iefjkeal
-                - spriteId: ...
-            - name: head
-              default: ...
+      # layered:
+      #   jf3iaslj2:
+      #     name: "eafh"
+      #     layers:
+      #       - name: base
+      #         default: ...
+      #         sprites:
+      #           - spriteId: iefjkeal
+      #           - spriteId: ...
+      #       - name: head
+      #         default: ...
 
     # 9823l31:
     #   variables:
@@ -77,27 +80,25 @@ story:
                   resourceId: screen1
                 background:
                   resourceId: alkejf3la
-                  resourceType: image
                 character:
                   items:
                     - id: "laj389d"
                       transformId: iasdlf
                       sprites:
                         - id: base
-                          imageId: fk4jla893
+                          resourceId: fk4jla893
                         - id: outfit
-                          imageId: 3fjaklj34
+                          resourceId: 3fjaklj34
             - id: line2
               actions:
                 background:
                   resourceId: alkejf3la
-                  resourceType: image
                 character:
                   items:
                     - id: "laj389d"
                       transformId: a32kf3
                       sprites:
                         - id: base
-                          imageId: fk4jla893
+                          resourceId: fk4jla893
                         - id: outfit
-                          imageId: 3fjaklj34
+                          resourceId: 3fjaklj34

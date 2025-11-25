@@ -20,8 +20,10 @@ in:
           - id: "char1"
             transformId: "transform1"
             sprites:
-              - imageId: "body"
-              - imageId: "face"
+              - id: "body"
+                resourceId: "body"
+              - id: "face"
+                resourceId: "face"
     resources:
       transforms:
         transform1:
@@ -32,13 +34,15 @@ in:
           rotation: 0
           scaleX: 1
           scaleY: 1
-      characters:
-        character1:
-          sprites:
-            body:
-              fileId: "body.png"
-            face:
-              fileId: "face.png"
+      images:
+        body:
+          fileId: "body.png"
+          width: 200
+          height: 200
+        face:
+          fileId: "face.png"
+          width: 200
+          height: 200
 out:
   elements:
     - id: "story"
@@ -59,11 +63,15 @@ out:
             - type: "sprite"
               id: "char1-body"
               url: "body.png"
+              width: 200
+              height: 200
               x: 0
               y: 0
             - type: "sprite"
               id: "char1-face"
               url: "face.png"
+              width: 200
+              height: 200
               x: 0
               y: 0
   animations: []
@@ -83,7 +91,8 @@ in:
           - id: "char1"
             transformId: "transform1"
             sprites:
-              - imageId: "body"
+              - id: "body"
+                resourceId: "body"
             animations:
               in:
                 animationId: "fadeIn"
@@ -97,11 +106,11 @@ in:
           rotation: 0
           scaleX: 1
           scaleY: 1
-      characters:
-        character1:
-          sprites:
-            body:
-              fileId: "body.png"
+      images:
+        body:
+          fileId: "body.png"
+          width: 200
+          height: 200
       animations:
         fadeIn:
           properties:
@@ -127,6 +136,8 @@ out:
             - type: "sprite"
               id: "char1-body"
               url: "body.png"
+              width: 200
+              height: 200
               x: 0
               y: 0
   animations:
@@ -189,7 +200,8 @@ in:
           - id: "char1"
             transformId: "transform1"
             sprites:
-              - imageId: "body"
+              - id: "body"
+                resourceId: "body"
             animations:
               in:
                 animationId: "fadeIn"
@@ -205,11 +217,11 @@ in:
           rotation: 0
           scaleX: 1
           scaleY: 1
-      characters:
-        character1:
-          sprites:
-            body:
-              fileId: "body.png"
+      images:
+        body:
+          fileId: "body.png"
+          width: 200
+          height: 200
       animations:
         fadeIn:
           properties:
@@ -239,6 +251,8 @@ out:
             - type: "sprite"
               id: "char1-body"
               url: "body.png"
+              width: 200
+              height: 200
               x: 0
               y: 0
   animations:
@@ -270,12 +284,15 @@ in:
           - id: "char1"
             transformId: "transform1"
             sprites:
-              - imageId: "body"
-              - imageId: "face"
+              - id: "body"
+                resourceId: "body"
+              - id: "face"
+                resourceId: "face"
           - id: "char2"
             transformId: "transform2"
             sprites:
-              - imageId: "body2"
+              - id: "body2"
+                resourceId: "body2"
     resources:
       transforms:
         transform1:
@@ -294,17 +311,19 @@ in:
           rotation: 0
           scaleX: 1
           scaleY: 1
-      characters:
-        character1:
-          sprites:
-            body:
-              fileId: "char1_body.png"
-            face:
-              fileId: "char1_face.png"
-        character2:
-          sprites:
-            body2:
-              fileId: "char2_body.png"
+      images:
+        body:
+          fileId: "char1_body.png"
+          width: 200
+          height: 200
+        face:
+          fileId: "char1_face.png"
+          width: 200
+          height: 200
+        body2:
+          fileId: "char2_body.png"
+          width: 200
+          height: 200
 out:
   elements:
     - id: "story"
@@ -325,11 +344,15 @@ out:
             - type: "sprite"
               id: "char1-body"
               url: "char1_body.png"
+              width: 200
+              height: 200
               x: 0
               y: 0
             - type: "sprite"
               id: "char1-face"
               url: "char1_face.png"
+              width: 200
+              height: 200
               x: 0
               y: 0
         - type: "container"
@@ -345,6 +368,8 @@ out:
             - type: "sprite"
               id: "char2-body2"
               url: "char2_body.png"
+              width: 200
+              height: 200
               x: 0
               y: 0
   animations: []
@@ -360,11 +385,11 @@ in:
     animations: []
   - presentationState: {}
     resources:
-      characters:
-        char1:
-          sprites:
-            body:
-              fileId: "body.png"
+      images:
+        body:
+          fileId: "body.png"
+          width: 200
+          height: 200
 out:
   elements:
     - id: "story"
@@ -387,7 +412,8 @@ in:
           - id: "char1"
             transformId: "transform1"
             sprites:
-              - imageId: "body"
+              - id: "body"
+                resourceId: "body"
     resources:
       transforms:
         transform1:
@@ -399,10 +425,10 @@ in:
           scaleX: 1
           scaleY: 1
       characters:
-        char1:
-          sprites:
-            body:
-              fileId: "body.png"
+        body:
+          fileId: "body.png"
+          width: 200
+          height: 200
 out:
   elements:
     - id: "notStory"
@@ -436,10 +462,10 @@ in:
           scaleX: 1
           scaleY: 1
       characters:
-        char1:
-          sprites:
-            body:
-              fileId: "body.png"
+        body:
+          fileId: "body.png"
+          width: 200
+          height: 200
 out:
   elements:
     - id: "story"
@@ -463,13 +489,14 @@ in:
         items:
           - id: "char1"
             sprites:
-              - imageId: "body"
+              - id: "body"
+                resourceId: "body"
     resources:
-      characters:
-        char1:
-          sprites:
-            body:
-              fileId: "body.png"
+      images:
+        body:
+          fileId: "body.png"
+          width: 200
+          height: 200
 out:
   elements:
     - id: "story"
@@ -492,11 +519,11 @@ in:
       character:
         items: []
     resources:
-      characters:
-        char1:
-          sprites:
-            body:
-              fileId: "body.png"
+      images:
+        body:
+          fileId: "body.png"
+          width: 200
+          height: 200
 out:
   elements:
     - id: "story"
@@ -521,7 +548,8 @@ in:
           - id: "char1"
             transformId: "transform1"
             sprites:
-              - imageId: "body"
+              - id: "body"
+                resourceId: "body"
     resources: null
 out:
   elements:

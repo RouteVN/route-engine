@@ -25,6 +25,14 @@ resources:
       fileId: lakjf3lka
       width: 1920
       height: 1080
+    fk4jla893:
+      fileId: la3lka
+      width: 200
+      height: 200
+    3fjaklj34:
+      fileId: x342fga
+      width: 200
+      height: 200
 
   characters:
     alkjf3ia:
@@ -108,9 +116,9 @@ story:
                       transformId: iasdlf
                       sprites:
                         - id: base
-                          imageId: fk4jla893
+                          resourceId: fk4jla893
                         - id: outfit
-                          imageId: 3fjaklj34
+                          resourceId: 3fjaklj34
                       animations:
                         in:
                           animationId: slide_in
@@ -125,9 +133,9 @@ story:
                       transformId: iasdlf
                       sprites:
                         - id: base
-                          imageId: fk4jla893
+                          resourceId: fk4jla893
                         - id: outfit
-                          imageId: 3fjaklj34
+                          resourceId: 3fjaklj34
                       animations:
                         update:
                           animationId: scale_update
