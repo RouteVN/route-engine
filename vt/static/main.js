@@ -11,7 +11,8 @@ import createRouteGraphics, {
   textRevealingPlugin,
   tweenPlugin,
   soundPlugin,
-} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.9/+esm"
+  // } from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.9/+esm"
+} from "./RouteGraphics.js"
 
 const projectData = parse(window.yamlContent);
 
@@ -103,7 +104,7 @@ const init = async () => {
   await assetBufferManager.load(assets);
   const assetBufferMap = assetBufferManager.getBufferMap();
 
-  const app = createRouteGraphics();
+  const routeGraphics = createRouteGraphics();
 
   const plugins = {
     elements: [
@@ -122,31 +123,33 @@ const init = async () => {
     ]
   };
 
-  await app.init({
+  let count = 0;
+
+  await routeGraphics.init({
     width: 1920,
     height: 1080,
     plugins,
     eventHandler: (eventName, payload) => {
-      console.log('eventHandler', eventName, payload);
-      if (payload.actions) {
-        engine.handleActions(payload.actions);
+      console.log('ZZZZZZZZZZZZZz eventHandler', eventName, payload);
+      if (eventName === 'renderComplete') {
+        console.log('YYYYYYYYYYYYYYYYYYY')
+        if (count >= 2) {
+          console.log('GGGGGGGGGGGGGGGGGG')
+          return;
+        }
+        engine.handleAction('nextLineFromCompleted', {})
+        count += 1;
+        // engine.handleLineActions();
+      } else {
+        if (payload.actions) {
+          engine.handleActions(payload.actions);
+        }
       }
-      // if (eventName === "completed") {
-      //   engine.handleEvent({
-      //     payload: {
-      //       actions: {
-      //         handleCompleted: {}
-      //       }
-      //     }
-      //   });
-      // } else if (eventName === "system") {
-      //   engine.handleEvent({ payload });
-      // }
     },
   });
-  await app.loadAssets(assetBufferMap)
+  await routeGraphics.loadAssets(assetBufferMap)
 
-  document.getElementById("canvas").appendChild(app.canvas);
+  document.getElementById("canvas").appendChild(routeGraphics.canvas);
   document.getElementById("canvas").addEventListener("contextmenu", (e) => {
     e.preventDefault();
   });
@@ -166,7 +169,7 @@ const init = async () => {
     for (const effect of uniqueEffects) {
       if (effect.name === 'render') {
         const renderState = engine.selectRenderState();
-        app.render(renderState);
+        routeGraphics.render(renderState);
       } else if (effect.name === 'handleLineActions') {
         console.log('44444444444 handleLineActions');
         engine.handleLineActions();

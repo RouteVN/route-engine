@@ -17,13 +17,12 @@ in:
             trigger: "fromComplete"
             delay: 1000
         pendingEffects: []
-  - nextLineConfig:
-      manual:
-        enabled: false
-        requireComplete: true
-      auto:
-        trigger: "fromStart"
-        delay: 2000
+  - manual:
+      enabled: false
+      requireComplete: true
+    auto:
+      trigger: "fromStart"
+      delay: 2000
 out:
   global:
     nextLineConfig:
@@ -48,10 +47,9 @@ in:
             trigger: "fromComplete"
             delay: 1000
         pendingEffects: []
-  - nextLineConfig:
-      manual:
-        enabled: false
-        requireComplete: true
+  - manual:
+      enabled: false
+      requireComplete: true
 out:
   global:
     nextLineConfig:
@@ -76,10 +74,9 @@ in:
             trigger: "fromComplete"
             delay: 1000
         pendingEffects: []
-  - nextLineConfig:
-      auto:
-        trigger: "fromStart"
-        delay: 500
+  - auto:
+      trigger: "fromStart"
+      delay: 500
 out:
   global:
     nextLineConfig:
@@ -106,13 +103,12 @@ in:
         pendingEffects:
           - name: "existingEffect"
             data: "test"
-  - nextLineConfig:
-      manual:
-        enabled: false
-        requireComplete: false
-      auto:
-        trigger: "fromComplete"
-        delay: 1500
+  - manual:
+      enabled: false
+      requireComplete: false
+    auto:
+      trigger: "fromComplete"
+      delay: 1500
 out:
   global:
     nextLineConfig:
@@ -139,13 +135,12 @@ in:
             trigger: "fromStart"
             delay: 3000
         pendingEffects: []
-  - nextLineConfig:
-      manual:
-        enabled: true
-        requireComplete: true
-      auto:
-        trigger: "fromStart"
-        delay: 3000
+  - manual:
+      enabled: true
+      requireComplete: true
+    auto:
+      trigger: "fromStart"
+      delay: 3000
 out:
   global:
     nextLineConfig:
@@ -170,11 +165,10 @@ in:
             trigger: "fromComplete"
             delay: 1000
         pendingEffects: []
-  - nextLineConfig:
-      manual:
-        enabled: true
-      auto:
-        delay: 0
+  - manual:
+      enabled: true
+    auto:
+      delay: 0
 out:
   global:
     nextLineConfig:
@@ -201,12 +195,11 @@ in:
         dialogueUIHidden: false
         currentLocalizationPackageId: "en"
         pendingEffects: []
-  - nextLineConfig:
-      manual:
-        enabled: false
-      auto:
-        trigger: "fromStart"
-        delay: 2000
+  - manual:
+      enabled: false
+    auto:
+      trigger: "fromStart"
+      delay: 2000
 out:
   global:
     nextLineConfig:

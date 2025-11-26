@@ -1883,14 +1883,14 @@ story:
           lines:
             - id: line1
               actions:
-                # nextConfig:
-                #   manual:
-                #     enabled: false
-                #   auto:
-                #     trigger: fromComplete
-                #     delay: 1000
                 screen:
                   resourceId: screen1
+                # setNextLineConfig:
+                #   manual:
+                # enabled: true
+                # auto:
+                #   trigger: fromComplete
+                #     delay: 1000
                 visual:
                   items:
                     - id: 39kdfj231
@@ -1900,10 +1900,10 @@ story:
                         in: 3lkj289
             - id: line2
               actions:
-                # nextConfig:
+                # setNextLineConfig:
                 #   manual:
                 #     enabled: false
-                #   auto:
+                # auto: {}
                 #     trigger: fromComplete
                 #     delay: 1000
                 visual:

@@ -1,11 +1,11 @@
 file: "../../../src/stores/system.store.js"
-group: systemStore.nextLine
-suites: [nextLine]
+group: systemStore.nextLineFromCompleted
+suites: [nextLineFromCompleted]
 ---
-suite: nextLine
-exportName: nextLine
+suite: nextLineFromCompleted
+exportName: nextLineFromCompleted
 ---
-case: move to next line
+case: auto navigation disabled (no change)
 in:
   - state:
       global:
@@ -13,6 +13,123 @@ in:
         nextLineConfig:
           manual:
             enabled: true
+          auto:
+            enabled: false
+            trigger: "fromComplete"
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  global:
+    isLineCompleted: true
+    nextLineConfig:
+      manual:
+        enabled: true
+      auto:
+        enabled: false
+        trigger: "fromComplete"
+    pendingEffects: []
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions: {}
+                - id: "2"
+                  actions: {}
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "1"
+---
+case: auto navigation enabled but trigger not fromComplete (no change)
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        nextLineConfig:
+          manual:
+            enabled: true
+          auto:
+            enabled: true
+            trigger: "fromStart"
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  global:
+    isLineCompleted: true
+    nextLineConfig:
+      manual:
+        enabled: true
+      auto:
+        enabled: true
+        trigger: "fromStart"
+    pendingEffects: []
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions: {}
+                - id: "2"
+                  actions: {}
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "1"
+---
+case: auto navigation enabled with fromComplete trigger (advances)
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        nextLineConfig:
+          manual:
+            enabled: false
+          auto:
+            enabled: true
+            trigger: "fromComplete"
         pendingEffects: []
       projectData:
         story:
@@ -33,13 +150,13 @@ in:
             read:
               sectionId: "section1"
               lineId: "1"
-  - sectionId: "section1"
 out:
   global:
     isLineCompleted: false
     nextLineConfig:
       manual:
-        enabled: true
+        enabled: false
+      auto: {}
     pendingEffects:
       - name: "render"
       - name: "handleLineActions"
@@ -70,7 +187,10 @@ in:
         isLineCompleted: true
         nextLineConfig:
           manual:
+            enabled: false
+          auto:
             enabled: true
+            trigger: "fromComplete"
         pendingEffects: []
       projectData:
         story:
@@ -89,13 +209,15 @@ in:
             read:
               sectionId: "section1"
               lineId: "2"
-  - sectionId: "section1"
 out:
   global:
     isLineCompleted: true
     nextLineConfig:
       manual:
+        enabled: false
+      auto:
         enabled: true
+        trigger: "fromComplete"
     pendingEffects: []
   projectData:
     story:
@@ -115,14 +237,17 @@ out:
           sectionId: "section1"
           lineId: "2"
 ---
-case: no section found
+case: no section found (no change)
 in:
   - state:
       global:
         isLineCompleted: true
         nextLineConfig:
           manual:
+            enabled: false
+          auto:
             enabled: true
+            trigger: "fromComplete"
         pendingEffects: []
       projectData:
         story:
@@ -139,13 +264,15 @@ in:
             read:
               sectionId: "section1"
               lineId: "1"
-  - sectionId: "section1"
 out:
   global:
     isLineCompleted: true
     nextLineConfig:
       manual:
+        enabled: false
+      auto:
         enabled: true
+        trigger: "fromComplete"
     pendingEffects: []
   projectData:
     story:
@@ -155,57 +282,6 @@ out:
             otherSection:
               lines:
                 - id: "1"
-                  actions: {}
-  contexts:
-    - currentPointerMode: "read"
-      pointers:
-        read:
-          sectionId: "section1"
-          lineId: "1"
----
-case: manual navigation disabled (no change)
-in:
-  - state:
-      global:
-        isLineCompleted: true
-        nextLineConfig:
-          manual:
-            enabled: false
-        pendingEffects: []
-      projectData:
-        story:
-          scenes:
-            scene1:
-              sections:
-                section1:
-                  lines:
-                    - id: "1"
-                      actions: {}
-                    - id: "2"
-                      actions: {}
-      contexts:
-        - currentPointerMode: "read"
-          pointers:
-            read:
-              sectionId: "section1"
-              lineId: "1"
-out:
-  global:
-    isLineCompleted: true
-    nextLineConfig:
-      manual:
-        enabled: false
-    pendingEffects: []
-  projectData:
-    story:
-      scenes:
-        scene1:
-          sections:
-            section1:
-              lines:
-                - id: "1"
-                  actions: {}
-                - id: "2"
                   actions: {}
   contexts:
     - currentPointerMode: "read"

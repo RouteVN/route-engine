@@ -434,42 +434,40 @@ export const addViewedResource = ({ state }, payload) => {
 /**
  * Sets the next line configuration for advancing to the next line
  * @param {Object} state - Current state object
- * @param {Object} initialState - Action payload
- * @param {Object} initialState.nextLineConfig - Configuration object
- * @param {Object} [payload.nextLineConfig.manual] - Manual navigation configuration
- * @param {boolean} [payload.nextLineConfig.manual.enabled] - Whether manual navigation is enabled
- * @param {boolean} [payload.nextLineConfig.manual.requireComplete] - Whether completion is required before advancing
- * @param {Object} [payload.nextLineConfig.auto] - Auto navigation configuration
- * @param {string} [payload.nextLineConfig.auto.trigger] - When auto navigation triggers ('fromStart' or 'fromComplete')
- * @param {number} [payload.nextLineConfig.auto.delay] - Delay in milliseconds before auto advancing
+ * @param {Object} payload - Action payload
+ * @param {Object} [payload.manual] - Manual navigation configuration
+ * @param {boolean} [payload.manual.enabled] - Whether manual navigation is enabled
+ * @param {boolean} [payload.manual.requireLineCompleted] - Whether completion is required before advancing
+ * @param {Object} [payload.auto] - Auto navigation configuration
+ * @param {string} [payload.auto.trigger] - When auto navigation triggers ('fromStart' or 'fromComplete')
+ * @param {number} [payload.auto.delay] - Delay in milliseconds before auto advancing
  * @returns {Object} Updated state object
  * @description
  * If both manual and auto configurations are provided, performs complete replacement.
  * If only one configuration is provided, performs partial merge with existing config.
  */
 export const setNextLineConfig = ({ state }, payload) => {
-  const { nextLineConfig } = payload;
+  const { manual, auto } = payload;
 
   // If both manual and auto are provided, do complete replacement
-  if (nextLineConfig.manual && nextLineConfig.auto) {
+  if (manual && auto) {
     state.global.nextLineConfig = {
-      manual: nextLineConfig.manual,
-      auto: nextLineConfig.auto
+      manual,
+      auto
     };
   } else {
     // Partial update - merge only provided sections
-    if (nextLineConfig.manual) {
-      state.global.nextLineConfig.manual = {
-        ...state.global.nextLineConfig.manual,
-        ...nextLineConfig.manual
-      };
+    if (manual) {
+
+      state.global.nextLineConfig.manual = manual;
+      // state.global.nextLineConfig.manual = {
+      //   ...state.global.nextLineConfig.manual,
+      //   ...manual
+      // };
     }
 
-    if (nextLineConfig.auto) {
-      state.global.nextLineConfig.auto = {
-        ...state.global.nextLineConfig.auto,
-        ...nextLineConfig.auto
-      };
+    if (auto) {
+      state.global.nextLineConfig.auto = auto;
     }
   }
 
@@ -528,7 +526,60 @@ export const addToHistory = ({ state }, payload) => {
   return state;
 };
 
-export const nextLine = ({ state }, payload) => {
+/**
+ * Advances to the next line if auto navigation is configured to trigger from line completion
+ * @param {Object} state - Current state object
+ * @returns {Object} Updated state object
+ * @description
+ * Checks if auto navigation is enabled and configured to trigger from line completion.
+ * If conditions are met, advances to the next line regardless of manual navigation settings.
+ * After advancing, resets the auto navigation configuration to empty object.
+ */
+export const nextLineFromCompleted = ({ state }) => {
+  // Check if auto navigation is enabled and configured to trigger from line completion
+  if (state.global.nextLineConfig?.auto?.enabled !== true || state.global.nextLineConfig?.auto?.trigger !== 'fromComplete') {
+    return state;
+  }
+
+  const pointer = selectCurrentPointer({ state })?.pointer;
+  const sectionId = pointer?.sectionId;
+  const section = selectSection({ state }, { sectionId });
+
+  const lines = section?.lines || [];
+  const currentLineIndex = lines.findIndex(line => line.id === pointer?.lineId);
+  const nextLineIndex = currentLineIndex + 1;
+
+  if (nextLineIndex < lines.length) {
+    const nextLine = lines[nextLineIndex];
+    const lastContext = state.contexts[state.contexts.length - 1];
+
+    if (lastContext) {
+      lastContext.pointers.read = {
+        sectionId,
+        lineId: nextLine.id
+      };
+    }
+
+    state.global.isLineCompleted = false;
+
+    // Reset auto navigation configuration after advancing
+    state.global.nextLineConfig.auto = {};
+
+    state.global.pendingEffects.push({
+      name: "render",
+    });
+    state.global.pendingEffects.push({
+      name: 'handleLineActions'
+    });
+  }
+  return state;
+};
+
+export const nextLine = ({ state }) => {
+  if (!state.global.nextLineConfig.manual.enabled) {
+    return state;
+  }
+
   const pointer = selectCurrentPointer({ state })?.pointer;
   const sectionId = pointer?.sectionId;
   const section = selectSection({ state }, { sectionId });
@@ -747,6 +798,7 @@ export const createSystemStore = (initialState) => {
     replaceSaveSlot,
     addToHistory,
     nextLine,
+    nextLineFromCompleted,
     markLineCompleted,
     prevLine,
     sectionTransition,
