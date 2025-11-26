@@ -1,5 +1,3 @@
-
-
 import { createStore } from "../util.js";
 import { constructPresentationState } from "./constructPresentationState.js";
 import { constructRenderState } from "./constructRenderState.js";
@@ -254,6 +252,7 @@ export const selectRenderState = ({ state }) => {
   const renderState = constructRenderState({
     presentationState,
     resources: state.projectData.resources,
+    l10n: state.projectData.localization.packages[state.global.currentLocalizationPackageId],
   });
   console.log('renderState', renderState);
   return renderState;

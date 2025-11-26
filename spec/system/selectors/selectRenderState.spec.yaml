@@ -13,6 +13,7 @@ in:
         autoMode: false
         skipMode: false
         isDialogueUIVisible: true
+        currentLocalizationPackageId: "en"
       projectData:
         story:
           scenes:
@@ -26,6 +27,15 @@ in:
                           resourceId: "abcd"
                     - id: "2"
                       actions: {}
+        localization:
+          packages:
+            en: {}
+        resources:
+          audio:
+            cde:
+              id: "cde"
+              type: "audio"
+              fileId: "audio/cde.mp3"
       contexts:
         - currentPointerMode: "read"
           pointers:
@@ -50,6 +60,7 @@ in:
         autoMode: false
         skipMode: false
         isDialogueUIVisible: true
+        currentLocalizationPackageId: "en"
       projectData:
         story:
           scenes:
@@ -67,6 +78,15 @@ in:
                       actions:
                         background:
                           resourceId: "xyz"
+        localization:
+          packages:
+            en: {}
+        resources:
+          audio:
+            cde:
+              id: "cde"
+              type: "audio"
+              fileId: "audio/cde.mp3"
       contexts:
         - currentPointerMode: "read"
           pointers:
@@ -81,7 +101,13 @@ out:
       y: 0
       children: []
   animations: []
-  audio: []
+  audio:
+    - id: "bgm"
+      type: "sound"
+      url: "audio/cde.mp3"
+      loop: true
+      volume: 0.5
+      delay: null
 ---
 case: multiple lines and actions last line
 in:
@@ -91,6 +117,7 @@ in:
         autoMode: false
         skipMode: false
         isDialogueUIVisible: true
+        currentLocalizationPackageId: "en"
       projectData:
         story:
           scenes:
@@ -108,6 +135,15 @@ in:
                       actions:
                         background:
                           resourceId: "xyz"
+        localization:
+          packages:
+            en: {}
+        resources:
+          audio:
+            cde:
+              id: "cde"
+              type: "audio"
+              fileId: "audio/cde.mp3"
       contexts:
         - currentPointerMode: "read"
           pointers:
@@ -122,4 +158,10 @@ out:
       y: 0
       children: []
   animations: []
-  audio: []
+  audio:
+    - id: "bgm"
+      type: "sound"
+      url: "audio/cde.mp3"
+      loop: true
+      volume: 0.5
+      delay: null

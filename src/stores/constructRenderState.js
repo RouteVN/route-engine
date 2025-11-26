@@ -347,7 +347,7 @@ export const addVisuals = (
  */
 export const addDialogue = (
   state,
-  { presentationState, resources = {}, dialogueUIHidden, autoMode, skipMode, currentLocalizationPackageId, variables },
+  { presentationState, resources = {}, dialogueUIHidden, autoMode, skipMode, l10n, variables },
 ) => {
   const { elements } = state;
   if (!presentationState.dialogue) {
@@ -393,14 +393,14 @@ export const addDialogue = (
           content: presentationState.dialogue?.content || [],
           lines: presentationState.dialogue?.lines || [],
         },
-        currentLocalizationPackageId,
+        l10n
       };
 
       let result = parseAndRender(wrappedTemplate, templateData, {
         functions: jemplFunctions,
       });
       result = parseAndRender(result, {
-        i18n: {}
+        l10n
       });
       const guiElements = result?.elements;
 
