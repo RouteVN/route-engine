@@ -14,6 +14,7 @@ in:
         y: 0
         children: []
     animations: []
+    audio: []
   - presentationState:
       visual:
         items:
@@ -52,6 +53,7 @@ out:
           scaleX: 1.5
           scaleY: 1.5
   animations: []
+  audio: []
 ---
 case: add visual with in animation
 in:
@@ -62,6 +64,7 @@ in:
         y: 0
         children: []
     animations: []
+    audio: []
   - presentationState:
       visual:
         items:
@@ -114,6 +117,7 @@ out:
       properties:
         opacity: [0, 1]
         duration: 500
+  audio: []
 ---
 case: add visual with out animation
 in:
@@ -124,6 +128,7 @@ in:
         y: 0
         children: []
     animations: []
+    audio: []
   - presentationState:
       visual:
         items:
@@ -175,6 +180,7 @@ out:
       properties:
         opacity: [1, 0]
         duration: 300
+  audio: []
 ---
 case: add visual with both in and out animations
 in:
@@ -185,6 +191,7 @@ in:
         y: 0
         children: []
     animations: []
+    audio: []
   - presentationState:
       visual:
         items:
@@ -249,6 +256,7 @@ out:
       properties:
         x: [150, 350]
         duration: 400
+  audio: []
 ---
 case: multiple visual items
 in:
@@ -259,6 +267,7 @@ in:
         y: 0
         children: []
     animations: []
+    audio: []
   - presentationState:
       visual:
         items:
@@ -321,6 +330,7 @@ out:
           scaleX: 1
           scaleY: 1
   animations: []
+  audio: []
 ---
 case: no presentationState.visual - return unchanged state
 in:
@@ -331,6 +341,7 @@ in:
         y: 0
         children: []
     animations: []
+    audio: []
   - presentationState: {}
     resources:
       images:
@@ -353,6 +364,7 @@ out:
       y: 0
       children: []
   animations: []
+  audio: []
 ---
 case: story container does not exist - return unchanged state
 in:
@@ -361,6 +373,7 @@ in:
         type: "container"
         children: []
     animations: []
+    audio: []
   - presentationState:
       visual:
         items:
@@ -387,6 +400,7 @@ out:
       type: "container"
       children: []
   animations: []
+  audio: []
 ---
 case: visual item missing resourceId - skip item
 in:
@@ -397,6 +411,7 @@ in:
         y: 0
         children: []
     animations: []
+    audio: []
   - presentationState:
       visual:
         items:
@@ -424,6 +439,7 @@ out:
       y: 0
       children: []
   animations: []
+  audio: []
 ---
 case: visual item missing resourceType - skip item
 in:
@@ -434,6 +450,7 @@ in:
         y: 0
         children: []
     animations: []
+    audio: []
   - presentationState:
       visual:
         items:
@@ -459,8 +476,19 @@ out:
       type: "container"
       x: 0
       y: 0
-      children: []
+      children:
+        - id: "visual-visual1"
+          type: "sprite"
+          url: "test.png"
+          x: 0
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
   animations: []
+  audio: []
 ---
 case: unsupported resourceType - skip item
 in:
@@ -471,6 +499,7 @@ in:
         y: 0
         children: []
     animations: []
+    audio: []
   - presentationState:
       visual:
         items:
@@ -479,6 +508,7 @@ in:
             resourceType: "video"
             transformId: "transform1"
     resources:
+      images: {}
       videos:
         video1:
           fileId: "test.mp4"
@@ -499,6 +529,7 @@ out:
       y: 0
       children: []
   animations: []
+  audio: []
 ---
 case: resource not found - skip item
 in:
@@ -509,6 +540,7 @@ in:
         y: 0
         children: []
     animations: []
+    audio: []
   - presentationState:
       visual:
         items:
@@ -537,6 +569,7 @@ out:
       y: 0
       children: []
   animations: []
+  audio: []
 ---
 case: no visual items - return unchanged state
 in:
@@ -547,6 +580,7 @@ in:
         y: 0
         children: []
     animations: []
+    audio: []
   - presentationState:
       visual:
         items: []
@@ -571,6 +605,7 @@ out:
       y: 0
       children: []
   animations: []
+  audio: []
 ---
 case: null resources - return unchanged state
 in:
@@ -581,6 +616,7 @@ in:
         y: 0
         children: []
     animations: []
+    audio: []
   - presentationState:
       visual:
         items:
@@ -597,3 +633,4 @@ out:
       y: 0
       children: []
   animations: []
+  audio: []

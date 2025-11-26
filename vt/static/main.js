@@ -153,7 +153,17 @@ const init = async () => {
 
   const effectsHandler = (effects) => {
     console.log('effects', effects)
-    for (const effect of effects) {
+
+    // Deduplicate effects by name, keeping only the last occurrence
+    const deduplicatedEffects = effects.reduce((acc, effect) => {
+      acc[effect.name] = effect;
+      return acc;
+    }, {});
+
+    // Convert back to array and process deduplicated effects
+    const uniqueEffects = Object.values(deduplicatedEffects);
+
+    for (const effect of uniqueEffects) {
       if (effect.name === 'render') {
         const renderState = engine.selectRenderState();
         app.render(renderState);

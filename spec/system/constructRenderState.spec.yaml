@@ -29,6 +29,7 @@ out:
             - type: "container"
               id: "screen-container"
   animations: []
+  audio: []
 ---
 case: construct render state with multiple actions in one presentation
 in:
@@ -69,6 +70,7 @@ out:
           width: 1920
           height: 1080
   animations: []
+  audio: []
 ---
 case: construct render state with clean all and multiple presentations
 in:
@@ -124,3 +126,4 @@ out:
           width: 1920
           height: 1080
   animations: []
+  audio: []

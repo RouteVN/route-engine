@@ -49,8 +49,8 @@ resources:
             - id: dialogue-text
               type: "text"
               y: 100
-              text: "${dialogue.content}"
-              style:
+              content: "${dialogue.content}"
+              textStyle:
                 fontSize: 24
                 fill: "white"
 

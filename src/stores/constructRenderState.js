@@ -18,6 +18,7 @@ export const createInitialState = () => {
       },
     ],
     animations: [],
+    audio: [],
   };
 };
 
@@ -284,7 +285,7 @@ export const addVisuals = (
     const items = presentationState.visual.items;
     for (const item of items) {
       // Check if both resourceId and resourceType exist, and resourceType is "image"
-      if (item.resourceId && item.resourceType === "image") {
+      if (item.resourceId) {
         let resource = resources.images[item.resourceId];
 
         if (resource) {
@@ -453,46 +454,43 @@ export const addBgm = (
   state,
   { presentationState, resources },
 ) => {
-  const { elements } = state;
+  const { elements, audio } = state;
   if (presentationState.bgm && resources) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
     if (!storyContainer) return state;
 
-    const audio = resources.audio[presentationState.bgm.audioId];
-    if (!audio) return state;
-    storyContainer.children.push({
+    const audioResource = resources.audio[presentationState.bgm.audioId];
+    if (!audioResource) return state;
+    audio.push({
       id: "bgm",
-      type: "audio",
-      url: audio.fileId,
-      loop: audio.loop ?? true,
-      volume: audio.volume ?? 0.5,
-      delay: audio.delay ?? null,
+      type: "sound",
+      url: audioResource.fileId,
+      loop: audioResource.loop ?? true,
+      volume: audioResource.volume ?? 0.5,
+      delay: audioResource.delay ?? null,
     });
   }
   return state;
 };
 
 export const addSfx = (state, { presentationState, resources }) => {
-  const { elements } = state;
+  const { audio: audioElements } = state;
 
   if (presentationState.sfx && resources) {
     // Find the story container
-    const storyContainer = elements.find((el) => el.id === "story");
-    if (!storyContainer) return state;
-
     const items = presentationState.sfx.items;
     for (const item of items) {
-      const audio = resources.audio?.[item.audioId];
-      if (!audio) continue;
+      const audioResource = resources.audio?.[item.audioId];
+      if (!audioResource) continue;
 
-      storyContainer.children.push({
+      audioElements.push({
         id: item.id,
-        type: "audio",
-        url: audio.fileId,
-        loop: item.loop ?? audio.loop ?? true,
-        volume: item.volume ?? audio.volume ?? 0.5,
-        delay: item.delay ?? audio.delay ?? null,
+        type: "sound",
+        url: audioResource.fileId,
+        loop: item.loop ?? audioResource.loop ?? true,
+        volume: item.volume ?? audioResource.volume ?? 0.5,
+        delay: item.delay ?? audioResource.delay ?? null,
       });
     }
   }
@@ -501,20 +499,17 @@ export const addSfx = (state, { presentationState, resources }) => {
 };
 
 export const addVoice = (state, { presentationState, resources }) => {
-  const { elements } = state;
+  const { audio } = state;
 
   if (!presentationState?.voice) {
     return state;
   }
 
-  const storyContainer = elements.find((el) => el.id === "story");
-  if (!storyContainer) return state;
-
   const { fileId, volume, loop } = presentationState.voice;
 
-  storyContainer.children.push({
+  audio.push({
     id: `voice-${fileId}`,
-    type: "audio",
+    type: "sound",
     url: fileId,
     volume: volume ?? 0.5,
     loop: loop ?? false,

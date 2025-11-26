@@ -279,18 +279,6 @@ i18n:
       #       fileId: 23jkfa893
 
 resources:
-  layouts:
-    screen1:
-      elements:
-        - id: af32
-          type: rect
-          fill: "#000000"
-          width: 1920
-          height: 1080
-          click:
-            actionPayload:
-              actions:
-                nextLine: {}
   variables:
     # 🔧 persistence Types
 
@@ -362,8 +350,18 @@ resources:
       type: number
       default: 50
       persistence: device
-
   layouts:
+    screen1:
+      elements:
+        - id: af32
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
     historyDialogueLayout:
       elements:
         - id: k3jfald
@@ -380,15 +378,15 @@ resources:
           children:
             - id: fkjl233
               type: text
-              text: ${i18n.layout.historyDialogueLayout.fkjl233}
-              style:
+              content: ${i18n.layout.historyDialogueLayout.fkjl233}
+              textStyle:
                 fontSize: 48
                 fill: "white"
             - id: fkjaefewfl233
               type: text
-              text: ${i18n.layout.historyDialogueLayout.fkjaefewfl233}
+              content: ${i18n.layout.historyDialogueLayout.fkjaefewfl233}
               y: 700
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
               eventName: "system"
@@ -407,10 +405,10 @@ resources:
                 - $for item, i in historyDialogue:
                     id: kl2j3flk23-${i}
                     type: text
-                    text: ${item.content}
+                    content: ${item.content}
                     height: 80
                     width: 500
-                    style:
+                    textStyle:
                       fontSize: 24
                       fill: "white"
 
@@ -465,142 +463,142 @@ resources:
           children:
             - id: x23f329fa
               type: text
-              text: ${i18n.layout.creditsLayout.x23f329fa}
+              content: ${i18n.layout.creditsLayout.x23f329fa}
               height: 100
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
             - id: f33h429fa
               type: text
-              text: ${i18n.layout.creditsLayout.f33h429fa}
+              content: ${i18n.layout.creditsLayout.f33h429fa}
               height: 100
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
             - id: iasdkj32
               type: text
-              text: ${i18n.layout.creditsLayout.iasdkj32}
+              content: ${i18n.layout.creditsLayout.iasdkj32}
               height: 100
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
             - id: credit4
               type: text
-              text: ${i18n.layout.creditsLayout.credit4}
+              content: ${i18n.layout.creditsLayout.credit4}
               height: 100
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
             - id: credit5
               type: text
-              text: ${i18n.layout.creditsLayout.credit5}
+              content: ${i18n.layout.creditsLayout.credit5}
               height: 100
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
             - id: credit6
               type: text
-              text: ${i18n.layout.creditsLayout.credit6}
+              content: ${i18n.layout.creditsLayout.credit6}
               height: 100
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
             - id: credit7
               type: text
-              text: ${i18n.layout.creditsLayout.credit7}
+              content: ${i18n.layout.creditsLayout.credit7}
               height: 100
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
             - id: credit8
               type: text
-              text: ${i18n.layout.creditsLayout.credit8}
+              content: ${i18n.layout.creditsLayout.credit8}
               height: 100
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
             - id: credit9
               type: text
-              text: ${i18n.layout.creditsLayout.credit9}
+              content: ${i18n.layout.creditsLayout.credit9}
               height: 100
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
             - id: credit10
               type: text
-              text: ${i18n.layout.creditsLayout.credit10}
+              content: ${i18n.layout.creditsLayout.credit10}
               height: 100
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
             - id: credit11
               type: text
-              text: ${i18n.layout.creditsLayout.credit11}
+              content: ${i18n.layout.creditsLayout.credit11}
               height: 100
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
             - id: credit12
               type: text
-              text: ${i18n.layout.creditsLayout.credit12}
+              content: ${i18n.layout.creditsLayout.credit12}
               height: 100
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
             - id: credit13
               type: text
-              text: ${i18n.layout.creditsLayout.credit13}
+              content: ${i18n.layout.creditsLayout.credit13}
               height: 100
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
             - id: credit14
               type: text
-              text: ${i18n.layout.creditsLayout.credit14}
+              content: ${i18n.layout.creditsLayout.credit14}
               height: 100
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
             - id: credit15
               type: text
-              text: ${i18n.layout.creditsLayout.credit15}
+              content: ${i18n.layout.creditsLayout.credit15}
               height: 100
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
             - id: credit16
               type: text
-              text: ${i18n.layout.creditsLayout.credit16}
+              content: ${i18n.layout.creditsLayout.credit16}
               height: 100
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
             - id: credit17
               type: text
-              text: ${i18n.layout.creditsLayout.credit17}
+              content: ${i18n.layout.creditsLayout.credit17}
               height: 100
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
             - id: credit18
               type: text
-              text: ${i18n.layout.creditsLayout.credit18}
+              content: ${i18n.layout.creditsLayout.credit18}
               height: 100
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
             - id: credit19
               type: text
-              text: ${i18n.layout.creditsLayout.credit19}
+              content: ${i18n.layout.creditsLayout.credit19}
               height: 100
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
             - id: credit20
               type: text
-              text: ${i18n.layout.creditsLayout.credit20}
+              content: ${i18n.layout.creditsLayout.credit20}
               height: 100
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
 
@@ -640,21 +638,21 @@ resources:
           width: 1920
           height: 1080
           fill: "#000000"
-          clickEventName: "system"
-          clickEventPayload:
-            actions:
-              nextLine: {}
-          rightClickEventName: "system"
-          rightClickEventPayload:
-            actions:
-              addModal:
-                resourceId: dafkjkl3
-                resourceType: layout
-              updateVariable:
-                operations:
-                  - variableId: "isMainMenu"
-                    op: "set"
-                    value: false
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+          # rightClickEventName: "system"
+          # rightClickEventPayload:
+          #   actions:
+          #     addModal:
+          #       resourceId: dafkjkl3
+          #       resourceType: layout
+          #     updateVariable:
+          #       operations:
+          #         - variableId: "isMainMenu"
+          #           op: "set"
+          #           value: false
     extraScreenLayout:
       name: ExtraScreen Background
       elements:
@@ -688,10 +686,10 @@ resources:
               type: "container"
               children:
                 - type: text
-                  text: ${i18n.layout.dafkjkl3["9fdadf-options"]}
+                  content: ${i18n.layout.dafkjkl3["9fdadf-options"]}
                   x: 100
                   y: 100
-                  style:
+                  textStyle:
                     fontSize: 64
                     fill: "white"
                 - id: 39jfkal21
@@ -705,8 +703,8 @@ resources:
                       type: text
                       x: 20
                       y: 0
-                      text: ${i18n.layout.dafkjkl3["textspeed-id"]}
-                      style:
+                      content: ${i18n.layout.dafkjkl3["textspeed-id"]}
+                      textStyle:
                         fontSize: 24
                         fill: "white"
                     - id: "a"
@@ -733,10 +731,10 @@ resources:
               children:
                 - id: load-title
                   type: text
-                  text: ${i18n.layout.dafkjkl3["load-title"]}
+                  content: ${i18n.layout.dafkjkl3["load-title"]}
                   x: 100
                   y: 100
-                  style:
+                  textStyle:
                     fontSize: 64
                     fill: "white"
                 - id: load-container
@@ -781,10 +779,10 @@ resources:
                               type: text
                               x: 20
                               y: 20
-                              style:
+                              textStyle:
                                 fontSize: 48
                                 fill: "white"
-                              text: ${item.id} - ${item.label}
+                              content: ${item.id} - ${item.label}
                 - id: save-container-page-nums
                   type: container
                   x: 300
@@ -794,13 +792,14 @@ resources:
                   children:
                     - id: page-prev
                       type: text
-                      text: ${i18n.layout.dafkjkl3["page-prev"]}
+                      content: ${i18n.layout.dafkjkl3["page-prev"]}
                       width: 80
                       $if variables.currentSavePageIndex > 0:
-                        style:
+                        textStyle:
                           fontSize: 48
                           fill: "white"
-                        hoverStyle:
+                        hover:
+                          textStyle:
                           fontSize: 48
                           fill: "yellow"
                         eventName: "system"
@@ -812,7 +811,7 @@ resources:
                                   op: "decrement"
                                   min: 0
                       $else:
-                        style:
+                        textStyle:
                           fontSize: 48
                           fill: "#ccc"
                     # TODO: how to make it work without adding nextra container
@@ -825,14 +824,14 @@ resources:
                         - $for item, i in variables.savePages.items:
                             - id: id-${item.label}
                               type: text
-                              text: "${item.label}"
+                              content: "${item.label}"
                               width: 80
                               $if i == variables.currentSavePageIndex:
-                                style:
+                                textStyle:
                                   fontSize: 48
                                   fill: "yellow"
                               $else:
-                                style:
+                                textStyle:
                                   fontSize: 48
                                   fill: "white"
                                 eventName: "system"
@@ -845,13 +844,14 @@ resources:
                                           value: "${i}"
                     - id: page-next
                       type: text
-                      text: ${i18n.layout.dafkjkl3["page-next"]}
+                      content: ${i18n.layout.dafkjkl3["page-next"]}
                       width: 80
                       $if variables.currentSavePageIndex < 8:
-                        style:
+                        textStyle:
                           fontSize: 48
                           fill: "white"
-                        hoverStyle:
+                        hover:
+                          textStyle:
                           fontSize: 48
                           fill: "yellow"
                         eventName: "system"
@@ -863,7 +863,7 @@ resources:
                                   op: "increment"
                                   max: 8
                       $else:
-                        style:
+                        textStyle:
                           fontSize: 48
                           fill: "#ccc"
 
@@ -873,10 +873,10 @@ resources:
               children:
                 - id: save-title
                   type: text
-                  text: ${i18n.layout.dafkjkl3["save-title"]}
+                  content: ${i18n.layout.dafkjkl3["save-title"]}
                   x: 100
                   y: 100
-                  style:
+                  textStyle:
                     fontSize: 64
                     fill: "white"
                 - id: save-container
@@ -926,10 +926,10 @@ resources:
                               type: text
                               x: 20
                               y: 20
-                              style:
+                              textStyle:
                                 fontSize: 48
                                 fill: "white"
-                              text: ${item.id} - ${item.label}
+                              content: ${item.id} - ${item.label}
                 - id: save-container-page-nums
                   type: container
                   x: 300
@@ -939,13 +939,14 @@ resources:
                   children:
                     - id: page-prev
                       type: text
-                      text: ${i18n.layout.dafkjkl3["page-prev"]}
+                      content: ${i18n.layout.dafkjkl3["page-prev"]}
                       width: 80
                       $if variables.currentSavePageIndex > 0:
-                        style:
+                        textStyle:
                           fontSize: 48
                           fill: "white"
-                        hoverStyle:
+                        hover:
+                          textStyle:
                           fontSize: 48
                           fill: "yellow"
                         eventName: "system"
@@ -957,7 +958,7 @@ resources:
                                   op: "decrement"
                                   min: 0
                       $else:
-                        style:
+                        textStyle:
                           fontSize: 48
                           fill: "#ccc"
                     # TODO: how to make it work without adding nextra container
@@ -970,14 +971,14 @@ resources:
                         - $for item, i in variables.savePages.items:
                             - id: id-${item.label}
                               type: text
-                              text: "${item.label}"
+                              content: "${item.label}"
                               width: 80
                               $if i == variables.currentSavePageIndex:
-                                style:
+                                textStyle:
                                   fontSize: 48
                                   fill: "yellow"
                               $else:
-                                style:
+                                textStyle:
                                   fontSize: 48
                                   fill: "white"
                                 eventName: "system"
@@ -990,13 +991,14 @@ resources:
                                           value: "${i}"
                     - id: page-next
                       type: text
-                      text: ${i18n.layout.dafkjkl3["page-next"]}
+                      content: ${i18n.layout.dafkjkl3["page-next"]}
                       width: 80
                       $if variables.currentSavePageIndex < 8:
-                        style:
+                        textStyle:
                           fontSize: 48
                           fill: "white"
-                        hoverStyle:
+                        hover:
+                          textStyle:
                           fontSize: 48
                           fill: "yellow"
                         eventName: "system"
@@ -1008,7 +1010,7 @@ resources:
                                   op: "increment"
                                   max: 8
                       $else:
-                        style:
+                        textStyle:
                           fontSize: 48
                           fill: "#ccc"
             - id: kfewaf3k29fdsk
@@ -1017,10 +1019,10 @@ resources:
               children:
                 - id: languages-title
                   type: text
-                  text: ${i18n.layout.dafkjkl3.languages}
+                  content: ${i18n.layout.dafkjkl3.languages}
                   x: 100
                   y: 100
-                  style:
+                  textStyle:
                     fontSize: 64
                     fill: "white"
                 - id: languages-container
@@ -1034,17 +1036,17 @@ resources:
                     - $for languagePack in objectValues(languagePacks):
                         - id: languages-item-${languagePack.id}
                           type: text
-                          text: ${languagePack.label}
+                          content: ${languagePack.label}
                           height: 40
-                          style:
+                          textStyle:
                             fontSize: 26
                             fill: "white"
                           $if currentLanguagePackId == languagePack.id:
-                            style:
+                            textStyle:
                               fontSize: 26
                               fill: "yellow"
                           $else:
-                            style:
+                            textStyle:
                               fontSize: 26
                               fill: "white"
                           eventName: "system"
@@ -1058,10 +1060,10 @@ resources:
               children:
                 - id: gallery-title
                   type: text
-                  text: ${i18n.layout.dafkjkl3["gallery-title"]}
+                  content: ${i18n.layout.dafkjkl3["gallery-title"]}
                   x: 100
                   y: 100
-                  style:
+                  textStyle:
                     fontSize: 64
                     fill: "white"
                 - id: gallery-container
@@ -1104,18 +1106,18 @@ resources:
                               type: text
                               x: 20
                               y: 20
-                              style:
+                              textStyle:
                                 fontSize: 48
                                 fill: "white"
-                              text: ${item.label}
+                              content: ${item.label}
                             - id: "3fa93224dje2-${item.label}"
                               type: text
                               x: 20
                               y: 80
-                              style:
+                              textStyle:
                                 fontSize: 48
                                 fill: "white"
-                              text: ${item.fileIds.length}
+                              content: ${item.fileIds.length}
 
             - id: "9fedf2323fdadf"
               $when: 'variables.currentMenuTabId == "replay"'
@@ -1123,10 +1125,10 @@ resources:
               children:
                 - id: replay-title
                   type: text
-                  text: ${i18n.layout.dafkjkl3["replay-title"]}
+                  content: ${i18n.layout.dafkjkl3["replay-title"]}
                   x: 100
                   y: 100
-                  style:
+                  textStyle:
                     fontSize: 64
                     fill: "white"
                 - id: replay-container
@@ -1157,10 +1159,10 @@ resources:
               children:
                 - id: music-room-title
                   type: text
-                  text: ${i18n.layout.dafkjkl3["music-room-title"]}
+                  content: ${i18n.layout.dafkjkl3["music-room-title"]}
                   x: 100
                   y: 100
-                  style:
+                  textStyle:
                     fontSize: 64
                     fill: "white"
                 - id: music-room-container
@@ -1173,9 +1175,9 @@ resources:
                   children:
                     - id: fjkl2jk
                       type: "text"
-                      text: ${i18n.layout.dafkjkl3.fjkl2jk}
+                      content: ${i18n.layout.dafkjkl3.fjkl2jk}
                       height: 100
-                      style:
+                      textStyle:
                         fontSize: 32
                         fill: "white"
                       eventName: "system"
@@ -1185,19 +1187,19 @@ resources:
                             fileId: "3ka3s"
                     - id: fjkl2fe23jk
                       type: "text"
-                      text: ${i18n.layout.dafkjkl3.fjkl2fe23jk}
+                      content: ${i18n.layout.dafkjkl3.fjkl2fe23jk}
                       height: 100
-                      style:
+                      textStyle:
                         fontSize: 32
                         fill: "white"
                 - id: "music-room-stop"
                   $when: globalAudios.length > 0
                   type: "text"
-                  text: ${i18n.layout.dafkjkl3["music-room-stop"]}
+                  content: ${i18n.layout.dafkjkl3["music-room-stop"]}
                   x: 500
                   y: 500
                   height: 100
-                  style:
+                  textStyle:
                     fontSize: 32
                     fill: "white"
                   eventName: "system"
@@ -1214,7 +1216,7 @@ resources:
             - id: "Start"
               $when: "variables.isMainMenu == true"
               type: text
-              text: ${i18n.layout.dafkjkl3.start}
+              content: ${i18n.layout.dafkjkl3.start}
               height: 40
               width: 200
               eventName: "system"
@@ -1225,16 +1227,17 @@ resources:
                     sectionId: "3k3s9sd"
               x: 0
               y: 0
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
-              hoverStyle:
-                fontSize: 48
-                fill: yellow
+              hover:
+                textStyle:
+                  fontSize: 48
+                  fill: yellow
             - id: "Save"
               $when: "variables.isMainMenu == false"
               type: text
-              text: ${i18n.layout.dafkjkl3.save}
+              content: ${i18n.layout.dafkjkl3.save}
               height: 40
               width: 200
               eventName: "system"
@@ -1247,18 +1250,19 @@ resources:
                         value: "save"
               x: 0
               y: 0
-              style:
+              textStyle:
                 fontSize: 48
                 $if variables.currentMenuTabId == "save":
                   fill: "yellow"
                 $else:
                   fill: "white"
-              hoverStyle:
-                fontSize: 48
-                fill: yellow
+              hover:
+                textStyle:
+                  fontSize: 48
+                  fill: yellow
             - id: "Load"
               type: text
-              text: ${i18n.layout.dafkjkl3.load}
+              content: ${i18n.layout.dafkjkl3.load}
               height: 40
               width: 200
               eventName: "system"
@@ -1271,18 +1275,19 @@ resources:
                         value: "load"
               x: 0
               y: 0
-              style:
+              textStyle:
                 fontSize: 48
                 $if variables.currentMenuTabId == "load":
                   fill: "yellow"
                 $else:
                   fill: "white"
-              hoverStyle:
-                fontSize: 48
-                fill: yellow
+              hover:
+                textStyle:
+                  fontSize: 48
+                  fill: yellow
             - id: "Options"
               type: text
-              text: ${i18n.layout.dafkjkl3.options}
+              content: ${i18n.layout.dafkjkl3.options}
               height: 40
               width: 200
               eventName: "system"
@@ -1295,18 +1300,19 @@ resources:
                         value: "options"
               x: 0
               y: 0
-              style:
+              textStyle:
                 fontSize: 48
                 $if variables.currentMenuTabId == "options":
                   fill: "yellow"
                 $else:
                   fill: "white"
-              hoverStyle:
-                fontSize: 48
-                fill: yellow
+              hover:
+                textStyle:
+                  fontSize: 48
+                  fill: yellow
             - id: Languages
               type: text
-              text: ${i18n.layout.dafkjkl3.languages}
+              content: ${i18n.layout.dafkjkl3.languages}
               height: 40
               width: 200
               eventName: "system"
@@ -1319,18 +1325,19 @@ resources:
                         value: "languages"
               x: 0
               y: 0
-              style:
+              textStyle:
                 fontSize: 48
                 $if variables.currentMenuTabId == "languages":
                   fill: "yellow"
                 $else:
                   fill: "white"
-              hoverStyle:
-                fontSize: 48
-                fill: yellow
+              hover:
+                textStyle:
+                  fontSize: 48
+                  fill: yellow
             - id: "Gallery"
               type: text
-              text: ${i18n.layout.dafkjkl3.gallery}
+              content: ${i18n.layout.dafkjkl3.gallery}
               height: 40
               width: 200
               eventName: "system"
@@ -1343,18 +1350,19 @@ resources:
                         value: "gallery"
               x: 0
               y: 0
-              style:
+              textStyle:
                 fontSize: 48
                 $if variables.currentMenuTabId == "gallery":
                   fill: "yellow"
                 $else:
                   fill: "white"
-              hoverStyle:
-                fontSize: 48
-                fill: yellow
+              hover:
+                textStyle:
+                  fontSize: 48
+                  fill: yellow
             - id: "Replay"
               type: text
-              text: ${i18n.layout.dafkjkl3.replay}
+              content: ${i18n.layout.dafkjkl3.replay}
               height: 40
               width: 200
               eventName: "system"
@@ -1367,18 +1375,19 @@ resources:
                         value: "replay"
               x: 0
               y: 0
-              style:
+              textStyle:
                 fontSize: 48
                 $if variables.currentMenuTabId == "replay":
                   fill: "yellow"
                 $else:
                   fill: "white"
-              hoverStyle:
-                fontSize: 48
-                fill: yellow
+              hover:
+                textStyle:
+                  fontSize: 48
+                  fill: yellow
             - id: "Music Room"
               type: text
-              text: ${i18n.layout.dafkjkl3["music-room"]}
+              content: ${i18n.layout.dafkjkl3["music-room"]}
               height: 40
               width: 200
               eventName: "system"
@@ -1391,19 +1400,20 @@ resources:
                         value: "music-room"
               x: 0
               y: 0
-              style:
+              textStyle:
                 fontSize: 48
                 $if variables.currentMenuTabId == "music-room":
                   fill: "yellow"
                 $else:
                   fill: "white"
-              hoverStyle:
-                fontSize: 48
-                fill: yellow
+              hover:
+                textStyle:
+                  fontSize: 48
+                  fill: yellow
             - id: "Main"
               $when: "variables.isMainMenu == false"
               type: text
-              text: ${i18n.layout.dafkjkl3.main}
+              content: ${i18n.layout.dafkjkl3.main}
               height: 40
               width: 200
               eventName: "system"
@@ -1415,15 +1425,16 @@ resources:
                     sectionId: "l3kjfawelf"
               x: 0
               y: 0
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
-              hoverStyle:
-                fontSize: 48
-                fill: yellow
+              hover:
+                textStyle:
+                  fontSize: 48
+                  fill: yellow
             - id: "back"
               type: text
-              text: ${i18n.layout.dafkjkl3.back}
+              content: ${i18n.layout.dafkjkl3.back}
               height: 40
               width: 200
               eventName: "system"
@@ -1432,12 +1443,13 @@ resources:
                   clearLastModal: {}
               x: 0
               y: 0
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
-              hoverStyle:
-                fontSize: 48
-                fill: yellow
+              hover:
+                textStyle:
+                  fontSize: 48
+                  fill: yellow
 
     3jfksdjkadf:
       name: Dialogue NVL
@@ -1458,10 +1470,10 @@ resources:
           children:
             - id: dialogue-character-name
               type: text
-              text: "${dialogue.character.name}"
+              content: "${dialogue.character.name}"
               x: 0
               y: 0
-              style:
+              textStyle:
                 fontSize: 24
                 fill: "white"
             - id: "3kjfasdkfj"
@@ -1479,7 +1491,7 @@ resources:
                         displaySpeed: 100
                       height: 100
                       content: ${line.content}
-                      style:
+                      textStyle:
                         fontSize: 24
                         fill: "white"
     fi3l:
@@ -1493,17 +1505,17 @@ resources:
           children:
             - id: dialogue-character-name
               type: text
-              text: "${dialogue.character.name}"
+              content: character name - "${dialogue.character.name}"
               x: 0
               y: 0
-              style:
+              textStyle:
                 fontSize: 24
                 fill: "white"
             - id: dialogue-text
-              type: "text-revealing"
+              type: "text"
               y: 100
-              content: ${dialogue.content}
-              style:
+              content: dialogue - ${dialogue.content[0].text}
+              textStyle:
                 fontSize: 24
                 fill: "white"
         - id: dialogue-actions
@@ -1515,60 +1527,63 @@ resources:
           children:
             - id: dialogue-action-button
               type: text
-              text: ${i18n.layout.fi3l["dialogue-action-button"]}
+              content: ${i18n.layout.fi3l["dialogue-action-button"]}
               x: 0
               y: 0
               width: 120
               height: 40
-              style:
+              textStyle:
                 fontSize: 24
                 $if autoMode:
                   fill: yellow
                 $else:
                   fill: "white"
-              hoverStyle:
-                fontSize: 24
-                fill: yellow
+              hover:
+                textStyle:
+                  fontSize: 24
+                  fill: yellow
               eventName: "system"
               eventPayload:
                 actions:
                   toggleAutoMode: {}
             - id: dialogue-action-skip
               type: text
-              text: ${i18n.layout.fi3l["dialogue-action-skip"]}
+              content: ${i18n.layout.fi3l["dialogue-action-skip"]}
               x: 0
               y: 0
               width: 120
               height: 40
-              style:
+              textStyle:
                 fontSize: 24
                 $if skipMode:
                   fill: yellow
                 $else:
                   fill: "white"
-              hoverStyle:
-                fontSize: 24
-                fill: yellow
+              hover:
+                textStyle:
+                  fontSize: 24
+                  fill: yellow
               eventName: "system"
               eventPayload:
                 actions:
                   toggleSkipMode: {}
             - id: dialogue-action-history
               type: text
-              text: ${i18n.layout.fi3l["dialogue-action-history"]}
+              content: ${i18n.layout.fi3l["dialogue-action-history"]}
               x: 0
               y: 0
               width: 120
               height: 40
-              style:
+              textStyle:
                 fontSize: 24
                 $if showDialogueHistory:
                   fill: yellow
                 $else:
                   fill: "white"
-              hoverStyle:
-                fontSize: 24
-                fill: yellow
+              hover:
+                textStyle:
+                  fontSize: 24
+                  fill: yellow
               eventName: "system"
               eventPayload:
                 actions:
@@ -1576,17 +1591,18 @@ resources:
                     resourceId: historyDialogueLayout
             - id: dialogue-action-options
               type: text
-              text: ${i18n.layout.fi3l["dialogue-action-options"]}
+              content: ${i18n.layout.fi3l["dialogue-action-options"]}
               x: 0
               y: 0
               width: 120
               height: 40
-              style:
+              textStyle:
                 fontSize: 24
                 fill: "white"
-              hoverStyle:
-                fontSize: 24
-                fill: yellow
+              hover:
+                textStyle:
+                  fontSize: 24
+                  fill: yellow
               eventName: "system"
               eventPayload:
                 actions:
@@ -1602,29 +1618,30 @@ resources:
                     resourceId: dafkjkl3
             - id: dialogue-action-hide
               type: text
-              text: ${i18n.layout.fi3l["dialogue-action-hide"]}
+              content: ${i18n.layout.fi3l["dialogue-action-hide"]}
               x: 0
               y: 0
               width: 120
               height: 40
-              style:
+              textStyle:
                 fontSize: 24
                 fill: "white"
-              hoverStyle:
-                fontSize: 24
-                fill: yellow
+              hover:
+                textStyle:
+                  fontSize: 24
+                  fill: yellow
               eventName: "system"
               eventPayload:
                 actions:
                   toggleDialogueUIHidden: {}
             - id: dialogue-action-back
               type: text
-              text: ${i18n.layout.fi3l["dialogue-action-back"]}
+              content: ${i18n.layout.fi3l["dialogue-action-back"]}
               x: 0
               y: 0
               width: 120
               height: 40
-              style:
+              textStyle:
                 fontSize: 24
                 fill: "white"
               eventName: "system"
@@ -1649,91 +1666,91 @@ resources:
               type: text
               x: 20
               y: 20
-              text: ${i18n.layout.f3jik32isdf["32sadfj"]}
-              style:
+              content: ${i18n.layout.f3jik32isdf["32sadfj"]}
+              textStyle:
                 fontSize: 48
                 fill: "white"
             - id: "38sdfa2"
               type: text
-              text: ${i18n.layout.f3jik32isdf["38sdfa2"]}
+              content: ${i18n.layout.f3jik32isdf["38sdfa2"]}
               y: 120
               x: 50
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
-              hoverStyle:
-                fontSize: 48
-                fill: yellow
+              hover:
+                textStyle:
+                  fontSize: 48
+                  fill: yellow
             - id: "e83a"
               type: text
-              text: ${i18n.layout.f3jik32isdf.e83a}
+              content: ${i18n.layout.f3jik32isdf.e83a}
               y: 120
               x: 250
               eventName: "system"
               eventPayload:
                 actions:
                   clearLastModal: {}
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
-              hoverStyle:
-                fontSize: 48
-                fill: yellow
+              hover:
+                textStyle:
+                  fontSize: 48
+                  fill: yellow
 
     j3i8dk32:
       name: Title Screen
       elements:
         - id: bg
           type: sprite
-          url: file:dmni32
+          src: dmni32
+          width: 1920
+          height: 1080
           x: 0
           y: 0
-          rightClickEventName: "system"
-          rightClickEventPayload:
-            actions:
-              addModal:
-                resourceId: dafkjkl3
-              updateVariable:
-                operations:
-                  - variableId: "currentMenuTabId"
-                    op: "set"
-                    value: "load"
-                  - variableId: "isMainMenu"
-                    op: "set"
-                    value: true
+        # TODO:
+        # rightClickEventName: "system"
+        # rightClickEventPayload:
+        #   actions:
+        #     addModal:
+        #       resourceId: dafkjkl3
+        #     updateVariable:
+        #       operations:
+        #         - variableId: "currentMenuTabId"
+        #           op: "set"
+        #           value: "load"
+        #         - variableId: "isMainMenu"
+        #           op: "set"
+        #           value: true
         - id: container
           type: container
           direction: horizontal
-          anchor: BottomCenter
+          gap: 20
+          # anchor: BottomCenter
           x: 560
           y: 540
           children:
             - id: "Start"
               type: text
-              text: ${i18n.layout.j3i8dk32.start}
-              height: 40
-              width: 200
-              eventName: "system"
-              eventPayload:
-                actions:
-                  sectionTransition:
-                    sectionId: "3k3s9sd"
-              x: 0
-              y: 0
-              style:
+              content: XStart ${i18n.layout.j3i8dk32.start}
+              textStyle:
                 fontSize: 48
                 fill: "white"
-              hoverStyle:
-                fontSize: 48
-                fill: yellow
+              hover:
+                textStyle:
+                  fontSize: 48
+                  fill: yellow
+              click:
+                actionPayload:
+                  actions:
+                    sectionTransition:
+                      sectionId: "3k3s9sd"
             - id: "Load"
               type: text
-              text: ${i18n.layout.j3i8dk32.load}
-              height: 40
-              width: 200
-              eventName: "system"
-              eventPayload:
-                actions:
+              content: XLoad ${i18n.layout.j3i8dk32.load}
+              click:
+                actionPayload:
                   addModal:
                     resourceId: dafkjkl3
                   updateVariable:
@@ -1744,19 +1761,16 @@ resources:
                       - variableId: "isMainMenu"
                         op: "set"
                         value: true
-              x: 0
-              y: 0
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
-              hoverStyle:
-                fontSize: 48
-                fill: yellow
+              hover:
+                textStyle:
+                  fontSize: 48
+                  fill: yellow
             - id: "Options"
               type: text
-              text: ${i18n.layout.j3i8dk32.options}
-              height: 40
-              width: 200
+              content: XOptions ${i18n.layout.j3i8dk32.options}
               eventName: "system"
               eventPayload:
                 actions:
@@ -1770,37 +1784,31 @@ resources:
                       - variableId: "isMainMenu"
                         op: "set"
                         value: true
-              x: 0
-              y: 0
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
-              hoverStyle:
-                fontSize: 48
-                fill: yellow
+              hover:
+                textStyle:
+                  fontSize: 48
+                  fill: yellow
             - id: "Exit"
               type: text
-              text: ${i18n.layout.j3i8dk32.exit}
-              height: 40
-              width: 200
+              content: XExit ${i18n.layout.j3i8dk32.exit}
               eventName: "system"
               eventPayload:
                 actions:
                   addModal:
                     resourceId: f3jik32isdf
-              x: 0
-              y: 0
-              style:
+              textStyle:
                 fontSize: 48
                 fill: "white"
-              hoverStyle:
-                fontSize: 48
-                fill: yellow
+              hover:
+                textStyle:
+                  fontSize: 48
+                  fill: yellow
         - id: "extra"
           type: text
-          text: ${i18n.layout.j3i8dk32.extra}
-          height: 40
-          width: 200
+          content: XExtra ${i18n.layout.j3i8dk32.extra}
           eventName: "system"
           eventPayload:
             actions:
@@ -1808,13 +1816,14 @@ resources:
                 sceneId: ajfl3a
                 sectionId: k3nfgdsai34
           x: 100
-          y: 800
-          style:
+          y: 100
+          textStyle:
             fontSize: 48
             fill: "white"
-          hoverStyle:
-            fontSize: 48
-            fill: yellow
+          hover:
+            textStyle:
+              fontSize: 48
+              fill: yellow
 
   characters:
     ajf34a:
@@ -1823,8 +1832,8 @@ resources:
   images:
     alkejf3la:
       fileId: 94lkj289
-      width: 1920
-      height: 1080
+      width: 920
+      height: 200
     f3wklajf32:
       fileId: dmni32
       width: 1920
@@ -1862,7 +1871,7 @@ resources:
               easing: linear
 story:
   # initialSceneId: ajfl3a
-  initialSceneId: 93jkal3
+  initialSceneId: ajfl3a
   # initialSceneId: 39kd932
   scenes:
     ajfl3a:
@@ -1874,30 +1883,29 @@ story:
           lines:
             - id: line1
               actions:
-                nextConfig:
-                  manual:
-                    enabled: false
-                  auto:
-                    trigger: fromComplete
-                    delay: 1000
+                # nextConfig:
+                #   manual:
+                #     enabled: false
+                #   auto:
+                #     trigger: fromComplete
+                #     delay: 1000
                 screen:
                   resourceId: screen1
                 visual:
                   items:
                     - id: 39kdfj231
                       resourceId: alkejf3la
-                      resourceType: image
                       transformId: iasdlf
                       animations:
                         in: 3lkj289
             - id: line2
               actions:
-                nextConfig:
-                  manual:
-                    enabled: false
-                  auto:
-                    trigger: fromComplete
-                    delay: 1000
+                # nextConfig:
+                #   manual:
+                #     enabled: false
+                #   auto:
+                #     trigger: fromComplete
+                #     delay: 1000
                 visual:
                   items:
                     - id: 39kdfj231
@@ -1906,7 +1914,6 @@ story:
             - id: line3
               actions:
                 sectionTransition:
-                  sceneId: 93jkal3
                   sectionId: asdkjl32
         3k3s9sd:
           name: Section 2
@@ -1915,20 +1922,18 @@ story:
               actions:
                 screen:
                   resourceId: storyScreenLayout
-                  resourceType: layout
                 background:
                   resourceId: f3wklajf32
-                  resourceType: image
                 dialogue:
                   mode: adv
-                  layoutId: fi3l
+                  gui:
+                    resourceId: fi3l
                   content:
                     - text: ${i18n.scene.ajfl3a.3k3s9sd.line1.qw8r4j2k}
                   characterId: ajf34a
             - id: line2
               actions:
                 dialogue:
-                  layoutId: fi3l
                   content:
                     - text: ${i18n.scene.ajfl3a.3k3s9sd.line2.xm3k9s2d}
                   characterId: ajf34a
@@ -1938,7 +1943,6 @@ story:
             - id: line3
               actions:
                 dialogue:
-                  layoutId: fi3l
                   content:
                     - text: ${i18n.scene.ajfl3a.3k3s9sd.line3.zn5k8w3r}
                   characterId: ajf34a
@@ -1948,77 +1952,66 @@ story:
             - id: line4
               actions:
                 dialogue:
-                  layoutId: fi3l
                   content:
                     - text: ${i18n.scene.ajfl3a.3k3s9sd.line4.cv7j2k9s}
                   characterId: ajf34a
             - id: line5
               actions:
                 dialogue:
-                  layoutId: fi3l
                   content:
                     - text: ${i18n.scene.ajfl3a.3k3s9sd.line5.bnm4k3s8}
                   characterId: ajf34a
             - id: line6
               actions:
                 dialogue:
-                  layoutId: fi3l
                   content:
                     - text: ${i18n.scene.ajfl3a.3k3s9sd.line6.lkj9s3d2}
                   characterId: ajf34a
             - id: line7
               actions:
                 dialogue:
-                  layoutId: fi3l
                   content:
                     - text: ${i18n.scene.ajfl3a.3k3s9sd.line7.poi8k3s7}
                   characterId: ajf34a
             - id: line8
               actions:
                 dialogue:
-                  layoutId: fi3l
                   content:
                     - text: ${i18n.scene.ajfl3a.3k3s9sd.line8.mnb6k2s9}
                   characterId: ajf34a
             - id: line9
               actions:
                 dialogue:
-                  layoutId: fi3l
                   content:
                     - text: ${i18n.scene.ajfl3a.3k3s9sd.line9.vxc4k7s3}
                   characterId: ajf34a
             - id: line10
               actions:
                 dialogue:
-                  layoutId: fi3l
                   content:
                     - text: ${i18n.scene.ajfl3a.3k3s9sd.line10.qaz3k8s2}
                   characterId: ajf34a
             - id: line11
               actions:
                 dialogue:
-                  layoutId: fi3l
                   content:
                     - text: ${i18n.scene.ajfl3a.3k3s9sd.line11.wsx4k9s1}
                   characterId: ajf34a
             - id: line12
               actions:
                 dialogue:
-                  layoutId: fi3l
                   content:
                     - text: ${i18n.scene.ajfl3a.3k3s9sd.line12.edc5k2s7}
                   characterId: ajf34a
             - id: line13
               actions:
                 dialogue:
-                  layoutId: fi3l
                   content:
                     - text: ${i18n.scene.ajfl3a.3k3s9sd.line13.rfv6k3s8}
                   characterId: ajf34a
             - id: line14
               actions:
                 dialogue:
-                  layoutId: fi3l
                   content:
                     - text: ${i18n.scene.ajfl3a.3k3s9sd.line14.tgb7k4s9}
                   characterId: ajf34a
@@ -2158,8 +2151,7 @@ story:
           lines:
             - id: line1
               actions:
-                screen:
-                  resourceId: titleScreenLayout
-                  resourceType: layout
+                # screen:
+                #   resourceId: titleScreenLayout
                 layout:
-                  layoutId: j3i8dk32
+                  resourceId: j3i8dk32
