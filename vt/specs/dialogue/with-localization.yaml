@@ -68,7 +68,7 @@ resources:
               type: sprite
               width: 1400
               height: 300
-              url: 3kda832 # url: file:3kda832
+              url: 3kda832
               x: 0
               y: 0
             - id: dialogue-character-name
@@ -93,8 +93,38 @@ resources:
           y: 100
           content: "Current Localization Package: ${l10n.label}"
           textStyle:
-            fontSize: 32
+            fontsize: 32
             fill: "white"
+        - id: dialogue-lang-toggle-container
+          type: "container"
+          direction: horizontal
+          gap: 40
+          x: 500
+          y: 100
+          children:
+            - id: 1jkfkswe3
+              type: text
+              content: English
+              textStyle:
+                fontsize: 32
+                fill: "white"
+              click:
+                actionPayload:
+                  actions:
+                    setCurrentLocalizationPackageId:
+                      localizationPackageId: eklekfjwalefj
+            - id: 1jka393f
+              type: text
+              content: Italiano
+              textStyle:
+                fontsize: 32
+                fill: "white"
+              click:
+                actionPayload:
+                  actions:
+                    setCurrentLocalizationPackageId:
+                      localizationPackageId: asdfi4t
+
   characters:
     ajf34a:
       name: ${l10n.keys.c1}
