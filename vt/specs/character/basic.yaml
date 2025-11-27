@@ -1,6 +1,13 @@
 ---
 title: "Sample"
 ---
+localization:
+  defaultPackageId: eklekfjwalefj
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys: {}
 screen:
   width: 1920
   height: 1080
@@ -10,6 +17,28 @@ resources:
   images:
     alkejf3la:
       fileId: lakjf3lka
+      width: 1920
+      height: 1080
+    fk4jla893:
+      fileId: la3lka
+      width: 200
+      height: 200
+    3fjaklj34:
+      fileId: x342fga
+      width: 50
+      height: 50
+  layouts:
+    screen1:
+      elements:
+        - id: af32
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
   transforms:
     iasdlf:
       x: 100
@@ -19,33 +48,7 @@ resources:
       y: 300
   characters:
     alkjf3ia:
-      variables:
-        name: "Abc"
-      sprites:
-        fk4jla893:
-          fileId: la3lka
-        3fjaklj34:
-          fileId: x342fga
-      layered:
-        jf3iaslj2:
-          name: "eafh"
-          layers:
-            - name: base
-              default: ...
-              sprites:
-                - spriteId: iefjkeal
-                - spriteId: ...
-            - name: head
-              default: ...
-
-    # 9823l31:
-    #   variables:
-    #     name: 'Abc'
-    #   spriteParts:
-    #     398fasdfj3:
-    #       fileId: fk4jla893
-    #     39023ixdf:
-    #       fileId: 3fjaklj34
+      name: "Abc"
 
 story:
   initialSceneId: ajfl3a
@@ -59,29 +62,29 @@ story:
           lines:
             - id: line1
               actions:
+                screen:
+                  resourceId: screen1
                 background:
                   resourceId: alkejf3la
-                  resourceType: image
                 character:
                   items:
                     - id: "laj389d"
                       transformId: iasdlf
                       sprites:
                         - id: base
-                          imageId: fk4jla893
+                          resourceId: fk4jla893
                         - id: outfit
-                          imageId: 3fjaklj34
+                          resourceId: 3fjaklj34
             - id: line2
               actions:
                 background:
                   resourceId: alkejf3la
-                  resourceType: image
                 character:
                   items:
                     - id: "laj389d"
                       transformId: a32kf3
                       sprites:
                         - id: base
-                          imageId: fk4jla893
+                          resourceId: fk4jla893
                         - id: outfit
-                          imageId: 3fjaklj34
+                          resourceId: 3fjaklj34

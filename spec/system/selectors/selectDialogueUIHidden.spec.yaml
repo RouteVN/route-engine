@@ -1,0 +1,23 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore selectors
+suites:
+  [
+    selectDialogueUIHidden,
+  ]
+---
+suite: selectDialogueUIHidden
+exportName: selectDialogueUIHidden
+---
+case: dialogue UI is visible
+in:
+  - state:
+      global:
+        dialogueUIHidden: false
+out: false
+---
+case: dialogue UI is hidden
+in:
+  - state:
+      global:
+        dialogueUIHidden: true
+out: true

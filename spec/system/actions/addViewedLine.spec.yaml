@@ -1,0 +1,165 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.addViewedLine
+suites: [addViewedLine]
+---
+suite: addViewedLine
+exportName: addViewedLine
+---
+case: add viewed line to new section
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections: []
+        pendingEffects: []
+  - sectionId: "intro"
+    lineId: "5"
+out:
+  global:
+    viewedRegistry:
+      sections:
+        - sectionId: "intro"
+          lastLineId: "5"
+    pendingEffects:
+      - name: "render"
+---
+case: add viewed line to existing section
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "intro"
+              lastLineId: "3"
+        pendingEffects: []
+  - sectionId: "intro"
+    lineId: "7"
+out:
+  global:
+    viewedRegistry:
+      sections:
+        - sectionId: "intro"
+          lastLineId: "7"
+    pendingEffects:
+      - name: "render"
+---
+case: add viewed line to one of multiple sections
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "intro"
+              lastLineId: "2"
+            - sectionId: "chapter1"
+              lastLineId: "5"
+            - sectionId: "chapter2"
+              lastLineId: "1"
+        pendingEffects: []
+  - sectionId: "chapter1"
+    lineId: "10"
+out:
+  global:
+    viewedRegistry:
+      sections:
+        - sectionId: "intro"
+          lastLineId: "2"
+        - sectionId: "chapter1"
+          lastLineId: "10"
+        - sectionId: "chapter2"
+          lastLineId: "1"
+    pendingEffects:
+      - name: "render"
+---
+case: add viewed line with existing pending effects
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "intro"
+              lastLineId: "1"
+        pendingEffects:
+          - name: "existingEffect"
+            data: "test"
+  - sectionId: "intro"
+    lineId: "3"
+out:
+  global:
+    viewedRegistry:
+      sections:
+        - sectionId: "intro"
+          lastLineId: "3"
+    pendingEffects:
+      - name: "existingEffect"
+        data: "test"
+      - name: "render"
+---
+case: add viewed line with numeric line IDs
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections: []
+        pendingEffects: []
+  - sectionId: "intro"
+    lineId: 42
+out:
+  global:
+    viewedRegistry:
+      sections:
+        - sectionId: "intro"
+          lastLineId: 42
+    pendingEffects:
+      - name: "render"
+---
+case: add viewed line with other global properties unchanged
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "existing"
+              lastLineId: "1"
+        autoMode: true
+        skipMode: false
+        dialogueUIHidden: false
+        currentLocalizationPackageId: "en"
+        pendingEffects: []
+  - sectionId: "newSection"
+    lineId: "5"
+out:
+  global:
+    viewedRegistry:
+      sections:
+        - sectionId: "existing"
+          lastLineId: "1"
+        - sectionId: "newSection"
+          lastLineId: "5"
+    autoMode: true
+    skipMode: false
+    dialogueUIHidden: false
+    currentLocalizationPackageId: "en"
+    pendingEffects:
+      - name: "render"
+---
+case: add viewed line updating from undefined to specific line
+in:
+  - state:
+      global:
+        viewedRegistry:
+          sections:
+            - sectionId: "intro"
+              lastLineId: undefined
+        pendingEffects: []
+  - sectionId: "intro"
+    lineId: "8"
+out:
+  global:
+    viewedRegistry:
+      sections:
+        - sectionId: "intro"
+          lastLineId: "8"
+    pendingEffects:
+      - name: "render"
+

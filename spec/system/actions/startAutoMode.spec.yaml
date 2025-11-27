@@ -1,0 +1,88 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.startAutoMode
+suites: [startAutoMode]
+---
+suite: startAutoMode
+exportName: startAutoMode
+---
+case: start auto mode
+in:
+  - state:
+      global:
+        autoMode: false
+        pendingEffects: []
+out:
+  global:
+    autoMode: true
+    pendingEffects:
+      - name: clearAutoNextTimer
+      - name: startAutoNextTimer
+      - name: render
+---
+case: start auto mode when already enabled
+in:
+  - state:
+      global:
+        autoMode: true
+        pendingEffects: []
+out:
+  global:
+    autoMode: true
+    pendingEffects:
+      - name: clearAutoNextTimer
+      - name: startAutoNextTimer
+      - name: render
+---
+case: start auto mode with skip mode enabled
+in:
+  - state:
+      global:
+        autoMode: false
+        skipMode: true
+        pendingEffects: []
+out:
+  global:
+    autoMode: true
+    skipMode: false
+    pendingEffects:
+      - name: clearSkipNextTimer
+      - name: clearAutoNextTimer
+      - name: startAutoNextTimer
+      - name: render
+---
+case: start auto mode with existing pending effects
+in:
+  - state:
+      global:
+        autoMode: false
+        pendingEffects:
+          - name: existingEffect
+            data: test
+out:
+  global:
+    autoMode: true
+    pendingEffects:
+      - name: existingEffect
+        data: test
+      - name: clearAutoNextTimer
+      - name: startAutoNextTimer
+      - name: render
+---
+case: start auto mode with both auto and skip mode enabled
+in:
+  - state:
+      global:
+        autoMode: true
+        skipMode: true
+        pendingEffects:
+          - name: existingEffect
+out:
+  global:
+    autoMode: true
+    skipMode: false
+    pendingEffects:
+      - name: existingEffect
+      - name: clearSkipNextTimer
+      - name: clearAutoNextTimer
+      - name: startAutoNextTimer
+      - name: render

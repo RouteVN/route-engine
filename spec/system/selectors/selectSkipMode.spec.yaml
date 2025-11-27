@@ -1,0 +1,23 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore selectors
+suites:
+  [
+    selectSkipMode,
+  ]
+---
+suite: selectSkipMode
+exportName: selectSkipMode
+---
+case: "false"
+in:
+  - state:
+      global:
+        skipMode: false
+out: false
+---
+case: "true"
+in:
+  - state:
+      global:
+        skipMode: true
+out: true

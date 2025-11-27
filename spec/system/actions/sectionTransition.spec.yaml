@@ -1,0 +1,180 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.actions
+suites: [sectionTransition]
+---
+suite: sectionTransition
+exportName: sectionTransition
+---
+case: valid section transition to first line
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        autoMode: false
+        skipMode: false
+        isDialogueUIVisible: true
+        pendingEffects: []
+      projectData:
+        story:
+          initialSceneId: "scene1"
+          scenes:
+            scene1:
+              initialSectionId: "section1"
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                section2:
+                  lines:
+                    - id: "10"
+                      actions:
+                        background:
+                          resourceId: "bg2"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+  - sectionId: "section2"
+out:
+  global:
+    isLineCompleted: false
+    autoMode: false
+    skipMode: false
+    isDialogueUIVisible: true
+    pendingEffects:
+      - name: "render"
+      - name: "handleLineActions"
+  projectData:
+    story:
+      initialSceneId: "scene1"
+      scenes:
+        scene1:
+          initialSectionId: "section1"
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions: {}
+            section2:
+              lines:
+                - id: "10"
+                  actions:
+                    background:
+                      resourceId: "bg2"
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section2"
+          lineId: "10"
+---
+case: section not found - returns unchanged state
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: false
+        skipMode: false
+        isDialogueUIVisible: true
+        pendingEffects: []
+      projectData:
+        story:
+          initialSceneId: "scene1"
+          scenes:
+            scene1:
+              initialSectionId: "section1"
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+  - sectionId: "nonexistent"
+out:
+  global:
+    isLineCompleted: false
+    autoMode: false
+    skipMode: false
+    isDialogueUIVisible: true
+    pendingEffects: []
+  projectData:
+    story:
+      initialSceneId: "scene1"
+      scenes:
+        scene1:
+          initialSectionId: "section1"
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions: {}
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "1"
+---
+case: section with no lines - returns unchanged state
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: false
+        skipMode: false
+        isDialogueUIVisible: true
+        pendingEffects: []
+      projectData:
+        story:
+          initialSceneId: "scene1"
+          scenes:
+            scene1:
+              initialSectionId: "section1"
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                emptySection:
+                  lines: []
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+  - sectionId: "emptySection"
+out:
+  global:
+    isLineCompleted: false
+    autoMode: false
+    skipMode: false
+    isDialogueUIVisible: true
+    pendingEffects: []
+  projectData:
+    story:
+      initialSceneId: "scene1"
+      scenes:
+        scene1:
+          initialSectionId: "section1"
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions: {}
+            emptySection:
+              lines: []
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "1"

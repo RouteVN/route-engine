@@ -1,0 +1,113 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.appendPendingEffect
+suites: [appendPendingEffect]
+---
+suite: appendPendingEffect
+exportName: appendPendingEffect
+---
+case: append simple effect to empty pending effects
+in:
+  - state:
+      global:
+        pendingEffects: []
+  -
+    name: "render"
+out:
+  global:
+    pendingEffects:
+      - name: "render"
+---
+case: append effect to existing pending effects
+in:
+  - state:
+      global:
+        pendingEffects:
+          - name: "existingEffect"
+            data: "test"
+  -
+    name: "newEffect"
+    param: "value"
+out:
+  global:
+    pendingEffects:
+      - name: "existingEffect"
+        data: "test"
+      - name: "newEffect"
+        param: "value"
+---
+case: append complex effect object
+in:
+  - state:
+      global:
+        pendingEffects:
+          - name: "startAutoNextTimer"
+  -
+    name: "clearAutoNextTimer"
+    config:
+      immediate: true
+      priority: 1
+out:
+  global:
+    pendingEffects:
+      - name: "startAutoNextTimer"
+      - name: "clearAutoNextTimer"
+        config:
+          immediate: true
+          priority: 1
+---
+case: append multiple effects sequentially
+in:
+  - state:
+      global:
+        pendingEffects: []
+  -
+    name: "effect1"
+    data: "test1"
+out:
+  global:
+    pendingEffects:
+      - name: "effect1"
+        data: "test1"
+---
+case: append effect with null/undefined properties
+in:
+  - state:
+      global:
+        pendingEffects:
+          - name: "existingEffect"
+  -
+    name: "effectWithNulls"
+    data: null
+    config: undefined
+    param: "value"
+out:
+  global:
+    pendingEffects:
+      - name: "existingEffect"
+      -
+        name: "effectWithNulls"
+        data: null
+        config: undefined
+        param: "value"
+---
+case: append effect with other global properties unchanged
+in:
+  - state:
+      global:
+        pendingEffects:
+          - name: "initialEffect"
+        autoMode: true
+        skipMode: false
+        dialogueUIHidden: false
+        currentLocalizationPackageId: "ja"
+  -
+    name: "newEffect"
+out:
+  global:
+    pendingEffects:
+      - name: "initialEffect"
+      - name: "newEffect"
+    autoMode: true
+    skipMode: false
+    dialogueUIHidden: false
+    currentLocalizationPackageId: "ja"

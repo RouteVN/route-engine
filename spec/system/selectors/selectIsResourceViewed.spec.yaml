@@ -1,0 +1,98 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore selectors
+suites:
+  [
+    selectIsResourceViewed,
+  ]
+---
+suite: selectIsResourceViewed
+exportName: selectIsResourceViewed
+---
+case: resource not found
+in:
+  - state:
+      global:
+        viewedRegistry:
+          resources:
+            - resourceId: "existing_resource.jpg"
+            - resourceId: "another_resource.png"
+  - resourceId: "missing_resource.gif"
+out: false
+---
+case: resource found
+in:
+  - state:
+      global:
+        viewedRegistry:
+          resources:
+            - resourceId: "image1.jpg"
+            - resourceId: "sound1.mp3"
+            - resourceId: "video1.mp4"
+  - resourceId: "sound1.mp3"
+out: true
+---
+case: empty resources registry
+in:
+  - state:
+      global:
+        viewedRegistry:
+          resources: []
+  - resourceId: "any_resource.png"
+out: false
+---
+case: check first resource
+in:
+  - state:
+      global:
+        viewedRegistry:
+          resources:
+            - resourceId: "first_resource.jpg"
+            - resourceId: "second_resource.png"
+  - resourceId: "first_resource.jpg"
+out: true
+---
+case: check last resource
+in:
+  - state:
+      global:
+        viewedRegistry:
+          resources:
+            - resourceId: "resource1.jpg"
+            - resourceId: "resource2.png"
+            - resourceId: "resource3.gif"
+  - resourceId: "resource3.gif"
+out: true
+---
+case: numeric resourceId found
+in:
+  - state:
+      global:
+        viewedRegistry:
+          resources:
+            - resourceId: 42
+            - resourceId: "text_resource.jpg"
+  - resourceId: 42
+out: true
+---
+case: numeric resourceId not found
+in:
+  - state:
+      global:
+        viewedRegistry:
+          resources:
+            - resourceId: "text_resource.jpg"
+            - resourceId: "image_resource.png"
+  - resourceId: 42
+out: false
+---
+case: resource with special characters found
+in:
+  - state:
+      global:
+        viewedRegistry:
+          resources:
+            - resourceId: "resource-with-dash.jpg"
+            - resourceId: "resource_with_underscore.png"
+            - resourceId: "resource.with.dots.gif"
+  - resourceId: "resource.with.dots.gif"
+out: true

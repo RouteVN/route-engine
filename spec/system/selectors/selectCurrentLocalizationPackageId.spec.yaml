@@ -1,0 +1,30 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore selectors
+suites:
+  [
+    selectCurrentLocalizationPackageId,
+  ]
+---
+suite: selectCurrentLocalizationPackageId
+exportName: selectCurrentLocalizationPackageId
+---
+case: english localization package
+in:
+  - state:
+      global:
+        currentLocalizationPackageId: "en"
+out: "en"
+---
+case: japanese localization package
+in:
+  - state:
+      global:
+        currentLocalizationPackageId: "ja"
+out: "ja"
+---
+case: empty localization package
+in:
+  - state:
+      global:
+        currentLocalizationPackageId: ""
+out: ""

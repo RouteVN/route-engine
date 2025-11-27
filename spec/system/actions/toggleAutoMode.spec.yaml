@@ -1,0 +1,100 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.toggleAutoMode
+suites: [toggleAutoMode]
+---
+suite: toggleAutoMode
+exportName: toggleAutoMode
+---
+case: toggle auto mode from false to true
+in:
+  - state:
+      global:
+        autoMode: false
+        pendingEffects: []
+out:
+  global:
+    autoMode: true
+    pendingEffects:
+      - name: clearAutoNextTimer
+      - name: startAutoNextTimer
+      - name: render
+---
+case: toggle auto mode from true to false
+in:
+  - state:
+      global:
+        autoMode: true
+        pendingEffects: []
+out:
+  global:
+    autoMode: false
+    pendingEffects:
+      - name: clearAutoNextTimer
+      - name: render
+---
+case: toggle auto mode from false to true with skip mode enabled
+in:
+  - state:
+      global:
+        autoMode: false
+        skipMode: true
+        pendingEffects: []
+out:
+  global:
+    autoMode: true
+    skipMode: false
+    pendingEffects:
+      - name: clearSkipNextTimer
+      - name: clearAutoNextTimer
+      - name: startAutoNextTimer
+      - name: render
+---
+case: toggle auto mode from true to false with skip mode enabled
+in:
+  - state:
+      global:
+        autoMode: true
+        skipMode: true
+        pendingEffects: []
+out:
+  global:
+    autoMode: false
+    skipMode: true
+    pendingEffects:
+      - name: clearAutoNextTimer
+      - name: render
+---
+case: toggle auto mode with existing pending effects (disabled to enabled)
+in:
+  - state:
+      global:
+        autoMode: false
+        pendingEffects:
+          - name: existingEffect
+            data: test
+out:
+  global:
+    autoMode: true
+    pendingEffects:
+      - name: existingEffect
+        data: test
+      - name: clearAutoNextTimer
+      - name: startAutoNextTimer
+      - name: render
+---
+case: toggle auto mode with existing pending effects (enabled to disabled)
+in:
+  - state:
+      global:
+        autoMode: true
+        pendingEffects:
+          - name: existingEffect
+            data: test
+out:
+  global:
+    autoMode: false
+    pendingEffects:
+      - name: existingEffect
+        data: test
+      - name: clearAutoNextTimer
+      - name: render

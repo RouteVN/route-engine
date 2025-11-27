@@ -6,19 +6,44 @@ description: >
   Second section transitions to Scene 2.
   Scene 2 then transitions back to Scene 1, Section 2, showing cross-scene section targeting.
 ---
+localization:
+  defaultPackageId: eklekfjwalefj
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys: {}
 screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
 
 resources:
+  layouts:
+    screen1:
+      elements:
+        - id: af32
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
   images:
     alkejf3la:
       fileId: lakjf3lka
+      width: 1920
+      height: 1080
     8a3lkja:
       fileId: dmni32
+      width: 1920
+      height: 1080
     img3:
       fileId: 23jkfa893
+      width: 1920
+      height: 1080
 
 story:
   initialSceneId: ajfl3a
@@ -32,9 +57,10 @@ story:
           lines:
             - id: line1
               actions:
+                screen:
+                  resourceId: screen1
                 background:
                   resourceId: alkejf3la
-                  resourceType: image
             - id: line2
               actions:
                 sectionTransition:
@@ -44,13 +70,13 @@ story:
           lines:
             - id: line1
               actions:
+                screen:
+                  resourceId: screen1
                 background:
                   resourceId: 8a3lkja
-                  resourceType: image
             - id: line2
               actions:
                 sectionTransition:
-                  sceneId: scene2
                   sectionId: s2s1
     scene2:
       name: Scene 2
@@ -61,11 +87,11 @@ story:
           lines:
             - id: line1
               actions:
+                screen:
+                  resourceId: screen1
                 background:
                   resourceId: img3
-                  resourceType: image
             - id: line2
               actions:
                 sectionTransition:
-                  sceneId: ajfl3a
-                  sectionId: 3k3s9sd
+                  sectionId: l3kjfawelf

@@ -1,0 +1,135 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.addToHistory
+suites: [addToHistory]
+---
+suite: addToHistory
+exportName: addToHistory
+---
+case: add item to history with empty history
+in:
+  - state:
+      global:
+        pendingEffects: []
+      contexts:
+        - historySequence: []
+  - item:
+      sectionId: "intro"
+out:
+  global:
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - historySequence:
+        - sectionId: "intro"
+---
+case: add item to history with existing items
+in:
+  - state:
+      global:
+        pendingEffects: []
+      contexts:
+        - historySequence:
+            - sectionId: "intro"
+            - sectionId: "intro"
+  - item:
+      sectionId: "intro"
+out:
+  global:
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - historySequence:
+        - sectionId: "intro"
+        - sectionId: "intro"
+        - sectionId: "intro"
+---
+case: add item to history with multiple contexts (should add to last one)
+in:
+  - state:
+      global:
+        pendingEffects: []
+      contexts:
+        - historySequence:
+            - sectionId: "chapter1"
+        - historySequence:
+            - sectionId: "menu"
+  - item:
+      sectionId: "menu"
+out:
+  global:
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - historySequence:
+        - sectionId: "chapter1"
+    - historySequence:
+        - sectionId: "menu"
+        - sectionId: "menu"
+---
+case: add item to history with existing pending effects
+in:
+  - state:
+      global:
+        pendingEffects:
+          - name: "existingEffect"
+            data: "test"
+      contexts:
+        - historySequence: []
+  - item:
+      sectionId: "intro"
+      action: "dialogue"
+out:
+  global:
+    pendingEffects:
+      - name: "existingEffect"
+        data: "test"
+      - name: "render"
+  contexts:
+    - historySequence:
+        - sectionId: "intro"
+          action: "dialogue"
+---
+case: add complex item to history
+in:
+  - state:
+      global:
+        pendingEffects: []
+      contexts:
+        - historySequence:
+            - sectionId: "intro"
+  - item:
+      sectionId: "intro"
+      type: "choice"
+      choice:
+        text: "Continue story"
+        options:
+          - id: "option1"
+            text: "Yes"
+            nextSection: "branch1"
+          - id: "option2"
+            text: "No"
+            nextSection: "branch2"
+      metadata:
+        musicTrack: "theme1"
+        backgroundImage: "scene1.png"
+out:
+  global:
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - historySequence:
+        - sectionId: "intro"
+        - sectionId: "intro"
+          type: "choice"
+          choice:
+            text: "Continue story"
+            options:
+              - id: "option1"
+                text: "Yes"
+                nextSection: "branch1"
+              - id: "option2"
+                text: "No"
+                nextSection: "branch2"
+          metadata:
+            musicTrack: "theme1"
+            backgroundImage: "scene1.png"

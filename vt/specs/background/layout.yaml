@@ -2,6 +2,13 @@
 title: "Layout background"
 description: test using layout for background
 ---
+localization:
+  defaultPackageId: eklekfjwalefj
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys: {}
 screen:
   width: 1920
   height: 1080
@@ -11,11 +18,28 @@ resources:
   images:
     alkejf3la:
       fileId: lakjf3lka
+      width: 1920
+      height: 1080
     8a3lkja:
       fileId: dmni32
+      width: 1920
+      height: 1080
     3ljdasfjlk32:
       fileId: 23jkfa893
+      width: 1920
+      height: 1080
   layouts:
+    screen1:
+      elements:
+        - id: af32
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
     j3i8dk32:
       name: Title Screen
       elements:
@@ -24,6 +48,8 @@ resources:
           url: file:lakjf3lka
           x: 0
           y: 0
+          width: 1920
+          height: 1080
         - id: container
           type: container
           x: 400
@@ -53,6 +79,8 @@ story:
           lines:
             - id: line1
               actions:
+                screen:
+                  resourceId: screen1
                 background:
                   resourceId: j3i8dk32
                   resourceType: layout

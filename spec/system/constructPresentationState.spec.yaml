@@ -1,0 +1,49 @@
+file: "../../src/stores/constructPresentationState.js"
+group: constructPresentationState
+suites: [constructPresentationState]
+---
+suite: constructPresentationState
+exportName: constructPresentationState
+---
+case: construct presentation state with single screen action
+in:
+  - - screen:
+        resourceId: "mainScreen"
+out:
+  screen:
+    resourceId: "mainScreen"
+---
+case: construct presentation state with multiple actions in one presentation
+in:
+  - - screen:
+        resourceId: "mainScreen"
+      background:
+        resourceId: "bgImage"
+        resourceType: "image"
+      bgm:
+        audioId: "backgroundMusic"
+        loop: true
+out:
+  screen:
+    resourceId: "mainScreen"
+  background:
+    resourceId: "bgImage"
+    resourceType: "image"
+  bgm:
+    audioId: "backgroundMusic"
+    loop: true
+---
+case: construct presentation state with clean all and multiple presentations
+in:
+  - - cleanAll: true
+      screen:
+        resourceId: "oldScreen"
+    - screen:
+        resourceId: "newScreen"
+      background:
+        resourceId: "newBg"
+out:
+  screen:
+    resourceId: "newScreen"
+  background:
+    resourceId: "newBg"

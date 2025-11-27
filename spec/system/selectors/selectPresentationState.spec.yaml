@@ -1,0 +1,113 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore selectors
+suites: [selectPresentationState]
+---
+suite: selectPresentationState
+exportName: selectPresentationState
+---
+case: basic case
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: false
+        skipMode: false
+        isDialogueUIVisible: true
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "abcd"
+                    - id: "2"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  background:
+    resourceId: abcd
+---
+case: multiple lines and actions not last line
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: false
+        skipMode: false
+        isDialogueUIVisible: true
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "abcd"
+                        bgm:
+                          audioId: "cde"
+                    - id: "2"
+                      actions:
+                        background:
+                          resourceId: "xyz"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  background:
+    resourceId: abcd
+  bgm:
+    audioId: cde
+    loop: true
+---
+case: multiple lines and actions last line
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: false
+        skipMode: false
+        isDialogueUIVisible: true
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "abcd"
+                        bgm:
+                          audioId: "cde"
+                    - id: "2"
+                      actions:
+                        background:
+                          resourceId: "xyz"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  background:
+    resourceId: xyz
+  bgm:
+    audioId: cde
+    loop: true

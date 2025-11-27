@@ -1,0 +1,216 @@
+file: "../../../src/stores/constructRenderState.js"
+group: constructRenderState.addBgm
+suites: [addBgm]
+---
+suite: addBgm
+exportName: addBgm
+---
+case: add bgm audio to story container
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      bgm:
+        audioId: "backgroundMusic"
+    resources:
+      audio:
+        backgroundMusic:
+          fileId: "bgm.mp3"
+          loop: true
+          volume: 0.7
+          delay: 0
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio:
+    - id: "bgm"
+      type: "sound"
+      url: "bgm.mp3"
+      loop: true
+      volume: 0.7
+      delay: 0
+---
+case: add bgm with default values
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      bgm:
+        audioId: "simpleMusic"
+    resources:
+      audio:
+        simpleMusic:
+          fileId: "simple.mp3"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio:
+    - id: "bgm"
+      type: "sound"
+      url: "simple.mp3"
+      loop: true
+      volume: 0.5
+      delay: null
+---
+case: add bgm with custom settings
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      bgm:
+        audioId: "customMusic"
+    resources:
+      audio:
+        customMusic:
+          fileId: "custom.mp3"
+          loop: false
+          volume: 0.3
+          delay: 1000
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio:
+    - id: "bgm"
+      type: "sound"
+      url: "custom.mp3"
+      loop: false
+      volume: 0.3
+      delay: 1000
+---
+case: no presentationState.bgm - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState: {}
+    resources:
+      audio:
+        backgroundMusic:
+          fileId: "bgm.mp3"
+          loop: true
+          volume: 0.7
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio: []
+---
+case: story container does not exist - return unchanged state
+in:
+  - elements:
+      - id: "notStory"
+        type: "container"
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      bgm:
+        audioId: "backgroundMusic"
+    resources:
+      audio:
+        backgroundMusic:
+          fileId: "bgm.mp3"
+          loop: true
+          volume: 0.7
+out:
+  elements:
+    - id: "notStory"
+      type: "container"
+      children: []
+  animations: []
+  audio: []
+---
+case: audio not found - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      bgm:
+        audioId: "nonExistent"
+    resources:
+      audio:
+        existing:
+          fileId: "existing.mp3"
+          loop: true
+          volume: 0.7
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio: []
+---
+case: null resources - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      bgm:
+        audioId: "backgroundMusic"
+    resources: null
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio: []

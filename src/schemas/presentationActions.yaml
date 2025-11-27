@@ -1,9 +1,8 @@
 $schema: http://json-schema.org/draft-07/schema#
-title: Actions Schema
-description: Unified schema for all line actions in visual novel engine (combines presentation and system actions)
+title: Presentation Actions Schema
+description: Schema for all presentation actions that handle visual and audio display in visual novel engine
 type: object
 properties:
-  # Presentation Actions
   cleanAll:
     type: object
     description: Whether to clean/clear all existing state
@@ -20,10 +19,7 @@ properties:
       resourceId:
         type: string
         description: ID of the screen resource to display
-      resourceType:
-        type: string
-        description: Type of the screen resource
-        enum: [layout]
+    additionalProperties: false
 
   background:
     type: object
@@ -32,10 +28,6 @@ properties:
       resourceId:
         type: string
         description: ID of the background resource to display
-      resourceType:
-        type: string
-        description: Type of the background resource
-        enum: [image, layout]
       animations:
         type: object
         description: Animation effects for background transitions
@@ -77,7 +69,7 @@ properties:
     type: object
     description: Dialogue display configuration
     properties:
-      layoutId:
+      resourceId:
         type: string
         description: ID of the dialogue box UI element
       content:
@@ -137,9 +129,6 @@ properties:
             resourceId:
               type: string
               description: ID of the resource
-            resourceType:
-              type: string
-              description: Type of the resource
             transformId:
               type: string
               description: ID of the transform where visual appears
@@ -186,7 +175,7 @@ properties:
     type: object
     description: Choice system configuration
     properties:
-      layoutId:
+      resourceId:
         type: string
         description: ID of the choice layout UI element
       items:
@@ -217,10 +206,10 @@ properties:
             id:
               type: string
               description: Unique identifier for the sound effect
-            audioId:
+            resourceId:
               type: string
               description: ID of the sound effect resource
-          required: [id, audioId]
+          required: [id, resourceId]
           additionalProperties: false
     additionalProperties: false
 
@@ -228,223 +217,19 @@ properties:
     type: object
     description: Background music configuration
     properties:
-      audioId:
+      resourceId:
         type: string
         description: ID of the background music resource
     additionalProperties: false
 
+  # TODO: check if can make this more generalized
   layout:
     type: object
     description: Layout configuration for UI layouts
     properties:
-      layoutId:
+      resourceIdId:
         type: string
         description: ID of the layout to display
-    additionalProperties: false
-
-  # System Actions
-  nextLine:
-    type: object
-    description: Advance to next line
-    properties:
-      forceSkipAutonext:
-        type: boolean
-        description: Force skip auto-next behavior
-        default: false
-    additionalProperties: false
-
-  prevLine:
-    type: object
-    description: Go to previous line
-    additionalProperties: false
-
-  sectionTransition:
-    type: object
-    description: Navigate to specific scene/section
-    properties:
-      sectionId:
-        type: string
-        description: Target section ID
-      sceneId:
-        type: string
-        description: Target scene ID (optional)
-      mode:
-        type: string
-        description: Navigation mode
-        enum: [read, menu, history, title]
-      presetId:
-        type: string
-        description: Preset to use after navigation
-    additionalProperties: false
-
-  updateVariable:
-    type: object
-    description: Update game variables
-    properties:
-      operations:
-        type: array
-        description: Array of variable operations to perform
-        items:
-          type: object
-          properties:
-            variableId:
-              type: string
-              description: ID of the variable to update
-            op:
-              type: string
-              description: Operation to perform on the variable
-              enum: [set, add, subtract, multiply, divide, increment, decrement]
-            value:
-              description: Value to use in the operation
-              oneOf:
-                - type: string
-                - type: number
-                - type: boolean
-          required: [variableId, op]
-          additionalProperties: false
-        minItems: 1
-    required: [operations]
-    additionalProperties: false
-
-  setPreset:
-    type: object
-    description: Set the current preset for event handling
-    properties:
-      presetId:
-        type: string
-        description: ID of the preset to activate
-    required: [presetId]
-    additionalProperties: false
-
-  clearCurrentMode:
-    type: object
-    description: Clear current mode and switch to a new one
-    properties:
-      mode:
-        type: string
-        description: Mode to switch to
-        enum: [read, menu, history, title]
-    required: [mode]
-    additionalProperties: false
-
-  startAutoMode:
-    type: object
-    description: Start auto-advance mode
-    additionalProperties: false
-
-  stopAutoMode:
-    type: object
-    description: Stop auto-advance mode
-    additionalProperties: false
-
-  toggleAutoMode:
-    type: object
-    description: Toggle auto-advance mode on/off
-    additionalProperties: false
-
-  startSkipMode:
-    type: object
-    description: Start skip mode for fast-forwarding
-    additionalProperties: false
-
-  stopSkipMode:
-    type: object
-    description: Stop skip mode
-    additionalProperties: false
-
-  toggleSkipMode:
-    type: object
-    description: Toggle skip mode on/off
-    additionalProperties: false
-
-  toggleDialogueUIHidden:
-    type: object
-    description: Toggle visibility of dialogue UI elements
-    additionalProperties: false
-
-  saveVnData:
-    type: object
-    description: Save current game state to a slot
-    properties:
-      slotIndex:
-        type: number
-        description: Save slot index to save to
-        minimum: 0
-    required: [slotIndex]
-    additionalProperties: false
-
-  loadVnData:
-    type: object
-    description: Load game state from a save slot
-    properties:
-      slotIndex:
-        type: number
-        description: Save slot index to load from
-        minimum: 0
-    required: [slotIndex]
-    additionalProperties: false
-
-  lineCompleted:
-    type: object
-    description: Handle completion of a line (internal action)
-    additionalProperties: false
-
-  clearPendingEffects:
-    type: object
-    description: Clear all pending effects (internal action)
-    additionalProperties: false
-
-  nextConfig:
-    type: object
-    description: Control how the line can be advanced
-    properties:
-      manual:
-        type: object
-        properties:
-          enabled:
-            type: boolean
-            default: true
-            description: Allow manual advance via user input
-          requireComplete:
-            type: boolean
-            default: false
-            description: Only allow manual advance after line completes
-        additionalProperties: false
-      auto:
-        type: object
-        description: Auto-advance configuration (presence enables it)
-        properties:
-          trigger:
-            type: string
-            enum: [fromStart, fromComplete]
-            default: fromComplete
-            description: When to start timing for auto advance
-          delay:
-            type: number
-            minimum: 0
-            default: 1000
-            description: Delay in milliseconds before advancing
-        required: [trigger, delay]
-        additionalProperties: false
-    additionalProperties: false
-
-  addModal:
-    type: object
-    description: Add a modal to the display
-    properties:
-      resourceId:
-        type: string
-        description: ID of the modal resource to display
-      resourceType:
-        type: string
-        description: Type of the modal resource
-        default: layout
-    required: [resourceId]
-    additionalProperties: false
-
-  clearLastModal:
-    type: object
-    description: Remove the last modal from the display
     additionalProperties: false
 
 additionalProperties: false

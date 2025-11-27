@@ -1,0 +1,230 @@
+file: "../../../src/stores/constructRenderState.js"
+group: constructRenderState.addVoice
+suites: [addVoice]
+---
+suite: addVoice
+exportName: addVoice
+---
+case: add voice audio to story container
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      voice:
+        fileId: "voice.mp3"
+        volume: 0.8
+        loop: false
+    resources: {}
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio:
+    - id: "voice-voice.mp3"
+      type: "sound"
+      url: "voice.mp3"
+      volume: 0.8
+      loop: false
+---
+case: add voice with default values
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      voice:
+        fileId: "simpleVoice.mp3"
+    resources: {}
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio:
+    - id: "voice-simpleVoice.mp3"
+      type: "sound"
+      url: "simpleVoice.mp3"
+      volume: 0.5
+      loop: false
+---
+case: add voice with loop enabled
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      voice:
+        fileId: "loopingVoice.mp3"
+        volume: 0.6
+        loop: true
+    resources: {}
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio:
+    - id: "voice-loopingVoice.mp3"
+      type: "sound"
+      url: "loopingVoice.mp3"
+      volume: 0.6
+      loop: true
+---
+case: no presentationState.voice - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState: {}
+    resources: {}
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio: []
+---
+case: story container does not exist - return unchanged state
+in:
+  - elements:
+      - id: "notStory"
+        type: "container"
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      voice:
+        fileId: "voice.mp3"
+        volume: 0.7
+        loop: false
+    resources: {}
+out:
+  elements:
+    - id: "notStory"
+      type: "container"
+      children: []
+  animations: []
+  audio:
+    - id: "voice-voice.mp3"
+      type: "sound"
+      url: "voice.mp3"
+      volume: 0.7
+      loop: false
+---
+case: null presentationState - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState: null
+    resources: {}
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio: []
+---
+case: voice with custom volume and loop
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      voice:
+        fileId: "customVoice.mp3"
+        volume: 0.3
+        loop: true
+    resources: {}
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio:
+    - id: "voice-customVoice.mp3"
+      type: "sound"
+      url: "customVoice.mp3"
+      volume: 0.3
+      loop: true
+---
+case: null resources - still works (voice doesn't use resources)
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      voice:
+        fileId: "voice.mp3"
+        volume: 0.7
+        loop: false
+    resources: null
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio:
+    - id: "voice-voice.mp3"
+      type: "sound"
+      url: "voice.mp3"
+      volume: 0.7
+      loop: false

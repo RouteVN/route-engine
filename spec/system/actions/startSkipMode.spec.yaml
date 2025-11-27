@@ -1,0 +1,94 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.startSkipMode
+suites: [startSkipMode]
+---
+suite: startSkipMode
+exportName: startSkipMode
+---
+case: start skip mode
+in:
+  - state:
+      global:
+        skipMode: false
+        autoMode: false
+        pendingEffects: []
+out:
+  global:
+    skipMode: true
+    autoMode: false
+    pendingEffects:
+      - name: clearSkipNextTimer
+      - name: startSkipNextTimer
+      - name: render
+---
+case: start skip mode when already enabled
+in:
+  - state:
+      global:
+        skipMode: true
+        autoMode: false
+        pendingEffects: []
+out:
+  global:
+    skipMode: true
+    autoMode: false
+    pendingEffects:
+      - name: clearSkipNextTimer
+      - name: startSkipNextTimer
+      - name: render
+---
+case: start skip mode with auto mode enabled
+in:
+  - state:
+      global:
+        skipMode: false
+        autoMode: true
+        pendingEffects: []
+out:
+  global:
+    skipMode: true
+    autoMode: false
+    pendingEffects:
+      - name: clearAutoNextTimer
+      - name: clearSkipNextTimer
+      - name: startSkipNextTimer
+      - name: render
+---
+case: start skip mode with existing pending effects
+in:
+  - state:
+      global:
+        skipMode: false
+        autoMode: false
+        pendingEffects:
+          - name: existingEffect
+            data: test
+out:
+  global:
+    skipMode: true
+    autoMode: false
+    pendingEffects:
+      - name: existingEffect
+        data: test
+      - name: clearSkipNextTimer
+      - name: startSkipNextTimer
+      - name: render
+---
+case: start skip mode with both skip and auto mode enabled
+in:
+  - state:
+      global:
+        skipMode: true
+        autoMode: true
+        pendingEffects:
+          - name: existingEffect
+out:
+  global:
+    skipMode: true
+    autoMode: false
+    pendingEffects:
+      - name: existingEffect
+      - name: clearAutoNextTimer
+      - name: clearSkipNextTimer
+      - name: startSkipNextTimer
+      - name: render

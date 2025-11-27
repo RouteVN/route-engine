@@ -1,0 +1,61 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.clearPendingEffects
+suites: [clearPendingEffects]
+---
+suite: clearPendingEffects
+exportName: clearPendingEffects
+---
+case: clear pending effects with existing effects
+in:
+  - state:
+      global:
+        pendingEffects:
+          - name: "existingEffect1"
+            data: "test1"
+          - name: "existingEffect2"
+            data: "test2"
+out:
+  global:
+    pendingEffects: []
+---
+case: clear pending effects when already empty
+in:
+  - state:
+      global:
+        pendingEffects: []
+out:
+  global:
+    pendingEffects: []
+---
+case: clear pending effects with complex effect objects
+in:
+  - state:
+      global:
+        pendingEffects:
+          - name: "render"
+            config:
+              immediate: true
+          - name: "startAutoNextTimer"
+            delay: 1000
+          - name: "clearSkipNextTimer"
+out:
+  global:
+    pendingEffects: []
+---
+case: clear pending effects with other global properties
+in:
+  - state:
+      global:
+        pendingEffects:
+          - name: "existingEffect"
+        autoMode: true
+        skipMode: false
+        dialogueUIHidden: false
+        currentLocalizationPackageId: "en"
+out:
+  global:
+    pendingEffects: []
+    autoMode: true
+    skipMode: false
+    dialogueUIHidden: false
+    currentLocalizationPackageId: "en"

@@ -1,0 +1,63 @@
+file: "../../../src/stores/constructRenderState.js"
+group: constructRenderState.addDialogue
+suites: [addDialogue]
+---
+suite: addDialogue
+exportName: addDialogue
+---
+case: dialogueUIHidden true - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      dialogue:
+        gui:
+          resourceId: "dialogueLayout"
+        content: ["Hello world"]
+    resources:
+      layouts:
+        dialogueLayout:
+          elements:
+            - type: "text"
+              content: "Dialogue text"
+    dialogueUIHidden: true
+    autoMode: false
+    skipMode: false
+    currentLocalizationPackageId: null
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+---
+case: no presentationState.dialogue - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState: {}
+    resources: {}
+    dialogueUIHidden: false
+    autoMode: false
+    skipMode: false
+    currentLocalizationPackageId: null
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []

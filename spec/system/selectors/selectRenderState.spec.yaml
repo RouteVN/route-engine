@@ -1,0 +1,167 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore selectors
+suites: [selectRenderState]
+---
+suite: selectRenderStateState
+exportName: selectRenderState
+---
+case: basic case
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: false
+        skipMode: false
+        isDialogueUIVisible: true
+        currentLocalizationPackageId: "en"
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "abcd"
+                    - id: "2"
+                      actions: {}
+        localization:
+          packages:
+            en: {}
+        resources:
+          audio:
+            cde:
+              id: "cde"
+              type: "audio"
+              fileId: "audio/cde.mp3"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio: []
+---
+case: multiple lines and actions not last line
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: false
+        skipMode: false
+        isDialogueUIVisible: true
+        currentLocalizationPackageId: "en"
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "abcd"
+                        bgm:
+                          audioId: "cde"
+                    - id: "2"
+                      actions:
+                        background:
+                          resourceId: "xyz"
+        localization:
+          packages:
+            en: {}
+        resources:
+          audio:
+            cde:
+              id: "cde"
+              type: "audio"
+              fileId: "audio/cde.mp3"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio:
+    - id: "bgm"
+      type: "sound"
+      url: "audio/cde.mp3"
+      loop: true
+      volume: 0.5
+      delay: null
+---
+case: multiple lines and actions last line
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: false
+        skipMode: false
+        isDialogueUIVisible: true
+        currentLocalizationPackageId: "en"
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "abcd"
+                        bgm:
+                          audioId: "cde"
+                    - id: "2"
+                      actions:
+                        background:
+                          resourceId: "xyz"
+        localization:
+          packages:
+            en: {}
+        resources:
+          audio:
+            cde:
+              id: "cde"
+              type: "audio"
+              fileId: "audio/cde.mp3"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio:
+    - id: "bgm"
+      type: "sound"
+      url: "audio/cde.mp3"
+      loop: true
+      volume: 0.5
+      delay: null

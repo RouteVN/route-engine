@@ -1,0 +1,127 @@
+$schema: http://json-schema.org/draft-07/schema#
+title: Effects Schema
+description: Schema for pending effects in the visual novel engine system state
+oneOf:
+  - title: Render effect
+    description: Triggers a render operation
+    type: object
+    properties:
+      type:
+        const: render
+      priority:
+        type: integer
+        description: Priority of the effect (lower numbers execute first)
+        default: 0
+    required: [type]
+    additionalProperties: false
+
+  - title: Save VN data effect
+    description: Saves visual novel data to a slot
+    type: object
+    properties:
+      type:
+        const: saveVnData
+      saveData:
+        type: object
+        description: Save game data for saving
+        additionalProperties: true
+      slotIndex:
+        type: integer
+        description: Save slot index
+        minimum: 0
+      priority:
+        type: integer
+        description: Priority of the effect (lower numbers execute first)
+        default: 0
+    required: [type, saveData, slotIndex]
+    additionalProperties: false
+
+  - title: Save variables effect
+    description: Saves device variables to localStorage
+    type: object
+    properties:
+      type:
+        const: saveVariables
+      priority:
+        type: integer
+        description: Priority of the effect (lower numbers execute first)
+        default: 0
+    required: [type]
+    additionalProperties: false
+
+  - title: Start auto next timer effect
+    description: Starts the auto-advance timer
+    type: object
+    properties:
+      type:
+        const: startAutoNextTimer
+      priority:
+        type: integer
+        description: Priority of the effect (lower numbers execute first)
+        default: 0
+    required: [type]
+    additionalProperties: false
+
+  - title: Clear auto next timer effect
+    description: Clears the auto-advance timer
+    type: object
+    properties:
+      type:
+        const: clearAutoNextTimer
+      priority:
+        type: integer
+        description: Priority of the effect (lower numbers execute first)
+        default: 0
+    required: [type]
+    additionalProperties: false
+
+  - title: Start skip next timer effect
+    description: Starts the skip mode timer
+    type: object
+    properties:
+      type:
+        const: startSkipNextTimer
+      priority:
+        type: integer
+        description: Priority of the effect (lower numbers execute first)
+        default: 0
+    required: [type]
+    additionalProperties: false
+
+  - title: Clear skip next timer effect
+    description: Clears the skip mode timer
+    type: object
+    properties:
+      type:
+        const: clearSkipNextTimer
+      priority:
+        type: integer
+        description: Priority of the effect (lower numbers execute first)
+        default: 0
+    required: [type]
+    additionalProperties: false
+
+  - title: Start timer effect
+    description: Starts a custom timer with payload
+    type: object
+    properties:
+      type:
+        const: startTimer
+      timerId:
+        type: string
+        description: Unique identifier for the timer
+      payload:
+        type: object
+        description: Payload to execute when timer expires
+        additionalProperties: true
+      delay:
+        type: integer
+        description: Delay in milliseconds before executing payload
+        minimum: 0
+      priority:
+        type: integer
+        description: Priority of the effect (lower numbers execute first)
+        default: 0
+    required: [type, timerId, payload, delay]
+    additionalProperties: false
+

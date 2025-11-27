@@ -1,0 +1,85 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.stopAutoMode
+suites: [stopAutoMode]
+---
+suite: stopAutoMode
+exportName: stopAutoMode
+---
+case: stop auto mode when enabled
+in:
+  - state:
+      global:
+        autoMode: true
+        pendingEffects: []
+out:
+  global:
+    autoMode: false
+    pendingEffects:
+      - name: clearAutoNextTimer
+      - name: render
+---
+case: stop auto mode when already disabled
+in:
+  - state:
+      global:
+        autoMode: false
+        pendingEffects: []
+out:
+  global:
+    autoMode: false
+    pendingEffects:
+      - name: clearAutoNextTimer
+      - name: render
+---
+case: stop auto mode with existing pending effects
+in:
+  - state:
+      global:
+        autoMode: true
+        pendingEffects:
+          - name: existingEffect
+            data: test
+out:
+  global:
+    autoMode: false
+    pendingEffects:
+      - name: existingEffect
+        data: test
+      - name: clearAutoNextTimer
+      - name: render
+---
+case: stop auto mode with skip mode enabled
+in:
+  - state:
+      global:
+        autoMode: true
+        skipMode: true
+        pendingEffects: []
+out:
+  global:
+    autoMode: false
+    skipMode: true
+    pendingEffects:
+      - name: clearAutoNextTimer
+      - name: render
+---
+case: stop auto mode with multiple existing effects
+in:
+  - state:
+      global:
+        autoMode: true
+        pendingEffects:
+          - name: effect1
+            data: value1
+          - name: effect2
+            data: value2
+out:
+  global:
+    autoMode: false
+    pendingEffects:
+      - name: effect1
+        data: value1
+      - name: effect2
+        data: value2
+      - name: clearAutoNextTimer
+      - name: render

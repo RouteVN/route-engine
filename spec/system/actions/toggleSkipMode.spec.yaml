@@ -1,0 +1,108 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.toggleSkipMode
+suites: [toggleSkipMode]
+---
+suite: toggleSkipMode
+exportName: toggleSkipMode
+---
+case: toggle skip mode from false to true
+in:
+  - state:
+      global:
+        skipMode: false
+        autoMode: false
+        pendingEffects: []
+out:
+  global:
+    skipMode: true
+    autoMode: false
+    pendingEffects:
+      - name: clearSkipNextTimer
+      - name: startSkipNextTimer
+      - name: render
+---
+case: toggle skip mode from true to false
+in:
+  - state:
+      global:
+        skipMode: true
+        autoMode: false
+        pendingEffects: []
+out:
+  global:
+    skipMode: false
+    autoMode: false
+    pendingEffects:
+      - name: clearSkipNextTimer
+      - name: render
+---
+case: toggle skip mode from false to true with auto mode enabled
+in:
+  - state:
+      global:
+        skipMode: false
+        autoMode: true
+        pendingEffects: []
+out:
+  global:
+    skipMode: true
+    autoMode: false
+    pendingEffects:
+      - name: clearAutoNextTimer
+      - name: clearSkipNextTimer
+      - name: startSkipNextTimer
+      - name: render
+---
+case: toggle skip mode from true to false with auto mode enabled
+in:
+  - state:
+      global:
+        skipMode: true
+        autoMode: true
+        pendingEffects: []
+out:
+  global:
+    skipMode: false
+    autoMode: true
+    pendingEffects:
+      - name: clearSkipNextTimer
+      - name: render
+---
+case: toggle skip mode with existing pending effects (disabled to enabled)
+in:
+  - state:
+      global:
+        skipMode: false
+        autoMode: false
+        pendingEffects:
+          - name: existingEffect
+            data: test
+out:
+  global:
+    skipMode: true
+    autoMode: false
+    pendingEffects:
+      - name: existingEffect
+        data: test
+      - name: clearSkipNextTimer
+      - name: startSkipNextTimer
+      - name: render
+---
+case: toggle skip mode with existing pending effects (enabled to disabled)
+in:
+  - state:
+      global:
+        skipMode: true
+        autoMode: false
+        pendingEffects:
+          - name: existingEffect
+            data: test
+out:
+  global:
+    skipMode: false
+    autoMode: false
+    pendingEffects:
+      - name: existingEffect
+        data: test
+      - name: clearSkipNextTimer
+      - name: render

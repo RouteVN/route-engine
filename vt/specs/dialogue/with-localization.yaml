@@ -1,0 +1,169 @@
+---
+title: "With localization"
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+localization:
+  defaultPackageId: eklekfjwalefj
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys:
+        a1: "Message a 1"
+        a2: "Message a 2"
+        a3: "Message a 3"
+        a4: "Message a 4"
+        c1: "Character name 1"
+    asdfi4t:
+      label: Italiano
+      lang: it
+      keys:
+        a1: "Messaggio a 1"
+        a2: "Messaggio a 2"
+        a3: "Messaggio a 3"
+        a4: "Messaggio a 4"
+        c1: "Carattere nome 1"
+
+resources:
+  layouts:
+    screen1:
+      elements:
+        - id: af32
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+    storyScreenLayout:
+      name: Story Screen Background
+      elements:
+        - id: story-screen-bg
+          type: rect
+          x: 0
+          y: 0
+          width: 1920
+          height: 1080
+          fill: "#000000"
+          clickEventName: "system"
+          clickEventPayload:
+            actions:
+              nextLine: {}
+    fi3l:
+      name: Dialogue Screen
+      mode: "adv"
+      elements:
+        - id: dialogue-container
+          type: "container"
+          x: 50
+          y: 300
+          children:
+            - id: "bfeawjk2g"
+              type: sprite
+              width: 1400
+              height: 300
+              url: 3kda832
+              x: 0
+              y: 0
+            - id: dialogue-character-name
+              type: text
+              content: "${dialogue.character.name}"
+              x: 20
+              y: 40
+              textStyle:
+                fontSize: 24
+                fill: "white"
+            - id: dialogue-text
+              type: "text"
+              x: 20
+              y: 100
+              content: "${dialogue.content[0].text}"
+              textStyle:
+                fontSize: 24
+                fill: "white"
+        - id: dialogue-text-asdf
+          type: "text"
+          x: 50
+          y: 100
+          content: "Current Localization Package: ${l10n.label}"
+          textStyle:
+            fontsize: 32
+            fill: "white"
+        - id: dialogue-lang-toggle-container
+          type: "container"
+          direction: horizontal
+          gap: 40
+          x: 500
+          y: 100
+          children:
+            - id: 1jkfkswe3
+              type: text
+              content: English
+              textStyle:
+                fontsize: 32
+                fill: "white"
+              click:
+                actionPayload:
+                  actions:
+                    setCurrentLocalizationPackageId:
+                      localizationPackageId: eklekfjwalefj
+            - id: 1jka393f
+              type: text
+              content: Italiano
+              textStyle:
+                fontsize: 32
+                fill: "white"
+              click:
+                actionPayload:
+                  actions:
+                    setCurrentLocalizationPackageId:
+                      localizationPackageId: asdfi4t
+
+  characters:
+    ajf34a:
+      name: ${l10n.keys.c1}
+
+story:
+  initialSceneId: ajfl3a
+  scenes:
+    ajfl3a:
+      name: Scene 1
+      initialSectionId: l3kjfawelf
+      sections:
+        l3kjfawelf:
+          name: Section 1
+          lines:
+            - id: line1
+              actions:
+                screen:
+                  resourceId: screen1
+                dialogue:
+                  gui:
+                    resourceId: fi3l
+                  mode: adv
+                  content:
+                    - text: ${l10n.keys.a1}
+                  characterId: ajf34a
+            - id: line2
+              actions: {}
+            - id: line3
+              actions:
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.a2}
+            - id: line4
+              actions:
+                dialogue:
+                  characterId: ajf34a
+            - id: line5
+              actions:
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.a2}
+                  characterId: ajf34a

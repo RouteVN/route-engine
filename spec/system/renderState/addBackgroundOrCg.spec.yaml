@@ -1,0 +1,351 @@
+file: "../../../src/stores/constructRenderState.js"
+group: constructRenderState.addBackgroundOrCg
+suites: [addBackgroundOrCg]
+---
+suite: addBackgroundOrCg
+exportName: addBackgroundOrCg
+---
+case: add background image to story container
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      background:
+        resourceId: "bg1"
+        resourceType: "image"
+    resources:
+      images:
+        bg1:
+          fileId: "image1.png"
+          width: 1920
+          height: 1080
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "bg-cg-bg1"
+          type: "sprite"
+          x: 0
+          y: 0
+          src: "image1.png"
+          width: 1920
+          height: 1080
+  animations: []
+---
+case: add background with in animation
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      background:
+        resourceId: "bg1"
+        resourceType: "image"
+        animations:
+          in:
+            animationId: "fadeIn"
+    resources:
+      images:
+        bg1:
+          fileId: "image1.png"
+          width: 1920
+          height: 1080
+      animations:
+        fadeIn:
+          properties:
+            opacity: [0, 1]
+            duration: 500
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "bg-cg-bg1"
+          type: "sprite"
+          x: 0
+          y: 0
+          src: "image1.png"
+          width: 1920
+          height: 1080
+  animations:
+    - id: "bg-cg-animation-in"
+      type: "tween"
+      targetId: "bg-cg-bg1"
+      properties:
+        opacity: [0, 1]
+        duration: 500
+---
+case: add background with update animation
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children:
+          - id: "bg-cg-existing"
+            type: "sprite"
+            x: 0
+            y: 0
+            src: "old.jpg"
+            width: 1920
+            height: 1080
+    animations: []
+  - presentationState:
+      background:
+        resourceId: "bg1"
+        resourceType: "image"
+        animations:
+          update:
+            animationId: "crossFade"
+    resources:
+      images:
+        bg1:
+          fileId: "new.jpg"
+          width: 1920
+          height: 1080
+      animations:
+        crossFade:
+          properties:
+            opacity: [1, 0]
+            duration: 1000
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "bg-cg-existing"
+          type: "sprite"
+          x: 0
+          y: 0
+          src: "old.jpg"
+          width: 1920
+          height: 1080
+        - id: "bg-cg-bg1"
+          type: "sprite"
+          x: 0
+          y: 0
+          src: "new.jpg"
+          width: 1920
+          height: 1080
+  animations:
+    - id: "bg-cg-animation-update"
+      type: "tween"
+      targetId: "bg-cg-bg1"
+      properties:
+        opacity: [1, 0]
+        duration: 1000
+---
+case: no presentationState.background - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState: {}
+    resources:
+      images:
+        bg1:
+          fileId: "image1.png"
+          width: 1920
+          height: 1080
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+---
+case: no resourceId in presentationState.background - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      background:
+        someOtherProperty: "value"
+    resources:
+      images:
+        bg1:
+          fileId: "image1.png"
+          width: 1920
+          height: 1080
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+---
+case: story container does not exist - return unchanged state
+in:
+  - elements:
+      - id: "notStory"
+        type: "container"
+        children: []
+    animations: []
+  - presentationState:
+      background:
+        resourceId: "bg1"
+        resourceType: "image"
+    resources:
+      images:
+        bg1:
+          fileId: "image1.png"
+          width: 1920
+          height: 1080
+out:
+  elements:
+    - id: "notStory"
+      type: "container"
+      children: []
+  animations: []
+---
+case: background image not found in resources - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      background:
+        resourceId: "nonExistent"
+        resourceType: "image"
+    resources:
+      images:
+        bg1:
+          fileId: "image1.png"
+          width: 1920
+          height: 1080
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+---
+case: null resources - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      background:
+        resourceId: "bg1"
+        resourceType: "image"
+    resources: {}
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+---
+case: multiple backgrounds and animations
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children:
+          - id: "existingChild"
+            type: "text"
+            content: "Hello"
+    animations:
+      - id: "existingTransition"
+        type: "existing"
+  - presentationState:
+      background:
+        resourceId: "bg2"
+        resourceType: "image"
+        animations:
+          in:
+            animationId: "slideIn"
+          update:
+            animationId: "pulse"
+    resources:
+      images:
+        bg2:
+          fileId: "background.jpg"
+          width: 1920
+          height: 1080
+      animations:
+        slideIn:
+          properties:
+            x: [-100, 0]
+            duration: 300
+        pulse:
+          properties:
+            scale: [1, 1.1, 1]
+            duration: 1000
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "existingChild"
+          type: "text"
+          content: "Hello"
+        - id: "bg-cg-bg2"
+          type: "sprite"
+          x: 0
+          y: 0
+          src: "background.jpg"
+          width: 1920
+          height: 1080
+  animations:
+    - id: "existingTransition"
+      type: "existing"
+    - id: "bg-cg-animation-in"
+      type: "tween"
+      targetId: "bg-cg-bg2"
+      properties:
+        x: [-100, 0]
+        duration: 300
+    - id: "bg-cg-animation-update"
+      type: "tween"
+      targetId: "bg-cg-bg2"
+      properties:
+        scale: [1, 1.1, 1]
+        duration: 1000

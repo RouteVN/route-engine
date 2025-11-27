@@ -1,0 +1,23 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore selectors
+suites:
+  [
+    selectAutoMode,
+  ]
+---
+suite: selectAutoMode
+exportName: selectAutoMode
+---
+case: "false"
+in:
+  - state:
+      global:
+        autoMode: false
+out: false
+---
+case: "true"
+in:
+  - state:
+      global:
+        autoMode: true
+out: true

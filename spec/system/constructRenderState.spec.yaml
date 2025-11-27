@@ -1,0 +1,129 @@
+file: "../../src/stores/constructRenderState.js"
+group: constructRenderState
+suites: [constructRenderState]
+---
+suite: constructRenderState
+exportName: constructRenderState
+---
+case: construct render state with single screen action
+in:
+  - - presentationState:
+        screen:
+          resourceId: "mainScreen"
+      resources:
+        layouts:
+          mainScreen:
+            elements:
+              - type: "container"
+                id: "screen-container"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "screen"
+          type: "container"
+          children:
+            - type: "container"
+              id: "screen-container"
+  animations: []
+  audio: []
+---
+case: construct render state with multiple actions in one presentation
+in:
+  - - presentationState:
+        screen:
+          resourceId: "mainScreen"
+        background:
+          resourceId: "bgImage"
+          resourceType: "image"
+      resources:
+        layouts:
+          mainScreen:
+            elements:
+              - type: "container"
+                id: "screen-container"
+        images:
+          bgImage:
+            fileId: "background.jpg"
+            width: 1920
+            height: 1080
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "screen"
+          type: "container"
+          children:
+            - type: "container"
+              id: "screen-container"
+        - id: "bg-cg-bgImage"
+          type: "sprite"
+          x: 0
+          y: 0
+          src: "background.jpg"
+          width: 1920
+          height: 1080
+  animations: []
+  audio: []
+---
+case: construct render state with clean all and multiple presentations
+in:
+  - - presentationState:
+        cleanAll: true
+        screen:
+          resourceId: "oldScreen"
+      resources:
+        layouts:
+          oldScreen:
+            elements:
+              - type: "container"
+                id: "old-container"
+    - presentationState:
+        screen:
+          resourceId: "newScreen"
+        background:
+          resourceId: "newBg"
+          resourceType: "image"
+      resources:
+        layouts:
+          newScreen:
+            elements:
+              - type: "container"
+                id: "new-container"
+        images:
+          newBg:
+            fileId: "new-background.jpg"
+            width: 1920
+            height: 1080
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "screen"
+          type: "container"
+          children:
+            - type: "container"
+              id: "new-container"
+        - id: "screen"
+          type: "container"
+          children:
+            - type: "container"
+              id: "old-container"
+        - id: "bg-cg-newBg"
+          type: "sprite"
+          x: 0
+          y: 0
+          src: "new-background.jpg"
+          width: 1920
+          height: 1080
+  animations: []
+  audio: []

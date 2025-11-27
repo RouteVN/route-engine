@@ -1,0 +1,636 @@
+file: "../../../src/stores/constructRenderState.js"
+group: constructRenderState.addVisuals
+suites: [addVisuals]
+---
+suite: addVisuals
+exportName: addVisuals
+---
+case: add visual sprite with transform to story container
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceId: "image1"
+            resourceType: "image"
+            transformId: "transform1"
+    resources:
+      images:
+        image1:
+          fileId: "visual.png"
+      transforms:
+        transform1:
+          x: 100
+          y: 200
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 45
+          scaleX: 1.5
+          scaleY: 1.5
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-visual1"
+          type: "sprite"
+          url: "visual.png"
+          x: 100
+          y: 200
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 45
+          scaleX: 1.5
+          scaleY: 1.5
+  animations: []
+  audio: []
+---
+case: add visual with in animation
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceId: "image1"
+            resourceType: "image"
+            transformId: "transform1"
+            animations:
+              in:
+                animationId: "fadeIn"
+    resources:
+      images:
+        image1:
+          fileId: "fade.png"
+      transforms:
+        transform1:
+          x: 50
+          y: 100
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      animations:
+        fadeIn:
+          properties:
+            opacity: [0, 1]
+            duration: 500
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-visual1"
+          type: "sprite"
+          url: "fade.png"
+          x: 50
+          y: 100
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+  animations:
+    - id: "visual1-animation"
+      type: "tween"
+      targetId: "visual-visual1"
+      properties:
+        opacity: [0, 1]
+        duration: 500
+  audio: []
+---
+case: add visual with out animation
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceId: "image1"
+            resourceType: "image"
+            transformId: "transform1"
+            animations:
+              out: "fadeOut"
+    resources:
+      images:
+        image1:
+          fileId: "out.png"
+      transforms:
+        transform1:
+          x: 0
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      animations:
+        fadeOut:
+          properties:
+            opacity: [1, 0]
+            duration: 300
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-visual1"
+          type: "sprite"
+          url: "out.png"
+          x: 0
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+  animations:
+    - id: "visual1-animation-2"
+      type: "tween"
+      targetId: "visual-visual1"
+      properties:
+        opacity: [1, 0]
+        duration: 300
+  audio: []
+---
+case: add visual with both in and out animations
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceId: "image1"
+            resourceType: "image"
+            transformId: "transform1"
+            animations:
+              in:
+                animationId: "slideIn"
+              out:
+                animationId: "slideOut"
+    resources:
+      images:
+        image1:
+          fileId: "slide.png"
+      transforms:
+        transform1:
+          x: 150
+          y: 75
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      animations:
+        slideIn:
+          properties:
+            x: [-50, 150]
+            duration: 400
+        slideOut:
+          properties:
+            x: [150, 350]
+            duration: 400
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-visual1"
+          type: "sprite"
+          url: "slide.png"
+          x: 150
+          y: 75
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+  animations:
+    - id: "visual1-animation"
+      type: "tween"
+      targetId: "visual-visual1"
+      properties:
+        x: [-50, 150]
+        duration: 400
+    - id: "visual1-animation-2"
+      type: "tween"
+      targetId: "visual-visual1"
+      properties:
+        x: [150, 350]
+        duration: 400
+  audio: []
+---
+case: multiple visual items
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceId: "image1"
+            resourceType: "image"
+            transformId: "transform1"
+          - id: "visual2"
+            resourceId: "image2"
+            resourceType: "image"
+            transformId: "transform2"
+    resources:
+      images:
+        image1:
+          fileId: "first.png"
+        image2:
+          fileId: "second.png"
+      transforms:
+        transform1:
+          x: 0
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+        transform2:
+          x: 200
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-visual1"
+          type: "sprite"
+          url: "first.png"
+          x: 0
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+        - id: "visual-visual2"
+          type: "sprite"
+          url: "second.png"
+          x: 200
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+  animations: []
+  audio: []
+---
+case: no presentationState.visual - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState: {}
+    resources:
+      images:
+        image1:
+          fileId: "test.png"
+      transforms:
+        transform1:
+          x: 0
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio: []
+---
+case: story container does not exist - return unchanged state
+in:
+  - elements:
+      - id: "notStory"
+        type: "container"
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceId: "image1"
+            resourceType: "image"
+            transformId: "transform1"
+    resources:
+      images:
+        image1:
+          fileId: "test.png"
+      transforms:
+        transform1:
+          x: 0
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+out:
+  elements:
+    - id: "notStory"
+      type: "container"
+      children: []
+  animations: []
+  audio: []
+---
+case: visual item missing resourceId - skip item
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceType: "image"
+            transformId: "transform1"
+    resources:
+      images:
+        image1:
+          fileId: "test.png"
+      transforms:
+        transform1:
+          x: 0
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio: []
+---
+case: visual item missing resourceType - skip item
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceId: "image1"
+            transformId: "transform1"
+    resources:
+      images:
+        image1:
+          fileId: "test.png"
+      transforms:
+        transform1:
+          x: 0
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-visual1"
+          type: "sprite"
+          url: "test.png"
+          x: 0
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+  animations: []
+  audio: []
+---
+case: unsupported resourceType - skip item
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceId: "video1"
+            resourceType: "video"
+            transformId: "transform1"
+    resources:
+      images: {}
+      videos:
+        video1:
+          fileId: "test.mp4"
+      transforms:
+        transform1:
+          x: 0
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio: []
+---
+case: resource not found - skip item
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceId: "nonExistent"
+            resourceType: "image"
+            transformId: "transform1"
+    resources:
+      images:
+        existing:
+          fileId: "test.png"
+      transforms:
+        transform1:
+          x: 0
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio: []
+---
+case: no visual items - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items: []
+    resources:
+      images:
+        image1:
+          fileId: "test.png"
+      transforms:
+        transform1:
+          x: 0
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio: []
+---
+case: null resources - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceId: "image1"
+            resourceType: "image"
+            transformId: "transform1"
+    resources: null
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio: []

@@ -1,0 +1,73 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore selectors
+suites:
+  [
+    selectNextLineConfig,
+  ]
+---
+suite: selectNextLineConfig
+exportName: selectNextLineConfig
+---
+case: default next line config
+in:
+  - state:
+      global:
+        nextLineConfig:
+          manual:
+            enabled: true
+            requireComplete: false
+          auto:
+            enabled: false
+out:
+  manual:
+    enabled: true
+    requireComplete: false
+  auto:
+    enabled: false
+---
+case: modified manual config
+in:
+  - state:
+      global:
+        nextLineConfig:
+          manual:
+            enabled: false
+            requireComplete: true
+          auto:
+            enabled: true
+out:
+  manual:
+    enabled: false
+    requireComplete: true
+  auto:
+    enabled: true
+---
+case: empty next line config
+in:
+  - state:
+      global:
+        nextLineConfig: {}
+out: {}
+---
+case: complex next line config
+in:
+  - state:
+      global:
+        nextLineConfig:
+          manual:
+            enabled: true
+            requireComplete: true
+            delay: 1000
+          auto:
+            enabled: true
+            speed: "normal"
+            skipUnread: false
+out:
+  manual:
+    enabled: true
+    requireComplete: true
+    delay: 1000
+  auto:
+    enabled: true
+    speed: "normal"
+    skipUnread: false

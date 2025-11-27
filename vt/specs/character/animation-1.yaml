@@ -2,15 +2,44 @@
 title: "Character Animation 1"
 description: Test animation in, update, out for character containers
 ---
+localization:
+  defaultPackageId: eklekfjwalefj
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys: {}
 screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
 
 resources:
+  layouts:
+    screen1:
+      elements:
+        - id: af32
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
   images:
     alkejf3la:
       fileId: lakjf3lka
+      width: 1920
+      height: 1080
+    fk4jla893:
+      fileId: la3lka
+      width: 200
+      height: 200
+    3fjaklj34:
+      fileId: x342fga
+      width: 200
+      height: 200
 
   characters:
     alkjf3ia:
@@ -83,6 +112,8 @@ story:
           lines:
             - id: line1
               actions:
+                screen:
+                  resourceId: screen1
                 background:
                   resourceId: alkejf3la
                   resourceType: image
@@ -92,9 +123,9 @@ story:
                       transformId: iasdlf
                       sprites:
                         - id: base
-                          imageId: fk4jla893
+                          resourceId: fk4jla893
                         - id: outfit
-                          imageId: 3fjaklj34
+                          resourceId: 3fjaklj34
                       animations:
                         in:
                           animationId: slide_in
@@ -109,9 +140,9 @@ story:
                       transformId: iasdlf
                       sprites:
                         - id: base
-                          imageId: fk4jla893
+                          resourceId: fk4jla893
                         - id: outfit
-                          imageId: 3fjaklj34
+                          resourceId: 3fjaklj34
                       animations:
                         update:
                           animationId: scale_update

@@ -1,0 +1,82 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.showDialogueUI
+suites: [showDialogueUI]
+---
+suite: showDialogueUI
+exportName: showDialogueUI
+---
+case: show dialogue UI when hidden
+in:
+  - state:
+      global:
+        dialogueUIHidden: true
+        pendingEffects: []
+out:
+  global:
+    dialogueUIHidden: false
+    pendingEffects:
+      - name: render
+---
+case: show dialogue UI when already visible
+in:
+  - state:
+      global:
+        dialogueUIHidden: false
+        pendingEffects: []
+out:
+  global:
+    dialogueUIHidden: false
+    pendingEffects:
+      - name: render
+---
+case: show dialogue UI with existing pending effects
+in:
+  - state:
+      global:
+        dialogueUIHidden: true
+        pendingEffects:
+          - name: existingEffect
+            data: test
+out:
+  global:
+    dialogueUIHidden: false
+    pendingEffects:
+      - name: existingEffect
+        data: test
+      - name: render
+---
+case: show dialogue UI with multiple existing effects
+in:
+  - state:
+      global:
+        dialogueUIHidden: true
+        pendingEffects:
+          - name: effect1
+            data: value1
+          - name: effect2
+            data: value2
+out:
+  global:
+    dialogueUIHidden: false
+    pendingEffects:
+      - name: effect1
+        data: value1
+      - name: effect2
+        data: value2
+      - name: render
+---
+case: show dialogue UI with other global properties
+in:
+  - state:
+      global:
+        dialogueUIHidden: true
+        autoMode: true
+        skipMode: false
+        pendingEffects: []
+out:
+  global:
+    dialogueUIHidden: false
+    autoMode: true
+    skipMode: false
+    pendingEffects:
+      - name: render

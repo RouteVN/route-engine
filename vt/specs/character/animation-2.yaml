@@ -2,17 +2,56 @@
 title: "Character Animation 2"
 description: Test both in and out animation at same time for character transitions
 ---
+localization:
+  defaultPackageId: eklekfjwalefj
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys: {}
 screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
 
 resources:
+  layouts:
+    screen1:
+      elements:
+        - id: af32
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
   images:
     alkejf3la:
       fileId: lakjf3lka
+      width: 1920
+      height: 1080
     8a3lkja:
       fileId: dmni32
+      width: 1920
+      height: 1080
+    fk4jla893:
+      fileId: la3lka
+      width: 200
+      height: 200
+    3fjaklj34:
+      fileId: x342fga
+      width: 200
+      height: 200
+    spr1:
+      fileId: file1
+      width: 200
+      height: 200
+    spr2:
+      fileId: file2
+      width: 200
+      height: 200
 
   characters:
     alkjf3ia:
@@ -113,6 +152,8 @@ story:
           lines:
             - id: line1
               actions:
+                screen:
+                  resourceId: screen1
                 background:
                   resourceId: alkejf3la
                   resourceType: image
@@ -122,9 +163,9 @@ story:
                       transformId: iasdlf
                       sprites:
                         - id: base
-                          imageId: fk4jla893
+                          resourceId: fk4jla893
                         - id: outfit
-                          imageId: 3fjaklj34
+                          resourceId: 3fjaklj34
                       animations:
                         in:
                           animationId: slide_in_left
@@ -139,16 +180,16 @@ story:
                       transformId: iasdlf
                       sprites:
                         - id: base
-                          imageId: fk4jla893
+                          resourceId: fk4jla893
                         - id: outfit
-                          imageId: 3fjaklj34
+                          resourceId: 3fjaklj34
                     - id: "char2id"
                       transformId: t_right
                       sprites:
                         - id: base
-                          imageId: spr1
+                          resourceId: spr1
                         - id: outfit
-                          imageId: spr2
+                          resourceId: spr2
                       animations:
                         in:
                           animationId: slide_in_right
@@ -163,9 +204,9 @@ story:
                       transformId: iasdlf
                       sprites:
                         - id: base
-                          imageId: fk4jla893
+                          resourceId: fk4jla893
                         - id: outfit
-                          imageId: 3fjaklj34
+                          resourceId: 3fjaklj34
                       animations:
                         out:
                           animationId: slide_out_left
@@ -173,9 +214,9 @@ story:
                       transformId: a32kf3
                       sprites:
                         - id: base
-                          imageId: fk4jla893
+                          resourceId: fk4jla893
                         - id: outfit
-                          imageId: 3fjaklj34
+                          resourceId: 3fjaklj34
                       animations:
                         in:
                           animationId: slide_in_left
@@ -190,9 +231,9 @@ story:
                       transformId: t_right
                       sprites:
                         - id: base
-                          imageId: spr1
+                          resourceId: spr1
                         - id: outfit
-                          imageId: spr2
+                          resourceId: spr2
                       animations:
                         out:
                           animationId: slide_out_right
@@ -200,6 +241,6 @@ story:
                       transformId: a32kf3
                       sprites:
                         - id: base
-                          imageId: fk4jla893
+                          resourceId: fk4jla893
                         - id: outfit
-                          imageId: 3fjaklj34
+                          resourceId: 3fjaklj34

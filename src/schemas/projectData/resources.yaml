@@ -1,19 +1,22 @@
 $schema: http://json-schema.org/draft-07/schema#
 title: Resources Schema
-description: Schema for all project resources including images, audio, characters, etc.
+description: Schema for all project resources including images, sounds, characters, etc.
 type: object
 properties:
   images:
     type: object
     description: Background image assets
     patternProperties:
-      "^[a-zA-Z0-9_-]+$":
+      "^[a-zA-Z0-9]+$":
         type: object
         description: Image resource
         properties:
           fileId:
             type: string
             description: Reference to the background file resource
+          fileType:
+            type: string
+            description: File type
           width:
             type: integer
             description: Width of the background image
@@ -28,7 +31,7 @@ properties:
     type: object
     description: Character sprite assets
     patternProperties:
-      "^[a-zA-Z0-9_-]+$":
+      "^[a-zA-Z0-9]+$":
         type: object
         description: Character resource
         properties:
@@ -42,13 +45,16 @@ properties:
     type: object
     description: Video assets
     patternProperties:
-      "^[a-zA-Z0-9_-]+$":
+      "^[a-zA-Z0-9]+$":
         type: object
         description: Video resource
         properties:
           fileId:
             type: string
             description: Reference to the video file resource
+          fileType:
+            type: string
+            description: File type
           width:
             type: integer
             description: Width of the video
@@ -63,7 +69,7 @@ properties:
     type: object
     description: Transform configurations for positioning elements
     patternProperties:
-      "^[a-zA-Z0-9_-]+$":
+      "^[a-zA-Z0-9]+$":
         type: object
         description: Transform configuration
         properties:
@@ -95,7 +101,7 @@ properties:
     type: object
     description: Animation definitions for various effects
     patternProperties:
-      "^[a-zA-Z0-9_-]+$":
+      "^[a-zA-Z0-9]+$":
         type: object
         description: Animation definition
         properties:
@@ -106,7 +112,7 @@ properties:
             type: object
             description: Animation properties and keyframes
             patternProperties:
-              "^[a-zA-Z0-9_-]+$":
+              "^[a-zA-Z0-9]+$":
                 type: object
                 properties:
                   initialValue:
@@ -138,17 +144,20 @@ properties:
         additionalProperties: false
     additionalProperties: false
 
-  audio:
+  sounds:
     type: object
-    description: Audio, including bgm and sound effects
+    description: Sounds, including bgm and sound effects
     patternProperties:
-      "^[a-zA-Z0-9_-]+$":
+      "^[a-zA-Z0-9]+$":
         type: object
-        description: Audio resource
+        description: Sound resource
         properties:
           fileId:
             type: string
             description: Reference to the sound file resource
+          fileType:
+            type: string
+            description: File type
         required: [fileId]
         additionalProperties: false
     additionalProperties: false
@@ -157,7 +166,7 @@ properties:
     type: object
     description: Color palette for the project
     patternProperties:
-      "^[a-zA-Z0-9_-]+$":
+      "^[a-zA-Z0-9]+$":
         type: object
         description: Color resource
         properties:
@@ -172,13 +181,16 @@ properties:
     type: object
     description: Font file for the project
     patternProperties:
-      "^[a-zA-Z0-9_-]+$":
+      "^[a-zA-Z0-9]+$":
         type: object
         description: Font resource
         properties:
           fileId:
             type: string
             description: Reference to the font file resource
+          fileType:
+            type: string
+            description: File type
         required: [fileId]
         additionalProperties: false
     additionalProperties: false
@@ -186,13 +198,16 @@ properties:
   typography:
     type: object
     patternProperties:
-      "^[a-zA-Z0-9_-]+$":
+      "^[a-zA-Z0-9]+$":
         type: object
         description: Typography configuration
         properties:
           fontId:
             type: string
             description: Font file
+          colorId:
+            type: string
+            description: Reference to color resource for font color
           fontSize:
             type: number
             description: Font size in pixels
@@ -208,7 +223,13 @@ properties:
           lineHeight:
             type: number
             description: Line height. 1 = font size pixels
-        required: [fontId, fontSize, fontWeight, fontStyle, lineHeight]
+          strokeColorId:
+            type: string
+            description: Stroke reference to color resource for font color
+          strokeWidth:
+            type: number
+            description: Stroke width
+        required: [fontId, fontSize, fontWeight, fontStyle, lineHeight, colorId]
         additionalProperties: false
     additionalProperties: false
 
@@ -216,13 +237,10 @@ properties:
     type: object
     description: Layout configurations for UI elements
     patternProperties:
-      "^[a-zA-Z0-9_-]+$":
+      "^[a-zA-Z0-9]+$":
         type: object
         description: Layout configuration
         properties:
-          name:
-            type: string
-            description: Display name for the layout
           elements:
             type: array
             description: Array of UI elements in this layout
@@ -234,14 +252,18 @@ properties:
 
   variables:
     type: object
-    description: Game variables and their initial values
+    description: Variables and their initial values
     patternProperties:
-      "^[a-zA-Z0-9_-]+$":
+      "^[a-zA-Z0-9]+$":
         description: Variable value
-        oneOf:
-          - type: string
-          - type: number
-          - type: boolean
+        required: [type, scope]
+        properties:
+          type:
+            type: enum
+            enum: [string, boolean, number]
+          scope:
+            type: enum
+            enum: [runtime, device, global]
     additionalProperties: false
 
 additionalProperties: false

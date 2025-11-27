@@ -1,0 +1,111 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore selectors
+suites:
+  [
+    selectCurrentPointer,
+  ]
+---
+suite: selectCurrentPointer
+exportName: selectCurrentPointer
+---
+case: no contexts available
+in:
+  - state:
+      global: {}
+      contexts: []
+out: __undefined__
+---
+case: single context with read pointer
+in:
+  - state:
+      global: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read: { sectionId: "intro", lineId: "1" }
+            history: { sectionId: "intro", lineId: "1" }
+out:
+  currentPointerMode: "read"
+  pointer:
+    sectionId: "intro"
+    lineId: "1"
+---
+case: single context with history pointer
+in:
+  - state:
+      global: {}
+      contexts:
+        - currentPointerMode: "history"
+          pointers:
+            read: { sectionId: "intro", lineId: "1" }
+            history: { sectionId: "section1", lineId: "5" }
+out:
+  currentPointerMode: "history"
+  pointer:
+    sectionId: "section1"
+    lineId: "5"
+---
+case: multiple contexts (should select last one)
+in:
+  - state:
+      global: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read: { sectionId: "intro", lineId: "1" }
+            history: { sectionId: "intro", lineId: "1" }
+        - currentPointerMode: "menu"
+          pointers:
+            read: { sectionId: undefined, lineId: undefined }
+            history: { sectionId: "menu", lineId: "save" }
+        - currentPointerMode: "history"
+          pointers:
+            read: { sectionId: undefined, lineId: undefined }
+            history: { sectionId: "inventory", lineId: "items" }
+out:
+  currentPointerMode: "history"
+  pointer:
+    sectionId: "inventory"
+    lineId: "items"
+---
+case: context with missing pointer mode
+in:
+  - state:
+      global: {}
+      contexts:
+        - currentPointerMode: "nonexistent"
+          pointers:
+            read: { sectionId: "intro", lineId: "1" }
+            history: { sectionId: "intro", lineId: "1" }
+out:
+  currentPointerMode: "nonexistent"
+---
+case: context with missing pointers object
+in:
+  - state:
+      global: {}
+      contexts:
+        - currentPointerMode: "read"
+out:
+  currentPointerMode: "read"
+---
+case: context with complex pointer data
+in:
+  - state:
+      global: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: 42
+              metadata: { scene: "dialogue", character: "hero" }
+              flags: ["canSkip", "hasChoices"]
+            history: { sectionId: "intro", lineId: "1" }
+out:
+  currentPointerMode: "read"
+  pointer:
+    sectionId: "section1"
+    lineId: 42
+    metadata: { scene: "dialogue", character: "hero" }
+    flags: ["canSkip", "hasChoices"]

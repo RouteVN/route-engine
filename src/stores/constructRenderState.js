@@ -1,4 +1,5 @@
 import { parseAndRender } from "jempl";
+import { createSequentialActionsExecutor } from "../util.js";
 
 const jemplFunctions = {
   objectValues: (obj) =>
@@ -16,24 +17,27 @@ export const createInitialState = () => {
         children: [],
       },
     ],
-    transitions: [],
+    animations: [],
+    audio: [],
   };
 };
 
 /**
  * @param {Object} params
  */
-export const addScreen = ({ elements }, { presentationState, resources }) => {
+export const addScreen = (state, { presentationState, resources }) => {
+  const { elements } = state;
   if (presentationState.screen) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
-    if (!storyContainer) return;
+    if (!storyContainer) {
+      return state;
+    }
 
     if (
-      presentationState.screen.resourceId &&
-      presentationState.screen.resourceType === "layout"
+      presentationState.screen.resourceId
     ) {
-      const layout = resources.layouts[presentationState.screen.resourceId];
+      const layout = resources?.layouts[presentationState.screen.resourceId];
 
       if (layout) {
         // Add screen as the first child of story container
@@ -45,60 +49,69 @@ export const addScreen = ({ elements }, { presentationState, resources }) => {
       }
     }
   }
+  return state;
 };
 
 /**
  *
  * @param {Object} params
  */
-export const addBackgrundOrCg = (
-  { elements, transitions },
-  { presentationState, resources, resolveFile },
+export const addBackgroundOrCg = (
+  state,
+  { presentationState, resources = {}, variables, autoMode, skipMode, currentLocalizationPackageId }, // resolveFile
 ) => {
+  const { elements } = state;
+  const animations = state.animations || [];
   if (presentationState.background) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
-    if (!storyContainer) return;
-
-    if (
-      presentationState.background.resourceId &&
-      presentationState.background.resourceType === "image"
-    ) {
-      const background =
-        resources.images[presentationState.background.resourceId];
-      storyContainer.children.push({
-        id: `bg-cg-${presentationState.background.resourceId}`,
-        type: "sprite",
-        x: 0,
-        y: 0,
-        url: resolveFile(background.fileId),
-      });
+    if (!storyContainer) {
+      return state;
     }
 
     if (
-      presentationState.background.resourceId &&
-      presentationState.background.resourceType === "layout"
+      presentationState.background.resourceId
     ) {
-      const layout = resources.layouts[presentationState.background.resourceId];
-
-      storyContainer.children.push({
-        id: `bg-cg-${presentationState.background.resourceId}`,
-        type: "container",
-        children: layout.elements,
-      });
+      const { images = {} } = resources;
+      const background = images[presentationState.background.resourceId];
+      if (background) {
+        storyContainer.children.push({
+          id: `bg-cg-${presentationState.background.resourceId}`,
+          type: "sprite",
+          x: 0,
+          y: 0,
+          src: background.fileId,
+          width: background.width,
+          height: background.height,
+        });
+      }
     }
+
+    if (
+      presentationState.background.resourceId
+    ) {
+      const { layouts = {} } = resources;
+      const layout = layouts[presentationState.background.resourceId];
+      if (layout) {
+        storyContainer.children.push({
+          id: `bg-cg-${presentationState.background.resourceId}`,
+          type: "container",
+          children: layout.elements,
+        });
+      }
+    }
+
 
     if (presentationState.background.animations) {
       if (presentationState.background.animations.in) {
         const animationId =
           presentationState.background.animations.in.animationId;
-        const animation = resources.animations[animationId];
+        const animation = resources?.animations[animationId];
         if (animation) {
-          transitions.push({
+          animations.push({
             id: "bg-cg-animation-in",
-            type: "keyframes",
-            event: "add",
-            elementId: `bg-cg-${presentationState.background.resourceId}`,
+            type: "tween",
+            targetId: `bg-cg-${presentationState.background.resourceId}`,
             properties: animation.properties,
           });
         }
@@ -109,13 +122,12 @@ export const addBackgrundOrCg = (
           presentationState.background.animations.out.animationId;
         const resourceId =
           presentationState.background.animations.out.resourceId;
-        const animation = resources.animations[animationId];
+        const animation = resources?.animations[animationId];
         if (animation) {
-          transitions.push({
+          animations.push({
             id: "bg-cg-animation-out",
-            type: "keyframes",
-            event: "remove",
-            elementId: `bg-cg-${resourceId}`,
+            type: "tween",
+            targetId: `bg-cg-${resourceId}`,
             properties: animation.properties,
           });
         }
@@ -124,19 +136,19 @@ export const addBackgrundOrCg = (
       if (presentationState.background.animations.update) {
         const animationId =
           presentationState.background.animations.update.animationId;
-        const animation = resources.animations[animationId];
+        const animation = resources?.animations[animationId];
         if (animation) {
-          transitions.push({
+          animations.push({
             id: "bg-cg-animation-update",
-            type: "keyframes",
-            event: "update",
-            elementId: `bg-cg-${presentationState.background.resourceId}`,
+            type: "tween",
+            targetId: `bg-cg-${presentationState.background.resourceId}`,
             properties: animation.properties,
           });
         }
       }
     }
   }
+  return state;
 };
 
 /**
@@ -144,13 +156,15 @@ export const addBackgrundOrCg = (
  * @param {Object} params
  */
 export const addCharacters = (
-  { elements, transitions },
-  { presentationState, resources, resolveFile },
+  state,
+  { presentationState, resources },
 ) => {
-  if (presentationState.character) {
+  const { elements } = state;
+  const animations = state.animations || [];
+  if (presentationState.character && resources) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
-    if (!storyContainer) return;
+    if (!storyContainer) return state;
 
     const items = presentationState.character.items || [];
 
@@ -161,28 +175,31 @@ export const addCharacters = (
       if (item.animations && item.animations.out && !sprites && !transformId) {
         // Just add the out animation transition, container should already exist
         const animationId = item.animations.out.animationId;
-        const animation = resources.animations[animationId];
+        const animation = resources?.animations[animationId];
         if (animation) {
           const outTransition = {
             id: `character-animation-out`,
-            type: "keyframes",
-            event: "remove",
-            elementId: `character-container-${item.id}`,
+            type: "tween",
+            targetId: `character-container-${item.id}`,
             properties: animation.properties,
           };
-          transitions.push(outTransition);
+          animations.push(outTransition);
         }
         continue;
       }
 
       // Skip items without required properties for creating containers
-      if (!sprites || !transformId) {
+      if (!sprites || sprites.length === 0 || !transformId) {
         console.warn("Character item missing sprites or transformId:", item);
         continue;
       }
 
-      const spritePartIds = sprites.map(({ imageId }) => imageId);
+      const spritePartIds = sprites.map(({ resourceId }) => resourceId);
       const transform = resources.transforms[transformId];
+      if (!transform) {
+        console.warn("Transform not found:", transformId);
+        continue;
+      }
       const characterContainer = {
         type: "container",
         id: `character-container-${item.id}`,
@@ -196,25 +213,19 @@ export const addCharacters = (
         children: [],
       };
 
-      const matchedSpriteParts = [];
-      Object.entries(resources.characters).flatMap(([key, character]) => {
-        const { sprites: characterSprites } = character;
-        Object.entries(characterSprites).map(([partId, part]) => {
-          if (spritePartIds.includes(partId)) {
-            matchedSpriteParts.push({
-              partId,
-              fileId: part.fileId,
-            });
-          }
-        });
-      });
+      for (const sprite of sprites) {
+        const imageResource = resources.images[sprite.resourceId];
+        if (!imageResource) {
+          console.warn(`Image resource not found: ${sprite.resourceId}`);
+          continue;
+        }
 
-      for (const spritePart of matchedSpriteParts) {
-        // @ts-ignore
         characterContainer.children.push({
           type: "sprite",
-          id: `${item.id}-${spritePart.partId}`,
-          url: resolveFile(spritePart.fileId),
+          id: `${item.id}-${sprite.id}`,
+          url: imageResource.fileId,
+          width: imageResource.width,
+          height: imageResource.height,
           x: 0,
           y: 0,
         });
@@ -226,13 +237,12 @@ export const addCharacters = (
       if (item.animations) {
         if (item.animations.in) {
           const animationId = item.animations.in.animationId;
-          const animation = resources.animations[animationId];
+          const animation = resources?.animations[animationId];
           if (animation) {
-            transitions.push({
+            animations.push({
               id: `character-animation-in`,
-              type: "keyframes",
-              event: "add",
-              elementId: `character-container-${item.id}`,
+              type: "tween",
+              targetId: `character-container-${item.id}`,
               properties: animation.properties,
             });
           }
@@ -240,21 +250,21 @@ export const addCharacters = (
 
         if (item.animations.update) {
           const animationId = item.animations.update.animationId;
-          const animation = resources.animations[animationId];
+          const animation = resources?.animations[animationId];
           if (animation) {
             const updateTransition = {
               id: `character-animation-update`,
-              type: "keyframes",
-              event: "update",
-              elementId: `character-container-${item.id}`,
+              type: "tween",
+              targetId: `character-container-${item.id}`,
               properties: animation.properties,
             };
-            transitions.push(updateTransition);
+            animations.push(updateTransition);
           }
         }
       }
     }
   }
+  return state;
 };
 
 /**
@@ -262,31 +272,30 @@ export const addCharacters = (
  * @param {Object} params
  */
 export const addVisuals = (
-  { elements, transitions },
-  { presentationState, resources, resolveFile },
+  state,
+  { presentationState, resources },
 ) => {
-  if (presentationState.visual) {
+  const { elements } = state;
+  const animations = state.animations || [];
+  if (presentationState.visual && resources) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
-    if (!storyContainer) return;
+    if (!storyContainer) return state;
 
     const items = presentationState.visual.items;
     for (const item of items) {
-      if (item.resourceId && item.resourceType) {
-        let resource;
-        if (item.resourceType === "image") {
-          resource = resources.images[item.resourceId];
-        } else {
-          // Placeholder for other resource types
-          continue;
-        }
+      // Check if both resourceId and resourceType exist, and resourceType is "image"
+      if (item.resourceId) {
+        let resource = resources.images[item.resourceId];
 
         if (resource) {
           const transform = resources.transforms[item.transformId];
           storyContainer.children.push({
             id: `visual-${item.id}`,
             type: "sprite",
-            url: resolveFile(resource.fileId),
+            url: resource.fileId,
+            width: resource.width,
+            height: resource.height,
             x: transform.x,
             y: transform.y,
             anchorX: transform.anchorX,
@@ -302,13 +311,12 @@ export const addVisuals = (
         if (item.animations.in) {
           const animationId =
             item.animations.in.animationId || item.animations.in;
-          const animation = resources.animations[animationId];
+          const animation = resources?.animations[animationId];
           if (animation) {
-            transitions.push({
+            animations.push({
               id: `${item.id}-animation`,
-              type: "keyframes",
-              event: "add",
-              elementId: `visual-${item.id}`,
+              type: "tween",
+              targetId: `visual-${item.id}`,
               properties: animation.properties,
             });
           }
@@ -317,13 +325,12 @@ export const addVisuals = (
         if (item.animations.out) {
           const animationId =
             item.animations.out.animationId || item.animations.out;
-          const animation = resources.animations[animationId];
+          const animation = resources?.animations[animationId];
           if (animation) {
-            transitions.push({
+            animations.push({
               id: `${item.id}-animation-2`,
-              type: "keyframes",
-              event: "remove",
-              elementId: `visual-${item.id}`,
+              type: "tween",
+              targetId: `visual-${item.id}`,
               properties: animation.properties,
             });
           }
@@ -331,6 +338,7 @@ export const addVisuals = (
       }
     }
   }
+  return state;
 };
 
 /**
@@ -338,89 +346,90 @@ export const addVisuals = (
  * @param {Object} params
  */
 export const addDialogue = (
-  { elements },
-  { presentationState, resources, systemState, systemStore },
+  state,
+  { presentationState, resources = {}, dialogueUIHidden, autoMode, skipMode, l10n, variables },
 ) => {
+  const { elements } = state;
   if (!presentationState.dialogue) {
-    return;
+    return state;
   }
 
-  if (systemState?.dialogueUIHidden) {
-    return;
+  if (dialogueUIHidden) {
+    return state;
   }
 
   // Find the story container
   const storyContainer = elements.find((el) => el.id === "story");
-  if (!storyContainer) return;
+  if (!storyContainer) return state;
 
-  const layout = resources.layouts[presentationState.dialogue.layoutId];
+  // Handle GUI elements (dialogue layouts) from dialogue.gui.resourceId
+  if (presentationState.dialogue.gui && presentationState.dialogue.gui.resourceId) {
+    const { layouts = {} } = resources;
+    const guiLayout = layouts[presentationState.dialogue.gui.resourceId];
+    if (guiLayout) {
+      let character;
+      if (presentationState.dialogue.characterId) {
+        character = resources.characters[presentationState.dialogue.characterId];
+      }
 
-  if (!layout) {
-    return;
-  }
+      // Check if there's a character object override
+      if (presentationState.dialogue.character) {
+        character = {
+          ...character,
+          name: presentationState.dialogue.character.name,
+        };
+      }
 
-  let character;
-  if (presentationState.dialogue.characterId) {
-    character = resources.characters[presentationState.dialogue.characterId];
-  }
+      const wrappedTemplate = { elements: guiLayout.elements };
 
-  // Check if there's a character object override
-  if (presentationState.dialogue.character) {
-    character = {
-      ...character,
-      name: presentationState.dialogue.character.name,
-    };
-  }
+      const templateData = {
+        variables,
+        autoMode,
+        skipMode,
+        dialogue: {
+          character: {
+            name: character?.name || "",
+          },
+          content: presentationState.dialogue?.content || [{ text: '' }],
+          lines: presentationState.dialogue?.lines || [],
+        },
+        l10n
+      };
 
-  const wrappedTemplate = { elements: layout.elements };
+      let result = parseAndRender(wrappedTemplate, templateData, {
+        functions: jemplFunctions,
+      });
+      result = parseAndRender(result, {
+        l10n
+      });
+      const guiElements = result?.elements;
 
-  const templateData = {
-    variables: systemState?.variables || {},
-    saveDataArray: systemStore.selectSaveDataPage({
-      page: systemState?.variables.currentSavePageIndex,
-      numberPerPage: 6,
-    }),
-    autoMode: systemStore.selectAutoMode(),
-    skipMode: systemStore.selectSkipMode(),
-    dialogue: {
-      character: {
-        name: character?.name || "",
-      },
-      content: presentationState.dialogue?.content || [],
-      lines: presentationState.dialogue?.lines || [],
-    },
-    currentLanguagePackId: systemStore.selectCurrentLanguagePackId(),
-    i18n: systemStore.selectCurrentLanguagePackKeys(),
-  };
-
-  let result = parseAndRender(wrappedTemplate, templateData, {
-    functions: jemplFunctions,
-  });
-  result = parseAndRender(result, {
-    i18n: systemStore.selectCurrentLanguagePackKeys(),
-  });
-  const dialogueElements = result?.elements;
-
-  if (Array.isArray(dialogueElements)) {
-    for (const element of dialogueElements) {
-      storyContainer.children.push(structuredClone(element));
+      if (Array.isArray(guiElements)) {
+        for (const element of guiElements) {
+          storyContainer.children.push(structuredClone(element));
+        }
+      } else if (guiElements) {
+        storyContainer.children.push(structuredClone(guiElements));
+      }
     }
-  } else if (dialogueElements) {
-    storyContainer.children.push(structuredClone(dialogueElements));
   }
+
+  return state;
 };
 
 /**
  *
  * @param {Object} params
  */
-export const addChoices = ({ elements }, { presentationState, resources }) => {
-  if (presentationState.choice) {
+export const addChoices = (state, { presentationState, resources }) => {
+  const { elements } = state;
+  if (presentationState.choice && resources) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
-    if (!storyContainer) return;
+    if (!storyContainer) return state;
 
-    const layout = resources.layouts[presentationState.choice.layoutId];
+    const layout = resources?.layouts[presentationState.choice.resourceId];
+    if (!layout || !layout.elements) return state;
 
     const wrappedTemplate = { elements: layout.elements };
     const result = parseAndRender(wrappedTemplate, {
@@ -438,70 +447,75 @@ export const addChoices = ({ elements }, { presentationState, resources }) => {
       storyContainer.children.push(structuredClone(choiceElements));
     }
   }
+  return state;
 };
 
 export const addBgm = (
-  { elements },
-  { presentationState, resources, resolveFile },
+  state,
+  { presentationState, resources },
 ) => {
-  if (presentationState.bgm) {
+  const { elements, audio } = state;
+  if (presentationState.bgm && resources) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
-    if (!storyContainer) return;
+    if (!storyContainer) return state;
 
-    const audio = resources.audio[presentationState.bgm.audioId];
-    storyContainer.children.push({
+    const audioResource = resources.audio[presentationState.bgm.audioId];
+    if (!audioResource) return state;
+    audio.push({
       id: "bgm",
-      type: "audio",
-      url: resolveFile(audio.fileId),
-      loop: audio.loop ?? true,
-      volume: audio.volume ?? 0.5,
-      delay: audio.delay,
+      type: "sound",
+      url: audioResource.fileId,
+      loop: audioResource.loop ?? true,
+      volume: audioResource.volume ?? 0.5,
+      delay: audioResource.delay ?? null,
     });
   }
+  return state;
 };
 
-export const addSfx = (
-  { elements },
-  { presentationState, resources, resolveFile },
-) => {
-  if (presentationState.sfx) {
-    // Find the story container
-    const storyContainer = elements.find((el) => el.id === "story");
-    if (!storyContainer) return;
+export const addSfx = (state, { presentationState, resources }) => {
+  const { audio: audioElements } = state;
 
+  if (presentationState.sfx && resources) {
+    // Find the story container
     const items = presentationState.sfx.items;
     for (const item of items) {
-      const audio = resources.audio[item.audioId];
-      storyContainer.children.push({
+      const audioResource = resources.audio?.[item.audioId];
+      if (!audioResource) continue;
+
+      audioElements.push({
         id: item.id,
-        type: "audio",
-        url: resolveFile(audio.fileId),
-        loop: item.loop ?? false,
-        volume: item.volume ?? 0.5,
-        delay: item.delay,
+        type: "sound",
+        url: audioResource.fileId,
+        loop: item.loop ?? audioResource.loop ?? true,
+        volume: item.volume ?? audioResource.volume ?? 0.5,
+        delay: item.delay ?? audioResource.delay ?? null,
       });
     }
   }
+
+  return state;
 };
 
-export const addVoice = ({ elements }, { presentationState, resolveFile }) => {
-  if (!presentationState.voice) {
-    return;
-  }
+export const addVoice = (state, { presentationState, resources }) => {
+  const { audio } = state;
 
-  const storyContainer = elements.find((el) => el.id === "story");
-  if (!storyContainer) return;
+  if (!presentationState?.voice) {
+    return state;
+  }
 
   const { fileId, volume, loop } = presentationState.voice;
 
-  storyContainer.children.push({
+  audio.push({
     id: `voice-${fileId}`,
-    type: "audio",
-    url: resolveFile(fileId),
-    volume,
-    loop,
+    type: "sound",
+    url: fileId,
+    volume: volume ?? 0.5,
+    loop: loop ?? false,
   });
+
+  return state;
 };
 
 /**
@@ -509,43 +523,30 @@ export const addVoice = ({ elements }, { presentationState, resolveFile }) => {
  * @param {Object} params
  */
 export const addLayout = (
-  { elements, transitions },
-  { presentationState, resources, resolveFile, systemState, systemStore },
+  state,
+  { presentationState, resources = {}, variables, autoMode, skipMode, currentLocalizationPackageId },
 ) => {
+  const { elements } = state;
+  const animations = state.animations || [];
   if (presentationState.layout) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
-    if (!storyContainer) return;
+    if (!storyContainer) return state;
 
-    const layout = resources.layouts[presentationState.layout.layoutId];
+    const layout = resources.layouts[presentationState.layout.resourceId];
 
     if (!layout) {
-      return;
+      return state;
     }
 
     if (Array.isArray(layout.transitions)) {
       layout.transitions.forEach((transition) => {
-        transitions.push(transition);
+        animations.push(transition);
       });
     }
 
-    const processElement = (element) => {
-      const processedElement = { ...element };
-
-      if (element.url && element.url.startsWith("file:")) {
-        const fileId = element.url.replace("file:", "");
-        processedElement.url = resolveFile(fileId);
-      }
-
-      if (element.children && Array.isArray(element.children)) {
-        processedElement.children = element.children.map(processElement);
-      }
-
-      return processedElement;
-    };
-
     const layoutContainer = {
-      id: `layout-${presentationState.layout.layoutId}`,
+      id: `layout-${presentationState.layout.resourceId}`,
       type: "container",
       x: 0,
       y: 0,
@@ -553,24 +554,25 @@ export const addLayout = (
     };
 
     const templateData = {
-      variables: systemState?.variables || {},
-      saveDataArray: systemStore.selectSaveDataPage({
-        page: systemState?.variables.currentSavePageIndex,
-        numberPerPage: 6,
-      }),
-      autoMode: systemStore.selectAutoMode(),
-      skipMode: systemStore.selectSkipMode(),
-      globalAudios: systemStore.selectGlobalAudios() || [],
-      currentLanguagePackId: systemStore.selectCurrentLanguagePackId(),
-      i18n: systemStore.selectCurrentLanguagePackKeys(),
-      languagePacks: systemStore.selectLanguagePacks(),
+      variables,
+      // saveDataArray: systemStore.selectSaveDataPage({
+      //   page: systemState?.variables.currentSavePageIndex,
+      //   numberPerPage: 6,
+      // }),
+      autoMode,
+      skipMode,
+      // globalAudios: systemStore.selectGlobalAudios() || [],
+      currentLocalizationPackageId,
+      // i18n: systemStore.selectCurrentLanguagePackKeys(),
+      // languagePacks: systemStore.selectLanguagePacks(),
     };
 
     let processedContainer = parseAndRender(layoutContainer, templateData, {
       functions: jemplFunctions,
     });
     processedContainer = parseAndRender(processedContainer, {
-      i18n: systemStore.selectCurrentLanguagePackKeys(),
+      i18n: {}
+      // i18n: systemStore.selectCurrentLanguagePackKeys(),
     });
 
     const processElementAfterRender = (element) => {
@@ -578,7 +580,7 @@ export const addLayout = (
 
       if (element.url && element.url.startsWith("file:")) {
         const fileId = element.url.replace("file:", "");
-        processedElement.url = resolveFile(fileId);
+        processedElement.url = fileId;
       }
 
       if (element.children && Array.isArray(element.children)) {
@@ -593,14 +595,19 @@ export const addLayout = (
     // Push the processed container
     storyContainer.children.push(processElementAfterRender(processedContainer));
   }
+  return state;
 };
 
 export const addModals = (
-  { elements, transitions },
-  { systemState, resources, resolveFile, systemStore },
+  state,
+  { resources = {}, variables, autoMode, skipMode, currentLocalizationPackageId },
 ) => {
+  const { elements } = state;
+  const animations = state.animations || [];
   // Get modals directly from the passed systemState instead of using systemStore
-  const modals = systemState.modes[systemState.currentMode].modals;
+  // const modals = systemState.modes[systemState.currentMode].modals;
+  // TODO: do this
+  const modals = [];
   if (modals && modals.length > 0) {
     // Add each modal as an overlay
     modals.forEach((modal, index) => {
@@ -614,27 +621,9 @@ export const addModals = (
 
         if (Array.isArray(layout.transitions)) {
           layout.transitions.forEach((transition) => {
-            transitions.push(transition);
+            animations.push(transition);
           });
         }
-
-        // Process layout elements similar to addLayout
-        const processElement = (element) => {
-          const processedElement = { ...element };
-
-          // Handle file references in layout elements
-          if (element.url && element.url.startsWith("file:")) {
-            const fileId = element.url.replace("file:", "");
-            processedElement.url = resolveFile(fileId);
-          }
-
-          // Recursively process children if they exist
-          if (element.children && Array.isArray(element.children)) {
-            processedElement.children = element.children.map(processElement);
-          }
-
-          return processedElement;
-        };
 
         // Create a container for this modal
         const modalContainer = {
@@ -645,55 +634,55 @@ export const addModals = (
           children: layout.elements || [],
         };
 
-        let currentActiveGalleryFileId;
-        let isLastFileIdIndex = false;
-
-        if (systemState.variables.activeGalleryIndex !== undefined) {
-          const gallery = systemState.variables.gallery.items;
-          if (
-            gallery &&
-            Array.isArray(gallery) &&
-            systemState.variables.activeGalleryIndex < gallery.length
-          ) {
-            currentActiveGalleryFileId =
-              gallery[systemState.variables.activeGalleryIndex]?.fileIds[
-                systemState.variables.activeGalleryFileIndex
-              ];
-          }
-
-          if (
-            systemState.variables.activeGalleryFileIndex <
-            gallery[systemState.variables.activeGalleryIndex]?.fileIds.length -
-              1
-          ) {
-            isLastFileIdIndex = false;
-          } else {
-            isLastFileIdIndex = true;
-          }
-        }
+        // let currentActiveGalleryFileId;
+        // let isLastFileIdIndex = false;
+        //
+        // if (systemState.variables.activeGalleryIndex !== undefined) {
+        //   const gallery = systemState.variables.gallery.items;
+        //   if (
+        //     gallery &&
+        //     Array.isArray(gallery) &&
+        //     systemState.variables.activeGalleryIndex < gallery.length
+        //   ) {
+        //     currentActiveGalleryFileId =
+        //       gallery[systemState.variables.activeGalleryIndex]?.fileIds[
+        //       systemState.variables.activeGalleryFileIndex
+        //       ];
+        //   }
+        //
+        //   if (
+        //     systemState.variables.activeGalleryFileIndex <
+        //     gallery[systemState.variables.activeGalleryIndex]?.fileIds.length -
+        //     1
+        //   ) {
+        //     isLastFileIdIndex = false;
+        //   } else {
+        //     isLastFileIdIndex = true;
+        //   }
+        // }
 
         const templateData = {
-          variables: systemState.variables || {},
-          currentActiveGalleryFileId,
-          isLastFileIdIndex,
-          saveDataArray: systemStore.selectSaveDataPage({
-            page: systemState?.variables.currentSavePageIndex,
-            numberPerPage: 6,
-          }),
-          autoMode: systemStore.selectAutoMode(),
-          skipMode: systemStore.selectSkipMode(),
-          globalAudios: systemStore.selectGlobalAudios() || [],
-          historyDialogue: systemStore.selectHistoryDialogue() || [],
-          currentLanguagePackId: systemStore.selectCurrentLanguagePackId(),
-          i18n: systemStore.selectCurrentLanguagePackKeys(),
-          languagePacks: systemStore.selectLanguagePacks(),
+          variables,
+          // currentActiveGalleryFileId,
+          // isLastFileIdIndex,
+          // saveDataArray: systemStore.selectSaveDataPage({
+          //   page: systemState?.variables.currentSavePageIndex,
+          //   numberPerPage: 6,
+          // }),
+          autoMode,
+          skipMode,
+          // globalAudios: systemStore.selectGlobalAudios() || [],
+          // historyDialogue: systemStore.selectHistoryDialogue() || [],
+          currentLocalizationPackageId
+          // i18n: systemStore.selectCurrentLanguagePackKeys(),
+          // languagePacks: systemStore.selectLanguagePacks(),
         };
 
         let processedModal = parseAndRender(modalContainer, templateData, {
           functions: jemplFunctions,
         });
         processedModal = parseAndRender(processedModal, {
-          i18n: systemStore.selectCurrentLanguagePackKeys(),
+          i18n: {}
         });
 
         // Then process file references in the result
@@ -718,37 +707,28 @@ export const addModals = (
       }
     });
   }
+  return state;
 };
 
-export const addGlobalAudios = (
-  { elements },
-  { systemState, resources, resolveFile },
-) => {
-  // Get global audios directly from the passed systemState instead of using systemStore
-  const globalAudios = systemState.globalAudios;
-  if (globalAudios && globalAudios.length > 0) {
-    // Add each global audio
-    globalAudios.forEach((audioItem, i) => {
-      elements.push({
-        id: `global-audio-${i}-${audioItem.audioId}`,
-        type: "audio",
-        url: resolveFile(audioItem.fileId),
-      });
-    });
-  }
-};
+export const constructRenderState = (params) => {
+  const actions = [
+    addScreen,
+    addBackgroundOrCg,
+    addCharacters,
+    addVisuals,
+    addDialogue,
+    addChoices,
+    addLayout,
+    addBgm,
+    addSfx,
+    addVoice,
+    addModals,
+  ];
 
-export default [
-  addScreen,
-  addBackgrundOrCg,
-  addCharacters,
-  addVisuals,
-  addDialogue,
-  addChoices,
-  addLayout,
-  addBgm,
-  addSfx,
-  addVoice,
-  addModals,
-  addGlobalAudios,
-];
+  const executeActions = createSequentialActionsExecutor(
+    createInitialState,
+    actions
+  );
+
+  return executeActions(params);
+}

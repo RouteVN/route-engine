@@ -1,0 +1,171 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.addViewedResource
+suites: [addViewedResource]
+---
+suite: addViewedResource
+exportName: addViewedResource
+---
+case: add viewed resource to empty registry
+in:
+  - state:
+      global:
+        viewedRegistry:
+          resources: []
+        pendingEffects: []
+  -
+    resourceId: "image1.png"
+out:
+  global:
+    viewedRegistry:
+      resources:
+        - resourceId: "image1.png"
+    pendingEffects:
+      - name: "render"
+---
+case: add viewed resource to existing registry
+in:
+  - state:
+      global:
+        viewedRegistry:
+          resources:
+            - resourceId: "existing_resource.jpg"
+        pendingEffects: []
+  -
+    resourceId: "new_resource.png"
+out:
+  global:
+    viewedRegistry:
+      resources:
+        - resourceId: "existing_resource.jpg"
+        - resourceId: "new_resource.png"
+    pendingEffects:
+      - name: "render"
+---
+case: add already viewed resource (should not duplicate)
+in:
+  - state:
+      global:
+        viewedRegistry:
+          resources:
+            - resourceId: "already_viewed.jpg"
+            - resourceId: "another_resource.png"
+        pendingEffects: []
+  -
+    resourceId: "already_viewed.jpg"
+out:
+  global:
+    viewedRegistry:
+      resources:
+        - resourceId: "already_viewed.jpg"
+        - resourceId: "another_resource.png"
+    pendingEffects:
+      - name: "render"
+---
+case: add viewed resource with existing pending effects
+in:
+  - state:
+      global:
+        viewedRegistry:
+          resources:
+            - resourceId: "first_resource.png"
+        pendingEffects:
+          - name: "existingEffect"
+            data: "test"
+  -
+    resourceId: "second_resource.jpg"
+out:
+  global:
+    viewedRegistry:
+      resources:
+        - resourceId: "first_resource.png"
+        - resourceId: "second_resource.jpg"
+    pendingEffects:
+      - name: "existingEffect"
+        data: "test"
+      - name: "render"
+---
+case: add multiple unique resources sequentially
+in:
+  - state:
+      global:
+        viewedRegistry:
+          resources:
+            - resourceId: "resource1.jpg"
+        pendingEffects: []
+  -
+    resourceId: "resource2.png"
+out:
+  global:
+    viewedRegistry:
+      resources:
+        - resourceId: "resource1.jpg"
+        - resourceId: "resource2.png"
+    pendingEffects:
+      - name: "render"
+---
+case: add viewed resource with numeric resourceId
+in:
+  - state:
+      global:
+        viewedRegistry:
+          resources: []
+        pendingEffects: []
+  -
+    resourceId: 42
+out:
+  global:
+    viewedRegistry:
+      resources:
+        - resourceId: 42
+    pendingEffects:
+      - name: "render"
+---
+case: add viewed resource with other global properties unchanged
+in:
+  - state:
+      global:
+        viewedRegistry:
+          resources:
+            - resourceId: "existing_asset.jpg"
+        autoMode: true
+        skipMode: false
+        dialogueUIHidden: false
+        currentLocalizationPackageId: "en"
+        pendingEffects: []
+  -
+    resourceId: "new_asset.png"
+out:
+  global:
+    viewedRegistry:
+      resources:
+        - resourceId: "existing_asset.jpg"
+        - resourceId: "new_asset.png"
+    autoMode: true
+    skipMode: false
+    dialogueUIHidden: false
+    currentLocalizationPackageId: "en"
+    pendingEffects:
+      - name: "render"
+---
+case: add viewed resource when registry already has many resources
+in:
+  - state:
+      global:
+        viewedRegistry:
+          resources:
+            - resourceId: "resource_a.jpg"
+            - resourceId: "resource_b.png"
+            - resourceId: "resource_c.gif"
+        pendingEffects: []
+  -
+    resourceId: "resource_d.svg"
+out:
+  global:
+    viewedRegistry:
+      resources:
+        - resourceId: "resource_a.jpg"
+        - resourceId: "resource_b.png"
+        - resourceId: "resource_c.gif"
+        - resourceId: "resource_d.svg"
+    pendingEffects:
+      - name: "render"

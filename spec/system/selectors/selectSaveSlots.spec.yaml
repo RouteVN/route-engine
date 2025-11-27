@@ -1,0 +1,70 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore selectors
+suites:
+  [
+    selectSaveSlots,
+  ]
+---
+suite: selectSaveSlots
+exportName: selectSaveSlots
+---
+case: empty save slots
+in:
+  - state:
+      global:
+        saveSlots: {}
+out: {}
+---
+case: save slots with multiple entries
+in:
+  - state:
+      global:
+        saveSlots:
+          "1":
+            date: "2024-01-01T12:00:00Z"
+            image: "base64..."
+            state:
+              test: "value1"
+          "2":
+            date: "2024-01-02T15:30:00Z"
+            image: "base64..."
+            state:
+              test: "value2"
+          "autosave":
+            date: "2024-01-03T09:15:00Z"
+            image: "base64..."
+            state:
+              test: "autosave_value"
+out:
+  "1":
+    date: "2024-01-01T12:00:00Z"
+    image: "base64..."
+    state:
+      test: "value1"
+  "2":
+    date: "2024-01-02T15:30:00Z"
+    image: "base64..."
+    state:
+      test: "value2"
+  "autosave":
+    date: "2024-01-03T09:15:00Z"
+    image: "base64..."
+    state:
+      test: "autosave_value"
+---
+case: save slots with single entry
+in:
+  - state:
+      global:
+        saveSlots:
+          "5":
+            date: "2024-12-25T00:00:00Z"
+            image: "holiday_save.png"
+            state:
+              progress: 75
+out:
+  "5":
+    date: "2024-12-25T00:00:00Z"
+    image: "holiday_save.png"
+    state:
+      progress: 75
