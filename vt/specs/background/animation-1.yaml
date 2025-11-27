@@ -2,6 +2,13 @@
 title: "Animation 1"
 description: Test animaton in , update, out
 ---
+localization:
+  defaultPackageId: eklekfjwalefj
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys: {}
 screen:
   width: 1920
   height: 1080

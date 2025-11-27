@@ -1,6 +1,13 @@
 ---
 title: "Sample"
 ---
+localization:
+  defaultPackageId: eklekfjwalefj
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys: {}
 screen:
   width: 1920
   height: 1080

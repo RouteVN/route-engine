@@ -2,6 +2,13 @@
 title: "Background 1"
 description: Test background
 ---
+localization:
+  defaultPackageId: eklekfjwalefj
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys: {}
 screen:
   width: 1920
   height: 1080

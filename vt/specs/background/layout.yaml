@@ -2,6 +2,13 @@
 title: "Layout background"
 description: test using layout for background
 ---
+localization:
+  defaultPackageId: eklekfjwalefj
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys: {}
 screen:
   width: 1920
   height: 1080

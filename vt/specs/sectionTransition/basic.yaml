@@ -6,6 +6,13 @@ description: >
   Second section transitions to Scene 2.
   Scene 2 then transitions back to Scene 1, Section 2, showing cross-scene section targeting.
 ---
+localization:
+  defaultPackageId: eklekfjwalefj
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys: {}
 screen:
   width: 1920
   height: 1080
