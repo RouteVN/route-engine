@@ -83,7 +83,7 @@ resources:
               type: "text"
               x: 20
               y: 100
-              content: "${dialogue.content}"
+              content: "${dialogue.content[0].text}"
               textStyle:
                 fontSize: 24
                 fill: "white"
@@ -147,14 +147,16 @@ story:
                   gui:
                     resourceId: fi3l
                   mode: adv
-                  content: ${l10n.keys.a1}
+                  content:
+                    - text: ${l10n.keys.a1}
                   characterId: ajf34a
             - id: line2
               actions: {}
             - id: line3
               actions:
                 dialogue:
-                  content: ${l10n.keys.a2}
+                  content:
+                    - text: ${l10n.keys.a2}
             - id: line4
               actions:
                 dialogue:
@@ -162,5 +164,6 @@ story:
             - id: line5
               actions:
                 dialogue:
-                  content: ${l10n.keys.a2}
+                  content:
+                    - text: ${l10n.keys.a2}
                   characterId: ajf34a

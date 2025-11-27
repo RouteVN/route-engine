@@ -30,13 +30,13 @@ localization:
         layoutCreditsLayoutCredit18: "Voice Director"
         layoutCreditsLayoutCredit19: "Sound Engineer"
         layoutCreditsLayoutCredit20: "Thank you for playing!"
-        layoutDafkjkl3Options: "Options"
+        layoutDafkjkl3OptionsTitle: "Options"
         layoutDafkjkl3TextspeedId: "Text Speed"
         layoutDafkjkl3LoadTitle: "Load Game"
         layoutDafkjkl3SaveTitle: "Save Game"
         layoutDafkjkl3PagePrev: "Previous"
         layoutDafkjkl3PageNext: "Next"
-        layoutDafkjkl3Languages: "Languages"
+        layoutDafkjkl3LanguagesTitle: "Languages"
         layoutDafkjkl3GalleryTitle: "Gallery"
         layoutDafkjkl3ReplayTitle: "Scene Replay"
         layoutDafkjkl3MusicRoomTitle: "Music Room"
@@ -488,7 +488,7 @@ resources:
               type: "container"
               children:
                 - type: text
-                  content: ${l10n.keys.layoutDafkjkl3Options}
+                  content: ${l10n.keys.layoutDafkjkl3OptionsTitle}
                   x: 100
                   y: 100
                   textStyle:
@@ -821,7 +821,7 @@ resources:
               children:
                 - id: languages-title
                   type: text
-                  content: ${l10n.keys.layoutDafkjkl3Languages}
+                  content: ${l10n.keys.layoutDafkjkl3LanguagesTitle}
                   x: 100
                   y: 100
                   textStyle:
@@ -1307,7 +1307,7 @@ resources:
           children:
             - id: dialogue-character-name
               type: text
-              content: character name - "${dialogue.character.name}"
+              content: ${dialogue.character.name}
               x: 0
               y: 0
               textStyle:
@@ -1316,7 +1316,7 @@ resources:
             - id: dialogue-text
               type: "text"
               y: 100
-              content: dialogue - ${dialogue.content[0].text}
+              content: ${dialogue.content[0].text}
               textStyle:
                 fontSize: 24
                 fill: "white"

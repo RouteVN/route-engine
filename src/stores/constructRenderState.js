@@ -390,7 +390,7 @@ export const addDialogue = (
           character: {
             name: character?.name || "",
           },
-          content: presentationState.dialogue?.content || [],
+          content: presentationState.dialogue?.content || [{ text: '' }],
           lines: presentationState.dialogue?.lines || [],
         },
         l10n

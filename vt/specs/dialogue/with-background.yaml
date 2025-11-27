@@ -67,7 +67,7 @@ resources:
               type: "text"
               x: 20
               y: 100
-              content: "${dialogue.content}"
+              content: "${dialogue.content[0].text}"
               textStyle:
                 fontSize: 24
                 fill: "white"
@@ -116,7 +116,8 @@ story:
                   gui:
                     resourceId: fi3l
                   mode: adv
-                  content: Hello! Welcome to this visual novel.
+                  content:
+                    - text: Hello! Welcome to this visual novel.
                   characterId: ajf34a
             - id: line2
               actions:
@@ -127,15 +128,18 @@ story:
             - id: line3
               actions:
                 dialogue:
-                  content: This is the second line of dialogue. Click to continue.
+                  content:
+                    - text: This is the second line of dialogue. Click to continue.
                   characterId: ajf34a
             - id: line4
               actions:
                 dialogue:
-                  content: Here we are on the third line. The dialogue system is working!
+                  content:
+                    - text: Here we are on the third line. The dialogue system is working!
                   characterId: ajf34a
             - id: line5
               actions:
                 dialogue:
-                  content: This is the final line. Thank you for testing the dialogue feature.
+                  content:
+                    - text: This is the final line. Thank you for testing the dialogue feature.
                   characterId: ajf34a
