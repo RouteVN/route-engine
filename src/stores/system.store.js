@@ -503,6 +503,91 @@ export const replaceSaveSlot = ({ state }, payload) => {
 };
 
 /**
+ * Updates the entire projectData with new data
+ * @param {Object} state - Current state object
+ * @param {Object} payload - Action payload
+ * @param {Object} payload.projectData - The new project data to replace existing data
+ * @returns {Object} Updated state object
+ */
+export const updateProjectData = ({ state }, payload) => {
+  const { projectData } = payload;
+
+  state.projectData = projectData;
+
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+  return state;
+};
+
+/**
+ * Jumps to a specific line within a section
+ * @param {Object} param - Object containing state and dispatch functions
+ * @param {Object} payload - Action payload
+ * @param {string} payload.sectionId - The target section ID (optional, defaults to current section)
+ * @param {string} payload.lineId - The target line ID to jump to
+ * @returns {Object} Updated state object
+ */
+export const jumpToLine = ({ state }, payload) => {
+  const { sectionId, lineId } = payload;
+
+  if (!lineId) {
+    console.warn("jumpToLine requires lineId parameter");
+    return state;
+  }
+
+  const lastContext = state.contexts[state.contexts.length - 1];
+  if (!lastContext) {
+    console.warn("No context available for jumpToLine");
+    return state;
+  }
+
+  // Use provided sectionId or current sectionId
+  const targetSectionId = sectionId || lastContext.pointers.read?.sectionId;
+
+  // Validate section exists (if sectionId is provided)
+  if (sectionId) {
+    const targetSection = selectSection({ state }, { sectionId });
+    if (!targetSection) {
+      console.warn(`Section not found: ${sectionId}`);
+      return state;
+    }
+  }
+
+  // Validate line exists in target section
+  const targetSection = selectSection({ state }, { sectionId: targetSectionId });
+  if (!targetSection?.lines || !Array.isArray(targetSection.lines)) {
+    console.warn(`Section ${targetSectionId} has no lines`);
+    return state;
+  }
+
+  const targetLine = targetSection.lines.find(line => line.id === lineId);
+  if (!targetLine) {
+    console.warn(`Line not found: ${lineId} in section ${targetSectionId}`);
+    return state;
+  }
+
+  // Update current pointer to new line
+  lastContext.pointers.read = {
+    sectionId: targetSectionId,
+    lineId: lineId
+  };
+
+  // Reset line completion state
+  state.global.isLineCompleted = false;
+
+  // Add appropriate pending effects
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+  state.global.pendingEffects.push({
+    name: "handleLineActions"
+  });
+
+  return state;
+};
+
+/**
  * Adds an item to the historySequence of the last context
  * @param {Object} state - Current state object
  * @param {Object} initialState - Action payload
@@ -795,12 +880,14 @@ export const createSystemStore = (initialState) => {
     addViewedResource,
     setNextLineConfig,
     replaceSaveSlot,
+    updateProjectData,
+    sectionTransition,
+    jumpToLine,
     addToHistory,
     nextLine,
     nextLineFromCompleted,
     markLineCompleted,
     prevLine,
-    sectionTransition,
   };
 
   return createStore(_initialState, selectorsAndActions, {
