@@ -1,8 +1,7 @@
 ---
 title: "Basic"
 ---
-localization:
-  defaultPackageId: eklekfjwalefj
+l10n:
   packages:
     eklekfjwalefj:
       label: English

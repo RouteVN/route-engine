@@ -2,8 +2,7 @@
 title: "Animation 2"
 description: test both in and out animation at same time
 ---
-localization:
-  defaultPackageId: eklekfjwalefj
+l10n:
   packages:
     eklekfjwalefj:
       label: English

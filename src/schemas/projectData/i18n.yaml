@@ -3,10 +3,7 @@ title: I18n Schema
 description: Internationalization configuration with language packs and translation keys
 type: object
 properties:
-  basePackageId:
-    type: string
-    description: Default language pack ID to use
-  localizationPackages:
+  packages:
     type: object
     description: Collection of language packs
     patternProperties:
@@ -17,7 +14,7 @@ properties:
           label:
             type: string
             description: Display label for the language pack
-          language:
+          lang:
             type: string
             description: ISO 639-1 standard language code (e.g., en, it, fr)
           keys:
@@ -36,5 +33,5 @@ properties:
         required: [label, lang, keys]
         additionalProperties: false
     additionalProperties: false
-required: [defaultPackId, packs]
+required: [packages]
 additionalProperties: false

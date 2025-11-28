@@ -2,8 +2,7 @@
 title: "Layout background"
 description: test using layout for background
 ---
-localization:
-  defaultPackageId: eklekfjwalefj
+l10n:
   packages:
     eklekfjwalefj:
       label: English

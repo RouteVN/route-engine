@@ -252,7 +252,7 @@ export const selectRenderState = ({ state }) => {
   const renderState = constructRenderState({
     presentationState,
     resources: state.projectData.resources,
-    l10n: state.projectData.localization.packages[state.global.currentLocalizationPackageId],
+    l10n: state.projectData.l10n.packages[state.global.currentLocalizationPackageId],
   });
   console.log('renderState', renderState);
   return renderState;
