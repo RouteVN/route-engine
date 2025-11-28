@@ -1,0 +1,325 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.jumpToLine
+suites: [jumpToLine]
+---
+suite: jumpToLine
+exportName: jumpToLine
+---
+case: jump to specific line in current section
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: line1
+                      text: "First line"
+                    - id: line2
+                      text: "Second line"
+                    - id: line3
+                      text: "Third line"
+      contexts:
+        - pointers:
+            read:
+              sectionId: section1
+              lineId: line1
+      global:
+        isLineCompleted: true
+        pendingEffects: []
+  -
+    lineId: line3
+out:
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: line1
+                  text: "First line"
+                - id: line2
+                  text: "Second line"
+                - id: line3
+                  text: "Third line"
+  contexts:
+    - pointers:
+        read:
+          sectionId: section1
+          lineId: line3
+  global:
+    isLineCompleted: false
+    pendingEffects:
+      - name: render
+      - name: handleLineActions
+---
+case: jump to specific line in different section
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: line1
+                      text: "Section 1 line 1"
+                section2:
+                  lines:
+                    - id: lineA
+                      text: "Section 2 line A"
+                    - id: lineB
+                      text: "Section 2 line B"
+      contexts:
+        - pointers:
+            read:
+              sectionId: section1
+              lineId: line1
+      global:
+        isLineCompleted: true
+        pendingEffects: []
+  -
+    sectionId: section2
+    lineId: lineB
+out:
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: line1
+                  text: "Section 1 line 1"
+            section2:
+              lines:
+                - id: lineA
+                  text: "Section 2 line A"
+                - id: lineB
+                  text: "Section 2 line B"
+  contexts:
+    - pointers:
+        read:
+          sectionId: section2
+          lineId: lineB
+  global:
+    isLineCompleted: false
+    pendingEffects:
+      - name: render
+      - name: handleLineActions
+---
+case: return unchanged state when lineId is missing
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: line1
+                      text: "First line"
+      contexts:
+        - pointers:
+            read:
+              sectionId: section1
+              lineId: line1
+      global:
+        isLineCompleted: true
+        pendingEffects: []
+  -
+    sectionId: section1
+out:
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: line1
+                  text: "First line"
+  contexts:
+    - pointers:
+        read:
+          sectionId: section1
+          lineId: line1
+  global:
+    isLineCompleted: true
+    pendingEffects: []
+---
+case: return unchanged state when section not found
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: line1
+                      text: "First line"
+      contexts:
+        - pointers:
+            read:
+              sectionId: section1
+              lineId: line1
+      global:
+        isLineCompleted: false
+        pendingEffects: []
+  -
+    sectionId: nonexistentSection
+    lineId: line1
+out:
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: line1
+                  text: "First line"
+  contexts:
+    - pointers:
+        read:
+          sectionId: section1
+          lineId: line1
+  global:
+    isLineCompleted: false
+    pendingEffects: []
+---
+case: return unchanged state when line not found in section
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: line1
+                      text: "First line"
+                    - id: line2
+                      text: "Second line"
+      contexts:
+        - pointers:
+            read:
+              sectionId: section1
+              lineId: line1
+      global:
+        isLineCompleted: false
+        pendingEffects: []
+  -
+    lineId: nonexistentLine
+out:
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: line1
+                  text: "First line"
+                - id: line2
+                  text: "Second line"
+  contexts:
+    - pointers:
+        read:
+          sectionId: section1
+          lineId: line1
+  global:
+    isLineCompleted: false
+    pendingEffects: []
+---
+case: return unchanged state when no context available
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: line1
+                      text: "First line"
+      contexts: []
+      global:
+        isLineCompleted: false
+        pendingEffects: []
+  -
+    lineId: line1
+out:
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: line1
+                  text: "First line"
+  contexts: []
+  global:
+    isLineCompleted: false
+    pendingEffects: []
+---
+case: jump with existing pending effects preserves them
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: line1
+                      text: "First line"
+                    - id: line2
+                      text: "Second line"
+      contexts:
+        - pointers:
+            read:
+              sectionId: section1
+              lineId: line1
+      global:
+        isLineCompleted: true
+        pendingEffects:
+          - name: "existingEffect"
+            data: "test"
+  -
+    lineId: line2
+out:
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: line1
+                  text: "First line"
+                - id: line2
+                  text: "Second line"
+  contexts:
+    - pointers:
+        read:
+          sectionId: section1
+          lineId: line2
+  global:
+    isLineCompleted: false
+    pendingEffects:
+      - name: "existingEffect"
+        data: "test"
+      - name: render
+      - name: handleLineActions

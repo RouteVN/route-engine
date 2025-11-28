@@ -1,0 +1,192 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.updateProjectData
+suites: [updateProjectData]
+---
+suite: updateProjectData
+exportName: updateProjectData
+---
+case: replace entire projectData with new data
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: line1
+                      text: "Original text"
+        resources:
+          resource1:
+            type: "image"
+            src: "original.png"
+        l10n:
+          packages:
+            package1:
+              name: "Original Package"
+      global:
+        pendingEffects: []
+  -
+    projectData:
+      story:
+        scenes:
+          scene2:
+            sections:
+              section2:
+                lines:
+                  - id: line3
+                    text: "New text"
+      resources:
+        resource2:
+          type: "audio"
+          src: "new.mp3"
+      l10n:
+        packages:
+          package2:
+            name: "New Package"
+out:
+  projectData:
+    story:
+      scenes:
+        scene2:
+          sections:
+            section2:
+              lines:
+                - id: line3
+                  text: "New text"
+    resources:
+      resource2:
+        type: "audio"
+        src: "new.mp3"
+    l10n:
+      packages:
+        package2:
+          name: "New Package"
+  global:
+    pendingEffects:
+      - name: render
+---
+case: add render effect even when projectData is empty
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: line1
+                      text: "Original text"
+      global:
+        pendingEffects: []
+  -
+    projectData: {}
+out:
+  projectData: {}
+  global:
+    pendingEffects:
+      - name: render
+---
+case: add render effect when projectData is null
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: line1
+                      text: "Original text"
+      global:
+        pendingEffects: []
+  -
+    projectData: null
+out:
+  projectData: null
+  global:
+    pendingEffects:
+      - name: render
+---
+case: preserve existing global state except projectData and pendingEffects
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            oldScene:
+              sections:
+                oldSection:
+                  lines:
+                    - id: oldLine
+                      text: "Old text"
+      global:
+        isLineCompleted: true
+        autoMode: true
+        skipMode: false
+        dialogueUIHidden: true
+        currentLocalizationPackageId: "oldPackage"
+        viewedRegistry:
+          sections:
+            - sectionId: "viewedSection"
+          resources:
+            - resourceId: "viewedResource"
+        nextLineConfig:
+          manual:
+            enabled: true
+          auto:
+            enabled: false
+        saveSlots:
+          slot1:
+            date: 1234567890
+            image: "base64image"
+            state: {}
+        pendingEffects:
+          - name: "existingEffect"
+  -
+    projectData:
+      story:
+        scenes:
+          newScene:
+            sections:
+              newSection:
+                lines:
+                  - id: newLine
+                    text: "New text"
+out:
+  projectData:
+    story:
+      scenes:
+        newScene:
+          sections:
+            newSection:
+              lines:
+                - id: newLine
+                  text: "New text"
+  global:
+    isLineCompleted: true
+    autoMode: true
+    skipMode: false
+    dialogueUIHidden: true
+    currentLocalizationPackageId: "oldPackage"
+    viewedRegistry:
+      sections:
+        - sectionId: "viewedSection"
+      resources:
+        - resourceId: "viewedResource"
+    nextLineConfig:
+      manual:
+        enabled: true
+      auto:
+        enabled: false
+    saveSlots:
+      slot1:
+        date: 1234567890
+        image: "base64image"
+        state: {}
+    pendingEffects:
+      - name: "existingEffect"
+      - name: render
