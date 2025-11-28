@@ -2,8 +2,7 @@
 title: "Animation 1"
 description: Test animaton in , update, out
 ---
-localization:
-  defaultPackageId: eklekfjwalefj
+l10n:
   packages:
     eklekfjwalefj:
       label: English

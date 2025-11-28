@@ -6,8 +6,7 @@ screen:
   height: 1080
   backgroundColor: "#000000"
 
-localization:
-  defaultPackageId: eklekfjwalefj
+l10n:
   packages:
     eklekfjwalefj:
       label: English

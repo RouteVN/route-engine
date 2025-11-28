@@ -2,8 +2,7 @@
 title: "Character Animation 1"
 description: Test animation in, update, out for character containers
 ---
-localization:
-  defaultPackageId: eklekfjwalefj
+l10n:
   packages:
     eklekfjwalefj:
       label: English

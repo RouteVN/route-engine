@@ -2,8 +2,7 @@
 title: "Background 1"
 description: Test background
 ---
-localization:
-  defaultPackageId: eklekfjwalefj
+l10n:
   packages:
     eklekfjwalefj:
       label: English
