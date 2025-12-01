@@ -62,14 +62,14 @@ out:
           children:
             - type: "sprite"
               id: "char1-body"
-              url: "body.png"
+              src: "body.png"
               width: 200
               height: 200
               x: 0
               y: 0
             - type: "sprite"
               id: "char1-face"
-              url: "face.png"
+              src: "face.png"
               width: 200
               height: 200
               x: 0
@@ -135,7 +135,7 @@ out:
           children:
             - type: "sprite"
               id: "char1-body"
-              url: "body.png"
+              src: "body.png"
               width: 200
               height: 200
               x: 0
@@ -250,7 +250,7 @@ out:
           children:
             - type: "sprite"
               id: "char1-body"
-              url: "body.png"
+              src: "body.png"
               width: 200
               height: 200
               x: 0
@@ -343,14 +343,14 @@ out:
           children:
             - type: "sprite"
               id: "char1-body"
-              url: "char1_body.png"
+              src: "char1_body.png"
               width: 200
               height: 200
               x: 0
               y: 0
             - type: "sprite"
               id: "char1-face"
-              url: "char1_face.png"
+              src: "char1_face.png"
               width: 200
               height: 200
               x: 0
@@ -367,7 +367,7 @@ out:
           children:
             - type: "sprite"
               id: "char2-body2"
-              url: "char2_body.png"
+              src: "char2_body.png"
               width: 200
               height: 200
               x: 0

@@ -223,7 +223,7 @@ export const addCharacters = (
         characterContainer.children.push({
           type: "sprite",
           id: `${item.id}-${sprite.id}`,
-          url: imageResource.fileId,
+          src: imageResource.fileId,
           width: imageResource.width,
           height: imageResource.height,
           x: 0,
@@ -293,7 +293,7 @@ export const addVisuals = (
           storyContainer.children.push({
             id: `visual-${item.id}`,
             type: "sprite",
-            url: resource.fileId,
+            src: resource.fileId,
             width: resource.width,
             height: resource.height,
             x: transform.x,
@@ -465,7 +465,7 @@ export const addBgm = (
     audio.push({
       id: "bgm",
       type: "sound",
-      url: audioResource.fileId,
+      src: audioResource.fileId,
       loop: audioResource.loop ?? true,
       volume: audioResource.volume ?? 0.5,
       delay: audioResource.delay ?? null,
@@ -487,7 +487,7 @@ export const addSfx = (state, { presentationState, resources }) => {
       audioElements.push({
         id: item.id,
         type: "sound",
-        url: audioResource.fileId,
+        src: audioResource.fileId,
         loop: item.loop ?? audioResource.loop ?? true,
         volume: item.volume ?? audioResource.volume ?? 0.5,
         delay: item.delay ?? audioResource.delay ?? null,
@@ -510,7 +510,7 @@ export const addVoice = (state, { presentationState, resources }) => {
   audio.push({
     id: `voice-${fileId}`,
     type: "sound",
-    url: fileId,
+    src: fileId,
     volume: volume ?? 0.5,
     loop: loop ?? false,
   });
@@ -578,9 +578,8 @@ export const addLayout = (
     const processElementAfterRender = (element) => {
       const processedElement = { ...element };
 
-      if (element.url && element.url.startsWith("file:")) {
-        const fileId = element.url.replace("file:", "");
-        processedElement.url = fileId;
+      if (element.src && element.src.startsWith("file:")) {
+        processedElement.src = element.src;
       }
 
       if (element.children && Array.isArray(element.children)) {
@@ -689,9 +688,9 @@ export const addModals = (
         const processElementAfterRender = (element) => {
           const processedElement = { ...element };
 
-          if (element.url && element.url.startsWith("file:")) {
-            const fileId = element.url.replace("file:", "");
-            processedElement.url = resolveFile(fileId);
+          if (element.src && element.src.startsWith("file:")) {
+            const fileId = element.src.replace("file:", "");
+            processedElement.src = resolveFile(fileId);
           }
 
           if (element.children && Array.isArray(element.children)) {
