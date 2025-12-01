@@ -44,7 +44,7 @@ out:
       children:
         - id: "visual-visual1"
           type: "sprite"
-          url: "visual.png"
+          src: "visual.png"
           x: 100
           y: 200
           anchorX: 0.5
@@ -102,7 +102,7 @@ out:
       children:
         - id: "visual-visual1"
           type: "sprite"
-          url: "fade.png"
+          src: "fade.png"
           x: 50
           y: 100
           anchorX: 0
@@ -165,7 +165,7 @@ out:
       children:
         - id: "visual-visual1"
           type: "sprite"
-          url: "out.png"
+          src: "out.png"
           x: 0
           y: 0
           anchorX: 0.5
@@ -235,7 +235,7 @@ out:
       children:
         - id: "visual-visual1"
           type: "sprite"
-          url: "slide.png"
+          src: "slide.png"
           x: 150
           y: 75
           anchorX: 0.5
@@ -311,7 +311,7 @@ out:
       children:
         - id: "visual-visual1"
           type: "sprite"
-          url: "first.png"
+          src: "first.png"
           x: 0
           y: 0
           anchorX: 0.5
@@ -321,7 +321,7 @@ out:
           scaleY: 1
         - id: "visual-visual2"
           type: "sprite"
-          url: "second.png"
+          src: "second.png"
           x: 200
           y: 0
           anchorX: 0.5
@@ -479,7 +479,7 @@ out:
       children:
         - id: "visual-visual1"
           type: "sprite"
-          url: "test.png"
+          src: "test.png"
           x: 0
           y: 0
           anchorX: 0.5

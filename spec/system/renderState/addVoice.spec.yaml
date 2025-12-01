@@ -32,7 +32,7 @@ out:
   audio:
     - id: "voice-voice.mp3"
       type: "sound"
-      url: "voice.mp3"
+      src: "voice.mp3"
       volume: 0.8
       loop: false
 ---
@@ -61,7 +61,7 @@ out:
   audio:
     - id: "voice-simpleVoice.mp3"
       type: "sound"
-      url: "simpleVoice.mp3"
+      src: "simpleVoice.mp3"
       volume: 0.5
       loop: false
 ---
@@ -92,7 +92,7 @@ out:
   audio:
     - id: "voice-loopingVoice.mp3"
       type: "sound"
-      url: "loopingVoice.mp3"
+      src: "loopingVoice.mp3"
       volume: 0.6
       loop: true
 ---
@@ -141,7 +141,7 @@ out:
   audio:
     - id: "voice-voice.mp3"
       type: "sound"
-      url: "voice.mp3"
+      src: "voice.mp3"
       volume: 0.7
       loop: false
 ---
@@ -194,7 +194,7 @@ out:
   audio:
     - id: "voice-customVoice.mp3"
       type: "sound"
-      url: "customVoice.mp3"
+      src: "customVoice.mp3"
       volume: 0.3
       loop: true
 ---
@@ -225,6 +225,6 @@ out:
   audio:
     - id: "voice-voice.mp3"
       type: "sound"
-      url: "voice.mp3"
+      src: "voice.mp3"
       volume: 0.7
       loop: false

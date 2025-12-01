@@ -36,7 +36,7 @@ out:
   audio:
     - id: "bgm"
       type: "sound"
-      url: "bgm.mp3"
+      src: "bgm.mp3"
       loop: true
       volume: 0.7
       delay: 0
@@ -69,7 +69,7 @@ out:
   audio:
     - id: "bgm"
       type: "sound"
-      url: "simple.mp3"
+      src: "simple.mp3"
       loop: true
       volume: 0.5
       delay: null
@@ -105,7 +105,7 @@ out:
   audio:
     - id: "bgm"
       type: "sound"
-      url: "custom.mp3"
+      src: "custom.mp3"
       loop: false
       volume: 0.3
       delay: 1000

@@ -38,7 +38,7 @@ out:
   audio:
     - id: "sfx1"
       type: "sound"
-      url: "effect.mp3"
+      src: "effect.mp3"
       loop: false
       volume: 0.7
       delay: 0
@@ -73,7 +73,7 @@ out:
   audio:
     - id: "sfx1"
       type: "sound"
-      url: "simple.mp3"
+      src: "simple.mp3"
       loop: true
       volume: 0.5
       delay: null
@@ -111,7 +111,7 @@ out:
   audio:
     - id: "sfx1"
       type: "sound"
-      url: "custom.mp3"
+      src: "custom.mp3"
       loop: true
       volume: 0.3
       delay: 500
@@ -151,13 +151,13 @@ out:
   audio:
     - id: "sfx1"
       type: "sound"
-      url: "first.mp3"
+      src: "first.mp3"
       loop: true
       volume: 0.6
       delay: null
     - id: "sfx2"
       type: "sound"
-      url: "second.mp3"
+      src: "second.mp3"
       loop: true
       volume: 0.5
       delay: null
@@ -217,7 +217,7 @@ out:
   audio:
     - id: "sfx1"
       type: "sound"
-      url: "effect.mp3"
+      src: "effect.mp3"
       loop: true
       volume: 0.7
       delay: null
