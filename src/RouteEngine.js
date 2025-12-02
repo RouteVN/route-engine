@@ -15,6 +15,10 @@ export default function createRouteEngine(options) {
     _systemStore.clearPendingEffects();
   }
 
+  const selectPresentationState = () => {
+    return _systemStore.selectPresentationState();
+  }
+
   const selectRenderState = () => {
     return _systemStore.selectRenderState();
   }
@@ -46,6 +50,7 @@ export default function createRouteEngine(options) {
     handleAction,
     handleActions,
     selectRenderState,
+    selectPresentationState,
     handleLineActions
   };
 }
