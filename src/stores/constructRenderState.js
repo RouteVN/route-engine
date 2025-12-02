@@ -466,9 +466,9 @@ export const addBgm = (
       id: "bgm",
       type: "sound",
       src: audioResource.fileId,
-      loop: presentationState.bgm.loop ?? audioResource.loop ?? true,
-      volume: presentationState.bgm.volume ?? audioResource.volume ?? 0.5,
-      delay: presentationState.bgm.delay ?? audioResource.delay ?? null,
+      loop: presentationState.bgm.loop ?? true,
+      volume: presentationState.bgm.volume ?? 0.5,
+      delay: presentationState.bgm.delay ?? null,
     });
   }
   return state;
