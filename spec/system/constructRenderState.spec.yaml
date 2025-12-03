@@ -5,17 +5,17 @@ suites: [constructRenderState]
 suite: constructRenderState
 exportName: constructRenderState
 ---
-case: construct render state with single screen action
+case: construct render state with single base action
 in:
   - - presentationState:
-        screen:
-          resourceId: "mainScreen"
+        base:
+          resourceId: "mainBase"
       resources:
         layouts:
-          mainScreen:
+          mainBase:
             elements:
               - type: "container"
-                id: "screen-container"
+                id: "base-container"
 out:
   elements:
     - id: "story"
@@ -23,28 +23,28 @@ out:
       x: 0
       y: 0
       children:
-        - id: "screen"
+        - id: "base"
           type: "container"
           children:
             - type: "container"
-              id: "screen-container"
+              id: "base-container"
   animations: []
   audio: []
 ---
 case: construct render state with multiple actions in one presentation
 in:
   - - presentationState:
-        screen:
-          resourceId: "mainScreen"
+        base:
+          resourceId: "mainBase"
         background:
           resourceId: "bgImage"
           resourceType: "image"
       resources:
         layouts:
-          mainScreen:
+          mainBase:
             elements:
               - type: "container"
-                id: "screen-container"
+                id: "base-container"
         images:
           bgImage:
             fileId: "background.jpg"
@@ -57,11 +57,11 @@ out:
       x: 0
       y: 0
       children:
-        - id: "screen"
+        - id: "base"
           type: "container"
           children:
             - type: "container"
-              id: "screen-container"
+              id: "base-container"
         - id: "bg-cg-bgImage"
           type: "sprite"
           x: 0
@@ -76,23 +76,23 @@ case: construct render state with clean all and multiple presentations
 in:
   - - presentationState:
         cleanAll: true
-        screen:
-          resourceId: "oldScreen"
+        base:
+          resourceId: "oldBase"
       resources:
         layouts:
-          oldScreen:
+          oldBase:
             elements:
               - type: "container"
                 id: "old-container"
     - presentationState:
-        screen:
-          resourceId: "newScreen"
+        base:
+          resourceId: "newBase"
         background:
           resourceId: "newBg"
           resourceType: "image"
       resources:
         layouts:
-          newScreen:
+          newBase:
             elements:
               - type: "container"
                 id: "new-container"
@@ -108,12 +108,12 @@ out:
       x: 0
       y: 0
       children:
-        - id: "screen"
+        - id: "base"
           type: "container"
           children:
             - type: "container"
               id: "new-container"
-        - id: "screen"
+        - id: "base"
           type: "container"
           children:
             - type: "container"

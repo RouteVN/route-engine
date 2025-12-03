@@ -5,18 +5,18 @@ suites: [constructPresentationState]
 suite: constructPresentationState
 exportName: constructPresentationState
 ---
-case: construct presentation state with single screen action
+case: construct presentation state with single base action
 in:
-  - - screen:
-        resourceId: "mainScreen"
+  - - base:
+        resourceId: "mainBase"
 out:
-  screen:
-    resourceId: "mainScreen"
+  base:
+    resourceId: "mainBase"
 ---
 case: construct presentation state with multiple actions in one presentation
 in:
-  - - screen:
-        resourceId: "mainScreen"
+  - - base:
+        resourceId: "mainBase"
       background:
         resourceId: "bgImage"
         resourceType: "image"
@@ -24,8 +24,8 @@ in:
         audioId: "backgroundMusic"
         loop: true
 out:
-  screen:
-    resourceId: "mainScreen"
+  base:
+    resourceId: "mainBase"
   background:
     resourceId: "bgImage"
     resourceType: "image"
@@ -36,14 +36,14 @@ out:
 case: construct presentation state with clean all and multiple presentations
 in:
   - - cleanAll: true
-      screen:
-        resourceId: "oldScreen"
-    - screen:
-        resourceId: "newScreen"
+      base:
+        resourceId: "oldBase"
+    - base:
+        resourceId: "newBase"
       background:
         resourceId: "newBg"
 out:
-  screen:
-    resourceId: "newScreen"
+  base:
+    resourceId: "newBase"
   background:
     resourceId: "newBg"

@@ -53,7 +53,7 @@ story:
           lines:
             - id: line1
               actions:
-                screen:
+                base:
                   resourceId: screen1
                 visual:
                   items:

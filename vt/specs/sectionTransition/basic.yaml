@@ -56,7 +56,7 @@ story:
           lines:
             - id: line1
               actions:
-                screen:
+                base:
                   resourceId: screen1
                 background:
                   resourceId: alkejf3la
@@ -69,7 +69,7 @@ story:
           lines:
             - id: line1
               actions:
-                screen:
+                base:
                   resourceId: screen1
                 background:
                   resourceId: 8a3lkja
@@ -86,7 +86,7 @@ story:
           lines:
             - id: line1
               actions:
-                screen:
+                base:
                   resourceId: screen1
                 background:
                   resourceId: img3

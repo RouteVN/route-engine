@@ -72,7 +72,7 @@ story:
           lines:
             - id: line0
               actions:
-                screen:
+                base:
                   resourceId: screen1
                 dialogue:
                   layoutId: fi3l
