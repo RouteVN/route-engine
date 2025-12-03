@@ -29,7 +29,7 @@ l10n:
 
 resources:
   layouts:
-    screen1:
+    base1:
       elements:
         - id: af32
           type: rect
@@ -140,8 +140,8 @@ story:
           lines:
             - id: line1
               actions:
-                screen:
-                  resourceId: screen1
+                base:
+                  resourceId: base1
                 dialogue:
                   gui:
                     resourceId: fi3l

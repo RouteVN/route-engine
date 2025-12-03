@@ -12,13 +12,13 @@ properties:
         description: Mode of cleaning/clearing all existing state
     additionalProperties: false
 
-  screen:
+  base:
     type: object
-    description: Screen behind the background
+    description: Base layer behind the background
     properties:
       resourceId:
         type: string
-        description: ID of the screen resource to display
+        description: ID of the base resource to display
     additionalProperties: false
 
   background:

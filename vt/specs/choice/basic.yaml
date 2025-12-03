@@ -14,7 +14,7 @@ screen:
 
 resources:
   layouts:
-    screen1:
+    base1:
       elements:
         - id: af32
           type: rect
@@ -104,7 +104,7 @@ story:
             - id: line1
               actions:
                 # screen:
-                #   resourceId: screen1
+                #   resourceId: base1
                 choice:
                   resourceId: fi3l
                   items:
@@ -129,8 +129,8 @@ story:
           lines:
             - id: line1
               actions:
-                screen:
-                  resourceId: screen1
+                base:
+                  resourceId: base1
                 dialogue:
                   mode: adv
                   gui:
@@ -154,8 +154,8 @@ story:
           lines:
             - id: line1
               actions:
-                screen:
-                  resourceId: screen1
+                base:
+                  resourceId: base1
                 dialogue:
                   mode: adv
                   gui:

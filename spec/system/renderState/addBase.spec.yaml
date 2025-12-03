@@ -1,11 +1,11 @@
 file: "../../../src/stores/constructRenderState.js"
-group: constructRenderState.addScreen
-suites: [addScreen]
+group: constructRenderState.addBase
+suites: [addBase]
 ---
-suite: addScreen
-exportName: addScreen
+suite: addBase
+exportName: addBase
 ---
-case: add screen container as first child of story container
+case: add base container as first child of story container
 in:
   - elements:
       - id: "story"
@@ -15,13 +15,13 @@ in:
         children: []
     animations: []
   - presentationState:
-      screen:
-        resourceId: "mainScreen"
+      base:
+        resourceId: "mainBase"
     resources:
       layouts:
-        mainScreen:
+        mainBase:
           elements:
-            - id: "screenElement1"
+            - id: "baseElement1"
               type: "text"
               content: "Hello"
 out:
@@ -31,15 +31,15 @@ out:
       x: 0
       y: 0
       children:
-        - id: "screen"
+        - id: "base"
           type: "container"
           children:
-            - id: "screenElement1"
+            - id: "baseElement1"
               type: "text"
               content: "Hello"
   animations: []
 ---
-case: prepend screen container before existing children
+case: prepend base container before existing children
 in:
   - elements:
       - id: "story"
@@ -53,13 +53,13 @@ in:
             type: "container"
     animations: []
   - presentationState:
-      screen:
-        resourceId: "newScreen"
+      base:
+        resourceId: "newBase"
     resources:
       layouts:
-        newScreen:
+        newBase:
           elements:
-            - id: "screenElement"
+            - id: "baseElement"
               type: "sprite"
 out:
   elements:
@@ -68,10 +68,10 @@ out:
       x: 0
       y: 0
       children:
-        - id: "screen"
+        - id: "base"
           type: "container"
           children:
-            - id: "screenElement"
+            - id: "baseElement"
               type: "sprite"
         - id: "existingChild1"
           type: "text"
@@ -89,11 +89,11 @@ in:
         children: []
     animations: []
   - presentationState:
-      screen:
-        resourceId: "complexScreen"
+      base:
+        resourceId: "complexBase"
     resources:
       layouts:
-        complexScreen:
+        complexBase:
           elements:
             - id: "container1"
               type: "container"
@@ -111,7 +111,7 @@ out:
       x: 0
       y: 0
       children:
-        - id: "screen"
+        - id: "base"
           type: "container"
           children:
             - id: "container1"
@@ -125,7 +125,7 @@ out:
               type: "image"
   animations: []
 ---
-case: no presentationState.screen - return unchanged state
+case: no presentationState.base - return unchanged state
 in:
   - elements:
       - id: "story"
@@ -137,7 +137,7 @@ in:
   - presentationState: {}
     resources:
       layouts:
-        mainScreen:
+        mainBase:
           elements: []
 out:
   elements:
@@ -148,7 +148,7 @@ out:
       children: []
   animations: []
 ---
-case: missing resourceId in presentationState.screen - return unchanged state
+case: missing resourceId in presentationState.base - return unchanged state
 in:
   - elements:
       - id: "story"
@@ -158,11 +158,11 @@ in:
         children: []
     animations: []
   - presentationState:
-      screen:
+      base:
         someOtherProperty: "value"
     resources:
       layouts:
-        mainScreen:
+        mainBase:
           elements: []
 out:
   elements:
@@ -181,11 +181,11 @@ in:
         children: []
     animations: []
   - presentationState:
-      screen:
-        resourceId: "mainScreen"
+      base:
+        resourceId: "mainBase"
     resources:
       layouts:
-        mainScreen:
+        mainBase:
           elements: []
 out:
   elements:
@@ -204,11 +204,11 @@ in:
         children: []
     animations: []
   - presentationState:
-      screen:
-        resourceId: "nonExistentScreen"
+      base:
+        resourceId: "nonExistentBase"
     resources:
       layouts:
-        mainScreen:
+        mainBase:
           elements: []
 out:
   elements:
@@ -229,11 +229,11 @@ in:
         children: []
     animations: []
   - presentationState:
-      screen:
-        resourceId: "emptyScreen"
+      base:
+        resourceId: "emptyBase"
     resources:
       layouts:
-        emptyScreen:
+        emptyBase:
           elements: []
 out:
   elements:
@@ -242,7 +242,7 @@ out:
       x: 0
       y: 0
       children:
-        - id: "screen"
+        - id: "base"
           type: "container"
           children: []
   animations: []
@@ -257,8 +257,8 @@ in:
         children: []
     animations: []
   - presentationState:
-      screen:
-        resourceId: "someScreen"
+      base:
+        resourceId: "someBase"
     resources: null
 out:
   elements:

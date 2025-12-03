@@ -19,7 +19,7 @@ screen:
 
 resources:
   layouts:
-    screen1:
+    base1:
       elements:
         - id: af32
           type: rect
@@ -56,8 +56,8 @@ story:
           lines:
             - id: line1
               actions:
-                screen:
-                  resourceId: screen1
+                base:
+                  resourceId: base1
                 background:
                   resourceId: alkejf3la
             - id: line2
@@ -69,8 +69,8 @@ story:
           lines:
             - id: line1
               actions:
-                screen:
-                  resourceId: screen1
+                base:
+                  resourceId: base1
                 background:
                   resourceId: 8a3lkja
             - id: line2
@@ -86,8 +86,8 @@ story:
           lines:
             - id: line1
               actions:
-                screen:
-                  resourceId: screen1
+                base:
+                  resourceId: base1
                 background:
                   resourceId: img3
             - id: line2

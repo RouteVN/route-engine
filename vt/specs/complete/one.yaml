@@ -152,7 +152,7 @@ resources:
       default: 50
       persistence: device
   layouts:
-    screen1:
+    base1:
       elements:
         - id: af32
           type: rect
@@ -1684,8 +1684,8 @@ story:
           lines:
             - id: line1
               actions:
-                screen:
-                  resourceId: screen1
+                base:
+                  resourceId: base1
                 # setNextLineConfig:
                 #   manual:
                 # enabled: true
@@ -1721,7 +1721,7 @@ story:
           lines:
             - id: line1
               actions:
-                screen:
+                base:
                   resourceId: storyScreenLayout
                 background:
                   resourceId: f3wklajf32
@@ -1825,7 +1825,7 @@ story:
           lines:
             - id: line1
               actions:
-                screen:
+                base:
                   resourceId: storyScreenLayout
                   resourceType: layout
                 dialogue:
@@ -1880,7 +1880,7 @@ story:
           lines:
             - id: line1
               actions:
-                screen:
+                base:
                   resourceId: extraScreenLayout
                   resourceType: layout
                 dialogue:

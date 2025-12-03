@@ -25,9 +25,9 @@ export const createInitialState = () => {
 /**
  * @param {Object} params
  */
-export const addScreen = (state, { presentationState, resources }) => {
+export const addBase = (state, { presentationState, resources }) => {
   const { elements } = state;
-  if (presentationState.screen) {
+  if (presentationState.base) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
     if (!storyContainer) {
@@ -35,14 +35,14 @@ export const addScreen = (state, { presentationState, resources }) => {
     }
 
     if (
-      presentationState.screen.resourceId
+      presentationState.base.resourceId
     ) {
-      const layout = resources?.layouts[presentationState.screen.resourceId];
+      const layout = resources?.layouts[presentationState.base.resourceId];
 
       if (layout) {
-        // Add screen as the first child of story container
+        // Add base as the first child of story container
         storyContainer.children.unshift({
-          id: "screen",
+          id: "base",
           type: "container",
           children: layout.elements,
         });
@@ -711,7 +711,7 @@ export const addModals = (
 
 export const constructRenderState = (params) => {
   const actions = [
-    addScreen,
+    addBase,
     addBackgroundOrCg,
     addCharacters,
     addVisuals,
