@@ -19,7 +19,7 @@ resources:
     93k22:
       fileId: xk393
   layouts:
-    screen1:
+    base1:
       elements:
         - id: af32
           type: rect
@@ -73,7 +73,7 @@ story:
             - id: line1
               actions:
                 base:
-                  resourceId: screen1
+                  resourceId: base1
                 bgm:
                   audioId: dk392
                 dialogue:

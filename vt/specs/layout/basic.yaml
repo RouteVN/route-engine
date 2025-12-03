@@ -14,7 +14,7 @@ screen:
 
 resources:
   layouts:
-    screen1:
+    base1:
       elements:
         - id: af32
           type: rect
@@ -66,6 +66,6 @@ story:
             - id: line1
               actions:
                 base:
-                  resourceId: screen1
+                  resourceId: base1
                 layout:
                   resourceId: j3i8dk32

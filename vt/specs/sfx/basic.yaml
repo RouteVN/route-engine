@@ -19,7 +19,7 @@ resources:
     93k22:
       fileId: 39csl
   layouts:
-    screen1:
+    base1:
       elements:
         - id: af32
           type: rect
@@ -73,7 +73,7 @@ story:
             - id: line0
               actions:
                 base:
-                  resourceId: screen1
+                  resourceId: base1
                 dialogue:
                   layoutId: fi3l
                   content: Click to play sfx

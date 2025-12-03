@@ -15,7 +15,7 @@ screen:
 
 resources:
   layouts:
-    screen1:
+    base1:
       elements:
         - id: af32
           type: rect
@@ -152,7 +152,7 @@ story:
             - id: line1
               actions:
                 base:
-                  resourceId: screen1
+                  resourceId: base1
                 background:
                   resourceId: alkejf3la
                   resourceType: image
