@@ -1,0 +1,122 @@
+---
+title: "Visual Layout"
+description: Test visual layout positioning
+---
+l10n:
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys: {}
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+resources:
+  layouts:
+    base1:
+      elements:
+        - id: af32
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+    menuLayout:
+      name: Menu Layout
+      elements:
+        - id: menuBg
+          type: rect
+          fill: "#333333"
+          width: 300
+          height: 400
+          x: 0
+          y: 0
+        - id: title
+          type: text
+          content: Menu
+          x: 150
+          y: 50
+          textStyle:
+            fontSize: 32
+            fill: "white"
+        - id: option1
+          type: text
+          content: Option 1
+          x: 150
+          y: 150
+          textStyle:
+            fontSize: 24
+            fill: "yellow"
+        - id: option2
+          type: text
+          content: Option 2
+          x: 150
+          y: 200
+          textStyle:
+            fontSize: 24
+            fill: "yellow"
+
+  transforms:
+    leftPos:
+      x: 250
+      y: 300
+      anchorX: 0.5
+      anchorY: 0.5
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+    centerPos:
+      x: 500
+      y: 300
+      anchorX: 0.5
+      anchorY: 0.5
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+    rightPos:
+      x: 750
+      y: 300
+      anchorX: 0.5
+      anchorY: 0.5
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+
+story:
+  initialSceneId: ajfl3a
+  scenes:
+    ajfl3a:
+      name: Scene 1
+      initialSectionId: l3kjfawelf
+      sections:
+        l3kjfawelf:
+          name: Section 1
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: base1
+                visual:
+                  items:
+                    - id: menu-1
+                      resourceId: menuLayout
+                      transformId: leftPos
+            - id: line2
+              actions:
+                visual:
+                  items:
+                    - id: menu-1
+                      resourceId: menuLayout
+                      transformId: centerPos
+            - id: line3
+              actions:
+                visual:
+                  items:
+                    - id: menu-1
+                      resourceId: menuLayout
+                      transformId: rightPos

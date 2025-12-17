@@ -634,3 +634,282 @@ out:
       children: []
   animations: []
   audio: []
+---
+case: add visual layout with transform to story container
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "rain"
+            resourceId: "rainLayout"
+            transformId: "transform1"
+    resources:
+      layouts:
+        rainLayout:
+          elements:
+            - id: "drop1"
+              type: "sprite"
+              src: "raindrop.png"
+              width: 20
+              height: 40
+              x: 0
+              y: 0
+            - id: "drop2"
+              type: "sprite"
+              src: "raindrop.png"
+              width: 20
+              height: 40
+              x: 50
+              y: 100
+      transforms:
+        transform1:
+          x: 500
+          y: 0
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-rain"
+          type: "container"
+          x: 500
+          y: 0
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - id: "drop1"
+              type: "sprite"
+              src: "raindrop.png"
+              width: 20
+              height: 40
+              x: 0
+              y: 0
+            - id: "drop2"
+              type: "sprite"
+              src: "raindrop.png"
+              width: 20
+              height: 40
+              x: 50
+              y: 100
+  animations: []
+  audio: []
+---
+case: add visual layout with in animation
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "overlay"
+            resourceId: "overlayLayout"
+            transformId: "transform1"
+            animations:
+              in:
+                animationId: "fadeIn"
+    resources:
+      layouts:
+        overlayLayout:
+          elements:
+            - id: "bg"
+              type: "rect"
+              fill: "#000000"
+              width: 1920
+              height: 1080
+      transforms:
+        transform1:
+          x: 0
+          y: 0
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      animations:
+        fadeIn:
+          properties:
+            alpha: [0, 1]
+            duration: 500
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-overlay"
+          type: "container"
+          x: 0
+          y: 0
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - id: "bg"
+              type: "rect"
+              fill: "#000000"
+              width: 1920
+              height: 1080
+  animations:
+    - id: "overlay-animation"
+      type: "tween"
+      targetId: "visual-overlay"
+      properties:
+        alpha: [0, 1]
+        duration: 500
+  audio: []
+---
+case: layout not found - skip item
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "missing"
+            resourceId: "nonExistentLayout"
+            transformId: "transform1"
+    resources:
+      layouts:
+        existingLayout:
+          elements:
+            - id: "test"
+              type: "sprite"
+              src: "test.png"
+      transforms:
+        transform1:
+          x: 0
+          y: 0
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio: []
+---
+case: mix of image and layout visuals
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "logo"
+            resourceId: "logoImage"
+            transformId: "transform1"
+          - id: "particles"
+            resourceId: "particleLayout"
+            transformId: "transform2"
+    resources:
+      images:
+        logoImage:
+          fileId: "logo.png"
+          width: 300
+          height: 100
+      layouts:
+        particleLayout:
+          elements:
+            - id: "p1"
+              type: "sprite"
+              src: "particle.png"
+              width: 5
+              height: 5
+      transforms:
+        transform1:
+          x: 100
+          y: 50
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+        transform2:
+          x: 500
+          y: 300
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-logo"
+          type: "sprite"
+          src: "logo.png"
+          width: 300
+          height: 100
+          x: 100
+          y: 50
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+        - id: "visual-particles"
+          type: "container"
+          x: 500
+          y: 300
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - id: "p1"
+              type: "sprite"
+              src: "particle.png"
+              width: 5
+              height: 5
+  animations: []
+  audio: []
