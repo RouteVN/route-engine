@@ -53,16 +53,16 @@ in:
       background:
         resourceId: "bg1"
         resourceType: "image"
-        animations:
+        tweens:
           in:
-            animationId: "fadeIn"
+            resourceId: "fadeIn"
     resources:
       images:
         bg1:
           fileId: "image1.png"
           width: 1920
           height: 1080
-      animations:
+      tweens:
         fadeIn:
           properties:
             opacity: [0, 1]
@@ -109,16 +109,16 @@ in:
       background:
         resourceId: "bg1"
         resourceType: "image"
-        animations:
+        tweens:
           update:
-            animationId: "crossFade"
+            resourceId: "crossFade"
     resources:
       images:
         bg1:
           fileId: "new.jpg"
           width: 1920
           height: 1080
-      animations:
+      tweens:
         crossFade:
           properties:
             opacity: [1, 0]
@@ -297,18 +297,18 @@ in:
       background:
         resourceId: "bg2"
         resourceType: "image"
-        animations:
+        tweens:
           in:
-            animationId: "slideIn"
+            resourceId: "slideIn"
           update:
-            animationId: "pulse"
+            resourceId: "pulse"
     resources:
       images:
         bg2:
           fileId: "background.jpg"
           width: 1920
           height: 1080
-      animations:
+      tweens:
         slideIn:
           properties:
             x: [-100, 0]

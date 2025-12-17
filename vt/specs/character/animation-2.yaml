@@ -81,7 +81,7 @@ resources:
       x: 1400
       y: 300
 
-  animations:
+  tweens:
     slide_in_left:
       name: "Slide In From Left"
       properties:
@@ -167,7 +167,7 @@ story:
                           resourceId: 3fjaklj34
                       animations:
                         in:
-                          animationId: slide_in_left
+                          resourceId: slide_in_left
             - id: line2
               actions:
                 background:
@@ -191,7 +191,7 @@ story:
                           resourceId: spr2
                       animations:
                         in:
-                          animationId: slide_in_right
+                          resourceId: slide_in_right
             - id: line3
               actions:
                 background:
@@ -208,7 +208,7 @@ story:
                           resourceId: 3fjaklj34
                       animations:
                         out:
-                          animationId: slide_out_left
+                          resourceId: slide_out_left
                     - id: "newchar"
                       transformId: a32kf3
                       sprites:
@@ -218,7 +218,7 @@ story:
                           resourceId: 3fjaklj34
                       animations:
                         in:
-                          animationId: slide_in_left
+                          resourceId: slide_in_left
             - id: line4
               actions:
                 background:
@@ -235,7 +235,7 @@ story:
                           resourceId: spr2
                       animations:
                         out:
-                          animationId: slide_out_right
+                          resourceId: slide_out_right
                     - id: "newchar"
                       transformId: a32kf3
                       sprites:

@@ -246,11 +246,39 @@ export const selectPresentationState = ({ state }) => {
   return presentationState
 }
 
+export const selectPreviousPresentationState = ({ state }) => {
+  const { sectionId, lineId } = selectCurrentPointer({ state }).pointer;
+  const section = selectSection({ state }, { sectionId });
+
+  const lines = section?.lines || [];
+  const currentLineIndex = lines.findIndex(line => line.id === lineId);
+
+  // Return all lines before the current line (not including current)
+  if (currentLineIndex <= 0) {
+    return null;
+  }
+
+  const previousLines = lines.slice(0, currentLineIndex);
+
+  const presentationActions = previousLines.map((line) => {
+    const actions = line.actions || {};
+    const presentationData = {};
+    Object.keys(actions).forEach((actionType) => {
+      presentationData[actionType] = actions[actionType];
+    });
+    return presentationData;
+  });
+
+  return constructPresentationState(presentationActions);
+}
+
 export const selectRenderState = ({ state }) => {
   const presentationState = selectPresentationState({ state });
+  const previousPresentationState = selectPreviousPresentationState({ state });
   console.log('presentationState', presentationState);
   const renderState = constructRenderState({
     presentationState,
+    previousPresentationState,
     resources: state.projectData.resources,
     l10n: state.projectData.l10n.packages[state.global.currentLocalizationPackageId],
   });

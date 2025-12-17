@@ -58,7 +58,7 @@ export const addBase = (state, { presentationState, resources }) => {
  */
 export const addBackgroundOrCg = (
   state,
-  { presentationState, resources = {}, variables, autoMode, skipMode, currentLocalizationPackageId }, // resolveFile
+  { presentationState, previousPresentationState, resources = {}, variables, autoMode, skipMode, currentLocalizationPackageId }, // resolveFile
 ) => {
   const { elements } = state;
   const animations = state.animations || [];
@@ -104,45 +104,44 @@ export const addBackgroundOrCg = (
 
     if (presentationState.background.animations) {
       if (presentationState.background.animations.in) {
-        const animationId =
-          presentationState.background.animations.in.animationId;
-        const animation = resources?.animations[animationId];
-        if (animation) {
+        const tweenId =
+          presentationState.background.animations.in.resourceId;
+        const tween = resources?.tweens[tweenId];
+        if (tween) {
           animations.push({
             id: "bg-cg-animation-in",
             type: "tween",
             targetId: `bg-cg-${presentationState.background.resourceId}`,
-            properties: animation.properties,
+            properties: tween.properties,
           });
         }
       }
 
       if (presentationState.background.animations.out) {
-        const animationId =
-          presentationState.background.animations.out.animationId;
-        const resourceId =
+        const tweenId =
           presentationState.background.animations.out.resourceId;
-        const animation = resources?.animations[animationId];
-        if (animation) {
+        const targetResourceId = previousPresentationState?.background?.resourceId;
+        const tween = resources?.tweens[tweenId];
+        if (tween && targetResourceId) {
           animations.push({
             id: "bg-cg-animation-out",
             type: "tween",
-            targetId: `bg-cg-${resourceId}`,
-            properties: animation.properties,
+            targetId: `bg-cg-${targetResourceId}`,
+            properties: tween.properties,
           });
         }
       }
 
       if (presentationState.background.animations.update) {
-        const animationId =
-          presentationState.background.animations.update.animationId;
-        const animation = resources?.animations[animationId];
-        if (animation) {
+        const tweenId =
+          presentationState.background.animations.update.resourceId;
+        const tween = resources?.tweens[tweenId];
+        if (tween) {
           animations.push({
             id: "bg-cg-animation-update",
             type: "tween",
             targetId: `bg-cg-${presentationState.background.resourceId}`,
-            properties: animation.properties,
+            properties: tween.properties,
           });
         }
       }
@@ -174,14 +173,14 @@ export const addCharacters = (
       // For out animations only, we don't need to create a container
       if (item.animations && item.animations.out && !sprites && !transformId) {
         // Just add the out animation transition, container should already exist
-        const animationId = item.animations.out.animationId;
-        const animation = resources?.animations[animationId];
-        if (animation) {
+        const tweenId = item.animations.out.resourceId;
+        const tween = resources?.tweens[tweenId];
+        if (tween) {
           const outTransition = {
             id: `character-animation-out`,
             type: "tween",
             targetId: `character-container-${item.id}`,
-            properties: animation.properties,
+            properties: tween.properties,
           };
           animations.push(outTransition);
         }
@@ -236,27 +235,27 @@ export const addCharacters = (
       // Add animation support (except out, which is handled above)
       if (item.animations) {
         if (item.animations.in) {
-          const animationId = item.animations.in.animationId;
-          const animation = resources?.animations[animationId];
-          if (animation) {
+          const tweenId = item.animations.in.resourceId;
+          const tween = resources?.tweens[tweenId];
+          if (tween) {
             animations.push({
               id: `character-animation-in`,
               type: "tween",
               targetId: `character-container-${item.id}`,
-              properties: animation.properties,
+              properties: tween.properties,
             });
           }
         }
 
         if (item.animations.update) {
-          const animationId = item.animations.update.animationId;
-          const animation = resources?.animations[animationId];
-          if (animation) {
+          const tweenId = item.animations.update.resourceId;
+          const tween = resources?.tweens[tweenId];
+          if (tween) {
             const updateTransition = {
               id: `character-animation-update`,
               type: "tween",
               targetId: `character-container-${item.id}`,
-              properties: animation.properties,
+              properties: tween.properties,
             };
             animations.push(updateTransition);
           }
@@ -331,29 +330,29 @@ export const addVisuals = (
 
       if (item.animations) {
         if (item.animations.in) {
-          const animationId =
-            item.animations.in.animationId || item.animations.in;
-          const animation = resources?.animations[animationId];
-          if (animation) {
+          const tweenId =
+            item.animations.in.resourceId || item.animations.in;
+          const tween = resources?.tweens[tweenId];
+          if (tween) {
             animations.push({
               id: `${item.id}-animation`,
               type: "tween",
               targetId: `visual-${item.id}`,
-              properties: animation.properties,
+              properties: tween.properties,
             });
           }
         }
 
         if (item.animations.out) {
-          const animationId =
-            item.animations.out.animationId || item.animations.out;
-          const animation = resources?.animations[animationId];
-          if (animation) {
+          const tweenId =
+            item.animations.out.resourceId || item.animations.out;
+          const tween = resources?.tweens[tweenId];
+          if (tween) {
             animations.push({
               id: `${item.id}-animation-2`,
               type: "tween",
               targetId: `visual-${item.id}`,
-              properties: animation.properties,
+              properties: tween.properties,
             });
           }
         }

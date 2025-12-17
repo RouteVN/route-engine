@@ -70,7 +70,7 @@ resources:
               textStyle:
                 fontSize: 24
                 fill: "white"
-  animations:
+  tweens:
     3lkj289:
       name: "Fade In"
       properties:

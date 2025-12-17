@@ -1651,7 +1651,7 @@ resources:
       anchorX: 0.5
       anchorY: 0.5
 
-  animations:
+  tweens:
     3lkj289:
       name: "Fade In"
       properties:

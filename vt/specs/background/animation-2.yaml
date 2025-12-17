@@ -40,7 +40,7 @@ resources:
       width: 1920
       height: 1080
 
-  animations:
+  tweens:
     3lkj289:
       name: "Fade In"
       properties:
@@ -77,15 +77,13 @@ story:
                   resourceType: image
                   animations:
                     in:
-                      animationId: 3lkj289
+                      resourceId: 3lkj289
             - id: line2
               actions:
                 background:
                   resourceId: 3ljdasfjlk32
-                  resourceType: image
                   animations:
                     in:
-                      animationId: 3lkj289
+                      resourceId: 3lkj289
                     out:
-                      animationId: 8h3js
-                      resourceId: alkejf3la
+                      resourceId: 8h3js

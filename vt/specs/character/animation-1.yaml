@@ -61,7 +61,7 @@ resources:
       x: 960
       y: 540
 
-  animations:
+  tweens:
     slide_in:
       name: "Slide In From Left"
       properties:
@@ -127,7 +127,7 @@ story:
                           resourceId: 3fjaklj34
                       animations:
                         in:
-                          animationId: slide_in
+                          resourceId: slide_in
             - id: line2
               actions:
                 background:
@@ -144,7 +144,7 @@ story:
                           resourceId: 3fjaklj34
                       animations:
                         update:
-                          animationId: scale_update
+                          resourceId: scale_update
             - id: line3
               actions:
                 background:
@@ -155,4 +155,4 @@ story:
                     - id: "laj389d"
                       animations:
                         out:
-                          animationId: fade_out
+                          resourceId: fade_out
