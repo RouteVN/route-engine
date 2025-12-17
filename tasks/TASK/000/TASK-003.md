@@ -1,6 +1,6 @@
 ---
 title: implement visuals
-status: todo
+status: done
 priority: high
 assignee: JeffY
 ---
