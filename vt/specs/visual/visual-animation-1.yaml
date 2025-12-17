@@ -1,0 +1,111 @@
+---
+title: "Visual Animation 1"
+description: Test visual animation in and out
+---
+l10n:
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys: {}
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+resources:
+  layouts:
+    base1:
+      elements:
+        - id: af32
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+
+  images:
+    alkejf3la:
+      fileId: x342fga
+      width: 100
+      height: 100
+    8a3lkja:
+      fileId: a32kf3
+      width: 150
+      height: 150
+    3ljdasfjlk32:
+      fileId: la3lka
+      width: 200
+      height: 200
+
+  transforms:
+    centerPos:
+      x: 500
+      y: 400
+      anchorX: 0.5
+      anchorY: 0.5
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+
+  animations:
+    3lkj289:
+      name: "Fade In"
+      properties:
+        alpha:
+          initialValue: 0
+          keyframes:
+            - duration: 700
+              value: 1
+              easing: linear
+    8h3js:
+      name: "Fade Out"
+      properties:
+        alpha:
+          keyframes:
+            - duration: 700
+              value: 0
+              easing: linear
+
+story:
+  initialSceneId: ajfl3a
+  scenes:
+    ajfl3a:
+      name: Scene 1
+      initialSectionId: l3kjfawelf
+      sections:
+        l3kjfawelf:
+          name: Section 1
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: base1
+                visual:
+                  items:
+                    - id: visual-1
+                      resourceId: alkejf3la
+                      transformId: centerPos
+                      animations:
+                        in:
+                          animationId: 3lkj289
+            - id: line2
+              actions:
+                visual:
+                  items:
+                    - id: visual-1
+                      resourceId: 8a3lkja
+                      transformId: centerPos
+            - id: line3
+              actions:
+                visual:
+                  items:
+                    - id: visual-1
+                      resourceId: 8a3lkja
+                      transformId: centerPos
+                      animations:
+                        out:
+                          animationId: 8h3js

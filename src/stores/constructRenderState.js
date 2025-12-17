@@ -286,7 +286,8 @@ export const addVisuals = (
     for (const item of items) {
       // Check if both resourceId and resourceType exist, and resourceType is "image"
       if (item.resourceId) {
-        let resource = resources.images[item.resourceId];
+        const { images = {} } = resources;
+        let resource = images[item.resourceId];
 
         if (resource) {
           const transform = resources.transforms[item.transformId];
@@ -307,6 +308,27 @@ export const addVisuals = (
         }
       }
 
+      if (item.resourceId) {
+        const { layouts = {} } = resources;
+        let layout = layouts[item.resourceId];
+
+        if (layout) {
+          const transform = resources.transforms[item.transformId];
+          storyContainer.children.push({
+            id: `visual-${item.id}`,
+            type: "container",
+            children: layout.elements,
+            x: transform.x,
+            y: transform.y,
+            anchorX: transform.anchorX,
+            anchorY: transform.anchorY,
+            rotation: transform.rotation,
+            scaleX: transform.scaleX,
+            scaleY: transform.scaleY,
+          });
+        }
+      }
+      
       if (item.animations) {
         if (item.animations.in) {
           const animationId =
