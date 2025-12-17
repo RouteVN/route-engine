@@ -98,7 +98,7 @@ const line = {
   actions: {
     background: { resourceId: 'bg_school' },
     dialogue: { characterId: 'protagonist', content: [{ text: 'Hello!' }] },
-    bgm: { audioId: 'music_1' }
+    bgm: { resourceId: 'music_1' }
   }
 };
 ```
@@ -125,7 +125,7 @@ const presentationState = engine.selectPresentationState();
 // {
 //   background: { resourceId: 'bg_school' },
 //   dialogue: { characterId: 'protagonist', content: [...] },
-//   bgm: { audioId: 'music_1', loop: true }
+//   bgm: { resourceId: 'music_1', loop: true }
 // }
 ```
 
@@ -230,7 +230,7 @@ Actions that can be attached to lines to control presentation:
 | `dialogue` | `{ characterId?, character?, content, mode?, gui?, clear? }` | Display dialogue |
 | `character` | `{ items }` | Display character sprites |
 | `visual` | `{ items }` | Display visual elements |
-| `bgm` | `{ audioId, loop?, volume?, delay? }` | Play background music |
+| `bgm` | `{ resourceId, loop?, volume?, delay? }` | Play background music |
 | `sfx` | `{ items }` | Play sound effects |
 | `voice` | `{ fileId, volume?, loop? }` | Play voice audio |
 | `animation` | `{ ... }` | Apply animations |

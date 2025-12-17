@@ -13,7 +13,7 @@ screen:
   backgroundColor: "#000000"
 
 resources:
-  audio:
+  sounds:
     dk392:
       fileId: xj323
     93k22:
@@ -46,6 +46,7 @@ resources:
               nextLine: {}
     fi3l:
       name: Dialogue Screen
+      mode: "adv"
       elements:
         - id: dialogue-container
           type: "container"
@@ -55,7 +56,7 @@ resources:
             - id: dialogue-text
               type: "text"
               y: 100
-              content: "${dialogue.content}"
+              content: "${dialogue.content[0].text}"
               textStyle:
                 fontSize: 24
                 fill: "white"
@@ -75,31 +76,43 @@ story:
                 base:
                   resourceId: base1
                 dialogue:
-                  layoutId: fi3l
-                  content: Click to play sfx
+                  gui:
+                    resourceId: fi3l
+                  mode: adv
+                  content:
+                    - text: Click to play sfx
 
             - id: line1
               actions:
                 sfx:
                   items:
                     - id: sfx-1
-                      audioId: dk392
+                      resourceId: dk392
                 dialogue:
-                  layoutId: fi3l
-                  content: Playing multiple SFX sounds
+                  gui:
+                    resourceId: fi3l
+                  mode: adv
+                  content:
+                    - text: Playing multiple SFX sounds
 
             - id: line2
               actions:
                 sfx:
                   items:
                     - id: sfx-2
-                      audioId: 93k22
+                      resourceId: 93k22
                 dialogue:
-                  layoutId: fi3l
-                  content: Playing single SFX sound
+                  gui:
+                    resourceId: fi3l
+                  mode: adv
+                  content:
+                    - text: Playing single SFX sound
 
             - id: line3
               actions:
                 dialogue:
-                  layoutId: fi3l
-                  content: No SFX playing
+                  gui:
+                    resourceId: fi3l
+                  mode: adv
+                  content:
+                    - text: No SFX playing

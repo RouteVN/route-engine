@@ -21,7 +21,7 @@ in:
         resourceId: "bgImage"
         resourceType: "image"
       bgm:
-        audioId: "backgroundMusic"
+        resourceId: "backgroundMusic"
         loop: true
 out:
   base:
@@ -30,7 +30,7 @@ out:
     resourceId: "bgImage"
     resourceType: "image"
   bgm:
-    audioId: "backgroundMusic"
+    resourceId: "backgroundMusic"
     loop: true
 ---
 case: construct presentation state with clean all and multiple presentations

@@ -56,7 +56,7 @@ in:
                         background:
                           resourceId: "abcd"
                         bgm:
-                          audioId: "cde"
+                          resourceId: "cde"
                     - id: "2"
                       actions:
                         background:
@@ -71,7 +71,7 @@ out:
   background:
     resourceId: abcd
   bgm:
-    audioId: cde
+    resourceId: cde
     loop: true
 ---
 case: multiple lines and actions last line
@@ -94,7 +94,7 @@ in:
                         background:
                           resourceId: "abcd"
                         bgm:
-                          audioId: "cde"
+                          resourceId: "cde"
                     - id: "2"
                       actions:
                         background:
@@ -109,5 +109,5 @@ out:
   background:
     resourceId: xyz
   bgm:
-    audioId: cde
+    resourceId: cde
     loop: true

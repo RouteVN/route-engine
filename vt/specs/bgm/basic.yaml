@@ -13,7 +13,7 @@ screen:
   backgroundColor: "#000000"
 
 resources:
-  audio:
+  sounds:
     dk392:
       fileId: 3ka3s
     93k22:
@@ -46,6 +46,7 @@ resources:
               nextLine: {}
     fi3l:
       name: Dialogue Screen
+      mode: "adv"
       elements:
         - id: dialogue-container
           type: "container"
@@ -55,8 +56,8 @@ resources:
             - id: dialogue-text
               type: "text"
               y: 100
-              text: "${dialogue.content}"
-              style:
+              content: "${dialogue.content[0].text}"
+              textStyle:
                 fontSize: 24
                 fill: "white"
 
@@ -75,32 +76,47 @@ story:
                 base:
                   resourceId: base1
                 bgm:
-                  audioId: dk392
+                  resourceId: dk392
                 dialogue:
-                  layoutId: fi3l
-                  content: 111111111111111
+                  gui:
+                    resourceId: fi3l
+                  mode: adv
+                  content:
+                    - text: 111111111111111
 
             - id: line2
               actions:
                 bgm:
-                  audioId: 93k22
+                  resourceId: 93k22
                 dialogue:
-                  layoutId: fi3l
-                  content: 2222222222222222222
+                  gui:
+                    resourceId: fi3l
+                  mode: adv
+                  content:
+                    - text: 2222222222222222222
 
             - id: line3
               actions:
                 dialogue:
-                  layoutId: fi3l
-                  content: 33333333333333333
+                  gui:
+                    resourceId: fi3l
+                  mode: adv
+                  content:
+                    - text: 33333333333333333
             - id: line4
               actions:
                 dialogue:
-                  layoutId: fi3l
-                  content: 4444444444444444444
+                  gui:
+                    resourceId: fi3l
+                  mode: adv
+                  content:
+                    - text: 4444444444444444444
             - id: line5
               actions:
                 bgm: {}
                 dialogue:
-                  layoutId: fi3l
-                  content: 5555555555555
+                  gui:
+                    resourceId: fi3l
+                  mode: adv
+                  content:
+                    - text: 5555555555555

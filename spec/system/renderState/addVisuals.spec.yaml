@@ -72,9 +72,9 @@ in:
             resourceId: "image1"
             resourceType: "image"
             transformId: "transform1"
-            animations:
+            tweens:
               in:
-                animationId: "fadeIn"
+                resourceId: "fadeIn"
     resources:
       images:
         image1:
@@ -88,7 +88,7 @@ in:
           rotation: 0
           scaleX: 1
           scaleY: 1
-      animations:
+      tweens:
         fadeIn:
           properties:
             opacity: [0, 1]
@@ -136,7 +136,7 @@ in:
             resourceId: "image1"
             resourceType: "image"
             transformId: "transform1"
-            animations:
+            tweens:
               out: "fadeOut"
     resources:
       images:
@@ -151,7 +151,7 @@ in:
           rotation: 0
           scaleX: 1
           scaleY: 1
-      animations:
+      tweens:
         fadeOut:
           properties:
             opacity: [1, 0]
@@ -199,11 +199,11 @@ in:
             resourceId: "image1"
             resourceType: "image"
             transformId: "transform1"
-            animations:
+            tweens:
               in:
-                animationId: "slideIn"
+                resourceId: "slideIn"
               out:
-                animationId: "slideOut"
+                resourceId: "slideOut"
     resources:
       images:
         image1:
@@ -217,7 +217,7 @@ in:
           rotation: 0
           scaleX: 1
           scaleY: 1
-      animations:
+      tweens:
         slideIn:
           properties:
             x: [-50, 150]
@@ -728,9 +728,9 @@ in:
           - id: "overlay"
             resourceId: "overlayLayout"
             transformId: "transform1"
-            animations:
+            tweens:
               in:
-                animationId: "fadeIn"
+                resourceId: "fadeIn"
     resources:
       layouts:
         overlayLayout:
@@ -749,7 +749,7 @@ in:
           rotation: 0
           scaleX: 1
           scaleY: 1
-      animations:
+      tweens:
         fadeIn:
           properties:
             alpha: [0, 1]

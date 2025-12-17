@@ -179,7 +179,7 @@ resources:
       scaleX: 1
       scaleY: 1
 
-  animations:
+  tweens:
     fadeIn:
       name: "Fade In"
       properties:
@@ -217,7 +217,7 @@ story:
                   resourceType: image
                   animations:
                     in:
-                      animationId: fadeIn
+                      resourceId: fadeIn
             - id: line2
               actions:
                 background:
@@ -230,7 +230,7 @@ story:
                       transformId: fullscreen
                       animations:
                         in:
-                          animationId: fadeIn
+                          resourceId: fadeIn
             - id: line3
               actions:
                 background:
@@ -243,4 +243,4 @@ story:
                       transformId: fullscreen
                       animations:
                         out:
-                          animationId: fadeOut
+                          resourceId: fadeOut

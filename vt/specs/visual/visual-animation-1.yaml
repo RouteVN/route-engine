@@ -51,7 +51,7 @@ resources:
       scaleX: 1
       scaleY: 1
 
-  animations:
+  tweens:
     3lkj289:
       name: "Fade In"
       properties:
@@ -91,7 +91,7 @@ story:
                       transformId: centerPos
                       animations:
                         in:
-                          animationId: 3lkj289
+                          resourceId: 3lkj289
             - id: line2
               actions:
                 visual:
@@ -108,4 +108,4 @@ story:
                       transformId: centerPos
                       animations:
                         out:
-                          animationId: 8h3js
+                          resourceId: 8h3js

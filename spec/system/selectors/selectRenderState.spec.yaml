@@ -31,7 +31,7 @@ in:
           packages:
             en: {}
         resources:
-          audio:
+          sounds:
             cde:
               id: "cde"
               type: "audio"
@@ -73,7 +73,7 @@ in:
                         background:
                           resourceId: "abcd"
                         bgm:
-                          audioId: "cde"
+                          resourceId: "cde"
                     - id: "2"
                       actions:
                         background:
@@ -82,7 +82,7 @@ in:
           packages:
             en: {}
         resources:
-          audio:
+          sounds:
             cde:
               id: "cde"
               type: "audio"
@@ -130,7 +130,7 @@ in:
                         background:
                           resourceId: "abcd"
                         bgm:
-                          audioId: "cde"
+                          resourceId: "cde"
                     - id: "2"
                       actions:
                         background:
@@ -139,7 +139,7 @@ in:
           packages:
             en: {}
         resources:
-          audio:
+          sounds:
             cde:
               id: "cde"
               type: "audio"

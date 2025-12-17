@@ -41,7 +41,7 @@ resources:
       width: 1920
       height: 1080
 
-  animations:
+  tweens:
     3lkj289:
       name: "Fade In"
       properties:

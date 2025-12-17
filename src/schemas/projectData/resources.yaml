@@ -97,13 +97,13 @@ properties:
         additionalProperties: false
     additionalProperties: false
 
-  animations:
+  tweens:
     type: object
-    description: Animation definitions for various effects
+    description: Tween definitions for various effects
     patternProperties:
       "^[a-zA-Z0-9]+$":
         type: object
-        description: Animation definition
+        description: Tween definition
         properties:
           name:
             type: string

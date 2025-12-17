@@ -93,9 +93,9 @@ in:
             sprites:
               - id: "body"
                 resourceId: "body"
-            animations:
+            tweens:
               in:
-                animationId: "fadeIn"
+                resourceId: "fadeIn"
     resources:
       transforms:
         transform1:
@@ -111,7 +111,7 @@ in:
           fileId: "body.png"
           width: 200
           height: 200
-      animations:
+      tweens:
         fadeIn:
           properties:
             opacity: [0, 1]
@@ -161,11 +161,11 @@ in:
       character:
         items:
           - id: "char1"
-            animations:
+            tweens:
               out:
-                animationId: "fadeOut"
+                resourceId: "fadeOut"
     resources:
-      animations:
+      tweens:
         fadeOut:
           properties:
             opacity: [1, 0]
@@ -202,11 +202,11 @@ in:
             sprites:
               - id: "body"
                 resourceId: "body"
-            animations:
+            tweens:
               in:
-                animationId: "fadeIn"
+                resourceId: "fadeIn"
               update:
-                animationId: "pulse"
+                resourceId: "pulse"
     resources:
       transforms:
         transform1:
@@ -222,7 +222,7 @@ in:
           fileId: "body.png"
           width: 200
           height: 200
-      animations:
+      tweens:
         fadeIn:
           properties:
             opacity: [0, 1]
