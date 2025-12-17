@@ -19,9 +19,9 @@ in:
       sfx:
         items:
           - id: "sfx1"
-            audioId: "soundEffect"
+            resourceId: "soundEffect"
     resources:
-      audio:
+      sounds:
         soundEffect:
           fileId: "effect.mp3"
           loop: false
@@ -57,9 +57,9 @@ in:
       sfx:
         items:
           - id: "sfx1"
-            audioId: "simpleSound"
+            resourceId: "simpleSound"
     resources:
-      audio:
+      sounds:
         simpleSound:
           fileId: "simple.mp3"
 out:
@@ -92,12 +92,12 @@ in:
       sfx:
         items:
           - id: "sfx1"
-            audioId: "customSound"
+            resourceId: "customSound"
             loop: true
             volume: 0.3
             delay: 500
     resources:
-      audio:
+      sounds:
         customSound:
           fileId: "custom.mp3"
 out:
@@ -130,11 +130,11 @@ in:
       sfx:
         items:
           - id: "sfx1"
-            audioId: "firstSound"
+            resourceId: "firstSound"
           - id: "sfx2"
-            audioId: "secondSound"
+            resourceId: "secondSound"
     resources:
-      audio:
+      sounds:
         firstSound:
           fileId: "first.mp3"
           volume: 0.6
@@ -174,7 +174,7 @@ in:
     audio: []
   - presentationState: {}
     resources:
-      audio:
+      sounds:
         soundEffect:
           fileId: "effect.mp3"
           loop: true
@@ -201,9 +201,9 @@ in:
       sfx:
         items:
           - id: "sfx1"
-            audioId: "soundEffect"
+            resourceId: "soundEffect"
     resources:
-      audio:
+      sounds:
         soundEffect:
           fileId: "effect.mp3"
           loop: true
@@ -236,9 +236,9 @@ in:
       sfx:
         items:
           - id: "sfx1"
-            audioId: "nonExistent"
+            resourceId: "nonExistent"
     resources:
-      audio:
+      sounds:
         existing:
           fileId: "existing.mp3"
           loop: true
@@ -267,7 +267,7 @@ in:
       sfx:
         items: []
     resources:
-      audio:
+      sounds:
         soundEffect:
           fileId: "effect.mp3"
           loop: true
@@ -296,7 +296,7 @@ in:
       sfx:
         items:
           - id: "sfx1"
-            audioId: "soundEffect"
+            resourceId: "soundEffect"
     resources: null
 out:
   elements:

@@ -117,7 +117,7 @@ export const sfx = (state, presentation) => {
  */
 export const bgm = (state, presentation) => {
   if (presentation.bgm) {
-    if (!presentation.bgm.audioId) {
+    if (!presentation.bgm.resourceId) {
       state.bgm = undefined;
       return;
     }

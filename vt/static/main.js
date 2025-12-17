@@ -11,7 +11,7 @@ import createRouteGraphics, {
   textRevealingPlugin,
   tweenPlugin,
   soundPlugin,
-} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.10/+esm"
+} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.15/+esm"
 
 const projectData = parse(window.yamlContent);
 
@@ -117,7 +117,7 @@ const init = async () => {
     animations: [
       tweenPlugin
     ],
-    audios: [
+    audio: [
       soundPlugin
     ]
   };
@@ -129,11 +129,8 @@ const init = async () => {
     height: 1080,
     plugins,
     eventHandler: (eventName, payload) => {
-      console.log('ZZZZZZZZZZZZZz eventHandler', eventName, payload);
       if (eventName === 'renderComplete') {
-        console.log('YYYYYYYYYYYYYYYYYYY')
         if (count >= 2) {
-          console.log('GGGGGGGGGGGGGGGGGG')
           return;
         }
         engine.handleAction('nextLineFromCompleted', {})
@@ -154,8 +151,6 @@ const init = async () => {
   });
 
   const effectsHandler = (effects) => {
-    console.log('effects', effects)
-
     // Deduplicate effects by name, keeping only the last occurrence
     const deduplicatedEffects = effects.reduce((acc, effect) => {
       acc[effect.name] = effect;
@@ -170,7 +165,6 @@ const init = async () => {
         const renderState = engine.selectRenderState();
         routeGraphics.render(renderState);
       } else if (effect.name === 'handleLineActions') {
-        console.log('44444444444 handleLineActions');
         engine.handleLineActions();
       }
     }

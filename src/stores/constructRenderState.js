@@ -328,7 +328,7 @@ export const addVisuals = (
           });
         }
       }
-      
+
       if (item.animations) {
         if (item.animations.in) {
           const animationId =
@@ -482,14 +482,14 @@ export const addBgm = (
     const storyContainer = elements.find((el) => el.id === "story");
     if (!storyContainer) return state;
 
-    const audioResource = resources.audio[presentationState.bgm.audioId];
+    const audioResource = resources.sounds[presentationState.bgm.resourceId];
     if (!audioResource) return state;
     audio.push({
       id: "bgm",
       type: "sound",
       src: audioResource.fileId,
       loop: presentationState.bgm.loop ?? true,
-      volume: presentationState.bgm.volume ?? 0.5,
+      volume: presentationState.bgm.volume ?? 500,
       delay: presentationState.bgm.delay ?? null,
     });
   }
@@ -503,7 +503,7 @@ export const addSfx = (state, { presentationState, resources }) => {
     // Find the story container
     const items = presentationState.sfx.items;
     for (const item of items) {
-      const audioResource = resources.audio?.[item.audioId];
+      const audioResource = resources.sounds?.[item.resourceId];
       if (!audioResource) continue;
 
       audioElements.push({
@@ -511,7 +511,7 @@ export const addSfx = (state, { presentationState, resources }) => {
         type: "sound",
         src: audioResource.fileId,
         loop: item.loop ?? audioResource.loop ?? true,
-        volume: item.volume ?? audioResource.volume ?? 0.5,
+        volume: item.volume ?? audioResource.volume ?? 500,
         delay: item.delay ?? audioResource.delay ?? null,
       });
     }
@@ -533,7 +533,7 @@ export const addVoice = (state, { presentationState, resources }) => {
     id: `voice-${fileId}`,
     type: "sound",
     src: fileId,
-    volume: volume ?? 0.5,
+    volume: volume ?? 500,
     loop: loop ?? false,
   });
 

@@ -17,9 +17,9 @@ in:
     audio: []
   - presentationState:
       bgm:
-        audioId: "backgroundMusic"
+        resourceId: "backgroundMusic"
     resources:
-      audio:
+      sounds:
         backgroundMusic:
           fileId: "bgm.mp3"
           loop: true
@@ -53,9 +53,9 @@ in:
     audio: []
   - presentationState:
       bgm:
-        audioId: "simpleMusic"
+        resourceId: "simpleMusic"
     resources:
-      audio:
+      sounds:
         simpleMusic:
           fileId: "simple.mp3"
 out:
@@ -86,9 +86,9 @@ in:
     audio: []
   - presentationState:
       bgm:
-        audioId: "customMusic"
+        resourceId: "customMusic"
     resources:
-      audio:
+      sounds:
         customMusic:
           fileId: "custom.mp3"
           loop: false
@@ -122,7 +122,7 @@ in:
     audio: []
   - presentationState: {}
     resources:
-      audio:
+      sounds:
         backgroundMusic:
           fileId: "bgm.mp3"
           loop: true
@@ -147,9 +147,9 @@ in:
     audio: []
   - presentationState:
       bgm:
-        audioId: "backgroundMusic"
+        resourceId: "backgroundMusic"
     resources:
-      audio:
+      sounds:
         backgroundMusic:
           fileId: "bgm.mp3"
           loop: true
@@ -174,9 +174,9 @@ in:
     audio: []
   - presentationState:
       bgm:
-        audioId: "nonExistent"
+        resourceId: "nonExistent"
     resources:
-      audio:
+      sounds:
         existing:
           fileId: "existing.mp3"
           loop: true
@@ -203,7 +203,7 @@ in:
     audio: []
   - presentationState:
       bgm:
-        audioId: "backgroundMusic"
+        resourceId: "backgroundMusic"
     resources: null
 out:
   elements:
