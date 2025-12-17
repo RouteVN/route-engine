@@ -182,6 +182,82 @@ out:
         duration: 300
   audio: []
 ---
+case: add visual with both in and out animations
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceId: "image1"
+            resourceType: "image"
+            transformId: "transform1"
+            animations:
+              in:
+                animationId: "slideIn"
+              out:
+                animationId: "slideOut"
+    resources:
+      images:
+        image1:
+          fileId: "slide.png"
+      transforms:
+        transform1:
+          x: 150
+          y: 75
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      animations:
+        slideIn:
+          properties:
+            x: [-50, 150]
+            duration: 400
+        slideOut:
+          properties:
+            x: [150, 350]
+            duration: 400
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-visual1"
+          type: "sprite"
+          src: "slide.png"
+          x: 150
+          y: 75
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+  animations:
+    - id: "visual1-animation"
+      type: "tween"
+      targetId: "visual-visual1"
+      properties:
+        x: [-50, 150]
+        duration: 400
+    - id: "visual1-animation-2"
+      type: "tween"
+      targetId: "visual-visual1"
+      properties:
+        x: [150, 350]
+        duration: 400
+  audio: []
+---
 case: multiple visual items
 in:
   - elements:
@@ -326,6 +402,135 @@ out:
   animations: []
   audio: []
 ---
+case: visual item missing resourceId - skip item
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceType: "image"
+            transformId: "transform1"
+    resources:
+      images:
+        image1:
+          fileId: "test.png"
+      transforms:
+        transform1:
+          x: 0
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio: []
+---
+case: visual item missing resourceType - skip item
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceId: "image1"
+            transformId: "transform1"
+    resources:
+      images:
+        image1:
+          fileId: "test.png"
+      transforms:
+        transform1:
+          x: 0
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-visual1"
+          type: "sprite"
+          src: "test.png"
+          x: 0
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+  animations: []
+  audio: []
+---
+case: unsupported resourceType - skip item
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceId: "video1"
+            resourceType: "video"
+            transformId: "transform1"
+    resources:
+      images: {}
+      videos:
+        video1:
+          fileId: "test.mp4"
+      transforms:
+        transform1:
+          x: 0
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio: []
+---
 case: resource not found - skip item
 in:
   - elements:
@@ -346,6 +551,42 @@ in:
     resources:
       images:
         existing:
+          fileId: "test.png"
+      transforms:
+        transform1:
+          x: 0
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio: []
+---
+case: no visual items - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items: []
+    resources:
+      images:
+        image1:
           fileId: "test.png"
       transforms:
         transform1:
