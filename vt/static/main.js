@@ -138,8 +138,6 @@ const init = async () => {
     height: 1080,
     plugins,
     eventHandler: (eventName, payload) => {
-      console.log('Event received:', eventName, payload);
-
       if (eventName === 'renderComplete') {
         if (count >= 2) {
           return;
