@@ -1,6 +1,6 @@
 ---
 title: characters take custom position
-status: todo
+status: done
 priority: medium
 assignee: JeffY
 ---

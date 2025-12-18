@@ -93,6 +93,12 @@ properties:
             transformId:
               type: string
               description: ID of the transform where character appears
+            x:
+              type: number
+              description: Custom x position to override transform x
+            y:
+              type: number
+              description: Custom y position to override transform y
             sprites:
               type: array
               description: Array of sprite parts that make up the character
