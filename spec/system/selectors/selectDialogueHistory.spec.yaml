@@ -1,0 +1,305 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore selectors
+suites: [selectDialogueHistory]
+---
+suite: selectDialogueHistory
+exportName: selectDialogueHistory
+---
+case: no contexts available
+in:
+  - state:
+      global:
+        isLineCompleted: false
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          content:
+                            - text: "Hello"
+      contexts: []
+out: []
+---
+case: single line with dialogue at current position
+in:
+  - state:
+      global:
+        isLineCompleted: false
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          characterId: "char1"
+                          content:
+                            - text: "Hello world"
+                    - id: "2"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  - characterId: "char1"
+    content:
+      - text: "Hello world"
+---
+case: multiple lines with dialogue up to current position
+in:
+  - state:
+      global:
+        isLineCompleted: false
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          characterId: "char1"
+                          content:
+                            - text: "First line"
+                    - id: "2"
+                      actions:
+                        dialogue:
+                          characterId: "char2"
+                          content:
+                            - text: "Second line"
+                    - id: "3"
+                      actions:
+                        dialogue:
+                          characterId: "char1"
+                          content:
+                            - text: "Third line"
+                    - id: "4"
+                      actions:
+                        dialogue:
+                          content:
+                            - text: "Fourth line"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "3"
+out:
+  - characterId: "char1"
+    content:
+      - text: "First line"
+  - characterId: "char2"
+    content:
+      - text: "Second line"
+  - characterId: "char1"
+    content:
+      - text: "Third line"
+---
+case: lines without dialogue are filtered out
+in:
+  - state:
+      global:
+        isLineCompleted: false
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          characterId: "char1"
+                          content:
+                            - text: "First dialogue"
+                    - id: "2"
+                      actions:
+                        background:
+                          resourceId: "bg1"
+                    - id: "3"
+                      actions:
+                        dialogue:
+                          characterId: "char2"
+                          content:
+                            - text: "Second dialogue"
+                    - id: "4"
+                      actions: {}
+                    - id: "5"
+                      actions:
+                        dialogue:
+                          content:
+                            - text: "Third dialogue"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "5"
+out:
+  - characterId: "char1"
+    content:
+      - text: "First dialogue"
+  - characterId: "char2"
+    content:
+      - text: "Second dialogue"
+  - content:
+      - text: "Third dialogue"
+---
+case: no dialogue lines before current position
+in:
+  - state:
+      global:
+        isLineCompleted: false
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "bg1"
+                    - id: "2"
+                      actions: {}
+                    - id: "3"
+                      actions:
+                        dialogue:
+                          content:
+                            - text: "First dialogue"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out: []
+---
+case: section not found
+in:
+  - state:
+      global:
+        isLineCompleted: false
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          content:
+                            - text: "Hello"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "nonexistent"
+              lineId: "1"
+out: []
+---
+case: empty lines array
+in:
+  - state:
+      global:
+        isLineCompleted: false
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines: []
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out: []
+---
+case: dialogue without characterId
+in:
+  - state:
+      global:
+        isLineCompleted: false
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          content:
+                            - text: "Narrator text"
+                    - id: "2"
+                      actions:
+                        dialogue:
+                          characterId: "char1"
+                          content:
+                            - text: "Character text"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  - content:
+      - text: "Narrator text"
+  - characterId: "char1"
+    content:
+      - text: "Character text"
+---
+case: multiple content items in dialogue
+in:
+  - state:
+      global:
+        isLineCompleted: false
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          characterId: "char1"
+                          content:
+                            - text: "First part"
+                            - text: "Second part"
+                            - text: "Third part"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  - characterId: "char1"
+    content:
+      - text: "First part"
+      - text: "Second part"
+      - text: "Third part"

@@ -27,6 +27,7 @@ export const createInitialState = (payload) => {
       autoMode: false,
       skipMode: false,
       dialogueUIHidden: false,
+      isDialogueHistoryShowing: false,
       currentLocalizationPackageId: currentLocalizationPackageId,
       viewedRegistry: {
         sections: [],
@@ -80,6 +81,34 @@ export const selectAutoMode = ({ state }) => {
 
 export const selectDialogueUIHidden = ({ state }) => {
   return state.global.dialogueUIHidden;
+};
+
+export const selectDialogueHistory = ({ state }) => {
+  const lastContext = state.contexts[state.contexts.length - 1];
+  if (!lastContext) {
+    return [];
+  }
+
+  const { sectionId, lineId } = lastContext.pointers.read;
+  const section = selectSection({ state }, { sectionId });
+
+  if (!section?.lines || !Array.isArray(section.lines)) {
+    return [];
+  }
+
+  // Get all lines up to and including the current line
+  const currentLineIndex = section.lines.findIndex(line => line.id === lineId);
+  const linesUpToCurrent = section.lines.slice(0, currentLineIndex + 1);
+
+  // Filter for lines that have dialogue content
+  const historyContent = linesUpToCurrent
+    .filter(line => line.actions?.dialogue)
+    .map(line => ({
+      content: line.actions.dialogue.content,
+      characterId: line.actions.dialogue.characterId,
+    }));
+
+  return historyContent;
 };
 
 export const selectCurrentLocalizationPackageId = ({ state }) => {
@@ -399,6 +428,23 @@ export const toggleDialogueUI = ({ state }) => {
   return state;
 };
 
+export const showDialogueHistory = ({ state }) => {
+  const dialogueHistory = selectDialogueHistory({ state });
+  state.global.isDialogueHistoryShowing = true;
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+  return state;
+};
+
+export const hideDialogueHistory = ({ state }) => {
+  state.global.isDialogueHistoryShowing = false;
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+  return state;
+};
+
 export const setCurrentLocalizationPackageId = ({ state }, payload) => {
   const { localizationPackageId } = payload;
   state.global.currentLocalizationPackageId = localizationPackageId;
@@ -618,20 +664,22 @@ export const jumpToLine = ({ state }, payload) => {
 };
 
 /**
- * Adds an item to the historySequence of the last context
+ * Adds an item to the historySequence of the last context.
+ * NOTE: This should only be called when transitioning to a new section.
  * @param {Object} state - Current state object
- * @param {Object} initialState - Action payload
- * @param {Object} initialState.item - The historySequence item to add (can be any structure)
+ * @param {Object} payload - Action payload
+ * @param {Object} payload.item - The historySequence item to add
+ * @param {string} payload.item.sectionId - The section ID for the history entry
  * @returns {Object} Updated state object
  */
-export const addToHistory = ({ state }, payload) => {
+export const addToHistorySequence = ({ state }, payload) => {
   const { item } = payload;
 
   // Get the last context (assuming we want to add to the most recent context)
   const lastContext = state.contexts[state.contexts.length - 1];
 
   if (lastContext && lastContext.historySequence) {
-    lastContext.historySequence.push(item);
+    lastContext.historySequence.push({ sectionId: item.sectionId });
   }
 
   state.global.pendingEffects.push({
@@ -730,6 +778,8 @@ export const nextLine = ({ state }) => {
       stopSkipMode({ state });
     }
   }
+
+  console.log('state', state)
   return state;
 };
 
@@ -889,6 +939,7 @@ export const createSystemStore = (initialState) => {
     selectSkipMode,
     selectAutoMode,
     selectDialogueUIHidden,
+    selectDialogueHistory,
     selectCurrentLocalizationPackageId,
     selectIsLineViewed,
     selectIsResourceViewed,
@@ -911,6 +962,8 @@ export const createSystemStore = (initialState) => {
     showDialogueUI,
     hideDialogueUI,
     toggleDialogueUI,
+    showDialogueHistory,
+    hideDialogueHistory,
     setCurrentLocalizationPackageId,
     clearPendingEffects,
     appendPendingEffect,
@@ -921,7 +974,7 @@ export const createSystemStore = (initialState) => {
     updateProjectData,
     sectionTransition,
     jumpToLine,
-    addToHistory,
+    addToHistorySequence,
     nextLine,
     nextLineFromCompleted,
     markLineCompleted,

@@ -27,6 +27,7 @@ out:
     autoMode: false
     skipMode: false
     dialogueUIHidden: false
+    isDialogueHistoryShowing: false
     currentLocalizationPackageId: "en"
     viewedRegistry:
       sections: []

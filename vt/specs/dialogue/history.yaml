@@ -1,0 +1,137 @@
+---
+title: "History"
+---
+l10n:
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys: {}
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+resources:
+  layouts:
+    base1:
+      elements:
+        - id: af32
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+    storyScreenLayout:
+      name: Story Screen Background
+      elements:
+        - id: story-screen-bg
+          type: rect
+          x: 0
+          y: 0
+          width: 1920
+          height: 1080
+          fill: "#000000"
+          clickEventName: "system"
+          clickEventPayload:
+            actions:
+              nextLine: {}
+    fi3l:
+      name: Dialogue Screen
+      mode: "adv"
+      elements:
+        - id: dialogue-container
+          type: "container"
+          x: 50
+          y: 300
+          children:
+            - id: "bfeawjk2g"
+              type: sprite
+              width: 1400
+              height: 300
+              url: 3kda832
+              x: 0
+              y: 0
+            - id: dialogue-character-name
+              type: text
+              content: "${dialogue.character.name}"
+              x: 20
+              y: 40
+              textStyle:
+                fontSize: 24
+                fill: "white"
+            - id: dialogue-text
+              type: "text"
+              x: 20
+              y: 100
+              content: "${dialogue.content[0].text}"
+              textStyle:
+                fontSize: 24
+                fill: "white"
+        - id: history-button-text
+          type: text
+          x: 1220
+          y: 35
+          content: "History"
+          textStyle:
+            fontSize: 20
+            fill: "white"
+          hover:
+            textStyle:
+              fontSize: 32
+              fill: yellow
+          click:
+            actionPayload:
+              actions:
+                showDialogueHistory: {}
+  characters:
+    ajf34a:
+      name: Character A
+
+story:
+  initialSceneId: ajfl3a
+  scenes:
+    ajfl3a:
+      name: Scene 1
+      initialSectionId: l3kjfawelf
+      sections:
+        l3kjfawelf:
+          name: Section 1
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: base1
+                dialogue:
+                  gui:
+                    resourceId: fi3l
+                  mode: adv
+                  content:
+                    - text: Hello! Welcome to this visual novel.
+                  characterId: ajf34a
+            - id: line2
+              actions:
+                dialogue:
+                  content:
+                    - text: This is the second line of dialogue.
+                  characterId: ajf34a
+            - id: line3
+              actions:
+                dialogue:
+                  content:
+                    - text: Here we are on the third line. Click the History button to view dialogue history!
+            - id: line4
+              actions:
+                dialogue:
+                  characterId: ajf34a
+                  content:
+                    - text: You can go back and review what was said before.
+            - id: line5
+              actions:
+                dialogue:
+                  content:
+                    - text: This is the final line. Try the History button!
+                  characterId: ajf34a
