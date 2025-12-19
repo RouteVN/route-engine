@@ -202,8 +202,8 @@ export const addCharacters = (
       const characterContainer = {
         type: "container",
         id: `character-container-${item.id}`,
-        x: transform.x,
-        y: transform.y,
+        x: item.x ?? transform.x,
+        y: item.y ?? transform.y,
         anchorX: transform.anchorX,
         anchorY: transform.anchorY,
         rotation: transform.rotation,

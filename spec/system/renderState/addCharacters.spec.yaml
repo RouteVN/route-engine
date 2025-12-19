@@ -559,3 +559,240 @@ out:
       y: 0
       children: []
   animations: []
+---
+case: custom x overrides transform x
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      character:
+        items:
+          - id: "char1"
+            transformId: "transform1"
+            x: 500
+            sprites:
+              - id: "body"
+                resourceId: "body"
+    resources:
+      transforms:
+        transform1:
+          x: 100
+          y: 200
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      images:
+        body:
+          fileId: "body.png"
+          width: 200
+          height: 200
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - type: "container"
+          id: "character-container-char1"
+          x: 500
+          y: 200
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - type: "sprite"
+              id: "char1-body"
+              src: "body.png"
+              width: 200
+              height: 200
+              x: 0
+              y: 0
+  animations: []
+---
+case: custom y overrides transform y
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      character:
+        items:
+          - id: "char1"
+            transformId: "transform1"
+            y: 600
+            sprites:
+              - id: "body"
+                resourceId: "body"
+    resources:
+      transforms:
+        transform1:
+          x: 100
+          y: 200
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      images:
+        body:
+          fileId: "body.png"
+          width: 200
+          height: 200
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - type: "container"
+          id: "character-container-char1"
+          x: 100
+          y: 600
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - type: "sprite"
+              id: "char1-body"
+              src: "body.png"
+              width: 200
+              height: 200
+              x: 0
+              y: 0
+  animations: []
+---
+case: custom x and y override both transform values
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      character:
+        items:
+          - id: "char1"
+            transformId: "transform1"
+            x: 300
+            y: 400
+            sprites:
+              - id: "body"
+                resourceId: "body"
+    resources:
+      transforms:
+        transform1:
+          x: 100
+          y: 200
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      images:
+        body:
+          fileId: "body.png"
+          width: 200
+          height: 200
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - type: "container"
+          id: "character-container-char1"
+          x: 300
+          y: 400
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - type: "sprite"
+              id: "char1-body"
+              src: "body.png"
+              width: 200
+              height: 200
+              x: 0
+              y: 0
+  animations: []
+---
+case: custom x with value 0 overrides transform x (zero is valid)
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      character:
+        items:
+          - id: "char1"
+            transformId: "transform1"
+            x: 0
+            sprites:
+              - id: "body"
+                resourceId: "body"
+    resources:
+      transforms:
+        transform1:
+          x: 100
+          y: 200
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      images:
+        body:
+          fileId: "body.png"
+          width: 200
+          height: 200
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - type: "container"
+          id: "character-container-char1"
+          x: 0
+          y: 200
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - type: "sprite"
+              id: "char1-body"
+              src: "body.png"
+              width: 200
+              height: 200
+              x: 0
+              y: 0
+  animations: []
