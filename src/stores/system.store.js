@@ -281,6 +281,7 @@ export const selectRenderState = ({ state }) => {
     previousPresentationState,
     resources: state.projectData.resources,
     l10n: state.projectData.l10n.packages[state.global.currentLocalizationPackageId],
+    autoMode: state.global.autoMode,
   });
   console.log('renderState', renderState);
   return renderState;

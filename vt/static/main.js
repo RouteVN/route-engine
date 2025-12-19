@@ -1,5 +1,6 @@
 import { parse } from "https://cdn.jsdelivr.net/npm/yaml@2.7.1/+esm";
 import createRouteEngine from "./RouteEngine.js";
+import { Ticker } from "https://cdn.jsdelivr.net/npm/pixi.js@8.0.0/+esm";
 
 import createRouteGraphics, {
   createAssetBufferManager,
@@ -124,6 +125,10 @@ const init = async () => {
 
   let count = 0;
 
+  // Create dedicated ticker for auto mode
+  const ticker = new Ticker();
+  ticker.start();
+
   await routeGraphics.init({
     width: 1920,
     height: 1080,
@@ -151,6 +156,10 @@ const init = async () => {
   });
 
   const effectsHandler = (effects) => {
+    // Auto mode state
+    let autoModeElapsed = 0;
+    let autoModeCallback = null;
+
     // Deduplicate effects by name, keeping only the last occurrence
     const deduplicatedEffects = effects.reduce((acc, effect) => {
       acc[effect.name] = effect;
@@ -166,6 +175,36 @@ const init = async () => {
         routeGraphics.render(renderState);
       } else if (effect.name === 'handleLineActions') {
         engine.handleLineActions();
+      } else if (effect.name === 'startAutoNextTimer') {
+        // Remove old callback if exists
+        if (autoModeCallback) {
+          ticker.remove(autoModeCallback);
+        }
+
+        // Reset elapsed time
+        autoModeElapsed = 0;
+
+        // Create new ticker callback for auto mode
+        autoModeCallback = (time) => {
+          autoModeElapsed += time.deltaMS;
+
+          // Auto advance every 1000ms (1 second) - hardcoded
+          // TODO: Speed can adjust in the future
+          if (autoModeElapsed >= 1000) {
+            autoModeElapsed = 0;
+            engine.handleAction('nextLine', {});
+          }
+        };
+
+        // Add to auto ticker
+        ticker.add(autoModeCallback);
+      } else if (effect.name === 'clearAutoNextTimer') {
+        // Remove ticker callback
+        if (autoModeCallback) {
+          ticker.remove(autoModeCallback);
+          autoModeCallback = null;
+        }
+        autoModeElapsed = 0;
       }
     }
   };
