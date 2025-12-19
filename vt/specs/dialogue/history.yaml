@@ -87,7 +87,6 @@ resources:
             actionPayload:
               actions:
                 showDialogueHistory: {}
-                # toggleAutoMode: {}
   characters:
     ajf34a:
       name: Character A
