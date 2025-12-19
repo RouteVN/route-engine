@@ -129,10 +129,6 @@ const init = async () => {
   const ticker = new Ticker();
   ticker.start();
 
-  // Auto mode state
-  let autoModeElapsed = 0;
-  let autoModeCallback = null;
-
   await routeGraphics.init({
     width: 1920,
     height: 1080,
@@ -160,6 +156,10 @@ const init = async () => {
   });
 
   const effectsHandler = (effects) => {
+    // Auto mode state
+    let autoModeElapsed = 0;
+    let autoModeCallback = null;
+
     // Deduplicate effects by name, keeping only the last occurrence
     const deduplicatedEffects = effects.reduce((acc, effect) => {
       acc[effect.name] = effect;
@@ -189,6 +189,7 @@ const init = async () => {
           autoModeElapsed += time.deltaMS;
 
           // Auto advance every 1000ms (1 second) - hardcoded
+          // TODO: Speed can adjust in the future
           if (autoModeElapsed >= 1000) {
             autoModeElapsed = 0;
             engine.handleAction('nextLine', {});
