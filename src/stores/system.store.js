@@ -151,6 +151,38 @@ export const selectSaveSlot = ({ state }, payload) => {
 };
 
 /**
+ * Selects formatted history dialogue for UI display
+ * @param {Object} state - Current state object
+ * @returns {Array} Array of formatted dialogue history entries with content text
+ */
+export const selectHistoryDialogue = ({ state }) => {
+  const lastContext = state.contexts[state.contexts.length - 1];
+  const historySequence = lastContext?.historySequence || [];
+  const currentLocalizationPackageId = state.global.currentLocalizationPackageId;
+  const l10n = state.projectData?.l10n?.packages[currentLocalizationPackageId];
+
+  return historySequence
+    .filter(entry => entry.actions?.dialogue)
+    .map((entry, index) => {
+      const dialogueAction = entry.actions.dialogue;
+      let content = dialogueAction.content?.[0]?.text || '';
+
+      if (content && l10n) {
+        content = content.replace(/\$\{l10n\.keys\.([^}]+)\}/g, (match, key) => {
+          return l10n.keys?.[key] || match;
+        });
+      }
+
+      return {
+        id: `history-${index}`,
+        sectionId: entry.sectionId,
+        lineId: entry.lineId,
+        content
+      };
+    });
+};
+
+/**
  * Selects the current pointer from the last context
  * @param {Object} state - Current state object
  * @returns {Object} Current pointer object with currentPointerMode and pointer properties
@@ -664,6 +696,18 @@ export const nextLineFromCompleted = ({ state }) => {
   const nextLineIndex = currentLineIndex + 1;
 
   if (nextLineIndex < lines.length) {
+    // Add current line to history before advancing
+    const currentLine = lines[currentLineIndex];
+    if (currentLine) {
+      addToHistory({ state }, {
+        item: {
+          sectionId,
+          lineId: currentLine.id,
+          actions: currentLine.actions
+        }
+      });
+    }
+
     const nextLine = lines[nextLineIndex];
     const lastContext = state.contexts[state.contexts.length - 1];
 
@@ -703,6 +747,18 @@ export const nextLine = ({ state }) => {
   const nextLineIndex = currentLineIndex + 1;
 
   if (nextLineIndex < lines.length) {
+    // Add current line to history before advancing
+    const currentLine = lines[currentLineIndex];
+    if (currentLine) {
+      addToHistory({ state }, {
+        item: {
+          sectionId,
+          lineId: currentLine.id,
+          actions: currentLine.actions
+        }
+      });
+    }
+
     const nextLine = lines[nextLineIndex];
     const lastContext = state.contexts[state.contexts.length - 1];
 
@@ -874,6 +930,27 @@ export const sectionTransition = ({ state }, payload) => {
   return state;
 };
 
+/**
+ * Logs the current history dialogue to console
+ * @param {Object} state - Current state object
+ * @returns {Object} Updated state object
+ */
+export const logHistory = ({ state }) => {
+  const historyDialogue = selectHistoryDialogue({ state });
+  console.log('=== Dialogue History ===');
+  console.log(`Total entries: ${historyDialogue.length}`);
+  historyDialogue.forEach((entry, index) => {
+    console.log(`\n[${index}]`, {
+      id: entry.id,
+      sectionId: entry.sectionId,
+      lineId: entry.lineId,
+      content: entry.content
+    });
+  });
+  console.log('\n========================');
+  return state;
+};
+
 /**************************
  * Store Export
  *************************/
@@ -895,6 +972,7 @@ export const createSystemStore = (initialState) => {
     selectNextLineConfig,
     selectSaveSlots,
     selectSaveSlot,
+    selectHistoryDialogue,
     selectCurrentPointer,
     selectSection,
     selectCurrentLine,
@@ -926,6 +1004,7 @@ export const createSystemStore = (initialState) => {
     nextLineFromCompleted,
     markLineCompleted,
     prevLine,
+    logHistory,
   };
 
   return createStore(_initialState, selectorsAndActions, {
