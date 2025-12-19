@@ -430,7 +430,6 @@ export const toggleDialogueUI = ({ state }) => {
 
 export const showDialogueHistory = ({ state }) => {
   const dialogueHistory = selectDialogueHistory({ state });
-  console.log('dialogueHistory', dialogueHistory);
   state.global.isDialogueHistoryShowing = true;
   state.global.pendingEffects.push({
     name: "render",
