@@ -282,6 +282,7 @@ export const selectRenderState = ({ state }) => {
     resources: state.projectData.resources,
     l10n: state.projectData.l10n.packages[state.global.currentLocalizationPackageId],
     autoMode: state.global.autoMode,
+    skipMode: state.global.skipMode,
   });
   console.log('renderState', renderState);
   return renderState;
@@ -720,6 +721,14 @@ export const nextLine = ({ state }) => {
     state.global.pendingEffects.push({
       name: 'handleLineActions'
     })
+  } else {
+    // Reached the end of section, stop auto/skip modes
+    if (state.global.autoMode) {
+      stopAutoMode({ state });
+    }
+    if (state.global.skipMode) {
+      stopSkipMode({ state });
+    }
   }
   return state;
 };

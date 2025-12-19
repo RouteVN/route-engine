@@ -13,6 +13,7 @@ l10n:
         line4: "Line 4: Auto mode should continue through all lines"
         line5: "Line 5: Final line - auto mode stops here"
         autoButton: "Auto"
+        skipButton: "Skip"
 
 screen:
   width: 1920
@@ -79,6 +80,26 @@ resources:
             actionPayload:
               actions:
                 toggleAutoMode: {}
+
+        - id: skip-button
+          type: text
+          x: 1550
+          y: 50
+          content: ${l10n.keys.skipButton}
+          textStyle:
+            fontSize: 32
+            $if skipMode:
+              fill: "#00ff00"
+            $else:
+              fill: "white"
+          hover:
+            textStyle:
+              fontSize: 32
+              fill: yellow
+          click:
+            actionPayload:
+              actions:
+                toggleSkipMode: {}
 
 story:
   initialSceneId: test_scene

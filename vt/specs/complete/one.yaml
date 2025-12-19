@@ -1343,10 +1343,10 @@ resources:
                 textStyle:
                   fontSize: 24
                   fill: yellow
-              eventName: "system"
-              eventPayload:
-                actions:
-                  toggleAutoMode: {}
+              click:
+                actionPayload:
+                  actions:
+                    toggleAutoMode: {}
             - id: dialogue-action-skip
               type: text
               content: ${l10n.keys.layoutFi3lDialogueActionSkip}
@@ -1364,10 +1364,10 @@ resources:
                 textStyle:
                   fontSize: 24
                   fill: yellow
-              eventName: "system"
-              eventPayload:
-                actions:
-                  toggleSkipMode: {}
+              click:
+                actionPayload:
+                  actions:
+                    toggleSkipMode: {}
             - id: dialogue-action-history
               type: text
               content: ${l10n.keys.layoutFi3lDialogueActionHistory}
