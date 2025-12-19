@@ -1,9 +1,9 @@
 file: "../../../src/stores/system.store.js"
-group: systemStore.addToHistory
-suites: [addToHistory]
+group: systemStore.addToHistorySequence
+suites: [addToHistorySequence]
 ---
-suite: addToHistory
-exportName: addToHistory
+suite: addToHistorySequence
+exportName: addToHistorySequence
 ---
 case: add item to history with empty history
 in:
@@ -77,7 +77,6 @@ in:
         - historySequence: []
   - item:
       sectionId: "intro"
-      action: "dialogue"
 out:
   global:
     pendingEffects:
@@ -87,9 +86,8 @@ out:
   contexts:
     - historySequence:
         - sectionId: "intro"
-          action: "dialogue"
 ---
-case: add complex item to history
+case: add complex item to history (only sectionId is stored)
 in:
   - state:
       global:
@@ -98,20 +96,7 @@ in:
         - historySequence:
             - sectionId: "intro"
   - item:
-      sectionId: "intro"
-      type: "choice"
-      choice:
-        text: "Continue story"
-        options:
-          - id: "option1"
-            text: "Yes"
-            nextSection: "branch1"
-          - id: "option2"
-            text: "No"
-            nextSection: "branch2"
-      metadata:
-        musicTrack: "theme1"
-        backgroundImage: "scene1.png"
+      sectionId: "chapter2"
 out:
   global:
     pendingEffects:
@@ -119,17 +104,4 @@ out:
   contexts:
     - historySequence:
         - sectionId: "intro"
-        - sectionId: "intro"
-          type: "choice"
-          choice:
-            text: "Continue story"
-            options:
-              - id: "option1"
-                text: "Yes"
-                nextSection: "branch1"
-              - id: "option2"
-                text: "No"
-                nextSection: "branch2"
-          metadata:
-            musicTrack: "theme1"
-            backgroundImage: "scene1.png"
+        - sectionId: "chapter2"
