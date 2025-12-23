@@ -620,14 +620,10 @@ export const addLayout = (
 
 export const addLayeredViews = (
   state,
-  { resources = {}, variables, autoMode, skipMode, currentLocalizationPackageId },
+  { resources = {}, variables, autoMode, skipMode, currentLocalizationPackageId, layeredViews = [] },
 ) => {
   const { elements } = state;
   const animations = state.animations || [];
-  // Get layeredViews directly from the passed systemState instead of using systemStore
-  // const layeredViews = systemState.modes[systemState.currentMode].layeredViews;
-  // TODO: do this
-  const layeredViews = [];
   if (layeredViews && layeredViews.length > 0) {
     // Add each layeredView as an overlay
     layeredViews.forEach((layeredView, index) => {

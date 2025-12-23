@@ -1,0 +1,87 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.layeredViewsActions
+suites: [pushLayeredView, popLayeredView, replaceLastLayeredView, clearLayeredViews]
+---
+suite: pushLayeredView
+exportName: pushLayeredView
+---
+case: push a layeredView to empty array
+in:
+  - state:
+      global:
+        layeredViews: []
+        pendingEffects: []
+  - resourceId: layout1
+    resourceType: layout
+out:
+  global:
+    layeredViews:
+      - resourceId: layout1
+        resourceType: layout
+    pendingEffects:
+      - name: render
+---
+suite: popLayeredView
+exportName: popLayeredView
+---
+case: pop last layeredView from array
+in:
+  - state:
+      global:
+        layeredViews:
+          - resourceId: layout1
+            resourceType: layout
+          - resourceId: layout2
+            resourceType: layout
+        pendingEffects: []
+out:
+  global:
+    layeredViews:
+      - resourceId: layout1
+        resourceType: layout
+    pendingEffects:
+      - name: render
+---
+suite: replaceLastLayeredView
+exportName: replaceLastLayeredView
+---
+case: replace last layeredView in array
+in:
+  - state:
+      global:
+        layeredViews:
+          - resourceId: layout1
+            resourceType: layout
+          - resourceId: layout2
+            resourceType: layout
+        pendingEffects: []
+  - resourceId: layout3
+    resourceType: layout
+out:
+  global:
+    layeredViews:
+      - resourceId: layout1
+        resourceType: layout
+      - resourceId: layout3
+        resourceType: layout
+    pendingEffects:
+      - name: render
+---
+suite: clearLayeredViews
+exportName: clearLayeredViews
+---
+case: clear all layeredViews
+in:
+  - state:
+      global:
+        layeredViews:
+          - resourceId: layout1
+            resourceType: layout
+          - resourceId: layout2
+            resourceType: layout
+        pendingEffects: []
+out:
+  global:
+    layeredViews: []
+    pendingEffects:
+      - name: render

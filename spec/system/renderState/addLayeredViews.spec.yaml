@@ -19,6 +19,7 @@ in:
     autoMode: false
     skipMode: false
     currentLocalizationPackageId: null
+    layeredViews: []
 out:
   elements:
     - id: "story"
@@ -28,9 +29,14 @@ out:
       children: []
   animations: []
 ---
-case: return unchanged state with empty elements array
+case: add layeredView layout to elements
 in:
-  - elements: []
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
     animations: []
   - resources:
       layouts:
@@ -42,6 +48,21 @@ in:
     autoMode: false
     skipMode: false
     currentLocalizationPackageId: null
+    layeredViews:
+      - resourceId: layeredViewLayout
+        resourceType: layout
 out:
-  elements: []
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+    - id: "layeredView-0"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - type: "text"
+          content: "LayeredView content"
   animations: []
