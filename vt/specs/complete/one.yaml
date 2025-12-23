@@ -193,7 +193,7 @@ resources:
               eventName: "system"
               eventPayload:
                 actions:
-                  clearLastModal: {}
+                  clearLastLayeredView: {}
             - id: 32kljfsf3
               type: container
               direction: vertical
@@ -213,7 +213,7 @@ resources:
                       fontSize: 24
                       fill: "white"
 
-    modalGalleryItemLayout:
+    layeredViewGalleryItemLayout:
       elements:
         - id: afk2lkas
           type: container
@@ -240,7 +240,7 @@ resources:
                         - variableId: "activeGalleryFileIndex"
                           op: set
                           value: 0
-                    clearLastModal: {}
+                    clearLastLayeredView: {}
 
     creditsLayout:
       transitions:
@@ -420,7 +420,7 @@ resources:
           rightClickEventName: "system"
           rightClickEventPayload:
             actions:
-              addModal:
+              addLayeredView:
                 resourceId: dafkjkl3
                 resourceType: layout
               updateVariable:
@@ -446,7 +446,7 @@ resources:
           # rightClickEventName: "system"
           # rightClickEventPayload:
           #   actions:
-          #     addModal:
+          #     addLayeredView:
           #       resourceId: dafkjkl3
           #       resourceType: layout
           #     updateVariable:
@@ -481,7 +481,7 @@ resources:
               rightClickEventName: "system"
               rightClickEventPayload:
                 actions:
-                  clearLastModal: {}
+                  clearLastLayeredView: {}
             - id: "9fdadf"
               $when: 'variables.currentMenuTabId == "options"'
               type: "container"
@@ -901,8 +901,8 @@ resources:
                                       - variableId: "activeGalleryFileIndex"
                                         op: set
                                         value: 0
-                                addModal:
-                                  resourceId: "modalGalleryItemLayout"
+                                addLayeredView:
+                                  resourceId: "layeredViewGalleryItemLayout"
                             - id: "3fadje2-${item.label}"
                               type: text
                               x: 20
@@ -1023,7 +1023,7 @@ resources:
               eventName: "system"
               eventPayload:
                 actions:
-                  clearLastModal: {}
+                  clearLastLayeredView: {}
                   sectionTransition:
                     sectionId: "3k3s9sd"
               x: 0
@@ -1220,7 +1220,7 @@ resources:
               eventName: "system"
               eventPayload:
                 actions:
-                  clearLastModal: {}
+                  clearLastLayeredView: {}
                   sectionTransition:
                     mode: "read"
                     sectionId: "l3kjfawelf"
@@ -1241,7 +1241,7 @@ resources:
               eventName: "system"
               eventPayload:
                 actions:
-                  clearLastModal: {}
+                  clearLastLayeredView: {}
               x: 0
               y: 0
               textStyle:
@@ -1388,7 +1388,7 @@ resources:
               eventName: "system"
               eventPayload:
                 actions:
-                  addModal:
+                  addLayeredView:
                     resourceId: historyDialogueLayout
             - id: dialogue-action-options
               type: text
@@ -1415,7 +1415,7 @@ resources:
                       - variableId: "isMainMenu"
                         op: "set"
                         value: false
-                  addModal:
+                  addLayeredView:
                     resourceId: dafkjkl3
             - id: dialogue-action-hide
               type: text
@@ -1451,7 +1451,7 @@ resources:
                   prevLine: {}
 
     f3jik32isdf:
-      name: Exit Application Modal
+      name: Exit Application LayeredView
       elements:
         - id: 23kjrasdf
           type: container
@@ -1491,7 +1491,7 @@ resources:
               eventName: "system"
               eventPayload:
                 actions:
-                  clearLastModal: {}
+                  clearLastLayeredView: {}
               textStyle:
                 fontSize: 48
                 fill: "white"
@@ -1514,7 +1514,7 @@ resources:
         # rightClickEventName: "system"
         # rightClickEventPayload:
         #   actions:
-        #     addModal:
+        #     addLayeredView:
         #       resourceId: dafkjkl3
         #     updateVariable:
         #       operations:
@@ -1552,7 +1552,7 @@ resources:
               content: XLoad ${l10n.keys.layoutJ3i8dk32Load}
               click:
                 actionPayload:
-                  addModal:
+                  addLayeredView:
                     resourceId: dafkjkl3
                   updateVariable:
                     operations:
@@ -1575,7 +1575,7 @@ resources:
               eventName: "system"
               eventPayload:
                 actions:
-                  addModal:
+                  addLayeredView:
                     resourceId: dafkjkl3
                   updateVariable:
                     operations:
@@ -1598,7 +1598,7 @@ resources:
               eventName: "system"
               eventPayload:
                 actions:
-                  addModal:
+                  addLayeredView:
                     resourceId: f3jik32isdf
               textStyle:
                 fontSize: 48

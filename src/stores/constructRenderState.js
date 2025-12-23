@@ -618,24 +618,24 @@ export const addLayout = (
   return state;
 };
 
-export const addModals = (
+export const addLayeredViews = (
   state,
   { resources = {}, variables, autoMode, skipMode, currentLocalizationPackageId },
 ) => {
   const { elements } = state;
   const animations = state.animations || [];
-  // Get modals directly from the passed systemState instead of using systemStore
-  // const modals = systemState.modes[systemState.currentMode].modals;
+  // Get layeredViews directly from the passed systemState instead of using systemStore
+  // const layeredViews = systemState.modes[systemState.currentMode].layeredViews;
   // TODO: do this
-  const modals = [];
-  if (modals && modals.length > 0) {
-    // Add each modal as an overlay
-    modals.forEach((modal, index) => {
-      if (modal.resourceType === "layout") {
-        const layout = resources.layouts[modal.resourceId];
+  const layeredViews = [];
+  if (layeredViews && layeredViews.length > 0) {
+    // Add each layeredView as an overlay
+    layeredViews.forEach((layeredView, index) => {
+      if (layeredView.resourceType === "layout") {
+        const layout = resources.layouts[layeredView.resourceId];
 
         if (!layout) {
-          console.warn(`Modal layout not found: ${modal.resourceId}`);
+          console.warn(`LayeredView layout not found: ${layeredView.resourceId}`);
           return;
         }
 
@@ -645,9 +645,9 @@ export const addModals = (
           });
         }
 
-        // Create a container for this modal
-        const modalContainer = {
-          id: `modal-${index}`,
+        // Create a container for this layeredView
+        const layeredViewContainer = {
+          id: `layeredView-${index}`,
           type: "container",
           x: 0,
           y: 0,
@@ -698,10 +698,10 @@ export const addModals = (
           // languagePacks: systemStore.selectLanguagePacks(),
         };
 
-        let processedModal = parseAndRender(modalContainer, templateData, {
+        let processedLayeredView = parseAndRender(layeredViewContainer, templateData, {
           functions: jemplFunctions,
         });
-        processedModal = parseAndRender(processedModal, {
+        processedLayeredView = parseAndRender(processedLayeredView, {
           i18n: {}
         });
 
@@ -723,7 +723,7 @@ export const addModals = (
           return processedElement;
         };
 
-        elements.push(processElementAfterRender(processedModal));
+        elements.push(processElementAfterRender(processedLayeredView));
       }
     });
   }
@@ -742,7 +742,7 @@ export const constructRenderState = (params) => {
     addBgm,
     addSfx,
     addVoice,
-    addModals,
+    addLayeredViews,
   ];
 
   const executeActions = createSequentialActionsExecutor(

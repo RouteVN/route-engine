@@ -19,7 +19,7 @@ const sytemState = {
 }
 ```
 
-you can think of this as a modal. it is a layoutId that will show on top of the presentationState.
+you can think of this as a layeredView. it is a layoutId that will show on top of the presentationState.
 
 - in constructRenderState we need to check for systemState.layeredViews. and then search for the resourceId/layoutId and add it to the elements.
 - needs to implement at least the following actions for systemState:
@@ -36,10 +36,9 @@ Could this work for now? I found it uses undefined resolveFile, hardcoded empty 
 
 Should it be kept? if not can just rename it into `addLayeredViews` and make a full implement on it.
 
-The implement have 2 ways:
+The implement way:
 
 - based on the current code & implement undefined things
-- based on `addLayout`, the difference is `addLayout` from `presentationState`, `addLayeredViews` from `systemState.contexts[n].layeredViews`, other logics i think is almost the same. The old `addModals` can remove if it is not needed. **This way should be better**. 
 
 Then in `src/stores/system.store.js`:
 

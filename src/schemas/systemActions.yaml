@@ -186,17 +186,17 @@ properties:
   # View Layer System
   ############
   # The view layer system manages a stack of UI layers that can be pushed, popped, and replaced.
-  # Each layer can be fullscreen, modal (blocks interaction with layers below), or floating (shows layers below).
+  # Each layer can be fullscreen, layeredView (blocks interaction with layers below), or floating (shows layers below).
   # The system maintains a linear stack where Layer 0 is the base/main view.
   #
   # Layer Types:
   # - fullscreen: Covers entire display, layers below are hidden
-  # - modal: Blocks interaction with layers below but may show them
+  # - layeredView: Blocks interaction with layers below but may show them
   # - floating: Shows on top of layers below, allows interaction with underlying layers
   #
   # Common Patterns:
   # - pushViewLayer() → popViewLayer() for normal navigation with back history
-  # - pushViewLayer() → clearViewLayers() → pushViewLayer() for modal flows
+  # - pushViewLayer() → clearViewLayers() → pushViewLayer() for layeredView flows
   # - replaceViewLayer() for form flows where back navigation should be preserved
   #
   # Examples:
@@ -222,7 +222,7 @@ properties:
     additionalProperties: false
   contextPushViewLayer:
     type: object
-    description: Push a new view layer onto the layer stack (can be modal, fullscreen, or floating)
+    description: Push a new view layer onto the layer stack (can be layeredView, fullscreen, or floating)
     properties:
       resourceId:
         type: string

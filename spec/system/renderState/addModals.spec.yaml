@@ -1,11 +1,11 @@
 file: "../../../src/stores/constructRenderState.js"
-group: constructRenderState.addModals
-suites: [addModals]
+group: constructRenderState.addLayeredViews
+suites: [addLayeredViews]
 ---
-suite: addModals
-exportName: addModals
+suite: addLayeredViews
+exportName: addLayeredViews
 ---
-case: return unchanged state when modals array is empty
+case: return unchanged state when layeredViews array is empty
 in:
   - elements:
       - id: "story"
@@ -34,10 +34,10 @@ in:
     animations: []
   - resources:
       layouts:
-        modalLayout:
+        layeredViewLayout:
           elements:
             - type: "text"
-              content: "Modal content"
+              content: "LayeredView content"
     variables: {}
     autoMode: false
     skipMode: false
