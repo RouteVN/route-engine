@@ -29,7 +29,30 @@ out:
       children: []
   animations: []
 ---
-case: add layeredView layout to elements
+case: return unchanged state when layeredViews is undefined
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - resources: {}
+    variables: {}
+    autoMode: false
+    skipMode: false
+    currentLocalizationPackageId: null
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+---
+case: add single layeredView layout to elements
 in:
   - elements:
       - id: "story"
@@ -65,4 +88,226 @@ out:
       children:
         - type: "text"
           content: "LayeredView content"
+  animations: []
+---
+case: add multiple layeredViews with correct indices
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - resources:
+      layouts:
+        menuLayout:
+          elements:
+            - type: "text"
+              content: "Menu"
+        overlayLayout:
+          elements:
+            - type: "image"
+              src: "overlay.png"
+    variables: {}
+    autoMode: false
+    skipMode: false
+    currentLocalizationPackageId: null
+    layeredViews:
+      - resourceId: menuLayout
+        resourceType: layout
+      - resourceId: overlayLayout
+        resourceType: layout
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+    - id: "layeredView-0"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - type: "text"
+          content: "Menu"
+    - id: "layeredView-1"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - type: "image"
+          src: "overlay.png"
+  animations: []
+---
+case: skip layeredView when layout resource not found
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - resources:
+      layouts:
+        existingLayout:
+          elements:
+            - type: "text"
+              content: "Exists"
+    variables: {}
+    autoMode: false
+    skipMode: false
+    currentLocalizationPackageId: null
+    layeredViews:
+      - resourceId: missingLayout
+        resourceType: layout
+      - resourceId: existingLayout
+        resourceType: layout
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+    - id: "layeredView-1"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - type: "text"
+          content: "Exists"
+  animations: []
+---
+case: add transitions from layout to animations
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - resources:
+      layouts:
+        animatedLayout:
+          elements:
+            - type: "text"
+              content: "Animated"
+          transitions:
+            - type: "fadeIn"
+              duration: 500
+            - type: "slideUp"
+              duration: 300
+    variables: {}
+    autoMode: false
+    skipMode: false
+    currentLocalizationPackageId: null
+    layeredViews:
+      - resourceId: animatedLayout
+        resourceType: layout
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+    - id: "layeredView-0"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - type: "text"
+          content: "Animated"
+  animations:
+    - type: "fadeIn"
+      duration: 500
+    - type: "slideUp"
+      duration: 300
+---
+case: handle layeredView with nested children
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - resources:
+      layouts:
+        nestedLayout:
+          elements:
+            - type: "container"
+              x: 10
+              y: 20
+              children:
+                - type: "text"
+                  content: "Nested text"
+                - type: "image"
+                  src: "icon.png"
+    variables: {}
+    autoMode: false
+    skipMode: false
+    currentLocalizationPackageId: null
+    layeredViews:
+      - resourceId: nestedLayout
+        resourceType: layout
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+    - id: "layeredView-0"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - type: "container"
+          x: 10
+          y: 20
+          children:
+            - type: "text"
+              content: "Nested text"
+            - type: "image"
+              src: "icon.png"
+  animations: []
+---
+case: handle layeredView with empty elements array
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - resources:
+      layouts:
+        emptyLayout:
+          elements: []
+    variables: {}
+    autoMode: false
+    skipMode: false
+    currentLocalizationPackageId: null
+    layeredViews:
+      - resourceId: emptyLayout
+        resourceType: layout
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+    - id: "layeredView-0"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
   animations: []

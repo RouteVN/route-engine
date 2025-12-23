@@ -627,100 +627,44 @@ export const addLayeredViews = (
   if (layeredViews && layeredViews.length > 0) {
     // Add each layeredView as an overlay
     layeredViews.forEach((layeredView, index) => {
-      if (layeredView.resourceType === "layout") {
-        const layout = resources.layouts[layeredView.resourceId];
+      const layout = resources.layouts[layeredView.resourceId];
 
-        if (!layout) {
-          console.warn(`LayeredView layout not found: ${layeredView.resourceId}`);
-          return;
-        }
-
-        if (Array.isArray(layout.transitions)) {
-          layout.transitions.forEach((transition) => {
-            animations.push(transition);
-          });
-        }
-
-        // Create a container for this layeredView
-        const layeredViewContainer = {
-          id: `layeredView-${index}`,
-          type: "container",
-          x: 0,
-          y: 0,
-          children: layout.elements || [],
-        };
-
-        // let currentActiveGalleryFileId;
-        // let isLastFileIdIndex = false;
-        //
-        // if (systemState.variables.activeGalleryIndex !== undefined) {
-        //   const gallery = systemState.variables.gallery.items;
-        //   if (
-        //     gallery &&
-        //     Array.isArray(gallery) &&
-        //     systemState.variables.activeGalleryIndex < gallery.length
-        //   ) {
-        //     currentActiveGalleryFileId =
-        //       gallery[systemState.variables.activeGalleryIndex]?.fileIds[
-        //       systemState.variables.activeGalleryFileIndex
-        //       ];
-        //   }
-        //
-        //   if (
-        //     systemState.variables.activeGalleryFileIndex <
-        //     gallery[systemState.variables.activeGalleryIndex]?.fileIds.length -
-        //     1
-        //   ) {
-        //     isLastFileIdIndex = false;
-        //   } else {
-        //     isLastFileIdIndex = true;
-        //   }
-        // }
-
-        const templateData = {
-          variables,
-          // currentActiveGalleryFileId,
-          // isLastFileIdIndex,
-          // saveDataArray: systemStore.selectSaveDataPage({
-          //   page: systemState?.variables.currentSavePageIndex,
-          //   numberPerPage: 6,
-          // }),
-          autoMode,
-          skipMode,
-          // globalAudios: systemStore.selectGlobalAudios() || [],
-          // historyDialogue: systemStore.selectHistoryDialogue() || [],
-          currentLocalizationPackageId
-          // i18n: systemStore.selectCurrentLanguagePackKeys(),
-          // languagePacks: systemStore.selectLanguagePacks(),
-        };
-
-        let processedLayeredView = parseAndRender(layeredViewContainer, templateData, {
-          functions: jemplFunctions,
-        });
-        processedLayeredView = parseAndRender(processedLayeredView, {
-          i18n: {}
-        });
-
-        // Then process file references in the result
-        const processElementAfterRender = (element) => {
-          const processedElement = { ...element };
-
-          if (element.src && element.src.startsWith("file:")) {
-            const fileId = element.src.replace("file:", "");
-            processedElement.src = resolveFile(fileId);
-          }
-
-          if (element.children && Array.isArray(element.children)) {
-            processedElement.children = element.children.map(
-              processElementAfterRender,
-            );
-          }
-
-          return processedElement;
-        };
-
-        elements.push(processElementAfterRender(processedLayeredView));
+      if (!layout) {
+        console.warn(`LayeredView layout not found: ${layeredView.resourceId}`);
+        return;
       }
+
+      if (Array.isArray(layout.transitions)) {
+        layout.transitions.forEach((transition) => {
+          animations.push(transition);
+        });
+      }
+
+      // Create a container for this layeredView
+      const layeredViewContainer = {
+        id: `layeredView-${index}`,
+        type: "container",
+        x: 0,
+        y: 0,
+        children: layout.elements || [],
+      };
+
+      const templateData = {
+        variables,
+        autoMode,
+        skipMode,
+        currentLocalizationPackageId
+      };
+
+      let processedLayeredView = parseAndRender(layeredViewContainer, templateData, {
+        functions: jemplFunctions,
+      });
+      processedLayeredView = parseAndRender(processedLayeredView, {
+        i18n: {}
+      });
+
+      elements.push(processedLayeredView);
+
     });
   }
   return state;
