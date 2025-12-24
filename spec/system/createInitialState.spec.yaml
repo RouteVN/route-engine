@@ -39,6 +39,7 @@ out:
       auto:
         enabled: false
     saveSlots: {}
+    layeredViews: []
   projectData:
     story:
       initialSceneId: "scene1"

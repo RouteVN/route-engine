@@ -43,6 +43,7 @@ export const createInitialState = (payload) => {
         }
       },
       saveSlots: {},
+      layeredViews: [],
     },
     contexts: [{
       currentPointerMode: 'read',
@@ -67,6 +68,10 @@ export const createInitialState = (payload) => {
 /**************************
  * Selectors
  *************************/
+export const selectLayeredViews = ({ state }) => {
+  return state.global.layeredViews || [];
+};
+
 export const selectPendingEffects = ({ state }) => {
   return state.global.pendingEffects;
 };
@@ -312,6 +317,7 @@ export const selectRenderState = ({ state }) => {
     l10n: state.projectData.l10n.packages[state.global.currentLocalizationPackageId],
     autoMode: state.global.autoMode,
     skipMode: state.global.skipMode,
+    layeredViews: state.global.layeredViews,
   });
   console.log('renderState', renderState);
   return renderState;
@@ -320,6 +326,32 @@ export const selectRenderState = ({ state }) => {
 /**************************
  * Actions
  *************************/
+export const pushLayeredView = ({ state }, payload) => {
+  state.global.layeredViews.push(payload);
+  state.global.pendingEffects.push({ name: "render" });
+  return state;
+};
+
+export const popLayeredView = ({ state }) => {
+  state.global.layeredViews.pop();
+  state.global.pendingEffects.push({ name: "render" });
+  return state;
+};
+
+export const replaceLastLayeredView = ({ state }, payload) => {
+  if (state.global.layeredViews.length > 0) {
+    state.global.layeredViews[state.global.layeredViews.length - 1] = payload;
+  }
+  state.global.pendingEffects.push({ name: "render" });
+  return state;
+};
+
+export const clearLayeredViews = ({ state }) => {
+  state.global.layeredViews = [];
+  state.global.pendingEffects.push({ name: "render" });
+  return state;
+};
+
 export const startAutoMode = ({ state }) => {
   if (state.global.skipMode) {
     state.global.skipMode = false;
@@ -951,6 +983,7 @@ export const createSystemStore = (initialState) => {
     selectCurrentLine,
     selectPresentationState,
     selectRenderState,
+    selectLayeredViews,
 
     // Actions
     startAutoMode,
@@ -979,6 +1012,10 @@ export const createSystemStore = (initialState) => {
     nextLineFromCompleted,
     markLineCompleted,
     prevLine,
+    pushLayeredView,
+    popLayeredView,
+    replaceLastLayeredView,
+    clearLayeredViews,
   };
 
   return createStore(_initialState, selectorsAndActions, {

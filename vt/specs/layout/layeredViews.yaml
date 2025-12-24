@@ -1,0 +1,212 @@
+---
+title: "Layered Views Test"
+---
+l10n:
+  packages:
+    en_package:
+      label: English
+      lang: en
+      keys: {}
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#1a1a2e"
+
+resources:
+  layouts:
+    baseLayout:
+      elements:
+        - id: bg
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+        - id: title
+          type: text
+          content: "Layered Views Test"
+          x: 700
+          y: 100
+          textStyle:
+            fontSize: 48
+            fill: "#ffffff"
+
+        # Push Menu Button
+        - id: pushMenuBtn
+          type: rect
+          fill: "#4CAF50"
+          width: 300
+          height: 60
+          x: 100
+          y: 300
+          click:
+            actionPayload:
+              actions:
+                pushLayeredView:
+                  resourceId: menuLayout
+                  resourceType: layout
+        - id: pushMenuText
+          type: text
+          content: "Push Menu Layer"
+          x: 140
+          y: 325
+          textStyle:
+            fontSize: 24
+            fill: "#ffffff"
+
+        # Push Overlay Button
+        - id: pushOverlayBtn
+          type: rect
+          fill: "#2196F3"
+          width: 300
+          height: 60
+          x: 100
+          y: 400
+          click:
+            actionPayload:
+              actions:
+                pushLayeredView:
+                  resourceId: overlayLayout
+                  resourceType: layout
+        - id: pushOverlayText
+          type: text
+          content: "Push Overlay Layer"
+          x: 115
+          y: 425
+          textStyle:
+            fontSize: 24
+            fill: "#ffffff"
+
+        # Pop Button
+        - id: popBtn
+          type: rect
+          fill: "#FF9800"
+          width: 300
+          height: 60
+          x: 100
+          y: 500
+          click:
+            actionPayload:
+              actions:
+                popLayeredView: {}
+        - id: popText
+          type: text
+          content: "Pop Layer"
+          x: 180
+          y: 525
+          textStyle:
+            fontSize: 24
+            fill: "#ffffff"
+
+        # Replace Last Button
+        - id: replaceBtn
+          type: rect
+          fill: "#9C27B0"
+          width: 300
+          height: 60
+          x: 100
+          y: 600
+          click:
+            actionPayload:
+              actions:
+                replaceLastLayeredView:
+                  resourceId: animatedLayout
+                  resourceType: layout
+        - id: replaceText
+          type: text
+          content: "Replace Last Layer"
+          x: 115
+          y: 625
+          textStyle:
+            fontSize: 24
+            fill: "#ffffff"
+
+        # Clear All Button
+        - id: clearBtn
+          type: rect
+          fill: "#F44336"
+          width: 300
+          height: 60
+          x: 100
+          y: 700
+          click:
+            actionPayload:
+              actions:
+                clearLayeredViews: {}
+        - id: clearText
+          type: text
+          content: "Clear All Layers"
+          x: 135
+          y: 725
+          textStyle:
+            fontSize: 24
+            fill: "#ffffff"
+
+    menuLayout:
+      elements:
+        - id: menuBg
+          type: rect
+          fill: "#16213e"
+          width: 400
+          height: 600
+          x: 800
+          y: 240
+        - id: menuText
+          type: text
+          content: "Menu Layer"
+          x: 900
+          y: 300
+          textStyle:
+            fontSize: 32
+            fill: "#ffffff"
+
+    overlayLayout:
+      elements:
+        - id: overlayBg
+          type: rect
+          fill: "#0f3460"
+          width: 300
+          height: 200
+          x: 1300
+          y: 440
+        - id: overlayText
+          type: text
+          content: "Overlay Layer"
+          x: 1340
+          y: 520
+          textStyle:
+            fontSize: 24
+            fill: "#e94560"
+
+    animatedLayout:
+      elements:
+        - id: animatedBg
+          type: rect
+          fill: "#9C27B0"
+          width: 350
+          height: 250
+          x: 1250
+          y: 650
+        - id: animatedText
+          type: text
+          content: "Replaced Layer"
+          x: 1290
+          y: 760
+          textStyle:
+            fontSize: 28
+            fill: "#ffffff"
+
+story:
+  initialSceneId: testScene
+  scenes:
+    testScene:
+      name: Test
+      initialSectionId: section1
+      sections:
+        section1:
+          name: Test Section
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: baseLayout
