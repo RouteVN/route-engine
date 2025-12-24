@@ -108,10 +108,19 @@ export const selectDialogueHistory = ({ state }) => {
   // Filter for lines that have dialogue content
   const historyContent = linesUpToCurrent
     .filter(line => line.actions?.dialogue)
-    .map(line => ({
-      content: line.actions.dialogue.content,
-      characterId: line.actions.dialogue.characterId,
-    }));
+    .map(line => {
+      const dialogue = line.actions.dialogue;
+      let characterName = '';
+      if (dialogue.characterId) {
+        const character = state.projectData.resources?.characters?.[dialogue.characterId];
+        characterName = character?.name || '';
+      }
+      return {
+        content: dialogue.content,
+        characterId: dialogue.characterId,
+        characterName: characterName,
+      };
+    });
 
   return historyContent;
 };

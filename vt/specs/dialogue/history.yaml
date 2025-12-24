@@ -129,27 +129,26 @@ resources:
           gap: 15
           children:
             - $for item, i in historyDialogue:
-                - id: history-item-container-${i}
-                  type: container
-                  direction: vertical
-                  width: 920
-                  gap: 5
-                  children:
-                    - $if item.characterId:
-                        id: history-character-${i}
-                        type: text
-                        content: "${characters[item.characterId].name}"
-                        textStyle:
-                          fontSize: 20
-                          fill: "#ffd700"
-                    - id: history-text-${i}
-                      type: text
-                      content: "${item.content[0].text}"
-                      textStyle:
-                        fontSize: 18
-                        fill: "#ffffff"
-                        wordWrap: true
-                        wordWrapWidth: 900
+                id: history-item-${i}
+                type: container
+                direction: vertical
+                width: 920
+                gap: 5
+                children:
+                  - id: history-character-${i}
+                    type: text
+                    content: "${item.characterName}"
+                    textStyle:
+                      fontSize: 20
+                      fill: "#ffd700"
+                  - id: history-text-${i}
+                    type: text
+                    content: "${item.content[0].text}"
+                    textStyle:
+                      fontSize: 18
+                      fill: "#ffffff"
+                      wordWrap: true
+                      wordWrapWidth: 900
         - id: close-button-bg
           type: rect
           fill: "#e94560"
