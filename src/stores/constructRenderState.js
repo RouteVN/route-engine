@@ -620,7 +620,7 @@ export const addLayout = (
 
 export const addLayeredViews = (
   state,
-  { resources = {}, variables, autoMode, skipMode, currentLocalizationPackageId, layeredViews = [], dialogueHistory = [] },
+  { resources = {}, variables, autoMode, skipMode, currentLocalizationPackageId, layeredViews = [], context = {} },
 ) => {
   const { elements } = state;
   const animations = state.animations || [];
@@ -654,7 +654,7 @@ export const addLayeredViews = (
         autoMode,
         skipMode,
         currentLocalizationPackageId,
-        historyDialogue: dialogueHistory,
+        historyDialogue: context.dialogueHistory || [],
         characters: resources.characters || {}
       };
 

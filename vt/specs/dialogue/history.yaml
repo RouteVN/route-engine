@@ -110,6 +110,9 @@ resources:
           height: 700
           x: 460
           y: 190
+          click:
+            actionPayload:
+              actions: {}
         - id: history-title
           type: text
           content: "Dialogue History"
