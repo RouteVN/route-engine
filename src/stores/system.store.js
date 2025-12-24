@@ -26,6 +26,7 @@ export const createInitialState = (payload) => {
       pendingEffects: [],
       autoMode: false,
       skipMode: false,
+      shouldSkipViewedLines: true,
       dialogueUIHidden: false,
       isDialogueHistoryShowing: false,
       currentLocalizationPackageId: currentLocalizationPackageId,
@@ -78,6 +79,10 @@ export const selectPendingEffects = ({ state }) => {
 
 export const selectSkipMode = ({ state }) => {
   return state.global.skipMode;
+};
+
+export const selectShouldSkipViewedLines = ({ state }) => {
+  return state.global.shouldSkipViewedLines;
 };
 
 export const selectAutoMode = ({ state }) => {
@@ -446,6 +451,23 @@ export const toggleSkipMode = ({ state }) => {
   return state;
 };
 
+export const setShouldSkipViewedLines = ({ state }, payload) => {
+  const { shouldSkipViewedLines } = payload;
+  state.global.shouldSkipViewedLines = shouldSkipViewedLines;
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+  return state;
+};
+
+export const toggleShouldSkipViewedLines = ({ state }) => {
+  state.global.shouldSkipViewedLines = !state.global.shouldSkipViewedLines;
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+  return state;
+};
+
 export const showDialogueUI = ({ state }) => {
   state.global.dialogueUIHidden = false;
   state.global.pendingEffects.push({
@@ -796,6 +818,20 @@ export const nextLine = ({ state }) => {
 
   if (nextLineIndex < lines.length) {
     const nextLine = lines[nextLineIndex];
+
+    // Check if skip mode should stop at unviewed lines
+    if (state.global.skipMode && state.global.shouldSkipViewedLines) {
+      const isNextLineViewed = selectIsLineViewed({ state }, {
+        sectionId,
+        lineId: nextLine.id
+      });
+
+      if (!isNextLineViewed) {
+        // Stop skip mode when encountering an unviewed line
+        stopSkipMode({ state });
+      }
+    }
+
     const lastContext = state.contexts[state.contexts.length - 1];
 
     if (lastContext) {
@@ -823,7 +859,6 @@ export const nextLine = ({ state }) => {
     }
   }
 
-  console.log('state', state)
   return state;
 };
 
@@ -981,6 +1016,7 @@ export const createSystemStore = (initialState) => {
     // Selectors
     selectPendingEffects,
     selectSkipMode,
+    selectShouldSkipViewedLines,
     selectAutoMode,
     selectDialogueUIHidden,
     selectDialogueHistory,
@@ -1004,6 +1040,8 @@ export const createSystemStore = (initialState) => {
     startSkipMode,
     stopSkipMode,
     toggleSkipMode,
+    setShouldSkipViewedLines,
+    toggleShouldSkipViewedLines,
     showDialogueUI,
     hideDialogueUI,
     toggleDialogueUI,

@@ -26,6 +26,7 @@ out:
     pendingEffects: []
     autoMode: false
     skipMode: false
+    shouldSkipViewedLines: true
     dialogueUIHidden: false
     isDialogueHistoryShowing: false
     currentLocalizationPackageId: "en"

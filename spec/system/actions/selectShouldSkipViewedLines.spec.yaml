@@ -1,0 +1,23 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore selectors
+suites:
+  [
+    selectShouldSkipViewedLines,
+  ]
+---
+suite: selectShouldSkipViewedLines
+exportName: selectShouldSkipViewedLines
+---
+case: "false"
+in:
+  - state:
+      global:
+        shouldSkipViewedLines: false
+out: false
+---
+case: "true"
+in:
+  - state:
+      global:
+        shouldSkipViewedLines: true
+out: true
