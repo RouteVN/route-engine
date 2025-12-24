@@ -310,6 +310,7 @@ export const selectRenderState = ({ state }) => {
   const presentationState = selectPresentationState({ state });
   const previousPresentationState = selectPreviousPresentationState({ state });
   console.log('presentationState', presentationState);
+  const dialogueHistory = selectDialogueHistory({ state });
   const renderState = constructRenderState({
     presentationState,
     previousPresentationState,
@@ -318,6 +319,7 @@ export const selectRenderState = ({ state }) => {
     autoMode: state.global.autoMode,
     skipMode: state.global.skipMode,
     layeredViews: state.global.layeredViews,
+    dialogueHistory,
   });
   console.log('renderState', renderState);
   return renderState;

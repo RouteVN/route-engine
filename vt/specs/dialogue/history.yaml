@@ -86,7 +86,89 @@ resources:
           click:
             actionPayload:
               actions:
-                showDialogueHistory: {}
+                pushLayeredView:
+                  resourceId: historyLayout
+                  resourceType: layout
+    historyLayout:
+      name: Dialogue History
+      elements:
+        - id: history-bg
+          type: rect
+          fill: "rgba(0, 0, 0, 0.8)"
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          click:
+            actionPayload:
+              actions:
+                popLayeredView: {}
+        - id: history-panel
+          type: rect
+          fill: "#1a1a2e"
+          width: 1000
+          height: 700
+          x: 460
+          y: 190
+        - id: history-title
+          type: text
+          content: "Dialogue History"
+          x: 810
+          y: 230
+          textStyle:
+            fontSize: 36
+            fill: "#ffffff"
+        - id: history-scroll-container
+          type: container
+          direction: vertical
+          x: 490
+          y: 290
+          width: 940
+          height: 450
+          scroll: true
+          gap: 15
+          children:
+            - $for item, i in historyDialogue:
+                - id: history-item-container-${i}
+                  type: container
+                  direction: vertical
+                  width: 920
+                  gap: 5
+                  children:
+                    - $if item.characterId:
+                        id: history-character-${i}
+                        type: text
+                        content: "${characters[item.characterId].name}"
+                        textStyle:
+                          fontSize: 20
+                          fill: "#ffd700"
+                    - id: history-text-${i}
+                      type: text
+                      content: "${item.content[0].text}"
+                      textStyle:
+                        fontSize: 18
+                        fill: "#ffffff"
+                        wordWrap: true
+                        wordWrapWidth: 900
+        - id: close-button-bg
+          type: rect
+          fill: "#e94560"
+          width: 120
+          height: 50
+          x: 900
+          y: 800
+          click:
+            actionPayload:
+              actions:
+                popLayeredView: {}
+        - id: close-button-text
+          type: text
+          content: "Close"
+          x: 935
+          y: 815
+          textStyle:
+            fontSize: 24
+            fill: "#ffffff"
   characters:
     ajf34a:
       name: Character A
@@ -134,4 +216,64 @@ story:
                 dialogue:
                   content:
                     - text: This is the final line. Try the History button!
+                  characterId: ajf34a
+            - id: line6
+              actions:
+                dialogue:
+                  content:
+                    - text: Line 6 - More dialogue to test scrolling.
+                  characterId: ajf34a
+            - id: line7
+              actions:
+                dialogue:
+                  content:
+                    - text: Line 7 - Even more content here.
+                  characterId: ajf34a
+            - id: line8
+              actions:
+                dialogue:
+                  content:
+                    - text: Line 8 - Keep scrolling down!
+                  characterId: ajf34a
+            - id: line9
+              actions:
+                dialogue:
+                  content:
+                    - text: Line 9 - Almost there...
+                  characterId: ajf34a
+            - id: line10
+              actions:
+                dialogue:
+                  content:
+                    - text: Line 10 - This should definitely require scrolling now.
+                  characterId: ajf34a
+            - id: line11
+              actions:
+                dialogue:
+                  content:
+                    - text: Line 11 - More and more dialogue.
+                  characterId: ajf34a
+            - id: line12
+              actions:
+                dialogue:
+                  content:
+                    - text: Line 12 - Testing the scroll functionality.
+                  characterId: ajf34a
+            - id: line13
+              actions:
+                dialogue:
+                  content:
+                    - text: Line 13 - Nearly at the end now.
+                  characterId: ajf34a
+            - id: line14
+              actions:
+                dialogue:
+                  content:
+                    - text: Line 14 - Just one more to go.
+                  characterId: ajf34a
+            - id: line15
+              actions:
+                dialogue:
+                  content:
+                    - text: Line 15 - This is the last line for scroll testing!
                   characterId: ajf34a
