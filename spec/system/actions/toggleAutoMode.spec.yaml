@@ -11,13 +11,20 @@ in:
       global:
         autoMode: false
         pendingEffects: []
+        nextLineConfig:
+          auto:
+            delay: 1000
 out:
   global:
     autoMode: true
     pendingEffects:
       - name: clearAutoNextTimer
       - name: startAutoNextTimer
+        delay: 1000
       - name: render
+    nextLineConfig:
+      auto:
+        delay: 1000
 ---
 case: toggle auto mode from true to false
 in:
@@ -25,12 +32,18 @@ in:
       global:
         autoMode: true
         pendingEffects: []
+        nextLineConfig:
+          auto:
+            delay: 1000
 out:
   global:
     autoMode: false
     pendingEffects:
       - name: clearAutoNextTimer
       - name: render
+    nextLineConfig:
+      auto:
+        delay: 1000
 ---
 case: toggle auto mode from false to true with skip mode enabled
 in:
@@ -39,6 +52,9 @@ in:
         autoMode: false
         skipMode: true
         pendingEffects: []
+        nextLineConfig:
+          auto:
+            delay: 1000
 out:
   global:
     autoMode: true
@@ -47,7 +63,11 @@ out:
       - name: clearSkipNextTimer
       - name: clearAutoNextTimer
       - name: startAutoNextTimer
+        delay: 1000
       - name: render
+    nextLineConfig:
+      auto:
+        delay: 1000
 ---
 case: toggle auto mode from true to false with skip mode enabled
 in:
@@ -56,6 +76,9 @@ in:
         autoMode: true
         skipMode: true
         pendingEffects: []
+        nextLineConfig:
+          auto:
+            delay: 1000
 out:
   global:
     autoMode: false
@@ -63,6 +86,9 @@ out:
     pendingEffects:
       - name: clearAutoNextTimer
       - name: render
+    nextLineConfig:
+      auto:
+        delay: 1000
 ---
 case: toggle auto mode with existing pending effects (disabled to enabled)
 in:
@@ -72,6 +98,9 @@ in:
         pendingEffects:
           - name: existingEffect
             data: test
+        nextLineConfig:
+          auto:
+            delay: 1000
 out:
   global:
     autoMode: true
@@ -80,7 +109,11 @@ out:
         data: test
       - name: clearAutoNextTimer
       - name: startAutoNextTimer
+        delay: 1000
       - name: render
+    nextLineConfig:
+      auto:
+        delay: 1000
 ---
 case: toggle auto mode with existing pending effects (enabled to disabled)
 in:
@@ -90,6 +123,9 @@ in:
         pendingEffects:
           - name: existingEffect
             data: test
+        nextLineConfig:
+          auto:
+            delay: 1000
 out:
   global:
     autoMode: false
@@ -98,3 +134,6 @@ out:
         data: test
       - name: clearAutoNextTimer
       - name: render
+    nextLineConfig:
+      auto:
+        delay: 1000
