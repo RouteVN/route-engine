@@ -243,6 +243,9 @@ const init = async () => {
           skipModeCallback = null;
         }
         skipModeElapsed = 0;
+      } else if (effect.name === 'loadGame') {
+        const { initialState } = effect.options;
+        engine.init({ initialState });
       }
     }
     };

@@ -611,6 +611,56 @@ export const replaceSaveSlot = ({ state }, payload) => {
 };
 
 /**
+ * Saves current game state to a slot
+ * @param {Object} state - Current state object
+ * @param {Object} payload - Action payload
+ * @param {number} payload.slot - Save slot number
+ * @returns {Object} Updated state object
+ */
+export const globalSaveStory = ({ state }, payload) => {
+  const { slot } = payload;
+  const slotKey = String(slot);
+
+  const { saveSlots, ...globalWithoutSlots } = state.global;
+  const currentState = {
+    projectData: state.projectData,
+    global: { ...globalWithoutSlots, pendingEffects: [] },
+    contexts: structuredClone(state.contexts)
+  };
+
+  state.global.saveSlots[slotKey] = {
+    slotKey,
+    date: Date.now(),
+    image: null,
+    state: currentState
+  };
+
+  state.global.pendingEffects.push({ name: 'render' });
+  return state;
+};
+
+/**
+ * Loads game state from a save slot
+ * @param {Object} state - Current state object
+ * @param {Object} payload - Action payload
+ * @param {number} payload.slot - Save slot number
+ * @returns {Object} Updated state object
+ */
+export const globalLoadStory = ({ state }, payload) => {
+  const { slot } = payload;
+  const slotKey = String(slot);
+  const slotData = state.global.saveSlots[slotKey];
+
+  if (slotData) {
+    state.global.pendingEffects.push({
+      name: 'loadGame',
+      options: { initialState: slotData.state }
+    });
+  }
+  return state;
+};
+
+/**
  * Updates the entire projectData with new data
  * @param {Object} state - Current state object
  * @param {Object} payload - Action payload
@@ -1004,6 +1054,8 @@ export const createSystemStore = (initialState) => {
     addViewedResource,
     setNextLineConfig,
     replaceSaveSlot,
+    globalSaveStory,
+    globalLoadStory,
     updateProjectData,
     sectionTransition,
     jumpToLine,

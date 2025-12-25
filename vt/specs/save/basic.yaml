@@ -71,11 +71,11 @@ resources:
           height: 150
           x: 100
           y: 300
-          click:
-            actionPayload:
-              actions:
-                saveVnData:
-                  slotIndex: 1
+          eventName: system
+          eventPayload:
+            actions:
+              globalSaveStory:
+                slot: 1
         - id: save-slot-1-text
           type: text
           content: ${l10n.keys.layoutSaveMenuSlot1}
@@ -92,11 +92,11 @@ resources:
           height: 150
           x: 100
           y: 500
-          click:
-            actionPayload:
-              actions:
-                saveVnData:
-                  slotIndex: 2
+          eventName: system
+          eventPayload:
+            actions:
+              globalSaveStory:
+                slot: 2
         - id: save-slot-2-text
           type: text
           content: ${l10n.keys.layoutSaveMenuSlot2}
@@ -113,11 +113,11 @@ resources:
           height: 150
           x: 100
           y: 700
-          click:
-            actionPayload:
-              actions:
-                saveVnData:
-                  slotIndex: 3
+          eventName: system
+          eventPayload:
+            actions:
+              globalSaveStory:
+                slot: 3
         - id: save-slot-3-text
           type: text
           content: ${l10n.keys.layoutSaveMenuSlot3}
@@ -174,11 +174,11 @@ resources:
           height: 150
           x: 100
           y: 300
-          click:
-            actionPayload:
-              actions:
-                loadVnData:
-                  slotIndex: 1
+          eventName: system
+          eventPayload:
+            actions:
+              globalLoadStory:
+                slot: 1
         - id: load-slot-1-text
           type: text
           content: ${l10n.keys.layoutSaveMenuSlot1}
@@ -195,11 +195,11 @@ resources:
           height: 150
           x: 100
           y: 500
-          click:
-            actionPayload:
-              actions:
-                loadVnData:
-                  slotIndex: 2
+          eventName: system
+          eventPayload:
+            actions:
+              globalLoadStory:
+                slot: 2
         - id: load-slot-2-text
           type: text
           content: ${l10n.keys.layoutSaveMenuSlot2}
@@ -216,11 +216,11 @@ resources:
           height: 150
           x: 100
           y: 700
-          click:
-            actionPayload:
-              actions:
-                loadVnData:
-                  slotIndex: 3
+          eventName: system
+          eventPayload:
+            actions:
+              globalLoadStory:
+                slot: 3
         - id: load-slot-3-text
           type: text
           content: ${l10n.keys.layoutSaveMenuSlot3}
