@@ -1,0 +1,169 @@
+---
+title: "Autoplay"
+---
+l10n:
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys:
+        line1: "Line 1: Testing skip functionality"
+        line2: "Line 2: Click Skip to skip through lines"
+        line3: "Line 3: Toggle Skip All to control skip behavior"
+        line4: "Line 4: Skip All ON (green) = skip everything"
+        line5: "Line 5: Skip All OFF (white) = skip only viewed lines"
+        restartButton: "Restart"
+        skipButton: "Skip"
+        skipAllButton: "Skip All"
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+resources:
+  characters:
+    narrator:
+      name: ""
+
+  layouts:
+    baseLayout:
+      elements:
+        - id: background
+          type: rect
+          x: 0
+          y: 0
+          width: 1920
+          height: 1080
+          fill: "#000000"
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+
+    dialogueLayout:
+      name: Dialogue Screen
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 100
+          y: 800
+          width: 1720
+          height: 200
+          fill: "#333333"
+
+        - id: dialogue-text
+          type: text
+          x: 150
+          y: 850
+          content: ${dialogue.content[0].text}
+          textStyle:
+            fontSize: 32
+            fill: "white"
+
+        - id: restart-button
+          type: text
+          x: 1700
+          y: 50
+          content: ${l10n.keys.restartButton}
+          textStyle:
+            fontSize: 32
+            fill: "white"
+          hover:
+            textStyle:
+              fontSize: 32
+              fill: yellow
+          click:
+            actionPayload:
+              actions:
+                jumpToLine:
+                  lineId: line1
+
+        - id: skip-button
+          type: text
+          x: 1550
+          y: 50
+          content: ${l10n.keys.skipButton}
+          textStyle:
+            fontSize: 32
+            $if skipMode:
+              fill: "#00ff00"
+            $else:
+              fill: "white"
+          hover:
+            textStyle:
+              fontSize: 32
+              fill: yellow
+          click:
+            actionPayload:
+              actions:
+                toggleSkipMode: {}
+
+        - id: skip-all-button
+          type: text
+          x: 1350
+          y: 50
+          content: ${l10n.keys.skipAllButton}
+          textStyle:
+            fontSize: 32
+            $if shouldSkipViewedLines:
+              fill: "white"
+            $else:
+              fill: "#00ff00"
+          hover:
+            textStyle:
+              fontSize: 32
+              fill: yellow
+          click:
+            actionPayload:
+              actions:
+                toggleShouldSkipViewedLines: {}
+
+story:
+  initialSceneId: test_scene
+  scenes:
+    test_scene:
+      initialSectionId: test_section
+      sections:
+        test_section:
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: baseLayout
+                dialogue:
+                  mode: adv
+                  gui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: ${l10n.keys.line1}
+                  characterId: narrator
+
+            - id: line2
+              actions:
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line2}
+                  characterId: narrator
+
+            - id: line3
+              actions:
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line3}
+                  characterId: narrator
+
+            - id: line4
+              actions:
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line4}
+                  characterId: narrator
+
+            - id: line5
+              actions:
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line5}
+                  characterId: narrator

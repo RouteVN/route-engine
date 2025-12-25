@@ -331,6 +331,7 @@ export const selectRenderState = ({ state }) => {
     l10n: state.projectData.l10n.packages[state.global.currentLocalizationPackageId],
     autoMode: state.global.autoMode,
     skipMode: state.global.skipMode,
+    shouldSkipViewedLines: state.global.shouldSkipViewedLines,
     layeredViews: state.global.layeredViews,
     context: {
       dialogueHistory: selectDialogueHistory({ state }),
@@ -537,8 +538,20 @@ export const addViewedLine = ({ state }, payload) => {
   );
 
   if (section) {
-    // Update existing section
-    section.lastLineId = lineId;
+    // Update existing section only if new line is after the current lastLineId
+    const foundSection = selectSection({ state }, { sectionId });
+    if (foundSection?.lines && section.lastLineId !== undefined) {
+      const lastLineIndex = foundSection.lines.findIndex(line => line.id === section.lastLineId);
+      const newLineIndex = foundSection.lines.findIndex(line => line.id === lineId);
+
+      // Update only if newLineIndex is greater (later in the section) or if lastLineId not found
+      if (lastLineIndex === -1 || newLineIndex > lastLineIndex) {
+        section.lastLineId = lineId;
+      }
+    } else {
+      // Fallback: if we can't find the section or lastLineId is undefined, just update
+      section.lastLineId = lineId;
+    }
   } else {
     // Add new section
     state.global.viewedRegistry.sections.push({
@@ -835,6 +848,12 @@ export const nextLine = ({ state }) => {
     const lastContext = state.contexts[state.contexts.length - 1];
 
     if (lastContext) {
+      // Mark current line as viewed before moving
+      const currentLineId = lastContext.pointers.read.lineId;
+      if (currentLineId && sectionId) {
+        addViewedLine({ state }, { sectionId, lineId: currentLineId });
+      }
+
       lastContext.pointers.read = {
         sectionId,
         lineId: nextLine.id
@@ -859,6 +878,7 @@ export const nextLine = ({ state }) => {
     }
   }
 
+  console.log('state', state)
   return state;
 };
 

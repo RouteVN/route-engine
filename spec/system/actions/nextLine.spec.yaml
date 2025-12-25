@@ -14,6 +14,8 @@ in:
           manual:
             enabled: true
         pendingEffects: []
+        viewedRegistry:
+          sections: []
       projectData:
         story:
           scenes:
@@ -42,7 +44,12 @@ out:
         enabled: true
     pendingEffects:
       - name: "render"
+      - name: "render"
       - name: "handleLineActions"
+    viewedRegistry:
+      sections:
+        - sectionId: "section1"
+          lastLineId: "1"
   projectData:
     story:
       scenes:
@@ -260,6 +267,7 @@ out:
       - name: "clearSkipNextTimer"
       - name: "render"
       - name: "render"
+      - name: "render"
       - name: "handleLineActions"
     viewedRegistry:
       sections:
@@ -329,6 +337,7 @@ out:
         enabled: true
     pendingEffects:
       - name: "render"
+      - name: "render"
       - name: "handleLineActions"
     viewedRegistry:
       sections:
@@ -397,6 +406,7 @@ out:
       manual:
         enabled: true
     pendingEffects:
+      - name: "render"
       - name: "render"
       - name: "handleLineActions"
     viewedRegistry:

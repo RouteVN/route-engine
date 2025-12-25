@@ -368,7 +368,7 @@ export const addVisuals = (
  */
 export const addDialogue = (
   state,
-  { presentationState, resources = {}, dialogueUIHidden, autoMode, skipMode, l10n, variables },
+  { presentationState, resources = {}, dialogueUIHidden, autoMode, skipMode, shouldSkipViewedLines, l10n, variables },
 ) => {
   const { elements } = state;
   if (!presentationState.dialogue) {
@@ -407,6 +407,7 @@ export const addDialogue = (
         variables,
         autoMode,
         skipMode,
+        shouldSkipViewedLines,
         dialogue: {
           character: {
             name: character?.name || "",
