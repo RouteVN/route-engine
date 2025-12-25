@@ -829,6 +829,9 @@ export const markLineCompleted = ({ state }) => {
   state.global.pendingEffects.push({
     name: "render",
   });
+  state.global.pendingEffects.push({
+    name: "lineCompleted",
+  });
   return state;
 };
 

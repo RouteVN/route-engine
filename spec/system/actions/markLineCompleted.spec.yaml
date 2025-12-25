@@ -16,6 +16,7 @@ out:
     isLineCompleted: true
     pendingEffects:
       - name: render
+      - name: lineCompleted
 ---
 case: mark line as completed when already completed
 in:
@@ -28,6 +29,7 @@ out:
     isLineCompleted: true
     pendingEffects:
       - name: render
+      - name: lineCompleted
 ---
 case: mark line as completed with existing pending effects
 in:
@@ -44,3 +46,4 @@ out:
       - name: existingEffect
         data: test
       - name: render
+      - name: lineCompleted
