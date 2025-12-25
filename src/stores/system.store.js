@@ -318,9 +318,7 @@ export const selectRenderState = ({ state }) => {
     autoMode: state.global.autoMode,
     skipMode: state.global.skipMode,
     layeredViews: state.global.layeredViews,
-    context: {
-      dialogueHistory: selectDialogueHistory({ state }),
-    },
+    dialogueHistory: selectDialogueHistory({ state }),
   });
   console.log('renderState', renderState);
   return renderState;
