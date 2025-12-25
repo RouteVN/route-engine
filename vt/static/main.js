@@ -181,6 +181,8 @@ const init = async () => {
         routeGraphics.render(renderState);
       } else if (effect.name === 'handleLineActions') {
         engine.handleLineActions();
+      } else if (effect.name === 'lineCompleted') {
+        engine.handleAction('nextLineFromCompleted', {});
       } else if (effect.name === 'startAutoNextTimer') {
         // Remove old callback if exists
         if (autoModeCallback) {
