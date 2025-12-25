@@ -318,6 +318,7 @@ export const selectRenderState = ({ state }) => {
     autoMode: state.global.autoMode,
     skipMode: state.global.skipMode,
     layeredViews: state.global.layeredViews,
+    dialogueHistory: selectDialogueHistory({ state }),
   });
   console.log('renderState', renderState);
   return renderState;

@@ -620,7 +620,7 @@ export const addLayout = (
 
 export const addLayeredViews = (
   state,
-  { resources = {}, variables, autoMode, skipMode, currentLocalizationPackageId, layeredViews = [] },
+  { resources = {}, variables, autoMode, skipMode, currentLocalizationPackageId, layeredViews = [], dialogueHistory = [] },
 ) => {
   const { elements } = state;
   const animations = state.animations || [];
@@ -649,11 +649,21 @@ export const addLayeredViews = (
         children: layout.elements || [],
       };
 
+      const historyDialogueWithNames = dialogueHistory.map(item => {
+        const character = resources.characters?.[item.characterId];
+        return {
+          ...item,
+          characterName: character?.name || ''
+        };
+      });
+
       const templateData = {
         variables,
         autoMode,
         skipMode,
-        currentLocalizationPackageId
+        currentLocalizationPackageId,
+        historyDialogue: historyDialogueWithNames,
+        characters: resources.characters || {}
       };
 
       let processedLayeredView = parseAndRender(layeredViewContainer, templateData, {
