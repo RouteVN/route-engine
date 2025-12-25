@@ -165,6 +165,9 @@ const init = async () => {
     let skipModeElapsed = 0;
     let skipModeCallback = null;
 
+    // Save data storage
+    const saveSlots = {};
+
     return (effects) => {
       // Deduplicate effects by name, keeping only the last occurrence
       const deduplicatedEffects = effects.reduce((acc, effect) => {

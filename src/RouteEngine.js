@@ -23,6 +23,10 @@ export default function createRouteEngine(options) {
     return _systemStore.selectRenderState();
   }
 
+  const selectSaveSlots = () => {
+    return _systemStore.selectSaveSlots();
+  }
+
   const handleAction = (actionType, payload) => {
     if (!_systemStore[actionType]) {
       return;
@@ -51,6 +55,7 @@ export default function createRouteEngine(options) {
     handleActions,
     selectRenderState,
     selectPresentationState,
+    selectSaveSlots,
     handleLineActions
   };
 }

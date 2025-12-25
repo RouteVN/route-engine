@@ -1,0 +1,449 @@
+---
+title: "Save and Load Test"
+---
+l10n:
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys:
+        layoutSaveMenuTitle: "Save Game"
+        layoutLoadMenuTitle: "Load Game"
+        layoutSaveMenuSlot1: "Slot 1"
+        layoutSaveMenuSlot2: "Slot 2"
+        layoutSaveMenuSlot3: "Slot 3"
+        layoutSaveMenuBack: "Back"
+        sceneSection1Line1: "This is line 1 of the story."
+        sceneSection1Line2: "This is line 2 - you can save here."
+        sceneSection1Line3: "This is line 3 - progress continues."
+        sceneSection2Line1: "This is Section 2, Line 1."
+        sceneSection2Line2: "If you loaded correctly, you should see this!"
+        sceneSection2Line3: "The save/load system is working!"
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+resources:
+  variables:
+    currentSaveSlot:
+      type: number
+      default: -1
+
+  layouts:
+    base1:
+      elements:
+        - id: af32
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+
+    # Save Menu Layout
+    saveMenuLayout:
+      name: Save Menu
+      elements:
+        - id: save-menu-bg
+          type: rect
+          fill: "#1a1a2e"
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+        - id: save-menu-title
+          type: text
+          content: ${l10n.keys.layoutSaveMenuTitle}
+          x: 800
+          y: 100
+          textStyle:
+            fontSize: 64
+            fill: "#ffffff"
+        # Save Slot 1
+        - id: save-slot-1-btn
+          type: rect
+          fill: "#4CAF50"
+          width: 600
+          height: 150
+          x: 100
+          y: 300
+          click:
+            actionPayload:
+              actions:
+                saveVnData:
+                  slotIndex: 1
+        - id: save-slot-1-text
+          type: text
+          content: ${l10n.keys.layoutSaveMenuSlot1}
+          x: 300
+          y: 360
+          textStyle:
+            fontSize: 36
+            fill: "#ffffff"
+        # Save Slot 2
+        - id: save-slot-2-btn
+          type: rect
+          fill: "#2196F3"
+          width: 600
+          height: 150
+          x: 100
+          y: 500
+          click:
+            actionPayload:
+              actions:
+                saveVnData:
+                  slotIndex: 2
+        - id: save-slot-2-text
+          type: text
+          content: ${l10n.keys.layoutSaveMenuSlot2}
+          x: 300
+          y: 560
+          textStyle:
+            fontSize: 36
+            fill: "#ffffff"
+        # Save Slot 3
+        - id: save-slot-3-btn
+          type: rect
+          fill: "#FF9800"
+          width: 600
+          height: 150
+          x: 100
+          y: 700
+          click:
+            actionPayload:
+              actions:
+                saveVnData:
+                  slotIndex: 3
+        - id: save-slot-3-text
+          type: text
+          content: ${l10n.keys.layoutSaveMenuSlot3}
+          x: 300
+          y: 760
+          textStyle:
+            fontSize: 36
+            fill: "#ffffff"
+        # Back Button
+        - id: save-menu-back-btn
+          type: rect
+          fill: "#F44336"
+          width: 300
+          height: 100
+          x: 1200
+          y: 800
+          eventName: system
+          eventPayload:
+            actions:
+              popViewLayer: {}
+        - id: save-menu-back-text
+          type: text
+          content: ${l10n.keys.layoutSaveMenuBack}
+          x: 1270
+          y: 850
+          textStyle:
+            fontSize: 32
+            fill: "#ffffff"
+
+    # Load Menu Layout
+    loadMenuLayout:
+      name: Load Menu
+      elements:
+        - id: load-menu-bg
+          type: rect
+          fill: "#1a1a2e"
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+        - id: load-menu-title
+          type: text
+          content: ${l10n.keys.layoutLoadMenuTitle}
+          x: 800
+          y: 100
+          textStyle:
+            fontSize: 64
+            fill: "#ffffff"
+        # Load Slot 1
+        - id: load-slot-1-btn
+          type: rect
+          fill: "#9C27B0"
+          width: 600
+          height: 150
+          x: 100
+          y: 300
+          click:
+            actionPayload:
+              actions:
+                loadVnData:
+                  slotIndex: 1
+        - id: load-slot-1-text
+          type: text
+          content: ${l10n.keys.layoutSaveMenuSlot1}
+          x: 300
+          y: 360
+          textStyle:
+            fontSize: 36
+            fill: "#ffffff"
+        # Load Slot 2
+        - id: load-slot-2-btn
+          type: rect
+          fill: "#E91E63"
+          width: 600
+          height: 150
+          x: 100
+          y: 500
+          click:
+            actionPayload:
+              actions:
+                loadVnData:
+                  slotIndex: 2
+        - id: load-slot-2-text
+          type: text
+          content: ${l10n.keys.layoutSaveMenuSlot2}
+          x: 300
+          y: 560
+          textStyle:
+            fontSize: 36
+            fill: "#ffffff"
+        # Load Slot 3
+        - id: load-slot-3-btn
+          type: rect
+          fill: "#673AB7"
+          width: 600
+          height: 150
+          x: 100
+          y: 700
+          click:
+            actionPayload:
+              actions:
+                loadVnData:
+                  slotIndex: 3
+        - id: load-slot-3-text
+          type: text
+          content: ${l10n.keys.layoutSaveMenuSlot3}
+          x: 300
+          y: 760
+          textStyle:
+            fontSize: 36
+            fill: "#ffffff"
+        # Back Button
+        - id: load-menu-back-btn
+          type: rect
+          fill: "#F44336"
+          width: 300
+          height: 100
+          x: 1200
+          y: 800
+          eventName: system
+          eventPayload:
+            actions:
+              popViewLayer: {}
+        - id: load-menu-back-text
+          type: text
+          content: ${l10n.keys.layoutSaveMenuBack}
+          x: 1270
+          y: 850
+          textStyle:
+            fontSize: 32
+            fill: "#ffffff"
+
+    # Main Menu with Save/Load Options
+    mainMenuLayout:
+      name: Main Menu
+      elements:
+        - id: main-menu-bg
+          type: rect
+          fill: "#16213e"
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+        - id: main-menu-title
+          type: text
+          content: "Save/Load Test"
+          x: 700
+          y: 200
+          textStyle:
+            fontSize: 72
+            fill: "#ffffff"
+        # Start Button
+        - id: start-btn
+          type: rect
+          fill: "#4CAF50"
+          width: 400
+          height: 80
+          x: 760
+          y: 350
+          eventName: system
+          eventPayload:
+            actions:
+              sectionTransition:
+                sectionId: section1
+        - id: start-text
+          type: text
+          content: "Start Game"
+          x: 870
+          y: 390
+          textStyle:
+            fontSize: 36
+            fill: "#ffffff"
+        # Save Button
+        - id: save-btn
+          type: rect
+          fill: "#2196F3"
+          width: 400
+          height: 80
+          x: 760
+          y: 470
+          eventName: system
+          eventPayload:
+            actions:
+              pushViewLayer:
+                resourceId: saveMenuLayout
+        - id: save-text
+          type: text
+          content: "Save Game"
+          x: 870
+          y: 510
+          textStyle:
+            fontSize: 36
+            fill: "#ffffff"
+        # Load Button
+        - id: load-btn
+          type: rect
+          fill: "#FF9800"
+          width: 400
+          height: 80
+          x: 760
+          y: 590
+          eventName: system
+          eventPayload:
+            actions:
+              pushViewLayer:
+                resourceId: loadMenuLayout
+        - id: load-text
+          type: text
+          content: "Load Game"
+          x: 870
+          y: 630
+          textStyle:
+            fontSize: 36
+            fill: "#ffffff"
+
+    dialogueLayout:
+      name: Dialogue
+      mode: adv
+      elements:
+        - id: dialogue-container
+          type: container
+          x: 50
+          y: 300
+          children:
+            - id: "dialogue-bg"
+              type: sprite
+              url: 3kda832
+              width: 1400
+              height: 300
+              x: 0
+              y: 0
+            - id: dialogue-character-name
+              type: text
+              content: "${dialogue.character.name}"
+              x: 20
+              y: 40
+              textStyle:
+                fontSize: 24
+                fill: "white"
+            - id: dialogue-text
+              type: text
+              x: 20
+              y: 100
+              content: "${dialogue.content[0].text}"
+              textStyle:
+                fontSize: 24
+                fill: "white"
+
+  characters:
+    ajf34a:
+      name: Narrator
+
+story:
+  initialSceneId: testScene
+  scenes:
+    testScene:
+      name: Test Scene
+      initialSectionId: mainMenu
+      sections:
+        mainMenu:
+          name: Main Menu
+          lines:
+            - id: line1
+              actions:
+                layout:
+                  resourceId: mainMenuLayout
+
+        section1:
+          name: Section 1
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: base1
+                dialogue:
+                  gui:
+                    resourceId: dialogueLayout
+                  mode: adv
+                  content:
+                    - text: ${l10n.keys.sceneSection1Line1}
+                  characterId: ajf34a
+            - id: line2
+              actions:
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.sceneSection1Line2}
+                  characterId: ajf34a
+            - id: line3
+              actions:
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.sceneSection1Line3}
+                  characterId: ajf34a
+                # Automatically show save menu at end of section
+                updateVariable:
+                  operations:
+                    - variableId: currentSaveSlot
+                      op: set
+                      value: 1
+
+        section2:
+          name: Section 2 (After Loading)
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: base1
+                dialogue:
+                  gui:
+                    resourceId: dialogueLayout
+                  mode: adv
+                  content:
+                    - text: ${l10n.keys.sceneSection2Line1}
+                  characterId: ajf34a
+            - id: line2
+              actions:
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.sceneSection2Line2}
+                  characterId: ajf34a
+            - id: line3
+              actions:
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.sceneSection2Line3}
+                  characterId: ajf34a
+                # Loop back to main menu
+                sectionTransition:
+                  sectionId: mainMenu
