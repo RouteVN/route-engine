@@ -196,7 +196,8 @@ const init = async () => {
 
           // Auto advance every 1000ms (1 second) - hardcoded
           // TODO: Speed can adjust in the future
-          if (autoModeElapsed >= 1000) {
+          const delay = effect.delay ?? 1000;
+          if (autoModeElapsed >= delay) {
             autoModeElapsed = 0;
             engine.handleAction('nextLine', {});
           }

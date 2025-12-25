@@ -38,6 +38,7 @@ out:
         requireLineCompleted: false
       auto:
         enabled: false
+        delay: 1000
     saveSlots: {}
     layeredViews: []
   projectData:

@@ -40,6 +40,7 @@ export const createInitialState = (payload) => {
         },
         auto: {
           enabled: false,
+          delay: 1000,
         }
       },
       saveSlots: {},
@@ -365,6 +366,7 @@ export const startAutoMode = ({ state }) => {
   });
   state.global.pendingEffects.push({
     name: "startAutoNextTimer",
+    delay: state.global.nextLineConfig.auto.delay,
   });
   state.global.pendingEffects.push({
     name: "render",
