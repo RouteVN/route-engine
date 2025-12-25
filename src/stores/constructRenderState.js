@@ -649,12 +649,20 @@ export const addLayeredViews = (
         children: layout.elements || [],
       };
 
+      const historyDialogueWithNames = (context.dialogueHistory || []).map(item => {
+        const character = resources.characters?.[item.characterId];
+        return {
+          ...item,
+          characterName: character?.name || ''
+        };
+      });
+
       const templateData = {
         variables,
         autoMode,
         skipMode,
         currentLocalizationPackageId,
-        historyDialogue: context.dialogueHistory || [],
+        historyDialogue: historyDialogueWithNames,
         characters: resources.characters || {}
       };
 
