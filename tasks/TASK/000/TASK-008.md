@@ -1,11 +1,11 @@
 ---
-title: History Dialogue
-status: todo
+title: History Layer
+status: done
 priority: high
-assignee: 
+assignee: 738NGX
 labels: []
 ---
 
 # Description
 
-Implement history dialogue
+Implement history layer
