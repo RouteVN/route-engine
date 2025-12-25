@@ -26,6 +26,7 @@ export const createInitialState = (payload) => {
       pendingEffects: [],
       autoMode: false,
       skipMode: false,
+      skipOnlyViewedLines: true,
       dialogueUIHidden: false,
       isDialogueHistoryShowing: false,
       currentLocalizationPackageId: currentLocalizationPackageId,
@@ -80,6 +81,10 @@ export const selectSkipMode = ({ state }) => {
   return state.global.skipMode;
 };
 
+export const selectSkipOnlyViewedLines = ({ state }) => {
+  return state.global.skipOnlyViewedLines;
+};
+
 export const selectAutoMode = ({ state }) => {
   return state.global.autoMode;
 };
@@ -108,10 +113,19 @@ export const selectDialogueHistory = ({ state }) => {
   // Filter for lines that have dialogue content
   const historyContent = linesUpToCurrent
     .filter(line => line.actions?.dialogue)
-    .map(line => ({
-      content: line.actions.dialogue.content,
-      characterId: line.actions.dialogue.characterId,
-    }));
+    .map(line => {
+      const dialogue = line.actions.dialogue;
+      let characterName = '';
+      if (dialogue.characterId) {
+        const character = state.projectData.resources?.characters?.[dialogue.characterId];
+        characterName = character?.name || '';
+      }
+      return {
+        content: dialogue.content,
+        characterId: dialogue.characterId,
+        characterName: characterName,
+      };
+    });
 
   return historyContent;
 };
@@ -317,6 +331,7 @@ export const selectRenderState = ({ state }) => {
     l10n: state.projectData.l10n.packages[state.global.currentLocalizationPackageId],
     autoMode: state.global.autoMode,
     skipMode: state.global.skipMode,
+    skipOnlyViewedLines: state.global.skipOnlyViewedLines,
     layeredViews: state.global.layeredViews,
     dialogueHistory: selectDialogueHistory({ state }),
   });
@@ -435,6 +450,23 @@ export const toggleSkipMode = ({ state }) => {
   return state;
 };
 
+export const setSkipOnlyViewedLines = ({ state }, payload) => {
+  const { skipOnlyViewedLines } = payload;
+  state.global.skipOnlyViewedLines = skipOnlyViewedLines;
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+  return state;
+};
+
+export const toggleSkipOnlyViewedLines = ({ state }) => {
+  state.global.skipOnlyViewedLines = !state.global.skipOnlyViewedLines;
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+  return state;
+};
+
 export const showDialogueUI = ({ state }) => {
   state.global.dialogueUIHidden = false;
   state.global.pendingEffects.push({
@@ -504,8 +536,20 @@ export const addViewedLine = ({ state }, payload) => {
   );
 
   if (section) {
-    // Update existing section
-    section.lastLineId = lineId;
+    // Update existing section only if new line is after the current lastLineId
+    const foundSection = selectSection({ state }, { sectionId });
+    if (foundSection?.lines && section.lastLineId !== undefined) {
+      const lastLineIndex = foundSection.lines.findIndex(line => line.id === section.lastLineId);
+      const newLineIndex = foundSection.lines.findIndex(line => line.id === lineId);
+
+      // Update only if newLineIndex is greater (later in the section) or if lastLineId not found
+      if (lastLineIndex === -1 || newLineIndex > lastLineIndex) {
+        section.lastLineId = lineId;
+      }
+    } else {
+      // Fallback: if we can't find the section or lastLineId is undefined, just update
+      section.lastLineId = lineId;
+    }
   } else {
     // Add new section
     state.global.viewedRegistry.sections.push({
@@ -785,9 +829,29 @@ export const nextLine = ({ state }) => {
 
   if (nextLineIndex < lines.length) {
     const nextLine = lines[nextLineIndex];
+
+    // Check if skip mode should stop at unviewed lines
+    if (state.global.skipMode && state.global.skipOnlyViewedLines) {
+      const isNextLineViewed = selectIsLineViewed({ state }, {
+        sectionId,
+        lineId: nextLine.id
+      });
+
+      if (!isNextLineViewed) {
+        // Stop skip mode when encountering an unviewed line
+        stopSkipMode({ state });
+      }
+    }
+
     const lastContext = state.contexts[state.contexts.length - 1];
 
     if (lastContext) {
+      // Mark current line as viewed before moving
+      const currentLineId = lastContext.pointers.read.lineId;
+      if (currentLineId && sectionId) {
+        addViewedLine({ state }, { sectionId, lineId: currentLineId });
+      }
+
       lastContext.pointers.read = {
         sectionId,
         lineId: nextLine.id
@@ -970,6 +1034,7 @@ export const createSystemStore = (initialState) => {
     // Selectors
     selectPendingEffects,
     selectSkipMode,
+    selectShouldSkipViewedLines,
     selectAutoMode,
     selectDialogueUIHidden,
     selectDialogueHistory,
@@ -993,6 +1058,8 @@ export const createSystemStore = (initialState) => {
     startSkipMode,
     stopSkipMode,
     toggleSkipMode,
+    setShouldSkipViewedLines,
+    toggleShouldSkipViewedLines,
     showDialogueUI,
     hideDialogueUI,
     toggleDialogueUI,
