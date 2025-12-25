@@ -26,7 +26,7 @@ export const createInitialState = (payload) => {
       pendingEffects: [],
       autoMode: false,
       skipMode: false,
-      shouldSkipViewedLines: true,
+      skipOnlyViewedLines: true,
       dialogueUIHidden: false,
       isDialogueHistoryShowing: false,
       currentLocalizationPackageId: currentLocalizationPackageId,
@@ -81,8 +81,8 @@ export const selectSkipMode = ({ state }) => {
   return state.global.skipMode;
 };
 
-export const selectShouldSkipViewedLines = ({ state }) => {
-  return state.global.shouldSkipViewedLines;
+export const selectSkipOnlyViewedLines = ({ state }) => {
+  return state.global.skipOnlyViewedLines;
 };
 
 export const selectAutoMode = ({ state }) => {
@@ -331,7 +331,7 @@ export const selectRenderState = ({ state }) => {
     l10n: state.projectData.l10n.packages[state.global.currentLocalizationPackageId],
     autoMode: state.global.autoMode,
     skipMode: state.global.skipMode,
-    shouldSkipViewedLines: state.global.shouldSkipViewedLines,
+    skipOnlyViewedLines: state.global.skipOnlyViewedLines,
     layeredViews: state.global.layeredViews,
     context: {
       dialogueHistory: selectDialogueHistory({ state }),
@@ -452,17 +452,17 @@ export const toggleSkipMode = ({ state }) => {
   return state;
 };
 
-export const setShouldSkipViewedLines = ({ state }, payload) => {
-  const { shouldSkipViewedLines } = payload;
-  state.global.shouldSkipViewedLines = shouldSkipViewedLines;
+export const setSkipOnlyViewedLines = ({ state }, payload) => {
+  const { skipOnlyViewedLines } = payload;
+  state.global.skipOnlyViewedLines = skipOnlyViewedLines;
   state.global.pendingEffects.push({
     name: "render",
   });
   return state;
 };
 
-export const toggleShouldSkipViewedLines = ({ state }) => {
-  state.global.shouldSkipViewedLines = !state.global.shouldSkipViewedLines;
+export const toggleSkipOnlyViewedLines = ({ state }) => {
+  state.global.skipOnlyViewedLines = !state.global.skipOnlyViewedLines;
   state.global.pendingEffects.push({
     name: "render",
   });
@@ -833,7 +833,7 @@ export const nextLine = ({ state }) => {
     const nextLine = lines[nextLineIndex];
 
     // Check if skip mode should stop at unviewed lines
-    if (state.global.skipMode && state.global.shouldSkipViewedLines) {
+    if (state.global.skipMode && state.global.skipOnlyViewedLines) {
       const isNextLineViewed = selectIsLineViewed({ state }, {
         sectionId,
         lineId: nextLine.id

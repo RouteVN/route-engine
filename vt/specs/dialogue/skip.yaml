@@ -107,7 +107,7 @@ resources:
           content: ${l10n.keys.skipAllButton}
           textStyle:
             fontSize: 32
-            $if shouldSkipViewedLines:
+            $if skipOnlyViewedLines:
               fill: "white"
             $else:
               fill: "#00ff00"

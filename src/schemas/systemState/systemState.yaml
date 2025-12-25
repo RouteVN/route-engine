@@ -84,7 +84,7 @@ properties:
         description: Whether skip mode is active
         default: false
 
-      shouldSkipViewedLines:
+      skipOnlyViewedLines:
         type: boolean
         description: Whether skip mode should only skip viewed lines (true) or skip all lines (false)
         default: true
