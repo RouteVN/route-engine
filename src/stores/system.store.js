@@ -45,7 +45,7 @@ export const createInitialState = (payload) => {
         auto: {
           enabled: false,
           //delay: 1000,
-        }
+        },
       },
       saveSlots: {},
       layeredViews: [],
