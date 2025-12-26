@@ -661,10 +661,11 @@ export const setNextLineConfig = ({ state }, payload) => {
  * @param {Object} state - Current state object
  * @param {Object} payload - Action payload
  * @param {number} payload.slot - Save slot number
+ * @param {string} payload.thumbnailImage - Base64 thumbnail image
  * @returns {Object} Updated state object
  */
 export const saveSaveSlot = ({ state }, payload) => {
-  const { slot } = payload;
+  const { slot, thumbnailImage } = payload;
   const slotKey = String(slot);
 
   const currentState = {
@@ -675,7 +676,7 @@ export const saveSaveSlot = ({ state }, payload) => {
   const saveData = {
     slotKey,
     date: Date.now(),
-    image: null,
+    image: thumbnailImage,
     state: currentState
   };
 
@@ -1151,7 +1152,6 @@ export const createSystemStore = (initialState) => {
     addViewedLine,
     addViewedResource,
     setNextLineConfig,
-    replaceSaveSlot,
     saveSaveSlot,
     loadSaveSlot,
     updateProjectData,
