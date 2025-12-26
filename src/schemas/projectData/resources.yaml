@@ -233,6 +233,19 @@ properties:
         additionalProperties: false
     additionalProperties: false
 
+  keyboards:
+    type: object
+    description: Keyboard mapping configurations
+    patternProperties:
+      "^[a-zA-Z0-9]+$":
+        type: object
+        description: A set of key-to-action mappings
+        additionalProperties:
+          type: object
+          properties:
+            actionPayload:
+              type: object
+          required: [actionPayload]
   layouts:
     type: object
     description: Layout configurations for UI elements
