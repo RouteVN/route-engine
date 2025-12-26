@@ -16,6 +16,7 @@ out:
       children: []
   animations: []
   audio: []
+  global: {}
 ---
 case: verify story container structure
 in: []
@@ -28,6 +29,7 @@ out:
       children: []
   animations: []
   audio: []
+  global: {}
 ---
 case: verify transitions array is empty
 in: []
@@ -40,6 +42,7 @@ out:
       children: []
   animations: []
   audio: []
+  global: {}
 ---
 case: verify elements array contains only one item
 in: []
@@ -52,6 +55,7 @@ out:
       children: []
   animations: []
   audio: []
+  global: {}
 ---
 case: verify story container has correct default properties
 in: []
@@ -64,3 +68,4 @@ out:
       children: []
   animations: []
   audio: []
+  global: {}

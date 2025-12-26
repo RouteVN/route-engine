@@ -51,6 +51,7 @@ out:
       children: []
   animations: []
   audio: []
+  global: {}
 ---
 case: multiple lines and actions not last line
 in:

@@ -30,6 +30,7 @@ out:
               id: "base-container"
   animations: []
   audio: []
+  global: {}
 ---
 case: construct render state with multiple actions in one presentation
 in:
@@ -71,6 +72,7 @@ out:
           height: 1080
   animations: []
   audio: []
+  global: {}
 ---
 case: construct render state with clean all and multiple presentations
 in:
@@ -127,3 +129,4 @@ out:
           height: 1080
   animations: []
   audio: []
+  global: {}

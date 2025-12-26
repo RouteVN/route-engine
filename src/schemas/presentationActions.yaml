@@ -222,6 +222,16 @@ properties:
         description: ID of the background music resource
     additionalProperties: false
 
+  keyboard:
+    type: object
+    description: Sets the active keyboard mapping
+    properties:
+      resourceId:
+        type: string
+        description: ID of the keyboard resource to activate
+    required: [resourceId]
+    additionalProperties: false
+
   # TODO: check if can make this more generalized
   layout:
     type: object
