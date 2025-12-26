@@ -37,3 +37,6 @@ out:
     pendingEffects:
       - name: clearAutoNextTimer
       - name: startAutoNextTimer
+        payload:
+          delay: 1000
+      - name: render
