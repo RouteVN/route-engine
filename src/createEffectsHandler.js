@@ -4,10 +4,16 @@ const createTimerState = () => {
 
   return {
     getElapsed: () => elapsed,
-    setElapsed: (value) => { elapsed = value; },
-    addElapsed: (value) => { elapsed += value; },
+    setElapsed: (value) => {
+      elapsed = value;
+    },
+    addElapsed: (value) => {
+      elapsed += value;
+    },
     getCallback: () => callback,
-    setCallback: (value) => { callback = value; },
+    setCallback: (value) => {
+      callback = value;
+    },
   };
 };
 
