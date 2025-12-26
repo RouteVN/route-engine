@@ -1,8 +1,8 @@
 ---
-title: support video playback (without asset load)
+title: support video playback (with asset load)
 status: done
 priority: high
-assignee: 738NGX
+assignee: 
 ---
 
 # Description
