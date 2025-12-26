@@ -76,17 +76,20 @@ export const addBackgroundOrCg = (
     }
 
     if (presentationState.background.resourceId) {
-      const { images = {} } = resources;
-      const background = images[presentationState.background.resourceId];
+      const { images = {}, videos = {} } = resources;
+      const background = images[presentationState.background.resourceId] || videos[presentationState.background.resourceId];
       if (background) {
+        const isVideo = videos[presentationState.background.resourceId] !== undefined;
         storyContainer.children.push({
           id: `bg-cg-${presentationState.background.resourceId}`,
-          type: "sprite",
+          type: isVideo ? "video" : "sprite",
           x: 0,
           y: 0,
           src: background.fileId,
           width: background.width,
           height: background.height,
+          loop: isVideo ? true : undefined,
+          volume: isVideo ? 1000 : undefined,
         });
       }
     }
@@ -279,14 +282,15 @@ export const addVisuals = (state, { presentationState, resources }) => {
     for (const item of items) {
       // Check if both resourceId and resourceType exist, and resourceType is "image"
       if (item.resourceId) {
-        const { images = {} } = resources;
-        let resource = images[item.resourceId];
+        const { images = {}, videos = {} } = resources;
+        let resource = images[item.resourceId] || videos[item.resourceId];
 
         if (resource) {
+          const isVideo = videos[item.resourceId] !== undefined;
           const transform = resources.transforms[item.transformId];
           storyContainer.children.push({
             id: `visual-${item.id}`,
-            type: "sprite",
+            type: isVideo ? "video" : "sprite",
             src: resource.fileId,
             width: resource.width,
             height: resource.height,
@@ -297,6 +301,8 @@ export const addVisuals = (state, { presentationState, resources }) => {
             rotation: transform.rotation,
             scaleX: transform.scaleX,
             scaleY: transform.scaleY,
+            loop: isVideo ? true : undefined,
+            volume: isVideo ? 1000 : undefined,
           });
         }
       }
