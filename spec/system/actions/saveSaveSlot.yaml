@@ -1,0 +1,146 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.saveSaveSlot
+suites: [saveSaveSlot]
+---
+suite: saveSaveSlot
+exportName: saveSaveSlot
+---
+case: save to slot 1
+in:
+  - state:
+      global:
+        saveSlots: {}
+        pendingEffects: []
+      projectData:
+        story: { initialSceneId: "test" }
+      contexts:
+        - pointers:
+            read: { sectionId: "sec1", lineId: "line1" }
+  - slot: 1
+out:
+  global:
+    saveSlots:
+      "1":
+        slotKey: "1"
+        date: null
+        image: null
+        state:
+          projectData:
+            story: { initialSceneId: "test" }
+          global:
+            pendingEffects: []
+          contexts:
+            - pointers:
+                read: { sectionId: "sec1", lineId: "line1" }
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - pointers:
+        read: { sectionId: "sec1", lineId: "line1" }
+---
+case: save to slot 2
+in:
+  - state:
+      global:
+        saveSlots: {}
+        pendingEffects: []
+      projectData:
+        story: { initialSceneId: "test" }
+      contexts:
+        - pointers:
+            read: { sectionId: "sec1", lineId: "line1" }
+  - slot: 2
+out:
+  global:
+    saveSlots:
+      "2":
+        slotKey: "2"
+        date: null
+        image: null
+        state:
+          projectData:
+            story: { initialSceneId: "test" }
+          global:
+            pendingEffects: []
+          contexts:
+            - pointers:
+                read: { sectionId: "sec1", lineId: "line1" }
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - pointers:
+        read: { sectionId: "sec1", lineId: "line1" }
+---
+case: overwrite existing save slot
+in:
+  - state:
+      global:
+        saveSlots:
+          "1":
+            slotKey: "1"
+            date: 1704110400
+            image: "old_image.png"
+            state:
+              level: 5
+        pendingEffects: []
+      projectData:
+        story: { initialSceneId: "test" }
+      contexts:
+        - pointers:
+            read: { sectionId: "sec1", lineId: "line1" }
+  - slot: 1
+out:
+  global:
+    saveSlots:
+      "1":
+        slotKey: "1"
+        date: null
+        image: null
+        state:
+          projectData:
+            story: { initialSceneId: "test" }
+          global:
+            pendingEffects: []
+          contexts:
+            - pointers:
+                read: { sectionId: "sec1", lineId: "line1" }
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - pointers:
+        read: { sectionId: "sec1", lineId: "line1" }
+---
+case: save to slot with existing pending effects
+in:
+  - state:
+      global:
+        saveSlots: {}
+        pendingEffects:
+          - name: "existingEffect"
+      projectData:
+        story: { initialSceneId: "test" }
+      contexts:
+        - pointers:
+            read: { sectionId: "sec1", lineId: "line1" }
+  - slot: 1
+out:
+  global:
+    saveSlots:
+      "1":
+        slotKey: "1"
+        date: null
+        image: null
+        state:
+          projectData:
+            story: { initialSceneId: "test" }
+          global:
+            pendingEffects: []
+          contexts:
+            - pointers:
+                read: { sectionId: "sec1", lineId: "line1" }
+    pendingEffects:
+      - name: "existingEffect"
+      - name: "render"
+  contexts:
+    - pointers:
+        read: { sectionId: "sec1", lineId: "line1" }

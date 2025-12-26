@@ -36,5 +36,7 @@ vt:
           files: "bgm"
         - title: "SFX"
           files: "sfx"
+        - title: "Save"
+          files: "save"
         - title: "Keyboard"
           files: "keyboard"

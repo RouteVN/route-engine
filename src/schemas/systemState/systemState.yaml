@@ -45,22 +45,25 @@ properties:
               additionalProperties: true
         default: {}
 
-      saveData:
+      saveSlots:
         type: object
-        description: Additional save game data
+        description: Save game slots indexed by slotKey
         properties:
-          "^d+$": # slot number
+          "^.+$": # slot key (string like "1", "autosave", etc.)
+            type: object
             properties:
-              date:
+              slotKey:
                 type: string
-                description: date
+              date:
+                type: integer
+                description: Unix timestamp
               image:
                 type: string
-                description: base64 representation of the image
+                description: Base64 screenshot (null if none)
               state:
                 type: object
-                description: full state
-        additionalProperties: true
+                description: Full system state
+            required: [slotKey, date, state]
         default: {}
 
       # TODO: don't remember why we need this for

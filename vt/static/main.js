@@ -12,8 +12,7 @@ import createRouteGraphics, {
   textRevealingPlugin,
   tweenPlugin,
   soundPlugin,
-  videoPlugin,
-} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.16/+esm"
+} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.19/+esm"
 
 const projectData = parse(window.yamlContent);
 
@@ -135,11 +134,24 @@ const init = async () => {
   const ticker = new Ticker();
   ticker.start();
 
+  const base64ToArrayBuffer = (base64) => {
+    const binaryString = window.atob(
+      base64.replace(/^data:image\/[a-z]+;base64,/, ""),
+    );
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes.buffer;
+  };
+
+
   await routeGraphics.init({
     width: 1920,
     height: 1080,
     plugins,
-    eventHandler: (eventName, payload) => {
+    eventHandler: async (eventName, payload) => {
       if (eventName === 'renderComplete') {
         if (count >= 2) {
           return;
@@ -149,6 +161,17 @@ const init = async () => {
         // engine.handleLineActions();
       } else {
         if (payload.actions) {
+          if(payload.actions.saveSaveSlot){
+            const url = await routeGraphics.extractBase64("story");
+            const assets = {
+              [`saveThumbnailImage:${payload.actions.saveSaveSlot.slot}`]: {
+                buffer: base64ToArrayBuffer(url),
+                type: "image/png",
+              },
+            };
+            await routeGraphics.loadAssets(assets);
+            payload.actions.saveSaveSlot.thumbnailImage = url;
+          }
           engine.handleActions(payload.actions);
         }
       }
@@ -163,11 +186,13 @@ const init = async () => {
 
   const effectsHandler = createEffectsHandler({ getEngine: () => engine, routeGraphics, ticker });
   const engine = createRouteEngine({ handlePendingEffects: effectsHandler });
+  const saveSlots = JSON.parse(localStorage.getItem("saveSlots")) || {};
 
   engine.init({
     initialState: {
       global: {
-        currentLocalizationPackageId: 'eklekfjwalefj'
+        currentLocalizationPackageId: 'eklekfjwalefj',
+        saveSlots
       },
       projectData
     }

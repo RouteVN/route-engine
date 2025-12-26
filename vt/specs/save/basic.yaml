@@ -1,0 +1,452 @@
+---
+title: "Save/Load Test"
+---
+l10n:
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys:
+        line1: "Line 1: Welcome to Save/Load test"
+        line2: "Line 2: Click Save in top right to save your game"
+        line3: "Line 3: Choose a slot, then click X to close"
+        line4: "Line 4: Click Load to load a saved game"
+        line5: "Line 5: Try saving now, then continue to next section"
+        line6: "Line 6: This is section 2 - loading returns you to section 1"
+        saveButton: "Save"
+        loadButton: "Load"
+        saveTitle: "Save Game"
+        loadTitle: "Load Game"
+        closeHint: "Click X to close"
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+resources:
+  characters:
+    narrator:
+      name: ""
+
+  layouts:
+    baseLayout:
+      elements:
+        - id: background
+          type: rect
+          x: 0
+          y: 0
+          width: 1920
+          height: 1080
+          fill: "#000000"
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+
+    dialogueLayout:
+      name: Dialogue Screen
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 100
+          y: 800
+          width: 1720
+          height: 200
+          fill: "#333333"
+
+        - id: dialogue-text
+          type: text
+          x: 150
+          y: 850
+          content: ${dialogue.content[0].text}
+          textStyle:
+            fontSize: 32
+            fill: "white"
+
+        - id: save-button
+          type: rect
+          x: 1780
+          y: 20
+          width: 100
+          height: 50
+          fill: "#4CAF50"
+          hover:
+            fill: "#66BB6A"
+          click:
+            actionPayload:
+              actions:
+                pushLayeredView:
+                  resourceId: saveMenuLayout
+                  resourceType: layout
+
+        - id: save-button-text
+          type: text
+          x: 1810
+          y: 35
+          content: ${l10n.keys.saveButton}
+          textStyle:
+            fontSize: 24
+            fill: "white"
+
+        - id: load-button
+          type: rect
+          x: 1660
+          y: 20
+          width: 100
+          height: 50
+          fill: "#2196F3"
+          hover:
+            fill: "#42A5F5"
+          click:
+            actionPayload:
+              actions:
+                pushLayeredView:
+                  resourceId: loadMenuLayout
+                  resourceType: layout
+
+        - id: load-button-text
+          type: text
+          x: 1690
+          y: 35
+          content: ${l10n.keys.loadButton}
+          textStyle:
+            fontSize: 24
+            fill: "white"
+
+    saveMenuLayout:
+      elements:
+        - id: save-menu-overlay
+          type: rect
+          fill: "rgba(0,0,0,0.7)"
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+
+        - id: save-menu-bg
+          type: rect
+          fill: "#1a1a2e"
+          width: 800
+          height: 500
+          x: 560
+          y: 290
+
+        - id: save-menu-title
+          type: text
+          content: ${l10n.keys.saveTitle}
+          x: 900
+          y: 340
+          textStyle:
+            fontSize: 48
+            fill: "#ffffff"
+
+        - id: close-btn
+          type: rect
+          fill: "#F44336"
+          width: 50
+          height: 50
+          x: 1290
+          y: 300
+          hover:
+            fill: "#EF5350"
+          click:
+            actionPayload:
+              actions:
+                clearLayeredViews: {}
+
+        - id: close-text
+          type: text
+          content: "X"
+          x: 1305
+          y: 310
+          textStyle:
+            fontSize: 32
+            fill: "#ffffff"
+
+        - id: save-slot-1-btn
+          type: rect
+          fill: "#4CAF50"
+          width: 600
+          height: 70
+          x: 660
+          y: 400
+          hover:
+            fill: "#66BB6A"
+          click:
+            actionPayload:
+              actions:
+                saveSaveSlot:
+                  slot: 1
+
+        - id: save-slot-1-text
+          type: text
+          content: "Slot 1"
+          x: 920
+          y: 420
+          textStyle:
+            fontSize: 32
+            fill: "#ffffff"
+
+        - id: save-slot-2-btn
+          type: rect
+          fill: "#2196F3"
+          width: 600
+          height: 70
+          x: 660
+          y: 490
+          hover:
+            fill: "#42A5F5"
+          click:
+            actionPayload:
+              actions:
+                saveSaveSlot:
+                  slot: 2
+
+        - id: save-slot-2-text
+          type: text
+          content: "Slot 2"
+          x: 920
+          y: 510
+          textStyle:
+            fontSize: 32
+            fill: "#ffffff"
+
+        - id: save-slot-3-btn
+          type: rect
+          fill: "#FF9800"
+          width: 600
+          height: 70
+          x: 660
+          y: 580
+          hover:
+            fill: "#FFB74D"
+          click:
+            actionPayload:
+              actions:
+                saveSaveSlot:
+                  slot: 3
+
+        - id: save-slot-3-text
+          type: text
+          content: "Slot 3"
+          x: 920
+          y: 600
+          textStyle:
+            fontSize: 32
+            fill: "#ffffff"
+
+        - id: save-menu-info
+          type: text
+          content: ${l10n.keys.closeHint}
+          x: 880
+          y: 730
+          textStyle:
+            fontSize: 20
+            fill: "#aaaaaa"
+
+    loadMenuLayout:
+      elements:
+        - id: load-menu-overlay
+          type: rect
+          fill: "rgba(0,0,0,0.7)"
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+
+        - id: load-menu-bg
+          type: rect
+          fill: "#1a1a2e"
+          width: 800
+          height: 500
+          x: 560
+          y: 290
+
+        - id: load-menu-title
+          type: text
+          content: ${l10n.keys.loadTitle}
+          x: 900
+          y: 340
+          textStyle:
+            fontSize: 48
+            fill: "#ffffff"
+
+        - id: load-close-btn
+          type: rect
+          fill: "#F44336"
+          width: 50
+          height: 50
+          x: 1290
+          y: 300
+          hover:
+            fill: "#EF5350"
+          click:
+            actionPayload:
+              actions:
+                clearLayeredViews: {}
+
+        - id: load-close-text
+          type: text
+          content: "X"
+          x: 1305
+          y: 310
+          textStyle:
+            fontSize: 32
+            fill: "#ffffff"
+
+        - id: load-slot-1-btn
+          type: rect
+          fill: "#9C27B0"
+          width: 600
+          height: 70
+          x: 660
+          y: 400
+          hover:
+            fill: "#AB47BC"
+          click:
+            actionPayload:
+              actions:
+                loadSaveSlot:
+                  slot: 1
+
+        - id: load-slot-1-text
+          type: text
+          content: "Slot 1"
+          x: 920
+          y: 420
+          textStyle:
+            fontSize: 32
+            fill: "#ffffff"
+
+        - id: load-slot-2-btn
+          type: rect
+          fill: "#E91E63"
+          width: 600
+          height: 70
+          x: 660
+          y: 490
+          hover:
+            fill: "#EC407A"
+          click:
+            actionPayload:
+              actions:
+                loadSaveSlot:
+                  slot: 2
+
+        - id: load-slot-2-text
+          type: text
+          content: "Slot 2"
+          x: 920
+          y: 510
+          textStyle:
+            fontSize: 32
+            fill: "#ffffff"
+
+        - id: load-slot-3-btn
+          type: rect
+          fill: "#673AB7"
+          width: 600
+          height: 70
+          x: 660
+          y: 580
+          hover:
+            fill: "#7E57C2"
+          click:
+            actionPayload:
+              actions:
+                loadSaveSlot:
+                  slot: 3
+
+        - id: load-slot-3-text
+          type: text
+          content: "Slot 3"
+          x: 920
+          y: 600
+          textStyle:
+            fontSize: 32
+            fill: "#ffffff"
+
+        - id: load-menu-info
+          type: text
+          content: ${l10n.keys.closeHint}
+          x: 880
+          y: 730
+          textStyle:
+            fontSize: 20
+            fill: "#aaaaaa"
+
+story:
+  initialSceneId: test_scene
+  scenes:
+    test_scene:
+      initialSectionId: test_section
+      sections:
+        test_section:
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: baseLayout
+                dialogue:
+                  mode: adv
+                  gui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: ${l10n.keys.line1}
+                  characterId: narrator
+
+            - id: line2
+              actions:
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line2}
+                  characterId: narrator
+
+            - id: line3
+              actions:
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line3}
+                  characterId: narrator
+
+            - id: line4
+              actions:
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line4}
+                  characterId: narrator
+
+            - id: line5
+              actions:
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line5}
+                  characterId: narrator
+
+            - id: line6
+              actions:
+                sectionTransition:
+                  sectionId: section2
+
+        section2:
+          lines:
+            - id: line1
+              actions:
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line6}
+                  characterId: narrator
+
+            - id: line2
+              actions:
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line1}
+                  characterId: narrator
+
+            - id: line3
+              actions:
+                sectionTransition:
+                  sectionId: test_section

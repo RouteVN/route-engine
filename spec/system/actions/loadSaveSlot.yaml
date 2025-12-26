@@ -1,0 +1,87 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.loadSaveSlot
+suites: [loadSaveSlot]
+---
+suite: loadSaveSlot
+exportName: loadSaveSlot
+---
+case: load from existing slot
+in:
+  - state:
+      global:
+        saveSlots:
+          "1":
+            slotKey: "1"
+            date: 1704110400
+            image: "save.png"
+            state:
+              projectData: { story: { initialSceneId: "loaded" } }
+              global:
+                currentLocalizationPackageId: "en"
+              contexts:
+                - pointers:
+                    read: { sectionId: "sec2", lineId: "line2" }
+        pendingEffects: []
+  - slot: 1
+out:
+  global:
+    pendingEffects:
+      - name: "loadGame"
+        options:
+          initialState:
+            projectData: { story: { initialSceneId: "loaded" } }
+---
+case: load from non-existent slot
+in:
+  - state:
+      global:
+        saveSlots: {}
+        pendingEffects: []
+  - slot: 99
+out:
+  global:
+    pendingEffects: []
+---
+case: load from slot 2
+in:
+  - state:
+      global:
+        saveSlots:
+          "2":
+            slotKey: "2"
+            date: 1704110500
+            image: "save2.png"
+            state:
+              level: 10
+        pendingEffects: []
+  - slot: 2
+out:
+  global:
+    pendingEffects:
+      - name: "loadGame"
+        options:
+          initialState:
+            level: 10
+---
+case: load with existing pending effects
+in:
+  - state:
+      global:
+        saveSlots:
+          "1":
+            slotKey: "1"
+            date: 1704110400
+            image: "save.png"
+            state:
+              level: 5
+        pendingEffects:
+          - name: "existingEffect"
+  - slot: 1
+out:
+  global:
+    pendingEffects:
+      - name: "existingEffect"
+      - name: "loadGame"
+        options:
+          initialState:
+            level: 5

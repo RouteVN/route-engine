@@ -102,8 +102,13 @@ const clearSkipNextTimer = ({ ticker, skipTimer }, payload) => {
   skipTimer.setElapsed(0);
 };
 
+const saveSlots = ({}, payload) => {
+  localStorage.setItem("saveSlots", JSON.stringify(payload.saveSlots));
+};
+
 const effects = {
   render,
+  saveSlots,
   handleLineActions,
   startAutoNextTimer,
   clearAutoNextTimer,

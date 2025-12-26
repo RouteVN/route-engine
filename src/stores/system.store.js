@@ -4,7 +4,7 @@ import { constructRenderState } from "./constructRenderState.js";
 
 export const createInitialState = (payload) => {
   const {
-    global: { currentLocalizationPackageId },
+    global: { currentLocalizationPackageId, saveSlots },
     // initialPointer,
     projectData,
   } = payload;
@@ -47,7 +47,7 @@ export const createInitialState = (payload) => {
           //delay: 1000,
         },
       },
-      saveSlots: {},
+      saveSlots,
       layeredViews: [],
     },
     contexts: [
@@ -75,6 +75,7 @@ export const createInitialState = (payload) => {
       },
     ],
   };
+  console.log("Initial State:", state);
   return state;
 };
 
@@ -681,28 +682,59 @@ export const setAutoplayDelay = ({ state }, { delay }) => {
 };
 
 /**
- * Replaces a save slot with new data
+ * Saves current game state to a slot
  * @param {Object} state - Current state object
- * @param {Object} initialState - Action payload
- * @param {string} initialState.slotKey - The key identifying the save slot
- * @param {number} initialState.date - Unix timestamp for when the save was created
- * @param {string} initialState.image - Base64 encoded save image/screenshot
- * @param {Object} initialState.state - The game state to be saved
+ * @param {Object} payload - Action payload
+ * @param {number} payload.slot - Save slot number
+ * @param {string} payload.thumbnailImage - Base64 thumbnail image
  * @returns {Object} Updated state object
  */
-export const replaceSaveSlot = ({ state }, payload) => {
-  const { slotKey, date, image, state: slotState } = payload;
+export const saveSaveSlot = ({ state }, payload) => {
+  const { slot, thumbnailImage } = payload;
+  const slotKey = String(slot);
 
-  state.global.saveSlots[slotKey] = {
-    slotKey,
-    date,
-    image,
-    state: slotState,
+  const currentState = {
+    contexts: [...state.contexts],
+    viewedRegistry: state.global.viewedRegistry,
   };
 
-  state.global.pendingEffects.push({
-    name: "render",
-  });
+  const saveData = {
+    slotKey,
+    date: Date.now(),
+    image: thumbnailImage,
+    state: currentState,
+  };
+
+  state.global.saveSlots[slotKey] = saveData;
+
+  state.global.pendingEffects.push(
+    {
+      name: "saveSlots",
+      payload: {
+        saveSlots: { ...state.global.saveSlots },
+      },
+    },
+    { name: "render" },
+  );
+  return state;
+};
+
+/**
+ * Loads game state from a save slot
+ * @param {Object} state - Current state object
+ * @param {Object} payload - Action payload
+ * @param {number} payload.slot - Save slot number
+ * @returns {Object} Updated state object
+ */
+export const loadSaveSlot = ({ state }, payload) => {
+  const { slot } = payload;
+  const slotKey = String(slot);
+  const slotData = state.global.saveSlots[slotKey];
+  if (slotData) {
+    state.global.viewedRegistry = slotData.state.viewedRegistry;
+    state.contexts = slotData.state.contexts;
+    state.global.pendingEffects.push({ name: "render" });
+  }
   return state;
 };
 
@@ -1144,7 +1176,8 @@ export const createSystemStore = (initialState) => {
     addViewedLine,
     addViewedResource,
     setNextLineConfig,
-    replaceSaveSlot,
+    saveSaveSlot,
+    loadSaveSlot,
     setAutoplayDelay,
     updateProjectData,
     sectionTransition,
