@@ -22,7 +22,7 @@ out:
     saveSlots:
       "1":
         slotKey: "1"
-        date: __ignore__
+        date: null
         image: null
         state:
           projectData:
@@ -55,7 +55,7 @@ out:
     saveSlots:
       "2":
         slotKey: "2"
-        date: __ignore__
+        date: null
         image: null
         state:
           projectData:
@@ -94,7 +94,7 @@ out:
     saveSlots:
       "1":
         slotKey: "1"
-        date: __ignore__
+        date: null
         image: null
         state:
           projectData:
@@ -128,7 +128,7 @@ out:
     saveSlots:
       "1":
         slotKey: "1"
-        date: __ignore__
+        date: null
         image: null
         state:
           projectData:
