@@ -137,20 +137,3 @@ oneOf:
         default: 0
     required: [type, timerId, payload, delay]
     additionalProperties: false
-
-  - title: Load game effect
-    description: Loads a saved game state
-    type: object
-    properties:
-      type:
-        const: loadGame
-      initialState:
-        type: object
-        description: The saved game state to restore
-      priority:
-        type: integer
-        description: Priority of the effect (lower numbers execute first)
-        default: 0
-    required: [type, initialState]
-    additionalProperties: false
-

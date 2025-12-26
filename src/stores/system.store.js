@@ -4,20 +4,22 @@ import { constructRenderState } from "./constructRenderState.js";
 
 export const createInitialState = (payload) => {
   const {
-    global: {
-      currentLocalizationPackageId,
-    },
+    global: { currentLocalizationPackageId },
     // initialPointer,
     projectData,
   } = payload;
 
   const initialPointer = {
     sceneId: projectData.story.initialSceneId,
-    sectionId: projectData.story.scenes[projectData.story.initialSceneId].initialSectionId,
-    lineId: projectData.story.scenes[projectData.story.initialSceneId]
-      .sections[projectData.story.scenes[projectData.story.initialSceneId].initialSectionId]
-      .lines[0].id,
-  }
+    sectionId:
+      projectData.story.scenes[projectData.story.initialSceneId]
+        .initialSectionId,
+    lineId:
+      projectData.story.scenes[projectData.story.initialSceneId].sections[
+        projectData.story.scenes[projectData.story.initialSceneId]
+          .initialSectionId
+      ].lines[0].id,
+  };
 
   const saveSlots = JSON.parse(localStorage.getItem("saveSlots")) || {};
 
@@ -28,12 +30,13 @@ export const createInitialState = (payload) => {
       pendingEffects: [],
       autoMode: false,
       skipMode: false,
+      skipOnlyViewedLines: true,
       dialogueUIHidden: false,
       isDialogueHistoryShowing: false,
       currentLocalizationPackageId: currentLocalizationPackageId,
       viewedRegistry: {
         sections: [],
-        resources: []
+        resources: [],
       },
       nextLineConfig: {
         manual: {
@@ -42,27 +45,35 @@ export const createInitialState = (payload) => {
         },
         auto: {
           enabled: false,
-        }
+        },
       },
       saveSlots,
       layeredViews: [],
     },
-    contexts: [{
-      currentPointerMode: 'read',
-      pointers: {
-        read: initialPointer,
-        history: { sectionId: undefined, lineId: undefined, historySequenceIndex: undefined },
+    contexts: [
+      {
+        currentPointerMode: "read",
+        pointers: {
+          read: initialPointer,
+          history: {
+            sectionId: undefined,
+            lineId: undefined,
+            historySequenceIndex: undefined,
+          },
+        },
+        historySequence: [
+          {
+            sectionId: "...",
+          },
+        ],
+        configuration: {},
+        views: [],
+        bgm: {
+          resourceId: undefined,
+        },
+        variables: {},
       },
-      historySequence: [{
-        sectionId: '...',
-      }],
-      configuration: {},
-      views: [],
-      bgm: {
-        resourceId: undefined,
-      },
-      variables: {},
-    }]
+    ],
   };
   console.log('Initial State:', state);
   return state;
@@ -81,6 +92,10 @@ export const selectPendingEffects = ({ state }) => {
 
 export const selectSkipMode = ({ state }) => {
   return state.global.skipMode;
+};
+
+export const selectSkipOnlyViewedLines = ({ state }) => {
+  return state.global.skipOnlyViewedLines;
 };
 
 export const selectAutoMode = ({ state }) => {
@@ -105,16 +120,28 @@ export const selectDialogueHistory = ({ state }) => {
   }
 
   // Get all lines up to and including the current line
-  const currentLineIndex = section.lines.findIndex(line => line.id === lineId);
+  const currentLineIndex = section.lines.findIndex(
+    (line) => line.id === lineId,
+  );
   const linesUpToCurrent = section.lines.slice(0, currentLineIndex + 1);
 
   // Filter for lines that have dialogue content
   const historyContent = linesUpToCurrent
-    .filter(line => line.actions?.dialogue)
-    .map(line => ({
-      content: line.actions.dialogue.content,
-      characterId: line.actions.dialogue.characterId,
-    }));
+    .filter((line) => line.actions?.dialogue)
+    .map((line) => {
+      const dialogue = line.actions.dialogue;
+      let characterName = "";
+      if (dialogue.characterId) {
+        const character =
+          state.projectData.resources?.characters?.[dialogue.characterId];
+        characterName = character?.name || "";
+      }
+      return {
+        content: dialogue.content,
+        characterId: dialogue.characterId,
+        characterName: characterName,
+      };
+    });
 
   return historyContent;
 };
@@ -126,7 +153,7 @@ export const selectCurrentLocalizationPackageId = ({ state }) => {
 export const selectIsLineViewed = ({ state }, payload) => {
   const { sectionId, lineId } = payload;
   const section = state.global.viewedRegistry.sections.find(
-    section => section.sectionId === sectionId
+    (section) => section.sectionId === sectionId,
   );
 
   if (!section) {
@@ -147,14 +174,22 @@ export const selectIsLineViewed = ({ state }, payload) => {
   // Use selectSection to get the section data
   const foundSection = selectSection({ state }, { sectionId });
 
-  if (!foundSection || !foundSection.lines || !Array.isArray(foundSection.lines)) {
+  if (
+    !foundSection ||
+    !foundSection.lines ||
+    !Array.isArray(foundSection.lines)
+  ) {
     // If we can't find the section or lines, fallback to original behavior
     return false;
   }
 
   // Find indices of both lines in the lines array
-  const lastLineIndex = foundSection.lines.findIndex(line => line.id === section.lastLineId);
-  const currentLineIndex = foundSection.lines.findIndex(line => line.id === lineId);
+  const lastLineIndex = foundSection.lines.findIndex(
+    (line) => line.id === section.lastLineId,
+  );
+  const currentLineIndex = foundSection.lines.findIndex(
+    (line) => line.id === lineId,
+  );
 
   // If we can't find either line in the array, fallback to simple comparison
   if (lastLineIndex === -1 || currentLineIndex === -1) {
@@ -168,7 +203,7 @@ export const selectIsLineViewed = ({ state }, payload) => {
 export const selectIsResourceViewed = ({ state }, payload) => {
   const { resourceId } = payload;
   const resource = state.global.viewedRegistry.resources.find(
-    resource => resource.resourceId === resourceId
+    (resource) => resource.resourceId === resourceId,
   );
 
   return !!resource;
@@ -205,7 +240,7 @@ export const selectCurrentPointer = ({ state }) => {
 
   return {
     currentPointerMode: lastContext.currentPointerMode,
-    pointer
+    pointer,
   };
 };
 
@@ -250,7 +285,7 @@ export const selectCurrentLine = ({ state }) => {
     return undefined;
   }
 
-  return section.lines.find(line => line.id === lineId);
+  return section.lines.find((line) => line.id === lineId);
 };
 
 export const selectPresentationState = ({ state }) => {
@@ -259,12 +294,12 @@ export const selectPresentationState = ({ state }) => {
 
   // get all lines up to the current line index, inclusive
   const lines = section?.lines || [];
-  const currentLineIndex = lines.findIndex(line => line.id === lineId);
+  const currentLineIndex = lines.findIndex((line) => line.id === lineId);
 
   // Return all lines up to and including the current line
   const currentLines = lines.slice(0, currentLineIndex + 1);
 
-  console.log('currentLines', currentLines);
+  console.log("currentLines", currentLines);
 
   // Create presentation state from unified actions
   const presentationActions = currentLines.map((line) => {
@@ -279,16 +314,16 @@ export const selectPresentationState = ({ state }) => {
     return presentationData;
   });
 
-  const presentationState = constructPresentationState(presentationActions)
-  return presentationState
-}
+  const presentationState = constructPresentationState(presentationActions);
+  return presentationState;
+};
 
 export const selectPreviousPresentationState = ({ state }) => {
   const { sectionId, lineId } = selectCurrentPointer({ state }).pointer;
   const section = selectSection({ state }, { sectionId });
 
   const lines = section?.lines || [];
-  const currentLineIndex = lines.findIndex(line => line.id === lineId);
+  const currentLineIndex = lines.findIndex((line) => line.id === lineId);
 
   // Return all lines before the current line (not including current)
   if (currentLineIndex <= 0) {
@@ -307,24 +342,28 @@ export const selectPreviousPresentationState = ({ state }) => {
   });
 
   return constructPresentationState(presentationActions);
-}
+};
 
 export const selectRenderState = ({ state }) => {
   const presentationState = selectPresentationState({ state });
   const previousPresentationState = selectPreviousPresentationState({ state });
-  console.log('presentationState', presentationState);
+  console.log("presentationState", presentationState);
   const renderState = constructRenderState({
     presentationState,
     previousPresentationState,
     resources: state.projectData.resources,
-    l10n: state.projectData.l10n.packages[state.global.currentLocalizationPackageId],
+    l10n: state.projectData.l10n.packages[
+      state.global.currentLocalizationPackageId
+    ],
     autoMode: state.global.autoMode,
     skipMode: state.global.skipMode,
+    skipOnlyViewedLines: state.global.skipOnlyViewedLines,
     layeredViews: state.global.layeredViews,
+    dialogueHistory: selectDialogueHistory({ state }),
   });
-  console.log('renderState', renderState);
+  console.log("renderState", renderState);
   return renderState;
-}
+};
 
 /**************************
  * Actions
@@ -437,6 +476,23 @@ export const toggleSkipMode = ({ state }) => {
   return state;
 };
 
+export const setSkipOnlyViewedLines = ({ state }, payload) => {
+  const { skipOnlyViewedLines } = payload;
+  state.global.skipOnlyViewedLines = skipOnlyViewedLines;
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+  return state;
+};
+
+export const toggleSkipOnlyViewedLines = ({ state }) => {
+  state.global.skipOnlyViewedLines = !state.global.skipOnlyViewedLines;
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+  return state;
+};
+
 export const showDialogueUI = ({ state }) => {
   state.global.dialogueUIHidden = false;
   state.global.pendingEffects.push({
@@ -502,17 +558,33 @@ export const appendPendingEffect = ({ state }, payload) => {
 export const addViewedLine = ({ state }, payload) => {
   const { sectionId, lineId } = payload;
   const section = state.global.viewedRegistry.sections.find(
-    section => section.sectionId === sectionId
+    (section) => section.sectionId === sectionId,
   );
 
   if (section) {
-    // Update existing section
-    section.lastLineId = lineId;
+    // Update existing section only if new line is after the current lastLineId
+    const foundSection = selectSection({ state }, { sectionId });
+    if (foundSection?.lines && section.lastLineId !== undefined) {
+      const lastLineIndex = foundSection.lines.findIndex(
+        (line) => line.id === section.lastLineId,
+      );
+      const newLineIndex = foundSection.lines.findIndex(
+        (line) => line.id === lineId,
+      );
+
+      // Update only if newLineIndex is greater (later in the section) or if lastLineId not found
+      if (lastLineIndex === -1 || newLineIndex > lastLineIndex) {
+        section.lastLineId = lineId;
+      }
+    } else {
+      // Fallback: if we can't find the section or lastLineId is undefined, just update
+      section.lastLineId = lineId;
+    }
   } else {
     // Add new section
     state.global.viewedRegistry.sections.push({
       sectionId,
-      lastLineId: lineId
+      lastLineId: lineId,
     });
   }
 
@@ -525,13 +597,13 @@ export const addViewedLine = ({ state }, payload) => {
 export const addViewedResource = ({ state }, payload) => {
   const { resourceId } = payload;
   const existingResource = state.global.viewedRegistry.resources.find(
-    resource => resource.resourceId === resourceId
+    (resource) => resource.resourceId === resourceId,
   );
 
   if (!existingResource) {
     // Add new resource only if it doesn't already exist
     state.global.viewedRegistry.resources.push({
-      resourceId
+      resourceId,
     });
   }
 
@@ -563,12 +635,11 @@ export const setNextLineConfig = ({ state }, payload) => {
   if (manual && auto) {
     state.global.nextLineConfig = {
       manual,
-      auto
+      auto,
     };
   } else {
     // Partial update - merge only provided sections
     if (manual) {
-
       state.global.nextLineConfig.manual = manual;
       // state.global.nextLineConfig.manual = {
       //   ...state.global.nextLineConfig.manual,
@@ -604,7 +675,7 @@ export const replaceSaveSlot = ({ state }, payload) => {
     slotKey,
     date,
     image,
-    state: slotState
+    state: slotState,
   };
 
   state.global.pendingEffects.push({
@@ -732,13 +803,16 @@ export const jumpToLine = ({ state }, payload) => {
   }
 
   // Validate line exists in target section
-  const targetSection = selectSection({ state }, { sectionId: targetSectionId });
+  const targetSection = selectSection(
+    { state },
+    { sectionId: targetSectionId },
+  );
   if (!targetSection?.lines || !Array.isArray(targetSection.lines)) {
     console.warn(`Section ${targetSectionId} has no lines`);
     return state;
   }
 
-  const targetLine = targetSection.lines.find(line => line.id === lineId);
+  const targetLine = targetSection.lines.find((line) => line.id === lineId);
   if (!targetLine) {
     console.warn(`Line not found: ${lineId} in section ${targetSectionId}`);
     return state;
@@ -747,7 +821,7 @@ export const jumpToLine = ({ state }, payload) => {
   // Update current pointer to new line
   lastContext.pointers.read = {
     sectionId: targetSectionId,
-    lineId: lineId
+    lineId: lineId,
   };
 
   // Reset line completion state
@@ -758,7 +832,7 @@ export const jumpToLine = ({ state }, payload) => {
     name: "render",
   });
   state.global.pendingEffects.push({
-    name: "handleLineActions"
+    name: "handleLineActions",
   });
 
   return state;
@@ -800,7 +874,10 @@ export const addToHistorySequence = ({ state }, payload) => {
  */
 export const nextLineFromCompleted = ({ state }) => {
   // Check if auto navigation is enabled and configured to trigger from line completion
-  if (state.global.nextLineConfig?.auto?.enabled !== true || state.global.nextLineConfig?.auto?.trigger !== 'fromComplete') {
+  if (
+    state.global.nextLineConfig?.auto?.enabled !== true ||
+    state.global.nextLineConfig?.auto?.trigger !== "fromComplete"
+  ) {
     return state;
   }
 
@@ -809,7 +886,9 @@ export const nextLineFromCompleted = ({ state }) => {
   const section = selectSection({ state }, { sectionId });
 
   const lines = section?.lines || [];
-  const currentLineIndex = lines.findIndex(line => line.id === pointer?.lineId);
+  const currentLineIndex = lines.findIndex(
+    (line) => line.id === pointer?.lineId,
+  );
   const nextLineIndex = currentLineIndex + 1;
 
   if (nextLineIndex < lines.length) {
@@ -819,7 +898,7 @@ export const nextLineFromCompleted = ({ state }) => {
     if (lastContext) {
       lastContext.pointers.read = {
         sectionId,
-        lineId: nextLine.id
+        lineId: nextLine.id,
       };
     }
 
@@ -832,7 +911,7 @@ export const nextLineFromCompleted = ({ state }) => {
       name: "render",
     });
     state.global.pendingEffects.push({
-      name: 'handleLineActions'
+      name: "handleLineActions",
     });
   }
   return state;
@@ -848,17 +927,42 @@ export const nextLine = ({ state }) => {
   const section = selectSection({ state }, { sectionId });
 
   const lines = section?.lines || [];
-  const currentLineIndex = lines.findIndex(line => line.id === pointer?.lineId);
+  const currentLineIndex = lines.findIndex(
+    (line) => line.id === pointer?.lineId,
+  );
   const nextLineIndex = currentLineIndex + 1;
 
   if (nextLineIndex < lines.length) {
     const nextLine = lines[nextLineIndex];
+
+    // Check if skip mode should stop at unviewed lines
+    if (state.global.skipMode && state.global.skipOnlyViewedLines) {
+      const isNextLineViewed = selectIsLineViewed(
+        { state },
+        {
+          sectionId,
+          lineId: nextLine.id,
+        },
+      );
+
+      if (!isNextLineViewed) {
+        // Stop skip mode when encountering an unviewed line
+        stopSkipMode({ state });
+      }
+    }
+
     const lastContext = state.contexts[state.contexts.length - 1];
 
     if (lastContext) {
+      // Mark current line as viewed before moving
+      const currentLineId = lastContext.pointers.read.lineId;
+      if (currentLineId && sectionId) {
+        addViewedLine({ state }, { sectionId, lineId: currentLineId });
+      }
+
       lastContext.pointers.read = {
         sectionId,
-        lineId: nextLine.id
+        lineId: nextLine.id,
       };
     }
 
@@ -868,8 +972,8 @@ export const nextLine = ({ state }) => {
       name: "render",
     });
     state.global.pendingEffects.push({
-      name: 'handleLineActions'
-    })
+      name: "handleLineActions",
+    });
   } else {
     // Reached the end of section, stop auto/skip modes
     if (state.global.autoMode) {
@@ -880,7 +984,7 @@ export const nextLine = ({ state }) => {
     }
   }
 
-  console.log('state', state)
+  console.log("state", state);
   return state;
 };
 
@@ -916,32 +1020,38 @@ export const prevLine = ({ state }, payload) => {
   }
 
   // Get current history pointer or use read pointer as fallback
-  const currentPointer = lastContext.pointers.history || lastContext.pointers.read;
+  const currentPointer =
+    lastContext.pointers.history || lastContext.pointers.read;
 
   // If we're already in history mode, keep history pointer and move it back
   // Otherwise, switch to history mode and initialize it (only if we have a valid currentPointer)
-  if (lastContext.currentPointerMode !== 'history' || !lastContext.pointers.history) {
+  if (
+    lastContext.currentPointerMode !== "history" ||
+    !lastContext.pointers.history
+  ) {
     // Only switch to history mode if we have a valid current pointer to work with
     if (!currentPointer) {
       return state;
     }
 
     // Switch to history mode, initialize history pointer with current position
-    lastContext.currentPointerMode = 'history';
+    lastContext.currentPointerMode = "history";
     lastContext.pointers.history = {
       sectionId,
-      lineId: currentPointer?.lineId
+      lineId: currentPointer?.lineId,
     };
 
     // Immediately move to previous line after switching to history mode
-    const currentLineIndex = lines.findIndex(line => line.id === currentPointer.lineId);
+    const currentLineIndex = lines.findIndex(
+      (line) => line.id === currentPointer.lineId,
+    );
     const prevLineIndex = currentLineIndex - 1;
 
     if (prevLineIndex >= 0 && prevLineIndex < lines.length) {
       const prevLine = lines[prevLineIndex];
       lastContext.pointers.history = {
         sectionId,
-        lineId: prevLine.id
+        lineId: prevLine.id,
       };
     }
 
@@ -954,14 +1064,16 @@ export const prevLine = ({ state }, payload) => {
   }
 
   // Already in history mode, move history pointer to previous line
-  const currentLineIndex = lines.findIndex(line => line.id === lastContext.pointers.history.lineId);
+  const currentLineIndex = lines.findIndex(
+    (line) => line.id === lastContext.pointers.history.lineId,
+  );
   const prevLineIndex = currentLineIndex - 1;
 
   if (prevLineIndex >= 0 && prevLineIndex < lines.length) {
     const prevLine = lines[prevLineIndex];
     lastContext.pointers.history = {
       sectionId,
-      lineId: prevLine.id
+      lineId: prevLine.id,
     };
 
     state.global.pendingEffects.push({
@@ -1007,7 +1119,7 @@ export const sectionTransition = ({ state }, payload) => {
   if (lastContext) {
     lastContext.pointers.read = {
       sectionId,
-      lineId: firstLine.id
+      lineId: firstLine.id,
     };
   }
 
@@ -1019,7 +1131,7 @@ export const sectionTransition = ({ state }, payload) => {
     name: "render",
   });
   state.global.pendingEffects.push({
-    name: "handleLineActions"
+    name: "handleLineActions",
   });
 
   return state;
@@ -1038,6 +1150,7 @@ export const createSystemStore = (initialState) => {
     // Selectors
     selectPendingEffects,
     selectSkipMode,
+    selectSkipOnlyViewedLines,
     selectAutoMode,
     selectDialogueUIHidden,
     selectDialogueHistory,
@@ -1061,6 +1174,8 @@ export const createSystemStore = (initialState) => {
     startSkipMode,
     stopSkipMode,
     toggleSkipMode,
+    setSkipOnlyViewedLines,
+    toggleSkipOnlyViewedLines,
     showDialogueUI,
     hideDialogueUI,
     toggleDialogueUI,
@@ -1091,11 +1206,10 @@ export const createSystemStore = (initialState) => {
 
   return createStore(_initialState, selectorsAndActions, {
     transformActionFirstArgument: (state) => {
-      return { state }
+      return { state };
     },
     transformSelectorFirstArgument: (state) => {
-      return { state }
+      return { state };
     },
   });
 };
-

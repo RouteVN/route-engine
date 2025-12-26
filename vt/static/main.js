@@ -1,5 +1,5 @@
 import { parse } from "https://cdn.jsdelivr.net/npm/yaml@2.7.1/+esm";
-import createRouteEngine from "./RouteEngine.js";
+import createRouteEngine, { createEffectsHandler } from "./RouteEngine.js";
 import { Ticker } from "https://cdn.jsdelivr.net/npm/pixi.js@8.0.0/+esm";
 
 import createRouteGraphics, {

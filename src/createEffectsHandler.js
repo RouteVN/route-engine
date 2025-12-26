@@ -1,0 +1,140 @@
+const createTimerState = () => {
+  let elapsed = 0;
+  let callback = null;
+
+  return {
+    getElapsed: () => elapsed,
+    setElapsed: (value) => {
+      elapsed = value;
+    },
+    addElapsed: (value) => {
+      elapsed += value;
+    },
+    getCallback: () => callback,
+    setCallback: (value) => {
+      callback = value;
+    },
+  };
+};
+
+const render = ({ engine, routeGraphics }, payload) => {
+  const renderState = engine.selectRenderState();
+  routeGraphics.render(renderState);
+};
+
+const handleLineActions = ({ engine }, payload) => {
+  engine.handleLineActions();
+};
+
+const startAutoNextTimer = ({ engine, ticker, autoTimer }, payload) => {
+  // Remove old callback if exists
+  const existingCallback = autoTimer.getCallback();
+  if (existingCallback) {
+    ticker.remove(existingCallback);
+  }
+
+  // Reset elapsed time
+  autoTimer.setElapsed(0);
+
+  // Create new ticker callback for auto mode
+  const newCallback = (time) => {
+    autoTimer.addElapsed(time.deltaMS);
+
+    // Auto advance every 1000ms (1 second) - hardcoded
+    // TODO: Speed can adjust in the future
+    if (autoTimer.getElapsed() >= 1000) {
+      autoTimer.setElapsed(0);
+      engine.handleAction("nextLine", {});
+    }
+  };
+
+  autoTimer.setCallback(newCallback);
+
+  // Add to auto ticker
+  ticker.add(newCallback);
+};
+
+const clearAutoNextTimer = ({ ticker, autoTimer }, payload) => {
+  // Remove ticker callback
+  const existingCallback = autoTimer.getCallback();
+  if (existingCallback) {
+    ticker.remove(existingCallback);
+    autoTimer.setCallback(null);
+  }
+  autoTimer.setElapsed(0);
+};
+
+const startSkipNextTimer = ({ engine, ticker, skipTimer }, payload) => {
+  // Remove old callback if exists
+  const existingCallback = skipTimer.getCallback();
+  if (existingCallback) {
+    ticker.remove(existingCallback);
+  }
+
+  // Reset elapsed time
+  skipTimer.setElapsed(0);
+
+  // Create new ticker callback for skip mode
+  const newCallback = (time) => {
+    skipTimer.addElapsed(time.deltaMS);
+
+    // Skip advance every 30ms
+    if (skipTimer.getElapsed() >= 30) {
+      skipTimer.setElapsed(0);
+      engine.handleAction("nextLine", {});
+    }
+  };
+
+  skipTimer.setCallback(newCallback);
+
+  // Add to skip ticker
+  ticker.add(newCallback);
+};
+
+const clearSkipNextTimer = ({ ticker, skipTimer }, payload) => {
+  // Remove ticker callback
+  const existingCallback = skipTimer.getCallback();
+  if (existingCallback) {
+    ticker.remove(existingCallback);
+    skipTimer.setCallback(null);
+  }
+  skipTimer.setElapsed(0);
+};
+
+const effects = {
+  render,
+  handleLineActions,
+  startAutoNextTimer,
+  clearAutoNextTimer,
+  startSkipNextTimer,
+  clearSkipNextTimer,
+};
+
+const createEffectsHandler = ({ getEngine, routeGraphics, ticker }) => {
+  const autoTimer = createTimerState();
+  const skipTimer = createTimerState();
+
+  return async (pendingEffects) => {
+    const engine = getEngine();
+
+    // Deduplicate effects by name, keeping only the last occurrence
+    const deduplicatedEffects = pendingEffects.reduce((acc, effect) => {
+      acc[effect.name] = effect;
+      return acc;
+    }, {});
+
+    // Convert back to array and process deduplicated effects
+    const uniqueEffects = Object.values(deduplicatedEffects);
+
+    const deps = { engine, routeGraphics, ticker, autoTimer, skipTimer };
+
+    for (const effect of uniqueEffects) {
+      const handler = effects[effect.name];
+      if (handler) {
+        handler(deps, effect.payload);
+      }
+    }
+  };
+};
+
+export default createEffectsHandler;

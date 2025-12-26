@@ -9,19 +9,19 @@ export default function createRouteEngine(options) {
   const { handlePendingEffects } = options;
   const init = ({ initialState }) => {
     _systemStore = createSystemStore(initialState);
-    _systemStore.appendPendingEffect({ name: 'render' });
+    _systemStore.appendPendingEffect({ name: "render" });
     handleLineActions();
     handlePendingEffects(_systemStore.selectPendingEffects());
     _systemStore.clearPendingEffects();
-  }
+  };
 
   const selectPresentationState = () => {
     return _systemStore.selectPresentationState();
-  }
+  };
 
   const selectRenderState = () => {
     return _systemStore.selectRenderState();
-  }
+  };
 
   const selectSaveSlots = () => {
     return _systemStore.selectSaveSlots();
@@ -32,22 +32,22 @@ export default function createRouteEngine(options) {
       return;
     }
     _systemStore[actionType](payload);
-    handlePendingEffects(_systemStore.selectPendingEffects())
+    handlePendingEffects(_systemStore.selectPendingEffects());
     _systemStore.clearPendingEffects();
-  }
+  };
 
   const handleActions = (actions) => {
     Object.entries(actions).forEach(([actionType, payload]) => {
       handleAction(actionType, payload);
     });
-  }
+  };
 
   const handleLineActions = () => {
     const line = _systemStore.selectCurrentLine();
     if (line && line.actions) {
       handleActions(line.actions);
     }
-  }
+  };
 
   return {
     init,
