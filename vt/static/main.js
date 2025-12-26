@@ -97,6 +97,10 @@ const init = async () => {
     "horizontal_idle_thumb": {
       url: "/public/horizontal_idle_thumb.png",
       type: "image/png"
+    },
+    "video_sample": {
+      url: "/public/video_sample.mp4",
+      type: "video/mp4"
     }
   };
 
@@ -113,7 +117,8 @@ const init = async () => {
       spritePlugin,
       sliderPlugin,
       containerPlugin,
-      textRevealingPlugin
+      textRevealingPlugin,
+      videoPlugin
     ],
     animations: [
       tweenPlugin

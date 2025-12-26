@@ -1,0 +1,63 @@
+---
+title: "Video Visual"
+description: Test video playback as visual element
+---
+l10n:
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys: {}
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+resources:
+  layouts:
+    base1:
+      elements:
+        - id: bg-rect
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+
+  videos:
+    video_sample_resource:
+      fileId: video_sample
+      width: 1920
+      height: 1080
+
+  transforms:
+    centerPos:
+      x: 960
+      y: 540
+      anchorX: 0.5
+      anchorY: 0.5
+
+story:
+  initialSceneId: videoScene
+  scenes:
+    videoScene:
+      name: Video Scene
+      initialSectionId: videoSection
+      sections:
+        videoSection:
+          name: Video Section
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: base1
+                visual:
+                  items:
+                    - id: video-visual
+                      resourceId: video_sample_resource
+                      resourceType: video
+                      transformId: centerPos

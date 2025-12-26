@@ -42,7 +42,8 @@ const startAutoNextTimer = ({ engine, ticker, autoTimer }, payload) => {
 
     // Auto advance every 1000ms (1 second) - hardcoded
     // TODO: Speed can adjust in the future
-    if (autoTimer.getElapsed() >= 1000) {
+    const delay = payload.delay ?? 1000;
+    if (autoTimer.getElapsed() >= delay) {
       autoTimer.setElapsed(0);
       engine.handleAction("nextLine", {});
     }
@@ -101,9 +102,9 @@ const clearSkipNextTimer = ({ ticker, skipTimer }, payload) => {
   skipTimer.setElapsed(0);
 };
 
-const saveSlots = ({}, payload)=>{
+const saveSlots = ({}, payload) => {
   localStorage.setItem("saveSlots", JSON.stringify(payload.saveSlots));
-}
+};
 
 const effects = {
   render,

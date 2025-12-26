@@ -101,6 +101,41 @@ resources:
               actions:
                 toggleSkipMode: {}
 
+        - id: speed-slow-button
+          type: text
+          x: 1400
+          y: 50
+          content: "Slow"
+          textStyle:
+            fontSize: 32
+            fill: "white"
+          hover:
+            textStyle:
+              fontSize: 32
+              fill: "yellow"
+          click:
+            actionPayload:
+              actions:
+                setAutoplayDelay:
+                  delay: 2000
+        - id: speed-fast-button
+          type: text
+          x: 1250
+          y: 50
+          content: "Fast"
+          textStyle:
+            fontSize: 32
+            fill: "white"
+          hover:
+            textStyle:
+              fontSize: 32
+              fill: "yellow"
+          click:
+            actionPayload:
+              actions:
+                setAutoplayDelay:
+                  delay: 250
+
 story:
   initialSceneId: test_scene
   scenes:

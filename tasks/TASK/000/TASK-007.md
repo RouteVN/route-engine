@@ -1,8 +1,8 @@
 ---
 title: Check autoplay speed
-status: todo
+status: done
 priority: high
-assignee: 
+assignee: nellow
 labels: []
 ---
 

@@ -24,6 +24,7 @@ export const createInitialState = (payload) => {
   const state = {
     projectData,
     global: {
+      autoplayDelay: 1000,
       isLineCompleted: false,
       pendingEffects: [],
       autoMode: false,
@@ -43,6 +44,7 @@ export const createInitialState = (payload) => {
         },
         auto: {
           enabled: false,
+          //delay: 1000,
         },
       },
       saveSlots,
@@ -73,7 +75,7 @@ export const createInitialState = (payload) => {
       },
     ],
   };
-  console.log('Initial State:', state);
+  console.log("Initial State:", state);
   return state;
 };
 
@@ -102,6 +104,10 @@ export const selectAutoMode = ({ state }) => {
 
 export const selectDialogueUIHidden = ({ state }) => {
   return state.global.dialogueUIHidden;
+};
+
+export const selectAutoplayDelay = ({ state }) => {
+  return state.global.autoplayDelay;
 };
 
 export const selectDialogueHistory = ({ state }) => {
@@ -405,6 +411,7 @@ export const startAutoMode = ({ state }) => {
   });
   state.global.pendingEffects.push({
     name: "startAutoNextTimer",
+    payload: { delay: state.global.autoplayDelay },
   });
   state.global.pendingEffects.push({
     name: "render",
@@ -656,6 +663,23 @@ export const setNextLineConfig = ({ state }, payload) => {
   return state;
 };
 
+export const setAutoplayDelay = ({ state }, { delay }) => {
+  state.global.autoplayDelay = delay;
+
+  if (state.global.autoMode) {
+    state.global.pendingEffects.push({ name: "clearAutoNextTimer" });
+    state.global.pendingEffects.push({
+      name: "startAutoNextTimer",
+      payload: { delay: state.global.autoplayDelay },
+    });
+  }
+
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+  return state;
+};
+
 /**
  * Saves current game state to a slot
  * @param {Object} state - Current state object
@@ -677,19 +701,19 @@ export const saveSaveSlot = ({ state }, payload) => {
     slotKey,
     date: Date.now(),
     image: thumbnailImage,
-    state: currentState
+    state: currentState,
   };
 
   state.global.saveSlots[slotKey] = saveData;
 
-
   state.global.pendingEffects.push(
-    { name: 'saveSlots',
+    {
+      name: "saveSlots",
       payload: {
-        saveSlots: {...state.global.saveSlots},
-      }
+        saveSlots: { ...state.global.saveSlots },
+      },
     },
-    { name: 'render' },
+    { name: "render" },
   );
   return state;
 };
@@ -708,9 +732,7 @@ export const loadSaveSlot = ({ state }, payload) => {
   if (slotData) {
     state.global.viewedRegistry = slotData.state.viewedRegistry;
     state.contexts = slotData.state.contexts;
-    state.global.pendingEffects.push(
-      { name: 'render' },
-    );
+    state.global.pendingEffects.push({ name: "render" });
   }
   return state;
 };
@@ -1129,6 +1151,7 @@ export const createSystemStore = (initialState) => {
     selectSection,
     selectCurrentLine,
     selectPresentationState,
+    selectAutoplayDelay,
     selectRenderState,
     selectLayeredViews,
 
@@ -1154,6 +1177,7 @@ export const createSystemStore = (initialState) => {
     setNextLineConfig,
     saveSaveSlot,
     loadSaveSlot,
+    setAutoplayDelay,
     updateProjectData,
     sectionTransition,
     jumpToLine,
