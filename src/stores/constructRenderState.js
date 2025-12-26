@@ -77,9 +77,12 @@ export const addBackgroundOrCg = (
 
     if (presentationState.background.resourceId) {
       const { images = {}, videos = {} } = resources;
-      const background = images[presentationState.background.resourceId] || videos[presentationState.background.resourceId];
+      const background =
+        images[presentationState.background.resourceId] ||
+        videos[presentationState.background.resourceId];
       if (background) {
-        const isVideo = videos[presentationState.background.resourceId] !== undefined;
+        const isVideo =
+          videos[presentationState.background.resourceId] !== undefined;
         const element = {
           id: `bg-cg-${presentationState.background.resourceId}`,
           type: isVideo ? "video" : "sprite",
