@@ -1,0 +1,88 @@
+---
+title: "Keyboard Navigation"
+description: "Test basic keyboard controls. Enter = nextLine, Space = toggleDialogueUI."
+---
+l10n:
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys:
+        line1: "Press ENTER to advance to the next line."
+        line2: "Press SPACE to hide and show this dialogue box."
+        line3: "Good job! The test is complete."
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+resources:
+  keyboards:
+    gameplay:
+      Enter:
+        actionPayload:
+          actions:
+            nextLine: {}
+      space:
+        actionPayload:
+          actions:
+            toggleDialogueUI: {}
+  layouts:
+    baseLayout:
+      elements:
+        - id: bg
+          type: rect
+          fill: "#1a1a2e"
+          width: 1920
+          height: 1080
+    dialogueLayout:
+      name: Dialogue Screen
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 100
+          y: 800
+          width: 1720
+          height: 200
+          fill: "#333333"
+        - id: dialogue-text
+          type: text
+          x: 150
+          y: 850
+          content: ${dialogue.content[0].text}
+          textStyle:
+            fontSize: 32
+            fill: "white"
+
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: start
+      sections:
+        start:
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: baseLayout
+                keyboard:
+                  resourceId: gameplay 
+                dialogue:
+                  gui:
+                    resourceId: dialogueLayout
+                  mode: adv
+                  content:
+                    - text: ${l10n.keys.line1}
+            - id: line2
+              actions:
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line2}
+            - id: line3
+              actions:
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line3}

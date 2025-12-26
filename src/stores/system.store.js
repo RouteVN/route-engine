@@ -358,6 +358,7 @@ export const selectRenderState = ({ state }) => {
     l10n: state.projectData.l10n.packages[
       state.global.currentLocalizationPackageId
     ],
+    dialogueUIHidden :  state.global.dialogueUIHidden,
     autoMode: state.global.autoMode,
     skipMode: state.global.skipMode,
     skipOnlyViewedLines: state.global.skipOnlyViewedLines,
