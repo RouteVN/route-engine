@@ -118,7 +118,7 @@ resources:
           click:
             actionPayload:
               actions:
-                toggleShouldSkipViewedLines: {}
+                toggleSkipOnlyViewedLines: {}
 
 story:
   initialSceneId: test_scene
