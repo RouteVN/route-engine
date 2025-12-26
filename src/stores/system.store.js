@@ -669,8 +669,8 @@ export const saveSaveSlot = ({ state }, payload) => {
   const slotKey = String(slot);
 
   const currentState = {
-    projectData: state.projectData,
-    contexts: [...state.contexts]
+    contexts: [...state.contexts],
+    viewedRegistry: state.global.viewedRegistry,
   };
 
   const saveData = {
@@ -706,7 +706,7 @@ export const loadSaveSlot = ({ state }, payload) => {
   const slotKey = String(slot);
   const slotData = state.global.saveSlots[slotKey];
   if (slotData) {
-    state.projectData = slotData.state.projectData;
+    state.global.viewedRegistry = slotData.state.viewedRegistry;
     state.contexts = slotData.state.contexts;
     state.global.pendingEffects.push(
       { name: 'render' },
