@@ -38,3 +38,5 @@ vt:
           files: "sfx"
         - title: "Save"
           files: "save"
+        - title: "Keyboard"
+          files: "keyboard"
