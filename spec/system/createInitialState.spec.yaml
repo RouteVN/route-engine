@@ -22,6 +22,7 @@ in:
                     actions: {}
 out:
   global:
+    autoplayDelay: 1000
     isLineCompleted: false
     pendingEffects: []
     autoMode: false
@@ -39,7 +40,6 @@ out:
         requireLineCompleted: false
       auto:
         enabled: false
-        delay: 1000
     saveSlots: {}
     layeredViews: []
   projectData:

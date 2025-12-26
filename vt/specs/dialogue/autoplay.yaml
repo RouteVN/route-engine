@@ -8,7 +8,7 @@ l10n:
       lang: en
       keys:
         line1: "Line 1: Testing autoplay functionality"
-        line2: "Line 2: This should auto-advance after 2 second"
+        line2: "Line 2: This should auto-advance after 1 second"
         line3: "Line 3: Click Auto button to enable/disable"
         line4: "Line 4: Auto mode should continue through all lines"
         line5: "Line 5: Final line - auto mode stops here"
@@ -116,9 +116,8 @@ resources:
           click:
             actionPayload:
               actions:
-                setNextLineConfig:
-                  auto:
-                    delay: 2000
+                setAutoplayDelay:
+                  delay: 2000
         - id: speed-fast-button
           type: text
           x: 1250
@@ -134,9 +133,8 @@ resources:
           click:
             actionPayload:
               actions:
-                setNextLineConfig:
-                  auto:
-                    delay: 250
+                setAutoplayDelay:
+                  delay: 250
 
 story:
   initialSceneId: test_scene

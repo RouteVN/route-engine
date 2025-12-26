@@ -1,45 +1,48 @@
 file: "../../../src/stores/system.store.js"
-group: systemStore.markLineCompleted
-suites: [markLineCompleted]
+group: systemStore.setAutoplayDelay
+suites: [setAutoplayDelay]
 ---
-suite: markLineCompleted
-exportName: markLineCompleted
+suite: setAutoplayDelay
+exportName: setAutoplayDelay
 ---
-case: mark line as completed
+case: set autoplay delay
 in:
   - state:
       global:
-        isLineCompleted: false
+        autoplayDelay: 1000
         pendingEffects: []
+  - delay: 2000
 out:
   global:
-    isLineCompleted: true
+    autoplayDelay: 2000
     pendingEffects:
       - name: render
 ---
-case: mark line as completed when already completed
+case: set autoplay delay to zero
 in:
   - state:
       global:
-        isLineCompleted: true
+        autoplayDelay: 1000
         pendingEffects: []
+  - delay: 0
 out:
   global:
-    isLineCompleted: true
+    autoplayDelay: 0
     pendingEffects:
       - name: render
 ---
-case: mark line as completed with existing pending effects
+case: set autoplay delay with existing pending effects
 in:
   - state:
       global:
-        isLineCompleted: false
+        autoplayDelay: 1000
         pendingEffects:
           - name: existingEffect
             data: test
+  - delay: 500
 out:
   global:
-    isLineCompleted: true
+    autoplayDelay: 500
     pendingEffects:
       - name: existingEffect
         data: test

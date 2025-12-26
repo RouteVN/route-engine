@@ -11,9 +11,7 @@ in:
       global:
         autoMode: false
         pendingEffects: []
-        nextLineConfig:
-          auto:
-            delay: 1000
+        autoplayDelay: 1000
 out:
   global:
     autoMode: true
@@ -22,9 +20,6 @@ out:
       - name: startAutoNextTimer
         delay: 1000
       - name: render
-    nextLineConfig:
-      auto:
-        delay: 1000
 ---
 case: start auto mode when already enabled
 in:
@@ -32,9 +27,7 @@ in:
       global:
         autoMode: true
         pendingEffects: []
-        nextLineConfig:
-          auto:
-            delay: 1000
+        autoplayDelay: 1000
 out:
   global:
     autoMode: true
@@ -43,9 +36,6 @@ out:
       - name: startAutoNextTimer
         delay: 1000
       - name: render
-    nextLineConfig:
-      auto:
-        delay: 1000
 ---
 case: start auto mode with skip mode enabled
 in:
@@ -54,9 +44,7 @@ in:
         autoMode: false
         skipMode: true
         pendingEffects: []
-        nextLineConfig:
-          auto:
-            delay: 1000
+        autoplayDelay: 1000
 out:
   global:
     autoMode: true
@@ -67,9 +55,6 @@ out:
       - name: startAutoNextTimer
         delay: 1000
       - name: render
-    nextLineConfig:
-      auto:
-        delay: 1000
 ---
 case: start auto mode with existing pending effects
 in:
@@ -79,9 +64,7 @@ in:
         pendingEffects:
           - name: existingEffect
             data: test
-        nextLineConfig:
-          auto:
-            delay: 1000
+        autoplayDelay: 1000
 out:
   global:
     autoMode: true
@@ -92,9 +75,6 @@ out:
       - name: startAutoNextTimer
         delay: 1000
       - name: render
-    nextLineConfig:
-      auto:
-        delay: 1000
 ---
 case: start auto mode with both auto and skip mode enabled
 in:
@@ -104,9 +84,7 @@ in:
         skipMode: true
         pendingEffects:
           - name: existingEffect
-        nextLineConfig:
-          auto:
-            delay: 1000
+        autoplayDelay: 1000
 out:
   global:
     autoMode: true
@@ -118,6 +96,3 @@ out:
       - name: startAutoNextTimer
         delay: 1000
       - name: render
-    nextLineConfig:
-      auto:
-        delay: 1000
