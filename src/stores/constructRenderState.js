@@ -80,7 +80,7 @@ export const addBackgroundOrCg = (
       const background = images[presentationState.background.resourceId] || videos[presentationState.background.resourceId];
       if (background) {
         const isVideo = videos[presentationState.background.resourceId] !== undefined;
-        storyContainer.children.push({
+        const element = {
           id: `bg-cg-${presentationState.background.resourceId}`,
           type: isVideo ? "video" : "sprite",
           x: 0,
@@ -88,9 +88,14 @@ export const addBackgroundOrCg = (
           src: background.fileId,
           width: background.width,
           height: background.height,
-          loop: isVideo ? true : undefined,
-          volume: isVideo ? 1000 : undefined,
-        });
+        };
+
+        if (isVideo) {
+          element.loop = background.loop ?? false;
+          element.volume = background.volume ?? 500;
+        }
+
+        storyContainer.children.push(element);
       }
     }
 
@@ -288,7 +293,7 @@ export const addVisuals = (state, { presentationState, resources }) => {
         if (resource) {
           const isVideo = videos[item.resourceId] !== undefined;
           const transform = resources.transforms[item.transformId];
-          storyContainer.children.push({
+          const element = {
             id: `visual-${item.id}`,
             type: isVideo ? "video" : "sprite",
             src: resource.fileId,
@@ -301,9 +306,14 @@ export const addVisuals = (state, { presentationState, resources }) => {
             rotation: transform.rotation,
             scaleX: transform.scaleX,
             scaleY: transform.scaleY,
-            loop: isVideo ? true : undefined,
-            volume: isVideo ? 1000 : undefined,
-          });
+          };
+
+          if (isVideo) {
+            element.loop = resource.loop ?? false;
+            element.volume = resource.volume ?? 500;
+          }
+
+          storyContainer.children.push(element);
         }
       }
 
