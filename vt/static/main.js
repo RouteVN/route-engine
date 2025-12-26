@@ -12,7 +12,8 @@ import createRouteGraphics, {
   textRevealingPlugin,
   tweenPlugin,
   soundPlugin,
-} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.15/+esm"
+  videoPlugin,
+} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.16/+esm"
 
 const projectData = parse(window.yamlContent);
 
@@ -97,6 +98,10 @@ const init = async () => {
     "horizontal_idle_thumb": {
       url: "/public/horizontal_idle_thumb.png",
       type: "image/png"
+    },
+    "video_sample": {
+      url: "/public/video_sample.mp4",
+      type: "video/mp4"
     }
   };
 
@@ -113,7 +118,8 @@ const init = async () => {
       spritePlugin,
       sliderPlugin,
       containerPlugin,
-      textRevealingPlugin
+      textRevealingPlugin,
+      videoPlugin
     ],
     animations: [
       tweenPlugin
