@@ -7,7 +7,7 @@ const createEffectsHandler = ({ getEngine, routeGraphics, ticker }) => {
   let skipModeElapsed = 0;
   let skipModeCallback = null;
 
-  return (effects) => {
+  return async (effects) => {
     const engine = getEngine();
     // Deduplicate effects by name, keeping only the last occurrence
     const deduplicatedEffects = effects.reduce((acc, effect) => {
