@@ -37,6 +37,10 @@ global
 
 ## Types
 
+boolean, string, number/integer, object, array, enum, etc...
 
+## Actions
+
+need action to edit/mutate variable values. currently I think we have only basic increment
 
 
