@@ -5,36 +5,44 @@ suites: [setAutoplayDelay]
 suite: setAutoplayDelay
 exportName: setAutoplayDelay
 ---
-case: set autoplay delay
+case: set autoplay delay when auto mode is OFF
 in:
   - state:
       global:
+        autoMode: false
         autoplayDelay: 1000
         pendingEffects: []
   - delay: 2000
 out:
   global:
+    autoMode: false
     autoplayDelay: 2000
     pendingEffects:
       - name: render
 ---
-case: set autoplay delay to zero
+case: set autoplay delay when auto mode is ON (should restart timer)
 in:
   - state:
       global:
+        autoMode: true
         autoplayDelay: 1000
         pendingEffects: []
-  - delay: 0
+  - delay: 500
 out:
   global:
-    autoplayDelay: 0
+    autoMode: true
+    autoplayDelay: 500
     pendingEffects:
+      - name: clearAutoNextTimer
+      - name: startAutoNextTimer
+        delay: 500
       - name: render
 ---
 case: set autoplay delay with existing pending effects
 in:
   - state:
       global:
+        autoMode: false
         autoplayDelay: 1000
         pendingEffects:
           - name: existingEffect
@@ -42,6 +50,7 @@ in:
   - delay: 500
 out:
   global:
+    autoMode: false
     autoplayDelay: 500
     pendingEffects:
       - name: existingEffect

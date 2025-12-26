@@ -410,7 +410,7 @@ export const startAutoMode = ({ state }) => {
   });
   state.global.pendingEffects.push({
     name: "startAutoNextTimer",
-    delay: state.global.autoplayDelay,
+    payload: { delay: state.global.autoplayDelay },
   });
   state.global.pendingEffects.push({
     name: "render",
@@ -664,6 +664,15 @@ export const setNextLineConfig = ({ state }, payload) => {
 
 export const setAutoplayDelay = ({ state }, { delay }) => {
   state.global.autoplayDelay = delay;
+
+  if (state.global.autoMode) {
+    state.global.pendingEffects.push({ name: "clearAutoNextTimer" });
+    state.global.pendingEffects.push({
+      name: "startAutoNextTimer",
+      payload: { delay: state.global.autoplayDelay },
+    });
+  }
+
   state.global.pendingEffects.push({
     name: "render",
   });
@@ -945,9 +954,6 @@ export const markLineCompleted = ({ state }) => {
   state.global.isLineCompleted = true;
   state.global.pendingEffects.push({
     name: "render",
-  });
-  state.global.pendingEffects.push({
-    name: "lineCompleted",
   });
   return state;
 };

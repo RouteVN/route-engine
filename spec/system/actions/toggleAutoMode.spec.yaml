@@ -15,6 +15,7 @@ in:
 out:
   global:
     autoMode: true
+    autoplayDelay: 1000
     pendingEffects:
       - name: clearAutoNextTimer
       - name: startAutoNextTimer
@@ -27,9 +28,11 @@ in:
       global:
         autoMode: true
         pendingEffects: []
+        autoplayDelay: 1000
 out:
   global:
     autoMode: false
+    autoplayDelay: 1000
     pendingEffects:
       - name: clearAutoNextTimer
       - name: render
@@ -45,6 +48,7 @@ in:
 out:
   global:
     autoMode: true
+    autoplayDelay: 1000
     skipMode: false
     pendingEffects:
       - name: clearSkipNextTimer
@@ -60,9 +64,11 @@ in:
         autoMode: true
         skipMode: true
         pendingEffects: []
+        autoplayDelay: 1000
 out:
   global:
     autoMode: false
+    autoplayDelay: 1000
     skipMode: true
     pendingEffects:
       - name: clearAutoNextTimer
@@ -80,6 +86,7 @@ in:
 out:
   global:
     autoMode: true
+    autoplayDelay: 1000
     pendingEffects:
       - name: existingEffect
         data: test
@@ -96,9 +103,11 @@ in:
         pendingEffects:
           - name: existingEffect
             data: test
+        autoplayDelay: 1000
 out:
   global:
     autoMode: false
+    autoplayDelay: 1000
     pendingEffects:
       - name: existingEffect
         data: test
