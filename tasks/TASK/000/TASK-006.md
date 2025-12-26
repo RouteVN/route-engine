@@ -1,6 +1,6 @@
 ---
 title: Check skip text
-status: todo
+status: done
 priority: high
 assignee: 
 labels: []
