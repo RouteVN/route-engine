@@ -84,6 +84,11 @@ properties:
         description: Whether skip mode is active
         default: false
 
+      skipOnlyViewedLines:
+        type: boolean
+        description: Whether skip mode should only skip viewed lines (true) or skip all lines (false)
+        default: true
+
       currentLanguagePackId:
         type: string
         description: ID of the currently active language pack
@@ -209,7 +214,6 @@ properties:
             properties:
               resourceId:
                 type: string
-          type: object
         bgm:
           properties:
             resourceId:
@@ -220,7 +224,7 @@ properties:
           properties: {}
 
         configuration:
-          $ref: './configuration.yaml'
+          $ref: "./configuration.yaml"
 
         historySequence:
           type: array
@@ -230,5 +234,6 @@ properties:
             description: History entry
           default: []
 
-required: [variables, currentLanguagePackId, historySequence, currentMode, modes]
+required:
+  [variables, currentLanguagePackId, historySequence, currentMode, modes]
 additionalProperties: false

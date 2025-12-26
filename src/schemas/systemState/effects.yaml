@@ -124,4 +124,3 @@ oneOf:
         default: 0
     required: [type, timerId, payload, delay]
     additionalProperties: false
-

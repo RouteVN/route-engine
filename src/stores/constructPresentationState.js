@@ -87,7 +87,10 @@ export const dialogue = (state, presentation) => {
   }
 
   // Handle NVL mode content addition
-  if (presentation.dialogue?.mode === "nvl" && presentation.dialogue.content !== undefined) {
+  if (
+    presentation.dialogue?.mode === "nvl" &&
+    presentation.dialogue.content !== undefined
+  ) {
     if (presentation.dialogue.clear) {
       state.dialogue.lines = [];
     }
@@ -139,7 +142,6 @@ export const visual = (state, presentation) => {
     state.visual = presentation.visual;
   }
 };
-
 
 /**
  * Applies character from presentation to state
@@ -243,9 +245,8 @@ export const constructPresentationState = (presentations) => {
 
   const executeActions = createSequentialActionsExecutor(
     createInitialState,
-    actions
+    actions,
   );
 
   return executeActions(presentations);
 };
-
