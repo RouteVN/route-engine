@@ -657,32 +657,6 @@ export const setNextLineConfig = ({ state }, payload) => {
 };
 
 /**
- * Replaces a save slot with new data
- * @param {Object} state - Current state object
- * @param {Object} initialState - Action payload
- * @param {string} initialState.slotKey - The key identifying the save slot
- * @param {number} initialState.date - Unix timestamp for when the save was created
- * @param {string} initialState.image - Base64 encoded save image/screenshot
- * @param {Object} initialState.state - The game state to be saved
- * @returns {Object} Updated state object
- */
-export const replaceSaveSlot = ({ state }, payload) => {
-  const { slotKey, date, image, state: slotState } = payload;
-
-  state.global.saveSlots[slotKey] = {
-    slotKey,
-    date,
-    image,
-    state: slotState,
-  };
-
-  state.global.pendingEffects.push({
-    name: "render",
-  });
-  return state;
-};
-
-/**
  * Saves current game state to a slot
  * @param {Object} state - Current state object
  * @param {Object} payload - Action payload
@@ -698,17 +672,6 @@ export const saveSaveSlot = ({ state }, payload) => {
     contexts: [...state.contexts]
   };
 
-  // const url = await captureElement("story");
-  // console.log("slotindex", slotIndex);
-  // saveData[slotIndex].image = url;
-  // const assets = {
-  //   [`saveImage:${slotIndex}`]: {
-  //     buffer: base64ToArrayBuffer(url),
-  //     type: "image/png",
-  //   },
-  // };
-  // await loadAssets(assets);
-
   const saveData = {
     slotKey,
     date: Date.now(),
@@ -718,10 +681,13 @@ export const saveSaveSlot = ({ state }, payload) => {
 
   state.global.saveSlots[slotKey] = saveData;
 
-  localStorage.setItem("saveSlots", JSON.stringify(state.global.saveSlots));
-
 
   state.global.pendingEffects.push(
+    { name: 'saveSlots',
+      payload: {
+        saveSlots: {...state.global.saveSlots},
+      }
+    },
     { name: 'render' },
   );
   return state;
