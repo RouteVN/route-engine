@@ -14,11 +14,12 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "build": "bun run esbuild.js",
-    "lint": "bunx prettier src -c",
-    "lint:fix": "bunx prettier src -w",
-    "coverage": "vitest run --coverage",
+    "lint": "bun run prettier src -c",
+    "lint:fix": "bun run prettier src -w",
+    "coverage": "bun run vitest run --coverage",
     "vt:generate": "bun run esbuild.js && rtgl vt generate --skip-screenshots",
-    "serve": "bun run esbuild.js && bunx serve -p 3004 .rettangoli/vt/_site"
+    "serve": "bun run esbuild.js && bunx serve -p 3004 .rettangoli/vt/_site",
+    "prepare": "husky"
   },
   "dependencies": {
     "immer": "^10.1.1",
@@ -26,9 +27,14 @@
     "js-yaml": "^4.1.0",
     "puty": "^0.0.6"
   },
+  "lint-staged": {
+    "src/**/*.js": "prettier --check"
+  },
   "devDependencies": {
     "@vitest/coverage-v8": "^3.2.4",
     "@vitest/ui": "^3.2.4",
-    "vitest": "^3.2.4"
+    "husky": "^9.1.7",
+    "prettier": "^3.7.4",
+    "vitest": "^4.0.16"
   }
 }

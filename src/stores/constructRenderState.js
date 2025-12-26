@@ -34,9 +34,7 @@ export const addBase = (state, { presentationState, resources }) => {
       return state;
     }
 
-    if (
-      presentationState.base.resourceId
-    ) {
+    if (presentationState.base.resourceId) {
       const layout = resources?.layouts[presentationState.base.resourceId];
 
       if (layout) {
@@ -58,7 +56,15 @@ export const addBase = (state, { presentationState, resources }) => {
  */
 export const addBackgroundOrCg = (
   state,
-  { presentationState, previousPresentationState, resources = {}, variables, autoMode, skipMode, currentLocalizationPackageId }, // resolveFile
+  {
+    presentationState,
+    previousPresentationState,
+    resources = {},
+    variables,
+    autoMode,
+    skipMode,
+    currentLocalizationPackageId,
+  }, // resolveFile
 ) => {
   const { elements } = state;
   const animations = state.animations || [];
@@ -69,9 +75,7 @@ export const addBackgroundOrCg = (
       return state;
     }
 
-    if (
-      presentationState.background.resourceId
-    ) {
+    if (presentationState.background.resourceId) {
       const { images = {} } = resources;
       const background = images[presentationState.background.resourceId];
       if (background) {
@@ -87,9 +91,7 @@ export const addBackgroundOrCg = (
       }
     }
 
-    if (
-      presentationState.background.resourceId
-    ) {
+    if (presentationState.background.resourceId) {
       const { layouts = {} } = resources;
       const layout = layouts[presentationState.background.resourceId];
       if (layout) {
@@ -101,11 +103,9 @@ export const addBackgroundOrCg = (
       }
     }
 
-
     if (presentationState.background.animations) {
       if (presentationState.background.animations.in) {
-        const tweenId =
-          presentationState.background.animations.in.resourceId;
+        const tweenId = presentationState.background.animations.in.resourceId;
         const tween = resources?.tweens[tweenId];
         if (tween) {
           animations.push({
@@ -118,9 +118,9 @@ export const addBackgroundOrCg = (
       }
 
       if (presentationState.background.animations.out) {
-        const tweenId =
-          presentationState.background.animations.out.resourceId;
-        const targetResourceId = previousPresentationState?.background?.resourceId;
+        const tweenId = presentationState.background.animations.out.resourceId;
+        const targetResourceId =
+          previousPresentationState?.background?.resourceId;
         const tween = resources?.tweens[tweenId];
         if (tween && targetResourceId) {
           animations.push({
@@ -154,10 +154,7 @@ export const addBackgroundOrCg = (
  *
  * @param {Object} params
  */
-export const addCharacters = (
-  state,
-  { presentationState, resources },
-) => {
+export const addCharacters = (state, { presentationState, resources }) => {
   const { elements } = state;
   const animations = state.animations || [];
   if (presentationState.character && resources) {
@@ -270,10 +267,7 @@ export const addCharacters = (
  *
  * @param {Object} params
  */
-export const addVisuals = (
-  state,
-  { presentationState, resources },
-) => {
+export const addVisuals = (state, { presentationState, resources }) => {
   const { elements } = state;
   const animations = state.animations || [];
   if (presentationState.visual && resources) {
@@ -330,8 +324,7 @@ export const addVisuals = (
 
       if (item.animations) {
         if (item.animations.in) {
-          const tweenId =
-            item.animations.in.resourceId || item.animations.in;
+          const tweenId = item.animations.in.resourceId || item.animations.in;
           const tween = resources?.tweens[tweenId];
           if (tween) {
             animations.push({
@@ -344,8 +337,7 @@ export const addVisuals = (
         }
 
         if (item.animations.out) {
-          const tweenId =
-            item.animations.out.resourceId || item.animations.out;
+          const tweenId = item.animations.out.resourceId || item.animations.out;
           const tween = resources?.tweens[tweenId];
           if (tween) {
             animations.push({
@@ -368,7 +360,16 @@ export const addVisuals = (
  */
 export const addDialogue = (
   state,
-  { presentationState, resources = {}, dialogueUIHidden, autoMode, skipMode, skipOnlyViewedLines, l10n, variables },
+  {
+    presentationState,
+    resources = {},
+    dialogueUIHidden,
+    autoMode,
+    skipMode,
+    skipOnlyViewedLines,
+    l10n,
+    variables,
+  },
 ) => {
   const { elements } = state;
   if (!presentationState.dialogue) {
@@ -384,13 +385,17 @@ export const addDialogue = (
   if (!storyContainer) return state;
 
   // Handle GUI elements (dialogue layouts) from dialogue.gui.resourceId
-  if (presentationState.dialogue.gui && presentationState.dialogue.gui.resourceId) {
+  if (
+    presentationState.dialogue.gui &&
+    presentationState.dialogue.gui.resourceId
+  ) {
     const { layouts = {} } = resources;
     const guiLayout = layouts[presentationState.dialogue.gui.resourceId];
     if (guiLayout) {
       let character;
       if (presentationState.dialogue.characterId) {
-        character = resources.characters[presentationState.dialogue.characterId];
+        character =
+          resources.characters[presentationState.dialogue.characterId];
       }
 
       // Check if there's a character object override
@@ -412,17 +417,17 @@ export const addDialogue = (
           character: {
             name: character?.name || "",
           },
-          content: presentationState.dialogue?.content || [{ text: '' }],
+          content: presentationState.dialogue?.content || [{ text: "" }],
           lines: presentationState.dialogue?.lines || [],
         },
-        l10n
+        l10n,
       };
 
       let result = parseAndRender(wrappedTemplate, templateData, {
         functions: jemplFunctions,
       });
       result = parseAndRender(result, {
-        l10n
+        l10n,
       });
       const guiElements = result?.elements;
 
@@ -472,10 +477,7 @@ export const addChoices = (state, { presentationState, resources }) => {
   return state;
 };
 
-export const addBgm = (
-  state,
-  { presentationState, resources },
-) => {
+export const addBgm = (state, { presentationState, resources }) => {
   const { elements, audio } = state;
   if (presentationState.bgm && resources) {
     // Find the story container
@@ -546,7 +548,14 @@ export const addVoice = (state, { presentationState, resources }) => {
  */
 export const addLayout = (
   state,
-  { presentationState, resources = {}, variables, autoMode, skipMode, currentLocalizationPackageId },
+  {
+    presentationState,
+    resources = {},
+    variables,
+    autoMode,
+    skipMode,
+    currentLocalizationPackageId,
+  },
 ) => {
   const { elements } = state;
   const animations = state.animations || [];
@@ -593,7 +602,7 @@ export const addLayout = (
       functions: jemplFunctions,
     });
     processedContainer = parseAndRender(processedContainer, {
-      i18n: {}
+      i18n: {},
       // i18n: systemStore.selectCurrentLanguagePackKeys(),
     });
 
@@ -621,7 +630,15 @@ export const addLayout = (
 
 export const addLayeredViews = (
   state,
-  { resources = {}, variables, autoMode, skipMode, currentLocalizationPackageId, layeredViews = [], dialogueHistory = [] },
+  {
+    resources = {},
+    variables,
+    autoMode,
+    skipMode,
+    currentLocalizationPackageId,
+    layeredViews = [],
+    dialogueHistory = [],
+  },
 ) => {
   const { elements } = state;
   const animations = state.animations || [];
@@ -650,11 +667,11 @@ export const addLayeredViews = (
         children: layout.elements || [],
       };
 
-      const historyDialogueWithNames = dialogueHistory.map(item => {
+      const historyDialogueWithNames = dialogueHistory.map((item) => {
         const character = resources.characters?.[item.characterId];
         return {
           ...item,
-          characterName: character?.name || ''
+          characterName: character?.name || "",
         };
       });
 
@@ -664,18 +681,21 @@ export const addLayeredViews = (
         skipMode,
         currentLocalizationPackageId,
         historyDialogue: historyDialogueWithNames,
-        characters: resources.characters || {}
+        characters: resources.characters || {},
       };
 
-      let processedLayeredView = parseAndRender(layeredViewContainer, templateData, {
-        functions: jemplFunctions,
-      });
+      let processedLayeredView = parseAndRender(
+        layeredViewContainer,
+        templateData,
+        {
+          functions: jemplFunctions,
+        },
+      );
       processedLayeredView = parseAndRender(processedLayeredView, {
-        i18n: {}
+        i18n: {},
       });
 
       elements.push(processedLayeredView);
-
     });
   }
   return state;
@@ -698,8 +718,8 @@ export const constructRenderState = (params) => {
 
   const executeActions = createSequentialActionsExecutor(
     createInitialState,
-    actions
+    actions,
   );
 
   return executeActions(params);
-}
+};

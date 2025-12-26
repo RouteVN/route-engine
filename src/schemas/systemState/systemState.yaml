@@ -214,7 +214,6 @@ properties:
             properties:
               resourceId:
                 type: string
-          type: object
         bgm:
           properties:
             resourceId:
@@ -225,7 +224,7 @@ properties:
           properties: {}
 
         configuration:
-          $ref: './configuration.yaml'
+          $ref: "./configuration.yaml"
 
         historySequence:
           type: array
@@ -235,5 +234,6 @@ properties:
             description: History entry
           default: []
 
-required: [variables, currentLanguagePackId, historySequence, currentMode, modes]
+required:
+  [variables, currentLanguagePackId, historySequence, currentMode, modes]
 additionalProperties: false
