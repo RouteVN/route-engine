@@ -221,7 +221,7 @@ properties:
         type: string
         description: ID of the background music resource
     additionalProperties: false
-  
+
   keyboard:
     type: object
     description: Sets the active keyboard mapping
