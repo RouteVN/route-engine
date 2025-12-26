@@ -19,6 +19,7 @@ export const createInitialState = () => {
     ],
     animations: [],
     audio: [],
+    global: {},
   };
 };
 
@@ -496,6 +497,17 @@ export const addChoices = (state, { presentationState, resources }) => {
   return state;
 };
 
+export const addKeyboard = (state, { presentationState, resources }) => {
+  if (presentationState.keyboard?.resourceId) {
+    const keyboardMapping =
+      resources?.keyboards?.[presentationState.keyboard.resourceId];
+    if (keyboardMapping) {
+      state.global.keyboard = keyboardMapping;
+    }
+  }
+  return state;
+};
+
 export const addBgm = (state, { presentationState, resources }) => {
   const { elements, audio } = state;
   if (presentationState.bgm && resources) {
@@ -728,6 +740,7 @@ export const constructRenderState = (params) => {
     addVisuals,
     addDialogue,
     addChoices,
+    addKeyboard,
     addLayout,
     addBgm,
     addSfx,
