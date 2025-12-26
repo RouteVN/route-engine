@@ -35,7 +35,8 @@ out:
     pendingEffects:
       - name: clearAutoNextTimer
       - name: startAutoNextTimer
-        delay: 500
+        payload:
+          delay: 500
       - name: render
 ---
 case: set autoplay delay with existing pending effects
