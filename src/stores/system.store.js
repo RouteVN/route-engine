@@ -4,7 +4,7 @@ import { constructRenderState } from "./constructRenderState.js";
 
 export const createInitialState = (payload) => {
   const {
-    global: { currentLocalizationPackageId },
+    global: { currentLocalizationPackageId, saveSlots },
     // initialPointer,
     projectData,
   } = payload;
@@ -20,8 +20,6 @@ export const createInitialState = (payload) => {
           .initialSectionId
       ].lines[0].id,
   };
-
-  const saveSlots = JSON.parse(localStorage.getItem("saveSlots")) || {};
 
   const state = {
     projectData,
@@ -691,7 +689,7 @@ export const replaceSaveSlot = ({ state }, payload) => {
  * @param {number} payload.slot - Save slot number
  * @returns {Object} Updated state object
  */
-export const globalSaveStory = ({ state }, payload) => {
+export const saveSaveSlot = ({ state }, payload) => {
   const { slot } = payload;
   const slotKey = String(slot);
 
@@ -736,7 +734,7 @@ export const globalSaveStory = ({ state }, payload) => {
  * @param {number} payload.slot - Save slot number
  * @returns {Object} Updated state object
  */
-export const globalLoadStory = ({ state }, payload) => {
+export const loadSaveSlot = ({ state }, payload) => {
   const { slot } = payload;
   const slotKey = String(slot);
   const slotData = state.global.saveSlots[slotKey];
@@ -1188,8 +1186,8 @@ export const createSystemStore = (initialState) => {
     addViewedResource,
     setNextLineConfig,
     replaceSaveSlot,
-    globalSaveStory,
-    globalLoadStory,
+    saveSaveSlot,
+    loadSaveSlot,
     updateProjectData,
     sectionTransition,
     jumpToLine,

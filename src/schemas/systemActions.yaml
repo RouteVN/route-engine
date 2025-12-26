@@ -159,7 +159,7 @@ properties:
   # Save and Load
   ############
   # TODO: finalize naming
-  globalSaveStory:
+  saveSaveSlot:
     type: object
     description: Save current story state. See the side effect for all the data it stores
     properties:
@@ -171,7 +171,7 @@ properties:
     additionalProperties: false
 
   # TODO: finalize naming
-  globalLoadStory:
+  loadSaveSlot:
     type: object
     description: Load game state from a save slot
     properties:

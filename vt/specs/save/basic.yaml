@@ -84,7 +84,7 @@ resources:
         - id: save-button-text
           type: text
           x: 1810
-          y: 45
+          y: 35
           content: ${l10n.keys.saveButton}
           textStyle:
             fontSize: 24
@@ -109,7 +109,7 @@ resources:
         - id: load-button-text
           type: text
           x: 1690
-          y: 45
+          y: 35
           content: ${l10n.keys.loadButton}
           textStyle:
             fontSize: 24
@@ -160,7 +160,7 @@ resources:
           type: text
           content: "X"
           x: 1305
-          y: 330
+          y: 310
           textStyle:
             fontSize: 32
             fill: "#ffffff"
@@ -177,14 +177,14 @@ resources:
           click:
             actionPayload:
               actions:
-                globalSaveStory:
+                saveSaveSlot:
                   slot: 1
 
         - id: save-slot-1-text
           type: text
           content: "Slot 1"
           x: 920
-          y: 445
+          y: 420
           textStyle:
             fontSize: 32
             fill: "#ffffff"
@@ -201,14 +201,14 @@ resources:
           click:
             actionPayload:
               actions:
-                globalSaveStory:
+                saveSaveSlot:
                   slot: 2
 
         - id: save-slot-2-text
           type: text
           content: "Slot 2"
           x: 920
-          y: 535
+          y: 510
           textStyle:
             fontSize: 32
             fill: "#ffffff"
@@ -225,14 +225,14 @@ resources:
           click:
             actionPayload:
               actions:
-                globalSaveStory:
+                saveSaveSlot:
                   slot: 3
 
         - id: save-slot-3-text
           type: text
           content: "Slot 3"
           x: 920
-          y: 625
+          y: 600
           textStyle:
             fontSize: 32
             fill: "#ffffff"
@@ -291,7 +291,7 @@ resources:
           type: text
           content: "X"
           x: 1305
-          y: 330
+          y: 310
           textStyle:
             fontSize: 32
             fill: "#ffffff"
@@ -308,14 +308,14 @@ resources:
           click:
             actionPayload:
               actions:
-                globalLoadStory:
+                loadSaveSlot:
                   slot: 1
 
         - id: load-slot-1-text
           type: text
           content: "Slot 1"
           x: 920
-          y: 445
+          y: 420
           textStyle:
             fontSize: 32
             fill: "#ffffff"
@@ -332,14 +332,14 @@ resources:
           click:
             actionPayload:
               actions:
-                globalLoadStory:
+                loadSaveSlot:
                   slot: 2
 
         - id: load-slot-2-text
           type: text
           content: "Slot 2"
           x: 920
-          y: 535
+          y: 510
           textStyle:
             fontSize: 32
             fill: "#ffffff"
@@ -356,14 +356,14 @@ resources:
           click:
             actionPayload:
               actions:
-                globalLoadStory:
+                loadSaveSlot:
                   slot: 3
 
         - id: load-slot-3-text
           type: text
           content: "Slot 3"
           x: 920
-          y: 625
+          y: 600
           textStyle:
             fontSize: 32
             fill: "#ffffff"

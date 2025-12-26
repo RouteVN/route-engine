@@ -157,11 +157,13 @@ const init = async () => {
 
   const effectsHandler = createEffectsHandler({ getEngine: () => engine, routeGraphics, ticker });
   const engine = createRouteEngine({ handlePendingEffects: effectsHandler });
+  const saveSlots = JSON.parse(localStorage.getItem("saveSlots")) || {};
 
   engine.init({
     initialState: {
       global: {
-        currentLocalizationPackageId: 'eklekfjwalefj'
+        currentLocalizationPackageId: 'eklekfjwalefj',
+        saveSlots
       },
       projectData
     }
