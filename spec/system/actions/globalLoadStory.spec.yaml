@@ -1,9 +1,9 @@
 file: "../../../src/stores/system.store.js"
-group: systemStore.globalLoadStory
-suites: [globalLoadStory]
+group: systemStore.loadSaveSlot
+suites: [loadSaveSlot]
 ---
-suite: globalLoadStory
-exportName: globalLoadStory
+suite: loadSaveSlot
+exportName: loadSaveSlot
 ---
 case: load from existing slot
 in:

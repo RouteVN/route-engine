@@ -1,9 +1,9 @@
 file: "../../../src/stores/system.store.js"
-group: systemStore.globalSaveStory
-suites: [globalSaveStory]
+group: systemStore.saveSaveSlot
+suites: [saveSaveSlot]
 ---
-suite: globalSaveStory
-exportName: globalSaveStory
+suite: saveSaveSlot
+exportName: saveSaveSlot
 ---
 case: save to slot 1
 in:
