@@ -24,6 +24,7 @@ export const createInitialState = (payload) => {
   const state = {
     projectData,
     global: {
+      autoplayDelay: 1000,
       isLineCompleted: false,
       pendingEffects: [],
       autoMode: false,
@@ -43,7 +44,7 @@ export const createInitialState = (payload) => {
         },
         auto: {
           enabled: false,
-          delay: 1000,
+          //delay: 1000,
         }
       },
       saveSlots: {},
@@ -102,6 +103,10 @@ export const selectAutoMode = ({ state }) => {
 
 export const selectDialogueUIHidden = ({ state }) => {
   return state.global.dialogueUIHidden;
+};
+
+export const selectAutoplayDelay = ({ state }) => {
+  return state.global.autoplayDelay;
 };
 
 export const selectDialogueHistory = ({ state }) => {
@@ -405,7 +410,7 @@ export const startAutoMode = ({ state }) => {
   });
   state.global.pendingEffects.push({
     name: "startAutoNextTimer",
-    delay: state.global.nextLineConfig.auto.delay,
+    delay: state.global.autoplayDelay,
   });
   state.global.pendingEffects.push({
     name: "render",
@@ -651,6 +656,14 @@ export const setNextLineConfig = ({ state }, payload) => {
     }
   }
 
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+  return state;
+};
+
+export const setAutoplayDelay = ({ state }, { delay }) => {
+  state.global.autoplayDelay = delay;
   state.global.pendingEffects.push({
     name: "render",
   });
@@ -1100,6 +1113,7 @@ export const createSystemStore = (initialState) => {
     selectSection,
     selectCurrentLine,
     selectPresentationState,
+    selectAutoplayDelay,
     selectRenderState,
     selectLayeredViews,
 
@@ -1124,6 +1138,7 @@ export const createSystemStore = (initialState) => {
     addViewedResource,
     setNextLineConfig,
     replaceSaveSlot,
+    setAutoplayDelay,
     updateProjectData,
     sectionTransition,
     jumpToLine,
