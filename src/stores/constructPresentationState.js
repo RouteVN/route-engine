@@ -200,6 +200,12 @@ export const choice = (state, presentation) => {
   }
 };
 
+export const keyboard = (state, presentation) => {
+  if (presentation.keyboard) {
+    state.keyboard = presentation.keyboard;
+  }
+};
+
 export const voice = (state, presentation) => {
   if (presentation.voice) {
     state.voice = presentation.voice;
@@ -240,6 +246,7 @@ export const constructPresentationState = (presentations) => {
     animation,
     layout,
     choice,
+    keyboard,
     voice,
   ];
 
