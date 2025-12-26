@@ -155,9 +155,8 @@ const init = async () => {
     e.preventDefault();
   });
 
-  const engine = {};
-  const effectsHandler = createEffectsHandler({ engine, routeGraphics, ticker });
-  Object.assign(engine, createRouteEngine({ handlePendingEffects: effectsHandler }));
+  const effectsHandler = createEffectsHandler({ getEngine: () => engine, routeGraphics, ticker });
+  const engine = createRouteEngine({ handlePendingEffects: effectsHandler });
 
   engine.init({
     initialState: {

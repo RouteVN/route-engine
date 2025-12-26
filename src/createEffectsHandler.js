@@ -1,4 +1,4 @@
-const createEffectsHandler = ({ engine, routeGraphics, ticker }) => {
+const createEffectsHandler = ({ getEngine, routeGraphics, ticker }) => {
   // Auto mode state (persisted across calls via closure)
   let autoModeElapsed = 0;
   let autoModeCallback = null;
@@ -7,7 +7,8 @@ const createEffectsHandler = ({ engine, routeGraphics, ticker }) => {
   let skipModeElapsed = 0;
   let skipModeCallback = null;
 
-  return async (effects) => {
+  return (effects) => {
+    const engine = getEngine();
     // Deduplicate effects by name, keeping only the last occurrence
     const deduplicatedEffects = effects.reduce((acc, effect) => {
       acc[effect.name] = effect;
