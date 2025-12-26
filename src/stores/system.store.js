@@ -19,6 +19,8 @@ export const createInitialState = (payload) => {
       .lines[0].id,
   }
 
+  const saveSlots = JSON.parse(localStorage.getItem("saveSlots")) || {};
+
   const state = {
     projectData,
     global: {
@@ -42,7 +44,7 @@ export const createInitialState = (payload) => {
           enabled: false,
         }
       },
-      saveSlots: {},
+      saveSlots,
       layeredViews: [],
     },
     contexts: [{
@@ -62,6 +64,7 @@ export const createInitialState = (payload) => {
       variables: {},
     }]
   };
+  console.log('Initial State:', state);
   return state;
 };
 
@@ -621,21 +624,37 @@ export const globalSaveStory = ({ state }, payload) => {
   const { slot } = payload;
   const slotKey = String(slot);
 
-  const { saveSlots, ...globalWithoutSlots } = state.global;
   const currentState = {
     projectData: state.projectData,
-    global: { ...globalWithoutSlots, pendingEffects: [] },
-    contexts: structuredClone(state.contexts)
+    contexts: [...state.contexts]
   };
 
-  state.global.saveSlots[slotKey] = {
+  // const url = await captureElement("story");
+  // console.log("slotindex", slotIndex);
+  // saveData[slotIndex].image = url;
+  // const assets = {
+  //   [`saveImage:${slotIndex}`]: {
+  //     buffer: base64ToArrayBuffer(url),
+  //     type: "image/png",
+  //   },
+  // };
+  // await loadAssets(assets);
+
+  const saveData = {
     slotKey,
     date: Date.now(),
     image: null,
     state: currentState
   };
 
-  state.global.pendingEffects.push({ name: 'render' });
+  state.global.saveSlots[slotKey] = saveData;
+
+  localStorage.setItem("saveSlots", JSON.stringify(state.global.saveSlots));
+
+
+  state.global.pendingEffects.push(
+    { name: 'render' },
+  );
   return state;
 };
 
@@ -650,12 +669,12 @@ export const globalLoadStory = ({ state }, payload) => {
   const { slot } = payload;
   const slotKey = String(slot);
   const slotData = state.global.saveSlots[slotKey];
-
   if (slotData) {
-    state.global.pendingEffects.push({
-      name: 'loadGame',
-      options: { initialState: slotData.state }
-    });
+    state.projectData = slotData.state.projectData;
+    state.contexts = slotData.state.contexts;
+    state.global.pendingEffects.push(
+      { name: 'render' },
+    );
   }
   return state;
 };

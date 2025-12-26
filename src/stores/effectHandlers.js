@@ -9,25 +9,14 @@ export const render = ({ processAndRender }) => {
 };
 
 export const saveVnData = async (
-  { timer, localStorage, captureElement, loadAssets },
+  { timer, localStorage },
   effect,
 ) => {
-  const { saveData: _saveData, slotIndex } = effect.options;
-  const saveData = structuredClone(_saveData);
-  const url = await captureElement("story");
-  console.log("saveData", saveData);
-  console.log("slotindex", slotIndex);
-  saveData[slotIndex].image = url;
-  const assets = {
-    [`saveImage:${slotIndex}`]: {
-      buffer: base64ToArrayBuffer(url),
-      type: "image/png",
-    },
-  };
-  await loadAssets(assets);
-  localStorage.setItem("saveData", JSON.stringify(saveData));
+  const { saveSlots } = effect.options;
+
+  localStorage.setItem("saveSlots", JSON.stringify(saveSlots));
   timer.setTimeout(
-    "saveData",
+    "saveSlots",
     {
       render: {},
     },

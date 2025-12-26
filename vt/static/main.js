@@ -165,8 +165,6 @@ const init = async () => {
     let skipModeElapsed = 0;
     let skipModeCallback = null;
 
-    // Save data storage
-    const saveSlots = {};
 
     return (effects) => {
       // Deduplicate effects by name, keeping only the last occurrence
@@ -243,10 +241,11 @@ const init = async () => {
           skipModeCallback = null;
         }
         skipModeElapsed = 0;
-      } else if (effect.name === 'loadGame') {
-        const { initialState } = effect.options;
-        engine.init({ initialState });
-      }
+      } 
+      // else if (effect.name === 'loadGame') {
+      //   const { initialState } = effect.options;
+      //   engine.init({ initialState });
+      // }
     }
     };
   };
