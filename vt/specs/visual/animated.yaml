@@ -1,0 +1,139 @@
+---
+title: "Animated Spritesheet Visual"
+description: Test animated spritesheet visual element
+---
+l10n:
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys: {}
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+resources:
+  layouts:
+    base1:
+      elements:
+        - id: af32
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+
+  spritesheets:
+    fighterSheet:
+      fileId: fighter-spritesheet
+      jsonData:
+        frames:
+          rollSequence0000.png:
+            frame: { x: 483, y: 692, w: 169, h: 226 }
+            rotated: false
+            trimmed: true
+            spriteSourceSize: { x: 3, y: 4, w: 169, h: 226 }
+            sourceSize: { w: 175, h: 240 }
+          rollSequence0001.png:
+            frame: { x: 468, y: 2, w: 169, h: 226 }
+            rotated: false
+            trimmed: true
+            spriteSourceSize: { x: 3, y: 4, w: 169, h: 226 }
+            sourceSize: { w: 175, h: 240 }
+          rollSequence0002.png:
+            frame: { x: 639, y: 2, w: 167, h: 226 }
+            rotated: false
+            trimmed: true
+            spriteSourceSize: { x: 3, y: 5, w: 167, h: 226 }
+            sourceSize: { w: 175, h: 240 }
+          rollSequence0003.png:
+            frame: { x: 808, y: 2, w: 165, h: 226 }
+            rotated: false
+            trimmed: true
+            spriteSourceSize: { x: 3, y: 5, w: 165, h: 226 }
+            sourceSize: { w: 175, h: 240 }
+          rollSequence0004.png:
+            frame: { x: 654, y: 688, w: 161, h: 226 }
+            rotated: false
+            trimmed: true
+            spriteSourceSize: { x: 3, y: 5, w: 161, h: 226 }
+            sourceSize: { w: 175, h: 240 }
+          rollSequence0005.png:
+            frame: { x: 817, y: 458, w: 151, h: 226 }
+            rotated: false
+            trimmed: true
+            spriteSourceSize: { x: 6, y: 5, w: 151, h: 226 }
+            sourceSize: { w: 175, h: 240 }
+        meta:
+          format: "RGBA8888"
+          size: { w: 1024, h: 1024 }
+          scale: "1"
+      animations:
+        roll:
+          frames: [0, 1, 2, 3, 4, 5]
+          animationSpeed: 0.5
+          loop: true
+        rollOnce:
+          frames: [0, 1, 2, 3, 4, 5]
+          animationSpeed: 0.3
+          loop: false
+
+  transforms:
+    centerPos:
+      x: 960
+      y: 540
+      anchorX: 0.5
+      anchorY: 0.5
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+    leftPos:
+      x: 400
+      y: 540
+      anchorX: 0.5
+      anchorY: 0.5
+      rotation: 0
+      scaleX: 1.5
+      scaleY: 1.5
+
+story:
+  initialSceneId: scene1
+  scenes:
+    scene1:
+      name: Scene 1
+      initialSectionId: section1
+      sections:
+        section1:
+          name: Section 1
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: base1
+                visual:
+                  items:
+                    - id: fighter-1
+                      resourceId: fighterSheet
+                      animation: roll
+                      transformId: centerPos
+            - id: line2
+              actions:
+                visual:
+                  items:
+                    - id: fighter-1
+                      resourceId: fighterSheet
+                      animation: rollOnce
+                      transformId: leftPos
+            - id: line3
+              actions:
+                visual:
+                  items:
+                    - id: fighter-1
+                      resourceId: fighterSheet
+                      animation: roll
+                      animationSpeed: 0.8
+                      transformId: centerPos
