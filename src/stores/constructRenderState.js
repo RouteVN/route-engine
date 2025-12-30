@@ -329,66 +329,35 @@ export const addVisuals = (state, { presentationState, resources }) => {
               },
             };
             storyContainer.children.push(element);
+          }
+        } else {
+          let resource = images[item.resourceId] || videos[item.resourceId];
 
-            if (item.animations) {
-              if (item.animations.in) {
-                const tweenId =
-                  item.animations.in.resourceId || item.animations.in;
-                const tween = resources?.tweens[tweenId];
-                if (tween) {
-                  animations.push({
-                    id: `${item.id}-animation`,
-                    type: "tween",
-                    targetId: `visual-${item.id}`,
-                    properties: tween.properties,
-                  });
-                }
-              }
+          if (resource) {
+            const isVideo = videos[item.resourceId] !== undefined;
+            const transform = resources.transforms[item.transformId];
+            const element = {
+              id: `visual-${item.id}`,
+              type: isVideo ? "video" : "sprite",
+              src: resource.fileId,
+              width: resource.width,
+              height: resource.height,
+              x: transform.x,
+              y: transform.y,
+              anchorX: transform.anchorX,
+              anchorY: transform.anchorY,
+              rotation: transform.rotation,
+              scaleX: transform.scaleX,
+              scaleY: transform.scaleY,
+            };
 
-              if (item.animations.out) {
-                const tweenId =
-                  item.animations.out.resourceId || item.animations.out;
-                const tween = resources?.tweens[tweenId];
-                if (tween) {
-                  animations.push({
-                    id: `${item.id}-animation-2`,
-                    type: "tween",
-                    targetId: `visual-${item.id}`,
-                    properties: tween.properties,
-                  });
-                }
-              }
+            if (isVideo) {
+              element.loop = resource.loop ?? false;
+              element.volume = resource.volume ?? 500;
             }
+
+            storyContainer.children.push(element);
           }
-          continue;
-        }
-
-        let resource = images[item.resourceId] || videos[item.resourceId];
-
-        if (resource) {
-          const isVideo = videos[item.resourceId] !== undefined;
-          const transform = resources.transforms[item.transformId];
-          const element = {
-            id: `visual-${item.id}`,
-            type: isVideo ? "video" : "sprite",
-            src: resource.fileId,
-            width: resource.width,
-            height: resource.height,
-            x: transform.x,
-            y: transform.y,
-            anchorX: transform.anchorX,
-            anchorY: transform.anchorY,
-            rotation: transform.rotation,
-            scaleX: transform.scaleX,
-            scaleY: transform.scaleY,
-          };
-
-          if (isVideo) {
-            element.loop = resource.loop ?? false;
-            element.volume = resource.volume ?? 500;
-          }
-
-          storyContainer.children.push(element);
         }
       }
 
