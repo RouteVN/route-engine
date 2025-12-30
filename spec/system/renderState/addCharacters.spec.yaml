@@ -93,7 +93,7 @@ in:
             sprites:
               - id: "body"
                 resourceId: "body"
-            tweens:
+            animations:
               in:
                 resourceId: "fadeIn"
     resources:
@@ -161,7 +161,7 @@ in:
       character:
         items:
           - id: "char1"
-            tweens:
+            animations:
               out:
                 resourceId: "fadeOut"
     resources:
@@ -202,7 +202,7 @@ in:
             sprites:
               - id: "body"
                 resourceId: "body"
-            tweens:
+            animations:
               in:
                 resourceId: "fadeIn"
               update:

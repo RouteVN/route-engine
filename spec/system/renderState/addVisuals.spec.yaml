@@ -20,7 +20,6 @@ in:
         items:
           - id: "visual1"
             resourceId: "image1"
-            resourceType: "image"
             transformId: "transform1"
     resources:
       images:
@@ -70,9 +69,8 @@ in:
         items:
           - id: "visual1"
             resourceId: "image1"
-            resourceType: "image"
             transformId: "transform1"
-            tweens:
+            animations:
               in:
                 resourceId: "fadeIn"
     resources:
@@ -134,9 +132,8 @@ in:
         items:
           - id: "visual1"
             resourceId: "image1"
-            resourceType: "image"
             transformId: "transform1"
-            tweens:
+            animations:
               out: "fadeOut"
     resources:
       images:
@@ -197,9 +194,8 @@ in:
         items:
           - id: "visual1"
             resourceId: "image1"
-            resourceType: "image"
             transformId: "transform1"
-            tweens:
+            animations:
               in:
                 resourceId: "slideIn"
               out:
@@ -273,11 +269,9 @@ in:
         items:
           - id: "visual1"
             resourceId: "image1"
-            resourceType: "image"
             transformId: "transform1"
           - id: "visual2"
             resourceId: "image2"
-            resourceType: "image"
             transformId: "transform2"
     resources:
       images:
@@ -379,7 +373,6 @@ in:
         items:
           - id: "visual1"
             resourceId: "image1"
-            resourceType: "image"
             transformId: "transform1"
     resources:
       images:
@@ -416,7 +409,6 @@ in:
       visual:
         items:
           - id: "visual1"
-            resourceType: "image"
             transformId: "transform1"
     resources:
       images:
@@ -504,14 +496,12 @@ in:
       visual:
         items:
           - id: "visual1"
-            resourceId: "video1"
-            resourceType: "video"
+            resourceId: "audio1"
+            resourceType: "audio"
             transformId: "transform1"
     resources:
       images: {}
-      videos:
-        video1:
-          fileId: "test.mp4"
+      videos: {}
       transforms:
         transform1:
           x: 0
@@ -546,7 +536,6 @@ in:
         items:
           - id: "visual1"
             resourceId: "nonExistent"
-            resourceType: "image"
             transformId: "transform1"
     resources:
       images:
@@ -622,7 +611,6 @@ in:
         items:
           - id: "visual1"
             resourceId: "image1"
-            resourceType: "image"
             transformId: "transform1"
     resources: null
 out:
@@ -728,7 +716,7 @@ in:
           - id: "overlay"
             resourceId: "overlayLayout"
             transformId: "transform1"
-            tweens:
+            animations:
               in:
                 resourceId: "fadeIn"
     resources:

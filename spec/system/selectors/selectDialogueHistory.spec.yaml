@@ -53,6 +53,7 @@ in:
               lineId: "1"
 out:
   - characterId: "char1"
+    characterName: ""
     content:
       - text: "Hello world"
 ---
@@ -99,12 +100,15 @@ in:
               lineId: "3"
 out:
   - characterId: "char1"
+    characterName: ""
     content:
       - text: "First line"
   - characterId: "char2"
+    characterName: ""
     content:
       - text: "Second line"
   - characterId: "char1"
+    characterName: ""
     content:
       - text: "Third line"
 ---
@@ -151,12 +155,16 @@ in:
               lineId: "5"
 out:
   - characterId: "char1"
+    characterName: ""
     content:
       - text: "First dialogue"
   - characterId: "char2"
+    characterName: ""
     content:
       - text: "Second dialogue"
-  - content:
+  - characterId: __undefined__
+    characterName: ""
+    content:
       - text: "Third dialogue"
 ---
 case: no dialogue lines before current position
@@ -265,9 +273,12 @@ in:
               sectionId: "section1"
               lineId: "2"
 out:
-  - content:
+  - characterId: __undefined__
+    characterName: ""
+    content:
       - text: "Narrator text"
   - characterId: "char1"
+    characterName: ""
     content:
       - text: "Character text"
 ---
@@ -299,6 +310,7 @@ in:
               lineId: "1"
 out:
   - characterId: "char1"
+    characterName: ""
     content:
       - text: "First part"
       - text: "Second part"

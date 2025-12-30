@@ -17,7 +17,6 @@ in:
   - presentationState:
       background:
         resourceId: "bg1"
-        resourceType: "image"
     resources:
       images:
         bg1:
@@ -52,8 +51,7 @@ in:
   - presentationState:
       background:
         resourceId: "bg1"
-        resourceType: "image"
-        tweens:
+        animations:
           in:
             resourceId: "fadeIn"
     resources:
@@ -108,8 +106,7 @@ in:
   - presentationState:
       background:
         resourceId: "bg1"
-        resourceType: "image"
-        tweens:
+        animations:
           update:
             resourceId: "crossFade"
     resources:
@@ -214,7 +211,6 @@ in:
   - presentationState:
       background:
         resourceId: "bg1"
-        resourceType: "image"
     resources:
       images:
         bg1:
@@ -240,7 +236,6 @@ in:
   - presentationState:
       background:
         resourceId: "nonExistent"
-        resourceType: "image"
     resources:
       images:
         bg1:
@@ -268,7 +263,6 @@ in:
   - presentationState:
       background:
         resourceId: "bg1"
-        resourceType: "image"
     resources: {}
 out:
   elements:
@@ -296,8 +290,7 @@ in:
   - presentationState:
       background:
         resourceId: "bg2"
-        resourceType: "image"
-        tweens:
+        animations:
           in:
             resourceId: "slideIn"
           update:

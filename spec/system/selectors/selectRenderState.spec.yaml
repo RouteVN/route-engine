@@ -107,8 +107,9 @@ out:
       type: "sound"
       src: "audio/cde.mp3"
       loop: true
-      volume: 0.5
+      volume: 500
       delay: null
+  global: {}
 ---
 case: multiple lines and actions last line
 in:
@@ -164,5 +165,6 @@ out:
       type: "sound"
       src: "audio/cde.mp3"
       loop: true
-      volume: 0.5
+      volume: 500
       delay: null
+  global: {}

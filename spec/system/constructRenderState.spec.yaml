@@ -39,7 +39,6 @@ in:
           resourceId: "mainBase"
         background:
           resourceId: "bgImage"
-          resourceType: "image"
       resources:
         layouts:
           mainBase:
@@ -91,7 +90,6 @@ in:
           resourceId: "newBase"
         background:
           resourceId: "newBg"
-          resourceType: "image"
       resources:
         layouts:
           newBase:

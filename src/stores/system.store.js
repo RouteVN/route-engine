@@ -4,7 +4,7 @@ import { constructRenderState } from "./constructRenderState.js";
 
 export const createInitialState = (payload) => {
   const {
-    global: { currentLocalizationPackageId, saveSlots },
+    global: { currentLocalizationPackageId, saveSlots = {} },
     // initialPointer,
     projectData,
   } = payload;

@@ -18,13 +18,13 @@ in:
   - presentationState:
       bgm:
         resourceId: "backgroundMusic"
+        loop: true
+        volume: 700
+        delay: 0
     resources:
       sounds:
         backgroundMusic:
           fileId: "bgm.mp3"
-          loop: true
-          volume: 0.7
-          delay: 0
 out:
   elements:
     - id: "story"
@@ -38,7 +38,7 @@ out:
       type: "sound"
       src: "bgm.mp3"
       loop: true
-      volume: 0.7
+      volume: 700
       delay: 0
 ---
 case: add bgm with default values
@@ -71,7 +71,7 @@ out:
       type: "sound"
       src: "simple.mp3"
       loop: true
-      volume: 0.5
+      volume: 500
       delay: null
 ---
 case: add bgm with custom settings
@@ -87,13 +87,13 @@ in:
   - presentationState:
       bgm:
         resourceId: "customMusic"
+        loop: false
+        volume: 300
+        delay: 1000
     resources:
       sounds:
         customMusic:
           fileId: "custom.mp3"
-          loop: false
-          volume: 0.3
-          delay: 1000
 out:
   elements:
     - id: "story"
@@ -107,7 +107,7 @@ out:
       type: "sound"
       src: "custom.mp3"
       loop: false
-      volume: 0.3
+      volume: 300
       delay: 1000
 ---
 case: no presentationState.bgm - return unchanged state
@@ -126,7 +126,7 @@ in:
         backgroundMusic:
           fileId: "bgm.mp3"
           loop: true
-          volume: 0.7
+          volume: 700
 out:
   elements:
     - id: "story"
@@ -153,7 +153,7 @@ in:
         backgroundMusic:
           fileId: "bgm.mp3"
           loop: true
-          volume: 0.7
+          volume: 700
 out:
   elements:
     - id: "notStory"
@@ -180,7 +180,7 @@ in:
         existing:
           fileId: "existing.mp3"
           loop: true
-          volume: 0.7
+          volume: 700
 out:
   elements:
     - id: "story"
