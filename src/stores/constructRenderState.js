@@ -289,9 +289,80 @@ export const addVisuals = (state, { presentationState, resources }) => {
 
     const items = presentationState.visual.items;
     for (const item of items) {
-      // Check if both resourceId and resourceType exist, and resourceType is "image"
       if (item.resourceId) {
-        const { images = {}, videos = {} } = resources;
+        const { images = {}, videos = {}, spritesheets = {} } = resources;
+
+        const spritesheet = spritesheets[item.resourceId];
+        if (spritesheet) {
+          const transform = resources.transforms?.[item.transformId] || {};
+          const animationName = item.animation;
+
+          if (animationName) {
+            const animationDef = spritesheet.animations?.[animationName];
+
+            if (!animationDef) {
+              throw new Error(
+                `Animation '${animationName}' not found in spritesheet resource '${item.resourceId}'`,
+              );
+            }
+
+            const element = {
+              id: `visual-${item.id}`,
+              type: "animated-sprite",
+              x: item.x ?? transform.x ?? 0,
+              y: item.y ?? transform.y ?? 0,
+              width: item.width ?? 100,
+              height: item.height ?? 100, 
+              alpha: item.alpha ?? 1,
+              anchorX: transform.anchorX,
+              anchorY: transform.anchorY,
+              rotation: transform.rotation,
+              scaleX: transform.scaleX,
+              scaleY: transform.scaleY,
+              spritesheetSrc: spritesheet.fileId,
+              spritesheetData: spritesheet.jsonData,
+              animation: {
+                frames: animationDef.frames,
+                animationSpeed:
+                  item.animationSpeed ?? animationDef.animationSpeed ?? 0.5,
+                loop: item.loop ?? animationDef.loop ?? true,
+              },
+            };
+            storyContainer.children.push(element);
+
+            if (item.animations) {
+              if (item.animations.in) {
+                const tweenId =
+                  item.animations.in.resourceId || item.animations.in;
+                const tween = resources?.tweens[tweenId];
+                if (tween) {
+                  animations.push({
+                    id: `${item.id}-animation`,
+                    type: "tween",
+                    targetId: `visual-${item.id}`,
+                    properties: tween.properties,
+                  });
+                }
+              }
+
+              if (item.animations.out) {
+                const tweenId =
+                  item.animations.out.resourceId || item.animations.out;
+                const tween = resources?.tweens[tweenId];
+                if (tween) {
+                  animations.push({
+                    id: `${item.id}-animation-2`,
+                    type: "tween",
+                    targetId: `visual-${item.id}`,
+                    properties: tween.properties,
+                  });
+                }
+              }
+            }
+          }
+          continue;
+        }
+
         let resource = images[item.resourceId] || videos[item.resourceId];
 
         if (resource) {
