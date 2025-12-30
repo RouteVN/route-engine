@@ -25,7 +25,7 @@ in:
         soundEffect:
           fileId: "effect.mp3"
           loop: false
-          volume: 0.7
+          volume: 700
           delay: 0
 out:
   elements:
@@ -40,7 +40,7 @@ out:
       type: "sound"
       src: "effect.mp3"
       loop: false
-      volume: 0.7
+      volume: 700
       delay: 0
 ---
 case: add sfx with default values
@@ -75,7 +75,7 @@ out:
       type: "sound"
       src: "simple.mp3"
       loop: true
-      volume: 0.5
+      volume: 500
       delay: null
 ---
 case: add sfx with custom settings
@@ -94,7 +94,7 @@ in:
           - id: "sfx1"
             resourceId: "customSound"
             loop: true
-            volume: 0.3
+            volume: 300
             delay: 500
     resources:
       sounds:
@@ -113,7 +113,7 @@ out:
       type: "sound"
       src: "custom.mp3"
       loop: true
-      volume: 0.3
+      volume: 300
       delay: 500
 ---
 case: multiple sfx items
@@ -137,7 +137,7 @@ in:
       sounds:
         firstSound:
           fileId: "first.mp3"
-          volume: 0.6
+          volume: 600
         secondSound:
           fileId: "second.mp3"
 out:
@@ -153,13 +153,13 @@ out:
       type: "sound"
       src: "first.mp3"
       loop: true
-      volume: 0.6
+      volume: 600
       delay: null
     - id: "sfx2"
       type: "sound"
       src: "second.mp3"
       loop: true
-      volume: 0.5
+      volume: 500
       delay: null
 ---
 case: no presentationState.sfx - return unchanged state
@@ -178,7 +178,7 @@ in:
         soundEffect:
           fileId: "effect.mp3"
           loop: true
-          volume: 0.7
+          volume: 700
 out:
   elements:
     - id: "story"
@@ -207,7 +207,7 @@ in:
         soundEffect:
           fileId: "effect.mp3"
           loop: true
-          volume: 0.7
+          volume: 700
 out:
   elements:
     - id: "notStory"
@@ -219,7 +219,7 @@ out:
       type: "sound"
       src: "effect.mp3"
       loop: true
-      volume: 0.7
+      volume: 700
       delay: null
 ---
 case: audio not found - skip item
@@ -242,7 +242,7 @@ in:
         existing:
           fileId: "existing.mp3"
           loop: true
-          volume: 0.7
+          volume: 700
 out:
   elements:
     - id: "story"
@@ -271,7 +271,7 @@ in:
         soundEffect:
           fileId: "effect.mp3"
           loop: true
-          volume: 0.7
+          volume: 700
 out:
   elements:
     - id: "story"

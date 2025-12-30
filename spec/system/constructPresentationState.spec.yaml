@@ -19,7 +19,6 @@ in:
         resourceId: "mainBase"
       background:
         resourceId: "bgImage"
-        resourceType: "image"
       bgm:
         resourceId: "backgroundMusic"
         loop: true
@@ -28,7 +27,6 @@ out:
     resourceId: "mainBase"
   background:
     resourceId: "bgImage"
-    resourceType: "image"
   bgm:
     resourceId: "backgroundMusic"
     loop: true
