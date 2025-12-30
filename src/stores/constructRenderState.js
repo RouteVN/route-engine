@@ -312,7 +312,7 @@ export const addVisuals = (state, { presentationState, resources }) => {
               x: item.x ?? transform.x ?? 0,
               y: item.y ?? transform.y ?? 0,
               width: item.width ?? 100,
-              height: item.height ?? 100, 
+              height: item.height ?? 100,
               alpha: item.alpha ?? 1,
               anchorX: transform.anchorX,
               anchorY: transform.anchorY,
