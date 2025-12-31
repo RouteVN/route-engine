@@ -51,7 +51,7 @@ export const createInitialState = (payload) => {
       layeredViews: [],
     },
     variables: {
-      count: String(10)
+      count: String(10),
     },
     contexts: [
       {
@@ -368,7 +368,7 @@ export const selectRenderState = ({ state }) => {
     skipOnlyViewedLines: state.global.skipOnlyViewedLines,
     layeredViews: state.global.layeredViews,
     dialogueHistory: selectDialogueHistory({ state }),
-    variables: state.variables
+    variables: state.variables,
   });
   console.log("renderState", renderState);
   return renderState;
@@ -1130,14 +1130,12 @@ export const sectionTransition = ({ state }, payload) => {
 };
 
 export const updateVariable = ({ state }, payload) => {
-  console.log('updateVariable')
+  console.log("updateVariable");
   state.variables.count += 1;
   state.global.pendingEffects.push({
     name: "render",
   });
-}
-
-
+};
 
 /**************************
  * Store Export
@@ -1205,7 +1203,7 @@ export const createSystemStore = (initialState) => {
     popLayeredView,
     replaceLastLayeredView,
     clearLayeredViews,
-    updateVariable
+    updateVariable,
   };
 
   return createStore(_initialState, selectorsAndActions, {
