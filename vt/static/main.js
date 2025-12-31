@@ -103,7 +103,11 @@ const init = async () => {
     "video_sample": {
       url: "/public/video_sample.mp4",
       type: "video/mp4"
-    }
+    },
+     "fighter-spritesheet": {
+      url: "/public/fighter.png",
+      type: "image/png",
+    },
   };
 
   const assetBufferManager = createAssetBufferManager();
@@ -121,7 +125,8 @@ const init = async () => {
       containerPlugin,
       textRevealingPlugin,
       videoPlugin,
-      particlesPlugin
+      particlesPlugin,
+      animatedSpritePlugin
     ],
     animations: [
       tweenPlugin
