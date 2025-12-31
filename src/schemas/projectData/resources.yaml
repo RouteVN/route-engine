@@ -65,6 +65,42 @@ properties:
         additionalProperties: false
     additionalProperties: false
 
+  spritesheets:
+    type: object
+    description: Spritesheet definitions containing image source and frame metadata
+    patternProperties:
+      "^[a-zA-Z0-9]+$":
+        type: object
+        properties:
+          fileId:
+            type: string
+            description: Reference to the spritesheet image file
+          jsonData:
+            type: object
+            description: The JSON metadata (frames, meta)
+          animations:
+            type: object
+            description: Map of named animations
+            patternProperties:
+              "^[a-zA-Z0-9_-]+$":
+                type: object
+                properties:
+                  frames:
+                    type: array
+                    items:
+                      type: number
+                    description: Array of frame indices
+                  animationSpeed:
+                    type: number
+                    description: Default playback speed (0.5 is standard)
+                  loop:
+                    type: boolean
+                    description: Whether the animation loops
+                required: [frames]
+                additionalProperties: false
+        required: [fileId, jsonData]
+        additionalProperties: false
+
   transforms:
     type: object
     description: Transform configurations for positioning elements

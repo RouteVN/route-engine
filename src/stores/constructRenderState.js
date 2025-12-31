@@ -289,35 +289,75 @@ export const addVisuals = (state, { presentationState, resources }) => {
 
     const items = presentationState.visual.items;
     for (const item of items) {
-      // Check if both resourceId and resourceType exist, and resourceType is "image"
       if (item.resourceId) {
-        const { images = {}, videos = {} } = resources;
-        let resource = images[item.resourceId] || videos[item.resourceId];
+        const { images = {}, videos = {}, spritesheets = {} } = resources;
 
-        if (resource) {
-          const isVideo = videos[item.resourceId] !== undefined;
-          const transform = resources.transforms[item.transformId];
-          const element = {
-            id: `visual-${item.id}`,
-            type: isVideo ? "video" : "sprite",
-            src: resource.fileId,
-            width: resource.width,
-            height: resource.height,
-            x: transform.x,
-            y: transform.y,
-            anchorX: transform.anchorX,
-            anchorY: transform.anchorY,
-            rotation: transform.rotation,
-            scaleX: transform.scaleX,
-            scaleY: transform.scaleY,
-          };
+        const spritesheet = spritesheets[item.resourceId];
+        if (spritesheet) {
+          const transform = resources.transforms?.[item.transformId] || {};
+          const animationName = item.animationName;
 
-          if (isVideo) {
-            element.loop = resource.loop ?? false;
-            element.volume = resource.volume ?? 500;
+          if (animationName) {
+            const animationDef = spritesheet.animations?.[animationName];
+
+            if (!animationDef) {
+              throw new Error(
+                `Animation '${animationName}' not found in spritesheet resource '${item.resourceId}'`,
+              );
+            }
+
+            const element = {
+              id: `visual-${item.id}`,
+              type: "animated-sprite",
+              x: item.x ?? transform.x ?? 0,
+              y: item.y ?? transform.y ?? 0,
+              width: item.width ?? 100,
+              height: item.height ?? 100,
+              alpha: item.alpha ?? 1,
+              anchorX: transform.anchorX,
+              anchorY: transform.anchorY,
+              rotation: transform.rotation,
+              scaleX: transform.scaleX,
+              scaleY: transform.scaleY,
+              spritesheetSrc: spritesheet.fileId,
+              spritesheetData: spritesheet.jsonData,
+              animation: {
+                frames: animationDef.frames,
+                animationSpeed:
+                  item.animationSpeed ?? animationDef.animationSpeed ?? 0.5,
+                loop: item.loop ?? animationDef.loop ?? true,
+              },
+            };
+            storyContainer.children.push(element);
           }
+        } else {
+          let resource = images[item.resourceId] || videos[item.resourceId];
 
-          storyContainer.children.push(element);
+          if (resource) {
+            const isVideo = videos[item.resourceId] !== undefined;
+            const transform = resources.transforms[item.transformId];
+            const element = {
+              id: `visual-${item.id}`,
+              type: isVideo ? "video" : "sprite",
+              src: resource.fileId,
+              width: resource.width,
+              height: resource.height,
+              x: transform.x,
+              y: transform.y,
+              anchorX: transform.anchorX,
+              anchorY: transform.anchorY,
+              rotation: transform.rotation,
+              scaleX: transform.scaleX,
+              scaleY: transform.scaleY,
+            };
+
+            if (isVideo) {
+              element.loop = resource.loop ?? false;
+              element.volume = resource.volume ?? 500;
+            }
+
+            storyContainer.children.push(element);
+          }
         }
       }
 

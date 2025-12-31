@@ -12,7 +12,9 @@ import createRouteGraphics, {
   textRevealingPlugin,
   tweenPlugin,
   soundPlugin,
-} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.19/+esm"
+  videoPlugin,
+  animatedSpritePlugin,
+} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.20/+esm"
 
 const projectData = parse(window.yamlContent);
 
@@ -101,7 +103,11 @@ const init = async () => {
     "video_sample": {
       url: "/public/video_sample.mp4",
       type: "video/mp4"
-    }
+    },
+     "fighter-spritesheet": {
+      url: "/public/fighter.png",
+      type: "image/png",
+    },
   };
 
   const assetBufferManager = createAssetBufferManager();
@@ -118,7 +124,8 @@ const init = async () => {
       sliderPlugin,
       containerPlugin,
       textRevealingPlugin,
-      videoPlugin
+      videoPlugin,
+      animatedSpritePlugin,
     ],
     animations: [
       tweenPlugin
