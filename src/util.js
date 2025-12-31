@@ -390,10 +390,7 @@ export const initializeVariablesFromProjectData = (projectData) => {
  * )
  * // Returns: { volume: '80', flag: 'true', score: '100', name: 'Alice' }
  */
-export const convertVariablesToStrings = (
-  globalAndDeviceVars,
-  runtimeVars,
-) => {
+export const convertVariablesToStrings = (globalAndDeviceVars, runtimeVars) => {
   return Object.fromEntries(
     Object.entries({
       ...globalAndDeviceVars,
@@ -453,7 +450,9 @@ export const validateVariableOperation = (type, op, variableId) => {
   // First check if type is valid
   const validOps = VALID_OPS_BY_TYPE[type];
   if (!validOps) {
-    throw new Error(`Unknown variable type: ${type} for variable ${variableId}`);
+    throw new Error(
+      `Unknown variable type: ${type} for variable ${variableId}`,
+    );
   }
 
   // Check if operation is known at all
