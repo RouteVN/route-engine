@@ -901,3 +901,112 @@ out:
               height: 5
   animations: []
   audio: []
+---
+case: add visual layout with particles element (pass-through)
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "snow-effect"
+            resourceId: "snowLayout"
+            transformId: "fullscreen"
+    resources:
+      layouts:
+        snowLayout:
+          elements:
+            - id: "snow-particles"
+              type: "particles"
+              x: 0
+              y: 0
+              width: 1920
+              height: 1080
+              alpha: 1
+              texture: "snowflake"
+              behaviors:
+                - type: "spawnShape"
+                  config:
+                    type: "rect"
+                    data:
+                      x: 0
+                      y: -20
+                      w: 1920
+                      h: 10
+                - type: "movePoint"
+                  config:
+                    speed:
+                      min: 50
+                      max: 150
+                    direction: 90
+              emitter:
+                lifetime:
+                  min: 4
+                  max: 8
+                frequency: 0.05
+                particlesPerWave: 2
+                maxParticles: 300
+      transforms:
+        fullscreen:
+          x: 0
+          y: 0
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-snow-effect"
+          type: "container"
+          x: 0
+          y: 0
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - id: "snow-particles"
+              type: "particles"
+              x: 0
+              y: 0
+              width: 1920
+              height: 1080
+              alpha: 1
+              texture: "snowflake"
+              behaviors:
+                - type: "spawnShape"
+                  config:
+                    type: "rect"
+                    data:
+                      x: 0
+                      y: -20
+                      w: 1920
+                      h: 10
+                - type: "movePoint"
+                  config:
+                    speed:
+                      min: 50
+                      max: 150
+                    direction: 90
+              emitter:
+                lifetime:
+                  min: 4
+                  max: 8
+                frequency: 0.05
+                particlesPerWave: 2
+                maxParticles: 300
+  animations: []
+  audio: []
