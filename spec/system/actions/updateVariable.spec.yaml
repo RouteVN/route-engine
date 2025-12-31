@@ -1,0 +1,510 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.updateVariable
+suites: [updateVariable]
+---
+suite: updateVariable
+exportName: updateVariable
+---
+case: set runtime variable
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            playerName:
+              type: string
+              scope: runtime
+              default: "Guest"
+      global:
+        crossSlotVariables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            playerName: "Guest"
+  - operations:
+      - variableId: playerName
+        op: set
+        value: "Alice"
+out:
+  projectData:
+    resources:
+      variables:
+        playerName:
+          type: string
+          scope: runtime
+          default: "Guest"
+  global:
+    crossSlotVariables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - variables:
+        playerName: "Alice"
+---
+case: set device variable
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            volume:
+              type: number
+              scope: device
+              default: 50
+      global:
+        crossSlotVariables:
+          volume: 50
+        pendingEffects: []
+      contexts:
+        - variables: {}
+  - operations:
+      - variableId: volume
+        op: set
+        value: 80
+out:
+  projectData:
+    resources:
+      variables:
+        volume:
+          type: number
+          scope: device
+          default: 50
+  global:
+    crossSlotVariables:
+      volume: 80
+    pendingEffects:
+      - name: "crossSlotVariables"
+        payload:
+          crossSlotVariables:
+            volume: 80
+      - name: "render"
+  contexts:
+    - variables: {}
+---
+case: set global variable
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            achievement1:
+              type: boolean
+              scope: global
+              default: false
+      global:
+        crossSlotVariables:
+          achievement1: false
+        pendingEffects: []
+      contexts:
+        - variables: {}
+  - operations:
+      - variableId: achievement1
+        op: set
+        value: true
+out:
+  projectData:
+    resources:
+      variables:
+        achievement1:
+          type: boolean
+          scope: global
+          default: false
+  global:
+    crossSlotVariables:
+      achievement1: true
+    pendingEffects:
+      - name: "crossSlotVariables"
+        payload:
+          crossSlotVariables:
+            achievement1: true
+      - name: "render"
+  contexts:
+    - variables: {}
+---
+case: increment runtime number
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            score:
+              type: number
+              scope: runtime
+              default: 0
+      global:
+        crossSlotVariables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            score: 100
+  - operations:
+      - variableId: score
+        op: increment
+out:
+  projectData:
+    resources:
+      variables:
+        score:
+          type: number
+          scope: runtime
+          default: 0
+  global:
+    crossSlotVariables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - variables:
+        score: 101
+---
+case: toggle runtime boolean
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            soundEnabled:
+              type: boolean
+              scope: runtime
+              default: true
+      global:
+        crossSlotVariables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            soundEnabled: true
+  - operations:
+      - variableId: soundEnabled
+        op: toggle
+out:
+  projectData:
+    resources:
+      variables:
+        soundEnabled:
+          type: boolean
+          scope: runtime
+          default: true
+  global:
+    crossSlotVariables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - variables:
+        soundEnabled: false
+---
+case: toggle device boolean
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            notificationsOn:
+              type: boolean
+              scope: device
+              default: false
+      global:
+        crossSlotVariables:
+          notificationsOn: false
+        pendingEffects: []
+      contexts:
+        - variables: {}
+  - operations:
+      - variableId: notificationsOn
+        op: toggle
+out:
+  projectData:
+    resources:
+      variables:
+        notificationsOn:
+          type: boolean
+          scope: device
+          default: false
+  global:
+    crossSlotVariables:
+      notificationsOn: true
+    pendingEffects:
+      - name: "crossSlotVariables"
+        payload:
+          crossSlotVariables:
+            notificationsOn: true
+      - name: "render"
+  contexts:
+    - variables: {}
+---
+case: multiple operations - mixed scopes
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            score:
+              type: number
+              scope: runtime
+              default: 0
+            volume:
+              type: number
+              scope: device
+              default: 50
+            achievement1:
+              type: boolean
+              scope: global
+              default: false
+      global:
+        crossSlotVariables:
+          volume: 50
+          achievement1: false
+        pendingEffects: []
+      contexts:
+        - variables:
+            score: 100
+  - operations:
+      - variableId: score
+        op: increment
+      - variableId: volume
+        op: set
+        value: 80
+      - variableId: achievement1
+        op: set
+        value: true
+out:
+  projectData:
+    resources:
+      variables:
+        score:
+          type: number
+          scope: runtime
+          default: 0
+        volume:
+          type: number
+          scope: device
+          default: 50
+        achievement1:
+          type: boolean
+          scope: global
+          default: false
+  global:
+    crossSlotVariables:
+      volume: 80
+      achievement1: true
+    pendingEffects:
+      - name: "crossSlotVariables"
+        payload:
+          crossSlotVariables:
+            volume: 80
+            achievement1: true
+      - name: "render"
+  contexts:
+    - variables:
+        score: 101
+---
+case: increment undefined runtime variable (should become 1)
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            newCounter:
+              type: number
+              scope: runtime
+              default: 0
+      global:
+        crossSlotVariables: {}
+        pendingEffects: []
+      contexts:
+        - variables: {}
+  - operations:
+      - variableId: newCounter
+        op: increment
+out:
+  projectData:
+    resources:
+      variables:
+        newCounter:
+          type: number
+          scope: runtime
+          default: 0
+  global:
+    crossSlotVariables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - variables:
+        newCounter: 1
+---
+case: add to runtime number
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            gold:
+              type: number
+              scope: runtime
+              default: 0
+      global:
+        crossSlotVariables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            gold: 50
+  - operations:
+      - variableId: gold
+        op: add
+        value: 25
+out:
+  projectData:
+    resources:
+      variables:
+        gold:
+          type: number
+          scope: runtime
+          default: 0
+  global:
+    crossSlotVariables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - variables:
+        gold: 75
+---
+case: subtract from runtime number
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            health:
+              type: number
+              scope: runtime
+              default: 100
+      global:
+        crossSlotVariables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            health: 100
+  - operations:
+      - variableId: health
+        op: subtract
+        value: 30
+out:
+  projectData:
+    resources:
+      variables:
+        health:
+          type: number
+          scope: runtime
+          default: 100
+  global:
+    crossSlotVariables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - variables:
+        health: 70
+---
+case: multiply runtime number
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            multiplier:
+              type: number
+              scope: runtime
+              default: 1
+      global:
+        crossSlotVariables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            multiplier: 2
+  - operations:
+      - variableId: multiplier
+        op: multiply
+        value: 3
+out:
+  projectData:
+    resources:
+      variables:
+        multiplier:
+          type: number
+          scope: runtime
+          default: 1
+  global:
+    crossSlotVariables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - variables:
+        multiplier: 6
+---
+case: divide runtime number
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            value:
+              type: number
+              scope: runtime
+              default: 0
+      global:
+        crossSlotVariables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            value: 100
+  - operations:
+      - variableId: value
+        op: divide
+        value: 4
+out:
+  projectData:
+    resources:
+      variables:
+        value:
+          type: number
+          scope: runtime
+          default: 0
+  global:
+    crossSlotVariables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - variables:
+        value: 25
+---
+case: decrement runtime number
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            score:
+              type: number
+              scope: runtime
+              default: 0
+      global:
+        crossSlotVariables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            score: 100
+  - operations:
+      - variableId: score
+        op: decrement
+out:
+  projectData:
+    resources:
+      variables:
+        score:
+          type: number
+          scope: runtime
+          default: 0
+  global:
+    crossSlotVariables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - variables:
+        score: 99

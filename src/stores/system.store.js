@@ -4,7 +4,11 @@ import { constructRenderState } from "./constructRenderState.js";
 
 export const createInitialState = (payload) => {
   const {
-    global: { currentLocalizationPackageId, saveSlots = {} },
+    global: {
+      currentLocalizationPackageId,
+      saveSlots = {},
+      crossSlotVariables: loadedCrossSlotVariables = {},
+    },
     // initialPointer,
     projectData,
   } = payload;
@@ -19,6 +23,36 @@ export const createInitialState = (payload) => {
         projectData.story.scenes[projectData.story.initialSceneId]
           .initialSectionId
       ].lines[0].id,
+  };
+
+  // Initialize variables from project data
+  const runtimeVariables = {};
+  const crossSlotVariables = {}; // Both device and global scopes (shared across all save slots)
+  if (projectData.resources?.variables) {
+    Object.entries(projectData.resources.variables).forEach(
+      ([variableId, config]) => {
+        const value =
+          config.default ??
+          (config.type === "number"
+            ? 0
+            : config.type === "boolean"
+              ? false
+              : "");
+
+        if (config.scope === "runtime") {
+          runtimeVariables[variableId] = value;
+        } else {
+          // Device and global scopes both go to crossSlotVariables
+          crossSlotVariables[variableId] = value;
+        }
+      },
+    );
+  }
+
+  // Merge with loaded crossSlotVariables from localStorage (if provided)
+  const mergedCrossSlotVariables = {
+    ...crossSlotVariables,
+    ...loadedCrossSlotVariables,
   };
 
   const state = {
@@ -49,9 +83,7 @@ export const createInitialState = (payload) => {
       },
       saveSlots,
       layeredViews: [],
-    },
-    variables: {
-      count: String(10),
+      crossSlotVariables: mergedCrossSlotVariables,
     },
     contexts: [
       {
@@ -74,7 +106,7 @@ export const createInitialState = (payload) => {
         bgm: {
           resourceId: undefined,
         },
-        // variables: {},
+        variables: runtimeVariables,
       },
     ],
   };
@@ -368,7 +400,12 @@ export const selectRenderState = ({ state }) => {
     skipOnlyViewedLines: state.global.skipOnlyViewedLines,
     layeredViews: state.global.layeredViews,
     dialogueHistory: selectDialogueHistory({ state }),
-    variables: state.variables,
+    variables: Object.fromEntries(
+      Object.entries({
+        ...state.global.crossSlotVariables,
+        ...state.contexts[state.contexts.length - 1].variables,
+      }).map(([key, value]) => [key, String(value)]),
+    ),
   });
   console.log("renderState", renderState);
   return renderState;
@@ -1130,11 +1167,69 @@ export const sectionTransition = ({ state }, payload) => {
 };
 
 export const updateVariable = ({ state }, payload) => {
-  console.log("updateVariable");
-  state.variables.count += 1;
+  const { operations = [] } = payload;
+
+  let crossSlotModified = false;
+
+  operations.forEach(({ variableId, op, value }) => {
+    // Determine target based on variable scope
+    const variableConfig = state.projectData.resources?.variables?.[variableId];
+    const scope = variableConfig?.scope || "runtime";
+
+    const target =
+      scope === "runtime"
+        ? state.contexts[state.contexts.length - 1].variables
+        : state.global.crossSlotVariables;
+
+    // Track if any device or global variables were modified
+    if (scope !== "runtime") {
+      crossSlotModified = true;
+    }
+
+    switch (op) {
+      case "set":
+        target[variableId] = value;
+        break;
+      case "add":
+        target[variableId] = (target[variableId] || 0) + value;
+        break;
+      case "subtract":
+        target[variableId] = (target[variableId] || 0) - value;
+        break;
+      case "multiply":
+        target[variableId] = (target[variableId] || 1) * value;
+        break;
+      case "divide":
+        target[variableId] = (target[variableId] || 0) / value;
+        break;
+      case "increment":
+        target[variableId] = (target[variableId] || 0) + 1;
+        break;
+      case "decrement":
+        target[variableId] = (target[variableId] || 0) - 1;
+        break;
+      case "toggle":
+        target[variableId] = !target[variableId];
+        break;
+      default:
+        console.warn(`Unknown operation: ${op}`);
+    }
+  });
+
+  // Save crossSlot variables if any were modified
+  if (crossSlotModified) {
+    state.global.pendingEffects.push({
+      name: "crossSlotVariables",
+      payload: {
+        crossSlotVariables: { ...state.global.crossSlotVariables },
+      },
+    });
+  }
+
   state.global.pendingEffects.push({
     name: "render",
   });
+  return state;
 };
 
 /**************************

@@ -105,6 +105,21 @@ out:
             - pointers:
                 read: { sectionId: "sec1", lineId: "line1" }
     pendingEffects:
+      - name: "saveSlots"
+        payload:
+          saveSlots:
+            "1":
+              slotKey: "1"
+              date: null
+              image: null
+              state:
+                projectData:
+                  story: { initialSceneId: "test" }
+                global:
+                  pendingEffects: []
+                contexts:
+                  - pointers:
+                      read: { sectionId: "sec1", lineId: "line1" }
       - name: "render"
   contexts:
     - pointers:
@@ -140,7 +155,90 @@ out:
                 read: { sectionId: "sec1", lineId: "line1" }
     pendingEffects:
       - name: "existingEffect"
+      - name: "saveSlots"
+        payload:
+          saveSlots:
+            "1":
+              slotKey: "1"
+              date: null
+              image: null
+              state:
+                projectData:
+                  story: { initialSceneId: "test" }
+                global:
+                  pendingEffects: []
+                contexts:
+                  - pointers:
+                      read: { sectionId: "sec1", lineId: "line1" }
       - name: "render"
   contexts:
     - pointers:
         read: { sectionId: "sec1", lineId: "line1" }
+---
+case: save with runtime variables
+in:
+  - state:
+      global:
+        saveSlots: {}
+        pendingEffects: []
+        viewedRegistry:
+          sections: ["sec1"]
+          resources: []
+      projectData:
+        story: { initialSceneId: "test" }
+      contexts:
+        - pointers:
+            read: { sectionId: "sec1", lineId: "line1" }
+          variables:
+            playerName: "Alice"
+            score: 150
+            soundEnabled: true
+  - slot: 1
+out:
+  global:
+    saveSlots:
+      "1":
+        slotKey: "1"
+        date: null
+        image: null
+        state:
+          viewedRegistry:
+            sections: ["sec1"]
+            resources: []
+          contexts:
+            - pointers:
+                read: { sectionId: "sec1", lineId: "line1" }
+              variables:
+                playerName: "Alice"
+                score: 150
+                soundEnabled: true
+    viewedRegistry:
+      sections: ["sec1"]
+      resources: []
+    pendingEffects:
+      - name: "saveSlots"
+        payload:
+          saveSlots:
+            "1":
+              slotKey: "1"
+              date: null
+              image: null
+              state:
+                viewedRegistry:
+                  sections: ["sec1"]
+                  resources: []
+                contexts:
+                  - pointers:
+                      read: { sectionId: "sec1", lineId: "line1" }
+                    variables:
+                      playerName: "Alice"
+                      score: 150
+                      soundEnabled: true
+      - name: "render"
+  contexts:
+    - pointers:
+        read: { sectionId: "sec1", lineId: "line1" }
+      variables:
+        playerName: "Alice"
+        score: 150
+        soundEnabled: true

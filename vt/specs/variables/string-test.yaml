@@ -1,0 +1,310 @@
+---
+title: "String Variables Test"
+---
+l10n:
+  packages:
+    en:
+      label: English
+      lang: en
+      keys: {}
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#2c3e50"
+
+resources:
+  variables:
+    playerName:
+      type: string
+      scope: runtime
+      default: "Guest"
+
+    currentStatus:
+      type: string
+      scope: global
+      default: "Idle"
+
+  layouts:
+    base1:
+      elements:
+        - id: clickArea
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+
+    stringTestUI:
+      name: String Variable Test Screen
+      elements:
+        - id: title
+          type: text
+          content: "String Variable Test"
+          x: 960
+          y: 100
+          anchorX: 0.5
+          textStyle:
+            fontSize: 48
+            fill: "#ecf0f1"
+
+        # Display runtime string (playerName)
+        - id: nameLabel
+          type: text
+          content: "Player Name (runtime):"
+          x: 400
+          y: 300
+          textStyle:
+            fontSize: 32
+            fill: "#bdc3c7"
+
+        - id: nameValue
+          type: text
+          content: "${variables.playerName}"
+          x: 800
+          y: 300
+          textStyle:
+            fontSize: 32
+            fill: "#3498db"
+            fontWeight: bold
+
+        # Display global string (currentStatus)
+        - id: statusLabel
+          type: text
+          content: "Status (global):"
+          x: 400
+          y: 400
+          textStyle:
+            fontSize: 32
+            fill: "#bdc3c7"
+
+        - id: statusValue
+          type: text
+          content: "${variables.currentStatus}"
+          x: 800
+          y: 400
+          textStyle:
+            fontSize: 32
+            fill: "#e74c3c"
+            fontWeight: bold
+
+        # Name change buttons
+        - id: nameButtonsContainer
+          type: container
+          x: 960
+          y: 550
+          anchorX: 0.5
+          children:
+            - id: btnAlice
+              type: text
+              content: "Alice"
+              x: -200
+              y: 0
+              anchorX: 0.5
+              textStyle:
+                fontSize: 28
+                fill: "#ffffff"
+              hover:
+                textStyle:
+                  fontSize: 28
+                  fill: "#f39c12"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: playerName
+                          op: set
+                          value: "Alice"
+
+            - id: btnBob
+              type: text
+              content: "Bob"
+              x: -50
+              y: 0
+              anchorX: 0.5
+              textStyle:
+                fontSize: 28
+                fill: "#ffffff"
+              hover:
+                textStyle:
+                  fontSize: 28
+                  fill: "#f39c12"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: playerName
+                          op: set
+                          value: "Bob"
+
+            - id: btnCharlie
+              type: text
+              content: "Charlie"
+              x: 100
+              y: 0
+              anchorX: 0.5
+              textStyle:
+                fontSize: 28
+                fill: "#ffffff"
+              hover:
+                textStyle:
+                  fontSize: 28
+                  fill: "#f39c12"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: playerName
+                          op: set
+                          value: "Charlie"
+
+            - id: btnReset
+              type: text
+              content: "Reset"
+              x: 250
+              y: 0
+              anchorX: 0.5
+              textStyle:
+                fontSize: 28
+                fill: "#95a5a6"
+              hover:
+                textStyle:
+                  fontSize: 28
+                  fill: "#e74c3c"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: playerName
+                          op: set
+                          value: "Guest"
+
+        # Status change buttons
+        - id: statusButtonsContainer
+          type: container
+          x: 960
+          y: 700
+          anchorX: 0.5
+          children:
+            - id: btnIdle
+              type: text
+              content: "Idle"
+              x: -200
+              y: 0
+              anchorX: 0.5
+              textStyle:
+                fontSize: 28
+                fill: "#ffffff"
+              hover:
+                textStyle:
+                  fontSize: 28
+                  fill: "#1abc9c"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: currentStatus
+                          op: set
+                          value: "Idle"
+
+            - id: btnActive
+              type: text
+              content: "Active"
+              x: -50
+              y: 0
+              anchorX: 0.5
+              textStyle:
+                fontSize: 28
+                fill: "#ffffff"
+              hover:
+                textStyle:
+                  fontSize: 28
+                  fill: "#1abc9c"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: currentStatus
+                          op: set
+                          value: "Active"
+
+            - id: btnBusy
+              type: text
+              content: "Busy"
+              x: 100
+              y: 0
+              anchorX: 0.5
+              textStyle:
+                fontSize: 28
+                fill: "#ffffff"
+              hover:
+                textStyle:
+                  fontSize: 28
+                  fill: "#1abc9c"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: currentStatus
+                          op: set
+                          value: "Busy"
+
+            - id: btnOffline
+              type: text
+              content: "Offline"
+              x: 250
+              y: 0
+              anchorX: 0.5
+              textStyle:
+                fontSize: 28
+                fill: "#ffffff"
+              hover:
+                textStyle:
+                  fontSize: 28
+                  fill: "#1abc9c"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: currentStatus
+                          op: set
+                          value: "Offline"
+
+        # Instructions
+        - id: instructions
+          type: text
+          content: "Click buttons to change variable values"
+          x: 960
+          y: 900
+          anchorX: 0.5
+          textStyle:
+            fontSize: 24
+            fill: "#7f8c8d"
+
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      name: String Test Scene
+      initialSectionId: section1
+      sections:
+        section1:
+          name: String Test Section
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: base1
+                layout:
+                  resourceId: stringTestUI

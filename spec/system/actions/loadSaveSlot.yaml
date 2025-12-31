@@ -85,3 +85,66 @@ out:
         options:
           initialState:
             level: 5
+---
+case: load with runtime variables
+in:
+  - state:
+      global:
+        saveSlots:
+          "1":
+            slotKey: "1"
+            date: 1704110400
+            image: "save.png"
+            state:
+              viewedRegistry:
+                sections: ["sec2"]
+                resources: []
+              contexts:
+                - pointers:
+                    read: { sectionId: "sec2", lineId: "line2" }
+                  variables:
+                    playerName: "Alice"
+                    score: 150
+                    soundEnabled: true
+        viewedRegistry:
+          sections: []
+          resources: []
+        pendingEffects: []
+      contexts:
+        - pointers:
+            read: { sectionId: "sec1", lineId: "line1" }
+          variables:
+            playerName: "Guest"
+            score: 0
+            soundEnabled: false
+  - slot: 1
+out:
+  global:
+    saveSlots:
+      "1":
+        slotKey: "1"
+        date: 1704110400
+        image: "save.png"
+        state:
+          viewedRegistry:
+            sections: ["sec2"]
+            resources: []
+          contexts:
+            - pointers:
+                read: { sectionId: "sec2", lineId: "line2" }
+              variables:
+                playerName: "Alice"
+                score: 150
+                soundEnabled: true
+    viewedRegistry:
+      sections: ["sec2"]
+      resources: []
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - pointers:
+        read: { sectionId: "sec2", lineId: "line2" }
+      variables:
+        playerName: "Alice"
+        score: 150
+        soundEnabled: true

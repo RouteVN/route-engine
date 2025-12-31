@@ -14,9 +14,9 @@ screen:
 
 resources:
   variables:
-    variable1:
+    count:
       type: number
-      readonly: true
+      scope: global
       default: 0
 
   layouts:
@@ -71,10 +71,8 @@ resources:
                   actions:
                     updateVariable:
                       operations:
-                        - type: increment
-                          value: 4
-                        # - type: set
-                        #   value: "abcd"
+                        - variableId: count
+                          op: increment
             - id: minus
               type: text
               content: "-"
@@ -87,6 +85,13 @@ resources:
                 textStyle:
                   fontSize: 48
                   fill: yellow
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: count
+                          op: decrement
 
 story:
   initialSceneId: ajfl3a

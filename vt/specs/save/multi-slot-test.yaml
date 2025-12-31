@@ -1,0 +1,596 @@
+---
+title: "Multi-Slot Save Test"
+---
+l10n:
+  packages:
+    en:
+      label: English
+      lang: en
+      keys: {}
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#1a1a2e"
+
+resources:
+  variables:
+    # Runtime variables - different per save slot
+    playerName:
+      type: string
+      scope: runtime
+      default: "New Player"
+
+    playerLevel:
+      type: number
+      scope: runtime
+      default: 1
+
+    playerGold:
+      type: number
+      scope: runtime
+      default: 0
+
+    questCompleted:
+      type: boolean
+      scope: runtime
+      default: false
+
+  layouts:
+    base1:
+      elements:
+        - id: clickArea
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                contextNextLine: {}
+
+    multiSlotTestUI:
+      name: Multi-Slot Save Test
+      elements:
+        # Title
+        - id: title
+          type: text
+          content: "Multi-Slot Save Test - Runtime Variables"
+          x: 960
+          y: 50
+          anchorX: 0.5
+          textStyle:
+            fontSize: 42
+            fill: "#ffffff"
+            fontWeight: bold
+
+        - id: subtitle
+          type: text
+          content: "Each save slot stores different runtime variables"
+          x: 960
+          y: 100
+          anchorX: 0.5
+          textStyle:
+            fontSize: 24
+            fill: "#95a5a6"
+
+        # Current State Display
+        - id: currentStateLabel
+          type: text
+          content: "CURRENT STATE"
+          x: 960
+          y: 180
+          anchorX: 0.5
+          textStyle:
+            fontSize: 28
+            fill: "#3498db"
+            fontWeight: bold
+
+        - id: nameDisplay
+          type: text
+          content: "Name: ${variables.playerName}"
+          x: 300
+          y: 240
+          textStyle:
+            fontSize: 26
+            fill: "#ecf0f1"
+
+        - id: levelDisplay
+          type: text
+          content: "Level: ${variables.playerLevel}"
+          x: 700
+          y: 240
+          textStyle:
+            fontSize: 26
+            fill: "#ecf0f1"
+
+        - id: goldDisplay
+          type: text
+          content: "Gold: ${variables.playerGold}"
+          x: 1000
+          y: 240
+          textStyle:
+            fontSize: 26
+            fill: "#ecf0f1"
+
+        - id: questDisplay
+          type: text
+          content: "Quest Done: ${variables.questCompleted}"
+          x: 1400
+          y: 240
+          textStyle:
+            fontSize: 26
+            fill: "#ecf0f1"
+
+        # Modify Current State Section
+        - id: modifyLabel
+          type: text
+          content: "MODIFY CURRENT STATE"
+          x: 960
+          y: 320
+          anchorX: 0.5
+          textStyle:
+            fontSize: 28
+            fill: "#e74c3c"
+            fontWeight: bold
+
+        # Name buttons
+        - id: nameButtons
+          type: container
+          x: 300
+          y: 380
+          children:
+            - id: nameLabel
+              type: text
+              content: "Set Name:"
+              x: 0
+              y: 0
+              textStyle:
+                fontSize: 22
+                fill: "#bdc3c7"
+
+            - id: btnAlice
+              type: text
+              content: "Alice"
+              x: 120
+              y: 0
+              textStyle:
+                fontSize: 20
+                fill: "#ffffff"
+              hover:
+                textStyle:
+                  fontSize: 20
+                  fill: "#f39c12"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: playerName
+                          op: set
+                          value: "Alice"
+
+            - id: btnBob
+              type: text
+              content: "Bob"
+              x: 200
+              y: 0
+              textStyle:
+                fontSize: 20
+                fill: "#ffffff"
+              hover:
+                textStyle:
+                  fontSize: 20
+                  fill: "#f39c12"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: playerName
+                          op: set
+                          value: "Bob"
+
+            - id: btnCharlie
+              type: text
+              content: "Charlie"
+              x: 270
+              y: 0
+              textStyle:
+                fontSize: 20
+                fill: "#ffffff"
+              hover:
+                textStyle:
+                  fontSize: 20
+                  fill: "#f39c12"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: playerName
+                          op: set
+                          value: "Charlie"
+
+        # Level buttons
+        - id: levelButtons
+          type: container
+          x: 700
+          y: 380
+          children:
+            - id: levelLabel
+              type: text
+              content: "Level:"
+              x: 0
+              y: 0
+              textStyle:
+                fontSize: 22
+                fill: "#bdc3c7"
+
+            - id: btnLevelUp
+              type: text
+              content: "+1"
+              x: 80
+              y: 0
+              textStyle:
+                fontSize: 20
+                fill: "#2ecc71"
+              hover:
+                textStyle:
+                  fontSize: 20
+                  fill: "#27ae60"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: playerLevel
+                          op: increment
+
+            - id: btnLevelDown
+              type: text
+              content: "-1"
+              x: 130
+              y: 0
+              textStyle:
+                fontSize: 20
+                fill: "#e74c3c"
+              hover:
+                textStyle:
+                  fontSize: 20
+                  fill: "#c0392b"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: playerLevel
+                          op: decrement
+
+        # Gold buttons
+        - id: goldButtons
+          type: container
+          x: 1000
+          y: 380
+          children:
+            - id: goldLabel
+              type: text
+              content: "Gold:"
+              x: 0
+              y: 0
+              textStyle:
+                fontSize: 22
+                fill: "#bdc3c7"
+
+            - id: btnGoldAdd
+              type: text
+              content: "+100"
+              x: 70
+              y: 0
+              textStyle:
+                fontSize: 20
+                fill: "#f39c12"
+              hover:
+                textStyle:
+                  fontSize: 20
+                  fill: "#f1c40f"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: playerGold
+                          op: add
+                          value: 100
+
+            - id: btnGoldReset
+              type: text
+              content: "Reset"
+              x: 140
+              y: 0
+              textStyle:
+                fontSize: 20
+                fill: "#95a5a6"
+              hover:
+                textStyle:
+                  fontSize: 20
+                  fill: "#7f8c8d"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: playerGold
+                          op: set
+                          value: 0
+
+        # Quest toggle
+        - id: questButton
+          type: container
+          x: 1400
+          y: 380
+          children:
+            - id: questLabel
+              type: text
+              content: "Quest:"
+              x: 0
+              y: 0
+              textStyle:
+                fontSize: 22
+                fill: "#bdc3c7"
+
+            - id: btnQuestToggle
+              type: text
+              content: "Toggle"
+              x: 80
+              y: 0
+              textStyle:
+                fontSize: 20
+                fill: "#9b59b6"
+              hover:
+                textStyle:
+                  fontSize: 20
+                  fill: "#8e44ad"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: questCompleted
+                          op: toggle
+
+        # Save Slots Section
+        - id: saveLabel
+          type: text
+          content: "SAVE TO SLOT"
+          x: 960
+          y: 480
+          anchorX: 0.5
+          textStyle:
+            fontSize: 28
+            fill: "#2ecc71"
+            fontWeight: bold
+
+        - id: saveSlotButtons
+          type: container
+          x: 960
+          y: 540
+          anchorX: 0.5
+          children:
+            - id: btnSaveSlot1
+              type: text
+              content: "Save Slot 1"
+              x: -300
+              y: 0
+              anchorX: 0.5
+              textStyle:
+                fontSize: 24
+                fill: "#ffffff"
+                fontWeight: bold
+              hover:
+                textStyle:
+                  fontSize: 24
+                  fill: "#2ecc71"
+              click:
+                actionPayload:
+                  actions:
+                    saveSaveSlot:
+                      slot: 1
+
+            - id: btnSaveSlot2
+              type: text
+              content: "Save Slot 2"
+              x: -100
+              y: 0
+              anchorX: 0.5
+              textStyle:
+                fontSize: 24
+                fill: "#ffffff"
+                fontWeight: bold
+              hover:
+                textStyle:
+                  fontSize: 24
+                  fill: "#2ecc71"
+              click:
+                actionPayload:
+                  actions:
+                    saveSaveSlot:
+                      slot: 2
+
+            - id: btnSaveSlot3
+              type: text
+              content: "Save Slot 3"
+              x: 100
+              y: 0
+              anchorX: 0.5
+              textStyle:
+                fontSize: 24
+                fill: "#ffffff"
+                fontWeight: bold
+              hover:
+                textStyle:
+                  fontSize: 24
+                  fill: "#2ecc71"
+              click:
+                actionPayload:
+                  actions:
+                    saveSaveSlot:
+                      slot: 3
+
+            - id: btnSaveSlot4
+              type: text
+              content: "Save Slot 4"
+              x: 300
+              y: 0
+              anchorX: 0.5
+              textStyle:
+                fontSize: 24
+                fill: "#ffffff"
+                fontWeight: bold
+              hover:
+                textStyle:
+                  fontSize: 24
+                  fill: "#2ecc71"
+              click:
+                actionPayload:
+                  actions:
+                    saveSaveSlot:
+                      slot: 4
+
+        # Load Slots Section
+        - id: loadLabel
+          type: text
+          content: "LOAD FROM SLOT"
+          x: 960
+          y: 640
+          anchorX: 0.5
+          textStyle:
+            fontSize: 28
+            fill: "#3498db"
+            fontWeight: bold
+
+        - id: loadSlotButtons
+          type: container
+          x: 960
+          y: 700
+          anchorX: 0.5
+          children:
+            - id: btnLoadSlot1
+              type: text
+              content: "Load Slot 1"
+              x: -300
+              y: 0
+              anchorX: 0.5
+              textStyle:
+                fontSize: 24
+                fill: "#ffffff"
+                fontWeight: bold
+              hover:
+                textStyle:
+                  fontSize: 24
+                  fill: "#3498db"
+              click:
+                actionPayload:
+                  actions:
+                    loadSaveSlot:
+                      slot: 1
+
+            - id: btnLoadSlot2
+              type: text
+              content: "Load Slot 2"
+              x: -100
+              y: 0
+              anchorX: 0.5
+              textStyle:
+                fontSize: 24
+                fill: "#ffffff"
+                fontWeight: bold
+              hover:
+                textStyle:
+                  fontSize: 24
+                  fill: "#3498db"
+              click:
+                actionPayload:
+                  actions:
+                    loadSaveSlot:
+                      slot: 2
+
+            - id: btnLoadSlot3
+              type: text
+              content: "Load Slot 3"
+              x: 100
+              y: 0
+              anchorX: 0.5
+              textStyle:
+                fontSize: 24
+                fill: "#ffffff"
+                fontWeight: bold
+              hover:
+                textStyle:
+                  fontSize: 24
+                  fill: "#3498db"
+              click:
+                actionPayload:
+                  actions:
+                    loadSaveSlot:
+                      slot: 3
+
+            - id: btnLoadSlot4
+              type: text
+              content: "Load Slot 4"
+              x: 300
+              y: 0
+              anchorX: 0.5
+              textStyle:
+                fontSize: 24
+                fill: "#ffffff"
+                fontWeight: bold
+              hover:
+                textStyle:
+                  fontSize: 24
+                  fill: "#3498db"
+              click:
+                actionPayload:
+                  actions:
+                    loadSaveSlot:
+                      slot: 4
+
+        # Instructions
+        - id: instructions
+          type: text
+          content: "1. Modify the current state (name, level, gold, quest)\n2. Save to a slot\n3. Modify state again differently\n4. Save to another slot\n5. Load different slots to see each has its own runtime variables!"
+          x: 960
+          y: 850
+          anchorX: 0.5
+          textStyle:
+            fontSize: 20
+            fill: "#7f8c8d"
+            align: center
+
+        - id: devToolsHint
+          type: text
+          content: "Open DevTools Console and type: JSON.parse(localStorage.getItem('saveSlots'))"
+          x: 960
+          y: 1000
+          anchorX: 0.5
+          textStyle:
+            fontSize: 18
+            fill: "#34495e"
+            align: center
+
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      name: Multi-Slot Save Scene
+      initialSectionId: section1
+      sections:
+        section1:
+          name: Multi-Slot Test Section
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: base1
+                layout:
+                  resourceId: multiSlotTestUI

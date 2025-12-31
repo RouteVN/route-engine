@@ -195,12 +195,14 @@ const init = async () => {
   const effectsHandler = createEffectsHandler({ getEngine: () => engine, routeGraphics, ticker });
   const engine = createRouteEngine({ handlePendingEffects: effectsHandler });
   const saveSlots = JSON.parse(localStorage.getItem("saveSlots")) || {};
+  const crossSlotVariables = JSON.parse(localStorage.getItem("crossSlotVariables")) || {};
 
   engine.init({
     initialState: {
       global: {
         currentLocalizationPackageId: 'eklekfjwalefj',
-        saveSlots
+        saveSlots,
+        crossSlotVariables
       },
       projectData
     }

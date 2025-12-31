@@ -106,9 +106,17 @@ const saveSlots = ({}, payload) => {
   localStorage.setItem("saveSlots", JSON.stringify(payload.saveSlots));
 };
 
+const crossSlotVariables = ({}, payload) => {
+  localStorage.setItem(
+    "crossSlotVariables",
+    JSON.stringify(payload.crossSlotVariables),
+  );
+};
+
 const effects = {
   render,
   saveSlots,
+  crossSlotVariables,
   handleLineActions,
   startAutoNextTimer,
   clearAutoNextTimer,
