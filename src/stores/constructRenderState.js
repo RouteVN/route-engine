@@ -295,7 +295,7 @@ export const addVisuals = (state, { presentationState, resources }) => {
         const spritesheet = spritesheets[item.resourceId];
         if (spritesheet) {
           const transform = resources.transforms?.[item.transformId] || {};
-          const animationName = item.animation;
+          const animationName = item.animationName;
 
           if (animationName) {
             const animationDef = spritesheet.animations?.[animationName];

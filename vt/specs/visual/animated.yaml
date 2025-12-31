@@ -118,7 +118,7 @@ story:
                   items:
                     - id: fighter-1
                       resourceId: fighterSheet
-                      animation: roll
+                      animationName: roll
                       transformId: centerPos
             - id: line2
               actions:
@@ -126,7 +126,7 @@ story:
                   items:
                     - id: fighter-1
                       resourceId: fighterSheet
-                      animation: rollOnce
+                      animationName: rollOnce
                       transformId: leftPos
             - id: line3
               actions:
@@ -134,6 +134,6 @@ story:
                   items:
                     - id: fighter-1
                       resourceId: fighterSheet
-                      animation: roll
+                      animationName: roll
                       animationSpeed: 0.8
                       transformId: centerPos

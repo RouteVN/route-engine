@@ -129,7 +129,7 @@ properties:
             id:
               type: string
               description: Unique identifier for the visual item
-            animation:
+            animationName:
               type: string
               description: Name of the animation to play (defined in the spritesheet resource)
             animationSpeed:
