@@ -40,3 +40,5 @@ vt:
           files: "save"
         - title: "Keyboard"
           files: "keyboard"
+        - title: "Variables"
+          files: "variables"

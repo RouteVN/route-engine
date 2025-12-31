@@ -1,0 +1,102 @@
+---
+title: "Sample"
+---
+l10n:
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys: {}
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+resources:
+  variables:
+    variable1:
+      type: number
+      readonly: true
+      default: 0
+
+  layouts:
+    base1:
+      elements:
+        - id: af32
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+    j3i8dk32:
+      name: Title Screen
+      elements:
+        - id: bg
+          type: sprite
+          url: dmni32
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+        - id: container
+          type: container
+          x: 400
+          y: 400
+          children:
+            - id: zero
+              type: text
+              content: "0"
+              x: -50
+              y: 0
+              textStyle:
+                fontSize: 48
+                fill: "white"
+              hover:
+                textStyle:
+                  fontSize: 48
+                  fill: yellow
+            - id: plus
+              type: text
+              content: "+"
+              x: 0
+              y: 0
+              textStyle:
+                fontSize: 48
+                fill: "white"
+              hover:
+                textStyle:
+                  fontSize: 48
+                  fill: yellow
+            - id: minus
+              type: text
+              content: "-"
+              x: 50
+              y: 0
+              textStyle:
+                fontSize: 48
+                fill: "white"
+              hover:
+                textStyle:
+                  fontSize: 48
+                  fill: yellow
+
+
+story:
+  initialSceneId: ajfl3a
+  scenes:
+    ajfl3a:
+      name: Scene 1
+      initialSectionId: l3kjfawelf
+      sections:
+        l3kjfawelf:
+          name: Section 1
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: base1
+                layout:
+                  resourceId: j3i8dk32
