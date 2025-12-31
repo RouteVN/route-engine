@@ -16,7 +16,7 @@ in:
               scope: runtime
               default: "Guest"
       global:
-        crossSlotVariables: {}
+        globalAndDeviceVariables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -34,7 +34,7 @@ out:
           scope: runtime
           default: "Guest"
   global:
-    crossSlotVariables: {}
+    globalAndDeviceVariables: {}
     pendingEffects:
       - name: "render"
   contexts:
@@ -52,7 +52,7 @@ in:
               scope: device
               default: 50
       global:
-        crossSlotVariables:
+        globalAndDeviceVariables:
           volume: 50
         pendingEffects: []
       contexts:
@@ -70,12 +70,12 @@ out:
           scope: device
           default: 50
   global:
-    crossSlotVariables:
+    globalAndDeviceVariables:
       volume: 80
     pendingEffects:
-      - name: "crossSlotVariables"
+      - name: "deviceVariables"
         payload:
-          crossSlotVariables:
+          deviceVariables:
             volume: 80
       - name: "render"
   contexts:
@@ -92,7 +92,7 @@ in:
               scope: global
               default: false
       global:
-        crossSlotVariables:
+        globalAndDeviceVariables:
           achievement1: false
         pendingEffects: []
       contexts:
@@ -110,18 +110,18 @@ out:
           scope: global
           default: false
   global:
-    crossSlotVariables:
+    globalAndDeviceVariables:
       achievement1: true
     pendingEffects:
-      - name: "crossSlotVariables"
+      - name: "globalVariables"
         payload:
-          crossSlotVariables:
+          globalVariables:
             achievement1: true
       - name: "render"
   contexts:
     - variables: {}
 ---
-case: increment runtime number
+case: increment runtime number (default value 1)
 in:
   - state:
       projectData:
@@ -132,7 +132,7 @@ in:
               scope: runtime
               default: 0
       global:
-        crossSlotVariables: {}
+        globalAndDeviceVariables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -149,7 +149,7 @@ out:
           scope: runtime
           default: 0
   global:
-    crossSlotVariables: {}
+    globalAndDeviceVariables: {}
     pendingEffects:
       - name: "render"
   contexts:
@@ -167,7 +167,7 @@ in:
               scope: runtime
               default: true
       global:
-        crossSlotVariables: {}
+        globalAndDeviceVariables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -184,7 +184,7 @@ out:
           scope: runtime
           default: true
   global:
-    crossSlotVariables: {}
+    globalAndDeviceVariables: {}
     pendingEffects:
       - name: "render"
   contexts:
@@ -202,7 +202,7 @@ in:
               scope: device
               default: false
       global:
-        crossSlotVariables:
+        globalAndDeviceVariables:
           notificationsOn: false
         pendingEffects: []
       contexts:
@@ -219,12 +219,12 @@ out:
           scope: device
           default: false
   global:
-    crossSlotVariables:
+    globalAndDeviceVariables:
       notificationsOn: true
     pendingEffects:
-      - name: "crossSlotVariables"
+      - name: "deviceVariables"
         payload:
-          crossSlotVariables:
+          deviceVariables:
             notificationsOn: true
       - name: "render"
   contexts:
@@ -249,7 +249,7 @@ in:
               scope: global
               default: false
       global:
-        crossSlotVariables:
+        globalAndDeviceVariables:
           volume: 50
           achievement1: false
         pendingEffects: []
@@ -282,14 +282,17 @@ out:
           scope: global
           default: false
   global:
-    crossSlotVariables:
+    globalAndDeviceVariables:
       volume: 80
       achievement1: true
     pendingEffects:
-      - name: "crossSlotVariables"
+      - name: "deviceVariables"
         payload:
-          crossSlotVariables:
+          deviceVariables:
             volume: 80
+      - name: "globalVariables"
+        payload:
+          globalVariables:
             achievement1: true
       - name: "render"
   contexts:
@@ -307,7 +310,7 @@ in:
               scope: runtime
               default: 0
       global:
-        crossSlotVariables: {}
+        globalAndDeviceVariables: {}
         pendingEffects: []
       contexts:
         - variables: {}
@@ -323,14 +326,14 @@ out:
           scope: runtime
           default: 0
   global:
-    crossSlotVariables: {}
+    globalAndDeviceVariables: {}
     pendingEffects:
       - name: "render"
   contexts:
     - variables:
         newCounter: 1
 ---
-case: add to runtime number
+case: increment runtime number with custom value
 in:
   - state:
       projectData:
@@ -341,14 +344,14 @@ in:
               scope: runtime
               default: 0
       global:
-        crossSlotVariables: {}
+        globalAndDeviceVariables: {}
         pendingEffects: []
       contexts:
         - variables:
             gold: 50
   - operations:
       - variableId: gold
-        op: add
+        op: increment
         value: 25
 out:
   projectData:
@@ -359,14 +362,14 @@ out:
           scope: runtime
           default: 0
   global:
-    crossSlotVariables: {}
+    globalAndDeviceVariables: {}
     pendingEffects:
       - name: "render"
   contexts:
     - variables:
         gold: 75
 ---
-case: subtract from runtime number
+case: decrement runtime number with custom value
 in:
   - state:
       projectData:
@@ -377,14 +380,14 @@ in:
               scope: runtime
               default: 100
       global:
-        crossSlotVariables: {}
+        globalAndDeviceVariables: {}
         pendingEffects: []
       contexts:
         - variables:
             health: 100
   - operations:
       - variableId: health
-        op: subtract
+        op: decrement
         value: 30
 out:
   projectData:
@@ -395,7 +398,7 @@ out:
           scope: runtime
           default: 100
   global:
-    crossSlotVariables: {}
+    globalAndDeviceVariables: {}
     pendingEffects:
       - name: "render"
   contexts:
@@ -413,7 +416,7 @@ in:
               scope: runtime
               default: 1
       global:
-        crossSlotVariables: {}
+        globalAndDeviceVariables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -431,7 +434,7 @@ out:
           scope: runtime
           default: 1
   global:
-    crossSlotVariables: {}
+    globalAndDeviceVariables: {}
     pendingEffects:
       - name: "render"
   contexts:
@@ -449,7 +452,7 @@ in:
               scope: runtime
               default: 0
       global:
-        crossSlotVariables: {}
+        globalAndDeviceVariables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -467,14 +470,14 @@ out:
           scope: runtime
           default: 0
   global:
-    crossSlotVariables: {}
+    globalAndDeviceVariables: {}
     pendingEffects:
       - name: "render"
   contexts:
     - variables:
         value: 25
 ---
-case: decrement runtime number
+case: decrement runtime number (default value 1)
 in:
   - state:
       projectData:
@@ -485,7 +488,7 @@ in:
               scope: runtime
               default: 0
       global:
-        crossSlotVariables: {}
+        globalAndDeviceVariables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -502,9 +505,154 @@ out:
           scope: runtime
           default: 0
   global:
-    crossSlotVariables: {}
+    globalAndDeviceVariables: {}
     pendingEffects:
       - name: "render"
   contexts:
     - variables:
         score: 99
+---
+case: error - missing scope
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            badVar:
+              type: number
+      global:
+        globalAndDeviceVariables: {}
+        pendingEffects: []
+      contexts:
+        - variables: {}
+  - operations:
+      - variableId: badVar
+        op: set
+        value: 10
+throws: "Variable scope is required for variable: badVar"
+---
+case: error - invalid scope
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            badVar:
+              type: number
+              scope: invalid
+      global:
+        globalAndDeviceVariables: {}
+        pendingEffects: []
+      contexts:
+        - variables: {}
+  - operations:
+      - variableId: badVar
+        op: set
+        value: 10
+throws: "Invalid variable scope: invalid for variable badVar. Expected one of: runtime, device, global"
+---
+case: error - unknown variable type
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            badVar:
+              type: customType
+              scope: runtime
+      global:
+        globalAndDeviceVariables: {}
+        pendingEffects: []
+      contexts:
+        - variables: {}
+  - operations:
+      - variableId: badVar
+        op: set
+        value: 10
+throws: "Unknown variable type: customType for variable badVar"
+---
+case: error - invalid operation for boolean
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            flag:
+              type: boolean
+              scope: runtime
+              default: false
+      global:
+        globalAndDeviceVariables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            flag: false
+  - operations:
+      - variableId: flag
+        op: increment
+throws: "Operation \"increment\" is not valid for variable \"flag\" of type \"boolean\". Valid operations: set, toggle"
+---
+case: error - invalid operation for string
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            name:
+              type: string
+              scope: runtime
+              default: ""
+      global:
+        globalAndDeviceVariables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            name: "Alice"
+  - operations:
+      - variableId: name
+        op: multiply
+        value: 2
+throws: "Operation \"multiply\" is not valid for variable \"name\" of type \"string\". Valid operations: set"
+---
+case: error - invalid operation for number
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            count:
+              type: number
+              scope: runtime
+              default: 0
+      global:
+        globalAndDeviceVariables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            count: 42
+  - operations:
+      - variableId: count
+        op: toggle
+throws: "Operation \"toggle\" is not valid for variable \"count\" of type \"number\". Valid operations: set, increment, decrement, multiply, divide"
+---
+case: error - unknown operation
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            score:
+              type: number
+              scope: runtime
+              default: 0
+      global:
+        globalAndDeviceVariables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            score: 100
+  - operations:
+      - variableId: score
+        op: unknown
+        value: 5
+throws: "Unknown operation: unknown"

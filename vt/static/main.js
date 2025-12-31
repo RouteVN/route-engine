@@ -159,7 +159,6 @@ const init = async () => {
     height: 1080,
     plugins,
     eventHandler: async (eventName, payload) => {
-      console.log('eventName', eventName, payload)
       if (eventName === 'renderComplete') {
         if (count >= 2) {
           return;
@@ -195,14 +194,16 @@ const init = async () => {
   const effectsHandler = createEffectsHandler({ getEngine: () => engine, routeGraphics, ticker });
   const engine = createRouteEngine({ handlePendingEffects: effectsHandler });
   const saveSlots = JSON.parse(localStorage.getItem("saveSlots")) || {};
-  const crossSlotVariables = JSON.parse(localStorage.getItem("crossSlotVariables")) || {};
+  const deviceVariables = JSON.parse(localStorage.getItem("deviceVariables")) || {};
+  const globalVariables = JSON.parse(localStorage.getItem("globalVariables")) || {};
+  const globalAndDeviceVariables = { ...deviceVariables, ...globalVariables };
 
   engine.init({
     initialState: {
       global: {
         currentLocalizationPackageId: 'eklekfjwalefj',
         saveSlots,
-        crossSlotVariables
+        globalAndDeviceVariables
       },
       projectData
     }

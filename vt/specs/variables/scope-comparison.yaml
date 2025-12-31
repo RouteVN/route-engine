@@ -159,7 +159,7 @@ resources:
                     updateVariable:
                       operations:
                         - variableId: playerGold
-                          op: add
+                          op: increment
                           value: 10
 
             - id: goldMinus
@@ -180,7 +180,7 @@ resources:
                     updateVariable:
                       operations:
                         - variableId: playerGold
-                          op: subtract
+                          op: decrement
                           value: 10
 
             # Location
@@ -411,7 +411,7 @@ resources:
                     updateVariable:
                       operations:
                         - variableId: volume
-                          op: add
+                          op: increment
                           value: 10
 
             - id: volumeDown
@@ -432,7 +432,7 @@ resources:
                     updateVariable:
                       operations:
                         - variableId: volume
-                          op: subtract
+                          op: decrement
                           value: 10
 
         # ═══════════════════════════════════════════════════════

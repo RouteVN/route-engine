@@ -291,3 +291,247 @@ export const createSelectiveActionsExecutor = (
     });
   };
 };
+
+/**
+ * Gets the default value for a variable based on its configuration
+ * @param {Object} config - Variable configuration
+ * @param {string} config.type - Variable type (number, boolean, string)
+ * @param {*} config.default - Optional default value
+ * @param {string} variableId - Variable identifier (for error messages)
+ * @returns {*} Default value for the variable
+ * @throws {Error} If variable type is invalid
+ *
+ * @example
+ * getVariableDefaultValue({ type: 'number' }, 'score') // 0
+ * getVariableDefaultValue({ type: 'boolean', default: true }, 'flag') // true
+ * getVariableDefaultValue({ type: 'unknown' }, 'bad') // throws Error
+ */
+export const getVariableDefaultValue = (config, variableId) => {
+  if (config.default !== undefined) {
+    return config.default;
+  }
+
+  const VALID_TYPES = ["number", "boolean", "string"];
+
+  if (!VALID_TYPES.includes(config.type)) {
+    throw new Error(
+      `Invalid variable type: ${config.type} for variable ${variableId}. Expected one of: ${VALID_TYPES.join(", ")}`,
+    );
+  }
+
+  switch (config.type) {
+    case "number":
+      return 0;
+    case "boolean":
+      return false;
+    case "string":
+      return "";
+  }
+};
+
+/**
+ * Initializes variables from project data, categorizing them by scope
+ * Pure function - throws error for invalid variable types or scopes
+ *
+ * @param {Object} projectData - Project data containing variable definitions
+ * @param {Object} projectData.resources.variables - Variable definitions
+ * @returns {Object} Object with runtimeVariables and globalAndDeviceVariables
+ * @throws {Error} If variable has invalid type
+ *
+ * @example
+ * const projectData = {
+ *   resources: {
+ *     variables: {
+ *       playerName: { type: 'string', scope: 'runtime', default: 'Player' },
+ *       volume: { type: 'number', scope: 'device', default: 50 }
+ *     }
+ *   }
+ * };
+ * const { runtimeVariables, globalAndDeviceVariables } = initializeVariablesFromProjectData(projectData);
+ * // runtimeVariables = { playerName: 'Player' }
+ * // globalAndDeviceVariables = { volume: 50 }
+ */
+export const initializeVariablesFromProjectData = (projectData) => {
+  const runtimeVariables = {};
+  const globalAndDeviceVariables = {};
+
+  if (!projectData.resources?.variables) {
+    return { runtimeVariables, globalAndDeviceVariables };
+  }
+
+  Object.entries(projectData.resources.variables).forEach(
+    ([variableId, config]) => {
+      const value = getVariableDefaultValue(config, variableId);
+
+      if (config.scope === "runtime") {
+        runtimeVariables[variableId] = value;
+      } else {
+        // Device and global scopes both go to globalAndDeviceVariables
+        globalAndDeviceVariables[variableId] = value;
+      }
+    },
+  );
+
+  return { runtimeVariables, globalAndDeviceVariables };
+};
+
+/**
+ * Converts all variable values to strings for rendering
+ * Pure function - no side effects
+ *
+ * @param {Object} globalAndDeviceVars - Global and device scoped variables
+ * @param {Object} runtimeVars - Runtime scoped variables
+ * @returns {Object} Object with all values converted to strings
+ *
+ * @example
+ * convertVariablesToStrings(
+ *   { volume: 80, flag: true },
+ *   { score: 100, name: 'Alice' }
+ * )
+ * // Returns: { volume: '80', flag: 'true', score: '100', name: 'Alice' }
+ */
+export const convertVariablesToStrings = (
+  globalAndDeviceVars,
+  runtimeVars,
+) => {
+  return Object.fromEntries(
+    Object.entries({
+      ...globalAndDeviceVars,
+      ...runtimeVars,
+    }).map(([key, value]) => [key, String(value)]),
+  );
+};
+
+/**
+ * Validates that a variable scope is defined and valid
+ * Pure function - throws error for invalid scopes
+ *
+ * @param {string} scope - Variable scope to validate
+ * @param {string} variableId - Variable identifier (for error messages)
+ * @throws {Error} If scope is missing or invalid
+ *
+ * @example
+ * validateVariableScope('runtime', 'score') // No error
+ * validateVariableScope('invalid', 'score') // Throws Error
+ * validateVariableScope(undefined, 'score') // Throws Error
+ */
+export const validateVariableScope = (scope, variableId) => {
+  const VALID_SCOPES = ["runtime", "device", "global"];
+
+  if (!scope) {
+    throw new Error(`Variable scope is required for variable: ${variableId}`);
+  }
+
+  if (!VALID_SCOPES.includes(scope)) {
+    throw new Error(
+      `Invalid variable scope: ${scope} for variable ${variableId}. Expected one of: ${VALID_SCOPES.join(", ")}`,
+    );
+  }
+};
+
+/**
+ * Validates that an operation is compatible with a variable type
+ * Pure function - throws error for incompatible operations
+ *
+ * @param {string} type - Variable type (number, boolean, string)
+ * @param {string} op - Operation to validate
+ * @param {string} variableId - Variable identifier (for error messages)
+ * @throws {Error} If type is unknown or operation is incompatible
+ *
+ * @example
+ * validateVariableOperation('number', 'increment', 'score') // No error
+ * validateVariableOperation('boolean', 'increment', 'flag') // Throws Error
+ * validateVariableOperation('string', 'set', 'name') // No error
+ */
+export const validateVariableOperation = (type, op, variableId) => {
+  const VALID_OPS_BY_TYPE = {
+    number: ["set", "increment", "decrement", "multiply", "divide"],
+    boolean: ["set", "toggle"],
+    string: ["set"],
+  };
+
+  // First check if type is valid
+  const validOps = VALID_OPS_BY_TYPE[type];
+  if (!validOps) {
+    throw new Error(`Unknown variable type: ${type} for variable ${variableId}`);
+  }
+
+  // Check if operation is known at all
+  const allOps = Object.values(VALID_OPS_BY_TYPE).flat();
+  if (!allOps.includes(op)) {
+    throw new Error(`Unknown operation: ${op}`);
+  }
+
+  // Check if operation is valid for this type
+  if (!validOps.includes(op)) {
+    throw new Error(
+      `Operation "${op}" is not valid for variable "${variableId}" of type "${type}". Valid operations: ${validOps.join(", ")}`,
+    );
+  }
+};
+
+/**
+ * Applies a variable operation to calculate the new value
+ * Pure function - returns new value without side effects
+ *
+ * @param {*} currentValue - Current value of the variable
+ * @param {string} op - Operation to apply (set, increment, decrement, multiply, divide, toggle)
+ * @param {*} value - Value parameter for the operation (optional for increment/decrement/toggle)
+ * @returns {*} New value after applying the operation
+ * @throws {Error} If operation is unknown
+ *
+ * @example
+ * applyVariableOperation(5, 'increment') // 6
+ * applyVariableOperation(10, 'increment', 5) // 15
+ * applyVariableOperation(true, 'toggle') // false
+ * applyVariableOperation(3, 'multiply', 4) // 12
+ */
+export const applyVariableOperation = (currentValue, op, value) => {
+  switch (op) {
+    case "set":
+      return value;
+    case "multiply":
+      return (currentValue ?? 1) * value;
+    case "divide":
+      return (currentValue ?? 0) / value;
+    case "increment":
+      return (currentValue ?? 0) + (value ?? 1);
+    case "decrement":
+      return (currentValue ?? 0) - (value ?? 1);
+    case "toggle":
+      return !currentValue;
+    default:
+      throw new Error(`Unknown operation: ${op}`);
+  }
+};
+
+/**
+ * Filters variables by scope from a variables object
+ * Pure function - returns new object with filtered variables
+ *
+ * @param {Object} variables - Object containing variable values
+ * @param {Object} variableConfigs - Variable configuration objects with scope information
+ * @param {string} targetScope - Scope to filter by (runtime, device, or global)
+ * @returns {Object} New object containing only variables matching the target scope
+ *
+ * @example
+ * const vars = { score: 100, volume: 80, achievement: true };
+ * const configs = {
+ *   score: { scope: 'runtime' },
+ *   volume: { scope: 'device' },
+ *   achievement: { scope: 'global' }
+ * };
+ * filterVariablesByScope(vars, configs, 'device') // { volume: 80 }
+ * filterVariablesByScope(vars, configs, 'runtime') // { score: 100 }
+ */
+export const filterVariablesByScope = (
+  variables,
+  variableConfigs,
+  targetScope,
+) => {
+  return Object.fromEntries(
+    Object.entries(variables).filter(
+      ([varId]) => variableConfigs?.[varId]?.scope === targetScope,
+    ),
+  );
+};

@@ -300,7 +300,7 @@ resources:
                     updateVariable:
                       operations:
                         - variableId: playerGold
-                          op: add
+                          op: increment
                           value: 100
 
             - id: btnGoldReset

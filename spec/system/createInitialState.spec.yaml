@@ -42,7 +42,7 @@ out:
         enabled: false
     saveSlots: {}
     layeredViews: []
-    crossSlotVariables: {}
+    globalAndDeviceVariables: {}
   projectData:
     story:
       initialSceneId: "scene1"
@@ -73,11 +73,11 @@ out:
         resourceId: __undefined__
       variables: {}
 ---
-case: merge loaded crossSlotVariables with defaults
+case: merge loaded globalAndDeviceVariables with defaults
 in:
   - global:
       currentLocalizationPackageId: "en"
-      crossSlotVariables:
+      globalAndDeviceVariables:
         volume: 80
         achievement1: true
     projectData:
@@ -127,7 +127,7 @@ out:
         enabled: false
     saveSlots: {}
     layeredViews: []
-    crossSlotVariables:
+    globalAndDeviceVariables:
       volume: 80
       achievement1: true
       newVariable: "default"

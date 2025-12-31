@@ -1,4 +1,12 @@
-import { createStore } from "../util.js";
+import {
+  createStore,
+  initializeVariablesFromProjectData,
+  convertVariablesToStrings,
+  validateVariableScope,
+  validateVariableOperation,
+  applyVariableOperation,
+  filterVariablesByScope,
+} from "../util.js";
 import { constructPresentationState } from "./constructPresentationState.js";
 import { constructRenderState } from "./constructRenderState.js";
 
@@ -7,7 +15,7 @@ export const createInitialState = (payload) => {
     global: {
       currentLocalizationPackageId,
       saveSlots = {},
-      crossSlotVariables: loadedCrossSlotVariables = {},
+      globalAndDeviceVariables: loadedGlobalAndDeviceVariables = {},
     },
     // initialPointer,
     projectData,
@@ -26,33 +34,13 @@ export const createInitialState = (payload) => {
   };
 
   // Initialize variables from project data
-  const runtimeVariables = {};
-  const crossSlotVariables = {}; // Both device and global scopes (shared across all save slots)
-  if (projectData.resources?.variables) {
-    Object.entries(projectData.resources.variables).forEach(
-      ([variableId, config]) => {
-        const value =
-          config.default ??
-          (config.type === "number"
-            ? 0
-            : config.type === "boolean"
-              ? false
-              : "");
+  const { runtimeVariables, globalAndDeviceVariables } =
+    initializeVariablesFromProjectData(projectData);
 
-        if (config.scope === "runtime") {
-          runtimeVariables[variableId] = value;
-        } else {
-          // Device and global scopes both go to crossSlotVariables
-          crossSlotVariables[variableId] = value;
-        }
-      },
-    );
-  }
-
-  // Merge with loaded crossSlotVariables from localStorage (if provided)
-  const mergedCrossSlotVariables = {
-    ...crossSlotVariables,
-    ...loadedCrossSlotVariables,
+  // Merge with loaded globalAndDeviceVariables from localStorage (if provided)
+  const mergedGlobalAndDeviceVariables = {
+    ...globalAndDeviceVariables,
+    ...loadedGlobalAndDeviceVariables,
   };
 
   const state = {
@@ -83,7 +71,7 @@ export const createInitialState = (payload) => {
       },
       saveSlots,
       layeredViews: [],
-      crossSlotVariables: mergedCrossSlotVariables,
+      globalAndDeviceVariables: mergedGlobalAndDeviceVariables,
     },
     contexts: [
       {
@@ -400,11 +388,9 @@ export const selectRenderState = ({ state }) => {
     skipOnlyViewedLines: state.global.skipOnlyViewedLines,
     layeredViews: state.global.layeredViews,
     dialogueHistory: selectDialogueHistory({ state }),
-    variables: Object.fromEntries(
-      Object.entries({
-        ...state.global.crossSlotVariables,
-        ...state.contexts[state.contexts.length - 1].variables,
-      }).map(([key, value]) => [key, String(value)]),
+    variables: convertVariablesToStrings(
+      state.global.globalAndDeviceVariables,
+      state.contexts[state.contexts.length - 1].variables,
     ),
   });
   console.log("renderState", renderState);
@@ -1169,59 +1155,60 @@ export const sectionTransition = ({ state }, payload) => {
 export const updateVariable = ({ state }, payload) => {
   const { operations = [] } = payload;
 
-  let crossSlotModified = false;
+  let deviceModified = false;
+  let globalModified = false;
 
   operations.forEach(({ variableId, op, value }) => {
-    // Determine target based on variable scope
     const variableConfig = state.projectData.resources?.variables?.[variableId];
-    const scope = variableConfig?.scope || "runtime";
+    const scope = variableConfig?.scope;
+    const type = variableConfig?.type;
+
+    // Use pure helpers for validation
+    validateVariableScope(scope, variableId);
+    validateVariableOperation(type, op, variableId);
 
     const target =
       scope === "runtime"
         ? state.contexts[state.contexts.length - 1].variables
-        : state.global.crossSlotVariables;
+        : state.global.globalAndDeviceVariables;
 
-    // Track if any device or global variables were modified
-    if (scope !== "runtime") {
-      crossSlotModified = true;
+    // Track which scope was modified
+    if (scope === "device") {
+      deviceModified = true;
+    } else if (scope === "global") {
+      globalModified = true;
     }
 
-    switch (op) {
-      case "set":
-        target[variableId] = value;
-        break;
-      case "add":
-        target[variableId] = (target[variableId] || 0) + value;
-        break;
-      case "subtract":
-        target[variableId] = (target[variableId] || 0) - value;
-        break;
-      case "multiply":
-        target[variableId] = (target[variableId] || 1) * value;
-        break;
-      case "divide":
-        target[variableId] = (target[variableId] || 0) / value;
-        break;
-      case "increment":
-        target[variableId] = (target[variableId] || 0) + 1;
-        break;
-      case "decrement":
-        target[variableId] = (target[variableId] || 0) - 1;
-        break;
-      case "toggle":
-        target[variableId] = !target[variableId];
-        break;
-      default:
-        console.warn(`Unknown operation: ${op}`);
-    }
+    // Use pure helper to apply operation
+    target[variableId] = applyVariableOperation(target[variableId], op, value);
   });
 
-  // Save crossSlot variables if any were modified
-  if (crossSlotModified) {
+  // Save device variables if any were modified
+  if (deviceModified) {
+    const deviceVars = filterVariablesByScope(
+      state.global.globalAndDeviceVariables,
+      state.projectData.resources?.variables,
+      "device",
+    );
     state.global.pendingEffects.push({
-      name: "crossSlotVariables",
+      name: "deviceVariables",
       payload: {
-        crossSlotVariables: { ...state.global.crossSlotVariables },
+        deviceVariables: deviceVars,
+      },
+    });
+  }
+
+  // Save global variables if any were modified
+  if (globalModified) {
+    const globalVars = filterVariablesByScope(
+      state.global.globalAndDeviceVariables,
+      state.projectData.resources?.variables,
+      "global",
+    );
+    state.global.pendingEffects.push({
+      name: "globalVariables",
+      payload: {
+        globalVariables: globalVars,
       },
     });
   }
