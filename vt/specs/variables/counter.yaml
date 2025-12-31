@@ -48,33 +48,17 @@ resources:
           children:
             - id: zero
               type: text
-              content: "0"
-              x: -50
-              y: 0
-              textStyle:
-                fontSize: 48
-                fill: "white"
-              hover:
-                textStyle:
-                  fontSize: 48
-                  fill: yellow
-            - id: plus
-              type: text
-              content: "+"
+              content: "${variables.count}"
               x: 0
               y: 0
               textStyle:
                 fontSize: 48
                 fill: "white"
-              hover:
-                textStyle:
-                  fontSize: 48
-                  fill: yellow
-            - id: minus
+            - id: plus
               type: text
-              content: "-"
-              x: 50
-              y: 0
+              content: "+"
+              x: 0
+              y: -100
               textStyle:
                 fontSize: 48
                 fill: "white"
@@ -82,7 +66,27 @@ resources:
                 textStyle:
                   fontSize: 48
                   fill: yellow
-
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - type: increment
+                          value: 4
+                        # - type: set
+                        #   value: "abcd"
+            - id: minus
+              type: text
+              content: "-"
+              x: 0
+              y: 100
+              textStyle:
+                fontSize: 48
+                fill: "white"
+              hover:
+                textStyle:
+                  fontSize: 48
+                  fill: yellow
 
 story:
   initialSceneId: ajfl3a

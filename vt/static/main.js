@@ -104,7 +104,7 @@ const init = async () => {
       url: "/public/video_sample.mp4",
       type: "video/mp4"
     },
-     "fighter-spritesheet": {
+    "fighter-spritesheet": {
       url: "/public/fighter.png",
       type: "image/png",
     },
@@ -159,6 +159,7 @@ const init = async () => {
     height: 1080,
     plugins,
     eventHandler: async (eventName, payload) => {
+      console.log('eventName', eventName, payload)
       if (eventName === 'renderComplete') {
         if (count >= 2) {
           return;
@@ -168,7 +169,7 @@ const init = async () => {
         // engine.handleLineActions();
       } else {
         if (payload.actions) {
-          if(payload.actions.saveSaveSlot){
+          if (payload.actions.saveSaveSlot) {
             const url = await routeGraphics.extractBase64("story");
             const assets = {
               [`saveThumbnailImage:${payload.actions.saveSaveSlot.slot}`]: {

@@ -37,6 +37,7 @@ export default function createRouteEngine(options) {
   };
 
   const handleActions = (actions) => {
+    console.log('handleActoin, handleActions')
     Object.entries(actions).forEach(([actionType, payload]) => {
       handleAction(actionType, payload);
     });

@@ -657,6 +657,9 @@ export const addLayout = (
 
     const templateData = {
       variables,
+      // variables: {
+      //   count: String(100)
+      // },
       // saveDataArray: systemStore.selectSaveDataPage({
       //   page: systemState?.variables.currentSavePageIndex,
       //   numberPerPage: 6,
