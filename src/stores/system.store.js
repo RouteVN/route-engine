@@ -469,6 +469,10 @@ export const toggleAutoMode = ({ state }) => {
 };
 
 export const startSkipMode = ({ state }) => {
+  if (state.global.nextLineConfig.manual.enabled === false) {
+    return state;
+  }
+
   if (state.global.autoMode) {
     state.global.autoMode = false;
     state.global.pendingEffects.push({
@@ -500,6 +504,14 @@ export const stopSkipMode = ({ state }) => {
 };
 
 export const toggleSkipMode = ({ state }) => {
+
+  if (state.global.nextLineConfig.manual.enabled === false) {
+    const skipMode = selectSkipMode({ state });
+    if (!skipMode) {
+      return state;
+    }
+  }
+
   const skipMode = selectSkipMode({ state });
   if (skipMode) {
     stopSkipMode({ state });
@@ -794,6 +806,10 @@ export const updateProjectData = ({ state }, payload) => {
 export const jumpToLine = ({ state }, payload) => {
   const { sectionId, lineId } = payload;
 
+  if (state.global.nextLineConfig.manual.enabled === false) {
+    return state;
+  }
+
   if (!lineId) {
     console.warn("jumpToLine requires lineId parameter");
     return state;
@@ -933,7 +949,9 @@ export const nextLineFromCompleted = ({ state }) => {
 };
 
 export const nextLine = ({ state }) => {
-  if (!state.global.nextLineConfig.manual.enabled) {
+  const isAutoOrSkip = state.global.autoMode || state.global.skipMode;
+  
+  if (!state.global.nextLineConfig.manual.enabled && !isAutoOrSkip) {
     return state;
   }
 
@@ -1019,6 +1037,10 @@ export const markLineCompleted = ({ state }) => {
 };
 
 export const prevLine = ({ state }, payload) => {
+
+  if (state.global.nextLineConfig.manual.enabled === false) {
+    return state;
+  }
   const { sectionId } = payload;
   const section = selectSection({ state }, { sectionId });
 
@@ -1115,6 +1137,9 @@ export const prevLine = ({ state }, payload) => {
 export const sectionTransition = ({ state }, payload) => {
   const { sectionId } = payload;
 
+  if (state.global.nextLineConfig.manual.enabled === false) {
+    return state;
+  }
   // Validate section exists
   const targetSection = selectSection({ state }, { sectionId });
   if (!targetSection) {
