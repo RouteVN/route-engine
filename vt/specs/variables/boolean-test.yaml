@@ -1,0 +1,263 @@
+---
+title: "Boolean Variables Test"
+---
+l10n:
+  packages:
+    en:
+      label: English
+      lang: en
+      keys: {}
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#2c3e50"
+
+resources:
+  variables:
+    soundEnabled:
+      type: boolean
+      scope: context
+      default: true
+
+    notificationsOn:
+      type: boolean
+      scope: global-device
+      default: false
+
+    tutorialCompleted:
+      type: boolean
+      scope: global-account
+      default: false
+
+  layouts:
+    base1:
+      elements:
+        - id: clickArea
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+
+    booleanTestUI:
+      name: Boolean Variable Test Screen
+      elements:
+        - id: title
+          type: text
+          content: "Boolean Variable Test - Toggle Operation"
+          x: 960
+          y: 100
+          anchorX: 0.5
+          textStyle:
+            fontSize: 48
+            fill: "#ecf0f1"
+
+        # Runtime boolean (soundEnabled)
+        - id: soundLabel
+          type: text
+          content: "Sound (context):"
+          x: 400
+          y: 300
+          textStyle:
+            fontSize: 32
+            fill: "#bdc3c7"
+
+        - id: soundValue
+          type: text
+          content: "${variables.soundEnabled}"
+          x: 750
+          y: 300
+          textStyle:
+            fontSize: 32
+            fill: "#3498db"
+            fontWeight: bold
+
+        - id: btnToggleSound
+          type: text
+          content: "Toggle Sound"
+          x: 1100
+          y: 300
+          anchorX: 0.5
+          textStyle:
+            fontSize: 28
+            fill: "#ffffff"
+          hover:
+            textStyle:
+              fontSize: 28
+              fill: "#f39c12"
+          click:
+            actionPayload:
+              actions:
+                updateVariable:
+                  operations:
+                    - variableId: soundEnabled
+                      op: toggle
+
+        # Device boolean (notificationsOn)
+        - id: notifLabel
+          type: text
+          content: "Notifications (device):"
+          x: 400
+          y: 450
+          textStyle:
+            fontSize: 32
+            fill: "#bdc3c7"
+
+        - id: notifValue
+          type: text
+          content: "${variables.notificationsOn}"
+          x: 750
+          y: 450
+          textStyle:
+            fontSize: 32
+            fill: "#9b59b6"
+            fontWeight: bold
+
+        - id: btnToggleNotif
+          type: text
+          content: "Toggle Notifications"
+          x: 1100
+          y: 450
+          anchorX: 0.5
+          textStyle:
+            fontSize: 28
+            fill: "#ffffff"
+          hover:
+            textStyle:
+              fontSize: 28
+              fill: "#f39c12"
+          click:
+            actionPayload:
+              actions:
+                updateVariable:
+                  operations:
+                    - variableId: notificationsOn
+                      op: toggle
+
+        # Global boolean (tutorialCompleted)
+        - id: tutorialLabel
+          type: text
+          content: "Tutorial (global):"
+          x: 400
+          y: 600
+          textStyle:
+            fontSize: 32
+            fill: "#bdc3c7"
+
+        - id: tutorialValue
+          type: text
+          content: "${variables.tutorialCompleted}"
+          x: 750
+          y: 600
+          textStyle:
+            fontSize: 32
+            fill: "#e74c3c"
+            fontWeight: bold
+
+        - id: btnToggleTutorial
+          type: text
+          content: "Toggle Tutorial"
+          x: 1100
+          y: 600
+          anchorX: 0.5
+          textStyle:
+            fontSize: 28
+            fill: "#ffffff"
+          hover:
+            textStyle:
+              fontSize: 28
+              fill: "#f39c12"
+          click:
+            actionPayload:
+              actions:
+                updateVariable:
+                  operations:
+                    - variableId: tutorialCompleted
+                      op: toggle
+
+        # Set operations for comparison
+        - id: setOpsTitle
+          type: text
+          content: "Set Operations (for comparison)"
+          x: 960
+          y: 750
+          anchorX: 0.5
+          textStyle:
+            fontSize: 28
+            fill: "#95a5a6"
+
+        - id: btnSetSoundTrue
+          type: text
+          content: "Set Sound: true"
+          x: 600
+          y: 850
+          anchorX: 0.5
+          textStyle:
+            fontSize: 24
+            fill: "#ffffff"
+          hover:
+            textStyle:
+              fontSize: 24
+              fill: "#1abc9c"
+          click:
+            actionPayload:
+              actions:
+                updateVariable:
+                  operations:
+                    - variableId: soundEnabled
+                      op: set
+                      value: true
+
+        - id: btnSetSoundFalse
+          type: text
+          content: "Set Sound: false"
+          x: 850
+          y: 850
+          anchorX: 0.5
+          textStyle:
+            fontSize: 24
+            fill: "#ffffff"
+          hover:
+            textStyle:
+              fontSize: 24
+              fill: "#e74c3c"
+          click:
+            actionPayload:
+              actions:
+                updateVariable:
+                  operations:
+                    - variableId: soundEnabled
+                      op: set
+                      value: false
+
+        # Instructions
+        - id: instructions
+          type: text
+          content: "Click 'Toggle' buttons to flip boolean values • Use 'Set' buttons to force specific values"
+          x: 960
+          y: 950
+          anchorX: 0.5
+          textStyle:
+            fontSize: 24
+            fill: "#7f8c8d"
+
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      name: Boolean Test Scene
+      initialSectionId: section1
+      sections:
+        section1:
+          name: Boolean Test Section
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: base1
+                layout:
+                  resourceId: booleanTestUI

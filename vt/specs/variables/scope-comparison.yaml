@@ -1,0 +1,794 @@
+---
+title: "Variable Scopes Comparison"
+description: "Demonstrates context, global-device, and global-account variable scopes"
+---
+l10n:
+  packages:
+    en:
+      label: English
+      lang: en
+      keys: {}
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#1a1a2e"
+
+resources:
+  variables:
+    # CONTEXT SCOPE - Tied to this playthrough
+    playerGold:
+      type: number
+      scope: context
+      default: 100
+
+    currentLocation:
+      type: string
+      scope: context
+      default: "Town Square"
+
+    # GLOBAL-DEVICE SCOPE - Settings that persist on this device
+    textSpeed:
+      type: number
+      scope: global-device
+      default: 50
+
+    volume:
+      type: number
+      scope: global-device
+      default: 80
+
+    # GLOBAL-ACCOUNT SCOPE - Achievements/unlocks that persist across saves
+    totalPlaythroughs:
+      type: number
+      scope: global-account
+      default: 0
+
+    secretUnlocked:
+      type: boolean
+      scope: global-account
+      default: false
+
+  layouts:
+    base1:
+      elements:
+        - id: clickArea
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+
+    scopeComparisonUI:
+      name: Variable Scopes Comparison
+      elements:
+        - id: title
+          type: text
+          content: "Variable Scopes: Context vs Global-Device vs Global-Account"
+          x: 960
+          y: 60
+          anchorX: 0.5
+          textStyle:
+            fontSize: 42
+            fill: "#e8e8e8"
+            fontWeight: bold
+
+        # ═══════════════════════════════════════════════════════
+        # CONTEXT SCOPE SECTION
+        # ═══════════════════════════════════════════════════════
+        - id: contextSection
+          type: container
+          x: 100
+          y: 150
+          children:
+            - id: contextTitle
+              type: text
+              content: "CONTEXT SCOPE"
+              x: 0
+              y: 0
+              textStyle:
+                fontSize: 32
+                fill: "#3498db"
+                fontWeight: bold
+
+            - id: contextDesc
+              type: text
+              content: "Tied to this playthrough"
+              x: 0
+              y: 40
+              textStyle:
+                fontSize: 18
+                fill: "#95a5a6"
+
+            - id: contextDesc2
+              type: text
+              content: "✓ Saved in save slots"
+              x: 0
+              y: 70
+              textStyle:
+                fontSize: 18
+                fill: "#2ecc71"
+
+            - id: contextDesc3
+              type: text
+              content: "✗ Lost on new game"
+              x: 0
+              y: 95
+              textStyle:
+                fontSize: 18
+                fill: "#e74c3c"
+
+            # Gold counter
+            - id: goldLabel
+              type: text
+              content: "Player Gold:"
+              x: 0
+              y: 150
+              textStyle:
+                fontSize: 24
+                fill: "#ffffff"
+
+            - id: goldValue
+              type: text
+              content: "${variables.playerGold}"
+              x: 180
+              y: 150
+              textStyle:
+                fontSize: 24
+                fill: "#f39c12"
+                fontWeight: bold
+
+            - id: goldPlus
+              type: text
+              content: "[+10]"
+              x: 280
+              y: 150
+              textStyle:
+                fontSize: 24
+                fill: "#2ecc71"
+              hover:
+                textStyle:
+                  fontSize: 24
+                  fill: "#27ae60"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: playerGold
+                          op: increment
+                          value: 10
+
+            - id: goldMinus
+              type: text
+              content: "[-10]"
+              x: 360
+              y: 150
+              textStyle:
+                fontSize: 24
+                fill: "#e74c3c"
+              hover:
+                textStyle:
+                  fontSize: 24
+                  fill: "#c0392b"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: playerGold
+                          op: decrement
+                          value: 10
+
+            # Location
+            - id: locationLabel
+              type: text
+              content: "Location:"
+              x: 0
+              y: 200
+              textStyle:
+                fontSize: 24
+                fill: "#ffffff"
+
+            - id: locationValue
+              type: text
+              content: "${variables.currentLocation}"
+              x: 140
+              y: 200
+              textStyle:
+                fontSize: 24
+                fill: "#9b59b6"
+                fontWeight: bold
+
+            - id: locationTown
+              type: text
+              content: "[Town]"
+              x: 350
+              y: 200
+              textStyle:
+                fontSize: 20
+                fill: "#95a5a6"
+              hover:
+                textStyle:
+                  fontSize: 20
+                  fill: "#ffffff"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: currentLocation
+                          op: set
+                          value: "Town Square"
+
+            - id: locationForest
+              type: text
+              content: "[Forest]"
+              x: 450
+              y: 200
+              textStyle:
+                fontSize: 20
+                fill: "#95a5a6"
+              hover:
+                textStyle:
+                  fontSize: 20
+                  fill: "#ffffff"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: currentLocation
+                          op: set
+                          value: "Dark Forest"
+
+        # ═══════════════════════════════════════════════════════
+        # GLOBAL-DEVICE SCOPE SECTION
+        # ═══════════════════════════════════════════════════════
+        - id: global-deviceSection
+          type: container
+          x: 100
+          y: 450
+          children:
+            - id: global-deviceTitle
+              type: text
+              content: "GLOBAL-DEVICE SCOPE"
+              x: 0
+              y: 0
+              textStyle:
+                fontSize: 32
+                fill: "#e67e22"
+                fontWeight: bold
+
+            - id: global-deviceDesc
+              type: text
+              content: "Settings stored on this device"
+              x: 0
+              y: 40
+              textStyle:
+                fontSize: 18
+                fill: "#95a5a6"
+
+            - id: global-deviceDesc2
+              type: text
+              content: "✓ Persists across sessions"
+              x: 0
+              y: 70
+              textStyle:
+                fontSize: 18
+                fill: "#2ecc71"
+
+            - id: global-deviceDesc3
+              type: text
+              content: "✗ NOT in save slots"
+              x: 0
+              y: 95
+              textStyle:
+                fontSize: 18
+                fill: "#e74c3c"
+
+            # Text Speed
+            - id: speedLabel
+              type: text
+              content: "Text Speed:"
+              x: 0
+              y: 150
+              textStyle:
+                fontSize: 24
+                fill: "#ffffff"
+
+            - id: speedValue
+              type: text
+              content: "${variables.textSpeed}"
+              x: 180
+              y: 150
+              textStyle:
+                fontSize: 24
+                fill: "#e67e22"
+                fontWeight: bold
+
+            - id: speedSlow
+              type: text
+              content: "[Slow]"
+              x: 240
+              y: 150
+              textStyle:
+                fontSize: 20
+                fill: "#95a5a6"
+              hover:
+                textStyle:
+                  fontSize: 20
+                  fill: "#ffffff"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: textSpeed
+                          op: set
+                          value: 25
+
+            - id: speedMedium
+              type: text
+              content: "[Medium]"
+              x: 330
+              y: 150
+              textStyle:
+                fontSize: 20
+                fill: "#95a5a6"
+              hover:
+                textStyle:
+                  fontSize: 20
+                  fill: "#ffffff"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: textSpeed
+                          op: set
+                          value: 50
+
+            - id: speedFast
+              type: text
+              content: "[Fast]"
+              x: 450
+              y: 150
+              textStyle:
+                fontSize: 20
+                fill: "#95a5a6"
+              hover:
+                textStyle:
+                  fontSize: 20
+                  fill: "#ffffff"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: textSpeed
+                          op: set
+                          value: 100
+
+            # Volume
+            - id: volumeLabel
+              type: text
+              content: "Volume:"
+              x: 0
+              y: 200
+              textStyle:
+                fontSize: 24
+                fill: "#ffffff"
+
+            - id: volumeValue
+              type: text
+              content: "${variables.volume}%"
+              x: 130
+              y: 200
+              textStyle:
+                fontSize: 24
+                fill: "#e67e22"
+                fontWeight: bold
+
+            - id: volumeUp
+              type: text
+              content: "[+10]"
+              x: 240
+              y: 200
+              textStyle:
+                fontSize: 24
+                fill: "#2ecc71"
+              hover:
+                textStyle:
+                  fontSize: 24
+                  fill: "#27ae60"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: volume
+                          op: increment
+                          value: 10
+
+            - id: volumeDown
+              type: text
+              content: "[-10]"
+              x: 320
+              y: 200
+              textStyle:
+                fontSize: 24
+                fill: "#e74c3c"
+              hover:
+                textStyle:
+                  fontSize: 24
+                  fill: "#c0392b"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: volume
+                          op: decrement
+                          value: 10
+
+        # ═══════════════════════════════════════════════════════
+        # GLOBAL-ACCOUNT SCOPE SECTION
+        # ═══════════════════════════════════════════════════════
+        - id: global-accountSection
+          type: container
+          x: 100
+          y: 750
+          children:
+            - id: global-accountTitle
+              type: text
+              content: "GLOBAL-ACCOUNT SCOPE"
+              x: 0
+              y: 0
+              textStyle:
+                fontSize: 32
+                fill: "#9b59b6"
+                fontWeight: bold
+
+            - id: global-accountDesc
+              type: text
+              content: "Achievements across all playthroughs"
+              x: 0
+              y: 40
+              textStyle:
+                fontSize: 18
+                fill: "#95a5a6"
+
+            - id: global-accountDesc2
+              type: text
+              content: "✓ Persists forever"
+              x: 0
+              y: 70
+              textStyle:
+                fontSize: 18
+                fill: "#2ecc71"
+
+            - id: global-accountDesc3
+              type: text
+              content: "✓ Shared across saves"
+              x: 0
+              y: 95
+              textStyle:
+                fontSize: 18
+                fill: "#2ecc71"
+
+            # Playthroughs counter
+            - id: playthroughsLabel
+              type: text
+              content: "Playthroughs:"
+              x: 0
+              y: 150
+              textStyle:
+                fontSize: 24
+                fill: "#ffffff"
+
+            - id: playthroughsValue
+              type: text
+              content: "${variables.totalPlaythroughs}"
+              x: 200
+              y: 150
+              textStyle:
+                fontSize: 24
+                fill: "#9b59b6"
+                fontWeight: bold
+
+            - id: playthroughsInc
+              type: text
+              content: "[+1]"
+              x: 250
+              y: 150
+              textStyle:
+                fontSize: 24
+                fill: "#2ecc71"
+              hover:
+                textStyle:
+                  fontSize: 24
+                  fill: "#27ae60"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: totalPlaythroughs
+                          op: increment
+
+            # Secret unlocked
+            - id: secretLabel
+              type: text
+              content: "Secret Unlocked:"
+              x: 0
+              y: 200
+              textStyle:
+                fontSize: 24
+                fill: "#ffffff"
+
+            - id: secretValue
+              type: text
+              content: "${variables.secretUnlocked}"
+              x: 230
+              y: 200
+              textStyle:
+                fontSize: 24
+                fill: "#9b59b6"
+                fontWeight: bold
+
+            - id: secretToggle
+              type: text
+              content: "toggle"
+              x: 320
+              y: 200
+              textStyle:
+                fontSize: 20
+                fill: "#95a5a6"
+              hover:
+                textStyle:
+                  fontSize: 20
+                  fill: "#ffffff"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: secretUnlocked
+                          op: set
+                          value: true
+
+        # ═══════════════════════════════════════════════════════
+        # COMPARISON TABLE (RIGHT SIDE)
+        # ═══════════════════════════════════════════════════════
+        - id: comparisonTable
+          type: container
+          x: 1100
+          y: 150
+          children:
+            - id: tableTitle
+              type: text
+              content: "Behavior Comparison"
+              x: 0
+              y: 0
+              textStyle:
+                fontSize: 28
+                fill: "#ecf0f1"
+                fontWeight: bold
+
+            # Table headers
+            - id: headerScope
+              type: text
+              content: "Scope"
+              x: 0
+              y: 60
+              textStyle:
+                fontSize: 20
+                fill: "#bdc3c7"
+
+            - id: headerSaved
+              type: text
+              content: "Saved?"
+              x: 200
+              y: 60
+              textStyle:
+                fontSize: 20
+                fill: "#bdc3c7"
+
+            - id: headerPersist
+              type: text
+              content: "Persist?"
+              x: 350
+              y: 60
+              textStyle:
+                fontSize: 20
+                fill: "#bdc3c7"
+
+            # Runtime row
+            - id: contextRow
+              type: text
+              content: "Runtime"
+              x: 0
+              y: 100
+              textStyle:
+                fontSize: 18
+                fill: "#3498db"
+
+            - id: contextSaved
+              type: text
+              content: "✓ Yes"
+              x: 200
+              y: 100
+              textStyle:
+                fontSize: 18
+                fill: "#2ecc71"
+
+            - id: contextPersist
+              type: text
+              content: "✗ No"
+              x: 350
+              y: 100
+              textStyle:
+                fontSize: 18
+                fill: "#e74c3c"
+
+            # Device row
+            - id: global-deviceRow
+              type: text
+              content: "Device"
+              x: 0
+              y: 140
+              textStyle:
+                fontSize: 18
+                fill: "#e67e22"
+
+            - id: global-deviceSaved
+              type: text
+              content: "✗ No"
+              x: 200
+              y: 140
+              textStyle:
+                fontSize: 18
+                fill: "#e74c3c"
+
+            - id: global-devicePersist
+              type: text
+              content: "✓ Yes"
+              x: 350
+              y: 140
+              textStyle:
+                fontSize: 18
+                fill: "#2ecc71"
+
+            # Global row
+            - id: global-accountRow
+              type: text
+              content: "Global"
+              x: 0
+              y: 180
+              textStyle:
+                fontSize: 18
+                fill: "#9b59b6"
+
+            - id: global-accountSaved
+              type: text
+              content: "✗ No*"
+              x: 200
+              y: 180
+              textStyle:
+                fontSize: 18
+                fill: "#e67e22"
+
+            - id: global-accountPersist
+              type: text
+              content: "✓ Yes"
+              x: 350
+              y: 180
+              textStyle:
+                fontSize: 18
+                fill: "#2ecc71"
+
+            - id: global-accountNote
+              type: text
+              content: "* Shared across all saves"
+              x: 0
+              y: 215
+              textStyle:
+                fontSize: 14
+                fill: "#7f8c8d"
+
+            # Use Cases
+            - id: useCasesTitle
+              type: text
+              content: "Common Use Cases:"
+              x: 0
+              y: 280
+              textStyle:
+                fontSize: 24
+                fill: "#ecf0f1"
+                fontWeight: bold
+
+            - id: useRuntime
+              type: text
+              content: "Runtime: Story progress, items"
+              x: 0
+              y: 330
+              textStyle:
+                fontSize: 16
+                fill: "#3498db"
+
+            - id: useDevice
+              type: text
+              content: "Device: Volume, text speed"
+              x: 0
+              y: 360
+              textStyle:
+                fontSize: 16
+                fill: "#e67e22"
+
+            - id: useGlobal
+              type: text
+              content: "Global: Achievements, unlocks"
+              x: 0
+              y: 390
+              textStyle:
+                fontSize: 16
+                fill: "#9b59b6"
+
+            # Lifecycle diagram
+            - id: lifecycleTitle
+              type: text
+              content: "Variable Lifecycle:"
+              x: 0
+              y: 460
+              textStyle:
+                fontSize: 24
+                fill: "#ecf0f1"
+                fontWeight: bold
+
+            - id: lifecycleRuntime
+              type: text
+              content: "Runtime: Created → Saved → Loaded"
+              x: 0
+              y: 510
+              textStyle:
+                fontSize: 16
+                fill: "#3498db"
+
+            - id: lifecycleDevice
+              type: text
+              content: "Device: Created → localStorage"
+              x: 0
+              y: 540
+              textStyle:
+                fontSize: 16
+                fill: "#e67e22"
+
+            - id: lifecycleGlobal
+              type: text
+              content: "Global: Created → localStorage"
+              x: 0
+              y: 570
+              textStyle:
+                fontSize: 16
+                fill: "#9b59b6"
+
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      name: Scope Comparison Scene
+      initialSectionId: section1
+      sections:
+        section1:
+          name: Test Section
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: base1
+                layout:
+                  resourceId: scopeComparisonUI

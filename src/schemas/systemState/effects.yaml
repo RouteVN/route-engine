@@ -50,7 +50,7 @@ oneOf:
     additionalProperties: false
 
   - title: Save variables effect
-    description: Saves device variables to localStorage
+    description: Saves global-device variables to localStorage
     type: object
     properties:
       type:
@@ -58,6 +58,48 @@ oneOf:
       priority:
         type: integer
         description: Priority of the effect (lower numbers execute first)
+        default: 0
+    required: [type]
+    additionalProperties: false
+
+  - title: Save global-device variables effect
+    description: Saves global-device variables to localStorage
+    type: object
+    properties:
+      type:
+        const: saveGlobalDeviceVariables
+      payload:
+        type: object
+        description: Global-device variables to save
+        properties:
+          globalDeviceVariables:
+            type: object
+            description: Global-device scoped variables
+            additionalProperties: true
+      priority:
+        type: integer
+        description: Priority of effect (lower numbers execute first)
+        default: 0
+    required: [type]
+    additionalProperties: false
+
+  - title: Save global-account variables effect
+    description: Saves global-account variables to localStorage
+    type: object
+    properties:
+      type:
+        const: saveGlobalAccountVariables
+      payload:
+        type: object
+        description: Global-account variables to save
+        properties:
+          globalAccountVariables:
+            type: object
+            description: Global-account scoped variables
+            additionalProperties: true
+      priority:
+        type: integer
+        description: Priority of effect (lower numbers execute first)
         default: 0
     required: [type]
     additionalProperties: false

@@ -1,0 +1,658 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.updateVariable
+suites: [updateVariable]
+---
+suite: updateVariable
+exportName: updateVariable
+---
+case: set context variable
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            playerName:
+              type: string
+              scope: context
+              default: "Guest"
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            playerName: "Guest"
+  - operations:
+      - variableId: playerName
+        op: set
+        value: "Alice"
+out:
+  projectData:
+    resources:
+      variables:
+        playerName:
+          type: string
+          scope: context
+          default: "Guest"
+  global:
+    variables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - variables:
+        playerName: "Alice"
+---
+case: set global-device variable
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            volume:
+              type: number
+              scope: global-device
+              default: 50
+      global:
+        variables:
+          volume: 50
+        pendingEffects: []
+      contexts:
+        - variables: {}
+  - operations:
+      - variableId: volume
+        op: set
+        value: 80
+out:
+  projectData:
+    resources:
+      variables:
+        volume:
+          type: number
+          scope: global-device
+          default: 50
+  global:
+    variables:
+      volume: 80
+    pendingEffects:
+      - name: "saveGlobalDeviceVariables"
+        payload:
+          globalDeviceVariables:
+            volume: 80
+      - name: "render"
+  contexts:
+    - variables: {}
+---
+case: set global-account variable
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            achievement1:
+              type: boolean
+              scope: global-account
+              default: false
+      global:
+        variables:
+          achievement1: false
+        pendingEffects: []
+      contexts:
+        - variables: {}
+  - operations:
+      - variableId: achievement1
+        op: set
+        value: true
+out:
+  projectData:
+    resources:
+      variables:
+        achievement1:
+          type: boolean
+          scope: global-account
+          default: false
+  global:
+    variables:
+      achievement1: true
+    pendingEffects:
+      - name: "saveGlobalAccountVariables"
+        payload:
+          globalAccountVariables:
+            achievement1: true
+      - name: "render"
+  contexts:
+    - variables: {}
+---
+case: increment context number (default value 1)
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            score:
+              type: number
+              scope: context
+              default: 0
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            score: 100
+  - operations:
+      - variableId: score
+        op: increment
+out:
+  projectData:
+    resources:
+      variables:
+        score:
+          type: number
+          scope: context
+          default: 0
+  global:
+    variables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - variables:
+        score: 101
+---
+case: toggle context boolean
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            soundEnabled:
+              type: boolean
+              scope: context
+              default: true
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            soundEnabled: true
+  - operations:
+      - variableId: soundEnabled
+        op: toggle
+out:
+  projectData:
+    resources:
+      variables:
+        soundEnabled:
+          type: boolean
+          scope: context
+          default: true
+  global:
+    variables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - variables:
+        soundEnabled: false
+---
+case: toggle global-device boolean
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            notificationsOn:
+              type: boolean
+              scope: global-device
+              default: false
+      global:
+        variables:
+          notificationsOn: false
+        pendingEffects: []
+      contexts:
+        - variables: {}
+  - operations:
+      - variableId: notificationsOn
+        op: toggle
+out:
+  projectData:
+    resources:
+      variables:
+        notificationsOn:
+          type: boolean
+          scope: global-device
+          default: false
+  global:
+    variables:
+      notificationsOn: true
+    pendingEffects:
+      - name: "saveGlobalDeviceVariables"
+        payload:
+          globalDeviceVariables:
+            notificationsOn: true
+      - name: "render"
+  contexts:
+    - variables: {}
+---
+case: multiple operations - mixed scopes
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            score:
+              type: number
+              scope: context
+              default: 0
+            volume:
+              type: number
+              scope: global-device
+              default: 50
+            achievement1:
+              type: boolean
+              scope: global-account
+              default: false
+      global:
+        variables:
+          volume: 50
+          achievement1: false
+        pendingEffects: []
+      contexts:
+        - variables:
+            score: 100
+  - operations:
+      - variableId: score
+        op: increment
+      - variableId: volume
+        op: set
+        value: 80
+      - variableId: achievement1
+        op: set
+        value: true
+out:
+  projectData:
+    resources:
+      variables:
+        score:
+          type: number
+          scope: context
+          default: 0
+        volume:
+          type: number
+          scope: global-device
+          default: 50
+        achievement1:
+          type: boolean
+          scope: global-account
+          default: false
+  global:
+    variables:
+      volume: 80
+      achievement1: true
+    pendingEffects:
+      - name: "saveGlobalDeviceVariables"
+        payload:
+          globalDeviceVariables:
+            volume: 80
+      - name: "saveGlobalAccountVariables"
+        payload:
+          globalAccountVariables:
+            achievement1: true
+      - name: "render"
+  contexts:
+    - variables:
+        score: 101
+---
+case: increment undefined context variable (should become 1)
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            newCounter:
+              type: number
+              scope: context
+              default: 0
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables: {}
+  - operations:
+      - variableId: newCounter
+        op: increment
+out:
+  projectData:
+    resources:
+      variables:
+        newCounter:
+          type: number
+          scope: context
+          default: 0
+  global:
+    variables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - variables:
+        newCounter: 1
+---
+case: increment context number with custom value
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            gold:
+              type: number
+              scope: context
+              default: 0
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            gold: 50
+  - operations:
+      - variableId: gold
+        op: increment
+        value: 25
+out:
+  projectData:
+    resources:
+      variables:
+        gold:
+          type: number
+          scope: context
+          default: 0
+  global:
+    variables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - variables:
+        gold: 75
+---
+case: decrement context number with custom value
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            health:
+              type: number
+              scope: context
+              default: 100
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            health: 100
+  - operations:
+      - variableId: health
+        op: decrement
+        value: 30
+out:
+  projectData:
+    resources:
+      variables:
+        health:
+          type: number
+          scope: context
+          default: 100
+  global:
+    variables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - variables:
+        health: 70
+---
+case: multiply context number
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            multiplier:
+              type: number
+              scope: context
+              default: 1
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            multiplier: 2
+  - operations:
+      - variableId: multiplier
+        op: multiply
+        value: 3
+out:
+  projectData:
+    resources:
+      variables:
+        multiplier:
+          type: number
+          scope: context
+          default: 1
+  global:
+    variables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - variables:
+        multiplier: 6
+---
+case: divide context number
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            value:
+              type: number
+              scope: context
+              default: 0
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            value: 100
+  - operations:
+      - variableId: value
+        op: divide
+        value: 4
+out:
+  projectData:
+    resources:
+      variables:
+        value:
+          type: number
+          scope: context
+          default: 0
+  global:
+    variables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - variables:
+        value: 25
+---
+case: decrement context number (default value 1)
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            score:
+              type: number
+              scope: context
+              default: 0
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            score: 100
+  - operations:
+      - variableId: score
+        op: decrement
+out:
+  projectData:
+    resources:
+      variables:
+        score:
+          type: number
+          scope: context
+          default: 0
+  global:
+    variables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - variables:
+        score: 99
+---
+case: error - missing scope
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            badVar:
+              type: number
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables: {}
+  - operations:
+      - variableId: badVar
+        op: set
+        value: 10
+throws: "Variable scope is required for variable: badVar"
+---
+case: error - invalid scope
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            badVar:
+              type: number
+              scope: invalid
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables: {}
+  - operations:
+      - variableId: badVar
+        op: set
+        value: 10
+throws: "Invalid variable scope: invalid for variable badVar. Expected one of: context, global-device, global-account"
+---
+case: error - unknown variable type
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            badVar:
+              type: customType
+              scope: context
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables: {}
+  - operations:
+      - variableId: badVar
+        op: set
+        value: 10
+throws: "Unknown variable type: customType for variable badVar"
+---
+case: error - invalid operation for boolean
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            flag:
+              type: boolean
+              scope: context
+              default: false
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            flag: false
+  - operations:
+      - variableId: flag
+        op: increment
+throws: "Operation \"increment\" is not valid for variable \"flag\" of type \"boolean\". Valid operations: set, toggle"
+---
+case: error - invalid operation for string
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            name:
+              type: string
+              scope: context
+              default: ""
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            name: "Alice"
+  - operations:
+      - variableId: name
+        op: multiply
+        value: 2
+throws: "Operation \"multiply\" is not valid for variable \"name\" of type \"string\". Valid operations: set"
+---
+case: error - invalid operation for number
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            count:
+              type: number
+              scope: context
+              default: 0
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            count: 42
+  - operations:
+      - variableId: count
+        op: toggle
+throws: "Operation \"toggle\" is not valid for variable \"count\" of type \"number\". Valid operations: set, increment, decrement, multiply, divide"
+---
+case: error - unknown operation
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            score:
+              type: number
+              scope: context
+              default: 0
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            score: 100
+  - operations:
+      - variableId: score
+        op: unknown
+        value: 5
+throws: "Unknown operation: unknown"

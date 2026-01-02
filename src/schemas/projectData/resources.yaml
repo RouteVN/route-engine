@@ -312,7 +312,13 @@ properties:
             enum: [string, boolean, number]
           scope:
             type: enum
-            enum: [runtime, device, global]
+            enum: [context, global-device, global-account]
+          default:
+            description: Default initial value for the variable
+            oneOf:
+              - type: string
+              - type: number
+              - type: boolean
     additionalProperties: false
 
 additionalProperties: false

@@ -1,10 +1,22 @@
-import { createStore } from "../util.js";
+import {
+  createStore,
+  getDefaultVariablesFromProjectData,
+  convertVariablesToStrings,
+  validateVariableScope,
+  validateVariableOperation,
+  applyVariableOperation,
+  filterVariablesByScope,
+} from "../util.js";
 import { constructPresentationState } from "./constructPresentationState.js";
 import { constructRenderState } from "./constructRenderState.js";
 
 export const createInitialState = (payload) => {
   const {
-    global: { currentLocalizationPackageId, saveSlots = {} },
+    global: {
+      currentLocalizationPackageId,
+      saveSlots = {},
+      variables: loadedGlobalVariables = {},
+    },
     // initialPointer,
     projectData,
   } = payload;
@@ -19,6 +31,16 @@ export const createInitialState = (payload) => {
         projectData.story.scenes[projectData.story.initialSceneId]
           .initialSectionId
       ].lines[0].id,
+  };
+
+  // Get default variables from project data
+  const { contextVariableDefaultValues, globalVariablesDefaultValues } =
+    getDefaultVariablesFromProjectData(projectData);
+
+  // Merge with loaded globalVariablesDefaultValues from localStorage (if provided)
+  const globalVariables = {
+    ...globalVariablesDefaultValues,
+    ...loadedGlobalVariables,
   };
 
   const state = {
@@ -49,6 +71,7 @@ export const createInitialState = (payload) => {
       },
       saveSlots,
       layeredViews: [],
+      variables: globalVariables,
     },
     contexts: [
       {
@@ -71,7 +94,7 @@ export const createInitialState = (payload) => {
         bgm: {
           resourceId: undefined,
         },
-        variables: {},
+        variables: contextVariableDefaultValues,
       },
     ],
   };
@@ -365,6 +388,10 @@ export const selectRenderState = ({ state }) => {
     skipOnlyViewedLines: state.global.skipOnlyViewedLines,
     layeredViews: state.global.layeredViews,
     dialogueHistory: selectDialogueHistory({ state }),
+    variables: convertVariablesToStrings(
+      state.global.variables,
+      state.contexts[state.contexts.length - 1].variables,
+    ),
   });
   console.log("renderState", renderState);
   return renderState;
@@ -1125,6 +1152,73 @@ export const sectionTransition = ({ state }, payload) => {
   return state;
 };
 
+export const updateVariable = ({ state }, payload) => {
+  const { operations = [] } = payload;
+
+  let globalDeviceModified = false;
+  let globalAccountModified = false;
+
+  operations.forEach(({ variableId, op, value }) => {
+    const variableConfig = state.projectData.resources?.variables?.[variableId];
+    const scope = variableConfig?.scope;
+    const type = variableConfig?.type;
+
+    // Use pure helpers for validation
+    validateVariableScope(scope, variableId);
+    validateVariableOperation(type, op, variableId);
+
+    const target =
+      scope === "context"
+        ? state.contexts[state.contexts.length - 1].variables
+        : state.global.variables;
+
+    // Track which scope was modified
+    if (scope === "global-device") {
+      globalDeviceModified = true;
+    } else if (scope === "global-account") {
+      globalAccountModified = true;
+    }
+
+    // Use pure helper to apply operation
+    target[variableId] = applyVariableOperation(target[variableId], op, value);
+  });
+
+  // Save global-device variables if any were modified
+  if (globalDeviceModified) {
+    const globalDeviceVars = filterVariablesByScope(
+      state.global.variables,
+      state.projectData.resources?.variables,
+      "global-device",
+    );
+    state.global.pendingEffects.push({
+      name: "saveGlobalDeviceVariables",
+      payload: {
+        globalDeviceVariables: globalDeviceVars,
+      },
+    });
+  }
+
+  // Save global-account variables if any were modified
+  if (globalAccountModified) {
+    const globalAccountVars = filterVariablesByScope(
+      state.global.variables,
+      state.projectData.resources?.variables,
+      "global-account",
+    );
+    state.global.pendingEffects.push({
+      name: "saveGlobalAccountVariables",
+      payload: {
+        globalAccountVariables: globalAccountVars,
+      },
+    });
+  }
+
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+  return state;
+};
+
 /**************************
  * Store Export
  *************************/
@@ -1191,6 +1285,7 @@ export const createSystemStore = (initialState) => {
     popLayeredView,
     replaceLastLayeredView,
     clearLayeredViews,
+    updateVariable,
   };
 
   return createStore(_initialState, selectorsAndActions, {

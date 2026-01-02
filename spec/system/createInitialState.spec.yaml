@@ -42,6 +42,7 @@ out:
         enabled: false
     saveSlots: {}
     layeredViews: []
+    variables: {}
   projectData:
     story:
       initialSceneId: "scene1"
@@ -71,4 +72,105 @@ out:
       bgm:
         resourceId: __undefined__
       variables: {}
-
+---
+case: merge loaded global variables with defaults
+in:
+  - global:
+      currentLocalizationPackageId: "en"
+      variables:
+        volume: 80
+        achievement1: true
+    projectData:
+      resources:
+        variables:
+          volume:
+            type: number
+            scope: global-device
+            default: 50
+          achievement1:
+            type: boolean
+            scope: global-account
+            default: false
+          newVariable:
+            type: string
+            scope: global-device
+            default: "default"
+      story:
+        initialSceneId: "scene1"
+        scenes:
+          scene1:
+            initialSectionId: "section1"
+            sections:
+              section1:
+                lines:
+                  - id: "line1"
+                    actions: {}
+out:
+  global:
+    autoplayDelay: 1000
+    isLineCompleted: false
+    pendingEffects: []
+    autoMode: false
+    skipMode: false
+    skipOnlyViewedLines: true
+    dialogueUIHidden: false
+    isDialogueHistoryShowing: false
+    currentLocalizationPackageId: "en"
+    viewedRegistry:
+      sections: []
+      resources: []
+    nextLineConfig:
+      manual:
+        enabled: true
+        requireLineCompleted: false
+      auto:
+        enabled: false
+    saveSlots: {}
+    layeredViews: []
+    variables:
+      volume: 80
+      achievement1: true
+      newVariable: "default"
+  projectData:
+    resources:
+      variables:
+        volume:
+          type: number
+          scope: global-device
+          default: 50
+        achievement1:
+          type: boolean
+          scope: global-account
+          default: false
+        newVariable:
+          type: string
+          scope: global-device
+          default: "default"
+    story:
+      initialSceneId: "scene1"
+      scenes:
+        scene1:
+          initialSectionId: "section1"
+          sections:
+            section1:
+              lines:
+                - id: "line1"
+                  actions: {}
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sceneId: "scene1"
+          sectionId: "section1"
+          lineId: "line1"
+        history:
+          sectionId: __undefined__
+          lineId: __undefined__
+          historySequenceIndex: __undefined__
+      historySequence:
+        - sectionId: "..."
+      configuration: {}
+      views: []
+      bgm:
+        resourceId: __undefined__
+      variables: {}

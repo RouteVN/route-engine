@@ -104,7 +104,7 @@ const init = async () => {
       url: "/public/video_sample.mp4",
       type: "video/mp4"
     },
-     "fighter-spritesheet": {
+    "fighter-spritesheet": {
       url: "/public/fighter.png",
       type: "image/png",
     },
@@ -168,7 +168,7 @@ const init = async () => {
         // engine.handleLineActions();
       } else {
         if (payload.actions) {
-          if(payload.actions.saveSaveSlot){
+          if (payload.actions.saveSaveSlot) {
             const url = await routeGraphics.extractBase64("story");
             const assets = {
               [`saveThumbnailImage:${payload.actions.saveSaveSlot.slot}`]: {
@@ -194,12 +194,15 @@ const init = async () => {
   const effectsHandler = createEffectsHandler({ getEngine: () => engine, routeGraphics, ticker });
   const engine = createRouteEngine({ handlePendingEffects: effectsHandler });
   const saveSlots = JSON.parse(localStorage.getItem("saveSlots")) || {};
+  const globalDeviceVariables = JSON.parse(localStorage.getItem("globalDeviceVariables")) || {};
+  const globalAccountVariables = JSON.parse(localStorage.getItem("globalAccountVariables")) || {};
 
   engine.init({
     initialState: {
       global: {
         currentLocalizationPackageId: 'eklekfjwalefj',
-        saveSlots
+        saveSlots,
+        variables: { ...globalDeviceVariables, ...globalAccountVariables }
       },
       projectData
     }
