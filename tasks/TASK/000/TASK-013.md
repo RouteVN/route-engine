@@ -12,7 +12,7 @@ we have some variables related code implemented but is mostly broken, we need to
 
 there are 3 types of variebles persistence:
 
-runtime/story: 
+context:
 - reset on every game/story start
 - needs to be saved in save data
 - example:
@@ -20,7 +20,7 @@ runtime/story:
   - in game point systems
 
 
-device
+global-device
 - stored per device, saved globally in device
 - will persist over restarts
 - not saved in save data
@@ -28,9 +28,9 @@ device
   - audio volume
   - text display speed
 
-global
+global-account
 - persists across game/story starts
-- unlike device, should be tied to the user in cloud systems.
+- unlike global-device, should be tied to the user in cloud systems.
 - example:
   - show extra section only when user has completed a specifc route or entire story
 

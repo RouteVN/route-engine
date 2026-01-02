@@ -17,12 +17,12 @@ resources:
   variables:
     playerName:
       type: string
-      scope: runtime
+      scope: context
       default: "Guest"
 
     currentStatus:
       type: string
-      scope: global
+      scope: global-account
       default: "Idle"
 
   layouts:

@@ -1,6 +1,6 @@
 ---
 title: "Variable Scopes Comparison"
-description: "Demonstrates runtime, device, and global variable scopes"
+description: "Demonstrates context, global-device, and global-account variable scopes"
 ---
 l10n:
   packages:
@@ -16,37 +16,37 @@ screen:
 
 resources:
   variables:
-    # RUNTIME SCOPE - Tied to this playthrough
+    # CONTEXT SCOPE - Tied to this playthrough
     playerGold:
       type: number
-      scope: runtime
+      scope: context
       default: 100
 
     currentLocation:
       type: string
-      scope: runtime
+      scope: context
       default: "Town Square"
 
-    # DEVICE SCOPE - Settings that persist on this device
+    # GLOBAL-DEVICE SCOPE - Settings that persist on this device
     textSpeed:
       type: number
-      scope: device
+      scope: global-device
       default: 50
 
     volume:
       type: number
-      scope: device
+      scope: global-device
       default: 80
 
-    # GLOBAL SCOPE - Achievements/unlocks that persist across saves
+    # GLOBAL-ACCOUNT SCOPE - Achievements/unlocks that persist across saves
     totalPlaythroughs:
       type: number
-      scope: global
+      scope: global-account
       default: 0
 
     secretUnlocked:
       type: boolean
-      scope: global
+      scope: global-account
       default: false
 
   layouts:
@@ -77,7 +77,7 @@ resources:
             fontWeight: bold
 
         # ═══════════════════════════════════════════════════════
-        # RUNTIME SCOPE SECTION
+        # CONTEXT SCOPE SECTION
         # ═══════════════════════════════════════════════════════
         - id: runtimeSection
           type: container
@@ -86,7 +86,7 @@ resources:
           children:
             - id: runtimeTitle
               type: text
-              content: "RUNTIME SCOPE"
+              content: "CONTEXT SCOPE"
               x: 0
               y: 0
               textStyle:
@@ -246,7 +246,7 @@ resources:
                           value: "Dark Forest"
 
         # ═══════════════════════════════════════════════════════
-        # DEVICE SCOPE SECTION
+        # GLOBAL-DEVICE SCOPE SECTION
         # ═══════════════════════════════════════════════════════
         - id: deviceSection
           type: container
@@ -255,7 +255,7 @@ resources:
           children:
             - id: deviceTitle
               type: text
-              content: "DEVICE SCOPE"
+              content: "GLOBAL-DEVICE SCOPE"
               x: 0
               y: 0
               textStyle:
@@ -436,7 +436,7 @@ resources:
                           value: 10
 
         # ═══════════════════════════════════════════════════════
-        # GLOBAL SCOPE SECTION
+        # GLOBAL-ACCOUNT SCOPE SECTION
         # ═══════════════════════════════════════════════════════
         - id: globalSection
           type: container
@@ -445,7 +445,7 @@ resources:
           children:
             - id: globalTitle
               type: text
-              content: "GLOBAL SCOPE"
+              content: "GLOBAL-ACCOUNT SCOPE"
               x: 0
               y: 0
               textStyle:

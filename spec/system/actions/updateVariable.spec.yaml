@@ -13,10 +13,10 @@ in:
           variables:
             playerName:
               type: string
-              scope: runtime
+              scope: context
               default: "Guest"
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -31,10 +31,10 @@ out:
       variables:
         playerName:
           type: string
-          scope: runtime
+          scope: context
           default: "Guest"
   global:
-    globalAndDeviceVariables: {}
+    variables: {}
     pendingEffects:
       - name: "render"
   contexts:
@@ -49,10 +49,10 @@ in:
           variables:
             volume:
               type: number
-              scope: device
+              scope: global-device
               default: 50
       global:
-        globalAndDeviceVariables:
+        variables:
           volume: 50
         pendingEffects: []
       contexts:
@@ -67,10 +67,10 @@ out:
       variables:
         volume:
           type: number
-          scope: device
+          scope: global-device
           default: 50
   global:
-    globalAndDeviceVariables:
+    variables:
       volume: 80
     pendingEffects:
       - name: "deviceVariables"
@@ -89,10 +89,10 @@ in:
           variables:
             achievement1:
               type: boolean
-              scope: global
+              scope: global-account
               default: false
       global:
-        globalAndDeviceVariables:
+        variables:
           achievement1: false
         pendingEffects: []
       contexts:
@@ -107,10 +107,10 @@ out:
       variables:
         achievement1:
           type: boolean
-          scope: global
+          scope: global-account
           default: false
   global:
-    globalAndDeviceVariables:
+    variables:
       achievement1: true
     pendingEffects:
       - name: "globalVariables"
@@ -129,10 +129,10 @@ in:
           variables:
             score:
               type: number
-              scope: runtime
+              scope: context
               default: 0
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -146,10 +146,10 @@ out:
       variables:
         score:
           type: number
-          scope: runtime
+          scope: context
           default: 0
   global:
-    globalAndDeviceVariables: {}
+    variables: {}
     pendingEffects:
       - name: "render"
   contexts:
@@ -164,10 +164,10 @@ in:
           variables:
             soundEnabled:
               type: boolean
-              scope: runtime
+              scope: context
               default: true
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -181,10 +181,10 @@ out:
       variables:
         soundEnabled:
           type: boolean
-          scope: runtime
+          scope: context
           default: true
   global:
-    globalAndDeviceVariables: {}
+    variables: {}
     pendingEffects:
       - name: "render"
   contexts:
@@ -199,10 +199,10 @@ in:
           variables:
             notificationsOn:
               type: boolean
-              scope: device
+              scope: global-device
               default: false
       global:
-        globalAndDeviceVariables:
+        variables:
           notificationsOn: false
         pendingEffects: []
       contexts:
@@ -216,10 +216,10 @@ out:
       variables:
         notificationsOn:
           type: boolean
-          scope: device
+          scope: global-device
           default: false
   global:
-    globalAndDeviceVariables:
+    variables:
       notificationsOn: true
     pendingEffects:
       - name: "deviceVariables"
@@ -238,18 +238,18 @@ in:
           variables:
             score:
               type: number
-              scope: runtime
+              scope: context
               default: 0
             volume:
               type: number
-              scope: device
+              scope: global-device
               default: 50
             achievement1:
               type: boolean
-              scope: global
+              scope: global-account
               default: false
       global:
-        globalAndDeviceVariables:
+        variables:
           volume: 50
           achievement1: false
         pendingEffects: []
@@ -271,18 +271,18 @@ out:
       variables:
         score:
           type: number
-          scope: runtime
+          scope: context
           default: 0
         volume:
           type: number
-          scope: device
+          scope: global-device
           default: 50
         achievement1:
           type: boolean
-          scope: global
+          scope: global-account
           default: false
   global:
-    globalAndDeviceVariables:
+    variables:
       volume: 80
       achievement1: true
     pendingEffects:
@@ -307,10 +307,10 @@ in:
           variables:
             newCounter:
               type: number
-              scope: runtime
+              scope: context
               default: 0
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables: {}
@@ -323,10 +323,10 @@ out:
       variables:
         newCounter:
           type: number
-          scope: runtime
+          scope: context
           default: 0
   global:
-    globalAndDeviceVariables: {}
+    variables: {}
     pendingEffects:
       - name: "render"
   contexts:
@@ -341,10 +341,10 @@ in:
           variables:
             gold:
               type: number
-              scope: runtime
+              scope: context
               default: 0
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -359,10 +359,10 @@ out:
       variables:
         gold:
           type: number
-          scope: runtime
+          scope: context
           default: 0
   global:
-    globalAndDeviceVariables: {}
+    variables: {}
     pendingEffects:
       - name: "render"
   contexts:
@@ -377,10 +377,10 @@ in:
           variables:
             health:
               type: number
-              scope: runtime
+              scope: context
               default: 100
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -395,10 +395,10 @@ out:
       variables:
         health:
           type: number
-          scope: runtime
+          scope: context
           default: 100
   global:
-    globalAndDeviceVariables: {}
+    variables: {}
     pendingEffects:
       - name: "render"
   contexts:
@@ -413,10 +413,10 @@ in:
           variables:
             multiplier:
               type: number
-              scope: runtime
+              scope: context
               default: 1
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -431,10 +431,10 @@ out:
       variables:
         multiplier:
           type: number
-          scope: runtime
+          scope: context
           default: 1
   global:
-    globalAndDeviceVariables: {}
+    variables: {}
     pendingEffects:
       - name: "render"
   contexts:
@@ -449,10 +449,10 @@ in:
           variables:
             value:
               type: number
-              scope: runtime
+              scope: context
               default: 0
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -467,10 +467,10 @@ out:
       variables:
         value:
           type: number
-          scope: runtime
+          scope: context
           default: 0
   global:
-    globalAndDeviceVariables: {}
+    variables: {}
     pendingEffects:
       - name: "render"
   contexts:
@@ -485,10 +485,10 @@ in:
           variables:
             score:
               type: number
-              scope: runtime
+              scope: context
               default: 0
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -502,10 +502,10 @@ out:
       variables:
         score:
           type: number
-          scope: runtime
+          scope: context
           default: 0
   global:
-    globalAndDeviceVariables: {}
+    variables: {}
     pendingEffects:
       - name: "render"
   contexts:
@@ -521,7 +521,7 @@ in:
             badVar:
               type: number
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables: {}
@@ -541,7 +541,7 @@ in:
               type: number
               scope: invalid
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables: {}
@@ -549,7 +549,7 @@ in:
       - variableId: badVar
         op: set
         value: 10
-throws: "Invalid variable scope: invalid for variable badVar. Expected one of: runtime, device, global"
+throws: "Invalid variable scope: invalid for variable badVar. Expected one of: context, global-device, global-account"
 ---
 case: error - unknown variable type
 in:
@@ -559,9 +559,9 @@ in:
           variables:
             badVar:
               type: customType
-              scope: runtime
+              scope: context
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables: {}
@@ -579,10 +579,10 @@ in:
           variables:
             flag:
               type: boolean
-              scope: runtime
+              scope: context
               default: false
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -600,10 +600,10 @@ in:
           variables:
             name:
               type: string
-              scope: runtime
+              scope: context
               default: ""
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -622,10 +622,10 @@ in:
           variables:
             count:
               type: number
-              scope: runtime
+              scope: context
               default: 0
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -643,10 +643,10 @@ in:
           variables:
             score:
               type: number
-              scope: runtime
+              scope: context
               default: 0
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables:

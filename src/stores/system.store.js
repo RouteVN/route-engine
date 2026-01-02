@@ -1,6 +1,6 @@
 import {
   createStore,
-  initializeVariablesFromProjectData,
+  getDefaultVariablesFromProjectData,
   convertVariablesToStrings,
   validateVariableScope,
   validateVariableOperation,
@@ -15,7 +15,7 @@ export const createInitialState = (payload) => {
     global: {
       currentLocalizationPackageId,
       saveSlots = {},
-      globalAndDeviceVariables: loadedGlobalAndDeviceVariables = {},
+      variables: loadedGlobalVariables = {},
     },
     // initialPointer,
     projectData,
@@ -33,14 +33,14 @@ export const createInitialState = (payload) => {
       ].lines[0].id,
   };
 
-  // Initialize variables from project data
-  const { runtimeVariables, globalAndDeviceVariables } =
-    initializeVariablesFromProjectData(projectData);
+  // Get default variables from project data
+  const { contextVariableDefaultValues, globalVariablesDefaultValues } =
+    getDefaultVariablesFromProjectData(projectData);
 
-  // Merge with loaded globalAndDeviceVariables from localStorage (if provided)
-  const mergedGlobalAndDeviceVariables = {
-    ...globalAndDeviceVariables,
-    ...loadedGlobalAndDeviceVariables,
+  // Merge with loaded globalVariablesDefaultValues from localStorage (if provided)
+  const globalVariables = {
+    ...globalVariablesDefaultValues,
+    ...loadedGlobalVariables,
   };
 
   const state = {
@@ -71,7 +71,7 @@ export const createInitialState = (payload) => {
       },
       saveSlots,
       layeredViews: [],
-      globalAndDeviceVariables: mergedGlobalAndDeviceVariables,
+      variables: globalVariables,
     },
     contexts: [
       {
@@ -94,7 +94,7 @@ export const createInitialState = (payload) => {
         bgm: {
           resourceId: undefined,
         },
-        variables: runtimeVariables,
+        variables: contextVariableDefaultValues,
       },
     ],
   };
@@ -389,7 +389,7 @@ export const selectRenderState = ({ state }) => {
     layeredViews: state.global.layeredViews,
     dialogueHistory: selectDialogueHistory({ state }),
     variables: convertVariablesToStrings(
-      state.global.globalAndDeviceVariables,
+      state.global.variables,
       state.contexts[state.contexts.length - 1].variables,
     ),
   });
@@ -1168,14 +1168,14 @@ export const updateVariable = ({ state }, payload) => {
     validateVariableOperation(type, op, variableId);
 
     const target =
-      scope === "runtime"
+      scope === "context"
         ? state.contexts[state.contexts.length - 1].variables
-        : state.global.globalAndDeviceVariables;
+        : state.global.variables;
 
     // Track which scope was modified
-    if (scope === "device") {
+    if (scope === "global-device") {
       deviceModified = true;
-    } else if (scope === "global") {
+    } else if (scope === "global-account") {
       globalModified = true;
     }
 
@@ -1186,9 +1186,9 @@ export const updateVariable = ({ state }, payload) => {
   // Save device variables if any were modified
   if (deviceModified) {
     const deviceVars = filterVariablesByScope(
-      state.global.globalAndDeviceVariables,
+      state.global.variables,
       state.projectData.resources?.variables,
-      "device",
+      "global-device",
     );
     state.global.pendingEffects.push({
       name: "deviceVariables",
@@ -1201,9 +1201,9 @@ export const updateVariable = ({ state }, payload) => {
   // Save global variables if any were modified
   if (globalModified) {
     const globalVars = filterVariablesByScope(
-      state.global.globalAndDeviceVariables,
+      state.global.variables,
       state.projectData.resources?.variables,
-      "global",
+      "global-account",
     );
     state.global.pendingEffects.push({
       name: "globalVariables",

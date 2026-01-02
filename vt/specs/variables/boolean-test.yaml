@@ -17,17 +17,17 @@ resources:
   variables:
     soundEnabled:
       type: boolean
-      scope: runtime
+      scope: context
       default: true
 
     notificationsOn:
       type: boolean
-      scope: device
+      scope: global-device
       default: false
 
     tutorialCompleted:
       type: boolean
-      scope: global
+      scope: global-account
       default: false
 
   layouts:

@@ -18,22 +18,22 @@ resources:
     # Runtime variables - different per save slot
     playerName:
       type: string
-      scope: runtime
+      scope: context
       default: "New Player"
 
     playerLevel:
       type: number
-      scope: runtime
+      scope: context
       default: 1
 
     playerGold:
       type: number
-      scope: runtime
+      scope: context
       default: 0
 
     questCompleted:
       type: boolean
-      scope: runtime
+      scope: context
       default: false
 
   layouts:
