@@ -191,7 +191,14 @@ const createEffectsHandler = ({ getEngine, routeGraphics, ticker }) => {
     // Convert back to array and process deduplicated effects
     const uniqueEffects = Object.values(deduplicatedEffects);
 
-    const deps = { engine, routeGraphics, ticker, autoTimer, skipTimer, sceneModeTimer  };
+    const deps = {
+      engine,
+      routeGraphics,
+      ticker,
+      autoTimer,
+      skipTimer,
+      sceneModeTimer,
+    };
 
     for (const effect of uniqueEffects) {
       const handler = effects[effect.name];

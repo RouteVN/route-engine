@@ -1375,7 +1375,7 @@ export const createSystemStore = (initialState) => {
     replaceLastLayeredView,
     clearLayeredViews,
     updateVariable,
-    _nextLineFromSystem
+    _nextLineFromSystem,
   };
 
   return createStore(_initialState, selectorsAndActions, {
