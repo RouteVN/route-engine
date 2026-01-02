@@ -75,7 +75,7 @@ out:
     pendingEffects:
       - name: "saveGlobalDeviceVariables"
         payload:
-          deviceVariables:
+          globalDeviceVariables:
             volume: 80
       - name: "render"
   contexts:
@@ -115,7 +115,7 @@ out:
     pendingEffects:
       - name: "saveGlobalAccountVariables"
         payload:
-          globalVariables:
+          globalAccountVariables:
             achievement1: true
       - name: "render"
   contexts:
@@ -224,7 +224,7 @@ out:
     pendingEffects:
       - name: "saveGlobalDeviceVariables"
         payload:
-          deviceVariables:
+          globalDeviceVariables:
             notificationsOn: true
       - name: "render"
   contexts:
@@ -288,11 +288,11 @@ out:
     pendingEffects:
       - name: "saveGlobalDeviceVariables"
         payload:
-          deviceVariables:
+          globalDeviceVariables:
             volume: 80
       - name: "saveGlobalAccountVariables"
         payload:
-          globalVariables:
+          globalAccountVariables:
             achievement1: true
       - name: "render"
   contexts:

@@ -15,7 +15,7 @@ screen:
 
 resources:
   variables:
-    # Runtime variables - different per save slot
+    # Context variables - different per save slot
     playerName:
       type: string
       scope: context

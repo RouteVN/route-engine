@@ -109,14 +109,14 @@ const saveSlots = ({}, payload) => {
 const saveGlobalDeviceVariables = ({}, payload) => {
   localStorage.setItem(
     "globalDeviceVariables",
-    JSON.stringify(payload.deviceVariables),
+    JSON.stringify(payload.globalDeviceVariables),
   );
 };
 
 const saveGlobalAccountVariables = ({}, payload) => {
   localStorage.setItem(
     "globalAccountVariables",
-    JSON.stringify(payload.globalVariables),
+    JSON.stringify(payload.globalAccountVariables),
   );
 };
 

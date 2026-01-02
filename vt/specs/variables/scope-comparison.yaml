@@ -67,7 +67,7 @@ resources:
       elements:
         - id: title
           type: text
-          content: "Variable Scopes: Runtime vs Device vs Global"
+          content: "Variable Scopes: Context vs Global-Device vs Global-Account"
           x: 960
           y: 60
           anchorX: 0.5

@@ -366,7 +366,7 @@ export const getDefaultVariablesFromProjectData = (projectData) => {
       if (config.scope === "context") {
         contextVariableDefaultValues[variableId] = value;
       } else {
-        // Device and global scopes both go to globalVariablesDefaultValues
+        // global-device and global-account scopes both go to globalVariablesDefaultValues
         globalVariablesDefaultValues[variableId] = value;
       }
     },
@@ -379,7 +379,7 @@ export const getDefaultVariablesFromProjectData = (projectData) => {
  * Converts all variable values to strings for rendering
  * Pure function - no side effects
  *
- * @param {Object} globalAndDeviceVars - Global-device and global-account scoped variables
+ * @param {Object} globalVars - Global-device and global-account scoped variables
  * @param {Object} contextVars - Context scoped variables
  * @returns {Object} Object with all values converted to strings
  *
@@ -390,10 +390,10 @@ export const getDefaultVariablesFromProjectData = (projectData) => {
  * )
  * // Returns: { volume: '80', flag: 'true', score: '100', name: 'Alice' }
  */
-export const convertVariablesToStrings = (globalAndDeviceVars, contextVars) => {
+export const convertVariablesToStrings = (globalVars, contextVars) => {
   return Object.fromEntries(
     Object.entries({
-      ...globalAndDeviceVars,
+      ...globalVars,
       ...contextVars,
     }).map(([key, value]) => [key, String(value)]),
   );

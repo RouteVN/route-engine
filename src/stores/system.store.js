@@ -1155,8 +1155,8 @@ export const sectionTransition = ({ state }, payload) => {
 export const updateVariable = ({ state }, payload) => {
   const { operations = [] } = payload;
 
-  let deviceModified = false;
-  let globalModified = false;
+  let globalDeviceModified = false;
+  let globalAccountModified = false;
 
   operations.forEach(({ variableId, op, value }) => {
     const variableConfig = state.projectData.resources?.variables?.[variableId];
@@ -1174,9 +1174,9 @@ export const updateVariable = ({ state }, payload) => {
 
     // Track which scope was modified
     if (scope === "global-device") {
-      deviceModified = true;
+      globalDeviceModified = true;
     } else if (scope === "global-account") {
-      globalModified = true;
+      globalAccountModified = true;
     }
 
     // Use pure helper to apply operation
@@ -1184,8 +1184,8 @@ export const updateVariable = ({ state }, payload) => {
   });
 
   // Save global-device variables if any were modified
-  if (deviceModified) {
-    const deviceVars = filterVariablesByScope(
+  if (globalDeviceModified) {
+    const globalDeviceVars = filterVariablesByScope(
       state.global.variables,
       state.projectData.resources?.variables,
       "global-device",
@@ -1193,14 +1193,14 @@ export const updateVariable = ({ state }, payload) => {
     state.global.pendingEffects.push({
       name: "saveGlobalDeviceVariables",
       payload: {
-        deviceVariables: deviceVars,
+        globalDeviceVariables: globalDeviceVars,
       },
     });
   }
 
   // Save global-account variables if any were modified
-  if (globalModified) {
-    const globalVars = filterVariablesByScope(
+  if (globalAccountModified) {
+    const globalAccountVars = filterVariablesByScope(
       state.global.variables,
       state.projectData.resources?.variables,
       "global-account",
@@ -1208,7 +1208,7 @@ export const updateVariable = ({ state }, payload) => {
     state.global.pendingEffects.push({
       name: "saveGlobalAccountVariables",
       payload: {
-        globalVariables: globalVars,
+        globalAccountVariables: globalAccountVars,
       },
     });
   }

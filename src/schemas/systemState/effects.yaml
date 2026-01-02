@@ -72,9 +72,9 @@ oneOf:
         type: object
         description: Global-device variables to save
         properties:
-          deviceVariables:
+          globalDeviceVariables:
             type: object
-            description: Device-scoped variables
+            description: Global-device scoped variables
             additionalProperties: true
       priority:
         type: integer
@@ -93,9 +93,9 @@ oneOf:
         type: object
         description: Global-account variables to save
         properties:
-          globalVariables:
+          globalAccountVariables:
             type: object
-            description: Global-account-scoped variables
+            description: Global-account scoped variables
             additionalProperties: true
       priority:
         type: integer
