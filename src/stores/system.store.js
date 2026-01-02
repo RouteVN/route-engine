@@ -504,7 +504,6 @@ export const stopSkipMode = ({ state }) => {
 };
 
 export const toggleSkipMode = ({ state }) => {
-
   if (state.global.nextLineConfig.manual.enabled === false) {
     const skipMode = selectSkipMode({ state });
     if (!skipMode) {
@@ -950,7 +949,7 @@ export const nextLineFromCompleted = ({ state }) => {
 
 export const nextLine = ({ state }) => {
   const isAutoOrSkip = state.global.autoMode || state.global.skipMode;
-  
+
   if (!state.global.nextLineConfig.manual.enabled && !isAutoOrSkip) {
     return state;
   }
@@ -1037,7 +1036,6 @@ export const markLineCompleted = ({ state }) => {
 };
 
 export const prevLine = ({ state }, payload) => {
-
   if (state.global.nextLineConfig.manual.enabled === false) {
     return state;
   }
