@@ -1183,7 +1183,7 @@ export const updateVariable = ({ state }, payload) => {
     target[variableId] = applyVariableOperation(target[variableId], op, value);
   });
 
-  // Save device variables if any were modified
+  // Save global-device variables if any were modified
   if (deviceModified) {
     const deviceVars = filterVariablesByScope(
       state.global.variables,
@@ -1198,7 +1198,7 @@ export const updateVariable = ({ state }, payload) => {
     });
   }
 
-  // Save global variables if any were modified
+  // Save global-account variables if any were modified
   if (globalModified) {
     const globalVars = filterVariablesByScope(
       state.global.variables,

@@ -30,7 +30,7 @@ properties:
         default: []
 
       # TODO: decide what to do with this in terms of context
-      # here we put only device, and global variables
+      # here we put only global-device, and global-account variables
       # context variables will go to context
       variables:
         type: object

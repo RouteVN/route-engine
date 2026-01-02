@@ -51,10 +51,10 @@ resources:
             fontSize: 48
             fill: "#ecf0f1"
 
-        # Display runtime string (playerName)
+        # Display context string (playerName)
         - id: nameLabel
           type: text
-          content: "Player Name (runtime):"
+          content: "Player Name (context):"
           x: 400
           y: 300
           textStyle:
@@ -71,7 +71,7 @@ resources:
             fill: "#3498db"
             fontWeight: bold
 
-        # Display global string (currentStatus)
+        # Display global-account string (currentStatus)
         - id: statusLabel
           type: text
           content: "Status (global):"

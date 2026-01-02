@@ -59,7 +59,7 @@ resources:
         # Runtime boolean (soundEnabled)
         - id: soundLabel
           type: text
-          content: "Sound (runtime):"
+          content: "Sound (context):"
           x: 400
           y: 300
           textStyle:

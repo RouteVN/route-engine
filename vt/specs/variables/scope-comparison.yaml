@@ -79,12 +79,12 @@ resources:
         # ═══════════════════════════════════════════════════════
         # CONTEXT SCOPE SECTION
         # ═══════════════════════════════════════════════════════
-        - id: runtimeSection
+        - id: contextSection
           type: container
           x: 100
           y: 150
           children:
-            - id: runtimeTitle
+            - id: contextTitle
               type: text
               content: "CONTEXT SCOPE"
               x: 0
@@ -94,7 +94,7 @@ resources:
                 fill: "#3498db"
                 fontWeight: bold
 
-            - id: runtimeDesc
+            - id: contextDesc
               type: text
               content: "Tied to this playthrough"
               x: 0
@@ -103,7 +103,7 @@ resources:
                 fontSize: 18
                 fill: "#95a5a6"
 
-            - id: runtimeDesc2
+            - id: contextDesc2
               type: text
               content: "✓ Saved in save slots"
               x: 0
@@ -112,7 +112,7 @@ resources:
                 fontSize: 18
                 fill: "#2ecc71"
 
-            - id: runtimeDesc3
+            - id: contextDesc3
               type: text
               content: "✗ Lost on new game"
               x: 0
@@ -248,12 +248,12 @@ resources:
         # ═══════════════════════════════════════════════════════
         # GLOBAL-DEVICE SCOPE SECTION
         # ═══════════════════════════════════════════════════════
-        - id: deviceSection
+        - id: global-deviceSection
           type: container
           x: 100
           y: 450
           children:
-            - id: deviceTitle
+            - id: global-deviceTitle
               type: text
               content: "GLOBAL-DEVICE SCOPE"
               x: 0
@@ -263,7 +263,7 @@ resources:
                 fill: "#e67e22"
                 fontWeight: bold
 
-            - id: deviceDesc
+            - id: global-deviceDesc
               type: text
               content: "Settings stored on this device"
               x: 0
@@ -272,7 +272,7 @@ resources:
                 fontSize: 18
                 fill: "#95a5a6"
 
-            - id: deviceDesc2
+            - id: global-deviceDesc2
               type: text
               content: "✓ Persists across sessions"
               x: 0
@@ -281,7 +281,7 @@ resources:
                 fontSize: 18
                 fill: "#2ecc71"
 
-            - id: deviceDesc3
+            - id: global-deviceDesc3
               type: text
               content: "✗ NOT in save slots"
               x: 0
@@ -438,12 +438,12 @@ resources:
         # ═══════════════════════════════════════════════════════
         # GLOBAL-ACCOUNT SCOPE SECTION
         # ═══════════════════════════════════════════════════════
-        - id: globalSection
+        - id: global-accountSection
           type: container
           x: 100
           y: 750
           children:
-            - id: globalTitle
+            - id: global-accountTitle
               type: text
               content: "GLOBAL-ACCOUNT SCOPE"
               x: 0
@@ -453,7 +453,7 @@ resources:
                 fill: "#9b59b6"
                 fontWeight: bold
 
-            - id: globalDesc
+            - id: global-accountDesc
               type: text
               content: "Achievements across all playthroughs"
               x: 0
@@ -462,7 +462,7 @@ resources:
                 fontSize: 18
                 fill: "#95a5a6"
 
-            - id: globalDesc2
+            - id: global-accountDesc2
               type: text
               content: "✓ Persists forever"
               x: 0
@@ -471,7 +471,7 @@ resources:
                 fontSize: 18
                 fill: "#2ecc71"
 
-            - id: globalDesc3
+            - id: global-accountDesc3
               type: text
               content: "✓ Shared across saves"
               x: 0
@@ -608,7 +608,7 @@ resources:
                 fill: "#bdc3c7"
 
             # Runtime row
-            - id: runtimeRow
+            - id: contextRow
               type: text
               content: "Runtime"
               x: 0
@@ -617,7 +617,7 @@ resources:
                 fontSize: 18
                 fill: "#3498db"
 
-            - id: runtimeSaved
+            - id: contextSaved
               type: text
               content: "✓ Yes"
               x: 200
@@ -626,7 +626,7 @@ resources:
                 fontSize: 18
                 fill: "#2ecc71"
 
-            - id: runtimePersist
+            - id: contextPersist
               type: text
               content: "✗ No"
               x: 350
@@ -636,7 +636,7 @@ resources:
                 fill: "#e74c3c"
 
             # Device row
-            - id: deviceRow
+            - id: global-deviceRow
               type: text
               content: "Device"
               x: 0
@@ -645,7 +645,7 @@ resources:
                 fontSize: 18
                 fill: "#e67e22"
 
-            - id: deviceSaved
+            - id: global-deviceSaved
               type: text
               content: "✗ No"
               x: 200
@@ -654,7 +654,7 @@ resources:
                 fontSize: 18
                 fill: "#e74c3c"
 
-            - id: devicePersist
+            - id: global-devicePersist
               type: text
               content: "✓ Yes"
               x: 350
@@ -664,7 +664,7 @@ resources:
                 fill: "#2ecc71"
 
             # Global row
-            - id: globalRow
+            - id: global-accountRow
               type: text
               content: "Global"
               x: 0
@@ -673,7 +673,7 @@ resources:
                 fontSize: 18
                 fill: "#9b59b6"
 
-            - id: globalSaved
+            - id: global-accountSaved
               type: text
               content: "✗ No*"
               x: 200
@@ -682,7 +682,7 @@ resources:
                 fontSize: 18
                 fill: "#e67e22"
 
-            - id: globalPersist
+            - id: global-accountPersist
               type: text
               content: "✓ Yes"
               x: 350
@@ -691,7 +691,7 @@ resources:
                 fontSize: 18
                 fill: "#2ecc71"
 
-            - id: globalNote
+            - id: global-accountNote
               type: text
               content: "* Shared across all saves"
               x: 0

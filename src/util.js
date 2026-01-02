@@ -379,8 +379,8 @@ export const getDefaultVariablesFromProjectData = (projectData) => {
  * Converts all variable values to strings for rendering
  * Pure function - no side effects
  *
- * @param {Object} globalAndDeviceVars - Global and device scoped variables
- * @param {Object} runtimeVars - Runtime scoped variables
+ * @param {Object} globalAndDeviceVars - Global-device and global-account scoped variables
+ * @param {Object} contextVars - Context scoped variables
  * @returns {Object} Object with all values converted to strings
  *
  * @example
@@ -390,11 +390,11 @@ export const getDefaultVariablesFromProjectData = (projectData) => {
  * )
  * // Returns: { volume: '80', flag: 'true', score: '100', name: 'Alice' }
  */
-export const convertVariablesToStrings = (globalAndDeviceVars, runtimeVars) => {
+export const convertVariablesToStrings = (globalAndDeviceVars, contextVars) => {
   return Object.fromEntries(
     Object.entries({
       ...globalAndDeviceVars,
-      ...runtimeVars,
+      ...contextVars,
     }).map(([key, value]) => [key, String(value)]),
   );
 };

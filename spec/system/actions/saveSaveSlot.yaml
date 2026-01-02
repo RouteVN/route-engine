@@ -175,7 +175,7 @@ out:
     - pointers:
         read: { sectionId: "sec1", lineId: "line1" }
 ---
-case: save with runtime variables
+case: save with context variables
 in:
   - state:
       global:

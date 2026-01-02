@@ -50,7 +50,7 @@ oneOf:
     additionalProperties: false
 
   - title: Save variables effect
-    description: Saves device variables to localStorage
+    description: Saves global-device variables to localStorage
     type: object
     properties:
       type:

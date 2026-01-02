@@ -5,7 +5,7 @@ suites: [updateVariable]
 suite: updateVariable
 exportName: updateVariable
 ---
-case: set runtime variable
+case: set context variable
 in:
   - state:
       projectData:
@@ -41,7 +41,7 @@ out:
     - variables:
         playerName: "Alice"
 ---
-case: set device variable
+case: set global-device variable
 in:
   - state:
       projectData:
@@ -81,7 +81,7 @@ out:
   contexts:
     - variables: {}
 ---
-case: set global variable
+case: set global-account variable
 in:
   - state:
       projectData:
@@ -121,7 +121,7 @@ out:
   contexts:
     - variables: {}
 ---
-case: increment runtime number (default value 1)
+case: increment context number (default value 1)
 in:
   - state:
       projectData:
@@ -156,7 +156,7 @@ out:
     - variables:
         score: 101
 ---
-case: toggle runtime boolean
+case: toggle context boolean
 in:
   - state:
       projectData:
@@ -191,7 +191,7 @@ out:
     - variables:
         soundEnabled: false
 ---
-case: toggle device boolean
+case: toggle global-device boolean
 in:
   - state:
       projectData:
@@ -299,7 +299,7 @@ out:
     - variables:
         score: 101
 ---
-case: increment undefined runtime variable (should become 1)
+case: increment undefined context variable (should become 1)
 in:
   - state:
       projectData:
@@ -333,7 +333,7 @@ out:
     - variables:
         newCounter: 1
 ---
-case: increment runtime number with custom value
+case: increment context number with custom value
 in:
   - state:
       projectData:
@@ -369,7 +369,7 @@ out:
     - variables:
         gold: 75
 ---
-case: decrement runtime number with custom value
+case: decrement context number with custom value
 in:
   - state:
       projectData:
@@ -405,7 +405,7 @@ out:
     - variables:
         health: 70
 ---
-case: multiply runtime number
+case: multiply context number
 in:
   - state:
       projectData:
@@ -441,7 +441,7 @@ out:
     - variables:
         multiplier: 6
 ---
-case: divide runtime number
+case: divide context number
 in:
   - state:
       projectData:
@@ -477,7 +477,7 @@ out:
     - variables:
         value: 25
 ---
-case: decrement runtime number (default value 1)
+case: decrement context number (default value 1)
 in:
   - state:
       projectData:
