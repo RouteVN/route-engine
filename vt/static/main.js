@@ -161,15 +161,7 @@ const init = async () => {
     height: 1080,
     plugins,
     eventHandler: async (eventName, payload) => {
-      if (eventName === 'renderComplete') {
-        if (count >= 2) {
-          return;
-        }
-        engine.handleAction('nextLineFromCompleted', {})
-        count += 1;
-        // engine.handleLineActions();
-      } else {
-        if (payload.actions) {
+      if (payload.actions) {
           if (payload.actions.saveSaveSlot) {
             const url = await routeGraphics.extractBase64("story");
             const assets = {
@@ -183,7 +175,6 @@ const init = async () => {
           }
           engine.handleActions(payload.actions);
         }
-      }
     },
   });
   await routeGraphics.loadAssets(assetBufferMap)
