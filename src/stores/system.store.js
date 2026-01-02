@@ -674,6 +674,8 @@ export const addViewedResource = ({ state }, payload) => {
  */
 export const setNextLineConfig = ({ state }, payload) => {
   const { manual, auto } = payload;
+  const currentAutoEnabled = state.global.nextLineConfig.auto?.enabled;
+  const newAutoEnabled = auto?.enabled;
 
   // If both manual and auto are provided, do complete replacement
   if (manual && auto) {
@@ -694,6 +696,18 @@ export const setNextLineConfig = ({ state }, payload) => {
     if (auto) {
       state.global.nextLineConfig.auto = auto;
     }
+  }
+
+  // If auto.enabled state has changed, dispatch timer effects
+  if (newAutoEnabled === true && !currentAutoEnabled) {
+    state.global.pendingEffects.push({
+      name: "startSceneModeTimer",
+      payload: { delay: state.global.nextLineConfig.auto.delay },
+    });
+  } else if (newAutoEnabled === false && currentAutoEnabled) {
+    state.global.pendingEffects.push({
+      name: "clearSceneModeTimer",
+    });
   }
 
   state.global.pendingEffects.push({
@@ -1174,6 +1188,58 @@ export const sectionTransition = ({ state }, payload) => {
 
   return state;
 };
+//can be named something better, i tried doing in the next line but got a bit messy
+// partially because i was getting kind of burned out, but after your comment and suggestions i can look back
+// and change the function name or merge to next line?
+
+const _nextLineFromSystem = ({ state }) => {
+  const pointer = selectCurrentPointer({ state })?.pointer;
+  const sectionId = pointer?.sectionId;
+  const section = selectSection({ state }, { sectionId });
+
+  const lines = section?.lines || [];
+  const currentLineIndex = lines.findIndex(
+    (line) => line.id === pointer?.lineId,
+  );
+  const nextLineIndex = currentLineIndex + 1;
+
+  if (nextLineIndex < lines.length) {
+    const nextLine = lines[nextLineIndex];
+    const lastContext = state.contexts[state.contexts.length - 1];
+
+    if (lastContext) {
+      lastContext.pointers.read = {
+        sectionId,
+        lineId: nextLine.id,
+      };
+    }
+
+    state.global.isLineCompleted = false;
+
+    state.global.pendingEffects.push({
+      name: "render",
+    });
+    state.global.pendingEffects.push({
+      name: "handleLineActions",
+    });
+
+    if (state.global.nextLineConfig.auto?.enabled) {
+      state.global.pendingEffects.push({
+        name: "startSceneModeTimer",
+        payload: { delay: state.global.nextLineConfig.auto.delay },
+      });
+    }
+  } else {
+    if (state.global.nextLineConfig.auto?.enabled) {
+      state.global.nextLineConfig.auto.enabled = false;
+      state.global.pendingEffects.push({
+        name: "clearSceneModeTimer",
+      });
+    }
+  }
+
+  return state;
+};
 
 export const updateVariable = ({ state }, payload) => {
   const { operations = [] } = payload;
@@ -1309,6 +1375,7 @@ export const createSystemStore = (initialState) => {
     replaceLastLayeredView,
     clearLayeredViews,
     updateVariable,
+    _nextLineFromSystem
   };
 
   return createStore(_initialState, selectorsAndActions, {

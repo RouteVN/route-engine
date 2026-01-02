@@ -45,7 +45,12 @@ export default function createRouteEngine(options) {
   const handleLineActions = () => {
     const line = _systemStore.selectCurrentLine();
     if (line && line.actions) {
-      handleActions(line.actions);
+      //This prevents recursion when an effect calls an action that queues another effect.
+     Object.entries(line.actions).forEach(([actionType, payload]) => {
+        if (_systemStore[actionType]) {
+          _systemStore[actionType](payload);
+        }
+      });
     }
   };
 

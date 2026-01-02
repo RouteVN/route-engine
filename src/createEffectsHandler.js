@@ -102,6 +102,46 @@ const clearSkipNextTimer = ({ ticker, skipTimer }, payload) => {
   skipTimer.setElapsed(0);
 };
 
+const startSceneModeTimer = ({ engine, ticker, sceneModeTimer }, payload) => {
+  // Remove old callback if exists
+  const existingCallback = sceneModeTimer.getCallback();
+  if (existingCallback) {
+    ticker.remove(existingCallback);
+  }
+
+  // Reset elapsed time
+  sceneModeTimer.setElapsed(0);
+
+  // Create new ticker callback for scene mode
+  const newCallback = (time) => {
+    sceneModeTimer.addElapsed(time.deltaMS);
+
+    const delay = payload.delay ?? 1000;
+    if (sceneModeTimer.getElapsed() >= delay) {
+      sceneModeTimer.setElapsed(0);
+      // Use the dedicated system action
+      engine.handleAction("_nextLineFromSystem", {});
+      ticker.remove(newCallback);
+      sceneModeTimer.setCallback(null);
+    }
+  };
+
+  sceneModeTimer.setCallback(newCallback);
+
+  // Add to ticker
+  ticker.add(newCallback);
+};
+
+const clearSceneModeTimer = ({ ticker, sceneModeTimer }, payload) => {
+  // Remove ticker callback
+  const existingCallback = sceneModeTimer.getCallback();
+  if (existingCallback) {
+    ticker.remove(existingCallback);
+    sceneModeTimer.setCallback(null);
+  }
+  sceneModeTimer.setElapsed(0);
+};
+
 const saveSlots = ({}, payload) => {
   localStorage.setItem("saveSlots", JSON.stringify(payload.saveSlots));
 };
@@ -130,11 +170,14 @@ const effects = {
   clearAutoNextTimer,
   startSkipNextTimer,
   clearSkipNextTimer,
+  startSceneModeTimer,
+  clearSceneModeTimer,
 };
 
 const createEffectsHandler = ({ getEngine, routeGraphics, ticker }) => {
   const autoTimer = createTimerState();
   const skipTimer = createTimerState();
+  const sceneModeTimer = createTimerState();
 
   return async (pendingEffects) => {
     const engine = getEngine();
@@ -148,7 +191,7 @@ const createEffectsHandler = ({ getEngine, routeGraphics, ticker }) => {
     // Convert back to array and process deduplicated effects
     const uniqueEffects = Object.values(deduplicatedEffects);
 
-    const deps = { engine, routeGraphics, ticker, autoTimer, skipTimer };
+    const deps = { engine, routeGraphics, ticker, autoTimer, skipTimer, sceneModeTimer  };
 
     for (const effect of uniqueEffects) {
       const handler = effects[effect.name];
