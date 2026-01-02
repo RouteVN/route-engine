@@ -16,7 +16,7 @@ resources:
   variables:
     count:
       type: number
-      scope: global
+      scope: global-account
       default: 0
 
   layouts:

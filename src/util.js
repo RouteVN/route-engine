@@ -330,57 +330,57 @@ export const getVariableDefaultValue = (config, variableId) => {
 };
 
 /**
- * Initializes variables from project data, categorizing them by scope
+ * Gets default variable values from project data, categorizing them by scope
  * Pure function - throws error for invalid variable types or scopes
  *
  * @param {Object} projectData - Project data containing variable definitions
  * @param {Object} projectData.resources.variables - Variable definitions
- * @returns {Object} Object with runtimeVariables and globalAndDeviceVariables
+ * @returns {Object} Object with contextVariableDefaultValues and globalVariablesDefaultValues
  * @throws {Error} If variable has invalid type
  *
  * @example
  * const projectData = {
  *   resources: {
  *     variables: {
- *       playerName: { type: 'string', scope: 'runtime', default: 'Player' },
- *       volume: { type: 'number', scope: 'device', default: 50 }
+ *       playerName: { type: 'string', scope: 'context', default: 'Player' },
+ *       volume: { type: 'number', scope: 'global-device', default: 50 }
  *     }
  *   }
  * };
- * const { runtimeVariables, globalAndDeviceVariables } = initializeVariablesFromProjectData(projectData);
- * // runtimeVariables = { playerName: 'Player' }
- * // globalAndDeviceVariables = { volume: 50 }
+ * const { contextVariableDefaultValues, globalVariablesDefaultValues } = getDefaultVariablesFromProjectData(projectData);
+ * // contextVariableDefaultValues = { playerName: 'Player' }
+ * // globalVariablesDefaultValues = { volume: 50 }
  */
-export const initializeVariablesFromProjectData = (projectData) => {
-  const runtimeVariables = {};
-  const globalAndDeviceVariables = {};
+export const getDefaultVariablesFromProjectData = (projectData) => {
+  const contextVariableDefaultValues = {};
+  const globalVariablesDefaultValues = {};
 
   if (!projectData.resources?.variables) {
-    return { runtimeVariables, globalAndDeviceVariables };
+    return { contextVariableDefaultValues, globalVariablesDefaultValues };
   }
 
   Object.entries(projectData.resources.variables).forEach(
     ([variableId, config]) => {
       const value = getVariableDefaultValue(config, variableId);
 
-      if (config.scope === "runtime") {
-        runtimeVariables[variableId] = value;
+      if (config.scope === "context") {
+        contextVariableDefaultValues[variableId] = value;
       } else {
-        // Device and global scopes both go to globalAndDeviceVariables
-        globalAndDeviceVariables[variableId] = value;
+        // Device and global scopes both go to globalVariablesDefaultValues
+        globalVariablesDefaultValues[variableId] = value;
       }
     },
   );
 
-  return { runtimeVariables, globalAndDeviceVariables };
+  return { contextVariableDefaultValues, globalVariablesDefaultValues };
 };
 
 /**
  * Converts all variable values to strings for rendering
  * Pure function - no side effects
  *
- * @param {Object} globalAndDeviceVars - Global and device scoped variables
- * @param {Object} runtimeVars - Runtime scoped variables
+ * @param {Object} globalAndDeviceVars - Global-device and global-account scoped variables
+ * @param {Object} contextVars - Context scoped variables
  * @returns {Object} Object with all values converted to strings
  *
  * @example
@@ -390,11 +390,11 @@ export const initializeVariablesFromProjectData = (projectData) => {
  * )
  * // Returns: { volume: '80', flag: 'true', score: '100', name: 'Alice' }
  */
-export const convertVariablesToStrings = (globalAndDeviceVars, runtimeVars) => {
+export const convertVariablesToStrings = (globalAndDeviceVars, contextVars) => {
   return Object.fromEntries(
     Object.entries({
       ...globalAndDeviceVars,
-      ...runtimeVars,
+      ...contextVars,
     }).map(([key, value]) => [key, String(value)]),
   );
 };
@@ -413,7 +413,7 @@ export const convertVariablesToStrings = (globalAndDeviceVars, runtimeVars) => {
  * validateVariableScope(undefined, 'score') // Throws Error
  */
 export const validateVariableScope = (scope, variableId) => {
-  const VALID_SCOPES = ["runtime", "device", "global"];
+  const VALID_SCOPES = ["context", "global-device", "global-account"];
 
   if (!scope) {
     throw new Error(`Variable scope is required for variable: ${variableId}`);
@@ -510,18 +510,18 @@ export const applyVariableOperation = (currentValue, op, value) => {
  *
  * @param {Object} variables - Object containing variable values
  * @param {Object} variableConfigs - Variable configuration objects with scope information
- * @param {string} targetScope - Scope to filter by (runtime, device, or global)
+ * @param {string} targetScope - Scope to filter by (context, global-device, or global-account)
  * @returns {Object} New object containing only variables matching the target scope
  *
  * @example
  * const vars = { score: 100, volume: 80, achievement: true };
  * const configs = {
- *   score: { scope: 'runtime' },
- *   volume: { scope: 'device' },
- *   achievement: { scope: 'global' }
+ *   score: { scope: 'context' },
+ *   volume: { scope: 'global-device' },
+ *   achievement: { scope: 'global-account' }
  * };
- * filterVariablesByScope(vars, configs, 'device') // { volume: 80 }
- * filterVariablesByScope(vars, configs, 'runtime') // { score: 100 }
+ * filterVariablesByScope(vars, configs, 'global-device') // { volume: 80 }
+ * filterVariablesByScope(vars, configs, 'context') // { score: 100 }
  */
 export const filterVariablesByScope = (
   variables,

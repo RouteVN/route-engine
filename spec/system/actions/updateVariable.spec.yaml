@@ -5,7 +5,7 @@ suites: [updateVariable]
 suite: updateVariable
 exportName: updateVariable
 ---
-case: set runtime variable
+case: set context variable
 in:
   - state:
       projectData:
@@ -13,10 +13,10 @@ in:
           variables:
             playerName:
               type: string
-              scope: runtime
+              scope: context
               default: "Guest"
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -31,17 +31,17 @@ out:
       variables:
         playerName:
           type: string
-          scope: runtime
+          scope: context
           default: "Guest"
   global:
-    globalAndDeviceVariables: {}
+    variables: {}
     pendingEffects:
       - name: "render"
   contexts:
     - variables:
         playerName: "Alice"
 ---
-case: set device variable
+case: set global-device variable
 in:
   - state:
       projectData:
@@ -49,10 +49,10 @@ in:
           variables:
             volume:
               type: number
-              scope: device
+              scope: global-device
               default: 50
       global:
-        globalAndDeviceVariables:
+        variables:
           volume: 50
         pendingEffects: []
       contexts:
@@ -67,13 +67,13 @@ out:
       variables:
         volume:
           type: number
-          scope: device
+          scope: global-device
           default: 50
   global:
-    globalAndDeviceVariables:
+    variables:
       volume: 80
     pendingEffects:
-      - name: "deviceVariables"
+      - name: "saveGlobalDeviceVariables"
         payload:
           deviceVariables:
             volume: 80
@@ -81,7 +81,7 @@ out:
   contexts:
     - variables: {}
 ---
-case: set global variable
+case: set global-account variable
 in:
   - state:
       projectData:
@@ -89,10 +89,10 @@ in:
           variables:
             achievement1:
               type: boolean
-              scope: global
+              scope: global-account
               default: false
       global:
-        globalAndDeviceVariables:
+        variables:
           achievement1: false
         pendingEffects: []
       contexts:
@@ -107,13 +107,13 @@ out:
       variables:
         achievement1:
           type: boolean
-          scope: global
+          scope: global-account
           default: false
   global:
-    globalAndDeviceVariables:
+    variables:
       achievement1: true
     pendingEffects:
-      - name: "globalVariables"
+      - name: "saveGlobalAccountVariables"
         payload:
           globalVariables:
             achievement1: true
@@ -121,7 +121,7 @@ out:
   contexts:
     - variables: {}
 ---
-case: increment runtime number (default value 1)
+case: increment context number (default value 1)
 in:
   - state:
       projectData:
@@ -129,10 +129,10 @@ in:
           variables:
             score:
               type: number
-              scope: runtime
+              scope: context
               default: 0
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -146,17 +146,17 @@ out:
       variables:
         score:
           type: number
-          scope: runtime
+          scope: context
           default: 0
   global:
-    globalAndDeviceVariables: {}
+    variables: {}
     pendingEffects:
       - name: "render"
   contexts:
     - variables:
         score: 101
 ---
-case: toggle runtime boolean
+case: toggle context boolean
 in:
   - state:
       projectData:
@@ -164,10 +164,10 @@ in:
           variables:
             soundEnabled:
               type: boolean
-              scope: runtime
+              scope: context
               default: true
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -181,17 +181,17 @@ out:
       variables:
         soundEnabled:
           type: boolean
-          scope: runtime
+          scope: context
           default: true
   global:
-    globalAndDeviceVariables: {}
+    variables: {}
     pendingEffects:
       - name: "render"
   contexts:
     - variables:
         soundEnabled: false
 ---
-case: toggle device boolean
+case: toggle global-device boolean
 in:
   - state:
       projectData:
@@ -199,10 +199,10 @@ in:
           variables:
             notificationsOn:
               type: boolean
-              scope: device
+              scope: global-device
               default: false
       global:
-        globalAndDeviceVariables:
+        variables:
           notificationsOn: false
         pendingEffects: []
       contexts:
@@ -216,13 +216,13 @@ out:
       variables:
         notificationsOn:
           type: boolean
-          scope: device
+          scope: global-device
           default: false
   global:
-    globalAndDeviceVariables:
+    variables:
       notificationsOn: true
     pendingEffects:
-      - name: "deviceVariables"
+      - name: "saveGlobalDeviceVariables"
         payload:
           deviceVariables:
             notificationsOn: true
@@ -238,18 +238,18 @@ in:
           variables:
             score:
               type: number
-              scope: runtime
+              scope: context
               default: 0
             volume:
               type: number
-              scope: device
+              scope: global-device
               default: 50
             achievement1:
               type: boolean
-              scope: global
+              scope: global-account
               default: false
       global:
-        globalAndDeviceVariables:
+        variables:
           volume: 50
           achievement1: false
         pendingEffects: []
@@ -271,26 +271,26 @@ out:
       variables:
         score:
           type: number
-          scope: runtime
+          scope: context
           default: 0
         volume:
           type: number
-          scope: device
+          scope: global-device
           default: 50
         achievement1:
           type: boolean
-          scope: global
+          scope: global-account
           default: false
   global:
-    globalAndDeviceVariables:
+    variables:
       volume: 80
       achievement1: true
     pendingEffects:
-      - name: "deviceVariables"
+      - name: "saveGlobalDeviceVariables"
         payload:
           deviceVariables:
             volume: 80
-      - name: "globalVariables"
+      - name: "saveGlobalAccountVariables"
         payload:
           globalVariables:
             achievement1: true
@@ -299,7 +299,7 @@ out:
     - variables:
         score: 101
 ---
-case: increment undefined runtime variable (should become 1)
+case: increment undefined context variable (should become 1)
 in:
   - state:
       projectData:
@@ -307,10 +307,10 @@ in:
           variables:
             newCounter:
               type: number
-              scope: runtime
+              scope: context
               default: 0
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables: {}
@@ -323,17 +323,17 @@ out:
       variables:
         newCounter:
           type: number
-          scope: runtime
+          scope: context
           default: 0
   global:
-    globalAndDeviceVariables: {}
+    variables: {}
     pendingEffects:
       - name: "render"
   contexts:
     - variables:
         newCounter: 1
 ---
-case: increment runtime number with custom value
+case: increment context number with custom value
 in:
   - state:
       projectData:
@@ -341,10 +341,10 @@ in:
           variables:
             gold:
               type: number
-              scope: runtime
+              scope: context
               default: 0
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -359,17 +359,17 @@ out:
       variables:
         gold:
           type: number
-          scope: runtime
+          scope: context
           default: 0
   global:
-    globalAndDeviceVariables: {}
+    variables: {}
     pendingEffects:
       - name: "render"
   contexts:
     - variables:
         gold: 75
 ---
-case: decrement runtime number with custom value
+case: decrement context number with custom value
 in:
   - state:
       projectData:
@@ -377,10 +377,10 @@ in:
           variables:
             health:
               type: number
-              scope: runtime
+              scope: context
               default: 100
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -395,17 +395,17 @@ out:
       variables:
         health:
           type: number
-          scope: runtime
+          scope: context
           default: 100
   global:
-    globalAndDeviceVariables: {}
+    variables: {}
     pendingEffects:
       - name: "render"
   contexts:
     - variables:
         health: 70
 ---
-case: multiply runtime number
+case: multiply context number
 in:
   - state:
       projectData:
@@ -413,10 +413,10 @@ in:
           variables:
             multiplier:
               type: number
-              scope: runtime
+              scope: context
               default: 1
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -431,17 +431,17 @@ out:
       variables:
         multiplier:
           type: number
-          scope: runtime
+          scope: context
           default: 1
   global:
-    globalAndDeviceVariables: {}
+    variables: {}
     pendingEffects:
       - name: "render"
   contexts:
     - variables:
         multiplier: 6
 ---
-case: divide runtime number
+case: divide context number
 in:
   - state:
       projectData:
@@ -449,10 +449,10 @@ in:
           variables:
             value:
               type: number
-              scope: runtime
+              scope: context
               default: 0
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -467,17 +467,17 @@ out:
       variables:
         value:
           type: number
-          scope: runtime
+          scope: context
           default: 0
   global:
-    globalAndDeviceVariables: {}
+    variables: {}
     pendingEffects:
       - name: "render"
   contexts:
     - variables:
         value: 25
 ---
-case: decrement runtime number (default value 1)
+case: decrement context number (default value 1)
 in:
   - state:
       projectData:
@@ -485,10 +485,10 @@ in:
           variables:
             score:
               type: number
-              scope: runtime
+              scope: context
               default: 0
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -502,10 +502,10 @@ out:
       variables:
         score:
           type: number
-          scope: runtime
+          scope: context
           default: 0
   global:
-    globalAndDeviceVariables: {}
+    variables: {}
     pendingEffects:
       - name: "render"
   contexts:
@@ -521,7 +521,7 @@ in:
             badVar:
               type: number
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables: {}
@@ -541,7 +541,7 @@ in:
               type: number
               scope: invalid
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables: {}
@@ -549,7 +549,7 @@ in:
       - variableId: badVar
         op: set
         value: 10
-throws: "Invalid variable scope: invalid for variable badVar. Expected one of: runtime, device, global"
+throws: "Invalid variable scope: invalid for variable badVar. Expected one of: context, global-device, global-account"
 ---
 case: error - unknown variable type
 in:
@@ -559,9 +559,9 @@ in:
           variables:
             badVar:
               type: customType
-              scope: runtime
+              scope: context
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables: {}
@@ -579,10 +579,10 @@ in:
           variables:
             flag:
               type: boolean
-              scope: runtime
+              scope: context
               default: false
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -600,10 +600,10 @@ in:
           variables:
             name:
               type: string
-              scope: runtime
+              scope: context
               default: ""
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -622,10 +622,10 @@ in:
           variables:
             count:
               type: number
-              scope: runtime
+              scope: context
               default: 0
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables:
@@ -643,10 +643,10 @@ in:
           variables:
             score:
               type: number
-              scope: runtime
+              scope: context
               default: 0
       global:
-        globalAndDeviceVariables: {}
+        variables: {}
         pendingEffects: []
       contexts:
         - variables:

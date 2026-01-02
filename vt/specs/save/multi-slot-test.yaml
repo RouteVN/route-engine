@@ -18,22 +18,22 @@ resources:
     # Runtime variables - different per save slot
     playerName:
       type: string
-      scope: runtime
+      scope: context
       default: "New Player"
 
     playerLevel:
       type: number
-      scope: runtime
+      scope: context
       default: 1
 
     playerGold:
       type: number
-      scope: runtime
+      scope: context
       default: 0
 
     questCompleted:
       type: boolean
-      scope: runtime
+      scope: context
       default: false
 
   layouts:
@@ -66,7 +66,7 @@ resources:
 
         - id: subtitle
           type: text
-          content: "Each save slot stores different runtime variables"
+          content: "Each save slot stores different context variables"
           x: 960
           y: 100
           anchorX: 0.5
@@ -558,7 +558,7 @@ resources:
         # Instructions
         - id: instructions
           type: text
-          content: "1. Modify the current state (name, level, gold, quest)\n2. Save to a slot\n3. Modify state again differently\n4. Save to another slot\n5. Load different slots to see each has its own runtime variables!"
+          content: "1. Modify the current state (name, level, gold, quest)\n2. Save to a slot\n3. Modify state again differently\n4. Save to another slot\n5. Load different slots to see each has its own context variables!"
           x: 960
           y: 850
           anchorX: 0.5

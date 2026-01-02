@@ -194,16 +194,15 @@ const init = async () => {
   const effectsHandler = createEffectsHandler({ getEngine: () => engine, routeGraphics, ticker });
   const engine = createRouteEngine({ handlePendingEffects: effectsHandler });
   const saveSlots = JSON.parse(localStorage.getItem("saveSlots")) || {};
-  const deviceVariables = JSON.parse(localStorage.getItem("deviceVariables")) || {};
-  const globalVariables = JSON.parse(localStorage.getItem("globalVariables")) || {};
-  const globalAndDeviceVariables = { ...deviceVariables, ...globalVariables };
+  const globalDeviceVariables = JSON.parse(localStorage.getItem("globalDeviceVariables")) || {};
+  const globalAccountVariables = JSON.parse(localStorage.getItem("globalAccountVariables")) || {};
 
   engine.init({
     initialState: {
       global: {
         currentLocalizationPackageId: 'eklekfjwalefj',
         saveSlots,
-        globalAndDeviceVariables
+        variables: { ...globalDeviceVariables, ...globalAccountVariables }
       },
       projectData
     }

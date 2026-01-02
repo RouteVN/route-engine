@@ -106,16 +106,16 @@ const saveSlots = ({}, payload) => {
   localStorage.setItem("saveSlots", JSON.stringify(payload.saveSlots));
 };
 
-const deviceVariables = ({}, payload) => {
+const saveGlobalDeviceVariables = ({}, payload) => {
   localStorage.setItem(
-    "deviceVariables",
+    "globalDeviceVariables",
     JSON.stringify(payload.deviceVariables),
   );
 };
 
-const globalVariables = ({}, payload) => {
+const saveGlobalAccountVariables = ({}, payload) => {
   localStorage.setItem(
-    "globalVariables",
+    "globalAccountVariables",
     JSON.stringify(payload.globalVariables),
   );
 };
@@ -123,8 +123,8 @@ const globalVariables = ({}, payload) => {
 const effects = {
   render,
   saveSlots,
-  deviceVariables,
-  globalVariables,
+  saveGlobalDeviceVariables,
+  saveGlobalAccountVariables,
   handleLineActions,
   startAutoNextTimer,
   clearAutoNextTimer,

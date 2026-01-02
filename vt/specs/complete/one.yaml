@@ -146,11 +146,11 @@ resources:
     currentMenuTabId:
       type: string
       default: options
-      persistence: runtime
+      persistence: context
     textSpeed:
       type: number
       default: 50
-      persistence: device
+      persistence: global-device
   layouts:
     base1:
       elements:

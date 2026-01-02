@@ -86,7 +86,7 @@ out:
           initialState:
             level: 5
 ---
-case: load with runtime variables
+case: load with context variables
 in:
   - state:
       global:
