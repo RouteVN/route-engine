@@ -13,8 +13,8 @@ import createRouteGraphics, {
   tweenPlugin,
   soundPlugin,
   videoPlugin,
-  animatedSpritePlugin,
-} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.20/+esm"
+  particlesPlugin
+} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.21/+esm"
 
 const projectData = parse(window.yamlContent);
 
@@ -125,7 +125,8 @@ const init = async () => {
       containerPlugin,
       textRevealingPlugin,
       videoPlugin,
-      animatedSpritePlugin,
+      particlesPlugin,
+      animatedSpritePlugin
     ],
     animations: [
       tweenPlugin

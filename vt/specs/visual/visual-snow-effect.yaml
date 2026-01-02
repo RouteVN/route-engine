@@ -11,7 +11,7 @@ l10n:
 screen:
   width: 1920
   height: 1080
-  backgroundColor: "#000000"
+  backgroundColor: "#4a6080"
 
 resources:
   layouts:
@@ -29,139 +29,64 @@ resources:
     snowEffect:
       name: Snow Sprite Effect
       elements:
-        - id: snow1
-          type: sprite
-          url: la3lka
-          width: 10
-          height: 10
-          x: 120
-          y: 80
-          alpha: 0.7
-        - id: snow2
-          type: sprite
-          url: x342fga
-          width: 8
-          height: 8
-          x: 280
-          y: 150
-          alpha: 0.6
-        - id: snow3
-          type: sprite
-          url: la3lka
-          width: 12
-          height: 12
-          x: 450
-          y: 100
-          alpha: 0.8
-        - id: snow4
-          type: sprite
-          url: x342fga
-          width: 7
-          height: 7
-          x: 620
-          y: 180
-          alpha: 0.5
-        - id: snow5
-          type: sprite
-          url: la3lka
-          width: 9
-          height: 9
-          x: 160
-          y: 280
-          alpha: 0.7
-        - id: snow6
-          type: sprite
-          url: x342fga
-          width: 11
-          height: 11
-          x: 350
-          y: 240
-          alpha: 0.6
-        - id: snow7
-          type: sprite
-          url: la3lka
-          width: 8
-          height: 8
-          x: 520
-          y: 310
-          alpha: 0.8
-        - id: snow8
-          type: sprite
-          url: x342fga
-          width: 10
-          height: 10
-          x: 700
-          y: 270
-          alpha: 0.5
-        - id: snow9
-          type: sprite
-          url: la3lka
-          width: 7
-          height: 7
-          x: 200
-          y: 420
-          alpha: 0.7
-        - id: snow10
-          type: sprite
-          url: x342fga
-          width: 9
-          height: 9
-          x: 400
-          y: 450
-          alpha: 0.6
-        - id: snow11
-          type: sprite
-          url: la3lka
-          width: 11
-          height: 11
-          x: 580
-          y: 480
-          alpha: 0.8
-        - id: snow12
-          type: sprite
-          url: x342fga
-          width: 8
-          height: 8
-          x: 150
-          y: 560
-          alpha: 0.5
-        - id: snow13
-          type: sprite
-          url: la3lka
-          width: 10
-          height: 10
-          x: 320
-          y: 590
-          alpha: 0.7
-        - id: snow14
-          type: sprite
-          url: x342fga
-          width: 12
-          height: 12
-          x: 500
-          y: 620
-          alpha: 0.6
-        - id: snow15
-          type: sprite
-          url: la3lka
-          width: 9
-          height: 9
-          x: 680
-          y: 580
-          alpha: 0.8
-        # Particles version (not supported yet - particlesPlugin not released)
-        # - id: particles-snow
-        #   type: particles
-        #   preset: snow
-        #   count: 300
-        # - id: debug-rect
-        #   type: rect
-        #   fill: "#FF0000"
-        #   width: 200
-        #   height: 200
-        #   x: 400
-        #   y: 300
-        #   alpha: 0.5
+        - id: particles-snow
+          type: particles
+          x: 0
+          y: 0
+          width: 1920
+          height: 1080
+          alpha: 1
+          texture: snowflake
+          behaviors:
+            - type: spawnShape
+              config:
+                type: rect
+                data:
+                  x: 0
+                  y: -20
+                  w: 1920
+                  h: 10
+            - type: movePoint
+              config:
+                speed:
+                  min: 50
+                  max: 150
+                direction: 90
+            - type: scaleStatic
+              config:
+                min: 0.3
+                max: 1.0
+            - type: alpha
+              config:
+                list:
+                  - value: 0
+                    time: 0
+                  - value: 0.8
+                    time: 0.1
+                  - value: 0.8
+                    time: 0.8
+                  - value: 0
+                    time: 1
+            - type: rotation
+              config:
+                minStart: 0
+                maxStart: 360
+                minSpeed: -45
+                maxSpeed: 45
+          emitter:
+            lifetime:
+              min: 4
+              max: 8
+            frequency: 0.05
+            particlesPerWave: 2
+            maxParticles: 300
+            emitterLifetime: -1
+            spawnBounds:
+              x: -50
+              y: -50
+              width: 2020
+              height: 1180
+            recycleOnBounds: true
 
   images:
     winterBg:
@@ -193,6 +118,7 @@ resources:
       name: "Fade Out"
       properties:
         alpha:
+          initialValue: 1
           keyframes:
             - duration: 1500
               value: 0
@@ -231,16 +157,3 @@ story:
                       animations:
                         in:
                           resourceId: fadeIn
-            - id: line3
-              actions:
-                background:
-                  resourceId: winterBg
-                  resourceType: image
-                visual:
-                  items:
-                    - id: snow-overlay
-                      resourceId: snowEffect
-                      transformId: fullscreen
-                      animations:
-                        out:
-                          resourceId: fadeOut
