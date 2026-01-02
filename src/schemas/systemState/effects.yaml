@@ -62,6 +62,48 @@ oneOf:
     required: [type]
     additionalProperties: false
 
+  - title: Save global-device variables effect
+    description: Saves global-device variables to localStorage
+    type: object
+    properties:
+      type:
+        const: saveGlobalDeviceVariables
+      payload:
+        type: object
+        description: Global-device variables to save
+        properties:
+          deviceVariables:
+            type: object
+            description: Device-scoped variables
+            additionalProperties: true
+      priority:
+        type: integer
+        description: Priority of effect (lower numbers execute first)
+        default: 0
+    required: [type]
+    additionalProperties: false
+
+  - title: Save global-account variables effect
+    description: Saves global-account variables to localStorage
+    type: object
+    properties:
+      type:
+        const: saveGlobalAccountVariables
+      payload:
+        type: object
+        description: Global-account variables to save
+        properties:
+          globalVariables:
+            type: object
+            description: Global-account-scoped variables
+            additionalProperties: true
+      priority:
+        type: integer
+        description: Priority of effect (lower numbers execute first)
+        default: 0
+    required: [type]
+    additionalProperties: false
+
   - title: Start auto next timer effect
     description: Starts the auto-advance timer
     type: object

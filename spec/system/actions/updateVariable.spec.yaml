@@ -73,7 +73,7 @@ out:
     variables:
       volume: 80
     pendingEffects:
-      - name: "deviceVariables"
+      - name: "saveGlobalDeviceVariables"
         payload:
           deviceVariables:
             volume: 80
@@ -113,7 +113,7 @@ out:
     variables:
       achievement1: true
     pendingEffects:
-      - name: "globalVariables"
+      - name: "saveGlobalAccountVariables"
         payload:
           globalVariables:
             achievement1: true
@@ -222,7 +222,7 @@ out:
     variables:
       notificationsOn: true
     pendingEffects:
-      - name: "deviceVariables"
+      - name: "saveGlobalDeviceVariables"
         payload:
           deviceVariables:
             notificationsOn: true
@@ -286,11 +286,11 @@ out:
       volume: 80
       achievement1: true
     pendingEffects:
-      - name: "deviceVariables"
+      - name: "saveGlobalDeviceVariables"
         payload:
           deviceVariables:
             volume: 80
-      - name: "globalVariables"
+      - name: "saveGlobalAccountVariables"
         payload:
           globalVariables:
             achievement1: true

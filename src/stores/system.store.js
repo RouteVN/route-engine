@@ -1191,7 +1191,7 @@ export const updateVariable = ({ state }, payload) => {
       "global-device",
     );
     state.global.pendingEffects.push({
-      name: "deviceVariables",
+      name: "saveGlobalDeviceVariables",
       payload: {
         deviceVariables: deviceVars,
       },
@@ -1206,7 +1206,7 @@ export const updateVariable = ({ state }, payload) => {
       "global-account",
     );
     state.global.pendingEffects.push({
-      name: "globalVariables",
+      name: "saveGlobalAccountVariables",
       payload: {
         globalVariables: globalVars,
       },
