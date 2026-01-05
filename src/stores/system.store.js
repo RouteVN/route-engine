@@ -1189,7 +1189,7 @@ export const sectionTransition = ({ state }, payload) => {
   return state;
 };
 
-const nextLineFromSystem = ({ state }) => {
+export const nextLineFromSystem = ({ state }) => {
   const pointer = selectCurrentPointer({ state })?.pointer;
   const sectionId = pointer?.sectionId;
   const section = selectSection({ state }, { sectionId });
