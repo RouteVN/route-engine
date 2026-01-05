@@ -471,7 +471,7 @@ export const toggleAutoMode = ({ state }) => {
 export const startSkipMode = ({ state }) => {
   // if (state.global.nextLineConfig.manual.enabled === false) {
   //   return state;
-  // } 
+  // }
 
   if (state.global.autoMode) {
     state.global.autoMode = false;
