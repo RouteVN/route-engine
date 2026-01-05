@@ -11,10 +11,7 @@ in:
       global:
         isLineCompleted: true
         nextLineConfig:
-          manual:
-            enabled: false
-          auto:
-            enabled: false
+          auto: { enabled: false }
         pendingEffects: []
       projectData:
         story:
@@ -35,10 +32,7 @@ out:
   global:
     isLineCompleted: false
     nextLineConfig:
-      manual:
-        enabled: false
-      auto:
-        enabled: false
+      auto: { enabled: false }
     pendingEffects:
       - name: "render"
       - name: "handleLineActions"
@@ -64,8 +58,6 @@ in:
       global:
         isLineCompleted: true
         nextLineConfig:
-          manual:
-            enabled: false
           auto:
             enabled: true
             delay: 1500
@@ -90,8 +82,6 @@ out:
   global:
     isLineCompleted: false
     nextLineConfig:
-      manual:
-        enabled: false
       auto:
         enabled: true
         delay: 1500
@@ -124,10 +114,7 @@ in:
       global:
         isLineCompleted: true
         nextLineConfig:
-          manual:
-            enabled: false
-          auto:
-            enabled: false
+          auto: { enabled: false }
         pendingEffects: []
       projectData:
         story:
@@ -148,10 +135,7 @@ out:
   global:
     isLineCompleted: true
     nextLineConfig:
-      manual:
-        enabled: false
-      auto:
-        enabled: false
+      auto: { enabled: false }
     pendingEffects: []
   projectData:
     story:
@@ -175,8 +159,6 @@ in:
       global:
         isLineCompleted: true
         nextLineConfig:
-          manual:
-            enabled: false
           auto:
             enabled: true
             delay: 1500
@@ -200,8 +182,6 @@ out:
   global:
     isLineCompleted: true
     nextLineConfig:
-      manual:
-        enabled: false
       auto:
         enabled: false
         delay: 1500
