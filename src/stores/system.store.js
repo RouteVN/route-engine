@@ -701,12 +701,12 @@ export const setNextLineConfig = ({ state }, payload) => {
   // If auto.enabled state has changed, dispatch timer effects
   if (newAutoEnabled === true && !currentAutoEnabled) {
     state.global.pendingEffects.push({
-      name: "startSceneModeTimer",
+      name: "nextLineConfigTimer",
       payload: { delay: state.global.nextLineConfig.auto.delay },
     });
   } else if (newAutoEnabled === false && currentAutoEnabled) {
     state.global.pendingEffects.push({
-      name: "clearSceneModeTimer",
+      name: "clearNextLineConfigTimer",
     });
   }
 
@@ -1222,7 +1222,7 @@ const nextLineFromSystem = ({ state }) => {
 
     if (state.global.nextLineConfig.auto?.enabled) {
       state.global.pendingEffects.push({
-        name: "startSceneModeTimer",
+        name: "nextLineConfigTimer",
         payload: { delay: state.global.nextLineConfig.auto.delay },
       });
     }
@@ -1230,7 +1230,7 @@ const nextLineFromSystem = ({ state }) => {
     if (state.global.nextLineConfig.auto?.enabled) {
       state.global.nextLineConfig.auto.enabled = false;
       state.global.pendingEffects.push({
-        name: "clearSceneModeTimer",
+        name: "clearNextLineConfigTimer",
       });
     }
   }

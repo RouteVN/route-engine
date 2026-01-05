@@ -102,7 +102,7 @@ const clearSkipNextTimer = ({ ticker, skipTimer }, payload) => {
   skipTimer.setElapsed(0);
 };
 
-const startSceneModeTimer = ({ engine, ticker, sceneModeTimer }, payload) => {
+const nextLineConfigTimer = ({ engine, ticker, sceneModeTimer }, payload) => {
   // Remove old callback if exists
   const existingCallback = sceneModeTimer.getCallback();
   if (existingCallback) {
@@ -132,7 +132,7 @@ const startSceneModeTimer = ({ engine, ticker, sceneModeTimer }, payload) => {
   ticker.add(newCallback);
 };
 
-const clearSceneModeTimer = ({ ticker, sceneModeTimer }, payload) => {
+const clearNextLineConfigTimer = ({ ticker, sceneModeTimer }, payload) => {
   // Remove ticker callback
   const existingCallback = sceneModeTimer.getCallback();
   if (existingCallback) {
@@ -170,8 +170,8 @@ const effects = {
   clearAutoNextTimer,
   startSkipNextTimer,
   clearSkipNextTimer,
-  startSceneModeTimer,
-  clearSceneModeTimer,
+  nextLineConfigTimer,
+  clearNextLineConfigTimer,
 };
 
 const createEffectsHandler = ({ getEngine, routeGraphics, ticker }) => {
