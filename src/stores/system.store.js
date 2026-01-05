@@ -1188,11 +1188,8 @@ export const sectionTransition = ({ state }, payload) => {
 
   return state;
 };
-//can be named something better, i tried doing in the next line but got a bit messy
-// partially because i was getting kind of burned out, but after your comment and suggestions i can look back
-// and change the function name or merge to next line?
 
-const _nextLineFromSystem = ({ state }) => {
+const nextLineFromSystem = ({ state }) => {
   const pointer = selectCurrentPointer({ state })?.pointer;
   const sectionId = pointer?.sectionId;
   const section = selectSection({ state }, { sectionId });
@@ -1375,7 +1372,7 @@ export const createSystemStore = (initialState) => {
     replaceLastLayeredView,
     clearLayeredViews,
     updateVariable,
-    _nextLineFromSystem,
+    nextLineFromSystem,
   };
 
   return createStore(_initialState, selectorsAndActions, {

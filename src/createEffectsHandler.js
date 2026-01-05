@@ -120,7 +120,7 @@ const startSceneModeTimer = ({ engine, ticker, sceneModeTimer }, payload) => {
     if (sceneModeTimer.getElapsed() >= delay) {
       sceneModeTimer.setElapsed(0);
       // Use the dedicated system action
-      engine.handleAction("_nextLineFromSystem", {});
+      engine.handleAction("nextLineFromSystem", {});
       ticker.remove(newCallback);
       sceneModeTimer.setCallback(null);
     }
