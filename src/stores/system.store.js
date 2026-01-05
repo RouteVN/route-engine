@@ -1216,9 +1216,9 @@ const nextLineFromSystem = ({ state }) => {
     state.global.pendingEffects.push({
       name: "render",
     });
-    state.global.pendingEffects.push({
-      name: "handleLineActions",
-    });
+    // state.global.pendingEffects.push({
+    //   name: "handleLineActions",
+    // });
 
     if (state.global.nextLineConfig.auto?.enabled) {
       state.global.pendingEffects.push({
