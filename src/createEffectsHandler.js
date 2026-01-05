@@ -45,7 +45,7 @@ const startAutoNextTimer = ({ engine, ticker, autoTimer }, payload) => {
     const delay = payload.delay ?? 1000;
     if (autoTimer.getElapsed() >= delay) {
       autoTimer.setElapsed(0);
-      engine.handleAction("nextLine", {});
+      engine.handleAction("nextLineFromSystem", {});
     }
   };
 
@@ -82,7 +82,7 @@ const startSkipNextTimer = ({ engine, ticker, skipTimer }, payload) => {
     // Skip advance every 30ms
     if (skipTimer.getElapsed() >= 30) {
       skipTimer.setElapsed(0);
-      engine.handleAction("nextLine", {});
+      engine.handleAction("nextLineFromSystem", {});
     }
   };
 

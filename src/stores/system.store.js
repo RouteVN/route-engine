@@ -962,9 +962,9 @@ export const nextLineFromCompleted = ({ state }) => {
 };
 
 export const nextLine = ({ state }) => {
-  const isAutoOrSkip = state.global.autoMode || state.global.skipMode;
+  //const isAutoOrSkip = state.global.autoMode || state.global.skipMode;
 
-  if (!state.global.nextLineConfig.manual.enabled && !isAutoOrSkip) {
+  if (!state.global.nextLineConfig.manual.enabled) {
     return state;
   }
 
