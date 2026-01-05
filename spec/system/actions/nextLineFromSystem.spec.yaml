@@ -1,0 +1,239 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.nextLineFromSystem
+suites: [nextLineFromSystem]
+---
+suite: nextLineFromSystem
+exportName: nextLineFromSystem
+---
+case: advance to next line when auto is disabled
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        nextLineConfig:
+          auto: { enabled: false }
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                    - id: "2"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  global:
+    isLineCompleted: false
+    nextLineConfig:
+      auto: { enabled: false }
+    pendingEffects:
+      - name: "render"
+      - name: "handleLineActions"
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                - id: "2"
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "2"
+---
+case: advance to next line when auto is enabled (re-queues timer)
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        nextLineConfig:
+          auto:
+            enabled: true
+            delay: 1500
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                    - id: "2"
+                    - id: "3"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  global:
+    isLineCompleted: false
+    nextLineConfig:
+      auto:
+        enabled: true
+        delay: 1500
+    pendingEffects:
+      - name: "render"
+      - name: "handleLineActions"
+      - name: "nextLineConfigTimer"
+        payload:
+          delay: 1500
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                - id: "2"
+                - id: "3"
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "2"
+---
+case: at last line of section with auto disabled
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        nextLineConfig:
+          auto: { enabled: false }
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                    - id: "2"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  global:
+    isLineCompleted: true
+    nextLineConfig:
+      auto: { enabled: false }
+    pendingEffects: []
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                - id: "2"
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "2"
+---
+case: at last line of section with auto enabled (stops sequence)
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        nextLineConfig:
+          auto:
+            enabled: true
+            delay: 1500
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                    - id: "2"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  global:
+    isLineCompleted: true
+    nextLineConfig:
+      auto:
+        enabled: false
+        delay: 1500
+    pendingEffects:
+      - name: "clearNextLineConfigTimer"
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                - id: "2"
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "2"
+---
+case: no section found (no change)
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        nextLineConfig: {}
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  global:
+    isLineCompleted: true
+    nextLineConfig: {}
+    pendingEffects: []
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections: {}
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "1"

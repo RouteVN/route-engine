@@ -45,7 +45,7 @@ const startAutoNextTimer = ({ engine, ticker, autoTimer }, payload) => {
     const delay = payload.delay ?? 1000;
     if (autoTimer.getElapsed() >= delay) {
       autoTimer.setElapsed(0);
-      engine.handleAction("nextLine", {});
+      engine.handleAction("nextLineFromSystem", {});
     }
   };
 
@@ -82,7 +82,7 @@ const startSkipNextTimer = ({ engine, ticker, skipTimer }, payload) => {
     // Skip advance every 30ms
     if (skipTimer.getElapsed() >= 30) {
       skipTimer.setElapsed(0);
-      engine.handleAction("nextLine", {});
+      engine.handleAction("nextLineFromSystem", {});
     }
   };
 
@@ -100,6 +100,53 @@ const clearSkipNextTimer = ({ ticker, skipTimer }, payload) => {
     skipTimer.setCallback(null);
   }
   skipTimer.setElapsed(0);
+};
+
+const nextLineConfigTimer = (
+  { engine, ticker, nextLineConfigTimerState },
+  payload,
+) => {
+  // Remove old callback if exists
+  const existingCallback = nextLineConfigTimerState.getCallback();
+  if (existingCallback) {
+    ticker.remove(existingCallback);
+  }
+
+  // Reset elapsed time
+  nextLineConfigTimerState.setElapsed(0);
+
+  // Create new ticker callback for scene mode
+  const newCallback = (time) => {
+    nextLineConfigTimerState.addElapsed(time.deltaMS);
+
+    const delay = payload.delay ?? 1000;
+    if (nextLineConfigTimerState.getElapsed() >= delay) {
+      nextLineConfigTimerState.setElapsed(0);
+      // Use the dedicated system action
+      engine.handleAction("nextLineFromSystem", {});
+      // Stop this timer instance; the action will re-queue it if needed
+      ticker.remove(newCallback);
+      nextLineConfigTimerState.setCallback(null);
+    }
+  };
+
+  nextLineConfigTimerState.setCallback(newCallback);
+
+  // Add to ticker
+  ticker.add(newCallback);
+};
+
+const clearNextLineConfigTimer = (
+  { ticker, nextLineConfigTimerState },
+  payload,
+) => {
+  // Remove ticker callback
+  const existingCallback = nextLineConfigTimerState.getCallback();
+  if (existingCallback) {
+    ticker.remove(existingCallback);
+    nextLineConfigTimerState.setCallback(null);
+  }
+  nextLineConfigTimerState.setElapsed(0);
 };
 
 const saveSlots = ({}, payload) => {
@@ -130,11 +177,14 @@ const effects = {
   clearAutoNextTimer,
   startSkipNextTimer,
   clearSkipNextTimer,
+  nextLineConfigTimer,
+  clearNextLineConfigTimer,
 };
 
 const createEffectsHandler = ({ getEngine, routeGraphics, ticker }) => {
   const autoTimer = createTimerState();
   const skipTimer = createTimerState();
+  const nextLineConfigTimerState = createTimerState();
 
   return async (pendingEffects) => {
     const engine = getEngine();
@@ -148,7 +198,14 @@ const createEffectsHandler = ({ getEngine, routeGraphics, ticker }) => {
     // Convert back to array and process deduplicated effects
     const uniqueEffects = Object.values(deduplicatedEffects);
 
-    const deps = { engine, routeGraphics, ticker, autoTimer, skipTimer };
+    const deps = {
+      engine,
+      routeGraphics,
+      ticker,
+      autoTimer,
+      skipTimer,
+      nextLineConfigTimerState,
+    };
 
     for (const effect of uniqueEffects) {
       const handler = effects[effect.name];
