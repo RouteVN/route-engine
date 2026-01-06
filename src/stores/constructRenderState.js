@@ -1,5 +1,8 @@
 import { parseAndRender } from "jempl";
-import { createSequentialActionsExecutor, stringifyTextContent } from "../util.js";
+import {
+  createSequentialActionsExecutor,
+  stringifyTextContent,
+} from "../util.js";
 
 const jemplFunctions = {
   objectValues: (obj) =>
