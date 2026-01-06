@@ -459,7 +459,8 @@ export const selectCurrentPageSlots = (
     const row = [];
     for (let colIndex = 0; colIndex < slotsPerRow; colIndex++) {
       const slotNumber = startSlot + rowIndex * slotsPerRow + colIndex;
-      const slotData = (state.global.saveSlots && state.global.saveSlots[slotNumber]) || {};
+      const slotData =
+        (state.global.saveSlots && state.global.saveSlots[slotNumber]) || {};
       row.push({
         slotNumber,
         ...slotData,
