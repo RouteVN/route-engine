@@ -370,10 +370,116 @@ export const selectPreviousPresentationState = ({ state }) => {
   return constructPresentationState(presentationActions);
 };
 
+/**
+ * Selects and prepares save slot data for the current page in a grid layout
+ * @param {Object} params - Parameters object
+ * @param {Object} params.state - Current state object
+ * @param {Object} [options] - Configuration options for the slot grid
+ * @param {number} [options.slotsPerRow=3] - Number of slots to display per row
+ * @param {number} [options.rowCount=2] - Number of rows to display
+ * @returns {Object} Object containing saveSlotRows array
+ * @returns {Array<Array<Object>>} returns.saveSlotRows - 2D array of slot data organized by rows
+ *
+ * @description
+ * This selector calculates which save slots should be displayed on the current page
+ * based on the `loadPage` variable and grid layout configuration. It organizes the
+ * slots into a 2D array structure suitable for nested template loops.
+ *
+ * Each slot object contains:
+ * - slotNumber: The unique slot identifier (1, 2, 3, ...)
+ * - date: Timestamp when the save was created (if saved)
+ * - image: Base64 thumbnail image (if saved)
+ * - state: Saved game state data (if saved)
+ *
+ * @example
+ * // Default 2x3 grid (6 slots per page)
+ * // Page 1: slots 1-6, Page 2: slots 7-12, etc.
+ * const { saveSlotRows } = selectCurrentPageSlots({ state });
+ * // Returns: [[slot1, slot2, slot3], [slot4, slot5, slot6]]
+ *
+ * @example
+ * // Custom 3x2 grid (6 slots per page)
+ * const { saveSlotRows } = selectCurrentPageSlots({ state }, { slotsPerRow: 2, rowCount: 3 });
+ * // Returns: [[slot1, slot2], [slot3, slot4], [slot5, slot6]]
+ *
+ * @example
+ * // Custom 4x3 grid (12 slots per page)
+ * const { saveSlotRows } = selectCurrentPageSlots({ state }, { slotsPerRow: 3, rowCount: 4 });
+ * // Returns: [[slot1, slot2, slot3], [slot4, slot5, slot6], ...]
+ *
+ * @example
+ * // Output data format example (Page 1, default 2x3 grid):
+ * {
+ *   saveSlotRows: [
+ *     [
+ *       // Row 1
+ *       {
+ *         slotNumber: 1,
+ *         date: 1704556800000,
+ *         image: "data:image/png;base64,iVBORw0KGgoAAAANS...",
+ *         state: { contexts: [...], viewedRegistry: {...} }
+ *       },
+ *       { slotNumber: 2 },  // Empty slot (not saved)
+ *       {
+ *         slotNumber: 3,
+ *         date: 1704643200000,
+ *         image: "data:image/png;base64,iVBORw0KGgoAAAANS...",
+ *         state: { contexts: [...], viewedRegistry: {...} }
+ *       }
+ *     ],
+ *     [
+ *       // Row 2
+ *       { slotNumber: 4 },  // Empty slot
+ *       { slotNumber: 5 },  // Empty slot
+ *       {
+ *         slotNumber: 6,
+ *         date: 1704729600000,
+ *         image: "data:image/png;base64,iVBORw0KGgoAAAANS...",
+ *         state: { contexts: [...], viewedRegistry: {...} }
+ *       }
+ *     ]
+ *   ]
+ * }
+ */
+export const selectCurrentPageSlots = ({ state }, { slotsPerRow = 3, rowCount = 2 } = {}) => {
+  const allVariables = {
+    ...state.global.variables,
+    ...state.contexts[state.contexts.length - 1].variables,
+  };
+  const loadPage = allVariables.loadPage ?? 1;
+  const slotsPerPage = slotsPerRow * rowCount;
+  const startSlot = (loadPage - 1) * slotsPerPage + 1;
+
+  const rows = [];
+
+  for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+    const row = [];
+    for (let colIndex = 0; colIndex < slotsPerRow; colIndex++) {
+      const slotNumber = startSlot + (rowIndex * slotsPerRow) + colIndex;
+      const slotData = state.global.saveSlots[slotNumber] || {};
+      row.push({
+        slotNumber,
+        ...slotData,
+      });
+    }
+    rows.push(row);
+  }
+
+  return { saveSlotRows: rows };
+};
+
 export const selectRenderState = ({ state }) => {
   const presentationState = selectPresentationState({ state });
   const previousPresentationState = selectPreviousPresentationState({ state });
   console.log("presentationState", presentationState);
+
+  const allVariables = {
+    ...state.global.variables,
+    ...state.contexts[state.contexts.length - 1].variables,
+  };
+
+  const { saveSlotRows } = selectCurrentPageSlots({ state });
+
   const renderState = constructRenderState({
     presentationState,
     previousPresentationState,
@@ -381,16 +487,15 @@ export const selectRenderState = ({ state }) => {
     l10n: state.projectData.l10n.packages[
       state.global.currentLocalizationPackageId
     ],
+    currentLocalizationPackageId: state.global.currentLocalizationPackageId,
     dialogueUIHidden: state.global.dialogueUIHidden,
     autoMode: state.global.autoMode,
     skipMode: state.global.skipMode,
     skipOnlyViewedLines: state.global.skipOnlyViewedLines,
     layeredViews: state.global.layeredViews,
     dialogueHistory: selectDialogueHistory({ state }),
-    variables: {
-      ...state.global.variables,
-      ...state.contexts[state.contexts.length - 1].variables,
-    },
+    saveSlotRows,
+    variables: allVariables,
   });
   console.log("renderState", renderState);
   return renderState;
@@ -1333,6 +1438,7 @@ export const createSystemStore = (initialState) => {
     selectCurrentLine,
     selectPresentationState,
     selectAutoplayDelay,
+    selectCurrentPageSlots,
     selectRenderState,
     selectLayeredViews,
 
