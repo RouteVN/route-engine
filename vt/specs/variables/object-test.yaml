@@ -19,7 +19,6 @@ resources:
     player:
       type: object
       scope: context
-      readonly: true
       default:
         name: "Alice"
         level: 5
@@ -29,7 +28,6 @@ resources:
     inventory:
       type: object
       scope: context
-      readonly: true
       default:
         gold: 250
         items:

@@ -370,10 +370,106 @@ export const selectPreviousPresentationState = ({ state }) => {
   return constructPresentationState(presentationActions);
 };
 
+/**
+ * Selects the save slots to display on the current page based on loadPage variable
+ * and page configuration. Returns a flat array of slots for the current page.
+ *
+ * @param {Object} params - The selector parameters
+ * @param {Object} params.state - The full application state
+ * @param {Object} [options] - Configuration options
+ * @param {number} [options.slotsPerPage=6] - Number of slots per page
+ * @returns {Object} Object containing saveSlots array
+ * @returns {Array<Object>} returns.saveSlots - Flat array of slot data for the current page
+ *
+ * @description
+ * This selector calculates which save slots should be displayed on the current page
+ * based on the `loadPage` variable and slots per page configuration. It returns a
+ * flat array of slots. The UI layer handles wrapping slots into rows using container
+ * layout properties (width, gap, direction).
+ *
+ * Each slot object contains:
+ * - slotNumber: The unique slot identifier (1, 2, 3, ...)
+ * - date: Timestamp when the save was created (if saved)
+ * - image: Base64 thumbnail image (if saved)
+ * - state: Saved game state data (if saved)
+ *
+ * @example
+ * // Default 6 slots per page
+ * // Page 1: slots 1-6, Page 2: slots 7-12, etc.
+ * const { saveSlots } = selectCurrentPageSlots({ state });
+ * // Returns: [slot1, slot2, slot3, slot4, slot5, slot6]
+ *
+ * @example
+ * // Custom 12 slots per page
+ * const { saveSlots } = selectCurrentPageSlots({ state }, { slotsPerPage: 12 });
+ * // Returns: [slot1, slot2, ..., slot12]
+ *
+ * @example
+ * // Output data format example (Page 1, default 6 slots):
+ * {
+ *   saveSlots: [
+ *     {
+ *       slotNumber: 1,
+ *       date: 1704556800000,
+ *       image: "data:image/png;base64,iVBORw0KGgoAAAANS...",
+ *       state: { contexts: [...], viewedRegistry: {...} }
+ *     },
+ *     { slotNumber: 2 },  // Empty slot (not saved)
+ *     {
+ *       slotNumber: 3,
+ *       date: 1704643200000,
+ *       image: "data:image/png;base64,iVBORw0KGgoAAAANS...",
+ *       state: { contexts: [...], viewedRegistry: {...} }
+ *     },
+ *     { slotNumber: 4 },  // Empty slot
+ *     { slotNumber: 5 },  // Empty slot
+ *     {
+ *       slotNumber: 6,
+ *       date: 1704729600000,
+ *       image: "data:image/png;base64,iVBORw0KGgoAAAANS...",
+ *       state: { contexts: [...], viewedRegistry: {...} }
+ *     }
+ *   ]
+ * }
+ */
+export const selectCurrentPageSlots = (
+  { state },
+  { slotsPerPage = 6 } = {},
+) => {
+  const allVariables = {
+    ...state.global.variables,
+    ...state.contexts[state.contexts.length - 1].variables,
+  };
+  const loadPage = allVariables.loadPage ?? 1;
+  const startSlot = (loadPage - 1) * slotsPerPage + 1;
+
+  const slots = [];
+
+  for (let i = 0; i < slotsPerPage; i++) {
+    const slotNumber = startSlot + i;
+    const slotData =
+      (state.global.saveSlots && state.global.saveSlots[slotNumber]) || {};
+    slots.push({
+      slotNumber,
+      ...slotData,
+    });
+  }
+
+  return { saveSlots: slots };
+};
+
 export const selectRenderState = ({ state }) => {
   const presentationState = selectPresentationState({ state });
   const previousPresentationState = selectPreviousPresentationState({ state });
   console.log("presentationState", presentationState);
+
+  const allVariables = {
+    ...state.global.variables,
+    ...state.contexts[state.contexts.length - 1].variables,
+  };
+
+  const { saveSlots } = selectCurrentPageSlots({ state });
+
   const renderState = constructRenderState({
     presentationState,
     previousPresentationState,
@@ -381,16 +477,15 @@ export const selectRenderState = ({ state }) => {
     l10n: state.projectData.l10n.packages[
       state.global.currentLocalizationPackageId
     ],
+    currentLocalizationPackageId: state.global.currentLocalizationPackageId,
     dialogueUIHidden: state.global.dialogueUIHidden,
     autoMode: state.global.autoMode,
     skipMode: state.global.skipMode,
     skipOnlyViewedLines: state.global.skipOnlyViewedLines,
     layeredViews: state.global.layeredViews,
     dialogueHistory: selectDialogueHistory({ state }),
-    variables: {
-      ...state.global.variables,
-      ...state.contexts[state.contexts.length - 1].variables,
-    },
+    saveSlots,
+    variables: allVariables,
   });
   console.log("renderState", renderState);
   return renderState;
@@ -1333,6 +1428,7 @@ export const createSystemStore = (initialState) => {
     selectCurrentLine,
     selectPresentationState,
     selectAutoplayDelay,
+    selectCurrentPageSlots,
     selectRenderState,
     selectLayeredViews,
 

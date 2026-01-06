@@ -429,6 +429,7 @@ export const addDialogue = (
     skipOnlyViewedLines,
     l10n,
     variables,
+    saveSlots = [],
   },
 ) => {
   const { elements } = state;
@@ -473,6 +474,7 @@ export const addDialogue = (
         autoMode,
         skipMode,
         skipOnlyViewedLines,
+        saveSlots,
         dialogue: {
           character: {
             name: character?.name || "",
@@ -626,6 +628,7 @@ export const addLayout = (
     autoMode,
     skipMode,
     currentLocalizationPackageId,
+    saveSlots = [],
   },
 ) => {
   const { elements } = state;
@@ -657,16 +660,10 @@ export const addLayout = (
 
     const templateData = {
       variables,
-      // saveDataArray: systemStore.selectSaveDataPage({
-      //   page: systemState?.variables.currentSavePageIndex,
-      //   numberPerPage: 6,
-      // }),
+      saveSlots,
       autoMode,
       skipMode,
-      // globalAudios: systemStore.selectGlobalAudios() || [],
       currentLocalizationPackageId,
-      // i18n: systemStore.selectCurrentLanguagePackKeys(),
-      // languagePacks: systemStore.selectLanguagePacks(),
     };
 
     let processedContainer = parseAndRender(layoutContainer, templateData, {
@@ -709,6 +706,7 @@ export const addLayeredViews = (
     currentLocalizationPackageId,
     layeredViews = [],
     dialogueHistory = [],
+    saveSlots = [],
   },
 ) => {
   const { elements } = state;
@@ -751,6 +749,7 @@ export const addLayeredViews = (
         autoMode,
         skipMode,
         currentLocalizationPackageId,
+        saveSlots,
         historyDialogue: historyDialogueWithNames,
         characters: resources.characters || {},
       };
