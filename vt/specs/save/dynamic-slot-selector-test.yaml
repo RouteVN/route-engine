@@ -1,0 +1,194 @@
+---
+title: "Dynamic Save Slot Selector Test"
+---
+l10n:
+  packages:
+    en:
+      label: English
+      lang: en
+      keys: {}
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#1a1a2e"
+
+resources:
+  variables:
+    loadPage:
+      type: number
+      scope: global-device
+      default: 1
+
+  layouts:
+    base1:
+      elements:
+        - id: clickArea
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                contextNextLine: {}
+
+    dynamicSlotsTestUI:
+      name: Dynamic Slots Grid Test
+      elements:
+        # Title
+        - id: title
+          type: text
+          content: "Dynamic Save Slots - Selector Test"
+          x: 960
+          y: 50
+          anchorX: 0.5
+          textStyle:
+            fontSize: 42
+            fill: "#ffffff"
+            fontWeight: bold
+
+        - id: subtitle
+          type: text
+          content: "Page ${variables.loadPage}"
+          x: 960
+          y: 100
+          anchorX: 0.5
+          textStyle:
+            fontSize: 32
+            fill: "#3498db"
+            fontWeight: bold
+
+        # Page navigation
+        - id: pageNav
+          type: container
+          x: 960
+          y: 180
+          anchorX: 0.5
+          children:
+            - id: btnPrevPage
+              type: text
+              content: "← Previous Page"
+              x: -150
+              y: 0
+              anchorX: 0.5
+              textStyle:
+                fontSize: 24
+                fill: "#ffffff"
+              hover:
+                textStyle:
+                  fontSize: 24
+                  fill: "#3498db"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: loadPage
+                          op: decrement
+
+            - id: btnNextPage
+              type: text
+              content: "Next Page →"
+              x: 150
+              y: 0
+              anchorX: 0.5
+              textStyle:
+                fontSize: 24
+                fill: "#ffffff"
+              hover:
+                textStyle:
+                  fontSize: 24
+                  fill: "#3498db"
+              click:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      operations:
+                        - variableId: loadPage
+                          op: increment
+
+        # Slots grid - demonstrates dynamic 2D array rendering
+        - id: slotsGrid
+          type: container
+          direction: vertical
+          gap: 30
+          x: 960
+          y: 300
+          anchorX: 0.5
+          children:
+            - $for row in saveSlotRows:
+                id: row_${row[0].slotNumber}
+                type: container
+                direction: horizontal
+                gap: 30
+                anchorX: 0.5
+                children:
+                  - $for slot in row:
+                      id: slot_${slot.slotNumber}_container
+                      type: container
+                      direction: vertical
+                      gap: 10
+                      children:
+                        - id: slot_${slot.slotNumber}_box
+                          type: rect
+                          fill: "#2c3e50"
+                          width: 200
+                          height: 150
+                          hover:
+                            fill: "#34495e"
+                          click:
+                            actionPayload:
+                              actions:
+                                saveSaveSlot:
+                                  slot: ${slot.slotNumber}
+
+                        - id: slot_${slot.slotNumber}_label
+                          type: text
+                          content: "Slot ${slot.slotNumber}"
+                          x: 100
+                          y: 60
+                          anchorX: 0.5
+                          anchorY: 0.5
+                          textStyle:
+                            fontSize: 20
+                            fill: "#ecf0f1"
+
+                        - id: slot_${slot.slotNumber}_status
+                          type: text
+                          content: "$if{slot.date:Saved:Empty}"
+                          x: 100
+                          y: 90
+                          anchorX: 0.5
+                          anchorY: 0.5
+                          textStyle:
+                            fontSize: 16
+                            fill: "#95a5a6"
+
+        # Instructions
+        - id: instructions
+          type: text
+          content: "Use Previous/Next to change pages. Click slots to save."
+          x: 960
+          y: 650
+          anchorX: 0.5
+          textStyle:
+            fontSize: 20
+            fill: "#95a5a6"
+
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      name: Dynamic Slot Selector Scene
+      initialSectionId: section1
+      sections:
+        section1:
+          name: Test Section
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: base1
+                layout:
+                  resourceId: dynamicSlotsTestUI

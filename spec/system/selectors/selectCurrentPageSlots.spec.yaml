@@ -1,0 +1,190 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore selectors
+suites:
+  [
+    selectCurrentPageSlots,
+  ]
+---
+suite: selectCurrentPageSlots
+exportName: selectCurrentPageSlots
+---
+case: default 2x3 grid, page 1
+in:
+  - state:
+      global:
+        variables: { loadPage: 1 }
+        saveSlots: {}
+      contexts:
+        - variables: {}
+out:
+  saveSlotRows:
+    - [{ slotNumber: 1 }, { slotNumber: 2 }, { slotNumber: 3 }]
+    - [{ slotNumber: 4 }, { slotNumber: 5 }, { slotNumber: 6 }]
+---
+case: default 2x3 grid, page 2
+in:
+  - state:
+      global:
+        variables: { loadPage: 2 }
+        saveSlots: {}
+      contexts:
+        - variables: {}
+out:
+  saveSlotRows:
+    - [{ slotNumber: 7 }, { slotNumber: 8 }, { slotNumber: 9 }]
+    - [{ slotNumber: 10 }, { slotNumber: 11 }, { slotNumber: 12 }]
+---
+case: default 2x3 grid, page 3
+in:
+  - state:
+      global:
+        variables: { loadPage: 3 }
+        saveSlots: {}
+      contexts:
+        - variables: {}
+out:
+  saveSlotRows:
+    - [{ slotNumber: 13 }, { slotNumber: 14 }, { slotNumber: 15 }]
+    - [{ slotNumber: 16 }, { slotNumber: 17 }, { slotNumber: 18 }]
+---
+case: loadPage defaults to 1 when undefined
+in:
+  - state:
+      global:
+        variables: {}
+        saveSlots: {}
+      contexts:
+        - variables: {}
+out:
+  saveSlotRows:
+    - [{ slotNumber: 1 }, { slotNumber: 2 }, { slotNumber: 3 }]
+    - [{ slotNumber: 4 }, { slotNumber: 5 }, { slotNumber: 6 }]
+---
+case: loadPage from context variables
+in:
+  - state:
+      global:
+        variables: {}
+        saveSlots: {}
+      contexts:
+        - variables: { loadPage: 2 }
+out:
+  saveSlotRows:
+    - [{ slotNumber: 7 }, { slotNumber: 8 }, { slotNumber: 9 }]
+    - [{ slotNumber: 10 }, { slotNumber: 11 }, { slotNumber: 12 }]
+---
+case: context variables override global variables
+in:
+  - state:
+      global:
+        variables: { loadPage: 1 }
+        saveSlots: {}
+      contexts:
+        - variables: { loadPage: 3 }
+out:
+  saveSlotRows:
+    - [{ slotNumber: 13 }, { slotNumber: 14 }, { slotNumber: 15 }]
+    - [{ slotNumber: 16 }, { slotNumber: 17 }, { slotNumber: 18 }]
+---
+case: with saved slot data
+in:
+  - state:
+      global:
+        variables: { loadPage: 1 }
+        saveSlots:
+          1:
+            date: 1704556800000
+            image: "data:image/png;base64,abc123"
+            state: { contexts: [], viewedRegistry: {} }
+          3:
+            date: 1704643200000
+      contexts:
+        - variables: {}
+out:
+  saveSlotRows:
+    - [
+        {
+          slotNumber: 1,
+          date: 1704556800000,
+          image: "data:image/png;base64,abc123",
+          state: { contexts: [], viewedRegistry: {} },
+        },
+        { slotNumber: 2 },
+        { slotNumber: 3, date: 1704643200000 },
+      ]
+    - [{ slotNumber: 4 }, { slotNumber: 5 }, { slotNumber: 6 }]
+---
+case: custom grid 3x2 (3 rows, 2 columns)
+in:
+  - state:
+      global:
+        variables: { loadPage: 1 }
+        saveSlots: {}
+      contexts:
+        - variables: {}
+  - slotsPerRow: 2
+    rowCount: 3
+out:
+  saveSlotRows:
+    - [{ slotNumber: 1 }, { slotNumber: 2 }]
+    - [{ slotNumber: 3 }, { slotNumber: 4 }]
+    - [{ slotNumber: 5 }, { slotNumber: 6 }]
+---
+case: custom grid 4x3 (4 rows, 3 columns)
+in:
+  - state:
+      global:
+        variables: { loadPage: 1 }
+        saveSlots: {}
+      contexts:
+        - variables: {}
+  - slotsPerRow: 3
+    rowCount: 4
+out:
+  saveSlotRows:
+    - [{ slotNumber: 1 }, { slotNumber: 2 }, { slotNumber: 3 }]
+    - [{ slotNumber: 4 }, { slotNumber: 5 }, { slotNumber: 6 }]
+    - [{ slotNumber: 7 }, { slotNumber: 8 }, { slotNumber: 9 }]
+    - [{ slotNumber: 10 }, { slotNumber: 11 }, { slotNumber: 12 }]
+---
+case: custom grid 1x5 (1 row, 5 columns)
+in:
+  - state:
+      global:
+        variables: { loadPage: 1 }
+        saveSlots: {}
+      contexts:
+        - variables: {}
+  - slotsPerRow: 5
+    rowCount: 1
+out:
+  saveSlotRows:
+    - [{ slotNumber: 1 }, { slotNumber: 2 }, { slotNumber: 3 }, { slotNumber: 4 }, { slotNumber: 5 }]
+---
+case: custom grid page 2
+in:
+  - state:
+      global:
+        variables: { loadPage: 2 }
+        saveSlots: {}
+      contexts:
+        - variables: {}
+  - slotsPerRow: 2
+    rowCount: 3
+out:
+  saveSlotRows:
+    - [{ slotNumber: 7 }, { slotNumber: 8 }]
+    - [{ slotNumber: 9 }, { slotNumber: 10 }]
+    - [{ slotNumber: 11 }, { slotNumber: 12 }]
+---
+case: undefined saveSlots handled gracefully
+in:
+  - state:
+      global:
+        variables: { loadPage: 1 }
+      contexts:
+        - variables: {}
+out:
+  saveSlotRows:
+    - [{ slotNumber: 1 }, { slotNumber: 2 }, { slotNumber: 3 }]
+    - [{ slotNumber: 4 }, { slotNumber: 5 }, { slotNumber: 6 }]
