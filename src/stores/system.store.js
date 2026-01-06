@@ -1,7 +1,6 @@
 import {
   createStore,
   getDefaultVariablesFromProjectData,
-  convertVariablesToStrings,
   validateVariableScope,
   validateVariableOperation,
   applyVariableOperation,
@@ -388,10 +387,10 @@ export const selectRenderState = ({ state }) => {
     skipOnlyViewedLines: state.global.skipOnlyViewedLines,
     layeredViews: state.global.layeredViews,
     dialogueHistory: selectDialogueHistory({ state }),
-    variables: convertVariablesToStrings(
-      state.global.variables,
-      state.contexts[state.contexts.length - 1].variables,
-    ),
+    variables: {
+      ...state.global.variables,
+      ...state.contexts[state.contexts.length - 1].variables,
+    },
   });
   console.log("renderState", renderState);
   return renderState;

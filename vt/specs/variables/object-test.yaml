@@ -1,0 +1,197 @@
+---
+title: "Object Type Variables Test"
+---
+l10n:
+  packages:
+    en:
+      label: English
+      lang: en
+      keys: {}
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#2c3e50"
+
+resources:
+  variables:
+    # Simple object with nested properties
+    player:
+      type: object
+      scope: context
+      readonly: true
+      default:
+        name: "Alice"
+        level: 5
+        health: 100
+
+    # Object containing an array
+    inventory:
+      type: object
+      scope: context
+      readonly: true
+      default:
+        gold: 250
+        items:
+          - "Sword"
+          - "Shield"
+          - "Potion"
+
+  layouts:
+    base1:
+      elements:
+        - id: clickArea
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+
+    objectTestUI:
+      name: Object Variable Test Screen
+      elements:
+        - id: title
+          type: text
+          content: "Object Type Variables Test"
+          x: 960
+          y: 50
+          anchorX: 0.5
+          textStyle:
+            fontSize: 48
+            fill: "#ecf0f1"
+
+        # Test 1: Access nested object properties
+        - id: test1Title
+          type: text
+          content: "1. Nested Object Properties:"
+          x: 100
+          y: 150
+          textStyle:
+            fontSize: 32
+            fill: "#3498db"
+            fontWeight: bold
+
+        - id: playerName
+          type: text
+          content: "Player Name: ${variables.player.name} (Expected: Alice)"
+          x: 100
+          y: 200
+          textStyle:
+            fontSize: 28
+            fill: "#ecf0f1"
+
+        - id: playerLevel
+          type: text
+          content: "Player Level: ${variables.player.level} (Expected: 5)"
+          x: 100
+          y: 240
+          textStyle:
+            fontSize: 28
+            fill: "#ecf0f1"
+
+        - id: playerHealth
+          type: text
+          content: "Player Health: ${variables.player.health} (Expected: 100)"
+          x: 100
+          y: 280
+          textStyle:
+            fontSize: 28
+            fill: "#ecf0f1"
+
+        # Test 2: Object with array
+        - id: test2Title
+          type: text
+          content: "2. Object Containing Array:"
+          x: 100
+          y: 380
+          textStyle:
+            fontSize: 32
+            fill: "#e74c3c"
+            fontWeight: bold
+
+        - id: inventoryGold
+          type: text
+          content: "Gold: ${variables.inventory.gold} (Expected: 250)"
+          x: 100
+          y: 430
+          textStyle:
+            fontSize: 28
+            fill: "#ecf0f1"
+
+        - id: inventoryCount
+          type: text
+          content: "Item Count: ${variables.inventory.items.length} (Expected: 3)"
+          x: 100
+          y: 470
+          textStyle:
+            fontSize: 28
+            fill: "#ecf0f1"
+
+        # Test 3: Array access
+        - id: test3Title
+          type: text
+          content: "3. Array Access:"
+          x: 100
+          y: 570
+          textStyle:
+            fontSize: 32
+            fill: "#9b59b6"
+            fontWeight: bold
+
+        - id: item1
+          type: text
+          content: "First Item: ${variables.inventory.items.0} (Expected: Sword)"
+          x: 100
+          y: 620
+          textStyle:
+            fontSize: 28
+            fill: "#ecf0f1"
+
+        - id: item2
+          type: text
+          content: "Second Item: ${variables.inventory.items.1} (Expected: Shield)"
+          x: 100
+          y: 660
+          textStyle:
+            fontSize: 28
+            fill: "#ecf0f1"
+
+        - id: item3
+          type: text
+          content: "Third Item: ${variables.inventory.items.2} (Expected: Potion)"
+          x: 100
+          y: 700
+          textStyle:
+            fontSize: 28
+            fill: "#ecf0f1"
+
+        # Instructions
+        - id: instructions
+          type: text
+          content: "All nested values should display correctly • Numbers stay as numbers • Strings stay as strings • Arrays are accessible"
+          x: 960
+          y: 950
+          anchorX: 0.5
+          textStyle:
+            fontSize: 24
+            fill: "#95a5a6"
+
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      name: Object Test Scene
+      initialSectionId: section1
+      sections:
+        section1:
+          name: Object Test Section
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: base1
+                layout:
+                  resourceId: objectTestUI

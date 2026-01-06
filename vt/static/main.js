@@ -15,7 +15,7 @@ import createRouteGraphics, {
   videoPlugin,
   particlesPlugin,
   animatedSpritePlugin
-} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.21/+esm"
+} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.25/+esm"
 
 const projectData = parse(window.yamlContent);
 
