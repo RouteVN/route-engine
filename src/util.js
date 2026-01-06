@@ -379,27 +379,6 @@ export const getDefaultVariablesFromProjectData = (projectData) => {
 };
 
 /**
- * Recursively converts text element content to strings (required by PixiJS)
- * Mutates the element in place
- *
- * @param {Object} element - Element to process
- *
- * @example
- * const element = { type: 'text', content: 123 };
- * stringifyTextContent(element);
- * // element.content is now "123"
- */
-export const stringifyTextContent = (element) => {
-  if (element.type === "text" && element.content != null) {
-    element.content = String(element.content);
-  }
-
-  if (element.children && Array.isArray(element.children)) {
-    element.children.forEach(stringifyTextContent);
-  }
-};
-
-/**
  * Validates that a variable scope is defined and valid
  * Pure function - throws error for invalid scopes
  *
