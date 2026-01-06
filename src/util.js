@@ -295,7 +295,7 @@ export const createSelectiveActionsExecutor = (
 /**
  * Gets the default value for a variable based on its configuration
  * @param {Object} config - Variable configuration
- * @param {string} config.type - Variable type (number, boolean, string)
+ * @param {string} config.type - Variable type (number, boolean, string, object)
  * @param {*} config.default - Optional default value
  * @param {string} variableId - Variable identifier (for error messages)
  * @returns {*} Default value for the variable
@@ -304,6 +304,7 @@ export const createSelectiveActionsExecutor = (
  * @example
  * getVariableDefaultValue({ type: 'number' }, 'score') // 0
  * getVariableDefaultValue({ type: 'boolean', default: true }, 'flag') // true
+ * getVariableDefaultValue({ type: 'object', default: {items: []} }, 'data') // {items: []}
  * getVariableDefaultValue({ type: 'unknown' }, 'bad') // throws Error
  */
 export const getVariableDefaultValue = (config, variableId) => {
@@ -311,7 +312,7 @@ export const getVariableDefaultValue = (config, variableId) => {
     return config.default;
   }
 
-  const VALID_TYPES = ["number", "boolean", "string"];
+  const VALID_TYPES = ["number", "boolean", "string", "object"];
 
   if (!VALID_TYPES.includes(config.type)) {
     throw new Error(
@@ -326,6 +327,8 @@ export const getVariableDefaultValue = (config, variableId) => {
       return false;
     case "string":
       return "";
+    case "object":
+      return {};
   }
 };
 
@@ -376,27 +379,24 @@ export const getDefaultVariablesFromProjectData = (projectData) => {
 };
 
 /**
- * Converts all variable values to strings for rendering
- * Pure function - no side effects
+ * Recursively converts text element content to strings (required by PixiJS)
+ * Mutates the element in place
  *
- * @param {Object} globalVars - Global-device and global-account scoped variables
- * @param {Object} contextVars - Context scoped variables
- * @returns {Object} Object with all values converted to strings
+ * @param {Object} element - Element to process
  *
  * @example
- * convertVariablesToStrings(
- *   { volume: 80, flag: true },
- *   { score: 100, name: 'Alice' }
- * )
- * // Returns: { volume: '80', flag: 'true', score: '100', name: 'Alice' }
+ * const element = { type: 'text', content: 123 };
+ * stringifyTextContent(element);
+ * // element.content is now "123"
  */
-export const convertVariablesToStrings = (globalVars, contextVars) => {
-  return Object.fromEntries(
-    Object.entries({
-      ...globalVars,
-      ...contextVars,
-    }).map(([key, value]) => [key, String(value)]),
-  );
+export const stringifyTextContent = (element) => {
+  if (element.type === "text" && element.content != null) {
+    element.content = String(element.content);
+  }
+
+  if (element.children && Array.isArray(element.children)) {
+    element.children.forEach(stringifyTextContent);
+  }
 };
 
 /**
@@ -445,6 +445,7 @@ export const validateVariableOperation = (type, op, variableId) => {
     number: ["set", "increment", "decrement", "multiply", "divide"],
     boolean: ["set", "toggle"],
     string: ["set"],
+    object: ["set"],
   };
 
   // First check if type is valid

@@ -73,6 +73,193 @@ out:
         resourceId: __undefined__
       variables: {}
 ---
+case: initialize object type variables with defaults
+in:
+  - global:
+      currentLocalizationPackageId: "en"
+    projectData:
+      resources:
+        variables:
+          inventory:
+            type: object
+            scope: context
+            default:
+              items:
+                - id: sword
+                  name: Steel Sword
+          pageButtons:
+            type: object
+            scope: global-device
+            default:
+              items:
+                - label: A
+                  value: -1
+      story:
+        initialSceneId: "scene1"
+        scenes:
+          scene1:
+            initialSectionId: "section1"
+            sections:
+              section1:
+                lines:
+                  - id: "line1"
+                    actions: {}
+out:
+  global:
+    autoplayDelay: 1000
+    isLineCompleted: false
+    pendingEffects: []
+    autoMode: false
+    skipMode: false
+    skipOnlyViewedLines: true
+    dialogueUIHidden: false
+    isDialogueHistoryShowing: false
+    currentLocalizationPackageId: "en"
+    viewedRegistry:
+      sections: []
+      resources: []
+    nextLineConfig:
+      manual:
+        enabled: true
+        requireLineCompleted: false
+      auto:
+        enabled: false
+    saveSlots: {}
+    layeredViews: []
+    variables:
+      pageButtons:
+        items:
+          - label: A
+            value: -1
+  projectData:
+    resources:
+      variables:
+        inventory:
+          type: object
+          scope: context
+          default:
+            items:
+              - id: sword
+                name: Steel Sword
+        pageButtons:
+          type: object
+          scope: global-device
+          default:
+            items:
+              - label: A
+                value: -1
+    story:
+      initialSceneId: "scene1"
+      scenes:
+        scene1:
+          initialSectionId: "section1"
+          sections:
+            section1:
+              lines:
+                - id: "line1"
+                  actions: {}
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sceneId: "scene1"
+          sectionId: "section1"
+          lineId: "line1"
+        history:
+          sectionId: __undefined__
+          lineId: __undefined__
+          historySequenceIndex: __undefined__
+      historySequence:
+        - sectionId: "..."
+      configuration: {}
+      views: []
+      bgm:
+        resourceId: __undefined__
+      variables:
+        inventory:
+          items:
+            - id: sword
+              name: Steel Sword
+---
+case: initialize object type variable with empty object default
+in:
+  - global:
+      currentLocalizationPackageId: "en"
+    projectData:
+      resources:
+        variables:
+          settings:
+            type: object
+            scope: context
+      story:
+        initialSceneId: "scene1"
+        scenes:
+          scene1:
+            initialSectionId: "section1"
+            sections:
+              section1:
+                lines:
+                  - id: "line1"
+                    actions: {}
+out:
+  global:
+    autoplayDelay: 1000
+    isLineCompleted: false
+    pendingEffects: []
+    autoMode: false
+    skipMode: false
+    skipOnlyViewedLines: true
+    dialogueUIHidden: false
+    isDialogueHistoryShowing: false
+    currentLocalizationPackageId: "en"
+    viewedRegistry:
+      sections: []
+      resources: []
+    nextLineConfig:
+      manual:
+        enabled: true
+        requireLineCompleted: false
+      auto:
+        enabled: false
+    saveSlots: {}
+    layeredViews: []
+    variables: {}
+  projectData:
+    resources:
+      variables:
+        settings:
+          type: object
+          scope: context
+    story:
+      initialSceneId: "scene1"
+      scenes:
+        scene1:
+          initialSectionId: "section1"
+          sections:
+            section1:
+              lines:
+                - id: "line1"
+                  actions: {}
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sceneId: "scene1"
+          sectionId: "section1"
+          lineId: "line1"
+        history:
+          sectionId: __undefined__
+          lineId: __undefined__
+          historySequenceIndex: __undefined__
+      historySequence:
+        - sectionId: "..."
+      configuration: {}
+      views: []
+      bgm:
+        resourceId: __undefined__
+      variables:
+        settings: {}
+---
 case: merge loaded global variables with defaults
 in:
   - global:

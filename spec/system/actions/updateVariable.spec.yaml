@@ -656,3 +656,127 @@ in:
         op: unknown
         value: 5
 throws: "Unknown operation: unknown"
+---
+case: set context object variable
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            inventory:
+              type: object
+              scope: context
+              default:
+                items: []
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            inventory:
+              items: []
+  - operations:
+      - variableId: inventory
+        op: set
+        value:
+          items:
+            - id: sword
+              name: Steel Sword
+out:
+  projectData:
+    resources:
+      variables:
+        inventory:
+          type: object
+          scope: context
+          default:
+            items: []
+  global:
+    variables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - variables:
+        inventory:
+          items:
+            - id: sword
+              name: Steel Sword
+---
+case: set global-device object variable
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            pageButtons:
+              type: object
+              scope: global-device
+              default:
+                items: []
+      global:
+        variables:
+          pageButtons:
+            items: []
+        pendingEffects: []
+      contexts:
+        - variables: {}
+  - operations:
+      - variableId: pageButtons
+        op: set
+        value:
+          items:
+            - label: A
+              value: -1
+            - label: Q
+              value: 0
+out:
+  projectData:
+    resources:
+      variables:
+        pageButtons:
+          type: object
+          scope: global-device
+          default:
+            items: []
+  global:
+    variables:
+      pageButtons:
+        items:
+          - label: A
+            value: -1
+          - label: Q
+            value: 0
+    pendingEffects:
+      - name: "saveGlobalDeviceVariables"
+        payload:
+          globalDeviceVariables:
+            pageButtons:
+              items:
+                - label: A
+                  value: -1
+                - label: Q
+                  value: 0
+      - name: "render"
+  contexts:
+    - variables: {}
+---
+case: error - invalid operation for object
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            data:
+              type: object
+              scope: context
+              default: {}
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            data: {}
+  - operations:
+      - variableId: data
+        op: increment
+throws: "Operation \"increment\" is not valid for variable \"data\" of type \"object\". Valid operations: set"

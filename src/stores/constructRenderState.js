@@ -1,5 +1,5 @@
 import { parseAndRender } from "jempl";
-import { createSequentialActionsExecutor } from "../util.js";
+import { createSequentialActionsExecutor, stringifyTextContent } from "../util.js";
 
 const jemplFunctions = {
   objectValues: (obj) =>
@@ -493,10 +493,14 @@ export const addDialogue = (
 
       if (Array.isArray(guiElements)) {
         for (const element of guiElements) {
-          storyContainer.children.push(structuredClone(element));
+          const clonedElement = structuredClone(element);
+          stringifyTextContent(clonedElement);
+          storyContainer.children.push(clonedElement);
         }
       } else if (guiElements) {
-        storyContainer.children.push(structuredClone(guiElements));
+        const clonedElement = structuredClone(guiElements);
+        stringifyTextContent(clonedElement);
+        storyContainer.children.push(clonedElement);
       }
     }
   }
@@ -694,7 +698,9 @@ export const addLayout = (
     };
 
     // Push the processed container
-    storyContainer.children.push(processElementAfterRender(processedContainer));
+    const layoutElement = processElementAfterRender(processedContainer);
+    stringifyTextContent(layoutElement);
+    storyContainer.children.push(layoutElement);
   }
   return state;
 };
