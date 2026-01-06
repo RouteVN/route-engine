@@ -108,62 +108,56 @@ resources:
                         - variableId: loadPage
                           op: increment
 
-        # Slots grid - demonstrates dynamic 2D array rendering
+        # Slots grid - demonstrates flat array with automatic wrapping
         - id: slotsGrid
           type: container
-          direction: vertical
+          direction: horizontal
           gap: 30
+          width: 720
           x: 960
           y: 300
           anchorX: 0.5
           children:
-            - $for row in saveSlotRows:
-                id: row_${row[0].slotNumber}
+            - $for slot in saveSlots:
+                id: slot_${slot.slotNumber}_container
                 type: container
-                direction: horizontal
-                gap: 30
-                anchorX: 0.5
+                direction: vertical
+                gap: 10
                 children:
-                  - $for slot in row:
-                      id: slot_${slot.slotNumber}_container
-                      type: container
-                      direction: vertical
-                      gap: 10
-                      children:
-                        - id: slot_${slot.slotNumber}_box
-                          type: rect
-                          fill: "#2c3e50"
-                          width: 200
-                          height: 150
-                          hover:
-                            fill: "#34495e"
-                          click:
-                            actionPayload:
-                              actions:
-                                saveSaveSlot:
-                                  slot: ${slot.slotNumber}
+                  - id: slot_${slot.slotNumber}_box
+                    type: rect
+                    fill: "#2c3e50"
+                    width: 200
+                    height: 150
+                    hover:
+                      fill: "#34495e"
+                    click:
+                      actionPayload:
+                        actions:
+                          saveSaveSlot:
+                            slot: ${slot.slotNumber}
 
-                        - id: slot_${slot.slotNumber}_label
-                          type: text
-                          content: "Slot ${slot.slotNumber}"
-                          x: 100
-                          y: 60
-                          anchorX: 0.5
-                          anchorY: 0.5
-                          textStyle:
-                            fontSize: 20
-                            fill: "#ecf0f1"
+                  - id: slot_${slot.slotNumber}_label
+                    type: text
+                    content: "Slot ${slot.slotNumber}"
+                    x: 100
+                    y: 60
+                    anchorX: 0.5
+                    anchorY: 0.5
+                    textStyle:
+                      fontSize: 20
+                      fill: "#ecf0f1"
 
-                        - id: slot_${slot.slotNumber}_status
-                          type: text
-                          content: "$if{slot.date:Saved:Empty}"
-                          x: 100
-                          y: 90
-                          anchorX: 0.5
-                          anchorY: 0.5
-                          textStyle:
-                            fontSize: 16
-                            fill: "#95a5a6"
+                  - id: slot_${slot.slotNumber}_status
+                    type: text
+                    content: "$if{slot.date:Saved:Empty}"
+                    x: 100
+                    y: 90
+                    anchorX: 0.5
+                    anchorY: 0.5
+                    textStyle:
+                      fontSize: 16
+                      fill: "#95a5a6"
 
         # Instructions
         - id: instructions

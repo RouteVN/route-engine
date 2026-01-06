@@ -429,7 +429,7 @@ export const addDialogue = (
     skipOnlyViewedLines,
     l10n,
     variables,
-    saveSlotRows = [],
+    saveSlots = [],
   },
 ) => {
   const { elements } = state;
@@ -474,7 +474,7 @@ export const addDialogue = (
         autoMode,
         skipMode,
         skipOnlyViewedLines,
-        saveSlotRows,
+        saveSlots,
         dialogue: {
           character: {
             name: character?.name || "",
@@ -628,7 +628,7 @@ export const addLayout = (
     autoMode,
     skipMode,
     currentLocalizationPackageId,
-    saveSlotRows = [],
+    saveSlots = [],
   },
 ) => {
   const { elements } = state;
@@ -660,7 +660,7 @@ export const addLayout = (
 
     const templateData = {
       variables,
-      saveSlotRows,
+      saveSlots,
       autoMode,
       skipMode,
       currentLocalizationPackageId,
@@ -706,7 +706,7 @@ export const addLayeredViews = (
     currentLocalizationPackageId,
     layeredViews = [],
     dialogueHistory = [],
-    saveSlotRows = [],
+    saveSlots = [],
   },
 ) => {
   const { elements } = state;
@@ -749,7 +749,7 @@ export const addLayeredViews = (
         autoMode,
         skipMode,
         currentLocalizationPackageId,
-        saveSlotRows,
+        saveSlots,
         historyDialogue: historyDialogueWithNames,
         characters: resources.characters || {},
       };
