@@ -4,6 +4,15 @@ import { createSequentialActionsExecutor } from "../util.js";
 const jemplFunctions = {
   objectValues: (obj) =>
     Object.entries(obj).map(([id, value]) => ({ id, ...value })),
+  slotNumber: (page, index, slotsPerPage = 6) => ((page - 1) * slotsPerPage) + index,
+  rowSlots: (rowIndex, slotsPerRow = 3) => {
+    const start = rowIndex * slotsPerRow + 1;
+    const result = [];
+    for (let i = 0; i < slotsPerRow; i++) {
+      result.push(start + i);
+    }
+    return result;
+  },
 };
 
 export const createInitialState = () => {
