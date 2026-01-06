@@ -441,7 +441,10 @@ export const selectPreviousPresentationState = ({ state }) => {
  *   ]
  * }
  */
-export const selectCurrentPageSlots = ({ state }, { slotsPerRow = 3, rowCount = 2 } = {}) => {
+export const selectCurrentPageSlots = (
+  { state },
+  { slotsPerRow = 3, rowCount = 2 } = {},
+) => {
   const allVariables = {
     ...state.global.variables,
     ...state.contexts[state.contexts.length - 1].variables,
@@ -455,7 +458,7 @@ export const selectCurrentPageSlots = ({ state }, { slotsPerRow = 3, rowCount = 
   for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
     const row = [];
     for (let colIndex = 0; colIndex < slotsPerRow; colIndex++) {
-      const slotNumber = startSlot + (rowIndex * slotsPerRow) + colIndex;
+      const slotNumber = startSlot + rowIndex * slotsPerRow + colIndex;
       const slotData = state.global.saveSlots[slotNumber] || {};
       row.push({
         slotNumber,
