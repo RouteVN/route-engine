@@ -45,3 +45,24 @@ out:
     resourceId: "newBase"
   background:
     resourceId: "newBg"
+---
+case: dialogue characterId should be cleared when second presentation has undefined characterId
+in:
+  - - dialogue:
+        mode: "adv"
+        gui:
+          resourceId: "simple-dialogue"
+        characterId: "character-123"
+        content:
+          - text: "Hello"
+    - dialogue:
+        mode: "adv"
+        gui:
+          resourceId: "simple-dialogue"
+out:
+  dialogue:
+    mode: "adv"
+    gui:
+      resourceId: "simple-dialogue"
+    content:
+      - text: "Hello"
