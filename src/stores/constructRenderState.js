@@ -520,7 +520,6 @@ export const addChoices = (state, { presentationState, resources }) => {
     storyContainer.children.push({
       id: "choice-blocker",
       type: "rect",
-      fill: "rgba(0,0,0,0)",
       width: 1920,
       height: 1080,
       x: 0,
