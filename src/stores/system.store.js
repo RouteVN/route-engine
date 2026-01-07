@@ -5,6 +5,7 @@ import {
   validateVariableOperation,
   applyVariableOperation,
   filterVariablesByScope,
+  formatDate,
 } from "../util.js";
 import { constructPresentationState } from "./constructPresentationState.js";
 import { constructRenderState } from "./constructRenderState.js";
@@ -452,6 +453,7 @@ export const selectCurrentPageSlots = (
     slots.push({
       slotNumber,
       ...slotData,
+      formattedDate: slotData.date ? formatDate(slotData.date) : null,
     });
   }
 
