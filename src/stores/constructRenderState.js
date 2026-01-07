@@ -1,9 +1,10 @@
 import { parseAndRender } from "jempl";
-import { createSequentialActionsExecutor } from "../util.js";
+import { createSequentialActionsExecutor, formatDate } from "../util.js";
 
 const jemplFunctions = {
   objectValues: (obj) =>
     Object.entries(obj).map(([id, value]) => ({ id, ...value })),
+  formatDate,
 };
 
 export const createInitialState = () => {
