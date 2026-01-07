@@ -36,6 +36,16 @@ out:
       x: 0
       y: 0
       children:
+        - id: "choice-blocker"
+          type: "rect"
+          
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          click:
+            actionPayload:
+              actions: {}
         - type: "button"
           id: "choice-button"
           text: "Select an option"
@@ -78,6 +88,16 @@ out:
       x: 0
       y: 0
       children:
+        - id: "choice-blocker"
+          type: "rect"
+          
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          click:
+            actionPayload:
+              actions: {}
         - type: "container"
           id: "choices"
           children:
@@ -167,7 +187,17 @@ out:
       type: "container"
       x: 0
       y: 0
-      children: []
+      children:
+        - id: "choice-blocker"
+          type: "rect"
+          
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          click:
+            actionPayload:
+              actions: {}
   animations: []
 ---
 case: layout has no elements - return unchanged state
@@ -195,7 +225,17 @@ out:
       type: "container"
       x: 0
       y: 0
-      children: []
+      children:
+        - id: "choice-blocker"
+          type: "rect"
+          
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          click:
+            actionPayload:
+              actions: {}
   animations: []
 ---
 case: no choice items - still add layout elements
@@ -224,6 +264,16 @@ out:
       x: 0
       y: 0
       children:
+        - id: "choice-blocker"
+          type: "rect"
+          
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          click:
+            actionPayload:
+              actions: {}
         - type: "text"
           content: "No choices available"
   animations: []
