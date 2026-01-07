@@ -517,6 +517,21 @@ export const addChoices = (state, { presentationState, resources }) => {
     const storyContainer = elements.find((el) => el.id === "story");
     if (!storyContainer) return state;
 
+    storyContainer.children.push({
+      id: "choice-blocker",
+      type: "rect",
+      fill: "rgba(0,0,0,0)",
+      width: 1920,
+      height: 1080,
+      x: 0,
+      y: 0,
+      click: {
+        actionPayload: {
+          actions: {},
+        },
+      },
+    });
+    
     const layout = resources?.layouts[presentationState.choice.resourceId];
     if (!layout || !layout.elements) return state;
 
