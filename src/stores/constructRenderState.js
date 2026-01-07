@@ -531,7 +531,7 @@ export const addChoices = (state, { presentationState, resources }) => {
         },
       },
     });
-    
+
     const layout = resources?.layouts[presentationState.choice.resourceId];
     if (!layout || !layout.elements) return state;
 
