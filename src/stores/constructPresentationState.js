@@ -73,7 +73,9 @@ export const dialogue = (state, presentation) => {
   if (presentation.dialogue.content !== undefined) {
     state.dialogue.content = presentation.dialogue.content;
   }
-  if (presentation.dialogue.characterId !== undefined) {
+  // Always clear characterId, then set if provided with a value
+  delete state.dialogue.characterId;
+  if (presentation.dialogue.characterId) {
     state.dialogue.characterId = presentation.dialogue.characterId;
   }
   if (presentation.dialogue.character) {
