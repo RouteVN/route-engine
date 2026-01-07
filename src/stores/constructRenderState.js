@@ -523,7 +523,7 @@ export const addChoices = (state, { presentationState, resources }) => {
     const wrappedTemplate = { elements: layout.elements };
     const result = parseAndRender(wrappedTemplate, {
       choice: {
-        items: presentationState.choice.items,
+        items: presentationState.choice?.items ?? [],
       },
     });
     const choiceElements = result?.elements;
