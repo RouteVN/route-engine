@@ -177,7 +177,8 @@ export const addCharacters = (state, { presentationState, resources }) => {
 
     const items = presentationState.character.items || [];
 
-    for (const item of items) {
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
       const { transformId, sprites } = item;
 
       // For out animations only, we don't need to create a container
@@ -204,6 +205,7 @@ export const addCharacters = (state, { presentationState, resources }) => {
       }
 
       const spritePartIds = sprites.map(({ resourceId }) => resourceId);
+      const containerId = `character-container-${item.id}-${i}-${spritePartIds.join("-")}`;
       const transform = resources.transforms[transformId];
       if (!transform) {
         console.warn("Transform not found:", transformId);
@@ -211,7 +213,7 @@ export const addCharacters = (state, { presentationState, resources }) => {
       }
       const characterContainer = {
         type: "container",
-        id: `character-container-${item.id}`,
+        id: containerId,
         x: item.x ?? transform.x,
         y: item.y ?? transform.y,
         anchorX: transform.anchorX,
@@ -231,7 +233,7 @@ export const addCharacters = (state, { presentationState, resources }) => {
 
         characterContainer.children.push({
           type: "sprite",
-          id: `${item.id}-${sprite.id}`,
+          id: `${containerId}-${sprite.id}`,
           src: imageResource.fileId,
           width: imageResource.width,
           height: imageResource.height,
@@ -251,7 +253,7 @@ export const addCharacters = (state, { presentationState, resources }) => {
             animations.push({
               id: `character-animation-in`,
               type: "tween",
-              targetId: `character-container-${item.id}`,
+              targetId: containerId,
               properties: tween.properties,
             });
           }
@@ -264,7 +266,7 @@ export const addCharacters = (state, { presentationState, resources }) => {
             const updateTransition = {
               id: `character-animation-update`,
               type: "tween",
-              targetId: `character-container-${item.id}`,
+              targetId: containerId,
               properties: tween.properties,
             };
             animations.push(updateTransition);
