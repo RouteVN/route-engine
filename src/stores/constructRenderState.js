@@ -1,9 +1,10 @@
 import { parseAndRender } from "jempl";
-import { createSequentialActionsExecutor } from "../util.js";
+import { createSequentialActionsExecutor, formatDate } from "../util.js";
 
 const jemplFunctions = {
   objectValues: (obj) =>
     Object.entries(obj).map(([id, value]) => ({ id, ...value })),
+  formatDate,
 };
 
 export const createInitialState = () => {
@@ -522,6 +523,7 @@ export const addChoices = (state, { presentationState, resources }) => {
     storyContainer.children.push({
       id: "choice-blocker",
       type: "rect",
+      fill: "transparent",
       width: 1920,
       height: 1080,
       x: 0,

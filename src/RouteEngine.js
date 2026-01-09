@@ -7,12 +7,20 @@ export default function createRouteEngine(options) {
   let _systemStore;
 
   const { handlePendingEffects } = options;
+
+  const processEffectsUntilEmpty = () => {
+    while (_systemStore.selectPendingEffects().length > 0) {
+      const snapshot = [..._systemStore.selectPendingEffects()];
+      _systemStore.clearPendingEffects();
+      handlePendingEffects(snapshot);
+    }
+  };
+
   const init = ({ initialState }) => {
     _systemStore = createSystemStore(initialState);
     _systemStore.appendPendingEffect({ name: "render" });
     handleLineActions();
-    handlePendingEffects(_systemStore.selectPendingEffects());
-    _systemStore.clearPendingEffects();
+    processEffectsUntilEmpty();
   };
 
   const selectPresentationState = () => {
@@ -32,8 +40,7 @@ export default function createRouteEngine(options) {
       return;
     }
     _systemStore[actionType](payload);
-    handlePendingEffects(_systemStore.selectPendingEffects());
-    _systemStore.clearPendingEffects();
+    processEffectsUntilEmpty();
   };
 
   const handleActions = (actions) => {
@@ -45,12 +52,7 @@ export default function createRouteEngine(options) {
   const handleLineActions = () => {
     const line = _systemStore.selectCurrentLine();
     if (line && line.actions) {
-      //This prevents recursion when an effect calls an action that queues another effect.
-      Object.entries(line.actions).forEach(([actionType, payload]) => {
-        if (_systemStore[actionType]) {
-          _systemStore[actionType](payload);
-        }
-      });
+      handleActions(line.actions);
     }
   };
 
