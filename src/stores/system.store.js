@@ -346,12 +346,18 @@ export const selectPresentationState = ({ state }) => {
 };
 
 export const selectPresentationChanges = ({ state }) => {
-  const presentationState = selectPresentationState({ state });
   const previousPresentationState = selectPreviousPresentationState({ state });
+  const currentLine = selectCurrentLine({ state });
+  const currentLineActions = currentLine?.actions || {};
+
+  const presentationStateAfterLineActions = constructPresentationState([
+    previousPresentationState || {},
+    currentLineActions,
+  ]);
 
   return diffPresentationState(
     previousPresentationState ?? {},
-    presentationState ?? {},
+    presentationStateAfterLineActions ?? {},
   );
 };
 

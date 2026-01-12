@@ -64,7 +64,7 @@ out:
     data:
       resourceId: "bg-home"
 ---
-case: "Detect deleted background"
+case: "Detect deleted background via cleanAll"
 in:
   - state:
       projectData:
@@ -93,7 +93,41 @@ out:
     data:
       resourceId: "bg-school"
 ---
-case: "Detect added character (Array treated as Object)"
+case: "Detect updated BGM properties on the same line"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        bgm:
+                          resourceId: "music-1"
+                          volume: 50
+                    - id: "2"
+                      actions:
+                        bgm:
+                          resourceId: "music-1"
+                          volume: 100
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  bgm:
+    changeType: "update"
+    data:
+      resourceId: "music-1"
+      volume: 100
+      loop: true
+---
+case: "Detect added character"
 in:
   - state:
       projectData:
@@ -125,7 +159,7 @@ out:
         - id: "char-1"
           transformId: "left"
 ---
-case: "Detect updated character (Array treated as Object)"
+case: "Detect updated character"
 in:
   - state:
       projectData:
@@ -160,3 +194,27 @@ out:
       items:
         - id: "char-1"
           transformId: "right"
+---
+case: "No changes on line 2 (state persists)"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "bg-school"
+                    - id: "2"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out: {}
