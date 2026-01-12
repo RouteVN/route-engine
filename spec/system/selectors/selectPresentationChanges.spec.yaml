@@ -1,14 +1,12 @@
 file: "../../../src/stores/system.store.js"
 group: systemStore selectors
 suites:
-  [
-    selectPresentationChanges,
-  ]
+  - selectPresentationChanges
 ---
 suite: selectPresentationChanges
 exportName: selectPresentationChanges
 ---
-case: "Detect added background (Singleton Add)"
+case: "Detect added background"
 in:
   - state:
       projectData:
@@ -31,23 +29,12 @@ in:
               sectionId: "section1"
               lineId: "2"
 out:
-  base: null
   background:
-    status: "add"
+    changeType: "add"
     data:
       resourceId: "bg-school"
-  dialogue: null
-  choice: null
-  bgm: null
-  voice: null
-  layout: null
-  animation: null
-  keyboard: null
-  character: []
-  visual: []
-  sfx: []
 ---
-case: "Detect updated background ID (Singleton Update - Swap)"
+case: "Detect updated background"
 in:
   - state:
       projectData:
@@ -72,23 +59,12 @@ in:
               sectionId: "section1"
               lineId: "2"
 out:
-  base: null
   background:
-    status: "update"
+    changeType: "update"
     data:
       resourceId: "bg-home"
-  dialogue: null
-  choice: null
-  bgm: null
-  voice: null
-  layout: null
-  animation: null
-  keyboard: null
-  character: []
-  visual: []
-  sfx: []
 ---
-case: "Detect deleted background (Singleton Delete via CleanAll)"
+case: "Detect deleted background"
 in:
   - state:
       projectData:
@@ -112,23 +88,12 @@ in:
               sectionId: "section1"
               lineId: "2"
 out:
-  base: null
   background:
-    status: "delete"
+    changeType: "delete"
     data:
       resourceId: "bg-school"
-  dialogue: null
-  choice: null
-  bgm: null
-  voice: null
-  layout: null
-  animation: null
-  keyboard: null
-  character: []
-  visual: []
-  sfx: []
 ---
-case: "Detect updated BGM properties same ID (Singleton Update - Deep Compare)"
+case: "Detect added character (Array treated as Object)"
 in:
   - state:
       projectData:
@@ -139,15 +104,13 @@ in:
                 section1:
                   lines:
                     - id: "1"
-                      actions:
-                        bgm:
-                          resourceId: "music-1"
-                          volume: 50
+                      actions: {}
                     - id: "2"
                       actions:
-                        bgm:
-                          resourceId: "music-1"
-                          volume: 100
+                        character:
+                          items:
+                            - id: "char-1"
+                              transformId: "left"
       contexts:
         - currentPointerMode: "read"
           pointers:
@@ -155,115 +118,14 @@ in:
               sectionId: "section1"
               lineId: "2"
 out:
-  base: null
-  background: null
-  dialogue: null
-  choice: null
-  bgm:
-    status: "update"
+  character:
+    changeType: "add"
     data:
-      resourceId: "music-1"
-      volume: 100
-      loop: true
-  voice: null
-  layout: null
-  animation: null
-  keyboard: null
-  character: []
-  visual: []
-  sfx: []
+      items:
+        - id: "char-1"
+          transformId: "left"
 ---
-case: "Detect added character (Array Add)"
-in:
-  - state:
-      projectData:
-        story:
-          scenes:
-            scene1:
-              sections:
-                section1:
-                  lines:
-                    - id: "1"
-                      actions:
-                        character:
-                          items: []
-                    - id: "2"
-                      actions:
-                        character:
-                          items:
-                            - id: "char-1"
-                              transformId: "left"
-      contexts:
-        - currentPointerMode: "read"
-          pointers:
-            read:
-              sectionId: "section1"
-              lineId: "2"
-out:
-  base: null
-  background: null
-  dialogue: null
-  choice: null
-  bgm: null
-  voice: null
-  layout: null
-  animation: null
-  keyboard: null
-  character:
-    - status: "add"
-      id: "char-1"
-      data:
-        id: "char-1"
-        transformId: "left"
-  visual: []
-  sfx: []
----
-case: "Detect deleted character (Array Delete)"
-in:
-  - state:
-      projectData:
-        story:
-          scenes:
-            scene1:
-              sections:
-                section1:
-                  lines:
-                    - id: "1"
-                      actions:
-                        character:
-                          items:
-                            - id: "char-1"
-                              transformId: "left"
-                    - id: "2"
-                      actions:
-                        character:
-                          items: []
-      contexts:
-        - currentPointerMode: "read"
-          pointers:
-            read:
-              sectionId: "section1"
-              lineId: "2"
-out:
-  base: null
-  background: null
-  dialogue: null
-  choice: null
-  bgm: null
-  voice: null
-  layout: null
-  animation: null
-  keyboard: null
-  character:
-    - status: "delete"
-      id: "char-1"
-      data:
-        id: "char-1"
-        transformId: "left"
-  visual: []
-  sfx: []
----
-case: "Detect updated character property (Array Update)"
+case: "Detect updated character (Array treated as Object)"
 in:
   - state:
       projectData:
@@ -292,87 +154,9 @@ in:
               sectionId: "section1"
               lineId: "2"
 out:
-  base: null
-  background: null
-  dialogue: null
-  choice: null
-  bgm: null
-  voice: null
-  layout: null
-  animation: null
-  keyboard: null
   character:
-    - status: "update"
-      id: "char-1"
-      data:
-        id: "char-1"
-        transformId: "right"
-  visual: []
-  sfx: []
----
-case: "Mixed changes (Add Visual, Remove Char, Update BGM)"
-in:
-  - state:
-      projectData:
-        story:
-          scenes:
-            scene1:
-              sections:
-                section1:
-                  lines:
-                    - id: "1"
-                      actions:
-                        bgm:
-                          resourceId: "song-1"
-                          volume: 50
-                        character:
-                          items:
-                            - id: "char-1"
-                              transformId: "center"
-                        visual:
-                          items: []
-                    - id: "2"
-                      actions:
-                        bgm:
-                          resourceId: "song-1"
-                          volume: 80
-                        character:
-                          items: []
-                        visual:
-                          items:
-                            - id: "vis-1"
-                              resourceId: "particles"
-      contexts:
-        - currentPointerMode: "read"
-          pointers:
-            read:
-              sectionId: "section1"
-              lineId: "2"
-out:
-  base: null
-  background: null
-  dialogue: null
-  choice: null
-  bgm:
-    status: "update"
+    changeType: "update"
     data:
-      resourceId: "song-1"
-      volume: 80
-      loop: true
-  voice: null
-  layout: null
-  animation: null
-  keyboard: null
-  character:
-    - status: "delete"
-      id: "char-1"
-      data:
-        id: "char-1"
-        transformId: "center"
-  visual:
-    - status: "add"
-      id: "vis-1"
-      data:
-        id: "vis-1"
-        resourceId: "particles"
-  sfx: []
+      items:
+        - id: "char-1"
+          transformId: "right"

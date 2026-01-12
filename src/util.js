@@ -559,84 +559,36 @@ export const formatDate = (timestamp, format = "DD/MM/YYYY - HH:mm") => {
  * @returns {Object} Changes object keyed by asset type
  */
 export const diffPresentationState = (prev = {}, curr = {}) => {
-  const changes = {
-    base: null,
-    background: null,
-    dialogue: null,
-    choice: null,
-    bgm: null,
-    voice: null,
-    layout: null,
-    animation: null,
-    keyboard: null,
-    character: [],
-    visual: [],
-    sfx: [],
-  };
+  const changes = {};
 
-  const diffSingleton = (key) => {
+  const diffObject = (key) => {
     const prevItem = prev[key];
     const currItem = curr[key];
 
     if (currItem && !prevItem) {
-      changes[key] = { status: "add", data: currItem };
+      changes[key] = { changeType: "add", data: currItem };
     } else if (prevItem && !currItem) {
-      changes[key] = { status: "delete", data: prevItem };
+      changes[key] = { changeType: "delete", data: prevItem };
     } else if (prevItem && currItem) {
       if (JSON.stringify(prevItem) !== JSON.stringify(currItem)) {
-        changes[key] = { status: "update", data: currItem };
+        changes[key] = { changeType: "update", data: currItem };
       }
     }
   };
 
-  const diffArray = (key) => {
-    const prevItems = prev[key]?.items || [];
-    const currItems = curr[key]?.items || [];
+  diffObject("background");
+  diffObject("base");
+  diffObject("bgm");
+  diffObject("voice");
+  diffObject("dialogue");
+  diffObject("choice");
+  diffObject("layout");
+  diffObject("animation");
+  diffObject("keyboard");
 
-    const prevMap = new Map(prevItems.map((i) => [i.id, i]));
-    const currMap = new Map(currItems.map((i) => [i.id, i]));
-
-    currItems.forEach((currItem) => {
-      const prevItem = prevMap.get(currItem.id);
-      if (!prevItem) {
-        changes[key].push({ status: "add", id: currItem.id, data: currItem });
-      } else {
-        const isDifferent =
-          JSON.stringify(prevItem) !== JSON.stringify(currItem);
-        if (isDifferent) {
-          changes[key].push({
-            status: "update",
-            id: currItem.id,
-            data: currItem,
-          });
-        }
-      }
-    });
-
-    prevItems.forEach((prevItem) => {
-      if (!currMap.has(prevItem.id)) {
-        changes[key].push({
-          status: "delete",
-          id: prevItem.id,
-          data: prevItem,
-        });
-      }
-    });
-  };
-
-  diffSingleton("background");
-  diffSingleton("base");
-  diffSingleton("bgm");
-  diffSingleton("voice");
-  diffSingleton("dialogue");
-  diffSingleton("choice");
-  diffSingleton("layout");
-  diffSingleton("animation");
-  diffSingleton("keyboard");
-
-  diffArray("character");
-  diffArray("visual");
-  diffArray("sfx");
+  diffObject("character");
+  diffObject("visual");
+  diffObject("sfx");
 
   return changes;
 };
