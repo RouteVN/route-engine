@@ -66,3 +66,142 @@ out:
       resourceId: "simple-dialogue"
     content:
       - text: "Hello"
+---
+case: clear background animations when next presentation has no background action
+in:
+  - - background:
+        resourceId: "bg-school"
+        animations:
+          in:
+            fade:
+              duration: 500
+    - dialogue:
+        mode: "adv"
+        content:
+          - text: "Hello!"
+out:
+  background:
+    resourceId: "bg-school"
+    animations: {}
+  dialogue:
+    mode: "adv"
+    content:
+      - text: "Hello!"
+---
+case: clear character item animations when next presentation has no character action
+in:
+  - - character:
+        items:
+          - id: "sakura"
+            resourceId: "char-sakura"
+            animations:
+              in:
+                slide:
+                  from: "left"
+    - dialogue:
+        mode: "adv"
+        content:
+          - text: "Nice to meet you!"
+out:
+  character:
+    items:
+      - id: "sakura"
+        resourceId: "char-sakura"
+        animations: {}
+  dialogue:
+    mode: "adv"
+    content:
+      - text: "Nice to meet you!"
+---
+case: clear visual item animations when next presentation has no visual action
+in:
+  - - visual:
+        items:
+          - id: "sparkle"
+            resourceId: "effect-sparkle"
+            animations:
+              in:
+                fade:
+                  duration: 300
+    - dialogue:
+        mode: "adv"
+        content:
+          - text: "So beautiful!"
+out:
+  visual:
+    items:
+      - id: "sparkle"
+        resourceId: "effect-sparkle"
+        animations: {}
+  dialogue:
+    mode: "adv"
+    content:
+      - text: "So beautiful!"
+---
+case: preserve background without animations (no empty animations added)
+in:
+  - - background:
+        resourceId: "bg-school"
+    - dialogue:
+        mode: "adv"
+        content:
+          - text: "Hello!"
+out:
+  background:
+    resourceId: "bg-school"
+  dialogue:
+    mode: "adv"
+    content:
+      - text: "Hello!"
+---
+case: clear animations across multiple lines
+in:
+  - - background:
+        resourceId: "bg-school"
+        animations:
+          in:
+            fade:
+              duration: 500
+    - dialogue:
+        mode: "adv"
+        content:
+          - text: "Line 2"
+    - dialogue:
+        content:
+          - text: "Line 3"
+out:
+  background:
+    resourceId: "bg-school"
+    animations: {}
+  dialogue:
+    mode: "adv"
+    content:
+      - text: "Line 3"
+---
+case: clear only items with animations (mixed character items)
+in:
+  - - character:
+        items:
+          - id: "char-1"
+            resourceId: "res-1"
+            animations:
+              in:
+                fade: {}
+          - id: "char-2"
+            resourceId: "res-2"
+    - dialogue:
+        mode: "adv"
+        content:
+          - text: "Hello!"
+out:
+  character:
+    items:
+      - id: "char-1"
+        resourceId: "res-1"
+        animations: {}
+      - id: "char-2"
+        resourceId: "res-2"
+  dialogue:
+    mode: "adv"
+    content:
+      - text: "Hello!"
