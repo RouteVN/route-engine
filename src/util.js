@@ -552,75 +552,82 @@ export const formatDate = (timestamp, format = "DD/MM/YYYY - HH:mm") => {
 
 /**
  * Compares two presentation states and returns the changes (add, update, delete)
+ * for all renderable assets.
+ *
  * @param {Object} prev - Previous presentation state
  * @param {Object} curr - Current presentation state
- * @returns {Object} Changes object
+ * @returns {Object} Changes object keyed by asset type
  */
 export const diffPresentationState = (prev = {}, curr = {}) => {
   const changes = {
+    base: null,
     background: null,
     bgm: null,
+    voice: null,
     character: [],
+    visual: [],
+    sfx: [],
   };
 
-  const prevBgId = prev.background?.resourceId;
-  const currBgId = curr.background?.resourceId;
+  const diffSingleton = (key, idPath = "resourceId") => {
+    const getVal = (obj) =>
+      idPath.split(".").reduce((o, k) => (o || {})[k], obj);
 
-  if (currBgId && !prevBgId) {
-    changes.background = { status: "add", data: curr.background };
-  } else if (prevBgId && !currBgId) {
-    changes.background = { status: "delete", data: prev.background };
-  } else if (prevBgId && currBgId && prevBgId !== currBgId) {
-    changes.background = { status: "update", data: curr.background };
-  }
+    const prevId = getVal(prev[key]);
+    const currId = getVal(curr[key]);
 
-  const prevBgmId = prev.bgm?.resourceId;
-  const currBgmId = curr.bgm?.resourceId;
+    if (currId && !prevId) {
+      changes[key] = { status: "add", data: curr[key] };
+    } else if (prevId && !currId) {
+      changes[key] = { status: "delete", data: prev[key] };
+    } else if (prevId && currId && prevId !== currId) {
+      changes[key] = { status: "update", data: curr[key] };
+    }
+  };
 
-  if (currBgmId && !prevBgmId) {
-    changes.bgm = { status: "add", data: curr.bgm };
-  } else if (prevBgmId && !currBgmId) {
-    changes.bgm = { status: "delete", data: prev.bgm };
-  } else if (prevBgmId && currBgmId && prevBgmId !== currBgmId) {
-    changes.bgm = { status: "update", data: curr.bgm };
-  }
+  const diffArray = (key) => {
+    const prevItems = prev[key]?.items || [];
+    const currItems = curr[key]?.items || [];
 
-  const prevChars = prev.character?.items || [];
-  const currChars = curr.character?.items || [];
+    const prevMap = new Map(prevItems.map((i) => [i.id, i]));
+    const currMap = new Map(currItems.map((i) => [i.id, i]));
 
-  const prevCharMap = new Map(prevChars.map((c) => [c.id, c]));
-  const currCharMap = new Map(currChars.map((c) => [c.id, c]));
+    currItems.forEach((currItem) => {
+      const prevItem = prevMap.get(currItem.id);
+      if (!prevItem) {
+        changes[key].push({ status: "add", id: currItem.id, data: currItem });
+      } else {
+        const isDifferent =
+          JSON.stringify(prevItem) !== JSON.stringify(currItem);
+        if (isDifferent) {
+          changes[key].push({
+            status: "update",
+            id: currItem.id,
+            data: currItem,
+          });
+        }
+      }
+    });
 
-  currChars.forEach((currChar) => {
-    const prevChar = prevCharMap.get(currChar.id);
-    if (!prevChar) {
-      changes.character.push({ status: "add", id: currChar.id, data: currChar });
-    } else {
-      const isDifferent =
-        prevChar.transformId !== currChar.transformId ||
-        JSON.stringify(prevChar.sprites) !== JSON.stringify(currChar.sprites) ||
-        prevChar.x !== currChar.x ||
-        prevChar.y !== currChar.y;
-
-      if (isDifferent) {
-        changes.character.push({
-          status: "update",
-          id: currChar.id,
-          data: currChar,
+    prevItems.forEach((prevItem) => {
+      if (!currMap.has(prevItem.id)) {
+        changes[key].push({
+          status: "delete",
+          id: prevItem.id,
+          data: prevItem,
         });
       }
-    }
-  });
+    });
+  };
 
-  prevChars.forEach((prevChar) => {
-    if (!currCharMap.has(prevChar.id)) {
-      changes.character.push({
-        status: "delete",
-        id: prevChar.id,
-        data: prevChar,
-      });
-    }
-  });
+  diffSingleton("background");
+  diffSingleton("base");
+  diffSingleton("bgm");
+  diffSingleton("voice", "fileId"); // Voice uses fileId instead of resourceId
+
+  diffArray("character");
+  diffArray("visual");
+  diffArray("sfx");
 
   return changes;
 };

@@ -5,7 +5,7 @@ import {
   validateVariableOperation,
   applyVariableOperation,
   filterVariablesByScope,
-  diffPresentationState
+  diffPresentationState,
 } from "../util.js";
 import { constructPresentationState } from "./constructPresentationState.js";
 import { constructRenderState } from "./constructRenderState.js";
@@ -349,7 +349,10 @@ export const selectPresentationChanges = ({ state }) => {
   const presentationState = selectPresentationState({ state });
   const previousPresentationState = selectPreviousPresentationState({ state });
 
-  return diffPresentationState(previousPresentationState, presentationState);
+  return diffPresentationState(
+    previousPresentationState || {},
+    presentationState || {},
+  );
 };
 
 export const selectPreviousPresentationState = ({ state }) => {
