@@ -350,8 +350,8 @@ export const selectPresentationChanges = ({ state }) => {
   const previousPresentationState = selectPreviousPresentationState({ state });
 
   return diffPresentationState(
-    previousPresentationState || {},
-    presentationState || {},
+    previousPresentationState ?? {},
+    presentationState ?? {},
   );
 };
 
