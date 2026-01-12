@@ -1,0 +1,220 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore selectors
+suites:
+  - selectPresentationChanges
+---
+suite: selectPresentationChanges
+exportName: selectPresentationChanges
+---
+case: "Detect added background"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions:
+                        background:
+                          resourceId: "bg-school"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  background:
+    changeType: "add"
+    data:
+      resourceId: "bg-school"
+---
+case: "Detect updated background"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "bg-school"
+                    - id: "2"
+                      actions:
+                        background:
+                          resourceId: "bg-home"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  background:
+    changeType: "update"
+    data:
+      resourceId: "bg-home"
+---
+case: "Detect deleted background via cleanAll"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "bg-school"
+                    - id: "2"
+                      actions:
+                        cleanAll: true
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  background:
+    changeType: "delete"
+    data:
+      resourceId: "bg-school"
+---
+case: "Detect updated BGM properties on the same line"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        bgm:
+                          resourceId: "music-1"
+                          volume: 50
+                    - id: "2"
+                      actions:
+                        bgm:
+                          resourceId: "music-1"
+                          volume: 100
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  bgm:
+    changeType: "update"
+    data:
+      resourceId: "music-1"
+      volume: 100
+      loop: true
+---
+case: "Detect added character"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions:
+                        character:
+                          items:
+                            - id: "char-1"
+                              transformId: "left"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  character:
+    changeType: "add"
+    data:
+      items:
+        - id: "char-1"
+          transformId: "left"
+---
+case: "Detect updated character"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        character:
+                          items:
+                            - id: "char-1"
+                              transformId: "left"
+                    - id: "2"
+                      actions:
+                        character:
+                          items:
+                            - id: "char-1"
+                              transformId: "right"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  character:
+    changeType: "update"
+    data:
+      items:
+        - id: "char-1"
+          transformId: "right"
+---
+case: "No changes on line 2 (state persists)"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "bg-school"
+                    - id: "2"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out: {}

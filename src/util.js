@@ -549,3 +549,46 @@ export const formatDate = (timestamp, format = "DD/MM/YYYY - HH:mm") => {
     .replace("mm", pad(date.getMinutes()))
     .replace("ss", pad(date.getSeconds()));
 };
+
+/**
+ * Compares two presentation states and returns the changes (add, update, delete)
+ * for all renderable assets.
+ *
+ * @param {Object} prev - Previous presentation state
+ * @param {Object} curr - Current presentation state
+ * @returns {Object} Changes object keyed by asset type
+ */
+export const diffPresentationState = (prev = {}, curr = {}) => {
+  const changes = {};
+
+  const diffObject = (key) => {
+    const prevItem = prev[key];
+    const currItem = curr[key];
+
+    if (currItem && !prevItem) {
+      changes[key] = { changeType: "add", data: currItem };
+    } else if (prevItem && !currItem) {
+      changes[key] = { changeType: "delete", data: prevItem };
+    } else if (prevItem && currItem) {
+      if (JSON.stringify(prevItem) !== JSON.stringify(currItem)) {
+        changes[key] = { changeType: "update", data: currItem };
+      }
+    }
+  };
+
+  diffObject("background");
+  diffObject("base");
+  diffObject("bgm");
+  diffObject("voice");
+  diffObject("dialogue");
+  diffObject("choice");
+  diffObject("layout");
+  diffObject("animation");
+  diffObject("keyboard");
+
+  diffObject("character");
+  diffObject("visual");
+  diffObject("sfx");
+
+  return changes;
+};
