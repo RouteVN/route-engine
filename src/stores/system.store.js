@@ -5,6 +5,7 @@ import {
   validateVariableOperation,
   applyVariableOperation,
   filterVariablesByScope,
+  diffPresentationState
 } from "../util.js";
 import { constructPresentationState } from "./constructPresentationState.js";
 import { constructRenderState } from "./constructRenderState.js";
@@ -342,6 +343,13 @@ export const selectPresentationState = ({ state }) => {
 
   const presentationState = constructPresentationState(presentationActions);
   return presentationState;
+};
+
+export const selectPresentationChanges = ({ state }) => {
+  const presentationState = selectPresentationState({ state });
+  const previousPresentationState = selectPreviousPresentationState({ state });
+
+  return diffPresentationState(previousPresentationState, presentationState);
 };
 
 export const selectPreviousPresentationState = ({ state }) => {
@@ -1427,6 +1435,7 @@ export const createSystemStore = (initialState) => {
     selectSection,
     selectCurrentLine,
     selectPresentationState,
+    selectPresentationChanges,
     selectAutoplayDelay,
     selectCurrentPageSlots,
     selectRenderState,

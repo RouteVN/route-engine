@@ -549,3 +549,78 @@ export const formatDate = (timestamp, format = "DD/MM/YYYY - HH:mm") => {
     .replace("mm", pad(date.getMinutes()))
     .replace("ss", pad(date.getSeconds()));
 };
+
+/**
+ * Compares two presentation states and returns the changes (add, update, delete)
+ * @param {Object} prev - Previous presentation state
+ * @param {Object} curr - Current presentation state
+ * @returns {Object} Changes object
+ */
+export const diffPresentationState = (prev = {}, curr = {}) => {
+  const changes = {
+    background: null,
+    bgm: null,
+    character: [],
+  };
+
+  const prevBgId = prev.background?.resourceId;
+  const currBgId = curr.background?.resourceId;
+
+  if (currBgId && !prevBgId) {
+    changes.background = { status: "add", data: curr.background };
+  } else if (prevBgId && !currBgId) {
+    changes.background = { status: "delete", data: prev.background };
+  } else if (prevBgId && currBgId && prevBgId !== currBgId) {
+    changes.background = { status: "update", data: curr.background };
+  }
+
+  const prevBgmId = prev.bgm?.resourceId;
+  const currBgmId = curr.bgm?.resourceId;
+
+  if (currBgmId && !prevBgmId) {
+    changes.bgm = { status: "add", data: curr.bgm };
+  } else if (prevBgmId && !currBgmId) {
+    changes.bgm = { status: "delete", data: prev.bgm };
+  } else if (prevBgmId && currBgmId && prevBgmId !== currBgmId) {
+    changes.bgm = { status: "update", data: curr.bgm };
+  }
+
+  const prevChars = prev.character?.items || [];
+  const currChars = curr.character?.items || [];
+
+  const prevCharMap = new Map(prevChars.map((c) => [c.id, c]));
+  const currCharMap = new Map(currChars.map((c) => [c.id, c]));
+
+  currChars.forEach((currChar) => {
+    const prevChar = prevCharMap.get(currChar.id);
+    if (!prevChar) {
+      changes.character.push({ status: "add", id: currChar.id, data: currChar });
+    } else {
+      const isDifferent =
+        prevChar.transformId !== currChar.transformId ||
+        JSON.stringify(prevChar.sprites) !== JSON.stringify(currChar.sprites) ||
+        prevChar.x !== currChar.x ||
+        prevChar.y !== currChar.y;
+
+      if (isDifferent) {
+        changes.character.push({
+          status: "update",
+          id: currChar.id,
+          data: currChar,
+        });
+      }
+    }
+  });
+
+  prevChars.forEach((prevChar) => {
+    if (!currCharMap.has(prevChar.id)) {
+      changes.character.push({
+        status: "delete",
+        id: prevChar.id,
+        data: prevChar,
+      });
+    }
+  });
+
+  return changes;
+};
