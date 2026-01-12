@@ -348,10 +348,10 @@ export const selectPresentationState = ({ state }) => {
 export const selectPresentationChanges = ({ state }) => {
   const previousPresentationState = selectPreviousPresentationState({ state });
   const currentLine = selectCurrentLine({ state });
-  const currentLineActions = currentLine?.actions || {};
+  const currentLineActions = currentLine?.actions ?? {};
 
   const presentationStateAfterLineActions = constructPresentationState([
-    previousPresentationState || {},
+    previousPresentationState ?? {},
     currentLineActions,
   ]);
 
