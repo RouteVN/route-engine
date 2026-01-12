@@ -562,26 +562,30 @@ export const diffPresentationState = (prev = {}, curr = {}) => {
   const changes = {
     base: null,
     background: null,
+    dialogue: null,
+    choice: null,
     bgm: null,
     voice: null,
+    layout: null,
+    animation: null,
+    keyboard: null,
     character: [],
     visual: [],
     sfx: [],
   };
 
-  const diffSingleton = (key, idPath = "resourceId") => {
-    const getVal = (obj) =>
-      idPath.split(".").reduce((o, k) => (o || {})[k], obj);
+  const diffSingleton = (key) => {
+    const prevItem = prev[key];
+    const currItem = curr[key];
 
-    const prevId = getVal(prev[key]);
-    const currId = getVal(curr[key]);
-
-    if (currId && !prevId) {
-      changes[key] = { status: "add", data: curr[key] };
-    } else if (prevId && !currId) {
-      changes[key] = { status: "delete", data: prev[key] };
-    } else if (prevId && currId && prevId !== currId) {
-      changes[key] = { status: "update", data: curr[key] };
+    if (currItem && !prevItem) {
+      changes[key] = { status: "add", data: currItem };
+    } else if (prevItem && !currItem) {
+      changes[key] = { status: "delete", data: prevItem };
+    } else if (prevItem && currItem) {
+      if (JSON.stringify(prevItem) !== JSON.stringify(currItem)) {
+        changes[key] = { status: "update", data: currItem };
+      }
     }
   };
 
@@ -623,7 +627,12 @@ export const diffPresentationState = (prev = {}, curr = {}) => {
   diffSingleton("background");
   diffSingleton("base");
   diffSingleton("bgm");
-  diffSingleton("voice", "fileId"); // Voice uses fileId instead of resourceId
+  diffSingleton("voice");
+  diffSingleton("dialogue");
+  diffSingleton("choice");
+  diffSingleton("layout");
+  diffSingleton("animation");
+  diffSingleton("keyboard");
 
   diffArray("character");
   diffArray("visual");
