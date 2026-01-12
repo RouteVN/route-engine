@@ -27,6 +27,10 @@ export default function createRouteEngine(options) {
     return _systemStore.selectPresentationState();
   };
 
+  const selectPresentationChanges = () => {
+    return _systemStore.selectPresentationChanges();
+  };
+
   const selectRenderState = () => {
     return _systemStore.selectRenderState();
   };
@@ -62,6 +66,7 @@ export default function createRouteEngine(options) {
     handleActions,
     selectRenderState,
     selectPresentationState,
+    selectPresentationChanges,
     selectSaveSlots,
     handleLineActions,
   };
