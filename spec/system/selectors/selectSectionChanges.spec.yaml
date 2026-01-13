@@ -1,10 +1,10 @@
 file: "../../../src/stores/system.store.js"
 group: systemStore selectors
 suites:
-  - selectSectionChanges
+  - selectSectionLineChanges
 ---
-suite: selectSectionChanges
-exportName: selectSectionChanges
+suite: selectSectionLineChanges
+exportName: selectSectionLineChanges
 ---
 case: "Calculate changes for an entire section"
 in:
@@ -34,28 +34,32 @@ in:
                               transformId: "left"
   - sectionId: "section1"
 out:
-  line1:
-    background:
-      changeType: "add"
-      data:
-        resourceId: "bg-school"
-  line2:
-    bgm:
-      changeType: "add"
-      data:
-        resourceId: "song-A"
-        loop: true
-  line3:
-    background:
-      changeType: "update"
-      data:
-        resourceId: "bg-home"
-    character:
-      changeType: "add"
-      data:
-        items:
-          - id: "char-1"
-            transformId: "left"
+  lines:
+    - id: "line1"
+      changes:
+        background:
+          changeType: "add"
+          data:
+            resourceId: "bg-school"
+    - id: "line2"
+      changes:
+        bgm:
+          changeType: "add"
+          data:
+            resourceId: "song-A"
+            loop: true
+    - id: "line3"
+      changes:
+        background:
+          changeType: "update"
+          data:
+            resourceId: "bg-home"
+        character:
+          changeType: "add"
+          data:
+            items:
+              - id: "char-1"
+                transformId: "left"
 ---
 case: "Handle cleanAll and subsequent actions"
 in:
@@ -82,28 +86,32 @@ in:
                           resourceId: "bg2"
   - sectionId: "section1"
 out:
-  "1":
-    background:
-      changeType: "add"
-      data:
-        resourceId: "bg1"
-    bgm:
-      changeType: "add"
-      data:
-        resourceId: "music1"
-        loop: true
-  "2":
-    background:
-      changeType: "delete"
-      data:
-        resourceId: "bg1"
-    bgm:
-      changeType: "delete"
-      data:
-        resourceId: "music1"
-        loop: true
-  "3":
-    background:
-      changeType: "add"
-      data:
-        resourceId: "bg2"
+  lines:
+    - id: "1"
+      changes:
+        background:
+          changeType: "add"
+          data:
+            resourceId: "bg1"
+        bgm:
+          changeType: "add"
+          data:
+            resourceId: "music1"
+            loop: true
+    - id: "2"
+      changes:
+        background:
+          changeType: "delete"
+          data:
+            resourceId: "bg1"
+        bgm:
+          changeType: "delete"
+          data:
+            resourceId: "music1"
+            loop: true
+    - id: "3"
+      changes:
+        background:
+          changeType: "add"
+          data:
+            resourceId: "bg2"
