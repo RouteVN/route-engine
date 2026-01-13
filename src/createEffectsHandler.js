@@ -218,7 +218,7 @@ const createEffectsHandler = ({ getEngine, routeGraphics, ticker }) => {
       skipTimer,
       nextLineConfigTimerState,
       lastScopes,
-      currentScopes
+      currentScopes,
     };
 
     for (const effect of uniqueEffects) {

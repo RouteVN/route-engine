@@ -508,7 +508,10 @@ export const selectCurrentPageSlots = (
   return { saveSlots: slots };
 };
 
-export const selectRenderState = ({ state }, { currentScopes, lastScopes } = {}) => {
+export const selectRenderState = (
+  { state },
+  { currentScopes, lastScopes } = {},
+) => {
   const presentationState = selectPresentationState({ state });
   const previousPresentationState = selectPreviousPresentationState({ state });
   console.log("presentationState", presentationState);

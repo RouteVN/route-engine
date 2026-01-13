@@ -168,7 +168,10 @@ export const addBackgroundOrCg = (
  *
  * @param {Object} params
  */
-export const addCharacters = (state, { presentationState, resources, scopeChanges }) => {
+export const addCharacters = (
+  state,
+  { presentationState, resources, scopeChanges },
+) => {
   const { elements } = state;
   const animations = state.animations || [];
   if (presentationState.character && resources) {
@@ -285,7 +288,10 @@ export const addCharacters = (state, { presentationState, resources, scopeChange
  *
  * @param {Object} params
  */
-export const addVisuals = (state, { presentationState, resources, scopeChanges }) => {
+export const addVisuals = (
+  state,
+  { presentationState, resources, scopeChanges },
+) => {
   const { elements } = state;
   const animations = state.animations || [];
   if (presentationState.visual && resources) {
