@@ -208,6 +208,8 @@ in:
     layeredViews:
       - resourceId: animatedLayout
         resourceType: layout
+    scopeChanges:
+      layeredViews: true
 out:
   elements:
     - id: "story"

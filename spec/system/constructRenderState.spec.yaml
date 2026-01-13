@@ -7,15 +7,17 @@ exportName: constructRenderState
 ---
 case: construct render state with single base action
 in:
-  - - presentationState:
-        base:
-          resourceId: "mainBase"
-      resources:
-        layouts:
-          mainBase:
-            elements:
-              - type: "container"
-                id: "base-container"
+  - presentationState:
+      base:
+        resourceId: "mainBase"
+    resources:
+      layouts:
+        mainBase:
+          elements:
+            - type: "container"
+              id: "base-container"
+    scopeChanges:
+      story: true
 out:
   elements:
     - id: "story"
@@ -34,22 +36,24 @@ out:
 ---
 case: construct render state with multiple actions in one presentation
 in:
-  - - presentationState:
-        base:
-          resourceId: "mainBase"
-        background:
-          resourceId: "bgImage"
-      resources:
-        layouts:
-          mainBase:
-            elements:
-              - type: "container"
-                id: "base-container"
-        images:
-          bgImage:
-            fileId: "background.jpg"
-            width: 1920
-            height: 1080
+  - presentationState:
+      base:
+        resourceId: "mainBase"
+      background:
+        resourceId: "bgImage"
+    resources:
+      layouts:
+        mainBase:
+          elements:
+            - type: "container"
+              id: "base-container"
+      images:
+        bgImage:
+          fileId: "background.jpg"
+          width: 1920
+          height: 1080
+    scopeChanges:
+      story: true
 out:
   elements:
     - id: "story"
@@ -73,34 +77,27 @@ out:
   audio: []
   global: {}
 ---
-case: construct render state with clean all and multiple presentations
+case: construct render state with clean all flag
 in:
-  - - presentationState:
-        cleanAll: true
-        base:
-          resourceId: "oldBase"
-      resources:
-        layouts:
-          oldBase:
-            elements:
-              - type: "container"
-                id: "old-container"
-    - presentationState:
-        base:
-          resourceId: "newBase"
-        background:
-          resourceId: "newBg"
-      resources:
-        layouts:
-          newBase:
-            elements:
-              - type: "container"
-                id: "new-container"
-        images:
-          newBg:
-            fileId: "new-background.jpg"
-            width: 1920
-            height: 1080
+  - presentationState:
+      cleanAll: true
+      base:
+        resourceId: "mainBase"
+      background:
+        resourceId: "bgImage"
+    resources:
+      layouts:
+        mainBase:
+          elements:
+            - type: "container"
+              id: "base-container"
+      images:
+        bgImage:
+          fileId: "background.jpg"
+          width: 1920
+          height: 1080
+    scopeChanges:
+      story: true
 out:
   elements:
     - id: "story"
@@ -112,17 +109,12 @@ out:
           type: "container"
           children:
             - type: "container"
-              id: "new-container"
-        - id: "base"
-          type: "container"
-          children:
-            - type: "container"
-              id: "old-container"
-        - id: "bg-cg-newBg"
+              id: "base-container"
+        - id: "bg-cg-bgImage"
           type: "sprite"
           x: 0
           y: 0
-          src: "new-background.jpg"
+          src: "background.jpg"
           width: 1920
           height: 1080
   animations: []
