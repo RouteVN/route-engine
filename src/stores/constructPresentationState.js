@@ -188,7 +188,8 @@ export const character = (state, presentation) => {
   }
 
   // Simply replace the entire character state
-  if (!presentation.character.items) {
+  if (!presentation.character.items ||
+    presentation.character.items.length === 0) {
     delete state.character;
     return;
   }
