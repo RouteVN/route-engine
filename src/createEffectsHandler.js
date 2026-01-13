@@ -186,7 +186,14 @@ const createEffectsHandler = ({ getEngine, routeGraphics, ticker }) => {
   const skipTimer = createTimerState();
   const nextLineConfigTimerState = createTimerState();
 
-  return async (pendingEffects) => {
+  // Track consumed triggers (animations, audio) to prevent replay on same-line re-render
+  let lastLineId = null;
+  let consumedTriggerIds = new Set();
+
+  // Store last rendered state for debugging (what actually rendered, not raw state)
+  let lastRenderedState = null;
+
+  const handleEffects = async (pendingEffects) => {
     const engine = getEngine();
 
     // Deduplicate effects by name, keeping only the last occurrence
@@ -208,11 +215,50 @@ const createEffectsHandler = ({ getEngine, routeGraphics, ticker }) => {
     };
 
     for (const effect of uniqueEffects) {
-      const handler = effects[effect.name];
-      if (handler) {
-        handler(deps, effect.payload);
+      if (effect.name === "render") {
+        const currentLineId = engine.selectCurrentLineId();
+        const rawRenderState = engine.selectRenderState();
+
+        // Reset consumed tracking on line change
+        if (currentLineId !== lastLineId) {
+          lastLineId = currentLineId;
+          consumedTriggerIds = new Set();
+        }
+
+        // Filter triggers that have already been consumed, mark new ones as consumed
+        const filterAndConsume = (items) => {
+          const newItems = items.filter(
+            (item) => !consumedTriggerIds.has(item.id),
+          );
+          newItems.forEach((item) => consumedTriggerIds.add(item.id));
+          return newItems;
+        };
+
+        // Apply filtering to all trigger types (animations, audio)
+        // Elements are declarative and should always re-render
+        const renderState = {
+          ...rawRenderState,
+          animations: filterAndConsume(rawRenderState.animations),
+          audio: filterAndConsume(rawRenderState.audio),
+        };
+
+        // Store for debugging - this is what actually renders
+        lastRenderedState = renderState;
+
+        console.log("filteredRenderState", renderState);
+        routeGraphics.render(renderState);
+      } else {
+        const handler = effects[effect.name];
+        if (handler) {
+          handler(deps, effect.payload);
+        }
       }
     }
+  };
+
+  return {
+    handleEffects,
+    selectRenderedState: () => lastRenderedState,
   };
 };
 

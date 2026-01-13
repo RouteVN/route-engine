@@ -64,6 +64,11 @@ export default function createRouteEngine(options) {
     }
   };
 
+  const selectCurrentLineId = () => {
+    const pointerData = _systemStore.selectCurrentPointer();
+    return pointerData?.pointer?.lineId ?? null;
+  };
+
   return {
     init,
     handleAction,
@@ -74,5 +79,6 @@ export default function createRouteEngine(options) {
     selectSectionLineChanges,
     selectSaveSlots,
     handleLineActions,
+    selectCurrentLineId,
   };
 }
