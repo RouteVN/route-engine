@@ -71,6 +71,7 @@ export const createInitialState = (payload) => {
       },
       saveSlots,
       layeredViews: [],
+      layeredViewIdCounter: 0,
       variables: globalVariables,
     },
     contexts: [
@@ -550,7 +551,8 @@ export const selectRenderState = (
  * Actions
  *************************/
 export const pushLayeredView = ({ state }, payload) => {
-  state.global.layeredViews.push(payload);
+  const renderId = `lv_${++state.global.layeredViewIdCounter}`;
+  state.global.layeredViews.push({ ...payload, renderId });
   state.global.pendingEffects.push({ name: "render" });
   return state;
 };
@@ -563,7 +565,11 @@ export const popLayeredView = ({ state }) => {
 
 export const replaceLastLayeredView = ({ state }, payload) => {
   if (state.global.layeredViews.length > 0) {
-    state.global.layeredViews[state.global.layeredViews.length - 1] = payload;
+    const renderId = `lv_${++state.global.layeredViewIdCounter}`;
+    state.global.layeredViews[state.global.layeredViews.length - 1] = {
+      ...payload,
+      renderId,
+    };
   }
   state.global.pendingEffects.push({ name: "render" });
   return state;

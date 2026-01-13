@@ -42,6 +42,7 @@ out:
         enabled: false
     saveSlots: {}
     layeredViews: []
+    layeredViewIdCounter: 0
     variables: {}
   projectData:
     story:
@@ -126,6 +127,7 @@ out:
         enabled: false
     saveSlots: {}
     layeredViews: []
+    layeredViewIdCounter: 0
     variables:
       pageButtons:
         items:
@@ -223,6 +225,7 @@ out:
         enabled: false
     saveSlots: {}
     layeredViews: []
+    layeredViewIdCounter: 0
     variables: {}
   projectData:
     resources:
@@ -314,6 +317,7 @@ out:
         enabled: false
     saveSlots: {}
     layeredViews: []
+    layeredViewIdCounter: 0
     variables:
       volume: 80
       achievement1: true

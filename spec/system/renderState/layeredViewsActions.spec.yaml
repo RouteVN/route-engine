@@ -10,6 +10,7 @@ in:
   - state:
       global:
         layeredViews: []
+        layeredViewIdCounter: 0
         pendingEffects: []
   - resourceId: layout1
     resourceType: layout
@@ -18,6 +19,8 @@ out:
     layeredViews:
       - resourceId: layout1
         resourceType: layout
+        renderId: lv_1
+    layeredViewIdCounter: 1
     pendingEffects:
       - name: render
 ---
@@ -54,6 +57,7 @@ in:
             resourceType: layout
           - resourceId: layout2
             resourceType: layout
+        layeredViewIdCounter: 2
         pendingEffects: []
   - resourceId: layout3
     resourceType: layout
@@ -64,6 +68,8 @@ out:
         resourceType: layout
       - resourceId: layout3
         resourceType: layout
+        renderId: lv_3
+    layeredViewIdCounter: 3
     pendingEffects:
       - name: render
 ---

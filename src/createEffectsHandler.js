@@ -189,7 +189,7 @@ const createEffectsHandler = ({ getEngine, routeGraphics, ticker }) => {
   // Animation scopes tracking
   let lastScopes = {
     story: null,
-    layeredViews: 0,
+    layeredViewRenderIds: [],
   };
 
   return async (pendingEffects) => {
@@ -207,7 +207,9 @@ const createEffectsHandler = ({ getEngine, routeGraphics, ticker }) => {
     // Compute current scopes
     const currentScopes = {
       story: engine.selectCurrentLineId(),
-      layeredViews: engine.selectLayeredViews().length,
+      layeredViewRenderIds: engine
+        .selectLayeredViews()
+        .map((lv) => lv.renderId),
     };
 
     const deps = {

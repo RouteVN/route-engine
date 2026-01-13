@@ -800,13 +800,19 @@ export const addLayeredViews = (
   return state;
 };
 
+const arraysEqual = (a, b) =>
+  a?.length === b?.length && a?.every((v, i) => v === b?.[i]);
+
 export const constructRenderState = (params) => {
   const { currentScopes, lastScopes } = params;
 
   // Compute scope changes - true means scope changed, animations should play
   const scopeChanges = {
     story: currentScopes?.story !== lastScopes?.story,
-    layeredViews: currentScopes?.layeredViews !== lastScopes?.layeredViews,
+    layeredViews: !arraysEqual(
+      currentScopes?.layeredViewRenderIds,
+      lastScopes?.layeredViewRenderIds,
+    ),
   };
 
   const actions = [
