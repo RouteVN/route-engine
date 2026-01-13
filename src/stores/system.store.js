@@ -361,6 +361,34 @@ export const selectPresentationChanges = ({ state }) => {
   );
 };
 
+export const selectSectionChanges = ({ state }, { sectionId }) => {
+  const section = selectSection({ state }, { sectionId });
+  if (!section?.lines) {
+    return {};
+  }
+
+  const allChanges = {};
+  let previousPresentationState = {};
+
+  for (const line of section.lines) {
+    const currentLineActions = line.actions || {};
+
+    const presentationStateAfterLineActions = constructPresentationState([
+      previousPresentationState,
+      currentLineActions,
+    ]);
+
+    allChanges[line.id] = diffPresentationState(
+      previousPresentationState,
+      presentationStateAfterLineActions,
+    );
+
+    previousPresentationState = presentationStateAfterLineActions;
+  }
+
+  return allChanges;
+};
+
 export const selectPreviousPresentationState = ({ state }) => {
   const { sectionId, lineId } = selectCurrentPointer({ state }).pointer;
   const section = selectSection({ state }, { sectionId });
@@ -1445,6 +1473,7 @@ export const createSystemStore = (initialState) => {
     selectCurrentLine,
     selectPresentationState,
     selectPresentationChanges,
+    selectSectionChanges,
     selectAutoplayDelay,
     selectCurrentPageSlots,
     selectRenderState,
