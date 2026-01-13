@@ -1,0 +1,113 @@
+---
+title: "Animation Once Per Line"
+description: |
+  Verifies that background animations only play when the background action
+  is defined on the current line, not on subsequent lines.
+
+  - Line 1: Background with fade-in animation (plays)
+  - Lines 2-4: Dialogue only (animation does NOT replay)
+---
+l10n:
+  packages:
+    en-pkg:
+      label: English
+      lang: en
+      keys: {}
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+resources:
+  layouts:
+    base1:
+      elements:
+        - id: click-area
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+    dialogueGui:
+      name: Dialogue Screen
+      elements:
+        - id: dialogue-container
+          type: "container"
+          x: 50
+          y: 800
+          children:
+            - id: dialogue-bg
+              type: rect
+              width: 1820
+              height: 200
+              fill: "#333333"
+              alpha: 0.8
+            - id: dialogue-text
+              type: "text"
+              x: 30
+              y: 30
+              content: "${dialogue.content[0].text}"
+              textStyle:
+                fontSize: 32
+                fill: "white"
+
+  images:
+    bg-school:
+      fileId: dmni32
+      width: 1920
+      height: 1080
+
+  tweens:
+    fade-in:
+      name: "Fade In (1 second)"
+      properties:
+        alpha:
+          initialValue: 0
+          keyframes:
+            - duration: 1000
+              value: 1
+              easing: linear
+
+story:
+  initialSceneId: scene1
+  scenes:
+    scene1:
+      name: Scene 1
+      initialSectionId: section1
+      sections:
+        section1:
+          name: Section 1
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: base1
+                dialogue:
+                  gui:
+                    resourceId: dialogueGui
+                  mode: adv
+                  content:
+                    - text: "Line 1: Background appears with fade-in animation."
+                background:
+                  resourceId: bg-school
+                  animations:
+                    in:
+                      resourceId: fade-in
+            - id: line2
+              actions:
+                dialogue:
+                  content:
+                    - text: "Line 2: Background stays visible, no animation replay."
+            - id: line3
+              actions:
+                dialogue:
+                  content:
+                    - text: "Line 3: Still no animation - background persists without re-animating."
+            - id: line4
+              actions:
+                dialogue:
+                  content:
+                    - text: "Line 4: Animation only played once on line 1."
