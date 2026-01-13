@@ -31,7 +31,7 @@ export default function createRouteEngine(options) {
     return _systemStore.selectPresentationChanges();
   };
 
-  const selectSectionLineChanges  = (payload) => {
+  const selectSectionLineChanges = (payload) => {
     return _systemStore.selectSectionLineChanges(payload);
   };
 
