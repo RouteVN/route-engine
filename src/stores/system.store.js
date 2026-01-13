@@ -508,7 +508,7 @@ export const selectCurrentPageSlots = (
   return { saveSlots: slots };
 };
 
-export const selectRenderState = ({ state }) => {
+export const selectRenderState = ({ state }, { currentScopes, lastScopes } = {}) => {
   const presentationState = selectPresentationState({ state });
   const previousPresentationState = selectPreviousPresentationState({ state });
   console.log("presentationState", presentationState);
@@ -536,6 +536,8 @@ export const selectRenderState = ({ state }) => {
     dialogueHistory: selectDialogueHistory({ state }),
     saveSlots,
     variables: allVariables,
+    currentScopes,
+    lastScopes,
   });
   console.log("renderState", renderState);
   return renderState;

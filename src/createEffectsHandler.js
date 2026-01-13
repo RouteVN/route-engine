@@ -17,8 +17,8 @@ const createTimerState = () => {
   };
 };
 
-const render = ({ engine, routeGraphics }, payload) => {
-  const renderState = engine.selectRenderState();
+const render = ({ engine, routeGraphics, currentScopes, lastScopes }) => {
+  const renderState = engine.selectRenderState({ currentScopes, lastScopes });
   routeGraphics.render(renderState);
 };
 
@@ -186,6 +186,12 @@ const createEffectsHandler = ({ getEngine, routeGraphics, ticker }) => {
   const skipTimer = createTimerState();
   const nextLineConfigTimerState = createTimerState();
 
+  // Animation scopes tracking
+  let lastScopes = {
+    story: null,
+    layeredViews: 0,
+  };
+
   return async (pendingEffects) => {
     const engine = getEngine();
 
@@ -198,6 +204,12 @@ const createEffectsHandler = ({ getEngine, routeGraphics, ticker }) => {
     // Convert back to array and process deduplicated effects
     const uniqueEffects = Object.values(deduplicatedEffects);
 
+    // Compute current scopes
+    const currentScopes = {
+      story: engine.selectCurrentLineId(),
+      layeredViews: engine.selectLayeredViews().length,
+    };
+
     const deps = {
       engine,
       routeGraphics,
@@ -205,9 +217,15 @@ const createEffectsHandler = ({ getEngine, routeGraphics, ticker }) => {
       autoTimer,
       skipTimer,
       nextLineConfigTimerState,
+      lastScopes,
+      currentScopes
     };
 
     for (const effect of uniqueEffects) {
+      if (effect.name === "render") {
+        // Create a copy for next render comparison
+        lastScopes = structuredClone(currentScopes);
+      }
       const handler = effects[effect.name];
       if (handler) {
         handler(deps, effect.payload);

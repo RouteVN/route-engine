@@ -35,8 +35,8 @@ export default function createRouteEngine(options) {
     return _systemStore.selectSectionLineChanges(payload);
   };
 
-  const selectRenderState = () => {
-    return _systemStore.selectRenderState();
+  const selectRenderState = ({ currentScopes, lastScopes } = {}) => {
+    return _systemStore.selectRenderState({ currentScopes, lastScopes });
   };
 
   const selectSaveSlots = () => {
@@ -64,6 +64,15 @@ export default function createRouteEngine(options) {
     }
   };
 
+  const selectCurrentLineId = () => {
+    const pointerData = _systemStore.selectCurrentPointer();
+    return pointerData?.pointer?.lineId ?? null;
+  };
+
+  const selectLayeredViews = () => {
+    return _systemStore.selectLayeredViews();
+  };
+
   return {
     init,
     handleAction,
@@ -74,5 +83,7 @@ export default function createRouteEngine(options) {
     selectSectionLineChanges,
     selectSaveSlots,
     handleLineActions,
+    selectCurrentLineId,
+    selectLayeredViews,
   };
 }

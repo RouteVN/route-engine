@@ -66,6 +66,7 @@ export const addBackgroundOrCg = (
     autoMode,
     skipMode,
     currentLocalizationPackageId,
+    scopeChanges,
   }, // resolveFile
 ) => {
   const { elements } = state;
@@ -116,7 +117,7 @@ export const addBackgroundOrCg = (
       }
     }
 
-    if (presentationState.background.animations) {
+    if (presentationState.background.animations && scopeChanges?.story) {
       if (presentationState.background.animations.in) {
         const tweenId = presentationState.background.animations.in.resourceId;
         const tween = resources?.tweens[tweenId];
@@ -167,7 +168,7 @@ export const addBackgroundOrCg = (
  *
  * @param {Object} params
  */
-export const addCharacters = (state, { presentationState, resources }) => {
+export const addCharacters = (state, { presentationState, resources, scopeChanges }) => {
   const { elements } = state;
   const animations = state.animations || [];
   if (presentationState.character && resources) {
@@ -184,16 +185,18 @@ export const addCharacters = (state, { presentationState, resources }) => {
       // For out animations only, we don't need to create a container
       if (item.animations && item.animations.out && !sprites && !transformId) {
         // Just add the out animation transition, container should already exist
-        const tweenId = item.animations.out.resourceId;
-        const tween = resources?.tweens[tweenId];
-        if (tween) {
-          const outTransition = {
-            id: `character-animation-out`,
-            type: "tween",
-            targetId: `character-container-${item.id}`,
-            properties: tween.properties,
-          };
-          animations.push(outTransition);
+        if (scopeChanges?.story) {
+          const tweenId = item.animations.out.resourceId;
+          const tween = resources?.tweens[tweenId];
+          if (tween) {
+            const outTransition = {
+              id: `character-animation-out`,
+              type: "tween",
+              targetId: `character-container-${item.id}`,
+              properties: tween.properties,
+            };
+            animations.push(outTransition);
+          }
         }
         continue;
       }
@@ -245,7 +248,7 @@ export const addCharacters = (state, { presentationState, resources }) => {
       storyContainer.children.push(characterContainer);
 
       // Add animation support (except out, which is handled above)
-      if (item.animations) {
+      if (item.animations && scopeChanges?.story) {
         if (item.animations.in) {
           const tweenId = item.animations.in.resourceId;
           const tween = resources?.tweens[tweenId];
@@ -282,7 +285,7 @@ export const addCharacters = (state, { presentationState, resources }) => {
  *
  * @param {Object} params
  */
-export const addVisuals = (state, { presentationState, resources }) => {
+export const addVisuals = (state, { presentationState, resources, scopeChanges }) => {
   const { elements } = state;
   const animations = state.animations || [];
   if (presentationState.visual && resources) {
@@ -385,7 +388,7 @@ export const addVisuals = (state, { presentationState, resources }) => {
         }
       }
 
-      if (item.animations) {
+      if (item.animations && scopeChanges?.story) {
         if (item.animations.in) {
           const tweenId = item.animations.in.resourceId || item.animations.in;
           const tween = resources?.tweens[tweenId];
@@ -647,6 +650,7 @@ export const addLayout = (
     skipMode,
     currentLocalizationPackageId,
     saveSlots = [],
+    scopeChanges,
   },
 ) => {
   const { elements } = state;
@@ -662,7 +666,7 @@ export const addLayout = (
       return state;
     }
 
-    if (Array.isArray(layout.transitions)) {
+    if (Array.isArray(layout.transitions) && scopeChanges?.story) {
       layout.transitions.forEach((transition) => {
         animations.push(transition);
       });
@@ -725,6 +729,7 @@ export const addLayeredViews = (
     layeredViews = [],
     dialogueHistory = [],
     saveSlots = [],
+    scopeChanges,
   },
 ) => {
   const { elements } = state;
@@ -739,7 +744,7 @@ export const addLayeredViews = (
         return;
       }
 
-      if (Array.isArray(layout.transitions)) {
+      if (Array.isArray(layout.transitions) && scopeChanges?.layeredViews) {
         layout.transitions.forEach((transition) => {
           animations.push(transition);
         });
@@ -790,6 +795,14 @@ export const addLayeredViews = (
 };
 
 export const constructRenderState = (params) => {
+  const { currentScopes, lastScopes } = params;
+
+  // Compute scope changes - true means scope changed, animations should play
+  const scopeChanges = {
+    story: currentScopes?.story !== lastScopes?.story,
+    layeredViews: currentScopes?.layeredViews !== lastScopes?.layeredViews,
+  };
+
   const actions = [
     addBase,
     addBackgroundOrCg,
@@ -810,5 +823,5 @@ export const constructRenderState = (params) => {
     actions,
   );
 
-  return executeActions(params);
+  return executeActions({ ...params, scopeChanges });
 };
