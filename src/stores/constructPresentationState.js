@@ -118,6 +118,10 @@ export const dialogue = (state, presentation) => {
  */
 export const sfx = (state, presentation) => {
   if (presentation.sfx) {
+    if (!presentation.sfx.items || presentation.sfx.items.length === 0) {
+      delete state.sfx;
+      return;
+    }
     state.sfx = presentation.sfx;
   } else if (state.sfx) {
     delete state.sfx;
