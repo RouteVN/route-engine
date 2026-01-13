@@ -27,6 +27,10 @@ export const base = (state, presentation) => {
  */
 export const background = (state, presentation) => {
   if (presentation.background) {
+    if (!presentation.background.resourceId) {
+      delete state.background;
+      return;
+    }
     state.background = { ...presentation.background };
   } else {
     // Only clear animations if they exist
