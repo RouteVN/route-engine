@@ -31,7 +31,7 @@ export const background = (state, presentation) => {
       delete state.background;
       return;
     }
-    state.background = { ...presentation.background };
+    state.background = structuredClone(presentation.background);
   } else {
     // Only clear animations if they exist
     if (state.background?.animations) {
@@ -154,7 +154,7 @@ export const bgm = (state, presentation) => {
  */
 export const visual = (state, presentation) => {
   if (presentation.visual) {
-    state.visual = presentation.visual;
+    state.visual = structuredClone(presentation.visual);
   } else {
     // Only clear animations from items that have them
     if (state.visual?.items) {
