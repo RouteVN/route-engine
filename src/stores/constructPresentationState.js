@@ -27,6 +27,10 @@ export const base = (state, presentation) => {
  */
 export const background = (state, presentation) => {
   if (presentation.background) {
+    if (!presentation.background.resourceId) {
+      delete state.background;
+      return;
+    }
     state.background = structuredClone(presentation.background);
   } else {
     // Only clear animations if they exist
@@ -117,6 +121,10 @@ export const dialogue = (state, presentation) => {
  */
 export const sfx = (state, presentation) => {
   if (presentation.sfx) {
+    if (!presentation.sfx.items || presentation.sfx.items.length === 0) {
+      delete state.sfx;
+      return;
+    }
     state.sfx = presentation.sfx;
   } else if (state.sfx) {
     delete state.sfx;
@@ -189,7 +197,10 @@ export const character = (state, presentation) => {
   }
 
   // Simply replace the entire character state
-  if (!presentation.character.items) {
+  if (
+    !presentation.character.items ||
+    presentation.character.items.length === 0
+  ) {
     delete state.character;
     return;
   }

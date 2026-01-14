@@ -560,6 +560,7 @@ export const formatDate = (timestamp, format = "DD/MM/YYYY - HH:mm") => {
  */
 export const diffPresentationState = (prev = {}, curr = {}) => {
   const changes = {};
+  const instantaneousKeys = ["sfx", "voice"];
 
   const diffObject = (key) => {
     const prevItem = prev[key];
@@ -568,7 +569,9 @@ export const diffPresentationState = (prev = {}, curr = {}) => {
     if (currItem && !prevItem) {
       changes[key] = { changeType: "add", data: currItem };
     } else if (prevItem && !currItem) {
-      changes[key] = { changeType: "delete", data: prevItem };
+      if (!instantaneousKeys.includes(key)) {
+        changes[key] = { changeType: "delete", data: prevItem };
+      }
     } else if (prevItem && currItem) {
       if (JSON.stringify(prevItem) !== JSON.stringify(currItem)) {
         changes[key] = { changeType: "update", data: currItem };
