@@ -151,11 +151,141 @@ out:
               - id: "sound1"
                 resourceId: "boom"
     - id: "2"
+      changes: {}
+    - id: "3"
+      changes: {}
+---
+case: "Detect dialogue gui addition"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions:
+                        dialogue:
+                          gui:
+                            resourceId: "dialogue-box"
+  - sectionId: "section1"
+out:
+  lines:
+    - id: "1"
+      changes: {}
+    - id: "2"
       changes:
         dialogue:
           changeType: "add"
           data:
-            content:
-              - text: "Next line"
-    - id: "3"
+            gui:
+              resourceId: "dialogue-box"
+---
+case: "Detect dialogue gui removal"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          gui:
+                            resourceId: "dialogue-box"
+                    - id: "2"
+                      actions:
+                        dialogue:
+                          content:
+                            - text: "No more gui"
+  - sectionId: "section1"
+out:
+  lines:
+    - id: "1"
+      changes:
+        dialogue:
+          changeType: "add"
+          data:
+            gui:
+              resourceId: "dialogue-box"
+    - id: "2"
+      changes: {}
+---
+case: "Detect dialogue gui update"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          gui:
+                            resourceId: "dialogue-box-1"
+                    - id: "2"
+                      actions:
+                        dialogue:
+                          gui:
+                            resourceId: "dialogue-box-2"
+  - sectionId: "section1"
+out:
+  lines:
+    - id: "1"
+      changes:
+        dialogue:
+          changeType: "add"
+          data:
+            gui:
+              resourceId: "dialogue-box-1"
+    - id: "2"
+      changes:
+        dialogue:
+          changeType: "update"
+          data:
+            gui:
+              resourceId: "dialogue-box-2"
+---
+case: "Ignore dialogue characterId change when gui is stable"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          gui:
+                            resourceId: "dialogue-box"
+                          characterId: "char1"
+                    - id: "2"
+                      actions:
+                        dialogue:
+                          characterId: "char2"
+  - sectionId: "section1"
+out:
+  lines:
+    - id: "1"
+      changes:
+        dialogue:
+          changeType: "add"
+          data:
+            gui:
+              resourceId: "dialogue-box"
+            characterId: "char1"
+    - id: "2"
       changes: {}
