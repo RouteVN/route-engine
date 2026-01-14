@@ -35,10 +35,7 @@ export const background = (state, presentation) => {
   } else {
     // Only clear animations if they exist
     if (state.background?.animations) {
-      state.background = {
-        ...state.background,
-        animations: {},
-      };
+      state.background.animation = {};
     }
   }
 };
@@ -161,15 +158,12 @@ export const visual = (state, presentation) => {
   } else {
     // Only clear animations from items that have them
     if (state.visual?.items) {
-      state.visual = {
-        ...state.visual,
-        items: state.visual.items.map((item) => {
-          if (item.animations) {
-            return { ...item, animations: {} };
-          }
-          return item;
-        }),
-      };
+      state.visual.items = state.visual.items.map((item) => {
+        if (item.animations) {
+          return { ...item, animations: {} };
+        }
+        return item;
+      });
     }
   }
 };
@@ -183,15 +177,12 @@ export const character = (state, presentation) => {
   if (!presentation.character) {
     // Only clear animations from items that have them
     if (state.character?.items) {
-      state.character = {
-        ...state.character,
-        items: state.character.items.map((item) => {
-          if (item.animations) {
-            return { ...item, animations: {} };
-          }
-          return item;
-        }),
-      };
+      state.character.items = state.character.items.map((item) => {
+        if (item.animations) {
+          return { ...item, animations: {} };
+        }
+        return item;
+      });
     }
     return;
   }
