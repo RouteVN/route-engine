@@ -35,7 +35,7 @@ export const background = (state, presentation) => {
   } else {
     // Only clear animations if they exist
     if (state.background?.animations) {
-      state.background.animation = {};
+      state.background.animations = {};
     }
   }
 };
