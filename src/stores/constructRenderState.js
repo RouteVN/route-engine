@@ -725,6 +725,7 @@ export const addLayeredViews = (
     layeredViews = [],
     dialogueHistory = [],
     saveSlots = [],
+    l10n,
   },
 ) => {
   const { elements } = state;
@@ -781,6 +782,7 @@ export const addLayeredViews = (
       );
       processedLayeredView = parseAndRender(processedLayeredView, {
         i18n: {},
+        l10n,
       });
 
       elements.push(processedLayeredView);
