@@ -551,6 +551,28 @@ export const formatDate = (timestamp, format = "DD/MM/YYYY - HH:mm") => {
 };
 
 /**
+ * Compares two dialogue states, flagging changes only for gui updates.
+ * Ignores content and characterId changes to reduce noise.
+ * @param {Object} prevDialogue - Previous dialogue state
+ * @param {Object} currDialogue - Current dialogue state
+ * @returns {Object|null} Change object or null if no significant change
+ */
+const diffDialogue = (prevDialogue, currDialogue) => {
+  if (currDialogue && !prevDialogue) {
+    return { changeType: "add", data: currDialogue };
+  }
+  if (prevDialogue && !currDialogue) {
+    return { changeType: "delete", data: prevDialogue };
+  }
+  if (prevDialogue && currDialogue) {
+    if (JSON.stringify(prevDialogue.gui) !== JSON.stringify(currDialogue.gui)) {
+      return { changeType: "update", data: currDialogue };
+    }
+  }
+  return null;
+};
+
+/**
  * Compares two presentation states and returns the changes (add, update, delete)
  * for all renderable assets.
  *
@@ -583,7 +605,13 @@ export const diffPresentationState = (prev = {}, curr = {}) => {
   diffObject("base");
   diffObject("bgm");
   diffObject("voice");
-  diffObject("dialogue");
+
+  // Special handling for dialogue
+  const dialogueChange = diffDialogue(prev.dialogue, curr.dialogue);
+  if (dialogueChange) {
+    changes.dialogue = dialogueChange;
+  }
+
   diffObject("choice");
   diffObject("layout");
   diffObject("animation");
