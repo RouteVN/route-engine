@@ -87,11 +87,6 @@ properties:
         description: Whether skip mode is active
         default: false
 
-      skipOnlyViewedLines:
-        type: boolean
-        description: Whether skip mode should only skip viewed lines (true) or skip all lines (false)
-        default: true
-
       currentLanguagePackId:
         type: string
         description: ID of the currently active language pack

@@ -27,7 +27,6 @@ out:
     pendingEffects: []
     autoMode: false
     skipMode: false
-    skipOnlyViewedLines: true
     dialogueUIHidden: false
     isDialogueHistoryShowing: false
     currentLocalizationPackageId: "en"
@@ -111,7 +110,6 @@ out:
     pendingEffects: []
     autoMode: false
     skipMode: false
-    skipOnlyViewedLines: true
     dialogueUIHidden: false
     isDialogueHistoryShowing: false
     currentLocalizationPackageId: "en"
@@ -208,7 +206,6 @@ out:
     pendingEffects: []
     autoMode: false
     skipMode: false
-    skipOnlyViewedLines: true
     dialogueUIHidden: false
     isDialogueHistoryShowing: false
     currentLocalizationPackageId: "en"
@@ -299,7 +296,6 @@ out:
     pendingEffects: []
     autoMode: false
     skipMode: false
-    skipOnlyViewedLines: true
     dialogueUIHidden: false
     isDialogueHistoryShowing: false
     currentLocalizationPackageId: "en"
