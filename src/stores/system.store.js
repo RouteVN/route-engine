@@ -361,6 +361,39 @@ export const selectPresentationChanges = ({ state }) => {
   );
 };
 
+export const selectSectionLineChanges = ({ state }, { sectionId }) => {
+  const section = selectSection({ state }, { sectionId });
+  if (!section?.lines) {
+    return { lines: [] };
+  }
+
+  const linesWithChanges = [];
+  let previousPresentationState = {};
+
+  for (const line of section.lines) {
+    const currentLineActions = line.actions || {};
+
+    const presentationStateAfterLineActions = constructPresentationState([
+      previousPresentationState,
+      currentLineActions,
+    ]);
+
+    const changes = diffPresentationState(
+      previousPresentationState,
+      presentationStateAfterLineActions,
+    );
+
+    linesWithChanges.push({
+      id: line.id,
+      changes: changes,
+    });
+
+    previousPresentationState = presentationStateAfterLineActions;
+  }
+
+  return { lines: linesWithChanges };
+};
+
 export const selectPreviousPresentationState = ({ state }) => {
   const { sectionId, lineId } = selectCurrentPointer({ state }).pointer;
   const section = selectSection({ state }, { sectionId });
@@ -499,6 +532,7 @@ export const selectRenderState = ({ state }) => {
     autoMode: state.global.autoMode,
     skipMode: state.global.skipMode,
     skipOnlyViewedLines: state.global.skipOnlyViewedLines,
+    isLineCompleted: state.global.isLineCompleted,
     layeredViews: state.global.layeredViews,
     dialogueHistory: selectDialogueHistory({ state }),
     saveSlots,
@@ -1079,6 +1113,13 @@ export const nextLine = ({ state }) => {
     return state;
   }
 
+  // If line is not completed, complete it instantly instead of advancing
+  if (!state.global.isLineCompleted) {
+    state.global.isLineCompleted = true;
+    state.global.pendingEffects.push({ name: "render" });
+    return state;
+  }
+
   const pointer = selectCurrentPointer({ state })?.pointer;
   const sectionId = pointer?.sectionId;
   const section = selectSection({ state }, { sectionId });
@@ -1153,6 +1194,10 @@ export const nextLine = ({ state }) => {
  * @returns {Object} Updated state object
  */
 export const markLineCompleted = ({ state }) => {
+  // Guard: if already completed, no action needed (prevents duplicate renders)
+  if (state.global.isLineCompleted) {
+    return state;
+  }
   state.global.isLineCompleted = true;
   state.global.pendingEffects.push({
     name: "render",
@@ -1445,6 +1490,7 @@ export const createSystemStore = (initialState) => {
     selectCurrentLine,
     selectPresentationState,
     selectPresentationChanges,
+    selectSectionLineChanges,
     selectAutoplayDelay,
     selectCurrentPageSlots,
     selectRenderState,

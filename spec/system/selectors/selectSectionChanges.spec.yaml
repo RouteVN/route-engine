@@ -1,0 +1,291 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore selectors
+suites:
+  - selectSectionLineChanges
+---
+suite: selectSectionLineChanges
+exportName: selectSectionLineChanges
+---
+case: "Calculate changes for an entire section"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "line1"
+                      actions:
+                        background:
+                          resourceId: "bg-school"
+                    - id: "line2"
+                      actions:
+                        bgm:
+                          resourceId: "song-A"
+                    - id: "line3"
+                      actions:
+                        background:
+                          resourceId: "bg-home"
+                        character:
+                          items:
+                            - id: "char-1"
+                              transformId: "left"
+  - sectionId: "section1"
+out:
+  lines:
+    - id: "line1"
+      changes:
+        background:
+          changeType: "add"
+          data:
+            resourceId: "bg-school"
+    - id: "line2"
+      changes:
+        bgm:
+          changeType: "add"
+          data:
+            resourceId: "song-A"
+            loop: true
+    - id: "line3"
+      changes:
+        background:
+          changeType: "update"
+          data:
+            resourceId: "bg-home"
+        character:
+          changeType: "add"
+          data:
+            items:
+              - id: "char-1"
+                transformId: "left"
+---
+case: "Handle cleanAll and subsequent actions"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "bg1"
+                        bgm:
+                          resourceId: "music1"
+                    - id: "2"
+                      actions:
+                        cleanAll: true
+                    - id: "3"
+                      actions:
+                        background:
+                          resourceId: "bg2"
+  - sectionId: "section1"
+out:
+  lines:
+    - id: "1"
+      changes:
+        background:
+          changeType: "add"
+          data:
+            resourceId: "bg1"
+        bgm:
+          changeType: "add"
+          data:
+            resourceId: "music1"
+            loop: true
+    - id: "2"
+      changes:
+        background:
+          changeType: "delete"
+          data:
+            resourceId: "bg1"
+        bgm:
+          changeType: "delete"
+          data:
+            resourceId: "music1"
+            loop: true
+    - id: "3"
+      changes:
+        background:
+          changeType: "add"
+          data:
+            resourceId: "bg2"
+---
+case: "Instantaneous actions (sfx) should not persist or show delete"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        sfx:
+                          items:
+                            - id: "sound1"
+                              resourceId: "boom"
+                    - id: "2"
+                      actions:
+                        dialogue:
+                          content:
+                            - text: "Next line"
+                    - id: "3"
+                      actions: {}
+  - sectionId: "section1"
+out:
+  lines:
+    - id: "1"
+      changes:
+        sfx:
+          changeType: "add"
+          data:
+            items:
+              - id: "sound1"
+                resourceId: "boom"
+    - id: "2"
+      changes: {}
+    - id: "3"
+      changes: {}
+---
+case: "Detect dialogue gui addition"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions:
+                        dialogue:
+                          gui:
+                            resourceId: "dialogue-box"
+  - sectionId: "section1"
+out:
+  lines:
+    - id: "1"
+      changes: {}
+    - id: "2"
+      changes:
+        dialogue:
+          changeType: "add"
+          data:
+            gui:
+              resourceId: "dialogue-box"
+---
+case: "Detect dialogue gui removal"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          gui:
+                            resourceId: "dialogue-box"
+                    - id: "2"
+                      actions:
+                        dialogue:
+                          content:
+                            - text: "No more gui"
+  - sectionId: "section1"
+out:
+  lines:
+    - id: "1"
+      changes:
+        dialogue:
+          changeType: "add"
+          data:
+            gui:
+              resourceId: "dialogue-box"
+    - id: "2"
+      changes: {}
+---
+case: "Detect dialogue gui update"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          gui:
+                            resourceId: "dialogue-box-1"
+                    - id: "2"
+                      actions:
+                        dialogue:
+                          gui:
+                            resourceId: "dialogue-box-2"
+  - sectionId: "section1"
+out:
+  lines:
+    - id: "1"
+      changes:
+        dialogue:
+          changeType: "add"
+          data:
+            gui:
+              resourceId: "dialogue-box-1"
+    - id: "2"
+      changes:
+        dialogue:
+          changeType: "update"
+          data:
+            gui:
+              resourceId: "dialogue-box-2"
+---
+case: "Ignore dialogue characterId change when gui is stable"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          gui:
+                            resourceId: "dialogue-box"
+                          characterId: "char1"
+                    - id: "2"
+                      actions:
+                        dialogue:
+                          characterId: "char2"
+  - sectionId: "section1"
+out:
+  lines:
+    - id: "1"
+      changes:
+        dialogue:
+          changeType: "add"
+          data:
+            gui:
+              resourceId: "dialogue-box"
+            characterId: "char1"
+    - id: "2"
+      changes: {}

@@ -331,7 +331,7 @@ export const addVisuals = (state, { presentationState, resources }) => {
                 loop: item.loop ?? animationDef.loop ?? true,
               },
             };
-            storyContainer.children.push(element);
+            storyContainer.children.push(structuredClone(element));
           }
         } else {
           let resource = images[item.resourceId] || videos[item.resourceId];
@@ -373,7 +373,7 @@ export const addVisuals = (state, { presentationState, resources }) => {
           storyContainer.children.push({
             id: `visual-${item.id}`,
             type: "container",
-            children: layout.elements,
+            children: structuredClone(layout.elements),
             x: transform.x,
             y: transform.y,
             anchorX: transform.anchorX,
@@ -394,7 +394,7 @@ export const addVisuals = (state, { presentationState, resources }) => {
               id: `${item.id}-animation`,
               type: "tween",
               targetId: `visual-${item.id}`,
-              properties: tween.properties,
+              properties: structuredClone(tween.properties),
             });
           }
         }
@@ -407,7 +407,7 @@ export const addVisuals = (state, { presentationState, resources }) => {
               id: `${item.id}-animation-2`,
               type: "tween",
               targetId: `visual-${item.id}`,
-              properties: tween.properties,
+              properties: structuredClone(tween.properties),
             });
           }
         }
@@ -430,6 +430,7 @@ export const addDialogue = (
     autoMode,
     skipMode,
     skipOnlyViewedLines,
+    isLineCompleted,
     l10n,
     variables,
     saveSlots = [],
@@ -477,6 +478,7 @@ export const addDialogue = (
         autoMode,
         skipMode,
         skipOnlyViewedLines,
+        isLineCompleted,
         saveSlots,
         dialogue: {
           character: {
@@ -725,6 +727,7 @@ export const addLayeredViews = (
     layeredViews = [],
     dialogueHistory = [],
     saveSlots = [],
+    l10n,
   },
 ) => {
   const { elements } = state;
@@ -781,6 +784,7 @@ export const addLayeredViews = (
       );
       processedLayeredView = parseAndRender(processedLayeredView, {
         i18n: {},
+        l10n,
       });
 
       elements.push(processedLayeredView);

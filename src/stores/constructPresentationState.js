@@ -27,7 +27,16 @@ export const base = (state, presentation) => {
  */
 export const background = (state, presentation) => {
   if (presentation.background) {
-    state.background = { ...presentation.background };
+    if (!presentation.background.resourceId) {
+      delete state.background;
+      return;
+    }
+    state.background = structuredClone(presentation.background);
+  } else {
+    // Only clear animations if they exist
+    if (state.background?.animations) {
+      state.background.animations = {};
+    }
   }
 };
 
@@ -109,6 +118,10 @@ export const dialogue = (state, presentation) => {
  */
 export const sfx = (state, presentation) => {
   if (presentation.sfx) {
+    if (!presentation.sfx.items || presentation.sfx.items.length === 0) {
+      delete state.sfx;
+      return;
+    }
     state.sfx = presentation.sfx;
   } else if (state.sfx) {
     delete state.sfx;
@@ -141,7 +154,17 @@ export const bgm = (state, presentation) => {
  */
 export const visual = (state, presentation) => {
   if (presentation.visual) {
-    state.visual = presentation.visual;
+    state.visual = structuredClone(presentation.visual);
+  } else {
+    // Only clear animations from items that have them
+    if (state.visual?.items) {
+      state.visual.items = state.visual.items.map((item) => {
+        if (item.animations) {
+          return { ...item, animations: {} };
+        }
+        return item;
+      });
+    }
   }
 };
 
@@ -152,12 +175,25 @@ export const visual = (state, presentation) => {
  */
 export const character = (state, presentation) => {
   if (!presentation.character) {
+    // Only clear animations from items that have them
+    if (state.character?.items) {
+      state.character.items = state.character.items.map((item) => {
+        if (item.animations) {
+          return { ...item, animations: {} };
+        }
+        return item;
+      });
+    }
     return;
   }
 
   // Simply replace the entire character state
-  if (!presentation.character.items) {
+  if (
+    !presentation.character.items ||
+    presentation.character.items.length === 0
+  ) {
     delete state.character;
+    return;
   }
 
   state.character = structuredClone(presentation.character);
