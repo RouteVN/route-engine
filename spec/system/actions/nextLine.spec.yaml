@@ -272,3 +272,207 @@ out:
         read:
           sectionId: "section1"
           lineId: "1"
+---
+case: skip mode stops at unviewed line when _skipUnseenText is undefined
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        skipMode: true
+        variables: {}
+        nextLineConfig:
+          manual:
+            enabled: true
+        pendingEffects: []
+        viewedRegistry:
+          sections:
+            - sectionId: "section1"
+              lastLineId: "1"
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  global:
+    isLineCompleted: true
+    skipMode: false
+    variables: {}
+    nextLineConfig:
+      manual:
+        enabled: true
+    pendingEffects:
+      - name: "clearSkipNextTimer"
+      - name: "render"
+    viewedRegistry:
+      sections:
+        - sectionId: "section1"
+          lastLineId: "1"
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions: {}
+                - id: "2"
+                  actions: {}
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "1"
+---
+case: skip mode stops at unviewed line when _skipUnseenText is false
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        skipMode: true
+        variables:
+          _skipUnseenText: false
+        nextLineConfig:
+          manual:
+            enabled: true
+        pendingEffects: []
+        viewedRegistry:
+          sections:
+            - sectionId: "section1"
+              lastLineId: "1"
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  global:
+    isLineCompleted: true
+    skipMode: false
+    variables:
+      _skipUnseenText: false
+    nextLineConfig:
+      manual:
+        enabled: true
+    pendingEffects:
+      - name: "clearSkipNextTimer"
+      - name: "render"
+    viewedRegistry:
+      sections:
+        - sectionId: "section1"
+          lastLineId: "1"
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions: {}
+                - id: "2"
+                  actions: {}
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "1"
+---
+case: skip mode continues when _skipUnseenText is true (skip all)
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        skipMode: true
+        variables:
+          _skipUnseenText: true
+        nextLineConfig:
+          manual:
+            enabled: true
+        pendingEffects: []
+        viewedRegistry:
+          sections:
+            - sectionId: "section1"
+              lastLineId: "1"
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+                    - id: "3"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  global:
+    isLineCompleted: false
+    skipMode: true
+    variables:
+      _skipUnseenText: true
+    nextLineConfig:
+      manual:
+        enabled: true
+    pendingEffects:
+      - name: "render"
+      - name: "render"
+      - name: "handleLineActions"
+    viewedRegistry:
+      sections:
+        - sectionId: "section1"
+          lastLineId: "1"
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions: {}
+                - id: "2"
+                  actions: {}
+                - id: "3"
+                  actions: {}
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "2"

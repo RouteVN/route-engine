@@ -526,7 +526,7 @@ export const selectRenderState = ({ state }) => {
     dialogueUIHidden: state.global.dialogueUIHidden,
     autoMode: state.global.autoMode,
     skipMode: state.global.skipMode,
-    skipOnlyViewedLines: !(allVariables._skipUnseenText ?? false),
+    skipOnlyViewedLines: !allVariables._skipUnseenText,
     isLineCompleted: state.global.isLineCompleted,
     layeredViews: state.global.layeredViews,
     dialogueHistory: selectDialogueHistory({ state }),
@@ -1112,8 +1112,7 @@ export const nextLine = ({ state }) => {
     const nextLine = lines[nextLineIndex];
 
     // Check if skip mode should stop at unviewed lines
-    const _skipUnseenText = state.global.variables?._skipUnseenText ?? false;
-    const skipOnlyViewedLines = !_skipUnseenText;
+    const skipOnlyViewedLines = !state.global.variables?._skipUnseenText;
     if (state.global.skipMode && skipOnlyViewedLines) {
       const isNextLineViewed = selectIsLineViewed(
         { state },
@@ -1126,6 +1125,7 @@ export const nextLine = ({ state }) => {
       if (!isNextLineViewed) {
         // Stop skip mode when encountering an unviewed line
         stopSkipMode({ state });
+        return state;
       }
     }
 
@@ -1340,8 +1340,7 @@ export const nextLineFromSystem = ({ state }) => {
     const nextLine = lines[nextLineIndex];
 
     // Check if skip mode should stop at unviewed lines
-    const _skipUnseenText = state.global.variables?._skipUnseenText ?? false;
-    const skipOnlyViewedLines = !_skipUnseenText;
+    const skipOnlyViewedLines = !state.global.variables?._skipUnseenText;
     if (state.global.skipMode && skipOnlyViewedLines) {
       const isNextLineViewed = selectIsLineViewed(
         { state },
