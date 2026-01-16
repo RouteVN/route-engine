@@ -430,6 +430,7 @@ export const addDialogue = (
     autoMode,
     skipMode,
     skipOnlyViewedLines,
+    isLineCompleted,
     l10n,
     variables,
     saveSlots = [],
@@ -477,6 +478,7 @@ export const addDialogue = (
         autoMode,
         skipMode,
         skipOnlyViewedLines,
+        isLineCompleted,
         saveSlots,
         dialogue: {
           character: {

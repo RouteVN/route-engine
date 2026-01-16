@@ -17,7 +17,7 @@ out:
     pendingEffects:
       - name: render
 ---
-case: mark line as completed when already completed
+case: mark line as completed when already completed (no-op)
 in:
   - state:
       global:
@@ -26,8 +26,7 @@ in:
 out:
   global:
     isLineCompleted: true
-    pendingEffects:
-      - name: render
+    pendingEffects: []
 ---
 case: mark line as completed with existing pending effects
 in:
