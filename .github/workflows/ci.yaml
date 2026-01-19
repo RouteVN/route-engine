@@ -21,3 +21,20 @@ jobs:
       - run: bun run lint
 
       - run: bun run test
+
+      - name: Install rtgl CLI
+        run: bun install -g rtgl
+
+      - name: Run Visual Tests (Docker)
+        env:
+          RTGL_VT_DEBUG: true
+        run: bun run vt:report
+
+      - name: Upload VT Images as Artifacts
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: vt-images-${{ github.run_number }}
+          path: .rettangoli/
+          include-hidden-files: true
+          retention-days: 30
