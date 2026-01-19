@@ -1140,10 +1140,16 @@ export const nextLine = ({ state }) => {
       }
 
       // Add a new line entry to the current section in historySequence (enables state rollback)
-      if (lastContext.historySequence && lastContext.historySequence.length > 0) {
+      if (
+        lastContext.historySequence &&
+        lastContext.historySequence.length > 0
+      ) {
         const currentSectionEntry =
           lastContext.historySequence[lastContext.historySequence.length - 1];
-        if (currentSectionEntry && currentSectionEntry.sectionId === sectionId) {
+        if (
+          currentSectionEntry &&
+          currentSectionEntry.sectionId === sectionId
+        ) {
           currentSectionEntry.lines.push({ id: nextLine.id });
         }
       }
