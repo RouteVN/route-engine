@@ -85,7 +85,8 @@ export const createInitialState = (payload) => {
         },
         historySequence: [
           {
-            sectionId: "...",
+            sectionId: initialPointer.sectionId,
+            lineId: initialPointer.lineId,
           },
         ],
         configuration: {},
@@ -1138,6 +1139,14 @@ export const nextLine = ({ state }) => {
         addViewedLine({ state }, { sectionId, lineId: currentLineId });
       }
 
+      // Add a new historySequence entry for the next line (enables state rollback)
+      if (lastContext.historySequence) {
+        lastContext.historySequence.push({
+          sectionId,
+          lineId: nextLine.id,
+        });
+      }
+
       lastContext.pointers.read = {
         sectionId,
         lineId: nextLine.id,
@@ -1325,6 +1334,78 @@ export const sectionTransition = ({ state }, payload) => {
   return state;
 };
 
+/**
+ * Backtracks to a specific line in history, restoring variable state
+ * @param {Object} state - Current state object
+ * @param {Object} payload - Action payload
+ * @param {string} payload.sectionId - The target section ID
+ * @param {string} payload.lineId - The target line ID to backtrack to
+ * @returns {Object} Updated state object
+ * @description
+ * - Finds target line in historySequence
+ * - Restores variables from stateBefore for all entries from current to target (inclusive)
+ * - Sets currentPointerMode to "read"
+ * - Updates pointers.read to target line
+ * - Sets isLineCompleted to false
+ * - Queues render and handleLineActions effects
+ */
+export const backtrackToLine = ({ state }, payload) => {
+  const { sectionId, lineId } = payload;
+  const lastContext = state.contexts[state.contexts.length - 1];
+
+  if (!lastContext || !lastContext.historySequence) {
+    return state;
+  }
+
+  // Find the index of the target line in historySequence
+  const targetIndex = lastContext.historySequence.findIndex(
+    (entry) => entry.sectionId === sectionId && entry.lineId === lineId,
+  );
+
+  if (targetIndex === -1) {
+    console.warn(
+      `Target line not found in historySequence: ${sectionId}/${lineId}`,
+    );
+    return state;
+  }
+
+  // Restore variables from stateBefore for entries from end to target (inclusive)
+  // We iterate backwards from end to target, applying stateBefore values
+  for (let i = lastContext.historySequence.length - 1; i >= targetIndex; i--) {
+    const entry = lastContext.historySequence[i];
+    const stateBefore = entry.stateBefore;
+
+    // Skip if no stateBefore (backward compatibility)
+    if (stateBefore && typeof stateBefore === "object") {
+      Object.entries(stateBefore).forEach(([variableId, value]) => {
+        lastContext.variables[variableId] = value;
+      });
+    }
+  }
+
+  // Set currentPointerMode to "read"
+  lastContext.currentPointerMode = "read";
+
+  // Update pointers.read to target line
+  lastContext.pointers.read = {
+    sectionId,
+    lineId,
+  };
+
+  // Reset line completion state
+  state.global.isLineCompleted = false;
+
+  // Add pending effects
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+  state.global.pendingEffects.push({
+    name: "handleLineActions",
+  });
+
+  return state;
+};
+
 export const nextLineFromSystem = ({ state }) => {
   const pointer = selectCurrentPointer({ state })?.pointer;
   const sectionId = pointer?.sectionId;
@@ -1400,6 +1481,14 @@ export const updateVariable = ({ state }, payload) => {
   let globalDeviceModified = false;
   let globalAccountModified = false;
 
+  // Get the last context and its last history entry for stateBefore capture
+  const lastContext = state.contexts[state.contexts.length - 1];
+  const historySequence = lastContext?.historySequence;
+  const lastHistoryEntry =
+    historySequence && historySequence.length > 0
+      ? historySequence[historySequence.length - 1]
+      : null;
+
   operations.forEach(({ variableId, op, value }) => {
     const variableConfig = state.projectData.resources?.variables?.[variableId];
     const scope = variableConfig?.scope;
@@ -1413,6 +1502,18 @@ export const updateVariable = ({ state }, payload) => {
       scope === "context"
         ? state.contexts[state.contexts.length - 1].variables
         : state.global.variables;
+
+    // Capture stateBefore for context-scoped variables only
+    if (scope === "context" && lastHistoryEntry) {
+      // Initialize stateBefore if it doesn't exist
+      if (!lastHistoryEntry.stateBefore) {
+        lastHistoryEntry.stateBefore = {};
+      }
+      // Only capture if not already captured (first change wins)
+      if (!(variableId in lastHistoryEntry.stateBefore)) {
+        lastHistoryEntry.stateBefore[variableId] = target[variableId];
+      }
+    }
 
     // Track which scope was modified
     if (scope === "global-device") {
@@ -1529,6 +1630,7 @@ export const createSystemStore = (initialState) => {
     clearLayeredViews,
     updateVariable,
     nextLineFromSystem,
+    backtrackToLine,
   };
 
   return createStore(_initialState, selectorsAndActions, {

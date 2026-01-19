@@ -1,0 +1,311 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.backtrackToLine
+suites: [backtrackToLine]
+---
+suite: backtrackToLine
+exportName: backtrackToLine
+---
+case: restore single context variable and set mode to read
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        pendingEffects: []
+      projectData:
+        resources:
+          variables:
+            score:
+              type: number
+              scope: context
+              default: 0
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+                    - id: "3"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          historySequence:
+            - sectionId: "section1"
+              lineId: "1"
+              stateBefore: {}
+            - sectionId: "section1"
+              lineId: "2"
+              stateBefore:
+                score: 0
+            - sectionId: "section1"
+              lineId: "3"
+              stateBefore:
+                score: 10
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "3"
+          variables:
+            score: 20
+  - sectionId: "section1"
+    lineId: "2"
+out:
+  global:
+    isLineCompleted: false
+    pendingEffects:
+      - name: "render"
+      - name: "handleLineActions"
+  projectData:
+    resources:
+      variables:
+        score:
+          type: number
+          scope: context
+          default: 0
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions: {}
+                - id: "2"
+                  actions: {}
+                - id: "3"
+                  actions: {}
+  contexts:
+    - currentPointerMode: "read"
+      historySequence:
+        - sectionId: "section1"
+          lineId: "1"
+          stateBefore: {}
+        - sectionId: "section1"
+          lineId: "2"
+          stateBefore:
+            score: 0
+        - sectionId: "section1"
+          lineId: "3"
+          stateBefore:
+            score: 10
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "2"
+      variables:
+        score: 0
+---
+case: restore multiple variables across history entries
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        pendingEffects: []
+      projectData:
+        resources:
+          variables:
+            score:
+              type: number
+              scope: context
+              default: 0
+            playerName:
+              type: string
+              scope: context
+              default: "Guest"
+            hasKey:
+              type: boolean
+              scope: context
+              default: false
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+                    - id: "3"
+                      actions: {}
+                    - id: "4"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          historySequence:
+            - sectionId: "section1"
+              lineId: "1"
+              stateBefore: {}
+            - sectionId: "section1"
+              lineId: "2"
+              stateBefore:
+                score: 0
+            - sectionId: "section1"
+              lineId: "3"
+              stateBefore:
+                playerName: "Guest"
+                score: 10
+            - sectionId: "section1"
+              lineId: "4"
+              stateBefore:
+                hasKey: false
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "4"
+          variables:
+            score: 50
+            playerName: "Alice"
+            hasKey: true
+  - sectionId: "section1"
+    lineId: "2"
+out:
+  global:
+    isLineCompleted: false
+    pendingEffects:
+      - name: "render"
+      - name: "handleLineActions"
+  projectData:
+    resources:
+      variables:
+        score:
+          type: number
+          scope: context
+          default: 0
+        playerName:
+          type: string
+          scope: context
+          default: "Guest"
+        hasKey:
+          type: boolean
+          scope: context
+          default: false
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions: {}
+                - id: "2"
+                  actions: {}
+                - id: "3"
+                  actions: {}
+                - id: "4"
+                  actions: {}
+  contexts:
+    - currentPointerMode: "read"
+      historySequence:
+        - sectionId: "section1"
+          lineId: "1"
+          stateBefore: {}
+        - sectionId: "section1"
+          lineId: "2"
+          stateBefore:
+            score: 0
+        - sectionId: "section1"
+          lineId: "3"
+          stateBefore:
+            playerName: "Guest"
+            score: 10
+        - sectionId: "section1"
+          lineId: "4"
+          stateBefore:
+            hasKey: false
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "2"
+      variables:
+        score: 0
+        playerName: "Guest"
+        hasKey: false
+---
+case: backward compatibility - missing stateBefore handled gracefully
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        pendingEffects: []
+      projectData:
+        resources:
+          variables:
+            score:
+              type: number
+              scope: context
+              default: 0
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+                    - id: "3"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          historySequence:
+            - sectionId: "section1"
+              lineId: "1"
+            - sectionId: "section1"
+              lineId: "2"
+              stateBefore: {}
+            - sectionId: "section1"
+              lineId: "3"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "3"
+          variables:
+            score: 100
+  - sectionId: "section1"
+    lineId: "1"
+out:
+  global:
+    isLineCompleted: false
+    pendingEffects:
+      - name: "render"
+      - name: "handleLineActions"
+  projectData:
+    resources:
+      variables:
+        score:
+          type: number
+          scope: context
+          default: 0
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions: {}
+                - id: "2"
+                  actions: {}
+                - id: "3"
+                  actions: {}
+  contexts:
+    - currentPointerMode: "read"
+      historySequence:
+        - sectionId: "section1"
+          lineId: "1"
+        - sectionId: "section1"
+          lineId: "2"
+          stateBefore: {}
+        - sectionId: "section1"
+          lineId: "3"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "1"
+      variables:
+        score: 100

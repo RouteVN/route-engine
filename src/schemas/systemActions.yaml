@@ -27,6 +27,11 @@ properties:
     description: Go to previous line, this will usually trigger history mode
     additionalProperties: false
 
+  contextBackLine:
+    type: object
+    description: Navigate directly to the previous line (moves the read pointer). Unlike prevLine which uses history mode, this actually changes position
+    additionalProperties: false
+
   # TODO: finalize naming
   contextLineCompleted:
     type: object

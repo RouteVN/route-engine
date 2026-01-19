@@ -780,3 +780,238 @@ in:
       - variableId: data
         op: increment
 throws: "Operation \"increment\" is not valid for variable \"data\" of type \"object\". Valid operations: set"
+---
+case: context variable captured in stateBefore before change
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            score:
+              type: number
+              scope: context
+              default: 0
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - historySequence:
+            - sectionId: "section1"
+              lineId: "1"
+          variables:
+            score: 100
+  - operations:
+      - variableId: score
+        op: increment
+        value: 50
+out:
+  projectData:
+    resources:
+      variables:
+        score:
+          type: number
+          scope: context
+          default: 0
+  global:
+    variables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - historySequence:
+        - sectionId: "section1"
+          lineId: "1"
+          stateBefore:
+            score: 100
+      variables:
+        score: 150
+---
+case: global-device and global-account NOT captured in stateBefore
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            score:
+              type: number
+              scope: context
+              default: 0
+            volume:
+              type: number
+              scope: global-device
+              default: 50
+            achievement1:
+              type: boolean
+              scope: global-account
+              default: false
+      global:
+        variables:
+          volume: 50
+          achievement1: false
+        pendingEffects: []
+      contexts:
+        - historySequence:
+            - sectionId: "section1"
+              lineId: "1"
+          variables:
+            score: 100
+  - operations:
+      - variableId: score
+        op: increment
+        value: 10
+      - variableId: volume
+        op: set
+        value: 80
+      - variableId: achievement1
+        op: set
+        value: true
+out:
+  projectData:
+    resources:
+      variables:
+        score:
+          type: number
+          scope: context
+          default: 0
+        volume:
+          type: number
+          scope: global-device
+          default: 50
+        achievement1:
+          type: boolean
+          scope: global-account
+          default: false
+  global:
+    variables:
+      volume: 80
+      achievement1: true
+    pendingEffects:
+      - name: "saveGlobalDeviceVariables"
+        payload:
+          globalDeviceVariables:
+            volume: 80
+      - name: "saveGlobalAccountVariables"
+        payload:
+          globalAccountVariables:
+            achievement1: true
+      - name: "render"
+  contexts:
+    - historySequence:
+        - sectionId: "section1"
+          lineId: "1"
+          stateBefore:
+            score: 100
+      variables:
+        score: 110
+---
+# AC: "If multiple operations affect the same variable in one call, then the system shall only capture the original value once (first encounter)"
+# Behavior: Call updateVariable with multiple operations on same variable -> Only first value captured in stateBefore
+# ROI: 7.2 | Business Value: 8 (correct rollback state) | Frequency: 5 (occasional multi-op calls)
+# @category: edge-case
+# @dependency: historySequence, contexts
+# @complexity: medium
+# Verification items:
+# - stateBefore contains only the original value before first operation
+# - Multiple operations still applied sequentially
+# - Final value reflects all operations
+case: multiple operations on same variable - first value wins
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            score:
+              type: number
+              scope: context
+              default: 0
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - historySequence:
+            - sectionId: "section1"
+              lineId: "1"
+          variables:
+            score: 100
+  - operations:
+      - variableId: score
+        op: increment
+        value: 50
+      - variableId: score
+        op: increment
+        value: 25
+      - variableId: score
+        op: multiply
+        value: 2
+out:
+  projectData:
+    resources:
+      variables:
+        score:
+          type: number
+          scope: context
+          default: 0
+  global:
+    variables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - historySequence:
+        - sectionId: "section1"
+          lineId: "1"
+          stateBefore:
+            score: 100
+      variables:
+        score: 350
+---
+# AC: "When a variable's value does not change after operation, the system shall still record the before value for consistency"
+# Behavior: Call updateVariable with set operation using same value -> stateBefore still captured
+# ROI: 5.4 | Business Value: 7 (consistent rollback behavior) | Frequency: 4 (occasional same-value sets)
+# @category: edge-case
+# @dependency: historySequence, contexts
+# @complexity: low
+# Verification items:
+# - stateBefore contains the value even when unchanged
+# - Variable value remains the same after operation
+case: unchanged value still recorded in stateBefore
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            flag:
+              type: boolean
+              scope: context
+              default: false
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - historySequence:
+            - sectionId: "section1"
+              lineId: "1"
+          variables:
+            flag: true
+  - operations:
+      - variableId: flag
+        op: set
+        value: true
+out:
+  projectData:
+    resources:
+      variables:
+        flag:
+          type: boolean
+          scope: context
+          default: false
+  global:
+    variables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - historySequence:
+        - sectionId: "section1"
+          lineId: "1"
+          stateBefore:
+            flag: true
+      variables:
+        flag: true

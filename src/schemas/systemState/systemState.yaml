@@ -230,6 +230,17 @@ properties:
           items:
             type: object
             description: History entry
+            properties:
+              sectionId:
+                type: string
+                description: ID of the section
+              lineId:
+                type: string
+                description: ID of the line this entry corresponds to
+              stateBefore:
+                type: object
+                description: Variable values before this line executed (only variables that changed)
+                additionalProperties: true
           default: []
 
 required:

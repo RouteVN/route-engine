@@ -65,7 +65,8 @@ out:
           lineId: __undefined__
           historySequenceIndex: __undefined__
       historySequence:
-        - sectionId: "..."
+        - sectionId: "section1"
+          lineId: "line1"
       configuration: {}
       views: []
       bgm:
@@ -168,7 +169,8 @@ out:
           lineId: __undefined__
           historySequenceIndex: __undefined__
       historySequence:
-        - sectionId: "..."
+        - sectionId: "section1"
+          lineId: "line1"
       configuration: {}
       views: []
       bgm:
@@ -249,7 +251,8 @@ out:
           lineId: __undefined__
           historySequenceIndex: __undefined__
       historySequence:
-        - sectionId: "..."
+        - sectionId: "section1"
+          lineId: "line1"
       configuration: {}
       views: []
       bgm:
@@ -351,7 +354,8 @@ out:
           lineId: __undefined__
           historySequenceIndex: __undefined__
       historySequence:
-        - sectionId: "..."
+        - sectionId: "section1"
+          lineId: "line1"
       configuration: {}
       views: []
       bgm:
