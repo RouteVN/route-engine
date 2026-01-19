@@ -21,6 +21,7 @@ out:
   contexts:
     - historySequence:
         - sectionId: "intro"
+          lines: []
 ---
 case: add item to history with existing items
 in:
@@ -30,9 +31,11 @@ in:
       contexts:
         - historySequence:
             - sectionId: "intro"
-            - sectionId: "intro"
+              lines:
+                - id: "1"
+                - id: "2"
   - item:
-      sectionId: "intro"
+      sectionId: "chapter1"
 out:
   global:
     pendingEffects:
@@ -40,8 +43,11 @@ out:
   contexts:
     - historySequence:
         - sectionId: "intro"
-        - sectionId: "intro"
-        - sectionId: "intro"
+          lines:
+            - id: "1"
+            - id: "2"
+        - sectionId: "chapter1"
+          lines: []
 ---
 case: add item to history with multiple contexts (should add to last one)
 in:
@@ -51,10 +57,14 @@ in:
       contexts:
         - historySequence:
             - sectionId: "chapter1"
+              lines:
+                - id: "1"
         - historySequence:
             - sectionId: "menu"
+              lines:
+                - id: "1"
   - item:
-      sectionId: "menu"
+      sectionId: "settings"
 out:
   global:
     pendingEffects:
@@ -62,9 +72,14 @@ out:
   contexts:
     - historySequence:
         - sectionId: "chapter1"
+          lines:
+            - id: "1"
     - historySequence:
         - sectionId: "menu"
-        - sectionId: "menu"
+          lines:
+            - id: "1"
+        - sectionId: "settings"
+          lines: []
 ---
 case: add item to history with existing pending effects
 in:
@@ -86,8 +101,9 @@ out:
   contexts:
     - historySequence:
         - sectionId: "intro"
+          lines: []
 ---
-case: add complex item to history (only sectionId is stored)
+case: add section transition (only sectionId is stored, lines start empty)
 in:
   - state:
       global:
@@ -95,6 +111,10 @@ in:
       contexts:
         - historySequence:
             - sectionId: "intro"
+              lines:
+                - id: "1"
+                  stateBefore:
+                    score: 0
   - item:
       sectionId: "chapter2"
 out:
@@ -104,4 +124,9 @@ out:
   contexts:
     - historySequence:
         - sectionId: "intro"
+          lines:
+            - id: "1"
+              stateBefore:
+                score: 0
         - sectionId: "chapter2"
+          lines: []

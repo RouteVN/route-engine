@@ -34,16 +34,14 @@ in:
         - currentPointerMode: "read"
           historySequence:
             - sectionId: "section1"
-              lineId: "1"
-              stateBefore: {}
-            - sectionId: "section1"
-              lineId: "2"
-              stateBefore:
-                score: 0
-            - sectionId: "section1"
-              lineId: "3"
-              stateBefore:
-                score: 10
+              lines:
+                - id: "1"
+                - id: "2"
+                  stateBefore:
+                    score: 0
+                - id: "3"
+                  stateBefore:
+                    score: 10
           pointers:
             read:
               sectionId: "section1"
@@ -81,16 +79,14 @@ out:
     - currentPointerMode: "read"
       historySequence:
         - sectionId: "section1"
-          lineId: "1"
-          stateBefore: {}
-        - sectionId: "section1"
-          lineId: "2"
-          stateBefore:
-            score: 0
-        - sectionId: "section1"
-          lineId: "3"
-          stateBefore:
-            score: 10
+          lines:
+            - id: "1"
+            - id: "2"
+              stateBefore:
+                score: 0
+            - id: "3"
+              stateBefore:
+                score: 10
       pointers:
         read:
           sectionId: "section1"
@@ -137,21 +133,18 @@ in:
         - currentPointerMode: "read"
           historySequence:
             - sectionId: "section1"
-              lineId: "1"
-              stateBefore: {}
-            - sectionId: "section1"
-              lineId: "2"
-              stateBefore:
-                score: 0
-            - sectionId: "section1"
-              lineId: "3"
-              stateBefore:
-                playerName: "Guest"
-                score: 10
-            - sectionId: "section1"
-              lineId: "4"
-              stateBefore:
-                hasKey: false
+              lines:
+                - id: "1"
+                - id: "2"
+                  stateBefore:
+                    score: 0
+                - id: "3"
+                  stateBefore:
+                    playerName: "Guest"
+                    score: 10
+                - id: "4"
+                  stateBefore:
+                    hasKey: false
           pointers:
             read:
               sectionId: "section1"
@@ -201,21 +194,18 @@ out:
     - currentPointerMode: "read"
       historySequence:
         - sectionId: "section1"
-          lineId: "1"
-          stateBefore: {}
-        - sectionId: "section1"
-          lineId: "2"
-          stateBefore:
-            score: 0
-        - sectionId: "section1"
-          lineId: "3"
-          stateBefore:
-            playerName: "Guest"
-            score: 10
-        - sectionId: "section1"
-          lineId: "4"
-          stateBefore:
-            hasKey: false
+          lines:
+            - id: "1"
+            - id: "2"
+              stateBefore:
+                score: 0
+            - id: "3"
+              stateBefore:
+                playerName: "Guest"
+                score: 10
+            - id: "4"
+              stateBefore:
+                hasKey: false
       pointers:
         read:
           sectionId: "section1"
@@ -225,7 +215,7 @@ out:
         playerName: "Guest"
         hasKey: false
 ---
-case: backward compatibility - missing stateBefore handled gracefully
+case: lines without state changes can be omitted
 in:
   - state:
       global:
@@ -254,12 +244,10 @@ in:
         - currentPointerMode: "read"
           historySequence:
             - sectionId: "section1"
-              lineId: "1"
-            - sectionId: "section1"
-              lineId: "2"
-              stateBefore: {}
-            - sectionId: "section1"
-              lineId: "3"
+              lines:
+                - id: "1"
+                - id: "2"
+                - id: "3"
           pointers:
             read:
               sectionId: "section1"
@@ -297,12 +285,10 @@ out:
     - currentPointerMode: "read"
       historySequence:
         - sectionId: "section1"
-          lineId: "1"
-        - sectionId: "section1"
-          lineId: "2"
-          stateBefore: {}
-        - sectionId: "section1"
-          lineId: "3"
+          lines:
+            - id: "1"
+            - id: "2"
+            - id: "3"
       pointers:
         read:
           sectionId: "section1"

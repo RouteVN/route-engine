@@ -86,7 +86,7 @@ export const createInitialState = (payload) => {
         historySequence: [
           {
             sectionId: initialPointer.sectionId,
-            lineId: initialPointer.lineId,
+            lines: [{ id: initialPointer.lineId }],
           },
         ],
         configuration: {},
@@ -1022,7 +1022,7 @@ export const addToHistorySequence = ({ state }, payload) => {
   const lastContext = state.contexts[state.contexts.length - 1];
 
   if (lastContext && lastContext.historySequence) {
-    lastContext.historySequence.push({ sectionId: item.sectionId });
+    lastContext.historySequence.push({ sectionId: item.sectionId, lines: [] });
   }
 
   state.global.pendingEffects.push({
@@ -1139,12 +1139,13 @@ export const nextLine = ({ state }) => {
         addViewedLine({ state }, { sectionId, lineId: currentLineId });
       }
 
-      // Add a new historySequence entry for the next line (enables state rollback)
-      if (lastContext.historySequence) {
-        lastContext.historySequence.push({
-          sectionId,
-          lineId: nextLine.id,
-        });
+      // Add a new line entry to the current section in historySequence (enables state rollback)
+      if (lastContext.historySequence && lastContext.historySequence.length > 0) {
+        const currentSectionEntry =
+          lastContext.historySequence[lastContext.historySequence.length - 1];
+        if (currentSectionEntry && currentSectionEntry.sectionId === sectionId) {
+          currentSectionEntry.lines.push({ id: nextLine.id });
+        }
       }
 
       lastContext.pointers.read = {
@@ -1342,8 +1343,8 @@ export const sectionTransition = ({ state }, payload) => {
  * @param {string} payload.lineId - The target line ID to backtrack to
  * @returns {Object} Updated state object
  * @description
- * - Finds target line in historySequence
- * - Restores variables from stateBefore for all entries from current to target (inclusive)
+ * - Finds target line in historySequence (grouped by section)
+ * - Restores variables from stateBefore for all line entries from current to target (inclusive)
  * - Sets currentPointerMode to "read"
  * - Updates pointers.read to target line
  * - Sets isLineCompleted to false
@@ -1357,29 +1358,60 @@ export const backtrackToLine = ({ state }, payload) => {
     return state;
   }
 
-  // Find the index of the target line in historySequence
-  const targetIndex = lastContext.historySequence.findIndex(
-    (entry) => entry.sectionId === sectionId && entry.lineId === lineId,
-  );
+  // Find the target section and line in the grouped historySequence
+  let targetSectionIndex = -1;
+  let targetLineIndex = -1;
 
-  if (targetIndex === -1) {
+  for (let i = 0; i < lastContext.historySequence.length; i++) {
+    const sectionEntry = lastContext.historySequence[i];
+    if (sectionEntry.sectionId === sectionId && sectionEntry.lines) {
+      const lineIdx = sectionEntry.lines.findIndex(
+        (line) => line.id === lineId,
+      );
+      if (lineIdx !== -1) {
+        targetSectionIndex = i;
+        targetLineIndex = lineIdx;
+        break;
+      }
+    }
+  }
+
+  if (targetSectionIndex === -1 || targetLineIndex === -1) {
     console.warn(
       `Target line not found in historySequence: ${sectionId}/${lineId}`,
     );
     return state;
   }
 
-  // Restore variables from stateBefore for entries from end to target (inclusive)
-  // We iterate backwards from end to target, applying stateBefore values
-  for (let i = lastContext.historySequence.length - 1; i >= targetIndex; i--) {
-    const entry = lastContext.historySequence[i];
-    const stateBefore = entry.stateBefore;
+  // Restore variables from stateBefore for all line entries from end to target (inclusive)
+  // We iterate backwards through sections, then backwards through lines within each section
+  for (
+    let secIdx = lastContext.historySequence.length - 1;
+    secIdx >= targetSectionIndex;
+    secIdx--
+  ) {
+    const sectionEntry = lastContext.historySequence[secIdx];
+    if (!sectionEntry.lines) continue;
 
-    // Skip if no stateBefore (backward compatibility)
-    if (stateBefore && typeof stateBefore === "object") {
-      Object.entries(stateBefore).forEach(([variableId, value]) => {
-        lastContext.variables[variableId] = value;
-      });
+    // Determine the starting line index for this section
+    const startLineIdx =
+      secIdx === lastContext.historySequence.length - 1
+        ? sectionEntry.lines.length - 1
+        : sectionEntry.lines.length - 1;
+
+    // Determine the ending line index for this section
+    const endLineIdx = secIdx === targetSectionIndex ? targetLineIndex : 0;
+
+    for (let lineIdx = startLineIdx; lineIdx >= endLineIdx; lineIdx--) {
+      const lineEntry = sectionEntry.lines[lineIdx];
+      const stateBefore = lineEntry?.stateBefore;
+
+      // Skip if no stateBefore (line had no state changes)
+      if (stateBefore && typeof stateBefore === "object") {
+        Object.entries(stateBefore).forEach(([variableId, value]) => {
+          lastContext.variables[variableId] = value;
+        });
+      }
     }
   }
 
@@ -1481,12 +1513,16 @@ export const updateVariable = ({ state }, payload) => {
   let globalDeviceModified = false;
   let globalAccountModified = false;
 
-  // Get the last context and its last history entry for stateBefore capture
+  // Get the last context and the last line entry in the last section for stateBefore capture
   const lastContext = state.contexts[state.contexts.length - 1];
   const historySequence = lastContext?.historySequence;
-  const lastHistoryEntry =
+  const lastSectionEntry =
     historySequence && historySequence.length > 0
       ? historySequence[historySequence.length - 1]
+      : null;
+  const lastLineEntry =
+    lastSectionEntry?.lines && lastSectionEntry.lines.length > 0
+      ? lastSectionEntry.lines[lastSectionEntry.lines.length - 1]
       : null;
 
   operations.forEach(({ variableId, op, value }) => {
@@ -1504,14 +1540,14 @@ export const updateVariable = ({ state }, payload) => {
         : state.global.variables;
 
     // Capture stateBefore for context-scoped variables only
-    if (scope === "context" && lastHistoryEntry) {
+    if (scope === "context" && lastLineEntry) {
       // Initialize stateBefore if it doesn't exist
-      if (!lastHistoryEntry.stateBefore) {
-        lastHistoryEntry.stateBefore = {};
+      if (!lastLineEntry.stateBefore) {
+        lastLineEntry.stateBefore = {};
       }
       // Only capture if not already captured (first change wins)
-      if (!(variableId in lastHistoryEntry.stateBefore)) {
-        lastHistoryEntry.stateBefore[variableId] = target[variableId];
+      if (!(variableId in lastLineEntry.stateBefore)) {
+        lastLineEntry.stateBefore[variableId] = target[variableId];
       }
     }
 

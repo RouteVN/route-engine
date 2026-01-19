@@ -797,7 +797,8 @@ in:
       contexts:
         - historySequence:
             - sectionId: "section1"
-              lineId: "1"
+              lines:
+                - id: "1"
           variables:
             score: 100
   - operations:
@@ -819,9 +820,10 @@ out:
   contexts:
     - historySequence:
         - sectionId: "section1"
-          lineId: "1"
-          stateBefore:
-            score: 100
+          lines:
+            - id: "1"
+              stateBefore:
+                score: 100
       variables:
         score: 150
 ---
@@ -851,7 +853,8 @@ in:
       contexts:
         - historySequence:
             - sectionId: "section1"
-              lineId: "1"
+              lines:
+                - id: "1"
           variables:
             score: 100
   - operations:
@@ -897,9 +900,10 @@ out:
   contexts:
     - historySequence:
         - sectionId: "section1"
-          lineId: "1"
-          stateBefore:
-            score: 100
+          lines:
+            - id: "1"
+              stateBefore:
+                score: 100
       variables:
         score: 110
 ---
@@ -929,7 +933,8 @@ in:
       contexts:
         - historySequence:
             - sectionId: "section1"
-              lineId: "1"
+              lines:
+                - id: "1"
           variables:
             score: 100
   - operations:
@@ -957,9 +962,10 @@ out:
   contexts:
     - historySequence:
         - sectionId: "section1"
-          lineId: "1"
-          stateBefore:
-            score: 100
+          lines:
+            - id: "1"
+              stateBefore:
+                score: 100
       variables:
         score: 350
 ---
@@ -988,7 +994,8 @@ in:
       contexts:
         - historySequence:
             - sectionId: "section1"
-              lineId: "1"
+              lines:
+                - id: "1"
           variables:
             flag: true
   - operations:
@@ -1010,8 +1017,9 @@ out:
   contexts:
     - historySequence:
         - sectionId: "section1"
-          lineId: "1"
-          stateBefore:
-            flag: true
+          lines:
+            - id: "1"
+              stateBefore:
+                flag: true
       variables:
         flag: true

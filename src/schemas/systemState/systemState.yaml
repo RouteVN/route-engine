@@ -226,21 +226,30 @@ properties:
 
         historySequence:
           type: array
-          description: History sequence tracking user interactions
+          description: History sequence tracking user interactions, grouped by section
           items:
             type: object
-            description: History entry
+            description: Section history group entry
             properties:
               sectionId:
                 type: string
                 description: ID of the section
-              lineId:
-                type: string
-                description: ID of the line this entry corresponds to
-              stateBefore:
-                type: object
-                description: Variable values before this line executed (only variables that changed)
-                additionalProperties: true
+              lines:
+                type: array
+                description: Lines visited within this section
+                items:
+                  type: object
+                  description: Line entry within section
+                  properties:
+                    id:
+                      type: string
+                      description: ID of the line
+                    stateBefore:
+                      type: object
+                      description: Variable values before this line executed (only variables that changed). Omitted if no state changes.
+                      additionalProperties: true
+                  required: [id]
+            required: [sectionId, lines]
           default: []
 
 required:
