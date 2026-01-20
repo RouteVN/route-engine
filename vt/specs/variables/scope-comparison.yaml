@@ -157,6 +157,7 @@ resources:
                 actionPayload:
                   actions:
                     updateVariable:
+                      id: uv1
                       operations:
                         - variableId: playerGold
                           op: increment
@@ -178,6 +179,7 @@ resources:
                 actionPayload:
                   actions:
                     updateVariable:
+                      id: uv2
                       operations:
                         - variableId: playerGold
                           op: decrement
@@ -219,6 +221,7 @@ resources:
                 actionPayload:
                   actions:
                     updateVariable:
+                      id: uv3
                       operations:
                         - variableId: currentLocation
                           op: set
@@ -240,6 +243,7 @@ resources:
                 actionPayload:
                   actions:
                     updateVariable:
+                      id: uv4
                       operations:
                         - variableId: currentLocation
                           op: set
@@ -326,6 +330,7 @@ resources:
                 actionPayload:
                   actions:
                     updateVariable:
+                      id: uv5
                       operations:
                         - variableId: textSpeed
                           op: set
@@ -347,6 +352,7 @@ resources:
                 actionPayload:
                   actions:
                     updateVariable:
+                      id: uv6
                       operations:
                         - variableId: textSpeed
                           op: set
@@ -368,6 +374,7 @@ resources:
                 actionPayload:
                   actions:
                     updateVariable:
+                      id: uv7
                       operations:
                         - variableId: textSpeed
                           op: set
@@ -409,6 +416,7 @@ resources:
                 actionPayload:
                   actions:
                     updateVariable:
+                      id: uv8
                       operations:
                         - variableId: volume
                           op: increment
@@ -430,6 +438,7 @@ resources:
                 actionPayload:
                   actions:
                     updateVariable:
+                      id: uv9
                       operations:
                         - variableId: volume
                           op: decrement
@@ -516,6 +525,7 @@ resources:
                 actionPayload:
                   actions:
                     updateVariable:
+                      id: uv10
                       operations:
                         - variableId: totalPlaythroughs
                           op: increment
@@ -556,6 +566,7 @@ resources:
                 actionPayload:
                   actions:
                     updateVariable:
+                      id: uv11
                       operations:
                         - variableId: secretUnlocked
                           op: set

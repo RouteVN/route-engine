@@ -93,6 +93,7 @@ resources:
             actionPayload:
               actions:
                 updateVariable:
+                  id: uv1
                   operations:
                     - variableId: soundEnabled
                       op: toggle
@@ -134,6 +135,7 @@ resources:
             actionPayload:
               actions:
                 updateVariable:
+                  id: uv2
                   operations:
                     - variableId: notificationsOn
                       op: toggle
@@ -175,6 +177,7 @@ resources:
             actionPayload:
               actions:
                 updateVariable:
+                  id: uv3
                   operations:
                     - variableId: tutorialCompleted
                       op: toggle
@@ -207,6 +210,7 @@ resources:
             actionPayload:
               actions:
                 updateVariable:
+                  id: uv4
                   operations:
                     - variableId: soundEnabled
                       op: set
@@ -229,6 +233,7 @@ resources:
             actionPayload:
               actions:
                 updateVariable:
+                  id: uv5
                   operations:
                     - variableId: soundEnabled
                       op: set

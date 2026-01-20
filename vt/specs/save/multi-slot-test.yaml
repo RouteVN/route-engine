@@ -165,6 +165,7 @@ resources:
                 actionPayload:
                   actions:
                     updateVariable:
+                      id: uv1
                       operations:
                         - variableId: playerName
                           op: set
@@ -186,6 +187,7 @@ resources:
                 actionPayload:
                   actions:
                     updateVariable:
+                      id: uv2
                       operations:
                         - variableId: playerName
                           op: set
@@ -207,6 +209,7 @@ resources:
                 actionPayload:
                   actions:
                     updateVariable:
+                      id: uv3
                       operations:
                         - variableId: playerName
                           op: set
@@ -243,6 +246,7 @@ resources:
                 actionPayload:
                   actions:
                     updateVariable:
+                      id: uv4
                       operations:
                         - variableId: playerLevel
                           op: increment
@@ -263,6 +267,7 @@ resources:
                 actionPayload:
                   actions:
                     updateVariable:
+                      id: uv5
                       operations:
                         - variableId: playerLevel
                           op: decrement
@@ -298,6 +303,7 @@ resources:
                 actionPayload:
                   actions:
                     updateVariable:
+                      id: uv6
                       operations:
                         - variableId: playerGold
                           op: increment
@@ -319,6 +325,7 @@ resources:
                 actionPayload:
                   actions:
                     updateVariable:
+                      id: uv7
                       operations:
                         - variableId: playerGold
                           op: set
@@ -355,6 +362,7 @@ resources:
                 actionPayload:
                   actions:
                     updateVariable:
+                      id: uv8
                       operations:
                         - variableId: questCompleted
                           op: toggle
