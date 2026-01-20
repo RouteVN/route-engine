@@ -311,3 +311,288 @@ out:
       y: 0
       children: []
   animations: []
+---
+case: resolve animations.in.resourceId to tween properties in layeredView elements
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - resources:
+      layouts:
+        menuLayout:
+          elements:
+            - id: "menuButton"
+              type: "rect"
+              animations:
+                in:
+                  resourceId: "fadeIn"
+      tweens:
+        fadeIn:
+          properties:
+            alpha:
+              from: 0
+              to: 1
+              duration: 500
+    variables: {}
+    autoMode: false
+    skipMode: false
+    currentLocalizationPackageId: null
+    layeredViews:
+      - resourceId: menuLayout
+        resourceType: layout
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+    - id: "layeredView-0"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "menuButton"
+          type: "rect"
+          animations:
+            in:
+              properties:
+                alpha:
+                  from: 0
+                  to: 1
+                  duration: 500
+  animations: []
+---
+case: resolve animations.out.resourceId to tween properties in layeredView elements
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - resources:
+      layouts:
+        dialogLayout:
+          elements:
+            - id: "closeBtn"
+              type: "rect"
+              animations:
+                out:
+                  resourceId: "fadeOut"
+      tweens:
+        fadeOut:
+          properties:
+            alpha:
+              from: 1
+              to: 0
+              duration: 300
+    variables: {}
+    autoMode: false
+    skipMode: false
+    currentLocalizationPackageId: null
+    layeredViews:
+      - resourceId: dialogLayout
+        resourceType: layout
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+    - id: "layeredView-0"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "closeBtn"
+          type: "rect"
+          animations:
+            out:
+              properties:
+                alpha:
+                  from: 1
+                  to: 0
+                  duration: 300
+  animations: []
+---
+case: resolve both in and out animations in layeredView
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - resources:
+      layouts:
+        popupLayout:
+          elements:
+            - id: "popup"
+              type: "container"
+              animations:
+                in:
+                  resourceId: "scaleIn"
+                out:
+                  resourceId: "scaleOut"
+      tweens:
+        scaleIn:
+          properties:
+            scale:
+              from: 0
+              to: 1
+              duration: 250
+        scaleOut:
+          properties:
+            scale:
+              from: 1
+              to: 0
+              duration: 250
+    variables: {}
+    autoMode: false
+    skipMode: false
+    currentLocalizationPackageId: null
+    layeredViews:
+      - resourceId: popupLayout
+        resourceType: layout
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+    - id: "layeredView-0"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "popup"
+          type: "container"
+          animations:
+            in:
+              properties:
+                scale:
+                  from: 0
+                  to: 1
+                  duration: 250
+            out:
+              properties:
+                scale:
+                  from: 1
+                  to: 0
+                  duration: 250
+  animations: []
+---
+case: resolve animations in nested children of layeredView recursively
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - resources:
+      layouts:
+        settingsLayout:
+          elements:
+            - id: "settingsPanel"
+              type: "container"
+              children:
+                - id: "volumeSlider"
+                  type: "rect"
+                  animations:
+                    in:
+                      resourceId: "slideIn"
+      tweens:
+        slideIn:
+          properties:
+            x:
+              from: -200
+              to: 0
+              duration: 300
+    variables: {}
+    autoMode: false
+    skipMode: false
+    currentLocalizationPackageId: null
+    layeredViews:
+      - resourceId: settingsLayout
+        resourceType: layout
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+    - id: "layeredView-0"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "settingsPanel"
+          type: "container"
+          children:
+            - id: "volumeSlider"
+              type: "rect"
+              animations:
+                in:
+                  properties:
+                    x:
+                      from: -200
+                      to: 0
+                      duration: 300
+  animations: []
+---
+case: layeredView animation resourceId not found keeps resourceId unchanged
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - resources:
+      layouts:
+        brokenLayout:
+          elements:
+            - id: "element1"
+              type: "rect"
+              animations:
+                in:
+                  resourceId: "missingTween"
+      tweens: {}
+    variables: {}
+    autoMode: false
+    skipMode: false
+    currentLocalizationPackageId: null
+    layeredViews:
+      - resourceId: brokenLayout
+        resourceType: layout
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+    - id: "layeredView-0"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "element1"
+          type: "rect"
+          animations:
+            in:
+              resourceId: "missingTween"
+  animations: []

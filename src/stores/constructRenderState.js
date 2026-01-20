@@ -7,6 +7,56 @@ const jemplFunctions = {
   formatDate,
 };
 
+/**
+ * Resolves animation resourceIds to actual tween properties within layout elements.
+ * This enables element-level animations (in/out) for elements inside layouts.
+ * @param {Object} element - The element to process
+ * @param {Object} resources - Resources containing tweens
+ * @returns {Object} - Element with resolved animations
+ */
+const resolveElementAnimations = (element, resources) => {
+  if (!element || !resources?.tweens) {
+    return element;
+  }
+
+  const processedElement = { ...element };
+
+  // Resolve animations.in
+  if (processedElement.animations?.in?.resourceId) {
+    const tween = resources.tweens[processedElement.animations.in.resourceId];
+    if (tween) {
+      processedElement.animations = {
+        ...processedElement.animations,
+        in: {
+          properties: structuredClone(tween.properties),
+        },
+      };
+    }
+  }
+
+  // Resolve animations.out
+  if (processedElement.animations?.out?.resourceId) {
+    const tween = resources.tweens[processedElement.animations.out.resourceId];
+    if (tween) {
+      processedElement.animations = {
+        ...processedElement.animations,
+        out: {
+          properties: structuredClone(tween.properties),
+        },
+      };
+    }
+  }
+
+  // Recurse into children
+  if (processedElement.children && Array.isArray(processedElement.children)) {
+    processedElement.children = processedElement.children.map((child) =>
+      resolveElementAnimations(child, resources),
+    );
+  }
+
+  return processedElement;
+};
+
 export const createInitialState = () => {
   return {
     elements: [
@@ -710,8 +760,12 @@ export const addLayout = (
       return processedElement;
     };
 
-    // Push the processed container
-    storyContainer.children.push(processElementAfterRender(processedContainer));
+    // Push the processed container with resolved animations
+    const finalContainer = resolveElementAnimations(
+      processElementAfterRender(processedContainer),
+      resources,
+    );
+    storyContainer.children.push(finalContainer);
   }
   return state;
 };
@@ -786,6 +840,12 @@ export const addLayeredViews = (
         i18n: {},
         l10n,
       });
+
+      // Resolve animation resourceIds to properties
+      processedLayeredView = resolveElementAnimations(
+        processedLayeredView,
+        resources,
+      );
 
       elements.push(processedLayeredView);
     });

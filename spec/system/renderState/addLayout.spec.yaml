@@ -55,3 +55,334 @@ out:
       type: "container"
       children: []
   animations: []
+---
+case: resolve animations.in.resourceId to tween properties in layout elements
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      layout:
+        resourceId: "animatedLayout"
+    resources:
+      layouts:
+        animatedLayout:
+          elements:
+            - id: "button1"
+              type: "rect"
+              animations:
+                in:
+                  resourceId: "fadeIn"
+      tweens:
+        fadeIn:
+          properties:
+            alpha:
+              from: 0
+              to: 1
+              duration: 500
+    variables: {}
+    autoMode: false
+    skipMode: false
+    currentLocalizationPackageId: null
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "layout-animatedLayout"
+          type: "container"
+          x: 0
+          y: 0
+          children:
+            - id: "button1"
+              type: "rect"
+              animations:
+                in:
+                  properties:
+                    alpha:
+                      from: 0
+                      to: 1
+                      duration: 500
+  animations: []
+---
+case: resolve animations.out.resourceId to tween properties in layout elements
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      layout:
+        resourceId: "animatedLayout"
+    resources:
+      layouts:
+        animatedLayout:
+          elements:
+            - id: "panel1"
+              type: "container"
+              animations:
+                out:
+                  resourceId: "fadeOut"
+      tweens:
+        fadeOut:
+          properties:
+            alpha:
+              from: 1
+              to: 0
+              duration: 300
+    variables: {}
+    autoMode: false
+    skipMode: false
+    currentLocalizationPackageId: null
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "layout-animatedLayout"
+          type: "container"
+          x: 0
+          y: 0
+          children:
+            - id: "panel1"
+              type: "container"
+              animations:
+                out:
+                  properties:
+                    alpha:
+                      from: 1
+                      to: 0
+                      duration: 300
+  animations: []
+---
+case: resolve both in and out animations on same element
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      layout:
+        resourceId: "animatedLayout"
+    resources:
+      layouts:
+        animatedLayout:
+          elements:
+            - id: "modal"
+              type: "container"
+              animations:
+                in:
+                  resourceId: "slideIn"
+                out:
+                  resourceId: "slideOut"
+      tweens:
+        slideIn:
+          properties:
+            y:
+              from: -100
+              to: 0
+              duration: 400
+        slideOut:
+          properties:
+            y:
+              from: 0
+              to: 100
+              duration: 400
+    variables: {}
+    autoMode: false
+    skipMode: false
+    currentLocalizationPackageId: null
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "layout-animatedLayout"
+          type: "container"
+          x: 0
+          y: 0
+          children:
+            - id: "modal"
+              type: "container"
+              animations:
+                in:
+                  properties:
+                    y:
+                      from: -100
+                      to: 0
+                      duration: 400
+                out:
+                  properties:
+                    y:
+                      from: 0
+                      to: 100
+                      duration: 400
+  animations: []
+---
+case: resolve animations in nested children recursively
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      layout:
+        resourceId: "nestedLayout"
+    resources:
+      layouts:
+        nestedLayout:
+          elements:
+            - id: "parent"
+              type: "container"
+              children:
+                - id: "child"
+                  type: "rect"
+                  animations:
+                    in:
+                      resourceId: "popIn"
+      tweens:
+        popIn:
+          properties:
+            scale:
+              from: 0
+              to: 1
+              duration: 200
+    variables: {}
+    autoMode: false
+    skipMode: false
+    currentLocalizationPackageId: null
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "layout-nestedLayout"
+          type: "container"
+          x: 0
+          y: 0
+          children:
+            - id: "parent"
+              type: "container"
+              children:
+                - id: "child"
+                  type: "rect"
+                  animations:
+                    in:
+                      properties:
+                        scale:
+                          from: 0
+                          to: 1
+                          duration: 200
+  animations: []
+---
+case: animation resourceId not found in tweens - keeps resourceId unchanged
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      layout:
+        resourceId: "animatedLayout"
+    resources:
+      layouts:
+        animatedLayout:
+          elements:
+            - id: "button1"
+              type: "rect"
+              animations:
+                in:
+                  resourceId: "nonExistentTween"
+      tweens: {}
+    variables: {}
+    autoMode: false
+    skipMode: false
+    currentLocalizationPackageId: null
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "layout-animatedLayout"
+          type: "container"
+          x: 0
+          y: 0
+          children:
+            - id: "button1"
+              type: "rect"
+              animations:
+                in:
+                  resourceId: "nonExistentTween"
+  animations: []
+---
+case: element without animations passes through unchanged
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      layout:
+        resourceId: "simpleLayout"
+    resources:
+      layouts:
+        simpleLayout:
+          elements:
+            - id: "staticElement"
+              type: "text"
+              content: "Hello"
+      tweens:
+        someAnimation:
+          properties:
+            alpha:
+              from: 0
+              to: 1
+    variables: {}
+    autoMode: false
+    skipMode: false
+    currentLocalizationPackageId: null
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "layout-simpleLayout"
+          type: "container"
+          x: 0
+          y: 0
+          children:
+            - id: "staticElement"
+              type: "text"
+              content: "Hello"
+  animations: []
