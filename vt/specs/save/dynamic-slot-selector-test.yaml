@@ -83,6 +83,7 @@ resources:
                 actionPayload:
                   actions:
                     updateVariable:
+                      id: uv1
                       operations:
                         - variableId: loadPage
                           op: decrement
@@ -104,6 +105,7 @@ resources:
                 actionPayload:
                   actions:
                     updateVariable:
+                      id: uv2
                       operations:
                         - variableId: loadPage
                           op: increment

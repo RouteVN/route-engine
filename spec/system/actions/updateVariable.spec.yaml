@@ -21,7 +21,8 @@ in:
       contexts:
         - variables:
             playerName: "Guest"
-  - operations:
+  - id: "test1"
+    operations:
       - variableId: playerName
         op: set
         value: "Alice"
@@ -57,7 +58,8 @@ in:
         pendingEffects: []
       contexts:
         - variables: {}
-  - operations:
+  - id: "test2"
+    operations:
       - variableId: volume
         op: set
         value: 80
@@ -97,7 +99,8 @@ in:
         pendingEffects: []
       contexts:
         - variables: {}
-  - operations:
+  - id: "test3"
+    operations:
       - variableId: achievement1
         op: set
         value: true
@@ -137,7 +140,8 @@ in:
       contexts:
         - variables:
             score: 100
-  - operations:
+  - id: "test4"
+    operations:
       - variableId: score
         op: increment
 out:
@@ -172,7 +176,8 @@ in:
       contexts:
         - variables:
             soundEnabled: true
-  - operations:
+  - id: "test5"
+    operations:
       - variableId: soundEnabled
         op: toggle
 out:
@@ -207,7 +212,8 @@ in:
         pendingEffects: []
       contexts:
         - variables: {}
-  - operations:
+  - id: "test6"
+    operations:
       - variableId: notificationsOn
         op: toggle
 out:
@@ -256,7 +262,8 @@ in:
       contexts:
         - variables:
             score: 100
-  - operations:
+  - id: "test7"
+    operations:
       - variableId: score
         op: increment
       - variableId: volume
@@ -314,7 +321,8 @@ in:
         pendingEffects: []
       contexts:
         - variables: {}
-  - operations:
+  - id: "test8"
+    operations:
       - variableId: newCounter
         op: increment
 out:
@@ -349,7 +357,8 @@ in:
       contexts:
         - variables:
             gold: 50
-  - operations:
+  - id: "test9"
+    operations:
       - variableId: gold
         op: increment
         value: 25
@@ -385,7 +394,8 @@ in:
       contexts:
         - variables:
             health: 100
-  - operations:
+  - id: "test10"
+    operations:
       - variableId: health
         op: decrement
         value: 30
@@ -421,7 +431,8 @@ in:
       contexts:
         - variables:
             multiplier: 2
-  - operations:
+  - id: "test11"
+    operations:
       - variableId: multiplier
         op: multiply
         value: 3
@@ -457,7 +468,8 @@ in:
       contexts:
         - variables:
             value: 100
-  - operations:
+  - id: "test12"
+    operations:
       - variableId: value
         op: divide
         value: 4
@@ -493,7 +505,8 @@ in:
       contexts:
         - variables:
             score: 100
-  - operations:
+  - id: "test13"
+    operations:
       - variableId: score
         op: decrement
 out:
@@ -525,7 +538,8 @@ in:
         pendingEffects: []
       contexts:
         - variables: {}
-  - operations:
+  - id: "test14"
+    operations:
       - variableId: badVar
         op: set
         value: 10
@@ -545,7 +559,8 @@ in:
         pendingEffects: []
       contexts:
         - variables: {}
-  - operations:
+  - id: "test15"
+    operations:
       - variableId: badVar
         op: set
         value: 10
@@ -565,7 +580,8 @@ in:
         pendingEffects: []
       contexts:
         - variables: {}
-  - operations:
+  - id: "test16"
+    operations:
       - variableId: badVar
         op: set
         value: 10
@@ -587,7 +603,8 @@ in:
       contexts:
         - variables:
             flag: false
-  - operations:
+  - id: "test17"
+    operations:
       - variableId: flag
         op: increment
 throws: "Operation \"increment\" is not valid for variable \"flag\" of type \"boolean\". Valid operations: set, toggle"
@@ -608,7 +625,8 @@ in:
       contexts:
         - variables:
             name: "Alice"
-  - operations:
+  - id: "test18"
+    operations:
       - variableId: name
         op: multiply
         value: 2
@@ -630,7 +648,8 @@ in:
       contexts:
         - variables:
             count: 42
-  - operations:
+  - id: "test19"
+    operations:
       - variableId: count
         op: toggle
 throws: "Operation \"toggle\" is not valid for variable \"count\" of type \"number\". Valid operations: set, increment, decrement, multiply, divide"
@@ -651,7 +670,8 @@ in:
       contexts:
         - variables:
             score: 100
-  - operations:
+  - id: "test20"
+    operations:
       - variableId: score
         op: unknown
         value: 5
@@ -675,7 +695,8 @@ in:
         - variables:
             inventory:
               items: []
-  - operations:
+  - id: "test21"
+    operations:
       - variableId: inventory
         op: set
         value:
@@ -720,7 +741,8 @@ in:
         pendingEffects: []
       contexts:
         - variables: {}
-  - operations:
+  - id: "test22"
+    operations:
       - variableId: pageButtons
         op: set
         value:
@@ -776,7 +798,117 @@ in:
       contexts:
         - variables:
             data: {}
-  - operations:
+  - id: "test23"
+    operations:
       - variableId: data
         op: increment
 throws: "Operation \"increment\" is not valid for variable \"data\" of type \"object\". Valid operations: set"
+---
+case: error - missing id field
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            testContextVar1:
+              type: number
+              scope: context
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            testContextVar1: 0
+  - operations:
+      - variableId: testContextVar1
+        op: set
+        value: 100
+throws: "updateVariable requires an id field"
+---
+case: error - id with hyphen
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            testContextVar1:
+              type: number
+              scope: context
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            testContextVar1: 0
+  - id: "invalid-id"
+    operations:
+      - variableId: testContextVar1
+        op: set
+        value: 100
+throws: "updateVariable id must be alphanumeric, got: \"invalid-id\""
+---
+case: error - id with underscore
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            testContextVar1:
+              type: number
+              scope: context
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            testContextVar1: 0
+  - id: "invalid_id"
+    operations:
+      - variableId: testContextVar1
+        op: set
+        value: 100
+throws: "updateVariable id must be alphanumeric, got: \"invalid_id\""
+---
+case: error - id with space
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            testContextVar1:
+              type: number
+              scope: context
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            testContextVar1: 0
+  - id: "invalid id"
+    operations:
+      - variableId: testContextVar1
+        op: set
+        value: 100
+throws: "updateVariable id must be alphanumeric, got: \"invalid id\""
+---
+case: error - empty id
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            testContextVar1:
+              type: number
+              scope: context
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            testContextVar1: 0
+  - id: ""
+    operations:
+      - variableId: testContextVar1
+        op: set
+        value: 100
+throws: "updateVariable requires an id field"

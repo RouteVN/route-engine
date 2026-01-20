@@ -230,12 +230,14 @@ resources:
                 $if !isLastFileIdIndex:
                   actions:
                     updateVariable:
+                      id: uv1
                       operations:
                         - variableId: "activeGalleryFileIndex"
                           op: "increment"
                 $else:
                   actions:
                     updateVariable:
+                      id: uv2
                       operations:
                         - variableId: "activeGalleryFileIndex"
                           op: set
@@ -424,6 +426,7 @@ resources:
                 resourceId: dafkjkl3
                 resourceType: layout
               updateVariable:
+                id: uv3
                 operations:
                   - variableId: "isMainMenu"
                     op: "set"
@@ -522,6 +525,7 @@ resources:
                       dragEventPayload:
                         actions:
                           updateVariable:
+                            id: uv4
                             operations:
                               - variableId: textSpeed
                                 op: "set"
@@ -607,6 +611,7 @@ resources:
                         eventPayload:
                           actions:
                             updateVariable:
+                              id: uv5
                               operations:
                                 - variableId: "currentSavePageIndex"
                                   op: "decrement"
@@ -639,6 +644,7 @@ resources:
                                 eventPayload:
                                   actions:
                                     updateVariable:
+                                      id: uv6
                                       operations:
                                         - variableId: "currentSavePageIndex"
                                           op: "set"
@@ -659,6 +665,7 @@ resources:
                         eventPayload:
                           actions:
                             updateVariable:
+                              id: uv7
                               operations:
                                 - variableId: "currentSavePageIndex"
                                   op: "increment"
@@ -754,6 +761,7 @@ resources:
                         eventPayload:
                           actions:
                             updateVariable:
+                              id: uv8
                               operations:
                                 - variableId: "currentSavePageIndex"
                                   op: "decrement"
@@ -786,6 +794,7 @@ resources:
                                 eventPayload:
                                   actions:
                                     updateVariable:
+                                      id: uv9
                                       operations:
                                         - variableId: "currentSavePageIndex"
                                           op: "set"
@@ -806,6 +815,7 @@ resources:
                         eventPayload:
                           actions:
                             updateVariable:
+                              id: uv10
                               operations:
                                 - variableId: "currentSavePageIndex"
                                   op: "increment"
@@ -894,6 +904,7 @@ resources:
                               eventPayload:
                                 actions:
                                   updateVariable:
+                                    id: uv11
                                     operations:
                                       - variableId: "activeGalleryIndex"
                                         op: "set"
@@ -1045,6 +1056,7 @@ resources:
               eventPayload:
                 actions:
                   updateVariable:
+                    id: uv12
                     operations:
                       - variableId: "currentMenuTabId"
                         op: "set"
@@ -1070,6 +1082,7 @@ resources:
               eventPayload:
                 actions:
                   updateVariable:
+                    id: uv13
                     operations:
                       - variableId: "currentMenuTabId"
                         op: "set"
@@ -1095,6 +1108,7 @@ resources:
               eventPayload:
                 actions:
                   updateVariable:
+                    id: uv14
                     operations:
                       - variableId: "currentMenuTabId"
                         op: "set"
@@ -1120,6 +1134,7 @@ resources:
               eventPayload:
                 actions:
                   updateVariable:
+                    id: uv15
                     operations:
                       - variableId: "currentMenuTabId"
                         op: "set"
@@ -1145,6 +1160,7 @@ resources:
               eventPayload:
                 actions:
                   updateVariable:
+                    id: uv16
                     operations:
                       - variableId: "currentMenuTabId"
                         op: "set"
@@ -1170,6 +1186,7 @@ resources:
               eventPayload:
                 actions:
                   updateVariable:
+                    id: uv17
                     operations:
                       - variableId: "currentMenuTabId"
                         op: "set"
@@ -1195,6 +1212,7 @@ resources:
               eventPayload:
                 actions:
                   updateVariable:
+                    id: uv18
                     operations:
                       - variableId: "currentMenuTabId"
                         op: "set"
@@ -1408,6 +1426,7 @@ resources:
               eventPayload:
                 actions:
                   updateVariable:
+                    id: uv19
                     operations:
                       - variableId: currentMenuTabId
                         op: "set"
@@ -1555,6 +1574,7 @@ resources:
                   addLayeredView:
                     resourceId: dafkjkl3
                   updateVariable:
+                    id: uv20
                     operations:
                       - variableId: "currentMenuTabId"
                         op: "set"
@@ -1578,6 +1598,7 @@ resources:
                   addLayeredView:
                     resourceId: dafkjkl3
                   updateVariable:
+                    id: uv21
                     operations:
                       - variableId: "currentMenuTabId"
                         op: "set"

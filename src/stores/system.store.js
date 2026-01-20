@@ -1395,7 +1395,15 @@ export const nextLineFromSystem = ({ state }) => {
 };
 
 export const updateVariable = ({ state }, payload) => {
-  const { operations = [] } = payload;
+  const { id, operations = [] } = payload;
+
+  // Validate required id field
+  if (!id) {
+    throw new Error("updateVariable requires an id field");
+  }
+  if (typeof id !== "string" || !/^[a-zA-Z0-9]+$/.test(id)) {
+    throw new Error(`updateVariable id must be alphanumeric, got: "${id}"`);
+  }
 
   let globalDeviceModified = false;
   let globalAccountModified = false;

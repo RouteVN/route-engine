@@ -70,6 +70,7 @@ resources:
                 actionPayload:
                   actions:
                     updateVariable:
+                      id: uvIncrement
                       operations:
                         - variableId: count
                           op: increment
@@ -89,6 +90,7 @@ resources:
                 actionPayload:
                   actions:
                     updateVariable:
+                      id: uvDecrement
                       operations:
                         - variableId: count
                           op: decrement

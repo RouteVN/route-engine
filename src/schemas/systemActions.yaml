@@ -76,6 +76,10 @@ properties:
     type: object
     description: Update game variables
     properties:
+      id:
+        type: string
+        description: Unique identifier for this updateVariable action (for backtrack reference)
+        pattern: "^[a-zA-Z0-9]+$"
       operations:
         type: array
         description: Array of variable operations to perform
@@ -98,7 +102,7 @@ properties:
           required: [variableId, op]
           additionalProperties: false
         minItems: 1
-    required: [operations]
+    required: [id, operations]
     additionalProperties: false
   # TODO: remove this
   # clearCurrentMode:
