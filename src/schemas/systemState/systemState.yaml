@@ -226,10 +226,34 @@ properties:
 
         historySequence:
           type: array
-          description: History sequence tracking user interactions
+          description: History sequence tracking user interactions with section-level state snapshots
           items:
             type: object
-            description: History entry
+            description: Section-level history entry with initial state and line progression
+            properties:
+              sectionId:
+                type: string
+                description: Section ID for this history entry
+              initialState:
+                type: object
+                description: Context variable values captured when entering this section
+                additionalProperties: true
+              lines:
+                type: array
+                description: Lines visited in this section with their executed action IDs
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: Line ID
+                    updateVariableIds:
+                      type: array
+                      description: IDs of updateVariable actions executed on this line
+                      items:
+                        type: string
+                  required: [id]
+            required: [sectionId]
           default: []
 
 required:

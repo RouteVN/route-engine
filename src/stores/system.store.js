@@ -1006,7 +1006,8 @@ export const jumpToLine = ({ state }, payload) => {
 };
 
 /**
- * Adds an item to the historySequence of the last context.
+ * Adds a section entry to the historySequence of the last context.
+ * Captures initialState (context variables snapshot) when entering the section.
  * NOTE: This should only be called when transitioning to a new section.
  * @param {Object} state - Current state object
  * @param {Object} payload - Action payload
@@ -1021,12 +1022,51 @@ export const addToHistorySequence = ({ state }, payload) => {
   const lastContext = state.contexts[state.contexts.length - 1];
 
   if (lastContext && lastContext.historySequence) {
-    lastContext.historySequence.push({ sectionId: item.sectionId });
+    // Capture initialState: snapshot of all context variables at section entry
+    const initialState = { ...lastContext.variables };
+
+    lastContext.historySequence.push({
+      sectionId: item.sectionId,
+      initialState, // Captured ONCE when entering section
+      lines: [], // Initialize empty lines array for line-level tracking
+    });
   }
 
   state.global.pendingEffects.push({
     name: "render",
   });
+  return state;
+};
+
+/**
+ * Adds a line entry to the current section's history sequence.
+ * Should be called when entering a new line, BEFORE actions execute.
+ * @param {Object} state - Current state object
+ * @param {Object} payload - Action payload
+ * @param {string} payload.lineId - The line ID to add
+ * @returns {Object} Updated state object
+ */
+export const addLineToHistory = ({ state }, payload) => {
+  const { lineId } = payload;
+  const lastContext = state.contexts[state.contexts.length - 1];
+
+  if (!lastContext?.historySequence) {
+    return state;
+  }
+
+  const historySequence = lastContext.historySequence;
+  if (historySequence.length === 0) {
+    return state;
+  }
+
+  const currentSection = historySequence[historySequence.length - 1];
+  if (!currentSection.lines) {
+    currentSection.lines = [];
+  }
+
+  // Add new line entry (updateVariableIds will be added by updateVariable if executed)
+  currentSection.lines.push({ id: lineId });
+
   return state;
 };
 
@@ -1405,6 +1445,10 @@ export const updateVariable = ({ state }, payload) => {
     throw new Error(`updateVariable id must be alphanumeric, got: "${id}"`);
   }
 
+  const lastContext = state.contexts[state.contexts.length - 1];
+
+  // Track which scopes are modified
+  let contextVariableModified = false;
   let globalDeviceModified = false;
   let globalAccountModified = false;
 
@@ -1418,12 +1462,12 @@ export const updateVariable = ({ state }, payload) => {
     validateVariableOperation(type, op, variableId);
 
     const target =
-      scope === "context"
-        ? state.contexts[state.contexts.length - 1].variables
-        : state.global.variables;
+      scope === "context" ? lastContext.variables : state.global.variables;
 
     // Track which scope was modified
-    if (scope === "global-device") {
+    if (scope === "context") {
+      contextVariableModified = true;
+    } else if (scope === "global-device") {
       globalDeviceModified = true;
     } else if (scope === "global-account") {
       globalAccountModified = true;
@@ -1432,6 +1476,25 @@ export const updateVariable = ({ state }, payload) => {
     // Use pure helper to apply operation
     target[variableId] = applyVariableOperation(target[variableId], op, value);
   });
+
+  // Log updateVariableId to current line's history entry (EVENT SOURCING)
+  // Only log if context variables were modified (global variables not tracked for backtrack)
+  if (contextVariableModified) {
+    const historySequence = lastContext.historySequence;
+    if (historySequence && historySequence.length > 0) {
+      const currentSection = historySequence[historySequence.length - 1];
+      if (currentSection.lines && currentSection.lines.length > 0) {
+        const currentLineEntry =
+          currentSection.lines[currentSection.lines.length - 1];
+        // Initialize array if not present
+        if (!currentLineEntry.updateVariableIds) {
+          currentLineEntry.updateVariableIds = [];
+        }
+        // Log the action ID (not the state, not the operations - just the ID)
+        currentLineEntry.updateVariableIds.push(id);
+      }
+    }
+  }
 
   // Save global-device variables if any were modified
   if (globalDeviceModified) {
@@ -1466,6 +1529,153 @@ export const updateVariable = ({ state }, payload) => {
   state.global.pendingEffects.push({
     name: "render",
   });
+  return state;
+};
+
+/**
+ * Looks up an updateVariable action definition by ID from project data.
+ * Searches through all scenes, sections, and lines to find the action.
+ * @param {Object} projectData - The project data containing all sections and lines
+ * @param {string} updateVariableId - The ID of the updateVariable action to find
+ * @returns {Object|undefined} The action definition { id, operations } or undefined if not found
+ */
+const lookupUpdateVariableAction = (projectData, updateVariableId) => {
+  const scenes = projectData?.story?.scenes || {};
+
+  for (const sceneId of Object.keys(scenes)) {
+    const scene = scenes[sceneId];
+    const sections = scene?.sections || {};
+
+    for (const sectionId of Object.keys(sections)) {
+      const section = sections[sectionId];
+      const lines = section?.lines || [];
+
+      for (const line of lines) {
+        // Check if line has updateVariable with matching ID
+        if (line.actions?.updateVariable?.id === updateVariableId) {
+          return line.actions.updateVariable;
+        }
+
+        // Also check for multiple updateVariable actions if that pattern exists
+        if (Array.isArray(line.actions?.updateVariables)) {
+          const found = line.actions.updateVariables.find(
+            (action) => action.id === updateVariableId,
+          );
+          if (found) return found;
+        }
+      }
+    }
+  }
+
+  return undefined;
+};
+
+/**
+ * Backtracks to a specific line using replay-forward algorithm.
+ *
+ * Algorithm:
+ *   1. Get initialState from current section
+ *   2. Reset context variables to initialState
+ *   3. For each line in history BEFORE targetLineId:
+ *      - For each updateVariableId in line:
+ *        - Look up action definition in project data
+ *        - Execute the action (apply operations)
+ *   4. Set pointer to targetLineId
+ *   5. Switch to read mode
+ *
+ * @param {Object} state - Current state object
+ * @param {Object} payload - Action payload
+ * @param {string} payload.sectionId - The section ID to backtrack within
+ * @param {string} payload.lineId - The target line ID to backtrack to
+ * @returns {Object} Updated state object
+ */
+export const backtrackToLine = ({ state }, payload) => {
+  const { sectionId, lineId } = payload;
+
+  const lastContext = state.contexts[state.contexts.length - 1];
+  if (!lastContext) {
+    console.warn("No context available for backtrackToLine");
+    return state;
+  }
+
+  // Find the section in history
+  const historySequence = lastContext.historySequence;
+  const sectionEntry = historySequence?.find(
+    (entry) => entry.sectionId === sectionId,
+  );
+
+  if (!sectionEntry?.lines) {
+    console.warn(`Section ${sectionId} not found in history or has no lines`);
+    return state;
+  }
+
+  // Find target line index
+  const targetLineIndex = sectionEntry.lines.findIndex(
+    (line) => line.id === lineId,
+  );
+  if (targetLineIndex === -1) {
+    console.warn(`Line ${lineId} not found in section ${sectionId} history`);
+    return state;
+  }
+
+  // Step 1: Reset context variables to initialState
+  const initialState = sectionEntry.initialState || {};
+  lastContext.variables = { ...initialState };
+
+  // Step 2: Replay all actions BEFORE the target line
+  // (We want state as it was BEFORE target line executed)
+  for (let i = 0; i < targetLineIndex; i++) {
+    const lineEntry = sectionEntry.lines[i];
+    const updateVariableIds = lineEntry.updateVariableIds || [];
+
+    for (const actionId of updateVariableIds) {
+      // Look up action definition in project data
+      const actionDef = lookupUpdateVariableAction(state.projectData, actionId);
+
+      if (!actionDef) {
+        console.warn(
+          `Action definition not found for ID: ${actionId}, skipping`,
+        );
+        continue;
+      }
+
+      // Apply the action's operations
+      const operations = actionDef.operations || [];
+      for (const { variableId, op, value } of operations) {
+        const variableConfig =
+          state.projectData.resources?.variables?.[variableId];
+        const scope = variableConfig?.scope;
+
+        // Only apply context-scoped variables during backtrack
+        if (scope === "context") {
+          lastContext.variables[variableId] = applyVariableOperation(
+            lastContext.variables[variableId],
+            op,
+            value,
+          );
+        }
+      }
+    }
+  }
+
+  // Step 3: Update pointer to target line
+  lastContext.pointers.read = { sectionId, lineId };
+
+  // Step 4: Switch to read mode (makes choices interactive)
+  lastContext.currentPointerMode = "read";
+  lastContext.pointers.history = {
+    sectionId: null,
+    lineId: null,
+    historySequenceIndex: null,
+  };
+
+  // Reset UI state
+  state.global.isLineCompleted = false;
+
+  // Queue render and line actions
+  state.global.pendingEffects.push({ name: "render" });
+  state.global.pendingEffects.push({ name: "handleLineActions" });
+
   return state;
 };
 
@@ -1527,10 +1737,12 @@ export const createSystemStore = (initialState) => {
     sectionTransition,
     jumpToLine,
     addToHistorySequence,
+    addLineToHistory,
     nextLine,
     nextLineFromCompleted,
     markLineCompleted,
     prevLine,
+    backtrackToLine,
     pushLayeredView,
     popLayeredView,
     replaceLastLayeredView,
