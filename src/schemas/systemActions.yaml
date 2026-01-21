@@ -78,7 +78,7 @@ properties:
     properties:
       id:
         type: string
-        description: Unique identifier for this updateVariable action (for backtrack reference)
+        description: Unique identifier for this updateVariable action (for rollback reference)
         pattern: "^[a-zA-Z0-9]+$"
       operations:
         type: array

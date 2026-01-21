@@ -1,6 +1,6 @@
 ---
-title: "Backtrack Test"
-description: "Simple visual novel simulation to test variable backtracking"
+title: "Rollback Test"
+description: "Simple visual novel simulation to test variable rollback"
 ---
 l10n:
   packages:
@@ -106,7 +106,7 @@ resources:
           click:
             actionPayload:
               actions:
-                backtrackToLine:
+                rollbackToLine:
                   sectionId: "story"
                   lineId: "line1"
 
@@ -174,5 +174,5 @@ story:
               actions:
                 dialogue:
                   content:
-                    - text: "If backtrack works, your score should reset to 0 when you go back!"
+                    - text: "If rollback works, your score should reset to 0 when you go back!"
                   characterId: narrator

@@ -996,7 +996,7 @@ export const jumpToLine = ({ state }, payload) => {
   // Reset line completion state
   state.global.isLineCompleted = false;
 
-  // Add line to history for backtrack support
+  // Add line to history for rollback support
   addLineToHistory({ state }, { lineId });
 
   // Add appropriate pending effects
@@ -1137,7 +1137,7 @@ export const nextLine = ({ state }) => {
 
     state.global.isLineCompleted = false;
 
-    // Add line to history for backtrack support
+    // Add line to history for rollback support
     addLineToHistory({ state }, { lineId: nextLine.id });
 
     state.global.pendingEffects.push({
@@ -1304,7 +1304,7 @@ export const sectionTransition = ({ state }, payload) => {
       lineId: firstLine.id,
     };
 
-    // Add new section to historySequence for backtrack support
+    // Add new section to historySequence for rollback support
     addToHistorySequence({ state }, { item: { sectionId } });
 
     // Add first line to history
@@ -1368,7 +1368,7 @@ export const nextLineFromSystem = ({ state }) => {
 
     state.global.isLineCompleted = false;
 
-    // Add line to history for backtrack support
+    // Add line to history for rollback support
     addLineToHistory({ state }, { lineId: nextLine.id });
 
     state.global.pendingEffects.push({
@@ -1441,7 +1441,7 @@ export const updateVariable = ({ state }, payload) => {
   });
 
   // Log updateVariableId to current line's history entry (EVENT SOURCING)
-  // Only log if context variables were modified (global variables not tracked for backtrack)
+  // Only log if context variables were modified (global variables not tracked for rollback)
   if (contextVariableModified) {
     const historySequence = lastContext.historySequence;
     if (historySequence && historySequence.length > 0) {
@@ -1534,7 +1534,7 @@ const lookupUpdateVariableAction = (projectData, updateVariableId) => {
 };
 
 /**
- * Backtracks to a specific line using replay-forward algorithm.
+ * Rolls back to a specific line using replay-forward algorithm.
  *
  * Algorithm:
  *   1. Get initialState from current section
@@ -1548,16 +1548,16 @@ const lookupUpdateVariableAction = (projectData, updateVariableId) => {
  *
  * @param {Object} state - Current state object
  * @param {Object} payload - Action payload
- * @param {string} payload.sectionId - The section ID to backtrack within
- * @param {string} payload.lineId - The target line ID to backtrack to
+ * @param {string} payload.sectionId - The section ID to rollback within
+ * @param {string} payload.lineId - The target line ID to rollback to
  * @returns {Object} Updated state object
  */
-export const backtrackToLine = ({ state }, payload) => {
+export const rollbackToLine = ({ state }, payload) => {
   const { sectionId, lineId } = payload;
 
   const lastContext = state.contexts[state.contexts.length - 1];
   if (!lastContext) {
-    throw new Error("No context available for backtrackToLine");
+    throw new Error("No context available for rollbackToLine");
   }
 
   // Find the section in history
@@ -1567,7 +1567,9 @@ export const backtrackToLine = ({ state }, payload) => {
   );
 
   if (!sectionEntry?.lines) {
-    throw new Error(`Section ${sectionId} not found in history or has no lines`);
+    throw new Error(
+      `Section ${sectionId} not found in history or has no lines`,
+    );
   }
 
   // Find target line index by lineId
@@ -1603,7 +1605,7 @@ export const backtrackToLine = ({ state }, payload) => {
           state.projectData.resources?.variables?.[variableId];
         const scope = variableConfig?.scope;
 
-        // Only apply context-scoped variables during backtrack
+        // Only apply context-scoped variables during rollback
         if (scope === "context") {
           lastContext.variables[variableId] = applyVariableOperation(
             lastContext.variables[variableId],
@@ -1619,7 +1621,7 @@ export const backtrackToLine = ({ state }, payload) => {
   // This removes entries at and after targetLineIndex
   sectionEntry.lines = sectionEntry.lines.slice(0, targetLineIndex);
 
-  // Step 4: Add target line to history (fresh entry for backtrack support)
+  // Step 4: Add target line to history (fresh entry for rollback support)
   sectionEntry.lines.push({ id: lineId });
 
   // Step 5: Update pointer to target line
@@ -1705,7 +1707,7 @@ export const createSystemStore = (initialState) => {
     nextLine,
     markLineCompleted,
     prevLine,
-    backtrackToLine,
+    rollbackToLine,
     pushLayeredView,
     popLayeredView,
     replaceLastLayeredView,

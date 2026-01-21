@@ -1,9 +1,9 @@
 file: "../../../src/stores/system.store.js"
-group: systemStore.backtrackToLine
-suites: [backtrackToLine]
+group: systemStore.rollbackToLine
+suites: [rollbackToLine]
 ---
-suite: backtrackToLine
-exportName: backtrackToLine
+suite: rollbackToLine
+exportName: rollbackToLine
 ---
 case: resets to initialState before replay
 in:
@@ -378,7 +378,7 @@ out:
                 - "act2"
             - id: "3"
 ---
-case: backtrack to first line resets to initialState only (no replay)
+case: rollback to first line resets to initialState only (no replay)
 in:
   - state:
       projectData:
@@ -475,7 +475,7 @@ out:
           lines:
             - id: "1"
 ---
-case: global variables are NOT replayed during backtrack
+case: global variables are NOT replayed during rollback
 in:
   - state:
       projectData:
