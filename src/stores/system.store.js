@@ -528,6 +528,7 @@ export const selectRenderState = ({ state }) => {
     dialogueUIHidden: state.global.dialogueUIHidden,
     autoMode: state.global.autoMode,
     skipMode: state.global.skipMode,
+    canRollback: selectCanRollback({ state }),
     skipOnlyViewedLines: !allVariables._skipUnseenText,
     isLineCompleted: state.global.isLineCompleted,
     layeredViews: state.global.layeredViews,
@@ -1604,6 +1605,18 @@ export const selectLineIdByOffset = ({ state }, payload) => {
 };
 
 /**
+ * Checks if rollback is possible (not at first line of history).
+ * Used for UI to conditionally enable/disable back button.
+ *
+ * @param {Object} state - Current state object
+ * @returns {boolean} True if rollback is possible, false otherwise
+ */
+export const selectCanRollback = ({ state }) => {
+  const target = selectLineIdByOffset({ state }, { offset: -1 });
+  return target !== null;
+};
+
+/**
  * Rolls back by a relative offset from current position.
  * Convenience action that combines selectLineIdByOffset with rollbackToLine.
  *
@@ -1789,6 +1802,7 @@ export const createSystemStore = (initialState) => {
     selectRenderState,
     selectLayeredViews,
     selectLineIdByOffset,
+    selectCanRollback,
 
     // Actions
     startAutoMode,
