@@ -67,7 +67,8 @@ out:
       historySequence:
         - sectionId: "section1"
           initialState: {}
-          lines: []
+          lines:
+            - id: "line1"
       configuration: {}
       views: []
       bgm:
@@ -176,7 +177,8 @@ out:
               items:
                 - id: sword
                   name: Steel Sword
-          lines: []
+          lines:
+            - id: "line1"
       configuration: {}
       views: []
       bgm:
@@ -260,7 +262,8 @@ out:
         - sectionId: "section1"
           initialState:
             settings: {}
-          lines: []
+          lines:
+            - id: "line1"
       configuration: {}
       views: []
       bgm:
@@ -364,7 +367,8 @@ out:
       historySequence:
         - sectionId: "section1"
           initialState: {}
-          lines: []
+          lines:
+            - id: "line1"
       configuration: {}
       views: []
       bgm:

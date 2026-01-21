@@ -87,7 +87,7 @@ export const createInitialState = (payload) => {
           {
             sectionId: initialPointer.sectionId,
             initialState: { ...contextVariableDefaultValues },
-            lines: [],
+            lines: [{ id: initialPointer.lineId }],
           },
         ],
         configuration: {},
@@ -996,6 +996,9 @@ export const jumpToLine = ({ state }, payload) => {
   // Reset line completion state
   state.global.isLineCompleted = false;
 
+  // Add line to history for backtrack support
+  addLineToHistory({ state }, { lineId });
+
   // Add appropriate pending effects
   state.global.pendingEffects.push({
     name: "render",
@@ -1072,60 +1075,6 @@ export const addLineToHistory = ({ state }, payload) => {
   return state;
 };
 
-/**
- * Advances to the next line if auto navigation is configured to trigger from line completion
- * @param {Object} state - Current state object
- * @returns {Object} Updated state object
- * @description
- * Checks if auto navigation is enabled and configured to trigger from line completion.
- * If conditions are met, advances to the next line regardless of manual navigation settings.
- * After advancing, resets the auto navigation configuration to empty object.
- */
-export const nextLineFromCompleted = ({ state }) => {
-  // Check if auto navigation is enabled and configured to trigger from line completion
-  if (
-    state.global.nextLineConfig?.auto?.enabled !== true ||
-    state.global.nextLineConfig?.auto?.trigger !== "fromComplete"
-  ) {
-    return state;
-  }
-
-  const pointer = selectCurrentPointer({ state })?.pointer;
-  const sectionId = pointer?.sectionId;
-  const section = selectSection({ state }, { sectionId });
-
-  const lines = section?.lines || [];
-  const currentLineIndex = lines.findIndex(
-    (line) => line.id === pointer?.lineId,
-  );
-  const nextLineIndex = currentLineIndex + 1;
-
-  if (nextLineIndex < lines.length) {
-    const nextLine = lines[nextLineIndex];
-    const lastContext = state.contexts[state.contexts.length - 1];
-
-    if (lastContext) {
-      lastContext.pointers.read = {
-        sectionId,
-        lineId: nextLine.id,
-      };
-    }
-
-    state.global.isLineCompleted = false;
-
-    // Reset auto navigation configuration after advancing
-    state.global.nextLineConfig.auto = {};
-
-    state.global.pendingEffects.push({
-      name: "render",
-    });
-    state.global.pendingEffects.push({
-      name: "handleLineActions",
-    });
-  }
-  return state;
-};
-
 export const nextLine = ({ state }) => {
   //const isAutoOrSkip = state.global.autoMode || state.global.skipMode;
 
@@ -1187,6 +1136,9 @@ export const nextLine = ({ state }) => {
     }
 
     state.global.isLineCompleted = false;
+
+    // Add line to history for backtrack support
+    addLineToHistory({ state }, { lineId: nextLine.id });
 
     state.global.pendingEffects.push({
       name: "render",
@@ -1351,6 +1303,12 @@ export const sectionTransition = ({ state }, payload) => {
       sectionId,
       lineId: firstLine.id,
     };
+
+    // Add new section to historySequence for backtrack support
+    addToHistorySequence({ state }, { item: { sectionId } });
+
+    // Add first line to history
+    addLineToHistory({ state }, { lineId: firstLine.id });
   }
 
   // Reset line completion state
@@ -1409,6 +1367,9 @@ export const nextLineFromSystem = ({ state }) => {
     }
 
     state.global.isLineCompleted = false;
+
+    // Add line to history for backtrack support
+    addLineToHistory({ state }, { lineId: nextLine.id });
 
     state.global.pendingEffects.push({
       name: "render",
@@ -1588,20 +1549,11 @@ const lookupUpdateVariableAction = (projectData, updateVariableId) => {
  * @param {Object} state - Current state object
  * @param {Object} payload - Action payload
  * @param {string} payload.sectionId - The section ID to backtrack within
- * @param {string} [payload.lineId] - The target line ID to backtrack to
- * @param {number} [payload.offset] - Relative offset from current line (e.g., -1 for previous line)
+ * @param {string} payload.lineId - The target line ID to backtrack to
  * @returns {Object} Updated state object
  */
 export const backtrackToLine = ({ state }, payload) => {
-  const { sectionId, lineId, offset } = payload;
-
-  // Require exactly one of lineId or offset
-  const hasLineId = lineId !== undefined;
-  const hasOffset = offset !== undefined;
-  if (hasLineId === hasOffset) {
-    console.warn("backtrackToLine requires exactly one of: lineId or offset");
-    return state;
-  }
+  const { sectionId, lineId } = payload;
 
   const lastContext = state.contexts[state.contexts.length - 1];
   if (!lastContext) {
@@ -1620,44 +1572,13 @@ export const backtrackToLine = ({ state }, payload) => {
     return state;
   }
 
-  // Determine target line - either by lineId or by offset
-  let targetLineId = lineId;
-  let targetLineIndex;
-
-  if (offset !== undefined) {
-    // Calculate target from current position using offset
-    // Use findLastIndex because history may contain duplicate entries after backtracking
-    const currentLineId = lastContext.pointers.read.lineId;
-    const currentIndex = sectionEntry.lines.findLastIndex(
-      (line) => line.id === currentLineId,
-    );
-
-    if (currentIndex === -1) {
-      console.warn("Current line not found in history");
-      return state;
-    }
-
-    targetLineIndex = currentIndex + offset;
-
-    if (targetLineIndex < 0 || targetLineIndex >= sectionEntry.lines.length) {
-      console.warn(
-        `Offset ${offset} out of bounds (current: ${currentIndex}, target: ${targetLineIndex})`,
-      );
-      return state;
-    }
-
-    targetLineId = sectionEntry.lines[targetLineIndex].id;
-  } else {
-    // Find target line index by lineId
-    targetLineIndex = sectionEntry.lines.findIndex(
-      (line) => line.id === targetLineId,
-    );
-    if (targetLineIndex === -1) {
-      console.warn(
-        `Line ${targetLineId} not found in section ${sectionId} history`,
-      );
-      return state;
-    }
+  // Find target line index by lineId
+  const targetLineIndex = sectionEntry.lines.findIndex(
+    (line) => line.id === lineId,
+  );
+  if (targetLineIndex === -1) {
+    console.warn(`Line ${lineId} not found in section ${sectionId} history`);
+    return state;
   }
 
   // Step 1: Reset context variables to initialState
@@ -1701,15 +1622,16 @@ export const backtrackToLine = ({ state }, payload) => {
   }
 
   // Step 3: Truncate history to target line position
-  // This removes entries at and after targetLineIndex, so handleLineActions
-  // can re-add the target line cleanly. This enables consecutive backtracks
-  // to work correctly (e.g., back 1, back 1, back 1 goes progressively back)
+  // This removes entries at and after targetLineIndex
   sectionEntry.lines = sectionEntry.lines.slice(0, targetLineIndex);
 
-  // Step 4: Update pointer to target line
-  lastContext.pointers.read = { sectionId, lineId: targetLineId };
+  // Step 4: Add target line to history (fresh entry for backtrack support)
+  sectionEntry.lines.push({ id: lineId });
 
-  // Step 5: Switch to read mode (makes choices interactive)
+  // Step 5: Update pointer to target line
+  lastContext.pointers.read = { sectionId, lineId };
+
+  // Step 6: Switch to read mode (makes choices interactive)
   lastContext.currentPointerMode = "read";
   lastContext.pointers.history = {
     sectionId: null,
@@ -1787,7 +1709,6 @@ export const createSystemStore = (initialState) => {
     addToHistorySequence,
     addLineToHistory,
     nextLine,
-    nextLineFromCompleted,
     markLineCompleted,
     prevLine,
     backtrackToLine,

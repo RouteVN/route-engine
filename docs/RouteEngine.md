@@ -136,7 +136,6 @@ const presentationState = engine.selectPresentationState();
 | Action | Payload | Description |
 |--------|---------|-------------|
 | `nextLine` | - | Advance to the next line (respects `nextLineConfig.manual`) |
-| `nextLineFromCompleted` | - | Advance if auto-trigger is `fromComplete` |
 | `prevLine` | `{ sectionId }` | Navigate to previous line (enters history mode) |
 | `jumpToLine` | `{ sectionId?, lineId }` | Jump to specific line |
 | `sectionTransition` | `{ sectionId }` | Transition to a different section |

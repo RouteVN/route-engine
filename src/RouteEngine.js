@@ -59,12 +59,8 @@ export default function createRouteEngine(options) {
 
   const handleLineActions = () => {
     const line = _systemStore.selectCurrentLine();
-    if (line) {
-      // Add line to history for backtrack support (before processing actions)
-      _systemStore.addLineToHistory({ lineId: line.id });
-      if (line.actions) {
-        handleActions(line.actions);
-      }
+    if (line?.actions) {
+      handleActions(line.actions);
     }
   };
 

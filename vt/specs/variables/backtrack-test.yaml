@@ -110,26 +110,6 @@ resources:
                   sectionId: "story"
                   lineId: "line1"
 
-        # Back one line button - positioned next to BACK to Line 1
-        - id: backOneBtn
-          type: text
-          content: "[BACK 1 Line]"
-          x: 350
-          y: 700
-          textStyle:
-            fontSize: 28
-            fill: "#9b59b6"
-          hover:
-            textStyle:
-              fontSize: 28
-              fill: "#be90d4"
-          click:
-            actionPayload:
-              actions:
-                backtrackToLine:
-                  sectionId: "story"
-                  offset: -1
-
 story:
   initialSceneId: main
   scenes:

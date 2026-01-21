@@ -81,7 +81,8 @@ out:
         - sectionId: "section1"
           initialState:
             score: 0
-          lines: []
+          lines:
+            - id: "1"
 ---
 case: replays actions forward to line before target
 in:
@@ -204,6 +205,7 @@ out:
             - id: "2"
               updateVariableIds:
                 - "act1"
+            - id: "3"
 ---
 case: handles missing action definitions gracefully (skips)
 in:
@@ -291,6 +293,7 @@ out:
             - id: "2"
               updateVariableIds:
                 - "missingAction"
+            - id: "3"
 ---
 case: handles missing initialState gracefully (empty state)
 in:
@@ -363,7 +366,8 @@ out:
           historySequenceIndex: null
       historySequence:
         - sectionId: "section1"
-          lines: []
+          lines:
+            - id: "1"
 ---
 case: switches to read mode after backtrack
 in:
@@ -431,6 +435,7 @@ out:
           initialState: {}
           lines:
             - id: "1"
+            - id: "2"
 ---
 case: returns unchanged state for invalid sectionId
 in:
@@ -654,6 +659,7 @@ out:
               updateVariableIds:
                 - "act1"
                 - "act2"
+            - id: "3"
 ---
 case: backtrack to first line resets to initialState only (no replay)
 in:
@@ -749,7 +755,8 @@ out:
         - sectionId: "section1"
           initialState:
             score: 10
-          lines: []
+          lines:
+            - id: "1"
 ---
 case: empty updateVariableIds results in no replay for that line
 in:
@@ -837,6 +844,7 @@ out:
               updateVariableIds: []
             - id: "2"
               updateVariableIds: []
+            - id: "3"
 ---
 case: global variables are NOT replayed during backtrack
 in:
@@ -938,412 +946,4 @@ out:
             - id: "2"
               updateVariableIds:
                 - "globalAct"
----
-case: backtrack using offset -1 (go back one line)
-in:
-  - state:
-      projectData:
-        story:
-          scenes:
-            scene1:
-              sections:
-                section1:
-                  lines:
-                    - id: "1"
-                    - id: "2"
-                      actions:
-                        updateVariable:
-                          id: "act1"
-                          operations:
-                            - variableId: score
-                              op: set
-                              value: 10
-                    - id: "3"
-                      actions:
-                        updateVariable:
-                          id: "act2"
-                          operations:
-                            - variableId: score
-                              op: increment
-                              value: 5
-                    - id: "4"
-        resources:
-          variables:
-            score:
-              type: number
-              scope: context
-              default: 0
-      global:
-        isLineCompleted: true
-        pendingEffects: []
-      contexts:
-        - variables:
-            score: 15
-          currentPointerMode: "read"
-          pointers:
-            read:
-              sectionId: "section1"
-              lineId: "4"
-            history: {}
-          historySequence:
-            - sectionId: "section1"
-              initialState:
-                score: 0
-              lines:
-                - id: "1"
-                - id: "2"
-                  updateVariableIds:
-                    - "act1"
-                - id: "3"
-                  updateVariableIds:
-                    - "act2"
-                - id: "4"
-  - sectionId: "section1"
-    offset: -1
-out:
-  projectData:
-    story:
-      scenes:
-        scene1:
-          sections:
-            section1:
-              lines:
-                - id: "1"
-                - id: "2"
-                  actions:
-                    updateVariable:
-                      id: "act1"
-                      operations:
-                        - variableId: score
-                          op: set
-                          value: 10
-                - id: "3"
-                  actions:
-                    updateVariable:
-                      id: "act2"
-                      operations:
-                        - variableId: score
-                          op: increment
-                          value: 5
-                - id: "4"
-    resources:
-      variables:
-        score:
-          type: number
-          scope: context
-          default: 0
-  global:
-    isLineCompleted: false
-    pendingEffects:
-      - name: "render"
-      - name: "handleLineActions"
-  contexts:
-    - variables:
-        score: 10
-      currentPointerMode: "read"
-      pointers:
-        read:
-          sectionId: "section1"
-          lineId: "3"
-        history:
-          sectionId: null
-          lineId: null
-          historySequenceIndex: null
-      historySequence:
-        - sectionId: "section1"
-          initialState:
-            score: 0
-          lines:
-            - id: "1"
-            - id: "2"
-              updateVariableIds:
-                - "act1"
----
-case: backtrack using offset -2 (go back two lines)
-in:
-  - state:
-      projectData:
-        story:
-          scenes:
-            scene1:
-              sections:
-                section1:
-                  lines:
-                    - id: "1"
-                    - id: "2"
-                    - id: "3"
-                    - id: "4"
-        resources:
-          variables:
-            score:
-              type: number
-              scope: context
-              default: 0
-      global:
-        isLineCompleted: true
-        pendingEffects: []
-      contexts:
-        - variables:
-            score: 50
-          currentPointerMode: "read"
-          pointers:
-            read:
-              sectionId: "section1"
-              lineId: "4"
-            history: {}
-          historySequence:
-            - sectionId: "section1"
-              initialState:
-                score: 0
-              lines:
-                - id: "1"
-                - id: "2"
-                - id: "3"
-                - id: "4"
-  - sectionId: "section1"
-    offset: -2
-out:
-  projectData:
-    story:
-      scenes:
-        scene1:
-          sections:
-            section1:
-              lines:
-                - id: "1"
-                - id: "2"
-                - id: "3"
-                - id: "4"
-    resources:
-      variables:
-        score:
-          type: number
-          scope: context
-          default: 0
-  global:
-    isLineCompleted: false
-    pendingEffects:
-      - name: "render"
-      - name: "handleLineActions"
-  contexts:
-    - variables:
-        score: 0
-      currentPointerMode: "read"
-      pointers:
-        read:
-          sectionId: "section1"
-          lineId: "2"
-        history:
-          sectionId: null
-          lineId: null
-          historySequenceIndex: null
-      historySequence:
-        - sectionId: "section1"
-          initialState:
-            score: 0
-          lines:
-            - id: "1"
----
-case: offset out of bounds (negative) returns unchanged state
-in:
-  - state:
-      projectData:
-        story:
-          scenes:
-            scene1:
-              sections:
-                section1:
-                  lines:
-                    - id: "1"
-                    - id: "2"
-        resources:
-          variables: {}
-      global:
-        isLineCompleted: true
-        pendingEffects: []
-      contexts:
-        - variables: {}
-          currentPointerMode: "read"
-          pointers:
-            read:
-              sectionId: "section1"
-              lineId: "1"
-            history: {}
-          historySequence:
-            - sectionId: "section1"
-              initialState: {}
-              lines:
-                - id: "1"
-                - id: "2"
-  - sectionId: "section1"
-    offset: -1
-out:
-  projectData:
-    story:
-      scenes:
-        scene1:
-          sections:
-            section1:
-              lines:
-                - id: "1"
-                - id: "2"
-    resources:
-      variables: {}
-  global:
-    isLineCompleted: true
-    pendingEffects: []
-  contexts:
-    - variables: {}
-      currentPointerMode: "read"
-      pointers:
-        read:
-          sectionId: "section1"
-          lineId: "1"
-        history: {}
-      historySequence:
-        - sectionId: "section1"
-          initialState: {}
-          lines:
-            - id: "1"
-            - id: "2"
----
-case: offset with duplicate entries uses last occurrence (after backtrack and advance)
-in:
-  - state:
-      projectData:
-        story:
-          scenes:
-            scene1:
-              sections:
-                section1:
-                  lines:
-                    - id: "1"
-                    - id: "2"
-                      actions:
-                        updateVariable:
-                          id: "act1"
-                          operations:
-                            - variableId: score
-                              op: set
-                              value: 10
-                    - id: "3"
-                      actions:
-                        updateVariable:
-                          id: "act2"
-                          operations:
-                            - variableId: score
-                              op: increment
-                              value: 5
-                    - id: "4"
-        resources:
-          variables:
-            score:
-              type: number
-              scope: context
-              default: 0
-      global:
-        isLineCompleted: true
-        pendingEffects: []
-      contexts:
-        - variables:
-            score: 15
-          currentPointerMode: "read"
-          pointers:
-            read:
-              sectionId: "section1"
-              lineId: "4"
-            history: {}
-          historySequence:
-            - sectionId: "section1"
-              initialState:
-                score: 0
-              lines:
-                # Original entries
-                - id: "1"
-                - id: "2"
-                  updateVariableIds:
-                    - "act1"
-                - id: "3"
-                  updateVariableIds:
-                    - "act2"
-                - id: "4"
-                # Duplicates from previous backtrack to line1 and advancing again
-                - id: "1"
-                - id: "2"
-                  updateVariableIds:
-                    - "act1"
-                - id: "3"
-                  updateVariableIds:
-                    - "act2"
-                - id: "4"
-  - sectionId: "section1"
-    offset: -1
-out:
-  projectData:
-    story:
-      scenes:
-        scene1:
-          sections:
-            section1:
-              lines:
-                - id: "1"
-                - id: "2"
-                  actions:
-                    updateVariable:
-                      id: "act1"
-                      operations:
-                        - variableId: score
-                          op: set
-                          value: 10
-                - id: "3"
-                  actions:
-                    updateVariable:
-                      id: "act2"
-                      operations:
-                        - variableId: score
-                          op: increment
-                          value: 5
-                - id: "4"
-    resources:
-      variables:
-        score:
-          type: number
-          scope: context
-          default: 0
-  global:
-    isLineCompleted: false
-    pendingEffects:
-      - name: "render"
-      - name: "handleLineActions"
-  contexts:
-    - variables:
-        # Replayed lines 0-6 (before target index 7):
-        # line1 + line2(set=10) + line3(+5) + line4 + line1 + line2(set=10)
-        # = 10 (set overwrites to 10 twice, but final is still 10)
-        score: 10
-      currentPointerMode: "read"
-      pointers:
-        read:
-          sectionId: "section1"
-          lineId: "3"
-        history:
-          sectionId: null
-          lineId: null
-          historySequenceIndex: null
-      historySequence:
-        - sectionId: "section1"
-          initialState:
-            score: 0
-          lines:
-            - id: "1"
-            - id: "2"
-              updateVariableIds:
-                - "act1"
             - id: "3"
-              updateVariableIds:
-                - "act2"
-            - id: "4"
-            - id: "1"
-            - id: "2"
-              updateVariableIds:
-                - "act1"
