@@ -1628,10 +1628,13 @@ export const backtrackByOffset = ({ state }, payload) => {
   }
 
   // Delegate to backtrackToLine for the actual backtracking with variable reversion
-  return backtrackToLine({ state }, {
-    sectionId: target.sectionId,
-    lineId: target.lineId,
-  });
+  return backtrackToLine(
+    { state },
+    {
+      sectionId: target.sectionId,
+      lineId: target.lineId,
+    },
+  );
 };
 
 /**
