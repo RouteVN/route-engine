@@ -1534,6 +1534,107 @@ const lookupUpdateVariableAction = (projectData, updateVariableId) => {
 };
 
 /**
+ * Selects a line ID by relative offset from current position in history.
+ * Uses findLastIndex to handle duplicate line entries after backtracking.
+ *
+ * @param {Object} state - Current state object
+ * @param {Object} payload - Selector payload
+ * @param {number} payload.offset - Relative offset (negative = back, positive = forward)
+ * @returns {Object|null} { sectionId, lineId } or null if out of bounds
+ *
+ * @example
+ * // Go back one line
+ * const target = selectLineIdByOffset({ state }, { offset: -1 });
+ * // target = { sectionId: "story", lineId: "line3" } or null if at first line
+ */
+export const selectLineIdByOffset = ({ state }, payload) => {
+  const { offset } = payload;
+
+  if (offset === undefined || typeof offset !== "number") {
+    console.warn("selectLineIdByOffset requires a numeric offset");
+    return null;
+  }
+
+  const lastContext = state.contexts[state.contexts.length - 1];
+  if (!lastContext) {
+    return null;
+  }
+
+  // Get current position from read pointer
+  const currentSectionId = lastContext.pointers.read?.sectionId;
+  const currentLineId = lastContext.pointers.read?.lineId;
+
+  if (!currentSectionId || !currentLineId) {
+    return null;
+  }
+
+  // Find section in history
+  const historySequence = lastContext.historySequence;
+  const sectionEntry = historySequence?.find(
+    (entry) => entry.sectionId === currentSectionId,
+  );
+
+  if (!sectionEntry?.lines || sectionEntry.lines.length === 0) {
+    return null;
+  }
+
+  // Use findLastIndex to handle duplicate entries after backtracking
+  // When user backtracks and moves forward again, same lineIds may appear multiple times
+  const currentIndex = sectionEntry.lines.findLastIndex(
+    (line) => line.id === currentLineId,
+  );
+
+  if (currentIndex === -1) {
+    return null;
+  }
+
+  // Calculate target index
+  const targetIndex = currentIndex + offset;
+
+  // Check bounds (within section only, as per user requirement)
+  if (targetIndex < 0 || targetIndex >= sectionEntry.lines.length) {
+    return null;
+  }
+
+  const targetLine = sectionEntry.lines[targetIndex];
+  return {
+    sectionId: currentSectionId,
+    lineId: targetLine.id,
+  };
+};
+
+/**
+ * Backtracks by a relative offset from current position.
+ * Convenience action that combines selectLineIdByOffset with backtrackToLine.
+ *
+ * @param {Object} state - Current state object
+ * @param {Object} payload - Action payload
+ * @param {number} payload.offset - Relative offset (typically -1 for back button)
+ * @returns {Object} Updated state object (unchanged if offset is out of bounds)
+ *
+ * @example
+ * // Go back one line with variable reversion
+ * engine.handleAction("backtrackByOffset", { offset: -1 });
+ */
+export const backtrackByOffset = ({ state }, payload) => {
+  const { offset } = payload;
+
+  // Get target using the selector
+  const target = selectLineIdByOffset({ state }, { offset });
+
+  if (!target) {
+    // Out of bounds or invalid - do nothing
+    return state;
+  }
+
+  // Delegate to backtrackToLine for the actual backtracking with variable reversion
+  return backtrackToLine({ state }, {
+    sectionId: target.sectionId,
+    lineId: target.lineId,
+  });
+};
+
+/**
  * Backtracks to a specific line using replay-forward algorithm.
  *
  * Algorithm:
@@ -1681,6 +1782,7 @@ export const createSystemStore = (initialState) => {
     selectCurrentPageSlots,
     selectRenderState,
     selectLayeredViews,
+    selectLineIdByOffset,
 
     // Actions
     startAutoMode,
@@ -1712,6 +1814,7 @@ export const createSystemStore = (initialState) => {
     markLineCompleted,
     prevLine,
     backtrackToLine,
+    backtrackByOffset,
     pushLayeredView,
     popLayeredView,
     replaceLastLayeredView,

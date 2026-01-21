@@ -1,0 +1,274 @@
+---
+title: "Backtrack By Offset Test"
+description: "Test backtrackByOffset action - go back N lines with variable reversion"
+---
+l10n:
+  packages:
+    en:
+      label: English
+      lang: en
+      keys: {}
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#1a1a2e"
+
+resources:
+  variables:
+    score:
+      type: number
+      scope: context
+      default: 0
+    lineVisited:
+      type: number
+      scope: context
+      default: 1
+
+  characters:
+    narrator:
+      name: "Guide"
+
+  layouts:
+    baseLayout:
+      elements:
+        - id: bg
+          type: rect
+          fill: "#1a1a2e"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+
+    dialogueUI:
+      name: Dialogue UI
+      mode: adv
+      elements:
+        # Dialogue box
+        - id: dialogueBox
+          type: rect
+          x: 100
+          y: 750
+          width: 1720
+          height: 280
+          fill: "#2c3e50"
+          opacity: 0.9
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+
+        # Character name
+        - id: charName
+          type: text
+          content: "${dialogue.character.name}"
+          x: 150
+          y: 770
+          textStyle:
+            fontSize: 28
+            fill: "#3498db"
+            fontWeight: bold
+
+        # Dialogue text
+        - id: dialogueText
+          type: text
+          content: "${dialogue.content[0].text}"
+          x: 150
+          y: 820
+          width: 1620
+          textStyle:
+            fontSize: 24
+            fill: "#ecf0f1"
+
+        # Score display
+        - id: scoreDisplay
+          type: text
+          content: "Score: ${variables.score}"
+          x: 1700
+          y: 50
+          anchorX: 1
+          textStyle:
+            fontSize: 32
+            fill: "#f1c40f"
+            fontWeight: bold
+
+        # Current line indicator
+        - id: lineIndicator
+          type: text
+          content: "Line visited: ${variables.lineVisited}"
+          x: 1700
+          y: 100
+          anchorX: 1
+          textStyle:
+            fontSize: 24
+            fill: "#9b59b6"
+
+        # Back 1 line button - uses backtrackByOffset
+        - id: backOneBtn
+          type: text
+          content: "[BACK 1 LINE]"
+          x: 100
+          y: 680
+          textStyle:
+            fontSize: 24
+            fill: "#e74c3c"
+          hover:
+            textStyle:
+              fontSize: 24
+              fill: "#ff6b6b"
+          click:
+            actionPayload:
+              actions:
+                backtrackByOffset:
+                  offset: -1
+
+        # Back 2 lines button
+        - id: backTwoBtn
+          type: text
+          content: "[BACK 2 LINES]"
+          x: 350
+          y: 680
+          textStyle:
+            fontSize: 24
+            fill: "#e67e22"
+          hover:
+            textStyle:
+              fontSize: 24
+              fill: "#f39c12"
+          click:
+            actionPayload:
+              actions:
+                backtrackByOffset:
+                  offset: -2
+
+        # Back 3 lines button
+        - id: backThreeBtn
+          type: text
+          content: "[BACK 3 LINES]"
+          x: 620
+          y: 680
+          textStyle:
+            fontSize: 24
+            fill: "#27ae60"
+          hover:
+            textStyle:
+              fontSize: 24
+              fill: "#2ecc71"
+          click:
+            actionPayload:
+              actions:
+                backtrackByOffset:
+                  offset: -3
+
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      name: Main Scene
+      initialSectionId: story
+      sections:
+        story:
+          name: Story
+          lines:
+            # Line 1: Introduction (score: 0)
+            - id: line1
+              actions:
+                base:
+                  resourceId: baseLayout
+                updateVariable:
+                  id: uvLine1
+                  operations:
+                    - variableId: lineVisited
+                      op: set
+                      value: 1
+                dialogue:
+                  mode: adv
+                  gui:
+                    resourceId: dialogueUI
+                  content:
+                    - text: "LINE 1: Score is 0. Use the back buttons above to test offset backtracking!"
+                  characterId: narrator
+
+            # Line 2: +5 score
+            - id: line2
+              actions:
+                updateVariable:
+                  id: uvLine2Score
+                  operations:
+                    - variableId: score
+                      op: increment
+                      value: 5
+                    - variableId: lineVisited
+                      op: set
+                      value: 2
+                dialogue:
+                  content:
+                    - text: "LINE 2: +5 points! (Total: 5)"
+                  characterId: narrator
+
+            # Line 3: +10 score
+            - id: line3
+              actions:
+                updateVariable:
+                  id: uvLine3Score
+                  operations:
+                    - variableId: score
+                      op: increment
+                      value: 10
+                    - variableId: lineVisited
+                      op: set
+                      value: 3
+                dialogue:
+                  content:
+                    - text: "LINE 3: +10 points! (Total: 15)"
+                  characterId: narrator
+
+            # Line 4: +15 score
+            - id: line4
+              actions:
+                updateVariable:
+                  id: uvLine4Score
+                  operations:
+                    - variableId: score
+                      op: increment
+                      value: 15
+                    - variableId: lineVisited
+                      op: set
+                      value: 4
+                dialogue:
+                  content:
+                    - text: "LINE 4: +15 points! (Total: 30)"
+                  characterId: narrator
+
+            # Line 5: +20 score
+            - id: line5
+              actions:
+                updateVariable:
+                  id: uvLine5Score
+                  operations:
+                    - variableId: score
+                      op: increment
+                      value: 20
+                    - variableId: lineVisited
+                      op: set
+                      value: 5
+                dialogue:
+                  content:
+                    - text: "LINE 5: +20 points! (Total: 50) - Try the back buttons now!"
+                  characterId: narrator
+
+            # Line 6: End message
+            - id: line6
+              actions:
+                updateVariable:
+                  id: uvLine6
+                  operations:
+                    - variableId: lineVisited
+                      op: set
+                      value: 6
+                dialogue:
+                  content:
+                    - text: "LINE 6: End of test. Expected behavior: [BACK 1] goes to line 5 (score 30), [BACK 2] goes to line 4 (score 15), etc."
+                  characterId: narrator
