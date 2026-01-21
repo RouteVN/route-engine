@@ -5,6 +5,110 @@ suites: [rollbackByOffset]
 suite: rollbackByOffset
 exportName: rollbackByOffset
 ---
+case: throws error for positive offset
+in:
+  - state:
+      projectData:
+        story:
+          scenes: {}
+        resources:
+          variables: {}
+      global:
+        pendingEffects: []
+      contexts:
+        - variables: {}
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+  - offset: 1
+throws: "rollbackByOffset requires a negative offset"
+---
+case: throws error for zero offset
+in:
+  - state:
+      projectData:
+        story:
+          scenes: {}
+        resources:
+          variables: {}
+      global:
+        pendingEffects: []
+      contexts:
+        - variables: {}
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+  - offset: 0
+throws: "rollbackByOffset requires a negative offset"
+---
+case: defaults to offset -1 when not specified
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                    - id: "2"
+        resources:
+          variables: {}
+      global:
+        isLineCompleted: true
+        pendingEffects: []
+      contexts:
+        - variables: {}
+          currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+            history: {}
+          historySequence:
+            - sectionId: "section1"
+              initialState: {}
+              lines:
+                - id: "1"
+                - id: "2"
+  - {}
+out:
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                - id: "2"
+    resources:
+      variables: {}
+  global:
+    isLineCompleted: false
+    pendingEffects:
+      - name: "render"
+      - name: "handleLineActions"
+  contexts:
+    - variables: {}
+      currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "1"
+        history:
+          sectionId: null
+          lineId: null
+          historySequenceIndex: null
+      historySequence:
+        - sectionId: "section1"
+          initialState: {}
+          lines:
+            - id: "1"
+---
 case: rolls back one line with offset -1 and reverts variables
 in:
   - state:

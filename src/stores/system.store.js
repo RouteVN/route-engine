@@ -1609,15 +1609,22 @@ export const selectLineIdByOffset = ({ state }, payload) => {
  *
  * @param {Object} state - Current state object
  * @param {Object} payload - Action payload
- * @param {number} payload.offset - Relative offset (typically -1 for back button)
- * @returns {Object} Updated state object (unchanged if offset is out of bounds)
+ * @param {number} [payload.offset=-1] - Negative offset (defaults to -1)
+ * @returns {Object} Updated state object (unchanged if out of bounds)
+ * @throws {Error} If offset is not negative
  *
  * @example
- * // Go back one line with variable reversion
- * engine.handleAction("rollbackByOffset", { offset: -1 });
+ * // Go back one line (default)
+ * engine.handleAction("rollbackByOffset", {});
+ * // Go back two lines
+ * engine.handleAction("rollbackByOffset", { offset: -2 });
  */
 export const rollbackByOffset = ({ state }, payload) => {
-  const { offset } = payload;
+  const { offset = -1 } = payload;
+
+  if (offset >= 0) {
+    throw new Error("rollbackByOffset requires a negative offset");
+  }
 
   // Get target using the selector
   const target = selectLineIdByOffset({ state }, { offset });
