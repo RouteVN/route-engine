@@ -1557,8 +1557,7 @@ export const backtrackToLine = ({ state }, payload) => {
 
   const lastContext = state.contexts[state.contexts.length - 1];
   if (!lastContext) {
-    console.warn("No context available for backtrackToLine");
-    return state;
+    throw new Error("No context available for backtrackToLine");
   }
 
   // Find the section in history
@@ -1568,8 +1567,7 @@ export const backtrackToLine = ({ state }, payload) => {
   );
 
   if (!sectionEntry?.lines) {
-    console.warn(`Section ${sectionId} not found in history or has no lines`);
-    return state;
+    throw new Error(`Section ${sectionId} not found in history or has no lines`);
   }
 
   // Find target line index by lineId
@@ -1577,8 +1575,7 @@ export const backtrackToLine = ({ state }, payload) => {
     (line) => line.id === lineId,
   );
   if (targetLineIndex === -1) {
-    console.warn(`Line ${lineId} not found in section ${sectionId} history`);
-    return state;
+    throw new Error(`Line ${lineId} not found in section ${sectionId} history`);
   }
 
   // Step 1: Reset context variables to initialState
@@ -1596,10 +1593,7 @@ export const backtrackToLine = ({ state }, payload) => {
       const actionDef = lookupUpdateVariableAction(state.projectData, actionId);
 
       if (!actionDef) {
-        console.warn(
-          `Action definition not found for ID: ${actionId}, skipping`,
-        );
-        continue;
+        throw new Error(`Action definition not found for ID: ${actionId}`);
       }
 
       // Apply the action's operations
