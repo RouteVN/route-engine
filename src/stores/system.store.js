@@ -1595,6 +1595,14 @@ const lookupUpdateVariableAction = (projectData, updateVariableId) => {
 export const backtrackToLine = ({ state }, payload) => {
   const { sectionId, lineId, offset } = payload;
 
+  // Require exactly one of lineId or offset
+  const hasLineId = lineId !== undefined;
+  const hasOffset = offset !== undefined;
+  if (hasLineId === hasOffset) {
+    console.warn("backtrackToLine requires exactly one of: lineId or offset");
+    return state;
+  }
+
   const lastContext = state.contexts[state.contexts.length - 1];
   if (!lastContext) {
     console.warn("No context available for backtrackToLine");
