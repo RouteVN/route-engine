@@ -1,6 +1,6 @@
 ---
-title: "Backtrack By Offset Test"
-description: "Test backtrackByOffset action - go back N lines with variable reversion"
+title: "Rollback By Offset Test"
+description: "Test rollbackByOffset action - go back N lines with variable reversion"
 ---
 l10n:
   packages:
@@ -105,7 +105,7 @@ resources:
             fontSize: 24
             fill: "#9b59b6"
 
-        # Back 1 line button - uses backtrackByOffset
+        # Back 1 line button - uses rollbackByOffset
         - id: backOneBtn
           type: text
           content: "[BACK 1 LINE]"
@@ -121,7 +121,7 @@ resources:
           click:
             actionPayload:
               actions:
-                backtrackByOffset:
+                rollbackByOffset:
                   offset: -1
 
         # Back 2 lines button
@@ -140,7 +140,7 @@ resources:
           click:
             actionPayload:
               actions:
-                backtrackByOffset:
+                rollbackByOffset:
                   offset: -2
 
         # Back 3 lines button
@@ -159,7 +159,7 @@ resources:
           click:
             actionPayload:
               actions:
-                backtrackByOffset:
+                rollbackByOffset:
                   offset: -3
 
 story:
@@ -188,7 +188,7 @@ story:
                   gui:
                     resourceId: dialogueUI
                   content:
-                    - text: "LINE 1: Score is 0. Use the back buttons above to test offset backtracking!"
+                    - text: "LINE 1: Score is 0. Use the back buttons above to test offset rollback!"
                   characterId: narrator
 
             # Line 2: +5 score

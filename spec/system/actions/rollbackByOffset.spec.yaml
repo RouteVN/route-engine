@@ -1,11 +1,11 @@
 file: "../../../src/stores/system.store.js"
-group: systemStore.backtrackByOffset
-suites: [backtrackByOffset]
+group: systemStore.rollbackByOffset
+suites: [rollbackByOffset]
 ---
-suite: backtrackByOffset
-exportName: backtrackByOffset
+suite: rollbackByOffset
+exportName: rollbackByOffset
 ---
-case: backtracks one line with offset -1 and reverts variables
+case: rolls back one line with offset -1 and reverts variables
 in:
   - state:
       projectData:
