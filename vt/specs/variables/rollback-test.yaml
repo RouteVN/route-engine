@@ -1,0 +1,178 @@
+---
+title: "Rollback Test"
+description: "Simple visual novel simulation to test variable rollback"
+---
+l10n:
+  packages:
+    en:
+      label: English
+      lang: en
+      keys: {}
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#1a1a2e"
+
+resources:
+  variables:
+    score:
+      type: number
+      scope: context
+      default: 0
+
+  characters:
+    narrator:
+      name: "Guide"
+
+  layouts:
+    baseLayout:
+      elements:
+        - id: bg
+          type: rect
+          fill: "#1a1a2e"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+
+    dialogueUI:
+      name: Dialogue UI
+      mode: adv
+      elements:
+        # Dialogue box
+        - id: dialogueBox
+          type: rect
+          x: 100
+          y: 750
+          width: 1720
+          height: 280
+          fill: "#2c3e50"
+          opacity: 0.9
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+
+        # Character name
+        - id: charName
+          type: text
+          content: "${dialogue.character.name}"
+          x: 150
+          y: 770
+          textStyle:
+            fontSize: 28
+            fill: "#3498db"
+            fontWeight: bold
+
+        # Dialogue text
+        - id: dialogueText
+          type: text
+          content: "${dialogue.content[0].text}"
+          x: 150
+          y: 820
+          width: 1620
+          textStyle:
+            fontSize: 24
+            fill: "#ecf0f1"
+
+        # Score display
+        - id: scoreDisplay
+          type: text
+          content: "Score: ${variables.score}"
+          x: 1700
+          y: 50
+          anchorX: 1
+          textStyle:
+            fontSize: 32
+            fill: "#f1c40f"
+            fontWeight: bold
+
+        # Back button - positioned above dialogue box
+        - id: backBtn
+          type: text
+          content: "[BACK to Line 1]"
+          x: 100
+          y: 700
+          textStyle:
+            fontSize: 28
+            fill: "#e74c3c"
+          hover:
+            textStyle:
+              fontSize: 28
+              fill: "#ff6b6b"
+          click:
+            actionPayload:
+              actions:
+                rollbackToLine:
+                  sectionId: "story"
+                  lineId: "line1"
+
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      name: Main Scene
+      initialSectionId: story
+      sections:
+        story:
+          name: Story
+          lines:
+            # Line 1: Introduction
+            - id: line1
+              actions:
+                base:
+                  resourceId: baseLayout
+                dialogue:
+                  mode: adv
+                  gui:
+                    resourceId: dialogueUI
+                  content:
+                    - text: "Welcome! Your current score is 0. Click to continue..."
+                  characterId: narrator
+
+            # Line 2: First dialogue
+            - id: line2
+              actions:
+                dialogue:
+                  content:
+                    - text: "This is the second line. Nothing changes here yet."
+                  characterId: narrator
+
+            # Line 3: Add score
+            - id: line3
+              actions:
+                updateVariable:
+                  id: uvAddScore
+                  operations:
+                    - variableId: score
+                      op: increment
+                      value: 10
+                dialogue:
+                  content:
+                    - text: "You gained +10 points! Watch the score in the corner."
+                  characterId: narrator
+
+            # Line 4: More score
+            - id: line4
+              actions:
+                updateVariable:
+                  id: uvAddMore
+                  operations:
+                    - variableId: score
+                      op: increment
+                      value: 20
+                dialogue:
+                  content:
+                    - text: "Another +20 points! Now try clicking [BACK] to return to line 1."
+                  characterId: narrator
+
+            # Line 5: End
+            - id: line5
+              actions:
+                dialogue:
+                  content:
+                    - text: "If rollback works, your score should reset to 0 when you go back!"
+                  characterId: narrator

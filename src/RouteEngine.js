@@ -59,7 +59,7 @@ export default function createRouteEngine(options) {
 
   const handleLineActions = () => {
     const line = _systemStore.selectCurrentLine();
-    if (line && line.actions) {
+    if (line?.actions) {
       handleActions(line.actions);
     }
   };

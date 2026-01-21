@@ -5,13 +5,16 @@ suites: [addToHistorySequence]
 suite: addToHistorySequence
 exportName: addToHistorySequence
 ---
-case: add item to history with empty history
+case: add item to history with empty history and captures initialState
 in:
   - state:
       global:
         pendingEffects: []
       contexts:
         - historySequence: []
+          variables:
+            score: 5
+            lives: 3
   - item:
       sectionId: "intro"
 out:
@@ -21,6 +24,13 @@ out:
   contexts:
     - historySequence:
         - sectionId: "intro"
+          initialState:
+            score: 5
+            lives: 3
+          lines: []
+      variables:
+        score: 5
+        lives: 3
 ---
 case: add item to history with existing items
 in:
@@ -30,9 +40,12 @@ in:
       contexts:
         - historySequence:
             - sectionId: "intro"
-            - sectionId: "intro"
+              initialState: {}
+              lines: []
+          variables:
+            playerName: "Alice"
   - item:
-      sectionId: "intro"
+      sectionId: "chapter1"
 out:
   global:
     pendingEffects:
@@ -40,8 +53,14 @@ out:
   contexts:
     - historySequence:
         - sectionId: "intro"
-        - sectionId: "intro"
-        - sectionId: "intro"
+          initialState: {}
+          lines: []
+        - sectionId: "chapter1"
+          initialState:
+            playerName: "Alice"
+          lines: []
+      variables:
+        playerName: "Alice"
 ---
 case: add item to history with multiple contexts (should add to last one)
 in:
@@ -51,10 +70,18 @@ in:
       contexts:
         - historySequence:
             - sectionId: "chapter1"
+              initialState: {}
+              lines: []
+          variables:
+            contextOneVar: 100
         - historySequence:
             - sectionId: "menu"
+              initialState: {}
+              lines: []
+          variables:
+            contextTwoVar: 200
   - item:
-      sectionId: "menu"
+      sectionId: "options"
 out:
   global:
     pendingEffects:
@@ -62,9 +89,20 @@ out:
   contexts:
     - historySequence:
         - sectionId: "chapter1"
+          initialState: {}
+          lines: []
+      variables:
+        contextOneVar: 100
     - historySequence:
         - sectionId: "menu"
-        - sectionId: "menu"
+          initialState: {}
+          lines: []
+        - sectionId: "options"
+          initialState:
+            contextTwoVar: 200
+          lines: []
+      variables:
+        contextTwoVar: 200
 ---
 case: add item to history with existing pending effects
 in:
@@ -75,6 +113,7 @@ in:
             data: "test"
       contexts:
         - historySequence: []
+          variables: {}
   - item:
       sectionId: "intro"
 out:
@@ -86,22 +125,105 @@ out:
   contexts:
     - historySequence:
         - sectionId: "intro"
+          initialState: {}
+          lines: []
+      variables: {}
 ---
-case: add complex item to history (only sectionId is stored)
+case: captures initialState with context variables at section entry
 in:
   - state:
       global:
         pendingEffects: []
       contexts:
-        - historySequence:
-            - sectionId: "intro"
+        - historySequence: []
+          variables:
+            health: 100
+            mana: 50
+            gold: 0
   - item:
-      sectionId: "chapter2"
+      sectionId: "section1"
 out:
   global:
     pendingEffects:
       - name: "render"
   contexts:
     - historySequence:
-        - sectionId: "intro"
-        - sectionId: "chapter2"
+        - sectionId: "section1"
+          initialState:
+            health: 100
+            mana: 50
+            gold: 0
+          lines: []
+      variables:
+        health: 100
+        mana: 50
+        gold: 0
+---
+case: initializes empty lines array for line-level tracking
+in:
+  - state:
+      global:
+        pendingEffects: []
+      contexts:
+        - historySequence: []
+          variables:
+            testVar: "value"
+  - item:
+      sectionId: "testSection"
+out:
+  global:
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - historySequence:
+        - sectionId: "testSection"
+          initialState:
+            testVar: "value"
+          lines: []
+      variables:
+        testVar: "value"
+---
+case: captures initialState as shallow copy (independent of original variables)
+in:
+  - state:
+      global:
+        pendingEffects: []
+      contexts:
+        - historySequence: []
+          variables:
+            counter: 0
+  - item:
+      sectionId: "newSection"
+out:
+  global:
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - historySequence:
+        - sectionId: "newSection"
+          initialState:
+            counter: 0
+          lines: []
+      variables:
+        counter: 0
+---
+case: captures empty initialState when no context variables
+in:
+  - state:
+      global:
+        pendingEffects: []
+      contexts:
+        - historySequence: []
+          variables: {}
+  - item:
+      sectionId: "emptySection"
+out:
+  global:
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - historySequence:
+        - sectionId: "emptySection"
+          initialState: {}
+          lines: []
+      variables: {}

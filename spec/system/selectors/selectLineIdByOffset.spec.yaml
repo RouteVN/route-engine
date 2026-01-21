@@ -1,0 +1,72 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore selectors
+suites:
+  [
+    selectLineIdByOffset,
+  ]
+---
+suite: selectLineIdByOffset
+exportName: selectLineIdByOffset
+---
+case: returns previous line with offset -1
+in:
+  - state:
+      global: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "3"
+          historySequence:
+            - sectionId: "section1"
+              initialState: {}
+              lines:
+                - id: "1"
+                - id: "2"
+                - id: "3"
+  - offset: -1
+out:
+  sectionId: "section1"
+  lineId: "2"
+---
+case: returns null when at first line with offset -1
+in:
+  - state:
+      global: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+          historySequence:
+            - sectionId: "section1"
+              initialState: {}
+              lines:
+                - id: "1"
+  - offset: -1
+out: null
+---
+case: handles duplicate line entries after backtracking (findLastIndex behavior)
+in:
+  - state:
+      global: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+          historySequence:
+            - sectionId: "section1"
+              initialState: {}
+              lines:
+                - id: "1"
+                - id: "2"
+                - id: "3"
+                - id: "2"
+  - offset: -1
+out:
+  sectionId: "section1"
+  lineId: "3"

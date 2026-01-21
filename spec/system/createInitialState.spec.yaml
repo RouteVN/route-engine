@@ -65,7 +65,10 @@ out:
           lineId: __undefined__
           historySequenceIndex: __undefined__
       historySequence:
-        - sectionId: "..."
+        - sectionId: "section1"
+          initialState: {}
+          lines:
+            - id: "line1"
       configuration: {}
       views: []
       bgm:
@@ -168,7 +171,14 @@ out:
           lineId: __undefined__
           historySequenceIndex: __undefined__
       historySequence:
-        - sectionId: "..."
+        - sectionId: "section1"
+          initialState:
+            inventory:
+              items:
+                - id: sword
+                  name: Steel Sword
+          lines:
+            - id: "line1"
       configuration: {}
       views: []
       bgm:
@@ -249,7 +259,11 @@ out:
           lineId: __undefined__
           historySequenceIndex: __undefined__
       historySequence:
-        - sectionId: "..."
+        - sectionId: "section1"
+          initialState:
+            settings: {}
+          lines:
+            - id: "line1"
       configuration: {}
       views: []
       bgm:
@@ -351,7 +365,10 @@ out:
           lineId: __undefined__
           historySequenceIndex: __undefined__
       historySequence:
-        - sectionId: "..."
+        - sectionId: "section1"
+          initialState: {}
+          lines:
+            - id: "line1"
       configuration: {}
       views: []
       bgm:

@@ -85,7 +85,9 @@ export const createInitialState = (payload) => {
         },
         historySequence: [
           {
-            sectionId: "...",
+            sectionId: initialPointer.sectionId,
+            initialState: { ...contextVariableDefaultValues },
+            lines: [{ id: initialPointer.lineId }],
           },
         ],
         configuration: {},
@@ -994,6 +996,9 @@ export const jumpToLine = ({ state }, payload) => {
   // Reset line completion state
   state.global.isLineCompleted = false;
 
+  // Add line to history for rollback support
+  addLineToHistory({ state }, { lineId });
+
   // Add appropriate pending effects
   state.global.pendingEffects.push({
     name: "render",
@@ -1006,7 +1011,8 @@ export const jumpToLine = ({ state }, payload) => {
 };
 
 /**
- * Adds an item to the historySequence of the last context.
+ * Adds a section entry to the historySequence of the last context.
+ * Captures initialState (context variables snapshot) when entering the section.
  * NOTE: This should only be called when transitioning to a new section.
  * @param {Object} state - Current state object
  * @param {Object} payload - Action payload
@@ -1021,7 +1027,14 @@ export const addToHistorySequence = ({ state }, payload) => {
   const lastContext = state.contexts[state.contexts.length - 1];
 
   if (lastContext && lastContext.historySequence) {
-    lastContext.historySequence.push({ sectionId: item.sectionId });
+    // Capture initialState: snapshot of all context variables at section entry
+    const initialState = { ...lastContext.variables };
+
+    lastContext.historySequence.push({
+      sectionId: item.sectionId,
+      initialState, // Captured ONCE when entering section
+      lines: [], // Initialize empty lines array for line-level tracking
+    });
   }
 
   state.global.pendingEffects.push({
@@ -1031,56 +1044,34 @@ export const addToHistorySequence = ({ state }, payload) => {
 };
 
 /**
- * Advances to the next line if auto navigation is configured to trigger from line completion
+ * Adds a line entry to the current section's history sequence.
+ * Should be called when entering a new line, BEFORE actions execute.
  * @param {Object} state - Current state object
+ * @param {Object} payload - Action payload
+ * @param {string} payload.lineId - The line ID to add
  * @returns {Object} Updated state object
- * @description
- * Checks if auto navigation is enabled and configured to trigger from line completion.
- * If conditions are met, advances to the next line regardless of manual navigation settings.
- * After advancing, resets the auto navigation configuration to empty object.
  */
-export const nextLineFromCompleted = ({ state }) => {
-  // Check if auto navigation is enabled and configured to trigger from line completion
-  if (
-    state.global.nextLineConfig?.auto?.enabled !== true ||
-    state.global.nextLineConfig?.auto?.trigger !== "fromComplete"
-  ) {
+export const addLineToHistory = ({ state }, payload) => {
+  const { lineId } = payload;
+  const lastContext = state.contexts[state.contexts.length - 1];
+
+  if (!lastContext?.historySequence) {
     return state;
   }
 
-  const pointer = selectCurrentPointer({ state })?.pointer;
-  const sectionId = pointer?.sectionId;
-  const section = selectSection({ state }, { sectionId });
-
-  const lines = section?.lines || [];
-  const currentLineIndex = lines.findIndex(
-    (line) => line.id === pointer?.lineId,
-  );
-  const nextLineIndex = currentLineIndex + 1;
-
-  if (nextLineIndex < lines.length) {
-    const nextLine = lines[nextLineIndex];
-    const lastContext = state.contexts[state.contexts.length - 1];
-
-    if (lastContext) {
-      lastContext.pointers.read = {
-        sectionId,
-        lineId: nextLine.id,
-      };
-    }
-
-    state.global.isLineCompleted = false;
-
-    // Reset auto navigation configuration after advancing
-    state.global.nextLineConfig.auto = {};
-
-    state.global.pendingEffects.push({
-      name: "render",
-    });
-    state.global.pendingEffects.push({
-      name: "handleLineActions",
-    });
+  const historySequence = lastContext.historySequence;
+  if (historySequence.length === 0) {
+    return state;
   }
+
+  const currentSection = historySequence[historySequence.length - 1];
+  if (!currentSection.lines) {
+    currentSection.lines = [];
+  }
+
+  // Add new line entry (updateVariableIds will be added by updateVariable if executed)
+  currentSection.lines.push({ id: lineId });
+
   return state;
 };
 
@@ -1145,6 +1136,9 @@ export const nextLine = ({ state }) => {
     }
 
     state.global.isLineCompleted = false;
+
+    // Add line to history for rollback support
+    addLineToHistory({ state }, { lineId: nextLine.id });
 
     state.global.pendingEffects.push({
       name: "render",
@@ -1309,6 +1303,12 @@ export const sectionTransition = ({ state }, payload) => {
       sectionId,
       lineId: firstLine.id,
     };
+
+    // Add new section to historySequence for rollback support
+    addToHistorySequence({ state }, { item: { sectionId } });
+
+    // Add first line to history
+    addLineToHistory({ state }, { lineId: firstLine.id });
   }
 
   // Reset line completion state
@@ -1368,6 +1368,9 @@ export const nextLineFromSystem = ({ state }) => {
 
     state.global.isLineCompleted = false;
 
+    // Add line to history for rollback support
+    addLineToHistory({ state }, { lineId: nextLine.id });
+
     state.global.pendingEffects.push({
       name: "render",
     });
@@ -1405,6 +1408,10 @@ export const updateVariable = ({ state }, payload) => {
     throw new Error(`updateVariable id must be alphanumeric, got: "${id}"`);
   }
 
+  const lastContext = state.contexts[state.contexts.length - 1];
+
+  // Track which scopes are modified
+  let contextVariableModified = false;
   let globalDeviceModified = false;
   let globalAccountModified = false;
 
@@ -1418,12 +1425,12 @@ export const updateVariable = ({ state }, payload) => {
     validateVariableOperation(type, op, variableId);
 
     const target =
-      scope === "context"
-        ? state.contexts[state.contexts.length - 1].variables
-        : state.global.variables;
+      scope === "context" ? lastContext.variables : state.global.variables;
 
     // Track which scope was modified
-    if (scope === "global-device") {
+    if (scope === "context") {
+      contextVariableModified = true;
+    } else if (scope === "global-device") {
       globalDeviceModified = true;
     } else if (scope === "global-account") {
       globalAccountModified = true;
@@ -1432,6 +1439,25 @@ export const updateVariable = ({ state }, payload) => {
     // Use pure helper to apply operation
     target[variableId] = applyVariableOperation(target[variableId], op, value);
   });
+
+  // Log updateVariableId to current line's history entry (EVENT SOURCING)
+  // Only log if context variables were modified (global variables not tracked for rollback)
+  if (contextVariableModified) {
+    const historySequence = lastContext.historySequence;
+    if (historySequence && historySequence.length > 0) {
+      const currentSection = historySequence[historySequence.length - 1];
+      if (currentSection.lines && currentSection.lines.length > 0) {
+        const currentLineEntry =
+          currentSection.lines[currentSection.lines.length - 1];
+        // Initialize array if not present
+        if (!currentLineEntry.updateVariableIds) {
+          currentLineEntry.updateVariableIds = [];
+        }
+        // Log the action ID (not the state, not the operations - just the ID)
+        currentLineEntry.updateVariableIds.push(id);
+      }
+    }
+  }
 
   // Save global-device variables if any were modified
   if (globalDeviceModified) {
@@ -1469,6 +1495,267 @@ export const updateVariable = ({ state }, payload) => {
   return state;
 };
 
+/**
+ * Looks up an updateVariable action definition by ID from project data.
+ * Searches through all scenes, sections, and lines to find the action.
+ * @param {Object} projectData - The project data containing all sections and lines
+ * @param {string} updateVariableId - The ID of the updateVariable action to find
+ * @returns {Object|undefined} The action definition { id, operations } or undefined if not found
+ */
+const lookupUpdateVariableAction = (projectData, updateVariableId) => {
+  const scenes = projectData?.story?.scenes || {};
+
+  for (const sceneId of Object.keys(scenes)) {
+    const scene = scenes[sceneId];
+    const sections = scene?.sections || {};
+
+    for (const sectionId of Object.keys(sections)) {
+      const section = sections[sectionId];
+      const lines = section?.lines || [];
+
+      for (const line of lines) {
+        // Check if line has updateVariable with matching ID
+        if (line.actions?.updateVariable?.id === updateVariableId) {
+          return line.actions.updateVariable;
+        }
+
+        // Also check for multiple updateVariable actions if that pattern exists
+        if (Array.isArray(line.actions?.updateVariables)) {
+          const found = line.actions.updateVariables.find(
+            (action) => action.id === updateVariableId,
+          );
+          if (found) return found;
+        }
+      }
+    }
+  }
+
+  return undefined;
+};
+
+/**
+ * Selects a line ID by relative offset from current position in history.
+ * Uses findLastIndex to handle duplicate line entries after rollback.
+ *
+ * @param {Object} state - Current state object
+ * @param {Object} payload - Selector payload
+ * @param {number} payload.offset - Relative offset (negative = back, positive = forward)
+ * @returns {Object|null} { sectionId, lineId } or null if out of bounds
+ *
+ * @example
+ * // Go back one line
+ * const target = selectLineIdByOffset({ state }, { offset: -1 });
+ * // target = { sectionId: "story", lineId: "line3" } or null if at first line
+ */
+export const selectLineIdByOffset = ({ state }, payload) => {
+  const { offset } = payload;
+
+  if (offset === undefined || typeof offset !== "number") {
+    console.warn("selectLineIdByOffset requires a numeric offset");
+    return null;
+  }
+
+  const lastContext = state.contexts[state.contexts.length - 1];
+  if (!lastContext) {
+    return null;
+  }
+
+  // Get current position from read pointer
+  const currentSectionId = lastContext.pointers.read?.sectionId;
+  const currentLineId = lastContext.pointers.read?.lineId;
+
+  if (!currentSectionId || !currentLineId) {
+    return null;
+  }
+
+  // Find section in history
+  const historySequence = lastContext.historySequence;
+  const sectionEntry = historySequence?.find(
+    (entry) => entry.sectionId === currentSectionId,
+  );
+
+  if (!sectionEntry?.lines || sectionEntry.lines.length === 0) {
+    return null;
+  }
+
+  // Use findLastIndex to handle duplicate entries after rollback
+  // When user rolls back and moves forward again, same lineIds may appear multiple times
+  const currentIndex = sectionEntry.lines.findLastIndex(
+    (line) => line.id === currentLineId,
+  );
+
+  if (currentIndex === -1) {
+    return null;
+  }
+
+  // Calculate target index
+  const targetIndex = currentIndex + offset;
+
+  // Check bounds (within section only, as per user requirement)
+  if (targetIndex < 0 || targetIndex >= sectionEntry.lines.length) {
+    return null;
+  }
+
+  const targetLine = sectionEntry.lines[targetIndex];
+  return {
+    sectionId: currentSectionId,
+    lineId: targetLine.id,
+  };
+};
+
+/**
+ * Rolls back by a relative offset from current position.
+ * Convenience action that combines selectLineIdByOffset with rollbackToLine.
+ *
+ * @param {Object} state - Current state object
+ * @param {Object} payload - Action payload
+ * @param {number} [payload.offset=-1] - Negative offset (defaults to -1)
+ * @returns {Object} Updated state object (unchanged if out of bounds)
+ * @throws {Error} If offset is not negative
+ *
+ * @example
+ * // Go back one line (default)
+ * engine.handleAction("rollbackByOffset", {});
+ * // Go back two lines
+ * engine.handleAction("rollbackByOffset", { offset: -2 });
+ */
+export const rollbackByOffset = ({ state }, payload) => {
+  const { offset = -1 } = payload;
+
+  if (offset >= 0) {
+    throw new Error("rollbackByOffset requires a negative offset");
+  }
+
+  // Get target using the selector
+  const target = selectLineIdByOffset({ state }, { offset });
+
+  if (!target) {
+    // Out of bounds or invalid - do nothing
+    return state;
+  }
+
+  // Delegate to rollbackToLine for the actual rollback with variable reversion
+  return rollbackToLine(
+    { state },
+    {
+      sectionId: target.sectionId,
+      lineId: target.lineId,
+    },
+  );
+};
+
+/**
+ * Rolls back to a specific line using replay-forward algorithm.
+ *
+ * Algorithm:
+ *   1. Get initialState from current section
+ *   2. Reset context variables to initialState
+ *   3. For each line in history BEFORE targetLineId:
+ *      - For each updateVariableId in line:
+ *        - Look up action definition in project data
+ *        - Execute the action (apply operations)
+ *   4. Set pointer to targetLineId
+ *   5. Switch to read mode
+ *
+ * @param {Object} state - Current state object
+ * @param {Object} payload - Action payload
+ * @param {string} payload.sectionId - The section ID to rollback within
+ * @param {string} payload.lineId - The target line ID to rollback to
+ * @returns {Object} Updated state object
+ */
+export const rollbackToLine = ({ state }, payload) => {
+  const { sectionId, lineId } = payload;
+
+  const lastContext = state.contexts[state.contexts.length - 1];
+  if (!lastContext) {
+    throw new Error("No context available for rollbackToLine");
+  }
+
+  // Find the section in history
+  const historySequence = lastContext.historySequence;
+  const sectionEntry = historySequence?.find(
+    (entry) => entry.sectionId === sectionId,
+  );
+
+  if (!sectionEntry?.lines) {
+    throw new Error(
+      `Section ${sectionId} not found in history or has no lines`,
+    );
+  }
+
+  // Find target line index by lineId
+  const targetLineIndex = sectionEntry.lines.findIndex(
+    (line) => line.id === lineId,
+  );
+  if (targetLineIndex === -1) {
+    throw new Error(`Line ${lineId} not found in section ${sectionId} history`);
+  }
+
+  // Step 1: Reset context variables to initialState
+  const initialState = sectionEntry.initialState || {};
+  lastContext.variables = { ...initialState };
+
+  // Step 2: Replay all actions BEFORE the target line
+  // (We want state as it was BEFORE target line executed)
+  for (let i = 0; i < targetLineIndex; i++) {
+    const lineEntry = sectionEntry.lines[i];
+    const updateVariableIds = lineEntry.updateVariableIds || [];
+
+    for (const actionId of updateVariableIds) {
+      // Look up action definition in project data
+      const actionDef = lookupUpdateVariableAction(state.projectData, actionId);
+
+      if (!actionDef) {
+        throw new Error(`Action definition not found for ID: ${actionId}`);
+      }
+
+      // Apply the action's operations
+      const operations = actionDef.operations || [];
+      for (const { variableId, op, value } of operations) {
+        const variableConfig =
+          state.projectData.resources?.variables?.[variableId];
+        const scope = variableConfig?.scope;
+
+        // Only apply context-scoped variables during rollback
+        if (scope === "context") {
+          lastContext.variables[variableId] = applyVariableOperation(
+            lastContext.variables[variableId],
+            op,
+            value,
+          );
+        }
+      }
+    }
+  }
+
+  // Step 3: Truncate history to target line position
+  // This removes entries at and after targetLineIndex
+  sectionEntry.lines = sectionEntry.lines.slice(0, targetLineIndex);
+
+  // Step 4: Add target line to history (fresh entry for rollback support)
+  sectionEntry.lines.push({ id: lineId });
+
+  // Step 5: Update pointer to target line
+  lastContext.pointers.read = { sectionId, lineId };
+
+  // Step 6: Switch to read mode (makes choices interactive)
+  lastContext.currentPointerMode = "read";
+  lastContext.pointers.history = {
+    sectionId: null,
+    lineId: null,
+    historySequenceIndex: null,
+  };
+
+  // Reset UI state
+  state.global.isLineCompleted = false;
+
+  // Queue render and line actions
+  state.global.pendingEffects.push({ name: "render" });
+  state.global.pendingEffects.push({ name: "handleLineActions" });
+
+  return state;
+};
+
 /**************************
  * Store Export
  *************************/
@@ -1501,6 +1788,7 @@ export const createSystemStore = (initialState) => {
     selectCurrentPageSlots,
     selectRenderState,
     selectLayeredViews,
+    selectLineIdByOffset,
 
     // Actions
     startAutoMode,
@@ -1527,10 +1815,12 @@ export const createSystemStore = (initialState) => {
     sectionTransition,
     jumpToLine,
     addToHistorySequence,
+    addLineToHistory,
     nextLine,
-    nextLineFromCompleted,
     markLineCompleted,
     prevLine,
+    rollbackToLine,
+    rollbackByOffset,
     pushLayeredView,
     popLayeredView,
     replaceLastLayeredView,

@@ -912,3 +912,360 @@ in:
         op: set
         value: 100
 throws: "updateVariable requires an id field"
+---
+case: action ID logged to updateVariableIds when context variable modified
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            score:
+              type: number
+              scope: context
+              default: 0
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            score: 100
+          historySequence:
+            - sectionId: "section1"
+              initialState:
+                score: 100
+              lines:
+                - id: "line1"
+  - id: "test1"
+    operations:
+      - variableId: score
+        op: increment
+out:
+  projectData:
+    resources:
+      variables:
+        score:
+          type: number
+          scope: context
+          default: 0
+  global:
+    variables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - variables:
+        score: 101
+      historySequence:
+        - sectionId: "section1"
+          initialState:
+            score: 100
+          lines:
+            - id: "line1"
+              updateVariableIds:
+                - "test1"
+---
+case: action ID NOT logged when only global-device variables modified
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            volume:
+              type: number
+              scope: global-device
+              default: 50
+      global:
+        variables:
+          volume: 50
+        pendingEffects: []
+      contexts:
+        - variables: {}
+          historySequence:
+            - sectionId: "section1"
+              initialState: {}
+              lines:
+                - id: "line1"
+  - id: "globalTest"
+    operations:
+      - variableId: volume
+        op: set
+        value: 80
+out:
+  projectData:
+    resources:
+      variables:
+        volume:
+          type: number
+          scope: global-device
+          default: 50
+  global:
+    variables:
+      volume: 80
+    pendingEffects:
+      - name: "saveGlobalDeviceVariables"
+        payload:
+          globalDeviceVariables:
+            volume: 80
+      - name: "render"
+  contexts:
+    - variables: {}
+      historySequence:
+        - sectionId: "section1"
+          initialState: {}
+          lines:
+            - id: "line1"
+---
+case: action ID NOT logged when only global-account variables modified
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            achievement:
+              type: boolean
+              scope: global-account
+              default: false
+      global:
+        variables:
+          achievement: false
+        pendingEffects: []
+      contexts:
+        - variables: {}
+          historySequence:
+            - sectionId: "section1"
+              initialState: {}
+              lines:
+                - id: "line1"
+  - id: "achievementTest"
+    operations:
+      - variableId: achievement
+        op: set
+        value: true
+out:
+  projectData:
+    resources:
+      variables:
+        achievement:
+          type: boolean
+          scope: global-account
+          default: false
+  global:
+    variables:
+      achievement: true
+    pendingEffects:
+      - name: "saveGlobalAccountVariables"
+        payload:
+          globalAccountVariables:
+            achievement: true
+      - name: "render"
+  contexts:
+    - variables: {}
+      historySequence:
+        - sectionId: "section1"
+          initialState: {}
+          lines:
+            - id: "line1"
+---
+case: multiple actions on same line logs all IDs
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            score:
+              type: number
+              scope: context
+              default: 0
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            score: 0
+          historySequence:
+            - sectionId: "section1"
+              initialState:
+                score: 0
+              lines:
+                - id: "line1"
+                  updateVariableIds:
+                    - "action1"
+  - id: "action2"
+    operations:
+      - variableId: score
+        op: increment
+        value: 10
+out:
+  projectData:
+    resources:
+      variables:
+        score:
+          type: number
+          scope: context
+          default: 0
+  global:
+    variables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - variables:
+        score: 10
+      historySequence:
+        - sectionId: "section1"
+          initialState:
+            score: 0
+          lines:
+            - id: "line1"
+              updateVariableIds:
+                - "action1"
+                - "action2"
+---
+case: action ID logged only for context variables in mixed scope operations
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            contextScore:
+              type: number
+              scope: context
+              default: 0
+            globalVolume:
+              type: number
+              scope: global-device
+              default: 50
+      global:
+        variables:
+          globalVolume: 50
+        pendingEffects: []
+      contexts:
+        - variables:
+            contextScore: 100
+          historySequence:
+            - sectionId: "section1"
+              initialState:
+                contextScore: 100
+              lines:
+                - id: "line1"
+  - id: "mixedAction"
+    operations:
+      - variableId: contextScore
+        op: increment
+      - variableId: globalVolume
+        op: set
+        value: 80
+out:
+  projectData:
+    resources:
+      variables:
+        contextScore:
+          type: number
+          scope: context
+          default: 0
+        globalVolume:
+          type: number
+          scope: global-device
+          default: 50
+  global:
+    variables:
+      globalVolume: 80
+    pendingEffects:
+      - name: "saveGlobalDeviceVariables"
+        payload:
+          globalDeviceVariables:
+            globalVolume: 80
+      - name: "render"
+  contexts:
+    - variables:
+        contextScore: 101
+      historySequence:
+        - sectionId: "section1"
+          initialState:
+            contextScore: 100
+          lines:
+            - id: "line1"
+              updateVariableIds:
+                - "mixedAction"
+---
+case: action ID NOT logged when no historySequence exists
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            score:
+              type: number
+              scope: context
+              default: 0
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            score: 100
+          historySequence: []
+  - id: "test1"
+    operations:
+      - variableId: score
+        op: increment
+out:
+  projectData:
+    resources:
+      variables:
+        score:
+          type: number
+          scope: context
+          default: 0
+  global:
+    variables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - variables:
+        score: 101
+      historySequence: []
+---
+case: action ID NOT logged when no lines in current section
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            score:
+              type: number
+              scope: context
+              default: 0
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            score: 100
+          historySequence:
+            - sectionId: "section1"
+              initialState:
+                score: 100
+              lines: []
+  - id: "test1"
+    operations:
+      - variableId: score
+        op: increment
+out:
+  projectData:
+    resources:
+      variables:
+        score:
+          type: number
+          scope: context
+          default: 0
+  global:
+    variables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - variables:
+        score: 101
+      historySequence:
+        - sectionId: "section1"
+          initialState:
+            score: 100
+          lines: []
