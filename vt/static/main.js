@@ -15,7 +15,7 @@ import createRouteGraphics, {
   videoPlugin,
   particlesPlugin,
   animatedSpritePlugin
-} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.27/+esm"
+} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.29/+esm"
 
 const projectData = parse(window.yamlContent);
 
@@ -101,21 +101,27 @@ const init = async () => {
       url: "/public/horizontal_idle_thumb.png",
       type: "image/png"
     },
-    "video_sample": {
-      url: "/public/video_sample.mp4",
-      type: "video/mp4"
-    },
     "fighter-spritesheet": {
       url: "/public/fighter.png",
       type: "image/png",
     },
   };
 
+  if (!window?.RTGL_VT_DEBUG) {
+    Object.assign(assets, {
+      "video_sample": {
+        url: "/public/video_sample.mp4",
+        type: "video/mp4"
+      }
+    })
+  }
+
   const assetBufferManager = createAssetBufferManager();
   await assetBufferManager.load(assets);
   const assetBufferMap = assetBufferManager.getBufferMap();
 
   const routeGraphics = createRouteGraphics();
+  window.takeVtScreenshotBase64 = async (label) => await routeGraphics.extractBase64(label);
 
   const plugins = {
     elements: [
@@ -136,8 +142,6 @@ const init = async () => {
       soundPlugin
     ]
   };
-
-  let count = 0;
 
   // Create dedicated ticker for auto mode
   const ticker = new Ticker();
@@ -162,20 +166,24 @@ const init = async () => {
     plugins,
     eventHandler: async (eventName, payload) => {
       if (payload.actions) {
-          if (payload.actions.saveSaveSlot) {
-            const url = await routeGraphics.extractBase64("story");
-            const assets = {
-              [`saveThumbnailImage:${payload.actions.saveSaveSlot.slot}`]: {
-                buffer: base64ToArrayBuffer(url),
-                type: "image/png",
-              },
-            };
-            await routeGraphics.loadAssets(assets);
-            payload.actions.saveSaveSlot.thumbnailImage = url;
-          }
-          engine.handleActions(payload.actions);
+        if (payload.actions.saveSaveSlot) {
+          const url = await routeGraphics.extractBase64("story");
+          const assets = {
+            [`saveThumbnailImage:${payload.actions.saveSaveSlot.slot}`]: {
+              buffer: base64ToArrayBuffer(url),
+              type: "image/png",
+            },
+          };
+          await routeGraphics.loadAssets(assets);
+          payload.actions.saveSaveSlot.thumbnailImage = url;
         }
+        engine.handleActions(payload.actions);
+      }
     },
+    onFirstRender: () => {
+      window.dispatchEvent(new CustomEvent('vt:ready'));
+    },
+    debug: window?.RTGL_VT_DEBUG ?? false,
   });
   await routeGraphics.loadAssets(assetBufferMap)
 
@@ -198,7 +206,7 @@ const init = async () => {
         variables: { ...globalDeviceVariables, ...globalAccountVariables }
       },
       projectData
-    }
+    },
   });
 
 };
