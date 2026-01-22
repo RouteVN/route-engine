@@ -101,15 +101,20 @@ const init = async () => {
       url: "/public/horizontal_idle_thumb.png",
       type: "image/png"
     },
-    "video_sample": {
-      url: "/public/video_sample.mp4",
-      type: "video/mp4"
-    },
     "fighter-spritesheet": {
       url: "/public/fighter.png",
       type: "image/png",
     },
   };
+
+  if (!window?.RTGL_VT_DEBUG) {
+    Object.assign(assets, {
+      "video_sample": {
+        url: "/public/video_sample.mp4",
+        type: "video/mp4"
+      }
+    })
+  }
 
   const assetBufferManager = createAssetBufferManager();
   await assetBufferManager.load(assets);
