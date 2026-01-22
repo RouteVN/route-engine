@@ -183,6 +183,7 @@ const init = async () => {
     onFirstRender: () => {
       window.dispatchEvent(new CustomEvent('vt:ready'));
     },
+    debug: window?.RTGL_VT_DEBUG ?? false,
   });
   await routeGraphics.loadAssets(assetBufferMap)
 
