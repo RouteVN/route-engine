@@ -1,0 +1,133 @@
+---
+title: "Visual Animation Update"
+description: |
+  Test update animation for visual elements.
+  Line 1: Visual appears with fade-in animation.
+  Line 2: Visual resource changes with scale-update animation.
+  Line 3: Visual fades out.
+---
+l10n:
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys: {}
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+resources:
+  layouts:
+    base1:
+      elements:
+        - id: af32
+          type: rect
+          fill: "#222222"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+
+  images:
+    alkejf3la:
+      fileId: x342fga
+      width: 200
+      height: 200
+    8a3lkja:
+      fileId: a32kf3
+      width: 200
+      height: 200
+
+  transforms:
+    centerPos:
+      x: 960
+      y: 540
+      anchorX: 0.5
+      anchorY: 0.5
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+
+  tweens:
+    3lkj289:
+      name: "Fade In"
+      properties:
+        alpha:
+          initialValue: 0
+          keyframes:
+            - duration: 600
+              value: 1
+              easing: linear
+    k38upd:
+      name: "Scale Update"
+      properties:
+        scaleX:
+          keyframes:
+            - duration: 300
+              value: 1.2
+              easing: linear
+            - duration: 300
+              value: 1
+              easing: linear
+        scaleY:
+          keyframes:
+            - duration: 300
+              value: 1.2
+              easing: linear
+            - duration: 300
+              value: 1
+              easing: linear
+    8h3js:
+      name: "Fade Out"
+      properties:
+        alpha:
+          keyframes:
+            - duration: 600
+              value: 0
+              easing: linear
+
+story:
+  initialSceneId: ajfl3a
+  scenes:
+    ajfl3a:
+      name: Scene 1
+      initialSectionId: l3kjfawelf
+      sections:
+        l3kjfawelf:
+          name: Section 1
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: base1
+                visual:
+                  items:
+                    - id: visual-1
+                      resourceId: alkejf3la
+                      transformId: centerPos
+                      animations:
+                        in:
+                          resourceId: 3lkj289
+            - id: line2
+              actions:
+                visual:
+                  items:
+                    - id: visual-1
+                      resourceId: 8a3lkja
+                      transformId: centerPos
+                      animations:
+                        update:
+                          resourceId: k38upd
+            - id: line3
+              actions:
+                visual:
+                  items:
+                    - id: visual-1
+                      resourceId: 8a3lkja
+                      transformId: centerPos
+                      animations:
+                        out:
+                          resourceId: 8h3js

@@ -1,0 +1,140 @@
+---
+title: "Dialogue Animation 1"
+description: |
+  Test animation in, update, out for dialogue container.
+  Line 1: Dialogue appears with fade-in animation.
+  Line 2: Content changes with update animation.
+  Line 3: Dialogue fades out.
+---
+
+l10n:
+  packages:
+    en-pkg:
+      label: English
+      lang: en
+      keys: {}
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+resources:
+  layouts:
+    base1:
+      elements:
+        - id: base-rect
+          type: rect
+          fill: "#1a1a2e"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+
+    dialogue-box:
+      elements:
+        - id: dialogue-bg
+          type: rect
+          fill: "#000000"
+          alpha: 0.8
+          x: 100
+          y: 700
+          width: 1720
+          height: 300
+        - id: dialogue-name
+          type: text
+          content: "{{dialogue.character.name}}"
+          fill: "#ffcc00"
+          fontSize: 28
+          x: 150
+          y: 730
+        - id: dialogue-text
+          type: text
+          content: "{{dialogue.content[0].text}}"
+          fill: "#ffffff"
+          fontSize: 32
+          x: 150
+          y: 780
+          width: 1620
+
+  tweens:
+    fade-in:
+      name: "Fade In"
+      properties:
+        alpha:
+          initialValue: 0
+          keyframes:
+            - duration: 500
+              value: 1
+              easing: linear
+    fade-update:
+      name: "Fade Update"
+      properties:
+        alpha:
+          keyframes:
+            - duration: 150
+              value: 0.5
+              easing: linear
+            - duration: 150
+              value: 1
+              easing: linear
+    fade-out:
+      name: "Fade Out"
+      properties:
+        alpha:
+          keyframes:
+            - duration: 500
+              value: 0
+              easing: linear
+
+  characters:
+    narrator:
+      name: "Narrator"
+
+story:
+  initialSceneId: scene1
+  scenes:
+    scene1:
+      name: Dialogue Animation Test Scene
+      initialSectionId: section1
+      sections:
+        section1:
+          name: Test Section
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: base1
+                dialogue:
+                  gui:
+                    resourceId: dialogue-box
+                  characterId: narrator
+                  content:
+                    - text: "This dialogue fades in. Click to continue."
+                  animations:
+                    in:
+                      resourceId: fade-in
+            - id: line2
+              actions:
+                dialogue:
+                  gui:
+                    resourceId: dialogue-box
+                  characterId: narrator
+                  content:
+                    - text: "Content changed with update animation!"
+                  animations:
+                    update:
+                      resourceId: fade-update
+            - id: line3
+              actions:
+                dialogue:
+                  gui:
+                    resourceId: dialogue-box
+                  characterId: narrator
+                  content:
+                    - text: "Now the dialogue will fade out..."
+                  animations:
+                    out:
+                      resourceId: fade-out

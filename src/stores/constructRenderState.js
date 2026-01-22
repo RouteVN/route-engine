@@ -29,6 +29,7 @@ export const createInitialState = () => {
  */
 export const addBase = (state, { presentationState, resources }) => {
   const { elements } = state;
+  const animations = state.animations || [];
   if (presentationState.base) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
@@ -46,6 +47,48 @@ export const addBase = (state, { presentationState, resources }) => {
           type: "container",
           children: layout.elements,
         });
+      }
+    }
+
+    // Add animation support for base
+    if (presentationState.base.animations) {
+      if (presentationState.base.animations.in) {
+        const tweenId = presentationState.base.animations.in.resourceId;
+        const tween = resources?.tweens?.[tweenId];
+        if (tween) {
+          animations.push({
+            id: "base-animation-in",
+            type: "tween",
+            targetId: "base",
+            properties: tween.properties,
+          });
+        }
+      }
+
+      if (presentationState.base.animations.out) {
+        const tweenId = presentationState.base.animations.out.resourceId;
+        const tween = resources?.tweens?.[tweenId];
+        if (tween) {
+          animations.push({
+            id: "base-animation-out",
+            type: "tween",
+            targetId: "base",
+            properties: tween.properties,
+          });
+        }
+      }
+
+      if (presentationState.base.animations.update) {
+        const tweenId = presentationState.base.animations.update.resourceId;
+        const tween = resources?.tweens?.[tweenId];
+        if (tween) {
+          animations.push({
+            id: "base-animation-update",
+            type: "tween",
+            targetId: "base",
+            properties: tween.properties,
+          });
+        }
       }
     }
   }
@@ -411,6 +454,20 @@ export const addVisuals = (state, { presentationState, resources }) => {
             });
           }
         }
+
+        if (item.animations.update) {
+          const tweenId =
+            item.animations.update.resourceId || item.animations.update;
+          const tween = resources?.tweens[tweenId];
+          if (tween) {
+            animations.push({
+              id: `${item.id}-animation-update`,
+              type: "tween",
+              targetId: `visual-${item.id}`,
+              properties: structuredClone(tween.properties),
+            });
+          }
+        }
       }
     }
   }
@@ -438,6 +495,7 @@ export const addDialogue = (
   },
 ) => {
   const { elements } = state;
+  const animations = state.animations || [];
   if (!presentationState.dialogue) {
     return state;
   }
@@ -500,12 +558,65 @@ export const addDialogue = (
       });
       const guiElements = result?.elements;
 
+      // Create dialogue container to wrap all dialogue elements
+      const dialogueContainer = {
+        id: "dialogue-container",
+        type: "container",
+        x: 0,
+        y: 0,
+        children: [],
+      };
+
       if (Array.isArray(guiElements)) {
         for (const element of guiElements) {
-          storyContainer.children.push(structuredClone(element));
+          dialogueContainer.children.push(structuredClone(element));
         }
       } else if (guiElements) {
-        storyContainer.children.push(structuredClone(guiElements));
+        dialogueContainer.children.push(structuredClone(guiElements));
+      }
+
+      storyContainer.children.push(dialogueContainer);
+    }
+  }
+
+  // Add animation support for dialogue
+  if (presentationState.dialogue.animations) {
+    if (presentationState.dialogue.animations.in) {
+      const tweenId = presentationState.dialogue.animations.in.resourceId;
+      const tween = resources?.tweens?.[tweenId];
+      if (tween) {
+        animations.push({
+          id: "dialogue-animation-in",
+          type: "tween",
+          targetId: "dialogue-container",
+          properties: tween.properties,
+        });
+      }
+    }
+
+    if (presentationState.dialogue.animations.out) {
+      const tweenId = presentationState.dialogue.animations.out.resourceId;
+      const tween = resources?.tweens?.[tweenId];
+      if (tween) {
+        animations.push({
+          id: "dialogue-animation-out",
+          type: "tween",
+          targetId: "dialogue-container",
+          properties: tween.properties,
+        });
+      }
+    }
+
+    if (presentationState.dialogue.animations.update) {
+      const tweenId = presentationState.dialogue.animations.update.resourceId;
+      const tween = resources?.tweens?.[tweenId];
+      if (tween) {
+        animations.push({
+          id: "dialogue-animation-update",
+          type: "tween",
+          targetId: "dialogue-container",
+          properties: tween.properties,
+        });
       }
     }
   }
@@ -519,11 +630,13 @@ export const addDialogue = (
  */
 export const addChoices = (state, { presentationState, resources }) => {
   const { elements } = state;
+  const animations = state.animations || [];
   if (presentationState.choice && resources) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
     if (!storyContainer) return state;
 
+    // Choice-blocker stays outside the container (first element)
     storyContainer.children.push({
       id: "choice-blocker",
       type: "rect",
@@ -550,12 +663,65 @@ export const addChoices = (state, { presentationState, resources }) => {
     });
     const choiceElements = result?.elements;
 
+    // Create choice container to wrap all choice elements
+    const choiceContainer = {
+      id: "choice-container",
+      type: "container",
+      x: 0,
+      y: 0,
+      children: [],
+    };
+
     if (Array.isArray(choiceElements)) {
       for (const element of choiceElements) {
-        storyContainer.children.push(structuredClone(element));
+        choiceContainer.children.push(structuredClone(element));
       }
     } else if (choiceElements) {
-      storyContainer.children.push(structuredClone(choiceElements));
+      choiceContainer.children.push(structuredClone(choiceElements));
+    }
+
+    storyContainer.children.push(choiceContainer);
+
+    // Add animation support for choice
+    if (presentationState.choice.animations) {
+      if (presentationState.choice.animations.in) {
+        const tweenId = presentationState.choice.animations.in.resourceId;
+        const tween = resources?.tweens?.[tweenId];
+        if (tween) {
+          animations.push({
+            id: "choice-animation-in",
+            type: "tween",
+            targetId: "choice-container",
+            properties: tween.properties,
+          });
+        }
+      }
+
+      if (presentationState.choice.animations.out) {
+        const tweenId = presentationState.choice.animations.out.resourceId;
+        const tween = resources?.tweens?.[tweenId];
+        if (tween) {
+          animations.push({
+            id: "choice-animation-out",
+            type: "tween",
+            targetId: "choice-container",
+            properties: tween.properties,
+          });
+        }
+      }
+
+      if (presentationState.choice.animations.update) {
+        const tweenId = presentationState.choice.animations.update.resourceId;
+        const tween = resources?.tweens?.[tweenId];
+        if (tween) {
+          animations.push({
+            id: "choice-animation-update",
+            type: "tween",
+            targetId: "choice-container",
+            properties: tween.properties,
+          });
+        }
+      }
     }
   }
   return state;

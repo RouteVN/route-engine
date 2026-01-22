@@ -170,6 +170,9 @@ properties:
                         easing:
                           type: string
                           description: Easing function for the animation
+                        relative:
+                          type: boolean
+                          description: If true, value is additive to previous keyframe value
                       required: [duration, value]
                       additionalProperties: false
                     minItems: 1

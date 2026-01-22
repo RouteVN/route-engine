@@ -46,9 +46,14 @@ out:
           click:
             actionPayload:
               actions: {}
-        - type: "button"
-          id: "choice-button"
-          text: "Select an option"
+        - id: "choice-container"
+          type: "container"
+          x: 0
+          y: 0
+          children:
+            - type: "button"
+              id: "choice-button"
+              text: "Select an option"
   animations: []
 ---
 case: multiple choice layout elements
@@ -98,15 +103,20 @@ out:
           click:
             actionPayload:
               actions: {}
-        - type: "container"
-          id: "choices"
+        - id: "choice-container"
+          type: "container"
+          x: 0
+          y: 0
           children:
-            - type: "button"
-              id: "choice-1"
-              text: "Option 1"
-            - type: "button"
-              id: "choice-2"
-              text: "Option 2"
+            - type: "container"
+              id: "choices"
+              children:
+                - type: "button"
+                  id: "choice-1"
+                  text: "Option 1"
+                - type: "button"
+                  id: "choice-2"
+                  text: "Option 2"
   animations: []
 ---
 case: no presentationState.choice - return unchanged state
@@ -236,6 +246,11 @@ out:
           click:
             actionPayload:
               actions: {}
+        - id: "choice-container"
+          type: "container"
+          x: 0
+          y: 0
+          children: []
   animations: []
 ---
 case: no choice items - still add layout elements
@@ -274,8 +289,13 @@ out:
           click:
             actionPayload:
               actions: {}
-        - type: "text"
-          content: "No choices available"
+        - id: "choice-container"
+          type: "container"
+          x: 0
+          y: 0
+          children:
+            - type: "text"
+              content: "No choices available"
   animations: []
 ---
 case: null resources - return unchanged state
