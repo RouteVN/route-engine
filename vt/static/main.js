@@ -15,7 +15,7 @@ import createRouteGraphics, {
   videoPlugin,
   particlesPlugin,
   animatedSpritePlugin
-} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.27/+esm"
+} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.29/+esm"
 
 const projectData = parse(window.yamlContent);
 
@@ -137,8 +137,6 @@ const init = async () => {
     ]
   };
 
-  let count = 0;
-
   // Create dedicated ticker for auto mode
   const ticker = new Ticker();
   ticker.start();
@@ -162,19 +160,19 @@ const init = async () => {
     plugins,
     eventHandler: async (eventName, payload) => {
       if (payload.actions) {
-          if (payload.actions.saveSaveSlot) {
-            const url = await routeGraphics.extractBase64("story");
-            const assets = {
-              [`saveThumbnailImage:${payload.actions.saveSaveSlot.slot}`]: {
-                buffer: base64ToArrayBuffer(url),
-                type: "image/png",
-              },
-            };
-            await routeGraphics.loadAssets(assets);
-            payload.actions.saveSaveSlot.thumbnailImage = url;
-          }
-          engine.handleActions(payload.actions);
+        if (payload.actions.saveSaveSlot) {
+          const url = await routeGraphics.extractBase64("story");
+          const assets = {
+            [`saveThumbnailImage:${payload.actions.saveSaveSlot.slot}`]: {
+              buffer: base64ToArrayBuffer(url),
+              type: "image/png",
+            },
+          };
+          await routeGraphics.loadAssets(assets);
+          payload.actions.saveSaveSlot.thumbnailImage = url;
         }
+        engine.handleActions(payload.actions);
+      }
     },
   });
   await routeGraphics.loadAssets(assetBufferMap)
@@ -186,6 +184,7 @@ const init = async () => {
 
   const effectsHandler = createEffectsHandler({ getEngine: () => engine, routeGraphics, ticker });
   const engine = createRouteEngine({ handlePendingEffects: effectsHandler });
+  window.takeVtScreenshotBase64 = async (label) => await engine.extractBase64(label);
   const saveSlots = JSON.parse(localStorage.getItem("saveSlots")) || {};
   const globalDeviceVariables = JSON.parse(localStorage.getItem("globalDeviceVariables")) || {};
   const globalAccountVariables = JSON.parse(localStorage.getItem("globalAccountVariables")) || {};
@@ -198,7 +197,10 @@ const init = async () => {
         variables: { ...globalDeviceVariables, ...globalAccountVariables }
       },
       projectData
-    }
+    },
+    onFirstRender: () => {
+      window.dispatchEvent(new CustomEvent('vt:ready'));
+    },
   });
 
 };
