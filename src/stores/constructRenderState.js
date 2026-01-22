@@ -434,7 +434,7 @@ export const addVisuals = (state, { presentationState, resources }) => {
           const tween = resources?.tweens[tweenId];
           if (tween) {
             animations.push({
-              id: `${item.id}-animation`,
+              id: `${item.id}-animation-in`,
               type: "tween",
               targetId: `visual-${item.id}`,
               properties: structuredClone(tween.properties),
@@ -447,7 +447,7 @@ export const addVisuals = (state, { presentationState, resources }) => {
           const tween = resources?.tweens[tweenId];
           if (tween) {
             animations.push({
-              id: `${item.id}-animation-2`,
+              id: `${item.id}-animation-out`,
               type: "tween",
               targetId: `visual-${item.id}`,
               properties: structuredClone(tween.properties),
@@ -811,6 +811,7 @@ export const addLayout = (
   state,
   {
     presentationState,
+    previousPresentationState,
     resources = {},
     variables,
     autoMode,
@@ -837,6 +838,49 @@ export const addLayout = (
       layout.transitions.forEach((transition) => {
         animations.push(transition);
       });
+    }
+
+    // Add animations from presentationState (like background does)
+    if (presentationState.layout.animations) {
+      if (presentationState.layout.animations.in) {
+        const tweenId = presentationState.layout.animations.in.resourceId;
+        const tween = resources?.tweens?.[tweenId];
+        if (tween) {
+          animations.push({
+            id: "layout-animation-in",
+            type: "tween",
+            targetId: `layout-${presentationState.layout.resourceId}`,
+            properties: structuredClone(tween.properties),
+          });
+        }
+      }
+
+      if (presentationState.layout.animations.out) {
+        const tweenId = presentationState.layout.animations.out.resourceId;
+        const targetResourceId = previousPresentationState?.layout?.resourceId;
+        const tween = resources?.tweens?.[tweenId];
+        if (tween && targetResourceId) {
+          animations.push({
+            id: "layout-animation-out",
+            type: "tween",
+            targetId: `layout-${targetResourceId}`,
+            properties: structuredClone(tween.properties),
+          });
+        }
+      }
+
+      if (presentationState.layout.animations.update) {
+        const tweenId = presentationState.layout.animations.update.resourceId;
+        const tween = resources?.tweens?.[tweenId];
+        if (tween) {
+          animations.push({
+            id: "layout-animation-update",
+            type: "tween",
+            targetId: `layout-${presentationState.layout.resourceId}`,
+            properties: structuredClone(tween.properties),
+          });
+        }
+      }
     }
 
     const layoutContainer = {
@@ -902,7 +946,6 @@ export const addLayeredViews = (
   },
 ) => {
   const { elements } = state;
-  const animations = state.animations || [];
   if (layeredViews && layeredViews.length > 0) {
     // Add each layeredView as an overlay
     layeredViews.forEach((layeredView, index) => {
@@ -911,12 +954,6 @@ export const addLayeredViews = (
       if (!layout) {
         console.warn(`LayeredView layout not found: ${layeredView.resourceId}`);
         return;
-      }
-
-      if (Array.isArray(layout.transitions)) {
-        layout.transitions.forEach((transition) => {
-          animations.push(transition);
-        });
       }
 
       // Create a container for this layeredView

@@ -109,7 +109,7 @@ out:
           scaleX: 1
           scaleY: 1
   animations:
-    - id: "visual1-animation"
+    - id: "visual1-animation-in"
       type: "tween"
       targetId: "visual-visual1"
       properties:
@@ -171,7 +171,7 @@ out:
           scaleX: 1
           scaleY: 1
   animations:
-    - id: "visual1-animation-2"
+    - id: "visual1-animation-out"
       type: "tween"
       targetId: "visual-visual1"
       properties:
@@ -240,13 +240,13 @@ out:
           scaleX: 1
           scaleY: 1
   animations:
-    - id: "visual1-animation"
+    - id: "visual1-animation-in"
       type: "tween"
       targetId: "visual-visual1"
       properties:
         x: [-50, 150]
         duration: 400
-    - id: "visual1-animation-2"
+    - id: "visual1-animation-out"
       type: "tween"
       targetId: "visual-visual1"
       properties:
@@ -765,7 +765,7 @@ out:
               width: 1920
               height: 1080
   animations:
-    - id: "overlay-animation"
+    - id: "overlay-animation-in"
       type: "tween"
       targetId: "visual-overlay"
       properties:

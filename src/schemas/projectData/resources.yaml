@@ -299,6 +299,32 @@ properties:
             items:
               type: object
               additionalProperties: true
+          animations:
+            type: object
+            description: Animation effects for layout transitions
+            properties:
+              in:
+                type: object
+                properties:
+                  resourceId:
+                    type: string
+                required: [resourceId]
+                additionalProperties: false
+              out:
+                type: object
+                properties:
+                  resourceId:
+                    type: string
+                required: [resourceId]
+                additionalProperties: false
+              update:
+                type: object
+                properties:
+                  resourceId:
+                    type: string
+                required: [resourceId]
+                additionalProperties: false
+            additionalProperties: false
         additionalProperties: false
     additionalProperties: false
 

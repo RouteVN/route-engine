@@ -1,0 +1,119 @@
+---
+title: "Layout Animation Test"
+description: |
+  Test animations defined on layout resources.
+  Line 1: Base layout loads.
+  Line 2: Layout with fade-in animation appears.
+  Line 3: Layout removed (with fade-out).
+---
+l10n:
+  packages:
+    en_package:
+      label: English
+      lang: en
+      keys: {}
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#1a1a2e"
+
+resources:
+  layouts:
+    baseLayout:
+      elements:
+        - id: bg
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+        - id: title
+          type: text
+          content: "Layout Animation Test - Click to continue"
+          x: 500
+          y: 100
+          textStyle:
+            fontSize: 48
+            fill: "#ffffff"
+
+    animatedPanel:
+      elements:
+        - id: panelBg
+          type: rect
+          fill: "#4CAF50"
+          width: 600
+          height: 300
+          x: 660
+          y: 390
+        - id: panelText
+          type: text
+          content: "Animated Panel"
+          x: 860
+          y: 520
+          textStyle:
+            fontSize: 36
+            fill: "#ffffff"
+          anchorX: 0.5
+          anchorY: 0.5
+
+  tweens:
+    slide-in:
+      name: "Slide In"
+      properties:
+        x:
+          initialValue: -600
+          keyframes:
+            - duration: 500
+              value: 0
+              easing: linear
+        alpha:
+          initialValue: 0
+          keyframes:
+            - duration: 500
+              value: 1
+              easing: linear
+    slide-out:
+      name: "Slide Out"
+      properties:
+        x:
+          keyframes:
+            - duration: 500
+              value: -600
+              easing: linear
+        alpha:
+          keyframes:
+            - duration: 500
+              value: 0
+              easing: linear
+
+story:
+  initialSceneId: testScene
+  scenes:
+    testScene:
+      name: Test
+      initialSectionId: section1
+      sections:
+        section1:
+          name: Test Section
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: baseLayout
+            - id: line2
+              actions:
+                layout:
+                  resourceId: animatedPanel
+                  animations:
+                    in:
+                      resourceId: slide-in
+            - id: line3
+              actions:
+                layout:
+                  animations:
+                    out:
+                      resourceId: slide-out

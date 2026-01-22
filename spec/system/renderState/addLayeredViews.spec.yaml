@@ -181,7 +181,7 @@ out:
           content: "Exists"
   animations: []
 ---
-case: add transitions from layout to animations
+case: layeredView ignores transitions from layout (animations not supported)
 in:
   - elements:
       - id: "story"
@@ -222,11 +222,7 @@ out:
       children:
         - type: "text"
           content: "Animated"
-  animations:
-    - type: "fadeIn"
-      duration: 500
-    - type: "slideUp"
-      duration: 300
+  animations: []
 ---
 case: handle layeredView with nested children
 in:
