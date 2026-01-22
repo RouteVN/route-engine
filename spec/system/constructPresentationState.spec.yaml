@@ -205,3 +205,182 @@ out:
     mode: "adv"
     content:
       - text: "Hello!"
+---
+case: nvl-mode-lines-accumulate
+in:
+  - - dialogue:
+        mode: "nvl"
+        gui:
+          resourceId: "nvl-layout"
+        characterId: "narrator"
+        content:
+          - text: "First line"
+    - dialogue:
+        mode: "nvl"
+        characterId: "alice"
+        content:
+          - text: "Second line"
+    - dialogue:
+        mode: "nvl"
+        characterId: "bob"
+        content:
+          - text: "Third line"
+out:
+  dialogue:
+    mode: "nvl"
+    gui:
+      resourceId: "nvl-layout"
+    characterId: "bob"
+    content:
+      - text: "Third line"
+    lines:
+      - content:
+          - text: "First line"
+        characterId: "narrator"
+      - content:
+          - text: "Second line"
+        characterId: "alice"
+      - content:
+          - text: "Third line"
+        characterId: "bob"
+---
+case: nvl-mode-clearPage
+in:
+  - - dialogue:
+        mode: "nvl"
+        gui:
+          resourceId: "nvl-layout"
+        characterId: "narrator"
+        content:
+          - text: "First page line 1"
+    - dialogue:
+        mode: "nvl"
+        characterId: "alice"
+        content:
+          - text: "First page line 2"
+    - dialogue:
+        mode: "nvl"
+        clearPage: true
+        characterId: "bob"
+        content:
+          - text: "Second page line 1"
+out:
+  dialogue:
+    mode: "nvl"
+    gui:
+      resourceId: "nvl-layout"
+    characterId: "bob"
+    content:
+      - text: "Second page line 1"
+    lines:
+      - content:
+          - text: "Second page line 1"
+        characterId: "bob"
+---
+case: nvl-mode-clearPage-with-content
+in:
+  - - dialogue:
+        mode: "nvl"
+        gui:
+          resourceId: "nvl-layout"
+        characterId: "alice"
+        content:
+          - text: "Old page content"
+    - dialogue:
+        mode: "nvl"
+        clearPage: true
+        content:
+          - text: "New page starts here"
+out:
+  dialogue:
+    mode: "nvl"
+    gui:
+      resourceId: "nvl-layout"
+    content:
+      - text: "New page starts here"
+    lines:
+      - content:
+          - text: "New page starts here"
+        characterId: null
+---
+case: nvl-mode-switch-from-adv
+in:
+  - - dialogue:
+        mode: "adv"
+        gui:
+          resourceId: "adv-layout"
+        characterId: "alice"
+        content:
+          - text: "ADV mode line"
+    - dialogue:
+        mode: "nvl"
+        gui:
+          resourceId: "nvl-layout"
+        characterId: "narrator"
+        content:
+          - text: "First NVL line"
+out:
+  dialogue:
+    mode: "nvl"
+    gui:
+      resourceId: "nvl-layout"
+    characterId: "narrator"
+    content:
+      - text: "First NVL line"
+    lines:
+      - content:
+          - text: "First NVL line"
+        characterId: "narrator"
+---
+case: nvl-mode-switch-to-adv
+in:
+  - - dialogue:
+        mode: "nvl"
+        gui:
+          resourceId: "nvl-layout"
+        characterId: "narrator"
+        content:
+          - text: "NVL line"
+    - dialogue:
+        mode: "adv"
+        gui:
+          resourceId: "adv-layout"
+        characterId: "alice"
+        content:
+          - text: "ADV line"
+out:
+  dialogue:
+    mode: "adv"
+    gui:
+      resourceId: "adv-layout"
+    characterId: "alice"
+    content:
+      - text: "ADV line"
+    lines:
+      - content:
+          - text: "NVL line"
+        characterId: "narrator"
+---
+case: nvl-mode-clearPage-adv-ignored
+in:
+  - - dialogue:
+        mode: "adv"
+        gui:
+          resourceId: "adv-layout"
+        characterId: "alice"
+        content:
+          - text: "First ADV line"
+    - dialogue:
+        mode: "adv"
+        clearPage: true
+        characterId: "bob"
+        content:
+          - text: "Second ADV line"
+out:
+  dialogue:
+    mode: "adv"
+    gui:
+      resourceId: "adv-layout"
+    characterId: "bob"
+    content:
+      - text: "Second ADV line"

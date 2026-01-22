@@ -97,16 +97,22 @@ export const dialogue = (state, presentation) => {
     return;
   }
 
+  // Handle NVL page clear (before adding new content)
+  if (
+    presentation.dialogue?.clearPage &&
+    state.dialogue?.mode === "nvl"
+  ) {
+    state.dialogue.lines = [];
+  }
+
   // Handle NVL mode content addition
   if (
     presentation.dialogue?.mode === "nvl" &&
     presentation.dialogue.content !== undefined
   ) {
-    if (presentation.dialogue.clear) {
-      state.dialogue.lines = [];
-    }
     state.dialogue.lines.push({
       content: presentation.dialogue.content,
+      characterId: presentation.dialogue.characterId || null,
     });
   }
 };
