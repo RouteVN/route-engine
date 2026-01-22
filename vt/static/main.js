@@ -116,6 +116,7 @@ const init = async () => {
   const assetBufferMap = assetBufferManager.getBufferMap();
 
   const routeGraphics = createRouteGraphics();
+  window.takeVtScreenshotBase64 = async (label) => await routeGraphics.extractBase64(label);
 
   const plugins = {
     elements: [
@@ -174,6 +175,9 @@ const init = async () => {
         engine.handleActions(payload.actions);
       }
     },
+    onFirstRender: () => {
+      window.dispatchEvent(new CustomEvent('vt:ready'));
+    },
   });
   await routeGraphics.loadAssets(assetBufferMap)
 
@@ -184,7 +188,6 @@ const init = async () => {
 
   const effectsHandler = createEffectsHandler({ getEngine: () => engine, routeGraphics, ticker });
   const engine = createRouteEngine({ handlePendingEffects: effectsHandler });
-  window.takeVtScreenshotBase64 = async (label) => await engine.extractBase64(label);
   const saveSlots = JSON.parse(localStorage.getItem("saveSlots")) || {};
   const globalDeviceVariables = JSON.parse(localStorage.getItem("globalDeviceVariables")) || {};
   const globalAccountVariables = JSON.parse(localStorage.getItem("globalAccountVariables")) || {};
@@ -197,9 +200,6 @@ const init = async () => {
         variables: { ...globalDeviceVariables, ...globalAccountVariables }
       },
       projectData
-    },
-    onFirstRender: () => {
-      window.dispatchEvent(new CustomEvent('vt:ready'));
     },
   });
 
