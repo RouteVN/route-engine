@@ -98,10 +98,7 @@ export const dialogue = (state, presentation) => {
   }
 
   // Handle NVL page clear (before adding new content)
-  if (
-    presentation.dialogue?.clearPage &&
-    state.dialogue?.mode === "nvl"
-  ) {
+  if (presentation.dialogue?.clearPage && state.dialogue?.mode === "nvl") {
     state.dialogue.lines = [];
   }
 

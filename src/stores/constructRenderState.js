@@ -490,7 +490,7 @@ export const addDialogue = (
           lines: (presentationState.dialogue?.lines || []).map((line) => ({
             content: line.content,
             characterName: line.characterId
-              ? (resources.characters?.[line.characterId]?.name || "")
+              ? resources.characters?.[line.characterId]?.name || ""
               : "",
           })),
         },
