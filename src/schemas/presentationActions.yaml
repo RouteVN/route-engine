@@ -371,9 +371,41 @@ properties:
     type: object
     description: Layout configuration for UI layouts
     properties:
-      resourceIdId:
+      resourceId:
         type: string
         description: ID of the layout to display
+      animations:
+        type: object
+        description: Animation effects for layout transitions
+        properties:
+          in:
+            type: object
+            description: Animation configuration for layout entrance
+            properties:
+              resourceId:
+                type: string
+                description: ID of the tween resource to use
+            required: [resourceId]
+            additionalProperties: false
+          out:
+            type: object
+            description: Animation configuration for layout exit
+            properties:
+              resourceId:
+                type: string
+                description: ID of the tween resource to use
+            required: [resourceId]
+            additionalProperties: false
+          update:
+            type: object
+            description: Animation configuration for layout update
+            properties:
+              resourceId:
+                type: string
+                description: ID of the tween resource to use
+            required: [resourceId]
+            additionalProperties: false
+        additionalProperties: false
     additionalProperties: false
 
 additionalProperties: false
