@@ -8,14 +8,13 @@ A lightweight, state-driven visual novel engine built in JavaScript for creating
 ## Features
 
 - **Declarative Story Definition**: Define your visual novel content in YAML
-- **Unidirectional Data Flow**: Predictable state management inspired by Redux
+- **Unidirectional Data Flow**: Predictable state management using Immer
 - **Layered Architecture**: Clean separation between engine logic, state, and rendering
 - **Save/Load System**: Built-in support for save slots with automatic persistence
 - **Multi-language Support**: Full localization system for international releases
 - **Auto/Skip Modes**: Player-friendly auto-advance and skip functionality
 - **Variable System**: Context, device, and account-scoped variables
-- **Modular Design**: Works with route-graphics for rendering (or bring your own renderer)
-
+- **Modular Design**: Works with [route-graphics](https://github.com/RouteVN/route-graphics) for rendering
 ## Quick Start
 
 ### Installation
@@ -28,31 +27,63 @@ npm install route-engine-js
 
 ```javascript
 import createRouteEngine, { createEffectsHandler } from 'route-engine-js';
+import createRouteGraphics, {
+  createAssetBufferManager,
+  textPlugin,
+  spritePlugin,
+  containerPlugin,
+  textRevealingPlugin,
+  tweenPlugin,
+  soundPlugin
+} from 'route-graphics';
+import { Ticker } from 'pixi.js';
 
-// Create the engine with an effects handler
-const engine = createRouteEngine({
-  handlePendingEffects: (effects) => {
-    effects.forEach(effect => {
-      if (effect.name === 'render') {
-        // Render using your graphics library
-        myRenderer.render(engine.selectRenderState());
-      }
-    });
-  }
-});
-
-// Initialize with your project data
-engine.init({
-  initialState: {
-    global: {
-      currentLocalizationPackageId: 'en'
+const init = async () => {
+  // Initialize route-graphics
+  const routeGraphics = createRouteGraphics();
+  await routeGraphics.init({
+    width: 1920,
+    height: 1080,
+    plugins: {
+      elements: [textPlugin, spritePlugin, containerPlugin, textRevealingPlugin],
+      animations: [tweenPlugin],
+      audio: [soundPlugin]
     },
-    projectData: myProjectData
-  }
-});
+    eventHandler: async (eventName, payload) => {
+      if (payload.actions) {
+        engine.handleActions(payload.actions);
+      }
+    }
+  });
 
-// Handle user actions
-engine.handleAction('nextLine');
+  document.getElementById('canvas').appendChild(routeGraphics.canvas);
+
+  // Create ticker for auto/skip modes
+  const ticker = new Ticker();
+  ticker.start();
+
+  // Create effects handler (handles render, timers, localStorage automatically)
+  const effectsHandler = createEffectsHandler({
+    getEngine: () => engine,
+    routeGraphics,
+    ticker
+  });
+
+  // Create engine
+  const engine = createRouteEngine({
+    handlePendingEffects: effectsHandler
+  });
+
+  // Initialize with project data
+  engine.init({
+    initialState: {
+      global: { currentLocalizationPackageId: 'en' },
+      projectData: myProjectData
+    }
+  });
+};
+
+init();
 ```
 
 ## Documentation
