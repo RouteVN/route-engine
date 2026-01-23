@@ -1,0 +1,137 @@
+---
+title: "Layout Animation"
+description: Test layout animation in and out
+---
+l10n:
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys: {}
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+resources:
+  layouts:
+    base1:
+      elements:
+        - id: af32
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+    menuLayout:
+      name: Menu Layout
+      elements:
+        - id: menu-container
+          type: container
+          x: 400
+          y: 300
+          children:
+            - id: menu-bg
+              type: rect
+              width: 400
+              height: 400
+              fill: "rgba(50, 50, 80, 0.9)"
+            - id: menu-title
+              type: text
+              content: "Menu"
+              x: 150
+              y: 40
+              textStyle:
+                fontSize: 36
+                fill: "white"
+            - id: menu-item-1
+              type: text
+              content: "Option 1"
+              x: 40
+              y: 120
+              textStyle:
+                fontSize: 24
+                fill: "white"
+            - id: menu-item-2
+              type: text
+              content: "Option 2"
+              x: 40
+              y: 180
+              textStyle:
+                fontSize: 24
+                fill: "white"
+
+  tweens:
+    fadeIn:
+      name: "Fade In"
+      properties:
+        alpha:
+          initialValue: 0
+          keyframes:
+            - duration: 400
+              value: 1
+              easing: easeOut
+    fadeOut:
+      name: "Fade Out"
+      properties:
+        alpha:
+          keyframes:
+            - duration: 400
+              value: 0
+              easing: easeIn
+    scaleIn:
+      name: "Scale In"
+      properties:
+        scaleX:
+          initialValue: 0.8
+          keyframes:
+            - duration: 300
+              value: 1
+              easing: easeOut
+        scaleY:
+          initialValue: 0.8
+          keyframes:
+            - duration: 300
+              value: 1
+              easing: easeOut
+        alpha:
+          initialValue: 0
+          keyframes:
+            - duration: 300
+              value: 1
+              easing: easeOut
+
+story:
+  initialSceneId: scene1
+  scenes:
+    scene1:
+      name: Scene 1
+      initialSectionId: section1
+      sections:
+        section1:
+          name: Section 1
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: base1
+            - id: line2
+              actions:
+                layout:
+                  resourceId: menuLayout
+                  animations:
+                    in:
+                      resourceId: scaleIn
+            - id: line3
+              actions:
+                layout:
+                  resourceId: menuLayout
+            - id: line4
+              actions:
+                layout:
+                  animations:
+                    out:
+                      resourceId: fadeOut

@@ -7,6 +7,78 @@ const jemplFunctions = {
   formatDate,
 };
 
+/**
+ * Helper to push in/out/update animations based on previous and current state
+ * @param {Object} params
+ * @param {Array} params.animations - The animations array to push to
+ * @param {Object} params.animationsDef - The animations definition (in/out/update)
+ * @param {Object} params.resources - The resources object containing tweens
+ * @param {string|undefined} params.previousResourceId - Previous resource ID
+ * @param {string|undefined} params.currentResourceId - Current resource ID
+ * @param {string} params.idPrefix - Prefix for animation IDs
+ * @param {string} params.targetId - Target element ID for in/update animations
+ * @param {string} params.outTargetId - Target element ID for out animation (defaults to targetId)
+ */
+const pushAnimations = ({
+  animations,
+  animationsDef,
+  resources,
+  previousResourceId,
+  currentResourceId,
+  idPrefix,
+  targetId,
+  outTargetId,
+}) => {
+  if (!animationsDef) return;
+
+  if (animationsDef.in) {
+    const tweenId = animationsDef.in.resourceId || animationsDef.in;
+    const tween = resources?.tweens?.[tweenId];
+    if (tween && !previousResourceId) {
+      animations.push({
+        id: `${idPrefix}-animation-in`,
+        type: "tween",
+        targetId,
+        properties: structuredClone(tween.properties),
+      });
+    }
+  }
+
+  if (animationsDef.out) {
+    const tweenId = animationsDef.out.resourceId || animationsDef.out;
+    const tween = resources?.tweens?.[tweenId];
+    if (
+      tween &&
+      previousResourceId &&
+      previousResourceId !== currentResourceId
+    ) {
+      animations.push({
+        id: `${idPrefix}-animation-out`,
+        type: "tween",
+        targetId: outTargetId || targetId,
+        properties: structuredClone(tween.properties),
+      });
+    }
+  }
+
+  if (animationsDef.update) {
+    const tweenId = animationsDef.update.resourceId || animationsDef.update;
+    const tween = resources?.tweens?.[tweenId];
+    if (
+      tween &&
+      previousResourceId &&
+      previousResourceId === currentResourceId
+    ) {
+      animations.push({
+        id: `${idPrefix}-animation-update`,
+        type: "tween",
+        targetId,
+        properties: structuredClone(tween.properties),
+      });
+    }
+  }
+};
+
 export const createInitialState = () => {
   return {
     elements: [
@@ -62,14 +134,10 @@ export const addBackgroundOrCg = (
     presentationState,
     previousPresentationState,
     resources = {},
-    variables,
-    autoMode,
-    skipMode,
-    currentLocalizationPackageId,
+    isLineCompleted,
   }, // resolveFile
 ) => {
-  const { elements } = state;
-  const animations = state.animations || [];
+  const { elements, animations } = state;
   if (presentationState.background) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
@@ -116,48 +184,21 @@ export const addBackgroundOrCg = (
       }
     }
 
-    if (presentationState.background.animations) {
-      if (presentationState.background.animations.in) {
-        const tweenId = presentationState.background.animations.in.resourceId;
-        const tween = resources?.tweens[tweenId];
-        if (tween) {
-          animations.push({
-            id: "bg-cg-animation-in",
-            type: "tween",
-            targetId: `bg-cg-${presentationState.background.resourceId}`,
-            properties: tween.properties,
-          });
-        }
-      }
+    if (presentationState.background.animations && !isLineCompleted) {
+      const previousResourceId =
+        previousPresentationState?.background?.resourceId;
+      const currentResourceId = presentationState.background.resourceId;
 
-      if (presentationState.background.animations.out) {
-        const tweenId = presentationState.background.animations.out.resourceId;
-        const targetResourceId =
-          previousPresentationState?.background?.resourceId;
-        const tween = resources?.tweens[tweenId];
-        if (tween && targetResourceId) {
-          animations.push({
-            id: "bg-cg-animation-out",
-            type: "tween",
-            targetId: `bg-cg-${targetResourceId}`,
-            properties: tween.properties,
-          });
-        }
-      }
-
-      if (presentationState.background.animations.update) {
-        const tweenId =
-          presentationState.background.animations.update.resourceId;
-        const tween = resources?.tweens[tweenId];
-        if (tween) {
-          animations.push({
-            id: "bg-cg-animation-update",
-            type: "tween",
-            targetId: `bg-cg-${presentationState.background.resourceId}`,
-            properties: tween.properties,
-          });
-        }
-      }
+      pushAnimations({
+        animations,
+        animationsDef: presentationState.background.animations,
+        resources,
+        previousResourceId,
+        currentResourceId,
+        idPrefix: "bg-cg",
+        targetId: `bg-cg-${currentResourceId}`,
+        outTargetId: `bg-cg-${previousResourceId}`,
+      });
     }
   }
   return state;
@@ -167,33 +208,44 @@ export const addBackgroundOrCg = (
  *
  * @param {Object} params
  */
-export const addCharacters = (state, { presentationState, resources }) => {
-  const { elements } = state;
-  const animations = state.animations || [];
+export const addCharacters = (
+  state,
+  { presentationState, previousPresentationState, resources, isLineCompleted },
+) => {
+  const { elements, animations } = state;
   if (presentationState.character && resources) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
     if (!storyContainer) return state;
 
     const items = presentationState.character.items || [];
+    const previousItems = previousPresentationState?.character?.items || [];
 
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       const { transformId, sprites } = item;
 
+      // Find previous item with same id
+      const previousItem = previousItems.find((p) => p.id === item.id);
+      const previousHasSprites =
+        previousItem?.sprites && previousItem.sprites.length > 0;
+      const currentHasSprites = sprites && sprites.length > 0;
+
       // For out animations only, we don't need to create a container
       if (item.animations && item.animations.out && !sprites && !transformId) {
         // Just add the out animation transition, container should already exist
-        const tweenId = item.animations.out.resourceId;
-        const tween = resources?.tweens[tweenId];
-        if (tween) {
-          const outTransition = {
-            id: `character-animation-out`,
-            type: "tween",
-            targetId: `character-container-${item.id}`,
-            properties: tween.properties,
-          };
-          animations.push(outTransition);
+        if (!isLineCompleted && previousHasSprites) {
+          const tweenId = item.animations.out.resourceId;
+          const tween = resources?.tweens?.[tweenId];
+          if (tween) {
+            const outTransition = {
+              id: `character-animation-out`,
+              type: "tween",
+              targetId: `character-container-${item.id}`,
+              properties: tween.properties,
+            };
+            animations.push(outTransition);
+          }
         }
         continue;
       }
@@ -245,33 +297,18 @@ export const addCharacters = (state, { presentationState, resources }) => {
       storyContainer.children.push(characterContainer);
 
       // Add animation support (except out, which is handled above)
-      if (item.animations) {
-        if (item.animations.in) {
-          const tweenId = item.animations.in.resourceId;
-          const tween = resources?.tweens[tweenId];
-          if (tween) {
-            animations.push({
-              id: `character-animation-in`,
-              type: "tween",
-              targetId: containerId,
-              properties: tween.properties,
-            });
-          }
-        }
-
-        if (item.animations.update) {
-          const tweenId = item.animations.update.resourceId;
-          const tween = resources?.tweens[tweenId];
-          if (tween) {
-            const updateTransition = {
-              id: `character-animation-update`,
-              type: "tween",
-              targetId: containerId,
-              properties: tween.properties,
-            };
-            animations.push(updateTransition);
-          }
-        }
+      if (item.animations && !isLineCompleted) {
+        // Use boolean flags as "resource IDs" for the helper
+        // previousHasSprites/currentHasSprites work because helper checks truthiness and equality
+        pushAnimations({
+          animations,
+          animationsDef: item.animations,
+          resources,
+          previousResourceId: previousHasSprites,
+          currentResourceId: currentHasSprites,
+          idPrefix: "character",
+          targetId: containerId,
+        });
       }
     }
   }
@@ -282,9 +319,11 @@ export const addCharacters = (state, { presentationState, resources }) => {
  *
  * @param {Object} params
  */
-export const addVisuals = (state, { presentationState, resources }) => {
-  const { elements } = state;
-  const animations = state.animations || [];
+export const addVisuals = (
+  state,
+  { presentationState, previousPresentationState, resources, isLineCompleted },
+) => {
+  const { elements, animations } = state;
   if (presentationState.visual && resources) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
@@ -385,32 +424,19 @@ export const addVisuals = (state, { presentationState, resources }) => {
         }
       }
 
-      if (item.animations) {
-        if (item.animations.in) {
-          const tweenId = item.animations.in.resourceId || item.animations.in;
-          const tween = resources?.tweens[tweenId];
-          if (tween) {
-            animations.push({
-              id: `${item.id}-animation`,
-              type: "tween",
-              targetId: `visual-${item.id}`,
-              properties: structuredClone(tween.properties),
-            });
-          }
-        }
+      if (item.animations && !isLineCompleted) {
+        const previousItems = previousPresentationState?.visual?.items || [];
+        const previousItem = previousItems.find((p) => p.id === item.id);
 
-        if (item.animations.out) {
-          const tweenId = item.animations.out.resourceId || item.animations.out;
-          const tween = resources?.tweens[tweenId];
-          if (tween) {
-            animations.push({
-              id: `${item.id}-animation-2`,
-              type: "tween",
-              targetId: `visual-${item.id}`,
-              properties: structuredClone(tween.properties),
-            });
-          }
-        }
+        pushAnimations({
+          animations,
+          animationsDef: item.animations,
+          resources,
+          previousResourceId: previousItem?.resourceId,
+          currentResourceId: item.resourceId,
+          idPrefix: item.id,
+          targetId: `visual-${item.id}`,
+        });
       }
     }
   }
@@ -425,6 +451,7 @@ export const addDialogue = (
   state,
   {
     presentationState,
+    previousPresentationState,
     resources = {},
     dialogueUIHidden,
     autoMode,
@@ -437,7 +464,8 @@ export const addDialogue = (
     saveSlots = [],
   },
 ) => {
-  const { elements } = state;
+  const { elements, animations } = state;
+
   if (!presentationState.dialogue) {
     return state;
   }
@@ -515,6 +543,19 @@ export const addDialogue = (
     }
   }
 
+  // Handle dialogue GUI animations
+  if (presentationState.dialogue.gui?.animations && !isLineCompleted) {
+    pushAnimations({
+      animations,
+      animationsDef: presentationState.dialogue.gui.animations,
+      resources,
+      previousResourceId: previousPresentationState?.dialogue?.gui?.resourceId,
+      currentResourceId: presentationState.dialogue.gui?.resourceId,
+      idPrefix: "dialogue-gui",
+      targetId: "dialogue-container",
+    });
+  }
+
   return state;
 };
 
@@ -522,8 +563,11 @@ export const addDialogue = (
  *
  * @param {Object} params
  */
-export const addChoices = (state, { presentationState, resources }) => {
-  const { elements } = state;
+export const addChoices = (
+  state,
+  { presentationState, previousPresentationState, resources, isLineCompleted },
+) => {
+  const { elements, animations } = state;
   if (presentationState.choice && resources) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
@@ -545,22 +589,35 @@ export const addChoices = (state, { presentationState, resources }) => {
     });
 
     const layout = resources?.layouts[presentationState.choice.resourceId];
-    if (!layout || !layout.elements) return state;
+    if (layout && layout.elements) {
+      const wrappedTemplate = { elements: layout.elements };
+      const result = parseAndRender(wrappedTemplate, {
+        choice: {
+          items: presentationState.choice?.items ?? [],
+        },
+      });
+      const choiceElements = result?.elements;
 
-    const wrappedTemplate = { elements: layout.elements };
-    const result = parseAndRender(wrappedTemplate, {
-      choice: {
-        items: presentationState.choice?.items ?? [],
-      },
-    });
-    const choiceElements = result?.elements;
-
-    if (Array.isArray(choiceElements)) {
-      for (const element of choiceElements) {
-        storyContainer.children.push(structuredClone(element));
+      if (Array.isArray(choiceElements)) {
+        for (const element of choiceElements) {
+          storyContainer.children.push(structuredClone(element));
+        }
+      } else if (choiceElements) {
+        storyContainer.children.push(structuredClone(choiceElements));
       }
-    } else if (choiceElements) {
-      storyContainer.children.push(structuredClone(choiceElements));
+    }
+
+    // Handle choice animations
+    if (presentationState.choice.animations && !isLineCompleted) {
+      pushAnimations({
+        animations,
+        animationsDef: presentationState.choice.animations,
+        resources,
+        previousResourceId: previousPresentationState?.choice?.resourceId,
+        currentResourceId: presentationState.choice.resourceId,
+        idPrefix: "choice",
+        targetId: "choice-container",
+      });
     }
   }
   return state;
@@ -650,6 +707,7 @@ export const addLayout = (
   state,
   {
     presentationState,
+    previousPresentationState,
     resources = {},
     variables,
     autoMode,
@@ -657,10 +715,10 @@ export const addLayout = (
     canRollback,
     currentLocalizationPackageId,
     saveSlots = [],
+    isLineCompleted,
   },
 ) => {
-  const { elements } = state;
-  const animations = state.animations || [];
+  const { elements, animations } = state;
   if (presentationState.layout) {
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
@@ -672,7 +730,7 @@ export const addLayout = (
       return state;
     }
 
-    if (Array.isArray(layout.transitions)) {
+    if (Array.isArray(layout.transitions) && !isLineCompleted) {
       layout.transitions.forEach((transition) => {
         animations.push(transition);
       });
@@ -722,6 +780,24 @@ export const addLayout = (
     // Push the processed container
     storyContainer.children.push(processElementAfterRender(processedContainer));
   }
+
+  // Handle layout animations
+  if (presentationState.layout?.animations && !isLineCompleted) {
+    const previousResourceId = previousPresentationState?.layout?.resourceId;
+    const currentResourceId = presentationState.layout?.resourceId;
+
+    pushAnimations({
+      animations,
+      animationsDef: presentationState.layout.animations,
+      resources,
+      previousResourceId,
+      currentResourceId,
+      idPrefix: "layout",
+      targetId: `layout-${currentResourceId}`,
+      outTargetId: `layout-${previousResourceId}`,
+    });
+  }
+
   return state;
 };
 
@@ -740,8 +816,7 @@ export const addLayeredViews = (
     l10n,
   },
 ) => {
-  const { elements } = state;
-  const animations = state.animations || [];
+  const { elements, animations } = state;
   if (layeredViews && layeredViews.length > 0) {
     // Add each layeredView as an overlay
     layeredViews.forEach((layeredView, index) => {

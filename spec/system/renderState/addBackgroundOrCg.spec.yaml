@@ -109,6 +109,9 @@ in:
         animations:
           update:
             resourceId: "crossFade"
+    previousPresentationState:
+      background:
+        resourceId: "bg1"
     resources:
       images:
         bg1:
@@ -293,8 +296,6 @@ in:
         animations:
           in:
             resourceId: "slideIn"
-          update:
-            resourceId: "pulse"
     resources:
       images:
         bg2:
@@ -306,10 +307,6 @@ in:
           properties:
             x: [-100, 0]
             duration: 300
-        pulse:
-          properties:
-            scale: [1, 1.1, 1]
-            duration: 1000
 out:
   elements:
     - id: "story"
@@ -336,9 +333,3 @@ out:
       properties:
         x: [-100, 0]
         duration: 300
-    - id: "bg-cg-animation-update"
-      type: "tween"
-      targetId: "bg-cg-bg2"
-      properties:
-        scale: [1, 1.1, 1]
-        duration: 1000

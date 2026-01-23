@@ -109,7 +109,7 @@ out:
           scaleX: 1
           scaleY: 1
   animations:
-    - id: "visual1-animation"
+    - id: "visual1-animation-in"
       type: "tween"
       targetId: "visual-visual1"
       properties:
@@ -131,23 +131,14 @@ in:
       visual:
         items:
           - id: "visual1"
-            resourceId: "image1"
-            transformId: "transform1"
             animations:
               out: "fadeOut"
+    previousPresentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceId: "image1"
     resources:
-      images:
-        image1:
-          fileId: "out.png"
-      transforms:
-        transform1:
-          x: 0
-          y: 0
-          anchorX: 0.5
-          anchorY: 0.5
-          rotation: 0
-          scaleX: 1
-          scaleY: 1
       tweens:
         fadeOut:
           properties:
@@ -159,19 +150,9 @@ out:
       type: "container"
       x: 0
       y: 0
-      children:
-        - id: "visual-visual1"
-          type: "sprite"
-          src: "out.png"
-          x: 0
-          y: 0
-          anchorX: 0.5
-          anchorY: 0.5
-          rotation: 0
-          scaleX: 1
-          scaleY: 1
+      children: []
   animations:
-    - id: "visual1-animation-2"
+    - id: "visual1-animation-out"
       type: "tween"
       targetId: "visual-visual1"
       properties:
@@ -179,7 +160,7 @@ out:
         duration: 300
   audio: []
 ---
-case: add visual with both in and out animations
+case: add visual with in animation (no previous state)
 in:
   - elements:
       - id: "story"
@@ -198,8 +179,6 @@ in:
             animations:
               in:
                 resourceId: "slideIn"
-              out:
-                resourceId: "slideOut"
     resources:
       images:
         image1:
@@ -217,10 +196,6 @@ in:
         slideIn:
           properties:
             x: [-50, 150]
-            duration: 400
-        slideOut:
-          properties:
-            x: [150, 350]
             duration: 400
 out:
   elements:
@@ -240,17 +215,11 @@ out:
           scaleX: 1
           scaleY: 1
   animations:
-    - id: "visual1-animation"
+    - id: "visual1-animation-in"
       type: "tween"
       targetId: "visual-visual1"
       properties:
         x: [-50, 150]
-        duration: 400
-    - id: "visual1-animation-2"
-      type: "tween"
-      targetId: "visual-visual1"
-      properties:
-        x: [150, 350]
         duration: 400
   audio: []
 ---
@@ -765,7 +734,7 @@ out:
               width: 1920
               height: 1080
   animations:
-    - id: "overlay-animation"
+    - id: "overlay-animation-in"
       type: "tween"
       targetId: "visual-overlay"
       properties:
