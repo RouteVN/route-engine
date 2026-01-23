@@ -66,15 +66,77 @@ properties:
     type: object
     description: Dialogue display configuration
     properties:
-      resourceId:
+      gui:
+        type: object
+        description: GUI configuration for dialogue box
+        properties:
+          resourceId:
+            type: string
+            description: ID of the dialogue box layout resource
+          animations:
+            type: object
+            description: Animation effects for dialogue transitions
+            properties:
+              in:
+                type: object
+                description: Animation configuration for dialogue entrance
+                properties:
+                  resourceId:
+                    type: string
+                    description: ID of the tween resource to use
+                required: [resourceId]
+                additionalProperties: false
+              out:
+                type: object
+                description: Animation configuration for dialogue exit
+                properties:
+                  resourceId:
+                    type: string
+                    description: ID of the tween resource to use
+                required: [resourceId]
+                additionalProperties: false
+              update:
+                type: object
+                description: Animation configuration for dialogue update
+                properties:
+                  resourceId:
+                    type: string
+                    description: ID of the tween resource to use
+                required: [resourceId]
+                additionalProperties: false
+            additionalProperties: false
+        additionalProperties: false
+      mode:
         type: string
-        description: ID of the dialogue box UI element
+        enum: [adv, nvl]
+        description: Dialogue mode (adv for adventure, nvl for novel)
       content:
-        type: string
+        oneOf:
+          - type: string
+          - type: array
+            items:
+              type: object
+              properties:
+                text:
+                  type: string
         description: The dialogue text content
       characterId:
         type: string
         description: ID of the character speaking
+      character:
+        type: object
+        description: Override character properties
+        properties:
+          name:
+            type: string
+            description: Override character name
+        additionalProperties: false
+      clear:
+        type: boolean
+        description: Clear the dialogue state
+      clearPage:
+        type: boolean
+        description: Clear the NVL page before adding new content
     additionalProperties: false
 
   character:
@@ -108,10 +170,42 @@ properties:
                   id:
                     type: string
                     description: Identifier for the sprite part
-                  imageId:
+                  resourceId:
                     type: string
                     description: ID of the sprite part resource
                 additionalProperties: false
+            animations:
+              type: object
+              description: Animation effects for character transitions
+              properties:
+                in:
+                  type: object
+                  description: Animation configuration for character entrance
+                  properties:
+                    resourceId:
+                      type: string
+                      description: ID of the tween resource to use
+                  required: [resourceId]
+                  additionalProperties: false
+                out:
+                  type: object
+                  description: Animation configuration for character exit
+                  properties:
+                    resourceId:
+                      type: string
+                      description: ID of the tween resource to use
+                  required: [resourceId]
+                  additionalProperties: false
+                update:
+                  type: object
+                  description: Animation configuration for character update
+                  properties:
+                    resourceId:
+                      type: string
+                      description: ID of the tween resource to use
+                  required: [resourceId]
+                  additionalProperties: false
+              additionalProperties: false
           required: [id]
           additionalProperties: false
     additionalProperties: false
@@ -196,8 +290,47 @@ properties:
             content:
               type: string
               description: Text content of the choice option
-          required: [id, content]
+            events:
+              type: object
+              description: Event handlers for the choice
+              properties:
+                click:
+                  type: object
+                  description: Click event handler
+              additionalProperties: true
           additionalProperties: false
+      animations:
+        type: object
+        description: Animation effects for choice transitions
+        properties:
+          in:
+            type: object
+            description: Animation configuration for choice entrance
+            properties:
+              resourceId:
+                type: string
+                description: ID of the tween resource to use
+            required: [resourceId]
+            additionalProperties: false
+          out:
+            type: object
+            description: Animation configuration for choice exit
+            properties:
+              resourceId:
+                type: string
+                description: ID of the tween resource to use
+            required: [resourceId]
+            additionalProperties: false
+          update:
+            type: object
+            description: Animation configuration for choice update
+            properties:
+              resourceId:
+                type: string
+                description: ID of the tween resource to use
+            required: [resourceId]
+            additionalProperties: false
+        additionalProperties: false
     additionalProperties: false
 
   sfx:
@@ -238,14 +371,45 @@ properties:
     required: [resourceId]
     additionalProperties: false
 
-  # TODO: check if can make this more generalized
   layout:
     type: object
     description: Layout configuration for UI layouts
     properties:
-      resourceIdId:
+      resourceId:
         type: string
         description: ID of the layout to display
+      animations:
+        type: object
+        description: Animation effects for layout transitions
+        properties:
+          in:
+            type: object
+            description: Animation configuration for layout entrance
+            properties:
+              resourceId:
+                type: string
+                description: ID of the tween resource to use
+            required: [resourceId]
+            additionalProperties: false
+          out:
+            type: object
+            description: Animation configuration for layout exit
+            properties:
+              resourceId:
+                type: string
+                description: ID of the tween resource to use
+            required: [resourceId]
+            additionalProperties: false
+          update:
+            type: object
+            description: Animation configuration for layout update
+            properties:
+              resourceId:
+                type: string
+                description: ID of the tween resource to use
+            required: [resourceId]
+            additionalProperties: false
+        additionalProperties: false
     additionalProperties: false
 
 additionalProperties: false

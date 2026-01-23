@@ -153,7 +153,7 @@ properties:
                 properties:
                   initialValue:
                     type: number
-                    description: Starting value for the animated property
+                    description: Starting value for the animated property (optional, uses current value if not specified)
                   keyframes:
                     type: array
                     description: Array of keyframe definitions
@@ -173,10 +173,10 @@ properties:
                       required: [duration, value]
                       additionalProperties: false
                     minItems: 1
-                required: [initialValue, keyframes]
+                required: [keyframes]
                 additionalProperties: false
             additionalProperties: false
-        required: [name, properties]
+        required: [properties]
         additionalProperties: false
     additionalProperties: false
 
