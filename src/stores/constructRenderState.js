@@ -487,7 +487,12 @@ export const addDialogue = (
             name: character?.name || "",
           },
           content: presentationState.dialogue?.content || [{ text: "" }],
-          lines: presentationState.dialogue?.lines || [],
+          lines: (presentationState.dialogue?.lines || []).map((line) => ({
+            content: line.content,
+            characterName: line.characterId
+              ? resources.characters?.[line.characterId]?.name || ""
+              : "",
+          })),
         },
         l10n,
       };
