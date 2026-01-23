@@ -165,7 +165,6 @@ const init = async () => {
     height: 1080,
     plugins,
     eventHandler: async (eventName, payload) => {
-      console.log('renderComplete', payload)
       if (eventName === "renderComplete") {
         engine.handleActions({
           markLineCompleted: {}

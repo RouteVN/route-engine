@@ -33,12 +33,7 @@ const processItemsWithAnimations = (items, hasResourceFn) => {
   }
 
   const processedItems = items
-    .map((item) => {
-      if (!hasResourceFn(item) && item.animations) {
-        return { id: item.id, animations: structuredClone(item.animations) };
-      }
-      return structuredClone(item);
-    })
+    .map((item) => structuredClone(item))
     .filter((item) => hasResourceFn(item) || item.animations);
 
   return {
@@ -274,7 +269,10 @@ export const character = (state, presentation) => {
 
   const { hasValidItems, processedItems } = processItemsWithAnimations(
     presentation.character.items,
-    (item) => item.sprites && item.sprites.length > 0,
+    (item) =>
+      (item.sprites && item.sprites.length > 0) ||
+      item.transformId ||
+      item.resourceId,
   );
 
   if (hasValidItems) {

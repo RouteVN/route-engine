@@ -164,6 +164,13 @@ in:
             animations:
               out:
                 resourceId: "fadeOut"
+    previousPresentationState:
+      character:
+        items:
+          - id: "char1"
+            sprites:
+              - id: "body"
+                resourceId: "body"
     resources:
       tweens:
         fadeOut:
@@ -185,7 +192,7 @@ out:
         opacity: [1, 0]
         duration: 300
 ---
-case: add character with both in and update animations
+case: add character with in animation (new character)
 in:
   - elements:
       - id: "story"
@@ -205,8 +212,6 @@ in:
             animations:
               in:
                 resourceId: "fadeIn"
-              update:
-                resourceId: "pulse"
     resources:
       transforms:
         transform1:
@@ -227,10 +232,6 @@ in:
           properties:
             opacity: [0, 1]
             duration: 500
-        pulse:
-          properties:
-            scale: [1, 1.1, 1]
-            duration: 1000
 out:
   elements:
     - id: "story"
@@ -262,12 +263,6 @@ out:
       properties:
         opacity: [0, 1]
         duration: 500
-    - id: "character-animation-update"
-      type: "tween"
-      targetId: "character-container-char1-0-body"
-      properties:
-        scale: [1, 1.1, 1]
-        duration: 1000
 ---
 case: multiple characters with different sprites
 in:
