@@ -1,0 +1,136 @@
+---
+title: "Dialogue Animation"
+description: Test dialogue GUI animation in and out
+---
+l10n:
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys: {}
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+resources:
+  layouts:
+    base1:
+      elements:
+        - id: af32
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+    dialogueLayout:
+      name: Dialogue Screen
+      mode: "adv"
+      elements:
+        - id: dialogue-container
+          type: "container"
+          x: 50
+          y: 700
+          children:
+            - id: "dialogue-bg"
+              type: rect
+              width: 1820
+              height: 300
+              fill: "rgba(0, 0, 0, 0.7)"
+              x: 0
+              y: 0
+            - id: dialogue-character-name
+              type: text
+              content: "${dialogue.character.name}"
+              x: 20
+              y: 40
+              textStyle:
+                fontSize: 24
+                fill: "white"
+            - id: dialogue-text
+              type: "text"
+              x: 20
+              y: 100
+              content: "${dialogue.content[0].text}"
+              textStyle:
+                fontSize: 24
+                fill: "white"
+
+  characters:
+    char1:
+      name: Alice
+
+  tweens:
+    fadeIn:
+      name: "Fade In"
+      properties:
+        alpha:
+          initialValue: 0
+          keyframes:
+            - duration: 500
+              value: 1
+              easing: easeOut
+    fadeOut:
+      name: "Fade Out"
+      properties:
+        alpha:
+          keyframes:
+            - duration: 500
+              value: 0
+              easing: easeIn
+    slideUp:
+      name: "Slide Up"
+      properties:
+        y:
+          initialValue: 800
+          keyframes:
+            - duration: 400
+              value: 700
+              easing: easeOut
+
+story:
+  initialSceneId: scene1
+  scenes:
+    scene1:
+      name: Scene 1
+      initialSectionId: section1
+      sections:
+        section1:
+          name: Section 1
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: base1
+                dialogue:
+                  gui:
+                    resourceId: dialogueLayout
+                    animations:
+                      in:
+                        resourceId: fadeIn
+                  mode: adv
+                  content:
+                    - text: Hello! The dialogue box just faded in.
+                  characterId: char1
+            - id: line2
+              actions:
+                dialogue:
+                  content:
+                    - text: This is the second line. No animation here.
+            - id: line3
+              actions:
+                dialogue:
+                  content:
+                    - text: This is the third line. About to fade out...
+                  characterId: char1
+            - id: line4
+              actions:
+                dialogue:
+                  gui:
+                    animations:
+                      out:
+                        resourceId: fadeOut
+                  clear: true

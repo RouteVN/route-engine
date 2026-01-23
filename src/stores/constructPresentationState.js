@@ -1,6 +1,53 @@
 import { createSequentialActionsExecutor } from "../util.js";
 
 /**
+ * Helper to handle animations-only state when no resource is provided
+ * @param {Object} presentation - The presentation object
+ * @param {Function} hasResourceFn - Function to check if presentation has a resource
+ * @returns {{ animationsOnly: boolean, state: Object|null }}
+ */
+const getAnimationsOnlyState = (presentation, hasResourceFn) => {
+  if (!presentation) {
+    return { animationsOnly: false, state: null };
+  }
+
+  if (!hasResourceFn(presentation) && presentation.animations) {
+    return {
+      animationsOnly: true,
+      state: { animations: structuredClone(presentation.animations) },
+    };
+  }
+
+  return { animationsOnly: false, state: null };
+};
+
+/**
+ * Processes items array to handle animations-only items
+ * @param {Array} items - The items array
+ * @param {Function} hasResourceFn - Function to check if item has a resource
+ * @returns {{ hasValidItems: boolean, processedItems: Array }}
+ */
+const processItemsWithAnimations = (items, hasResourceFn) => {
+  if (!items || items.length === 0) {
+    return { hasValidItems: false, processedItems: [] };
+  }
+
+  const processedItems = items
+    .map((item) => {
+      if (!hasResourceFn(item) && item.animations) {
+        return { id: item.id, animations: structuredClone(item.animations) };
+      }
+      return structuredClone(item);
+    })
+    .filter((item) => hasResourceFn(item) || item.animations);
+
+  return {
+    hasValidItems: processedItems.length > 0,
+    processedItems,
+  };
+};
+
+/**
  * Creates the initial presentation state
  * @returns {Object} Empty initial state object
  */
@@ -27,10 +74,21 @@ export const base = (state, presentation) => {
  */
 export const background = (state, presentation) => {
   if (presentation.background) {
+    const { animationsOnly, state: animState } = getAnimationsOnlyState(
+      presentation.background,
+      (p) => !!p.resourceId,
+    );
+
+    if (animationsOnly) {
+      state.background = animState;
+      return;
+    }
+
     if (!presentation.background.resourceId) {
       delete state.background;
       return;
     }
+
     state.background = structuredClone(presentation.background);
   } else {
     // Only clear animations if they exist
@@ -61,7 +119,22 @@ export const dialogue = (state, presentation) => {
 
   // Copy all dialogue properties including gui
   if (presentation.dialogue.gui) {
-    state.dialogue.gui = { ...presentation.dialogue.gui };
+    const { animationsOnly, state: animState } = getAnimationsOnlyState(
+      presentation.dialogue.gui,
+      (p) => !!p.resourceId,
+    );
+
+    if (animationsOnly) {
+      state.dialogue.gui = {
+        ...state.dialogue.gui,
+        ...animState,
+      };
+    } else {
+      state.dialogue.gui = { ...presentation.dialogue.gui };
+    }
+  } else if (state.dialogue?.gui?.animations) {
+    // Clear animations if no gui in presentation
+    state.dialogue.gui.animations = {};
   }
 
   // Handle mode-specific initialization
@@ -157,7 +230,16 @@ export const bgm = (state, presentation) => {
  */
 export const visual = (state, presentation) => {
   if (presentation.visual) {
-    state.visual = structuredClone(presentation.visual);
+    const { hasValidItems, processedItems } = processItemsWithAnimations(
+      presentation.visual.items,
+      (item) => !!item.resourceId,
+    );
+
+    if (hasValidItems) {
+      state.visual = { items: processedItems };
+    } else {
+      delete state.visual;
+    }
   } else {
     // Only clear animations from items that have them
     if (state.visual?.items) {
@@ -190,16 +272,16 @@ export const character = (state, presentation) => {
     return;
   }
 
-  // Simply replace the entire character state
-  if (
-    !presentation.character.items ||
-    presentation.character.items.length === 0
-  ) {
-    delete state.character;
-    return;
-  }
+  const { hasValidItems, processedItems } = processItemsWithAnimations(
+    presentation.character.items,
+    (item) => item.sprites && item.sprites.length > 0,
+  );
 
-  state.character = structuredClone(presentation.character);
+  if (hasValidItems) {
+    state.character = { items: processedItems };
+  } else {
+    delete state.character;
+  }
 };
 
 /**
@@ -222,6 +304,21 @@ export const animation = (state, presentation) => {
  */
 export const layout = (state, presentation) => {
   if (presentation.layout) {
+    const { animationsOnly, state: animState } = getAnimationsOnlyState(
+      presentation.layout,
+      (p) => !!p.resourceId,
+    );
+
+    if (animationsOnly) {
+      state.layout = animState;
+      return;
+    }
+
+    if (!presentation.layout.resourceId) {
+      delete state.layout;
+      return;
+    }
+
     state.layout = presentation.layout;
   } else if (state.layout) {
     delete state.layout;
@@ -235,6 +332,24 @@ export const layout = (state, presentation) => {
  */
 export const choice = (state, presentation) => {
   if (presentation.choice) {
+    const { animationsOnly, state: animState } = getAnimationsOnlyState(
+      presentation.choice,
+      (p) => !!p.resourceId,
+    );
+
+    if (animationsOnly) {
+      state.choice = {
+        ...state.choice,
+        ...animState,
+      };
+      return;
+    }
+
+    if (!presentation.choice.resourceId) {
+      delete state.choice;
+      return;
+    }
+
     state.choice = presentation.choice;
   } else if (state.choice) {
     delete state.choice;
