@@ -751,6 +751,7 @@ export const addLayout = (
       skipMode,
       canRollback,
       currentLocalizationPackageId,
+      effectiveSoundVolume: variables._muteAll ? 0 : variables._soundVolume,
     };
 
     let processedContainer = parseAndRender(layoutContainer, templateData, {
@@ -857,6 +858,7 @@ export const addLayeredViews = (
         canRollback,
         currentLocalizationPackageId,
         saveSlots,
+        effectiveSoundVolume: variables._muteAll ? 0 : variables._soundVolume,
         historyDialogue: historyDialogueWithNames,
         characters: resources.characters || {},
       };
