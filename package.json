@@ -1,6 +1,6 @@
 {
   "name": "route-engine-js",
-  "version": "0.1.28",
+  "version": "0.1.29",
   "description": "A lightweight Visual Novel engine built in JavaScript for creating interactive narrative games with branching storylines",
   "keywords": [
     "game-engine",
