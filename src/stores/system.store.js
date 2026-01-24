@@ -99,7 +99,6 @@ export const createInitialState = (payload) => {
       },
     ],
   };
-  console.log("Initial State:", state);
   return state;
 };
 
@@ -323,8 +322,6 @@ export const selectPresentationState = ({ state }) => {
   // Return all lines up to and including the current line
   const currentLines = lines.slice(0, currentLineIndex + 1);
 
-  console.log("currentLines", currentLines);
-
   // Create presentation state from unified actions
   const presentationActions = currentLines.map((line) => {
     const actions = line.actions || {};
@@ -508,7 +505,6 @@ export const selectCurrentPageSlots = (
 export const selectRenderState = ({ state }) => {
   const presentationState = selectPresentationState({ state });
   const previousPresentationState = selectPreviousPresentationState({ state });
-  console.log("presentationState", presentationState);
 
   const allVariables = {
     ...state.global.variables,
@@ -536,7 +532,6 @@ export const selectRenderState = ({ state }) => {
     saveSlots,
     variables: allVariables,
   });
-  console.log("renderState", renderState);
   return renderState;
 };
 
@@ -1157,7 +1152,6 @@ export const nextLine = ({ state }) => {
     }
   }
 
-  console.log("state", state);
   return state;
 };
 
