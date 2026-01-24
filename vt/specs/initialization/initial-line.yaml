@@ -1,0 +1,71 @@
+---
+title: "Initial Line ID"
+description: "Test starting at a specific line via initialLineId"
+---
+l10n:
+  packages:
+    en:
+      label: English
+      lang: en
+      keys: {}
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+resources:
+  layouts:
+    base1:
+      elements:
+        - id: bg
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+    dialogueGui:
+      name: Dialogue Screen
+      mode: adv
+      elements:
+        - id: dialogue-container
+          type: "container"
+          x: 100
+          y: 800
+          children:
+            - id: dialogue-text
+              type: "text"
+              x: 50
+              y: 50
+              content: "${dialogue.content[0].text}"
+              textStyle:
+                fontSize: 48
+                fill: "white"
+
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: section1
+      sections:
+        section1:
+          initialLineId: line2
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: base1
+                dialogue:
+                  gui:
+                    resourceId: dialogueGui
+                  content:
+                    - text: "Line 1 (Should not start here)"
+            - id: line2
+              actions:
+                dialogue:
+                  content:
+                    - text: "Line 2 (Should start here)"
+            - id: line3
+              actions:
+                dialogue:
+                  content:
+                    - text: "Line 3"

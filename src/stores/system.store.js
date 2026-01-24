@@ -21,16 +21,15 @@ export const createInitialState = (payload) => {
     projectData,
   } = payload;
 
+  const initialSceneId = projectData.story.initialSceneId;
+  const initialScene = projectData.story.scenes[initialSceneId];
+  const initialSectionId = initialScene.initialSectionId;
+  const initialSection = initialScene.sections[initialSectionId];
+
   const initialPointer = {
-    sceneId: projectData.story.initialSceneId,
-    sectionId:
-      projectData.story.scenes[projectData.story.initialSceneId]
-        .initialSectionId,
-    lineId:
-      projectData.story.scenes[projectData.story.initialSceneId].sections[
-        projectData.story.scenes[projectData.story.initialSceneId]
-          .initialSectionId
-      ].lines[0].id,
+    sceneId: initialSceneId,
+    sectionId: initialSectionId,
+    lineId: initialSection.initialLineId ?? initialSection.lines[0].id,
   };
 
   // Get default variables from project data
