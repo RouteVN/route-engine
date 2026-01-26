@@ -1086,6 +1086,8 @@ export const nextLine = ({ state }) => {
   // If line is not completed, complete it instantly instead of advancing
   if (!state.global.isLineCompleted) {
     state.global.isLineCompleted = true;
+    // Clear any running nextLineConfigTimer to prevent auto-advance after manual click
+    state.global.pendingEffects.push({ name: "clearNextLineConfigTimer" });
     state.global.pendingEffects.push({ name: "render" });
     return state;
   }
