@@ -1,0 +1,114 @@
+---
+title: "Sound Volume Test"
+---
+l10n:
+  packages:
+    en:
+      label: English
+      lang: en
+      keys: {}
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#1a1a2e"
+
+resources:
+  variables:
+    _soundVolume:
+      type: number
+      scope: global-device
+      default: 500
+    _muteAll:
+      type: boolean
+      scope: global-device
+      default: false
+
+  layouts:
+    main:
+      elements:
+        - id: title
+          type: text
+          x: 960
+          y: 100
+          anchorX: 0.5
+          content: "Sound Volume: ${variables._soundVolume}"
+          textStyle:
+            fontSize: 48
+            fill: "#ffffff"
+
+        - id: vol-250
+          type: text
+          x: 400
+          y: 300
+          content: "250"
+          textStyle:
+            fontSize: 32
+            fill: "#ffffff"
+          click:
+            soundSrc: "xj323"
+            soundVolume: 250
+
+        - id: vol-500
+          type: text
+          x: 700
+          y: 300
+          content: "500"
+          textStyle:
+            fontSize: 32
+            fill: "#ffffff"
+          click:
+            soundSrc: "xj323"
+            soundVolume: 500
+
+        - id: vol-750
+          type: text
+          x: 1000
+          y: 300
+          content: "750"
+          textStyle:
+            fontSize: 32
+            fill: "#ffffff"
+          click:
+            soundSrc: "xj323"
+            soundVolume: 750
+
+        - id: vol-1000
+          type: text
+          x: 1300
+          y: 300
+          content: "1000"
+          textStyle:
+            fontSize: 32
+            fill: "#ffffff"
+          click:
+            soundSrc: "xj323"
+            soundVolume: 1000
+
+        - id: play-dynamic
+          type: text
+          x: 960
+          y: 500
+          anchorX: 0.5
+          content: "Play at _soundVolume"
+          textStyle:
+            fontSize: 36
+            fill: "#00ff00"
+          click:
+            soundSrc: "xj323"
+            soundVolume: ${effectiveSoundVolume}
+
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      name: Main
+      initialSectionId: main
+      sections:
+        main:
+          name: Main
+          lines:
+            - id: start
+              actions:
+                layout:
+                  resourceId: main
