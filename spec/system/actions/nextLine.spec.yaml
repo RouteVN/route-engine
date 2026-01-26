@@ -38,6 +38,7 @@ out:
       manual:
         enabled: true
     pendingEffects:
+      - name: "clearNextLineConfigTimer"
       - name: "render"
   projectData:
     story:

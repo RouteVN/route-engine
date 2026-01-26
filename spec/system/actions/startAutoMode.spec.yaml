@@ -10,17 +10,16 @@ in:
   - state:
       global:
         autoMode: false
+        isLineCompleted: false
         pendingEffects: []
         autoplayDelay: 1000
 out:
   global:
     autoMode: true
+    isLineCompleted: false
     autoplayDelay: 1000
     pendingEffects:
       - name: clearAutoNextTimer
-      - name: startAutoNextTimer
-        payload:
-          delay: 1000
       - name: render
 ---
 case: start auto mode when already enabled
@@ -28,11 +27,30 @@ in:
   - state:
       global:
         autoMode: true
+        isLineCompleted: false
         pendingEffects: []
         autoplayDelay: 1000
 out:
   global:
     autoMode: true
+    isLineCompleted: false
+    autoplayDelay: 1000
+    pendingEffects:
+      - name: clearAutoNextTimer
+      - name: render
+---
+case: start auto mode when line already completed (starts timer immediately)
+in:
+  - state:
+      global:
+        autoMode: false
+        isLineCompleted: true
+        pendingEffects: []
+        autoplayDelay: 1000
+out:
+  global:
+    autoMode: true
+    isLineCompleted: true
     autoplayDelay: 1000
     pendingEffects:
       - name: clearAutoNextTimer

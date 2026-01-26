@@ -1088,6 +1088,15 @@ export const nextLine = ({ state }) => {
     state.global.isLineCompleted = true;
     // Clear any running nextLineConfigTimer to prevent auto-advance after manual click
     state.global.pendingEffects.push({ name: "clearNextLineConfigTimer" });
+
+    // If auto mode is on, continue auto-advancing after the skip
+    if (state.global.autoMode) {
+      state.global.pendingEffects.push({
+        name: "startAutoNextTimer",
+        payload: { delay: state.global.autoplayDelay },
+      });
+    }
+
     state.global.pendingEffects.push({ name: "render" });
     return state;
   }
