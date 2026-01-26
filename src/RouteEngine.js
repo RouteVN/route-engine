@@ -43,6 +43,14 @@ export default function createRouteEngine(options) {
     return _systemStore.selectSaveSlots();
   };
 
+  const selectSkipMode = () => {
+    return _systemStore.selectSkipMode();
+  };
+
+  const selectAutoMode = () => {
+    return _systemStore.selectAutoMode();
+  };
+
   const handleAction = (actionType, payload) => {
     if (!_systemStore[actionType]) {
       return;
