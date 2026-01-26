@@ -36,15 +36,17 @@ const startAutoNextTimer = ({ engine, ticker, autoTimer }, payload) => {
   // Reset elapsed time
   autoTimer.setElapsed(0);
 
-  // Create new ticker callback for auto mode
+  // Create new ticker callback for auto mode (one-shot)
   const newCallback = (time) => {
     autoTimer.addElapsed(time.deltaMS);
 
-    // Auto advance every 1000ms (1 second) - hardcoded
-    // TODO: Speed can adjust in the future
     const delay = payload.delay ?? 1000;
     if (autoTimer.getElapsed() >= delay) {
+      // Remove timer before advancing (one-shot behavior)
+      ticker.remove(newCallback);
+      autoTimer.setCallback(null);
       autoTimer.setElapsed(0);
+      // Advance to next line - markLineCompleted will restart timer when ready
       engine.handleAction("nextLineFromSystem", {});
     }
   };

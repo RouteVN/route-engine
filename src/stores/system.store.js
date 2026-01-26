@@ -574,10 +574,16 @@ export const startAutoMode = ({ state }) => {
   state.global.pendingEffects.push({
     name: "clearAutoNextTimer",
   });
-  state.global.pendingEffects.push({
-    name: "startAutoNextTimer",
-    payload: { delay: state.global.autoplayDelay },
-  });
+
+  // Only start timer immediately if line is already completed
+  // Otherwise, markLineCompleted will start it when renderComplete fires
+  if (state.global.isLineCompleted) {
+    state.global.pendingEffects.push({
+      name: "startAutoNextTimer",
+      payload: { delay: state.global.autoplayDelay },
+    });
+  }
+
   state.global.pendingEffects.push({
     name: "render",
   });
@@ -1167,6 +1173,15 @@ export const markLineCompleted = ({ state }) => {
     return state;
   }
   state.global.isLineCompleted = true;
+
+  // If auto mode is on, start the delay timer to advance after completion
+  if (state.global.autoMode) {
+    state.global.pendingEffects.push({
+      name: "startAutoNextTimer",
+      payload: { delay: state.global.autoplayDelay },
+    });
+  }
+
   state.global.pendingEffects.push({
     name: "render",
   });
@@ -1288,6 +1303,14 @@ export const sectionTransition = ({ state }, payload) => {
   if (!firstLine) {
     console.warn(`Section ${sectionId} has no lines`);
     return state;
+  }
+
+  // Stop auto/skip modes on section transition
+  if (state.global.autoMode) {
+    stopAutoMode({ state });
+  }
+  if (state.global.skipMode) {
+    stopSkipMode({ state });
   }
 
   // Update current pointer to new section's first line
