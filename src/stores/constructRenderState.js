@@ -634,7 +634,7 @@ export const addKeyboard = (state, { presentationState, resources }) => {
   return state;
 };
 
-export const addBgm = (state, { presentationState, resources }) => {
+export const addBgm = (state, { presentationState, resources, variables }) => {
   const { elements, audio } = state;
   if (presentationState.bgm && resources) {
     // Find the story container
@@ -643,12 +643,18 @@ export const addBgm = (state, { presentationState, resources }) => {
 
     const audioResource = resources.sounds[presentationState.bgm.resourceId];
     if (!audioResource) return state;
+
+    // Calculate effective music volume respecting _muteAll and _musicVolume
+    const effectiveMusicVolume = variables?._muteAll
+      ? 0
+      : (variables?._musicVolume ?? 500);
+
     audio.push({
       id: "bgm",
       type: "sound",
       src: audioResource.fileId,
       loop: presentationState.bgm.loop ?? true,
-      volume: presentationState.bgm.volume ?? 500,
+      volume: effectiveMusicVolume,
       delay: presentationState.bgm.delay ?? null,
     });
   }
