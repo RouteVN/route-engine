@@ -1786,8 +1786,8 @@ export const rollbackToLine = ({ state }, payload) => {
     historySequenceIndex: null,
   };
 
-  // Reset UI state
-  state.global.isLineCompleted = false;
+  // Skip animations when rolling back - set to true to disable animation
+  state.global.isLineCompleted = true;
 
   // Queue render and line actions
   state.global.pendingEffects.push({ name: "render" });
