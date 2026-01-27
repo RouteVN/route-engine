@@ -88,7 +88,7 @@ out:
     resources:
       variables: {}
   global:
-    isLineCompleted: false
+    isLineCompleted: true
     pendingEffects:
       - name: "render"
       - name: "handleLineActions"
@@ -183,7 +183,7 @@ out:
           scope: context
           default: 0
   global:
-    isLineCompleted: false
+    isLineCompleted: true
     pendingEffects:
       - name: "render"
       - name: "handleLineActions"
@@ -352,7 +352,7 @@ out:
           scope: context
           default: 0
   global:
-    isLineCompleted: false
+    isLineCompleted: true
     pendingEffects:
       - name: "render"
       - name: "handleLineActions"

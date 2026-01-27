@@ -61,7 +61,7 @@ out:
           scope: context
           default: 0
   global:
-    isLineCompleted: false
+    isLineCompleted: true
     pendingEffects:
       - name: "render"
       - name: "handleLineActions"
@@ -180,7 +180,7 @@ out:
           scope: context
           default: 0
   global:
-    isLineCompleted: false
+    isLineCompleted: true
     pendingEffects:
       - name: "render"
       - name: "handleLineActions"
@@ -326,7 +326,7 @@ out:
           scope: context
           default: 0
   global:
-    isLineCompleted: false
+    isLineCompleted: true
     pendingEffects:
       - name: "render"
       - name: "handleLineActions"
@@ -428,7 +428,7 @@ out:
           scope: context
           default: 0
   global:
-    isLineCompleted: false
+    isLineCompleted: true
     pendingEffects:
       - name: "render"
       - name: "handleLineActions"
@@ -528,7 +528,7 @@ out:
   global:
     variables:
       volume: 100
-    isLineCompleted: false
+    isLineCompleted: true
     pendingEffects:
       - name: "render"
       - name: "handleLineActions"
