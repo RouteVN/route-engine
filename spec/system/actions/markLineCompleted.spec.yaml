@@ -43,3 +43,91 @@ out:
       - name: existingEffect
         data: test
       - name: render
+---
+case: mark line as completed with auto mode enabled starts auto timer
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: true
+        autoplayDelay: 1000
+        nextLineConfig:
+          manual:
+            enabled: true
+          auto:
+            enabled: false
+        pendingEffects: []
+out:
+  global:
+    isLineCompleted: true
+    autoMode: true
+    autoplayDelay: 1000
+    nextLineConfig:
+      manual:
+        enabled: true
+      auto:
+        enabled: false
+    pendingEffects:
+      - name: startAutoNextTimer
+        payload:
+          delay: 1000
+      - name: render
+---
+case: mark line as completed with scene mode enabled (fromComplete) starts scene timer
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: false
+        nextLineConfig:
+          manual:
+            enabled: true
+          auto:
+            enabled: true
+            trigger: "fromComplete"
+            delay: 2000
+        pendingEffects: []
+out:
+  global:
+    isLineCompleted: true
+    autoMode: false
+    nextLineConfig:
+      manual:
+        enabled: true
+      auto:
+        enabled: true
+        trigger: "fromComplete"
+        delay: 2000
+    pendingEffects:
+      - name: nextLineConfigTimer
+        payload:
+          delay: 2000
+      - name: render
+---
+case: mark line as completed with scene mode enabled (fromStart) does not start timer
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: false
+        nextLineConfig:
+          manual:
+            enabled: true
+          auto:
+            enabled: true
+            trigger: "fromStart"
+            delay: 1500
+        pendingEffects: []
+out:
+  global:
+    isLineCompleted: true
+    autoMode: false
+    nextLineConfig:
+      manual:
+        enabled: true
+      auto:
+        enabled: true
+        trigger: "fromStart"
+        delay: 1500
+    pendingEffects:
+      - name: render

@@ -826,10 +826,23 @@ export const setNextLineConfig = ({ state }, payload) => {
 
   // If auto.enabled state has changed, dispatch timer effects
   if (newAutoEnabled === true && !currentAutoEnabled) {
-    state.global.pendingEffects.push({
-      name: "nextLineConfigTimer",
-      payload: { delay: state.global.nextLineConfig.auto.delay },
-    });
+    const trigger = state.global.nextLineConfig.auto?.trigger;
+
+    // Event-based: only start timer immediately if trigger is "fromStart"
+    // or if line is already completed (for "fromComplete" trigger)
+    // Otherwise, markLineCompleted will start it when renderComplete fires
+    if (trigger === "fromStart") {
+      state.global.pendingEffects.push({
+        name: "nextLineConfigTimer",
+        payload: { delay: state.global.nextLineConfig.auto.delay },
+      });
+    } else if (state.global.isLineCompleted) {
+      // trigger === "fromComplete" (or default) and line is already completed
+      state.global.pendingEffects.push({
+        name: "nextLineConfigTimer",
+        payload: { delay: state.global.nextLineConfig.auto.delay },
+      });
+    }
   } else if (newAutoEnabled === false && currentAutoEnabled) {
     state.global.pendingEffects.push({
       name: "clearNextLineConfigTimer",
@@ -1097,6 +1110,19 @@ export const nextLine = ({ state }) => {
       });
     }
 
+    // If scene mode (nextLineConfig.auto) is enabled with fromComplete trigger, restart the timer
+    const nextLineConfig = state.global.nextLineConfig;
+    if (nextLineConfig?.auto?.enabled) {
+      const trigger = nextLineConfig.auto.trigger;
+      // Default trigger is "fromComplete", so start timer if not explicitly "fromStart"
+      if (trigger !== "fromStart") {
+        state.global.pendingEffects.push({
+          name: "nextLineConfigTimer",
+          payload: { delay: nextLineConfig.auto.delay },
+        });
+      }
+    }
+
     state.global.pendingEffects.push({ name: "render" });
     return state;
   }
@@ -1191,6 +1217,19 @@ export const markLineCompleted = ({ state }) => {
       name: "startAutoNextTimer",
       payload: { delay: state.global.autoplayDelay },
     });
+  }
+
+  // If nextLineConfig.auto is enabled with fromComplete trigger, start the timer
+  const nextLineConfig = state.global.nextLineConfig;
+  if (nextLineConfig?.auto?.enabled) {
+    const trigger = nextLineConfig.auto.trigger;
+    // Default trigger is "fromComplete", so start timer if not explicitly "fromStart"
+    if (trigger !== "fromStart") {
+      state.global.pendingEffects.push({
+        name: "nextLineConfigTimer",
+        payload: { delay: nextLineConfig.auto.delay },
+      });
+    }
   }
 
   state.global.pendingEffects.push({
@@ -1407,11 +1446,16 @@ export const nextLineFromSystem = ({ state }) => {
       name: "handleLineActions",
     });
 
+    // Only start timer immediately if trigger is "fromStart"
+    // For "fromComplete" trigger, markLineCompleted will start it when renderComplete fires
     if (state.global.nextLineConfig.auto?.enabled) {
-      state.global.pendingEffects.push({
-        name: "nextLineConfigTimer",
-        payload: { delay: state.global.nextLineConfig.auto.delay },
-      });
+      const trigger = state.global.nextLineConfig.auto.trigger;
+      if (trigger === "fromStart") {
+        state.global.pendingEffects.push({
+          name: "nextLineConfigTimer",
+          payload: { delay: state.global.nextLineConfig.auto.delay },
+        });
+      }
     }
   } else {
     if (state.global.nextLineConfig.auto?.enabled) {

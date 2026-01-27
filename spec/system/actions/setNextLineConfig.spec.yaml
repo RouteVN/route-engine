@@ -214,4 +214,121 @@ out:
     currentLocalizationPackageId: "en"
     pendingEffects:
       - name: "render"
+---
+case: enable auto with trigger fromStart starts timer immediately
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        nextLineConfig:
+          manual:
+            enabled: true
+          auto:
+            enabled: false
+        pendingEffects: []
+  - auto:
+      enabled: true
+      trigger: "fromStart"
+      delay: 1500
+out:
+  global:
+    isLineCompleted: false
+    nextLineConfig:
+      manual:
+        enabled: true
+      auto:
+        enabled: true
+        trigger: "fromStart"
+        delay: 1500
+    pendingEffects:
+      - name: "nextLineConfigTimer"
+        payload:
+          delay: 1500
+      - name: "render"
+---
+case: enable auto with trigger fromComplete does not start timer when line not completed
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        nextLineConfig:
+          manual:
+            enabled: true
+          auto:
+            enabled: false
+        pendingEffects: []
+  - auto:
+      enabled: true
+      trigger: "fromComplete"
+      delay: 2000
+out:
+  global:
+    isLineCompleted: false
+    nextLineConfig:
+      manual:
+        enabled: true
+      auto:
+        enabled: true
+        trigger: "fromComplete"
+        delay: 2000
+    pendingEffects:
+      - name: "render"
+---
+case: enable auto with trigger fromComplete starts timer when line already completed
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        nextLineConfig:
+          manual:
+            enabled: true
+          auto:
+            enabled: false
+        pendingEffects: []
+  - auto:
+      enabled: true
+      trigger: "fromComplete"
+      delay: 2000
+out:
+  global:
+    isLineCompleted: true
+    nextLineConfig:
+      manual:
+        enabled: true
+      auto:
+        enabled: true
+        trigger: "fromComplete"
+        delay: 2000
+    pendingEffects:
+      - name: "nextLineConfigTimer"
+        payload:
+          delay: 2000
+      - name: "render"
+---
+case: disable auto clears timer
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        nextLineConfig:
+          manual:
+            enabled: true
+          auto:
+            enabled: true
+            trigger: "fromStart"
+            delay: 1500
+        pendingEffects: []
+  - auto:
+      enabled: false
+out:
+  global:
+    isLineCompleted: false
+    nextLineConfig:
+      manual:
+        enabled: true
+      auto:
+        enabled: false
+    pendingEffects:
+      - name: "clearNextLineConfigTimer"
+      - name: "render"
 
