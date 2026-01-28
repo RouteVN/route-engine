@@ -1616,16 +1616,6 @@ const findUpdateVariableRecursive = (obj, updateVariableId, parentKey = "") => {
   return undefined;
 };
 
-/**
- * Looks up an updateVariable action definition by ID from project data.
- * Recursively searches the entire projectData structure.
- * @param {Object} projectData - The project data
- * @param {string} updateVariableId - The ID of the updateVariable action to find
- * @returns {Object|undefined} The action definition { id, operations } or undefined if not found
- */
-const lookupUpdateVariableAction = (projectData, updateVariableId) => {
-  return findUpdateVariableRecursive(projectData, updateVariableId);
-};
 
 /**
  * Selects a line ID by relative offset from current position in history.
@@ -1809,7 +1799,7 @@ export const rollbackToLine = ({ state }, payload) => {
 
     for (const actionId of updateVariableIds) {
       // Look up action definition in project data
-      const actionDef = lookupUpdateVariableAction(state.projectData, actionId);
+      const actionDef = findUpdateVariableRecursive(state.projectData, actionId);
 
       if (!actionDef) {
         throw new Error(`Action definition not found for ID: ${actionId}`);
