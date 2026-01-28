@@ -78,6 +78,12 @@ properties:
           jsonData:
             type: object
             description: The JSON metadata (frames, meta)
+          width:
+            type: integer
+            description: Default width for the animated sprite
+          height:
+            type: integer
+            description: Default height for the animated sprite
           animations:
             type: object
             description: Map of named animations
