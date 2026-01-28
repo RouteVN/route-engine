@@ -510,6 +510,9 @@ export const addDialogue = (
         skipOnlyViewedLines,
         isLineCompleted,
         saveSlots,
+        effectiveSoundVolume: variables?._muteAll
+          ? 0
+          : (variables?._soundVolume ?? 500),
         textSpeed: variables?._textSpeed ?? 50,
         dialogue: {
           character: {
