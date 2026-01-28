@@ -45,7 +45,6 @@ export const createInitialState = (payload) => {
   const state = {
     projectData,
     global: {
-      autoplayDelay: 1000,
       isLineCompleted: false,
       pendingEffects: [],
       autoMode: false,
@@ -122,10 +121,6 @@ export const selectAutoMode = ({ state }) => {
 
 export const selectDialogueUIHidden = ({ state }) => {
   return state.global.dialogueUIHidden;
-};
-
-export const selectAutoplayDelay = ({ state }) => {
-  return state.global.autoplayDelay;
 };
 
 export const selectDialogueHistory = ({ state }) => {
@@ -578,9 +573,10 @@ export const startAutoMode = ({ state }) => {
   // Only start timer immediately if line is already completed
   // Otherwise, markLineCompleted will start it when renderComplete fires
   if (state.global.isLineCompleted) {
+    const autoForwardTime = state.global.variables._autoForwardTime ?? 1000;
     state.global.pendingEffects.push({
       name: "startAutoNextTimer",
-      payload: { delay: state.global.autoplayDelay },
+      payload: { delay: autoForwardTime },
     });
   }
 
@@ -855,23 +851,6 @@ export const setNextLineConfig = ({ state }, payload) => {
   return state;
 };
 
-export const setAutoplayDelay = ({ state }, { delay }) => {
-  state.global.autoplayDelay = delay;
-
-  if (state.global.autoMode) {
-    state.global.pendingEffects.push({ name: "clearAutoNextTimer" });
-    state.global.pendingEffects.push({
-      name: "startAutoNextTimer",
-      payload: { delay: state.global.autoplayDelay },
-    });
-  }
-
-  state.global.pendingEffects.push({
-    name: "render",
-  });
-  return state;
-};
-
 /**
  * Saves current game state to a slot
  * @param {Object} state - Current state object
@@ -1104,9 +1083,10 @@ export const nextLine = ({ state }) => {
 
     // If auto mode is on, continue auto-advancing after the skip
     if (state.global.autoMode) {
+      const autoForwardTime = state.global.variables._autoForwardTime ?? 1000;
       state.global.pendingEffects.push({
         name: "startAutoNextTimer",
-        payload: { delay: state.global.autoplayDelay },
+        payload: { delay: autoForwardTime },
       });
     }
 
@@ -1213,9 +1193,10 @@ export const markLineCompleted = ({ state }) => {
 
   // If auto mode is on, start the delay timer to advance after completion
   if (state.global.autoMode) {
+    const autoForwardTime = state.global.variables._autoForwardTime ?? 1000;
     state.global.pendingEffects.push({
       name: "startAutoNextTimer",
-      payload: { delay: state.global.autoplayDelay },
+      payload: { delay: autoForwardTime },
     });
   }
 
@@ -1868,7 +1849,6 @@ export const createSystemStore = (initialState) => {
     selectPresentationState,
     selectPresentationChanges,
     selectSectionLineChanges,
-    selectAutoplayDelay,
     selectCurrentPageSlots,
     selectRenderState,
     selectLayeredViews,
@@ -1895,7 +1875,6 @@ export const createSystemStore = (initialState) => {
     setNextLineConfig,
     saveSaveSlot,
     loadSaveSlot,
-    setAutoplayDelay,
     updateProjectData,
     sectionTransition,
     jumpToLine,

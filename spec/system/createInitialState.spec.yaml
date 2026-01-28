@@ -22,7 +22,6 @@ in:
                     actions: {}
 out:
   global:
-    autoplayDelay: 1000
     isLineCompleted: false
     pendingEffects: []
     autoMode: false
@@ -108,7 +107,6 @@ in:
                     actions: {}
 out:
   global:
-    autoplayDelay: 1000
     isLineCompleted: false
     pendingEffects: []
     autoMode: false
@@ -211,7 +209,6 @@ in:
                     actions: {}
 out:
   global:
-    autoplayDelay: 1000
     isLineCompleted: false
     pendingEffects: []
     autoMode: false
@@ -305,7 +302,6 @@ in:
                     actions: {}
 out:
   global:
-    autoplayDelay: 1000
     isLineCompleted: false
     pendingEffects: []
     autoMode: false
@@ -395,7 +391,6 @@ in:
                     actions: {}
 out:
   global:
-    autoplayDelay: 1000
     isLineCompleted: false
     pendingEffects: []
     autoMode: false

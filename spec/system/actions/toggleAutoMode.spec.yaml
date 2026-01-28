@@ -12,12 +12,14 @@ in:
         autoMode: false
         isLineCompleted: false
         pendingEffects: []
-        autoplayDelay: 1000
+        variables:
+          _autoForwardTime: 1000
 out:
   global:
     autoMode: true
     isLineCompleted: false
-    autoplayDelay: 1000
+    variables:
+      _autoForwardTime: 1000
     pendingEffects:
       - name: clearAutoNextTimer
       - name: render
@@ -29,12 +31,14 @@ in:
         autoMode: false
         isLineCompleted: true
         pendingEffects: []
-        autoplayDelay: 1000
+        variables:
+          _autoForwardTime: 1000
 out:
   global:
     autoMode: true
     isLineCompleted: true
-    autoplayDelay: 1000
+    variables:
+      _autoForwardTime: 1000
     pendingEffects:
       - name: clearAutoNextTimer
       - name: startAutoNextTimer
@@ -49,12 +53,14 @@ in:
         autoMode: true
         isLineCompleted: false
         pendingEffects: []
-        autoplayDelay: 1000
+        variables:
+          _autoForwardTime: 1000
 out:
   global:
     autoMode: false
     isLineCompleted: false
-    autoplayDelay: 1000
+    variables:
+      _autoForwardTime: 1000
     pendingEffects:
       - name: clearAutoNextTimer
       - name: render
@@ -67,11 +73,13 @@ in:
         skipMode: true
         isLineCompleted: false
         pendingEffects: []
-        autoplayDelay: 1000
+        variables:
+          _autoForwardTime: 1000
 out:
   global:
     autoMode: true
-    autoplayDelay: 1000
+    variables:
+      _autoForwardTime: 1000
     skipMode: false
     isLineCompleted: false
     pendingEffects:
@@ -87,11 +95,13 @@ in:
         skipMode: true
         isLineCompleted: false
         pendingEffects: []
-        autoplayDelay: 1000
+        variables:
+          _autoForwardTime: 1000
 out:
   global:
     autoMode: false
-    autoplayDelay: 1000
+    variables:
+      _autoForwardTime: 1000
     skipMode: true
     isLineCompleted: false
     pendingEffects:
@@ -107,12 +117,14 @@ in:
         pendingEffects:
           - name: existingEffect
             data: test
-        autoplayDelay: 1000
+        variables:
+          _autoForwardTime: 1000
 out:
   global:
     autoMode: true
     isLineCompleted: false
-    autoplayDelay: 1000
+    variables:
+      _autoForwardTime: 1000
     pendingEffects:
       - name: existingEffect
         data: test
@@ -128,14 +140,58 @@ in:
         pendingEffects:
           - name: existingEffect
             data: test
-        autoplayDelay: 1000
+        variables:
+          _autoForwardTime: 1000
 out:
   global:
     autoMode: false
     isLineCompleted: false
-    autoplayDelay: 1000
+    variables:
+      _autoForwardTime: 1000
     pendingEffects:
       - name: existingEffect
         data: test
       - name: clearAutoNextTimer
+      - name: render
+---
+case: toggle auto mode with custom _autoForwardTime
+in:
+  - state:
+      global:
+        autoMode: false
+        isLineCompleted: true
+        pendingEffects: []
+        variables:
+          _autoForwardTime: 2500
+out:
+  global:
+    autoMode: true
+    isLineCompleted: true
+    variables:
+      _autoForwardTime: 2500
+    pendingEffects:
+      - name: clearAutoNextTimer
+      - name: startAutoNextTimer
+        payload:
+          delay: 2500
+      - name: render
+---
+case: toggle auto mode with default _autoForwardTime (not set)
+in:
+  - state:
+      global:
+        autoMode: false
+        isLineCompleted: true
+        pendingEffects: []
+        variables: {}
+out:
+  global:
+    autoMode: true
+    isLineCompleted: true
+    variables: {}
+    pendingEffects:
+      - name: clearAutoNextTimer
+      - name: startAutoNextTimer
+        payload:
+          delay: 1000
       - name: render

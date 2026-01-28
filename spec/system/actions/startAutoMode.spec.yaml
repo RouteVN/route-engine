@@ -12,12 +12,14 @@ in:
         autoMode: false
         isLineCompleted: false
         pendingEffects: []
-        autoplayDelay: 1000
+        variables:
+          _autoForwardTime: 1000
 out:
   global:
     autoMode: true
     isLineCompleted: false
-    autoplayDelay: 1000
+    variables:
+      _autoForwardTime: 1000
     pendingEffects:
       - name: clearAutoNextTimer
       - name: render
@@ -29,12 +31,14 @@ in:
         autoMode: true
         isLineCompleted: false
         pendingEffects: []
-        autoplayDelay: 1000
+        variables:
+          _autoForwardTime: 1000
 out:
   global:
     autoMode: true
     isLineCompleted: false
-    autoplayDelay: 1000
+    variables:
+      _autoForwardTime: 1000
     pendingEffects:
       - name: clearAutoNextTimer
       - name: render
@@ -46,12 +50,56 @@ in:
         autoMode: false
         isLineCompleted: true
         pendingEffects: []
-        autoplayDelay: 1000
+        variables:
+          _autoForwardTime: 1000
 out:
   global:
     autoMode: true
     isLineCompleted: true
-    autoplayDelay: 1000
+    variables:
+      _autoForwardTime: 1000
+    pendingEffects:
+      - name: clearAutoNextTimer
+      - name: startAutoNextTimer
+        payload:
+          delay: 1000
+      - name: render
+---
+case: start auto mode with custom _autoForwardTime
+in:
+  - state:
+      global:
+        autoMode: false
+        isLineCompleted: true
+        pendingEffects: []
+        variables:
+          _autoForwardTime: 2500
+out:
+  global:
+    autoMode: true
+    isLineCompleted: true
+    variables:
+      _autoForwardTime: 2500
+    pendingEffects:
+      - name: clearAutoNextTimer
+      - name: startAutoNextTimer
+        payload:
+          delay: 2500
+      - name: render
+---
+case: start auto mode with default _autoForwardTime (not set)
+in:
+  - state:
+      global:
+        autoMode: false
+        isLineCompleted: true
+        pendingEffects: []
+        variables: {}
+out:
+  global:
+    autoMode: true
+    isLineCompleted: true
+    variables: {}
     pendingEffects:
       - name: clearAutoNextTimer
       - name: startAutoNextTimer
