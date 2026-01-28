@@ -1591,7 +1591,11 @@ const findUpdateVariableRecursive = (obj, updateVariableId, parentKey = "") => {
   // Recurse into arrays
   if (Array.isArray(obj)) {
     for (const item of obj) {
-      const found = findUpdateVariableRecursive(item, updateVariableId, parentKey);
+      const found = findUpdateVariableRecursive(
+        item,
+        updateVariableId,
+        parentKey,
+      );
       if (found) return found;
     }
     return undefined;
@@ -1600,7 +1604,11 @@ const findUpdateVariableRecursive = (obj, updateVariableId, parentKey = "") => {
   // Recurse into objects
   if (typeof obj === "object") {
     for (const key of Object.keys(obj)) {
-      const found = findUpdateVariableRecursive(obj[key], updateVariableId, key);
+      const found = findUpdateVariableRecursive(
+        obj[key],
+        updateVariableId,
+        key,
+      );
       if (found) return found;
     }
   }
