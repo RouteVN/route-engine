@@ -758,7 +758,9 @@ export const addLayout = (
       skipMode,
       canRollback,
       currentLocalizationPackageId,
-      effectiveSoundVolume: variables?._muteAll ? 0 : (variables?._soundVolume ?? 500),
+      effectiveSoundVolume: variables?._muteAll
+        ? 0
+        : (variables?._soundVolume ?? 500),
       textSpeed: variables?._textSpeed ?? 50,
     };
 
@@ -866,7 +868,9 @@ export const addLayeredViews = (
         canRollback,
         currentLocalizationPackageId,
         saveSlots,
-        effectiveSoundVolume: variables?._muteAll ? 0 : (variables?._soundVolume ?? 500),
+        effectiveSoundVolume: variables?._muteAll
+          ? 0
+          : (variables?._soundVolume ?? 500),
         textSpeed: variables?._textSpeed ?? 50,
         historyDialogue: historyDialogueWithNames,
         characters: resources.characters || {},
