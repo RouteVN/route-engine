@@ -510,7 +510,7 @@ export const addDialogue = (
         skipOnlyViewedLines,
         isLineCompleted,
         saveSlots,
-        textSpeed: variables._textSpeed ?? 50,
+        textSpeed: variables?._textSpeed ?? 50,
         dialogue: {
           character: {
             name: character?.name || "",
@@ -759,7 +759,7 @@ export const addLayout = (
       canRollback,
       currentLocalizationPackageId,
       effectiveSoundVolume: variables._muteAll ? 0 : variables._soundVolume,
-      textSpeed: variables._textSpeed ?? 50,
+      textSpeed: variables?._textSpeed ?? 50,
     };
 
     let processedContainer = parseAndRender(layoutContainer, templateData, {
@@ -867,7 +867,7 @@ export const addLayeredViews = (
         currentLocalizationPackageId,
         saveSlots,
         effectiveSoundVolume: variables._muteAll ? 0 : variables._soundVolume,
-        textSpeed: variables._textSpeed ?? 50,
+        textSpeed: variables?._textSpeed ?? 50,
         historyDialogue: historyDialogueWithNames,
         characters: resources.characters || {},
       };
