@@ -1616,7 +1616,6 @@ const findUpdateVariableRecursive = (obj, updateVariableId, parentKey = "") => {
   return undefined;
 };
 
-
 /**
  * Selects a line ID by relative offset from current position in history.
  * Uses findLastIndex to handle duplicate line entries after rollback.
@@ -1799,7 +1798,10 @@ export const rollbackToLine = ({ state }, payload) => {
 
     for (const actionId of updateVariableIds) {
       // Look up action definition in project data
-      const actionDef = findUpdateVariableRecursive(state.projectData, actionId);
+      const actionDef = findUpdateVariableRecursive(
+        state.projectData,
+        actionId,
+      );
 
       if (!actionDef) {
         throw new Error(`Action definition not found for ID: ${actionId}`);
