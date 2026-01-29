@@ -1568,37 +1568,48 @@ export const updateVariable = ({ state }, payload) => {
 };
 
 /**
- * Looks up an updateVariable action definition by ID from project data.
- * Searches through all scenes, sections, and lines to find the action.
- * @param {Object} projectData - The project data containing all sections and lines
- * @param {string} updateVariableId - The ID of the updateVariable action to find
- * @returns {Object|undefined} The action definition { id, operations } or undefined if not found
+ * Recursively traverses any object/array looking for updateVariable actions with matching ID.
+ * This is a generic approach that works regardless of where actions are defined.
+ * @param {any} obj - The object to search
+ * @param {string} updateVariableId - The ID to find
+ * @param {string} parentKey - The key that led to this object (used to detect updateVariable context)
+ * @returns {Object|undefined} The action definition or undefined
  */
-const lookupUpdateVariableAction = (projectData, updateVariableId) => {
-  const scenes = projectData?.story?.scenes || {};
+const findUpdateVariableRecursive = (obj, updateVariableId, parentKey = "") => {
+  if (obj === null || obj === undefined) return undefined;
 
-  for (const sceneId of Object.keys(scenes)) {
-    const scene = scenes[sceneId];
-    const sections = scene?.sections || {};
+  // If this is an updateVariable object with matching ID, return it
+  if (
+    parentKey === "updateVariable" &&
+    typeof obj === "object" &&
+    obj.id === updateVariableId &&
+    Array.isArray(obj.operations)
+  ) {
+    return obj;
+  }
 
-    for (const sectionId of Object.keys(sections)) {
-      const section = sections[sectionId];
-      const lines = section?.lines || [];
+  // Recurse into arrays
+  if (Array.isArray(obj)) {
+    for (const item of obj) {
+      const found = findUpdateVariableRecursive(
+        item,
+        updateVariableId,
+        parentKey,
+      );
+      if (found) return found;
+    }
+    return undefined;
+  }
 
-      for (const line of lines) {
-        // Check if line has updateVariable with matching ID
-        if (line.actions?.updateVariable?.id === updateVariableId) {
-          return line.actions.updateVariable;
-        }
-
-        // Also check for multiple updateVariable actions if that pattern exists
-        if (Array.isArray(line.actions?.updateVariables)) {
-          const found = line.actions.updateVariables.find(
-            (action) => action.id === updateVariableId,
-          );
-          if (found) return found;
-        }
-      }
+  // Recurse into objects
+  if (typeof obj === "object") {
+    for (const key of Object.keys(obj)) {
+      const found = findUpdateVariableRecursive(
+        obj[key],
+        updateVariableId,
+        key,
+      );
+      if (found) return found;
     }
   }
 
@@ -1787,7 +1798,10 @@ export const rollbackToLine = ({ state }, payload) => {
 
     for (const actionId of updateVariableIds) {
       // Look up action definition in project data
-      const actionDef = lookupUpdateVariableAction(state.projectData, actionId);
+      const actionDef = findUpdateVariableRecursive(
+        state.projectData,
+        actionId,
+      );
 
       if (!actionDef) {
         throw new Error(`Action definition not found for ID: ${actionId}`);

@@ -238,7 +238,7 @@ in:
     lineId: "nonExistentLine"
 throws: "Line nonExistentLine not found in section section1 history"
 ---
-case: handles multiple actions on same line
+case: handles multiple operations in single action
 in:
   - state:
       projectData:
@@ -251,17 +251,15 @@ in:
                     - id: "1"
                     - id: "2"
                       actions:
-                        updateVariables:
-                          - id: "act1"
-                            operations:
-                              - variableId: score
-                                op: set
-                                value: 10
-                          - id: "act2"
-                            operations:
-                              - variableId: score
-                                op: increment
-                                value: 5
+                        updateVariable:
+                          id: "act1"
+                          operations:
+                            - variableId: score
+                              op: set
+                              value: 10
+                            - variableId: score
+                              op: increment
+                              value: 5
                     - id: "3"
         resources:
           variables:
@@ -292,7 +290,6 @@ in:
                 - id: "2"
                   updateVariableIds:
                     - "act1"
-                    - "act2"
                 - id: "3"
   - sectionId: "section1"
     lineId: "3"
@@ -307,17 +304,15 @@ out:
                 - id: "1"
                 - id: "2"
                   actions:
-                    updateVariables:
-                      - id: "act1"
-                        operations:
-                          - variableId: score
-                            op: set
-                            value: 10
-                      - id: "act2"
-                        operations:
-                          - variableId: score
-                            op: increment
-                            value: 5
+                    updateVariable:
+                      id: "act1"
+                      operations:
+                        - variableId: score
+                          op: set
+                          value: 10
+                        - variableId: score
+                          op: increment
+                          value: 5
                 - id: "3"
     resources:
       variables:
@@ -351,7 +346,6 @@ out:
             - id: "2"
               updateVariableIds:
                 - "act1"
-                - "act2"
             - id: "3"
 ---
 case: rollback to first line resets to initialState only (no replay)
