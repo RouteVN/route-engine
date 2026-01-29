@@ -99,7 +99,10 @@ export const createInitialState = () => {
 /**
  * @param {Object} params
  */
-export const addBase = (state, { presentationState, resources }) => {
+export const addBase = (
+  state,
+  { presentationState, resources, rollbackSide },
+) => {
   const { elements } = state;
   if (presentationState.base) {
     // Find the story container
@@ -112,11 +115,47 @@ export const addBase = (state, { presentationState, resources }) => {
       const layout = resources?.layouts[presentationState.base.resourceId];
 
       if (layout) {
+        let baseElements = layout.elements;
+
+        // When rollbackSide is enabled, split the base click rect into two halves:
+        // one for rollback, one for forward navigation
+        if (rollbackSide && rollbackSide !== "disable") {
+          baseElements = layout.elements.flatMap((el) => {
+            const hasNextLineClick =
+              el.click?.actionPayload?.actions?.nextLine !== undefined;
+            if (el.type !== "rect" || !hasNextLineClick) return [el];
+
+            const fullWidth = el.width || 0;
+            const halfWidth = fullWidth / 2;
+            const rollbackRect = {
+              ...el,
+              id: `${el.id}_rollback`,
+              x: rollbackSide === "left" ? 0 : halfWidth,
+              width: halfWidth,
+              click: {
+                ...el.click,
+                actionPayload: { actions: { rollbackByOffset: {} } },
+              },
+            };
+            const forwardRect = {
+              ...el,
+              id: `${el.id}_forward`,
+              x: rollbackSide === "left" ? halfWidth : 0,
+              width: halfWidth,
+              click: {
+                ...el.click,
+                actionPayload: { actions: { nextLine: {} } },
+              },
+            };
+            return [rollbackRect, forwardRect];
+          });
+        }
+
         // Add base as the first child of story container
         storyContainer.children.unshift({
           id: "base",
           type: "container",
-          children: layout.elements,
+          children: baseElements,
         });
       }
     }

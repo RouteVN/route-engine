@@ -268,4 +268,213 @@ out:
       y: 0
       children: []
   animations: []
+---
+case: rollbackSide left - splits base rect into rollback left and forward right
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      base:
+        resourceId: "mainBase"
+    resources:
+      layouts:
+        mainBase:
+          elements:
+            - id: "base_bg"
+              type: "rect"
+              fill: "#000000"
+              width: 1280
+              height: 720
+              click:
+                actionPayload:
+                  actions:
+                    nextLine: {}
+    rollbackSide: "left"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "base"
+          type: "container"
+          children:
+            - id: "base_bg_rollback"
+              type: "rect"
+              fill: "#000000"
+              width: 640
+              height: 720
+              x: 0
+              click:
+                actionPayload:
+                  actions:
+                    rollbackByOffset: {}
+            - id: "base_bg_forward"
+              type: "rect"
+              fill: "#000000"
+              width: 640
+              height: 720
+              x: 640
+              click:
+                actionPayload:
+                  actions:
+                    nextLine: {}
+  animations: []
+---
+case: rollbackSide right - splits base rect into forward left and rollback right
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      base:
+        resourceId: "mainBase"
+    resources:
+      layouts:
+        mainBase:
+          elements:
+            - id: "base_bg"
+              type: "rect"
+              fill: "#000000"
+              width: 1280
+              height: 720
+              click:
+                actionPayload:
+                  actions:
+                    nextLine: {}
+    rollbackSide: "right"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "base"
+          type: "container"
+          children:
+            - id: "base_bg_rollback"
+              type: "rect"
+              fill: "#000000"
+              width: 640
+              height: 720
+              x: 640
+              click:
+                actionPayload:
+                  actions:
+                    rollbackByOffset: {}
+            - id: "base_bg_forward"
+              type: "rect"
+              fill: "#000000"
+              width: 640
+              height: 720
+              x: 0
+              click:
+                actionPayload:
+                  actions:
+                    nextLine: {}
+  animations: []
+---
+case: rollbackSide disable - no split, base rect unchanged
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      base:
+        resourceId: "mainBase"
+    resources:
+      layouts:
+        mainBase:
+          elements:
+            - id: "base_bg"
+              type: "rect"
+              fill: "#000000"
+              width: 1280
+              height: 720
+              click:
+                actionPayload:
+                  actions:
+                    nextLine: {}
+    rollbackSide: "disable"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "base"
+          type: "container"
+          children:
+            - id: "base_bg"
+              type: "rect"
+              fill: "#000000"
+              width: 1280
+              height: 720
+              click:
+                actionPayload:
+                  actions:
+                    nextLine: {}
+  animations: []
+---
+case: no variables - no split, base rect unchanged
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      base:
+        resourceId: "mainBase"
+    resources:
+      layouts:
+        mainBase:
+          elements:
+            - id: "base_bg"
+              type: "rect"
+              fill: "#000000"
+              width: 1280
+              height: 720
+              click:
+                actionPayload:
+                  actions:
+                    nextLine: {}
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "base"
+          type: "container"
+          children:
+            - id: "base_bg"
+              type: "rect"
+              fill: "#000000"
+              width: 1280
+              height: 720
+              click:
+                actionPayload:
+                  actions:
+                    nextLine: {}
+  animations: []
 
