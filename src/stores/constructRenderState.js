@@ -99,7 +99,7 @@ export const createInitialState = () => {
 /**
  * @param {Object} params
  */
-export const addBase = (state, { presentationState, resources }) => {
+export const addBase = (state, { presentationState, resources, variables }) => {
   const { elements } = state;
   if (presentationState.base) {
     // Find the story container
@@ -112,12 +112,19 @@ export const addBase = (state, { presentationState, resources }) => {
       const layout = resources?.layouts[presentationState.base.resourceId];
 
       if (layout) {
-        // Add base as the first child of story container
-        storyContainer.children.unshift({
+        const baseContainer = {
           id: "base",
           type: "container",
           children: layout.elements,
-        });
+        };
+
+        const processedContainer = parseAndRender(
+          baseContainer,
+          { variables },
+          { functions: jemplFunctions },
+        );
+
+        storyContainer.children.unshift(processedContainer);
       }
     }
   }

@@ -268,4 +268,151 @@ out:
       y: 0
       children: []
   animations: []
+---
+case: conditional elements with $if - renders matching branch (left rollback)
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      base:
+        resourceId: "conditionalBase"
+    resources:
+      layouts:
+        conditionalBase:
+          elements:
+            - "$if variables.rollbackSide == 'left'":
+                id: "left_container"
+                type: "container"
+                children:
+                  - id: "rollback_rect"
+                    type: "rect"
+                    width: 640
+                    height: 720
+                    x: 0
+                  - id: "forward_rect"
+                    type: "rect"
+                    width: 640
+                    height: 720
+                    x: 640
+            - "$if variables.rollbackSide == 'disable' || !variables.rollbackSide":
+                id: "full_rect"
+                type: "rect"
+                width: 1280
+                height: 720
+    variables:
+      rollbackSide: "left"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "base"
+          type: "container"
+          children:
+            - id: "left_container"
+              type: "container"
+              children:
+                - id: "rollback_rect"
+                  type: "rect"
+                  width: 640
+                  height: 720
+                  x: 0
+                - id: "forward_rect"
+                  type: "rect"
+                  width: 640
+                  height: 720
+                  x: 640
+  animations: []
+---
+case: conditional elements with $if - renders disable branch
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      base:
+        resourceId: "conditionalBase"
+    resources:
+      layouts:
+        conditionalBase:
+          elements:
+            - "$if variables.rollbackSide == 'left'":
+                id: "left_container"
+                type: "container"
+                children: []
+            - "$if variables.rollbackSide == 'disable' || !variables.rollbackSide":
+                id: "full_rect"
+                type: "rect"
+                width: 1280
+                height: 720
+    variables:
+      rollbackSide: "disable"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "base"
+          type: "container"
+          children:
+            - id: "full_rect"
+              type: "rect"
+              width: 1280
+              height: 720
+  animations: []
+---
+case: conditional elements with $if - no variables defaults to fallback
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      base:
+        resourceId: "conditionalBase"
+    resources:
+      layouts:
+        conditionalBase:
+          elements:
+            - "$if variables.rollbackSide == 'left'":
+                id: "left_container"
+                type: "container"
+                children: []
+            - "$if variables.rollbackSide == 'disable' || !variables.rollbackSide":
+                id: "full_rect"
+                type: "rect"
+                width: 1280
+                height: 720
+    variables: {}
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "base"
+          type: "container"
+          children:
+            - id: "full_rect"
+              type: "rect"
+              width: 1280
+              height: 720
+  animations: []
 
