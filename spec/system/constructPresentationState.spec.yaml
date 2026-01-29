@@ -384,3 +384,95 @@ out:
     characterId: "bob"
     content:
       - text: "Second ADV line"
+---
+case: nvl-mode-maxLines-trims-oldest
+in:
+  - - dialogue:
+        mode: "nvl"
+        gui:
+          resourceId: "nvl-layout"
+        characterId: "narrator"
+        content:
+          - text: "Line 1"
+    - dialogue:
+        mode: "nvl"
+        characterId: "alice"
+        content:
+          - text: "Line 2"
+    - dialogue:
+        mode: "nvl"
+        characterId: "bob"
+        content:
+          - text: "Line 3"
+    - dialogue:
+        mode: "nvl"
+        characterId: "narrator"
+        content:
+          - text: "Line 4"
+    - dialogue:
+        mode: "nvl"
+        maxLines: 4
+        characterId: "alice"
+        content:
+          - text: "Line 5"
+out:
+  dialogue:
+    mode: "nvl"
+    gui:
+      resourceId: "nvl-layout"
+    characterId: "alice"
+    content:
+      - text: "Line 5"
+    lines:
+      - content:
+          - text: "Line 2"
+        characterId: "alice"
+      - content:
+          - text: "Line 3"
+        characterId: "bob"
+      - content:
+          - text: "Line 4"
+        characterId: "narrator"
+      - content:
+          - text: "Line 5"
+        characterId: "alice"
+---
+case: nvl-mode-maxLines-no-trim-under-limit
+in:
+  - - dialogue:
+        mode: "nvl"
+        gui:
+          resourceId: "nvl-layout"
+        characterId: "narrator"
+        content:
+          - text: "Line 1"
+    - dialogue:
+        mode: "nvl"
+        maxLines: 4
+        characterId: "alice"
+        content:
+          - text: "Line 2"
+    - dialogue:
+        mode: "nvl"
+        maxLines: 4
+        characterId: "bob"
+        content:
+          - text: "Line 3"
+out:
+  dialogue:
+    mode: "nvl"
+    gui:
+      resourceId: "nvl-layout"
+    characterId: "bob"
+    content:
+      - text: "Line 3"
+    lines:
+      - content:
+          - text: "Line 1"
+        characterId: "narrator"
+      - content:
+          - text: "Line 2"
+        characterId: "alice"
+      - content:
+          - text: "Line 3"
+        characterId: "bob"

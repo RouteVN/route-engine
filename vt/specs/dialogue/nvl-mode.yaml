@@ -170,8 +170,58 @@ story:
                   content:
                     - text: "Second line on the new page."
 
-            # Back to ADV
+            # maxLines scroll effect
             - id: "8"
+              actions:
+                dialogue:
+                  mode: nvl
+                  clearPage: true
+                  content:
+                    - text: "[maxLines test] Line 1 - This should scroll away."
+
+            - id: "9"
+              actions:
+                dialogue:
+                  mode: nvl
+                  characterId: alice
+                  content:
+                    - text: "[maxLines test] Line 2 - This should scroll away."
+
+            - id: "10"
+              actions:
+                dialogue:
+                  mode: nvl
+                  characterId: bob
+                  content:
+                    - text: "[maxLines test] Line 3 - Stays visible."
+
+            - id: "11"
+              actions:
+                dialogue:
+                  mode: nvl
+                  content:
+                    - text: "[maxLines test] Line 4 - Stays visible."
+
+            - id: "12"
+              actions:
+                dialogue:
+                  mode: nvl
+                  maxLines: 4
+                  characterId: alice
+                  content:
+                    - text: "[maxLines test] Line 5 - Line 1 should be gone now."
+
+            - id: "13"
+              actions:
+                dialogue:
+                  mode: nvl
+                  maxLines: 4
+                  characterId: bob
+                  content:
+                    - text: "[maxLines test] Line 6 - Lines 1-2 should be gone."
+
+            # Back to ADV
+            - id: "14"
               actions:
                 dialogue:
                   mode: adv

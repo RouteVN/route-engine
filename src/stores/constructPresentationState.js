@@ -180,6 +180,16 @@ export const dialogue = (state, presentation) => {
       characterId: presentation.dialogue.characterId || null,
     });
   }
+
+  // Handle NVL maxLines trimming (scroll effect)
+  if (
+    presentation.dialogue?.maxLines &&
+    state.dialogue?.lines?.length > presentation.dialogue.maxLines
+  ) {
+    state.dialogue.lines = state.dialogue.lines.slice(
+      -presentation.dialogue.maxLines,
+    );
+  }
 };
 
 /**
