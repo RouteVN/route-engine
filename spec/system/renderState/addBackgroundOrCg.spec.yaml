@@ -87,6 +87,49 @@ out:
         opacity: [0, 1]
         duration: 500
 ---
+case: skip background in animation when skipTransitionsAndAnimations is true
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      background:
+        resourceId: "bg1"
+        animations:
+          in:
+            resourceId: "fadeIn"
+    resources:
+      images:
+        bg1:
+          fileId: "image1.png"
+          width: 1920
+          height: 1080
+      tweens:
+        fadeIn:
+          properties:
+            opacity: [0, 1]
+            duration: 500
+    skipTransitionsAndAnimations: true
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "bg-cg-bg1"
+          type: "sprite"
+          x: 0
+          y: 0
+          src: "image1.png"
+          width: 1920
+          height: 1080
+  animations: []
+---
 case: add background with update animation
 in:
   - elements:

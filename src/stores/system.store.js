@@ -521,6 +521,7 @@ export const selectRenderState = ({ state }) => {
     canRollback: selectCanRollback({ state }),
     skipOnlyViewedLines: !allVariables._skipUnseenText,
     isLineCompleted: state.global.isLineCompleted,
+    skipTransitionsAndAnimations: !!allVariables._skipTransitionsAndAnimations,
     layeredViews: state.global.layeredViews,
     dialogueHistory: selectDialogueHistory({ state }),
     saveSlots,
