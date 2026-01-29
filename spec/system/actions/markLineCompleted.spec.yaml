@@ -50,7 +50,8 @@ in:
       global:
         isLineCompleted: false
         autoMode: true
-        autoplayDelay: 1000
+        variables:
+          _autoForwardTime: 1000
         nextLineConfig:
           manual:
             enabled: true
@@ -61,7 +62,68 @@ out:
   global:
     isLineCompleted: true
     autoMode: true
-    autoplayDelay: 1000
+    variables:
+      _autoForwardTime: 1000
+    nextLineConfig:
+      manual:
+        enabled: true
+      auto:
+        enabled: false
+    pendingEffects:
+      - name: startAutoNextTimer
+        payload:
+          delay: 1000
+      - name: render
+---
+case: mark line as completed with auto mode and custom _autoForwardTime
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: true
+        variables:
+          _autoForwardTime: 2000
+        nextLineConfig:
+          manual:
+            enabled: true
+          auto:
+            enabled: false
+        pendingEffects: []
+out:
+  global:
+    isLineCompleted: true
+    autoMode: true
+    variables:
+      _autoForwardTime: 2000
+    nextLineConfig:
+      manual:
+        enabled: true
+      auto:
+        enabled: false
+    pendingEffects:
+      - name: startAutoNextTimer
+        payload:
+          delay: 2000
+      - name: render
+---
+case: mark line as completed with auto mode and default _autoForwardTime (not set)
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: true
+        variables: {}
+        nextLineConfig:
+          manual:
+            enabled: true
+          auto:
+            enabled: false
+        pendingEffects: []
+out:
+  global:
+    isLineCompleted: true
+    autoMode: true
+    variables: {}
     nextLineConfig:
       manual:
         enabled: true
