@@ -185,7 +185,11 @@ export const addBackgroundOrCg = (
       }
     }
 
-    if (presentationState.background.animations && !isLineCompleted && !skipTransitionsAndAnimations) {
+    if (
+      presentationState.background.animations &&
+      !isLineCompleted &&
+      !skipTransitionsAndAnimations
+    ) {
       const previousResourceId =
         previousPresentationState?.background?.resourceId;
       const currentResourceId = presentationState.background.resourceId;
@@ -211,7 +215,13 @@ export const addBackgroundOrCg = (
  */
 export const addCharacters = (
   state,
-  { presentationState, previousPresentationState, resources, isLineCompleted, skipTransitionsAndAnimations },
+  {
+    presentationState,
+    previousPresentationState,
+    resources,
+    isLineCompleted,
+    skipTransitionsAndAnimations,
+  },
 ) => {
   const { elements, animations } = state;
   if (presentationState.character && resources) {
@@ -298,7 +308,11 @@ export const addCharacters = (
       storyContainer.children.push(characterContainer);
 
       // Add animation support (except out, which is handled above)
-      if (item.animations && !isLineCompleted && !skipTransitionsAndAnimations) {
+      if (
+        item.animations &&
+        !isLineCompleted &&
+        !skipTransitionsAndAnimations
+      ) {
         // Use boolean flags as "resource IDs" for the helper
         // previousHasSprites/currentHasSprites work because helper checks truthiness and equality
         pushAnimations({
@@ -322,7 +336,13 @@ export const addCharacters = (
  */
 export const addVisuals = (
   state,
-  { presentationState, previousPresentationState, resources, isLineCompleted, skipTransitionsAndAnimations },
+  {
+    presentationState,
+    previousPresentationState,
+    resources,
+    isLineCompleted,
+    skipTransitionsAndAnimations,
+  },
 ) => {
   const { elements, animations } = state;
   if (presentationState.visual && resources) {
@@ -425,7 +445,11 @@ export const addVisuals = (
         }
       }
 
-      if (item.animations && !isLineCompleted && !skipTransitionsAndAnimations) {
+      if (
+        item.animations &&
+        !isLineCompleted &&
+        !skipTransitionsAndAnimations
+      ) {
         const previousItems = previousPresentationState?.visual?.items || [];
         const previousItem = previousItems.find((p) => p.id === item.id);
 
@@ -550,7 +574,11 @@ export const addDialogue = (
   }
 
   // Handle dialogue GUI animations
-  if (presentationState.dialogue.gui?.animations && !isLineCompleted && !skipTransitionsAndAnimations) {
+  if (
+    presentationState.dialogue.gui?.animations &&
+    !isLineCompleted &&
+    !skipTransitionsAndAnimations
+  ) {
     pushAnimations({
       animations,
       animationsDef: presentationState.dialogue.gui.animations,
@@ -571,7 +599,13 @@ export const addDialogue = (
  */
 export const addChoices = (
   state,
-  { presentationState, previousPresentationState, resources, isLineCompleted, skipTransitionsAndAnimations },
+  {
+    presentationState,
+    previousPresentationState,
+    resources,
+    isLineCompleted,
+    skipTransitionsAndAnimations,
+  },
 ) => {
   const { elements, animations } = state;
   if (presentationState.choice && resources) {
@@ -614,7 +648,11 @@ export const addChoices = (
     }
 
     // Handle choice animations
-    if (presentationState.choice.animations && !isLineCompleted && !skipTransitionsAndAnimations) {
+    if (
+      presentationState.choice.animations &&
+      !isLineCompleted &&
+      !skipTransitionsAndAnimations
+    ) {
       pushAnimations({
         animations,
         animationsDef: presentationState.choice.animations,
@@ -743,7 +781,11 @@ export const addLayout = (
       return state;
     }
 
-    if (Array.isArray(layout.transitions) && !isLineCompleted && !skipTransitionsAndAnimations) {
+    if (
+      Array.isArray(layout.transitions) &&
+      !isLineCompleted &&
+      !skipTransitionsAndAnimations
+    ) {
       layout.transitions.forEach((transition) => {
         animations.push(transition);
       });
@@ -799,7 +841,11 @@ export const addLayout = (
   }
 
   // Handle layout animations
-  if (presentationState.layout?.animations && !isLineCompleted && !skipTransitionsAndAnimations) {
+  if (
+    presentationState.layout?.animations &&
+    !isLineCompleted &&
+    !skipTransitionsAndAnimations
+  ) {
     const previousResourceId = previousPresentationState?.layout?.resourceId;
     const currentResourceId = presentationState.layout?.resourceId;
 
