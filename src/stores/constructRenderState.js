@@ -884,6 +884,7 @@ export const addLayeredViews = (
     dialogueHistory = [],
     saveSlots = [],
     l10n,
+    screen,
   },
 ) => {
   const { elements, animations } = state;
@@ -909,7 +910,23 @@ export const addLayeredViews = (
         type: "container",
         x: 0,
         y: 0,
-        children: layout.elements || [],
+        children: [
+          {
+            id: `layeredView-${index}-blocker`,
+            type: "rect",
+            fill: "transparent",
+            width: screen.width,
+            height: screen.height,
+            x: 0,
+            y: 0,
+            click: {
+              actionPayload: {
+                actions: {},
+              },
+            },
+          },
+          ...(layout.elements || []),
+        ],
       };
 
       const historyDialogueWithNames = dialogueHistory.map((item) => {

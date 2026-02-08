@@ -71,6 +71,9 @@ in:
     autoMode: false
     skipMode: false
     currentLocalizationPackageId: null
+    screen:
+      width: 1920
+      height: 1080
     layeredViews:
       - resourceId: layeredViewLayout
         resourceType: layout
@@ -86,6 +89,16 @@ out:
       x: 0
       y: 0
       children:
+        - id: "layeredView-0-blocker"
+          type: "rect"
+          fill: "transparent"
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          click:
+            actionPayload:
+              actions: {}
         - type: "text"
           content: "LayeredView content"
   animations: []
@@ -113,6 +126,9 @@ in:
     autoMode: false
     skipMode: false
     currentLocalizationPackageId: null
+    screen:
+      width: 1920
+      height: 1080
     layeredViews:
       - resourceId: menuLayout
         resourceType: layout
@@ -130,6 +146,16 @@ out:
       x: 0
       y: 0
       children:
+        - id: "layeredView-0-blocker"
+          type: "rect"
+          fill: "transparent"
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          click:
+            actionPayload:
+              actions: {}
         - type: "text"
           content: "Menu"
     - id: "layeredView-1"
@@ -137,6 +163,16 @@ out:
       x: 0
       y: 0
       children:
+        - id: "layeredView-1-blocker"
+          type: "rect"
+          fill: "transparent"
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          click:
+            actionPayload:
+              actions: {}
         - type: "image"
           src: "overlay.png"
   animations: []
@@ -160,6 +196,9 @@ in:
     autoMode: false
     skipMode: false
     currentLocalizationPackageId: null
+    screen:
+      width: 1920
+      height: 1080
     layeredViews:
       - resourceId: missingLayout
         resourceType: layout
@@ -177,6 +216,16 @@ out:
       x: 0
       y: 0
       children:
+        - id: "layeredView-1-blocker"
+          type: "rect"
+          fill: "transparent"
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          click:
+            actionPayload:
+              actions: {}
         - type: "text"
           content: "Exists"
   animations: []
@@ -205,6 +254,9 @@ in:
     autoMode: false
     skipMode: false
     currentLocalizationPackageId: null
+    screen:
+      width: 1920
+      height: 1080
     layeredViews:
       - resourceId: animatedLayout
         resourceType: layout
@@ -220,6 +272,16 @@ out:
       x: 0
       y: 0
       children:
+        - id: "layeredView-0-blocker"
+          type: "rect"
+          fill: "transparent"
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          click:
+            actionPayload:
+              actions: {}
         - type: "text"
           content: "Animated"
   animations:
@@ -253,6 +315,9 @@ in:
     autoMode: false
     skipMode: false
     currentLocalizationPackageId: null
+    screen:
+      width: 1920
+      height: 1080
     layeredViews:
       - resourceId: nestedLayout
         resourceType: layout
@@ -268,6 +333,16 @@ out:
       x: 0
       y: 0
       children:
+        - id: "layeredView-0-blocker"
+          type: "rect"
+          fill: "transparent"
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          click:
+            actionPayload:
+              actions: {}
         - type: "container"
           x: 10
           y: 20
@@ -295,6 +370,9 @@ in:
     autoMode: false
     skipMode: false
     currentLocalizationPackageId: null
+    screen:
+      width: 1920
+      height: 1080
     layeredViews:
       - resourceId: emptyLayout
         resourceType: layout
@@ -309,5 +387,15 @@ out:
       type: "container"
       x: 0
       y: 0
-      children: []
+      children:
+        - id: "layeredView-0-blocker"
+          type: "rect"
+          fill: "transparent"
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          click:
+            actionPayload:
+              actions: {}
   animations: []
