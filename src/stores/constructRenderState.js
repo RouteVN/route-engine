@@ -913,7 +913,7 @@ export const addLayeredViews = (
           {
             id: `layeredView-${index}-blocker`,
             type: "rect",
-            fill: "transparent",
+            fill: "rgba(0, 0, 0, 0.7)",
             width: 1920,
             height: 1080,
             x: 0,
