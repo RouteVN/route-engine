@@ -29,6 +29,9 @@ in:
             - type: "button"
               id: "choice-button"
               text: "Select an option"
+    screen:
+      width: 1920
+      height: 1080
 out:
   elements:
     - id: "story"
@@ -81,6 +84,9 @@ in:
                 - type: "button"
                   id: "choice-2"
                   text: "Option 2"
+    screen:
+      width: 1920
+      height: 1080
 out:
   elements:
     - id: "story"
@@ -181,6 +187,9 @@ in:
           elements:
             - type: "text"
               content: "Other"
+    screen:
+      width: 1920
+      height: 1080
 out:
   elements:
     - id: "story"
@@ -219,6 +228,9 @@ in:
       layouts:
         emptyLayout:
           elements: []
+    screen:
+      width: 1920
+      height: 1080
 out:
   elements:
     - id: "story"
@@ -257,6 +269,9 @@ in:
           elements:
             - type: "text"
               content: "No choices available"
+    screen:
+      width: 1920
+      height: 1080
 out:
   elements:
     - id: "story"
