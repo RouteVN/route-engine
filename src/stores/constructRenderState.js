@@ -909,7 +909,23 @@ export const addLayeredViews = (
         type: "container",
         x: 0,
         y: 0,
-        children: layout.elements || [],
+        children: [
+          {
+            id: `layeredView-${index}-blocker`,
+            type: "rect",
+            fill: "transparent",
+            width: 1920,
+            height: 1080,
+            x: 0,
+            y: 0,
+            click: {
+              actionPayload: {
+                actions: {},
+              },
+            },
+          },
+          ...(layout.elements || []),
+        ],
       };
 
       const historyDialogueWithNames = dialogueHistory.map((item) => {
