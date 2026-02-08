@@ -71,6 +71,9 @@ in:
     autoMode: false
     skipMode: false
     currentLocalizationPackageId: null
+    screen:
+      width: 1920
+      height: 1080
     layeredViews:
       - resourceId: layeredViewLayout
         resourceType: layout
@@ -88,7 +91,7 @@ out:
       children:
         - id: "layeredView-0-blocker"
           type: "rect"
-          fill: "rgba(0, 0, 0, 0.7)"
+          fill: "transparent"
           width: 1920
           height: 1080
           x: 0
@@ -123,6 +126,9 @@ in:
     autoMode: false
     skipMode: false
     currentLocalizationPackageId: null
+    screen:
+      width: 1920
+      height: 1080
     layeredViews:
       - resourceId: menuLayout
         resourceType: layout
@@ -142,7 +148,7 @@ out:
       children:
         - id: "layeredView-0-blocker"
           type: "rect"
-          fill: "rgba(0, 0, 0, 0.7)"
+          fill: "transparent"
           width: 1920
           height: 1080
           x: 0
@@ -159,7 +165,7 @@ out:
       children:
         - id: "layeredView-1-blocker"
           type: "rect"
-          fill: "rgba(0, 0, 0, 0.7)"
+          fill: "transparent"
           width: 1920
           height: 1080
           x: 0
@@ -190,6 +196,9 @@ in:
     autoMode: false
     skipMode: false
     currentLocalizationPackageId: null
+    screen:
+      width: 1920
+      height: 1080
     layeredViews:
       - resourceId: missingLayout
         resourceType: layout
@@ -209,7 +218,7 @@ out:
       children:
         - id: "layeredView-1-blocker"
           type: "rect"
-          fill: "rgba(0, 0, 0, 0.7)"
+          fill: "transparent"
           width: 1920
           height: 1080
           x: 0
@@ -245,6 +254,9 @@ in:
     autoMode: false
     skipMode: false
     currentLocalizationPackageId: null
+    screen:
+      width: 1920
+      height: 1080
     layeredViews:
       - resourceId: animatedLayout
         resourceType: layout
@@ -262,7 +274,7 @@ out:
       children:
         - id: "layeredView-0-blocker"
           type: "rect"
-          fill: "rgba(0, 0, 0, 0.7)"
+          fill: "transparent"
           width: 1920
           height: 1080
           x: 0
@@ -303,6 +315,9 @@ in:
     autoMode: false
     skipMode: false
     currentLocalizationPackageId: null
+    screen:
+      width: 1920
+      height: 1080
     layeredViews:
       - resourceId: nestedLayout
         resourceType: layout
@@ -320,7 +335,7 @@ out:
       children:
         - id: "layeredView-0-blocker"
           type: "rect"
-          fill: "rgba(0, 0, 0, 0.7)"
+          fill: "transparent"
           width: 1920
           height: 1080
           x: 0
@@ -355,6 +370,9 @@ in:
     autoMode: false
     skipMode: false
     currentLocalizationPackageId: null
+    screen:
+      width: 1920
+      height: 1080
     layeredViews:
       - resourceId: emptyLayout
         resourceType: layout
@@ -372,7 +390,7 @@ out:
       children:
         - id: "layeredView-0-blocker"
           type: "rect"
-          fill: "rgba(0, 0, 0, 0.7)"
+          fill: "transparent"
           width: 1920
           height: 1080
           x: 0

@@ -884,6 +884,7 @@ export const addLayeredViews = (
     dialogueHistory = [],
     saveSlots = [],
     l10n,
+    screen,
   },
 ) => {
   const { elements, animations } = state;
@@ -913,9 +914,9 @@ export const addLayeredViews = (
           {
             id: `layeredView-${index}-blocker`,
             type: "rect",
-            fill: "rgba(0, 0, 0, 0.7)",
-            width: 1920,
-            height: 1080,
+            fill: "transparent",
+            width: screen.width,
+            height: screen.height,
             x: 0,
             y: 0,
             click: {

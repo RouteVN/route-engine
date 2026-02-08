@@ -511,6 +511,7 @@ export const selectRenderState = ({ state }) => {
     presentationState,
     previousPresentationState,
     resources: state.projectData.resources,
+    screen: state.projectData.screen,
     l10n: state.projectData.l10n.packages[
       state.global.currentLocalizationPackageId
     ],
