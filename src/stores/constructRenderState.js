@@ -612,6 +612,7 @@ export const addChoices = (
     resources,
     isLineCompleted,
     skipTransitionsAndAnimations,
+    screen,
   },
 ) => {
   const { elements, animations } = state;
@@ -624,8 +625,8 @@ export const addChoices = (
       id: "choice-blocker",
       type: "rect",
       fill: "transparent",
-      width: 1920,
-      height: 1080,
+      width: screen.width,
+      height: screen.height,
       x: 0,
       y: 0,
       click: {
