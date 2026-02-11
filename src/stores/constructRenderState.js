@@ -8,6 +8,19 @@ const jemplFunctions = {
 };
 
 /**
+ * Interpolates dialogue text using jempl parseAndRender.
+ * @param {string} text - The text containing ${...} patterns
+ * @param {Object} data - Data object to resolve variables from
+ * @returns {string} - Interpolated text
+ */
+const interpolateDialogueText = (text, data) => {
+  if (!text || typeof text !== "string") return text;
+  if (!text.includes("${")) return text;
+
+  return parseAndRender(text, data);
+};
+
+/**
  * Helper to push in/out/update animations based on previous and current state
  * @param {Object} params
  * @param {Array} params.animations - The animations array to push to
@@ -143,7 +156,8 @@ export const addBackgroundOrCg = (
     resources = {},
     isLineCompleted,
     skipTransitionsAndAnimations,
-  }, // resolveFile
+    variables,
+  },
 ) => {
   const { elements, animations } = state;
   if (presentationState.background) {
@@ -184,11 +198,17 @@ export const addBackgroundOrCg = (
       const { layouts = {} } = resources;
       const layout = layouts[presentationState.background.resourceId];
       if (layout) {
-        storyContainer.children.push({
+        const bgContainer = {
           id: `bg-cg-${presentationState.background.resourceId}`,
           type: "container",
           children: layout.elements,
-        });
+        };
+        const processedContainer = parseAndRender(
+          bgContainer,
+          { variables },
+          { functions: jemplFunctions },
+        );
+        storyContainer.children.push(processedContainer);
       }
     }
 
@@ -349,6 +369,7 @@ export const addVisuals = (
     resources,
     isLineCompleted,
     skipTransitionsAndAnimations,
+    variables,
   },
 ) => {
   const { elements, animations } = state;
@@ -437,7 +458,7 @@ export const addVisuals = (
 
         if (layout) {
           const transform = resources.transforms[item.transformId];
-          storyContainer.children.push({
+          const visualContainer = {
             id: `visual-${item.id}`,
             type: "container",
             children: structuredClone(layout.elements),
@@ -448,7 +469,13 @@ export const addVisuals = (
             rotation: transform.rotation,
             scaleX: transform.scaleX,
             scaleY: transform.scaleY,
-          });
+          };
+          const processedContainer = parseAndRender(
+            visualContainer,
+            { variables },
+            { functions: jemplFunctions },
+          );
+          storyContainer.children.push(processedContainer);
         }
       }
 
@@ -551,9 +578,17 @@ export const addDialogue = (
           character: {
             name: character?.name || "",
           },
-          content: presentationState.dialogue?.content || [{ text: "" }],
+          content: (presentationState.dialogue?.content || [{ text: "" }]).map(
+            (item) => ({
+              ...item,
+              text: interpolateDialogueText(item.text, { variables }),
+            }),
+          ),
           lines: (presentationState.dialogue?.lines || []).map((line) => ({
-            content: line.content,
+            content: line.content?.map((item) => ({
+              ...item,
+              text: interpolateDialogueText(item.text, { variables }),
+            })),
             characterName: line.characterId
               ? resources.characters?.[line.characterId]?.name || ""
               : "",
