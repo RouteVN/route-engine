@@ -71,6 +71,74 @@ Static, read-only data that defines the visual novel content:
 
 Project data is loaded once and never mutated during runtime.
 
+## Story Hierarchy: Scenes, Sections, and Lines
+
+The story content is organized in a three-level hierarchy:
+
+```
+story
+├── scenes
+│   ├── title_screen (Scene)
+│   │   └── sections
+│   │       ├── main_menu (Section)
+│   │       │   └── lines: [line_1, line_2, ...]
+│   │       └── settings (Section)
+│   │           └── lines: [line_1, line_2, ...]
+│   │
+│   └── chapter_1 (Scene)
+│       └── sections
+│           ├── intro (Section)
+│           │   └── lines: [line_1, line_2, ...]
+│           ├── meeting (Section)
+│           │   └── lines: [line_1, line_2, ...]
+│           └── ending (Section)
+│               └── lines: [line_1, line_2, ...]
+```
+
+### Hierarchy Levels
+
+| Level | Purpose | Navigation |
+|-------|---------|------------|
+| **Scene** | Major story divisions (chapters, menus) | Currently implicit - set via `initialSceneId` |
+| **Section** | Logical groupings within a scene | Use `sectionTransition` action |
+| **Line** | Individual content units with actions | Automatic via `nextLine` or `jumpToLine` |
+
+### Key Points
+
+1. **Scene IDs are organizational only**: The pointer tracks `sectionId` and `lineId`, not `sceneId`. Scenes group related sections but don't appear in navigation state.
+
+2. **Section IDs must be unique across all scenes**: When using `sectionTransition`, the engine searches all scenes to find the target section.
+
+3. **Lines advance sequentially within a section**: Use `nextLine` to advance, `sectionTransition` to jump between sections.
+
+### Navigation Example
+
+```yaml
+# In project data
+story:
+  initialSceneId: chapter_1
+  scenes:
+    chapter_1:
+      initialSectionId: intro
+      sections:
+        intro:
+          lines:
+            - id: line_1
+              actions:
+                dialogue:
+                  content: "Welcome to chapter 1!"
+            - id: line_2
+              actions:
+                sectionTransition:
+                  sectionId: meeting  # Jump to another section
+        meeting:
+          lines:
+            - id: line_1
+              actions:
+                dialogue:
+                  content: "Nice to meet you!"
+```
+
 ### System State
 
 Mutable runtime state managed by the system store. Key components:
@@ -144,6 +212,81 @@ All contexts share global state but maintain their own:
 - Variables
 - View stacks
 
+## Layered Views
+
+Layered views provide a stack-based system for displaying UI overlays on top of the main story content. This is used for menus, settings screens, save/load interfaces, and other UI that temporarily covers the story view.
+
+### Concept
+
+```
+┌─────────────────────────────────────┐
+│         Layered View Stack          │
+├─────────────────────────────────────┤
+│  ┌─────────────────────────────┐   │  ← Top layer (visible, interactive)
+│  │     Settings Menu           │   │
+│  └─────────────────────────────┘   │
+│  ┌─────────────────────────────┐   │  ← Middle layer
+│  │     Pause Menu              │   │
+│  └─────────────────────────────┘   │
+├─────────────────────────────────────┤
+│         Main Story View             │  ← Base (always present)
+│   (background, characters, dialogue)│
+└─────────────────────────────────────┘
+```
+
+### How It Works
+
+- Views are pushed onto a stack using `pushLayeredView`
+- The topmost view receives user interactions
+- Popping a view reveals the one beneath it
+- When the stack is empty, the main story view is interactive
+
+### Layered View Actions
+
+| Action | Effect |
+|--------|--------|
+| `pushLayeredView` | Add a new view on top of the stack |
+| `popLayeredView` | Remove the topmost view |
+| `replaceLastLayeredView` | Replace the current top view with a new one |
+| `clearLayeredViews` | Remove all layered views, returning to story |
+
+### Usage Example
+
+```yaml
+# Open a menu
+- id: open_menu
+  actions:
+    pushLayeredView:
+      resourceId: pause_menu_layout
+
+# From within the menu, open settings (stacks on top)
+- id: open_settings
+  actions:
+    pushLayeredView:
+      resourceId: settings_layout
+
+# Close current view (returns to pause menu)
+- id: close_settings
+  actions:
+    popLayeredView: {}
+
+# Close all menus and return to story
+- id: resume_game
+  actions:
+    clearLayeredViews: {}
+```
+
+### When to Use Layered Views vs Section Transitions
+
+| Use Case | Approach |
+|----------|----------|
+| Temporary UI overlay (pause menu, settings) | Layered Views |
+| Navigating to different story content | Section Transition |
+| Modal dialogs, confirmations | Layered Views |
+| Branching narrative paths | Section Transition |
+
+Layered views preserve the underlying story state, while section transitions change the story position entirely.
+
 ## Pointers
 
 Pointers are the core navigation mechanism in route-engine. A pointer tracks the current position in the story by referencing a `sectionId` and `lineId`.
@@ -172,12 +315,14 @@ When `nextLine` is executed:
 5. Update the pointer with the new `lineId`
 
 ```js
-// Simplified nextLine logic
+// Simplified nextLine logic (inside an Immer-wrapped action)
 const section = selectSection({ sectionId });
 const currentIndex = section.lines.findIndex(line => line.id === lineId);
 const nextLine = section.lines[currentIndex + 1];
-pointer.lineId = nextLine.id;
+pointer.lineId = nextLine.id;  // This mutation is safe - Immer creates a new state
 ```
+
+> **Note:** This code runs inside an Immer-wrapped action function. What looks like direct mutation (`pointer.lineId = ...`) actually operates on an Immer "draft" that produces an immutable update. The original state is never modified.
 
 ### Pointer Modes
 
@@ -232,6 +377,7 @@ Functions that mutate system state. Examples:
 - `jumpToLine`: Jump to specific line
 - `toggleAutoMode` / `toggleSkipMode`: Control playback
 - `toggleDialogueUI`: Show/hide dialogue box
+- `rollbackByOffset` / `rollbackToLine`: Backtrack with variable restoration
 
 ### Pending Effects
 Side effects queued during action execution:
@@ -250,9 +396,11 @@ The engine uses a custom store implementation (`createStore`) with:
 ```js
 const store = createStore(initialState, {
   selectCount: (state) => state.count,
-  increment: (state) => { state.count++; }
+  increment: (state) => { state.count++; }  // Immer draft - safe mutation syntax
 });
 ```
+
+> **Immer Integration:** Action functions receive an Immer "draft" of the state, not the actual state. Code like `state.count++` uses mutation syntax but produces immutable updates under the hood. This provides the ergonomics of mutable code with the safety of immutable state management. You can write mutations naturally without spreading objects or creating copies manually.
 
 ### Action Executors
 
@@ -289,3 +437,189 @@ Save slots store:
 - `date`: Unix timestamp
 - `image`: Screenshot (base64)
 - `state`: Serialized game state
+
+## History Sequence Structure
+
+The `historySequence` tracks navigation history with state snapshots for rollback functionality:
+
+```js
+historySequence: [
+  {
+    sectionId: "chapter_1",
+    initialState: {           // Context variables snapshot at section entry
+      score: 0,
+      lives: 3
+    },
+    lines: [
+      { id: "line_1" },
+      { id: "line_2", updateVariableIds: ["action1"] },  // Action IDs executed
+      { id: "line_3", updateVariableIds: ["action2", "action3"] }
+    ]
+  }
+]
+```
+
+Key properties:
+- `initialState`: Captured once when entering a section (context variables only)
+- `lines`: Array of visited lines with their executed action IDs
+- `updateVariableIds`: IDs of `updateVariable` actions executed on that line
+
+## Backtrack and Rollback
+
+The engine supports backtracking through history with variable state restoration using an **Event Sourcing** pattern:
+
+### How Rollback Works
+
+1. **Reset to `initialState`**: Context variables are restored to section entry values
+2. **Replay Forward**: All `updateVariable` actions from `initialState` up to (but not including) the target line are re-executed
+3. **Update Pointer**: Navigation pointer moves to target line in read mode
+
+```js
+// Rollback by offset (go back 1 line)
+engine.handleAction('rollbackByOffset', { offset: -1 });
+
+// Rollback to specific line
+engine.handleAction('rollbackToLine', { sectionId: 'chapter_1', lineId: 'line_2' });
+```
+
+### Scope Limitations
+
+- Only **context-scoped** variables are rolled back
+- `global-device` and `global-account` variables are NOT affected
+- Rollback is limited to lines within the current section
+
+### Performance Considerations
+
+Rollback uses a **replay-forward algorithm** that re-executes all variable update actions from the section's start to the target line. This means:
+
+| Section Length | Rollback Cost |
+|---------------|---------------|
+| 10 lines with 5 variable updates | ~5 operations |
+| 100 lines with 50 variable updates | ~50 operations |
+| 500 lines with 200 variable updates | ~200 operations |
+
+**Best practices for performance:**
+
+1. **Keep sections reasonably sized**: Split very long sections (100+ lines) into smaller sections at natural break points
+2. **Minimize variable updates per section**: Move complex variable logic to section transitions when possible
+3. **Use section transitions strategically**: Each section creates a new `initialState` snapshot, resetting the replay cost
+
+**Note:** Rollback is typically fast for normal section sizes. Performance only becomes noticeable with very long sections containing many variable updates.
+
+## Effects System
+
+The engine uses a pending effects queue to handle side effects. When an action modifies state, it queues effects rather than executing them directly. This provides:
+
+- **Deduplication**: Multiple render requests become a single render
+- **Batching**: All effects from an action cycle execute together
+- **Separation of concerns**: State logic stays pure, side effects are explicit
+
+### Built-in Effects
+
+| Effect | Description |
+|--------|-------------|
+| `render` | Re-render the current state to the screen |
+| `handleLineActions` | Process actions attached to the current line |
+| `startAutoNextTimer` | Start auto-advance timer |
+| `clearAutoNextTimer` | Stop auto-advance timer |
+| `startSkipNextTimer` | Start skip mode timer (30ms intervals) |
+| `clearSkipNextTimer` | Stop skip mode timer |
+| `nextLineConfigTimer` | Start scene-specific auto-advance timer |
+| `clearNextLineConfigTimer` | Stop scene-specific auto-advance timer |
+| `saveSlots` | Persist save slots to localStorage |
+| `saveGlobalDeviceVariables` | Persist device variables to localStorage |
+| `saveGlobalAccountVariables` | Persist account variables to localStorage |
+
+### Custom Effects Handler
+
+The effects handler is injected at engine creation:
+
+```javascript
+const engine = createRouteEngine({
+  handlePendingEffects: (effects) => {
+    effects.forEach(effect => {
+      switch (effect.name) {
+        case 'render':
+          routeGraphics.render(engine.selectRenderState());
+          break;
+        case 'handleLineActions':
+          engine.handleLineActions();
+          break;
+        // ... handle other effects
+      }
+    });
+  }
+});
+```
+
+## Glossary
+
+This glossary standardizes terminology used throughout the route-engine documentation.
+
+### Core Terms
+
+| Term | Definition |
+|------|------------|
+| **route-engine** | The state management library for visual novels. Manages game logic, navigation, and state. |
+| **route-graphics** | The rendering library that displays visuals using PixiJS. Receives render state from route-engine. |
+| **projectData** | Static YAML/JSON configuration containing all story content, resources, and settings. Immutable at runtime. |
+
+### State Terms
+
+| Term | Definition |
+|------|------------|
+| **systemState** | The complete runtime state managed by systemStore. Contains pointers, variables, presentation state, etc. |
+| **systemStore** | The Zustand store that holds systemState. Provides actions and selectors. |
+| **presentationState** | Derived state describing what should be displayed (dialogue, background, characters, audio). |
+| **renderState** | Final state passed to route-graphics. Contains elements, animations, and audio arrays ready for rendering. |
+| **context** | An isolated game environment with its own pointer and variables. Supports multiple simultaneous contexts. |
+
+### Story Structure Terms
+
+| Term | Definition |
+|------|------------|
+| **Scene** | Top-level grouping (like chapters). Contains multiple sections. |
+| **Section** | Mid-level grouping within a scene. Contains an array of lines. |
+| **Line** | Single unit of content. Has an ID and actions object. |
+| **Pointer** | Current reading position: `{ sectionId, lineId }`. Note: scoped to section, not scene. |
+
+### Action Terms
+
+| Term | Definition |
+|------|------------|
+| **Action** | A function that modifies systemState. Dispatched via `handleAction()` or `handleActions()`. |
+| **Line Action** | Actions attached to a line (dialogue, background, character, etc.) that affect presentation. |
+| **Effect** | Side effect queued for external handling (render, timers, persistence). Processed by effects handler. |
+| **Pending Effects** | Queue of effects waiting to be processed. Cleared after handling. |
+
+### Navigation Terms
+
+| Term | Definition |
+|------|------------|
+| **nextLine** | Advance to the following line within the current section. |
+| **sectionTransition** | Navigate to a different section (same or different scene). |
+| **Rollback** | Return to a previous line with variable state reverted. Uses event sourcing. |
+| **History Mode** | Reading mode that allows navigating through previously viewed content. |
+
+### Variable Terms
+
+| Term | Definition |
+|------|------------|
+| **context variable** | Variable scoped to current game session. Reset on new game. |
+| **global-device variable** | Variable persisted to device localStorage. Survives across sessions. |
+| **global-account variable** | Variable persisted to account localStorage. Follows user across devices. |
+
+### UI Terms
+
+| Term | Definition |
+|------|------------|
+| **Layered View** | Overlay UI (menus, settings) managed as a stack. Push/pop to show/hide. |
+| **Dialogue UI** | The dialogue box and related UI. Can be shown/hidden independently. |
+| **nextLineConfig** | Configuration controlling how lines advance (manual click, auto-advance, timers). |
+
+## Related Documentation
+
+- [Getting Started Guide](./GettingStarted.md) - Quick setup and basic usage
+- [API Reference](./RouteEngine.md) - Complete API documentation
+- [Project Data Schema](./ProjectDataSchema.md) - YAML configuration reference
+- [Troubleshooting](./Troubleshooting.md) - Common issues and solutions
