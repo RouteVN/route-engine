@@ -35,7 +35,5 @@ jobs:
           registry-url: "https://registry.npmjs.org"
 
       # Publish to npm
-      - name: Publish to npm
-        run: bun publish
-        env:
-          NPM_CONFIG_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+      - name: Publish to npm (Trusted)
+        run: npm publish --access public
