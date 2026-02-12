@@ -73,11 +73,12 @@ engine.handleAction('sectionTransition', { sectionId: 'chapter_2' });
 engine.handleAction('toggleAutoMode');
 ```
 
-### `handleActions(actions)`
+### `handleActions(actions, eventContext?)`
 
-Dispatches multiple actions from an object.
+Dispatches multiple actions from an object. Optionally accepts an event context for template interpolation.
 
 ```js
+// Basic usage
 engine.handleActions({
   setNextLineConfig: {
     manual: { enabled: false },
@@ -85,6 +86,47 @@ engine.handleActions({
   },
   markLineCompleted: {}
 });
+
+// With event context (for slider/input events)
+// Templates like ${event.value} in action payloads get resolved
+engine.handleActions(
+  payload.actions,
+  { event: payload._event }
+);
+```
+
+#### Event Templating
+
+When `eventContext` is provided, action payloads can use template syntax to reference event values. Action payloads can also reference `${variables.*}` and they will be resolved at runtime.
+
+```yaml
+# In YAML layout definition
+- id: volumeSlider
+  type: slider
+  min: 0
+  max: 100
+  change:
+    actionPayload:
+      actions:
+        updateVariable:
+          id: setVolume
+          operations:
+            - variableId: volume
+              op: set
+              value: '${event.value}'  # Resolved to slider's current value
+```
+
+The integration layer should pass event context when handling events:
+
+```js
+eventHandler: (eventName, payload) => {
+  if (payload.actions) {
+    engine.handleActions(
+      payload.actions,
+      payload._event ? { event: payload._event } : undefined
+    );
+  }
+}
 ```
 
 ### `handleLineActions()`
@@ -236,4 +278,3 @@ Actions that can be attached to lines to control presentation:
 | `layout` | `{ resourceId }` | Display layout |
 | `choice` | `{ resourceId, items }` | Display choice menu |
 | `cleanAll` | `true` | Clear all presentation state |
-

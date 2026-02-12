@@ -7,6 +7,46 @@ const jemplFunctions = {
   formatDate,
 };
 
+const stripActionPayloads = (input) => {
+  const payloads = [];
+  const working = structuredClone(input);
+
+  const walk = (node, path = []) => {
+    if (!node || typeof node !== "object") return;
+
+    if (Array.isArray(node)) {
+      node.forEach((item, index) => walk(item, path.concat(index)));
+      return;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(node, "actionPayload")) {
+      payloads.push({ path: path.concat("actionPayload"), value: node.actionPayload });
+      delete node.actionPayload;
+    }
+
+    Object.keys(node).forEach((key) => walk(node[key], path.concat(key)));
+  };
+
+  walk(working);
+  return { stripped: working, payloads };
+};
+
+const restoreActionPayloads = (input, payloads) => {
+  const setAtPath = (root, path, value) => {
+    let current = root;
+    for (let i = 0; i < path.length - 1; i += 1) {
+      const key = path[i];
+      if (current == null) return;
+      current = current[key];
+    }
+    if (current == null) return;
+    current[path[path.length - 1]] = value;
+  };
+
+  payloads.forEach(({ path, value }) => setAtPath(input, path, value));
+  return input;
+};
+
 /**
  * Interpolates dialogue text using jempl parseAndRender.
  * @param {string} text - The text containing ${...} patterns
@@ -134,11 +174,15 @@ export const addBase = (state, { presentationState, resources, variables }) => {
           children: layout.elements,
         };
 
+        const { stripped, payloads } = stripActionPayloads(baseContainer);
         const processedContainer = parseAndRender(
-          baseContainer,
+          stripped,
           { variables },
           { functions: jemplFunctions },
         );
+        if (processedContainer) {
+          restoreActionPayloads(processedContainer, payloads);
+        }
 
         storyContainer.children.unshift(processedContainer);
       }
@@ -206,11 +250,15 @@ export const addBackgroundOrCg = (
           type: "container",
           children: layout.elements,
         };
+        const { stripped, payloads } = stripActionPayloads(bgContainer);
         const processedContainer = parseAndRender(
-          bgContainer,
+          stripped,
           { variables },
           { functions: jemplFunctions },
         );
+        if (processedContainer) {
+          restoreActionPayloads(processedContainer, payloads);
+        }
         storyContainer.children.push(processedContainer);
       }
     }
@@ -473,11 +521,15 @@ export const addVisuals = (
             scaleX: transform.scaleX,
             scaleY: transform.scaleY,
           };
+          const { stripped, payloads } = stripActionPayloads(visualContainer);
           const processedContainer = parseAndRender(
-            visualContainer,
+            stripped,
             { variables },
             { functions: jemplFunctions },
           );
+          if (processedContainer) {
+            restoreActionPayloads(processedContainer, payloads);
+          }
           storyContainer.children.push(processedContainer);
         }
       }
@@ -564,6 +616,7 @@ export const addDialogue = (
       }
 
       const wrappedTemplate = { elements: guiLayout.elements };
+      const { stripped, payloads } = stripActionPayloads(wrappedTemplate);
 
       const templateData = {
         variables,
@@ -600,12 +653,15 @@ export const addDialogue = (
         l10n,
       };
 
-      let result = parseAndRender(wrappedTemplate, templateData, {
+      let result = parseAndRender(stripped, templateData, {
         functions: jemplFunctions,
       });
       result = parseAndRender(result, {
         l10n,
       });
+      if (result) {
+        restoreActionPayloads(result, payloads);
+      }
       const guiElements = result?.elements;
 
       if (Array.isArray(guiElements)) {
@@ -677,11 +733,15 @@ export const addChoices = (
     const layout = resources?.layouts[presentationState.choice.resourceId];
     if (layout && layout.elements) {
       const wrappedTemplate = { elements: layout.elements };
-      const result = parseAndRender(wrappedTemplate, {
+      const { stripped, payloads } = stripActionPayloads(wrappedTemplate);
+      const result = parseAndRender(stripped, {
         choice: {
           items: presentationState.choice?.items ?? [],
         },
       });
+      if (result) {
+        restoreActionPayloads(result, payloads);
+      }
       const choiceElements = result?.elements;
 
       if (Array.isArray(choiceElements)) {
@@ -858,13 +918,17 @@ export const addLayout = (
       textSpeed: variables?._textSpeed ?? 50,
     };
 
-    let processedContainer = parseAndRender(layoutContainer, templateData, {
+    const { stripped, payloads } = stripActionPayloads(layoutContainer);
+    let processedContainer = parseAndRender(stripped, templateData, {
       functions: jemplFunctions,
     });
     processedContainer = parseAndRender(processedContainer, {
       i18n: {},
       // i18n: systemStore.selectCurrentLanguagePackKeys(),
     });
+    if (processedContainer) {
+      restoreActionPayloads(processedContainer, payloads);
+    }
 
     const processElementAfterRender = (element) => {
       const processedElement = { ...element };
@@ -991,17 +1055,17 @@ export const addLayeredViews = (
         characters: resources.characters || {},
       };
 
-      let processedLayeredView = parseAndRender(
-        layeredViewContainer,
-        templateData,
-        {
-          functions: jemplFunctions,
-        },
-      );
+      const { stripped, payloads } = stripActionPayloads(layeredViewContainer);
+      let processedLayeredView = parseAndRender(stripped, templateData, {
+        functions: jemplFunctions,
+      });
       processedLayeredView = parseAndRender(processedLayeredView, {
         i18n: {},
         l10n,
       });
+      if (processedLayeredView) {
+        restoreActionPayloads(processedLayeredView, payloads);
+      }
 
       elements.push(processedLayeredView);
     });

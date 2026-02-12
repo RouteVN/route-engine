@@ -1,4 +1,5 @@
 import { produce } from "immer";
+import { parseAndRender } from "jempl";
 
 /**
  * Creates a store with selectors and actions from a single object definition.
@@ -631,4 +632,41 @@ export const diffPresentationState = (prev = {}, curr = {}) => {
   diffObject("sfx");
 
   return changes;
+};
+
+/**
+ * Processes action templates by interpolating event context values.
+ * Uses jempl's parseAndRender to resolve ${event.value} and similar patterns.
+ *
+ * Fast-path optimization: skips jempl processing if no template syntax is present.
+ *
+ * @param {Object} actions - Action payload object that may contain template strings
+ * @param {Object} context - Context object for template interpolation (e.g., { event: { value: 42 }, variables: {...} })
+ * @returns {Object} Processed actions with templates resolved
+ *
+ * @example
+ * // With event context
+ * processActionTemplates(
+ *   { updateVariable: { operations: [{ variableId: 'volume', op: 'set', value: '${event.value}' }] } },
+ *   { event: { id: 'slider1', value: 75 }, variables: { volume: 75 } }
+ * )
+ * // Returns: { updateVariable: { operations: [{ variableId: 'volume', op: 'set', value: 75 }] } }
+ *
+ * @example
+ * // Without templates (fast-path)
+ * processActionTemplates(
+ *   { nextLine: {} },
+ *   { event: { value: 42 } }
+ * )
+ * // Returns: { nextLine: {} } (unchanged, skips jempl)
+ */
+export const processActionTemplates = (actions, context) => {
+  if (!context) return actions;
+
+  const json = JSON.stringify(actions);
+
+  // Fast-path: skip jempl if no template syntax present
+  if (!json.includes("${")) return actions;
+
+  return parseAndRender(actions, context);
 };

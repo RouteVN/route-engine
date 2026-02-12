@@ -1,0 +1,114 @@
+file: "../../src/util.js"
+group: processActionTemplates
+suites: [processActionTemplates]
+---
+suite: processActionTemplates
+exportName: processActionTemplates
+---
+case: returns actions unchanged when no context provided
+in:
+  - updateVariable:
+      id: test
+      operations:
+        - variableId: volume
+          op: set
+          value: 50
+out:
+  updateVariable:
+    id: test
+    operations:
+      - variableId: volume
+        op: set
+        value: 50
+---
+case: returns actions unchanged when no templates present
+in:
+  - updateVariable:
+      id: test
+      operations:
+        - variableId: volume
+          op: set
+          value: 50
+  - event:
+      id: slider1
+      value: 75
+out:
+  updateVariable:
+    id: test
+    operations:
+      - variableId: volume
+        op: set
+        value: 50
+---
+case: resolves event.value template
+in:
+  - updateVariable:
+      id: test
+      operations:
+        - variableId: volume
+          op: set
+          value: "${event.value}"
+  - event:
+      id: slider1
+      value: 75
+out:
+  updateVariable:
+    id: test
+    operations:
+      - variableId: volume
+        op: set
+        value: 75
+---
+case: resolves event.id template
+in:
+  - logAction:
+      elementId: "${event.id}"
+  - event:
+      id: volumeSlider
+      value: 50
+out:
+  logAction:
+    elementId: volumeSlider
+---
+case: resolves multiple templates in same action
+in:
+  - updateVariable:
+      id: test
+      operations:
+        - variableId: "${event.id}"
+          op: set
+          value: "${event.value}"
+  - event:
+      id: volume
+      value: 80
+out:
+  updateVariable:
+    id: test
+    operations:
+      - variableId: volume
+        op: set
+        value: 80
+---
+case: preserves non-template values
+in:
+  - updateVariable:
+      id: staticId
+      operations:
+        - variableId: count
+          op: increment
+          value: 1
+        - variableId: slider
+          op: set
+          value: "${event.value}"
+  - event:
+      value: 42
+out:
+  updateVariable:
+    id: staticId
+    operations:
+      - variableId: count
+        op: increment
+        value: 1
+      - variableId: slider
+        op: set
+        value: 42
