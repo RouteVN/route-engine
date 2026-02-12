@@ -31,7 +31,7 @@
     "lint:fix": "bun run prettier src -w",
     "coverage": "bun run vitest run --coverage",
     "vt:generate": "bun run esbuild.js && rtgl vt generate --skip-screenshots",
-    "vt:docker": "bun run esbuild.js && docker run --rm --user $(id -u):$(id -g) -e RTGL_VT_DEBUG=true -v \"$PWD:/app\" -w /app han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc12 rtgl vt generate --wait-event vt:ready --concurrency 2",
+    "vt:docker": "bun run esbuild.js && docker run --rm --user $(id -u):$(id -g) -e RTGL_VT_DEBUG=true -v \"$PWD:/app\" -w /app han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.0-rc12 rtgl vt screenshot --wait-event vt:ready --concurrency 4",
     "vt:report": "bun run vt:docker && rtgl vt report",
     "vt:accept": "rtgl vt accept",
     "serve": "bun run esbuild.js && bunx serve -p 3004 .rettangoli/vt/_site"
