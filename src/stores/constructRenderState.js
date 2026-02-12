@@ -20,7 +20,10 @@ const stripActionPayloads = (input) => {
     }
 
     if (Object.prototype.hasOwnProperty.call(node, "actionPayload")) {
-      payloads.push({ path: path.concat("actionPayload"), value: node.actionPayload });
+      payloads.push({
+        path: path.concat("actionPayload"),
+        value: node.actionPayload,
+      });
       delete node.actionPayload;
     }
 
