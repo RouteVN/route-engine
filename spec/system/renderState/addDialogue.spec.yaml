@@ -119,6 +119,47 @@ out:
           children: []
   animations: []
 ---
+case: interpolates dialogue content with l10n keys
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      dialogue:
+        gui:
+          resourceId: "dialogueLayout"
+        content:
+          - text: "${l10n.keys.line1}"
+    resources:
+      layouts:
+        dialogueLayout:
+          elements:
+            - id: "dialogue-text"
+              type: "text"
+              content: "${dialogue.content[0].text}"
+    dialogueUIHidden: false
+    autoMode: false
+    skipMode: false
+    currentLocalizationPackageId: null
+    l10n:
+      keys:
+        line1: "Localized line"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "dialogue-text"
+          type: "text"
+          content: "Localized line"
+  animations: []
+---
 case: nvl-multi-line-display
 in:
   - elements:

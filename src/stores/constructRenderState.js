@@ -17,7 +17,10 @@ const interpolateDialogueText = (text, data) => {
   if (!text || typeof text !== "string") return text;
   if (!text.includes("${")) return text;
 
-  return parseAndRender(text, data);
+  const rendered = parseAndRender(text, data);
+  // Avoid rendering object values as "[object Object]" in text nodes.
+  if (rendered && typeof rendered === "object") return text;
+  return rendered;
 };
 
 /**
@@ -581,13 +584,13 @@ export const addDialogue = (
           content: (presentationState.dialogue?.content || [{ text: "" }]).map(
             (item) => ({
               ...item,
-              text: interpolateDialogueText(item.text, { variables }),
+              text: interpolateDialogueText(item.text, { variables, l10n }),
             }),
           ),
           lines: (presentationState.dialogue?.lines || []).map((line) => ({
             content: line.content?.map((item) => ({
               ...item,
-              text: interpolateDialogueText(item.text, { variables }),
+              text: interpolateDialogueText(item.text, { variables, l10n }),
             })),
             characterName: line.characterId
               ? resources.characters?.[line.characterId]?.name || ""

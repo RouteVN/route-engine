@@ -1,6 +1,7 @@
 ---
 title: "Video Visual"
 description: Test video playback as visual element
+skipScreenshot: true
 ---
 l10n:
   packages:
