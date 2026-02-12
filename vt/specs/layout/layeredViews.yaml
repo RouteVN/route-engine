@@ -11,7 +11,7 @@ l10n:
 screen:
   width: 1920
   height: 1080
-  backgroundColor: "#1a1a2e"
+  backgroundColor: "#000000"
 
 resources:
   layouts:
@@ -29,12 +29,12 @@ resources:
           y: 100
           textStyle:
             fontSize: 48
-            fill: "#ffffff"
+            fill: "#FFFFFF"
 
         # Push Menu Button
         - id: pushMenuBtn
           type: rect
-          fill: "#4CAF50"
+          fill: "#737373"
           width: 300
           height: 60
           x: 100
@@ -52,12 +52,12 @@ resources:
           y: 325
           textStyle:
             fontSize: 24
-            fill: "#ffffff"
+            fill: "#FFFFFF"
 
         # Push Overlay Button
         - id: pushOverlayBtn
           type: rect
-          fill: "#2196F3"
+          fill: "#737373"
           width: 300
           height: 60
           x: 100
@@ -75,12 +75,12 @@ resources:
           y: 425
           textStyle:
             fontSize: 24
-            fill: "#ffffff"
+            fill: "#FFFFFF"
 
         # Pop Button
         - id: popBtn
           type: rect
-          fill: "#FF9800"
+          fill: "#737373"
           width: 300
           height: 60
           x: 100
@@ -96,12 +96,12 @@ resources:
           y: 525
           textStyle:
             fontSize: 24
-            fill: "#ffffff"
+            fill: "#FFFFFF"
 
         # Replace Last Button
         - id: replaceBtn
           type: rect
-          fill: "#9C27B0"
+          fill: "#737373"
           width: 300
           height: 60
           x: 100
@@ -119,12 +119,12 @@ resources:
           y: 625
           textStyle:
             fontSize: 24
-            fill: "#ffffff"
+            fill: "#FFFFFF"
 
         # Clear All Button
         - id: clearBtn
           type: rect
-          fill: "#F44336"
+          fill: "#737373"
           width: 300
           height: 60
           x: 100
@@ -140,13 +140,13 @@ resources:
           y: 725
           textStyle:
             fontSize: 24
-            fill: "#ffffff"
+            fill: "#FFFFFF"
 
     menuLayout:
       elements:
         - id: menuBg
           type: rect
-          fill: "#16213e"
+          fill: "#4D4D4D"
           width: 400
           height: 600
           x: 800
@@ -158,13 +158,13 @@ resources:
           y: 300
           textStyle:
             fontSize: 32
-            fill: "#ffffff"
+            fill: "#FFFFFF"
 
     overlayLayout:
       elements:
         - id: overlayBg
           type: rect
-          fill: "#0f3460"
+          fill: "#4D4D4D"
           width: 300
           height: 200
           x: 1300
@@ -176,13 +176,13 @@ resources:
           y: 520
           textStyle:
             fontSize: 24
-            fill: "#e94560"
+            fill: "#737373"
 
     animatedLayout:
       elements:
         - id: animatedBg
           type: rect
-          fill: "#9C27B0"
+          fill: "#737373"
           width: 350
           height: 250
           x: 1250
@@ -194,7 +194,7 @@ resources:
           y: 760
           textStyle:
             fontSize: 28
-            fill: "#ffffff"
+            fill: "#FFFFFF"
 
 story:
   initialSceneId: testScene

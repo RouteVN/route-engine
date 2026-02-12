@@ -11,7 +11,7 @@ l10n:
 screen:
   width: 1920
   height: 1080
-  backgroundColor: "#1a1a2e"
+  backgroundColor: "#000000"
 
 resources:
   variables:
@@ -45,7 +45,7 @@ resources:
           anchorX: 0.5
           textStyle:
             fontSize: 42
-            fill: "#ffffff"
+            fill: "#FFFFFF"
             fontWeight: bold
 
         - id: subtitle
@@ -56,7 +56,7 @@ resources:
           anchorX: 0.5
           textStyle:
             fontSize: 32
-            fill: "#3498db"
+            fill: "#737373"
             fontWeight: bold
 
         # Page navigation
@@ -74,11 +74,11 @@ resources:
               anchorX: 0.5
               textStyle:
                 fontSize: 24
-                fill: "#ffffff"
+                fill: "#FFFFFF"
               hover:
                 textStyle:
                   fontSize: 24
-                  fill: "#3498db"
+                  fill: "#737373"
               click:
                 actionPayload:
                   actions:
@@ -96,11 +96,11 @@ resources:
               anchorX: 0.5
               textStyle:
                 fontSize: 24
-                fill: "#ffffff"
+                fill: "#FFFFFF"
               hover:
                 textStyle:
                   fontSize: 24
-                  fill: "#3498db"
+                  fill: "#737373"
               click:
                 actionPayload:
                   actions:
@@ -128,11 +128,11 @@ resources:
                 children:
                   - id: slot_${slot.slotNumber}_box
                     type: rect
-                    fill: "#2c3e50"
+                    fill: "#4D4D4D"
                     width: 200
                     height: 150
                     hover:
-                      fill: "#34495e"
+                      fill: "#4D4D4D"
                     click:
                       actionPayload:
                         actions:
@@ -148,7 +148,7 @@ resources:
                     anchorY: 0.5
                     textStyle:
                       fontSize: 20
-                      fill: "#ecf0f1"
+                      fill: "#D9D9D9"
 
                   - id: slot_${slot.slotNumber}_status
                     type: text
@@ -159,7 +159,7 @@ resources:
                     anchorY: 0.5
                     textStyle:
                       fontSize: 16
-                      fill: "#95a5a6"
+                      fill: "#A6A6A6"
 
         # Instructions
         - id: instructions
@@ -170,7 +170,7 @@ resources:
           anchorX: 0.5
           textStyle:
             fontSize: 20
-            fill: "#95a5a6"
+            fill: "#A6A6A6"
 
 story:
   initialSceneId: main

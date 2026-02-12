@@ -51,7 +51,7 @@ resources:
           y: 800
           width: 1720
           height: 200
-          fill: "#333333"
+          fill: "#4D4D4D"
 
         - id: dialogue-text
           type: text
@@ -88,7 +88,7 @@ resources:
           textStyle:
             fontSize: 32
             $if skipMode:
-              fill: "#00ff00"
+              fill: "#D9D9D9"
             $else:
               fill: "white"
           hover:
@@ -110,7 +110,7 @@ resources:
             $if skipOnlyViewedLines:
               fill: "white"
             $else:
-              fill: "#00ff00"
+              fill: "#D9D9D9"
           hover:
             textStyle:
               fontSize: 32

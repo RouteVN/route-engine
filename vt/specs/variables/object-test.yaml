@@ -11,7 +11,7 @@ l10n:
 screen:
   width: 1920
   height: 1080
-  backgroundColor: "#2c3e50"
+  backgroundColor: "#4D4D4D"
 
 resources:
   variables:
@@ -59,7 +59,7 @@ resources:
           anchorX: 0.5
           textStyle:
             fontSize: 48
-            fill: "#ecf0f1"
+            fill: "#D9D9D9"
 
         # Test 1: Access nested object properties
         - id: test1Title
@@ -69,7 +69,7 @@ resources:
           y: 150
           textStyle:
             fontSize: 32
-            fill: "#3498db"
+            fill: "#737373"
             fontWeight: bold
 
         - id: playerName
@@ -79,7 +79,7 @@ resources:
           y: 200
           textStyle:
             fontSize: 28
-            fill: "#ecf0f1"
+            fill: "#D9D9D9"
 
         - id: playerLevel
           type: text
@@ -88,7 +88,7 @@ resources:
           y: 240
           textStyle:
             fontSize: 28
-            fill: "#ecf0f1"
+            fill: "#D9D9D9"
 
         - id: playerHealth
           type: text
@@ -97,7 +97,7 @@ resources:
           y: 280
           textStyle:
             fontSize: 28
-            fill: "#ecf0f1"
+            fill: "#D9D9D9"
 
         # Test 2: Object with array
         - id: test2Title
@@ -107,7 +107,7 @@ resources:
           y: 380
           textStyle:
             fontSize: 32
-            fill: "#e74c3c"
+            fill: "#737373"
             fontWeight: bold
 
         - id: inventoryGold
@@ -117,7 +117,7 @@ resources:
           y: 430
           textStyle:
             fontSize: 28
-            fill: "#ecf0f1"
+            fill: "#D9D9D9"
 
         - id: inventoryCount
           type: text
@@ -126,7 +126,7 @@ resources:
           y: 470
           textStyle:
             fontSize: 28
-            fill: "#ecf0f1"
+            fill: "#D9D9D9"
 
         # Test 3: Array access
         - id: test3Title
@@ -136,7 +136,7 @@ resources:
           y: 570
           textStyle:
             fontSize: 32
-            fill: "#9b59b6"
+            fill: "#737373"
             fontWeight: bold
 
         - id: item1
@@ -146,7 +146,7 @@ resources:
           y: 620
           textStyle:
             fontSize: 28
-            fill: "#ecf0f1"
+            fill: "#D9D9D9"
 
         - id: item2
           type: text
@@ -155,7 +155,7 @@ resources:
           y: 660
           textStyle:
             fontSize: 28
-            fill: "#ecf0f1"
+            fill: "#D9D9D9"
 
         - id: item3
           type: text
@@ -164,7 +164,7 @@ resources:
           y: 700
           textStyle:
             fontSize: 28
-            fill: "#ecf0f1"
+            fill: "#D9D9D9"
 
         # Instructions
         - id: instructions
@@ -175,7 +175,7 @@ resources:
           anchorX: 0.5
           textStyle:
             fontSize: 24
-            fill: "#95a5a6"
+            fill: "#A6A6A6"
 
 story:
   initialSceneId: main

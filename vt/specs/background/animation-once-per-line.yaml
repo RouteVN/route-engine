@@ -43,7 +43,7 @@ resources:
               type: rect
               width: 1820
               height: 200
-              fill: "#333333"
+              fill: "#4D4D4D"
               alpha: 0.8
             - id: dialogue-text
               type: "text"

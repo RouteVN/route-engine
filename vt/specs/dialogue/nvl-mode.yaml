@@ -43,7 +43,7 @@ resources:
           textStyle:
             fontSize: 28
             fontWeight: "bold"
-            fill: "#ffcc00"
+            fill: "#D9D9D9"
         - id: dialogue-text
           type: text
           x: 100
@@ -51,7 +51,7 @@ resources:
           content: "${dialogue.content[0].text}"
           textStyle:
             fontSize: 24
-            fill: "#ffffff"
+            fill: "#FFFFFF"
 
     nvl-layout:
       elements:
@@ -82,13 +82,13 @@ resources:
                           textStyle:
                             fontSize: 22
                             fontWeight: "bold"
-                            fill: "#ffcc00"
+                            fill: "#D9D9D9"
                     - id: "text-${i}"
                       type: text
                       content: "${line.content[0].text}"
                       textStyle:
                         fontSize: 22
-                        fill: "#ffffff"
+                        fill: "#FFFFFF"
 
   characters:
     alice:

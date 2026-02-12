@@ -33,7 +33,7 @@ resources:
       elements:
         - id: bg
           type: rect
-          fill: "#1a1a2e"
+          fill: "#000000"
           width: 1920
           height: 1080
     dialogueLayout:
@@ -46,7 +46,7 @@ resources:
           y: 800
           width: 1720
           height: 200
-          fill: "#333333"
+          fill: "#4D4D4D"
         - id: dialogue-text
           type: text
           x: 150

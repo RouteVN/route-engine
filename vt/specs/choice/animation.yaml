@@ -19,7 +19,7 @@ resources:
       elements:
         - id: af32
           type: rect
-          fill: "#333333"
+          fill: "#4D4D4D"
           width: 1920
           height: 1080
           click:

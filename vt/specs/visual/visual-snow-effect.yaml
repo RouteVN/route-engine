@@ -11,7 +11,7 @@ l10n:
 screen:
   width: 1920
   height: 1080
-  backgroundColor: "#4a6080"
+  backgroundColor: "#4D4D4D"
 
 resources:
   layouts:

@@ -31,7 +31,7 @@ resources:
       elements:
         - id: menuBg
           type: rect
-          fill: "#333333"
+          fill: "#4D4D4D"
           width: 300
           height: 400
           x: 0

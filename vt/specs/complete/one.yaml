@@ -171,7 +171,7 @@ resources:
           y: 100
           width: 800
           height: 800
-          fill: "#ccc"
+          fill: "#D9D9D9"
         - id: afk2lkas
           type: container
           x: 120
@@ -619,7 +619,7 @@ resources:
                       $else:
                         textStyle:
                           fontSize: 48
-                          fill: "#ccc"
+                          fill: "#D9D9D9"
                     # TODO: how to make it work without adding nextra container
                     - id: save-container-page-nums-container
                       type: container
@@ -673,7 +673,7 @@ resources:
                       $else:
                         textStyle:
                           fontSize: 48
-                          fill: "#ccc"
+                          fill: "#D9D9D9"
 
             - id: "9fdadf"
               $when: 'variables.currentMenuTabId == "save"'
@@ -769,7 +769,7 @@ resources:
                       $else:
                         textStyle:
                           fontSize: 48
-                          fill: "#ccc"
+                          fill: "#D9D9D9"
                     # TODO: how to make it work without adding nextra container
                     - id: save-container-page-nums-container
                       type: container
@@ -823,7 +823,7 @@ resources:
                       $else:
                         textStyle:
                           fontSize: 48
-                          fill: "#ccc"
+                          fill: "#D9D9D9"
             - id: kfewaf3k29fdsk
               $when: 'variables.currentMenuTabId == "languages"'
               type: container
@@ -1280,7 +1280,7 @@ resources:
           y: 40
           width: 1720
           height: 880
-          fill: "#ccc"
+          fill: "#D9D9D9"
           opacity: 0.5
         - id: dialogue-contaef32iner
           type: "container"
@@ -1481,7 +1481,7 @@ resources:
               type: "rect"
               width: 800
               height: 300
-              fill: "#ccc"
+              fill: "#D9D9D9"
             - id: "32sadfj"
               type: text
               x: 20
