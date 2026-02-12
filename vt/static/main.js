@@ -22,15 +22,15 @@ const projectData = parse(window.yamlContent);
 const init = async () => {
   const assets = {
     "lakjf3lka": {
-      url: "/public/background-1-1.png",
+      url: "/public/bg/door.png",
       type: "image/png",
     },
     "dmni32": {
-      url: "/public/background-1-2.png",
+      url: "/public/bg/forest.png",
       type: "image/png",
     },
     "23jkfa893": {
-      url: "/public/background-2-1.png",
+      url: "/public/bg/moon.png",
       type: "image/png",
     },
     "la3lka": {
@@ -43,6 +43,22 @@ const init = async () => {
     },
     "x342fga": {
       url: "/public/circle-green-small.png",
+      type: "image/png",
+    },
+    "char_sprite_1": {
+      url: "/public/characters/sprite-1-1.png",
+      type: "image/png",
+    },
+    "char_sprite_2": {
+      url: "/public/characters/sprite-1-2.png",
+      type: "image/png",
+    },
+    "char_sprite_3": {
+      url: "/public/characters/sprite-2-1.png",
+      type: "image/png",
+    },
+    "char_sprite_4": {
+      url: "/public/characters/sprite-2-2.png",
       type: "image/png",
     },
     "94lkj289": {

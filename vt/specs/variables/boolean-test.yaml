@@ -11,7 +11,7 @@ l10n:
 screen:
   width: 1920
   height: 1080
-  backgroundColor: "#2c3e50"
+  backgroundColor: "#4D4D4D"
 
 resources:
   variables:
@@ -54,7 +54,7 @@ resources:
           anchorX: 0.5
           textStyle:
             fontSize: 48
-            fill: "#ecf0f1"
+            fill: "#D9D9D9"
 
         # Runtime boolean (soundEnabled)
         - id: soundLabel
@@ -64,7 +64,7 @@ resources:
           y: 300
           textStyle:
             fontSize: 32
-            fill: "#bdc3c7"
+            fill: "#A6A6A6"
 
         - id: soundValue
           type: text
@@ -73,7 +73,7 @@ resources:
           y: 300
           textStyle:
             fontSize: 32
-            fill: "#3498db"
+            fill: "#737373"
             fontWeight: bold
 
         - id: btnToggleSound
@@ -84,11 +84,11 @@ resources:
           anchorX: 0.5
           textStyle:
             fontSize: 28
-            fill: "#ffffff"
+            fill: "#FFFFFF"
           hover:
             textStyle:
               fontSize: 28
-              fill: "#f39c12"
+              fill: "#737373"
           click:
             actionPayload:
               actions:
@@ -106,7 +106,7 @@ resources:
           y: 450
           textStyle:
             fontSize: 32
-            fill: "#bdc3c7"
+            fill: "#A6A6A6"
 
         - id: notifValue
           type: text
@@ -115,7 +115,7 @@ resources:
           y: 450
           textStyle:
             fontSize: 32
-            fill: "#9b59b6"
+            fill: "#737373"
             fontWeight: bold
 
         - id: btnToggleNotif
@@ -126,11 +126,11 @@ resources:
           anchorX: 0.5
           textStyle:
             fontSize: 28
-            fill: "#ffffff"
+            fill: "#FFFFFF"
           hover:
             textStyle:
               fontSize: 28
-              fill: "#f39c12"
+              fill: "#737373"
           click:
             actionPayload:
               actions:
@@ -148,7 +148,7 @@ resources:
           y: 600
           textStyle:
             fontSize: 32
-            fill: "#bdc3c7"
+            fill: "#A6A6A6"
 
         - id: tutorialValue
           type: text
@@ -157,7 +157,7 @@ resources:
           y: 600
           textStyle:
             fontSize: 32
-            fill: "#e74c3c"
+            fill: "#737373"
             fontWeight: bold
 
         - id: btnToggleTutorial
@@ -168,11 +168,11 @@ resources:
           anchorX: 0.5
           textStyle:
             fontSize: 28
-            fill: "#ffffff"
+            fill: "#FFFFFF"
           hover:
             textStyle:
               fontSize: 28
-              fill: "#f39c12"
+              fill: "#737373"
           click:
             actionPayload:
               actions:
@@ -191,7 +191,7 @@ resources:
           anchorX: 0.5
           textStyle:
             fontSize: 28
-            fill: "#95a5a6"
+            fill: "#A6A6A6"
 
         - id: btnSetSoundTrue
           type: text
@@ -201,11 +201,11 @@ resources:
           anchorX: 0.5
           textStyle:
             fontSize: 24
-            fill: "#ffffff"
+            fill: "#FFFFFF"
           hover:
             textStyle:
               fontSize: 24
-              fill: "#1abc9c"
+              fill: "#737373"
           click:
             actionPayload:
               actions:
@@ -224,11 +224,11 @@ resources:
           anchorX: 0.5
           textStyle:
             fontSize: 24
-            fill: "#ffffff"
+            fill: "#FFFFFF"
           hover:
             textStyle:
               fontSize: 24
-              fill: "#e74c3c"
+              fill: "#737373"
           click:
             actionPayload:
               actions:
@@ -248,7 +248,7 @@ resources:
           anchorX: 0.5
           textStyle:
             fontSize: 24
-            fill: "#7f8c8d"
+            fill: "#A6A6A6"
 
 story:
   initialSceneId: main

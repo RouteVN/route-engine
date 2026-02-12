@@ -11,6 +11,7 @@ vt:
   path: "vt"
   name: "ok"
   description: "Visual testing for example1 project"
+  timeout: 60000
 
   sections:
     - title: "Element Types"

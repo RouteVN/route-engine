@@ -36,21 +36,21 @@ resources:
       width: 1920
       height: 1080
     fk4jla893:
-      fileId: la3lka
-      width: 200
-      height: 200
+      fileId: char_sprite_1
+      width: 553
+      height: 865
     3fjaklj34:
-      fileId: x342fga
-      width: 200
-      height: 200
+      fileId: char_sprite_2
+      width: 553
+      height: 865
     spr1:
-      fileId: file1
-      width: 200
-      height: 200
+      fileId: char_sprite_3
+      width: 526
+      height: 891
     spr2:
-      fileId: file2
-      width: 200
-      height: 200
+      fileId: char_sprite_4
+      width: 526
+      height: 891
 
   characters:
     alkjf3ia:
@@ -58,38 +58,44 @@ resources:
         name: "Abc"
       sprites:
         fk4jla893:
-          fileId: la3lka
+          fileId: char_sprite_1
         3fjaklj34:
-          fileId: x342fga
+          fileId: char_sprite_2
     char2:
       variables:
         name: "Def"
       sprites:
         spr1:
-          fileId: file1
+          fileId: char_sprite_3
         spr2:
-          fileId: file2
+          fileId: char_sprite_4
 
   transforms:
     iasdlf:
-      x: 100
-      y: 300
+      x: 480
+      y: 1080
+      anchorX: 0.5
+      anchorY: 1
     a32kf3:
-      x: 500
-      y: 300
+      x: 960
+      y: 1080
+      anchorX: 0.5
+      anchorY: 1
     t_right:
       x: 1400
-      y: 300
+      y: 1080
+      anchorX: 0.5
+      anchorY: 1
 
   tweens:
     slide_in_left:
       name: "Slide In From Left"
       properties:
         x:
-          initialValue: -500
+          initialValue: -300
           keyframes:
             - duration: 1500
-              value: 100
+              value: 480
               easing: easeOutCubic
         alpha:
           initialValue: 0
@@ -101,7 +107,7 @@ resources:
       name: "Slide In From Right"
       properties:
         x:
-          initialValue: 2420
+          initialValue: 2220
           keyframes:
             - duration: 1500
               value: 1400
@@ -118,7 +124,7 @@ resources:
         x:
           keyframes:
             - duration: 1500
-              value: -500
+              value: -300
               easing: easeInCubic
         alpha:
           keyframes:
@@ -131,7 +137,7 @@ resources:
         x:
           keyframes:
             - duration: 1500
-              value: 2420
+              value: 2220
               easing: easeInCubic
         alpha:
           keyframes:

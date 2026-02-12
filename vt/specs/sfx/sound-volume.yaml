@@ -11,7 +11,7 @@ l10n:
 screen:
   width: 1920
   height: 1080
-  backgroundColor: "#1a1a2e"
+  backgroundColor: "#000000"
 
 resources:
   variables:
@@ -35,7 +35,7 @@ resources:
           content: "Sound Volume: ${variables._soundVolume}"
           textStyle:
             fontSize: 48
-            fill: "#ffffff"
+            fill: "#FFFFFF"
 
         - id: vol-250
           type: text
@@ -44,7 +44,7 @@ resources:
           content: "250"
           textStyle:
             fontSize: 32
-            fill: "#ffffff"
+            fill: "#FFFFFF"
           click:
             soundSrc: "xj323"
             soundVolume: 250
@@ -56,7 +56,7 @@ resources:
           content: "500"
           textStyle:
             fontSize: 32
-            fill: "#ffffff"
+            fill: "#FFFFFF"
           click:
             soundSrc: "xj323"
             soundVolume: 500
@@ -68,7 +68,7 @@ resources:
           content: "750"
           textStyle:
             fontSize: 32
-            fill: "#ffffff"
+            fill: "#FFFFFF"
           click:
             soundSrc: "xj323"
             soundVolume: 750
@@ -80,7 +80,7 @@ resources:
           content: "1000"
           textStyle:
             fontSize: 32
-            fill: "#ffffff"
+            fill: "#FFFFFF"
           click:
             soundSrc: "xj323"
             soundVolume: 1000
@@ -93,7 +93,7 @@ resources:
           content: "Play at _soundVolume"
           textStyle:
             fontSize: 36
-            fill: "#00ff00"
+            fill: "#D9D9D9"
           click:
             soundSrc: "xj323"
             soundVolume: ${effectiveSoundVolume}

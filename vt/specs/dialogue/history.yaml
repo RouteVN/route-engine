@@ -105,7 +105,7 @@ resources:
                 popLayeredView: {}
         - id: history-panel
           type: rect
-          fill: "#1a1a2e"
+          fill: "#000000"
           width: 1000
           height: 700
           x: 460
@@ -120,7 +120,7 @@ resources:
           y: 230
           textStyle:
             fontSize: 36
-            fill: "#ffffff"
+            fill: "#FFFFFF"
         - id: history-scroll-container
           type: container
           direction: vertical
@@ -143,18 +143,18 @@ resources:
                     content: "${item.characterName}"
                     textStyle:
                       fontSize: 20
-                      fill: "#ffd700"
+                      fill: "#D9D9D9"
                   - id: history-text-${i}
                     type: text
                     content: "${item.content[0].text}"
                     textStyle:
                       fontSize: 18
-                      fill: "#ffffff"
+                      fill: "#FFFFFF"
                       wordWrap: true
                       wordWrapWidth: 900
         - id: close-button-bg
           type: rect
-          fill: "#e94560"
+          fill: "#737373"
           width: 120
           height: 50
           x: 900
@@ -170,7 +170,7 @@ resources:
           y: 815
           textStyle:
             fontSize: 24
-            fill: "#ffffff"
+            fill: "#FFFFFF"
   characters:
     ajf34a:
       name: Character A

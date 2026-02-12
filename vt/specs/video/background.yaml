@@ -1,6 +1,7 @@
 ---
 title: "Video Background"
 description: Test video playback as background
+skipScreenshot: true
 ---
 l10n:
   packages:

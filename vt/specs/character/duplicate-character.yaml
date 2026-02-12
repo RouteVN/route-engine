@@ -19,13 +19,13 @@ resources:
       width: 1920
       height: 1080
     fk4jla893:
-      fileId: la3lka
-      width: 200
-      height: 200
+      fileId: char_sprite_1
+      width: 553
+      height: 865
     3fjaklj34:
-      fileId: x342fga
-      width: 50
-      height: 50
+      fileId: char_sprite_2
+      width: 553
+      height: 865
   layouts:
     base1:
       elements:
@@ -40,11 +40,15 @@ resources:
                 nextLine: {}
   transforms:
     iasdlf:
-      x: 100
-      y: 300
+      x: 480
+      y: 1080
+      anchorX: 0.5
+      anchorY: 1
     a32kf3:
-      x: 500
-      y: 300
+      x: 1440
+      y: 1080
+      anchorX: 0.5
+      anchorY: 1
   characters:
     alkjf3ia:
       name: "Abc"

@@ -12,7 +12,7 @@ l10n:
 screen:
   width: 1920
   height: 1080
-  backgroundColor: "#1a1a2e"
+  backgroundColor: "#000000"
 
 resources:
   variables:
@@ -34,7 +34,7 @@ resources:
       elements:
         - id: bg
           type: rect
-          fill: "#1a1a2e"
+          fill: "#000000"
           width: 1920
           height: 1080
           click:
@@ -53,7 +53,7 @@ resources:
           y: 750
           width: 1720
           height: 280
-          fill: "#2c3e50"
+          fill: "#4D4D4D"
           opacity: 0.9
           click:
             actionPayload:
@@ -68,7 +68,7 @@ resources:
           y: 770
           textStyle:
             fontSize: 28
-            fill: "#3498db"
+            fill: "#737373"
             fontWeight: bold
 
         # Dialogue text
@@ -80,7 +80,7 @@ resources:
           width: 1620
           textStyle:
             fontSize: 24
-            fill: "#ecf0f1"
+            fill: "#D9D9D9"
 
         # Score display
         - id: scoreDisplay
@@ -91,7 +91,7 @@ resources:
           anchorX: 1
           textStyle:
             fontSize: 32
-            fill: "#f1c40f"
+            fill: "#A6A6A6"
             fontWeight: bold
 
         # Current line indicator
@@ -103,7 +103,7 @@ resources:
           anchorX: 1
           textStyle:
             fontSize: 24
-            fill: "#9b59b6"
+            fill: "#737373"
 
         # Back 1 line button - uses rollbackByOffset
         - id: backOneBtn
@@ -113,11 +113,11 @@ resources:
           y: 680
           textStyle:
             fontSize: 24
-            fill: "#e74c3c"
+            fill: "#737373"
           hover:
             textStyle:
               fontSize: 24
-              fill: "#ff6b6b"
+              fill: "#A6A6A6"
           click:
             actionPayload:
               actions:
@@ -132,11 +132,11 @@ resources:
           y: 680
           textStyle:
             fontSize: 24
-            fill: "#e67e22"
+            fill: "#737373"
           hover:
             textStyle:
               fontSize: 24
-              fill: "#f39c12"
+              fill: "#737373"
           click:
             actionPayload:
               actions:
@@ -151,11 +151,11 @@ resources:
           y: 680
           textStyle:
             fontSize: 24
-            fill: "#27ae60"
+            fill: "#4D4D4D"
           hover:
             textStyle:
               fontSize: 24
-              fill: "#2ecc71"
+              fill: "#737373"
           click:
             actionPayload:
               actions:
