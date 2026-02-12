@@ -19,11 +19,11 @@ resources:
       width: 1920
       height: 1080
     fk4jla893:
-      fileId: la3lka
+      fileId: char_sprite_1
       width: 200
       height: 200
     3fjaklj34:
-      fileId: x342fga
+      fileId: char_sprite_2
       width: 50
       height: 50
   layouts:

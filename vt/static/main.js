@@ -45,6 +45,22 @@ const init = async () => {
       url: "/public/circle-green-small.png",
       type: "image/png",
     },
+    "char_sprite_1": {
+      url: "/public/characters/sprite-1-1.png",
+      type: "image/png",
+    },
+    "char_sprite_2": {
+      url: "/public/characters/sprite-1-2.png",
+      type: "image/png",
+    },
+    "char_sprite_3": {
+      url: "/public/characters/sprite-2-1.png",
+      type: "image/png",
+    },
+    "char_sprite_4": {
+      url: "/public/characters/sprite-2-2.png",
+      type: "image/png",
+    },
     "94lkj289": {
       url: "/public/logo1.png",
       type: "image/png",

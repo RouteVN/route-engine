@@ -36,19 +36,19 @@ resources:
       width: 1920
       height: 1080
     fk4jla893:
-      fileId: la3lka
+      fileId: char_sprite_1
       width: 200
       height: 200
     3fjaklj34:
-      fileId: x342fga
+      fileId: char_sprite_2
       width: 200
       height: 200
     spr1:
-      fileId: file1
+      fileId: char_sprite_3
       width: 200
       height: 200
     spr2:
-      fileId: file2
+      fileId: char_sprite_4
       width: 200
       height: 200
 
@@ -58,17 +58,17 @@ resources:
         name: "Abc"
       sprites:
         fk4jla893:
-          fileId: la3lka
+          fileId: char_sprite_1
         3fjaklj34:
-          fileId: x342fga
+          fileId: char_sprite_2
     char2:
       variables:
         name: "Def"
       sprites:
         spr1:
-          fileId: file1
+          fileId: char_sprite_3
         spr2:
-          fileId: file2
+          fileId: char_sprite_4
 
   transforms:
     iasdlf:
