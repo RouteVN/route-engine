@@ -189,8 +189,7 @@ export const addBackgroundOrCg = (
         };
 
         if (isVideo) {
-          element.loop =
-            presentationState.background.loop ?? false;
+          element.loop = presentationState.background.loop ?? false;
           element.volume = background.volume ?? 500;
         }
 
