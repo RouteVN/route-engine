@@ -531,6 +531,19 @@ export const selectRenderState = ({ state }) => {
   return renderState;
 };
 
+export const selectAllVariables = ({ state }) => {
+  return {
+    ...state.global.variables,
+    ...state.contexts[state.contexts.length - 1].variables,
+  };
+};
+
+export const selectCurrentL10n = ({ state }) => {
+  return state.projectData.l10n.packages[
+    state.global.currentLocalizationPackageId
+  ];
+};
+
 /**************************
  * Actions
  *************************/
@@ -1867,6 +1880,8 @@ export const createSystemStore = (initialState) => {
     selectSectionLineChanges,
     selectCurrentPageSlots,
     selectRenderState,
+    selectAllVariables,
+    selectCurrentL10n,
     selectLayeredViews,
     selectLineIdByOffset,
     selectCanRollback,
