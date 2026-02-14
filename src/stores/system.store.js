@@ -10,6 +10,39 @@ import {
 import { constructPresentationState } from "./constructPresentationState.js";
 import { constructRenderState } from "./constructRenderState.js";
 
+const DEFAULT_NEXT_LINE_CONFIG = {
+  manual: {
+    enabled: true,
+    requireLineCompleted: false,
+  },
+  auto: {
+    enabled: false,
+  },
+  applyMode: "persistent",
+};
+
+const resetNextLineConfigIfSingleLine = (state) => {
+  const applyMode = state.global.nextLineConfig?.applyMode ?? "persistent";
+  if (applyMode !== "singleLine") {
+    return;
+  }
+
+  const wasAutoEnabled = state.global.nextLineConfig?.auto?.enabled === true;
+
+  state.global.nextLineConfig = {
+    manual: { ...DEFAULT_NEXT_LINE_CONFIG.manual },
+    auto: { ...DEFAULT_NEXT_LINE_CONFIG.auto },
+    applyMode: DEFAULT_NEXT_LINE_CONFIG.applyMode,
+  };
+
+  // Ensure stale timers cannot fire after single-line config is consumed.
+  if (wasAutoEnabled) {
+    state.global.pendingEffects.push({
+      name: "clearNextLineConfigTimer",
+    });
+  }
+};
+
 export const createInitialState = (payload) => {
   const {
     global: {
@@ -57,14 +90,9 @@ export const createInitialState = (payload) => {
         resources: [],
       },
       nextLineConfig: {
-        manual: {
-          enabled: true,
-          requireLineCompleted: false,
-        },
-        auto: {
-          enabled: false,
-          //delay: 1000,
-        },
+        manual: { ...DEFAULT_NEXT_LINE_CONFIG.manual },
+        auto: { ...DEFAULT_NEXT_LINE_CONFIG.auto },
+        applyMode: DEFAULT_NEXT_LINE_CONFIG.applyMode,
       },
       saveSlots,
       layeredViews: [],
@@ -303,6 +331,44 @@ export const selectCurrentLine = ({ state }) => {
   }
 
   return section.lines.find((line) => line.id === lineId);
+};
+
+const selectVisibleChoiceResourceId = ({ state }) => {
+  const pointer = selectCurrentPointer({ state })?.pointer;
+  const sectionId = pointer?.sectionId;
+  const lineId = pointer?.lineId;
+  const section = selectSection({ state }, { sectionId });
+  const lines = section?.lines || [];
+  const currentLineIndex = lines.findIndex((line) => line.id === lineId);
+
+  if (currentLineIndex < 0) {
+    return undefined;
+  }
+
+  let visibleChoiceResourceId;
+  const currentLines = lines.slice(0, currentLineIndex + 1);
+  currentLines.forEach((line) => {
+    if (
+      !line?.actions ||
+      !Object.prototype.hasOwnProperty.call(line.actions, "choice")
+    ) {
+      return;
+    }
+
+    const choice = line.actions.choice;
+    if (!choice?.resourceId) {
+      // `choice: {}` clears the currently visible choice.
+      // Choice animations without resourceId should not change visibility.
+      if (!choice?.animations) {
+        visibleChoiceResourceId = undefined;
+      }
+      return;
+    }
+
+    visibleChoiceResourceId = choice.resourceId;
+  });
+
+  return visibleChoiceResourceId;
 };
 
 export const selectPresentationState = ({ state }) => {
@@ -791,15 +857,16 @@ export const addViewedResource = ({ state }, payload) => {
  * @param {Object} [payload.auto] - Auto navigation configuration
  * @param {string} [payload.auto.trigger] - When auto navigation triggers ('fromStart' or 'fromComplete')
  * @param {number} [payload.auto.delay] - Delay in milliseconds before auto advancing
+ * @param {"singleLine"|"persistent"} [payload.applyMode] - Whether config applies to one line or persists
  * @returns {Object} Updated state object
  * @description
  * If both manual and auto configurations are provided, performs complete replacement.
  * If only one configuration is provided, performs partial merge with existing config.
  */
 export const setNextLineConfig = ({ state }, payload) => {
-  const { manual, auto } = payload;
-  const currentAutoEnabled = state.global.nextLineConfig.auto?.enabled;
-  const newAutoEnabled = auto?.enabled;
+  const { manual, auto, applyMode } = payload;
+  const previousAutoEnabled = state.global.nextLineConfig.auto?.enabled;
+  const previousApplyMode = state.global.nextLineConfig?.applyMode;
 
   // If both manual and auto are provided, do complete replacement
   if (manual && auto) {
@@ -807,6 +874,11 @@ export const setNextLineConfig = ({ state }, payload) => {
       manual,
       auto,
     };
+    if (applyMode !== undefined) {
+      state.global.nextLineConfig.applyMode = applyMode;
+    } else if (previousApplyMode !== undefined) {
+      state.global.nextLineConfig.applyMode = previousApplyMode;
+    }
   } else {
     // Partial update - merge only provided sections
     if (manual) {
@@ -820,10 +892,16 @@ export const setNextLineConfig = ({ state }, payload) => {
     if (auto) {
       state.global.nextLineConfig.auto = auto;
     }
+
+    if (applyMode !== undefined) {
+      state.global.nextLineConfig.applyMode = applyMode;
+    }
   }
 
+  const currentAutoEnabled = state.global.nextLineConfig.auto?.enabled;
+
   // If auto.enabled state has changed, dispatch timer effects
-  if (newAutoEnabled === true && !currentAutoEnabled) {
+  if (currentAutoEnabled === true && !previousAutoEnabled) {
     const trigger = state.global.nextLineConfig.auto?.trigger;
 
     // Event-based: only start timer immediately if trigger is "fromStart"
@@ -841,7 +919,7 @@ export const setNextLineConfig = ({ state }, payload) => {
         payload: { delay: state.global.nextLineConfig.auto.delay },
       });
     }
-  } else if (newAutoEnabled === false && currentAutoEnabled) {
+  } else if (currentAutoEnabled === false && previousAutoEnabled) {
     state.global.pendingEffects.push({
       name: "clearNextLineConfigTimer",
     });
@@ -1159,6 +1237,7 @@ export const nextLine = ({ state }) => {
 
     // Add line to history for rollback support
     addLineToHistory({ state }, { lineId: nextLine.id });
+    resetNextLineConfigIfSingleLine(state);
 
     state.global.pendingEffects.push({
       name: "render",
@@ -1166,6 +1245,18 @@ export const nextLine = ({ state }) => {
     state.global.pendingEffects.push({
       name: "handleLineActions",
     });
+
+    // Keep scene auto mode running after manual advances (e.g. choice click -> nextLine).
+    const nextLineConfig = state.global.nextLineConfig;
+    if (nextLineConfig?.auto?.enabled) {
+      const trigger = nextLineConfig.auto.trigger;
+      if (trigger === "fromStart") {
+        state.global.pendingEffects.push({
+          name: "nextLineConfigTimer",
+          payload: { delay: nextLineConfig.auto.delay },
+        });
+      }
+    }
   } else {
     // Reached the end of section, stop auto/skip modes
     if (state.global.autoMode) {
@@ -1376,6 +1467,11 @@ export const sectionTransition = ({ state }, payload) => {
 };
 
 export const nextLineFromSystem = ({ state }) => {
+  // Auto/skip/scene timers should pause when an interactive choice is visible.
+  if (selectVisibleChoiceResourceId({ state })) {
+    return state;
+  }
+
   const pointer = selectCurrentPointer({ state })?.pointer;
   const sectionId = pointer?.sectionId;
   const section = selectSection({ state }, { sectionId });
@@ -1420,6 +1516,7 @@ export const nextLineFromSystem = ({ state }) => {
 
     // Add line to history for rollback support
     addLineToHistory({ state }, { lineId: nextLine.id });
+    resetNextLineConfigIfSingleLine(state);
 
     state.global.pendingEffects.push({
       name: "render",

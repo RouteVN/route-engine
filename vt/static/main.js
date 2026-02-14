@@ -15,7 +15,7 @@ import createRouteGraphics, {
   videoPlugin,
   particlesPlugin,
   animatedSpritePlugin
-} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.30/+esm"
+} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.32/+esm"
 
 const projectData = parse(window.yamlContent);
 
@@ -181,6 +181,8 @@ const init = async () => {
     height: 1080,
     plugins,
     eventHandler: async (eventName, payload) => {
+      console.log("[vt][route-graphics:event]", eventName, payload);
+
       if (eventName === "renderComplete") {
         engine.handleActions({
           markLineCompleted: {}

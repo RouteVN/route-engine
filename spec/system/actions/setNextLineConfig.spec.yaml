@@ -89,6 +89,33 @@ out:
     pendingEffects:
       - name: "render"
 ---
+case: set partial next line config (only applyMode)
+in:
+  - state:
+      global:
+        nextLineConfig:
+          manual:
+            enabled: true
+            requireComplete: false
+          auto:
+            trigger: "fromComplete"
+            delay: 1000
+          applyMode: "persistent"
+        pendingEffects: []
+  - applyMode: "singleLine"
+out:
+  global:
+    nextLineConfig:
+      manual:
+        enabled: true
+        requireComplete: false
+      auto:
+        trigger: "fromComplete"
+        delay: 1000
+      applyMode: "singleLine"
+    pendingEffects:
+      - name: "render"
+---
 case: set next line config with existing pending effects
 in:
   - state:
@@ -331,4 +358,3 @@ out:
     pendingEffects:
       - name: "clearNextLineConfigTimer"
       - name: "render"
-

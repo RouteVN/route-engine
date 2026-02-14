@@ -1,0 +1,159 @@
+---
+title: "nextLineConfig with Choice"
+description: "Scene auto (fromStart) should pause when a choice is visible"
+---
+l10n:
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys:
+        line1: "Line 1: Scene auto is enabled (persistent)."
+        line2: "Line 2: Auto advanced here. Next line shows a choice."
+        line3: "Line 3: Choice is visible. Auto should NOT continue now."
+        line4: "Line 4: Reached after selecting a choice item."
+        line5: "Line 5: End."
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+resources:
+  sounds:
+    bgmMain:
+      fileId: bgm-1.mp3
+
+  layouts:
+    baseLayout:
+      elements:
+        - id: bg
+          type: rect
+          x: 0
+          y: 0
+          width: 1920
+          height: 1080
+          fill: "#101010"
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 100
+          y: 760
+          width: 1720
+          height: 260
+          fill: "#3E3E3E"
+
+        - id: dialogue-text
+          type: text
+          x: 140
+          y: 835
+          content: ${dialogue.content[0].text}
+          textStyle:
+            fontSize: 34
+            fill: "white"
+
+    choiceLayout:
+      elements:
+        - id: choice-container
+          type: container
+          x: 260
+          y: 220
+          direction: vertical
+          gap: 24
+          children:
+            - "$each": item, i in choice.items
+              id: choice-item-${i}
+              type: container
+              children:
+                - id: choice-btn-${i}
+                  type: rect
+                  x: 0
+                  y: 0
+                  width: 1400
+                  height: 80
+                  fill: "#5C5C5C"
+                  click:
+                    actionPayload:
+                      actions:
+                        nextLine: {}
+                - id: choice-text-${i}
+                  type: text
+                  x: 36
+                  y: 24
+                  content: ${item.content}
+                  textStyle:
+                    fontSize: 30
+                    fill: "white"
+
+story:
+  initialSceneId: bgm_scene
+  scenes:
+    bgm_scene:
+      initialSectionId: test_section
+      sections:
+        test_section:
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: baseLayout
+                bgm:
+                  resourceId: bgmMain
+                setNextLineConfig:
+                  manual:
+                    enabled: true
+                  auto:
+                    enabled: true
+                    trigger: fromStart
+                    delay: 1000
+                  applyMode: persistent
+                dialogue:
+                  mode: adv
+                  gui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: ${l10n.keys.line1}
+
+            - id: line2
+              actions:
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line2}
+
+            - id: line3
+              actions:
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line3}
+                choice:
+                  resourceId: choiceLayout
+                  items:
+                    - id: c1
+                      content: "Choice A: continue"
+                    - id: c2
+                      content: "Choice B: continue"
+
+            - id: line4
+              actions:
+                choice: {}
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line4}
+
+            - id: line5
+              actions:
+                setNextLineConfig:
+                  manual:
+                    enabled: true
+                  auto:
+                    enabled: false
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line5}

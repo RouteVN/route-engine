@@ -1,0 +1,106 @@
+---
+title: "nextLineConfig applyMode singleLine"
+description: "singleLine should auto-advance once, then reset to manual"
+---
+l10n:
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys:
+        line1: "Line 1: nextLineConfig auto is enabled with applyMode=singleLine."
+        line2: "Line 2: Reached automatically. Config should now reset to manual+autoOff."
+        line3: "Line 3: This should require manual click to continue."
+        line4: "Line 4: End."
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+resources:
+  sounds:
+    bgmMain:
+      fileId: bgm-2.mp3
+
+  layouts:
+    baseLayout:
+      elements:
+        - id: bg
+          type: rect
+          x: 0
+          y: 0
+          width: 1920
+          height: 1080
+          fill: "#0F0F0F"
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 100
+          y: 760
+          width: 1720
+          height: 260
+          fill: "#3B3B3B"
+
+        - id: dialogue-text
+          type: text
+          x: 140
+          y: 835
+          content: ${dialogue.content[0].text}
+          textStyle:
+            fontSize: 34
+            fill: "white"
+
+story:
+  initialSceneId: bgm_scene
+  scenes:
+    bgm_scene:
+      initialSectionId: test_section
+      sections:
+        test_section:
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: baseLayout
+                bgm:
+                  resourceId: bgmMain
+                setNextLineConfig:
+                  manual:
+                    enabled: true
+                  auto:
+                    enabled: true
+                    trigger: fromStart
+                    delay: 1000
+                  applyMode: singleLine
+                dialogue:
+                  mode: adv
+                  gui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: ${l10n.keys.line1}
+
+            - id: line2
+              actions:
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line2}
+
+            - id: line3
+              actions:
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line3}
+
+            - id: line4
+              actions:
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line4}

@@ -1,0 +1,177 @@
+---
+title: "AutoMode Completion Gates (Text + Animation + Choice)"
+description: |
+  Tests auto mode with fromComplete trigger:
+  - waits for text-revealing to finish
+  - waits for background tween animation to finish
+  - then stops on a choice line
+---
+l10n:
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys:
+        line1: "Line 1: text-revealing must complete before auto-next."
+        line2: "Line 2: background fade-in animation must complete before auto-next."
+        line3: "Line 3: auto should continue here."
+        line4: "Line 4: choice is visible. auto must stop on this line."
+        line5: "Line 5: reached after selecting a choice."
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+resources:
+  images:
+    bg-forest:
+      fileId: dmni32
+      width: 1920
+      height: 1080
+
+  tweens:
+    fade-in-1s:
+      properties:
+        alpha:
+          initialValue: 0
+          keyframes:
+            - duration: 1000
+              value: 1
+              easing: linear
+
+  layouts:
+    baseLayout:
+      elements:
+        - id: click-area
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 100
+          y: 780
+          width: 1720
+          height: 220
+          fill: "#4D4D4D"
+        - id: dialogue-text
+          type: "text-revealing"
+          x: 140
+          y: 845
+          width: 1640
+          displaySpeed: 30
+          content: ${dialogue.content}
+          textStyle:
+            fontSize: 32
+            fill: "#FFFFFF"
+
+    choiceLayout:
+      elements:
+        - id: choice-container
+          type: container
+          x: 240
+          y: 220
+          direction: vertical
+          gap: 20
+          children:
+            - "$each": item, i in choice.items
+              id: choice-item-${i}
+              type: container
+              children:
+                - id: choice-item-bg-${i}
+                  type: rect
+                  width: 1440
+                  height: 76
+                  fill: "#4D4D4D"
+                  click:
+                    actionPayload:
+                      actions:
+                        nextLine: {}
+                - id: choice-item-text-${i}
+                  type: text
+                  x: 28
+                  y: 22
+                  content: ${item.content}
+                  textStyle:
+                    fontSize: 28
+                    fill: "#FFFFFF"
+
+story:
+  initialSceneId: testScene
+  scenes:
+    testScene:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: baseLayout
+                startAutoMode: {}
+                setNextLineConfig:
+                  manual:
+                    enabled: true
+                  auto:
+                    enabled: true
+                    trigger: fromComplete
+                    delay: 350
+                  applyMode: persistent
+                dialogue:
+                  mode: adv
+                  gui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: ${l10n.keys.line1}
+
+            - id: line2
+              actions:
+                background:
+                  resourceId: bg-forest
+                  animations:
+                    in:
+                      resourceId: fade-in-1s
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line2}
+
+            - id: line3
+              actions:
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line3}
+
+            - id: line4
+              actions:
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line4}
+                choice:
+                  resourceId: choiceLayout
+                  items:
+                    - id: continue-a
+                      content: "Continue A"
+                    - id: continue-b
+                      content: "Continue B"
+
+            - id: line5
+              actions:
+                choice: {}
+                stopAutoMode: {}
+                setNextLineConfig:
+                  manual:
+                    enabled: true
+                  auto:
+                    enabled: false
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line5}
