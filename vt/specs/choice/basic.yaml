@@ -87,7 +87,7 @@ resources:
               type: "text"
               x: 20
               y: 100
-              content: "${dialogue.content}"
+              content: "${dialogue.content[0].text}"
               textStyle:
                 fontSize: 24
                 fill: "white"
@@ -135,11 +135,13 @@ story:
                   mode: adv
                   gui:
                     resourceId: 392fsadf
-                  content: Hello, this should be choice 1
+                  content:
+                    - text: Hello, this should be choice 1
             - id: line2
               actions:
                 dialogue:
-                  content: next line of choice 1
+                  content:
+                    - text: next line of choice 1
             - id: line3
               actions:
                 sectionTransition:
@@ -160,11 +162,13 @@ story:
                   mode: adv
                   gui:
                     resourceId: 392fsadf
-                  content: Hello, this should be choice 2
+                  content:
+                    - text: Hello, this should be choice 2
             - id: line2
               actions:
                 dialogue:
-                  content: Next line of choice 2
+                  content:
+                    - text: Next line of choice 2
             - id: line3
               actions:
                 sectionTransition:
