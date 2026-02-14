@@ -2,6 +2,14 @@
   "name": "route-engine-js",
   "version": "0.1.34",
   "description": "A lightweight Visual Novel engine built in JavaScript for creating interactive narrative games with branching storylines",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RouteVN/route-engine.git"
+  },
+  "bugs": {
+    "url": "https://github.com/RouteVN/route-engine/issues"
+  },
+  "homepage": "https://github.com/RouteVN/route-engine#readme",
   "keywords": [
     "game-engine",
     "visual-novel",
