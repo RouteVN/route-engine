@@ -1,0 +1,187 @@
+---
+title: "AutoMode Completion Gates (Video + Animation)"
+description: |
+  Tests nextLineConfig auto in two phases:
+  - fromStart: timer starts when line starts
+  - fromComplete: timer starts after line completion
+  Each phase covers video background and tween animation.
+  Intended for manual/video-capable runs.
+skipScreenshot: true
+---
+l10n:
+  packages:
+    eklekfjwalefj:
+      label: English
+      lang: en
+      keys:
+        line0: "Line 0: click once to allow video playback in browser."
+        line1: "Line 1: auto enabled (fromStart)."
+        line2: "Line 2: fromStart on video background."
+        line3: "Line 3: fromStart on animation."
+        line4: "Line 4: switch to fromComplete."
+        line5: "Line 5: fromComplete on video background."
+        line6: "Line 6: fromComplete on animation."
+        line7: "Line 7: done."
+
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+
+resources:
+  images:
+    bg-moon:
+      fileId: 23jkfa893
+      width: 1920
+      height: 1080
+
+  videos:
+    bg-video:
+      fileId: video_sample
+      width: 1920
+      height: 1080
+
+  tweens:
+    fade-in-800:
+      properties:
+        alpha:
+          initialValue: 0
+          keyframes:
+            - duration: 800
+              value: 1
+              easing: linear
+
+  layouts:
+    baseLayout:
+      elements:
+        - id: click-area
+          type: rect
+          fill: "#000000"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 100
+          y: 780
+          width: 1720
+          height: 220
+          fill: "#4D4D4D"
+        - id: dialogue-text
+          type: "text-revealing"
+          x: 140
+          y: 845
+          width: 1640
+          displaySpeed: 24
+          content: ${dialogue.content}
+          textStyle:
+            fontSize: 32
+            fill: "#FFFFFF"
+
+story:
+  initialSceneId: testScene
+  scenes:
+    testScene:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line0
+              actions:
+                base:
+                  resourceId: baseLayout
+                dialogue:
+                  mode: adv
+                  gui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: ${l10n.keys.line0}
+
+            - id: line1
+              actions:
+                setNextLineConfig:
+                  manual:
+                    enabled: true
+                  auto:
+                    enabled: true
+                    trigger: fromStart
+                    delay: 300
+                  applyMode: persistent
+                dialogue:
+                  mode: adv
+                  gui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: ${l10n.keys.line1}
+
+            - id: line2
+              actions:
+                background:
+                  resourceId: bg-video
+                  resourceType: video
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line2}
+
+            - id: line3
+              actions:
+                background:
+                  resourceId: bg-moon
+                  animations:
+                    in:
+                      resourceId: fade-in-800
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line3}
+
+            - id: line4
+              actions:
+                setNextLineConfig:
+                  manual:
+                    enabled: true
+                  auto:
+                    enabled: true
+                    trigger: fromComplete
+                    delay: 300
+                  applyMode: persistent
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line4}
+
+            - id: line5
+              actions:
+                background:
+                  resourceId: bg-video
+                  resourceType: video
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line5}
+
+            - id: line6
+              actions:
+                background:
+                  resourceId: bg-moon
+                  animations:
+                    in:
+                      resourceId: fade-in-800
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line6}
+
+            - id: line7
+              actions:
+                setNextLineConfig:
+                  manual:
+                    enabled: true
+                  auto:
+                    enabled: false
+                dialogue:
+                  content:
+                    - text: ${l10n.keys.line7}

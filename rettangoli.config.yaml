@@ -27,6 +27,8 @@ vt:
           files: "character"
         - title: "Dialogue"
           files: "dialogue"
+        - title: "NextLineConfig"
+          files: "nextLineConfig"
         - title: "Choice"
           files: "choice"
         - title: "Complete"

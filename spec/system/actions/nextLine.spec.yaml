@@ -123,6 +123,83 @@ out:
           sectionId: "section1"
           lineId: "2"
 ---
+case: move to next line keeps fromStart scene auto running
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        nextLineConfig:
+          manual:
+            enabled: true
+          auto:
+            enabled: true
+            trigger: "fromStart"
+            delay: 900
+          applyMode: "persistent"
+        pendingEffects: []
+        viewedRegistry:
+          sections: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+                    - id: "3"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  global:
+    isLineCompleted: false
+    nextLineConfig:
+      manual:
+        enabled: true
+      auto:
+        enabled: true
+        trigger: "fromStart"
+        delay: 900
+      applyMode: "persistent"
+    pendingEffects:
+      - name: "render"
+      - name: "render"
+      - name: "handleLineActions"
+      - name: "nextLineConfigTimer"
+        payload:
+          delay: 900
+    viewedRegistry:
+      sections:
+        - sectionId: "section1"
+          lastLineId: "1"
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions: {}
+                - id: "2"
+                  actions: {}
+                - id: "3"
+                  actions: {}
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "2"
+---
 case: move to next line resets singleLine applyMode config
 in:
   - state:

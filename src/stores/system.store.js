@@ -333,6 +333,41 @@ export const selectCurrentLine = ({ state }) => {
   return section.lines.find((line) => line.id === lineId);
 };
 
+const selectVisibleChoiceResourceId = ({ state }) => {
+  const pointer = selectCurrentPointer({ state })?.pointer;
+  const sectionId = pointer?.sectionId;
+  const lineId = pointer?.lineId;
+  const section = selectSection({ state }, { sectionId });
+  const lines = section?.lines || [];
+  const currentLineIndex = lines.findIndex((line) => line.id === lineId);
+
+  if (currentLineIndex < 0) {
+    return undefined;
+  }
+
+  let visibleChoiceResourceId;
+  const currentLines = lines.slice(0, currentLineIndex + 1);
+  currentLines.forEach((line) => {
+    if (!line?.actions || !Object.prototype.hasOwnProperty.call(line.actions, "choice")) {
+      return;
+    }
+
+    const choice = line.actions.choice;
+    if (!choice?.resourceId) {
+      // `choice: {}` clears the currently visible choice.
+      // Choice animations without resourceId should not change visibility.
+      if (!choice?.animations) {
+        visibleChoiceResourceId = undefined;
+      }
+      return;
+    }
+
+    visibleChoiceResourceId = choice.resourceId;
+  });
+
+  return visibleChoiceResourceId;
+};
+
 export const selectPresentationState = ({ state }) => {
   const { sectionId, lineId } = selectCurrentPointer({ state }).pointer;
   const section = selectSection({ state }, { sectionId });
@@ -1207,6 +1242,18 @@ export const nextLine = ({ state }) => {
     state.global.pendingEffects.push({
       name: "handleLineActions",
     });
+
+    // Keep scene auto mode running after manual advances (e.g. choice click -> nextLine).
+    const nextLineConfig = state.global.nextLineConfig;
+    if (nextLineConfig?.auto?.enabled) {
+      const trigger = nextLineConfig.auto.trigger;
+      if (trigger === "fromStart") {
+        state.global.pendingEffects.push({
+          name: "nextLineConfigTimer",
+          payload: { delay: nextLineConfig.auto.delay },
+        });
+      }
+    }
   } else {
     // Reached the end of section, stop auto/skip modes
     if (state.global.autoMode) {
@@ -1417,10 +1464,8 @@ export const sectionTransition = ({ state }, payload) => {
 };
 
 export const nextLineFromSystem = ({ state }) => {
-  const presentationState = selectPresentationState({ state });
-
   // Auto/skip/scene timers should pause when an interactive choice is visible.
-  if (presentationState?.choice?.resourceId) {
+  if (selectVisibleChoiceResourceId({ state })) {
     return state;
   }
 
