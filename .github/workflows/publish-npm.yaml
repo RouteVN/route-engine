@@ -31,9 +31,16 @@ jobs:
       # Setup .npmrc file to publish to npm
       - uses: actions/setup-node@v4
         with:
-          node-version: "22.x"
+          node-version: "24.x"
           registry-url: "https://registry.npmjs.org"
+
+      - name: Print Node and npm versions
+        run: node -v && npm -v
 
       # Publish to npm
       - name: Publish to npm (Trusted)
-        run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ""
+          NPM_TOKEN: ""
+          NPM_CONFIG_TOKEN: ""
+        run: npm publish --access public
