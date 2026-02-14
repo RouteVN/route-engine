@@ -348,7 +348,10 @@ const selectVisibleChoiceResourceId = ({ state }) => {
   let visibleChoiceResourceId;
   const currentLines = lines.slice(0, currentLineIndex + 1);
   currentLines.forEach((line) => {
-    if (!line?.actions || !Object.prototype.hasOwnProperty.call(line.actions, "choice")) {
+    if (
+      !line?.actions ||
+      !Object.prototype.hasOwnProperty.call(line.actions, "choice")
+    ) {
       return;
     }
 
