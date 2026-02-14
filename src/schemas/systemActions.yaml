@@ -67,6 +67,11 @@ properties:
                 default: 1000
                 description: Delay in milliseconds before advancing
         additionalProperties: false
+      applyMode:
+        type: string
+        enum: [singleLine, persistent]
+        default: persistent
+        description: Whether this config is consumed after one line advance or kept until changed
     additionalProperties: false
 
   #####

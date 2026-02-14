@@ -110,6 +110,65 @@ out:
           sectionId: "section1"
           lineId: "2"
 ---
+case: advance resets singleLine applyMode config and does not re-queue timer
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        nextLineConfig:
+          auto:
+            enabled: true
+            trigger: "fromStart"
+            delay: 1500
+          applyMode: "singleLine"
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                    - id: "2"
+                    - id: "3"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  global:
+    isLineCompleted: false
+    nextLineConfig:
+      manual:
+        enabled: true
+        requireLineCompleted: false
+      auto:
+        enabled: false
+      applyMode: "persistent"
+    pendingEffects:
+      - name: "clearNextLineConfigTimer"
+      - name: "render"
+      - name: "handleLineActions"
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                - id: "2"
+                - id: "3"
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "2"
+---
 case: advance to next line when auto is enabled with fromComplete trigger (does not re-queue timer)
 in:
   - state:
@@ -209,6 +268,69 @@ out:
         read:
           sectionId: "section1"
           lineId: "2"
+---
+case: do not advance when a choice is on screen
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        nextLineConfig:
+          auto:
+            enabled: true
+            trigger: "fromStart"
+            delay: 1200
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        choice:
+                          resourceId: "choice-ui"
+                          items:
+                            - id: "option-1"
+                              content: "Go"
+                    - id: "2"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  global:
+    isLineCompleted: true
+    nextLineConfig:
+      auto:
+        enabled: true
+        trigger: "fromStart"
+        delay: 1200
+    pendingEffects: []
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions:
+                    choice:
+                      resourceId: "choice-ui"
+                      items:
+                        - id: "option-1"
+                          content: "Go"
+                - id: "2"
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "1"
 ---
 case: at last line of section with auto enabled (stops sequence)
 in:

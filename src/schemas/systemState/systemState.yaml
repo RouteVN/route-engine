@@ -146,6 +146,10 @@ properties:
                 default: 1000
             required: [trigger, delay]
             additionalProperties: false
+          applyMode:
+            type: string
+            enum: ["singleLine", "persistent"]
+            default: "persistent"
         additionalProperties: false
         default: {}
       viewedRegistry:

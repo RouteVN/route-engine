@@ -38,6 +38,7 @@ out:
         requireLineCompleted: false
       auto:
         enabled: false
+      applyMode: "persistent"
     saveSlots: {}
     layeredViews: []
     variables: {}
@@ -123,6 +124,7 @@ out:
         requireLineCompleted: false
       auto:
         enabled: false
+      applyMode: "persistent"
     saveSlots: {}
     layeredViews: []
     variables:
@@ -225,6 +227,7 @@ out:
         requireLineCompleted: false
       auto:
         enabled: false
+      applyMode: "persistent"
     saveSlots: {}
     layeredViews: []
     variables: {}
@@ -318,6 +321,7 @@ out:
         requireLineCompleted: false
       auto:
         enabled: false
+      applyMode: "persistent"
     saveSlots: {}
     layeredViews: []
     variables:
@@ -407,6 +411,7 @@ out:
         requireLineCompleted: false
       auto:
         enabled: false
+      applyMode: "persistent"
     saveSlots: {}
     layeredViews: []
     variables: {}
