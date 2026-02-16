@@ -73,11 +73,12 @@ engine.handleAction('sectionTransition', { sectionId: 'chapter_2' });
 engine.handleAction('toggleAutoMode');
 ```
 
-### `handleActions(actions)`
+### `handleActions(actions, eventContext?)`
 
-Dispatches multiple actions from an object.
+Dispatches multiple actions from an object. Optionally accepts event context for `_event.*` payload bindings.
 
 ```js
+// Basic usage
 engine.handleActions({
   setNextLineConfig: {
     manual: { enabled: false },
@@ -85,6 +86,50 @@ engine.handleActions({
   },
   markLineCompleted: {}
 });
+
+// With event context (for slider/input events)
+// Bindings like _event.value in action payloads get resolved
+engine.handleActions(
+  payload.actions,
+  { _event: payload._event }
+);
+```
+
+#### Event Templating
+
+When `eventContext` is provided, action payloads can use `_event.*` bindings to reference event values.
+Action payloads can also reference `${variables.*}` and they will be resolved at runtime.
+`eventContext` only supports `_event` for event data; using `event` will throw.
+Invalid `_event.*` bindings fail fast with an explicit error.
+
+```yaml
+# In YAML layout definition
+- id: volumeSlider
+  type: slider
+  min: 0
+  max: 100
+  change:
+    actionPayload:
+      actions:
+        updateVariable:
+          id: setVolume
+          operations:
+            - variableId: volume
+              op: set
+              value: '_event.value'  # Resolved to slider's current value
+```
+
+The integration layer should pass event context when handling events:
+
+```js
+eventHandler: (eventName, payload) => {
+  if (payload.actions) {
+    engine.handleActions(
+      payload.actions,
+      payload._event ? { _event: payload._event } : undefined
+    );
+  }
+}
 ```
 
 ### `handleLineActions()`
@@ -236,4 +281,3 @@ Actions that can be attached to lines to control presentation:
 | `layout` | `{ resourceId }` | Display layout |
 | `choice` | `{ resourceId, items }` | Display choice menu |
 | `cleanAll` | `true` | Clear all presentation state |
-

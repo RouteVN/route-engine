@@ -199,7 +199,12 @@ const init = async () => {
           await routeGraphics.loadAssets(assets);
           payload.actions.saveSaveSlot.thumbnailImage = url;
         }
-        engine.handleActions(payload.actions);
+        const eventContext = payload?._event
+          ? { _event: payload._event }
+          : payload?.event
+            ? { _event: payload.event }
+            : undefined;
+        engine.handleActions(payload.actions, eventContext);
       }
     },
     onFirstRender: () => {

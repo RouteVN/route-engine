@@ -1,0 +1,116 @@
+file: "../../src/util.js"
+group: processActionTemplates
+suites: [processActionTemplates]
+---
+suite: processActionTemplates
+exportName: processActionTemplates
+---
+case: returns actions unchanged when no context provided
+in:
+  - updateVariable:
+      id: test
+      operations:
+        - variableId: volume
+          op: set
+          value: 50
+out:
+  updateVariable:
+    id: test
+    operations:
+      - variableId: volume
+        op: set
+        value: 50
+---
+case: resolves _event.value binding
+in:
+  - updateVariable:
+      id: test
+      operations:
+        - variableId: volume
+          op: set
+          value: "_event.value"
+  - _event:
+      id: slider1
+      value: 75
+out:
+  updateVariable:
+    id: test
+    operations:
+      - variableId: volume
+        op: set
+        value: 75
+---
+case: resolves nested _event path
+in:
+  - updateVariable:
+      id: test
+      operations:
+        - variableId: volume
+          op: set
+          value: "_event.detail.value"
+  - _event:
+      detail:
+        value: 43
+out:
+  updateVariable:
+    id: test
+    operations:
+      - variableId: volume
+        op: set
+        value: 43
+---
+case: resolves mixed _event bindings and variables templates
+in:
+  - updateVariable:
+      id: test
+      operations:
+        - variableId: "${variables.targetId}"
+          op: set
+          value: "_event.value"
+  - _event:
+      value: 33
+    variables:
+      targetId: sliderValue
+out:
+  updateVariable:
+    id: test
+    operations:
+      - variableId: sliderValue
+        op: set
+        value: 33
+---
+case: throws when _event is missing for binding
+in:
+  - updateVariable:
+      id: test
+      operations:
+        - variableId: volume
+          op: set
+          value: "_event.value"
+  - variables:
+      volume: 75
+throws: 'Action template binding "_event.value" requires event context "_event".'
+---
+case: throws when _event path is unresolved
+in:
+  - updateVariable:
+      id: test
+      operations:
+        - variableId: volume
+          op: set
+          value: "_event.missing"
+  - _event:
+      value: 75
+throws: 'Action template binding "_event.missing" could not be resolved from "_event".'
+---
+case: throws when legacy event context key is provided
+in:
+  - updateVariable:
+      id: test
+      operations:
+        - variableId: volume
+          op: set
+          value: "_event.value"
+  - event:
+      value: 75
+throws: 'Action template context key "event" is no longer supported. Use "_event".'

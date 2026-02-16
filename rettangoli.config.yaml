@@ -45,3 +45,5 @@ vt:
           files: "variables"
         - title: "initialization"
           files: "initialization"
+        - title: "Slider"
+          files: "slider"

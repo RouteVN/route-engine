@@ -1,0 +1,169 @@
+---
+title: "Slider Variable Binding Test"
+---
+l10n:
+  packages:
+    en:
+      label: English
+      lang: en
+      keys: {}
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#222222"
+
+resources:
+  variables:
+    sliderValue:
+      type: number
+      scope: global-device
+      default: 50
+
+  images:
+    horizontal_idle_thumb:
+      fileId: horizontal_idle_thumb.png
+      width: 20
+      height: 20
+    horizontal_idle_bar:
+      fileId: horizontal_idle_bar.png
+      width: 200
+      height: 10
+    horizontal_hover_thumb:
+      fileId: horizontal_hover_thumb.png
+      width: 20
+      height: 20
+    horizontal_hover_bar:
+      fileId: horizontal_hover_bar.png
+      width: 200
+      height: 10
+
+  layouts:
+    baseLayout:
+      elements:
+        - id: background
+          type: rect
+          fill: "#333333"
+          width: 1920
+          height: 1080
+          click:
+            actionPayload:
+              actions:
+                nextLine: {}
+
+    sliderTestLayout:
+      name: Slider Variable Binding Test
+      elements:
+        - id: mainContainer
+          type: container
+          x: 960
+          y: 400
+          children:
+            # Title
+            - id: title
+              type: text
+              content: "Slider Variable Binding Test"
+              x: 0
+              y: -200
+              anchorX: 0.5
+              textStyle:
+                fontSize: 48
+                fill: "#ffffff"
+
+            # Instructions
+            - id: instructions
+              type: text
+              content: "Drag the slider - the value below should update in real-time"
+              x: 0
+              y: -120
+              anchorX: 0.5
+              textStyle:
+                fontSize: 24
+                fill: "#aaaaaa"
+
+            # Value display label
+            - id: valueLabel
+              type: text
+              content: "Current Value:"
+              x: -100
+              y: 0
+              anchorX: 0.5
+              textStyle:
+                fontSize: 32
+                fill: "#ffffff"
+
+            # Variable value display - this should update when slider changes
+            - id: valueDisplay
+              type: text
+              content: "${variables.sliderValue}"
+              x: 80
+              y: 0
+              anchorX: 0.5
+              textStyle:
+                fontSize: 48
+                fill: "#00ff00"
+                fontWeight: bold
+
+            # The slider
+            - id: testSlider
+              type: slider
+              direction: horizontal
+              thumbSrc: horizontal_idle_thumb
+              barSrc: horizontal_idle_bar
+              width: 300
+              height: 20
+              x: -150
+              y: 100
+              min: 0
+              max: 100
+              step: 1
+              initialValue: "${variables.sliderValue}"
+              hover:
+                thumbSrc: horizontal_hover_thumb
+                barSrc: horizontal_hover_bar
+              change:
+                actionPayload:
+                  actions:
+                    updateVariable:
+                      id: setSliderValue
+                      operations:
+                        - variableId: sliderValue
+                          op: set
+                          value: "_event.value"
+
+            # Min/Max labels
+            - id: minLabel
+              type: text
+              content: "0"
+              x: -170
+              y: 100
+              anchorX: 0.5
+              textStyle:
+                fontSize: 20
+                fill: "#888888"
+
+            - id: maxLabel
+              type: text
+              content: "100"
+              x: 170
+              y: 100
+              anchorX: 0.5
+              textStyle:
+                fontSize: 20
+                fill: "#888888"
+
+story:
+  initialSceneId: testScene
+  scenes:
+    testScene:
+      name: Slider Test Scene
+      initialSectionId: mainSection
+      sections:
+        mainSection:
+          name: Main Section
+          lines:
+            - id: line1
+              actions:
+                base:
+                  resourceId: baseLayout
+                layout:
+                  resourceId: sliderTestLayout
