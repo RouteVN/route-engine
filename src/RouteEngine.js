@@ -1,4 +1,5 @@
 import { createSystemStore } from "./stores/system.store.js";
+import { processActionTemplates } from "./util.js";
 
 /**
  * Creates a RouteEngine instance.
@@ -59,8 +60,32 @@ export default function createRouteEngine(options) {
     processEffectsUntilEmpty();
   };
 
-  const handleActions = (actions) => {
-    Object.entries(actions).forEach(([actionType, payload]) => {
+  const buildActionTemplateContext = (eventContext) => {
+    if (!eventContext) return undefined;
+    if (Object.prototype.hasOwnProperty.call(eventContext, "event")) {
+      throw new Error(
+        'eventContext key "event" is no longer supported. Use "_event".',
+      );
+    }
+    const { _event, ...additionalContext } = eventContext;
+    const variables = _systemStore.selectAllVariables
+      ? _systemStore.selectAllVariables()
+      : undefined;
+    const l10n = _systemStore.selectCurrentL10n
+      ? _systemStore.selectCurrentL10n()
+      : undefined;
+    return {
+      ...additionalContext,
+      _event,
+      variables,
+      l10n,
+    };
+  };
+
+  const handleActions = (actions, eventContext) => {
+    const context = buildActionTemplateContext(eventContext);
+    const processedActions = processActionTemplates(actions, context);
+    Object.entries(processedActions).forEach(([actionType, payload]) => {
       handleAction(actionType, payload);
     });
   };

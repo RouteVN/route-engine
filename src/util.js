@@ -1,4 +1,5 @@
 import { produce } from "immer";
+import { parseAndRender } from "jempl";
 
 /**
  * Creates a store with selectors and actions from a single object definition.
@@ -631,4 +632,80 @@ export const diffPresentationState = (prev = {}, curr = {}) => {
   diffObject("sfx");
 
   return changes;
+};
+
+const getValueByPath = (source, path) => {
+  if (!source || !path) return undefined;
+
+  let current = source;
+  for (const segment of path.split(".")) {
+    if (current === null || current === undefined) return undefined;
+    if (!(segment in Object(current))) return undefined;
+    current = current[segment];
+  }
+  return current;
+};
+
+const resolveEventBindingString = (value, eventData) => {
+  if (typeof value !== "string") return value;
+  if (value === "_event") {
+    if (eventData === undefined || eventData === null) {
+      throw new Error(
+        'Action template binding "_event" requires event context "_event".',
+      );
+    }
+    return eventData;
+  }
+  if (!value.startsWith("_event.")) return value;
+  if (eventData === undefined || eventData === null) {
+    throw new Error(
+      `Action template binding "${value}" requires event context "_event".`,
+    );
+  }
+
+  const path = value.slice("_event.".length);
+  const resolved = getValueByPath(eventData, path);
+  if (resolved === undefined) {
+    throw new Error(
+      `Action template binding "${value}" could not be resolved from "_event".`,
+    );
+  }
+  return resolved;
+};
+
+const resolveEventBindings = (value, eventData) => {
+  if (Array.isArray(value)) {
+    return value.map((item) => resolveEventBindings(item, eventData));
+  }
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, nestedValue]) => [
+        key,
+        resolveEventBindings(nestedValue, eventData),
+      ]),
+    );
+  }
+  return resolveEventBindingString(value, eventData);
+};
+
+/**
+ * Processes action payloads by resolving `_event.*` bindings and rendering jempl templates.
+ *
+ * `_event.*` bindings are resolved directly from event context.
+ * jempl interpolation remains available for `${variables.*}`, `${l10n.*}`, and similar templates.
+ *
+ * @param {Object} actions - Action payload object that may contain `_event.*` and jempl template strings
+ * @param {Object} context - Context object (e.g., { _event: { value: 42 }, variables: {...} })
+ * @returns {Object} Processed actions with event bindings and templates resolved
+ */
+export const processActionTemplates = (actions, context) => {
+  if (!context) return actions;
+  if (Object.prototype.hasOwnProperty.call(context, "event")) {
+    throw new Error(
+      'Action template context key "event" is no longer supported. Use "_event".',
+    );
+  }
+
+  const eventResolvedActions = resolveEventBindings(actions, context._event);
+  return parseAndRender(eventResolvedActions, context);
 };
