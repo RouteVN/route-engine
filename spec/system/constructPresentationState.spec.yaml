@@ -244,6 +244,42 @@ out:
           - text: "Third line"
         characterId: "bob"
 ---
+case: nvl-mode-lines-accumulate-with-implicit-mode
+in:
+  - - dialogue:
+        mode: "nvl"
+        gui:
+          resourceId: "nvl-layout"
+        characterId: "narrator"
+        content:
+          - text: "First line"
+    - dialogue:
+        characterId: "alice"
+        content:
+          - text: "Second line"
+    - dialogue:
+        characterId: "bob"
+        content:
+          - text: "Third line"
+out:
+  dialogue:
+    mode: "nvl"
+    gui:
+      resourceId: "nvl-layout"
+    characterId: "bob"
+    content:
+      - text: "Third line"
+    lines:
+      - content:
+          - text: "First line"
+        characterId: "narrator"
+      - content:
+          - text: "Second line"
+        characterId: "alice"
+      - content:
+          - text: "Third line"
+        characterId: "bob"
+---
 case: nvl-mode-clearPage
 in:
   - - dialogue:

@@ -132,7 +132,6 @@ story:
             - id: "3"
               actions:
                 dialogue:
-                  mode: nvl
                   characterId: alice
                   content:
                     - text: "This line has Alice as the speaker."
@@ -140,7 +139,6 @@ story:
             - id: "4"
               actions:
                 dialogue:
-                  mode: nvl
                   characterId: bob
                   content:
                     - text: "And this one is Bob speaking."
@@ -148,7 +146,6 @@ story:
             - id: "5"
               actions:
                 dialogue:
-                  mode: nvl
                   content:
                     - text: "Another narration line. All lines should be visible above."
 
@@ -156,7 +153,6 @@ story:
             - id: "6"
               actions:
                 dialogue:
-                  mode: nvl
                   clearPage: true
                   characterId: alice
                   content:
@@ -165,7 +161,6 @@ story:
             - id: "7"
               actions:
                 dialogue:
-                  mode: nvl
                   characterId: bob
                   content:
                     - text: "Second line on the new page."

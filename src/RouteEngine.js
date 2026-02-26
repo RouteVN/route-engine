@@ -6,6 +6,7 @@ import { processActionTemplates } from "./util.js";
  */
 export default function createRouteEngine(options) {
   let _systemStore;
+  let _renderSequence = 0;
 
   const { handlePendingEffects } = options;
 
@@ -19,6 +20,7 @@ export default function createRouteEngine(options) {
 
   const init = ({ initialState }) => {
     _systemStore = createSystemStore(initialState);
+    _renderSequence = 0;
     _systemStore.appendPendingEffect({ name: "render" });
     handleLineActions();
     processEffectsUntilEmpty();
@@ -37,7 +39,12 @@ export default function createRouteEngine(options) {
   };
 
   const selectRenderState = () => {
-    return _systemStore.selectRenderState();
+    _renderSequence += 1;
+    const renderState = _systemStore.selectRenderState();
+    return {
+      ...renderState,
+      id: `render-${_renderSequence}`,
+    };
   };
 
   const selectSaveSlots = () => {
