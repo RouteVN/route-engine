@@ -162,6 +162,55 @@ const init = async () => {
   // Create dedicated ticker for auto mode
   const ticker = new Ticker();
   ticker.start();
+  let latestRenderId = null;
+  let lastHandledRenderCompleteId = null;
+  let handledIdlessRenderComplete = false;
+
+  const trackRenderDispatch = (renderState) => {
+    const renderId =
+      typeof renderState?.id === "string" && renderState.id.length > 0
+        ? renderState.id
+        : null;
+    latestRenderId = renderId;
+    handledIdlessRenderComplete = false;
+  };
+
+  const renderWithTracking = (renderState) => {
+    trackRenderDispatch(renderState);
+    routeGraphics.render(renderState);
+  };
+
+  const shouldHandleRenderComplete = (payload = {}) => {
+    if (payload?.aborted === true) {
+      return false;
+    }
+
+    const completionId =
+      typeof payload?.id === "string" && payload.id.length > 0
+        ? payload.id
+        : null;
+
+    if (completionId) {
+      if (completionId !== latestRenderId) {
+        return false;
+      }
+      if (completionId === lastHandledRenderCompleteId) {
+        return false;
+      }
+      lastHandledRenderCompleteId = completionId;
+      return true;
+    }
+
+    if (latestRenderId !== null) {
+      return false;
+    }
+    if (handledIdlessRenderComplete) {
+      return false;
+    }
+
+    handledIdlessRenderComplete = true;
+    return true;
+  };
 
   const base64ToArrayBuffer = (base64) => {
     const binaryString = window.atob(
@@ -184,6 +233,9 @@ const init = async () => {
       console.log("[vt][route-graphics:event]", eventName, payload);
 
       if (eventName === "renderComplete") {
+        if (!shouldHandleRenderComplete(payload)) {
+          return;
+        }
         engine.handleActions({
           markLineCompleted: {}
         });
@@ -221,7 +273,13 @@ const init = async () => {
     e.preventDefault();
   });
 
-  const effectsHandler = createEffectsHandler({ getEngine: () => engine, routeGraphics, ticker });
+  const effectsHandler = createEffectsHandler({
+    getEngine: () => engine,
+    routeGraphics: {
+      render: renderWithTracking,
+    },
+    ticker,
+  });
   const engine = createRouteEngine({ handlePendingEffects: effectsHandler });
   const saveSlots = JSON.parse(localStorage.getItem("saveSlots")) || {};
   const globalDeviceVariables = JSON.parse(localStorage.getItem("globalDeviceVariables")) || {};

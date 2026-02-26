@@ -172,7 +172,7 @@ export const dialogue = (state, presentation) => {
 
   // Handle NVL mode content addition
   if (
-    presentation.dialogue?.mode === "nvl" &&
+    state.dialogue?.mode === "nvl" &&
     presentation.dialogue.content !== undefined
   ) {
     state.dialogue.lines.push({
