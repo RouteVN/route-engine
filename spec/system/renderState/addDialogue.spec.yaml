@@ -18,7 +18,8 @@ in:
       dialogue:
         gui:
           resourceId: "dialogueLayout"
-        content: ["Hello world"]
+        content:
+          - text: "Hello world"
     resources:
       layouts:
         dialogueLayout:
@@ -118,6 +119,33 @@ out:
           type: "container"
           children: []
   animations: []
+---
+case: invalid dialogue content string should throw clear error
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      dialogue:
+        gui:
+          resourceId: "dialogueLayout"
+        content: "Hello world"
+    resources:
+      layouts:
+        dialogueLayout:
+          elements:
+            - id: "dialogue-text"
+              type: "text"
+              content: "${dialogue.content[0].text}"
+    dialogueUIHidden: false
+    autoMode: false
+    skipMode: false
+    currentLocalizationPackageId: null
+throws: "dialogue.content must be an array of objects"
 ---
 case: interpolates dialogue content with l10n keys
 in:

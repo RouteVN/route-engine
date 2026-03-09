@@ -54,6 +54,50 @@ out:
   animations: []
   audio: []
 ---
+case: missing transformId should throw clear error
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceId: "image1"
+    resources:
+      images:
+        image1:
+          fileId: "visual.png"
+throws: "Visual item \"visual1\" requires transformId"
+---
+case: unknown transformId should throw clear error
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceId: "image1"
+            transformId: "missing"
+    resources:
+      images:
+        image1:
+          fileId: "visual.png"
+      transforms: {}
+throws: "Transform \"missing\" not found for visual item \"visual1\""
+---
 case: add visual with in animation
 in:
   - elements:

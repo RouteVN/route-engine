@@ -187,7 +187,7 @@ out:
   animations:
     - id: "character-animation-out"
       type: "tween"
-      targetId: "character-container-char1"
+      targetId: "character-container-char1-0-body"
       properties:
         opacity: [1, 0]
         duration: 300

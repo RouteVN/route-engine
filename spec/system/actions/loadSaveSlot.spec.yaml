@@ -25,11 +25,24 @@ in:
   - slot: 1
 out:
   global:
+    saveSlots:
+      "1":
+        slotKey: "1"
+        date: 1704110400
+        image: "save.png"
+        state:
+          projectData: { story: { initialSceneId: "loaded" } }
+          global:
+            currentLocalizationPackageId: "en"
+          contexts:
+            - pointers:
+                read: { sectionId: "sec2", lineId: "line2" }
+    viewedRegistry: __undefined__
     pendingEffects:
-      - name: "loadGame"
-        options:
-          initialState:
-            projectData: { story: { initialSceneId: "loaded" } }
+      - name: "render"
+  contexts:
+    - pointers:
+        read: { sectionId: "sec2", lineId: "line2" }
 ---
 case: load from non-existent slot
 in:
@@ -40,6 +53,7 @@ in:
   - slot: 99
 out:
   global:
+    saveSlots: {}
     pendingEffects: []
 ---
 case: load from slot 2
@@ -57,11 +71,17 @@ in:
   - slot: 2
 out:
   global:
+    saveSlots:
+      "2":
+        slotKey: "2"
+        date: 1704110500
+        image: "save2.png"
+        state:
+          level: 10
+    viewedRegistry: __undefined__
     pendingEffects:
-      - name: "loadGame"
-        options:
-          initialState:
-            level: 10
+      - name: "render"
+  contexts: __undefined__
 ---
 case: load with existing pending effects
 in:
@@ -79,12 +99,18 @@ in:
   - slot: 1
 out:
   global:
+    saveSlots:
+      "1":
+        slotKey: "1"
+        date: 1704110400
+        image: "save.png"
+        state:
+          level: 5
+    viewedRegistry: __undefined__
     pendingEffects:
       - name: "existingEffect"
-      - name: "loadGame"
-        options:
-          initialState:
-            level: 5
+      - name: "render"
+  contexts: __undefined__
 ---
 case: load with context variables
 in:

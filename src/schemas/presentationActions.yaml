@@ -111,14 +111,12 @@ properties:
         enum: [adv, nvl]
         description: Dialogue mode (adv for adventure, nvl for novel)
       content:
-        oneOf:
-          - type: string
-          - type: array
-            items:
-              type: object
-              properties:
-                text:
-                  type: string
+        type: array
+        items:
+          type: object
+          properties:
+            text:
+              type: string
         description: The dialogue text content
       characterId:
         type: string
@@ -206,7 +204,7 @@ properties:
                   required: [resourceId]
                   additionalProperties: false
               additionalProperties: false
-          required: [id]
+          required: [id, transformId]
           additionalProperties: false
     additionalProperties: false
 
