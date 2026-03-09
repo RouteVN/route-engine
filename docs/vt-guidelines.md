@@ -1,6 +1,6 @@
 # VT Guidelines
 
-Last updated: 2026-02-12
+Last updated: 2026-03-09
 
 ## Purpose
 
@@ -9,6 +9,23 @@ Define one stable standard for VT authoring in this repo:
 - Minimal and deterministic screenshots.
 - Clear visual assertions for rendering behavior.
 - Reduced flakiness in local and CI runs.
+
+## Runtime Notes
+
+- The VT Docker flow runs Chromium in a software WebGL fallback path on this repo's current container/runtime setup.
+- Full-size `1920x1080` Pixi capture on that path is expensive, so VT uses a local `vt/static/RouteGraphics.js` bundle instead of the CDN package.
+- That VT-only bundle initializes Pixi with `resolution: 0.5` and `preserveDrawingBuffer: true`.
+- The VT screenshot hook in `vt/static/main.js` then upscales the smaller internal canvas back to the standard `1920x1080` output before exporting.
+- Keep this path VT-only. Do not copy these settings into the product runtime without a separate rendering review.
+- Do not switch VT back to the CDN `route-graphics` import unless you re-benchmark the Docker capture path.
+
+## VT Workflow
+
+- Capture screenshots with `bun run vt:docker`.
+- Generate the comparison report with `bun run vt:report`.
+- Accept an intentional visual change with `rtgl vt accept`.
+- Pull request CI runs the same `bun run vt:report` flow.
+- CI uploads `.rettangoli/` as an artifact only when VT fails.
 
 ## Visual Standard
 
