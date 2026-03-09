@@ -5,36 +5,41 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..");
-const sourcePath = process.env.VT_ROUTE_GRAPHICS_SOURCE
-  ? path.resolve(process.env.VT_ROUTE_GRAPHICS_SOURCE)
-  : path.resolve(repoRoot, "../route-graphics/dist/RouteGraphics.js");
 const targetPath = path.resolve(repoRoot, "vt/static/RouteGraphics.js");
-const upstreamSnippet =
-  'await r.init({width:E,height:w,backgroundColor:P,preference:"webgl"})';
-const vtSnippet =
-  'await r.init({width:E,height:w,backgroundColor:P,preference:"webgl",resolution:.5,preserveDrawingBuffer:!0})';
+const defaultVersion = process.env.VT_ROUTE_GRAPHICS_VERSION || "0.0.35";
+const sourceUrl =
+  process.env.VT_ROUTE_GRAPHICS_URL ||
+  `https://cdn.jsdelivr.net/npm/route-graphics@${defaultVersion}/dist/RouteGraphics.js`;
+const initPattern =
+  /await r\.init\(\{([^}]*)preference:"webgl"\}\)/;
 
-if (!fs.existsSync(sourcePath)) {
+const response = await fetch(sourceUrl);
+
+if (!response.ok) {
   console.error(
-    `Missing RouteGraphics source at ${sourcePath}. ` +
-      "Set VT_ROUTE_GRAPHICS_SOURCE to a local RouteGraphics.js build.",
+    `Failed to download RouteGraphics from ${sourceUrl}: ` +
+      `${response.status} ${response.statusText}`,
   );
   process.exit(1);
 }
 
-const source = fs.readFileSync(sourcePath, "utf8");
+const source = await response.text();
 
-if (!source.includes(upstreamSnippet)) {
+if (!initPattern.test(source)) {
   console.error(
-    `Could not find the expected Pixi init snippet in ${sourcePath}. ` +
+    `Could not find the expected Pixi init call in ${sourceUrl}. ` +
       "Upstream RouteGraphics.js likely changed and the VT sync patch needs an update.",
   );
   process.exit(1);
 }
 
-const patched = source.replace(upstreamSnippet, vtSnippet);
+const patched = source.replace(
+  initPattern,
+  (_, initPrefix) =>
+    `await r.init({${initPrefix}preference:"webgl",resolution:.5,preserveDrawingBuffer:!0})`,
+);
 
 fs.mkdirSync(path.dirname(targetPath), { recursive: true });
 fs.writeFileSync(targetPath, patched);
 
-console.log(`Synced VT RouteGraphics from ${sourcePath} to ${targetPath}`);
+console.log(`Synced VT RouteGraphics from ${sourceUrl} to ${targetPath}`);
