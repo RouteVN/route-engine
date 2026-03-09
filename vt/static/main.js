@@ -137,23 +137,13 @@ const init = async () => {
   const assetBufferMap = assetBufferManager.getBufferMap();
 
   const routeGraphics = createRouteGraphics();
-  const vtScreenshotCanvas = document.createElement("canvas");
-  const vtScreenshotContext = vtScreenshotCanvas.getContext("2d");
-  const screenWidth = Number(projectData?.screen?.width) || 1920;
-  const screenHeight = Number(projectData?.screen?.height) || 1080;
 
   window.takeVtScreenshotBase64 = async (label) => {
     if (label) {
       return await routeGraphics.extractBase64(label);
     }
 
-    // VT renders to a smaller internal surface for speed, then upscales to
-    // the existing output dimensions so reference image shape stays stable.
-    vtScreenshotCanvas.width = screenWidth;
-    vtScreenshotCanvas.height = screenHeight;
-    vtScreenshotContext.clearRect(0, 0, screenWidth, screenHeight);
-    vtScreenshotContext.drawImage(routeGraphics.canvas, 0, 0, screenWidth, screenHeight);
-    return vtScreenshotCanvas.toDataURL("image/png");
+    return routeGraphics.canvas.toDataURL("image/png");
   };
 
   const plugins = {

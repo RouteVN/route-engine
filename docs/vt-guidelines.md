@@ -15,7 +15,7 @@ Define one stable standard for VT authoring in this repo:
 - The VT Docker flow runs Chromium in a software WebGL fallback path on this repo's current container/runtime setup.
 - Full-size `1920x1080` Pixi capture on that path is expensive, so VT uses a local `vt/static/RouteGraphics.js` bundle instead of the CDN package.
 - That VT-only bundle initializes Pixi with `resolution: 0.5` and `preserveDrawingBuffer: true`.
-- The VT screenshot hook in `vt/static/main.js` then upscales the smaller internal canvas back to the standard `1920x1080` output before exporting.
+- Full-frame VT references are exported from that native half-resolution render surface.
 - Keep this path VT-only. Do not copy these settings into the product runtime without a separate rendering review.
 - Do not switch VT back to the CDN `route-graphics` import unless you re-benchmark the Docker capture path.
 
