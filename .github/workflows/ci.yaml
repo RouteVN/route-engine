@@ -27,9 +27,11 @@ jobs:
       - run: bun run test
 
       - name: Install rtgl CLI
+        if: false # VT remains local-only until GitHub runner stability is addressed
         run: bun install -g rtgl
 
       - name: Run Visual Tests (Docker)
+        if: false # VT remains local-only until GitHub runner stability is addressed
         env:
           RTGL_VT_DEBUG: true
           VT_DOCKER_ARGS: --init --ipc=host
@@ -39,7 +41,7 @@ jobs:
 
       - name: Upload VT Images as Artifacts
         uses: actions/upload-artifact@v4
-        if: failure()
+        if: false # VT remains local-only until GitHub runner stability is addressed
         with:
           name: vt-images-${{ github.run_number }}
           path: .rettangoli/

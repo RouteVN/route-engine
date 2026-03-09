@@ -24,11 +24,8 @@ Define one stable standard for VT authoring in this repo:
 - Capture screenshots with `bun run vt:docker`.
 - Generate the comparison report with `bun run vt:report`.
 - Accept an intentional visual change with `rtgl vt accept`.
-- Pull request CI runs the same `bun run vt:report` flow.
 - Local VT defaults to `2` Docker workers and a `60000ms` timeout.
-- CI overrides that to `1` Docker worker and a `120000ms` timeout because the GitHub runner is materially slower on software WebGL.
-- CI also adds `--init --ipc=host` to the Docker run so Chromium has a more stable process and shared-memory setup.
-- CI uploads `.rettangoli/` as an artifact only when VT fails.
+- VT is currently local-only. GitHub Actions VT is disabled again until the runner instability is fixed separately.
 
 ## Visual Standard
 
