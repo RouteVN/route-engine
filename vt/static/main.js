@@ -15,7 +15,7 @@ import createRouteGraphics, {
   videoPlugin,
   particlesPlugin,
   animatedSpritePlugin
-} from "https://cdn.jsdelivr.net/npm/route-graphics@0.0.32/+esm"
+} from "./RouteGraphics.js"
 
 const projectData = parse(window.yamlContent);
 
@@ -137,7 +137,14 @@ const init = async () => {
   const assetBufferMap = assetBufferManager.getBufferMap();
 
   const routeGraphics = createRouteGraphics();
-  window.takeVtScreenshotBase64 = async (label) => await routeGraphics.extractBase64(label);
+
+  window.takeVtScreenshotBase64 = async (label) => {
+    if (label) {
+      return await routeGraphics.extractBase64(label);
+    }
+
+    return routeGraphics.canvas.toDataURL("image/png");
+  };
 
   const plugins = {
     elements: [

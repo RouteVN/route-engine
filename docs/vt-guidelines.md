@@ -1,6 +1,6 @@
 # VT Guidelines
 
-Last updated: 2026-02-12
+Last updated: 2026-03-09
 
 ## Purpose
 
@@ -9,6 +9,26 @@ Define one stable standard for VT authoring in this repo:
 - Minimal and deterministic screenshots.
 - Clear visual assertions for rendering behavior.
 - Reduced flakiness in local and CI runs.
+
+## Runtime Notes
+
+- The VT Docker flow runs Chromium in a software WebGL fallback path on this repo's current container/runtime setup.
+- Full-size `1920x1080` Pixi capture on that path is expensive, so VT syncs a local ignored `vt/static/RouteGraphics.js` bundle before VT runs.
+- The sync script downloads `route-graphics@0.0.35/dist/RouteGraphics.js` from jsDelivr by default.
+- Override the source with `VT_ROUTE_GRAPHICS_URL`, or just the package version with `VT_ROUTE_GRAPHICS_VERSION`.
+- That VT-only bundle is patched during sync to initialize Pixi with `resolution: 0.5` and `preserveDrawingBuffer: true`.
+- Full-frame VT references are exported from that native half-resolution render surface.
+- Keep this path VT-only. Do not copy these settings into the product runtime without a separate rendering review.
+- Do not switch VT back to the CDN `route-graphics` import unless you re-benchmark the Docker capture path.
+
+## VT Workflow
+
+- Capture screenshots with `bun run vt:docker`.
+- Generate the comparison report with `bun run vt:report`.
+- Accept an intentional visual change with `rtgl vt accept`.
+- If the sync step needs a different upstream build, point `VT_ROUTE_GRAPHICS_URL` at the desired CDN file.
+- Local VT defaults to `2` Docker workers and a `60000ms` timeout.
+- VT is currently local-only. GitHub Actions VT is disabled again until the runner instability is fixed separately.
 
 ## Visual Standard
 

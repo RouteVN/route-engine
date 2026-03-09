@@ -27,18 +27,21 @@ jobs:
       - run: bun run test
 
       - name: Install rtgl CLI
-        if: false # Temporarily disable VT in CI until timeout issues are resolved
+        if: false # VT remains local-only until GitHub runner stability is addressed
         run: bun install -g rtgl
 
       - name: Run Visual Tests (Docker)
-        if: false # Temporarily disable VT in CI until timeout issues are resolved
+        if: false # VT remains local-only until GitHub runner stability is addressed
         env:
           RTGL_VT_DEBUG: true
+          VT_DOCKER_ARGS: --init --ipc=host
+          VT_DOCKER_CONCURRENCY: 1
+          VT_DOCKER_TIMEOUT: 120000
         run: bun run vt:report
 
       - name: Upload VT Images as Artifacts
         uses: actions/upload-artifact@v4
-        if: false # Temporarily disable VT in CI until timeout issues are resolved
+        if: false # VT remains local-only until GitHub runner stability is addressed
         with:
           name: vt-images-${{ github.run_number }}
           path: .rettangoli/
