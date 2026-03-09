@@ -71,7 +71,8 @@ in:
                           resourceId: "bg1"
                         dialogue:
                           characterId: "char1"
-                          content: ["Hello world"]
+                          content:
+                            - text: "Hello world"
                     - id: "2"
                       actions: {}
       contexts:
@@ -87,7 +88,8 @@ out:
       resourceId: "bg1"
     dialogue:
       characterId: "char1"
-      content: ["Hello world"]
+      content:
+        - text: "Hello world"
 ---
 case: valid current line with no actions
 in:
@@ -206,7 +208,8 @@ in:
                     - id: "3"
                       actions:
                         dialogue:
-                          content: ["Different section"]
+                          content:
+                            - text: "Different section"
       contexts:
         - currentPointerMode: "read"
           pointers:
@@ -222,7 +225,8 @@ out:
   id: "3"
   actions:
     dialogue:
-      content: ["Different section"]
+      content:
+        - text: "Different section"
 ---
 case: history mode pointer
 in:
@@ -244,11 +248,13 @@ in:
                     - id: "1"
                       actions:
                         dialogue:
-                          content: ["First line"]
+                          content:
+                            - text: "First line"
                     - id: "2"
                       actions:
                         dialogue:
-                          content: ["Second line"]
+                          content:
+                            - text: "Second line"
       contexts:
         - currentPointerMode: "history"
           pointers:
@@ -262,7 +268,8 @@ out:
   id: "1"
   actions:
     dialogue:
-      content: ["First line"]
+      content:
+        - text: "First line"
 ---
 case: pointer without lineId
 in:

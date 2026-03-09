@@ -67,6 +67,33 @@ out:
     content:
       - text: "Hello"
 ---
+case: dialogue character override should be cleared when next line omits it
+in:
+  - - dialogue:
+        mode: "adv"
+        gui:
+          resourceId: "simple-dialogue"
+        characterId: "alice"
+        character:
+          name: "Alias"
+        content:
+          - text: "Hello"
+    - dialogue:
+        mode: "adv"
+        gui:
+          resourceId: "simple-dialogue"
+        characterId: "bob"
+        content:
+          - text: "Hi"
+out:
+  dialogue:
+    mode: "adv"
+    gui:
+      resourceId: "simple-dialogue"
+    characterId: "bob"
+    content:
+      - text: "Hi"
+---
 case: clear background animations when next presentation has no background action
 in:
   - - background:

@@ -17,23 +17,35 @@ in:
         - pointers:
             read: { sectionId: "sec1", lineId: "line1" }
   - slot: 1
+    thumbnailImage: null
 out:
   global:
     saveSlots:
       "1":
         slotKey: "1"
-        date: null
+        date: 1700000000000
         image: null
         state:
-          projectData:
-            story: { initialSceneId: "test" }
-          global:
-            pendingEffects: []
           contexts:
             - pointers:
                 read: { sectionId: "sec1", lineId: "line1" }
+          viewedRegistry: __undefined__
     pendingEffects:
+      - name: "saveSlots"
+        payload:
+          saveSlots:
+            "1":
+              slotKey: "1"
+              date: 1700000000000
+              image: null
+              state:
+                contexts:
+                  - pointers:
+                      read: { sectionId: "sec1", lineId: "line1" }
+                viewedRegistry: __undefined__
       - name: "render"
+  projectData:
+    story: { initialSceneId: "test" }
   contexts:
     - pointers:
         read: { sectionId: "sec1", lineId: "line1" }
@@ -50,23 +62,35 @@ in:
         - pointers:
             read: { sectionId: "sec1", lineId: "line1" }
   - slot: 2
+    thumbnailImage: null
 out:
   global:
     saveSlots:
       "2":
         slotKey: "2"
-        date: null
+        date: 1700000000000
         image: null
         state:
-          projectData:
-            story: { initialSceneId: "test" }
-          global:
-            pendingEffects: []
           contexts:
             - pointers:
                 read: { sectionId: "sec1", lineId: "line1" }
+          viewedRegistry: __undefined__
     pendingEffects:
+      - name: "saveSlots"
+        payload:
+          saveSlots:
+            "2":
+              slotKey: "2"
+              date: 1700000000000
+              image: null
+              state:
+                contexts:
+                  - pointers:
+                      read: { sectionId: "sec1", lineId: "line1" }
+                viewedRegistry: __undefined__
       - name: "render"
+  projectData:
+    story: { initialSceneId: "test" }
   contexts:
     - pointers:
         read: { sectionId: "sec1", lineId: "line1" }
@@ -89,38 +113,35 @@ in:
         - pointers:
             read: { sectionId: "sec1", lineId: "line1" }
   - slot: 1
+    thumbnailImage: null
 out:
   global:
     saveSlots:
       "1":
         slotKey: "1"
-        date: null
+        date: 1700000000000
         image: null
         state:
-          projectData:
-            story: { initialSceneId: "test" }
-          global:
-            pendingEffects: []
           contexts:
             - pointers:
                 read: { sectionId: "sec1", lineId: "line1" }
+          viewedRegistry: __undefined__
     pendingEffects:
       - name: "saveSlots"
         payload:
           saveSlots:
             "1":
               slotKey: "1"
-              date: null
+              date: 1700000000000
               image: null
               state:
-                projectData:
-                  story: { initialSceneId: "test" }
-                global:
-                  pendingEffects: []
                 contexts:
                   - pointers:
                       read: { sectionId: "sec1", lineId: "line1" }
+                viewedRegistry: __undefined__
       - name: "render"
+  projectData:
+    story: { initialSceneId: "test" }
   contexts:
     - pointers:
         read: { sectionId: "sec1", lineId: "line1" }
@@ -138,21 +159,19 @@ in:
         - pointers:
             read: { sectionId: "sec1", lineId: "line1" }
   - slot: 1
+    thumbnailImage: null
 out:
   global:
     saveSlots:
       "1":
         slotKey: "1"
-        date: null
+        date: 1700000000000
         image: null
         state:
-          projectData:
-            story: { initialSceneId: "test" }
-          global:
-            pendingEffects: []
           contexts:
             - pointers:
                 read: { sectionId: "sec1", lineId: "line1" }
+          viewedRegistry: __undefined__
     pendingEffects:
       - name: "existingEffect"
       - name: "saveSlots"
@@ -160,17 +179,16 @@ out:
           saveSlots:
             "1":
               slotKey: "1"
-              date: null
+              date: 1700000000000
               image: null
               state:
-                projectData:
-                  story: { initialSceneId: "test" }
-                global:
-                  pendingEffects: []
                 contexts:
                   - pointers:
                       read: { sectionId: "sec1", lineId: "line1" }
+                viewedRegistry: __undefined__
       - name: "render"
+  projectData:
+    story: { initialSceneId: "test" }
   contexts:
     - pointers:
         read: { sectionId: "sec1", lineId: "line1" }
@@ -194,12 +212,13 @@ in:
             score: 150
             soundEnabled: true
   - slot: 1
+    thumbnailImage: null
 out:
   global:
     saveSlots:
       "1":
         slotKey: "1"
-        date: null
+        date: 1700000000000
         image: null
         state:
           viewedRegistry:
@@ -221,7 +240,7 @@ out:
           saveSlots:
             "1":
               slotKey: "1"
-              date: null
+              date: 1700000000000
               image: null
               state:
                 viewedRegistry:
@@ -235,6 +254,8 @@ out:
                       score: 150
                       soundEnabled: true
       - name: "render"
+  projectData:
+    story: { initialSceneId: "test" }
   contexts:
     - pointers:
         read: { sectionId: "sec1", lineId: "line1" }

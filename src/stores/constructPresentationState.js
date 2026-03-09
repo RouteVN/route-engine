@@ -157,6 +157,8 @@ export const dialogue = (state, presentation) => {
   }
   if (presentation.dialogue.character) {
     state.dialogue.character = { ...presentation.dialogue.character };
+  } else {
+    delete state.dialogue.character;
   }
 
   // Handle clear action

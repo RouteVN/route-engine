@@ -23,6 +23,50 @@ const interpolateDialogueText = (text, data) => {
   return rendered;
 };
 
+const ensureDialogueContentItems = (content, path) => {
+  if (content === undefined) {
+    return [];
+  }
+
+  if (
+    !Array.isArray(content) ||
+    content.some(
+      (item) =>
+        item === null || typeof item !== "object" || Array.isArray(item),
+    )
+  ) {
+    throw new Error(`${path} must be an array of objects`);
+  }
+
+  return content;
+};
+
+const getCharacterContainerId = (item, index = 0) => {
+  const spritePartIds =
+    item?.sprites?.map(({ resourceId }) => resourceId) || [];
+
+  if (spritePartIds.length === 0) {
+    return `character-container-${item.id}`;
+  }
+
+  return `character-container-${item.id}-${index}-${spritePartIds.join("-")}`;
+};
+
+const getRequiredVisualTransform = (resources, item) => {
+  if (!item.transformId) {
+    throw new Error(`Visual item "${item.id}" requires transformId`);
+  }
+
+  const transform = resources.transforms?.[item.transformId];
+  if (!transform) {
+    throw new Error(
+      `Transform "${item.transformId}" not found for visual item "${item.id}"`,
+    );
+  }
+
+  return transform;
+};
+
 /**
  * Helper to push in/out/update animations based on previous and current state
  * @param {Object} params
@@ -268,9 +312,16 @@ export const addCharacters = (
 
       // Find previous item with same id
       const previousItem = previousItems.find((p) => p.id === item.id);
+      const previousItemIndex = previousItems.findIndex(
+        (p) => p.id === item.id,
+      );
       const previousHasSprites =
         previousItem?.sprites && previousItem.sprites.length > 0;
       const currentHasSprites = sprites && sprites.length > 0;
+      const previousContainerId =
+        previousItemIndex >= 0
+          ? getCharacterContainerId(previousItem, previousItemIndex)
+          : undefined;
 
       // For out animations only, we don't need to create a container
       if (item.animations && item.animations.out && !sprites && !transformId) {
@@ -282,8 +333,8 @@ export const addCharacters = (
             const outTransition = {
               id: `character-animation-out`,
               type: "tween",
-              targetId: `character-container-${item.id}`,
-              properties: tween.properties,
+              targetId: previousContainerId || `character-container-${item.id}`,
+              properties: structuredClone(tween.properties),
             };
             animations.push(outTransition);
           }
@@ -297,8 +348,7 @@ export const addCharacters = (
         continue;
       }
 
-      const spritePartIds = sprites.map(({ resourceId }) => resourceId);
-      const containerId = `character-container-${item.id}-${i}-${spritePartIds.join("-")}`;
+      const containerId = getCharacterContainerId(item, i);
       const transform = resources.transforms[transformId];
       if (!transform) {
         console.warn("Transform not found:", transformId);
@@ -353,6 +403,7 @@ export const addCharacters = (
           currentResourceId: currentHasSprites,
           idPrefix: "character",
           targetId: containerId,
+          outTargetId: previousContainerId,
         });
       }
     }
@@ -388,7 +439,7 @@ export const addVisuals = (
 
         const spritesheet = spritesheets[item.resourceId];
         if (spritesheet) {
-          const transform = resources.transforms?.[item.transformId] || {};
+          const transform = getRequiredVisualTransform(resources, item);
           const animationName = item.animationName;
 
           if (animationName) {
@@ -403,8 +454,8 @@ export const addVisuals = (
             const element = {
               id: `visual-${item.id}`,
               type: "animated-sprite",
-              x: item.x ?? transform.x ?? 0,
-              y: item.y ?? transform.y ?? 0,
+              x: item.x ?? transform.x,
+              y: item.y ?? transform.y,
               width: item.width ?? spritesheet.width,
               height: item.height ?? spritesheet.height,
               alpha: item.alpha ?? 1,
@@ -429,7 +480,7 @@ export const addVisuals = (
 
           if (resource) {
             const isVideo = videos[item.resourceId] !== undefined;
-            const transform = resources.transforms[item.transformId];
+            const transform = getRequiredVisualTransform(resources, item);
             const element = {
               id: `visual-${item.id}`,
               type: isVideo ? "video" : "sprite",
@@ -460,7 +511,7 @@ export const addVisuals = (
         let layout = layouts[item.resourceId];
 
         if (layout) {
-          const transform = resources.transforms[item.transformId];
+          const transform = getRequiredVisualTransform(resources, item);
           const visualContainer = {
             id: `visual-${item.id}`,
             type: "container",
@@ -564,6 +615,13 @@ export const addDialogue = (
       }
 
       const wrappedTemplate = { elements: guiLayout.elements };
+      const dialogueContent =
+        presentationState.dialogue?.content === undefined
+          ? [{ text: "" }]
+          : ensureDialogueContentItems(
+              presentationState.dialogue.content,
+              "dialogue.content",
+            );
 
       const templateData = {
         variables,
@@ -581,21 +639,28 @@ export const addDialogue = (
           character: {
             name: character?.name || "",
           },
-          content: (presentationState.dialogue?.content || [{ text: "" }]).map(
-            (item) => ({
-              ...item,
-              text: interpolateDialogueText(item.text, { variables, l10n }),
-            }),
-          ),
-          lines: (presentationState.dialogue?.lines || []).map((line) => ({
-            content: line.content?.map((item) => ({
-              ...item,
-              text: interpolateDialogueText(item.text, { variables, l10n }),
-            })),
-            characterName: line.characterId
-              ? resources.characters?.[line.characterId]?.name || ""
-              : "",
+          content: dialogueContent.map((item) => ({
+            ...item,
+            text: interpolateDialogueText(item.text, { variables, l10n }),
           })),
+          lines: (presentationState.dialogue?.lines || []).map(
+            (line, index) => {
+              const lineContent = ensureDialogueContentItems(
+                line.content,
+                `dialogue.lines[${index}].content`,
+              );
+
+              return {
+                content: lineContent.map((item) => ({
+                  ...item,
+                  text: interpolateDialogueText(item.text, { variables, l10n }),
+                })),
+                characterName: line.characterId
+                  ? resources.characters?.[line.characterId]?.name || ""
+                  : "",
+              };
+            },
+          ),
         },
         l10n,
       };
