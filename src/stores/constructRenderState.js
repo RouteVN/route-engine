@@ -31,7 +31,8 @@ const ensureDialogueContentItems = (content, path) => {
   if (
     !Array.isArray(content) ||
     content.some(
-      (item) => item === null || typeof item !== "object" || Array.isArray(item),
+      (item) =>
+        item === null || typeof item !== "object" || Array.isArray(item),
     )
   ) {
     throw new Error(`${path} must be an array of objects`);
@@ -41,7 +42,8 @@ const ensureDialogueContentItems = (content, path) => {
 };
 
 const getCharacterContainerId = (item, index = 0) => {
-  const spritePartIds = item?.sprites?.map(({ resourceId }) => resourceId) || [];
+  const spritePartIds =
+    item?.sprites?.map(({ resourceId }) => resourceId) || [];
 
   if (spritePartIds.length === 0) {
     return `character-container-${item.id}`;
@@ -310,7 +312,9 @@ export const addCharacters = (
 
       // Find previous item with same id
       const previousItem = previousItems.find((p) => p.id === item.id);
-      const previousItemIndex = previousItems.findIndex((p) => p.id === item.id);
+      const previousItemIndex = previousItems.findIndex(
+        (p) => p.id === item.id,
+      );
       const previousHasSprites =
         previousItem?.sprites && previousItem.sprites.length > 0;
       const currentHasSprites = sprites && sprites.length > 0;
@@ -639,22 +643,24 @@ export const addDialogue = (
             ...item,
             text: interpolateDialogueText(item.text, { variables, l10n }),
           })),
-          lines: (presentationState.dialogue?.lines || []).map((line, index) => {
-            const lineContent = ensureDialogueContentItems(
-              line.content,
-              `dialogue.lines[${index}].content`,
-            );
+          lines: (presentationState.dialogue?.lines || []).map(
+            (line, index) => {
+              const lineContent = ensureDialogueContentItems(
+                line.content,
+                `dialogue.lines[${index}].content`,
+              );
 
-            return {
-              content: lineContent.map((item) => ({
-                ...item,
-                text: interpolateDialogueText(item.text, { variables, l10n }),
-              })),
-              characterName: line.characterId
-                ? resources.characters?.[line.characterId]?.name || ""
-                : "",
-            };
-          }),
+              return {
+                content: lineContent.map((item) => ({
+                  ...item,
+                  text: interpolateDialogueText(item.text, { variables, l10n }),
+                })),
+                characterName: line.characterId
+                  ? resources.characters?.[line.characterId]?.name || ""
+                  : "",
+              };
+            },
+          ),
         },
         l10n,
       };

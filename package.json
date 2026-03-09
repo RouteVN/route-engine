@@ -34,6 +34,7 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
+    "prepare": "husky",
     "build": "bun run esbuild.js",
     "lint": "bun run prettier src -c",
     "lint:fix": "bun run prettier src -w",
