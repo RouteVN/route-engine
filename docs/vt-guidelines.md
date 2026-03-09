@@ -25,6 +25,8 @@ Define one stable standard for VT authoring in this repo:
 - Generate the comparison report with `bun run vt:report`.
 - Accept an intentional visual change with `rtgl vt accept`.
 - Pull request CI runs the same `bun run vt:report` flow.
+- Local VT defaults to `2` Docker workers and a `60000ms` timeout.
+- CI overrides that to `1` Docker worker and a `120000ms` timeout because the GitHub runner is materially slower on software WebGL.
 - CI uploads `.rettangoli/` as an artifact only when VT fails.
 
 ## Visual Standard
