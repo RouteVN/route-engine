@@ -37,8 +37,18 @@ engine.init({
     projectData: {
       resources: { /* images, audio, etc */ },
       story: {
-        initialSceneId: 'scene_1',
-        scenes: { /* scene definitions */ }
+        initialSceneId: 'scene1',
+        scenes: {
+          scene1: {
+            initialSectionId: 'section1',
+            sections: {
+              section1: {
+                initialLineId: 'line1', // optional, otherwise first line is used
+                lines: [ /* section lines */ ]
+              }
+            }
+          }
+        }
       }
     }
   }

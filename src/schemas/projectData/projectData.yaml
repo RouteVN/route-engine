@@ -20,18 +20,6 @@ properties:
     required: [width, height]
     additionalProperties: false
 
-  # used to manage main and replays, isolated variables
-  contexts:
-    type: object
-    description: Contexts
-    patternProperties:
-      "^[a-zA-Z0-9]+$":
-        type: object
-        description: Context
-        properties:
-        additionalProperties: false
-    additionalProperties: false
-
   resources:
     $ref: "resources.yaml"
     description: All project resources including images, sounds, characters, etc.

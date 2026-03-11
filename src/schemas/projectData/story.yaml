@@ -11,7 +11,7 @@ properties:
     type: object
     description: Collection of scenes in the story
     patternProperties:
-      "^[a-zA-Z0-9]+$":
+      "^.+$":
         type: object
         description: Scene definition
         properties:
@@ -27,7 +27,7 @@ properties:
             type: object
             description: Collection of sections within this scene
             patternProperties:
-              "^[a-zA-Z0-9]+$":
+              "^.+$":
                 type: object
                 description: Section definition
                 properties:
@@ -35,9 +35,14 @@ properties:
                     type: string
                     description: Display name for the section
 
+                  initialLineId:
+                    type: string
+                    description: Optional ID of the line to start with when entering this section. If omitted, the first line is used
+
                   lines:
                     type: array
                     description: Array of story lines/steps within this section
+                    minItems: 1
                     items:
                       type: object
                       description: Individual story line/step
@@ -54,7 +59,7 @@ properties:
                       required: [id, actions]
                       additionalProperties: false
 
-                required: [name]
+                required: [name, lines]
                 additionalProperties: false
             additionalProperties: false
 
@@ -62,5 +67,5 @@ properties:
         additionalProperties: false
     additionalProperties: false
 
-required: [initialPresetId, initialSceneId, scenes]
+required: [initialSceneId, scenes]
 additionalProperties: false
