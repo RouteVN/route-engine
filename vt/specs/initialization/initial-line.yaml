@@ -60,7 +60,7 @@ story:
                 base:
                   resourceId: base1
                 dialogue:
-                  gui:
+                  ui:
                     resourceId: dialogueGui
                   content:
                     - text: Line 1 (Should not start here)

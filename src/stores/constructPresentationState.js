@@ -112,24 +112,24 @@ export const dialogue = (state, presentation) => {
     state.dialogue = {};
   }
 
-  // Copy all dialogue properties including gui
-  if (presentation.dialogue.gui) {
+  // Copy all dialogue properties including ui
+  if (presentation.dialogue.ui) {
     const { animationsOnly, state: animState } = getAnimationsOnlyState(
-      presentation.dialogue.gui,
+      presentation.dialogue.ui,
       (p) => !!p.resourceId,
     );
 
     if (animationsOnly) {
-      state.dialogue.gui = {
-        ...state.dialogue.gui,
+      state.dialogue.ui = {
+        ...state.dialogue.ui,
         ...animState,
       };
     } else {
-      state.dialogue.gui = { ...presentation.dialogue.gui };
+      state.dialogue.ui = { ...presentation.dialogue.ui };
     }
-  } else if (state.dialogue?.gui?.animations) {
-    // Clear animations if no gui in presentation
-    state.dialogue.gui.animations = {};
+  } else if (state.dialogue?.ui?.animations) {
+    // Clear animations if no ui in presentation
+    state.dialogue.ui.animations = {};
   }
 
   // Handle mode-specific initialization

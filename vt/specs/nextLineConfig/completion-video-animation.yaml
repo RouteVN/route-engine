@@ -94,7 +94,7 @@ story:
                   resourceId: baseLayout
                 dialogue:
                   mode: adv
-                  gui:
+                  ui:
                     resourceId: dialogueLayout
                   content:
                     - text: Line 0: click once to allow video playback in browser.
@@ -110,7 +110,7 @@ story:
                   applyMode: persistent
                 dialogue:
                   mode: adv
-                  gui:
+                  ui:
                     resourceId: dialogueLayout
                   content:
                     - text: Line 1: auto enabled (fromStart).

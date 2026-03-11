@@ -50,19 +50,19 @@ case: dialogue characterId should be cleared when second presentation has undefi
 in:
   - - dialogue:
         mode: "adv"
-        gui:
+        ui:
           resourceId: "simple-dialogue"
         characterId: "character-123"
         content:
           - text: "Hello"
     - dialogue:
         mode: "adv"
-        gui:
+        ui:
           resourceId: "simple-dialogue"
 out:
   dialogue:
     mode: "adv"
-    gui:
+    ui:
       resourceId: "simple-dialogue"
     content:
       - text: "Hello"
@@ -71,7 +71,7 @@ case: dialogue character override should be cleared when next line omits it
 in:
   - - dialogue:
         mode: "adv"
-        gui:
+        ui:
           resourceId: "simple-dialogue"
         characterId: "alice"
         character:
@@ -80,7 +80,7 @@ in:
           - text: "Hello"
     - dialogue:
         mode: "adv"
-        gui:
+        ui:
           resourceId: "simple-dialogue"
         characterId: "bob"
         content:
@@ -88,7 +88,7 @@ in:
 out:
   dialogue:
     mode: "adv"
-    gui:
+    ui:
       resourceId: "simple-dialogue"
     characterId: "bob"
     content:
@@ -237,7 +237,7 @@ case: nvl-mode-lines-accumulate
 in:
   - - dialogue:
         mode: "nvl"
-        gui:
+        ui:
           resourceId: "nvl-layout"
         characterId: "narrator"
         content:
@@ -255,7 +255,7 @@ in:
 out:
   dialogue:
     mode: "nvl"
-    gui:
+    ui:
       resourceId: "nvl-layout"
     characterId: "bob"
     content:
@@ -275,7 +275,7 @@ case: nvl-mode-lines-accumulate-with-implicit-mode
 in:
   - - dialogue:
         mode: "nvl"
-        gui:
+        ui:
           resourceId: "nvl-layout"
         characterId: "narrator"
         content:
@@ -291,7 +291,7 @@ in:
 out:
   dialogue:
     mode: "nvl"
-    gui:
+    ui:
       resourceId: "nvl-layout"
     characterId: "bob"
     content:
@@ -311,7 +311,7 @@ case: nvl-mode-clearPage
 in:
   - - dialogue:
         mode: "nvl"
-        gui:
+        ui:
           resourceId: "nvl-layout"
         characterId: "narrator"
         content:
@@ -330,7 +330,7 @@ in:
 out:
   dialogue:
     mode: "nvl"
-    gui:
+    ui:
       resourceId: "nvl-layout"
     characterId: "bob"
     content:
@@ -344,7 +344,7 @@ case: nvl-mode-clearPage-with-content
 in:
   - - dialogue:
         mode: "nvl"
-        gui:
+        ui:
           resourceId: "nvl-layout"
         characterId: "alice"
         content:
@@ -357,7 +357,7 @@ in:
 out:
   dialogue:
     mode: "nvl"
-    gui:
+    ui:
       resourceId: "nvl-layout"
     content:
       - text: "New page starts here"
@@ -370,14 +370,14 @@ case: nvl-mode-switch-from-adv
 in:
   - - dialogue:
         mode: "adv"
-        gui:
+        ui:
           resourceId: "adv-layout"
         characterId: "alice"
         content:
           - text: "ADV mode line"
     - dialogue:
         mode: "nvl"
-        gui:
+        ui:
           resourceId: "nvl-layout"
         characterId: "narrator"
         content:
@@ -385,7 +385,7 @@ in:
 out:
   dialogue:
     mode: "nvl"
-    gui:
+    ui:
       resourceId: "nvl-layout"
     characterId: "narrator"
     content:
@@ -399,14 +399,14 @@ case: nvl-mode-switch-to-adv
 in:
   - - dialogue:
         mode: "nvl"
-        gui:
+        ui:
           resourceId: "nvl-layout"
         characterId: "narrator"
         content:
           - text: "NVL line"
     - dialogue:
         mode: "adv"
-        gui:
+        ui:
           resourceId: "adv-layout"
         characterId: "alice"
         content:
@@ -414,7 +414,7 @@ in:
 out:
   dialogue:
     mode: "adv"
-    gui:
+    ui:
       resourceId: "adv-layout"
     characterId: "alice"
     content:
@@ -428,7 +428,7 @@ case: nvl-mode-clearPage-adv-ignored
 in:
   - - dialogue:
         mode: "adv"
-        gui:
+        ui:
           resourceId: "adv-layout"
         characterId: "alice"
         content:
@@ -442,7 +442,7 @@ in:
 out:
   dialogue:
     mode: "adv"
-    gui:
+    ui:
       resourceId: "adv-layout"
     characterId: "bob"
     content:

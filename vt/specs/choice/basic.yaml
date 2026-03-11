@@ -138,7 +138,7 @@ story:
                   resourceId: base1
                 dialogue:
                   mode: adv
-                  gui:
+                  ui:
                     resourceId: 392fsadf
                   content:
                     - text: Hello, this should be choice 1
@@ -164,7 +164,7 @@ story:
                   resourceId: base1
                 dialogue:
                   mode: adv
-                  gui:
+                  ui:
                     resourceId: 392fsadf
                   content:
                     - text: Hello, this should be choice 2

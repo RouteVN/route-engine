@@ -121,7 +121,7 @@ story:
                   applyMode: persistent
                 dialogue:
                   mode: adv
-                  gui:
+                  ui:
                     resourceId: dialogueLayout
                   content:
                     - text: Line 1: Scene auto is enabled (persistent).

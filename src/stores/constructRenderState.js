@@ -1107,14 +1107,14 @@ export const addDialogue = (
   const storyContainer = elements.find((el) => el.id === "story");
   if (!storyContainer) return state;
 
-  // Handle GUI elements (dialogue layouts) from dialogue.gui.resourceId
+  // Handle dialogue UI elements from dialogue.ui.resourceId
   if (
-    presentationState.dialogue.gui &&
-    presentationState.dialogue.gui.resourceId
+    presentationState.dialogue.ui &&
+    presentationState.dialogue.ui.resourceId
   ) {
     const { layouts = {} } = resources;
-    const guiLayout = layouts[presentationState.dialogue.gui.resourceId];
-    if (guiLayout) {
+    const uiLayout = layouts[presentationState.dialogue.ui.resourceId];
+    if (uiLayout) {
       let character;
       if (presentationState.dialogue.characterId) {
         character =
@@ -1129,7 +1129,7 @@ export const addDialogue = (
         };
       }
 
-      const wrappedTemplate = { elements: guiLayout.elements };
+      const wrappedTemplate = { elements: uiLayout.elements };
       const dialogueContent =
         presentationState.dialogue?.content === undefined
           ? [{ text: "" }]
@@ -1182,31 +1182,31 @@ export const addDialogue = (
       const result = parseAndRender(wrappedTemplate, templateData, {
         functions: jemplFunctions,
       });
-      const guiElements = resolveLayoutResourceIds(result?.elements, resources);
+      const uiElements = resolveLayoutResourceIds(result?.elements, resources);
 
-      if (Array.isArray(guiElements)) {
-        for (const element of guiElements) {
+      if (Array.isArray(uiElements)) {
+        for (const element of uiElements) {
           storyContainer.children.push(element);
         }
-      } else if (guiElements) {
-        storyContainer.children.push(guiElements);
+      } else if (uiElements) {
+        storyContainer.children.push(uiElements);
       }
     }
   }
 
-  // Handle dialogue GUI animations
+  // Handle dialogue UI animations
   if (
-    presentationState.dialogue.gui?.animations &&
+    presentationState.dialogue.ui?.animations &&
     !isLineCompleted &&
     !skipTransitionsAndAnimations
   ) {
     pushAnimations({
       animations,
-      animationsDef: presentationState.dialogue.gui.animations,
+      animationsDef: presentationState.dialogue.ui.animations,
       resources,
-      previousResourceId: previousPresentationState?.dialogue?.gui?.resourceId,
-      currentResourceId: presentationState.dialogue.gui?.resourceId,
-      idPrefix: "dialogue-gui",
+      previousResourceId: previousPresentationState?.dialogue?.ui?.resourceId,
+      currentResourceId: presentationState.dialogue.ui?.resourceId,
+      idPrefix: "dialogue-ui",
       targetId: "dialogue-container",
     });
   }

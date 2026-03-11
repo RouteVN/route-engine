@@ -134,7 +134,7 @@ story:
                   resourceId: base1
                 dialogue:
                   mode: adv
-                  gui:
+                  ui:
                     resourceId: adv-layout
                   characterId: alice
                   content:
@@ -143,7 +143,7 @@ story:
               actions:
                 dialogue:
                   mode: nvl
-                  gui:
+                  ui:
                     resourceId: nvl-layout
                   content:
                     - text: Now in NVL mode. This is narration without a speaker.
@@ -181,7 +181,7 @@ story:
               actions:
                 dialogue:
                   mode: adv
-                  gui:
+                  ui:
                     resourceId: adv-layout
                   characterId: alice
                   content:

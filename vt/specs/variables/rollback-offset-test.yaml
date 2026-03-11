@@ -192,7 +192,7 @@ story:
                       value: 1
                 dialogue:
                   mode: adv
-                  gui:
+                  ui:
                     resourceId: dialogueUI
                   content:
                     - text: "LINE 1: Score is 0. Use the back buttons above to test offset rollback!"

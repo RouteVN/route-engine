@@ -155,7 +155,7 @@ out:
     - id: "3"
       changes: {}
 ---
-case: "Detect dialogue gui addition"
+case: "Detect dialogue ui addition"
 in:
   - state:
       projectData:
@@ -170,7 +170,7 @@ in:
                     - id: "2"
                       actions:
                         dialogue:
-                          gui:
+                          ui:
                             resourceId: "dialogue-box"
   - sectionId: "section1"
 out:
@@ -182,10 +182,10 @@ out:
         dialogue:
           changeType: "add"
           data:
-            gui:
+            ui:
               resourceId: "dialogue-box"
 ---
-case: "Detect dialogue gui removal"
+case: "Detect dialogue ui removal"
 in:
   - state:
       projectData:
@@ -198,13 +198,13 @@ in:
                     - id: "1"
                       actions:
                         dialogue:
-                          gui:
+                          ui:
                             resourceId: "dialogue-box"
                     - id: "2"
                       actions:
                         dialogue:
                           content:
-                            - text: "No more gui"
+                            - text: "No more ui"
   - sectionId: "section1"
 out:
   lines:
@@ -213,12 +213,12 @@ out:
         dialogue:
           changeType: "add"
           data:
-            gui:
+            ui:
               resourceId: "dialogue-box"
     - id: "2"
       changes: {}
 ---
-case: "Detect dialogue gui update"
+case: "Detect dialogue ui update"
 in:
   - state:
       projectData:
@@ -231,12 +231,12 @@ in:
                     - id: "1"
                       actions:
                         dialogue:
-                          gui:
+                          ui:
                             resourceId: "dialogue-box-1"
                     - id: "2"
                       actions:
                         dialogue:
-                          gui:
+                          ui:
                             resourceId: "dialogue-box-2"
   - sectionId: "section1"
 out:
@@ -246,17 +246,17 @@ out:
         dialogue:
           changeType: "add"
           data:
-            gui:
+            ui:
               resourceId: "dialogue-box-1"
     - id: "2"
       changes:
         dialogue:
           changeType: "update"
           data:
-            gui:
+            ui:
               resourceId: "dialogue-box-2"
 ---
-case: "Ignore dialogue characterId change when gui is stable"
+case: "Ignore dialogue characterId change when ui is stable"
 in:
   - state:
       projectData:
@@ -269,7 +269,7 @@ in:
                     - id: "1"
                       actions:
                         dialogue:
-                          gui:
+                          ui:
                             resourceId: "dialogue-box"
                           characterId: "char1"
                     - id: "2"
@@ -284,7 +284,7 @@ out:
         dialogue:
           changeType: "add"
           data:
-            gui:
+            ui:
               resourceId: "dialogue-box"
             characterId: "char1"
     - id: "2"

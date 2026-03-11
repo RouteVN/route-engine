@@ -144,7 +144,7 @@ story:
                   resourceId: baseLayout
                 dialogue:
                   mode: adv
-                  gui:
+                  ui:
                     resourceId: dialogueLayout
                   content:
                     - text: Line 1: Testing autoplay functionality

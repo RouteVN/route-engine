@@ -16,7 +16,7 @@ in:
     animations: []
   - presentationState:
       dialogue:
-        gui:
+        ui:
           resourceId: "dialogueLayout"
         content:
           - text: "Hello world"
@@ -73,7 +73,7 @@ in:
   - presentationState:
       dialogue:
         mode: "nvl"
-        gui:
+        ui:
           resourceId: "nvl-layout"
         characterId: "bob"
         content:
@@ -117,7 +117,7 @@ out:
           children: []
   animations: []
 ---
-case: resolves textStyleId in dialogue gui layout elements
+case: resolves textStyleId in dialogue ui layout elements
 in:
   - elements:
       - id: "story"
@@ -128,7 +128,7 @@ in:
     animations: []
   - presentationState:
       dialogue:
-        gui:
+        ui:
           resourceId: "dialogueLayout"
         content:
           - text: "Hello"
@@ -195,7 +195,7 @@ out:
               fill: "#FFFF00"
   animations: []
 ---
-case: resolves colorId in dialogue gui layout elements
+case: resolves colorId in dialogue ui layout elements
 in:
   - elements:
       - id: "story"
@@ -206,7 +206,7 @@ in:
     animations: []
   - presentationState:
       dialogue:
-        gui:
+        ui:
           resourceId: "dialogueLayout"
         content:
           - text: "Hello"
@@ -245,7 +245,7 @@ out:
             fill: "#222222"
   animations: []
 ---
-case: resolves imageId in dialogue gui layout elements
+case: resolves imageId in dialogue ui layout elements
 in:
   - elements:
       - id: "story"
@@ -256,7 +256,7 @@ in:
     animations: []
   - presentationState:
       dialogue:
-        gui:
+        ui:
           resourceId: "dialogueLayout"
         content:
           - text: "Hello"
@@ -300,7 +300,7 @@ in:
     animations: []
   - presentationState:
       dialogue:
-        gui:
+        ui:
           resourceId: "dialogueLayout"
         content: "Hello world"
     resources:
@@ -326,7 +326,7 @@ in:
     animations: []
   - presentationState:
       dialogue:
-        gui:
+        ui:
           resourceId: "dialogueLayout"
         content:
           - text: "${variables.line1}"
@@ -366,7 +366,7 @@ in:
   - presentationState:
       dialogue:
         mode: "nvl"
-        gui:
+        ui:
           resourceId: "nvl-layout"
         content:
           - text: "Narration without character"

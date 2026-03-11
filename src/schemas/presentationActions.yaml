@@ -66,9 +66,9 @@ properties:
     type: object
     description: Dialogue display configuration
     properties:
-      gui:
+      ui:
         type: object
-        description: GUI configuration for dialogue box
+        description: UI configuration for dialogue box
         properties:
           resourceId:
             type: string
