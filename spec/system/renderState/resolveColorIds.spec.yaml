@@ -44,7 +44,7 @@ in:
       active:
         hex: "#666666"
       muted:
-        hex: "rgba(0, 0, 0, 0.6)"
+        hex: "#000000"
 out:
   id: "button"
   type: "rect"
@@ -59,7 +59,7 @@ out:
     actionPayload:
       actions: {}
   rightClick:
-    fill: "rgba(0, 0, 0, 0.6)"
+    fill: "#000000"
 ---
 case: leaves nodes without colorId unchanged
 in:

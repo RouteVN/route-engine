@@ -120,11 +120,12 @@ const normalizeHexColor = (value, errorContext) => {
 };
 
 const applyAlphaToHexColor = (value, alpha, errorContext) => {
+  const normalizedHexColor = normalizeHexColor(value, errorContext);
+
   if (alpha === 1) {
-    return value;
+    return normalizedHexColor;
   }
 
-  const normalizedHexColor = normalizeHexColor(value, errorContext);
   const red = Number.parseInt(normalizedHexColor.slice(1, 3), 16);
   const green = Number.parseInt(normalizedHexColor.slice(3, 5), 16);
   const blue = Number.parseInt(normalizedHexColor.slice(5, 7), 16);
@@ -272,7 +273,7 @@ const resolveColorResource = (resources = {}, colorId) => {
     throw new Error(`Color "${colorId}" not found`);
   }
 
-  return colorResource.hex;
+  return normalizeHexColor(colorResource.hex, `Color "${colorId}"`);
 };
 
 const getRectColorFieldReplacement = (fieldName) => {

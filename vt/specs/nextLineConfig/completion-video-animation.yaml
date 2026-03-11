@@ -97,7 +97,7 @@ story:
                   ui:
                     resourceId: dialogueLayout
                   content:
-                    - text: Line 0: click once to allow video playback in browser.
+                    - text: "Line 0: click once to allow video playback in browser."
             - id: line1
               actions:
                 setNextLineConfig:
@@ -113,7 +113,7 @@ story:
                   ui:
                     resourceId: dialogueLayout
                   content:
-                    - text: Line 1: auto enabled (fromStart).
+                    - text: "Line 1: auto enabled (fromStart)."
             - id: line2
               actions:
                 background:
@@ -121,7 +121,7 @@ story:
                   resourceType: video
                 dialogue:
                   content:
-                    - text: Line 2: fromStart on video background.
+                    - text: "Line 2: fromStart on video background."
             - id: line3
               actions:
                 background:
@@ -131,7 +131,7 @@ story:
                       resourceId: fade-in-800
                 dialogue:
                   content:
-                    - text: Line 3: fromStart on animation.
+                    - text: "Line 3: fromStart on animation."
             - id: line4
               actions:
                 setNextLineConfig:
@@ -144,7 +144,7 @@ story:
                   applyMode: persistent
                 dialogue:
                   content:
-                    - text: Line 4: switch to fromComplete.
+                    - text: "Line 4: switch to fromComplete."
             - id: line5
               actions:
                 background:
@@ -152,7 +152,7 @@ story:
                   resourceType: video
                 dialogue:
                   content:
-                    - text: Line 5: fromComplete on video background.
+                    - text: "Line 5: fromComplete on video background."
             - id: line6
               actions:
                 background:
@@ -162,7 +162,7 @@ story:
                       resourceId: fade-in-800
                 dialogue:
                   content:
-                    - text: Line 6: fromComplete on animation.
+                    - text: "Line 6: fromComplete on animation."
             - id: line7
               actions:
                 setNextLineConfig:
@@ -172,4 +172,4 @@ story:
                     enabled: false
                 dialogue:
                   content:
-                    - text: Line 7: done.
+                    - text: "Line 7: done."

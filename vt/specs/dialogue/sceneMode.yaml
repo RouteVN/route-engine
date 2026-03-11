@@ -94,9 +94,9 @@ resources:
       fileId: Arial
   colors:
     color1:
-      hex: white
+      hex: "#FFFFFF"
     color2:
-      hex: yellow
+      hex: "#FFFF00"
     color3:
       hex: "#D9D9D9"
     layoutColor1:
@@ -142,25 +142,25 @@ story:
                   ui:
                     resourceId: dialogueLayout
                   content:
-                    - text: Line 1: Click 'Start Scene' to begin unskippable sequence.
+                    - text: "Line 1: Click 'Start Scene' to begin unskippable sequence."
                   characterId: narrator
             - id: line2
               actions:
                 dialogue:
                   content:
-                    - text: Line 2: This line advanced automatically.
+                    - text: "Line 2: This line advanced automatically."
                   characterId: narrator
             - id: line3
               actions:
                 dialogue:
                   content:
-                    - text: Line 3: Clicks and Skip are disabled during this sequence.
+                    - text: "Line 3: Clicks and Skip are disabled during this sequence."
                   characterId: narrator
             - id: line4
               actions:
                 dialogue:
                   content:
-                    - text: Line 4: This will continue until the end...
+                    - text: "Line 4: This will continue until the end..."
                   characterId: narrator
             - id: line5
               actions:
@@ -171,5 +171,5 @@ story:
                     enabled: false
                 dialogue:
                   content:
-                    - text: Line 5: Sequence finished. Manual control is now restored.
+                    - text: "Line 5: Sequence finished. Manual control is now restored."
                   characterId: narrator

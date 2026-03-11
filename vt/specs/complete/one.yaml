@@ -1333,15 +1333,15 @@ resources:
       fileId: Arial
   colors:
     color1:
-      hex: white
+      hex: "#FFFFFF"
     color2:
       hex: "#D9D9D9"
     color3:
-      hex: yellow
+      hex: "#FFFF00"
     layoutColor1:
       hex: "#000000"
     layoutColor2:
-      hex: black
+      hex: "#000000"
   textStyles:
     textStyle1:
       fontId: fontDefault

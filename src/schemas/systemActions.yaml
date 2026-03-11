@@ -9,7 +9,7 @@ properties:
   contextNextLine:
     type: object
     description: Advance to next line
-    properties:
+    properties: {}
       # TODO: not sure if we need this
       # forceSkipAutonext:
       #   type: boolean

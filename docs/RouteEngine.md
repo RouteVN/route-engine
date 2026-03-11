@@ -161,7 +161,8 @@ Layout text should be authored with `textStyleId` and resolved through `resource
 Authored inline `textStyle` objects in layout elements are rejected at render-state construction.
 Text transparency should be authored on the text style resource with `colorAlpha`
 and `strokeAlpha`, not baked into the shared color resource itself. Whole-node
-transparency still uses the element `alpha`.
+transparency still uses the element `alpha`. `resources.colors[*].hex` must be
+opaque hex only.
 
 ```yaml
 resources:
@@ -239,9 +240,9 @@ rect-facing `fill` fields.
 resources:
   colors:
     panelBg:
-      hex: "rgba(0, 0, 0, 0.85)"
+      hex: "#000000"
     panelBgHover:
-      hex: "rgba(20, 20, 20, 0.9)"
+      hex: "#141414"
   layouts:
     menuLayout:
       elements:
@@ -249,9 +250,11 @@ resources:
           type: rect
           width: 900
           height: 420
+          opacity: 0.85
           colorId: panelBg
           hover:
             colorId: panelBgHover
+            opacity: 0.9
 ```
 
 ### `handleLineActions()`

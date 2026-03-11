@@ -31,6 +31,7 @@ resources:
               type: rect
               width: 400
               height: 400
+              opacity: 0.9
               colorId: layoutColor2
             - id: menu-title
               type: text
@@ -94,11 +95,11 @@ resources:
       fileId: Arial
   colors:
     color1:
-      hex: white
+      hex: "#FFFFFF"
     layoutColor1:
       hex: "#000000"
     layoutColor2:
-      hex: rgba(50, 50, 80, 0.9)
+      hex: "#323250"
   textStyles:
     textStyle1:
       fontId: fontDefault

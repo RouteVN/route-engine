@@ -77,9 +77,9 @@ resources:
       fileId: Arial
   colors:
     color1:
-      hex: white
+      hex: "#FFFFFF"
     color2:
-      hex: yellow
+      hex: "#FFFF00"
     layoutColor1:
       hex: "#000000"
     layoutColor2:
