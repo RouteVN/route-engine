@@ -70,6 +70,7 @@ const getRequiredVisualTransform = (resources, item) => {
 const getTextStyleResources = (resources = {}) => resources.textStyles || {};
 const getImageResources = (resources = {}) => resources.images || {};
 const getColorResources = (resources = {}) => resources.colors || {};
+const HEX_COLOR_PATTERN = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 
 const getLayoutResourcePath = (path, key) =>
   path === "root" ? `${key}` : `${path}.${key}`;
@@ -80,6 +81,55 @@ const ensureNonEmptyLayoutResourceId = (value, path, fieldName) => {
       `${fieldName} at "${path}" must resolve to a non-empty string`,
     );
   }
+};
+
+const ensureNormalizedAlpha = (value, fieldName, textStyleId) => {
+  if (value === undefined) {
+    return 1;
+  }
+
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new Error(
+      `${fieldName} for text style "${textStyleId}" must be a number between 0 and 1`,
+    );
+  }
+
+  if (value < 0 || value > 1) {
+    throw new Error(
+      `${fieldName} for text style "${textStyleId}" must be a number between 0 and 1`,
+    );
+  }
+
+  return value;
+};
+
+const normalizeHexColor = (value, errorContext) => {
+  if (typeof value !== "string" || !HEX_COLOR_PATTERN.test(value)) {
+    throw new Error(`${errorContext} must resolve to a hex color`);
+  }
+
+  if (value.length === 4) {
+    return `#${value
+      .slice(1)
+      .split("")
+      .map((character) => character.repeat(2))
+      .join("")}`;
+  }
+
+  return value;
+};
+
+const applyAlphaToHexColor = (value, alpha, errorContext) => {
+  if (alpha === 1) {
+    return value;
+  }
+
+  const normalizedHexColor = normalizeHexColor(value, errorContext);
+  const red = Number.parseInt(normalizedHexColor.slice(1, 3), 16);
+  const green = Number.parseInt(normalizedHexColor.slice(3, 5), 16);
+  const blue = Number.parseInt(normalizedHexColor.slice(5, 7), 16);
+
+  return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
 };
 
 const resolveTextStyleResource = (resources = {}, textStyleId) => {
@@ -103,13 +153,23 @@ const resolveTextStyleResource = (resources = {}, textStyleId) => {
     );
   }
 
+  const colorAlpha = ensureNormalizedAlpha(
+    textStyleResource.colorAlpha,
+    "colorAlpha",
+    textStyleId,
+  );
+
   const resolvedTextStyle = {
     fontFamily: fontResource.fileId,
     fontSize: textStyleResource.fontSize ?? 16,
     fontWeight: textStyleResource.fontWeight ?? "400",
     fontStyle: textStyleResource.fontStyle ?? "normal",
     lineHeight: textStyleResource.lineHeight ?? 1.2,
-    fill: colorResource.hex,
+    fill: applyAlphaToHexColor(
+      colorResource.hex,
+      colorAlpha,
+      `Color "${textStyleResource.colorId}" for text style "${textStyleId}"`,
+    ),
   };
 
   if (textStyleResource.align !== undefined) {
@@ -138,7 +198,21 @@ const resolveTextStyleResource = (resources = {}, textStyleId) => {
       );
     }
 
-    resolvedTextStyle.strokeColor = strokeColorResource.hex;
+    const strokeAlpha = ensureNormalizedAlpha(
+      textStyleResource.strokeAlpha,
+      "strokeAlpha",
+      textStyleId,
+    );
+
+    resolvedTextStyle.strokeColor = applyAlphaToHexColor(
+      strokeColorResource.hex,
+      strokeAlpha,
+      `Stroke color "${textStyleResource.strokeColorId}" for text style "${textStyleId}"`,
+    );
+  } else if (textStyleResource.strokeAlpha !== undefined) {
+    throw new Error(
+      `strokeAlpha for text style "${textStyleId}" requires strokeColorId`,
+    );
   }
 
   if (textStyleResource.strokeWidth !== undefined) {

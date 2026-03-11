@@ -251,6 +251,9 @@ properties:
           colorId:
             type: string
             description: Reference to color resource for font color
+          colorAlpha:
+            type: number
+            description: Alpha applied to the resolved fill color. 0 = transparent, 1 = opaque
           fontSize:
             type: number
             description: Font size in pixels
@@ -279,6 +282,9 @@ properties:
           strokeColorId:
             type: string
             description: Stroke reference to color resource for font color
+          strokeAlpha:
+            type: number
+            description: Alpha applied to the resolved stroke color. 0 = transparent, 1 = opaque
           strokeWidth:
             type: number
             description: Stroke width
