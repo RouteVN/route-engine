@@ -181,7 +181,10 @@ export const resolveTextStyleIds = (node, resources = {}, path = "root") => {
   if (node.textStyleId !== undefined) {
     ensureNonEmptyLayoutResourceId(node.textStyleId, path, "textStyleId");
 
-    resolvedNode.textStyle = resolveTextStyleResource(resources, node.textStyleId);
+    resolvedNode.textStyle = resolveTextStyleResource(
+      resources,
+      node.textStyleId,
+    );
   }
 
   return resolvedNode;
@@ -293,9 +296,7 @@ export const resolveImageIds = (node, resources = {}, path = "root") => {
   for (const [key, value] of Object.entries(node)) {
     if (
       node.type === "sprite" &&
-      (key === "imageId" ||
-        key === "hoverImageId" ||
-        key === "clickImageId")
+      (key === "imageId" || key === "hoverImageId" || key === "clickImageId")
     ) {
       continue;
     }
@@ -352,11 +353,8 @@ export const resolveImageIds = (node, resources = {}, path = "root") => {
   return resolvedNode;
 };
 
-export const resolveLayoutResourceIds = (
-  node,
-  resources = {},
-  path = "root",
-) => resolveImageIds(resolveTextStyleIds(node, resources, path), resources, path);
+export const resolveLayoutResourceIds = (node, resources = {}, path = "root") =>
+  resolveImageIds(resolveTextStyleIds(node, resources, path), resources, path);
 
 /**
  * Helper to push in/out/update animations based on previous and current state
@@ -1044,7 +1042,10 @@ export const addChoices = (
           items: presentationState.choice?.items ?? [],
         },
       });
-      const choiceElements = resolveLayoutResourceIds(result?.elements, resources);
+      const choiceElements = resolveLayoutResourceIds(
+        result?.elements,
+        resources,
+      );
 
       if (Array.isArray(choiceElements)) {
         for (const element of choiceElements) {
