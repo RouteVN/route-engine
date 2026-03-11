@@ -399,3 +399,138 @@ out:
             actionPayload:
               actions: {}
   animations: []
+---
+case: resolves textStyleId in layeredView layout elements
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - resources:
+      layouts:
+        styledLayeredView:
+          elements:
+            - id: "layered-label"
+              type: "text"
+              content: "Overlay"
+              textStyleId: "body"
+      textStyles:
+        body:
+          fontId: "fontMain"
+          colorId: "fg"
+          fontSize: 18
+          fontWeight: "400"
+          fontStyle: "normal"
+          lineHeight: 1
+      fonts:
+        fontMain:
+          fileId: "Arial"
+      colors:
+        fg:
+          hex: "#FFFFFF"
+    variables: {}
+    autoMode: false
+    skipMode: false
+    currentLocalizationPackageId: null
+    screen:
+      width: 1920
+      height: 1080
+    layeredViews:
+      - resourceId: styledLayeredView
+        resourceType: layout
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+    - id: "layeredView-0"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "layeredView-0-blocker"
+          type: "rect"
+          fill: "transparent"
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          click:
+            actionPayload:
+              actions: {}
+        - id: "layered-label"
+          type: "text"
+          content: "Overlay"
+          textStyle:
+            fontFamily: "Arial"
+            fontSize: 18
+            fontWeight: "400"
+            fontStyle: "normal"
+            lineHeight: 1
+            fill: "#FFFFFF"
+  animations: []
+---
+case: resolves imageId in layeredView layout elements
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - resources:
+      layouts:
+        imageLayeredView:
+          elements:
+            - id: "layered-image"
+              type: "sprite"
+              imageId: "overlayImage"
+      images:
+        overlayImage:
+          fileId: "overlay.png"
+          width: 640
+          height: 360
+    variables: {}
+    autoMode: false
+    skipMode: false
+    currentLocalizationPackageId: null
+    screen:
+      width: 1920
+      height: 1080
+    layeredViews:
+      - resourceId: imageLayeredView
+        resourceType: layout
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+    - id: "layeredView-0"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "layeredView-0-blocker"
+          type: "rect"
+          fill: "transparent"
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          click:
+            actionPayload:
+              actions: {}
+        - id: "layered-image"
+          type: "sprite"
+          src: "overlay.png"
+          width: 640
+          height: 360
+  animations: []

@@ -1,6 +1,6 @@
 ---
-title: "Rollback By Offset Test"
-description: "Test rollbackByOffset action - go back N lines with variable reversion"
+title: Rollback By Offset Test
+description: Test rollbackByOffset action - go back N lines with variable reversion
 ---
 l10n:
   packages:
@@ -8,12 +8,10 @@ l10n:
       label: English
       lang: en
       keys: {}
-
 screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 resources:
   variables:
     score:
@@ -24,11 +22,9 @@ resources:
       type: number
       scope: context
       default: 1
-
   characters:
     narrator:
-      name: "Guide"
-
+      name: Guide
   layouts:
     baseLayout:
       elements:
@@ -41,12 +37,10 @@ resources:
             actionPayload:
               actions:
                 nextLine: {}
-
     dialogueUI:
       name: Dialogue UI
       mode: adv
       elements:
-        # Dialogue box
         - id: dialogueBox
           type: rect
           x: 100
@@ -59,109 +53,127 @@ resources:
             actionPayload:
               actions:
                 nextLine: {}
-
-        # Character name
         - id: charName
           type: text
-          content: "${dialogue.character.name}"
+          content: ${dialogue.character.name}
           x: 150
           y: 770
-          textStyle:
-            fontSize: 28
-            fill: "#737373"
-            fontWeight: bold
-
-        # Dialogue text
+          textStyleId: textStyle1
         - id: dialogueText
           type: text
-          content: "${dialogue.content[0].text}"
+          content: ${dialogue.content[0].text}
           x: 150
           y: 820
           width: 1620
-          textStyle:
-            fontSize: 24
-            fill: "#D9D9D9"
-
-        # Score display
+          textStyleId: textStyle2
         - id: scoreDisplay
           type: text
           content: "Score: ${variables.score}"
           x: 1700
           y: 50
           anchorX: 1
-          textStyle:
-            fontSize: 32
-            fill: "#A6A6A6"
-            fontWeight: bold
-
-        # Current line indicator
+          textStyleId: textStyle3
         - id: lineIndicator
           type: text
           content: "Line visited: ${variables.lineVisited}"
           x: 1700
           y: 100
           anchorX: 1
-          textStyle:
-            fontSize: 24
-            fill: "#737373"
-
-        # Back 1 line button - uses rollbackByOffset
+          textStyleId: textStyle4
         - id: backOneBtn
           type: text
           content: "[BACK 1 LINE]"
           x: 100
           y: 680
-          textStyle:
-            fontSize: 24
-            fill: "#737373"
           hover:
-            textStyle:
-              fontSize: 24
-              fill: "#A6A6A6"
+            textStyleId: textStyle5
           click:
             actionPayload:
               actions:
                 rollbackByOffset:
                   offset: -1
-
-        # Back 2 lines button
+          textStyleId: textStyle4
         - id: backTwoBtn
           type: text
           content: "[BACK 2 LINES]"
           x: 350
           y: 680
-          textStyle:
-            fontSize: 24
-            fill: "#737373"
           hover:
-            textStyle:
-              fontSize: 24
-              fill: "#737373"
+            textStyleId: textStyle4
           click:
             actionPayload:
               actions:
                 rollbackByOffset:
                   offset: -2
-
-        # Back 3 lines button
+          textStyleId: textStyle4
         - id: backThreeBtn
           type: text
           content: "[BACK 3 LINES]"
           x: 620
           y: 680
-          textStyle:
-            fontSize: 24
-            fill: "#4D4D4D"
           hover:
-            textStyle:
-              fontSize: 24
-              fill: "#737373"
+            textStyleId: textStyle4
           click:
             actionPayload:
               actions:
                 rollbackByOffset:
                   offset: -3
-
+          textStyleId: textStyle6
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: "#737373"
+    color2:
+      hex: "#D9D9D9"
+    color3:
+      hex: "#A6A6A6"
+    color4:
+      hex: "#4D4D4D"
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 28
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle2:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle3:
+      fontId: fontDefault
+      colorId: color3
+      fontSize: 32
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle4:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle5:
+      fontId: fontDefault
+      colorId: color3
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle6:
+      fontId: fontDefault
+      colorId: color4
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
 story:
   initialSceneId: main
   scenes:
@@ -172,7 +184,6 @@ story:
         story:
           name: Story
           lines:
-            # Line 1: Introduction (score: 0)
             - id: line1
               actions:
                 base:
@@ -190,8 +201,6 @@ story:
                   content:
                     - text: "LINE 1: Score is 0. Use the back buttons above to test offset rollback!"
                   characterId: narrator
-
-            # Line 2: +5 score
             - id: line2
               actions:
                 updateVariable:
@@ -207,8 +216,6 @@ story:
                   content:
                     - text: "LINE 2: +5 points! (Total: 5)"
                   characterId: narrator
-
-            # Line 3: +10 score
             - id: line3
               actions:
                 updateVariable:
@@ -224,8 +231,6 @@ story:
                   content:
                     - text: "LINE 3: +10 points! (Total: 15)"
                   characterId: narrator
-
-            # Line 4: +15 score
             - id: line4
               actions:
                 updateVariable:
@@ -241,8 +246,6 @@ story:
                   content:
                     - text: "LINE 4: +15 points! (Total: 30)"
                   characterId: narrator
-
-            # Line 5: +20 score
             - id: line5
               actions:
                 updateVariable:
@@ -258,8 +261,6 @@ story:
                   content:
                     - text: "LINE 5: +20 points! (Total: 50) - Try the back buttons now!"
                   characterId: narrator
-
-            # Line 6: End message
             - id: line6
               actions:
                 updateVariable:

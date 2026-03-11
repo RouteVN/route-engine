@@ -1,5 +1,5 @@
 ---
-title: "Sample"
+title: Sample
 ---
 l10n:
   packages:
@@ -11,8 +11,12 @@ screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 resources:
+  images:
+    3kda832:
+      fileId: 3kda832
+      width: 1920
+      height: 1080
   layouts:
     base1:
       elements:
@@ -29,13 +33,13 @@ resources:
       name: Choices
       elements:
         - id: 3943ar32jkd
-          type: "container"
+          type: container
           x: 100
           y: 100
           gap: 80
           direction: vertical
           children:
-            - "$each": item, i in choice.items
+            - $each: item, i in choice.items
               id: choice-item-${i}
               type: container
               x: 0
@@ -44,7 +48,7 @@ resources:
               children:
                 - id: 23lksdf3
                   type: sprite
-                  src: 3kda832
+                  imageId: 3kda832
                   width: 400
                   height: 60
                   click:
@@ -56,41 +60,48 @@ resources:
                   y: 12
                   type: text
                   content: ${item.content}
-                  textStyle:
-                    fontSize: 24
-                    fill: "white"
-
+                  textStyleId: textStyle1
     392fsadf:
       name: Dialogue Screen
       elements:
         - id: dialogue-container
-          type: "container"
+          type: container
           x: 50
           y: 300
           children:
-            - id: "bfeawjk2g"
+            - id: bfeawjk2g
               type: sprite
-              src: 3kda832
+              imageId: 3kda832
               width: 1920
               height: 1080
               x: 0
               y: 0
             - id: dialogue-character-name
               type: text
-              content: "${dialogue.character.name}"
+              content: ${dialogue.character.name}
               x: 20
               y: 40
-              textStyle:
-                fontSize: 24
-                fill: "white"
+              textStyleId: textStyle1
             - id: dialogue-text
-              type: "text"
+              type: text
               x: 20
               y: 100
-              content: "${dialogue.content[0].text}"
-              textStyle:
-                fontSize: 24
-                fill: "white"
+              content: ${dialogue.content[0].text}
+              textStyleId: textStyle1
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: white
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
 story:
   initialSceneId: ajfl3a
   scenes:
@@ -103,8 +114,6 @@ story:
           lines:
             - id: line1
               actions:
-                # screen:
-                #   resourceId: base1
                 choice:
                   resourceId: fi3l
                   items:
@@ -113,13 +122,13 @@ story:
                         click:
                           actions:
                             sectionTransition:
-                              sectionId: "fdakjf3aax"
+                              sectionId: fdakjf3aax
                     - content: Choice 2 b
                       events:
                         click:
                           actions:
                             sectionTransition:
-                              sectionId: "kdf903a"
+                              sectionId: kdf903a
     3ijdfsa23:
       name: Scene 2
       initialSectionId: fdakjf3aax
@@ -146,7 +155,6 @@ story:
               actions:
                 sectionTransition:
                   sectionId: l3kjfawelf
-
     fd3j289df:
       name: Scene 3
       initialSectionId: kdf903a

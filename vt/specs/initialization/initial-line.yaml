@@ -1,6 +1,6 @@
 ---
-title: "Initial Line ID"
-description: "Test starting at a specific line via initialLineId"
+title: Initial Line ID
+description: Test starting at a specific line via initialLineId
 ---
 l10n:
   packages:
@@ -8,12 +8,10 @@ l10n:
       label: English
       lang: en
       keys: {}
-
 screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 resources:
   layouts:
     base1:
@@ -28,19 +26,30 @@ resources:
       mode: adv
       elements:
         - id: dialogue-container
-          type: "container"
+          type: container
           x: 100
           y: 800
           children:
             - id: dialogue-text
-              type: "text"
+              type: text
               x: 50
               y: 50
-              content: "${dialogue.content[0].text}"
-              textStyle:
-                fontSize: 48
-                fill: "white"
-
+              content: ${dialogue.content[0].text}
+              textStyleId: textStyle1
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: white
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 48
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
 story:
   initialSceneId: main
   scenes:
@@ -58,14 +67,14 @@ story:
                   gui:
                     resourceId: dialogueGui
                   content:
-                    - text: "Line 1 (Should not start here)"
+                    - text: Line 1 (Should not start here)
             - id: line2
               actions:
                 dialogue:
                   content:
-                    - text: "Line 2 (Should start here)"
+                    - text: Line 2 (Should start here)
             - id: line3
               actions:
                 dialogue:
                   content:
-                    - text: "Line 3"
+                    - text: Line 3

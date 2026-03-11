@@ -1,5 +1,5 @@
 ---
-title: "Boolean Variables Test"
+title: Boolean Variables Test
 ---
 l10n:
   packages:
@@ -7,29 +7,24 @@ l10n:
       label: English
       lang: en
       keys: {}
-
 screen:
   width: 1920
   height: 1080
   backgroundColor: "#4D4D4D"
-
 resources:
   variables:
     soundEnabled:
       type: boolean
       scope: context
       default: true
-
     notificationsOn:
       type: boolean
       scope: global-device
       default: false
-
     tutorialCompleted:
       type: boolean
       scope: global-account
       default: false
-
   layouts:
     base1:
       elements:
@@ -42,53 +37,36 @@ resources:
             actionPayload:
               actions:
                 nextLine: {}
-
     booleanTestUI:
       name: Boolean Variable Test Screen
       elements:
         - id: title
           type: text
-          content: "Boolean Variable Test - Toggle Operation"
+          content: Boolean Variable Test - Toggle Operation
           x: 960
           y: 100
           anchorX: 0.5
-          textStyle:
-            fontSize: 48
-            fill: "#D9D9D9"
-
-        # Runtime boolean (soundEnabled)
+          textStyleId: textStyle1
         - id: soundLabel
           type: text
           content: "Sound (context):"
           x: 400
           y: 300
-          textStyle:
-            fontSize: 32
-            fill: "#A6A6A6"
-
+          textStyleId: textStyle2
         - id: soundValue
           type: text
-          content: "${variables.soundEnabled}"
+          content: ${variables.soundEnabled}
           x: 750
           y: 300
-          textStyle:
-            fontSize: 32
-            fill: "#737373"
-            fontWeight: bold
-
+          textStyleId: textStyle3
         - id: btnToggleSound
           type: text
-          content: "Toggle Sound"
+          content: Toggle Sound
           x: 1100
           y: 300
           anchorX: 0.5
-          textStyle:
-            fontSize: 28
-            fill: "#FFFFFF"
           hover:
-            textStyle:
-              fontSize: 28
-              fill: "#737373"
+            textStyleId: textStyle5
           click:
             actionPayload:
               actions:
@@ -97,40 +75,27 @@ resources:
                   operations:
                     - variableId: soundEnabled
                       op: toggle
-
-        # Device boolean (notificationsOn)
+          textStyleId: textStyle4
         - id: notifLabel
           type: text
           content: "Notifications (device):"
           x: 400
           y: 450
-          textStyle:
-            fontSize: 32
-            fill: "#A6A6A6"
-
+          textStyleId: textStyle2
         - id: notifValue
           type: text
-          content: "${variables.notificationsOn}"
+          content: ${variables.notificationsOn}
           x: 750
           y: 450
-          textStyle:
-            fontSize: 32
-            fill: "#737373"
-            fontWeight: bold
-
+          textStyleId: textStyle3
         - id: btnToggleNotif
           type: text
-          content: "Toggle Notifications"
+          content: Toggle Notifications
           x: 1100
           y: 450
           anchorX: 0.5
-          textStyle:
-            fontSize: 28
-            fill: "#FFFFFF"
           hover:
-            textStyle:
-              fontSize: 28
-              fill: "#737373"
+            textStyleId: textStyle5
           click:
             actionPayload:
               actions:
@@ -139,40 +104,27 @@ resources:
                   operations:
                     - variableId: notificationsOn
                       op: toggle
-
-        # Global boolean (tutorialCompleted)
+          textStyleId: textStyle4
         - id: tutorialLabel
           type: text
           content: "Tutorial (global):"
           x: 400
           y: 600
-          textStyle:
-            fontSize: 32
-            fill: "#A6A6A6"
-
+          textStyleId: textStyle2
         - id: tutorialValue
           type: text
-          content: "${variables.tutorialCompleted}"
+          content: ${variables.tutorialCompleted}
           x: 750
           y: 600
-          textStyle:
-            fontSize: 32
-            fill: "#737373"
-            fontWeight: bold
-
+          textStyleId: textStyle3
         - id: btnToggleTutorial
           type: text
-          content: "Toggle Tutorial"
+          content: Toggle Tutorial
           x: 1100
           y: 600
           anchorX: 0.5
-          textStyle:
-            fontSize: 28
-            fill: "#FFFFFF"
           hover:
-            textStyle:
-              fontSize: 28
-              fill: "#737373"
+            textStyleId: textStyle5
           click:
             actionPayload:
               actions:
@@ -181,31 +133,22 @@ resources:
                   operations:
                     - variableId: tutorialCompleted
                       op: toggle
-
-        # Set operations for comparison
+          textStyleId: textStyle4
         - id: setOpsTitle
           type: text
-          content: "Set Operations (for comparison)"
+          content: Set Operations (for comparison)
           x: 960
           y: 750
           anchorX: 0.5
-          textStyle:
-            fontSize: 28
-            fill: "#A6A6A6"
-
+          textStyleId: textStyle6
         - id: btnSetSoundTrue
           type: text
           content: "Set Sound: true"
           x: 600
           y: 850
           anchorX: 0.5
-          textStyle:
-            fontSize: 24
-            fill: "#FFFFFF"
           hover:
-            textStyle:
-              fontSize: 24
-              fill: "#737373"
+            textStyleId: textStyle8
           click:
             actionPayload:
               actions:
@@ -215,20 +158,15 @@ resources:
                     - variableId: soundEnabled
                       op: set
                       value: true
-
+          textStyleId: textStyle7
         - id: btnSetSoundFalse
           type: text
           content: "Set Sound: false"
           x: 850
           y: 850
           anchorX: 0.5
-          textStyle:
-            fontSize: 24
-            fill: "#FFFFFF"
           hover:
-            textStyle:
-              fontSize: 24
-              fill: "#737373"
+            textStyleId: textStyle8
           click:
             actionPayload:
               actions:
@@ -238,18 +176,90 @@ resources:
                     - variableId: soundEnabled
                       op: set
                       value: false
-
-        # Instructions
+          textStyleId: textStyle7
         - id: instructions
           type: text
-          content: "Click 'Toggle' buttons to flip boolean values • Use 'Set' buttons to force specific values"
+          content: Click 'Toggle' buttons to flip boolean values • Use 'Set' buttons to force specific values
           x: 960
           y: 950
           anchorX: 0.5
-          textStyle:
-            fontSize: 24
-            fill: "#A6A6A6"
-
+          textStyleId: textStyle9
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: "#D9D9D9"
+    color2:
+      hex: "#A6A6A6"
+    color3:
+      hex: "#737373"
+    color4:
+      hex: "#FFFFFF"
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 48
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle2:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 32
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle3:
+      fontId: fontDefault
+      colorId: color3
+      fontSize: 32
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle4:
+      fontId: fontDefault
+      colorId: color4
+      fontSize: 28
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle5:
+      fontId: fontDefault
+      colorId: color3
+      fontSize: 28
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle6:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 28
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle7:
+      fontId: fontDefault
+      colorId: color4
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle8:
+      fontId: fontDefault
+      colorId: color3
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle9:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
 story:
   initialSceneId: main
   scenes:

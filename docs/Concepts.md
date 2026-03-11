@@ -66,7 +66,10 @@ flowchart TD
 Static, read-only data that defines the visual novel content:
 
 - **l10n**: Localization packages for multi-language support
-- **resources**: Images, audio, animations, transforms, layouts, characters
+- **resources**: Images, audio, animations, transforms, layouts, characters, fonts, colors, and `textStyles`
+  - Layout text elements should reference shared styles with `textStyleId`
+  - Layout sprite elements should reference images with `imageId` and optional `hoverImageId` / `clickImageId`
+  - Authored inline `textStyle` objects and authored sprite `src` / `hover.src` / `click.src` fields in layout elements are invalid and fail fast at render-state construction
 - **story**: Scenes, sections, and lines that define the narrative flow
 
 Project data is loaded once and never mutated during runtime.

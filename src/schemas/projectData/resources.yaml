@@ -237,12 +237,12 @@ properties:
         additionalProperties: false
     additionalProperties: false
 
-  typography:
+  textStyles:
     type: object
     patternProperties:
       "^[a-zA-Z0-9]+$":
         type: object
-        description: Typography configuration
+        description: Text style configuration
         properties:
           fontId:
             type: string
@@ -255,9 +255,7 @@ properties:
             description: Font size in pixels
           fontWeight:
             type: string
-            description: Font weight
-            enum:
-              ["100", "200", "300", "400", "500", "600", "700", "800", "900"]
+            description: CSS font weight
           fontStyle:
             type: string
             description: Font style
@@ -265,6 +263,18 @@ properties:
           lineHeight:
             type: number
             description: Line height. 1 = font size pixels
+          align:
+            type: string
+            description: Text alignment
+          wordWrap:
+            type: boolean
+            description: Enable word wrapping
+          breakWords:
+            type: boolean
+            description: Break words when wrapping text
+          wordWrapWidth:
+            type: number
+            description: Wrap width in pixels
           strokeColorId:
             type: string
             description: Stroke reference to color resource for font color

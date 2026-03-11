@@ -1,5 +1,5 @@
 ---
-title: "Multi-Slot Save Test"
+title: Multi-Slot Save Test
 ---
 l10n:
   packages:
@@ -7,35 +7,28 @@ l10n:
       label: English
       lang: en
       keys: {}
-
 screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 resources:
   variables:
-    # Context variables - different per save slot
     playerName:
       type: string
       scope: context
-      default: "New Player"
-
+      default: New Player
     playerLevel:
       type: number
       scope: context
       default: 1
-
     playerGold:
       type: number
       scope: context
       default: 0
-
     questCompleted:
       type: boolean
       scope: context
       default: false
-
   layouts:
     base1:
       elements:
@@ -48,93 +41,61 @@ resources:
             actionPayload:
               actions:
                 contextNextLine: {}
-
     multiSlotTestUI:
       name: Multi-Slot Save Test
       elements:
-        # Title
         - id: title
           type: text
-          content: "Multi-Slot Save Test - Runtime Variables"
+          content: Multi-Slot Save Test - Runtime Variables
           x: 960
           y: 50
           anchorX: 0.5
-          textStyle:
-            fontSize: 42
-            fill: "#FFFFFF"
-            fontWeight: bold
-
+          textStyleId: textStyle1
         - id: subtitle
           type: text
-          content: "Each save slot stores different context variables"
+          content: Each save slot stores different context variables
           x: 960
           y: 100
           anchorX: 0.5
-          textStyle:
-            fontSize: 24
-            fill: "#A6A6A6"
-
-        # Current State Display
+          textStyleId: textStyle2
         - id: currentStateLabel
           type: text
-          content: "CURRENT STATE"
+          content: CURRENT STATE
           x: 960
           y: 180
           anchorX: 0.5
-          textStyle:
-            fontSize: 28
-            fill: "#737373"
-            fontWeight: bold
-
+          textStyleId: textStyle3
         - id: nameDisplay
           type: text
           content: "Name: ${variables.playerName}"
           x: 300
           y: 240
-          textStyle:
-            fontSize: 26
-            fill: "#D9D9D9"
-
+          textStyleId: textStyle4
         - id: levelDisplay
           type: text
           content: "Level: ${variables.playerLevel}"
           x: 700
           y: 240
-          textStyle:
-            fontSize: 26
-            fill: "#D9D9D9"
-
+          textStyleId: textStyle4
         - id: goldDisplay
           type: text
           content: "Gold: ${variables.playerGold}"
           x: 1000
           y: 240
-          textStyle:
-            fontSize: 26
-            fill: "#D9D9D9"
-
+          textStyleId: textStyle4
         - id: questDisplay
           type: text
           content: "Quest Done: ${variables.questCompleted}"
           x: 1400
           y: 240
-          textStyle:
-            fontSize: 26
-            fill: "#D9D9D9"
-
-        # Modify Current State Section
+          textStyleId: textStyle4
         - id: modifyLabel
           type: text
-          content: "MODIFY CURRENT STATE"
+          content: MODIFY CURRENT STATE
           x: 960
           y: 320
           anchorX: 0.5
-          textStyle:
-            fontSize: 28
-            fill: "#737373"
-            fontWeight: bold
-
-        # Name buttons
+          textStyleId: textStyle3
         - id: nameButtons
           type: container
           x: 300
@@ -145,22 +106,14 @@ resources:
               content: "Set Name:"
               x: 0
               y: 0
-              textStyle:
-                fontSize: 22
-                fill: "#A6A6A6"
-
+              textStyleId: textStyle5
             - id: btnAlice
               type: text
-              content: "Alice"
+              content: Alice
               x: 120
               y: 0
-              textStyle:
-                fontSize: 20
-                fill: "#FFFFFF"
               hover:
-                textStyle:
-                  fontSize: 20
-                  fill: "#737373"
+                textStyleId: textStyle7
               click:
                 actionPayload:
                   actions:
@@ -169,20 +122,15 @@ resources:
                       operations:
                         - variableId: playerName
                           op: set
-                          value: "Alice"
-
+                          value: Alice
+              textStyleId: textStyle6
             - id: btnBob
               type: text
-              content: "Bob"
+              content: Bob
               x: 200
               y: 0
-              textStyle:
-                fontSize: 20
-                fill: "#FFFFFF"
               hover:
-                textStyle:
-                  fontSize: 20
-                  fill: "#737373"
+                textStyleId: textStyle7
               click:
                 actionPayload:
                   actions:
@@ -191,20 +139,15 @@ resources:
                       operations:
                         - variableId: playerName
                           op: set
-                          value: "Bob"
-
+                          value: Bob
+              textStyleId: textStyle6
             - id: btnCharlie
               type: text
-              content: "Charlie"
+              content: Charlie
               x: 270
               y: 0
-              textStyle:
-                fontSize: 20
-                fill: "#FFFFFF"
               hover:
-                textStyle:
-                  fontSize: 20
-                  fill: "#737373"
+                textStyleId: textStyle7
               click:
                 actionPayload:
                   actions:
@@ -213,9 +156,8 @@ resources:
                       operations:
                         - variableId: playerName
                           op: set
-                          value: "Charlie"
-
-        # Level buttons
+                          value: Charlie
+              textStyleId: textStyle6
         - id: levelButtons
           type: container
           x: 700
@@ -226,22 +168,14 @@ resources:
               content: "Level:"
               x: 0
               y: 0
-              textStyle:
-                fontSize: 22
-                fill: "#A6A6A6"
-
+              textStyleId: textStyle5
             - id: btnLevelUp
               type: text
               content: "+1"
               x: 80
               y: 0
-              textStyle:
-                fontSize: 20
-                fill: "#737373"
               hover:
-                textStyle:
-                  fontSize: 20
-                  fill: "#4D4D4D"
+                textStyleId: textStyle8
               click:
                 actionPayload:
                   actions:
@@ -250,19 +184,14 @@ resources:
                       operations:
                         - variableId: playerLevel
                           op: increment
-
+              textStyleId: textStyle7
             - id: btnLevelDown
               type: text
               content: "-1"
               x: 130
               y: 0
-              textStyle:
-                fontSize: 20
-                fill: "#737373"
               hover:
-                textStyle:
-                  fontSize: 20
-                  fill: "#4D4D4D"
+                textStyleId: textStyle8
               click:
                 actionPayload:
                   actions:
@@ -271,8 +200,7 @@ resources:
                       operations:
                         - variableId: playerLevel
                           op: decrement
-
-        # Gold buttons
+              textStyleId: textStyle7
         - id: goldButtons
           type: container
           x: 1000
@@ -283,22 +211,14 @@ resources:
               content: "Gold:"
               x: 0
               y: 0
-              textStyle:
-                fontSize: 22
-                fill: "#A6A6A6"
-
+              textStyleId: textStyle5
             - id: btnGoldAdd
               type: text
               content: "+100"
               x: 70
               y: 0
-              textStyle:
-                fontSize: 20
-                fill: "#737373"
               hover:
-                textStyle:
-                  fontSize: 20
-                  fill: "#A6A6A6"
+                textStyleId: textStyle9
               click:
                 actionPayload:
                   actions:
@@ -308,19 +228,14 @@ resources:
                         - variableId: playerGold
                           op: increment
                           value: 100
-
+              textStyleId: textStyle7
             - id: btnGoldReset
               type: text
-              content: "Reset"
+              content: Reset
               x: 140
               y: 0
-              textStyle:
-                fontSize: 20
-                fill: "#A6A6A6"
               hover:
-                textStyle:
-                  fontSize: 20
-                  fill: "#A6A6A6"
+                textStyleId: textStyle9
               click:
                 actionPayload:
                   actions:
@@ -330,8 +245,7 @@ resources:
                         - variableId: playerGold
                           op: set
                           value: 0
-
-        # Quest toggle
+              textStyleId: textStyle9
         - id: questButton
           type: container
           x: 1400
@@ -342,22 +256,14 @@ resources:
               content: "Quest:"
               x: 0
               y: 0
-              textStyle:
-                fontSize: 22
-                fill: "#A6A6A6"
-
+              textStyleId: textStyle5
             - id: btnQuestToggle
               type: text
-              content: "Toggle"
+              content: Toggle
               x: 80
               y: 0
-              textStyle:
-                fontSize: 20
-                fill: "#737373"
               hover:
-                textStyle:
-                  fontSize: 20
-                  fill: "#4D4D4D"
+                textStyleId: textStyle8
               click:
                 actionPayload:
                   actions:
@@ -366,19 +272,14 @@ resources:
                       operations:
                         - variableId: questCompleted
                           op: toggle
-
-        # Save Slots Section
+              textStyleId: textStyle7
         - id: saveLabel
           type: text
-          content: "SAVE TO SLOT"
+          content: SAVE TO SLOT
           x: 960
           y: 480
           anchorX: 0.5
-          textStyle:
-            fontSize: 28
-            fill: "#737373"
-            fontWeight: bold
-
+          textStyleId: textStyle3
         - id: saveSlotButtons
           type: container
           x: 960
@@ -387,96 +288,67 @@ resources:
           children:
             - id: btnSaveSlot1
               type: text
-              content: "Save Slot 1"
+              content: Save Slot 1
               x: -300
               y: 0
               anchorX: 0.5
-              textStyle:
-                fontSize: 24
-                fill: "#FFFFFF"
-                fontWeight: bold
               hover:
-                textStyle:
-                  fontSize: 24
-                  fill: "#737373"
+                textStyleId: textStyle11
               click:
                 actionPayload:
                   actions:
                     saveSaveSlot:
                       slot: 1
-
+              textStyleId: textStyle10
             - id: btnSaveSlot2
               type: text
-              content: "Save Slot 2"
+              content: Save Slot 2
               x: -100
               y: 0
               anchorX: 0.5
-              textStyle:
-                fontSize: 24
-                fill: "#FFFFFF"
-                fontWeight: bold
               hover:
-                textStyle:
-                  fontSize: 24
-                  fill: "#737373"
+                textStyleId: textStyle11
               click:
                 actionPayload:
                   actions:
                     saveSaveSlot:
                       slot: 2
-
+              textStyleId: textStyle10
             - id: btnSaveSlot3
               type: text
-              content: "Save Slot 3"
+              content: Save Slot 3
               x: 100
               y: 0
               anchorX: 0.5
-              textStyle:
-                fontSize: 24
-                fill: "#FFFFFF"
-                fontWeight: bold
               hover:
-                textStyle:
-                  fontSize: 24
-                  fill: "#737373"
+                textStyleId: textStyle11
               click:
                 actionPayload:
                   actions:
                     saveSaveSlot:
                       slot: 3
-
+              textStyleId: textStyle10
             - id: btnSaveSlot4
               type: text
-              content: "Save Slot 4"
+              content: Save Slot 4
               x: 300
               y: 0
               anchorX: 0.5
-              textStyle:
-                fontSize: 24
-                fill: "#FFFFFF"
-                fontWeight: bold
               hover:
-                textStyle:
-                  fontSize: 24
-                  fill: "#737373"
+                textStyleId: textStyle11
               click:
                 actionPayload:
                   actions:
                     saveSaveSlot:
                       slot: 4
-
-        # Load Slots Section
+              textStyleId: textStyle10
         - id: loadLabel
           type: text
-          content: "LOAD FROM SLOT"
+          content: LOAD FROM SLOT
           x: 960
           y: 640
           anchorX: 0.5
-          textStyle:
-            fontSize: 28
-            fill: "#737373"
-            fontWeight: bold
-
+          textStyleId: textStyle3
         - id: loadSlotButtons
           type: container
           x: 960
@@ -485,107 +357,187 @@ resources:
           children:
             - id: btnLoadSlot1
               type: text
-              content: "Load Slot 1"
+              content: Load Slot 1
               x: -300
               y: 0
               anchorX: 0.5
-              textStyle:
-                fontSize: 24
-                fill: "#FFFFFF"
-                fontWeight: bold
               hover:
-                textStyle:
-                  fontSize: 24
-                  fill: "#737373"
+                textStyleId: textStyle11
               click:
                 actionPayload:
                   actions:
                     loadSaveSlot:
                       slot: 1
-
+              textStyleId: textStyle10
             - id: btnLoadSlot2
               type: text
-              content: "Load Slot 2"
+              content: Load Slot 2
               x: -100
               y: 0
               anchorX: 0.5
-              textStyle:
-                fontSize: 24
-                fill: "#FFFFFF"
-                fontWeight: bold
               hover:
-                textStyle:
-                  fontSize: 24
-                  fill: "#737373"
+                textStyleId: textStyle11
               click:
                 actionPayload:
                   actions:
                     loadSaveSlot:
                       slot: 2
-
+              textStyleId: textStyle10
             - id: btnLoadSlot3
               type: text
-              content: "Load Slot 3"
+              content: Load Slot 3
               x: 100
               y: 0
               anchorX: 0.5
-              textStyle:
-                fontSize: 24
-                fill: "#FFFFFF"
-                fontWeight: bold
               hover:
-                textStyle:
-                  fontSize: 24
-                  fill: "#737373"
+                textStyleId: textStyle11
               click:
                 actionPayload:
                   actions:
                     loadSaveSlot:
                       slot: 3
-
+              textStyleId: textStyle10
             - id: btnLoadSlot4
               type: text
-              content: "Load Slot 4"
+              content: Load Slot 4
               x: 300
               y: 0
               anchorX: 0.5
-              textStyle:
-                fontSize: 24
-                fill: "#FFFFFF"
-                fontWeight: bold
               hover:
-                textStyle:
-                  fontSize: 24
-                  fill: "#737373"
+                textStyleId: textStyle11
               click:
                 actionPayload:
                   actions:
                     loadSaveSlot:
                       slot: 4
-
-        # Instructions
+              textStyleId: textStyle10
         - id: instructions
           type: text
-          content: "1. Modify the current state (name, level, gold, quest)\n2. Save to a slot\n3. Modify state again differently\n4. Save to another slot\n5. Load different slots to see each has its own context variables!"
+          content: |-
+            1. Modify the current state (name, level, gold, quest)
+            2. Save to a slot
+            3. Modify state again differently
+            4. Save to another slot
+            5. Load different slots to see each has its own context variables!
           x: 960
           y: 850
           anchorX: 0.5
-          textStyle:
-            fontSize: 20
-            fill: "#A6A6A6"
-            align: center
-
+          textStyleId: textStyle12
         - id: devToolsHint
           type: text
           content: "Open DevTools Console and type: JSON.parse(localStorage.getItem('saveSlots'))"
           x: 960
           y: 1000
           anchorX: 0.5
-          textStyle:
-            fontSize: 18
-            fill: "#4D4D4D"
-            align: center
-
+          textStyleId: textStyle13
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: "#FFFFFF"
+    color2:
+      hex: "#A6A6A6"
+    color3:
+      hex: "#737373"
+    color4:
+      hex: "#D9D9D9"
+    color5:
+      hex: "#4D4D4D"
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 42
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle2:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle3:
+      fontId: fontDefault
+      colorId: color3
+      fontSize: 28
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle4:
+      fontId: fontDefault
+      colorId: color4
+      fontSize: 26
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle5:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 22
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle6:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 20
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle7:
+      fontId: fontDefault
+      colorId: color3
+      fontSize: 20
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle8:
+      fontId: fontDefault
+      colorId: color5
+      fontSize: 20
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle9:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 20
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle10:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 24
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle11:
+      fontId: fontDefault
+      colorId: color3
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle12:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 20
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+      align: center
+    textStyle13:
+      fontId: fontDefault
+      colorId: color5
+      fontSize: 18
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+      align: center
 story:
   initialSceneId: main
   scenes:

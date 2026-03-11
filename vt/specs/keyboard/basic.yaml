@@ -1,6 +1,6 @@
 ---
-title: "Keyboard Navigation"
-description: "Test basic keyboard controls. Enter = nextLine, Space = toggleDialogueUI."
+title: Keyboard Navigation
+description: Test basic keyboard controls. Enter = nextLine, Space = toggleDialogueUI.
 ---
 l10n:
   packages:
@@ -8,15 +8,13 @@ l10n:
       label: English
       lang: en
       keys:
-        line1: "Press ENTER to advance to the next line."
-        line2: "Press SPACE to hide and show this dialogue box."
-        line3: "Good job! The test is complete."
-
+        line1: Press ENTER to advance to the next line.
+        line2: Press SPACE to hide and show this dialogue box.
+        line3: Good job! The test is complete.
 screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 resources:
   keyboards:
     gameplay:
@@ -52,10 +50,21 @@ resources:
           x: 150
           y: 850
           content: ${dialogue.content[0].text}
-          textStyle:
-            fontSize: 32
-            fill: "white"
-
+          textStyleId: textStyle1
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: white
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 32
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
 story:
   initialSceneId: main
   scenes:
@@ -69,7 +78,7 @@ story:
                 base:
                   resourceId: baseLayout
                 keyboard:
-                  resourceId: gameplay 
+                  resourceId: gameplay
                 dialogue:
                   gui:
                     resourceId: dialogueLayout

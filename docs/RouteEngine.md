@@ -132,6 +132,70 @@ eventHandler: (eventName, payload) => {
 }
 ```
 
+#### Layout Text Styles
+
+Layout text should be authored with `textStyleId` and resolved through `resources.textStyles`.
+Authored inline `textStyle` objects in layout elements are rejected at render-state construction.
+
+```yaml
+resources:
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    colorPrimary:
+      hex: "#FFFFFF"
+  textStyles:
+    body:
+      fontId: fontDefault
+      colorId: colorPrimary
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+  layouts:
+    dialogueLayout:
+      elements:
+        - id: dialogue-text
+          type: text
+          content: "${dialogue.content[0].text}"
+          textStyleId: body
+```
+
+#### Layout Sprite Images
+
+Layout sprite elements should be authored with `imageId` and optional
+`hoverImageId` / `clickImageId`.
+Authored inline sprite `src` and interaction `hover.src` / `click.src` fields are
+rejected at render-state construction. Legacy `url`, `hoverUrl`, and `clickUrl`
+fields are also rejected.
+
+If `resources.images[imageId]` exists, the engine resolves the sprite to that
+image resource's `fileId`. Otherwise, the rendered `imageId` string is passed
+through directly, which allows dynamic values such as save preview image keys.
+Before RouteGraphics parses the layout, the engine resolves these IDs to
+sprite-facing `src`, `hover.src`, and `click.src` fields.
+
+```yaml
+resources:
+  images:
+    buttonIdle:
+      fileId: button-idle.png
+      width: 400
+      height: 80
+    buttonHover:
+      fileId: button-hover.png
+      width: 400
+      height: 80
+  layouts:
+    titleLayout:
+      elements:
+        - id: start-button
+          type: sprite
+          imageId: buttonIdle
+          hoverImageId: buttonHover
+```
+
 ### `handleLineActions()`
 
 Processes actions attached to the current line. Called automatically on line changes.

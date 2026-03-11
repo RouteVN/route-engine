@@ -1,5 +1,5 @@
 ---
-title: "History"
+title: History
 ---
 l10n:
   packages:
@@ -11,8 +11,12 @@ screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 resources:
+  images:
+    3kda832:
+      fileId: 3kda832
+      width: 1920
+      height: 1080
   layouts:
     base1:
       elements:
@@ -35,66 +39,58 @@ resources:
           width: 1920
           height: 1080
           fill: "#000000"
-          clickEventName: "system"
+          clickEventName: system
           clickEventPayload:
             actions:
               nextLine: {}
     fi3l:
       name: Dialogue Screen
-      mode: "adv"
+      mode: adv
       elements:
         - id: dialogue-container
-          type: "container"
+          type: container
           x: 50
           y: 300
           children:
-            - id: "bfeawjk2g"
+            - id: bfeawjk2g
               type: sprite
               width: 1400
               height: 300
-              url: 3kda832
+              imageId: 3kda832
               x: 0
               y: 0
             - id: dialogue-character-name
               type: text
-              content: "${dialogue.character.name}"
+              content: ${dialogue.character.name}
               x: 20
               y: 40
-              textStyle:
-                fontSize: 24
-                fill: "white"
+              textStyleId: textStyle1
             - id: dialogue-text
-              type: "text"
+              type: text
               x: 20
               y: 100
-              content: "${dialogue.content[0].text}"
-              textStyle:
-                fontSize: 24
-                fill: "white"
+              content: ${dialogue.content[0].text}
+              textStyleId: textStyle1
         - id: history-button-text
           type: text
           x: 1220
           y: 35
-          content: "History"
-          textStyle:
-            fontSize: 20
-            fill: "white"
+          content: History
           hover:
-            textStyle:
-              fontSize: 32
-              fill: yellow
+            textStyleId: textStyle3
           click:
             actionPayload:
               actions:
                 pushLayeredView:
                   resourceId: historyLayout
                   resourceType: layout
+          textStyleId: textStyle2
     historyLayout:
       name: Dialogue History
       elements:
         - id: history-bg
           type: rect
-          fill: "rgba(0, 0, 0, 0.8)"
+          fill: rgba(0, 0, 0, 0.8)
           width: 1920
           height: 1080
           x: 0
@@ -115,12 +111,10 @@ resources:
               actions: {}
         - id: history-title
           type: text
-          content: "Dialogue History"
+          content: Dialogue History
           x: 810
           y: 230
-          textStyle:
-            fontSize: 36
-            fill: "#FFFFFF"
+          textStyleId: textStyle4
         - id: history-scroll-container
           type: container
           direction: vertical
@@ -140,18 +134,12 @@ resources:
                 children:
                   - id: history-character-${i}
                     type: text
-                    content: "${item.characterName}"
-                    textStyle:
-                      fontSize: 20
-                      fill: "#D9D9D9"
+                    content: ${item.characterName}
+                    textStyleId: textStyle5
                   - id: history-text-${i}
                     type: text
-                    content: "${item.content[0].text}"
-                    textStyle:
-                      fontSize: 18
-                      fill: "#FFFFFF"
-                      wordWrap: true
-                      wordWrapWidth: 900
+                    content: ${item.content[0].text}
+                    textStyleId: textStyle6
         - id: close-button-bg
           type: rect
           fill: "#737373"
@@ -165,16 +153,77 @@ resources:
                 popLayeredView: {}
         - id: close-button-text
           type: text
-          content: "Close"
+          content: Close
           x: 935
           y: 815
-          textStyle:
-            fontSize: 24
-            fill: "#FFFFFF"
+          textStyleId: textStyle7
   characters:
     ajf34a:
       name: Character A
-
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: white
+    color2:
+      hex: yellow
+    color3:
+      hex: "#FFFFFF"
+    color4:
+      hex: "#D9D9D9"
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle2:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 20
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle3:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 32
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle4:
+      fontId: fontDefault
+      colorId: color3
+      fontSize: 36
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle5:
+      fontId: fontDefault
+      colorId: color4
+      fontSize: 20
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle6:
+      fontId: fontDefault
+      colorId: color3
+      fontSize: 18
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+      wordWrap: true
+      wordWrapWidth: 900
+    textStyle7:
+      fontId: fontDefault
+      colorId: color3
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
 story:
   initialSceneId: ajfl3a
   scenes:

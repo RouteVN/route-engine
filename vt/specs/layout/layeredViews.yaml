@@ -1,5 +1,5 @@
 ---
-title: "Layered Views Test"
+title: Layered Views Test
 ---
 l10n:
   packages:
@@ -7,12 +7,10 @@ l10n:
       label: English
       lang: en
       keys: {}
-
 screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 resources:
   layouts:
     baseLayout:
@@ -24,14 +22,10 @@ resources:
           height: 1080
         - id: title
           type: text
-          content: "Layered Views Test"
+          content: Layered Views Test
           x: 700
           y: 100
-          textStyle:
-            fontSize: 48
-            fill: "#FFFFFF"
-
-        # Push Menu Button
+          textStyleId: textStyle1
         - id: pushMenuBtn
           type: rect
           fill: "#737373"
@@ -47,14 +41,10 @@ resources:
                   resourceType: layout
         - id: pushMenuText
           type: text
-          content: "Push Menu Layer"
+          content: Push Menu Layer
           x: 140
           y: 325
-          textStyle:
-            fontSize: 24
-            fill: "#FFFFFF"
-
-        # Push Overlay Button
+          textStyleId: textStyle2
         - id: pushOverlayBtn
           type: rect
           fill: "#737373"
@@ -70,14 +60,10 @@ resources:
                   resourceType: layout
         - id: pushOverlayText
           type: text
-          content: "Push Overlay Layer"
+          content: Push Overlay Layer
           x: 115
           y: 425
-          textStyle:
-            fontSize: 24
-            fill: "#FFFFFF"
-
-        # Pop Button
+          textStyleId: textStyle2
         - id: popBtn
           type: rect
           fill: "#737373"
@@ -91,14 +77,10 @@ resources:
                 popLayeredView: {}
         - id: popText
           type: text
-          content: "Pop Layer"
+          content: Pop Layer
           x: 180
           y: 525
-          textStyle:
-            fontSize: 24
-            fill: "#FFFFFF"
-
-        # Replace Last Button
+          textStyleId: textStyle2
         - id: replaceBtn
           type: rect
           fill: "#737373"
@@ -114,14 +96,10 @@ resources:
                   resourceType: layout
         - id: replaceText
           type: text
-          content: "Replace Last Layer"
+          content: Replace Last Layer
           x: 115
           y: 625
-          textStyle:
-            fontSize: 24
-            fill: "#FFFFFF"
-
-        # Clear All Button
+          textStyleId: textStyle2
         - id: clearBtn
           type: rect
           fill: "#737373"
@@ -135,13 +113,10 @@ resources:
                 clearLayeredViews: {}
         - id: clearText
           type: text
-          content: "Clear All Layers"
+          content: Clear All Layers
           x: 135
           y: 725
-          textStyle:
-            fontSize: 24
-            fill: "#FFFFFF"
-
+          textStyleId: textStyle2
     menuLayout:
       elements:
         - id: menuBg
@@ -153,13 +128,10 @@ resources:
           y: 240
         - id: menuText
           type: text
-          content: "Menu Layer"
+          content: Menu Layer
           x: 900
           y: 300
-          textStyle:
-            fontSize: 32
-            fill: "#FFFFFF"
-
+          textStyleId: textStyle3
     overlayLayout:
       elements:
         - id: overlayBg
@@ -171,13 +143,10 @@ resources:
           y: 440
         - id: overlayText
           type: text
-          content: "Overlay Layer"
+          content: Overlay Layer
           x: 1340
           y: 520
-          textStyle:
-            fontSize: 24
-            fill: "#737373"
-
+          textStyleId: textStyle4
     animatedLayout:
       elements:
         - id: animatedBg
@@ -189,13 +158,54 @@ resources:
           y: 650
         - id: animatedText
           type: text
-          content: "Replaced Layer"
+          content: Replaced Layer
           x: 1290
           y: 760
-          textStyle:
-            fontSize: 28
-            fill: "#FFFFFF"
-
+          textStyleId: textStyle5
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: "#FFFFFF"
+    color2:
+      hex: "#737373"
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 48
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle2:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle3:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 32
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle4:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle5:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 28
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
 story:
   initialSceneId: testScene
   scenes:

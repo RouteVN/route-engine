@@ -658,14 +658,14 @@ in:
           elements:
             - id: "drop1"
               type: "sprite"
-              src: "raindrop.png"
+              imageId: "raindrop.png"
               width: 20
               height: 40
               x: 0
               y: 0
             - id: "drop2"
               type: "sprite"
-              src: "raindrop.png"
+              imageId: "raindrop.png"
               width: 20
               height: 40
               x: 50
@@ -808,7 +808,7 @@ in:
           elements:
             - id: "test"
               type: "sprite"
-              src: "test.png"
+              imageId: "test.png"
       transforms:
         transform1:
           x: 0
@@ -858,7 +858,7 @@ in:
           elements:
             - id: "p1"
               type: "sprite"
-              src: "particle.png"
+              imageId: "particle.png"
               width: 5
               height: 5
       transforms:
@@ -1021,5 +1021,144 @@ out:
                 frequency: 0.05
                 particlesPerWave: 2
                 maxParticles: 300
+  animations: []
+  audio: []
+---
+case: resolves textStyleId in visual layout elements
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "caption"
+            resourceId: "captionLayout"
+            transformId: "transform1"
+    resources:
+      layouts:
+        captionLayout:
+          elements:
+            - id: "caption-text"
+              type: "text"
+              content: "Overlay"
+              textStyleId: "body"
+      textStyles:
+        body:
+          fontId: "fontMain"
+          colorId: "fg"
+          fontSize: 18
+          fontWeight: "400"
+          fontStyle: "normal"
+          lineHeight: 1
+      fonts:
+        fontMain:
+          fileId: "Arial"
+      colors:
+        fg:
+          hex: "#FFFFFF"
+      transforms:
+        transform1:
+          x: 20
+          y: 30
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-caption"
+          type: "container"
+          x: 20
+          y: 30
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - id: "caption-text"
+              type: "text"
+              content: "Overlay"
+              textStyle:
+                fontFamily: "Arial"
+                fontSize: 18
+                fontWeight: "400"
+                fontStyle: "normal"
+                lineHeight: 1
+                fill: "#FFFFFF"
+  animations: []
+  audio: []
+---
+case: resolves imageId in visual layout elements
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "overlay"
+            resourceId: "overlayLayout"
+            transformId: "transform1"
+    resources:
+      layouts:
+        overlayLayout:
+          elements:
+            - id: "overlay-image"
+              type: "sprite"
+              imageId: "overlayImage"
+      images:
+        overlayImage:
+          fileId: "overlay.png"
+          width: 320
+          height: 180
+      transforms:
+        transform1:
+          x: 20
+          y: 30
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-overlay"
+          type: "container"
+          x: 20
+          y: 30
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - id: "overlay-image"
+              type: "sprite"
+              src: "overlay.png"
+              width: 320
+              height: 180
   animations: []
   audio: []

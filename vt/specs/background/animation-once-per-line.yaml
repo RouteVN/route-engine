@@ -1,5 +1,5 @@
 ---
-title: "Animation Once Per Line"
+title: Animation Once Per Line
 description: |
   Verifies that background animations only play when the background action
   is defined on the current line, not on subsequent lines.
@@ -17,7 +17,6 @@ screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 resources:
   layouts:
     base1:
@@ -35,7 +34,7 @@ resources:
       name: Dialogue Screen
       elements:
         - id: dialogue-container
-          type: "container"
+          type: container
           x: 50
           y: 800
           children:
@@ -46,23 +45,19 @@ resources:
               fill: "#4D4D4D"
               alpha: 0.8
             - id: dialogue-text
-              type: "text"
+              type: text
               x: 30
               y: 30
-              content: "${dialogue.content[0].text}"
-              textStyle:
-                fontSize: 32
-                fill: "white"
-
+              content: ${dialogue.content[0].text}
+              textStyleId: textStyle1
   images:
     bg-school:
       fileId: dmni32
       width: 1920
       height: 1080
-
   tweens:
     fade-in:
-      name: "Fade In (1 second)"
+      name: Fade In (1 second)
       properties:
         alpha:
           initialValue: 0
@@ -70,7 +65,20 @@ resources:
             - duration: 1000
               value: 1
               easing: linear
-
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: white
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 32
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
 story:
   initialSceneId: scene1
   scenes:

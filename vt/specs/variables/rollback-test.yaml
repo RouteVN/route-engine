@@ -1,6 +1,6 @@
 ---
-title: "Rollback Test"
-description: "Simple visual novel simulation to test variable rollback"
+title: Rollback Test
+description: Simple visual novel simulation to test variable rollback
 ---
 l10n:
   packages:
@@ -8,23 +8,19 @@ l10n:
       label: English
       lang: en
       keys: {}
-
 screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 resources:
   variables:
     score:
       type: number
       scope: context
       default: 0
-
   characters:
     narrator:
-      name: "Guide"
-
+      name: Guide
   layouts:
     baseLayout:
       elements:
@@ -37,12 +33,10 @@ resources:
             actionPayload:
               actions:
                 nextLine: {}
-
     dialogueUI:
       name: Dialogue UI
       mode: adv
       elements:
-        # Dialogue box
         - id: dialogueBox
           type: rect
           x: 100
@@ -55,61 +49,86 @@ resources:
             actionPayload:
               actions:
                 nextLine: {}
-
-        # Character name
         - id: charName
           type: text
-          content: "${dialogue.character.name}"
+          content: ${dialogue.character.name}
           x: 150
           y: 770
-          textStyle:
-            fontSize: 28
-            fill: "#737373"
-            fontWeight: bold
-
-        # Dialogue text
+          textStyleId: textStyle1
         - id: dialogueText
           type: text
-          content: "${dialogue.content[0].text}"
+          content: ${dialogue.content[0].text}
           x: 150
           y: 820
           width: 1620
-          textStyle:
-            fontSize: 24
-            fill: "#D9D9D9"
-
-        # Score display
+          textStyleId: textStyle2
         - id: scoreDisplay
           type: text
           content: "Score: ${variables.score}"
           x: 1700
           y: 50
           anchorX: 1
-          textStyle:
-            fontSize: 32
-            fill: "#A6A6A6"
-            fontWeight: bold
-
-        # Back button - positioned above dialogue box
+          textStyleId: textStyle3
         - id: backBtn
           type: text
           content: "[BACK to Line 1]"
           x: 100
           y: 700
-          textStyle:
-            fontSize: 28
-            fill: "#737373"
           hover:
-            textStyle:
-              fontSize: 28
-              fill: "#A6A6A6"
+            textStyleId: textStyle5
           click:
             actionPayload:
               actions:
                 rollbackToLine:
-                  sectionId: "story"
-                  lineId: "line1"
-
+                  sectionId: story
+                  lineId: line1
+          textStyleId: textStyle4
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: "#737373"
+    color2:
+      hex: "#D9D9D9"
+    color3:
+      hex: "#A6A6A6"
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 28
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle2:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle3:
+      fontId: fontDefault
+      colorId: color3
+      fontSize: 32
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle4:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 28
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle5:
+      fontId: fontDefault
+      colorId: color3
+      fontSize: 28
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
 story:
   initialSceneId: main
   scenes:
@@ -120,7 +139,6 @@ story:
         story:
           name: Story
           lines:
-            # Line 1: Introduction
             - id: line1
               actions:
                 base:
@@ -130,18 +148,14 @@ story:
                   gui:
                     resourceId: dialogueUI
                   content:
-                    - text: "Welcome! Your current score is 0. Click to continue..."
+                    - text: Welcome! Your current score is 0. Click to continue...
                   characterId: narrator
-
-            # Line 2: First dialogue
             - id: line2
               actions:
                 dialogue:
                   content:
-                    - text: "This is the second line. Nothing changes here yet."
+                    - text: This is the second line. Nothing changes here yet.
                   characterId: narrator
-
-            # Line 3: Add score
             - id: line3
               actions:
                 updateVariable:
@@ -152,10 +166,8 @@ story:
                       value: 10
                 dialogue:
                   content:
-                    - text: "You gained +10 points! Watch the score in the corner."
+                    - text: You gained +10 points! Watch the score in the corner.
                   characterId: narrator
-
-            # Line 4: More score
             - id: line4
               actions:
                 updateVariable:
@@ -166,13 +178,11 @@ story:
                       value: 20
                 dialogue:
                   content:
-                    - text: "Another +20 points! Now try clicking [BACK] to return to line 1."
+                    - text: Another +20 points! Now try clicking [BACK] to return to line 1.
                   characterId: narrator
-
-            # Line 5: End
             - id: line5
               actions:
                 dialogue:
                   content:
-                    - text: "If rollback works, your score should reset to 0 when you go back!"
+                    - text: If rollback works, your score should reset to 0 when you go back!
                   characterId: narrator

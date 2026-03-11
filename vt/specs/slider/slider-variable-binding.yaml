@@ -1,5 +1,5 @@
 ---
-title: "Slider Variable Binding Test"
+title: Slider Variable Binding Test
 ---
 l10n:
   packages:
@@ -11,14 +11,12 @@ screen:
   width: 1920
   height: 1080
   backgroundColor: "#222222"
-
 resources:
   variables:
     sliderValue:
       type: number
       scope: global-device
       default: 50
-
   images:
     horizontal_idle_thumb:
       fileId: horizontal_idle_thumb.png
@@ -36,7 +34,6 @@ resources:
       fileId: horizontal_hover_bar.png
       width: 200
       height: 10
-
   layouts:
     baseLayout:
       elements:
@@ -49,7 +46,6 @@ resources:
             actionPayload:
               actions:
                 nextLine: {}
-
     sliderTestLayout:
       name: Slider Variable Binding Test
       elements:
@@ -58,52 +54,34 @@ resources:
           x: 960
           y: 400
           children:
-            # Title
             - id: title
               type: text
-              content: "Slider Variable Binding Test"
+              content: Slider Variable Binding Test
               x: 0
               y: -200
               anchorX: 0.5
-              textStyle:
-                fontSize: 48
-                fill: "#ffffff"
-
-            # Instructions
+              textStyleId: textStyle1
             - id: instructions
               type: text
-              content: "Drag the slider - the value below should update in real-time"
+              content: Drag the slider - the value below should update in real-time
               x: 0
               y: -120
               anchorX: 0.5
-              textStyle:
-                fontSize: 24
-                fill: "#aaaaaa"
-
-            # Value display label
+              textStyleId: textStyle2
             - id: valueLabel
               type: text
               content: "Current Value:"
               x: -100
               y: 0
               anchorX: 0.5
-              textStyle:
-                fontSize: 32
-                fill: "#ffffff"
-
-            # Variable value display - this should update when slider changes
+              textStyleId: textStyle3
             - id: valueDisplay
               type: text
-              content: "${variables.sliderValue}"
+              content: ${variables.sliderValue}
               x: 80
               y: 0
               anchorX: 0.5
-              textStyle:
-                fontSize: 48
-                fill: "#00ff00"
-                fontWeight: bold
-
-            # The slider
+              textStyleId: textStyle4
             - id: testSlider
               type: slider
               direction: horizontal
@@ -116,7 +94,7 @@ resources:
               min: 0
               max: 100
               step: 1
-              initialValue: "${variables.sliderValue}"
+              initialValue: ${variables.sliderValue}
               hover:
                 thumbSrc: horizontal_hover_thumb
                 barSrc: horizontal_hover_bar
@@ -128,29 +106,69 @@ resources:
                       operations:
                         - variableId: sliderValue
                           op: set
-                          value: "_event.value"
-
-            # Min/Max labels
+                          value: _event.value
             - id: minLabel
               type: text
               content: "0"
               x: -170
               y: 100
               anchorX: 0.5
-              textStyle:
-                fontSize: 20
-                fill: "#888888"
-
+              textStyleId: textStyle5
             - id: maxLabel
               type: text
               content: "100"
               x: 170
               y: 100
               anchorX: 0.5
-              textStyle:
-                fontSize: 20
-                fill: "#888888"
-
+              textStyleId: textStyle5
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: "#ffffff"
+    color2:
+      hex: "#aaaaaa"
+    color3:
+      hex: "#00ff00"
+    color4:
+      hex: "#888888"
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 48
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle2:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle3:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 32
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle4:
+      fontId: fontDefault
+      colorId: color3
+      fontSize: 48
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle5:
+      fontId: fontDefault
+      colorId: color4
+      fontSize: 20
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
 story:
   initialSceneId: testScene
   scenes:

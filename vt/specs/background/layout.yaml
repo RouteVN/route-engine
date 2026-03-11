@@ -44,7 +44,7 @@ resources:
       elements:
         - id: bg
           type: sprite
-          url: file:lakjf3lka
+          imageId: alkejf3la
           x: 0
           y: 0
           width: 1920

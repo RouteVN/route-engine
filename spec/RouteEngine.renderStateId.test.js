@@ -25,6 +25,7 @@ const createMinimalProjectData = () => ({
     tweens: {},
     fonts: {},
     colors: {},
+    textStyles: {},
   },
   story: {
     initialSceneId: "scene1",

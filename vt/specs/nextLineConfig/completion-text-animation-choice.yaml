@@ -1,5 +1,5 @@
 ---
-title: "AutoMode Completion Gates (Text + Animation + Choice)"
+title: AutoMode Completion Gates (Text + Animation + Choice)
 description: |
   Tests auto mode with fromComplete trigger:
   - waits for text-revealing to finish
@@ -17,19 +17,16 @@ l10n:
         line3: "Line 3: auto should continue here."
         line4: "Line 4: choice is visible. auto must stop on this line."
         line5: "Line 5: reached after selecting a choice."
-
 screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 resources:
   images:
     bg-forest:
       fileId: dmni32
       width: 1920
       height: 1080
-
   tweens:
     fade-in-1s:
       properties:
@@ -39,7 +36,6 @@ resources:
             - duration: 1000
               value: 1
               easing: linear
-
   layouts:
     baseLayout:
       elements:
@@ -52,7 +48,6 @@ resources:
             actionPayload:
               actions:
                 nextLine: {}
-
     dialogueLayout:
       mode: adv
       elements:
@@ -64,16 +59,13 @@ resources:
           height: 220
           fill: "#4D4D4D"
         - id: dialogue-text
-          type: "text-revealing"
+          type: text-revealing
           x: 140
           y: 845
           width: 1640
           displaySpeed: 30
           content: ${dialogue.content}
-          textStyle:
-            fontSize: 32
-            fill: "#FFFFFF"
-
+          textStyleId: textStyle1
     choiceLayout:
       elements:
         - id: choice-container
@@ -83,7 +75,7 @@ resources:
           direction: vertical
           gap: 20
           children:
-            - "$each": item, i in choice.items
+            - $each: item, i in choice.items
               id: choice-item-${i}
               type: container
               children:
@@ -101,10 +93,28 @@ resources:
                   x: 28
                   y: 22
                   content: ${item.content}
-                  textStyle:
-                    fontSize: 28
-                    fill: "#FFFFFF"
-
+                  textStyleId: textStyle2
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: "#FFFFFF"
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 32
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle2:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 28
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
 story:
   initialSceneId: testScene
   scenes:
@@ -132,7 +142,6 @@ story:
                     resourceId: dialogueLayout
                   content:
                     - text: ${l10n.keys.line1}
-
             - id: line2
               actions:
                 background:
@@ -143,13 +152,11 @@ story:
                 dialogue:
                   content:
                     - text: ${l10n.keys.line2}
-
             - id: line3
               actions:
                 dialogue:
                   content:
                     - text: ${l10n.keys.line3}
-
             - id: line4
               actions:
                 dialogue:
@@ -159,10 +166,9 @@ story:
                   resourceId: choiceLayout
                   items:
                     - id: continue-a
-                      content: "Continue A"
+                      content: Continue A
                     - id: continue-b
-                      content: "Continue B"
-
+                      content: Continue B
             - id: line5
               actions:
                 choice: {}

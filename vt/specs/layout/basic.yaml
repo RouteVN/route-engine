@@ -1,5 +1,5 @@
 ---
-title: "Sample"
+title: Sample
 ---
 l10n:
   packages:
@@ -11,8 +11,12 @@ screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 resources:
+  images:
+    dmni32:
+      fileId: dmni32
+      width: 1920
+      height: 1080
   layouts:
     base1:
       elements:
@@ -30,7 +34,7 @@ resources:
       elements:
         - id: bg
           type: sprite
-          url: dmni32
+          imageId: dmni32
           width: 1920
           height: 1080
           x: 0
@@ -45,14 +49,32 @@ resources:
               content: Start
               x: 0
               y: 0
-              textStyle:
-                fontSize: 48
-                fill: "white"
               hover:
-                textStyle:
-                  fontSize: 48
-                  fill: yellow
-
+                textStyleId: textStyle2
+              textStyleId: textStyle1
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: white
+    color2:
+      hex: yellow
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 48
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle2:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 48
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
 story:
   initialSceneId: ajfl3a
   scenes:

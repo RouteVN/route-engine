@@ -1,5 +1,5 @@
 ---
-title: "AutoMode Completion Gates (Video + Animation)"
+title: AutoMode Completion Gates (Video + Animation)
 description: |
   Tests nextLineConfig auto in two phases:
   - fromStart: timer starts when line starts
@@ -22,25 +22,21 @@ l10n:
         line5: "Line 5: fromComplete on video background."
         line6: "Line 6: fromComplete on animation."
         line7: "Line 7: done."
-
 screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 resources:
   images:
     bg-moon:
       fileId: 23jkfa893
       width: 1920
       height: 1080
-
   videos:
     bg-video:
       fileId: video_sample
       width: 1920
       height: 1080
-
   tweens:
     fade-in-800:
       properties:
@@ -50,7 +46,6 @@ resources:
             - duration: 800
               value: 1
               easing: linear
-
   layouts:
     baseLayout:
       elements:
@@ -63,7 +58,6 @@ resources:
             actionPayload:
               actions:
                 nextLine: {}
-
     dialogueLayout:
       mode: adv
       elements:
@@ -75,16 +69,27 @@ resources:
           height: 220
           fill: "#4D4D4D"
         - id: dialogue-text
-          type: "text-revealing"
+          type: text-revealing
           x: 140
           y: 845
           width: 1640
           displaySpeed: 24
           content: ${dialogue.content}
-          textStyle:
-            fontSize: 32
-            fill: "#FFFFFF"
-
+          textStyleId: textStyle1
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: "#FFFFFF"
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 32
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
 story:
   initialSceneId: testScene
   scenes:
@@ -103,7 +108,6 @@ story:
                     resourceId: dialogueLayout
                   content:
                     - text: ${l10n.keys.line0}
-
             - id: line1
               actions:
                 setNextLineConfig:
@@ -120,7 +124,6 @@ story:
                     resourceId: dialogueLayout
                   content:
                     - text: ${l10n.keys.line1}
-
             - id: line2
               actions:
                 background:
@@ -129,7 +132,6 @@ story:
                 dialogue:
                   content:
                     - text: ${l10n.keys.line2}
-
             - id: line3
               actions:
                 background:
@@ -140,7 +142,6 @@ story:
                 dialogue:
                   content:
                     - text: ${l10n.keys.line3}
-
             - id: line4
               actions:
                 setNextLineConfig:
@@ -154,7 +155,6 @@ story:
                 dialogue:
                   content:
                     - text: ${l10n.keys.line4}
-
             - id: line5
               actions:
                 background:
@@ -163,7 +163,6 @@ story:
                 dialogue:
                   content:
                     - text: ${l10n.keys.line5}
-
             - id: line6
               actions:
                 background:
@@ -174,7 +173,6 @@ story:
                 dialogue:
                   content:
                     - text: ${l10n.keys.line6}
-
             - id: line7
               actions:
                 setNextLineConfig:

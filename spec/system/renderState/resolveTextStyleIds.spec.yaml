@@ -1,0 +1,305 @@
+file: "../../../src/stores/constructRenderState.js"
+group: constructRenderState.resolveTextStyleIds
+suites: [resolveTextStyleIds]
+---
+suite: resolveTextStyleIds
+exportName: resolveTextStyleIds
+---
+case: resolves textStyleId into inline textStyle
+in:
+  - type: "text"
+    content: "Hello"
+    textStyleId: "body"
+  - textStyles:
+      body:
+        fontId: "fontMain"
+        colorId: "fg"
+        fontSize: 24
+        fontWeight: "400"
+        fontStyle: "normal"
+        lineHeight: 1.2
+        strokeColorId: "outline"
+        strokeWidth: 2
+    fonts:
+      fontMain:
+        fileId: "Arial"
+    colors:
+      fg:
+        hex: "#FFFFFF"
+      outline:
+        hex: "#000000"
+out:
+  type: "text"
+  content: "Hello"
+  textStyle:
+    fontFamily: "Arial"
+    fontSize: 24
+    fontWeight: "400"
+    fontStyle: "normal"
+    lineHeight: 1.2
+    fill: "#FFFFFF"
+    strokeColor: "#000000"
+    strokeWidth: 2
+---
+case: resolves nested interaction textStyleIds and extended text style fields
+in:
+  - id: "container"
+    type: "container"
+    children:
+      - id: "title"
+        type: "text"
+        content: "Start"
+        textStyleId: "title"
+        hover:
+          textStyleId: "titleHover"
+        click:
+          textStyleId: "titleClick"
+        rightClick:
+          textStyleId: "titleRightClick"
+  - textStyles:
+      title:
+        fontId: "fontMain"
+        colorId: "fg"
+        fontSize: 48
+        fontWeight: "bold"
+        fontStyle: "normal"
+        lineHeight: 1
+        align: "center"
+        wordWrap: true
+        breakWords: true
+        wordWrapWidth: 600
+      titleHover:
+        fontId: "fontMain"
+        colorId: "hover"
+        fontSize: 48
+        fontWeight: "500"
+        fontStyle: "normal"
+        lineHeight: 1
+      titleClick:
+        fontId: "fontMain"
+        colorId: "active"
+        fontSize: 48
+        fontWeight: "400"
+        fontStyle: "normal"
+        lineHeight: 1
+      titleRightClick:
+        fontId: "fontMain"
+        colorId: "muted"
+        fontSize: 48
+        fontWeight: "400"
+        fontStyle: "italic"
+        lineHeight: 1
+    fonts:
+      fontMain:
+        fileId: "Arial"
+    colors:
+      fg:
+        hex: "#FFFFFF"
+      hover:
+        hex: "#FFFF00"
+      active:
+        hex: "#FF0000"
+      muted:
+        hex: "#999999"
+out:
+  id: "container"
+  type: "container"
+  children:
+    - id: "title"
+      type: "text"
+      content: "Start"
+      textStyle:
+        fontFamily: "Arial"
+        fontSize: 48
+        fontWeight: "bold"
+        fontStyle: "normal"
+        lineHeight: 1
+        fill: "#FFFFFF"
+        align: "center"
+        wordWrap: true
+        breakWords: true
+        wordWrapWidth: 600
+      hover:
+        textStyle:
+          fontFamily: "Arial"
+          fontSize: 48
+          fontWeight: "500"
+          fontStyle: "normal"
+          lineHeight: 1
+          fill: "#FFFF00"
+      click:
+        textStyle:
+          fontFamily: "Arial"
+          fontSize: 48
+          fontWeight: "400"
+          fontStyle: "normal"
+          lineHeight: 1
+          fill: "#FF0000"
+      rightClick:
+        textStyle:
+          fontFamily: "Arial"
+          fontSize: 48
+          fontWeight: "400"
+          fontStyle: "italic"
+          lineHeight: 1
+          fill: "#999999"
+---
+case: leaves nodes without textStyleId unchanged
+in:
+  - type: "text"
+    content: "Hello"
+  - {}
+out:
+  type: "text"
+  content: "Hello"
+---
+case: inline textStyle throws clear error
+in:
+  - type: "text"
+    content: "Hello"
+    textStyle:
+      fontSize: 20
+      fill: "#FFFFFF"
+  - {}
+throws: 'Inline textStyle is not allowed in layout elements at "root". Use textStyleId instead'
+---
+case: nested inline interaction textStyle throws clear error
+in:
+  - type: "text"
+    content: "Hello"
+    textStyleId: "body"
+    hover:
+      textStyle:
+        fill: "#FFFFFF"
+  - textStyles:
+      body:
+        fontId: "fontMain"
+        colorId: "fg"
+        fontSize: 24
+        fontWeight: "400"
+        fontStyle: "normal"
+        lineHeight: 1
+    fonts:
+      fontMain:
+        fileId: "Arial"
+    colors:
+      fg:
+        hex: "#FFFFFF"
+throws: 'Inline textStyle is not allowed in layout elements at "hover". Use textStyleId instead'
+---
+case: missing textStyle resource throws clear error
+in:
+  - type: "text"
+    content: "Hello"
+    textStyleId: "missing"
+  - textStyles: {}
+throws: 'Text style "missing" not found'
+---
+case: textStyleId must resolve to a non-empty string
+in:
+  - type: "text"
+    content: "Hello"
+    textStyleId: 123
+  - textStyles: {}
+throws: 'textStyleId at "root" must resolve to a non-empty string'
+---
+case: does not fallback to legacy typography resources
+in:
+  - type: "text"
+    content: "Hello"
+    textStyleId: "body"
+  - typography:
+      body:
+        fontId: "fontMain"
+        colorId: "fg"
+        fontSize: 24
+        fontWeight: "400"
+        fontStyle: "normal"
+        lineHeight: 1
+    fonts:
+      fontMain:
+        fileId: "Arial"
+    colors:
+      fg:
+        hex: "#FFFFFF"
+throws: 'Text style "body" not found'
+---
+case: does not fallback to singular textStyle resources
+in:
+  - type: "text"
+    content: "Hello"
+    textStyleId: "body"
+  - textStyle:
+      body:
+        fontId: "fontMain"
+        colorId: "fg"
+        fontSize: 24
+        fontWeight: "400"
+        fontStyle: "normal"
+        lineHeight: 1
+    fonts:
+      fontMain:
+        fileId: "Arial"
+    colors:
+      fg:
+        hex: "#FFFFFF"
+throws: 'Text style "body" not found'
+---
+case: missing font resource throws clear error
+in:
+  - type: "text"
+    content: "Hello"
+    textStyleId: "body"
+  - textStyles:
+      body:
+        fontId: "missingFont"
+        colorId: "fg"
+        fontSize: 24
+        fontWeight: "400"
+        fontStyle: "normal"
+        lineHeight: 1
+    colors:
+      fg:
+        hex: "#FFFFFF"
+throws: 'Font "missingFont" not found for text style "body"'
+---
+case: missing color resource throws clear error
+in:
+  - type: "text"
+    content: "Hello"
+    textStyleId: "body"
+  - textStyles:
+      body:
+        fontId: "fontMain"
+        colorId: "missingColor"
+        fontSize: 24
+        fontWeight: "400"
+        fontStyle: "normal"
+        lineHeight: 1
+    fonts:
+      fontMain:
+        fileId: "Arial"
+throws: 'Color "missingColor" not found for text style "body"'
+---
+case: missing stroke color resource throws clear error
+in:
+  - type: "text"
+    content: "Hello"
+    textStyleId: "body"
+  - textStyles:
+      body:
+        fontId: "fontMain"
+        colorId: "fg"
+        fontSize: 24
+        fontWeight: "400"
+        fontStyle: "normal"
+        lineHeight: 1
+        strokeColorId: "missingStroke"
+        strokeWidth: 2
+    fonts:
+      fontMain:
+        fileId: "Arial"
+    colors:
+      fg:
+        hex: "#FFFFFF"
+throws: 'Stroke color "missingStroke" not found for text style "body"'

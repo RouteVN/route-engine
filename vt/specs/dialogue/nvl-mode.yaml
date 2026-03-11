@@ -1,5 +1,5 @@
 ---
-title: "NVL Mode"
+title: NVL Mode
 ---
 l10n:
   packages:
@@ -11,7 +11,6 @@ screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 resources:
   layouts:
     base1:
@@ -25,7 +24,6 @@ resources:
             actionPayload:
               actions:
                 nextLine: {}
-
     adv-layout:
       elements:
         - id: dialogue-bg
@@ -34,25 +32,19 @@ resources:
           y: 820
           width: 1920
           height: 260
-          fill: "rgba(0, 0, 0, 0.8)"
+          fill: rgba(0, 0, 0, 0.8)
         - id: character-name
           type: text
           x: 100
           y: 850
-          content: "${dialogue.character.name}"
-          textStyle:
-            fontSize: 28
-            fontWeight: "bold"
-            fill: "#D9D9D9"
+          content: ${dialogue.character.name}
+          textStyleId: textStyle1
         - id: dialogue-text
           type: text
           x: 100
           y: 900
-          content: "${dialogue.content[0].text}"
-          textStyle:
-            fontSize: 24
-            fill: "#FFFFFF"
-
+          content: ${dialogue.content[0].text}
+          textStyleId: textStyle2
     nvl-layout:
       elements:
         - id: nvl-bg
@@ -61,7 +53,7 @@ resources:
           y: 0
           width: 1920
           height: 1080
-          fill: "rgba(0, 0, 0, 0.85)"
+          fill: rgba(0, 0, 0, 0.85)
         - id: nvl-container
           type: container
           x: 100
@@ -70,32 +62,62 @@ resources:
           gap: 30
           children:
             - $for line, i in dialogue.lines:
-                - id: "line-${i}"
+                - id: line-${i}
                   type: container
                   direction: horizontal
                   gap: 10
                   children:
                     - $if line.characterName:
-                        - id: "name-${i}"
+                        - id: name-${i}
                           type: text
                           content: "${line.characterName}:"
-                          textStyle:
-                            fontSize: 22
-                            fontWeight: "bold"
-                            fill: "#D9D9D9"
-                    - id: "text-${i}"
+                          textStyleId: textStyle3
+                    - id: text-${i}
                       type: text
-                      content: "${line.content[0].text}"
-                      textStyle:
-                        fontSize: 22
-                        fill: "#FFFFFF"
-
+                      content: ${line.content[0].text}
+                      textStyleId: textStyle4
   characters:
     alice:
-      name: "Alice"
+      name: Alice
     bob:
-      name: "Bob"
-
+      name: Bob
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: "#D9D9D9"
+    color2:
+      hex: "#FFFFFF"
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 28
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle2:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle3:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 22
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle4:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 22
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
 story:
   initialSceneId: main
   scenes:
@@ -106,7 +128,6 @@ story:
         section1:
           name: Section 1
           lines:
-            # ADV mode start
             - id: "1"
               actions:
                 base:
@@ -117,9 +138,7 @@ story:
                     resourceId: adv-layout
                   characterId: alice
                   content:
-                    - text: "Starting in ADV mode. Click to switch to NVL."
-
-            # Switch to NVL - lines accumulate
+                    - text: Starting in ADV mode. Click to switch to NVL.
             - id: "2"
               actions:
                 dialogue:
@@ -127,45 +146,37 @@ story:
                   gui:
                     resourceId: nvl-layout
                   content:
-                    - text: "Now in NVL mode. This is narration without a speaker."
-
+                    - text: Now in NVL mode. This is narration without a speaker.
             - id: "3"
               actions:
                 dialogue:
                   characterId: alice
                   content:
-                    - text: "This line has Alice as the speaker."
-
+                    - text: This line has Alice as the speaker.
             - id: "4"
               actions:
                 dialogue:
                   characterId: bob
                   content:
-                    - text: "And this one is Bob speaking."
-
+                    - text: And this one is Bob speaking.
             - id: "5"
               actions:
                 dialogue:
                   content:
-                    - text: "Another narration line. All lines should be visible above."
-
-            # clearPage - clears and starts fresh
+                    - text: Another narration line. All lines should be visible above.
             - id: "6"
               actions:
                 dialogue:
                   clearPage: true
                   characterId: alice
                   content:
-                    - text: "Page cleared! This is the only line now."
-
+                    - text: Page cleared! This is the only line now.
             - id: "7"
               actions:
                 dialogue:
                   characterId: bob
                   content:
-                    - text: "Second line on the new page."
-
-            # Back to ADV
+                    - text: Second line on the new page.
             - id: "8"
               actions:
                 dialogue:
@@ -174,4 +185,4 @@ story:
                     resourceId: adv-layout
                   characterId: alice
                   content:
-                    - text: "Back to ADV mode. Test complete!"
+                    - text: Back to ADV mode. Test complete!
