@@ -18,23 +18,23 @@ resources:
       elements:
         - id: af32
           type: rect
-          fill: "#000000"
           width: 1920
           height: 1080
           click:
             actionPayload:
               actions:
                 nextLine: {}
+          colorId: layoutColor1
     menuLayout:
       name: Menu Layout
       elements:
         - id: menuBg
           type: rect
-          fill: "#4D4D4D"
           width: 300
           height: 400
           x: 0
           y: 0
+          colorId: layoutColor2
         - id: title
           type: text
           content: Menu
@@ -86,6 +86,10 @@ resources:
       hex: white
     color2:
       hex: yellow
+    layoutColor1:
+      hex: "#000000"
+    layoutColor2:
+      hex: "#4D4D4D"
   textStyles:
     textStyle1:
       fontId: fontDefault

@@ -738,9 +738,12 @@ in:
           elements:
             - id: "bg"
               type: "rect"
-              fill: "#000000"
+              colorId: "bgColor"
               width: 1920
               height: 1080
+      colors:
+        bgColor:
+          hex: "#000000"
       transforms:
         transform1:
           x: 0
@@ -1098,6 +1101,68 @@ out:
                 fontStyle: "normal"
                 lineHeight: 1
                 fill: "#FFFFFF"
+  animations: []
+  audio: []
+---
+case: resolves colorId in visual layout elements
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "overlay"
+            resourceId: "overlayLayout"
+            transformId: "transform1"
+    resources:
+      layouts:
+        overlayLayout:
+          elements:
+            - id: "overlay-panel"
+              type: "rect"
+              width: 640
+              height: 360
+              colorId: "overlayColor"
+      colors:
+        overlayColor:
+          hex: "#000000"
+      transforms:
+        transform1:
+          x: 20
+          y: 30
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-overlay"
+          type: "container"
+          x: 20
+          y: 30
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - id: "overlay-panel"
+              type: "rect"
+              width: 640
+              height: 360
+              fill: "#000000"
   animations: []
   audio: []
 ---

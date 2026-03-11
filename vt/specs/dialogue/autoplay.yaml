@@ -31,11 +31,11 @@ resources:
           y: 0
           width: 1920
           height: 1080
-          fill: "#000000"
           click:
             actionPayload:
               actions:
                 nextLine: {}
+          colorId: layoutColor1
     dialogueLayout:
       name: Dialogue Screen
       mode: adv
@@ -46,7 +46,7 @@ resources:
           y: 800
           width: 1720
           height: 200
-          fill: "#4D4D4D"
+          colorId: layoutColor2
         - id: dialogue-text
           type: text
           x: 150
@@ -117,6 +117,10 @@ resources:
       hex: "#D9D9D9"
     color3:
       hex: yellow
+    layoutColor1:
+      hex: "#000000"
+    layoutColor2:
+      hex: "#4D4D4D"
   textStyles:
     textStyle1:
       fontId: fontDefault

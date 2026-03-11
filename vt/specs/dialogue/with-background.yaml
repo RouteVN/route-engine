@@ -17,13 +17,13 @@ resources:
       elements:
         - id: af32
           type: rect
-          fill: "#000000"
           width: 1920
           height: 1080
           click:
             actionPayload:
               actions:
                 nextLine: {}
+          colorId: layoutColor1
     storyScreenLayout:
       name: Story Screen Background
       elements:
@@ -33,11 +33,11 @@ resources:
           y: 0
           width: 1920
           height: 1080
-          fill: "#000000"
           clickEventName: system
           clickEventPayload:
             actions:
               nextLine: {}
+          colorId: layoutColor1
     fi3l:
       name: Dialogue Screen
       elements:
@@ -101,6 +101,8 @@ resources:
   colors:
     color1:
       hex: white
+    layoutColor1:
+      hex: "#000000"
   textStyles:
     textStyle1:
       fontId: fontDefault

@@ -207,6 +207,58 @@ out:
             fill: "#FFFFFF"
   animations: []
 ---
+case: resolves colorId in choice layout elements
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      choice:
+        resourceId: "choiceLayout"
+        items: []
+    resources:
+      layouts:
+        choiceLayout:
+          elements:
+            - id: "choice-panel"
+              type: "rect"
+              width: 500
+              height: 80
+              colorId: "panel"
+      colors:
+        panel:
+          hex: "#4D4D4D"
+    screen:
+      width: 1920
+      height: 1080
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "choice-blocker"
+          type: "rect"
+          fill: "transparent"
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          click:
+            actionPayload:
+              actions: {}
+        - id: "choice-panel"
+          type: "rect"
+          width: 500
+          height: 80
+          fill: "#4D4D4D"
+  animations: []
+---
 case: resolves imageId in choice layout elements
 in:
   - elements:

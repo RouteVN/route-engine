@@ -473,6 +473,48 @@ out:
                 fill: "#FFFFFF"
   animations: []
 ---
+case: resolves colorId in base layout elements
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      base:
+        resourceId: "coloredBase"
+    resources:
+      layouts:
+        coloredBase:
+          elements:
+            - id: "base-panel"
+              type: "rect"
+              width: 1280
+              height: 720
+              colorId: "panel"
+      colors:
+        panel:
+          hex: "#111111"
+    variables: {}
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "base"
+          type: "container"
+          children:
+            - id: "base-panel"
+              type: "rect"
+              width: 1280
+              height: 720
+              fill: "#111111"
+  animations: []
+---
 case: resolves imageId in base layout elements
 in:
   - elements:

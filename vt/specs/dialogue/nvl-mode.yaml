@@ -17,13 +17,13 @@ resources:
       elements:
         - id: base-bg
           type: rect
-          fill: "#000000"
           width: 1920
           height: 1080
           click:
             actionPayload:
               actions:
                 nextLine: {}
+          colorId: layoutColor1
     adv-layout:
       elements:
         - id: dialogue-bg
@@ -32,7 +32,7 @@ resources:
           y: 820
           width: 1920
           height: 260
-          fill: rgba(0, 0, 0, 0.8)
+          colorId: layoutColor2
         - id: character-name
           type: text
           x: 100
@@ -53,7 +53,7 @@ resources:
           y: 0
           width: 1920
           height: 1080
-          fill: rgba(0, 0, 0, 0.85)
+          colorId: layoutColor3
         - id: nvl-container
           type: container
           x: 100
@@ -89,6 +89,12 @@ resources:
       hex: "#D9D9D9"
     color2:
       hex: "#FFFFFF"
+    layoutColor1:
+      hex: "#000000"
+    layoutColor2:
+      hex: rgba(0, 0, 0, 0.8)
+    layoutColor3:
+      hex: rgba(0, 0, 0, 0.85)
   textStyles:
     textStyle1:
       fontId: fontDefault

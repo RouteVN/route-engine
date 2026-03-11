@@ -18,13 +18,13 @@ resources:
       elements:
         - id: af32
           type: rect
-          fill: "#4D4D4D"
           width: 1920
           height: 1080
           click:
             actionPayload:
               actions:
                 nextLine: {}
+          colorId: layoutColor1
     choiceLayout:
       name: Choices
       elements:
@@ -44,13 +44,13 @@ resources:
               children:
                 - id: choice-bg-${i}
                   type: rect
-                  fill: rgba(80, 80, 120, 0.9)
                   width: 600
                   height: 50
                   click:
                     actionPayload:
                       actions:
                         sectionTransition: ${item.events.click.actions.sectionTransition}
+                  colorId: layoutColor2
                 - id: choice-text-${i}
                   x: 20
                   y: 12
@@ -69,7 +69,7 @@ resources:
               type: rect
               width: 1820
               height: 300
-              fill: rgba(0, 0, 0, 0.7)
+              colorId: layoutColor3
             - id: dialogue-text
               type: text
               x: 20
@@ -115,6 +115,12 @@ resources:
   colors:
     color1:
       hex: white
+    layoutColor1:
+      hex: "#4D4D4D"
+    layoutColor2:
+      hex: rgba(80, 80, 120, 0.9)
+    layoutColor3:
+      hex: rgba(0, 0, 0, 0.7)
   textStyles:
     textStyle1:
       fontId: fontDefault

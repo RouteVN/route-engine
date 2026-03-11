@@ -196,6 +196,34 @@ resources:
           hoverImageId: buttonHover
 ```
 
+#### Layout Rect Colors
+
+Layout rect elements should be authored with `colorId` and optional
+`hover.colorId` / `click.colorId` / `rightClick.colorId`.
+Authored inline rect `fill` and interaction `hover.fill` / `click.fill` /
+`rightClick.fill` fields are rejected at render-state construction.
+Before RouteGraphics parses the layout, the engine resolves these IDs to
+rect-facing `fill` fields.
+
+```yaml
+resources:
+  colors:
+    panelBg:
+      hex: "rgba(0, 0, 0, 0.85)"
+    panelBgHover:
+      hex: "rgba(20, 20, 20, 0.9)"
+  layouts:
+    menuLayout:
+      elements:
+        - id: menu-panel
+          type: rect
+          width: 900
+          height: 420
+          colorId: panelBg
+          hover:
+            colorId: panelBgHover
+```
+
 ### `handleLineActions()`
 
 Processes actions attached to the current line. Called automatically on line changes.

@@ -475,6 +475,66 @@ out:
             fill: "#FFFFFF"
   animations: []
 ---
+case: resolves colorId in layeredView layout elements
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - resources:
+      layouts:
+        coloredLayeredView:
+          elements:
+            - id: "layered-panel"
+              type: "rect"
+              width: 1920
+              height: 1080
+              colorId: "overlay"
+      colors:
+        overlay:
+          hex: "rgba(0, 0, 0, 0.85)"
+    variables: {}
+    autoMode: false
+    skipMode: false
+    currentLocalizationPackageId: null
+    screen:
+      width: 1920
+      height: 1080
+    layeredViews:
+      - resourceId: coloredLayeredView
+        resourceType: layout
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+    - id: "layeredView-0"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "layeredView-0-blocker"
+          type: "rect"
+          fill: "transparent"
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          click:
+            actionPayload:
+              actions: {}
+        - id: "layered-panel"
+          type: "rect"
+          width: 1920
+          height: 1080
+          fill: "rgba(0, 0, 0, 0.85)"
+  animations: []
+---
 case: resolves imageId in layeredView layout elements
 in:
   - elements:

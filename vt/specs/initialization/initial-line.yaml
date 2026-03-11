@@ -18,9 +18,9 @@ resources:
       elements:
         - id: bg
           type: rect
-          fill: "#000000"
           width: 1920
           height: 1080
+          colorId: layoutColor1
     dialogueGui:
       name: Dialogue Screen
       mode: adv
@@ -42,6 +42,8 @@ resources:
   colors:
     color1:
       hex: white
+    layoutColor1:
+      hex: "#000000"
   textStyles:
     textStyle1:
       fontId: fontDefault

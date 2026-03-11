@@ -30,11 +30,11 @@ resources:
           y: 0
           width: 1920
           height: 1080
-          fill: "#101010"
           click:
             actionPayload:
               actions:
                 nextLine: {}
+          colorId: layoutColor1
     dialogueLayout:
       mode: adv
       elements:
@@ -44,7 +44,7 @@ resources:
           y: 760
           width: 1720
           height: 260
-          fill: "#3E3E3E"
+          colorId: layoutColor2
         - id: dialogue-text
           type: text
           x: 140
@@ -70,11 +70,11 @@ resources:
                   y: 0
                   width: 1400
                   height: 80
-                  fill: "#5C5C5C"
                   click:
                     actionPayload:
                       actions:
                         nextLine: {}
+                  colorId: layoutColor3
                 - id: choice-text-${i}
                   type: text
                   x: 36
@@ -87,6 +87,12 @@ resources:
   colors:
     color1:
       hex: white
+    layoutColor1:
+      hex: "#101010"
+    layoutColor2:
+      hex: "#3E3E3E"
+    layoutColor3:
+      hex: "#5C5C5C"
   textStyles:
     textStyle1:
       fontId: fontDefault

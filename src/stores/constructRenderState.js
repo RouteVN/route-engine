@@ -69,6 +69,7 @@ const getRequiredVisualTransform = (resources, item) => {
 
 const getTextStyleResources = (resources = {}) => resources.textStyles || {};
 const getImageResources = (resources = {}) => resources.images || {};
+const getColorResources = (resources = {}) => resources.colors || {};
 
 const getLayoutResourcePath = (path, key) =>
   path === "root" ? `${key}` : `${path}.${key}`;
@@ -185,6 +186,144 @@ export const resolveTextStyleIds = (node, resources = {}, path = "root") => {
       resources,
       node.textStyleId,
     );
+  }
+
+  return resolvedNode;
+};
+
+const resolveColorResource = (resources = {}, colorId) => {
+  const colorResource = getColorResources(resources)?.[colorId];
+
+  if (!colorResource) {
+    throw new Error(`Color "${colorId}" not found`);
+  }
+
+  return colorResource.hex;
+};
+
+const getRectColorFieldReplacement = (fieldName) => {
+  if (fieldName === "hover.fill") {
+    return "hover.colorId";
+  }
+
+  if (fieldName === "click.fill") {
+    return "click.colorId";
+  }
+
+  if (fieldName === "rightClick.fill") {
+    return "rightClick.colorId";
+  }
+
+  return "colorId";
+};
+
+const ensureNoInlineRectInteractionFill = (node, interactionKey, path) => {
+  const interaction = node?.[interactionKey];
+
+  if (
+    !interaction ||
+    typeof interaction !== "object" ||
+    Array.isArray(interaction)
+  ) {
+    return;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(interaction, "fill")) {
+    throw new Error(
+      `Inline ${interactionKey}.fill is not allowed in rect layout elements at "${path}". Use ${getRectColorFieldReplacement(`${interactionKey}.fill`)} instead`,
+    );
+  }
+};
+
+const resolveRectInteractionColorIds = (
+  node,
+  resources = {},
+  path = "root",
+) => {
+  if (Array.isArray(node)) {
+    return node.map((item, index) =>
+      resolveColorIds(item, resources, `${path}[${index}]`),
+    );
+  }
+
+  if (!node || typeof node !== "object") {
+    return node;
+  }
+
+  const resolvedNode = {};
+
+  for (const [key, value] of Object.entries(node)) {
+    if (key === "colorId") {
+      continue;
+    }
+
+    resolvedNode[key] = resolveColorIds(
+      value,
+      resources,
+      getLayoutResourcePath(path, key),
+    );
+  }
+
+  if (node.colorId !== undefined) {
+    ensureNonEmptyLayoutResourceId(node.colorId, path, "colorId");
+    resolvedNode.fill = resolveColorResource(resources, node.colorId);
+  }
+
+  return resolvedNode;
+};
+
+export const resolveColorIds = (node, resources = {}, path = "root") => {
+  if (Array.isArray(node)) {
+    return node.map((item, index) =>
+      resolveColorIds(item, resources, `${path}[${index}]`),
+    );
+  }
+
+  if (!node || typeof node !== "object") {
+    return node;
+  }
+
+  if (node.type === "rect") {
+    if (Object.prototype.hasOwnProperty.call(node, "fill")) {
+      throw new Error(
+        `Inline fill is not allowed in rect layout elements at "${path}". Use ${getRectColorFieldReplacement("fill")} instead`,
+      );
+    }
+
+    ensureNoInlineRectInteractionFill(node, "hover", path);
+    ensureNoInlineRectInteractionFill(node, "click", path);
+    ensureNoInlineRectInteractionFill(node, "rightClick", path);
+  }
+
+  const resolvedNode = {};
+
+  for (const [key, value] of Object.entries(node)) {
+    if (node.type === "rect" && key === "colorId") {
+      continue;
+    }
+
+    if (
+      node.type === "rect" &&
+      (key === "hover" || key === "click" || key === "rightClick")
+    ) {
+      resolvedNode[key] = resolveRectInteractionColorIds(
+        value,
+        resources,
+        getLayoutResourcePath(path, key),
+      );
+      continue;
+    }
+
+    resolvedNode[key] = resolveColorIds(
+      value,
+      resources,
+      getLayoutResourcePath(path, key),
+    );
+  }
+
+  if (node.type === "rect" && node.colorId !== undefined) {
+    ensureNonEmptyLayoutResourceId(node.colorId, path, "colorId");
+    resolvedNode.fill = resolveColorResource(resources, node.colorId);
   }
 
   return resolvedNode;
@@ -354,7 +493,11 @@ export const resolveImageIds = (node, resources = {}, path = "root") => {
 };
 
 export const resolveLayoutResourceIds = (node, resources = {}, path = "root") =>
-  resolveImageIds(resolveTextStyleIds(node, resources, path), resources, path);
+  resolveImageIds(
+    resolveColorIds(resolveTextStyleIds(node, resources, path), resources, path),
+    resources,
+    path,
+  );
 
 /**
  * Helper to push in/out/update animations based on previous and current state
@@ -1352,7 +1495,21 @@ export const addLayeredViews = (
         l10n,
       });
 
-      elements.push(resolveLayoutResourceIds(processedLayeredView, resources));
+      const [blocker, ...layoutChildren] = processedLayeredView.children || [];
+      const resolvedLayeredView = resolveLayoutResourceIds(
+        {
+          ...processedLayeredView,
+          children: layoutChildren,
+        },
+        resources,
+      );
+
+      elements.push({
+        ...resolvedLayeredView,
+        children: blocker
+          ? [blocker, ...(resolvedLayeredView.children || [])]
+          : resolvedLayeredView.children,
+      });
     });
   }
   return state;
