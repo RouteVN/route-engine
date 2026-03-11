@@ -5,7 +5,7 @@ type: object
 properties:
   images:
     type: object
-    description: Background image assets
+    description: Image resources referenced by story actions and layout sprite imageId fields
     patternProperties:
       "^[a-zA-Z0-9]+$":
         type: object
@@ -206,7 +206,7 @@ properties:
 
   colors:
     type: object
-    description: Color palette for the project
+    description: Color resources referenced by textStyles and layout rect colorId fields
     patternProperties:
       "^[a-zA-Z0-9]+$":
         type: object
@@ -221,7 +221,7 @@ properties:
 
   fonts:
     type: object
-    description: Font file for the project
+    description: Font resources referenced by resources.textStyles
     patternProperties:
       "^[a-zA-Z0-9]+$":
         type: object
@@ -239,10 +239,11 @@ properties:
 
   textStyles:
     type: object
+    description: Shared text style resources referenced by layout text textStyleId fields
     patternProperties:
       "^[a-zA-Z0-9]+$":
         type: object
-        description: Text style configuration
+        description: Text style resource resolved into a renderer-facing textStyle object
         properties:
           fontId:
             type: string
@@ -300,7 +301,7 @@ properties:
           required: [actionPayload]
   layouts:
     type: object
-    description: Layout configurations for UI elements
+    description: Layout configurations authored with resource references that are resolved before rendering
     patternProperties:
       "^[a-zA-Z0-9]+$":
         type: object
@@ -308,7 +309,7 @@ properties:
         properties:
           elements:
             type: array
-            description: Array of UI elements in this layout
+            description: Array of UI elements authored with textStyleId, imageId, and colorId references
             items:
               type: object
               additionalProperties: true
