@@ -132,6 +132,20 @@ eventHandler: (eventName, payload) => {
 }
 ```
 
+#### Layout Resource References
+
+Layout authoring uses project resource references, not the renderer-facing fields
+that RouteGraphics consumes directly.
+
+- `textStyleId` resolves through `resources.textStyles` to renderer `textStyle`
+- `imageId` / `hoverImageId` / `clickImageId` resolve through `resources.images`
+  to renderer `src`, `hover.src`, and `click.src`
+- `colorId` / `hover.colorId` / `click.colorId` / `rightClick.colorId` resolve
+  through `resources.colors` to renderer `fill`
+
+This resolution happens during render-state construction, before RouteGraphics
+parses the layout tree.
+
 #### Layout Text Styles
 
 Layout text should be authored with `textStyleId` and resolved through `resources.textStyles`.
