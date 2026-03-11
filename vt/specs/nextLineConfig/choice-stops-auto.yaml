@@ -75,7 +75,7 @@ resources:
       fileId: Arial
   colors:
     color1:
-      hex: white
+      hex: "#FFFFFF"
     layoutColor1:
       hex: "#101010"
     layoutColor2:
@@ -124,17 +124,17 @@ story:
                   ui:
                     resourceId: dialogueLayout
                   content:
-                    - text: Line 1: Scene auto is enabled (persistent).
+                    - text: "Line 1: Scene auto is enabled (persistent)."
             - id: line2
               actions:
                 dialogue:
                   content:
-                    - text: Line 2: Auto advanced here. Next line shows a choice.
+                    - text: "Line 2: Auto advanced here. Next line shows a choice."
             - id: line3
               actions:
                 dialogue:
                   content:
-                    - text: Line 3: Choice is visible. Auto should NOT continue now.
+                    - text: "Line 3: Choice is visible. Auto should NOT continue now."
                 choice:
                   resourceId: choiceLayout
                   items:
@@ -147,7 +147,7 @@ story:
                 choice: {}
                 dialogue:
                   content:
-                    - text: Line 4: Reached after selecting a choice item.
+                    - text: "Line 4: Reached after selecting a choice item."
             - id: line5
               actions:
                 setNextLineConfig:
@@ -157,4 +157,4 @@ story:
                     enabled: false
                 dialogue:
                   content:
-                    - text: Line 5: End.
+                    - text: "Line 5: End."

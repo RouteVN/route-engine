@@ -99,11 +99,11 @@ resources:
       fileId: Arial
   colors:
     color1:
-      hex: white
+      hex: "#FFFFFF"
     color2:
       hex: "#D9D9D9"
     color3:
-      hex: yellow
+      hex: "#FFFF00"
     layoutColor1:
       hex: "#000000"
     layoutColor2:
@@ -147,29 +147,29 @@ story:
                   ui:
                     resourceId: dialogueLayout
                   content:
-                    - text: Line 1: Testing autoplay functionality
+                    - text: "Line 1: Testing autoplay functionality"
                   characterId: narrator
             - id: line2
               actions:
                 dialogue:
                   content:
-                    - text: Line 2: This should auto-advance after 1 second
+                    - text: "Line 2: This should auto-advance after 1 second"
                   characterId: narrator
             - id: line3
               actions:
                 dialogue:
                   content:
-                    - text: Line 3: Click Auto button to enable/disable
+                    - text: "Line 3: Click Auto button to enable/disable"
                   characterId: narrator
             - id: line4
               actions:
                 dialogue:
                   content:
-                    - text: Line 4: Auto mode should continue through all lines
+                    - text: "Line 4: Auto mode should continue through all lines"
                   characterId: narrator
             - id: line5
               actions:
                 dialogue:
                   content:
-                    - text: Line 5: Final line - auto mode stops here
+                    - text: "Line 5: Final line - auto mode stops here"
                   characterId: narrator

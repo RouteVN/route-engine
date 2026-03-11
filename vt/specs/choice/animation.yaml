@@ -40,6 +40,7 @@ resources:
                   type: rect
                   width: 600
                   height: 50
+                  opacity: 0.9
                   click:
                     actionPayload:
                       actions:
@@ -63,6 +64,7 @@ resources:
               type: rect
               width: 1820
               height: 300
+              opacity: 0.7
               colorId: layoutColor3
             - id: dialogue-text
               type: text
@@ -108,13 +110,13 @@ resources:
       fileId: Arial
   colors:
     color1:
-      hex: white
+      hex: "#FFFFFF"
     layoutColor1:
       hex: "#4D4D4D"
     layoutColor2:
-      hex: rgba(80, 80, 120, 0.9)
+      hex: "#505078"
     layoutColor3:
-      hex: rgba(0, 0, 0, 0.7)
+      hex: "#000000"
   textStyles:
     textStyle1:
       fontId: fontDefault

@@ -26,6 +26,7 @@ resources:
           y: 820
           width: 1920
           height: 260
+          opacity: 0.8
           colorId: layoutColor2
         - id: character-name
           type: text
@@ -47,6 +48,7 @@ resources:
           y: 0
           width: 1920
           height: 1080
+          opacity: 0.85
           colorId: layoutColor3
         - id: nvl-container
           type: container
@@ -86,9 +88,9 @@ resources:
     layoutColor1:
       hex: "#000000"
     layoutColor2:
-      hex: rgba(0, 0, 0, 0.8)
+      hex: "#000000"
     layoutColor3:
-      hex: rgba(0, 0, 0, 0.85)
+      hex: "#000000"
   textStyles:
     textStyle1:
       fontId: fontDefault

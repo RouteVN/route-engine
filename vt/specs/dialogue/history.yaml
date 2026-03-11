@@ -88,6 +88,7 @@ resources:
           height: 1080
           x: 0
           y: 0
+          opacity: 0.8
           click:
             actionPayload:
               actions:
@@ -159,9 +160,9 @@ resources:
       fileId: Arial
   colors:
     color1:
-      hex: white
+      hex: "#FFFFFF"
     color2:
-      hex: yellow
+      hex: "#FFFF00"
     color3:
       hex: "#FFFFFF"
     color4:
@@ -169,7 +170,7 @@ resources:
     layoutColor1:
       hex: "#000000"
     layoutColor2:
-      hex: rgba(0, 0, 0, 0.8)
+      hex: "#000000"
     layoutColor3:
       hex: "#737373"
   textStyles:

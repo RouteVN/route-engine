@@ -45,7 +45,7 @@ resources:
       fileId: Arial
   colors:
     color1:
-      hex: white
+      hex: "#FFFFFF"
     layoutColor1:
       hex: "#111111"
     layoutColor2:
@@ -85,24 +85,24 @@ story:
                   ui:
                     resourceId: dialogueLayout
                   content:
-                    - text: Line 1: nextLineConfig auto is enabled with applyMode=persistent.
+                    - text: "Line 1: nextLineConfig auto is enabled with applyMode=persistent."
             - id: line2
               actions:
                 dialogue:
                   content:
-                    - text: Line 2: Should auto-advance.
+                    - text: "Line 2: Should auto-advance."
             - id: line3
               actions:
                 dialogue:
                   content:
-                    - text: Line 3: Should auto-advance.
+                    - text: "Line 3: Should auto-advance."
             - id: line4
               actions:
                 dialogue:
                   content:
-                    - text: Line 4: Should auto-advance.
+                    - text: "Line 4: Should auto-advance."
             - id: line5
               actions:
                 dialogue:
                   content:
-                    - text: Line 5: End.
+                    - text: "Line 5: End."

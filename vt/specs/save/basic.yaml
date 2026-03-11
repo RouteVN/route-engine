@@ -90,6 +90,7 @@ resources:
           height: 1080
           x: 0
           y: 0
+          opacity: 0.7
           colorId: layoutColor4
         - id: save-menu-bg
           type: rect
@@ -197,6 +198,7 @@ resources:
           height: 1080
           x: 0
           y: 0
+          opacity: 0.7
           colorId: layoutColor4
         - id: load-menu-bg
           type: rect
@@ -301,7 +303,7 @@ resources:
       fileId: Arial
   colors:
     color1:
-      hex: white
+      hex: "#FFFFFF"
     color2:
       hex: "#FFFFFF"
     color3:
@@ -313,7 +315,7 @@ resources:
     layoutColor3:
       hex: "#737373"
     layoutColor4:
-      hex: rgba(0,0,0,0.7)
+      hex: "#000000"
   textStyles:
     textStyle1:
       fontId: fontDefault
@@ -367,31 +369,31 @@ story:
                   ui:
                     resourceId: dialogueLayout
                   content:
-                    - text: Line 1: Welcome to Save/Load test
+                    - text: "Line 1: Welcome to Save/Load test"
                   characterId: narrator
             - id: line2
               actions:
                 dialogue:
                   content:
-                    - text: Line 2: Click Save in top right to save your game
+                    - text: "Line 2: Click Save in top right to save your game"
                   characterId: narrator
             - id: line3
               actions:
                 dialogue:
                   content:
-                    - text: Line 3: Choose a slot, then click X to close
+                    - text: "Line 3: Choose a slot, then click X to close"
                   characterId: narrator
             - id: line4
               actions:
                 dialogue:
                   content:
-                    - text: Line 4: Click Load to load a saved game
+                    - text: "Line 4: Click Load to load a saved game"
                   characterId: narrator
             - id: line5
               actions:
                 dialogue:
                   content:
-                    - text: Line 5: Try saving now, then continue to next section
+                    - text: "Line 5: Try saving now, then continue to next section"
                   characterId: narrator
             - id: line6
               actions:
@@ -403,13 +405,13 @@ story:
               actions:
                 dialogue:
                   content:
-                    - text: Line 6: This is section 2 - loading returns you to section 1
+                    - text: "Line 6: This is section 2 - loading returns you to section 1"
                   characterId: narrator
             - id: line2
               actions:
                 dialogue:
                   content:
-                    - text: Line 1: Welcome to Save/Load test
+                    - text: "Line 1: Welcome to Save/Load test"
                   characterId: narrator
             - id: line3
               actions:

@@ -94,7 +94,7 @@ resources:
       fileId: Arial
   colors:
     color1:
-      hex: white
+      hex: "#FFFFFF"
     layoutColor1:
       hex: "#000000"
   textStyles:

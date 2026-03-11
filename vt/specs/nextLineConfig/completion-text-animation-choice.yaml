@@ -134,7 +134,7 @@ story:
                   ui:
                     resourceId: dialogueLayout
                   content:
-                    - text: Line 1: text-revealing must complete before auto-next.
+                    - text: "Line 1: text-revealing must complete before auto-next."
             - id: line2
               actions:
                 background:
@@ -144,17 +144,17 @@ story:
                       resourceId: fade-in-1s
                 dialogue:
                   content:
-                    - text: Line 2: background fade-in animation must complete before auto-next.
+                    - text: "Line 2: background fade-in animation must complete before auto-next."
             - id: line3
               actions:
                 dialogue:
                   content:
-                    - text: Line 3: auto should continue here.
+                    - text: "Line 3: auto should continue here."
             - id: line4
               actions:
                 dialogue:
                   content:
-                    - text: Line 4: choice is visible. auto must stop on this line.
+                    - text: "Line 4: choice is visible. auto must stop on this line."
                 choice:
                   resourceId: choiceLayout
                   items:
@@ -173,4 +173,4 @@ story:
                     enabled: false
                 dialogue:
                   content:
-                    - text: Line 5: reached after selecting a choice.
+                    - text: "Line 5: reached after selecting a choice."

@@ -45,7 +45,7 @@ resources:
       fileId: Arial
   colors:
     color1:
-      hex: white
+      hex: "#FFFFFF"
     layoutColor1:
       hex: "#0F0F0F"
     layoutColor2:
@@ -85,19 +85,19 @@ story:
                   ui:
                     resourceId: dialogueLayout
                   content:
-                    - text: Line 1: nextLineConfig auto is enabled with applyMode=singleLine.
+                    - text: "Line 1: nextLineConfig auto is enabled with applyMode=singleLine."
             - id: line2
               actions:
                 dialogue:
                   content:
-                    - text: Line 2: Reached automatically. Config should now reset to manual+autoOff.
+                    - text: "Line 2: Reached automatically. Config should now reset to manual+autoOff."
             - id: line3
               actions:
                 dialogue:
                   content:
-                    - text: Line 3: This should require manual click to continue.
+                    - text: "Line 3: This should require manual click to continue."
             - id: line4
               actions:
                 dialogue:
                   content:
-                    - text: Line 4: End.
+                    - text: "Line 4: End."

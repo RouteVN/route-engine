@@ -486,7 +486,7 @@ in:
               colorId: "overlay"
       colors:
         overlay:
-          hex: "rgba(0, 0, 0, 0.85)"
+          hex: "#000000"
     variables: {}
     autoMode: false
     skipMode: false
@@ -522,7 +522,7 @@ out:
           type: "rect"
           width: 1920
           height: 1080
-          fill: "rgba(0, 0, 0, 0.85)"
+          fill: "#000000"
   animations: []
 ---
 case: resolves imageId in layeredView layout elements

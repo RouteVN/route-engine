@@ -456,7 +456,7 @@ in:
               colorId: "panel"
       colors:
         panel:
-          hex: "rgba(0, 0, 0, 0.7)"
+          hex: "#000000"
 out:
   elements:
     - id: "story"
@@ -471,7 +471,7 @@ out:
               type: "rect"
               width: 1920
               height: 1080
-              fill: "rgba(0, 0, 0, 0.7)"
+              fill: "#000000"
   animations: []
 ---
 case: resolves imageId in background layout elements

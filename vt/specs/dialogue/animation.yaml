@@ -32,6 +32,7 @@ resources:
               type: rect
               width: 1820
               height: 300
+              opacity: 0.7
               x: 0
               y: 0
               colorId: layoutColor2
@@ -82,11 +83,11 @@ resources:
       fileId: Arial
   colors:
     color1:
-      hex: white
+      hex: "#FFFFFF"
     layoutColor1:
       hex: "#000000"
     layoutColor2:
-      hex: rgba(0, 0, 0, 0.7)
+      hex: "#000000"
   textStyles:
     textStyle1:
       fontId: fontDefault

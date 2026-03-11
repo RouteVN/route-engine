@@ -68,7 +68,7 @@ Static, read-only data that defines the visual novel content:
 - **resources**: Images, audio, animations, transforms, layouts, characters, fonts, colors, and `textStyles`
   - Localization is not implemented in the current runtime. The planned patch-based model is documented in `docs/L10n.md`
   - Layout text elements should reference shared styles with `textStyleId`
-  - Text fill and stroke transparency should be authored on `resources.textStyles` with `colorAlpha` / `strokeAlpha`, not inside `resources.colors`
+  - `resources.colors[*].hex` should be opaque hex only; text fill and stroke transparency should be authored on `resources.textStyles` with `colorAlpha` / `strokeAlpha`, not inside `resources.colors`
   - Layout sprite elements should reference images with `imageId` and optional `hoverImageId` / `clickImageId`
   - Layout rect elements should reference shared colors with `colorId` and optional `hover.colorId` / `click.colorId` / `rightClick.colorId`
   - Authored inline `textStyle` objects, authored sprite `src` / `hover.src` / `click.src` fields, and authored rect `fill` / `hover.fill` / `click.fill` / `rightClick.fill` fields in layout elements are invalid and fail fast at render-state construction

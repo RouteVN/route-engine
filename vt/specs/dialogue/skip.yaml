@@ -86,9 +86,9 @@ resources:
       fileId: Arial
   colors:
     color1:
-      hex: white
+      hex: "#FFFFFF"
     color2:
-      hex: yellow
+      hex: "#FFFF00"
     color3:
       hex: "#D9D9D9"
     layoutColor1:
@@ -134,29 +134,29 @@ story:
                   ui:
                     resourceId: dialogueLayout
                   content:
-                    - text: Line 1: Testing skip functionality
+                    - text: "Line 1: Testing skip functionality"
                   characterId: narrator
             - id: line2
               actions:
                 dialogue:
                   content:
-                    - text: Line 2: Click Skip to skip through lines
+                    - text: "Line 2: Click Skip to skip through lines"
                   characterId: narrator
             - id: line3
               actions:
                 dialogue:
                   content:
-                    - text: Line 3: Toggle Skip All to control skip behavior
+                    - text: "Line 3: Toggle Skip All to control skip behavior"
                   characterId: narrator
             - id: line4
               actions:
                 dialogue:
                   content:
-                    - text: Line 4: Skip All ON (green) = skip everything
+                    - text: "Line 4: Skip All ON (green) = skip everything"
                   characterId: narrator
             - id: line5
               actions:
                 dialogue:
                   content:
-                    - text: Line 5: Skip All OFF (white) = skip only viewed lines
+                    - text: "Line 5: Skip All OFF (white) = skip only viewed lines"
                   characterId: narrator
