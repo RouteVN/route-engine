@@ -7,7 +7,7 @@ properties:
     type: object
     description: Image resources referenced by story actions and layout sprite imageId fields
     patternProperties:
-      "^[a-zA-Z0-9]+$":
+      "^.+$":
         type: object
         description: Image resource
         properties:
@@ -31,7 +31,7 @@ properties:
     type: object
     description: Character sprite assets
     patternProperties:
-      "^[a-zA-Z0-9]+$":
+      "^.+$":
         type: object
         description: Character resource
         properties:
@@ -45,7 +45,7 @@ properties:
     type: object
     description: Video assets
     patternProperties:
-      "^[a-zA-Z0-9]+$":
+      "^.+$":
         type: object
         description: Video resource
         properties:
@@ -69,7 +69,7 @@ properties:
     type: object
     description: Spritesheet definitions containing image source and frame metadata
     patternProperties:
-      "^[a-zA-Z0-9]+$":
+      "^.+$":
         type: object
         properties:
           fileId:
@@ -88,7 +88,7 @@ properties:
             type: object
             description: Map of named animations
             patternProperties:
-              "^[a-zA-Z0-9_-]+$":
+              "^.+$":
                 type: object
                 properties:
                   frames:
@@ -111,7 +111,7 @@ properties:
     type: object
     description: Transform configurations for positioning elements
     patternProperties:
-      "^[a-zA-Z0-9]+$":
+      "^.+$":
         type: object
         description: Transform configuration
         properties:
@@ -143,7 +143,7 @@ properties:
     type: object
     description: Tween definitions for various effects
     patternProperties:
-      "^[a-zA-Z0-9]+$":
+      "^.+$":
         type: object
         description: Tween definition
         properties:
@@ -154,7 +154,7 @@ properties:
             type: object
             description: Animation properties and keyframes
             patternProperties:
-              "^[a-zA-Z0-9]+$":
+              "^.+$":
                 type: object
                 properties:
                   initialValue:
@@ -190,7 +190,7 @@ properties:
     type: object
     description: Sounds, including bgm and sound effects
     patternProperties:
-      "^[a-zA-Z0-9]+$":
+      "^.+$":
         type: object
         description: Sound resource
         properties:
@@ -208,7 +208,7 @@ properties:
     type: object
     description: Color resources referenced by textStyles and layout rect colorId fields
     patternProperties:
-      "^[a-zA-Z0-9]+$":
+      "^.+$":
         type: object
         description: Color resource
         properties:
@@ -223,7 +223,7 @@ properties:
     type: object
     description: Font resources referenced by resources.textStyles
     patternProperties:
-      "^[a-zA-Z0-9]+$":
+      "^.+$":
         type: object
         description: Font resource
         properties:
@@ -241,7 +241,7 @@ properties:
     type: object
     description: Shared text style resources referenced by layout text textStyleId fields
     patternProperties:
-      "^[a-zA-Z0-9]+$":
+      "^.+$":
         type: object
         description: Text style resource resolved into a renderer-facing textStyle object
         properties:
@@ -296,7 +296,7 @@ properties:
     type: object
     description: Keyboard mapping configurations
     patternProperties:
-      "^[a-zA-Z0-9]+$":
+      "^.+$":
         type: object
         description: A set of key-to-action mappings
         additionalProperties:
@@ -309,9 +309,9 @@ properties:
     type: object
     description: Layout configurations authored with resource references that are resolved before rendering
     patternProperties:
-      "^[a-zA-Z0-9]+$":
+      "^.+$":
         type: object
-        description: Layout configuration
+        description: Layout configuration. This schema is intentionally permissive because runtime-supported layout fields extend beyond the documented subset.
         properties:
           elements:
             type: array
@@ -319,29 +319,27 @@ properties:
             items:
               type: object
               additionalProperties: true
-        additionalProperties: false
+        additionalProperties: true
     additionalProperties: false
 
   variables:
     type: object
     description: Variables and their initial values
     patternProperties:
-      "^[a-zA-Z0-9]+$":
+      "^.+$":
+        type: object
         description: Variable value
         required: [type, scope]
         properties:
           type:
-            type: enum
-            enum: [string, boolean, number]
+            type: string
+            enum: [string, boolean, number, object]
           scope:
-            type: enum
+            type: string
             enum: [context, global-device, global-account]
           default:
-            description: Default initial value for the variable
-            oneOf:
-              - type: string
-              - type: number
-              - type: boolean
+            description: Default initial value for the variable. Runtime accepts any YAML value and uses it as-is
+        additionalProperties: true
     additionalProperties: false
 
 additionalProperties: false
