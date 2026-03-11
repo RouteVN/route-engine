@@ -494,7 +494,11 @@ export const resolveImageIds = (node, resources = {}, path = "root") => {
 
 export const resolveLayoutResourceIds = (node, resources = {}, path = "root") =>
   resolveImageIds(
-    resolveColorIds(resolveTextStyleIds(node, resources, path), resources, path),
+    resolveColorIds(
+      resolveTextStyleIds(node, resources, path),
+      resources,
+      path,
+    ),
     resources,
     path,
   );
