@@ -17,9 +17,9 @@ resources:
       elements:
         - id: bg
           type: rect
-          fill: "#000000"
           width: 1920
           height: 1080
+          colorId: layoutColor1
         - id: title
           type: text
           content: Layered Views Test
@@ -28,7 +28,6 @@ resources:
           textStyleId: textStyle1
         - id: pushMenuBtn
           type: rect
-          fill: "#737373"
           width: 300
           height: 60
           x: 100
@@ -39,6 +38,7 @@ resources:
                 pushLayeredView:
                   resourceId: menuLayout
                   resourceType: layout
+          colorId: color2
         - id: pushMenuText
           type: text
           content: Push Menu Layer
@@ -47,7 +47,6 @@ resources:
           textStyleId: textStyle2
         - id: pushOverlayBtn
           type: rect
-          fill: "#737373"
           width: 300
           height: 60
           x: 100
@@ -58,6 +57,7 @@ resources:
                 pushLayeredView:
                   resourceId: overlayLayout
                   resourceType: layout
+          colorId: color2
         - id: pushOverlayText
           type: text
           content: Push Overlay Layer
@@ -66,7 +66,6 @@ resources:
           textStyleId: textStyle2
         - id: popBtn
           type: rect
-          fill: "#737373"
           width: 300
           height: 60
           x: 100
@@ -75,6 +74,7 @@ resources:
             actionPayload:
               actions:
                 popLayeredView: {}
+          colorId: color2
         - id: popText
           type: text
           content: Pop Layer
@@ -83,7 +83,6 @@ resources:
           textStyleId: textStyle2
         - id: replaceBtn
           type: rect
-          fill: "#737373"
           width: 300
           height: 60
           x: 100
@@ -94,6 +93,7 @@ resources:
                 replaceLastLayeredView:
                   resourceId: animatedLayout
                   resourceType: layout
+          colorId: color2
         - id: replaceText
           type: text
           content: Replace Last Layer
@@ -102,7 +102,6 @@ resources:
           textStyleId: textStyle2
         - id: clearBtn
           type: rect
-          fill: "#737373"
           width: 300
           height: 60
           x: 100
@@ -111,6 +110,7 @@ resources:
             actionPayload:
               actions:
                 clearLayeredViews: {}
+          colorId: color2
         - id: clearText
           type: text
           content: Clear All Layers
@@ -121,11 +121,11 @@ resources:
       elements:
         - id: menuBg
           type: rect
-          fill: "#4D4D4D"
           width: 400
           height: 600
           x: 800
           y: 240
+          colorId: layoutColor2
         - id: menuText
           type: text
           content: Menu Layer
@@ -136,11 +136,11 @@ resources:
       elements:
         - id: overlayBg
           type: rect
-          fill: "#4D4D4D"
           width: 300
           height: 200
           x: 1300
           y: 440
+          colorId: layoutColor2
         - id: overlayText
           type: text
           content: Overlay Layer
@@ -151,11 +151,11 @@ resources:
       elements:
         - id: animatedBg
           type: rect
-          fill: "#737373"
           width: 350
           height: 250
           x: 1250
           y: 650
+          colorId: color2
         - id: animatedText
           type: text
           content: Replaced Layer
@@ -170,6 +170,10 @@ resources:
       hex: "#FFFFFF"
     color2:
       hex: "#737373"
+    layoutColor1:
+      hex: "#000000"
+    layoutColor2:
+      hex: "#4D4D4D"
   textStyles:
     textStyle1:
       fontId: fontDefault

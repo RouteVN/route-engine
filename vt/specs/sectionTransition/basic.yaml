@@ -1,10 +1,10 @@
 ---
-title: "Section Transitions"
+title: Section Transitions
 description: >
-  Demonstrates section transitions within and across scenes.
-  Scene 1 has two sections - first section transitions to the second section.
-  Second section transitions to Scene 2.
-  Scene 2 then transitions back to Scene 1, Section 2, showing cross-scene section targeting.
+  Demonstrates section transitions within and across scenes. Scene 1 has two
+  sections - first section transitions to the second section. Second section
+  transitions to Scene 2. Scene 2 then transitions back to Scene 1, Section 2,
+  showing cross-scene section targeting.
 ---
 l10n:
   packages:
@@ -16,20 +16,19 @@ screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 resources:
   layouts:
     base1:
       elements:
         - id: af32
           type: rect
-          fill: "#000000"
           width: 1920
           height: 1080
           click:
             actionPayload:
               actions:
                 nextLine: {}
+          colorId: layoutColor1
   images:
     alkejf3la:
       fileId: lakjf3lka
@@ -43,7 +42,9 @@ resources:
       fileId: 23jkfa893
       width: 1920
       height: 1080
-
+  colors:
+    layoutColor1:
+      hex: "#000000"
 story:
   initialSceneId: ajfl3a
   scenes:

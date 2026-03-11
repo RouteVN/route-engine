@@ -433,6 +433,47 @@ out:
                 fill: "#FFFFFF"
   animations: []
 ---
+case: resolves colorId in background layout elements
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      background:
+        resourceId: "coloredLayout"
+    resources:
+      layouts:
+        coloredLayout:
+          elements:
+            - id: "bg-panel"
+              type: "rect"
+              width: 1920
+              height: 1080
+              colorId: "panel"
+      colors:
+        panel:
+          hex: "rgba(0, 0, 0, 0.7)"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "bg-cg-coloredLayout"
+          type: "container"
+          children:
+            - id: "bg-panel"
+              type: "rect"
+              width: 1920
+              height: 1080
+              fill: "rgba(0, 0, 0, 0.7)"
+  animations: []
+---
 case: resolves imageId in background layout elements
 in:
   - elements:

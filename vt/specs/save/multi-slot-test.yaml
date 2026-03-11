@@ -34,13 +34,13 @@ resources:
       elements:
         - id: clickArea
           type: rect
-          fill: "#000000"
           width: 1920
           height: 1080
           click:
             actionPayload:
               actions:
                 contextNextLine: {}
+          colorId: layoutColor1
     multiSlotTestUI:
       name: Multi-Slot Save Test
       elements:
@@ -425,7 +425,8 @@ resources:
           textStyleId: textStyle12
         - id: devToolsHint
           type: text
-          content: "Open DevTools Console and type: JSON.parse(localStorage.getItem('saveSlots'))"
+          content: "Open DevTools Console and type:
+            JSON.parse(localStorage.getItem('saveSlots'))"
           x: 960
           y: 1000
           anchorX: 0.5
@@ -444,6 +445,8 @@ resources:
       hex: "#D9D9D9"
     color5:
       hex: "#4D4D4D"
+    layoutColor1:
+      hex: "#000000"
   textStyles:
     textStyle1:
       fontId: fontDefault

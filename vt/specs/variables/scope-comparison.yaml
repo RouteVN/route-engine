@@ -43,13 +43,13 @@ resources:
       elements:
         - id: clickArea
           type: rect
-          fill: "#000000"
           width: 1920
           height: 1080
           click:
             actionPayload:
               actions:
                 nextLine: {}
+          colorId: layoutColor1
     scopeComparisonUI:
       name: Variable Scopes Comparison
       elements:
@@ -556,6 +556,8 @@ resources:
       hex: "#FFFFFF"
     color5:
       hex: "#4D4D4D"
+    layoutColor1:
+      hex: "#000000"
   textStyles:
     textStyle1:
       fontId: fontDefault

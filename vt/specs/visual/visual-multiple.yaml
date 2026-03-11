@@ -1,5 +1,5 @@
 ---
-title: "Visual Multiple"
+title: Visual Multiple
 description: Test multiple visuals at once
 ---
 l10n:
@@ -12,21 +12,19 @@ screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 resources:
   layouts:
     base1:
       elements:
         - id: af32
           type: rect
-          fill: "#000000"
           width: 1920
           height: 1080
           click:
             actionPayload:
               actions:
                 nextLine: {}
-
+          colorId: layoutColor1
   images:
     alkejf3la:
       fileId: x342fga
@@ -40,7 +38,6 @@ resources:
       fileId: la3lka
       width: 200
       height: 200
-
   transforms:
     topLeft:
       x: 200
@@ -74,7 +71,9 @@ resources:
       rotation: 90
       scaleX: 0.8
       scaleY: 0.8
-
+  colors:
+    layoutColor1:
+      hex: "#000000"
 story:
   initialSceneId: ajfl3a
   scenes:

@@ -137,6 +137,73 @@ out:
                   fill: "#FF0000"
   animations: []
 ---
+case: resolves colorId in layout rect elements
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      layout:
+        resourceId: "colorLayout"
+    resources:
+      layouts:
+        colorLayout:
+          elements:
+            - id: "layout-panel"
+              type: "rect"
+              width: 300
+              height: 120
+              colorId:
+                $if autoMode: "activeColor"
+                $else: "idleColor"
+              hover:
+                colorId: "hoverColor"
+              click:
+                colorId: "clickColor"
+                actionPayload:
+                  actions: {}
+      colors:
+        idleColor:
+          hex: "#101010"
+        activeColor:
+          hex: "#202020"
+        hoverColor:
+          hex: "#303030"
+        clickColor:
+          hex: "#404040"
+    variables: {}
+    autoMode: true
+    skipMode: false
+    currentLocalizationPackageId: null
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "layout-colorLayout"
+          type: "container"
+          x: 0
+          y: 0
+          children:
+            - id: "layout-panel"
+              type: "rect"
+              width: 300
+              height: 120
+              fill: "#202020"
+              hover:
+                fill: "#303030"
+              click:
+                fill: "#404040"
+                actionPayload:
+                  actions: {}
+  animations: []
+---
 case: resolves imageId in layout elements
 in:
   - elements:

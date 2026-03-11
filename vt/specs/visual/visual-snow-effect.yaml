@@ -1,5 +1,5 @@
 ---
-title: "Visual Snow Effect"
+title: Visual Snow Effect
 description: Phase 2 - Background with snow particle effect layout overlay
 ---
 l10n:
@@ -12,20 +12,19 @@ screen:
   width: 1920
   height: 1080
   backgroundColor: "#4D4D4D"
-
 resources:
   layouts:
     base1:
       elements:
         - id: af32
           type: rect
-          fill: "#000000"
           width: 1920
           height: 1080
           click:
             actionPayload:
               actions:
                 nextLine: {}
+          colorId: layoutColor1
     snowEffect:
       name: Snow Sprite Effect
       elements:
@@ -55,7 +54,7 @@ resources:
             - type: scaleStatic
               config:
                 min: 0.3
-                max: 1.0
+                max: 1
             - type: alpha
               config:
                 list:
@@ -87,13 +86,11 @@ resources:
               width: 2020
               height: 1180
             recycleOnBounds: true
-
   images:
     winterBg:
       fileId: dmni32
       width: 1920
       height: 1080
-
   transforms:
     fullscreen:
       x: 0
@@ -103,10 +100,9 @@ resources:
       rotation: 0
       scaleX: 1
       scaleY: 1
-
   tweens:
     fadeIn:
-      name: "Fade In"
+      name: Fade In
       properties:
         alpha:
           initialValue: 0
@@ -115,7 +111,7 @@ resources:
               value: 1
               easing: linear
     fadeOut:
-      name: "Fade Out"
+      name: Fade Out
       properties:
         alpha:
           initialValue: 1
@@ -123,7 +119,9 @@ resources:
             - duration: 1500
               value: 0
               easing: linear
-
+  colors:
+    layoutColor1:
+      hex: "#000000"
 story:
   initialSceneId: scene1
   scenes:

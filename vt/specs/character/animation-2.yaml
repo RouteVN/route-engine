@@ -1,5 +1,5 @@
 ---
-title: "Character Animation 2"
+title: Character Animation 2
 description: Test both in and out animation at same time for character transitions
 ---
 l10n:
@@ -12,20 +12,19 @@ screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 resources:
   layouts:
     base1:
       elements:
         - id: af32
           type: rect
-          fill: "#000000"
           width: 1920
           height: 1080
           click:
             actionPayload:
               actions:
                 nextLine: {}
+          colorId: layoutColor1
   images:
     alkejf3la:
       fileId: lakjf3lka
@@ -51,11 +50,10 @@ resources:
       fileId: char_sprite_4
       width: 526
       height: 891
-
   characters:
     alkjf3ia:
       variables:
-        name: "Abc"
+        name: Abc
       sprites:
         fk4jla893:
           fileId: char_sprite_1
@@ -63,13 +61,12 @@ resources:
           fileId: char_sprite_2
     char2:
       variables:
-        name: "Def"
+        name: Def
       sprites:
         spr1:
           fileId: char_sprite_3
         spr2:
           fileId: char_sprite_4
-
   transforms:
     iasdlf:
       x: 480
@@ -86,10 +83,9 @@ resources:
       y: 1080
       anchorX: 0.5
       anchorY: 1
-
   tweens:
     slide_in_left:
-      name: "Slide In From Left"
+      name: Slide In From Left
       properties:
         x:
           initialValue: -300
@@ -104,7 +100,7 @@ resources:
               value: 1
               easing: linear
     slide_in_right:
-      name: "Slide In From Right"
+      name: Slide In From Right
       properties:
         x:
           initialValue: 2220
@@ -119,7 +115,7 @@ resources:
               value: 1
               easing: linear
     slide_out_left:
-      name: "Slide Out To Left"
+      name: Slide Out To Left
       properties:
         x:
           keyframes:
@@ -132,7 +128,7 @@ resources:
               value: 0
               easing: linear
     slide_out_right:
-      name: "Slide Out To Right"
+      name: Slide Out To Right
       properties:
         x:
           keyframes:
@@ -144,7 +140,9 @@ resources:
             - duration: 1500
               value: 0
               easing: linear
-
+  colors:
+    layoutColor1:
+      hex: "#000000"
 story:
   initialSceneId: ajfl3a
   scenes:
@@ -164,7 +162,7 @@ story:
                   resourceType: image
                 character:
                   items:
-                    - id: "laj389d"
+                    - id: laj389d
                       transformId: iasdlf
                       sprites:
                         - id: base
@@ -181,14 +179,14 @@ story:
                   resourceType: image
                 character:
                   items:
-                    - id: "laj389d"
+                    - id: laj389d
                       transformId: iasdlf
                       sprites:
                         - id: base
                           resourceId: fk4jla893
                         - id: outfit
                           resourceId: 3fjaklj34
-                    - id: "char2id"
+                    - id: char2id
                       transformId: t_right
                       sprites:
                         - id: base
@@ -205,7 +203,7 @@ story:
                   resourceType: image
                 character:
                   items:
-                    - id: "laj389d"
+                    - id: laj389d
                       transformId: iasdlf
                       sprites:
                         - id: base
@@ -215,7 +213,7 @@ story:
                       animations:
                         out:
                           resourceId: slide_out_left
-                    - id: "newchar"
+                    - id: newchar
                       transformId: a32kf3
                       sprites:
                         - id: base
@@ -232,7 +230,7 @@ story:
                   resourceType: image
                 character:
                   items:
-                    - id: "char2id"
+                    - id: char2id
                       transformId: t_right
                       sprites:
                         - id: base
@@ -242,7 +240,7 @@ story:
                       animations:
                         out:
                           resourceId: slide_out_right
-                    - id: "newchar"
+                    - id: newchar
                       transformId: a32kf3
                       sprites:
                         - id: base

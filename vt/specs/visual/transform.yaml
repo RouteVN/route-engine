@@ -1,5 +1,5 @@
 ---
-title: "Sample"
+title: Sample
 ---
 l10n:
   packages:
@@ -11,20 +11,19 @@ screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 resources:
   layouts:
     base1:
       elements:
         - id: af32
           type: rect
-          fill: "#000000"
           width: 1920
           height: 1080
           click:
             actionPayload:
               actions:
                 nextLine: {}
+          colorId: layoutColor1
   images:
     alkejf3la:
       fileId: x342fga
@@ -41,6 +40,9 @@ resources:
     a32kf3:
       x: 200
       y: 200
+  colors:
+    layoutColor1:
+      hex: "#000000"
 story:
   initialSceneId: ajfl3a
   scenes:

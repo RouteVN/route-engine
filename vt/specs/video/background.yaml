@@ -1,5 +1,5 @@
 ---
-title: "Video Background"
+title: Video Background
 description: Test video playback as background
 skipScreenshot: true
 ---
@@ -9,32 +9,31 @@ l10n:
       label: English
       lang: en
       keys: {}
-
 screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 resources:
   layouts:
     base1:
       elements:
         - id: bg-rect
           type: rect
-          fill: "#000000"
           width: 1920
           height: 1080
           click:
             actionPayload:
               actions:
                 nextLine: {}
-
+          colorId: layoutColor1
   videos:
     video_sample_resource:
       fileId: video_sample
       width: 1920
       height: 1080
-
+  colors:
+    layoutColor1:
+      hex: "#000000"
 story:
   initialSceneId: videoScene
   scenes:

@@ -30,13 +30,13 @@ resources:
       elements:
         - id: bg
           type: rect
-          fill: "#000000"
           width: 1920
           height: 1080
           click:
             actionPayload:
               actions:
                 nextLine: {}
+          colorId: layoutColor1
     dialogueUI:
       name: Dialogue UI
       mode: adv
@@ -47,12 +47,12 @@ resources:
           y: 750
           width: 1720
           height: 280
-          fill: "#4D4D4D"
           opacity: 0.9
           click:
             actionPayload:
               actions:
                 nextLine: {}
+          colorId: color4
         - id: charName
           type: text
           content: ${dialogue.character.name}
@@ -131,6 +131,8 @@ resources:
       hex: "#A6A6A6"
     color4:
       hex: "#4D4D4D"
+    layoutColor1:
+      hex: "#000000"
   textStyles:
     textStyle1:
       fontId: fontDefault
@@ -271,5 +273,7 @@ story:
                       value: 6
                 dialogue:
                   content:
-                    - text: "LINE 6: End of test. Expected behavior: [BACK 1] goes to line 5 (score 30), [BACK 2] goes to line 4 (score 15), etc."
+                    - text:
+                        "LINE 6: End of test. Expected behavior: [BACK 1] goes to line 5 (score
+                        30), [BACK 2] goes to line 4 (score 15), etc."
                   characterId: narrator

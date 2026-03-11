@@ -27,13 +27,13 @@ resources:
       elements:
         - id: af32
           type: rect
-          fill: "#000000"
           width: 1920
           height: 1080
           click:
             actionPayload:
               actions:
                 nextLine: {}
+          colorId: layoutColor1
     j3i8dk32:
       name: Title Screen
       elements:
@@ -95,6 +95,8 @@ resources:
       hex: white
     color2:
       hex: yellow
+    layoutColor1:
+      hex: "#000000"
   textStyles:
     textStyle1:
       fontId: fontDefault

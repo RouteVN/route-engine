@@ -1,0 +1,115 @@
+file: "../../../src/stores/constructRenderState.js"
+group: constructRenderState.resolveColorIds
+suites: [resolveColorIds]
+---
+suite: resolveColorIds
+exportName: resolveColorIds
+---
+case: resolves colorId into inline fill for rect elements
+in:
+  - type: "rect"
+    width: 100
+    height: 50
+    colorId: "panel"
+  - colors:
+      panel:
+        hex: "#112233"
+out:
+  type: "rect"
+  width: 100
+  height: 50
+  fill: "#112233"
+---
+case: resolves nested interaction colorIds for rect elements
+in:
+  - id: "button"
+    type: "rect"
+    width: 240
+    height: 80
+    colorId: "idle"
+    hover:
+      colorId: "hover"
+      cursor: "pointer"
+    click:
+      colorId: "active"
+      actionPayload:
+        actions: {}
+    rightClick:
+      colorId: "muted"
+  - colors:
+      idle:
+        hex: "#222222"
+      hover:
+        hex: "#444444"
+      active:
+        hex: "#666666"
+      muted:
+        hex: "rgba(0, 0, 0, 0.6)"
+out:
+  id: "button"
+  type: "rect"
+  width: 240
+  height: 80
+  fill: "#222222"
+  hover:
+    fill: "#444444"
+    cursor: "pointer"
+  click:
+    fill: "#666666"
+    actionPayload:
+      actions: {}
+  rightClick:
+    fill: "rgba(0, 0, 0, 0.6)"
+---
+case: leaves nodes without colorId unchanged
+in:
+  - type: "container"
+    children:
+      - type: "text"
+        content: "Hello"
+  - {}
+out:
+  type: "container"
+  children:
+    - type: "text"
+      content: "Hello"
+---
+case: inline fill throws clear error
+in:
+  - type: "rect"
+    width: 100
+    height: 50
+    fill: "#FFFFFF"
+  - {}
+throws: 'Inline fill is not allowed in rect layout elements at "root". Use colorId instead'
+---
+case: nested inline interaction fill throws clear error
+in:
+  - type: "rect"
+    width: 100
+    height: 50
+    colorId: "idle"
+    hover:
+      fill: "#FFFFFF"
+  - colors:
+      idle:
+        hex: "#000000"
+throws: 'Inline hover.fill is not allowed in rect layout elements at "root". Use hover.colorId instead'
+---
+case: missing color resource throws clear error
+in:
+  - type: "rect"
+    width: 100
+    height: 50
+    colorId: "missing"
+  - colors: {}
+throws: 'Color "missing" not found'
+---
+case: colorId must resolve to a non-empty string
+in:
+  - type: "rect"
+    width: 100
+    height: 50
+    colorId: 123
+  - colors: {}
+throws: 'colorId at "root" must resolve to a non-empty string'

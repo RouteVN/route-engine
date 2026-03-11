@@ -39,13 +39,13 @@ resources:
       elements:
         - id: background
           type: rect
-          fill: "#333333"
           width: 1920
           height: 1080
           click:
             actionPayload:
               actions:
                 nextLine: {}
+          colorId: layoutColor1
     sliderTestLayout:
       name: Slider Variable Binding Test
       elements:
@@ -133,6 +133,8 @@ resources:
       hex: "#00ff00"
     color4:
       hex: "#888888"
+    layoutColor1:
+      hex: "#333333"
   textStyles:
     textStyle1:
       fontId: fontDefault

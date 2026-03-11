@@ -1,5 +1,5 @@
 ---
-title: "Visual Animation 2"
+title: Visual Animation 2
 description: Test both in and out animation at same time
 ---
 l10n:
@@ -12,21 +12,19 @@ screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 resources:
   layouts:
     base1:
       elements:
         - id: af32
           type: rect
-          fill: "#000000"
           width: 1920
           height: 1080
           click:
             actionPayload:
               actions:
                 nextLine: {}
-
+          colorId: layoutColor1
   images:
     alkejf3la:
       fileId: x342fga
@@ -40,7 +38,6 @@ resources:
       fileId: la3lka
       width: 200
       height: 200
-
   transforms:
     leftPos:
       x: 300
@@ -58,10 +55,9 @@ resources:
       rotation: 0
       scaleX: 1
       scaleY: 1
-
   tweens:
     3lkj289:
-      name: "Fade In"
+      name: Fade In
       properties:
         alpha:
           initialValue: 0
@@ -70,14 +66,16 @@ resources:
               value: 1
               easing: linear
     8h3js:
-      name: "Fade Out"
+      name: Fade Out
       properties:
         alpha:
           keyframes:
             - duration: 2000
               value: 0
               easing: linear
-
+  colors:
+    layoutColor1:
+      hex: "#000000"
 story:
   initialSceneId: ajfl3a
   scenes:

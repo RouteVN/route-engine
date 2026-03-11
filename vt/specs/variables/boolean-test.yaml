@@ -30,13 +30,13 @@ resources:
       elements:
         - id: clickArea
           type: rect
-          fill: "#000000"
           width: 1920
           height: 1080
           click:
             actionPayload:
               actions:
                 nextLine: {}
+          colorId: layoutColor1
     booleanTestUI:
       name: Boolean Variable Test Screen
       elements:
@@ -179,7 +179,9 @@ resources:
           textStyleId: textStyle7
         - id: instructions
           type: text
-          content: Click 'Toggle' buttons to flip boolean values • Use 'Set' buttons to force specific values
+          content:
+            Click 'Toggle' buttons to flip boolean values • Use 'Set' buttons to
+            force specific values
           x: 960
           y: 950
           anchorX: 0.5
@@ -196,6 +198,8 @@ resources:
       hex: "#737373"
     color4:
       hex: "#FFFFFF"
+    layoutColor1:
+      hex: "#000000"
   textStyles:
     textStyle1:
       fontId: fontDefault

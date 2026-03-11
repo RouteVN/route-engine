@@ -199,6 +199,57 @@ out:
               fill: "#FFFF00"
   animations: []
 ---
+case: resolves colorId in dialogue gui layout elements
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      dialogue:
+        gui:
+          resourceId: "dialogueLayout"
+        content:
+          - text: "Hello"
+    resources:
+      layouts:
+        dialogueLayout:
+          elements:
+            - id: "dialogue-panel"
+              type: "rect"
+              width: 1400
+              height: 300
+              colorId: "panel"
+              hover:
+                colorId: "hoverPanel"
+      colors:
+        panel:
+          hex: "#000000"
+        hoverPanel:
+          hex: "#222222"
+    dialogueUIHidden: false
+    autoMode: false
+    skipMode: false
+    currentLocalizationPackageId: null
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "dialogue-panel"
+          type: "rect"
+          width: 1400
+          height: 300
+          fill: "#000000"
+          hover:
+            fill: "#222222"
+  animations: []
+---
 case: resolves imageId in dialogue gui layout elements
 in:
   - elements:
