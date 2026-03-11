@@ -1,6 +1,6 @@
 ---
 title: Dialogue Animation
-description: Test dialogue GUI animation in and out
+description: Test dialogue UI animation in and out
 ---
 screen:
   width: 1920
@@ -110,7 +110,7 @@ story:
                 base:
                   resourceId: base1
                 dialogue:
-                  gui:
+                  ui:
                     resourceId: dialogueLayout
                     animations:
                       in:
@@ -133,7 +133,7 @@ story:
             - id: line4
               actions:
                 dialogue:
-                  gui:
+                  ui:
                     animations:
                       out:
                         resourceId: fadeOut

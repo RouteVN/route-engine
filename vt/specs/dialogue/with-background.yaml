@@ -120,7 +120,7 @@ story:
                 base:
                   resourceId: base1
                 dialogue:
-                  gui:
+                  ui:
                     resourceId: fi3l
                   mode: adv
                   content:

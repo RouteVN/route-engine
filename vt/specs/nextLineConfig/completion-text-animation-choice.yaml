@@ -131,7 +131,7 @@ story:
                   applyMode: persistent
                 dialogue:
                   mode: adv
-                  gui:
+                  ui:
                     resourceId: dialogueLayout
                   content:
                     - text: Line 1: text-revealing must complete before auto-next.

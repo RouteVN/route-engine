@@ -1449,7 +1449,7 @@ story:
                   resourceId: f3wklajf32
                 dialogue:
                   mode: adv
-                  gui:
+                  ui:
                     resourceId: fi3l
                   content:
                     - text: Hello there! Welcome to our visual novel.

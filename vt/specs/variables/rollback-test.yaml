@@ -143,7 +143,7 @@ story:
                   resourceId: baseLayout
                 dialogue:
                   mode: adv
-                  gui:
+                  ui:
                     resourceId: dialogueUI
                   content:
                     - text: Welcome! Your current score is 0. Click to continue...

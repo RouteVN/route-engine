@@ -138,7 +138,7 @@ story:
                 base:
                   resourceId: base1
                 dialogue:
-                  gui:
+                  ui:
                     resourceId: dialogueLayout
                   mode: adv
                   content:

@@ -82,7 +82,7 @@ story:
                   applyMode: singleLine
                 dialogue:
                   mode: adv
-                  gui:
+                  ui:
                     resourceId: dialogueLayout
                   content:
                     - text: Line 1: nextLineConfig auto is enabled with applyMode=singleLine.

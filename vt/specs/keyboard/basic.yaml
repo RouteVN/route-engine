@@ -75,7 +75,7 @@ story:
                 keyboard:
                   resourceId: gameplay
                 dialogue:
-                  gui:
+                  ui:
                     resourceId: dialogueLayout
                   mode: adv
                   content:

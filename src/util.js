@@ -552,30 +552,30 @@ export const formatDate = (timestamp, format = "DD/MM/YYYY - HH:mm") => {
 };
 
 /**
- * Compares two dialogue states, flagging changes only for gui updates.
+ * Compares two dialogue states, flagging changes only for ui updates.
  * Ignores content and characterId changes to reduce noise.
- * If the gui is removed, it's considered a delete action.
+ * If the ui is removed, it's considered a delete action.
  * @param {Object} prevDialogue - Previous dialogue state
  * @param {Object} currDialogue - Current dialogue state
  * @returns {Object|null} Change object or null if no significant change
  */
 const diffDialogue = (prevDialogue, currDialogue) => {
-  const prevGui = prevDialogue?.gui;
-  const currGui = currDialogue?.gui;
+  const prevUi = prevDialogue?.ui;
+  const currUi = currDialogue?.ui;
 
-  if (JSON.stringify(prevGui) === JSON.stringify(currGui)) {
+  if (JSON.stringify(prevUi) === JSON.stringify(currUi)) {
     return null;
   }
 
-  if (prevGui && !currGui) {
+  if (prevUi && !currUi) {
     return { changeType: "delete", data: prevDialogue };
   }
 
-  if (currGui && !prevDialogue) {
+  if (currUi && !prevDialogue) {
     return { changeType: "add", data: currDialogue };
   }
 
-  if (currGui && prevDialogue) {
+  if (currUi && prevDialogue) {
     return { changeType: "update", data: currDialogue };
   }
 

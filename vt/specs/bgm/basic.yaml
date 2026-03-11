@@ -84,7 +84,7 @@ story:
                 bgm:
                   resourceId: dk392
                 dialogue:
-                  gui:
+                  ui:
                     resourceId: fi3l
                   mode: adv
                   content:
@@ -94,7 +94,7 @@ story:
                 bgm:
                   resourceId: 93k22
                 dialogue:
-                  gui:
+                  ui:
                     resourceId: fi3l
                   mode: adv
                   content:
@@ -102,7 +102,7 @@ story:
             - id: line3
               actions:
                 dialogue:
-                  gui:
+                  ui:
                     resourceId: fi3l
                   mode: adv
                   content:
@@ -110,7 +110,7 @@ story:
             - id: line4
               actions:
                 dialogue:
-                  gui:
+                  ui:
                     resourceId: fi3l
                   mode: adv
                   content:
@@ -119,7 +119,7 @@ story:
               actions:
                 bgm: {}
                 dialogue:
-                  gui:
+                  ui:
                     resourceId: fi3l
                   mode: adv
                   content:
