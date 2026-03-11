@@ -1,20 +1,6 @@
 ---
 title: Autoplay
 ---
-l10n:
-  packages:
-    eklekfjwalefj:
-      label: English
-      lang: en
-      keys:
-        line1: "Line 1: Testing skip functionality"
-        line2: "Line 2: Click Skip to skip through lines"
-        line3: "Line 3: Toggle Skip All to control skip behavior"
-        line4: "Line 4: Skip All ON (green) = skip everything"
-        line5: "Line 5: Skip All OFF (white) = skip only viewed lines"
-        restartButton: Restart
-        skipButton: Skip
-        skipAllButton: Skip All
 screen:
   width: 1920
   height: 1080
@@ -58,7 +44,7 @@ resources:
           type: text
           x: 1700
           y: 50
-          content: ${l10n.keys.restartButton}
+          content: Restart
           hover:
             textStyleId: textStyle2
           click:
@@ -71,7 +57,7 @@ resources:
           type: text
           x: 1550
           y: 50
-          content: ${l10n.keys.skipButton}
+          content: Skip
           hover:
             textStyleId: textStyle2
           click:
@@ -85,7 +71,7 @@ resources:
           type: text
           x: 1350
           y: 50
-          content: ${l10n.keys.skipAllButton}
+          content: Skip All
           hover:
             textStyleId: textStyle2
           click:
@@ -148,29 +134,29 @@ story:
                   gui:
                     resourceId: dialogueLayout
                   content:
-                    - text: ${l10n.keys.line1}
+                    - text: Line 1: Testing skip functionality
                   characterId: narrator
             - id: line2
               actions:
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line2}
+                    - text: Line 2: Click Skip to skip through lines
                   characterId: narrator
             - id: line3
               actions:
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line3}
+                    - text: Line 3: Toggle Skip All to control skip behavior
                   characterId: narrator
             - id: line4
               actions:
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line4}
+                    - text: Line 4: Skip All ON (green) = skip everything
                   characterId: narrator
             - id: line5
               actions:
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line5}
+                    - text: Line 5: Skip All OFF (white) = skip only viewed lines
                   characterId: narrator

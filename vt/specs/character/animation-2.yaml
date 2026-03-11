@@ -2,12 +2,6 @@
 title: Character Animation 2
 description: Test both in and out animation at same time for character transitions
 ---
-l10n:
-  packages:
-    eklekfjwalefj:
-      label: English
-      lang: en
-      keys: {}
 screen:
   width: 1920
   height: 1080

@@ -2,12 +2,6 @@
 title: Character Animation 1
 description: Test animation in, update, out for character containers
 ---
-l10n:
-  packages:
-    eklekfjwalefj:
-      label: English
-      lang: en
-      keys: {}
 screen:
   width: 1920
   height: 1080

@@ -6,17 +6,6 @@ description: |
   - waits for background tween animation to finish
   - then stops on a choice line
 ---
-l10n:
-  packages:
-    eklekfjwalefj:
-      label: English
-      lang: en
-      keys:
-        line1: "Line 1: text-revealing must complete before auto-next."
-        line2: "Line 2: background fade-in animation must complete before auto-next."
-        line3: "Line 3: auto should continue here."
-        line4: "Line 4: choice is visible. auto must stop on this line."
-        line5: "Line 5: reached after selecting a choice."
 screen:
   width: 1920
   height: 1080
@@ -145,7 +134,7 @@ story:
                   gui:
                     resourceId: dialogueLayout
                   content:
-                    - text: ${l10n.keys.line1}
+                    - text: Line 1: text-revealing must complete before auto-next.
             - id: line2
               actions:
                 background:
@@ -155,17 +144,17 @@ story:
                       resourceId: fade-in-1s
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line2}
+                    - text: Line 2: background fade-in animation must complete before auto-next.
             - id: line3
               actions:
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line3}
+                    - text: Line 3: auto should continue here.
             - id: line4
               actions:
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line4}
+                    - text: Line 4: choice is visible. auto must stop on this line.
                 choice:
                   resourceId: choiceLayout
                   items:
@@ -184,4 +173,4 @@ story:
                     enabled: false
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line5}
+                    - text: Line 5: reached after selecting a choice.

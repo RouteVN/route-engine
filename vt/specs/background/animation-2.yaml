@@ -2,12 +2,6 @@
 title: Animation 2
 description: test both in and out animation at same time
 ---
-l10n:
-  packages:
-    eklekfjwalefj:
-      label: English
-      lang: en
-      keys: {}
 screen:
   width: 1920
   height: 1080

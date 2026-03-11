@@ -2,17 +2,6 @@
 title: nextLineConfig with Choice
 description: Scene auto (fromStart) should pause when a choice is visible
 ---
-l10n:
-  packages:
-    eklekfjwalefj:
-      label: English
-      lang: en
-      keys:
-        line1: "Line 1: Scene auto is enabled (persistent)."
-        line2: "Line 2: Auto advanced here. Next line shows a choice."
-        line3: "Line 3: Choice is visible. Auto should NOT continue now."
-        line4: "Line 4: Reached after selecting a choice item."
-        line5: "Line 5: End."
 screen:
   width: 1920
   height: 1080
@@ -135,17 +124,17 @@ story:
                   gui:
                     resourceId: dialogueLayout
                   content:
-                    - text: ${l10n.keys.line1}
+                    - text: Line 1: Scene auto is enabled (persistent).
             - id: line2
               actions:
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line2}
+                    - text: Line 2: Auto advanced here. Next line shows a choice.
             - id: line3
               actions:
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line3}
+                    - text: Line 3: Choice is visible. Auto should NOT continue now.
                 choice:
                   resourceId: choiceLayout
                   items:
@@ -158,7 +147,7 @@ story:
                 choice: {}
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line4}
+                    - text: Line 4: Reached after selecting a choice item.
             - id: line5
               actions:
                 setNextLineConfig:
@@ -168,4 +157,4 @@ story:
                     enabled: false
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line5}
+                    - text: Line 5: End.

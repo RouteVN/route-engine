@@ -2,17 +2,6 @@
 title: nextLineConfig applyMode persistent
 description: persistent should keep auto-advancing until changed or section end
 ---
-l10n:
-  packages:
-    eklekfjwalefj:
-      label: English
-      lang: en
-      keys:
-        line1: "Line 1: nextLineConfig auto is enabled with applyMode=persistent."
-        line2: "Line 2: Should auto-advance."
-        line3: "Line 3: Should auto-advance."
-        line4: "Line 4: Should auto-advance."
-        line5: "Line 5: End."
 screen:
   width: 1920
   height: 1080
@@ -96,24 +85,24 @@ story:
                   gui:
                     resourceId: dialogueLayout
                   content:
-                    - text: ${l10n.keys.line1}
+                    - text: Line 1: nextLineConfig auto is enabled with applyMode=persistent.
             - id: line2
               actions:
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line2}
+                    - text: Line 2: Should auto-advance.
             - id: line3
               actions:
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line3}
+                    - text: Line 3: Should auto-advance.
             - id: line4
               actions:
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line4}
+                    - text: Line 4: Should auto-advance.
             - id: line5
               actions:
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line5}
+                    - text: Line 5: End.

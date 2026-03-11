@@ -51,11 +51,9 @@ in:
         autoMode: true
         skipMode: false
         dialogueUIHidden: false
-        currentLocalizationPackageId: "en"
 out:
   global:
     pendingEffects: []
     autoMode: true
     skipMode: false
     dialogueUIHidden: false
-    currentLocalizationPackageId: "en"

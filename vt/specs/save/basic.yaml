@@ -1,23 +1,6 @@
 ---
 title: Save/Load Test
 ---
-l10n:
-  packages:
-    eklekfjwalefj:
-      label: English
-      lang: en
-      keys:
-        line1: "Line 1: Welcome to Save/Load test"
-        line2: "Line 2: Click Save in top right to save your game"
-        line3: "Line 3: Choose a slot, then click X to close"
-        line4: "Line 4: Click Load to load a saved game"
-        line5: "Line 5: Try saving now, then continue to next section"
-        line6: "Line 6: This is section 2 - loading returns you to section 1"
-        saveButton: Save
-        loadButton: Load
-        saveTitle: Save Game
-        loadTitle: Load Game
-        closeHint: Click X to close
 screen:
   width: 1920
   height: 1080
@@ -76,7 +59,7 @@ resources:
           type: text
           x: 1810
           y: 35
-          content: ${l10n.keys.saveButton}
+          content: Save
           textStyleId: textStyle2
         - id: load-button
           type: rect
@@ -97,7 +80,7 @@ resources:
           type: text
           x: 1690
           y: 35
-          content: ${l10n.keys.loadButton}
+          content: Load
           textStyleId: textStyle2
     saveMenuLayout:
       elements:
@@ -117,7 +100,7 @@ resources:
           colorId: layoutColor1
         - id: save-menu-title
           type: text
-          content: ${l10n.keys.saveTitle}
+          content: Save Game
           x: 900
           y: 340
           textStyleId: textStyle3
@@ -202,7 +185,7 @@ resources:
           textStyleId: textStyle4
         - id: save-menu-info
           type: text
-          content: ${l10n.keys.closeHint}
+          content: Click X to close
           x: 880
           y: 730
           textStyleId: textStyle5
@@ -224,7 +207,7 @@ resources:
           colorId: layoutColor1
         - id: load-menu-title
           type: text
-          content: ${l10n.keys.loadTitle}
+          content: Load Game
           x: 900
           y: 340
           textStyleId: textStyle3
@@ -309,7 +292,7 @@ resources:
           textStyleId: textStyle4
         - id: load-menu-info
           type: text
-          content: ${l10n.keys.closeHint}
+          content: Click X to close
           x: 880
           y: 730
           textStyleId: textStyle5
@@ -384,31 +367,31 @@ story:
                   gui:
                     resourceId: dialogueLayout
                   content:
-                    - text: ${l10n.keys.line1}
+                    - text: Line 1: Welcome to Save/Load test
                   characterId: narrator
             - id: line2
               actions:
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line2}
+                    - text: Line 2: Click Save in top right to save your game
                   characterId: narrator
             - id: line3
               actions:
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line3}
+                    - text: Line 3: Choose a slot, then click X to close
                   characterId: narrator
             - id: line4
               actions:
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line4}
+                    - text: Line 4: Click Load to load a saved game
                   characterId: narrator
             - id: line5
               actions:
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line5}
+                    - text: Line 5: Try saving now, then continue to next section
                   characterId: narrator
             - id: line6
               actions:
@@ -420,13 +403,13 @@ story:
               actions:
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line6}
+                    - text: Line 6: This is section 2 - loading returns you to section 1
                   characterId: narrator
             - id: line2
               actions:
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line1}
+                    - text: Line 1: Welcome to Save/Load test
                   characterId: narrator
             - id: line3
               actions:

@@ -2,12 +2,6 @@
 title: Visual 1
 description: Test visual positioning
 ---
-l10n:
-  packages:
-    eklekfjwalefj:
-      label: English
-      lang: en
-      keys: {}
 screen:
   width: 1920
   height: 1080

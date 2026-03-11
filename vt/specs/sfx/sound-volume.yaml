@@ -1,12 +1,6 @@
 ---
 title: Sound Volume Test
 ---
-l10n:
-  packages:
-    en:
-      label: English
-      lang: en
-      keys: {}
 screen:
   width: 1920
   height: 1080

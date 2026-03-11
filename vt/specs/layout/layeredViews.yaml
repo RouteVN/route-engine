@@ -1,12 +1,6 @@
 ---
 title: Layered Views Test
 ---
-l10n:
-  packages:
-    en_package:
-      label: English
-      lang: en
-      keys: {}
 screen:
   width: 1920
   height: 1080

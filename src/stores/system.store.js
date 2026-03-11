@@ -44,15 +44,9 @@ const resetNextLineConfigIfSingleLine = (state) => {
 };
 
 export const createInitialState = (payload) => {
-  const {
-    global: {
-      currentLocalizationPackageId,
-      saveSlots = {},
-      variables: loadedGlobalVariables = {},
-    },
-    // initialPointer,
-    projectData,
-  } = payload;
+  const { projectData } = payload;
+  const global = payload.global ?? {};
+  const { saveSlots = {}, variables: loadedGlobalVariables = {} } = global;
 
   const initialSceneId = projectData.story.initialSceneId;
   const initialScene = projectData.story.scenes[initialSceneId];
@@ -84,7 +78,6 @@ export const createInitialState = (payload) => {
       skipMode: false,
       dialogueUIHidden: false,
       isDialogueHistoryShowing: false,
-      currentLocalizationPackageId: currentLocalizationPackageId,
       viewedRegistry: {
         sections: [],
         resources: [],
@@ -189,10 +182,6 @@ export const selectDialogueHistory = ({ state }) => {
     });
 
   return historyContent;
-};
-
-export const selectCurrentLocalizationPackageId = ({ state }) => {
-  return state.global.currentLocalizationPackageId;
 };
 
 export const selectIsLineViewed = ({ state }, payload) => {
@@ -578,10 +567,6 @@ export const selectRenderState = ({ state }) => {
     previousPresentationState,
     resources: state.projectData.resources,
     screen: state.projectData.screen,
-    l10n: state.projectData.l10n.packages[
-      state.global.currentLocalizationPackageId
-    ],
-    currentLocalizationPackageId: state.global.currentLocalizationPackageId,
     dialogueUIHidden: state.global.dialogueUIHidden,
     autoMode: state.global.autoMode,
     skipMode: state.global.skipMode,
@@ -764,15 +749,6 @@ export const showDialogueHistory = ({ state }) => {
 
 export const hideDialogueHistory = ({ state }) => {
   state.global.isDialogueHistoryShowing = false;
-  state.global.pendingEffects.push({
-    name: "render",
-  });
-  return state;
-};
-
-export const setCurrentLocalizationPackageId = ({ state }, payload) => {
-  const { localizationPackageId } = payload;
-  state.global.currentLocalizationPackageId = localizationPackageId;
   state.global.pendingEffects.push({
     name: "render",
   });
@@ -1950,7 +1926,6 @@ export const createSystemStore = (initialState) => {
     selectAutoMode,
     selectDialogueUIHidden,
     selectDialogueHistory,
-    selectCurrentLocalizationPackageId,
     selectIsLineViewed,
     selectIsResourceViewed,
     selectNextLineConfig,
@@ -1980,7 +1955,6 @@ export const createSystemStore = (initialState) => {
     toggleDialogueUI,
     showDialogueHistory,
     hideDialogueHistory,
-    setCurrentLocalizationPackageId,
     clearPendingEffects,
     appendPendingEffect,
     addViewedLine,

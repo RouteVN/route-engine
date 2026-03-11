@@ -99,7 +99,6 @@ in:
         autoMode: true
         skipMode: false
         dialogueUIHidden: false
-        currentLocalizationPackageId: "ja"
   -
     name: "newEffect"
 out:
@@ -110,4 +109,3 @@ out:
     autoMode: true
     skipMode: false
     dialogueUIHidden: false
-    currentLocalizationPackageId: "ja"

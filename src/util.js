@@ -692,7 +692,7 @@ const resolveEventBindings = (value, eventData) => {
  * Processes action payloads by resolving `_event.*` bindings and rendering jempl templates.
  *
  * `_event.*` bindings are resolved directly from event context.
- * jempl interpolation remains available for `${variables.*}`, `${l10n.*}`, and similar templates.
+ * jempl interpolation remains available for `${variables.*}` and similar templates.
  *
  * @param {Object} actions - Action payload object that may contain `_event.*` and jempl template strings
  * @param {Object} context - Context object (e.g., { _event: { value: 42 }, variables: {...} })

@@ -2,12 +2,6 @@
 title: Choice Animation
 description: Test choice animation in and out
 ---
-l10n:
-  packages:
-    eklekfjwalefj:
-      label: English
-      lang: en
-      keys: {}
 screen:
   width: 1920
   height: 1080

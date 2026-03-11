@@ -1,19 +1,6 @@
 ---
 title: Autoplay
 ---
-l10n:
-  packages:
-    eklekfjwalefj:
-      label: English
-      lang: en
-      keys:
-        line1: "Line 1: Testing autoplay functionality"
-        line2: "Line 2: This should auto-advance after 1 second"
-        line3: "Line 3: Click Auto button to enable/disable"
-        line4: "Line 4: Auto mode should continue through all lines"
-        line5: "Line 5: Final line - auto mode stops here"
-        autoButton: Auto
-        skipButton: Skip
 screen:
   width: 1920
   height: 1080
@@ -57,7 +44,7 @@ resources:
           type: text
           x: 1700
           y: 50
-          content: ${l10n.keys.autoButton}
+          content: Auto
           hover:
             textStyleId: textStyle3
           click:
@@ -71,7 +58,7 @@ resources:
           type: text
           x: 1550
           y: 50
-          content: ${l10n.keys.skipButton}
+          content: Skip
           hover:
             textStyleId: textStyle3
           click:
@@ -160,29 +147,29 @@ story:
                   gui:
                     resourceId: dialogueLayout
                   content:
-                    - text: ${l10n.keys.line1}
+                    - text: Line 1: Testing autoplay functionality
                   characterId: narrator
             - id: line2
               actions:
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line2}
+                    - text: Line 2: This should auto-advance after 1 second
                   characterId: narrator
             - id: line3
               actions:
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line3}
+                    - text: Line 3: Click Auto button to enable/disable
                   characterId: narrator
             - id: line4
               actions:
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line4}
+                    - text: Line 4: Auto mode should continue through all lines
                   characterId: narrator
             - id: line5
               actions:
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line5}
+                    - text: Line 5: Final line - auto mode stops here
                   characterId: narrator

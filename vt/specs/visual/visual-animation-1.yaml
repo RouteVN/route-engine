@@ -2,12 +2,6 @@
 title: Visual Animation 1
 description: Test visual animation in and out
 ---
-l10n:
-  packages:
-    eklekfjwalefj:
-      label: English
-      lang: en
-      keys: {}
 screen:
   width: 1920
   height: 1080

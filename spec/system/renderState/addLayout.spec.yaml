@@ -19,7 +19,6 @@ in:
     variables: {}
     autoMode: false
     skipMode: false
-    currentLocalizationPackageId: null
 out:
   elements:
     - id: "story"
@@ -48,7 +47,6 @@ in:
     variables: {}
     autoMode: false
     skipMode: false
-    currentLocalizationPackageId: null
 out:
   elements:
     - id: "notStory"
@@ -104,7 +102,6 @@ in:
     variables: {}
     autoMode: false
     skipMode: false
-    currentLocalizationPackageId: null
 out:
   elements:
     - id: "story"
@@ -192,7 +189,6 @@ in:
     variables: {}
     autoMode: false
     skipMode: false
-    currentLocalizationPackageId: null
 out:
   elements:
     - id: "story"
@@ -268,7 +264,6 @@ in:
     variables: {}
     autoMode: true
     skipMode: false
-    currentLocalizationPackageId: null
 out:
   elements:
     - id: "story"
@@ -333,7 +328,6 @@ in:
     variables: {}
     autoMode: false
     skipMode: false
-    currentLocalizationPackageId: null
 out:
   elements:
     - id: "story"
@@ -407,7 +401,6 @@ in:
     variables: {}
     autoMode: true
     skipMode: false
-    currentLocalizationPackageId: null
 out:
   elements:
     - id: "story"
@@ -475,7 +468,6 @@ in:
     variables: {}
     autoMode: true
     skipMode: false
-    currentLocalizationPackageId: null
 out:
   elements:
     - id: "story"
@@ -524,7 +516,6 @@ in:
     variables: {}
     autoMode: false
     skipMode: false
-    currentLocalizationPackageId: null
 throws: 'Inline textStyle is not allowed in layout elements at "children[0]". Use textStyleId instead'
 ---
 case: inline src in sprite layout elements throws clear error
@@ -549,7 +540,6 @@ in:
     variables: {}
     autoMode: false
     skipMode: false
-    currentLocalizationPackageId: null
 throws: 'Inline src is not allowed in sprite layout elements at "children[0]". Use imageId instead'
 ---
 case: inline src in layout sprite elements throws clear error
@@ -574,5 +564,4 @@ in:
     variables: {}
     autoMode: false
     skipMode: false
-    currentLocalizationPackageId: null
 throws: 'Inline src is not allowed in sprite layout elements at "children[0]". Use imageId instead'

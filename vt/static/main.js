@@ -295,7 +295,6 @@ const init = async () => {
   engine.init({
     initialState: {
       global: {
-        currentLocalizationPackageId: 'eklekfjwalefj',
         saveSlots,
         variables: { ...globalDeviceVariables, ...globalAccountVariables }
       },

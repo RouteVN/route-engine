@@ -17,7 +17,6 @@ in:
             state:
               projectData: { story: { initialSceneId: "loaded" } }
               global:
-                currentLocalizationPackageId: "en"
               contexts:
                 - pointers:
                     read: { sectionId: "sec2", lineId: "line2" }
@@ -33,7 +32,6 @@ out:
         state:
           projectData: { story: { initialSceneId: "loaded" } }
           global:
-            currentLocalizationPackageId: "en"
           contexts:
             - pointers:
                 read: { sectionId: "sec2", lineId: "line2" }
