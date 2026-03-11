@@ -256,6 +256,5 @@ properties:
             required: [sectionId]
           default: []
 
-required:
-  [variables, historySequence, currentMode, modes]
+required: [variables, historySequence, currentMode, modes]
 additionalProperties: false
