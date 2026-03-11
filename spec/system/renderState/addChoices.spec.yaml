@@ -140,6 +140,125 @@ out:
       children: []
   animations: []
 ---
+case: resolves textStyleId in choice layout elements
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      choice:
+        resourceId: "choiceLayout"
+        items: []
+    resources:
+      layouts:
+        choiceLayout:
+          elements:
+            - id: "choice-label"
+              type: "text"
+              content: "Select an option"
+              textStyleId: "body"
+      textStyles:
+        body:
+          fontId: "fontMain"
+          colorId: "fg"
+          fontSize: 20
+          fontWeight: "400"
+          fontStyle: "normal"
+          lineHeight: 1
+      fonts:
+        fontMain:
+          fileId: "Arial"
+      colors:
+        fg:
+          hex: "#FFFFFF"
+    screen:
+      width: 1920
+      height: 1080
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "choice-blocker"
+          type: "rect"
+          fill: "transparent"
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          click:
+            actionPayload:
+              actions: {}
+        - id: "choice-label"
+          type: "text"
+          content: "Select an option"
+          textStyle:
+            fontFamily: "Arial"
+            fontSize: 20
+            fontWeight: "400"
+            fontStyle: "normal"
+            lineHeight: 1
+            fill: "#FFFFFF"
+  animations: []
+---
+case: resolves imageId in choice layout elements
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      choice:
+        resourceId: "choiceLayout"
+        items: []
+    resources:
+      layouts:
+        choiceLayout:
+          elements:
+            - id: "choice-image"
+              type: "sprite"
+              imageId: "choiceFrame"
+      images:
+        choiceFrame:
+          fileId: "choice-frame.png"
+          width: 400
+          height: 60
+    screen:
+      width: 1920
+      height: 1080
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "choice-blocker"
+          type: "rect"
+          fill: "transparent"
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          click:
+            actionPayload:
+              actions: {}
+        - id: "choice-image"
+          type: "sprite"
+          src: "choice-frame.png"
+          width: 400
+          height: 60
+  animations: []
+---
 case: story container does not exist - return unchanged state
 in:
   - elements:

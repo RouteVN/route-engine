@@ -1,0 +1,135 @@
+file: "../../../src/stores/constructRenderState.js"
+group: constructRenderState.resolveImageIds
+suites: [resolveImageIds]
+---
+suite: resolveImageIds
+exportName: resolveImageIds
+---
+case: resolves sprite imageId and interaction image ids from image resources
+in:
+  - id: "hero-button"
+    type: "sprite"
+    imageId: "idle"
+    hoverImageId: "hover"
+    clickImageId: "click"
+    hover:
+      cursor: "pointer"
+      actionPayload:
+        action: "hovered"
+    click:
+      actionPayload:
+        action: "clicked"
+  - images:
+      idle:
+        fileId: "idle.png"
+        width: 320
+        height: 180
+      hover:
+        fileId: "hover.png"
+        width: 320
+        height: 180
+      click:
+        fileId: "click.png"
+        width: 320
+        height: 180
+out:
+  id: "hero-button"
+  type: "sprite"
+  src: "idle.png"
+  width: 320
+  height: 180
+  hover:
+    cursor: "pointer"
+    actionPayload:
+      action: "hovered"
+    src: "hover.png"
+  click:
+    actionPayload:
+      action: "clicked"
+    src: "click.png"
+---
+case: resolves direct sprite imageId when no image resource exists
+in:
+  - type: "sprite"
+    imageId: "saveImage:slot-1"
+  - {}
+out:
+  type: "sprite"
+  src: "saveImage:slot-1"
+---
+case: preserves explicit width and height over image resource defaults
+in:
+  - type: "sprite"
+    imageId: "idle"
+    width: 640
+    height: 360
+  - images:
+      idle:
+        fileId: "idle.png"
+        width: 320
+        height: 180
+out:
+  type: "sprite"
+  src: "idle.png"
+  width: 640
+  height: 360
+---
+case: inline url throws clear error
+in:
+  - type: "sprite"
+    url: "legacy.png"
+  - {}
+throws: 'Inline url is not allowed in sprite layout elements at "root". Use imageId instead'
+---
+case: inline src throws clear error
+in:
+  - type: "sprite"
+    src: "legacy.png"
+  - {}
+throws: 'Inline src is not allowed in sprite layout elements at "root". Use imageId instead'
+---
+case: inline hoverUrl throws clear error
+in:
+  - type: "sprite"
+    hoverUrl: "hover.png"
+  - {}
+throws: 'Inline hoverUrl is not allowed in sprite layout elements at "root". Use hoverImageId instead'
+---
+case: inline hover.src throws clear error
+in:
+  - type: "sprite"
+    hover:
+      src: "hover.png"
+  - {}
+throws: 'Inline hover.src is not allowed in sprite layout elements at "root". Use hoverImageId instead'
+---
+case: inline click.src throws clear error
+in:
+  - type: "sprite"
+    click:
+      src: "click.png"
+  - {}
+throws: 'Inline click.src is not allowed in sprite layout elements at "root". Use clickImageId instead'
+---
+case: imageId must resolve to a non-empty string
+in:
+  - type: "sprite"
+    imageId: 123
+  - {}
+throws: 'imageId at "root" must resolve to a non-empty string'
+---
+case: hoverImageId must resolve to a non-empty string
+in:
+  - type: "sprite"
+    imageId: "idle"
+    hoverImageId: false
+  - {}
+throws: 'hoverImageId at "root" must resolve to a non-empty string'
+---
+case: clickImageId must resolve to a non-empty string
+in:
+  - type: "sprite"
+    imageId: "idle"
+    clickImageId: false
+  - {}
+throws: 'clickImageId at "root" must resolve to a non-empty string'

@@ -1,5 +1,5 @@
 ---
-title: "Autoplay"
+title: Autoplay
 ---
 l10n:
   packages:
@@ -12,19 +12,16 @@ l10n:
         line3: "Line 3: Click Auto button to enable/disable"
         line4: "Line 4: Auto mode should continue through all lines"
         line5: "Line 5: Final line - auto mode stops here"
-        autoButton: "Auto"
-        skipButton: "Skip"
-
+        autoButton: Auto
+        skipButton: Skip
 screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 resources:
   characters:
     narrator:
       name: ""
-
   layouts:
     baseLayout:
       elements:
@@ -39,7 +36,6 @@ resources:
             actionPayload:
               actions:
                 nextLine: {}
-
     dialogueLayout:
       name: Dialogue Screen
       mode: adv
@@ -51,91 +47,98 @@ resources:
           width: 1720
           height: 200
           fill: "#4D4D4D"
-
         - id: dialogue-text
           type: text
           x: 150
           y: 850
           content: ${dialogue.content[0].text}
-          textStyle:
-            fontSize: 32
-            fill: "white"
-
+          textStyleId: textStyle1
         - id: auto-button
           type: text
           x: 1700
           y: 50
           content: ${l10n.keys.autoButton}
-          textStyle:
-            fontSize: 32
-            $if autoMode:
-              fill: "#D9D9D9"
-            $else:
-              fill: "white"
           hover:
-            textStyle:
-              fontSize: 32
-              fill: yellow
+            textStyleId: textStyle3
           click:
             actionPayload:
               actions:
                 toggleAutoMode: {}
-
+          textStyleId:
+            $if autoMode: textStyle2
+            $else: textStyle1
         - id: skip-button
           type: text
           x: 1550
           y: 50
           content: ${l10n.keys.skipButton}
-          textStyle:
-            fontSize: 32
-            $if skipMode:
-              fill: "#D9D9D9"
-            $else:
-              fill: "white"
           hover:
-            textStyle:
-              fontSize: 32
-              fill: yellow
+            textStyleId: textStyle3
           click:
             actionPayload:
               actions:
                 toggleSkipMode: {}
-
+          textStyleId:
+            $if skipMode: textStyle2
+            $else: textStyle1
         - id: speed-slow-button
           type: text
           x: 1400
           y: 50
-          content: "Slow"
-          textStyle:
-            fontSize: 32
-            fill: "white"
+          content: Slow
           hover:
-            textStyle:
-              fontSize: 32
-              fill: "yellow"
+            textStyleId: textStyle3
           click:
             actionPayload:
               actions:
                 setAutoplayDelay:
                   delay: 2000
+          textStyleId: textStyle1
         - id: speed-fast-button
           type: text
           x: 1250
           y: 50
-          content: "Fast"
-          textStyle:
-            fontSize: 32
-            fill: "white"
+          content: Fast
           hover:
-            textStyle:
-              fontSize: 32
-              fill: "yellow"
+            textStyleId: textStyle3
           click:
             actionPayload:
               actions:
                 setAutoplayDelay:
                   delay: 250
-
+          textStyleId: textStyle1
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: white
+    color2:
+      hex: "#D9D9D9"
+    color3:
+      hex: yellow
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 32
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle2:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 32
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle3:
+      fontId: fontDefault
+      colorId: color3
+      fontSize: 32
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
 story:
   initialSceneId: test_scene
   scenes:
@@ -155,28 +158,24 @@ story:
                   content:
                     - text: ${l10n.keys.line1}
                   characterId: narrator
-
             - id: line2
               actions:
                 dialogue:
                   content:
                     - text: ${l10n.keys.line2}
                   characterId: narrator
-
             - id: line3
               actions:
                 dialogue:
                   content:
                     - text: ${l10n.keys.line3}
                   characterId: narrator
-
             - id: line4
               actions:
                 dialogue:
                   content:
                     - text: ${l10n.keys.line4}
                   characterId: narrator
-
             - id: line5
               actions:
                 dialogue:

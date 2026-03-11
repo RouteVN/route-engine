@@ -1,5 +1,5 @@
 ---
-title: "Layout Animation"
+title: Layout Animation
 description: Test layout animation in and out
 ---
 l10n:
@@ -12,7 +12,6 @@ screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 resources:
   layouts:
     base1:
@@ -38,35 +37,28 @@ resources:
               type: rect
               width: 400
               height: 400
-              fill: "rgba(50, 50, 80, 0.9)"
+              fill: rgba(50, 50, 80, 0.9)
             - id: menu-title
               type: text
-              content: "Menu"
+              content: Menu
               x: 150
               y: 40
-              textStyle:
-                fontSize: 36
-                fill: "white"
+              textStyleId: textStyle1
             - id: menu-item-1
               type: text
-              content: "Option 1"
+              content: Option 1
               x: 40
               y: 120
-              textStyle:
-                fontSize: 24
-                fill: "white"
+              textStyleId: textStyle2
             - id: menu-item-2
               type: text
-              content: "Option 2"
+              content: Option 2
               x: 40
               y: 180
-              textStyle:
-                fontSize: 24
-                fill: "white"
-
+              textStyleId: textStyle2
   tweens:
     fadeIn:
-      name: "Fade In"
+      name: Fade In
       properties:
         alpha:
           initialValue: 0
@@ -75,7 +67,7 @@ resources:
               value: 1
               easing: easeOut
     fadeOut:
-      name: "Fade Out"
+      name: Fade Out
       properties:
         alpha:
           keyframes:
@@ -83,7 +75,7 @@ resources:
               value: 0
               easing: easeIn
     scaleIn:
-      name: "Scale In"
+      name: Scale In
       properties:
         scaleX:
           initialValue: 0.8
@@ -103,7 +95,27 @@ resources:
             - duration: 300
               value: 1
               easing: easeOut
-
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: white
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 36
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle2:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
 story:
   initialSceneId: scene1
   scenes:

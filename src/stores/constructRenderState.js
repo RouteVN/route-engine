@@ -67,6 +67,295 @@ const getRequiredVisualTransform = (resources, item) => {
   return transform;
 };
 
+const getTextStyleResources = (resources = {}) => resources.textStyles || {};
+const getImageResources = (resources = {}) => resources.images || {};
+
+const getLayoutResourcePath = (path, key) =>
+  path === "root" ? `${key}` : `${path}.${key}`;
+
+const ensureNonEmptyLayoutResourceId = (value, path, fieldName) => {
+  if (typeof value !== "string" || value.length === 0) {
+    throw new Error(
+      `${fieldName} at "${path}" must resolve to a non-empty string`,
+    );
+  }
+};
+
+const resolveTextStyleResource = (resources = {}, textStyleId) => {
+  const textStyleResource = getTextStyleResources(resources)?.[textStyleId];
+
+  if (!textStyleResource) {
+    throw new Error(`Text style "${textStyleId}" not found`);
+  }
+
+  const fontResource = resources.fonts?.[textStyleResource.fontId];
+  if (!fontResource) {
+    throw new Error(
+      `Font "${textStyleResource.fontId}" not found for text style "${textStyleId}"`,
+    );
+  }
+
+  const colorResource = resources.colors?.[textStyleResource.colorId];
+  if (!colorResource) {
+    throw new Error(
+      `Color "${textStyleResource.colorId}" not found for text style "${textStyleId}"`,
+    );
+  }
+
+  const resolvedTextStyle = {
+    fontFamily: fontResource.fileId,
+    fontSize: textStyleResource.fontSize ?? 16,
+    fontWeight: textStyleResource.fontWeight ?? "400",
+    fontStyle: textStyleResource.fontStyle ?? "normal",
+    lineHeight: textStyleResource.lineHeight ?? 1.2,
+    fill: colorResource.hex,
+  };
+
+  if (textStyleResource.align !== undefined) {
+    resolvedTextStyle.align = textStyleResource.align;
+  }
+
+  if (textStyleResource.wordWrap !== undefined) {
+    resolvedTextStyle.wordWrap = textStyleResource.wordWrap;
+  }
+
+  if (textStyleResource.breakWords !== undefined) {
+    resolvedTextStyle.breakWords = textStyleResource.breakWords;
+  }
+
+  if (textStyleResource.wordWrapWidth !== undefined) {
+    resolvedTextStyle.wordWrapWidth = textStyleResource.wordWrapWidth;
+  }
+
+  if (textStyleResource.strokeColorId) {
+    const strokeColorResource =
+      resources.colors?.[textStyleResource.strokeColorId];
+
+    if (!strokeColorResource) {
+      throw new Error(
+        `Stroke color "${textStyleResource.strokeColorId}" not found for text style "${textStyleId}"`,
+      );
+    }
+
+    resolvedTextStyle.strokeColor = strokeColorResource.hex;
+  }
+
+  if (textStyleResource.strokeWidth !== undefined) {
+    resolvedTextStyle.strokeWidth = textStyleResource.strokeWidth;
+  }
+
+  return resolvedTextStyle;
+};
+
+export const resolveTextStyleIds = (node, resources = {}, path = "root") => {
+  if (Array.isArray(node)) {
+    return node.map((item, index) =>
+      resolveTextStyleIds(item, resources, `${path}[${index}]`),
+    );
+  }
+
+  if (!node || typeof node !== "object") {
+    return node;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(node, "textStyle")) {
+    throw new Error(
+      `Inline textStyle is not allowed in layout elements at "${path}". Use textStyleId instead`,
+    );
+  }
+
+  const resolvedNode = {};
+
+  for (const [key, value] of Object.entries(node)) {
+    if (key === "textStyleId") {
+      continue;
+    }
+
+    resolvedNode[key] = resolveTextStyleIds(
+      value,
+      resources,
+      getLayoutResourcePath(path, key),
+    );
+  }
+
+  if (node.textStyleId !== undefined) {
+    ensureNonEmptyLayoutResourceId(node.textStyleId, path, "textStyleId");
+
+    resolvedNode.textStyle = resolveTextStyleResource(
+      resources,
+      node.textStyleId,
+    );
+  }
+
+  return resolvedNode;
+};
+
+const resolveImageResource = (resources = {}, imageId) => {
+  const imageResource = getImageResources(resources)?.[imageId];
+
+  if (!imageResource) {
+    return null;
+  }
+
+  return imageResource;
+};
+
+const getSpriteFieldReplacement = (fieldName) => {
+  if (
+    fieldName === "hoverUrl" ||
+    fieldName === "hoverSrc" ||
+    fieldName === "hover.src"
+  ) {
+    return "hoverImageId";
+  }
+
+  if (
+    fieldName === "clickUrl" ||
+    fieldName === "clickSrc" ||
+    fieldName === "click.src"
+  ) {
+    return "clickImageId";
+  }
+
+  return "imageId";
+};
+
+const ensureNoInlineSpriteInteractionSource = (
+  node,
+  interactionKey,
+  path,
+  fieldName,
+) => {
+  const interaction = node?.[interactionKey];
+
+  if (
+    !interaction ||
+    typeof interaction !== "object" ||
+    Array.isArray(interaction)
+  ) {
+    return;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(interaction, fieldName)) {
+    throw new Error(
+      `Inline ${interactionKey}.${fieldName} is not allowed in sprite layout elements at "${path}". Use ${getSpriteFieldReplacement(`${interactionKey}.${fieldName}`)} instead`,
+    );
+  }
+};
+
+const setResolvedSpriteInteractionSource = (
+  resolvedNode,
+  interactionKey,
+  source,
+) => {
+  const interaction = resolvedNode[interactionKey];
+
+  resolvedNode[interactionKey] = {
+    ...(interaction &&
+    typeof interaction === "object" &&
+    !Array.isArray(interaction)
+      ? interaction
+      : {}),
+    src: source,
+  };
+};
+
+export const resolveImageIds = (node, resources = {}, path = "root") => {
+  if (Array.isArray(node)) {
+    return node.map((item, index) =>
+      resolveImageIds(item, resources, `${path}[${index}]`),
+    );
+  }
+
+  if (!node || typeof node !== "object") {
+    return node;
+  }
+
+  if (node.type === "sprite") {
+    for (const fieldName of [
+      "url",
+      "src",
+      "hoverUrl",
+      "hoverSrc",
+      "clickUrl",
+      "clickSrc",
+    ]) {
+      if (Object.prototype.hasOwnProperty.call(node, fieldName)) {
+        throw new Error(
+          `Inline ${fieldName} is not allowed in sprite layout elements at "${path}". Use ${getSpriteFieldReplacement(fieldName)} instead`,
+        );
+      }
+    }
+
+    ensureNoInlineSpriteInteractionSource(node, "hover", path, "src");
+    ensureNoInlineSpriteInteractionSource(node, "click", path, "src");
+  }
+
+  const resolvedNode = {};
+
+  for (const [key, value] of Object.entries(node)) {
+    if (
+      node.type === "sprite" &&
+      (key === "imageId" || key === "hoverImageId" || key === "clickImageId")
+    ) {
+      continue;
+    }
+
+    resolvedNode[key] = resolveImageIds(
+      value,
+      resources,
+      getLayoutResourcePath(path, key),
+    );
+  }
+
+  if (node.type === "sprite" && node.imageId !== undefined) {
+    ensureNonEmptyLayoutResourceId(node.imageId, path, "imageId");
+    const imageResource = resolveImageResource(resources, node.imageId);
+    const imageSource = imageResource?.fileId ?? node.imageId;
+
+    resolvedNode.src = imageSource;
+
+    if (
+      resolvedNode.width === undefined &&
+      imageResource?.width !== undefined
+    ) {
+      resolvedNode.width = imageResource.width;
+    }
+
+    if (
+      resolvedNode.height === undefined &&
+      imageResource?.height !== undefined
+    ) {
+      resolvedNode.height = imageResource.height;
+    }
+  }
+
+  if (node.type === "sprite" && node.hoverImageId !== undefined) {
+    ensureNonEmptyLayoutResourceId(node.hoverImageId, path, "hoverImageId");
+    setResolvedSpriteInteractionSource(
+      resolvedNode,
+      "hover",
+      resolveImageResource(resources, node.hoverImageId)?.fileId ??
+        node.hoverImageId,
+    );
+  }
+
+  if (node.type === "sprite" && node.clickImageId !== undefined) {
+    ensureNonEmptyLayoutResourceId(node.clickImageId, path, "clickImageId");
+    setResolvedSpriteInteractionSource(
+      resolvedNode,
+      "click",
+      resolveImageResource(resources, node.clickImageId)?.fileId ??
+        node.clickImageId,
+    );
+  }
+
+  return resolvedNode;
+};
+
+export const resolveLayoutResourceIds = (node, resources = {}, path = "root") =>
+  resolveImageIds(resolveTextStyleIds(node, resources, path), resources, path);
+
 /**
  * Helper to push in/out/update animations based on previous and current state
  * @param {Object} params
@@ -184,7 +473,9 @@ export const addBase = (state, { presentationState, resources, variables }) => {
           { functions: jemplFunctions },
         );
 
-        storyContainer.children.unshift(processedContainer);
+        storyContainer.children.unshift(
+          resolveLayoutResourceIds(processedContainer, resources),
+        );
       }
     }
   }
@@ -255,7 +546,9 @@ export const addBackgroundOrCg = (
           { variables },
           { functions: jemplFunctions },
         );
-        storyContainer.children.push(processedContainer);
+        storyContainer.children.push(
+          resolveLayoutResourceIds(processedContainer, resources),
+        );
       }
     }
 
@@ -529,7 +822,9 @@ export const addVisuals = (
             { variables },
             { functions: jemplFunctions },
           );
-          storyContainer.children.push(processedContainer);
+          storyContainer.children.push(
+            resolveLayoutResourceIds(processedContainer, resources),
+          );
         }
       }
 
@@ -671,14 +966,14 @@ export const addDialogue = (
       result = parseAndRender(result, {
         l10n,
       });
-      const guiElements = result?.elements;
+      const guiElements = resolveLayoutResourceIds(result?.elements, resources);
 
       if (Array.isArray(guiElements)) {
         for (const element of guiElements) {
-          storyContainer.children.push(structuredClone(element));
+          storyContainer.children.push(element);
         }
       } else if (guiElements) {
-        storyContainer.children.push(structuredClone(guiElements));
+        storyContainer.children.push(guiElements);
       }
     }
   }
@@ -747,14 +1042,17 @@ export const addChoices = (
           items: presentationState.choice?.items ?? [],
         },
       });
-      const choiceElements = result?.elements;
+      const choiceElements = resolveLayoutResourceIds(
+        result?.elements,
+        resources,
+      );
 
       if (Array.isArray(choiceElements)) {
         for (const element of choiceElements) {
-          storyContainer.children.push(structuredClone(element));
+          storyContainer.children.push(element);
         }
       } else if (choiceElements) {
-        storyContainer.children.push(structuredClone(choiceElements));
+        storyContainer.children.push(choiceElements);
       }
     }
 
@@ -931,24 +1229,10 @@ export const addLayout = (
       // i18n: systemStore.selectCurrentLanguagePackKeys(),
     });
 
-    const processElementAfterRender = (element) => {
-      const processedElement = { ...element };
-
-      if (element.src && element.src.startsWith("file:")) {
-        processedElement.src = element.src;
-      }
-
-      if (element.children && Array.isArray(element.children)) {
-        processedElement.children = element.children.map(
-          processElementAfterRender,
-        );
-      }
-
-      return processedElement;
-    };
-
     // Push the processed container
-    storyContainer.children.push(processElementAfterRender(processedContainer));
+    storyContainer.children.push(
+      resolveLayoutResourceIds(processedContainer, resources),
+    );
   }
 
   // Handle layout animations
@@ -1068,7 +1352,7 @@ export const addLayeredViews = (
         l10n,
       });
 
-      elements.push(processedLayeredView);
+      elements.push(resolveLayoutResourceIds(processedLayeredView, resources));
     });
   }
   return state;

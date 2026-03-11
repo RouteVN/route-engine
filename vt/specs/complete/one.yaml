@@ -1,5 +1,5 @@
 ---
-title: "Sample"
+title: Sample
 ---
 l10n:
   packages:
@@ -7,96 +7,95 @@ l10n:
       label: English
       lang: en
       keys:
-        layoutHistoryDialogueLayoutFkjl233: "Dialogue History"
-        layoutHistoryDialogueLayoutFkjaefewfl233: "Close"
-        layoutCreditsLayoutX23f329fa: "Director"
-        layoutCreditsLayoutF33h429fa: "Lead Developer"
-        layoutCreditsLayoutIasdkj32: "Art Director"
-        layoutCreditsLayoutCredit4: "Music Composer"
-        layoutCreditsLayoutCredit5: "Sound Designer"
-        layoutCreditsLayoutCredit6: "Lead Writer"
-        layoutCreditsLayoutCredit7: "Story Editor"
-        layoutCreditsLayoutCredit8: "Character Designer"
-        layoutCreditsLayoutCredit9: "Background Artist"
-        layoutCreditsLayoutCredit10: "UI Designer"
-        layoutCreditsLayoutCredit11: "Quality Assurance"
-        layoutCreditsLayoutCredit12: "Beta Testers"
-        layoutCreditsLayoutCredit13: "Special Thanks"
-        layoutCreditsLayoutCredit14: "Community Manager"
-        layoutCreditsLayoutCredit15: "Technical Advisor"
-        layoutCreditsLayoutCredit16: "Marketing Lead"
-        layoutCreditsLayoutCredit17: "Localization Manager"
-        layoutCreditsLayoutCredit18: "Voice Director"
-        layoutCreditsLayoutCredit19: "Sound Engineer"
-        layoutCreditsLayoutCredit20: "Thank you for playing!"
-        layoutDafkjkl3OptionsTitle: "Options"
-        layoutDafkjkl3TextspeedId: "Text Speed"
-        layoutDafkjkl3LoadTitle: "Load Game"
-        layoutDafkjkl3SaveTitle: "Save Game"
-        layoutDafkjkl3PagePrev: "Previous"
-        layoutDafkjkl3PageNext: "Next"
-        layoutDafkjkl3LanguagesTitle: "Languages"
-        layoutDafkjkl3GalleryTitle: "Gallery"
-        layoutDafkjkl3ReplayTitle: "Scene Replay"
-        layoutDafkjkl3MusicRoomTitle: "Music Room"
-        layoutDafkjkl3MusicRoomStop: "Stop Music"
-        layoutDafkjkl3Fjkl2jk: "Track 1"
-        layoutDafkjkl3Fjkl2fe23jk: "Track 2"
-        layoutDafkjkl3Start: "Start"
-        layoutDafkjkl3Save: "Save"
-        layoutDafkjkl3Load: "Load"
-        layoutDafkjkl3Options: "Options"
-        layoutDafkjkl3Languages: "Languages"
-        layoutDafkjkl3Gallery: "Gallery"
-        layoutDafkjkl3Replay: "Replay"
-        layoutDafkjkl3MusicRoom: "Music Room"
-        layoutDafkjkl3Main: "Main"
-        layoutDafkjkl3Back: "Back"
-        layoutFi3lDialogueActionButton: "Auto"
-        layoutFi3lDialogueActionSkip: "Skip"
-        layoutFi3lDialogueActionHistory: "History"
-        layoutFi3lDialogueActionOptions: "Options"
-        layoutFi3lDialogueActionHide: "Hide"
-        layoutFi3lDialogueActionBack: "Back"
-        layoutF3jik32isdf32sadfj: "Are you sure you want to exit?"
-        layoutF3jik32isdf38sdfa2: "Yes"
-        layoutF3jik32isdfE83a: "No"
-        layoutJ3i8dk32Start: "Start"
-        layoutJ3i8dk32Load: "Load"
-        layoutJ3i8dk32Options: "Options"
-        layoutJ3i8dk32Exit: "Exit"
-        layoutJ3i8dk32Extra: "Extra"
-        sceneAjfl3a3k3s9sdLine1Qw8r4j2k: "Hello there! Welcome to our visual novel."
-        sceneAjfl3a3k3s9sdLine2Xm3k9s2d: "This is the beginning of an amazing story."
-        sceneAjfl3a3k3s9sdLine3Zn5k8w3r: "I hope you enjoy your time here."
-        sceneAjfl3a3k3s9sdLine4Cv7j2k9s: "Let me introduce you to the world."
-        sceneAjfl3a3k3s9sdLine5Bnm4k3s8: "Every choice you make matters."
-        sceneAjfl3a3k3s9sdLine6Lkj9s3d2: "The journey ahead will be filled with challenges."
-        sceneAjfl3a3k3s9sdLine7Poi8k3s7: "But also with moments of joy and discovery."
-        sceneAjfl3a3k3s9sdLine8Mnb6k2s9: "Take your time and explore everything."
-        sceneAjfl3a3k3s9sdLine9Vxc4k7s3: "There are secrets waiting to be uncovered."
-        sceneAjfl3a3k3s9sdLine10Qaz3k8s2: "Your adventure is just beginning."
-        sceneAjfl3a3k3s9sdLine11Wsx4k9s1: "I'll be here to guide you along the way."
-        sceneAjfl3a3k3s9sdLine12Edc5k2s7: "Remember that every ending is also a new beginning."
-        sceneAjfl3a3k3s9sdLine13Rfv6k3s8: "The bonds you form will shape your destiny."
-        sceneAjfl3a3k3s9sdLine14Tgb7k4s9: "Trust your instincts and follow your heart."
-        sceneAjfl3a3k3s9sdLine15: "Now, let's continue this journey together."
-        sceneAjfl3a934kjfa3Line1Yhn8k5s1: "This is a new section of the story."
-        sceneAjfl3a934kjfa3Line2Ujm9k6s2: "The plot continues to develop here."
-        sceneAjfl3a934kjfa3Line3Ik0k7s3: "More exciting events await you."
-        sceneAjfl3a934kjfa3Line4Ol1k8s4: "Character relationships deepen."
-        sceneAjfl3a934kjfa3Line5P2k9s5: "The mystery unfolds further."
-        sceneAjfl3a934kjfa3Line6A3k0s6: "This section sets up the next chapter."
-        sceneAjfl3aK3nfgdsai34Line1Fkjl23ras: "Welcome to the extra content section."
-        sceneAjfl3aK3nfgdsai34Line2Afjk293s: "Here you can enjoy additional scenes."
-        sceneAjfl3aK3nfgdsai34Line3Kl4j3sf9: "Special moments that enrich the main story."
-        sceneAjfl3aK3nfgdsai34Line4M2k4jfs8: "This is a special bonus scene."
-        sceneAjfl3aK3nfgdsai34Line5P9sj2k3f: "Thank you for exploring all the content!"
+        layoutHistoryDialogueLayoutFkjl233: Dialogue History
+        layoutHistoryDialogueLayoutFkjaefewfl233: Close
+        layoutCreditsLayoutX23f329fa: Director
+        layoutCreditsLayoutF33h429fa: Lead Developer
+        layoutCreditsLayoutIasdkj32: Art Director
+        layoutCreditsLayoutCredit4: Music Composer
+        layoutCreditsLayoutCredit5: Sound Designer
+        layoutCreditsLayoutCredit6: Lead Writer
+        layoutCreditsLayoutCredit7: Story Editor
+        layoutCreditsLayoutCredit8: Character Designer
+        layoutCreditsLayoutCredit9: Background Artist
+        layoutCreditsLayoutCredit10: UI Designer
+        layoutCreditsLayoutCredit11: Quality Assurance
+        layoutCreditsLayoutCredit12: Beta Testers
+        layoutCreditsLayoutCredit13: Special Thanks
+        layoutCreditsLayoutCredit14: Community Manager
+        layoutCreditsLayoutCredit15: Technical Advisor
+        layoutCreditsLayoutCredit16: Marketing Lead
+        layoutCreditsLayoutCredit17: Localization Manager
+        layoutCreditsLayoutCredit18: Voice Director
+        layoutCreditsLayoutCredit19: Sound Engineer
+        layoutCreditsLayoutCredit20: Thank you for playing!
+        layoutDafkjkl3OptionsTitle: Options
+        layoutDafkjkl3TextspeedId: Text Speed
+        layoutDafkjkl3LoadTitle: Load Game
+        layoutDafkjkl3SaveTitle: Save Game
+        layoutDafkjkl3PagePrev: Previous
+        layoutDafkjkl3PageNext: Next
+        layoutDafkjkl3LanguagesTitle: Languages
+        layoutDafkjkl3GalleryTitle: Gallery
+        layoutDafkjkl3ReplayTitle: Scene Replay
+        layoutDafkjkl3MusicRoomTitle: Music Room
+        layoutDafkjkl3MusicRoomStop: Stop Music
+        layoutDafkjkl3Fjkl2jk: Track 1
+        layoutDafkjkl3Fjkl2fe23jk: Track 2
+        layoutDafkjkl3Start: Start
+        layoutDafkjkl3Save: Save
+        layoutDafkjkl3Load: Load
+        layoutDafkjkl3Options: Options
+        layoutDafkjkl3Languages: Languages
+        layoutDafkjkl3Gallery: Gallery
+        layoutDafkjkl3Replay: Replay
+        layoutDafkjkl3MusicRoom: Music Room
+        layoutDafkjkl3Main: Main
+        layoutDafkjkl3Back: Back
+        layoutFi3lDialogueActionButton: Auto
+        layoutFi3lDialogueActionSkip: Skip
+        layoutFi3lDialogueActionHistory: History
+        layoutFi3lDialogueActionOptions: Options
+        layoutFi3lDialogueActionHide: Hide
+        layoutFi3lDialogueActionBack: Back
+        layoutF3jik32isdf32sadfj: Are you sure you want to exit?
+        layoutF3jik32isdf38sdfa2: Yes
+        layoutF3jik32isdfE83a: No
+        layoutJ3i8dk32Start: Start
+        layoutJ3i8dk32Load: Load
+        layoutJ3i8dk32Options: Options
+        layoutJ3i8dk32Exit: Exit
+        layoutJ3i8dk32Extra: Extra
+        sceneAjfl3a3k3s9sdLine1Qw8r4j2k: Hello there! Welcome to our visual novel.
+        sceneAjfl3a3k3s9sdLine2Xm3k9s2d: This is the beginning of an amazing story.
+        sceneAjfl3a3k3s9sdLine3Zn5k8w3r: I hope you enjoy your time here.
+        sceneAjfl3a3k3s9sdLine4Cv7j2k9s: Let me introduce you to the world.
+        sceneAjfl3a3k3s9sdLine5Bnm4k3s8: Every choice you make matters.
+        sceneAjfl3a3k3s9sdLine6Lkj9s3d2: The journey ahead will be filled with challenges.
+        sceneAjfl3a3k3s9sdLine7Poi8k3s7: But also with moments of joy and discovery.
+        sceneAjfl3a3k3s9sdLine8Mnb6k2s9: Take your time and explore everything.
+        sceneAjfl3a3k3s9sdLine9Vxc4k7s3: There are secrets waiting to be uncovered.
+        sceneAjfl3a3k3s9sdLine10Qaz3k8s2: Your adventure is just beginning.
+        sceneAjfl3a3k3s9sdLine11Wsx4k9s1: I'll be here to guide you along the way.
+        sceneAjfl3a3k3s9sdLine12Edc5k2s7: Remember that every ending is also a new beginning.
+        sceneAjfl3a3k3s9sdLine13Rfv6k3s8: The bonds you form will shape your destiny.
+        sceneAjfl3a3k3s9sdLine14Tgb7k4s9: Trust your instincts and follow your heart.
+        sceneAjfl3a3k3s9sdLine15: Now, let's continue this journey together.
+        sceneAjfl3a934kjfa3Line1Yhn8k5s1: This is a new section of the story.
+        sceneAjfl3a934kjfa3Line2Ujm9k6s2: The plot continues to develop here.
+        sceneAjfl3a934kjfa3Line3Ik0k7s3: More exciting events await you.
+        sceneAjfl3a934kjfa3Line4Ol1k8s4: Character relationships deepen.
+        sceneAjfl3a934kjfa3Line5P2k9s5: The mystery unfolds further.
+        sceneAjfl3a934kjfa3Line6A3k0s6: This section sets up the next chapter.
+        sceneAjfl3aK3nfgdsai34Line1Fkjl23ras: Welcome to the extra content section.
+        sceneAjfl3aK3nfgdsai34Line2Afjk293s: Here you can enjoy additional scenes.
+        sceneAjfl3aK3nfgdsai34Line3Kl4j3sf9: Special moments that enrich the main story.
+        sceneAjfl3aK3nfgdsai34Line4M2k4jfs8: This is a special bonus scene.
+        sceneAjfl3aK3nfgdsai34Line5P9sj2k3f: Thank you for exploring all the content!
 screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 resources:
   variables:
     savePages:
@@ -113,36 +112,35 @@ resources:
           - label: 7
           - label: 8
           - label: 9
-
     gallery:
       type: object
       default:
         items:
           - label: CG1
             resourceId: alkejf3l
-            fileIds: [94lkj289, 23jkfa893, dmni32]
+            fileIds:
+              - 94lkj289
+              - 23jkfa893
+              - dmni32
           - label: CG2
             resourceId: f3wklajf32
-            fileIds: [23jkfa893]
+            fileIds:
+              - 23jkfa893
           - label: CG3
             resourceId: 32rka331
-            fileIds: [dmni32]
-
+            fileIds:
+              - dmni32
     activeGalleryIndex:
       type: number
-
     activeGalleryFileIndex:
       type: number
       default: 0
-
     exploredResourceIds:
       default:
         items: []
-
     currentSavePageIndex:
       type: number
       default: 0
-
     currentMenuTabId:
       type: string
       default: options
@@ -180,20 +178,16 @@ resources:
             - id: fkjl233
               type: text
               content: ${l10n.keys.layoutHistoryDialogueLayoutFkjl233}
-              textStyle:
-                fontSize: 48
-                fill: "white"
+              textStyleId: textStyle1
             - id: fkjaefewfl233
               type: text
               content: ${l10n.keys.layoutHistoryDialogueLayoutFkjaefewfl233}
               y: 700
-              textStyle:
-                fontSize: 48
-                fill: "white"
-              eventName: "system"
+              eventName: system
               eventPayload:
                 actions:
                   clearLastLayeredView: {}
+              textStyleId: textStyle1
             - id: 32kljfsf3
               type: container
               direction: vertical
@@ -209,10 +203,7 @@ resources:
                     content: ${item.content}
                     height: 80
                     width: 500
-                    textStyle:
-                      fontSize: 24
-                      fill: "white"
-
+                    textStyleId: textStyle2
     layeredViewGalleryItemLayout:
       elements:
         - id: afk2lkas
@@ -220,30 +211,29 @@ resources:
           children:
             - id: k9ka3lk-${isLastFileIdIndex}
               type: sprite
-              url: file:${currentActiveGalleryFileId}
+              imageId: file:${currentActiveGalleryFileId}
               x: 0
               y: 0
               width: 1920
               height: 1080
-              eventName: "system"
+              eventName: system
               eventPayload:
                 $if !isLastFileIdIndex:
                   actions:
                     updateVariable:
                       id: uv1
                       operations:
-                        - variableId: "activeGalleryFileIndex"
-                          op: "increment"
+                        - variableId: activeGalleryFileIndex
+                          op: increment
                 $else:
                   actions:
                     updateVariable:
                       id: uv2
                       operations:
-                        - variableId: "activeGalleryFileIndex"
+                        - variableId: activeGalleryFileIndex
                           op: set
                           value: 0
                     clearLastLayeredView: {}
-
     creditsLayout:
       transitions:
         - id: 932fsdf
@@ -268,143 +258,102 @@ resources:
               type: text
               content: ${l10n.keys.layoutCreditsLayoutX23f329fa}
               height: 100
-              textStyle:
-                fontSize: 48
-                fill: "white"
+              textStyleId: textStyle1
             - id: f33h429fa
               type: text
               content: ${l10n.keys.layoutCreditsLayoutF33h429fa}
               height: 100
-              textStyle:
-                fontSize: 48
-                fill: "white"
+              textStyleId: textStyle1
             - id: iasdkj32
               type: text
               content: ${l10n.keys.layoutCreditsLayoutIasdkj32}
               height: 100
-              textStyle:
-                fontSize: 48
-                fill: "white"
+              textStyleId: textStyle1
             - id: credit4
               type: text
               content: ${l10n.keys.layoutCreditsLayoutCredit4}
               height: 100
-              textStyle:
-                fontSize: 48
-                fill: "white"
+              textStyleId: textStyle1
             - id: credit5
               type: text
               content: ${l10n.keys.layoutCreditsLayoutCredit5}
               height: 100
-              textStyle:
-                fontSize: 48
-                fill: "white"
+              textStyleId: textStyle1
             - id: credit6
               type: text
               content: ${l10n.keys.layoutCreditsLayoutcredit6}
               height: 100
-              textStyle:
-                fontSize: 48
-                fill: "white"
+              textStyleId: textStyle1
             - id: credit7
               type: text
               content: ${l10n.keys.layoutCreditsLayoutcredit7}
               height: 100
-              textStyle:
-                fontSize: 48
-                fill: "white"
+              textStyleId: textStyle1
             - id: credit8
               type: text
               content: ${l10n.keys.layoutCreditsLayoutcredit8}
               height: 100
-              textStyle:
-                fontSize: 48
-                fill: "white"
+              textStyleId: textStyle1
             - id: credit9
               type: text
               content: ${l10n.keys.layoutCreditsLayoutcredit9}
               height: 100
-              textStyle:
-                fontSize: 48
-                fill: "white"
+              textStyleId: textStyle1
             - id: credit10
               type: text
               content: ${l10n.keys.layoutCreditsLayoutcredit10}
               height: 100
-              textStyle:
-                fontSize: 48
-                fill: "white"
+              textStyleId: textStyle1
             - id: credit11
               type: text
               content: ${l10n.keys.layoutCreditsLayoutcredit11}
               height: 100
-              textStyle:
-                fontSize: 48
-                fill: "white"
+              textStyleId: textStyle1
             - id: credit12
               type: text
               content: ${l10n.keys.layoutCreditsLayoutcredit12}
               height: 100
-              textStyle:
-                fontSize: 48
-                fill: "white"
+              textStyleId: textStyle1
             - id: credit13
               type: text
               content: ${l10n.keys.layoutCreditsLayoutcredit13}
               height: 100
-              textStyle:
-                fontSize: 48
-                fill: "white"
+              textStyleId: textStyle1
             - id: credit14
               type: text
               content: ${l10n.keys.layoutCreditsLayoutcredit14}
               height: 100
-              textStyle:
-                fontSize: 48
-                fill: "white"
+              textStyleId: textStyle1
             - id: credit15
               type: text
               content: ${l10n.keys.layoutCreditsLayoutcredit15}
               height: 100
-              textStyle:
-                fontSize: 48
-                fill: "white"
+              textStyleId: textStyle1
             - id: credit16
               type: text
               content: ${l10n.keys.layoutCreditsLayoutcredit16}
               height: 100
-              textStyle:
-                fontSize: 48
-                fill: "white"
+              textStyleId: textStyle1
             - id: credit17
               type: text
               content: ${l10n.keys.layoutCreditsLayoutcredit17}
               height: 100
-              textStyle:
-                fontSize: 48
-                fill: "white"
+              textStyleId: textStyle1
             - id: credit18
               type: text
               content: ${l10n.keys.layoutCreditsLayoutcredit18}
               height: 100
-              textStyle:
-                fontSize: 48
-                fill: "white"
+              textStyleId: textStyle1
             - id: credit19
               type: text
               content: ${l10n.keys.layoutCreditsLayoutcredit19}
               height: 100
-              textStyle:
-                fontSize: 48
-                fill: "white"
+              textStyleId: textStyle1
             - id: credit20
               type: text
               content: ${l10n.keys.layoutCreditsLayoutcredit20}
               height: 100
-              textStyle:
-                fontSize: 48
-                fill: "white"
-
+              textStyleId: textStyle1
     titleScreenLayout:
       name: Title Screen Background
       elements:
@@ -415,11 +364,11 @@ resources:
           width: 1920
           height: 1080
           fill: "#000000"
-          clickEventName: "system"
+          clickEventName: system
           clickEventPayload:
             actions:
               nextLine: {}
-          rightClickEventName: "system"
+          rightClickEventName: system
           rightClickEventPayload:
             actions:
               addLayeredView:
@@ -428,10 +377,9 @@ resources:
               updateVariable:
                 id: uv3
                 operations:
-                  - variableId: "isMainMenu"
-                    op: "set"
+                  - variableId: isMainMenu
+                    op: set
                     value: true
-
     storyScreenLayout:
       name: Story Screen Background
       elements:
@@ -446,17 +394,6 @@ resources:
             actionPayload:
               actions:
                 nextLine: {}
-          # rightClickEventName: "system"
-          # rightClickEventPayload:
-          #   actions:
-          #     addLayeredView:
-          #       resourceId: dafkjkl3
-          #       resourceType: layout
-          #     updateVariable:
-          #       operations:
-          #         - variableId: "isMainMenu"
-          #           op: "set"
-          #           value: false
     extraScreenLayout:
       name: ExtraScreen Background
       elements:
@@ -467,35 +404,33 @@ resources:
           width: 1920
           height: 1080
           fill: "#000000"
-          clickEventName: "system"
+          clickEventName: system
           clickEventPayload:
             actions:
               nextLine: {}
     dafkjkl3:
       name: Menu Screen
       elements:
-        - type: "container"
+        - type: container
           children:
             - id: k3jl2rj
               type: rect
               width: 1920
               height: 1080
               fill: black
-              rightClickEventName: "system"
+              rightClickEventName: system
               rightClickEventPayload:
                 actions:
                   clearLastLayeredView: {}
-            - id: "9fdadf"
-              $when: 'variables.currentMenuTabId == "options"'
-              type: "container"
+            - id: 9fdadf
+              $when: variables.currentMenuTabId == "options"
+              type: container
               children:
                 - type: text
                   content: ${l10n.keys.layoutDafkjkl3OptionsTitle}
                   x: 100
                   y: 100
-                  textStyle:
-                    fontSize: 64
-                    fill: "white"
+                  textStyleId: textStyle3
                 - id: 39jfkal21
                   type: container
                   x: 300
@@ -508,18 +443,16 @@ resources:
                       x: 20
                       y: 0
                       content: ${l10n.keys.layoutDafkjkl3TextspeedId}
-                      textStyle:
-                        fontSize: 24
-                        fill: "white"
-                    - id: "a"
-                      type: "slider"
+                      textStyleId: textStyle2
+                    - id: a
+                      type: slider
                       x: 20
                       y: 50
-                      direction: "horizontal"
-                      idleThumb: "file:horizontal_idle_thumb"
-                      hoverThumb: "file:horizontal_hover_thumb"
-                      idleBar: "file:horizontal_idle_bar"
-                      hoverBar: "file:horizontal_hover_bar"
+                      direction: horizontal
+                      idleThumb: file:horizontal_idle_thumb
+                      hoverThumb: file:horizontal_hover_thumb
+                      idleBar: file:horizontal_idle_bar
+                      hoverBar: file:horizontal_hover_bar
                       dragEventName: system
                       dragEndEventName: system
                       dragEventPayload:
@@ -528,20 +461,18 @@ resources:
                             id: uv4
                             operations:
                               - variableId: textSpeed
-                                op: "set"
+                                op: set
                                 value: "{{ value }}"
-            - id: "9fdadf"
-              $when: 'variables.currentMenuTabId == "load"'
-              type: "container"
+            - id: 9fdadf
+              $when: variables.currentMenuTabId == "load"
+              type: container
               children:
                 - id: load-title
                   type: text
                   content: ${l10n.keys.layoutDafkjkl3LoadTitle}
                   x: 100
                   y: 100
-                  textStyle:
-                    fontSize: 64
-                    fill: "white"
+                  textStyleId: textStyle3
                 - id: load-container
                   type: container
                   x: 300
@@ -558,36 +489,34 @@ resources:
                           width: 400
                           height: 300
                           children:
-                            - id: "1-${item.id}"
-                              $when: "item.hasData"
+                            - id: 1-${item.id}
+                              $when: item.hasData
                               type: sprite
-                              url: "saveImage:${item.id}"
+                              imageId: saveImage:${item.id}
                               x: 0
                               y: 0
                               width: 400
                               height: 300
-                              eventName: "system"
+                              eventName: system
                               eventPayload:
                                 actions:
                                   loadVnData:
                                     slotIndex: ${item.id}
-                            - id: "2-${item.id}"
+                            - id: 2-${item.id}
                               $when: "!item.hasData"
                               type: sprite
-                              url: file:lakjf3lka
-                              hoverUrl: file:dmni32
+                              imageId: file:lakjf3lka
+                              hoverImageId: file:dmni32
                               x: 0
                               y: 0
                               width: 400
                               height: 300
-                            - id: "3-${item.id}"
+                            - id: 3-${item.id}
                               type: text
                               x: 20
                               y: 20
-                              textStyle:
-                                fontSize: 48
-                                fill: "white"
                               content: ${item.id} - ${item.label}
+                              textStyleId: textStyle1
                 - id: save-container-page-nums
                   type: container
                   x: 300
@@ -600,27 +529,20 @@ resources:
                       content: ${l10n.keys.layoutDafkjkl3PagePrev}
                       width: 80
                       $if variables.currentSavePageIndex > 0:
-                        textStyle:
-                          fontSize: 48
-                          fill: "white"
                         hover:
-                          textStyle:
-                          fontSize: 48
-                          fill: "yellow"
-                        eventName: "system"
+                          textStyleId: textStyle5
+                        eventName: system
                         eventPayload:
                           actions:
                             updateVariable:
                               id: uv5
                               operations:
-                                - variableId: "currentSavePageIndex"
-                                  op: "decrement"
+                                - variableId: currentSavePageIndex
+                                  op: decrement
                                   min: 0
+                        textStyleId: textStyle1
                       $else:
-                        textStyle:
-                          fontSize: 48
-                          fill: "#D9D9D9"
-                    # TODO: how to make it work without adding nextra container
+                        textStyleId: textStyle4
                     - id: save-container-page-nums-container
                       type: container
                       direction: horizontal
@@ -630,63 +552,50 @@ resources:
                         - $for item, i in variables.savePages.items:
                             - id: id-${item.label}
                               type: text
-                              content: "${item.label}"
+                              content: ${item.label}
                               width: 80
                               $if i == variables.currentSavePageIndex:
-                                textStyle:
-                                  fontSize: 48
-                                  fill: "yellow"
+                                textStyleId: textStyle5
                               $else:
-                                textStyle:
-                                  fontSize: 48
-                                  fill: "white"
-                                eventName: "system"
+                                eventName: system
                                 eventPayload:
                                   actions:
                                     updateVariable:
                                       id: uv6
                                       operations:
-                                        - variableId: "currentSavePageIndex"
-                                          op: "set"
-                                          value: "${i}"
+                                        - variableId: currentSavePageIndex
+                                          op: set
+                                          value: ${i}
+                                textStyleId: textStyle1
                     - id: page-next
                       type: text
                       content: ${l10n.keys.layoutDafkjkl3PageNext}
                       width: 80
                       $if variables.currentSavePageIndex < 8:
-                        textStyle:
-                          fontSize: 48
-                          fill: "white"
                         hover:
-                          textStyle:
-                          fontSize: 48
-                          fill: "yellow"
-                        eventName: "system"
+                          textStyleId: textStyle5
+                        eventName: system
                         eventPayload:
                           actions:
                             updateVariable:
                               id: uv7
                               operations:
-                                - variableId: "currentSavePageIndex"
-                                  op: "increment"
+                                - variableId: currentSavePageIndex
+                                  op: increment
                                   max: 8
+                        textStyleId: textStyle1
                       $else:
-                        textStyle:
-                          fontSize: 48
-                          fill: "#D9D9D9"
-
-            - id: "9fdadf"
-              $when: 'variables.currentMenuTabId == "save"'
-              type: "container"
+                        textStyleId: textStyle4
+            - id: 9fdadf
+              $when: variables.currentMenuTabId == "save"
+              type: container
               children:
                 - id: save-title
                   type: text
                   content: ${l10n.keys.layoutDafkjkl3SaveTitle}
                   x: 100
                   y: 100
-                  textStyle:
-                    fontSize: 64
-                    fill: "white"
+                  textStyleId: textStyle3
                 - id: save-container
                   type: container
                   x: 300
@@ -696,48 +605,46 @@ resources:
                   gap: 20
                   children:
                     - $for item in saveDataArray:
-                        - id: "${item.id}"
+                        - id: ${item.id}
                           type: container
                           x: 0
                           y: 0
                           width: 400
                           height: 300
                           children:
-                            - id: "ef31-${item.id}-${item.hasData}"
-                              $when: "item.hasData"
+                            - id: ef31-${item.id}-${item.hasData}
+                              $when: item.hasData
                               type: sprite
-                              url: "saveImage:${item.id}"
-                              hoverUrl: file:dmni32
+                              imageId: saveImage:${item.id}
+                              hoverImageId: file:dmni32
                               x: 0
                               y: 0
                               width: 400
                               height: 300
-                              eventName: "system"
+                              eventName: system
                               eventPayload:
                                 actions:
                                   saveVnData:
                                     slotIndex: ${item.id}
-                            - id: "afe1jjef31-${item.id}-${item.hasData}"
+                            - id: afe1jjef31-${item.id}-${item.hasData}
                               $when: "!item.hasData"
                               type: sprite
-                              url: "file:lakjf3lka"
+                              imageId: file:lakjf3lka
                               x: 0
                               y: 0
                               width: 400
                               height: 300
-                              eventName: "system"
+                              eventName: system
                               eventPayload:
                                 actions:
                                   saveVnData:
                                     slotIndex: ${item.id}
-                            - id: "3fadj-${item.id}"
+                            - id: 3fadj-${item.id}
                               type: text
                               x: 20
                               y: 20
-                              textStyle:
-                                fontSize: 48
-                                fill: "white"
                               content: ${item.id} - ${item.label}
+                              textStyleId: textStyle1
                 - id: save-container-page-nums
                   type: container
                   x: 300
@@ -750,27 +657,20 @@ resources:
                       content: ${l10n.keys.layoutDafkjkl3PagePrev}
                       width: 80
                       $if variables.currentSavePageIndex > 0:
-                        textStyle:
-                          fontSize: 48
-                          fill: "white"
                         hover:
-                          textStyle:
-                          fontSize: 48
-                          fill: "yellow"
-                        eventName: "system"
+                          textStyleId: textStyle5
+                        eventName: system
                         eventPayload:
                           actions:
                             updateVariable:
                               id: uv8
                               operations:
-                                - variableId: "currentSavePageIndex"
-                                  op: "decrement"
+                                - variableId: currentSavePageIndex
+                                  op: decrement
                                   min: 0
+                        textStyleId: textStyle1
                       $else:
-                        textStyle:
-                          fontSize: 48
-                          fill: "#D9D9D9"
-                    # TODO: how to make it work without adding nextra container
+                        textStyleId: textStyle4
                     - id: save-container-page-nums-container
                       type: container
                       direction: horizontal
@@ -780,52 +680,42 @@ resources:
                         - $for item, i in variables.savePages.items:
                             - id: id-${item.label}
                               type: text
-                              content: "${item.label}"
+                              content: ${item.label}
                               width: 80
                               $if i == variables.currentSavePageIndex:
-                                textStyle:
-                                  fontSize: 48
-                                  fill: "yellow"
+                                textStyleId: textStyle5
                               $else:
-                                textStyle:
-                                  fontSize: 48
-                                  fill: "white"
-                                eventName: "system"
+                                eventName: system
                                 eventPayload:
                                   actions:
                                     updateVariable:
                                       id: uv9
                                       operations:
-                                        - variableId: "currentSavePageIndex"
-                                          op: "set"
-                                          value: "${i}"
+                                        - variableId: currentSavePageIndex
+                                          op: set
+                                          value: ${i}
+                                textStyleId: textStyle1
                     - id: page-next
                       type: text
                       content: ${l10n.keys.layoutDafkjkl3PageNext}
                       width: 80
                       $if variables.currentSavePageIndex < 8:
-                        textStyle:
-                          fontSize: 48
-                          fill: "white"
                         hover:
-                          textStyle:
-                          fontSize: 48
-                          fill: "yellow"
-                        eventName: "system"
+                          textStyleId: textStyle5
+                        eventName: system
                         eventPayload:
                           actions:
                             updateVariable:
                               id: uv10
                               operations:
-                                - variableId: "currentSavePageIndex"
-                                  op: "increment"
+                                - variableId: currentSavePageIndex
+                                  op: increment
                                   max: 8
+                        textStyleId: textStyle1
                       $else:
-                        textStyle:
-                          fontSize: 48
-                          fill: "#D9D9D9"
+                        textStyleId: textStyle4
             - id: kfewaf3k29fdsk
-              $when: 'variables.currentMenuTabId == "languages"'
+              $when: variables.currentMenuTabId == "languages"
               type: container
               children:
                 - id: languages-title
@@ -833,9 +723,7 @@ resources:
                   content: ${l10n.keys.layoutDafkjkl3LanguagesTitle}
                   x: 100
                   y: 100
-                  textStyle:
-                    fontSize: 64
-                    fill: "white"
+                  textStyleId: textStyle3
                 - id: languages-container
                   type: container
                   x: 400
@@ -849,34 +737,26 @@ resources:
                           type: text
                           content: ${languagePack.label}
                           height: 40
-                          textStyle:
-                            fontSize: 26
-                            fill: "white"
                           $if currentLanguagePackId == languagePack.id:
-                            textStyle:
-                              fontSize: 26
-                              fill: "yellow"
+                            textStyleId: textStyle7
                           $else:
-                            textStyle:
-                              fontSize: 26
-                              fill: "white"
-                          eventName: "system"
+                            textStyleId: textStyle6
+                          eventName: system
                           eventPayload:
                             actions:
                               setLanguagePackId:
-                                languagePackId: "${languagePack.id}"
-            - id: "9fe23fdadf"
-              $when: 'variables.currentMenuTabId == "gallery"'
-              type: "container"
+                                languagePackId: ${languagePack.id}
+                          textStyleId: textStyle6
+            - id: 9fe23fdadf
+              $when: variables.currentMenuTabId == "gallery"
+              type: container
               children:
                 - id: gallery-title
                   type: text
                   content: ${l10n.keys.layoutDafkjkl3GalleryTitle}
                   x: 100
                   y: 100
-                  textStyle:
-                    fontSize: 64
-                    fill: "white"
+                  textStyleId: textStyle3
                 - id: gallery-container
                   type: container
                   x: 300
@@ -886,63 +766,56 @@ resources:
                   gap: 20
                   children:
                     - $for item, i in variables.gallery.items:
-                        - id: "32fe-${item.label}"
+                        - id: 32fe-${item.label}
                           type: container
                           x: 0
                           y: 0
                           width: 400
                           height: 300
                           children:
-                            - id: "ef3ef1-${item.label}"
+                            - id: ef3ef1-${item.label}
                               type: sprite
-                              url: "file:dmni32"
+                              imageId: file:dmni32
                               x: 0
                               y: 0
                               width: 400
                               height: 300
-                              eventName: "system"
+                              eventName: system
                               eventPayload:
                                 actions:
                                   updateVariable:
                                     id: uv11
                                     operations:
-                                      - variableId: "activeGalleryIndex"
-                                        op: "set"
-                                        value: "${i}"
-                                      - variableId: "activeGalleryFileIndex"
+                                      - variableId: activeGalleryIndex
+                                        op: set
+                                        value: ${i}
+                                      - variableId: activeGalleryFileIndex
                                         op: set
                                         value: 0
                                 addLayeredView:
-                                  resourceId: "layeredViewGalleryItemLayout"
-                            - id: "3fadje2-${item.label}"
+                                  resourceId: layeredViewGalleryItemLayout
+                            - id: 3fadje2-${item.label}
                               type: text
                               x: 20
                               y: 20
-                              textStyle:
-                                fontSize: 48
-                                fill: "white"
                               content: ${item.label}
-                            - id: "3fa93224dje2-${item.label}"
+                              textStyleId: textStyle1
+                            - id: 3fa93224dje2-${item.label}
                               type: text
                               x: 20
                               y: 80
-                              textStyle:
-                                fontSize: 48
-                                fill: "white"
                               content: ${item.fileIds.length}
-
-            - id: "9fedf2323fdadf"
-              $when: 'variables.currentMenuTabId == "replay"'
-              type: "container"
+                              textStyleId: textStyle1
+            - id: 9fedf2323fdadf
+              $when: variables.currentMenuTabId == "replay"
+              type: container
               children:
                 - id: replay-title
                   type: text
                   content: ${l10n.keys.layoutDafkjkl3ReplayTitle}
                   x: 100
                   y: 100
-                  textStyle:
-                    fontSize: 64
-                    fill: "white"
+                  textStyleId: textStyle3
                 - id: replay-container
                   type: container
                   x: 300
@@ -951,32 +824,30 @@ resources:
                   direction: horizontal
                   gap: 20
                   children:
-                    - id: "ef3ef13k1"
+                    - id: ef3ef13k1
                       type: sprite
-                      url: "file:dmni32"
+                      imageId: file:dmni32
                       x: 0
                       y: 0
                       width: 400
                       height: 300
-                      eventName: "system"
+                      eventName: system
                       eventPayload:
                         actions:
                           sectionTransition:
                             mode: replay
                             sceneId: ajfl3a
                             sectionId: k3nfgdsai34
-            - id: "399324jd"
-              $when: 'variables.currentMenuTabId == "music-room"'
-              type: "container"
+            - id: 399324jd
+              $when: variables.currentMenuTabId == "music-room"
+              type: container
               children:
                 - id: music-room-title
                   type: text
                   content: ${l10n.keys.layoutDafkjkl3MusicRoomTitle}
                   x: 100
                   y: 100
-                  textStyle:
-                    fontSize: 64
-                    fill: "white"
+                  textStyleId: textStyle3
                 - id: music-room-container
                   type: container
                   x: 600
@@ -986,38 +857,32 @@ resources:
                   gap: 20
                   children:
                     - id: fjkl2jk
-                      type: "text"
+                      type: text
                       content: ${l10n.keys.layoutDafkjkl3Fjkl2jk}
                       height: 100
-                      textStyle:
-                        fontSize: 32
-                        fill: "white"
-                      eventName: "system"
+                      eventName: system
                       eventPayload:
                         actions:
                           addGlobalAudio:
-                            fileId: "3ka3s"
+                            fileId: 3ka3s
+                      textStyleId: textStyle8
                     - id: fjkl2fe23jk
-                      type: "text"
+                      type: text
                       content: ${l10n.keys.layoutDafkjkl3Fjkl2fe23jk}
                       height: 100
-                      textStyle:
-                        fontSize: 32
-                        fill: "white"
-                - id: "music-room-stop"
+                      textStyleId: textStyle8
+                - id: music-room-stop
                   $when: globalAudios.length > 0
-                  type: "text"
+                  type: text
                   content: ${l10n.keys.layoutDafkjkl3MusicRoomStop}
                   x: 500
                   y: 500
                   height: 100
-                  textStyle:
-                    fontSize: 32
-                    fill: "white"
-                  eventName: "system"
+                  eventName: system
                   eventPayload:
                     actions:
                       clearAllGlobalAudio: {}
+                  textStyleId: textStyle8
         - id: menu-container-${currentLanguagePackId}
           direction: vertical
           gap: 20
@@ -1025,251 +890,203 @@ resources:
           x: 100
           y: 540
           children:
-            - id: "Start"
-              $when: "variables.isMainMenu == true"
+            - id: Start
+              $when: variables.isMainMenu == true
               type: text
               content: ${l10n.keys.layoutDafkjkl3Start}
               height: 40
               width: 200
-              eventName: "system"
+              eventName: system
               eventPayload:
                 actions:
                   clearLastLayeredView: {}
                   sectionTransition:
-                    sectionId: "3k3s9sd"
+                    sectionId: 3k3s9sd
               x: 0
               y: 0
-              textStyle:
-                fontSize: 48
-                fill: "white"
               hover:
-                textStyle:
-                  fontSize: 48
-                  fill: yellow
-            - id: "Save"
-              $when: "variables.isMainMenu == false"
+                textStyleId: textStyle5
+              textStyleId: textStyle1
+            - id: Save
+              $when: variables.isMainMenu == false
               type: text
               content: ${l10n.keys.layoutDafkjkl3Save}
               height: 40
               width: 200
-              eventName: "system"
+              eventName: system
               eventPayload:
                 actions:
                   updateVariable:
                     id: uv12
                     operations:
-                      - variableId: "currentMenuTabId"
-                        op: "set"
-                        value: "save"
+                      - variableId: currentMenuTabId
+                        op: set
+                        value: save
               x: 0
               y: 0
-              textStyle:
-                fontSize: 48
-                $if variables.currentMenuTabId == "save":
-                  fill: "yellow"
-                $else:
-                  fill: "white"
               hover:
-                textStyle:
-                  fontSize: 48
-                  fill: yellow
-            - id: "Load"
+                textStyleId: textStyle5
+              textStyleId:
+                $if variables.currentMenuTabId == "save": textStyle5
+                $else: textStyle1
+            - id: Load
               type: text
               content: ${l10n.keys.layoutDafkjkl3Load}
               height: 40
               width: 200
-              eventName: "system"
+              eventName: system
               eventPayload:
                 actions:
                   updateVariable:
                     id: uv13
                     operations:
-                      - variableId: "currentMenuTabId"
-                        op: "set"
-                        value: "load"
+                      - variableId: currentMenuTabId
+                        op: set
+                        value: load
               x: 0
               y: 0
-              textStyle:
-                fontSize: 48
-                $if variables.currentMenuTabId == "load":
-                  fill: "yellow"
-                $else:
-                  fill: "white"
               hover:
-                textStyle:
-                  fontSize: 48
-                  fill: yellow
-            - id: "Options"
+                textStyleId: textStyle5
+              textStyleId:
+                $if variables.currentMenuTabId == "load": textStyle5
+                $else: textStyle1
+            - id: Options
               type: text
               content: ${l10n.keys.layoutDafkjkl3Options}
               height: 40
               width: 200
-              eventName: "system"
+              eventName: system
               eventPayload:
                 actions:
                   updateVariable:
                     id: uv14
                     operations:
-                      - variableId: "currentMenuTabId"
-                        op: "set"
-                        value: "options"
+                      - variableId: currentMenuTabId
+                        op: set
+                        value: options
               x: 0
               y: 0
-              textStyle:
-                fontSize: 48
-                $if variables.currentMenuTabId == "options":
-                  fill: "yellow"
-                $else:
-                  fill: "white"
               hover:
-                textStyle:
-                  fontSize: 48
-                  fill: yellow
+                textStyleId: textStyle5
+              textStyleId:
+                $if variables.currentMenuTabId == "options": textStyle5
+                $else: textStyle1
             - id: Languages
               type: text
               content: ${l10n.keys.layoutDafkjkl3Languages}
               height: 40
               width: 200
-              eventName: "system"
+              eventName: system
               eventPayload:
                 actions:
                   updateVariable:
                     id: uv15
                     operations:
-                      - variableId: "currentMenuTabId"
-                        op: "set"
-                        value: "languages"
+                      - variableId: currentMenuTabId
+                        op: set
+                        value: languages
               x: 0
               y: 0
-              textStyle:
-                fontSize: 48
-                $if variables.currentMenuTabId == "languages":
-                  fill: "yellow"
-                $else:
-                  fill: "white"
               hover:
-                textStyle:
-                  fontSize: 48
-                  fill: yellow
-            - id: "Gallery"
+                textStyleId: textStyle5
+              textStyleId:
+                $if variables.currentMenuTabId == "languages": textStyle5
+                $else: textStyle1
+            - id: Gallery
               type: text
               content: ${l10n.keys.layoutDafkjkl3Gallery}
               height: 40
               width: 200
-              eventName: "system"
+              eventName: system
               eventPayload:
                 actions:
                   updateVariable:
                     id: uv16
                     operations:
-                      - variableId: "currentMenuTabId"
-                        op: "set"
-                        value: "gallery"
+                      - variableId: currentMenuTabId
+                        op: set
+                        value: gallery
               x: 0
               y: 0
-              textStyle:
-                fontSize: 48
-                $if variables.currentMenuTabId == "gallery":
-                  fill: "yellow"
-                $else:
-                  fill: "white"
               hover:
-                textStyle:
-                  fontSize: 48
-                  fill: yellow
-            - id: "Replay"
+                textStyleId: textStyle5
+              textStyleId:
+                $if variables.currentMenuTabId == "gallery": textStyle5
+                $else: textStyle1
+            - id: Replay
               type: text
               content: ${l10n.keys.layoutDafkjkl3Replay}
               height: 40
               width: 200
-              eventName: "system"
+              eventName: system
               eventPayload:
                 actions:
                   updateVariable:
                     id: uv17
                     operations:
-                      - variableId: "currentMenuTabId"
-                        op: "set"
-                        value: "replay"
+                      - variableId: currentMenuTabId
+                        op: set
+                        value: replay
               x: 0
               y: 0
-              textStyle:
-                fontSize: 48
-                $if variables.currentMenuTabId == "replay":
-                  fill: "yellow"
-                $else:
-                  fill: "white"
               hover:
-                textStyle:
-                  fontSize: 48
-                  fill: yellow
-            - id: "Music Room"
+                textStyleId: textStyle5
+              textStyleId:
+                $if variables.currentMenuTabId == "replay": textStyle5
+                $else: textStyle1
+            - id: Music Room
               type: text
               content: ${l10n.keys.layoutDafkjkl3MusicRoom}
               height: 40
               width: 200
-              eventName: "system"
+              eventName: system
               eventPayload:
                 actions:
                   updateVariable:
                     id: uv18
                     operations:
-                      - variableId: "currentMenuTabId"
-                        op: "set"
-                        value: "music-room"
+                      - variableId: currentMenuTabId
+                        op: set
+                        value: music-room
               x: 0
               y: 0
-              textStyle:
-                fontSize: 48
-                $if variables.currentMenuTabId == "music-room":
-                  fill: "yellow"
-                $else:
-                  fill: "white"
               hover:
-                textStyle:
-                  fontSize: 48
-                  fill: yellow
-            - id: "Main"
-              $when: "variables.isMainMenu == false"
+                textStyleId: textStyle5
+              textStyleId:
+                $if variables.currentMenuTabId == "music-room": textStyle5
+                $else: textStyle1
+            - id: Main
+              $when: variables.isMainMenu == false
               type: text
               content: ${l10n.keys.layoutDafkjkl3Main}
               height: 40
               width: 200
-              eventName: "system"
+              eventName: system
               eventPayload:
                 actions:
                   clearLastLayeredView: {}
                   sectionTransition:
-                    mode: "read"
-                    sectionId: "l3kjfawelf"
+                    mode: read
+                    sectionId: l3kjfawelf
               x: 0
               y: 0
-              textStyle:
-                fontSize: 48
-                fill: "white"
               hover:
-                textStyle:
-                  fontSize: 48
-                  fill: yellow
-            - id: "back"
+                textStyleId: textStyle5
+              textStyleId: textStyle1
+            - id: back
               type: text
               content: ${l10n.keys.layoutDafkjkl3Back}
               height: 40
               width: 200
-              eventName: "system"
+              eventName: system
               eventPayload:
                 actions:
                   clearLastLayeredView: {}
               x: 0
               y: 0
-              textStyle:
-                fontSize: 48
-                fill: "white"
               hover:
-                textStyle:
-                  fontSize: 48
-                  fill: yellow
-
+                textStyleId: textStyle5
+              textStyleId: textStyle1
     3jfksdjkadf:
       name: Dialogue NVL
       mode: nvl
@@ -1283,42 +1100,7 @@ resources:
           fill: "#D9D9D9"
           opacity: 0.5
         - id: dialogue-contaef32iner
-          type: "container"
-          x: 100
-          y: 100
-          children:
-            - id: dialogue-character-name
-              type: text
-              content: "${dialogue.character.name}"
-              x: 0
-              y: 0
-              textStyle:
-                fontSize: 24
-                fill: "white"
-            - id: "3kjfasdkfj"
-              type: container
-              direction: vertical
-              gap: 20
-              children:
-                - $for line, i in dialogue.lines:
-                    - id: dialogue-text-${i}
-                      type: "text-revealing"
-                      y: 100
-                      $if i == dialogue.lines.length - 1:
-                        displaySpeed: 50
-                      $else:
-                        displaySpeed: 100
-                      height: 100
-                      content: ${line.content}
-                      textStyle:
-                        fontSize: 24
-                        fill: "white"
-    fi3l:
-      name: Dialogue Screen
-      mode: adv
-      elements:
-        - id: dialogue-container
-          type: "container"
+          type: container
           x: 100
           y: 100
           children:
@@ -1327,16 +1109,43 @@ resources:
               content: ${dialogue.character.name}
               x: 0
               y: 0
-              textStyle:
-                fontSize: 24
-                fill: "white"
+              textStyleId: textStyle2
+            - id: 3kjfasdkfj
+              type: container
+              direction: vertical
+              gap: 20
+              children:
+                - $for line, i in dialogue.lines:
+                    - id: dialogue-text-${i}
+                      type: text-revealing
+                      y: 100
+                      $if i == dialogue.lines.length - 1:
+                        displaySpeed: 50
+                      $else:
+                        displaySpeed: 100
+                      height: 100
+                      content: ${line.content}
+                      textStyleId: textStyle2
+    fi3l:
+      name: Dialogue Screen
+      mode: adv
+      elements:
+        - id: dialogue-container
+          type: container
+          x: 100
+          y: 100
+          children:
+            - id: dialogue-character-name
+              type: text
+              content: ${dialogue.character.name}
+              x: 0
+              y: 0
+              textStyleId: textStyle2
             - id: dialogue-text
-              type: "text"
+              type: text
               y: 100
               content: ${dialogue.content[0].text}
-              textStyle:
-                fontSize: 24
-                fill: "white"
+              textStyleId: textStyle2
         - id: dialogue-actions
           type: container
           x: 100
@@ -1351,20 +1160,15 @@ resources:
               y: 0
               width: 120
               height: 40
-              textStyle:
-                fontSize: 24
-                $if autoMode:
-                  fill: yellow
-                $else:
-                  fill: "white"
               hover:
-                textStyle:
-                  fontSize: 24
-                  fill: yellow
+                textStyleId: textStyle9
               click:
                 actionPayload:
                   actions:
                     toggleAutoMode: {}
+              textStyleId:
+                $if autoMode: textStyle9
+                $else: textStyle2
             - id: dialogue-action-skip
               type: text
               content: ${l10n.keys.layoutFi3lDialogueActionSkip}
@@ -1372,20 +1176,15 @@ resources:
               y: 0
               width: 120
               height: 40
-              textStyle:
-                fontSize: 24
-                $if skipMode:
-                  fill: yellow
-                $else:
-                  fill: "white"
               hover:
-                textStyle:
-                  fontSize: 24
-                  fill: yellow
+                textStyleId: textStyle9
               click:
                 actionPayload:
                   actions:
                     toggleSkipMode: {}
+              textStyleId:
+                $if skipMode: textStyle9
+                $else: textStyle2
             - id: dialogue-action-history
               type: text
               content: ${l10n.keys.layoutFi3lDialogueActionHistory}
@@ -1393,21 +1192,16 @@ resources:
               y: 0
               width: 120
               height: 40
-              textStyle:
-                fontSize: 24
-                $if showDialogueHistory:
-                  fill: yellow
-                $else:
-                  fill: "white"
               hover:
-                textStyle:
-                  fontSize: 24
-                  fill: yellow
-              eventName: "system"
+                textStyleId: textStyle9
+              eventName: system
               eventPayload:
                 actions:
                   addLayeredView:
                     resourceId: historyDialogueLayout
+              textStyleId:
+                $if showDialogueHistory: textStyle9
+                $else: textStyle2
             - id: dialogue-action-options
               type: text
               content: ${l10n.keys.layoutFi3lDialogueActionOptions}
@@ -1415,27 +1209,23 @@ resources:
               y: 0
               width: 120
               height: 40
-              textStyle:
-                fontSize: 24
-                fill: "white"
               hover:
-                textStyle:
-                  fontSize: 24
-                  fill: yellow
-              eventName: "system"
+                textStyleId: textStyle9
+              eventName: system
               eventPayload:
                 actions:
                   updateVariable:
                     id: uv19
                     operations:
                       - variableId: currentMenuTabId
-                        op: "set"
-                        value: "options"
-                      - variableId: "isMainMenu"
-                        op: "set"
+                        op: set
+                        value: options
+                      - variableId: isMainMenu
+                        op: set
                         value: false
                   addLayeredView:
                     resourceId: dafkjkl3
+              textStyleId: textStyle2
             - id: dialogue-action-hide
               type: text
               content: ${l10n.keys.layoutFi3lDialogueActionHide}
@@ -1443,17 +1233,13 @@ resources:
               y: 0
               width: 120
               height: 40
-              textStyle:
-                fontSize: 24
-                fill: "white"
               hover:
-                textStyle:
-                  fontSize: 24
-                  fill: yellow
-              eventName: "system"
+                textStyleId: textStyle9
+              eventName: system
               eventPayload:
                 actions:
                   toggleDialogueUIHidden: {}
+              textStyleId: textStyle2
             - id: dialogue-action-back
               type: text
               content: ${l10n.keys.layoutFi3lDialogueActionBack}
@@ -1461,14 +1247,11 @@ resources:
               y: 0
               width: 120
               height: 40
-              textStyle:
-                fontSize: 24
-                fill: "white"
-              eventName: "system"
+              eventName: system
               eventPayload:
                 actions:
                   prevLine: {}
-
+              textStyleId: textStyle2
     f3jik32isdf:
       name: Exit Application LayeredView
       elements:
@@ -1477,96 +1260,66 @@ resources:
           x: 500
           y: 300
           children:
-            - id: "efawkl3"
-              type: "rect"
+            - id: efawkl3
+              type: rect
               width: 800
               height: 300
               fill: "#D9D9D9"
-            - id: "32sadfj"
+            - id: 32sadfj
               type: text
               x: 20
               y: 20
               content: ${l10n.keys.layoutF3jik32isdf32sadfj}
-              textStyle:
-                fontSize: 48
-                fill: "white"
-            - id: "38sdfa2"
+              textStyleId: textStyle1
+            - id: 38sdfa2
               type: text
               content: ${l10n.keys.layoutF3jik32isdf38sdfa2}
               y: 120
               x: 50
-              textStyle:
-                fontSize: 48
-                fill: "white"
               hover:
-                textStyle:
-                  fontSize: 48
-                  fill: yellow
-            - id: "e83a"
+                textStyleId: textStyle5
+              textStyleId: textStyle1
+            - id: e83a
               type: text
               content: ${l10n.keys.layoutF3jik32isdfE83a}
               y: 120
               x: 250
-              eventName: "system"
+              eventName: system
               eventPayload:
                 actions:
                   clearLastLayeredView: {}
-              textStyle:
-                fontSize: 48
-                fill: "white"
               hover:
-                textStyle:
-                  fontSize: 48
-                  fill: yellow
-
+                textStyleId: textStyle5
+              textStyleId: textStyle1
     j3i8dk32:
       name: Title Screen
       elements:
         - id: bg
           type: sprite
-          src: dmni32
+          imageId: dmni32
           width: 1920
           height: 1080
           x: 0
           y: 0
-        # TODO:
-        # rightClickEventName: "system"
-        # rightClickEventPayload:
-        #   actions:
-        #     addLayeredView:
-        #       resourceId: dafkjkl3
-        #     updateVariable:
-        #       operations:
-        #         - variableId: "currentMenuTabId"
-        #           op: "set"
-        #           value: "load"
-        #         - variableId: "isMainMenu"
-        #           op: "set"
-        #           value: true
         - id: container
           type: container
           direction: horizontal
           gap: 20
-          # anchor: BottomCenter
           x: 560
           y: 540
           children:
-            - id: "Start"
+            - id: Start
               type: text
               content: XStart ${l10n.keys.layoutJ3i8dk32Start}
-              textStyle:
-                fontSize: 48
-                fill: "white"
               hover:
-                textStyle:
-                  fontSize: 48
-                  fill: yellow
+                textStyleId: textStyle5
               click:
                 actionPayload:
                   actions:
                     sectionTransition:
-                      sectionId: "3k3s9sd"
-            - id: "Load"
+                      sectionId: 3k3s9sd
+              textStyleId: textStyle1
+            - id: Load
               type: text
               content: XLoad ${l10n.keys.layoutJ3i8dk32Load}
               click:
@@ -1576,23 +1329,19 @@ resources:
                   updateVariable:
                     id: uv20
                     operations:
-                      - variableId: "currentMenuTabId"
-                        op: "set"
-                        value: "load"
-                      - variableId: "isMainMenu"
-                        op: "set"
+                      - variableId: currentMenuTabId
+                        op: set
+                        value: load
+                      - variableId: isMainMenu
+                        op: set
                         value: true
-              textStyle:
-                fontSize: 48
-                fill: "white"
               hover:
-                textStyle:
-                  fontSize: 48
-                  fill: yellow
-            - id: "Options"
+                textStyleId: textStyle5
+              textStyleId: textStyle1
+            - id: Options
               type: text
               content: XOptions ${l10n.keys.layoutJ3i8dk32Options}
-              eventName: "system"
+              eventName: system
               eventPayload:
                 actions:
                   addLayeredView:
@@ -1600,38 +1349,30 @@ resources:
                   updateVariable:
                     id: uv21
                     operations:
-                      - variableId: "currentMenuTabId"
-                        op: "set"
-                        value: "options"
-                      - variableId: "isMainMenu"
-                        op: "set"
+                      - variableId: currentMenuTabId
+                        op: set
+                        value: options
+                      - variableId: isMainMenu
+                        op: set
                         value: true
-              textStyle:
-                fontSize: 48
-                fill: "white"
               hover:
-                textStyle:
-                  fontSize: 48
-                  fill: yellow
-            - id: "Exit"
+                textStyleId: textStyle5
+              textStyleId: textStyle1
+            - id: Exit
               type: text
               content: XExit ${l10n.keys.layoutJ3i8dk32Exit}
-              eventName: "system"
+              eventName: system
               eventPayload:
                 actions:
                   addLayeredView:
                     resourceId: f3jik32isdf
-              textStyle:
-                fontSize: 48
-                fill: "white"
               hover:
-                textStyle:
-                  fontSize: 48
-                  fill: yellow
-        - id: "extra"
+                textStyleId: textStyle5
+              textStyleId: textStyle1
+        - id: extra
           type: text
           content: XExtra ${l10n.keys.layoutJ3i8dk32Extra}
-          eventName: "system"
+          eventName: system
           eventPayload:
             actions:
               sectionTransition:
@@ -1639,18 +1380,12 @@ resources:
                 sectionId: k3nfgdsai34
           x: 100
           y: 100
-          textStyle:
-            fontSize: 48
-            fill: "white"
           hover:
-            textStyle:
-              fontSize: 48
-              fill: yellow
-
+            textStyleId: textStyle5
+          textStyleId: textStyle1
   characters:
     ajf34a:
       name: Character One
-
   images:
     alkejf3la:
       fileId: 94lkj289
@@ -1664,17 +1399,15 @@ resources:
       fileId: 23jkfa893
       width: 1920
       height: 1080
-
   transforms:
     iasdlf:
       x: 960
       y: 540
       anchorX: 0.5
       anchorY: 0.5
-
   tweens:
     3lkj289:
-      name: "Fade In"
+      name: Fade In
       properties:
         alpha:
           initialValue: 0
@@ -1683,7 +1416,7 @@ resources:
               value: 1
               easing: linear
     8h3js:
-      name: "Fade Out"
+      name: Fade Out
       properties:
         alpha:
           initialValue: 1
@@ -1691,10 +1424,82 @@ resources:
             - duration: 1000
               value: 0
               easing: linear
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: white
+    color2:
+      hex: "#D9D9D9"
+    color3:
+      hex: yellow
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 48
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle2:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle3:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 64
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle4:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 48
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle5:
+      fontId: fontDefault
+      colorId: color3
+      fontSize: 48
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle6:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 26
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle7:
+      fontId: fontDefault
+      colorId: color3
+      fontSize: 26
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle8:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 32
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle9:
+      fontId: fontDefault
+      colorId: color3
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
 story:
-  # initialSceneId: ajfl3a
   initialSceneId: ajfl3a
-  # initialSceneId: 39kd932
   scenes:
     ajfl3a:
       name: Scene 1
@@ -1707,12 +1512,6 @@ story:
               actions:
                 base:
                   resourceId: base1
-                # setNextLineConfig:
-                #   manual:
-                # enabled: true
-                # auto:
-                #   trigger: fromComplete
-                #     delay: 1000
                 visual:
                   items:
                     - id: 39kdfj231
@@ -1722,12 +1521,6 @@ story:
                         in: 3lkj289
             - id: line2
               actions:
-                # setNextLineConfig:
-                #   manual:
-                #     enabled: false
-                # auto: {}
-                #     trigger: fromComplete
-                #     delay: 1000
                 visual:
                   items:
                     - id: 39kdfj231
@@ -1895,7 +1688,6 @@ story:
                 sectionTransition:
                   scenedId: 39kd932
                   sectionId: 2dk302s
-
         k3nfgdsai34:
           name: Section Extra
           lines:
@@ -1921,7 +1713,6 @@ story:
                   mode: nvl
                   content:
                     - text: ${l10n.keys.sceneAjfl3aK3nfgdsai34Line3Kl4j3sf9}
-
             - id: line4
               actions:
                 dialogue:
@@ -1929,7 +1720,6 @@ story:
                   clear: true
                   content:
                     - text: ${l10n.keys.sceneAjfl3aK3nfgdsai34Line4M2k4jfs8}
-
             - id: line5
               actions:
                 dialogue:
@@ -1942,7 +1732,6 @@ story:
                   endReplay: true
                   sceneId: 93jkal3
                   sectionId: asdkjl32
-
     39kd932:
       initialSectionId: 2dk302s
       name: Credits
@@ -1973,7 +1762,5 @@ story:
           lines:
             - id: line1
               actions:
-                # screen:
-                #   resourceId: titleScreenLayout
                 layout:
                   resourceId: j3i8dk32

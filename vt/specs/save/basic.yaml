@@ -1,5 +1,5 @@
 ---
-title: "Save/Load Test"
+title: Save/Load Test
 ---
 l10n:
   packages:
@@ -13,22 +13,19 @@ l10n:
         line4: "Line 4: Click Load to load a saved game"
         line5: "Line 5: Try saving now, then continue to next section"
         line6: "Line 6: This is section 2 - loading returns you to section 1"
-        saveButton: "Save"
-        loadButton: "Load"
-        saveTitle: "Save Game"
-        loadTitle: "Load Game"
-        closeHint: "Click X to close"
-
+        saveButton: Save
+        loadButton: Load
+        saveTitle: Save Game
+        loadTitle: Load Game
+        closeHint: Click X to close
 screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 resources:
   characters:
     narrator:
       name: ""
-
   layouts:
     baseLayout:
       elements:
@@ -43,7 +40,6 @@ resources:
             actionPayload:
               actions:
                 nextLine: {}
-
     dialogueLayout:
       name: Dialogue Screen
       mode: adv
@@ -55,16 +51,12 @@ resources:
           width: 1720
           height: 200
           fill: "#4D4D4D"
-
         - id: dialogue-text
           type: text
           x: 150
           y: 850
           content: ${dialogue.content[0].text}
-          textStyle:
-            fontSize: 32
-            fill: "white"
-
+          textStyleId: textStyle1
         - id: save-button
           type: rect
           x: 1780
@@ -80,16 +72,12 @@ resources:
                 pushLayeredView:
                   resourceId: saveMenuLayout
                   resourceType: layout
-
         - id: save-button-text
           type: text
           x: 1810
           y: 35
           content: ${l10n.keys.saveButton}
-          textStyle:
-            fontSize: 24
-            fill: "white"
-
+          textStyleId: textStyle2
         - id: load-button
           type: rect
           x: 1660
@@ -105,26 +93,21 @@ resources:
                 pushLayeredView:
                   resourceId: loadMenuLayout
                   resourceType: layout
-
         - id: load-button-text
           type: text
           x: 1690
           y: 35
           content: ${l10n.keys.loadButton}
-          textStyle:
-            fontSize: 24
-            fill: "white"
-
+          textStyleId: textStyle2
     saveMenuLayout:
       elements:
         - id: save-menu-overlay
           type: rect
-          fill: "rgba(0,0,0,0.7)"
+          fill: rgba(0,0,0,0.7)
           width: 1920
           height: 1080
           x: 0
           y: 0
-
         - id: save-menu-bg
           type: rect
           fill: "#000000"
@@ -132,16 +115,12 @@ resources:
           height: 500
           x: 560
           y: 290
-
         - id: save-menu-title
           type: text
           content: ${l10n.keys.saveTitle}
           x: 900
           y: 340
-          textStyle:
-            fontSize: 48
-            fill: "#FFFFFF"
-
+          textStyleId: textStyle3
         - id: close-btn
           type: rect
           fill: "#737373"
@@ -155,16 +134,12 @@ resources:
             actionPayload:
               actions:
                 clearLayeredViews: {}
-
         - id: close-text
           type: text
-          content: "X"
+          content: X
           x: 1305
           y: 310
-          textStyle:
-            fontSize: 32
-            fill: "#FFFFFF"
-
+          textStyleId: textStyle4
         - id: save-slot-1-btn
           type: rect
           fill: "#737373"
@@ -179,16 +154,12 @@ resources:
               actions:
                 saveSaveSlot:
                   slot: 1
-
         - id: save-slot-1-text
           type: text
-          content: "Slot 1"
+          content: Slot 1
           x: 920
           y: 420
-          textStyle:
-            fontSize: 32
-            fill: "#FFFFFF"
-
+          textStyleId: textStyle4
         - id: save-slot-2-btn
           type: rect
           fill: "#737373"
@@ -203,16 +174,12 @@ resources:
               actions:
                 saveSaveSlot:
                   slot: 2
-
         - id: save-slot-2-text
           type: text
-          content: "Slot 2"
+          content: Slot 2
           x: 920
           y: 510
-          textStyle:
-            fontSize: 32
-            fill: "#FFFFFF"
-
+          textStyleId: textStyle4
         - id: save-slot-3-btn
           type: rect
           fill: "#737373"
@@ -227,35 +194,27 @@ resources:
               actions:
                 saveSaveSlot:
                   slot: 3
-
         - id: save-slot-3-text
           type: text
-          content: "Slot 3"
+          content: Slot 3
           x: 920
           y: 600
-          textStyle:
-            fontSize: 32
-            fill: "#FFFFFF"
-
+          textStyleId: textStyle4
         - id: save-menu-info
           type: text
           content: ${l10n.keys.closeHint}
           x: 880
           y: 730
-          textStyle:
-            fontSize: 20
-            fill: "#A6A6A6"
-
+          textStyleId: textStyle5
     loadMenuLayout:
       elements:
         - id: load-menu-overlay
           type: rect
-          fill: "rgba(0,0,0,0.7)"
+          fill: rgba(0,0,0,0.7)
           width: 1920
           height: 1080
           x: 0
           y: 0
-
         - id: load-menu-bg
           type: rect
           fill: "#000000"
@@ -263,16 +222,12 @@ resources:
           height: 500
           x: 560
           y: 290
-
         - id: load-menu-title
           type: text
           content: ${l10n.keys.loadTitle}
           x: 900
           y: 340
-          textStyle:
-            fontSize: 48
-            fill: "#FFFFFF"
-
+          textStyleId: textStyle3
         - id: load-close-btn
           type: rect
           fill: "#737373"
@@ -286,16 +241,12 @@ resources:
             actionPayload:
               actions:
                 clearLayeredViews: {}
-
         - id: load-close-text
           type: text
-          content: "X"
+          content: X
           x: 1305
           y: 310
-          textStyle:
-            fontSize: 32
-            fill: "#FFFFFF"
-
+          textStyleId: textStyle4
         - id: load-slot-1-btn
           type: rect
           fill: "#737373"
@@ -310,16 +261,12 @@ resources:
               actions:
                 loadSaveSlot:
                   slot: 1
-
         - id: load-slot-1-text
           type: text
-          content: "Slot 1"
+          content: Slot 1
           x: 920
           y: 420
-          textStyle:
-            fontSize: 32
-            fill: "#FFFFFF"
-
+          textStyleId: textStyle4
         - id: load-slot-2-btn
           type: rect
           fill: "#737373"
@@ -334,16 +281,12 @@ resources:
               actions:
                 loadSaveSlot:
                   slot: 2
-
         - id: load-slot-2-text
           type: text
-          content: "Slot 2"
+          content: Slot 2
           x: 920
           y: 510
-          textStyle:
-            fontSize: 32
-            fill: "#FFFFFF"
-
+          textStyleId: textStyle4
         - id: load-slot-3-btn
           type: rect
           fill: "#737373"
@@ -358,25 +301,64 @@ resources:
               actions:
                 loadSaveSlot:
                   slot: 3
-
         - id: load-slot-3-text
           type: text
-          content: "Slot 3"
+          content: Slot 3
           x: 920
           y: 600
-          textStyle:
-            fontSize: 32
-            fill: "#FFFFFF"
-
+          textStyleId: textStyle4
         - id: load-menu-info
           type: text
           content: ${l10n.keys.closeHint}
           x: 880
           y: 730
-          textStyle:
-            fontSize: 20
-            fill: "#A6A6A6"
-
+          textStyleId: textStyle5
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: white
+    color2:
+      hex: "#FFFFFF"
+    color3:
+      hex: "#A6A6A6"
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 32
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle2:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle3:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 48
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle4:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 32
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle5:
+      fontId: fontDefault
+      colorId: color3
+      fontSize: 20
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
 story:
   initialSceneId: test_scene
   scenes:
@@ -396,40 +378,34 @@ story:
                   content:
                     - text: ${l10n.keys.line1}
                   characterId: narrator
-
             - id: line2
               actions:
                 dialogue:
                   content:
                     - text: ${l10n.keys.line2}
                   characterId: narrator
-
             - id: line3
               actions:
                 dialogue:
                   content:
                     - text: ${l10n.keys.line3}
                   characterId: narrator
-
             - id: line4
               actions:
                 dialogue:
                   content:
                     - text: ${l10n.keys.line4}
                   characterId: narrator
-
             - id: line5
               actions:
                 dialogue:
                   content:
                     - text: ${l10n.keys.line5}
                   characterId: narrator
-
             - id: line6
               actions:
                 sectionTransition:
                   sectionId: section2
-
         section2:
           lines:
             - id: line1
@@ -438,14 +414,12 @@ story:
                   content:
                     - text: ${l10n.keys.line6}
                   characterId: narrator
-
             - id: line2
               actions:
                 dialogue:
                   content:
                     - text: ${l10n.keys.line1}
                   characterId: narrator
-
             - id: line3
               actions:
                 sectionTransition:

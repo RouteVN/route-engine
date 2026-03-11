@@ -1,6 +1,6 @@
 ---
-title: "Variable Scopes Comparison"
-description: "Demonstrates context, global-device, and global-account variable scopes"
+title: Variable Scopes Comparison
+description: Demonstrates context, global-device, and global-account variable scopes
 ---
 l10n:
   packages:
@@ -8,47 +8,36 @@ l10n:
       label: English
       lang: en
       keys: {}
-
 screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 resources:
   variables:
-    # CONTEXT SCOPE - Tied to this playthrough
     playerGold:
       type: number
       scope: context
       default: 100
-
     currentLocation:
       type: string
       scope: context
-      default: "Town Square"
-
-    # GLOBAL-DEVICE SCOPE - Settings that persist on this device
+      default: Town Square
     textSpeed:
       type: number
       scope: global-device
       default: 50
-
     volume:
       type: number
       scope: global-device
       default: 80
-
-    # GLOBAL-ACCOUNT SCOPE - Achievements/unlocks that persist across saves
     totalPlaythroughs:
       type: number
       scope: global-account
       default: 0
-
     secretUnlocked:
       type: boolean
       scope: global-account
       default: false
-
   layouts:
     base1:
       elements:
@@ -61,7 +50,6 @@ resources:
             actionPayload:
               actions:
                 nextLine: {}
-
     scopeComparisonUI:
       name: Variable Scopes Comparison
       elements:
@@ -71,14 +59,7 @@ resources:
           x: 960
           y: 60
           anchorX: 0.5
-          textStyle:
-            fontSize: 42
-            fill: "#D9D9D9"
-            fontWeight: bold
-
-        # ═══════════════════════════════════════════════════════
-        # CONTEXT SCOPE SECTION
-        # ═══════════════════════════════════════════════════════
+          textStyleId: textStyle1
         - id: contextSection
           type: container
           x: 100
@@ -86,73 +67,47 @@ resources:
           children:
             - id: contextTitle
               type: text
-              content: "CONTEXT SCOPE"
+              content: CONTEXT SCOPE
               x: 0
               y: 0
-              textStyle:
-                fontSize: 32
-                fill: "#737373"
-                fontWeight: bold
-
+              textStyleId: textStyle2
             - id: contextDesc
               type: text
-              content: "Tied to this playthrough"
+              content: Tied to this playthrough
               x: 0
               y: 40
-              textStyle:
-                fontSize: 18
-                fill: "#A6A6A6"
-
+              textStyleId: textStyle3
             - id: contextDesc2
               type: text
-              content: "✓ Saved in save slots"
+              content: ✓ Saved in save slots
               x: 0
               y: 70
-              textStyle:
-                fontSize: 18
-                fill: "#737373"
-
+              textStyleId: textStyle4
             - id: contextDesc3
               type: text
-              content: "✗ Lost on new game"
+              content: ✗ Lost on new game
               x: 0
               y: 95
-              textStyle:
-                fontSize: 18
-                fill: "#737373"
-
-            # Gold counter
+              textStyleId: textStyle4
             - id: goldLabel
               type: text
               content: "Player Gold:"
               x: 0
               y: 150
-              textStyle:
-                fontSize: 24
-                fill: "#FFFFFF"
-
+              textStyleId: textStyle5
             - id: goldValue
               type: text
-              content: "${variables.playerGold}"
+              content: ${variables.playerGold}
               x: 180
               y: 150
-              textStyle:
-                fontSize: 24
-                fill: "#737373"
-                fontWeight: bold
-
+              textStyleId: textStyle6
             - id: goldPlus
               type: text
               content: "[+10]"
               x: 280
               y: 150
-              textStyle:
-                fontSize: 24
-                fill: "#737373"
               hover:
-                textStyle:
-                  fontSize: 24
-                  fill: "#4D4D4D"
+                textStyleId: textStyle8
               click:
                 actionPayload:
                   actions:
@@ -162,19 +117,14 @@ resources:
                         - variableId: playerGold
                           op: increment
                           value: 10
-
+              textStyleId: textStyle7
             - id: goldMinus
               type: text
               content: "[-10]"
               x: 360
               y: 150
-              textStyle:
-                fontSize: 24
-                fill: "#737373"
               hover:
-                textStyle:
-                  fontSize: 24
-                  fill: "#4D4D4D"
+                textStyleId: textStyle8
               click:
                 actionPayload:
                   actions:
@@ -184,39 +134,26 @@ resources:
                         - variableId: playerGold
                           op: decrement
                           value: 10
-
-            # Location
+              textStyleId: textStyle7
             - id: locationLabel
               type: text
               content: "Location:"
               x: 0
               y: 200
-              textStyle:
-                fontSize: 24
-                fill: "#FFFFFF"
-
+              textStyleId: textStyle5
             - id: locationValue
               type: text
-              content: "${variables.currentLocation}"
+              content: ${variables.currentLocation}
               x: 140
               y: 200
-              textStyle:
-                fontSize: 24
-                fill: "#737373"
-                fontWeight: bold
-
+              textStyleId: textStyle6
             - id: locationTown
               type: text
               content: "[Town]"
               x: 350
               y: 200
-              textStyle:
-                fontSize: 20
-                fill: "#A6A6A6"
               hover:
-                textStyle:
-                  fontSize: 20
-                  fill: "#FFFFFF"
+                textStyleId: textStyle10
               click:
                 actionPayload:
                   actions:
@@ -225,20 +162,15 @@ resources:
                       operations:
                         - variableId: currentLocation
                           op: set
-                          value: "Town Square"
-
+                          value: Town Square
+              textStyleId: textStyle9
             - id: locationForest
               type: text
               content: "[Forest]"
               x: 450
               y: 200
-              textStyle:
-                fontSize: 20
-                fill: "#A6A6A6"
               hover:
-                textStyle:
-                  fontSize: 20
-                  fill: "#FFFFFF"
+                textStyleId: textStyle10
               click:
                 actionPayload:
                   actions:
@@ -247,11 +179,8 @@ resources:
                       operations:
                         - variableId: currentLocation
                           op: set
-                          value: "Dark Forest"
-
-        # ═══════════════════════════════════════════════════════
-        # GLOBAL-DEVICE SCOPE SECTION
-        # ═══════════════════════════════════════════════════════
+                          value: Dark Forest
+              textStyleId: textStyle9
         - id: global-deviceSection
           type: container
           x: 100
@@ -259,73 +188,47 @@ resources:
           children:
             - id: global-deviceTitle
               type: text
-              content: "GLOBAL-DEVICE SCOPE"
+              content: GLOBAL-DEVICE SCOPE
               x: 0
               y: 0
-              textStyle:
-                fontSize: 32
-                fill: "#737373"
-                fontWeight: bold
-
+              textStyleId: textStyle2
             - id: global-deviceDesc
               type: text
-              content: "Settings stored on this device"
+              content: Settings stored on this device
               x: 0
               y: 40
-              textStyle:
-                fontSize: 18
-                fill: "#A6A6A6"
-
+              textStyleId: textStyle3
             - id: global-deviceDesc2
               type: text
-              content: "✓ Persists across sessions"
+              content: ✓ Persists across sessions
               x: 0
               y: 70
-              textStyle:
-                fontSize: 18
-                fill: "#737373"
-
+              textStyleId: textStyle4
             - id: global-deviceDesc3
               type: text
-              content: "✗ NOT in save slots"
+              content: ✗ NOT in save slots
               x: 0
               y: 95
-              textStyle:
-                fontSize: 18
-                fill: "#737373"
-
-            # Text Speed
+              textStyleId: textStyle4
             - id: speedLabel
               type: text
               content: "Text Speed:"
               x: 0
               y: 150
-              textStyle:
-                fontSize: 24
-                fill: "#FFFFFF"
-
+              textStyleId: textStyle5
             - id: speedValue
               type: text
-              content: "${variables.textSpeed}"
+              content: ${variables.textSpeed}
               x: 180
               y: 150
-              textStyle:
-                fontSize: 24
-                fill: "#737373"
-                fontWeight: bold
-
+              textStyleId: textStyle6
             - id: speedSlow
               type: text
               content: "[Slow]"
               x: 240
               y: 150
-              textStyle:
-                fontSize: 20
-                fill: "#A6A6A6"
               hover:
-                textStyle:
-                  fontSize: 20
-                  fill: "#FFFFFF"
+                textStyleId: textStyle10
               click:
                 actionPayload:
                   actions:
@@ -335,19 +238,14 @@ resources:
                         - variableId: textSpeed
                           op: set
                           value: 25
-
+              textStyleId: textStyle9
             - id: speedMedium
               type: text
               content: "[Medium]"
               x: 330
               y: 150
-              textStyle:
-                fontSize: 20
-                fill: "#A6A6A6"
               hover:
-                textStyle:
-                  fontSize: 20
-                  fill: "#FFFFFF"
+                textStyleId: textStyle10
               click:
                 actionPayload:
                   actions:
@@ -357,19 +255,14 @@ resources:
                         - variableId: textSpeed
                           op: set
                           value: 50
-
+              textStyleId: textStyle9
             - id: speedFast
               type: text
               content: "[Fast]"
               x: 450
               y: 150
-              textStyle:
-                fontSize: 20
-                fill: "#A6A6A6"
               hover:
-                textStyle:
-                  fontSize: 20
-                  fill: "#FFFFFF"
+                textStyleId: textStyle10
               click:
                 actionPayload:
                   actions:
@@ -379,39 +272,26 @@ resources:
                         - variableId: textSpeed
                           op: set
                           value: 100
-
-            # Volume
+              textStyleId: textStyle9
             - id: volumeLabel
               type: text
               content: "Volume:"
               x: 0
               y: 200
-              textStyle:
-                fontSize: 24
-                fill: "#FFFFFF"
-
+              textStyleId: textStyle5
             - id: volumeValue
               type: text
-              content: "${variables.volume}%"
+              content: ${variables.volume}%
               x: 130
               y: 200
-              textStyle:
-                fontSize: 24
-                fill: "#737373"
-                fontWeight: bold
-
+              textStyleId: textStyle6
             - id: volumeUp
               type: text
               content: "[+10]"
               x: 240
               y: 200
-              textStyle:
-                fontSize: 24
-                fill: "#737373"
               hover:
-                textStyle:
-                  fontSize: 24
-                  fill: "#4D4D4D"
+                textStyleId: textStyle8
               click:
                 actionPayload:
                   actions:
@@ -421,19 +301,14 @@ resources:
                         - variableId: volume
                           op: increment
                           value: 10
-
+              textStyleId: textStyle7
             - id: volumeDown
               type: text
               content: "[-10]"
               x: 320
               y: 200
-              textStyle:
-                fontSize: 24
-                fill: "#737373"
               hover:
-                textStyle:
-                  fontSize: 24
-                  fill: "#4D4D4D"
+                textStyleId: textStyle8
               click:
                 actionPayload:
                   actions:
@@ -443,10 +318,7 @@ resources:
                         - variableId: volume
                           op: decrement
                           value: 10
-
-        # ═══════════════════════════════════════════════════════
-        # GLOBAL-ACCOUNT SCOPE SECTION
-        # ═══════════════════════════════════════════════════════
+              textStyleId: textStyle7
         - id: global-accountSection
           type: container
           x: 100
@@ -454,73 +326,47 @@ resources:
           children:
             - id: global-accountTitle
               type: text
-              content: "GLOBAL-ACCOUNT SCOPE"
+              content: GLOBAL-ACCOUNT SCOPE
               x: 0
               y: 0
-              textStyle:
-                fontSize: 32
-                fill: "#737373"
-                fontWeight: bold
-
+              textStyleId: textStyle2
             - id: global-accountDesc
               type: text
-              content: "Achievements across all playthroughs"
+              content: Achievements across all playthroughs
               x: 0
               y: 40
-              textStyle:
-                fontSize: 18
-                fill: "#A6A6A6"
-
+              textStyleId: textStyle3
             - id: global-accountDesc2
               type: text
-              content: "✓ Persists forever"
+              content: ✓ Persists forever
               x: 0
               y: 70
-              textStyle:
-                fontSize: 18
-                fill: "#737373"
-
+              textStyleId: textStyle4
             - id: global-accountDesc3
               type: text
-              content: "✓ Shared across saves"
+              content: ✓ Shared across saves
               x: 0
               y: 95
-              textStyle:
-                fontSize: 18
-                fill: "#737373"
-
-            # Playthroughs counter
+              textStyleId: textStyle4
             - id: playthroughsLabel
               type: text
               content: "Playthroughs:"
               x: 0
               y: 150
-              textStyle:
-                fontSize: 24
-                fill: "#FFFFFF"
-
+              textStyleId: textStyle5
             - id: playthroughsValue
               type: text
-              content: "${variables.totalPlaythroughs}"
+              content: ${variables.totalPlaythroughs}
               x: 200
               y: 150
-              textStyle:
-                fontSize: 24
-                fill: "#737373"
-                fontWeight: bold
-
+              textStyleId: textStyle6
             - id: playthroughsInc
               type: text
               content: "[+1]"
               x: 250
               y: 150
-              textStyle:
-                fontSize: 24
-                fill: "#737373"
               hover:
-                textStyle:
-                  fontSize: 24
-                  fill: "#4D4D4D"
+                textStyleId: textStyle8
               click:
                 actionPayload:
                   actions:
@@ -529,39 +375,26 @@ resources:
                       operations:
                         - variableId: totalPlaythroughs
                           op: increment
-
-            # Secret unlocked
+              textStyleId: textStyle7
             - id: secretLabel
               type: text
               content: "Secret Unlocked:"
               x: 0
               y: 200
-              textStyle:
-                fontSize: 24
-                fill: "#FFFFFF"
-
+              textStyleId: textStyle5
             - id: secretValue
               type: text
-              content: "${variables.secretUnlocked}"
+              content: ${variables.secretUnlocked}
               x: 230
               y: 200
-              textStyle:
-                fontSize: 24
-                fill: "#737373"
-                fontWeight: bold
-
+              textStyleId: textStyle6
             - id: secretToggle
               type: text
-              content: "toggle"
+              content: toggle
               x: 320
               y: 200
-              textStyle:
-                fontSize: 20
-                fill: "#A6A6A6"
               hover:
-                textStyle:
-                  fontSize: 20
-                  fill: "#FFFFFF"
+                textStyleId: textStyle10
               click:
                 actionPayload:
                   actions:
@@ -571,10 +404,7 @@ resources:
                         - variableId: secretUnlocked
                           op: set
                           value: true
-
-        # ═══════════════════════════════════════════════════════
-        # COMPARISON TABLE (RIGHT SIDE)
-        # ═══════════════════════════════════════════════════════
+              textStyleId: textStyle9
         - id: comparisonTable
           type: container
           x: 1100
@@ -582,211 +412,249 @@ resources:
           children:
             - id: tableTitle
               type: text
-              content: "Behavior Comparison"
+              content: Behavior Comparison
               x: 0
               y: 0
-              textStyle:
-                fontSize: 28
-                fill: "#D9D9D9"
-                fontWeight: bold
-
-            # Table headers
+              textStyleId: textStyle11
             - id: headerScope
               type: text
-              content: "Scope"
+              content: Scope
               x: 0
               y: 60
-              textStyle:
-                fontSize: 20
-                fill: "#A6A6A6"
-
+              textStyleId: textStyle9
             - id: headerSaved
               type: text
-              content: "Saved?"
+              content: Saved?
               x: 200
               y: 60
-              textStyle:
-                fontSize: 20
-                fill: "#A6A6A6"
-
+              textStyleId: textStyle9
             - id: headerPersist
               type: text
-              content: "Persist?"
+              content: Persist?
               x: 350
               y: 60
-              textStyle:
-                fontSize: 20
-                fill: "#A6A6A6"
-
-            # Runtime row
+              textStyleId: textStyle9
             - id: contextRow
               type: text
-              content: "Runtime"
+              content: Runtime
               x: 0
               y: 100
-              textStyle:
-                fontSize: 18
-                fill: "#737373"
-
+              textStyleId: textStyle4
             - id: contextSaved
               type: text
-              content: "✓ Yes"
+              content: ✓ Yes
               x: 200
               y: 100
-              textStyle:
-                fontSize: 18
-                fill: "#737373"
-
+              textStyleId: textStyle4
             - id: contextPersist
               type: text
-              content: "✗ No"
+              content: ✗ No
               x: 350
               y: 100
-              textStyle:
-                fontSize: 18
-                fill: "#737373"
-
-            # Device row
+              textStyleId: textStyle4
             - id: global-deviceRow
               type: text
-              content: "Device"
+              content: Device
               x: 0
               y: 140
-              textStyle:
-                fontSize: 18
-                fill: "#737373"
-
+              textStyleId: textStyle4
             - id: global-deviceSaved
               type: text
-              content: "✗ No"
+              content: ✗ No
               x: 200
               y: 140
-              textStyle:
-                fontSize: 18
-                fill: "#737373"
-
+              textStyleId: textStyle4
             - id: global-devicePersist
               type: text
-              content: "✓ Yes"
+              content: ✓ Yes
               x: 350
               y: 140
-              textStyle:
-                fontSize: 18
-                fill: "#737373"
-
-            # Global row
+              textStyleId: textStyle4
             - id: global-accountRow
               type: text
-              content: "Global"
+              content: Global
               x: 0
               y: 180
-              textStyle:
-                fontSize: 18
-                fill: "#737373"
-
+              textStyleId: textStyle4
             - id: global-accountSaved
               type: text
-              content: "✗ No*"
+              content: ✗ No*
               x: 200
               y: 180
-              textStyle:
-                fontSize: 18
-                fill: "#737373"
-
+              textStyleId: textStyle4
             - id: global-accountPersist
               type: text
-              content: "✓ Yes"
+              content: ✓ Yes
               x: 350
               y: 180
-              textStyle:
-                fontSize: 18
-                fill: "#737373"
-
+              textStyleId: textStyle4
             - id: global-accountNote
               type: text
               content: "* Shared across all saves"
               x: 0
               y: 215
-              textStyle:
-                fontSize: 14
-                fill: "#A6A6A6"
-
-            # Use Cases
+              textStyleId: textStyle12
             - id: useCasesTitle
               type: text
               content: "Common Use Cases:"
               x: 0
               y: 280
-              textStyle:
-                fontSize: 24
-                fill: "#D9D9D9"
-                fontWeight: bold
-
+              textStyleId: textStyle13
             - id: useRuntime
               type: text
               content: "Runtime: Story progress, items"
               x: 0
               y: 330
-              textStyle:
-                fontSize: 16
-                fill: "#737373"
-
+              textStyleId: textStyle14
             - id: useDevice
               type: text
               content: "Device: Volume, text speed"
               x: 0
               y: 360
-              textStyle:
-                fontSize: 16
-                fill: "#737373"
-
+              textStyleId: textStyle14
             - id: useGlobal
               type: text
               content: "Global: Achievements, unlocks"
               x: 0
               y: 390
-              textStyle:
-                fontSize: 16
-                fill: "#737373"
-
-            # Lifecycle diagram
+              textStyleId: textStyle14
             - id: lifecycleTitle
               type: text
               content: "Variable Lifecycle:"
               x: 0
               y: 460
-              textStyle:
-                fontSize: 24
-                fill: "#D9D9D9"
-                fontWeight: bold
-
+              textStyleId: textStyle13
             - id: lifecycleRuntime
               type: text
               content: "Runtime: Created → Saved → Loaded"
               x: 0
               y: 510
-              textStyle:
-                fontSize: 16
-                fill: "#737373"
-
+              textStyleId: textStyle14
             - id: lifecycleDevice
               type: text
               content: "Device: Created → localStorage"
               x: 0
               y: 540
-              textStyle:
-                fontSize: 16
-                fill: "#737373"
-
+              textStyleId: textStyle14
             - id: lifecycleGlobal
               type: text
               content: "Global: Created → localStorage"
               x: 0
               y: 570
-              textStyle:
-                fontSize: 16
-                fill: "#737373"
-
+              textStyleId: textStyle14
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: "#D9D9D9"
+    color2:
+      hex: "#737373"
+    color3:
+      hex: "#A6A6A6"
+    color4:
+      hex: "#FFFFFF"
+    color5:
+      hex: "#4D4D4D"
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 42
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle2:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 32
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle3:
+      fontId: fontDefault
+      colorId: color3
+      fontSize: 18
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle4:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 18
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle5:
+      fontId: fontDefault
+      colorId: color4
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle6:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 24
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle7:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle8:
+      fontId: fontDefault
+      colorId: color5
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle9:
+      fontId: fontDefault
+      colorId: color3
+      fontSize: 20
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle10:
+      fontId: fontDefault
+      colorId: color4
+      fontSize: 20
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle11:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 28
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle12:
+      fontId: fontDefault
+      colorId: color3
+      fontSize: 14
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle13:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 24
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle14:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 16
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
 story:
   initialSceneId: main
   scenes:

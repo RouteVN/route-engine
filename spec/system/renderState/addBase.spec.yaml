@@ -415,4 +415,102 @@ out:
               width: 1280
               height: 720
   animations: []
-
+---
+case: resolves textStyleId in base layout elements
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      base:
+        resourceId: "styledBase"
+    resources:
+      layouts:
+        styledBase:
+          elements:
+            - id: "base-text"
+              type: "text"
+              content: "Base"
+              textStyleId: "body"
+      textStyles:
+        body:
+          fontId: "fontMain"
+          colorId: "fg"
+          fontSize: 24
+          fontWeight: "400"
+          fontStyle: "normal"
+          lineHeight: 1
+      fonts:
+        fontMain:
+          fileId: "Arial"
+      colors:
+        fg:
+          hex: "#FFFFFF"
+    variables: {}
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "base"
+          type: "container"
+          children:
+            - id: "base-text"
+              type: "text"
+              content: "Base"
+              textStyle:
+                fontFamily: "Arial"
+                fontSize: 24
+                fontWeight: "400"
+                fontStyle: "normal"
+                lineHeight: 1
+                fill: "#FFFFFF"
+  animations: []
+---
+case: resolves imageId in base layout elements
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      base:
+        resourceId: "imageBase"
+    resources:
+      layouts:
+        imageBase:
+          elements:
+            - id: "base-image"
+              type: "sprite"
+              imageId: "backgroundImage"
+      images:
+        backgroundImage:
+          fileId: "background.png"
+          width: 1280
+          height: 720
+    variables: {}
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "base"
+          type: "container"
+          children:
+            - id: "base-image"
+              type: "sprite"
+              src: "background.png"
+              width: 1280
+              height: 720
+  animations: []

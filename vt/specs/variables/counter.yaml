@@ -1,5 +1,5 @@
 ---
-title: "Sample"
+title: Sample
 ---
 l10n:
   packages:
@@ -11,14 +11,17 @@ screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 resources:
   variables:
     count:
       type: number
       scope: global-account
       default: 0
-
+  images:
+    dmni32:
+      fileId: dmni32
+      width: 1920
+      height: 1080
   layouts:
     base1:
       elements:
@@ -36,7 +39,7 @@ resources:
       elements:
         - id: bg
           type: sprite
-          url: dmni32
+          imageId: dmni32
           width: 1920
           height: 1080
           x: 0
@@ -48,24 +51,17 @@ resources:
           children:
             - id: zero
               type: text
-              content: "${variables.count}"
+              content: ${variables.count}
               x: 0
               y: 0
-              textStyle:
-                fontSize: 48
-                fill: "white"
+              textStyleId: textStyle1
             - id: plus
               type: text
-              content: "+"
+              content: +
               x: 0
               y: -100
-              textStyle:
-                fontSize: 48
-                fill: "white"
               hover:
-                textStyle:
-                  fontSize: 48
-                  fill: yellow
+                textStyleId: textStyle2
               click:
                 actionPayload:
                   actions:
@@ -74,18 +70,14 @@ resources:
                       operations:
                         - variableId: count
                           op: increment
+              textStyleId: textStyle1
             - id: minus
               type: text
               content: "-"
               x: 0
               y: 100
-              textStyle:
-                fontSize: 48
-                fill: "white"
               hover:
-                textStyle:
-                  fontSize: 48
-                  fill: yellow
+                textStyleId: textStyle2
               click:
                 actionPayload:
                   actions:
@@ -94,7 +86,30 @@ resources:
                       operations:
                         - variableId: count
                           op: decrement
-
+              textStyleId: textStyle1
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: white
+    color2:
+      hex: yellow
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 48
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle2:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 48
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
 story:
   initialSceneId: ajfl3a
   scenes:

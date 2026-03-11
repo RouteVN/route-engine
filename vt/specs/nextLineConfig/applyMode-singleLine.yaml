@@ -1,6 +1,6 @@
 ---
-title: "nextLineConfig applyMode singleLine"
-description: "singleLine should auto-advance once, then reset to manual"
+title: nextLineConfig applyMode singleLine
+description: singleLine should auto-advance once, then reset to manual
 ---
 l10n:
   packages:
@@ -12,17 +12,14 @@ l10n:
         line2: "Line 2: Reached automatically. Config should now reset to manual+autoOff."
         line3: "Line 3: This should require manual click to continue."
         line4: "Line 4: End."
-
 screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 resources:
   sounds:
     bgmMain:
       fileId: bgm-2.mp3
-
   layouts:
     baseLayout:
       elements:
@@ -37,7 +34,6 @@ resources:
             actionPayload:
               actions:
                 nextLine: {}
-
     dialogueLayout:
       mode: adv
       elements:
@@ -48,16 +44,26 @@ resources:
           width: 1720
           height: 260
           fill: "#3B3B3B"
-
         - id: dialogue-text
           type: text
           x: 140
           y: 835
           content: ${dialogue.content[0].text}
-          textStyle:
-            fontSize: 34
-            fill: "white"
-
+          textStyleId: textStyle1
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: white
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 34
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
 story:
   initialSceneId: bgm_scene
   scenes:
@@ -86,19 +92,16 @@ story:
                     resourceId: dialogueLayout
                   content:
                     - text: ${l10n.keys.line1}
-
             - id: line2
               actions:
                 dialogue:
                   content:
                     - text: ${l10n.keys.line2}
-
             - id: line3
               actions:
                 dialogue:
                   content:
                     - text: ${l10n.keys.line3}
-
             - id: line4
               actions:
                 dialogue:

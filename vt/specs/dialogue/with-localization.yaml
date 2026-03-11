@@ -1,33 +1,36 @@
 ---
-title: "With localization"
+title: With localization
 ---
 screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 l10n:
   packages:
     eklekfjwalefj:
       label: English
       lang: en
       keys:
-        a1: "Message a 1"
-        a2: "Message a 2"
-        a3: "Message a 3"
-        a4: "Message a 4"
-        c1: "Character name 1"
+        a1: Message a 1
+        a2: Message a 2
+        a3: Message a 3
+        a4: Message a 4
+        c1: Character name 1
     asdfi4t:
       label: Italiano
       lang: it
       keys:
-        a1: "Messaggio a 1"
-        a2: "Messaggio a 2"
-        a3: "Messaggio a 3"
-        a4: "Messaggio a 4"
-        c1: "Carattere nome 1"
-
+        a1: Messaggio a 1
+        a2: Messaggio a 2
+        a3: Messaggio a 3
+        a4: Messaggio a 4
+        c1: Carattere nome 1
 resources:
+  images:
+    3kda832:
+      fileId: 3kda832
+      width: 1920
+      height: 1080
   layouts:
     base1:
       elements:
@@ -50,52 +53,46 @@ resources:
           width: 1920
           height: 1080
           fill: "#000000"
-          clickEventName: "system"
+          clickEventName: system
           clickEventPayload:
             actions:
               nextLine: {}
     fi3l:
       name: Dialogue Screen
-      mode: "adv"
+      mode: adv
       elements:
         - id: dialogue-container
-          type: "container"
+          type: container
           x: 50
           y: 300
           children:
-            - id: "bfeawjk2g"
+            - id: bfeawjk2g
               type: sprite
               width: 1400
               height: 300
-              url: 3kda832
+              imageId: 3kda832
               x: 0
               y: 0
             - id: dialogue-character-name
               type: text
-              content: "${dialogue.character.name}"
+              content: ${dialogue.character.name}
               x: 20
               y: 40
-              textStyle:
-                fontSize: 24
-                fill: "white"
+              textStyleId: textStyle1
             - id: dialogue-text
-              type: "text"
+              type: text
               x: 20
               y: 100
-              content: "${dialogue.content[0].text}"
-              textStyle:
-                fontSize: 24
-                fill: "white"
+              content: ${dialogue.content[0].text}
+              textStyleId: textStyle1
         - id: dialogue-text-asdf
-          type: "text"
+          type: text
           x: 50
           y: 100
           content: "Current Localization Package: ${l10n.label}"
-          textStyle:
-            fontsize: 32
-            fill: "white"
+          textStyleId: textStyle2
         - id: dialogue-lang-toggle-container
-          type: "container"
+          type: container
           direction: horizontal
           gap: 40
           x: 500
@@ -104,30 +101,45 @@ resources:
             - id: 1jkfkswe3
               type: text
               content: English
-              textStyle:
-                fontsize: 32
-                fill: "white"
               click:
                 actionPayload:
                   actions:
                     setCurrentLocalizationPackageId:
                       localizationPackageId: eklekfjwalefj
+              textStyleId: textStyle2
             - id: 1jka393f
               type: text
               content: Italiano
-              textStyle:
-                fontsize: 32
-                fill: "white"
               click:
                 actionPayload:
                   actions:
                     setCurrentLocalizationPackageId:
                       localizationPackageId: asdfi4t
-
+              textStyleId: textStyle2
   characters:
     ajf34a:
       name: ${l10n.keys.c1}
-
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: white
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle2:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 32
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
 story:
   initialSceneId: ajfl3a
   scenes:

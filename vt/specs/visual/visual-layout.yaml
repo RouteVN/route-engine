@@ -1,5 +1,5 @@
 ---
-title: "Visual Layout"
+title: Visual Layout
 description: Test visual layout positioning
 ---
 l10n:
@@ -12,7 +12,6 @@ screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
-
 resources:
   layouts:
     base1:
@@ -41,26 +40,19 @@ resources:
           content: Menu
           x: 150
           y: 50
-          textStyle:
-            fontSize: 32
-            fill: "white"
+          textStyleId: textStyle1
         - id: option1
           type: text
           content: Option 1
           x: 150
           y: 150
-          textStyle:
-            fontSize: 24
-            fill: "yellow"
+          textStyleId: textStyle2
         - id: option2
           type: text
           content: Option 2
           x: 150
           y: 200
-          textStyle:
-            fontSize: 24
-            fill: "yellow"
-
+          textStyleId: textStyle2
   transforms:
     leftPos:
       x: 250
@@ -86,7 +78,29 @@ resources:
       rotation: 0
       scaleX: 1
       scaleY: 1
-
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: white
+    color2:
+      hex: yellow
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 32
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle2:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
 story:
   initialSceneId: ajfl3a
   scenes:
