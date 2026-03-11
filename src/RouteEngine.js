@@ -78,14 +78,10 @@ export default function createRouteEngine(options) {
     const variables = _systemStore.selectAllVariables
       ? _systemStore.selectAllVariables()
       : undefined;
-    const l10n = _systemStore.selectCurrentL10n
-      ? _systemStore.selectCurrentL10n()
-      : undefined;
     return {
       ...additionalContext,
       _event,
       variables,
-      l10n,
     };
   };
 

@@ -1089,7 +1089,6 @@ export const addDialogue = (
     skipOnlyViewedLines,
     isLineCompleted,
     skipTransitionsAndAnimations,
-    l10n,
     variables,
     saveSlots = [],
   },
@@ -1157,7 +1156,7 @@ export const addDialogue = (
           },
           content: dialogueContent.map((item) => ({
             ...item,
-            text: interpolateDialogueText(item.text, { variables, l10n }),
+            text: interpolateDialogueText(item.text, { variables }),
           })),
           lines: (presentationState.dialogue?.lines || []).map(
             (line, index) => {
@@ -1169,7 +1168,7 @@ export const addDialogue = (
               return {
                 content: lineContent.map((item) => ({
                   ...item,
-                  text: interpolateDialogueText(item.text, { variables, l10n }),
+                  text: interpolateDialogueText(item.text, { variables }),
                 })),
                 characterName: line.characterId
                   ? resources.characters?.[line.characterId]?.name || ""
@@ -1178,14 +1177,10 @@ export const addDialogue = (
             },
           ),
         },
-        l10n,
       };
 
-      let result = parseAndRender(wrappedTemplate, templateData, {
+      const result = parseAndRender(wrappedTemplate, templateData, {
         functions: jemplFunctions,
-      });
-      result = parseAndRender(result, {
-        l10n,
       });
       const guiElements = resolveLayoutResourceIds(result?.elements, resources);
 
@@ -1393,7 +1388,6 @@ export const addLayout = (
     autoMode,
     skipMode,
     canRollback,
-    currentLocalizationPackageId,
     saveSlots = [],
     isLineCompleted,
     skipTransitionsAndAnimations,
@@ -1435,19 +1429,14 @@ export const addLayout = (
       autoMode,
       skipMode,
       canRollback,
-      currentLocalizationPackageId,
       effectiveSoundVolume: variables?._muteAll
         ? 0
         : (variables?._soundVolume ?? 500),
       textSpeed: variables?._textSpeed ?? 50,
     };
 
-    let processedContainer = parseAndRender(layoutContainer, templateData, {
+    const processedContainer = parseAndRender(layoutContainer, templateData, {
       functions: jemplFunctions,
-    });
-    processedContainer = parseAndRender(processedContainer, {
-      i18n: {},
-      // i18n: systemStore.selectCurrentLanguagePackKeys(),
     });
 
     // Push the processed container
@@ -1488,11 +1477,9 @@ export const addLayeredViews = (
     autoMode,
     skipMode,
     canRollback,
-    currentLocalizationPackageId,
     layeredViews = [],
     dialogueHistory = [],
     saveSlots = [],
-    l10n,
     screen,
   },
 ) => {
@@ -1551,7 +1538,6 @@ export const addLayeredViews = (
         autoMode,
         skipMode,
         canRollback,
-        currentLocalizationPackageId,
         saveSlots,
         effectiveSoundVolume: variables?._muteAll
           ? 0
@@ -1561,17 +1547,13 @@ export const addLayeredViews = (
         characters: resources.characters || {},
       };
 
-      let processedLayeredView = parseAndRender(
+      const processedLayeredView = parseAndRender(
         layeredViewContainer,
         templateData,
         {
           functions: jemplFunctions,
         },
       );
-      processedLayeredView = parseAndRender(processedLayeredView, {
-        i18n: {},
-        l10n,
-      });
 
       const [blocker, ...layoutChildren] = processedLayeredView.children || [];
       const resolvedLayeredView = resolveLayoutResourceIds(

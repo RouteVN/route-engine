@@ -8,20 +8,6 @@ description: |
   Intended for manual/video-capable runs.
 skipScreenshot: true
 ---
-l10n:
-  packages:
-    eklekfjwalefj:
-      label: English
-      lang: en
-      keys:
-        line0: "Line 0: click once to allow video playback in browser."
-        line1: "Line 1: auto enabled (fromStart)."
-        line2: "Line 2: fromStart on video background."
-        line3: "Line 3: fromStart on animation."
-        line4: "Line 4: switch to fromComplete."
-        line5: "Line 5: fromComplete on video background."
-        line6: "Line 6: fromComplete on animation."
-        line7: "Line 7: done."
 screen:
   width: 1920
   height: 1080
@@ -111,7 +97,7 @@ story:
                   gui:
                     resourceId: dialogueLayout
                   content:
-                    - text: ${l10n.keys.line0}
+                    - text: Line 0: click once to allow video playback in browser.
             - id: line1
               actions:
                 setNextLineConfig:
@@ -127,7 +113,7 @@ story:
                   gui:
                     resourceId: dialogueLayout
                   content:
-                    - text: ${l10n.keys.line1}
+                    - text: Line 1: auto enabled (fromStart).
             - id: line2
               actions:
                 background:
@@ -135,7 +121,7 @@ story:
                   resourceType: video
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line2}
+                    - text: Line 2: fromStart on video background.
             - id: line3
               actions:
                 background:
@@ -145,7 +131,7 @@ story:
                       resourceId: fade-in-800
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line3}
+                    - text: Line 3: fromStart on animation.
             - id: line4
               actions:
                 setNextLineConfig:
@@ -158,7 +144,7 @@ story:
                   applyMode: persistent
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line4}
+                    - text: Line 4: switch to fromComplete.
             - id: line5
               actions:
                 background:
@@ -166,7 +152,7 @@ story:
                   resourceType: video
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line5}
+                    - text: Line 5: fromComplete on video background.
             - id: line6
               actions:
                 background:
@@ -176,7 +162,7 @@ story:
                       resourceId: fade-in-800
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line6}
+                    - text: Line 6: fromComplete on animation.
             - id: line7
               actions:
                 setNextLineConfig:
@@ -186,4 +172,4 @@ story:
                     enabled: false
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line7}
+                    - text: Line 7: done.

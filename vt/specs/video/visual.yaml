@@ -3,12 +3,6 @@ title: Video Visual
 description: Test video playback as visual element
 skipScreenshot: true
 ---
-l10n:
-  packages:
-    eklekfjwalefj:
-      label: English
-      lang: en
-      keys: {}
 screen:
   width: 1920
   height: 1080

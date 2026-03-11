@@ -124,7 +124,6 @@ in:
         autoMode: true
         skipMode: false
         dialogueUIHidden: false
-        currentLocalizationPackageId: "en"
         pendingEffects: []
   - sectionId: "newSection"
     lineId: "5"
@@ -139,7 +138,6 @@ out:
     autoMode: true
     skipMode: false
     dialogueUIHidden: false
-    currentLocalizationPackageId: "en"
     pendingEffects:
       - name: "render"
 ---

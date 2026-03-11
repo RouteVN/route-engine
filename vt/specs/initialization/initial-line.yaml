@@ -2,12 +2,6 @@
 title: Initial Line ID
 description: Test starting at a specific line via initialLineId
 ---
-l10n:
-  packages:
-    en:
-      label: English
-      lang: en
-      keys: {}
 screen:
   width: 1920
   height: 1080

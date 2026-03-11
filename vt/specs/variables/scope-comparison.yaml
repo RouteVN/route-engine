@@ -2,12 +2,6 @@
 title: Variable Scopes Comparison
 description: Demonstrates context, global-device, and global-account variable scopes
 ---
-l10n:
-  packages:
-    en:
-      label: English
-      lang: en
-      keys: {}
 screen:
   width: 1920
   height: 1080

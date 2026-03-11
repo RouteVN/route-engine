@@ -2,12 +2,6 @@
 title: Visual Layout
 description: Test visual layout positioning
 ---
-l10n:
-  packages:
-    eklekfjwalefj:
-      label: English
-      lang: en
-      keys: {}
 screen:
   width: 1920
   height: 1080

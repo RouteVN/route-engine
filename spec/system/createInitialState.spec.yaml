@@ -8,7 +8,6 @@ exportName: createInitialState
 case: create initial state with basic structure
 in:
   - global:
-      currentLocalizationPackageId: "en"
     projectData:
       story:
         initialSceneId: "scene1"
@@ -28,7 +27,6 @@ out:
     skipMode: false
     dialogueUIHidden: false
     isDialogueHistoryShowing: false
-    currentLocalizationPackageId: "en"
     viewedRegistry:
       sections: []
       resources: []
@@ -78,7 +76,6 @@ out:
 case: initialize object type variables with defaults
 in:
   - global:
-      currentLocalizationPackageId: "en"
     projectData:
       resources:
         variables:
@@ -114,7 +111,6 @@ out:
     skipMode: false
     dialogueUIHidden: false
     isDialogueHistoryShowing: false
-    currentLocalizationPackageId: "en"
     viewedRegistry:
       sections: []
       resources: []
@@ -192,7 +188,6 @@ out:
 case: initialize object type variable with empty object default
 in:
   - global:
-      currentLocalizationPackageId: "en"
     projectData:
       resources:
         variables:
@@ -217,7 +212,6 @@ out:
     skipMode: false
     dialogueUIHidden: false
     isDialogueHistoryShowing: false
-    currentLocalizationPackageId: "en"
     viewedRegistry:
       sections: []
       resources: []
@@ -274,7 +268,6 @@ out:
 case: merge loaded global variables with defaults
 in:
   - global:
-      currentLocalizationPackageId: "en"
       variables:
         volume: 80
         achievement1: true
@@ -311,7 +304,6 @@ out:
     skipMode: false
     dialogueUIHidden: false
     isDialogueHistoryShowing: false
-    currentLocalizationPackageId: "en"
     viewedRegistry:
       sections: []
       resources: []
@@ -378,7 +370,6 @@ out:
 case: initialize with specific initialLineId
 in:
   - global:
-      currentLocalizationPackageId: "en"
     projectData:
       story:
         initialSceneId: "scene1"
@@ -401,7 +392,6 @@ out:
     skipMode: false
     dialogueUIHidden: false
     isDialogueHistoryShowing: false
-    currentLocalizationPackageId: "en"
     viewedRegistry:
       sections: []
       resources: []

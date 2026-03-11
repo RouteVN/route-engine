@@ -2,12 +2,6 @@
 title: Rollback By Offset Test
 description: Test rollbackByOffset action - go back N lines with variable reversion
 ---
-l10n:
-  packages:
-    en:
-      label: English
-      lang: en
-      keys: {}
 screen:
   width: 1920
   height: 1080

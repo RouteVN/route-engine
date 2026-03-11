@@ -130,7 +130,6 @@ in:
         autoMode: true
         skipMode: false
         dialogueUIHidden: false
-        currentLocalizationPackageId: "en"
         pendingEffects: []
   -
     resourceId: "new_asset.png"
@@ -143,7 +142,6 @@ out:
     autoMode: true
     skipMode: false
     dialogueUIHidden: false
-    currentLocalizationPackageId: "en"
     pendingEffects:
       - name: "render"
 ---

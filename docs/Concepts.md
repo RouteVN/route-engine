@@ -65,8 +65,8 @@ flowchart TD
 
 Static, read-only data that defines the visual novel content:
 
-- **l10n**: Localization packages for multi-language support
 - **resources**: Images, audio, animations, transforms, layouts, characters, fonts, colors, and `textStyles`
+  - Localization is not implemented in the current runtime. The planned patch-based model is documented in `docs/L10n.md`
   - Layout text elements should reference shared styles with `textStyleId`
   - Text fill and stroke transparency should be authored on `resources.textStyles` with `colorAlpha` / `strokeAlpha`, not inside `resources.colors`
   - Layout sprite elements should reference images with `imageId` and optional `hoverImageId` / `clickImageId`
@@ -84,7 +84,6 @@ Mutable runtime state managed by the system store. Key components:
   - `pendingEffects`: Queue of side effects to execute
   - `autoMode` / `skipMode`: Playback mode flags
   - `dialogueUIHidden`: UI visibility toggle
-  - `currentLocalizationPackageId`: Active language
   - `viewedRegistry`: Tracks which sections/lines have been seen
   - `nextLineConfig`: Controls line advancement behavior
   - `saveSlots`: Save game data
@@ -125,8 +124,7 @@ Final output format ready for the renderer:
 ```js
 const renderState = constructRenderState({
   presentationState,
-  resources,
-  l10n
+  resources
 });
 ```
 

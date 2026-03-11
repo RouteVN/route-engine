@@ -2,20 +2,6 @@
 title: Scene Mode
 description: Test unskippable, auto-advancing scene mode using setNextLineConfig
 ---
-l10n:
-  packages:
-    eklekfjwalefj:
-      label: English
-      lang: en
-      keys:
-        line1: "Line 1: Click 'Start Scene' to begin unskippable sequence."
-        line2: "Line 2: This line advanced automatically."
-        line3: "Line 3: Clicks and Skip are disabled during this sequence."
-        line4: "Line 4: This will continue until the end..."
-        line5: "Line 5: Sequence finished. Manual control is now restored."
-        startButton: Start Scene
-        stopButton: Stop Scene
-        skipButton: Skip
 screen:
   width: 1920
   height: 1080
@@ -59,7 +45,7 @@ resources:
           type: text
           x: 1700
           y: 50
-          content: ${l10n.keys.startButton}
+          content: Start Scene
           hover:
             textStyleId: textStyle2
           click:
@@ -77,7 +63,7 @@ resources:
           type: text
           x: 1500
           y: 50
-          content: ${l10n.keys.stopButton}
+          content: Stop Scene
           hover:
             textStyleId: textStyle2
           click:
@@ -93,7 +79,7 @@ resources:
           type: text
           x: 1350
           y: 50
-          content: ${l10n.keys.skipButton}
+          content: Skip
           hover:
             textStyleId: textStyle2
           click:
@@ -156,25 +142,25 @@ story:
                   gui:
                     resourceId: dialogueLayout
                   content:
-                    - text: ${l10n.keys.line1}
+                    - text: Line 1: Click 'Start Scene' to begin unskippable sequence.
                   characterId: narrator
             - id: line2
               actions:
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line2}
+                    - text: Line 2: This line advanced automatically.
                   characterId: narrator
             - id: line3
               actions:
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line3}
+                    - text: Line 3: Clicks and Skip are disabled during this sequence.
                   characterId: narrator
             - id: line4
               actions:
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line4}
+                    - text: Line 4: This will continue until the end...
                   characterId: narrator
             - id: line5
               actions:
@@ -185,5 +171,5 @@ story:
                     enabled: false
                 dialogue:
                   content:
-                    - text: ${l10n.keys.line5}
+                    - text: Line 5: Sequence finished. Manual control is now restored.
                   characterId: narrator

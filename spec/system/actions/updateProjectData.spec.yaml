@@ -21,10 +21,6 @@ in:
           resource1:
             type: "image"
             src: "original.png"
-        l10n:
-          packages:
-            package1:
-              name: "Original Package"
       global:
         pendingEffects: []
   -
@@ -41,10 +37,6 @@ in:
         resource2:
           type: "audio"
           src: "new.mp3"
-      l10n:
-        packages:
-          package2:
-            name: "New Package"
 out:
   projectData:
     story:
@@ -59,10 +51,6 @@ out:
       resource2:
         type: "audio"
         src: "new.mp3"
-    l10n:
-      packages:
-        package2:
-          name: "New Package"
   global:
     pendingEffects:
       - name: render
@@ -128,7 +116,6 @@ in:
         autoMode: true
         skipMode: false
         dialogueUIHidden: true
-        currentLocalizationPackageId: "oldPackage"
         viewedRegistry:
           sections:
             - sectionId: "viewedSection"
@@ -171,7 +158,6 @@ out:
     autoMode: true
     skipMode: false
     dialogueUIHidden: true
-    currentLocalizationPackageId: "oldPackage"
     viewedRegistry:
       sections:
         - sectionId: "viewedSection"

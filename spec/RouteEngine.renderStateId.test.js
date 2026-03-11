@@ -7,11 +7,6 @@ const createMinimalProjectData = () => ({
     height: 1080,
     backgroundColor: "#000000",
   },
-  l10n: {
-    packages: {
-      en: {},
-    },
-  },
   resources: {
     layouts: {},
     sounds: {},
@@ -50,9 +45,7 @@ describe("RouteEngine selectRenderState id", () => {
 
     engine.init({
       initialState: {
-        global: {
-          currentLocalizationPackageId: "en",
-        },
+        global: {},
         projectData: createMinimalProjectData(),
       },
     });

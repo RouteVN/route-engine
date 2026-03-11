@@ -13,7 +13,6 @@ in:
         autoMode: false
         skipMode: false
         isDialogueUIVisible: true
-        currentLocalizationPackageId: "en"
       projectData:
         story:
           scenes:
@@ -27,9 +26,6 @@ in:
                           resourceId: "abcd"
                     - id: "2"
                       actions: {}
-        l10n:
-          packages:
-            en: {}
         resources:
           sounds:
             cde:
@@ -61,7 +57,6 @@ in:
         autoMode: false
         skipMode: false
         isDialogueUIVisible: true
-        currentLocalizationPackageId: "en"
       projectData:
         story:
           scenes:
@@ -79,9 +74,6 @@ in:
                       actions:
                         background:
                           resourceId: "xyz"
-        l10n:
-          packages:
-            en: {}
         resources:
           sounds:
             cde:
@@ -119,7 +111,6 @@ in:
         autoMode: false
         skipMode: false
         isDialogueUIVisible: true
-        currentLocalizationPackageId: "en"
       projectData:
         story:
           scenes:
@@ -137,9 +128,6 @@ in:
                       actions:
                         background:
                           resourceId: "xyz"
-        l10n:
-          packages:
-            en: {}
         resources:
           sounds:
             cde:

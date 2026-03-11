@@ -34,11 +34,7 @@ Initializes the engine with project data and global settings.
 ```js
 engine.init({
   initialState: {
-    global: {
-      currentLocalizationPackageId: 'en'
-    },
     projectData: {
-      l10n: { packages: { en: { /* translations */ } } },
       resources: { /* images, audio, etc */ },
       story: {
         initialSceneId: 'scene_1',
@@ -48,6 +44,9 @@ engine.init({
   }
 });
 ```
+
+Localization is not implemented in the current runtime. The planned
+patch-based l10n model is documented in [L10n.md](./L10n.md).
 
 The engine will:
 1. Create the system store with initial state
@@ -323,7 +322,6 @@ const presentationState = engine.selectPresentationState();
 |--------|---------|-------------|
 | `markLineCompleted` | - | Mark current line as completed |
 | `setNextLineConfig` | `{ manual?, auto? }` | Configure line advancement |
-| `setCurrentLocalizationPackageId` | `{ localizationPackageId }` | Change language |
 | `updateProjectData` | `{ projectData }` | Replace project data |
 
 ### Registry Actions
@@ -360,7 +358,6 @@ The system store exposes these selectors (called internally):
 | `selectAutoMode` | - | Boolean |
 | `selectSkipMode` | - | Boolean |
 | `selectDialogueUIHidden` | - | Boolean |
-| `selectCurrentLocalizationPackageId` | - | String |
 | `selectIsLineViewed` | `{ sectionId, lineId }` | Boolean |
 | `selectIsResourceViewed` | `{ resourceId }` | Boolean |
 | `selectNextLineConfig` | - | Config object |

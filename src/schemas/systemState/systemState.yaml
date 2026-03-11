@@ -87,10 +87,6 @@ properties:
         description: Whether skip mode is active
         default: false
 
-      currentLanguagePackId:
-        type: string
-        description: ID of the currently active language pack
-
       # history:
       #   type: object
       #   description: Navigation history
@@ -260,6 +256,5 @@ properties:
             required: [sectionId]
           default: []
 
-required:
-  [variables, currentLanguagePackId, historySequence, currentMode, modes]
+required: [variables, historySequence, currentMode, modes]
 additionalProperties: false

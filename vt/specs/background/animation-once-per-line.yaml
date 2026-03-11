@@ -7,12 +7,6 @@ description: |
   - Line 1: Background with fade-in animation (plays)
   - Lines 2-4: Dialogue only (animation does NOT replay)
 ---
-l10n:
-  packages:
-    en-pkg:
-      label: English
-      lang: en
-      keys: {}
 screen:
   width: 1920
   height: 1080

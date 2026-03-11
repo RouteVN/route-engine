@@ -2,12 +2,6 @@
 title: Visual Snow Effect
 description: Phase 2 - Background with snow particle effect layout overlay
 ---
-l10n:
-  packages:
-    eklekfjwalefj:
-      label: English
-      lang: en
-      keys: {}
 screen:
   width: 1920
   height: 1080

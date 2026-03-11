@@ -29,7 +29,6 @@ in:
     dialogueUIHidden: true
     autoMode: false
     skipMode: false
-    currentLocalizationPackageId: null
 out:
   elements:
     - id: "story"
@@ -53,7 +52,6 @@ in:
     dialogueUIHidden: false
     autoMode: false
     skipMode: false
-    currentLocalizationPackageId: null
 out:
   elements:
     - id: "story"
@@ -107,7 +105,6 @@ in:
     dialogueUIHidden: false
     autoMode: false
     skipMode: false
-    currentLocalizationPackageId: null
 out:
   elements:
     - id: "story"
@@ -171,7 +168,6 @@ in:
     dialogueUIHidden: false
     autoMode: false
     skipMode: false
-    currentLocalizationPackageId: null
 out:
   elements:
     - id: "story"
@@ -233,7 +229,6 @@ in:
     dialogueUIHidden: false
     autoMode: false
     skipMode: false
-    currentLocalizationPackageId: null
 out:
   elements:
     - id: "story"
@@ -280,7 +275,6 @@ in:
     dialogueUIHidden: false
     autoMode: false
     skipMode: false
-    currentLocalizationPackageId: null
 out:
   elements:
     - id: "story"
@@ -319,10 +313,9 @@ in:
     dialogueUIHidden: false
     autoMode: false
     skipMode: false
-    currentLocalizationPackageId: null
 throws: "dialogue.content must be an array of objects"
 ---
-case: interpolates dialogue content with l10n keys
+case: interpolates dialogue content with variables
 in:
   - elements:
       - id: "story"
@@ -336,7 +329,7 @@ in:
         gui:
           resourceId: "dialogueLayout"
         content:
-          - text: "${l10n.keys.line1}"
+          - text: "${variables.line1}"
     resources:
       layouts:
         dialogueLayout:
@@ -347,10 +340,8 @@ in:
     dialogueUIHidden: false
     autoMode: false
     skipMode: false
-    currentLocalizationPackageId: null
-    l10n:
-      keys:
-        line1: "Localized line"
+    variables:
+      line1: "Localized line"
 out:
   elements:
     - id: "story"
@@ -399,7 +390,6 @@ in:
     dialogueUIHidden: false
     autoMode: false
     skipMode: false
-    currentLocalizationPackageId: null
 out:
   elements:
     - id: "story"
