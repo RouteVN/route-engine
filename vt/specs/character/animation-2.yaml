@@ -86,7 +86,7 @@ resources:
           keyframes:
             - duration: 1500
               value: 480
-              easing: easeOutCubic
+              easing: easeOut
         alpha:
           initialValue: 0
           keyframes:
@@ -101,7 +101,7 @@ resources:
           keyframes:
             - duration: 1500
               value: 1400
-              easing: easeOutCubic
+              easing: easeOut
         alpha:
           initialValue: 0
           keyframes:
@@ -115,7 +115,7 @@ resources:
           keyframes:
             - duration: 1500
               value: -300
-              easing: easeInCubic
+              easing: easeIn
         alpha:
           keyframes:
             - duration: 1500
@@ -128,7 +128,7 @@ resources:
           keyframes:
             - duration: 1500
               value: 2220
-              easing: easeInCubic
+              easing: easeIn
         alpha:
           keyframes:
             - duration: 1500

@@ -7,146 +7,23 @@ const jemplFunctions = {
   formatDate,
 };
 
-const LEGACY_ANIMATION_PROPERTY_ALIASES = Object.freeze({
-  opacity: "alpha",
-  "scale.x": "scaleX",
-  "scale.y": "scaleY",
-});
-
-const LEGACY_EASING_ALIASES = Object.freeze({
-  easeInCubic: "easeIn",
-  easeOutCubic: "easeOut",
-  easeInOutCubic: "easeInOut",
-});
-
-const normalizeAnimationPropertyName = (propertyName) =>
-  LEGACY_ANIMATION_PROPERTY_ALIASES[propertyName] ?? propertyName;
-
-const normalizeAnimationEasing = (easing) =>
-  typeof easing === "string"
-    ? (LEGACY_EASING_ALIASES[easing] ?? easing)
-    : easing;
-
-const normalizeAnimationKeyframe = (keyframe, relative) => {
-  if (!keyframe || typeof keyframe !== "object" || Array.isArray(keyframe)) {
-    return keyframe;
-  }
-
-  return {
-    ...structuredClone(keyframe),
-    ...(keyframe.easing !== undefined
-      ? { easing: normalizeAnimationEasing(keyframe.easing) }
-      : {}),
-    ...(relative !== undefined && keyframe.relative === undefined
-      ? { relative }
-      : {}),
-  };
-};
-
-const normalizeTweenPropertyConfig = (config) => {
-  if (!config || typeof config !== "object" || Array.isArray(config)) {
-    return config;
-  }
-
-  if (!Array.isArray(config.keyframes)) {
-    return structuredClone(config);
-  }
-
-  const normalized = {};
-
-  if (config.initialValue !== undefined) {
-    normalized.initialValue = config.initialValue;
-  }
-
-  normalized.keyframes = config.keyframes.map((keyframe) =>
-    normalizeAnimationKeyframe(keyframe, config.relative),
-  );
-
-  return normalized;
-};
-
-const normalizeTweenDefinition = (properties) => {
-  if (
-    !properties ||
-    typeof properties !== "object" ||
-    Array.isArray(properties)
-  ) {
-    return properties;
-  }
-
-  const duration =
-    typeof properties.duration === "number" ? properties.duration : 0;
-  const easing = normalizeAnimationEasing(properties.easing);
-  const normalized = {};
-
-  for (const [rawPropertyName, rawConfig] of Object.entries(properties)) {
-    if (rawPropertyName === "duration" || rawPropertyName === "easing") {
-      continue;
-    }
-
-    const propertyName = normalizeAnimationPropertyName(rawPropertyName);
-
-    if (Array.isArray(rawConfig)) {
-      const [initialValue, value] = rawConfig;
-
-      normalized[propertyName] = {
-        ...(initialValue !== undefined ? { initialValue } : {}),
-        keyframes: [
-          {
-            duration,
-            value,
-            ...(easing !== undefined ? { easing } : {}),
-          },
-        ],
-      };
-      continue;
-    }
-
-    normalized[propertyName] = normalizeTweenPropertyConfig(rawConfig);
-  }
-
-  return normalized;
-};
-
 const createLiveAnimation = ({ id, targetId, tween, complete }) => ({
   id,
   type: "live",
   targetId,
-  tween: normalizeTweenDefinition(tween),
+  tween: structuredClone(tween),
   ...(complete ? { complete } : {}),
 });
 
-const normalizeAnimation = (animation, { defaultTargetId, defaultId } = {}) => {
+const cloneAnimation = (animation, { defaultTargetId, defaultId } = {}) => {
   if (!animation || typeof animation !== "object" || Array.isArray(animation)) {
     return animation;
   }
 
-  if (animation.type === "replace") {
-    const normalized = structuredClone(animation);
-    normalized.id ??= defaultId;
-    normalized.targetId ??= defaultTargetId;
-
-    if (normalized.prev?.tween) {
-      normalized.prev.tween = normalizeTweenDefinition(normalized.prev.tween);
-    }
-
-    if (normalized.next?.tween) {
-      normalized.next.tween = normalizeTweenDefinition(normalized.next.tween);
-    }
-
-    return normalized;
-  }
-
-  if (animation.type === "live" || animation.type === "keyframes") {
-    return createLiveAnimation({
-      id: animation.id ?? defaultId,
-      targetId: animation.targetId ?? animation.elementId ?? defaultTargetId,
-      tween: animation.tween ?? animation.properties,
-      complete: animation.complete,
-    });
-  }
-
-  return structuredClone(animation);
+  const normalized = structuredClone(animation);
+  normalized.id ??= defaultId;
+  normalized.targetId ??= defaultTargetId;
+  return normalized;
 };
 
 const pushNormalizedLayoutTransitions = ({
@@ -157,7 +34,7 @@ const pushNormalizedLayoutTransitions = ({
 }) => {
   transitions.forEach((transition, index) => {
     animations.push(
-      normalizeAnimation(transition, {
+      cloneAnimation(transition, {
         defaultTargetId,
         defaultId: `${idPrefix}-transition-${index}`,
       }),

@@ -310,7 +310,7 @@ out:
             - duration: 300
               value: 0
 ---
-case: normalize legacy keyframes transitions for layered views
+case: add layered view child animation with explicit target id
 in:
   - elements:
       - id: "story"
@@ -328,16 +328,15 @@ in:
               children: []
           transitions:
             - id: "credits-scroll"
-              type: "keyframes"
-              event: "add"
-              elementId: "credits-body"
-              properties:
+              type: "live"
+              targetId: "credits-body"
+              tween:
                 y:
-                  relative: true
                   keyframes:
                     - duration: 20000
                       value: -1600
                       easing: "linear"
+                      relative: true
     variables: {}
     autoMode: false
     skipMode: false

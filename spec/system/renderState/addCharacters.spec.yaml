@@ -114,8 +114,11 @@ in:
       tweens:
         fadeIn:
           properties:
-            opacity: [0, 1]
-            duration: 500
+            alpha:
+              initialValue: 0
+              keyframes:
+                - duration: 500
+                  value: 1
 out:
   elements:
     - id: "story"
@@ -178,8 +181,11 @@ in:
       tweens:
         fadeOut:
           properties:
-            opacity: [1, 0]
-            duration: 300
+            alpha:
+              initialValue: 1
+              keyframes:
+                - duration: 300
+                  value: 0
 out:
   elements:
     - id: "story"
@@ -236,8 +242,11 @@ in:
       tweens:
         fadeIn:
           properties:
-            opacity: [0, 1]
-            duration: 500
+            alpha:
+              initialValue: 0
+              keyframes:
+                - duration: 500
+                  value: 1
 out:
   elements:
     - id: "story"
@@ -273,7 +282,7 @@ out:
             - duration: 500
               value: 1
 ---
-case: normalize legacy tween aliases for character update animation
+case: add character update animation with final tween properties
 in:
   - elements:
       - id: "story"
@@ -318,16 +327,16 @@ in:
       tweens:
         scaleUp:
           properties:
-            scale.x:
+            scaleX:
               keyframes:
                 - duration: 2000
                   value: 2.2
-                  easing: easeOutCubic
-            scale.y:
+                  easing: easeOut
+            scaleY:
               keyframes:
                 - duration: 2000
                   value: 2.2
-                  easing: easeOutCubic
+                  easing: easeOut
 out:
   elements:
     - id: "story"

@@ -63,8 +63,11 @@ in:
       tweens:
         fadeIn:
           properties:
-            opacity: [0, 1]
-            duration: 500
+            alpha:
+              initialValue: 0
+              keyframes:
+                - duration: 500
+                  value: 1
 out:
   elements:
     - id: "story"
@@ -114,8 +117,11 @@ in:
       tweens:
         fadeIn:
           properties:
-            opacity: [0, 1]
-            duration: 500
+            alpha:
+              initialValue: 0
+              keyframes:
+                - duration: 500
+                  value: 1
     skipTransitionsAndAnimations: true
 out:
   elements:
@@ -167,8 +173,11 @@ in:
       tweens:
         crossFade:
           properties:
-            opacity: [1, 0]
-            duration: 1000
+            alpha:
+              initialValue: 1
+              keyframes:
+                - duration: 1000
+                  value: 0
 out:
   elements:
     - id: "story"
@@ -354,8 +363,11 @@ in:
       tweens:
         slideIn:
           properties:
-            x: [-100, 0]
-            duration: 300
+            x:
+              initialValue: -100
+              keyframes:
+                - duration: 300
+                  value: 0
 out:
   elements:
     - id: "story"

@@ -146,16 +146,15 @@ resources:
     creditsLayout:
       transitions:
         - id: 932fsdf
-          type: keyframes
-          event: add
-          elementId: kjf32alk32
-          properties:
+          type: live
+          targetId: kjf32alk32
+          tween:
             y:
-              relative: true
               keyframes:
                 - duration: 20000
                   value: -1600
                   easing: linear
+                  relative: true
       elements:
         - id: kjf32alk32
           type: container
