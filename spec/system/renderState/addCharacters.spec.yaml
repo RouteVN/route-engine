@@ -111,9 +111,10 @@ in:
           fileId: "body.png"
           width: 200
           height: 200
-      tweens:
+      animations:
         fadeIn:
-          properties:
+          type: live
+          tween:
             alpha:
               initialValue: 0
               keyframes:
@@ -178,9 +179,10 @@ in:
               - id: "body"
                 resourceId: "body"
     resources:
-      tweens:
+      animations:
         fadeOut:
-          properties:
+          type: live
+          tween:
             alpha:
               initialValue: 1
               keyframes:
@@ -239,9 +241,10 @@ in:
           fileId: "body.png"
           width: 200
           height: 200
-      tweens:
+      animations:
         fadeIn:
-          properties:
+          type: live
+          tween:
             alpha:
               initialValue: 0
               keyframes:
@@ -324,9 +327,10 @@ in:
           fileId: "body.png"
           width: 200
           height: 200
-      tweens:
+      animations:
         scaleUp:
-          properties:
+          type: live
+          tween:
             scaleX:
               keyframes:
                 - duration: 2000

@@ -77,10 +77,11 @@ resources:
       y: 1080
       anchorX: 0.5
       anchorY: 1
-  tweens:
+  animations:
     slide_in_left:
       name: Slide In From Left
-      properties:
+      type: live
+      tween:
         x:
           initialValue: -300
           keyframes:
@@ -95,7 +96,8 @@ resources:
               easing: linear
     slide_in_right:
       name: Slide In From Right
-      properties:
+      type: live
+      tween:
         x:
           initialValue: 2220
           keyframes:
@@ -110,7 +112,8 @@ resources:
               easing: linear
     slide_out_left:
       name: Slide Out To Left
-      properties:
+      type: live
+      tween:
         x:
           keyframes:
             - duration: 1500
@@ -123,7 +126,8 @@ resources:
               easing: linear
     slide_out_right:
       name: Slide Out To Right
-      properties:
+      type: live
+      tween:
         x:
           keyframes:
             - duration: 1500

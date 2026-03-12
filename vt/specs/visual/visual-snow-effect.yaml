@@ -94,10 +94,11 @@ resources:
       rotation: 0
       scaleX: 1
       scaleY: 1
-  tweens:
+  animations:
     fadeIn:
       name: Fade In
-      properties:
+      type: live
+      tween:
         alpha:
           initialValue: 0
           keyframes:
@@ -106,7 +107,8 @@ resources:
               easing: linear
     fadeOut:
       name: Fade Out
-      properties:
+      type: live
+      tween:
         alpha:
           initialValue: 1
           keyframes:

@@ -57,10 +57,11 @@ resources:
       y: 1080
       anchorX: 0.5
       anchorY: 1
-  tweens:
+  animations:
     slide_in:
       name: Slide In From Left
-      properties:
+      type: live
+      tween:
         x:
           keyframes:
             - duration: 1000
@@ -75,7 +76,8 @@ resources:
               easing: linear
     scale_update:
       name: Scale Up
-      properties:
+      type: live
+      tween:
         scaleX:
           keyframes:
             - duration: 2000
@@ -88,7 +90,8 @@ resources:
               easing: linear
     fade_out:
       name: Fade Out
-      properties:
+      type: live
+      tween:
         alpha:
           keyframes:
             - duration: 800

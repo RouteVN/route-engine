@@ -51,10 +51,11 @@ resources:
   characters:
     char1:
       name: Alice
-  tweens:
+  animations:
     fadeIn:
       name: Fade In
-      properties:
+      type: live
+      tween:
         alpha:
           initialValue: 0
           keyframes:
@@ -63,7 +64,8 @@ resources:
               easing: easeOut
     fadeOut:
       name: Fade Out
-      properties:
+      type: live
+      tween:
         alpha:
           keyframes:
             - duration: 500
@@ -71,7 +73,8 @@ resources:
               easing: easeIn
     slideUp:
       name: Slide Up
-      properties:
+      type: live
+      tween:
         y:
           initialValue: 800
           keyframes:

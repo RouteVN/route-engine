@@ -60,9 +60,10 @@ in:
           fileId: "image1.png"
           width: 1920
           height: 1080
-      tweens:
+      animations:
         fadeIn:
-          properties:
+          type: live
+          tween:
             alpha:
               initialValue: 0
               keyframes:
@@ -114,9 +115,10 @@ in:
           fileId: "image1.png"
           width: 1920
           height: 1080
-      tweens:
+      animations:
         fadeIn:
-          properties:
+          type: live
+          tween:
             alpha:
               initialValue: 0
               keyframes:
@@ -170,9 +172,10 @@ in:
           fileId: "new.jpg"
           width: 1920
           height: 1080
-      tweens:
+      animations:
         crossFade:
-          properties:
+          type: live
+          tween:
             alpha:
               initialValue: 1
               keyframes:
@@ -360,9 +363,10 @@ in:
           fileId: "background.jpg"
           width: 1920
           height: 1080
-      tweens:
+      animations:
         slideIn:
-          properties:
+          type: live
+          tween:
             x:
               initialValue: -100
               keyframes:

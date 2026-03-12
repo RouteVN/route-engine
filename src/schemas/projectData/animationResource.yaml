@@ -1,0 +1,237 @@
+$schema: http://json-schema.org/draft-07/schema#
+title: Animation Resource
+description: Schema for Route Graphics animation resources authored in project data
+type: object
+required:
+  - type
+$defs:
+  keyframe:
+    type: object
+    required:
+      - value
+      - duration
+    properties:
+      value:
+        type: number
+        description: The target value for this keyframe.
+      duration:
+        type: number
+        description: Duration to reach this value in milliseconds.
+      easing:
+        type: string
+        description: Easing function to use.
+        enum:
+          - linear
+          - easeIn
+          - easeOut
+          - easeInOut
+          - easeInQuad
+          - easeOutQuad
+          - easeInOutQuad
+          - easeInCubic
+          - easeOutCubic
+          - easeInOutCubic
+          - easeInQuart
+          - easeOutQuart
+          - easeInOutQuart
+          - easeInQuint
+          - easeOutQuint
+          - easeInOutQuint
+          - easeInSine
+          - easeOutSine
+          - easeInOutSine
+          - easeInExpo
+          - easeOutExpo
+          - easeInOutExpo
+          - easeInCirc
+          - easeOutCirc
+          - easeInOutCirc
+          - easeInBack
+          - easeOutBack
+          - easeInOutBack
+          - easeInBounce
+          - easeOutBounce
+          - easeInOutBounce
+          - easeInElastic
+          - easeOutElastic
+          - easeInOutElastic
+      relative:
+        type: boolean
+        description: Whether the value is relative to the previous keyframe value.
+        default: false
+    additionalProperties: false
+  tweenProperty:
+    type: object
+    properties:
+      initialValue:
+        type: number
+        description: Optional initial value before the first keyframe.
+      keyframes:
+        type: array
+        minItems: 1
+        items:
+          $ref: "#/$defs/keyframe"
+    required:
+      - keyframes
+    additionalProperties: false
+  liveTween:
+    type: object
+    properties:
+      alpha:
+        $ref: "#/$defs/tweenProperty"
+      x:
+        $ref: "#/$defs/tweenProperty"
+      y:
+        $ref: "#/$defs/tweenProperty"
+      scaleX:
+        $ref: "#/$defs/tweenProperty"
+      scaleY:
+        $ref: "#/$defs/tweenProperty"
+      rotation:
+        $ref: "#/$defs/tweenProperty"
+    additionalProperties: false
+    minProperties: 1
+  replaceTween:
+    type: object
+    properties:
+      translateX:
+        $ref: "#/$defs/tweenProperty"
+      translateY:
+        $ref: "#/$defs/tweenProperty"
+      alpha:
+        $ref: "#/$defs/tweenProperty"
+      scaleX:
+        $ref: "#/$defs/tweenProperty"
+      scaleY:
+        $ref: "#/$defs/tweenProperty"
+      rotation:
+        $ref: "#/$defs/tweenProperty"
+    additionalProperties: false
+    minProperties: 1
+  replaceSide:
+    type: object
+    required:
+      - tween
+    properties:
+      tween:
+        $ref: "#/$defs/replaceTween"
+    additionalProperties: false
+  maskProgress:
+    $ref: "#/$defs/tweenProperty"
+  compositeMaskItem:
+    type: object
+    required:
+      - texture
+    properties:
+      texture:
+        type: string
+      channel:
+        type: string
+        enum: [red, green, blue, alpha]
+      invert:
+        type: boolean
+    additionalProperties: false
+  mask:
+    type: object
+    required:
+      - kind
+    properties:
+      kind:
+        type: string
+        enum: [single, sequence, composite]
+      texture:
+        type: string
+      textures:
+        type: array
+        minItems: 1
+        items:
+          type: string
+      items:
+        type: array
+        minItems: 1
+        items:
+          $ref: "#/$defs/compositeMaskItem"
+      combine:
+        type: string
+        enum: [max, min, multiply, add]
+      channel:
+        type: string
+        enum: [red, green, blue, alpha]
+      softness:
+        type: number
+      invert:
+        type: boolean
+      sample:
+        type: string
+      progress:
+        $ref: "#/$defs/maskProgress"
+    additionalProperties: false
+    allOf:
+      - if:
+          properties:
+            kind:
+              const: single
+        then:
+          required:
+            - texture
+      - if:
+          properties:
+            kind:
+              const: sequence
+        then:
+          required:
+            - textures
+      - if:
+          properties:
+            kind:
+              const: composite
+        then:
+          required:
+            - items
+properties:
+  name:
+    type: string
+    description: Display name for the animation
+  type:
+    type: string
+    enum: [live, replace]
+    description: Animation structure.
+  complete:
+    type: object
+    properties:
+      actionPayload:
+        type: object
+    additionalProperties: true
+  tween:
+    $ref: "#/$defs/liveTween"
+  prev:
+    $ref: "#/$defs/replaceSide"
+  next:
+    $ref: "#/$defs/replaceSide"
+  mask:
+    $ref: "#/$defs/mask"
+allOf:
+  - if:
+      properties:
+        type:
+          const: live
+    then:
+      required:
+        - tween
+      not:
+        anyOf:
+          - required: [prev]
+          - required: [next]
+          - required: [mask]
+  - if:
+      properties:
+        type:
+          const: replace
+    then:
+      not:
+        required: [tween]
+      anyOf:
+        - required: [prev]
+        - required: [next]
+        - required: [mask]
+additionalProperties: false

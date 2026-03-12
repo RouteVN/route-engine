@@ -32,10 +32,11 @@ resources:
       fileId: 23jkfa893
       width: 1920
       height: 1080
-  tweens:
+  animations:
     3lkj289:
       name: Fade In
-      properties:
+      type: live
+      tween:
         alpha:
           initialValue: 0
           keyframes:
@@ -44,7 +45,8 @@ resources:
               easing: linear
     k38df:
       name: Fade to half
-      properties:
+      type: live
+      tween:
         alpha:
           keyframes:
             - duration: 700
@@ -52,7 +54,8 @@ resources:
               easing: linear
     8h3js:
       name: Fade Out
-      properties:
+      type: live
+      tween:
         alpha:
           keyframes:
             - duration: 700

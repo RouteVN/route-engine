@@ -130,9 +130,10 @@ in:
           rotation: 0
           scaleX: 1
           scaleY: 1
-      tweens:
+      animations:
         fadeIn:
-          properties:
+          type: live
+          tween:
             alpha:
               initialValue: 0
               keyframes:
@@ -189,9 +190,10 @@ in:
           - id: "visual1"
             resourceId: "image1"
     resources:
-      tweens:
+      animations:
         fadeOut:
-          properties:
+          type: live
+          tween:
             alpha:
               initialValue: 1
               keyframes:
@@ -248,9 +250,10 @@ in:
           rotation: 0
           scaleX: 1
           scaleY: 1
-      tweens:
+      animations:
         slideIn:
-          properties:
+          type: live
+          tween:
             x:
               initialValue: -50
               keyframes:
@@ -771,9 +774,10 @@ in:
           rotation: 0
           scaleX: 1
           scaleY: 1
-      tweens:
+      animations:
         fadeIn:
-          properties:
+          type: live
+          tween:
             alpha:
               initialValue: 0
               keyframes:
