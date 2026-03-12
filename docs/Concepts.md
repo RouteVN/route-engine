@@ -30,6 +30,7 @@ The engine follows a strict **State → View → Action** cycle:
 4. **systemStore Actions**: These functions receive the current state, apply mutations (via Immer), and produce the next state. The cycle then repeats.
 
 This pattern ensures:
+
 - **Predictability**: State changes only through defined actions
 - **Debuggability**: You can inspect any state and understand what the view should show
 - **Testability**: Each part can be tested in isolation
@@ -107,6 +108,7 @@ const presentationState = constructPresentationState(presentations);
 ```
 
 Presentation state includes:
+
 - `base`: Base layout/screen configuration
 - `background`: Current background or CG
 - `dialogue`: Speaker, text content, mode (ADV/NVL)
@@ -124,13 +126,14 @@ Final output format ready for the renderer:
 ```js
 const renderState = constructRenderState({
   presentationState,
-  resources
+  resources,
 });
 ```
 
 Render state structure:
+
 - `elements`: Tree of renderable elements (containers, sprites, text)
-- `animations`: Tween animations to apply
+- `animations`: Renderer animation descriptors to apply
 - `audio`: Sound effects and music to play
 
 ## Contexts
@@ -142,6 +145,7 @@ Contexts provide isolated environments for different game states:
 - **Replay Context**: History replay mode with read-only global variables
 
 All contexts share global state but maintain their own:
+
 - Pointer positions
 - History sequences
 - Variables
@@ -161,6 +165,7 @@ pointer: {
 ```
 
 The pointer always points to a specific line within a specific section. The engine uses this to:
+
 - Retrieve the current line's content and actions
 - Determine which lines to include in presentation state (all lines from start of section up to current line)
 - Navigate forward/backward through the story
@@ -168,6 +173,7 @@ The pointer always points to a specific line within a specific section. The engi
 ### How Navigation Works
 
 When `nextLine` is executed:
+
 1. Get the current pointer's `sectionId` and `lineId`
 2. Find the section using `selectSection({ sectionId })`
 3. Find the current line's index in `section.lines`
@@ -177,7 +183,7 @@ When `nextLine` is executed:
 ```js
 // Simplified nextLine logic
 const section = selectSection({ sectionId });
-const currentIndex = section.lines.findIndex(line => line.id === lineId);
+const currentIndex = section.lines.findIndex((line) => line.id === lineId);
 const nextLine = section.lines[currentIndex + 1];
 pointer.lineId = nextLine.id;
 ```
@@ -194,11 +200,13 @@ pointers: {
 ```
 
 **Read Mode (`'read'`)**
+
 - Normal playback mode
 - The read pointer advances through lines sequentially
 - Used during active gameplay
 
 **History Mode (`'history'`)**
+
 - Review mode for navigating back through previously viewed content
 - Uses a separate history pointer while preserving the read pointer position
 - Allows players to re-read past dialogue without losing their place
@@ -207,11 +215,13 @@ pointers: {
 ## Line Navigation
 
 ### Manual Navigation
+
 - Controlled by `nextLineConfig.manual`
 - `enabled`: Whether manual advancement is allowed
 - `requireLineCompleted`: Whether line must finish animating first
 
 ### Auto Navigation
+
 - Controlled by `nextLineConfig.auto`
 - `enabled`: Whether auto-advance is active
 - `trigger`: When to advance (`'fromStart'` or `'fromComplete'`)
@@ -220,15 +230,19 @@ pointers: {
 ## Dialogue Modes
 
 ### ADV Mode (Adventure)
+
 Traditional visual novel style with one text box showing the current line. Each new line replaces the previous content.
 
 ### NVL Mode (Novel)
+
 Novel-style display where lines accumulate on screen. Text is appended rather than replaced.
 
 ## Actions and Effects
 
 ### Actions
+
 Functions that mutate system state. Examples:
+
 - `nextLine`: Advance to next line
 - `prevLine`: Go back in history
 - `sectionTransition`: Jump to a different section
@@ -237,7 +251,9 @@ Functions that mutate system state. Examples:
 - `toggleDialogueUI`: Show/hide dialogue box
 
 ### Pending Effects
+
 Side effects queued during action execution:
+
 - `render`: Re-render the current state
 - `handleLineActions`: Process actions attached to a line
 - `startAutoNextTimer` / `clearAutoNextTimer`: Auto mode timers
@@ -253,7 +269,9 @@ The engine uses a custom store implementation (`createStore`) with:
 ```js
 const store = createStore(initialState, {
   selectCount: (state) => state.count,
-  increment: (state) => { state.count++; }
+  increment: (state) => {
+    state.count++;
+  },
 });
 ```
 
@@ -262,14 +280,20 @@ const store = createStore(initialState, {
 Two patterns for processing multiple actions:
 
 **Sequential Executor**: Applies all actions to each payload in sequence
+
 ```js
 const executor = createSequentialActionsExecutor(createInitialState, actions);
 const result = executor(payloads);
 ```
 
 **Selective Executor**: Applies only specified actions with their payloads
+
 ```js
-const executor = createSelectiveActionsExecutor(deps, actions, createInitialState);
+const executor = createSelectiveActionsExecutor(
+  deps,
+  actions,
+  createInitialState,
+);
 const result = executor({ actionName: payload });
 ```
 
@@ -281,6 +305,7 @@ Tracks content the player has seen:
 - **resources**: Array of `{ resourceId }` entries
 
 Used for:
+
 - Skip mode (skip only viewed content)
 - Unlocking gallery items
 - Tracking completion progress
@@ -288,6 +313,7 @@ Used for:
 ## Save System
 
 Save slots store:
+
 - `slotKey`: Unique identifier
 - `date`: Unix timestamp
 - `image`: Screenshot (base64)

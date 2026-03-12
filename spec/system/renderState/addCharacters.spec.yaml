@@ -142,11 +142,14 @@ out:
               y: 0
   animations:
     - id: "character-animation-in"
-      type: "tween"
+      type: "live"
       targetId: "character-container-char1-0-body"
-      properties:
-        opacity: [0, 1]
-        duration: 500
+      tween:
+        alpha:
+          initialValue: 0
+          keyframes:
+            - duration: 500
+              value: 1
 ---
 case: add character with out animation only (no container created)
 in:
@@ -186,11 +189,14 @@ out:
       children: []
   animations:
     - id: "character-animation-out"
-      type: "tween"
+      type: "live"
       targetId: "character-container-char1-0-body"
-      properties:
-        opacity: [1, 0]
-        duration: 300
+      tween:
+        alpha:
+          initialValue: 1
+          keyframes:
+            - duration: 300
+              value: 0
 ---
 case: add character with in animation (new character)
 in:
@@ -258,11 +264,109 @@ out:
               y: 0
   animations:
     - id: "character-animation-in"
-      type: "tween"
+      type: "live"
       targetId: "character-container-char1-0-body"
-      properties:
-        opacity: [0, 1]
-        duration: 500
+      tween:
+        alpha:
+          initialValue: 0
+          keyframes:
+            - duration: 500
+              value: 1
+---
+case: normalize legacy tween aliases for character update animation
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      character:
+        items:
+          - id: "char1"
+            transformId: "transform1"
+            sprites:
+              - id: "body"
+                resourceId: "body"
+            animations:
+              update:
+                resourceId: "scaleUp"
+    previousPresentationState:
+      character:
+        items:
+          - id: "char1"
+            sprites:
+              - id: "body"
+                resourceId: "body"
+    resources:
+      transforms:
+        transform1:
+          x: 0
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      images:
+        body:
+          fileId: "body.png"
+          width: 200
+          height: 200
+      tweens:
+        scaleUp:
+          properties:
+            scale.x:
+              keyframes:
+                - duration: 2000
+                  value: 2.2
+                  easing: easeOutCubic
+            scale.y:
+              keyframes:
+                - duration: 2000
+                  value: 2.2
+                  easing: easeOutCubic
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - type: "container"
+          id: "character-container-char1-0-body"
+          x: 0
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - type: "sprite"
+              id: "character-container-char1-0-body-body"
+              src: "body.png"
+              width: 200
+              height: 200
+              x: 0
+              y: 0
+  animations:
+    - id: "character-animation-update"
+      type: "live"
+      targetId: "character-container-char1-0-body"
+      tween:
+        scaleX:
+          keyframes:
+            - duration: 2000
+              value: 2.2
+              easing: easeOut
+        scaleY:
+          keyframes:
+            - duration: 2000
+              value: 2.2
+              easing: easeOut
 ---
 case: multiple characters with different sprites
 in:

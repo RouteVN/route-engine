@@ -73,7 +73,7 @@ in:
       images:
         image1:
           fileId: "visual.png"
-throws: "Visual item \"visual1\" requires transformId"
+throws: 'Visual item "visual1" requires transformId'
 ---
 case: unknown transformId should throw clear error
 in:
@@ -96,7 +96,7 @@ in:
         image1:
           fileId: "visual.png"
       transforms: {}
-throws: "Transform \"missing\" not found for visual item \"visual1\""
+throws: 'Transform "missing" not found for visual item "visual1"'
 ---
 case: add visual with in animation
 in:
@@ -154,11 +154,14 @@ out:
           scaleY: 1
   animations:
     - id: "visual1-animation-in"
-      type: "tween"
+      type: "live"
       targetId: "visual-visual1"
-      properties:
-        opacity: [0, 1]
-        duration: 500
+      tween:
+        alpha:
+          initialValue: 0
+          keyframes:
+            - duration: 500
+              value: 1
   audio: []
 ---
 case: add visual with out animation
@@ -197,11 +200,14 @@ out:
       children: []
   animations:
     - id: "visual1-animation-out"
-      type: "tween"
+      type: "live"
       targetId: "visual-visual1"
-      properties:
-        opacity: [1, 0]
-        duration: 300
+      tween:
+        alpha:
+          initialValue: 1
+          keyframes:
+            - duration: 300
+              value: 0
   audio: []
 ---
 case: add visual with in animation (no previous state)
@@ -260,11 +266,14 @@ out:
           scaleY: 1
   animations:
     - id: "visual1-animation-in"
-      type: "tween"
+      type: "live"
       targetId: "visual-visual1"
-      properties:
-        x: [-50, 150]
-        duration: 400
+      tween:
+        x:
+          initialValue: -50
+          keyframes:
+            - duration: 400
+              value: 150
   audio: []
 ---
 case: multiple visual items
@@ -782,11 +791,14 @@ out:
               height: 1080
   animations:
     - id: "overlay-animation-in"
-      type: "tween"
+      type: "live"
       targetId: "visual-overlay"
-      properties:
-        alpha: [0, 1]
-        duration: 500
+      tween:
+        alpha:
+          initialValue: 0
+          keyframes:
+            - duration: 500
+              value: 1
   audio: []
 ---
 case: layout not found - skip item

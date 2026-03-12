@@ -7,6 +7,164 @@ const jemplFunctions = {
   formatDate,
 };
 
+const LEGACY_ANIMATION_PROPERTY_ALIASES = Object.freeze({
+  opacity: "alpha",
+  "scale.x": "scaleX",
+  "scale.y": "scaleY",
+});
+
+const LEGACY_EASING_ALIASES = Object.freeze({
+  easeInCubic: "easeIn",
+  easeOutCubic: "easeOut",
+  easeInOutCubic: "easeInOut",
+});
+
+const normalizeAnimationPropertyName = (propertyName) =>
+  LEGACY_ANIMATION_PROPERTY_ALIASES[propertyName] ?? propertyName;
+
+const normalizeAnimationEasing = (easing) =>
+  typeof easing === "string"
+    ? (LEGACY_EASING_ALIASES[easing] ?? easing)
+    : easing;
+
+const normalizeAnimationKeyframe = (keyframe, relative) => {
+  if (!keyframe || typeof keyframe !== "object" || Array.isArray(keyframe)) {
+    return keyframe;
+  }
+
+  return {
+    ...structuredClone(keyframe),
+    ...(keyframe.easing !== undefined
+      ? { easing: normalizeAnimationEasing(keyframe.easing) }
+      : {}),
+    ...(relative !== undefined && keyframe.relative === undefined
+      ? { relative }
+      : {}),
+  };
+};
+
+const normalizeTweenPropertyConfig = (config) => {
+  if (!config || typeof config !== "object" || Array.isArray(config)) {
+    return config;
+  }
+
+  if (!Array.isArray(config.keyframes)) {
+    return structuredClone(config);
+  }
+
+  const normalized = {};
+
+  if (config.initialValue !== undefined) {
+    normalized.initialValue = config.initialValue;
+  }
+
+  normalized.keyframes = config.keyframes.map((keyframe) =>
+    normalizeAnimationKeyframe(keyframe, config.relative),
+  );
+
+  return normalized;
+};
+
+const normalizeTweenDefinition = (properties) => {
+  if (
+    !properties ||
+    typeof properties !== "object" ||
+    Array.isArray(properties)
+  ) {
+    return properties;
+  }
+
+  const duration =
+    typeof properties.duration === "number" ? properties.duration : 0;
+  const easing = normalizeAnimationEasing(properties.easing);
+  const normalized = {};
+
+  for (const [rawPropertyName, rawConfig] of Object.entries(properties)) {
+    if (rawPropertyName === "duration" || rawPropertyName === "easing") {
+      continue;
+    }
+
+    const propertyName = normalizeAnimationPropertyName(rawPropertyName);
+
+    if (Array.isArray(rawConfig)) {
+      const [initialValue, value] = rawConfig;
+
+      normalized[propertyName] = {
+        ...(initialValue !== undefined ? { initialValue } : {}),
+        keyframes: [
+          {
+            duration,
+            value,
+            ...(easing !== undefined ? { easing } : {}),
+          },
+        ],
+      };
+      continue;
+    }
+
+    normalized[propertyName] = normalizeTweenPropertyConfig(rawConfig);
+  }
+
+  return normalized;
+};
+
+const createLiveAnimation = ({ id, targetId, tween, complete }) => ({
+  id,
+  type: "live",
+  targetId,
+  tween: normalizeTweenDefinition(tween),
+  ...(complete ? { complete } : {}),
+});
+
+const normalizeAnimation = (animation, { defaultTargetId, defaultId } = {}) => {
+  if (!animation || typeof animation !== "object" || Array.isArray(animation)) {
+    return animation;
+  }
+
+  if (animation.type === "replace") {
+    const normalized = structuredClone(animation);
+    normalized.id ??= defaultId;
+    normalized.targetId ??= defaultTargetId;
+
+    if (normalized.prev?.tween) {
+      normalized.prev.tween = normalizeTweenDefinition(normalized.prev.tween);
+    }
+
+    if (normalized.next?.tween) {
+      normalized.next.tween = normalizeTweenDefinition(normalized.next.tween);
+    }
+
+    return normalized;
+  }
+
+  if (animation.type === "live" || animation.type === "keyframes") {
+    return createLiveAnimation({
+      id: animation.id ?? defaultId,
+      targetId: animation.targetId ?? animation.elementId ?? defaultTargetId,
+      tween: animation.tween ?? animation.properties,
+      complete: animation.complete,
+    });
+  }
+
+  return structuredClone(animation);
+};
+
+const pushNormalizedLayoutTransitions = ({
+  animations,
+  transitions,
+  defaultTargetId,
+  idPrefix,
+}) => {
+  transitions.forEach((transition, index) => {
+    animations.push(
+      normalizeAnimation(transition, {
+        defaultTargetId,
+        defaultId: `${idPrefix}-transition-${index}`,
+      }),
+    );
+  });
+};
+
 /**
  * Interpolates dialogue text using jempl parseAndRender.
  * @param {string} text - The text containing ${...} patterns
@@ -608,12 +766,13 @@ const pushAnimations = ({
     const tweenId = animationsDef.in.resourceId || animationsDef.in;
     const tween = resources?.tweens?.[tweenId];
     if (tween && !previousResourceId) {
-      animations.push({
-        id: `${idPrefix}-animation-in`,
-        type: "tween",
-        targetId,
-        properties: structuredClone(tween.properties),
-      });
+      animations.push(
+        createLiveAnimation({
+          id: `${idPrefix}-animation-in`,
+          targetId,
+          tween: tween.properties,
+        }),
+      );
     }
   }
 
@@ -625,12 +784,13 @@ const pushAnimations = ({
       previousResourceId &&
       previousResourceId !== currentResourceId
     ) {
-      animations.push({
-        id: `${idPrefix}-animation-out`,
-        type: "tween",
-        targetId: outTargetId || targetId,
-        properties: structuredClone(tween.properties),
-      });
+      animations.push(
+        createLiveAnimation({
+          id: `${idPrefix}-animation-out`,
+          targetId: outTargetId || targetId,
+          tween: tween.properties,
+        }),
+      );
     }
   }
 
@@ -642,12 +802,13 @@ const pushAnimations = ({
       previousResourceId &&
       previousResourceId === currentResourceId
     ) {
-      animations.push({
-        id: `${idPrefix}-animation-update`,
-        type: "tween",
-        targetId,
-        properties: structuredClone(tween.properties),
-      });
+      animations.push(
+        createLiveAnimation({
+          id: `${idPrefix}-animation-update`,
+          targetId,
+          tween: tween.properties,
+        }),
+      );
     }
   }
 };
@@ -847,12 +1008,11 @@ export const addCharacters = (
           const tweenId = item.animations.out.resourceId;
           const tween = resources?.tweens?.[tweenId];
           if (tween) {
-            const outTransition = {
+            const outTransition = createLiveAnimation({
               id: `character-animation-out`,
-              type: "tween",
               targetId: previousContainerId || `character-container-${item.id}`,
-              properties: structuredClone(tween.properties),
-            };
+              tween: tween.properties,
+            });
             animations.push(outTransition);
           }
         }
@@ -1413,8 +1573,11 @@ export const addLayout = (
       !isLineCompleted &&
       !skipTransitionsAndAnimations
     ) {
-      layout.transitions.forEach((transition) => {
-        animations.push(transition);
+      pushNormalizedLayoutTransitions({
+        animations,
+        transitions: layout.transitions,
+        defaultTargetId: `layout-${presentationState.layout.resourceId}`,
+        idPrefix: `layout-${presentationState.layout.resourceId}`,
       });
     }
 
@@ -1498,8 +1661,11 @@ export const addLayeredViews = (
       }
 
       if (Array.isArray(layout.transitions)) {
-        layout.transitions.forEach((transition) => {
-          animations.push(transition);
+        pushNormalizedLayoutTransitions({
+          animations,
+          transitions: layout.transitions,
+          defaultTargetId: `layeredView-${index}`,
+          idPrefix: `layeredView-${index}`,
         });
       }
 
