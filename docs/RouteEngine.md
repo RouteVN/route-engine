@@ -67,6 +67,32 @@ The engine will:
 
 ## Methods
 
+## Utilities
+
+### `resolveLayoutReferences(value, { resources })`
+
+Resolves authored layout references into renderer-facing fields without mutating
+the input value.
+
+It resolves:
+
+- `textStyleId` into `textStyle`
+- `colorId` into `fill`
+- `imageId` into `src`
+- nested interaction references such as `hover.colorId`,
+  `clickImageId`, and `rightClick.colorId`
+
+It uses the same strict rules as the engine render-state pipeline, so inline
+authored `textStyle`, `fill`, and sprite `src` fields still throw.
+
+```js
+import { resolveLayoutReferences } from "rvn-temp";
+
+const resolvedElements = resolveLayoutReferences(layout.elements, {
+  resources: projectData.resources,
+});
+```
+
 ### `handleAction(actionType, payload)`
 
 Dispatches a single action to the system store.

@@ -567,7 +567,7 @@ export const resolveImageIds = (node, resources = {}, path = "root") => {
   return resolvedNode;
 };
 
-export const resolveLayoutResourceIds = (node, resources = {}, path = "root") =>
+export const resolveLayoutReferences = (node, resources = {}, path = "root") =>
   resolveImageIds(
     resolveColorIds(
       resolveTextStyleIds(node, resources, path),
@@ -577,6 +577,8 @@ export const resolveLayoutResourceIds = (node, resources = {}, path = "root") =>
     resources,
     path,
   );
+
+export const resolveLayoutResourceIds = resolveLayoutReferences;
 
 /**
  * Helper to push in/out/update animations based on previous and current state
