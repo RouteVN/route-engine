@@ -146,16 +146,15 @@ resources:
     creditsLayout:
       transitions:
         - id: 932fsdf
-          type: keyframes
-          event: add
-          elementId: kjf32alk32
-          properties:
+          type: live
+          targetId: kjf32alk32
+          tween:
             y:
-              relative: true
               keyframes:
                 - duration: 20000
                   value: -1600
                   easing: linear
+                  relative: true
       elements:
         - id: kjf32alk32
           type: container
@@ -1309,10 +1308,11 @@ resources:
       y: 540
       anchorX: 0.5
       anchorY: 0.5
-  tweens:
+  animations:
     3lkj289:
       name: Fade In
-      properties:
+      type: live
+      tween:
         alpha:
           initialValue: 0
           keyframes:
@@ -1321,7 +1321,8 @@ resources:
               easing: linear
     8h3js:
       name: Fade Out
-      properties:
+      type: live
+      tween:
         alpha:
           initialValue: 1
           keyframes:

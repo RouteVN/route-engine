@@ -49,10 +49,11 @@ resources:
       rotation: 0
       scaleX: 1
       scaleY: 1
-  tweens:
+  animations:
     3lkj289:
       name: Fade In
-      properties:
+      type: live
+      tween:
         alpha:
           initialValue: 0
           keyframes:
@@ -61,7 +62,8 @@ resources:
               easing: linear
     8h3js:
       name: Fade Out
-      properties:
+      type: live
+      tween:
         alpha:
           keyframes:
             - duration: 2000

@@ -23,9 +23,10 @@ resources:
       fileId: video_sample
       width: 1920
       height: 1080
-  tweens:
+  animations:
     fade-in-800:
-      properties:
+      type: live
+      tween:
         alpha:
           initialValue: 0
           keyframes:

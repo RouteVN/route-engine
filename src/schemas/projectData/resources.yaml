@@ -139,51 +139,12 @@ properties:
         additionalProperties: false
     additionalProperties: false
 
-  tweens:
+  animations:
     type: object
-    description: Tween definitions for various effects
+    description: Animation resources for various effects
     patternProperties:
       "^.+$":
-        type: object
-        description: Tween definition
-        properties:
-          name:
-            type: string
-            description: Display name for the animation
-          properties:
-            type: object
-            description: Animation properties and keyframes
-            patternProperties:
-              "^.+$":
-                type: object
-                properties:
-                  initialValue:
-                    type: number
-                    description: Starting value for the animated property (optional, uses current value if not specified)
-                  keyframes:
-                    type: array
-                    description: Array of keyframe definitions
-                    items:
-                      type: object
-                      properties:
-                        duration:
-                          type: number
-                          description: Duration of this keyframe in milliseconds
-                          minimum: 0
-                        value:
-                          type: number
-                          description: Target value for this keyframe
-                        easing:
-                          type: string
-                          description: Easing function for the animation
-                      required: [duration, value]
-                      additionalProperties: false
-                    minItems: 1
-                required: [keyframes]
-                additionalProperties: false
-            additionalProperties: false
-        required: [properties]
-        additionalProperties: false
+        $ref: "animationResource.yaml"
     additionalProperties: false
 
   sounds:

@@ -17,7 +17,7 @@ const createMinimalProjectData = () => ({
     variables: {},
     transforms: {},
     sectionTransitions: {},
-    tweens: {},
+    animations: {},
     fonts: {},
     colors: {},
     textStyles: {},

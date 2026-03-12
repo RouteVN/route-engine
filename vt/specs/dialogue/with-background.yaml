@@ -59,10 +59,11 @@ resources:
               y: 100
               content: ${dialogue.content[0].text}
               textStyleId: textStyle1
-  tweens:
+  animations:
     3lkj289:
       name: Fade In
-      properties:
+      type: live
+      tween:
         alpha:
           initialValue: 0
           keyframes:

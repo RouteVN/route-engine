@@ -72,10 +72,11 @@ resources:
               y: 100
               content: ${dialogue.content[0].text}
               textStyleId: textStyle1
-  tweens:
+  animations:
     fadeIn:
       name: Fade In
-      properties:
+      type: live
+      tween:
         alpha:
           initialValue: 0
           keyframes:
@@ -84,7 +85,8 @@ resources:
               easing: easeOut
     fadeOut:
       name: Fade Out
-      properties:
+      type: live
+      tween:
         alpha:
           keyframes:
             - duration: 400
@@ -92,7 +94,8 @@ resources:
               easing: easeIn
     slideIn:
       name: Slide In
-      properties:
+      type: live
+      tween:
         y:
           initialValue: 500
           keyframes:

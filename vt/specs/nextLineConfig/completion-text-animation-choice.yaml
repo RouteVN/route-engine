@@ -16,9 +16,10 @@ resources:
       fileId: dmni32
       width: 1920
       height: 1080
-  tweens:
+  animations:
     fade-in-1s:
-      properties:
+      type: live
+      tween:
         alpha:
           initialValue: 0
           keyframes:

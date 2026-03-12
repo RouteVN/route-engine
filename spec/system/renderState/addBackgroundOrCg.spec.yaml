@@ -60,11 +60,15 @@ in:
           fileId: "image1.png"
           width: 1920
           height: 1080
-      tweens:
+      animations:
         fadeIn:
-          properties:
-            opacity: [0, 1]
-            duration: 500
+          type: live
+          tween:
+            alpha:
+              initialValue: 0
+              keyframes:
+                - duration: 500
+                  value: 1
 out:
   elements:
     - id: "story"
@@ -81,11 +85,14 @@ out:
           height: 1080
   animations:
     - id: "bg-cg-animation-in"
-      type: "tween"
+      type: "live"
       targetId: "bg-cg-bg1"
-      properties:
-        opacity: [0, 1]
-        duration: 500
+      tween:
+        alpha:
+          initialValue: 0
+          keyframes:
+            - duration: 500
+              value: 1
 ---
 case: skip background in animation when skipTransitionsAndAnimations is true
 in:
@@ -108,11 +115,15 @@ in:
           fileId: "image1.png"
           width: 1920
           height: 1080
-      tweens:
+      animations:
         fadeIn:
-          properties:
-            opacity: [0, 1]
-            duration: 500
+          type: live
+          tween:
+            alpha:
+              initialValue: 0
+              keyframes:
+                - duration: 500
+                  value: 1
     skipTransitionsAndAnimations: true
 out:
   elements:
@@ -161,11 +172,15 @@ in:
           fileId: "new.jpg"
           width: 1920
           height: 1080
-      tweens:
+      animations:
         crossFade:
-          properties:
-            opacity: [1, 0]
-            duration: 1000
+          type: live
+          tween:
+            alpha:
+              initialValue: 1
+              keyframes:
+                - duration: 1000
+                  value: 0
 out:
   elements:
     - id: "story"
@@ -189,11 +204,14 @@ out:
           height: 1080
   animations:
     - id: "bg-cg-animation-update"
-      type: "tween"
+      type: "live"
       targetId: "bg-cg-bg1"
-      properties:
-        opacity: [1, 0]
-        duration: 1000
+      tween:
+        alpha:
+          initialValue: 1
+          keyframes:
+            - duration: 1000
+              value: 0
 ---
 case: no presentationState.background - return unchanged state
 in:
@@ -345,11 +363,15 @@ in:
           fileId: "background.jpg"
           width: 1920
           height: 1080
-      tweens:
+      animations:
         slideIn:
-          properties:
-            x: [-100, 0]
-            duration: 300
+          type: live
+          tween:
+            x:
+              initialValue: -100
+              keyframes:
+                - duration: 300
+                  value: 0
 out:
   elements:
     - id: "story"
@@ -371,11 +393,14 @@ out:
     - id: "existingTransition"
       type: "existing"
     - id: "bg-cg-animation-in"
-      type: "tween"
+      type: "live"
       targetId: "bg-cg-bg2"
-      properties:
-        x: [-100, 0]
-        duration: 300
+      tween:
+        x:
+          initialValue: -100
+          keyframes:
+            - duration: 300
+              value: 0
 ---
 case: resolves textStyleId in background layout elements
 in:

@@ -7,6 +7,41 @@ const jemplFunctions = {
   formatDate,
 };
 
+const createAnimationInstance = ({ id, targetId, animation }) => {
+  const normalized = structuredClone(animation);
+  delete normalized.name;
+  normalized.id = id;
+  normalized.targetId = targetId;
+  return normalized;
+};
+
+const cloneAnimation = (animation, { defaultTargetId, defaultId } = {}) => {
+  if (!animation || typeof animation !== "object" || Array.isArray(animation)) {
+    return animation;
+  }
+
+  const normalized = structuredClone(animation);
+  normalized.id ??= defaultId;
+  normalized.targetId ??= defaultTargetId;
+  return normalized;
+};
+
+const pushNormalizedLayoutTransitions = ({
+  animations,
+  transitions,
+  defaultTargetId,
+  idPrefix,
+}) => {
+  transitions.forEach((transition, index) => {
+    animations.push(
+      cloneAnimation(transition, {
+        defaultTargetId,
+        defaultId: `${idPrefix}-transition-${index}`,
+      }),
+    );
+  });
+};
+
 /**
  * Interpolates dialogue text using jempl parseAndRender.
  * @param {string} text - The text containing ${...} patterns
@@ -585,7 +620,7 @@ export const resolveLayoutResourceIds = resolveLayoutReferences;
  * @param {Object} params
  * @param {Array} params.animations - The animations array to push to
  * @param {Object} params.animationsDef - The animations definition (in/out/update)
- * @param {Object} params.resources - The resources object containing tweens
+ * @param {Object} params.resources - The resources object containing animations
  * @param {string|undefined} params.previousResourceId - Previous resource ID
  * @param {string|undefined} params.currentResourceId - Current resource ID
  * @param {string} params.idPrefix - Prefix for animation IDs
@@ -605,49 +640,52 @@ const pushAnimations = ({
   if (!animationsDef) return;
 
   if (animationsDef.in) {
-    const tweenId = animationsDef.in.resourceId || animationsDef.in;
-    const tween = resources?.tweens?.[tweenId];
-    if (tween && !previousResourceId) {
-      animations.push({
-        id: `${idPrefix}-animation-in`,
-        type: "tween",
-        targetId,
-        properties: structuredClone(tween.properties),
-      });
+    const animationId = animationsDef.in.resourceId || animationsDef.in;
+    const animation = resources?.animations?.[animationId];
+    if (animation && !previousResourceId) {
+      animations.push(
+        createAnimationInstance({
+          id: `${idPrefix}-animation-in`,
+          targetId,
+          animation,
+        }),
+      );
     }
   }
 
   if (animationsDef.out) {
-    const tweenId = animationsDef.out.resourceId || animationsDef.out;
-    const tween = resources?.tweens?.[tweenId];
+    const animationId = animationsDef.out.resourceId || animationsDef.out;
+    const animation = resources?.animations?.[animationId];
     if (
-      tween &&
+      animation &&
       previousResourceId &&
       previousResourceId !== currentResourceId
     ) {
-      animations.push({
-        id: `${idPrefix}-animation-out`,
-        type: "tween",
-        targetId: outTargetId || targetId,
-        properties: structuredClone(tween.properties),
-      });
+      animations.push(
+        createAnimationInstance({
+          id: `${idPrefix}-animation-out`,
+          targetId: outTargetId || targetId,
+          animation,
+        }),
+      );
     }
   }
 
   if (animationsDef.update) {
-    const tweenId = animationsDef.update.resourceId || animationsDef.update;
-    const tween = resources?.tweens?.[tweenId];
+    const animationId = animationsDef.update.resourceId || animationsDef.update;
+    const animation = resources?.animations?.[animationId];
     if (
-      tween &&
+      animation &&
       previousResourceId &&
       previousResourceId === currentResourceId
     ) {
-      animations.push({
-        id: `${idPrefix}-animation-update`,
-        type: "tween",
-        targetId,
-        properties: structuredClone(tween.properties),
-      });
+      animations.push(
+        createAnimationInstance({
+          id: `${idPrefix}-animation-update`,
+          targetId,
+          animation,
+        }),
+      );
     }
   }
 };
@@ -844,15 +882,14 @@ export const addCharacters = (
       if (item.animations && item.animations.out && !sprites && !transformId) {
         // Just add the out animation transition, container should already exist
         if (!isLineCompleted && previousHasSprites) {
-          const tweenId = item.animations.out.resourceId;
-          const tween = resources?.tweens?.[tweenId];
-          if (tween) {
-            const outTransition = {
+          const animationId = item.animations.out.resourceId;
+          const animation = resources?.animations?.[animationId];
+          if (animation) {
+            const outTransition = createAnimationInstance({
               id: `character-animation-out`,
-              type: "tween",
               targetId: previousContainerId || `character-container-${item.id}`,
-              properties: structuredClone(tween.properties),
-            };
+              animation,
+            });
             animations.push(outTransition);
           }
         }
@@ -1413,8 +1450,11 @@ export const addLayout = (
       !isLineCompleted &&
       !skipTransitionsAndAnimations
     ) {
-      layout.transitions.forEach((transition) => {
-        animations.push(transition);
+      pushNormalizedLayoutTransitions({
+        animations,
+        transitions: layout.transitions,
+        defaultTargetId: `layout-${presentationState.layout.resourceId}`,
+        idPrefix: `layout-${presentationState.layout.resourceId}`,
       });
     }
 
@@ -1498,8 +1538,11 @@ export const addLayeredViews = (
       }
 
       if (Array.isArray(layout.transitions)) {
-        layout.transitions.forEach((transition) => {
-          animations.push(transition);
+        pushNormalizedLayoutTransitions({
+          animations,
+          transitions: layout.transitions,
+          defaultTargetId: `layeredView-${index}`,
+          idPrefix: `layeredView-${index}`,
         });
       }
 
