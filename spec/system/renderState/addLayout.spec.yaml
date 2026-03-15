@@ -250,7 +250,7 @@ in:
                 colorId: "hoverColor"
               click:
                 colorId: "clickColor"
-                actionPayload:
+                payload:
                   actions: {}
       colors:
         idleColor:
@@ -285,7 +285,7 @@ out:
                 fill: "#303030"
               click:
                 fill: "#404040"
-                actionPayload:
+                payload:
                   actions: {}
   animations: []
 ---

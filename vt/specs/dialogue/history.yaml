@@ -19,7 +19,7 @@ resources:
           width: 1920
           height: 1080
           click:
-            actionPayload:
+            payload:
               actions:
                 nextLine: {}
           colorId: layoutColor1
@@ -73,7 +73,7 @@ resources:
           hover:
             textStyleId: textStyle3
           click:
-            actionPayload:
+            payload:
               actions:
                 pushLayeredView:
                   resourceId: historyLayout
@@ -90,7 +90,7 @@ resources:
           y: 0
           opacity: 0.8
           click:
-            actionPayload:
+            payload:
               actions:
                 popLayeredView: {}
           colorId: layoutColor2
@@ -101,7 +101,7 @@ resources:
           x: 460
           y: 190
           click:
-            actionPayload:
+            payload:
               actions: {}
           colorId: layoutColor1
         - id: history-title
@@ -142,7 +142,7 @@ resources:
           x: 900
           y: 800
           click:
-            actionPayload:
+            payload:
               actions:
                 popLayeredView: {}
           colorId: layoutColor3

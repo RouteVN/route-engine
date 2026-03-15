@@ -137,7 +137,9 @@ const init = async () => {
   const assetBufferMap = assetBufferManager.getBufferMap();
 
   const routeGraphics = createRouteGraphics();
-  const autoCompleteRenderedLines = !!window?.RTGL_VT_DEBUG;
+  // VT relies on render-complete to drive fromComplete/auto-mode flows in both
+  // local and docker runs. Keep the completion signal enabled for all VT pages.
+  const autoCompleteRenderedLines = true;
 
   window.takeVtScreenshotBase64 = async (label) => {
     if (label) {

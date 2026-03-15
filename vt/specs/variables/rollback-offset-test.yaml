@@ -27,7 +27,7 @@ resources:
           width: 1920
           height: 1080
           click:
-            actionPayload:
+            payload:
               actions:
                 nextLine: {}
           colorId: layoutColor1
@@ -43,7 +43,7 @@ resources:
           height: 280
           opacity: 0.9
           click:
-            actionPayload:
+            payload:
               actions:
                 nextLine: {}
           colorId: color4
@@ -82,7 +82,7 @@ resources:
           hover:
             textStyleId: textStyle5
           click:
-            actionPayload:
+            payload:
               actions:
                 rollbackByOffset:
                   offset: -1
@@ -95,7 +95,7 @@ resources:
           hover:
             textStyleId: textStyle4
           click:
-            actionPayload:
+            payload:
               actions:
                 rollbackByOffset:
                   offset: -2
@@ -108,7 +108,7 @@ resources:
           hover:
             textStyleId: textStyle4
           click:
-            actionPayload:
+            payload:
               actions:
                 rollbackByOffset:
                   offset: -3

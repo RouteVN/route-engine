@@ -47,7 +47,7 @@ out:
           x: 0
           y: 0
           click:
-            actionPayload:
+            payload:
               actions: {}
         - type: "button"
           id: "choice-button"
@@ -102,7 +102,7 @@ out:
           x: 0
           y: 0
           click:
-            actionPayload:
+            payload:
               actions: {}
         - type: "container"
           id: "choices"
@@ -193,7 +193,7 @@ out:
           x: 0
           y: 0
           click:
-            actionPayload:
+            payload:
               actions: {}
         - id: "choice-label"
           type: "text"
@@ -250,7 +250,7 @@ out:
           x: 0
           y: 0
           click:
-            actionPayload:
+            payload:
               actions: {}
         - id: "choice-panel"
           type: "rect"
@@ -302,7 +302,7 @@ out:
           x: 0
           y: 0
           click:
-            actionPayload:
+            payload:
               actions: {}
         - id: "choice-image"
           type: "sprite"
@@ -376,7 +376,7 @@ out:
           x: 0
           y: 0
           click:
-            actionPayload:
+            payload:
               actions: {}
   animations: []
 ---
@@ -417,7 +417,7 @@ out:
           x: 0
           y: 0
           click:
-            actionPayload:
+            payload:
               actions: {}
   animations: []
 ---
@@ -458,7 +458,7 @@ out:
           x: 0
           y: 0
           click:
-            actionPayload:
+            payload:
               actions: {}
         - type: "text"
           content: "No choices available"

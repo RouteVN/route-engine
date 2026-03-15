@@ -66,7 +66,7 @@ resources:
           width: 1920
           height: 1080
           click:
-            actionPayload:
+            payload:
               actions:
                 nextLine: {}
           colorId: layoutColor1
@@ -298,7 +298,7 @@ resources:
           width: 1920
           height: 1080
           click:
-            actionPayload:
+            payload:
               actions:
                 nextLine: {}
           colorId: layoutColor1
@@ -1066,7 +1066,7 @@ resources:
               hover:
                 textStyleId: textStyle9
               click:
-                actionPayload:
+                payload:
                   actions:
                     toggleAutoMode: {}
               textStyleId:
@@ -1082,7 +1082,7 @@ resources:
               hover:
                 textStyleId: textStyle9
               click:
-                actionPayload:
+                payload:
                   actions:
                     toggleSkipMode: {}
               textStyleId:
@@ -1217,7 +1217,7 @@ resources:
               hover:
                 textStyleId: textStyle5
               click:
-                actionPayload:
+                payload:
                   actions:
                     sectionTransition:
                       sectionId: 3k3s9sd
@@ -1226,7 +1226,7 @@ resources:
               type: text
               content: XLoad Load
               click:
-                actionPayload:
+                payload:
                   addLayeredView:
                     resourceId: dafkjkl3
                   updateVariable:

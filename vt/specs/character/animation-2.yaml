@@ -15,7 +15,7 @@ resources:
           width: 1920
           height: 1080
           click:
-            actionPayload:
+            payload:
               actions:
                 nextLine: {}
           colorId: layoutColor1
@@ -87,7 +87,7 @@ resources:
           keyframes:
             - duration: 1500
               value: 480
-              easing: easeOut
+              easing: easeOutQuad
         alpha:
           initialValue: 0
           keyframes:
@@ -103,7 +103,7 @@ resources:
           keyframes:
             - duration: 1500
               value: 1400
-              easing: easeOut
+              easing: easeOutQuad
         alpha:
           initialValue: 0
           keyframes:
@@ -118,7 +118,7 @@ resources:
           keyframes:
             - duration: 1500
               value: -300
-              easing: easeIn
+              easing: easeInQuad
         alpha:
           keyframes:
             - duration: 1500
@@ -132,7 +132,7 @@ resources:
           keyframes:
             - duration: 1500
               value: 2220
-              easing: easeIn
+              easing: easeInQuad
         alpha:
           keyframes:
             - duration: 1500

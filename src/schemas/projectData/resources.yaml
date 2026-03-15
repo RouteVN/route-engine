@@ -264,9 +264,9 @@ properties:
         additionalProperties:
           type: object
           properties:
-            actionPayload:
+            payload:
               type: object
-          required: [actionPayload]
+          required: [payload]
   layouts:
     type: object
     description: Layout configurations authored with resource references that are resolved before rendering
