@@ -19,7 +19,7 @@ resources:
           width: 1920
           height: 1080
           click:
-            actionPayload:
+            payload:
               actions:
                 contextNextLine: {}
           colorId: layoutColor1
@@ -55,7 +55,7 @@ resources:
               hover:
                 textStyleId: textStyle4
               click:
-                actionPayload:
+                payload:
                   actions:
                     updateVariable:
                       id: uv1
@@ -72,7 +72,7 @@ resources:
               hover:
                 textStyleId: textStyle4
               click:
-                actionPayload:
+                payload:
                   actions:
                     updateVariable:
                       id: uv2
@@ -102,7 +102,7 @@ resources:
                     hover:
                       colorId: layoutColor2
                     click:
-                      actionPayload:
+                      payload:
                         actions:
                           saveSaveSlot:
                             slot: ${slot.slotNumber}

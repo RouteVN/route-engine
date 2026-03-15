@@ -10,11 +10,11 @@ resources:
   keyboards:
     gameplay:
       Enter:
-        actionPayload:
+        payload:
           actions:
             nextLine: {}
       space:
-        actionPayload:
+        payload:
           actions:
             toggleDialogueUI: {}
   layouts:

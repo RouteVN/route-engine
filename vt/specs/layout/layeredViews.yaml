@@ -27,7 +27,7 @@ resources:
           x: 100
           y: 300
           click:
-            actionPayload:
+            payload:
               actions:
                 pushLayeredView:
                   resourceId: menuLayout
@@ -46,7 +46,7 @@ resources:
           x: 100
           y: 400
           click:
-            actionPayload:
+            payload:
               actions:
                 pushLayeredView:
                   resourceId: overlayLayout
@@ -65,7 +65,7 @@ resources:
           x: 100
           y: 500
           click:
-            actionPayload:
+            payload:
               actions:
                 popLayeredView: {}
           colorId: color2
@@ -82,7 +82,7 @@ resources:
           x: 100
           y: 600
           click:
-            actionPayload:
+            payload:
               actions:
                 replaceLastLayeredView:
                   resourceId: animatedLayout
@@ -101,7 +101,7 @@ resources:
           x: 100
           y: 700
           click:
-            actionPayload:
+            payload:
               actions:
                 clearLayeredViews: {}
           colorId: color2

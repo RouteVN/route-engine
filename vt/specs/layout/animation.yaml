@@ -15,7 +15,7 @@ resources:
           width: 1920
           height: 1080
           click:
-            actionPayload:
+            payload:
               actions:
                 nextLine: {}
           colorId: layoutColor1
@@ -61,7 +61,7 @@ resources:
           keyframes:
             - duration: 400
               value: 1
-              easing: easeOut
+              easing: easeOutQuad
     fadeOut:
       name: Fade Out
       type: live
@@ -70,7 +70,7 @@ resources:
           keyframes:
             - duration: 400
               value: 0
-              easing: easeIn
+              easing: easeInQuad
     scaleIn:
       name: Scale In
       type: live
@@ -80,19 +80,19 @@ resources:
           keyframes:
             - duration: 300
               value: 1
-              easing: easeOut
+              easing: easeOutQuad
         scaleY:
           initialValue: 0.8
           keyframes:
             - duration: 300
               value: 1
-              easing: easeOut
+              easing: easeOutQuad
         alpha:
           initialValue: 0
           keyframes:
             - duration: 300
               value: 1
-              easing: easeOut
+              easing: easeOutQuad
   fonts:
     fontDefault:
       fileId: Arial

@@ -20,7 +20,7 @@ resources:
           width: 1920
           height: 1080
           click:
-            actionPayload:
+            payload:
               actions:
                 nextLine: {}
           colorId: layoutColor1
@@ -60,7 +60,7 @@ resources:
                   width: 1400
                   height: 80
                   click:
-                    actionPayload:
+                    payload:
                       actions:
                         nextLine: {}
                   colorId: layoutColor3
