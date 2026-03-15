@@ -35,7 +35,7 @@ if (!initPattern.test(source)) {
 const patched = source.replace(
   initPattern,
   (_, initPrefix) =>
-    `await r.init({${initPrefix}preference:"webgl",resolution:.5,preserveDrawingBuffer:!0,clearBeforeRender:!0})`,
+    `await r.init({${initPrefix}preference:"webgl",resolution:(globalThis.RTGL_VT_DEBUG||navigator.webdriver)? .5 : 1,preserveDrawingBuffer:!!(globalThis.RTGL_VT_DEBUG||navigator.webdriver),clearBeforeRender:!0})`,
 );
 
 fs.mkdirSync(path.dirname(targetPath), { recursive: true });
