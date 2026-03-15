@@ -137,6 +137,7 @@ const init = async () => {
   const assetBufferMap = assetBufferManager.getBufferMap();
 
   const routeGraphics = createRouteGraphics();
+  const autoCompleteRenderedLines = !!window?.RTGL_VT_DEBUG;
 
   window.takeVtScreenshotBase64 = async (label) => {
     if (label) {
@@ -243,9 +244,11 @@ const init = async () => {
         if (!shouldHandleRenderComplete(payload)) {
           return;
         }
-        engine.handleActions({
-          markLineCompleted: {}
-        });
+        if (autoCompleteRenderedLines) {
+          engine.handleActions({
+            markLineCompleted: {}
+          });
+        }
         return;
       }
       if (payload.actions) {
