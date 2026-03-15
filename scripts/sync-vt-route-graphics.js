@@ -6,7 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..");
 const targetPath = path.resolve(repoRoot, "vt/static/RouteGraphics.js");
-const defaultVersion = process.env.VT_ROUTE_GRAPHICS_VERSION || "0.1.0";
+const defaultVersion = process.env.VT_ROUTE_GRAPHICS_VERSION || "0.1.2";
 const sourceUrl =
   process.env.VT_ROUTE_GRAPHICS_URL ||
   `https://cdn.jsdelivr.net/npm/route-graphics@${defaultVersion}/dist/RouteGraphics.js`;
@@ -35,7 +35,7 @@ if (!initPattern.test(source)) {
 const patched = source.replace(
   initPattern,
   (_, initPrefix) =>
-    `await r.init({${initPrefix}preference:"webgl",resolution:.5,preserveDrawingBuffer:!0})`,
+    `await r.init({${initPrefix}preference:"webgl",resolution:globalThis.RTGL_VT_DEBUG ? .5 : 1,preserveDrawingBuffer:!!globalThis.RTGL_VT_DEBUG,clearBeforeRender:!0})`,
 );
 
 fs.mkdirSync(path.dirname(targetPath), { recursive: true });
