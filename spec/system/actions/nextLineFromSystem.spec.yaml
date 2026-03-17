@@ -5,6 +5,54 @@ suites: [nextLineFromSystem]
 suite: nextLineFromSystem
 exportName: nextLineFromSystem
 ---
+case: show dialogue UI instead of advancing when hidden
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        dialogueUIHidden: true
+        nextLineConfig:
+          auto: { enabled: false }
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                    - id: "2"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  global:
+    isLineCompleted: true
+    dialogueUIHidden: false
+    nextLineConfig:
+      auto: { enabled: false }
+    pendingEffects:
+      - name: "render"
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                - id: "2"
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "1"
+---
 case: advance to next line when auto is disabled
 in:
   - state:

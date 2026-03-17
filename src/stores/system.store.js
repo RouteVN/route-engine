@@ -1131,6 +1131,11 @@ export const nextLine = ({ state }) => {
     return state;
   }
 
+  if (state.global.dialogueUIHidden) {
+    showDialogueUI({ state });
+    return state;
+  }
+
   // If line is not completed, complete it instantly instead of advancing
   if (!state.global.isLineCompleted) {
     state.global.isLineCompleted = true;
@@ -1443,6 +1448,11 @@ export const sectionTransition = ({ state }, payload) => {
 };
 
 export const nextLineFromSystem = ({ state }) => {
+  if (state.global.dialogueUIHidden) {
+    showDialogueUI({ state });
+    return state;
+  }
+
   // Auto/skip/scene timers should pause when an interactive choice is visible.
   if (selectVisibleChoiceResourceId({ state })) {
     return state;

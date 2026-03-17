@@ -364,8 +364,6 @@ export const control = (state, presentation) => {
     }
 
     state.control = presentation.control;
-  } else if (state.control) {
-    delete state.control;
   }
 };
 
