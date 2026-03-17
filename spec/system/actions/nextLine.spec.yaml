@@ -5,6 +5,60 @@ suites: [nextLine]
 suite: nextLine
 exportName: nextLine
 ---
+case: show dialogue UI instead of completing or advancing when hidden
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        dialogueUIHidden: true
+        nextLineConfig:
+          manual:
+            enabled: true
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  global:
+    isLineCompleted: true
+    dialogueUIHidden: false
+    nextLineConfig:
+      manual:
+        enabled: true
+    pendingEffects:
+      - name: "render"
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions: {}
+                - id: "2"
+                  actions: {}
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "1"
+---
 case: complete line instantly when not completed (click during animation)
 in:
   - state:

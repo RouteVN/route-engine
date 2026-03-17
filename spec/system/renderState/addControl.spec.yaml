@@ -1,0 +1,142 @@
+file: "../../../src/stores/constructRenderState.js"
+group: constructRenderState.addControl
+suites: [addControl]
+---
+suite: addControl
+exportName: addControl
+---
+case: no presentationState.control - return unchanged state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    global: {}
+  - presentationState: {}
+    resources: {}
+    variables: {}
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  global: {}
+---
+case: add control keyboard mapping to global state
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    global: {}
+  - presentationState:
+      control:
+        resourceId: "gameplay"
+    resources:
+      controls:
+        gameplay:
+          keyboard:
+            enter:
+              actions:
+                nextLine: {}
+            space:
+              actions:
+                toggleDialogueUI: {}
+    variables: {}
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  global:
+    keyboard:
+      enter:
+        payload:
+          actions:
+            nextLine: {}
+      space:
+        payload:
+          actions:
+            toggleDialogueUI: {}
+---
+case: render control elements like layout elements
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    global: {}
+  - presentationState:
+      control:
+        resourceId: "hud"
+    resources:
+      controls:
+        hud:
+          elements:
+            - id: "hint"
+              type: "text"
+              x: 10
+              y: 12
+              content: "${variables.message}"
+              textStyleId: "body"
+      textStyles:
+        body:
+          fontId: "fontMain"
+          colorId: "fg"
+          fontSize: 20
+          fontWeight: "400"
+          fontStyle: "normal"
+          lineHeight: 1
+      fonts:
+        fontMain:
+          fileId: "Arial"
+      colors:
+        fg:
+          hex: "#FFFFFF"
+    variables:
+      message: "Press Enter"
+    autoMode: false
+    skipMode: false
+    canRollback: true
+    saveSlots: []
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "control-hud"
+          type: "container"
+          x: 0
+          y: 0
+          children:
+            - id: "hint"
+              type: "text"
+              x: 10
+              y: 12
+              content: "Press Enter"
+              textStyle:
+                fontFamily: "Arial"
+                fontSize: 20
+                fontWeight: "400"
+                fontStyle: "normal"
+                lineHeight: 1
+                fill: "#FFFFFF"
+  animations: []
+  global: {}

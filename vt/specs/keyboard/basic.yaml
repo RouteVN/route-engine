@@ -7,16 +7,22 @@ screen:
   height: 1080
   backgroundColor: "#000000"
 resources:
-  keyboards:
+  controls:
     gameplay:
-      Enter:
-        payload:
+      keyboard:
+        Enter:
           actions:
             nextLine: {}
-      space:
-        payload:
+        space:
           actions:
             toggleDialogueUI: {}
+      elements:
+        - id: keyboard-hint
+          type: text
+          x: 1450
+          y: 40
+          content: "ENTER / SPACE"
+          textStyleId: textStyle1
   layouts:
     baseLayout:
       elements:
@@ -72,7 +78,7 @@ story:
               actions:
                 base:
                   resourceId: baseLayout
-                keyboard:
+                control:
                   resourceId: gameplay
                 dialogue:
                   ui:
