@@ -51,17 +51,6 @@ export const createInitialState = () => {
 };
 
 /**
- * Applies base from presentation to state
- * @param {Object} state - The current state of the system
- * @param {Object} presentation - The presentation to apply
- */
-export const base = (state, presentation) => {
-  if (presentation.base) {
-    state.base = { ...presentation.base };
-  }
-};
-
-/**
  *
  * Applies background from presentation to state
  * @param {Object} state - The current state of the system
@@ -397,7 +386,6 @@ export const cleanAll = (state, presentation) => {
 export const constructPresentationState = (presentations) => {
   const actions = [
     cleanAll,
-    base,
     background,
     sfx,
     bgm,

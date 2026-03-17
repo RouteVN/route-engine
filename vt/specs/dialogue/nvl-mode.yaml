@@ -132,7 +132,7 @@ story:
           lines:
             - id: "1"
               actions:
-                base:
+                background:
                   resourceId: base1
                 dialogue:
                   mode: adv

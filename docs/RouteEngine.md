@@ -420,7 +420,6 @@ Actions that can be attached to lines to control presentation:
 
 | Action       | Properties                                                  | Description                                                                                       |
 | ------------ | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `base`       | `{ resourceId }`                                            | Set base layout                                                                                   |
 | `background` | `{ resourceId, animations? }`                               | Set background/CG                                                                                 |
 | `dialogue`   | `{ characterId?, character?, content, mode?, ui?, clear? }` | Display dialogue                                                                                  |
 | `character`  | `{ items }`                                                 | Display character sprites. Each item can have optional `x` and `y` to override transform position |

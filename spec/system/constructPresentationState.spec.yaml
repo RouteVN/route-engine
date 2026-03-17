@@ -5,13 +5,13 @@ suites: [constructPresentationState]
 suite: constructPresentationState
 exportName: constructPresentationState
 ---
-case: construct presentation state with single base action
+case: construct presentation state with single background action
 in:
-  - - base:
-        resourceId: "mainBase"
+  - - background:
+        resourceId: "mainBackground"
 out:
-  base:
-    resourceId: "mainBase"
+  background:
+    resourceId: "mainBackground"
 ---
 case: construct presentation state with control action
 in:
@@ -39,16 +39,12 @@ out:
 ---
 case: construct presentation state with multiple actions in one presentation
 in:
-  - - base:
-        resourceId: "mainBase"
-      background:
+  - - background:
         resourceId: "bgImage"
       bgm:
         resourceId: "backgroundMusic"
         loop: true
 out:
-  base:
-    resourceId: "mainBase"
   background:
     resourceId: "bgImage"
   bgm:
@@ -58,15 +54,11 @@ out:
 case: construct presentation state with clean all and multiple presentations
 in:
   - - cleanAll: true
-      base:
-        resourceId: "oldBase"
-    - base:
-        resourceId: "newBase"
       background:
+        resourceId: "oldBg"
+    - background:
         resourceId: "newBg"
 out:
-  base:
-    resourceId: "newBase"
   background:
     resourceId: "newBg"
 ---

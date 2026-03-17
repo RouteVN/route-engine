@@ -79,7 +79,7 @@ story:
           lines:
             - id: line0
               actions:
-                base:
+                background:
                   resourceId: base1
                 dialogue:
                   ui:
