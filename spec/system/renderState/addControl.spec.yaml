@@ -63,11 +63,11 @@ out:
   global:
     keyboard:
       enter:
-        actionPayload:
+        payload:
           actions:
             nextLine: {}
       space:
-        actionPayload:
+        payload:
           actions:
             toggleDialogueUI: {}
 ---

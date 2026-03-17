@@ -32,7 +32,7 @@ in:
       cursor: "pointer"
     click:
       colorId: "active"
-      actionPayload:
+      payload:
         actions: {}
     rightClick:
       colorId: "muted"
@@ -56,7 +56,7 @@ out:
     cursor: "pointer"
   click:
     fill: "#666666"
-    actionPayload:
+    payload:
       actions: {}
   rightClick:
     fill: "#000000"

@@ -146,7 +146,7 @@ Invalid `_event.*` bindings fail fast with an explicit error.
   min: 0
   max: 100
   change:
-    actionPayload:
+    payload:
       actions:
         updateVariable:
           id: setVolume

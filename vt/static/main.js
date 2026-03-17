@@ -20,6 +20,8 @@ import createRouteGraphics, {
 const projectData = parse(window.yamlContent);
 
 const init = async () => {
+  const screenWidth = projectData?.screen?.width ?? 1920;
+  const screenHeight = projectData?.screen?.height ?? 1080;
   const assets = {
     "lakjf3lka": {
       url: "/public/bg/door.png",
@@ -137,6 +139,11 @@ const init = async () => {
   const assetBufferMap = assetBufferManager.getBufferMap();
 
   const routeGraphics = createRouteGraphics();
+  const isAutomatedVtRun =
+    !!window?.RTGL_VT_DEBUG || !!window.navigator?.webdriver;
+  // Auto-complete only during VT automation so manual candidate browsing keeps
+  // the normal interaction path and does not stack text on rerenders.
+  const autoCompleteRenderedLines = isAutomatedVtRun;
 
   window.takeVtScreenshotBase64 = async (label) => {
     if (label) {
@@ -233,8 +240,8 @@ const init = async () => {
 
 
   await routeGraphics.init({
-    width: 1920,
-    height: 1080,
+    width: screenWidth,
+    height: screenHeight,
     plugins,
     eventHandler: async (eventName, payload) => {
       console.log("[vt][route-graphics:event]", eventName, payload);
@@ -243,9 +250,11 @@ const init = async () => {
         if (!shouldHandleRenderComplete(payload)) {
           return;
         }
-        engine.handleActions({
-          markLineCompleted: {}
-        });
+        if (autoCompleteRenderedLines) {
+          engine.handleActions({
+            markLineCompleted: {}
+          });
+        }
         return;
       }
       if (payload.actions) {
@@ -275,8 +284,9 @@ const init = async () => {
   });
   await routeGraphics.loadAssets(assetBufferMap)
 
-  document.getElementById("canvas").appendChild(routeGraphics.canvas);
-  document.getElementById("canvas").addEventListener("contextmenu", (e) => {
+  const canvasHost = document.getElementById("canvas");
+  canvasHost.appendChild(routeGraphics.canvas);
+  canvasHost.addEventListener("contextmenu", (e) => {
     e.preventDefault();
   });
 

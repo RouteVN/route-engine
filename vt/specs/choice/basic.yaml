@@ -19,7 +19,7 @@ resources:
           width: 1920
           height: 1080
           click:
-            actionPayload:
+            payload:
               actions:
                 nextLine: {}
           colorId: layoutColor1
@@ -46,7 +46,7 @@ resources:
                   width: 400
                   height: 60
                   click:
-                    actionPayload:
+                    payload:
                       actions:
                         sectionTransition: ${item.events.click.actions.sectionTransition}
                 - id: 39dkk2

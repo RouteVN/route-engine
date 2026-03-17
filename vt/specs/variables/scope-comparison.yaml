@@ -40,7 +40,7 @@ resources:
           width: 1920
           height: 1080
           click:
-            actionPayload:
+            payload:
               actions:
                 nextLine: {}
           colorId: layoutColor1
@@ -103,7 +103,7 @@ resources:
               hover:
                 textStyleId: textStyle8
               click:
-                actionPayload:
+                payload:
                   actions:
                     updateVariable:
                       id: uv1
@@ -120,7 +120,7 @@ resources:
               hover:
                 textStyleId: textStyle8
               click:
-                actionPayload:
+                payload:
                   actions:
                     updateVariable:
                       id: uv2
@@ -149,7 +149,7 @@ resources:
               hover:
                 textStyleId: textStyle10
               click:
-                actionPayload:
+                payload:
                   actions:
                     updateVariable:
                       id: uv3
@@ -166,7 +166,7 @@ resources:
               hover:
                 textStyleId: textStyle10
               click:
-                actionPayload:
+                payload:
                   actions:
                     updateVariable:
                       id: uv4
@@ -224,7 +224,7 @@ resources:
               hover:
                 textStyleId: textStyle10
               click:
-                actionPayload:
+                payload:
                   actions:
                     updateVariable:
                       id: uv5
@@ -241,7 +241,7 @@ resources:
               hover:
                 textStyleId: textStyle10
               click:
-                actionPayload:
+                payload:
                   actions:
                     updateVariable:
                       id: uv6
@@ -258,7 +258,7 @@ resources:
               hover:
                 textStyleId: textStyle10
               click:
-                actionPayload:
+                payload:
                   actions:
                     updateVariable:
                       id: uv7
@@ -287,7 +287,7 @@ resources:
               hover:
                 textStyleId: textStyle8
               click:
-                actionPayload:
+                payload:
                   actions:
                     updateVariable:
                       id: uv8
@@ -304,7 +304,7 @@ resources:
               hover:
                 textStyleId: textStyle8
               click:
-                actionPayload:
+                payload:
                   actions:
                     updateVariable:
                       id: uv9
@@ -362,7 +362,7 @@ resources:
               hover:
                 textStyleId: textStyle8
               click:
-                actionPayload:
+                payload:
                   actions:
                     updateVariable:
                       id: uv10
@@ -390,7 +390,7 @@ resources:
               hover:
                 textStyleId: textStyle10
               click:
-                actionPayload:
+                payload:
                   actions:
                     updateVariable:
                       id: uv11

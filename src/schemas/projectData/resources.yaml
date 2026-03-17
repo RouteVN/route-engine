@@ -278,7 +278,6 @@ properties:
               type: object
               additionalProperties: true
         additionalProperties: true
-
   layouts:
     type: object
     description: Layout configurations authored with resource references that are resolved before rendering

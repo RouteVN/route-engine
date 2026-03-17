@@ -335,12 +335,12 @@ in:
               keyframes:
                 - duration: 2000
                   value: 2.2
-                  easing: easeOut
+                  easing: easeOutQuad
             scaleY:
               keyframes:
                 - duration: 2000
                   value: 2.2
-                  easing: easeOut
+                  easing: easeOutQuad
 out:
   elements:
     - id: "story"
@@ -374,12 +374,12 @@ out:
           keyframes:
             - duration: 2000
               value: 2.2
-              easing: easeOut
+              easing: easeOutQuad
         scaleY:
           keyframes:
             - duration: 2000
               value: 2.2
-              easing: easeOut
+              easing: easeOutQuad
 ---
 case: multiple characters with different sprites
 in:

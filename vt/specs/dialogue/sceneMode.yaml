@@ -20,7 +20,7 @@ resources:
           width: 1920
           height: 1080
           click:
-            actionPayload:
+            payload:
               actions:
                 nextLine: {}
           colorId: layoutColor1
@@ -49,7 +49,7 @@ resources:
           hover:
             textStyleId: textStyle2
           click:
-            actionPayload:
+            payload:
               actions:
                 setNextLineConfig:
                   manual:
@@ -67,7 +67,7 @@ resources:
           hover:
             textStyleId: textStyle2
           click:
-            actionPayload:
+            payload:
               actions:
                 setNextLineConfig:
                   manual:
@@ -83,7 +83,7 @@ resources:
           hover:
             textStyleId: textStyle2
           click:
-            actionPayload:
+            payload:
               actions:
                 toggleSkipMode: {}
           textStyleId:

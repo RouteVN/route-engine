@@ -1,6 +1,6 @@
 # VT Guidelines
 
-Last updated: 2026-03-09
+Last updated: 2026-03-15
 
 ## Purpose
 
@@ -14,7 +14,7 @@ Define one stable standard for VT authoring in this repo:
 
 - The VT Docker flow runs Chromium in a software WebGL fallback path on this repo's current container/runtime setup.
 - Full-size `1920x1080` Pixi capture on that path is expensive, so VT syncs a local ignored `vt/static/RouteGraphics.js` bundle before VT runs.
-- The sync script downloads `route-graphics@0.1.0/dist/RouteGraphics.js` from jsDelivr by default.
+- The sync script downloads `route-graphics@1.0.0/dist/RouteGraphics.js` from jsDelivr by default.
 - Override the source with `VT_ROUTE_GRAPHICS_URL`, or just the package version with `VT_ROUTE_GRAPHICS_VERSION`.
 - That VT-only bundle is patched during sync to initialize Pixi with `resolution: 0.5` and `preserveDrawingBuffer: true`.
 - Full-frame VT references are exported from that native half-resolution render surface.

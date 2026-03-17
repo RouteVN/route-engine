@@ -15,7 +15,7 @@ resources:
           width: 1920
           height: 1080
           click:
-            actionPayload:
+            payload:
               actions:
                 nextLine: {}
           colorId: layoutColor1
@@ -61,7 +61,7 @@ resources:
           keyframes:
             - duration: 500
               value: 1
-              easing: easeOut
+              easing: easeOutQuad
     fadeOut:
       name: Fade Out
       type: live
@@ -70,7 +70,7 @@ resources:
           keyframes:
             - duration: 500
               value: 0
-              easing: easeIn
+              easing: easeInQuad
     slideUp:
       name: Slide Up
       type: live
@@ -80,7 +80,7 @@ resources:
           keyframes:
             - duration: 400
               value: 700
-              easing: easeOut
+              easing: easeOutQuad
   fonts:
     fontDefault:
       fileId: Arial

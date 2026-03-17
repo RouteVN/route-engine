@@ -34,7 +34,7 @@ resources:
           width: 1920
           height: 1080
           click:
-            actionPayload:
+            payload:
               actions:
                 nextLine: {}
           colorId: layoutColor1
@@ -74,7 +74,7 @@ resources:
                   width: 1440
                   height: 76
                   click:
-                    actionPayload:
+                    payload:
                       actions:
                         nextLine: {}
                   colorId: layoutColor2

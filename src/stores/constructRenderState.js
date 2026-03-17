@@ -660,7 +660,7 @@ const toRenderStateKeyboard = (keyboard = {}) => {
     Object.entries(keyboard).map(([key, value]) => [
       key,
       {
-        actionPayload: {
+        payload: {
           actions: structuredClone(value?.actions || {}),
         },
       },
@@ -1337,7 +1337,7 @@ export const addChoices = (
       x: 0,
       y: 0,
       click: {
-        actionPayload: {
+        payload: {
           actions: {},
         },
       },
@@ -1657,7 +1657,7 @@ export const addLayeredViews = (
             x: 0,
             y: 0,
             click: {
-              actionPayload: {
+              payload: {
                 actions: {},
               },
             },

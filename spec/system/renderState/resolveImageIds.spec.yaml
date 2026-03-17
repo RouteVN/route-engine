@@ -14,10 +14,10 @@ in:
     clickImageId: "click"
     hover:
       cursor: "pointer"
-      actionPayload:
+      payload:
         action: "hovered"
     click:
-      actionPayload:
+      payload:
         action: "clicked"
   - images:
       idle:
@@ -40,11 +40,11 @@ out:
   height: 180
   hover:
     cursor: "pointer"
-    actionPayload:
+    payload:
       action: "hovered"
     src: "hover.png"
   click:
-    actionPayload:
+    payload:
       action: "clicked"
     src: "click.png"
 ---

@@ -94,7 +94,7 @@ out:
           x: 0
           y: 0
           click:
-            actionPayload:
+            payload:
               actions: {}
         - type: "text"
           content: "LayeredView content"
@@ -150,7 +150,7 @@ out:
           x: 0
           y: 0
           click:
-            actionPayload:
+            payload:
               actions: {}
         - type: "text"
           content: "Menu"
@@ -167,7 +167,7 @@ out:
           x: 0
           y: 0
           click:
-            actionPayload:
+            payload:
               actions: {}
         - type: "image"
           src: "overlay.png"
@@ -219,7 +219,7 @@ out:
           x: 0
           y: 0
           click:
-            actionPayload:
+            payload:
               actions: {}
         - type: "text"
           content: "Exists"
@@ -286,7 +286,7 @@ out:
           x: 0
           y: 0
           click:
-            actionPayload:
+            payload:
               actions: {}
         - type: "text"
           content: "Animated"
@@ -366,7 +366,7 @@ out:
           x: 0
           y: 0
           click:
-            actionPayload:
+            payload:
               actions: {}
         - id: "credits-body"
           type: "container"
@@ -433,7 +433,7 @@ out:
           x: 0
           y: 0
           click:
-            actionPayload:
+            payload:
               actions: {}
         - type: "container"
           x: 10
@@ -487,7 +487,7 @@ out:
           x: 0
           y: 0
           click:
-            actionPayload:
+            payload:
               actions: {}
   animations: []
 ---
@@ -551,7 +551,7 @@ out:
           x: 0
           y: 0
           click:
-            actionPayload:
+            payload:
               actions: {}
         - id: "layered-label"
           type: "text"
@@ -615,7 +615,7 @@ out:
           x: 0
           y: 0
           click:
-            actionPayload:
+            payload:
               actions: {}
         - id: "layered-panel"
           type: "rect"
@@ -674,7 +674,7 @@ out:
           x: 0
           y: 0
           click:
-            actionPayload:
+            payload:
               actions: {}
         - id: "layered-image"
           type: "sprite"

@@ -22,9 +22,6 @@ $defs:
         description: Easing function to use.
         enum:
           - linear
-          - easeIn
-          - easeOut
-          - easeInOut
           - easeInQuad
           - easeOutQuad
           - easeInOutQuad
@@ -199,7 +196,7 @@ properties:
   complete:
     type: object
     properties:
-      actionPayload:
+      payload:
         type: object
     additionalProperties: true
   tween:
