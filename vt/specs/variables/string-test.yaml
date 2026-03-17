@@ -300,7 +300,7 @@ story:
           lines:
             - id: line1
               actions:
-                base:
+                background:
                   resourceId: base1
                 layout:
                   resourceId: stringTestUI

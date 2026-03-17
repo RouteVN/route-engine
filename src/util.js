@@ -612,7 +612,6 @@ export const diffPresentationState = (prev = {}, curr = {}) => {
   };
 
   diffObject("background");
-  diffObject("base");
   diffObject("bgm");
   diffObject("voice");
 

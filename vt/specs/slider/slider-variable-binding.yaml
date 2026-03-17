@@ -177,7 +177,7 @@ story:
           lines:
             - id: line1
               actions:
-                base:
+                background:
                   resourceId: baseLayout
                 layout:
                   resourceId: sliderTestLayout

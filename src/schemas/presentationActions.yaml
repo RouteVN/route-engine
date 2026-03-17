@@ -12,15 +12,6 @@ properties:
         description: Mode of cleaning/clearing all existing state
     additionalProperties: false
 
-  base:
-    type: object
-    description: Base layer behind the background
-    properties:
-      resourceId:
-        type: string
-        description: ID of the base resource to display
-    additionalProperties: false
-
   background:
     type: object
     description: Background management and display

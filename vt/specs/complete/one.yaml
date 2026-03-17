@@ -1419,7 +1419,7 @@ story:
           lines:
             - id: line1
               actions:
-                base:
+                background:
                   resourceId: base1
                 visual:
                   items:
@@ -1444,8 +1444,6 @@ story:
           lines:
             - id: line1
               actions:
-                base:
-                  resourceId: storyScreenLayout
                 background:
                   resourceId: f3wklajf32
                 dialogue:
@@ -1548,7 +1546,7 @@ story:
           lines:
             - id: line1
               actions:
-                base:
+                background:
                   resourceId: storyScreenLayout
                   resourceType: layout
                 dialogue:
@@ -1602,7 +1600,7 @@ story:
           lines:
             - id: line1
               actions:
-                base:
+                background:
                   resourceId: extraScreenLayout
                   resourceType: layout
                 dialogue:
