@@ -615,6 +615,59 @@ export const resolveLayoutReferences = (node, resources = {}, path = "root") =>
 
 export const resolveLayoutResourceIds = resolveLayoutReferences;
 
+const getStoryContainer = (elements = []) => {
+  return elements.find((element) => element.id === "story");
+};
+
+const createLayoutTemplateData = ({
+  variables,
+  saveSlots = [],
+  autoMode,
+  skipMode,
+  canRollback,
+} = {}) => {
+  return {
+    variables,
+    saveSlots,
+    autoMode,
+    skipMode,
+    canRollback,
+    effectiveSoundVolume: variables?._muteAll
+      ? 0
+      : (variables?._soundVolume ?? 500),
+    textSpeed: variables?._textSpeed ?? 50,
+  };
+};
+
+const renderTemplatedLayoutContainer = ({
+  container,
+  resources,
+  templateData,
+}) => {
+  const processedContainer = parseAndRender(container, templateData, {
+    functions: jemplFunctions,
+  });
+
+  return resolveLayoutResourceIds(processedContainer, resources);
+};
+
+const toRenderStateKeyboard = (keyboard = {}) => {
+  if (!keyboard || typeof keyboard !== "object" || Array.isArray(keyboard)) {
+    return undefined;
+  }
+
+  return Object.fromEntries(
+    Object.entries(keyboard).map(([key, value]) => [
+      key,
+      {
+        actionPayload: {
+          actions: structuredClone(value?.actions || {}),
+        },
+      },
+    ]),
+  );
+};
+
 /**
  * Helper to push in/out/update animations based on previous and current state
  * @param {Object} params
@@ -714,7 +767,7 @@ export const addBase = (state, { presentationState, resources, variables }) => {
   const { elements } = state;
   if (presentationState.base) {
     // Find the story container
-    const storyContainer = elements.find((el) => el.id === "story");
+    const storyContainer = getStoryContainer(elements);
     if (!storyContainer) {
       return state;
     }
@@ -1272,7 +1325,7 @@ export const addChoices = (
   const { elements, animations } = state;
   if (presentationState.choice && resources) {
     // Find the story container
-    const storyContainer = elements.find((el) => el.id === "story");
+    const storyContainer = getStoryContainer(elements);
     if (!storyContainer) return state;
 
     storyContainer.children.push({
@@ -1332,14 +1385,63 @@ export const addChoices = (
   return state;
 };
 
-export const addKeyboard = (state, { presentationState, resources }) => {
-  if (presentationState.keyboard?.resourceId) {
-    const keyboardMapping =
-      resources?.keyboards?.[presentationState.keyboard.resourceId];
-    if (keyboardMapping) {
-      state.global.keyboard = keyboardMapping;
-    }
+export const addControl = (
+  state,
+  {
+    presentationState,
+    resources = {},
+    variables,
+    autoMode,
+    skipMode,
+    canRollback,
+    saveSlots = [],
+  },
+) => {
+  if (!presentationState.control?.resourceId) {
+    return state;
   }
+
+  const control = resources.controls?.[presentationState.control.resourceId];
+  if (!control) {
+    return state;
+  }
+
+  const keyboardMapping = toRenderStateKeyboard(control.keyboard);
+  if (keyboardMapping && Object.keys(keyboardMapping).length > 0) {
+    state.global.keyboard = keyboardMapping;
+  }
+
+  if (!Array.isArray(control.elements) || control.elements.length === 0) {
+    return state;
+  }
+
+  const storyContainer = getStoryContainer(state.elements);
+  if (!storyContainer) {
+    return state;
+  }
+
+  const controlContainer = {
+    id: `control-${presentationState.control.resourceId}`,
+    type: "container",
+    x: 0,
+    y: 0,
+    children: control.elements,
+  };
+
+  storyContainer.children.push(
+    renderTemplatedLayoutContainer({
+      container: controlContainer,
+      resources,
+      templateData: createLayoutTemplateData({
+        variables,
+        saveSlots,
+        autoMode,
+        skipMode,
+        canRollback,
+      }),
+    }),
+  );
+
   return state;
 };
 
@@ -1347,7 +1449,7 @@ export const addBgm = (state, { presentationState, resources, variables }) => {
   const { elements, audio } = state;
   if (presentationState.bgm && resources) {
     // Find the story container
-    const storyContainer = elements.find((el) => el.id === "story");
+    const storyContainer = getStoryContainer(elements);
     if (!storyContainer) return state;
 
     const audioResource = resources.sounds[presentationState.bgm.resourceId];
@@ -1436,7 +1538,7 @@ export const addLayout = (
   const { elements, animations } = state;
   if (presentationState.layout) {
     // Find the story container
-    const storyContainer = elements.find((el) => el.id === "story");
+    const storyContainer = getStoryContainer(elements);
     if (!storyContainer) return state;
 
     const layout = resources.layouts[presentationState.layout.resourceId];
@@ -1466,25 +1568,18 @@ export const addLayout = (
       children: layout.elements || [],
     };
 
-    const templateData = {
-      variables,
-      saveSlots,
-      autoMode,
-      skipMode,
-      canRollback,
-      effectiveSoundVolume: variables?._muteAll
-        ? 0
-        : (variables?._soundVolume ?? 500),
-      textSpeed: variables?._textSpeed ?? 50,
-    };
-
-    const processedContainer = parseAndRender(layoutContainer, templateData, {
-      functions: jemplFunctions,
-    });
-
-    // Push the processed container
     storyContainer.children.push(
-      resolveLayoutResourceIds(processedContainer, resources),
+      renderTemplatedLayoutContainer({
+        container: layoutContainer,
+        resources,
+        templateData: createLayoutTemplateData({
+          variables,
+          saveSlots,
+          autoMode,
+          skipMode,
+          canRollback,
+        }),
+      }),
     );
   }
 
@@ -1629,8 +1724,8 @@ export const constructRenderState = (params) => {
     addVisuals,
     addDialogue,
     addChoices,
-    addKeyboard,
     addLayout,
+    addControl,
     addBgm,
     addSfx,
     addVoice,

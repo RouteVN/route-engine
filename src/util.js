@@ -625,7 +625,7 @@ export const diffPresentationState = (prev = {}, curr = {}) => {
   diffObject("choice");
   diffObject("layout");
   diffObject("animation");
-  diffObject("keyboard");
+  diffObject("control");
 
   diffObject("character");
   diffObject("visual");

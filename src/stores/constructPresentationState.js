@@ -356,9 +356,16 @@ export const choice = (state, presentation) => {
   }
 };
 
-export const keyboard = (state, presentation) => {
-  if (presentation.keyboard) {
-    state.keyboard = presentation.keyboard;
+export const control = (state, presentation) => {
+  if (presentation.control) {
+    if (!presentation.control.resourceId) {
+      delete state.control;
+      return;
+    }
+
+    state.control = presentation.control;
+  } else if (state.control) {
+    delete state.control;
   }
 };
 
@@ -402,7 +409,7 @@ export const constructPresentationState = (presentations) => {
     animation,
     layout,
     choice,
-    keyboard,
+    control,
     voice,
   ];
 

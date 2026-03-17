@@ -359,13 +359,13 @@ properties:
         description: ID of the background music resource
     additionalProperties: false
 
-  keyboard:
+  control:
     type: object
-    description: Sets the active keyboard mapping
+    description: Sets the active control resource
     properties:
       resourceId:
         type: string
-        description: ID of the keyboard resource to activate
+        description: ID of the control resource to activate
     required: [resourceId]
     additionalProperties: false
 

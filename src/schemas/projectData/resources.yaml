@@ -254,19 +254,31 @@ properties:
         additionalProperties: false
     additionalProperties: false
 
-  keyboards:
+  controls:
     type: object
-    description: Keyboard mapping configurations
+    description: Control resources containing keyboard bindings and optional UI elements
     patternProperties:
       "^.+$":
         type: object
-        description: A set of key-to-action mappings
-        additionalProperties:
-          type: object
-          properties:
-            actionPayload:
+        description: Control configuration. This schema is intentionally permissive because runtime-supported control fields may grow beyond the documented subset.
+        properties:
+          keyboard:
+            type: object
+            description: Key-to-action mappings owned by the control resource
+            additionalProperties:
               type: object
-          required: [actionPayload]
+              properties:
+                actions:
+                  type: object
+              required: [actions]
+          elements:
+            type: array
+            description: Array of UI elements authored with textStyleId, imageId, and colorId references
+            items:
+              type: object
+              additionalProperties: true
+        additionalProperties: true
+
   layouts:
     type: object
     description: Layout configurations authored with resource references that are resolved before rendering
