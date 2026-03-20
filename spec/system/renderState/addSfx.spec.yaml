@@ -74,7 +74,7 @@ out:
     - id: "sfx1"
       type: "sound"
       src: "simple.mp3"
-      loop: true
+      loop: false
       volume: 500
       delay: null
 ---
@@ -152,13 +152,13 @@ out:
     - id: "sfx1"
       type: "sound"
       src: "first.mp3"
-      loop: true
+      loop: false
       volume: 600
       delay: null
     - id: "sfx2"
       type: "sound"
       src: "second.mp3"
-      loop: true
+      loop: false
       volume: 500
       delay: null
 ---
