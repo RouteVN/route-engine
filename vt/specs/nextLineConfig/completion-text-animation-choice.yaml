@@ -119,7 +119,7 @@ story:
           lines:
             - id: line1
               actions:
-                base:
+                background:
                   resourceId: baseLayout
                 startAutoMode: {}
                 setNextLineConfig:

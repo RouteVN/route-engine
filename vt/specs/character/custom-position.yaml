@@ -60,8 +60,6 @@ story:
           lines:
             - id: line1
               actions:
-                base:
-                  resourceId: base1
                 background:
                   resourceId: alkejf3la
                 character:

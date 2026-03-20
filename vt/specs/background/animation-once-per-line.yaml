@@ -90,8 +90,6 @@ story:
           lines:
             - id: line1
               actions:
-                base:
-                  resourceId: base1
                 dialogue:
                   ui:
                     resourceId: dialogueGui

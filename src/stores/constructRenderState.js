@@ -760,47 +760,6 @@ export const createInitialState = () => {
   };
 };
 
-/**
- * @param {Object} params
- */
-export const addBase = (state, { presentationState, resources, variables }) => {
-  const { elements } = state;
-  if (presentationState.base) {
-    // Find the story container
-    const storyContainer = getStoryContainer(elements);
-    if (!storyContainer) {
-      return state;
-    }
-
-    if (presentationState.base.resourceId) {
-      const layout = resources?.layouts[presentationState.base.resourceId];
-
-      if (layout) {
-        const baseContainer = {
-          id: "base",
-          type: "container",
-          children: layout.elements,
-        };
-
-        const processedContainer = parseAndRender(
-          baseContainer,
-          { variables },
-          { functions: jemplFunctions },
-        );
-
-        storyContainer.children.unshift(
-          resolveLayoutResourceIds(processedContainer, resources),
-        );
-      }
-    }
-  }
-  return state;
-};
-
-/**
- *
- * @param {Object} params
- */
 export const addBackgroundOrCg = (
   state,
   {
@@ -1718,14 +1677,13 @@ export const addLayeredViews = (
 
 export const constructRenderState = (params) => {
   const actions = [
-    addBase,
+    addControl,
     addBackgroundOrCg,
     addCharacters,
     addVisuals,
     addDialogue,
     addChoices,
     addLayout,
-    addControl,
     addBgm,
     addSfx,
     addVoice,
