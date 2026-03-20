@@ -337,8 +337,17 @@ properties:
             resourceId:
               type: string
               description: ID of the sound effect resource
-          required: [id, resourceId]
-          additionalProperties: false
+            loop:
+              type: boolean
+              description: Whether the sound effect loops
+            volume:
+              type: number
+              description: Sound effect volume from 0 to 1000
+            delay:
+              type: number
+              description: Delay before the sound effect starts in milliseconds
+        required: [id, resourceId]
+        additionalProperties: false
     additionalProperties: false
 
   bgm:

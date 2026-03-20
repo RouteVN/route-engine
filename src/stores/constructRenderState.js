@@ -1445,7 +1445,7 @@ export const addSfx = (state, { presentationState, resources }) => {
         id: item.id,
         type: "sound",
         src: audioResource.fileId,
-        loop: item.loop ?? audioResource.loop ?? true,
+        loop: item.loop ?? audioResource.loop ?? false,
         volume: item.volume ?? audioResource.volume ?? 500,
         delay: item.delay ?? audioResource.delay ?? null,
       });
