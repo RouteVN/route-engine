@@ -62,7 +62,7 @@ resources:
   animations:
     3lkj289:
       name: Fade In
-      type: live
+      type: update
       tween:
         alpha:
           initialValue: 0

@@ -81,6 +81,12 @@ out:
               height: 100
         - id: "bg-cg-bgImage"
           type: "sprite"
+          alpha: 1
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
           x: 0
           y: 0
           src: "background.jpg"
@@ -132,6 +138,12 @@ out:
               id: "old-container"
         - id: "bg-cg-newBg"
           type: "sprite"
+          alpha: 1
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
           x: 0
           y: 0
           src: "new-background.jpg"

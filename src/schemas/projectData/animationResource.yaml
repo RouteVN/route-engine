@@ -71,7 +71,7 @@ $defs:
     required:
       - keyframes
     additionalProperties: false
-  liveTween:
+  updateTween:
     type: object
     properties:
       alpha:
@@ -88,7 +88,7 @@ $defs:
         $ref: "#/$defs/tweenProperty"
     additionalProperties: false
     minProperties: 1
-  replaceTween:
+  transitionTween:
     type: object
     properties:
       translateX:
@@ -105,13 +105,13 @@ $defs:
         $ref: "#/$defs/tweenProperty"
     additionalProperties: false
     minProperties: 1
-  replaceSide:
+  transitionSide:
     type: object
     required:
       - tween
     properties:
       tween:
-        $ref: "#/$defs/replaceTween"
+        $ref: "#/$defs/transitionTween"
     additionalProperties: false
   maskProgress:
     $ref: "#/$defs/tweenProperty"
@@ -191,8 +191,8 @@ properties:
     description: Display name for the animation
   type:
     type: string
-    enum: [live, replace]
-    description: Animation structure.
+    enum: [update, transition]
+    description: Animation structure. Legacy `live` and `replace` payloads are normalized during render-state construction, but authored project data should use `update` and `transition`.
   complete:
     type: object
     properties:
@@ -200,18 +200,18 @@ properties:
         type: object
     additionalProperties: true
   tween:
-    $ref: "#/$defs/liveTween"
+    $ref: "#/$defs/updateTween"
   prev:
-    $ref: "#/$defs/replaceSide"
+    $ref: "#/$defs/transitionSide"
   next:
-    $ref: "#/$defs/replaceSide"
+    $ref: "#/$defs/transitionSide"
   mask:
     $ref: "#/$defs/mask"
 allOf:
   - if:
       properties:
         type:
-          const: live
+          const: update
     then:
       required:
         - tween
@@ -223,7 +223,7 @@ allOf:
   - if:
       properties:
         type:
-          const: replace
+          const: transition
     then:
       not:
         required: [tween]

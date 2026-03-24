@@ -97,7 +97,7 @@ resources:
   animations:
     fadeIn:
       name: Fade In
-      type: live
+      type: update
       tween:
         alpha:
           initialValue: 0
@@ -107,7 +107,7 @@ resources:
               easing: linear
     fadeOut:
       name: Fade Out
-      type: live
+      type: update
       tween:
         alpha:
           initialValue: 1

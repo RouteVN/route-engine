@@ -7,8 +7,24 @@ const jemplFunctions = {
   formatDate,
 };
 
-const createAnimationInstance = ({ id, targetId, animation }) => {
+const LEGACY_ANIMATION_TYPE_MAP = {
+  live: "update",
+  replace: "transition",
+};
+
+const cloneAndNormalizeAnimation = (animation) => {
   const normalized = structuredClone(animation);
+
+  if (typeof normalized.type === "string") {
+    normalized.type =
+      LEGACY_ANIMATION_TYPE_MAP[normalized.type] || normalized.type;
+  }
+
+  return normalized;
+};
+
+const createAnimationInstance = ({ id, targetId, animation }) => {
+  const normalized = cloneAndNormalizeAnimation(animation);
   delete normalized.name;
   normalized.id = id;
   normalized.targetId = targetId;
@@ -20,7 +36,7 @@ const cloneAnimation = (animation, { defaultTargetId, defaultId } = {}) => {
     return animation;
   }
 
-  const normalized = structuredClone(animation);
+  const normalized = cloneAndNormalizeAnimation(animation);
   normalized.id ??= defaultId;
   normalized.targetId ??= defaultTargetId;
   return normalized;
@@ -795,6 +811,12 @@ export const addBackgroundOrCg = (
           src: background.fileId,
           width: background.width,
           height: background.height,
+          alpha: 1,
+          anchorX: 0,
+          anchorY: 0,
+          rotation: 0,
+          scaleX: 1,
+          scaleY: 1,
         };
 
         if (isVideo) {
