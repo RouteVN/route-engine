@@ -75,7 +75,7 @@ resources:
   animations:
     fadeIn:
       name: Fade In
-      type: live
+      type: update
       tween:
         alpha:
           initialValue: 0
@@ -85,7 +85,7 @@ resources:
               easing: easeOutQuad
     fadeOut:
       name: Fade Out
-      type: live
+      type: update
       tween:
         alpha:
           keyframes:
@@ -94,7 +94,7 @@ resources:
               easing: easeInQuad
     slideIn:
       name: Slide In
-      type: live
+      type: update
       tween:
         y:
           initialValue: 500

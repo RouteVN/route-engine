@@ -146,7 +146,7 @@ resources:
     creditsLayout:
       transitions:
         - id: 932fsdf
-          type: live
+          type: update
           targetId: kjf32alk32
           tween:
             y:
@@ -1311,7 +1311,7 @@ resources:
   animations:
     3lkj289:
       name: Fade In
-      type: live
+      type: update
       tween:
         alpha:
           initialValue: 0
@@ -1321,7 +1321,7 @@ resources:
               easing: linear
     8h3js:
       name: Fade Out
-      type: live
+      type: update
       tween:
         alpha:
           initialValue: 1

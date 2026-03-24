@@ -113,7 +113,7 @@ in:
           height: 200
       animations:
         fadeIn:
-          type: live
+          type: update
           tween:
             alpha:
               initialValue: 0
@@ -146,7 +146,7 @@ out:
               y: 0
   animations:
     - id: "character-animation-in"
-      type: "live"
+      type: "update"
       targetId: "character-container-char1-0-body"
       tween:
         alpha:
@@ -181,7 +181,7 @@ in:
     resources:
       animations:
         fadeOut:
-          type: live
+          type: update
           tween:
             alpha:
               initialValue: 1
@@ -197,7 +197,7 @@ out:
       children: []
   animations:
     - id: "character-animation-out"
-      type: "live"
+      type: "update"
       targetId: "character-container-char1-0-body"
       tween:
         alpha:
@@ -243,7 +243,7 @@ in:
           height: 200
       animations:
         fadeIn:
-          type: live
+          type: update
           tween:
             alpha:
               initialValue: 0
@@ -276,7 +276,7 @@ out:
               y: 0
   animations:
     - id: "character-animation-in"
-      type: "live"
+      type: "update"
       targetId: "character-container-char1-0-body"
       tween:
         alpha:
@@ -329,7 +329,7 @@ in:
           height: 200
       animations:
         scaleUp:
-          type: live
+          type: update
           tween:
             scaleX:
               keyframes:
@@ -367,7 +367,7 @@ out:
               y: 0
   animations:
     - id: "character-animation-update"
-      type: "live"
+      type: "update"
       targetId: "character-container-char1-0-body"
       tween:
         scaleX:

@@ -52,7 +52,7 @@ resources:
   animations:
     fade-in:
       name: Fade In (1 second)
-      type: live
+      type: update
       tween:
         alpha:
           initialValue: 0

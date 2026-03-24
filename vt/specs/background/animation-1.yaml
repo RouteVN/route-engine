@@ -35,7 +35,7 @@ resources:
   animations:
     3lkj289:
       name: Fade In
-      type: live
+      type: update
       tween:
         alpha:
           initialValue: 0
@@ -45,7 +45,7 @@ resources:
               easing: linear
     k38df:
       name: Fade to half
-      type: live
+      type: update
       tween:
         alpha:
           keyframes:
@@ -54,7 +54,7 @@ resources:
               easing: linear
     8h3js:
       name: Fade Out
-      type: live
+      type: update
       tween:
         alpha:
           keyframes:

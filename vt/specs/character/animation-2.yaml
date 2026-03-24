@@ -80,7 +80,7 @@ resources:
   animations:
     slide_in_left:
       name: Slide In From Left
-      type: live
+      type: update
       tween:
         x:
           initialValue: -300
@@ -96,7 +96,7 @@ resources:
               easing: linear
     slide_in_right:
       name: Slide In From Right
-      type: live
+      type: update
       tween:
         x:
           initialValue: 2220
@@ -112,7 +112,7 @@ resources:
               easing: linear
     slide_out_left:
       name: Slide Out To Left
-      type: live
+      type: update
       tween:
         x:
           keyframes:
@@ -126,7 +126,7 @@ resources:
               easing: linear
     slide_out_right:
       name: Slide Out To Right
-      type: live
+      type: update
       tween:
         x:
           keyframes:

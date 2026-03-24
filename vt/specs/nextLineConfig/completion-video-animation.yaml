@@ -25,7 +25,7 @@ resources:
       height: 1080
   animations:
     fade-in-800:
-      type: live
+      type: update
       tween:
         alpha:
           initialValue: 0
