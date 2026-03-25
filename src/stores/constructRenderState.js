@@ -31,6 +31,116 @@ const createAnimationInstance = ({ id, targetId, animation }) => {
   return normalized;
 };
 
+const getAnimationType = (animation) => {
+  if (!animation || typeof animation !== "object" || Array.isArray(animation)) {
+    return undefined;
+  }
+
+  if (typeof animation.type !== "string") {
+    return undefined;
+  }
+
+  return LEGACY_ANIMATION_TYPE_MAP[animation.type] || animation.type;
+};
+
+const resolveAnimationResourceId = (animationDef) => {
+  if (typeof animationDef === "string") {
+    return animationDef;
+  }
+
+  if (
+    !animationDef ||
+    typeof animationDef !== "object" ||
+    Array.isArray(animationDef)
+  ) {
+    return undefined;
+  }
+
+  return animationDef.resourceId;
+};
+
+const hasLegacyAnimationLifecycleConfig = (animationsDef) => {
+  if (
+    !animationsDef ||
+    typeof animationsDef !== "object" ||
+    Array.isArray(animationsDef)
+  ) {
+    return false;
+  }
+
+  return ["in", "out", "update"].some(
+    (key) => animationsDef[key] !== undefined,
+  );
+};
+
+const pushAnimationInstance = ({
+  animations,
+  resources,
+  animationId,
+  instanceId,
+  targetId,
+}) => {
+  if (!animationId || !targetId) {
+    return false;
+  }
+
+  const animation = resources?.animations?.[animationId];
+  if (!animation) {
+    return false;
+  }
+
+  animations.push(
+    createAnimationInstance({
+      id: instanceId,
+      targetId,
+      animation,
+    }),
+  );
+
+  return true;
+};
+
+const getAnimationLifecycle = ({
+  hasPrevious,
+  hasCurrent,
+  previousResourceId,
+  currentResourceId,
+  sharedTarget,
+}) => {
+  if (!hasPrevious && hasCurrent) {
+    return "enter";
+  }
+
+  if (hasPrevious && !hasCurrent) {
+    return "exit";
+  }
+
+  if (hasPrevious && hasCurrent) {
+    if (previousResourceId === currentResourceId && sharedTarget) {
+      return "update";
+    }
+
+    return "replace";
+  }
+
+  return "none";
+};
+
+const assertUpdateAnimationLifecycle = ({
+  animationType,
+  animationId,
+  animationPath,
+  lifecycle,
+}) => {
+  if (animationType !== "update" || lifecycle === "update") {
+    return;
+  }
+
+  throw new Error(
+    `[${animationPath}] Animation "${animationId}" has type "update", but update animations can only be used when the same target persists across the state change. Use type "transition" for enter, exit, and replace.`,
+  );
+};
+
 const cloneAnimation = (animation, { defaultTargetId, defaultId } = {}) => {
   if (!animation || typeof animation !== "object" || Array.isArray(animation)) {
     return animation;
@@ -685,16 +795,17 @@ const toRenderStateKeyboard = (keyboard = {}) => {
 };
 
 /**
- * Helper to push in/out/update animations based on previous and current state
+ * Helper to push animations based on previous and current state
  * @param {Object} params
  * @param {Array} params.animations - The animations array to push to
- * @param {Object} params.animationsDef - The animations definition (in/out/update)
+ * @param {Object} params.animationsDef - Animation selection definition
  * @param {Object} params.resources - The resources object containing animations
  * @param {string|undefined} params.previousResourceId - Previous resource ID
  * @param {string|undefined} params.currentResourceId - Current resource ID
+ * @param {string|undefined} params.previousTargetId - Previous target element ID
+ * @param {string|undefined} params.currentTargetId - Current target element ID
+ * @param {string} params.animationPath - Source path for error reporting
  * @param {string} params.idPrefix - Prefix for animation IDs
- * @param {string} params.targetId - Target element ID for in/update animations
- * @param {string} params.outTargetId - Target element ID for out animation (defaults to targetId)
  */
 const pushAnimations = ({
   animations,
@@ -702,59 +813,152 @@ const pushAnimations = ({
   resources,
   previousResourceId,
   currentResourceId,
+  previousTargetId,
+  currentTargetId,
+  animationPath,
   idPrefix,
-  targetId,
-  outTargetId,
 }) => {
   if (!animationsDef) return;
 
-  if (animationsDef.in) {
-    const animationId = animationsDef.in.resourceId || animationsDef.in;
-    const animation = resources?.animations?.[animationId];
-    if (animation && !previousResourceId) {
-      animations.push(
-        createAnimationInstance({
-          id: `${idPrefix}-animation-in`,
-          targetId,
-          animation,
-        }),
-      );
-    }
-  }
+  const hasPrevious =
+    previousResourceId !== undefined &&
+    previousResourceId !== null &&
+    previousResourceId !== false;
+  const hasCurrent =
+    currentResourceId !== undefined &&
+    currentResourceId !== null &&
+    currentResourceId !== false;
+  const sharedTarget =
+    previousTargetId && currentTargetId && previousTargetId === currentTargetId;
+  const lifecycle = getAnimationLifecycle({
+    hasPrevious,
+    hasCurrent,
+    previousResourceId,
+    currentResourceId,
+    sharedTarget,
+  });
 
-  if (animationsDef.out) {
-    const animationId = animationsDef.out.resourceId || animationsDef.out;
-    const animation = resources?.animations?.[animationId];
+  if (hasLegacyAnimationLifecycleConfig(animationsDef)) {
+    if (animationsDef.in && !hasPrevious) {
+      const animationId = resolveAnimationResourceId(animationsDef.in);
+      assertUpdateAnimationLifecycle({
+        animationType: getAnimationType(resources?.animations?.[animationId]),
+        animationId,
+        animationPath: `${animationPath}.in`,
+        lifecycle: "enter",
+      });
+
+      pushAnimationInstance({
+        animations,
+        resources,
+        animationId,
+        instanceId: `${idPrefix}-animation-in`,
+        targetId: currentTargetId,
+      });
+    }
+
     if (
-      animation &&
-      previousResourceId &&
+      animationsDef.out &&
+      hasPrevious &&
       previousResourceId !== currentResourceId
     ) {
-      animations.push(
-        createAnimationInstance({
-          id: `${idPrefix}-animation-out`,
-          targetId: outTargetId || targetId,
-          animation,
-        }),
-      );
+      const animationId = resolveAnimationResourceId(animationsDef.out);
+      assertUpdateAnimationLifecycle({
+        animationType: getAnimationType(resources?.animations?.[animationId]),
+        animationId,
+        animationPath: `${animationPath}.out`,
+        lifecycle: "exit",
+      });
+
+      pushAnimationInstance({
+        animations,
+        resources,
+        animationId,
+        instanceId: `${idPrefix}-animation-out`,
+        targetId: previousTargetId,
+      });
     }
+
+    if (
+      animationsDef.update &&
+      hasPrevious &&
+      hasCurrent &&
+      previousResourceId === currentResourceId &&
+      sharedTarget
+    ) {
+      pushAnimationInstance({
+        animations,
+        resources,
+        animationId: resolveAnimationResourceId(animationsDef.update),
+        instanceId: `${idPrefix}-animation-update`,
+        targetId: currentTargetId,
+      });
+    }
+
+    return;
   }
 
-  if (animationsDef.update) {
-    const animationId = animationsDef.update.resourceId || animationsDef.update;
-    const animation = resources?.animations?.[animationId];
+  const animationId = resolveAnimationResourceId(animationsDef);
+  const animation = resources?.animations?.[animationId];
+  const animationType = getAnimationType(animation);
+
+  assertUpdateAnimationLifecycle({
+    animationType,
+    animationId,
+    animationPath,
+    lifecycle,
+  });
+
+  if (animationType === "update") {
     if (
-      animation &&
-      previousResourceId &&
-      previousResourceId === currentResourceId
+      hasPrevious &&
+      hasCurrent &&
+      previousResourceId === currentResourceId &&
+      sharedTarget
     ) {
-      animations.push(
-        createAnimationInstance({
-          id: `${idPrefix}-animation-update`,
-          targetId,
-          animation,
-        }),
-      );
+      pushAnimationInstance({
+        animations,
+        resources,
+        animationId,
+        instanceId: `${idPrefix}-animation-update`,
+        targetId: currentTargetId,
+      });
+    }
+
+    return;
+  }
+
+  if (animationType === "transition") {
+    if (hasPrevious && hasCurrent && sharedTarget) {
+      pushAnimationInstance({
+        animations,
+        resources,
+        animationId,
+        instanceId: `${idPrefix}-animation-transition`,
+        targetId: currentTargetId,
+      });
+
+      return;
+    }
+
+    if (hasPrevious) {
+      pushAnimationInstance({
+        animations,
+        resources,
+        animationId,
+        instanceId: `${idPrefix}-animation-out`,
+        targetId: previousTargetId,
+      });
+    }
+
+    if (hasCurrent) {
+      pushAnimationInstance({
+        animations,
+        resources,
+        animationId,
+        instanceId: `${idPrefix}-animation-in`,
+        targetId: currentTargetId,
+      });
     }
   }
 };
@@ -863,9 +1067,14 @@ export const addBackgroundOrCg = (
         resources,
         previousResourceId,
         currentResourceId,
+        previousTargetId: previousResourceId
+          ? `bg-cg-${previousResourceId}`
+          : undefined,
+        currentTargetId: currentResourceId
+          ? `bg-cg-${currentResourceId}`
+          : undefined,
+        animationPath: "background.animations",
         idPrefix: "bg-cg",
-        targetId: `bg-cg-${currentResourceId}`,
-        outTargetId: `bg-cg-${previousResourceId}`,
       });
     }
   }
@@ -912,21 +1121,25 @@ export const addCharacters = (
           ? getCharacterContainerId(previousItem, previousItemIndex)
           : undefined;
 
-      // For out animations only, we don't need to create a container
-      if (item.animations && item.animations.out && !sprites && !transformId) {
-        // Just add the out animation transition, container should already exist
-        if (!isLineCompleted && previousHasSprites) {
-          const animationId = item.animations.out.resourceId;
-          const animation = resources?.animations?.[animationId];
-          if (animation) {
-            const outTransition = createAnimationInstance({
-              id: `character-animation-out`,
-              targetId: previousContainerId || `character-container-${item.id}`,
-              animation,
-            });
-            animations.push(outTransition);
-          }
-        }
+      if (
+        item.animations &&
+        !sprites &&
+        !transformId &&
+        previousHasSprites &&
+        !isLineCompleted &&
+        !skipTransitionsAndAnimations
+      ) {
+        pushAnimations({
+          animations,
+          animationsDef: item.animations,
+          resources,
+          previousResourceId: previousContainerId,
+          currentResourceId: undefined,
+          previousTargetId: previousContainerId,
+          currentTargetId: undefined,
+          animationPath: `character.items[${i}].animations`,
+          idPrefix: "character",
+        });
         continue;
       }
 
@@ -981,17 +1194,16 @@ export const addCharacters = (
         !isLineCompleted &&
         !skipTransitionsAndAnimations
       ) {
-        // Use boolean flags as "resource IDs" for the helper
-        // previousHasSprites/currentHasSprites work because helper checks truthiness and equality
         pushAnimations({
           animations,
           animationsDef: item.animations,
           resources,
-          previousResourceId: previousHasSprites,
-          currentResourceId: currentHasSprites,
+          previousResourceId: previousContainerId,
+          currentResourceId: containerId,
+          previousTargetId: previousContainerId,
+          currentTargetId: containerId,
+          animationPath: `character.items[${i}].animations`,
           idPrefix: "character",
-          targetId: containerId,
-          outTargetId: previousContainerId,
         });
       }
     }
@@ -1137,8 +1349,12 @@ export const addVisuals = (
           resources,
           previousResourceId: previousItem?.resourceId,
           currentResourceId: item.resourceId,
+          previousTargetId: previousItem?.resourceId
+            ? `visual-${item.id}`
+            : undefined,
+          currentTargetId: item.resourceId ? `visual-${item.id}` : undefined,
+          animationPath: `visual.items[${item.id}].animations`,
           idPrefix: item.id,
-          targetId: `visual-${item.id}`,
         });
       }
     }
@@ -1280,8 +1496,14 @@ export const addDialogue = (
       resources,
       previousResourceId: previousPresentationState?.dialogue?.ui?.resourceId,
       currentResourceId: presentationState.dialogue.ui?.resourceId,
+      previousTargetId: previousPresentationState?.dialogue?.ui?.resourceId
+        ? "dialogue-container"
+        : undefined,
+      currentTargetId: presentationState.dialogue.ui?.resourceId
+        ? "dialogue-container"
+        : undefined,
+      animationPath: "dialogue.ui.animations",
       idPrefix: "dialogue-ui",
-      targetId: "dialogue-container",
     });
   }
 
@@ -1358,8 +1580,14 @@ export const addChoices = (
         resources,
         previousResourceId: previousPresentationState?.choice?.resourceId,
         currentResourceId: presentationState.choice.resourceId,
+        previousTargetId: previousPresentationState?.choice?.resourceId
+          ? "choice-container"
+          : undefined,
+        currentTargetId: presentationState.choice.resourceId
+          ? "choice-container"
+          : undefined,
+        animationPath: "choice.animations",
         idPrefix: "choice",
-        targetId: "choice-container",
       });
     }
   }
@@ -1579,9 +1807,14 @@ export const addLayout = (
       resources,
       previousResourceId,
       currentResourceId,
+      previousTargetId: previousResourceId
+        ? `layout-${previousResourceId}`
+        : undefined,
+      currentTargetId: currentResourceId
+        ? `layout-${currentResourceId}`
+        : undefined,
+      animationPath: "layout.animations",
       idPrefix: "layout",
-      targetId: `layout-${currentResourceId}`,
-      outTargetId: `layout-${previousResourceId}`,
     });
   }
 

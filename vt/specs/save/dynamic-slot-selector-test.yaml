@@ -11,7 +11,7 @@ resources:
       type: number
       scope: global-device
       default: 1
-  layouts:
+  controls:
     base1:
       elements:
         - id: clickArea
@@ -23,6 +23,7 @@ resources:
               actions:
                 contextNextLine: {}
           colorId: layoutColor1
+  layouts:
     dynamicSlotsTestUI:
       name: Dynamic Slots Grid Test
       elements:
@@ -208,7 +209,7 @@ story:
           lines:
             - id: line1
               actions:
-                background:
+                control:
                   resourceId: base1
                 layout:
                   resourceId: dynamicSlotsTestUI

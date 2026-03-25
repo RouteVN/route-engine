@@ -141,8 +141,7 @@ story:
                 background:
                   resourceId: bg-forest
                   animations:
-                    in:
-                      resourceId: fade-in-1s
+                    resourceId: fade-in-1s
                 dialogue:
                   content:
                     - text: "Line 2: background fade-in animation must complete before auto-next."

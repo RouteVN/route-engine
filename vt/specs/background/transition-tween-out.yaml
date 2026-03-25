@@ -1,0 +1,86 @@
+---
+title: Background Transition Tween Out
+description: Background image exiting to transparency with a transition tween.
+specs:
+  - background out should accept transition-type animation resources
+  - the background should be partially moved offscreen halfway through the transition
+  - the background should be fully cleared after the transition completes
+steps:
+  - action: wait
+    ms: 100
+  - action: click
+    x: 960
+    "y": 540
+  - action: wait
+    ms: 500
+  - action: screenshot
+  - action: wait
+    ms: 600
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  images:
+    bg-forest:
+      fileId: dmni32
+      width: 1920
+      height: 1080
+  layouts:
+    bg-forest-layout:
+      name: Clickable Forest Background
+      elements:
+        - id: bg-forest-sprite
+          type: sprite
+          imageId: bg-forest
+          x: 0
+          y: 0
+          width: 1920
+          height: 1080
+        - id: click-area
+          type: rect
+          x: 0
+          y: 0
+          width: 1920
+          height: 1080
+          alpha: 0
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: overlayColor
+  animations:
+    bg-slide-out:
+      name: Background Slide Out
+      type: transition
+      prev:
+        tween:
+          translateX:
+            initialValue: 0
+            keyframes:
+              - duration: 1000
+                value: -1
+                easing: linear
+  colors:
+    overlayColor:
+      hex: "#000000"
+story:
+  initialSceneId: backgroundScene
+  scenes:
+    backgroundScene:
+      name: Background Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                background:
+                  resourceId: bg-forest-layout
+            - id: line2
+              actions:
+                background:
+                  animations:
+                    resourceId: bg-slide-out

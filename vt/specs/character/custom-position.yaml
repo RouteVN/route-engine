@@ -19,7 +19,7 @@ resources:
       fileId: char_sprite_2
       width: 553
       height: 865
-  layouts:
+  controls:
     base1:
       elements:
         - id: af32

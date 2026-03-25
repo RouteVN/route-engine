@@ -32,7 +32,7 @@ resources:
       type: boolean
       scope: global-account
       default: false
-  layouts:
+  controls:
     base1:
       elements:
         - id: clickArea
@@ -44,6 +44,7 @@ resources:
               actions:
                 nextLine: {}
           colorId: layoutColor1
+  layouts:
     scopeComparisonUI:
       name: Variable Scopes Comparison
       elements:
@@ -663,7 +664,7 @@ story:
           lines:
             - id: line1
               actions:
-                background:
+                control:
                   resourceId: base1
                 layout:
                   resourceId: scopeComparisonUI

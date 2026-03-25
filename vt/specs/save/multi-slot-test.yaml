@@ -23,7 +23,7 @@ resources:
       type: boolean
       scope: context
       default: false
-  layouts:
+  controls:
     base1:
       elements:
         - id: clickArea
@@ -35,6 +35,7 @@ resources:
               actions:
                 contextNextLine: {}
           colorId: layoutColor1
+  layouts:
     multiSlotTestUI:
       name: Multi-Slot Save Test
       elements:
@@ -547,7 +548,7 @@ story:
           lines:
             - id: line1
               actions:
-                background:
+                control:
                   resourceId: base1
                 layout:
                   resourceId: multiSlotTestUI

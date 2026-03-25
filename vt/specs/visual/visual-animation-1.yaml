@@ -7,7 +7,7 @@ screen:
   height: 1080
   backgroundColor: "#000000"
 resources:
-  layouts:
+  controls:
     base1:
       elements:
         - id: af32
@@ -44,23 +44,25 @@ resources:
   animations:
     3lkj289:
       name: Fade In
-      type: update
-      tween:
-        alpha:
-          initialValue: 0
-          keyframes:
-            - duration: 700
-              value: 1
-              easing: linear
+      type: transition
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 700
+                value: 1
+                easing: linear
     8h3js:
       name: Fade Out
-      type: update
-      tween:
-        alpha:
-          keyframes:
-            - duration: 700
-              value: 0
-              easing: linear
+      type: transition
+      prev:
+        tween:
+          alpha:
+            keyframes:
+              - duration: 700
+                value: 0
+                easing: linear
   colors:
     layoutColor1:
       hex: "#000000"
@@ -76,7 +78,7 @@ story:
           lines:
             - id: line1
               actions:
-                background:
+                control:
                   resourceId: base1
                 visual:
                   items:
@@ -84,8 +86,7 @@ story:
                       resourceId: alkejf3la
                       transformId: centerPos
                       animations:
-                        in:
-                          resourceId: 3lkj289
+                        resourceId: 3lkj289
             - id: line2
               actions:
                 visual:
@@ -98,8 +99,5 @@ story:
                 visual:
                   items:
                     - id: visual-1
-                      resourceId: 8a3lkja
-                      transformId: centerPos
                       animations:
-                        out:
-                          resourceId: 8h3js
+                        resourceId: 8h3js

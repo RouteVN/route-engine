@@ -132,13 +132,14 @@ in:
           scaleY: 1
       animations:
         fadeIn:
-          type: update
-          tween:
-            alpha:
-              initialValue: 0
-              keyframes:
-                - duration: 500
-                  value: 1
+          type: transition
+          next:
+            tween:
+              alpha:
+                initialValue: 0
+                keyframes:
+                  - duration: 500
+                    value: 1
 out:
   elements:
     - id: "story"
@@ -158,14 +159,15 @@ out:
           scaleY: 1
   animations:
     - id: "visual1-animation-in"
-      type: "update"
+      type: "transition"
       targetId: "visual-visual1"
-      tween:
-        alpha:
-          initialValue: 0
-          keyframes:
-            - duration: 500
-              value: 1
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 500
+                value: 1
   audio: []
 ---
 case: add visual with out animation
@@ -192,13 +194,14 @@ in:
     resources:
       animations:
         fadeOut:
-          type: update
-          tween:
-            alpha:
-              initialValue: 1
-              keyframes:
-                - duration: 300
-                  value: 0
+          type: transition
+          prev:
+            tween:
+              alpha:
+                initialValue: 1
+                keyframes:
+                  - duration: 300
+                    value: 0
 out:
   elements:
     - id: "story"
@@ -208,14 +211,15 @@ out:
       children: []
   animations:
     - id: "visual1-animation-out"
-      type: "update"
+      type: "transition"
       targetId: "visual-visual1"
-      tween:
-        alpha:
-          initialValue: 1
-          keyframes:
-            - duration: 300
-              value: 0
+      prev:
+        tween:
+          alpha:
+            initialValue: 1
+            keyframes:
+              - duration: 300
+                value: 0
   audio: []
 ---
 case: add visual with in animation (no previous state)
@@ -252,13 +256,14 @@ in:
           scaleY: 1
       animations:
         slideIn:
-          type: update
-          tween:
-            x:
-              initialValue: -50
-              keyframes:
-                - duration: 400
-                  value: 150
+          type: transition
+          next:
+            tween:
+              x:
+                initialValue: -50
+                keyframes:
+                  - duration: 400
+                    value: 150
 out:
   elements:
     - id: "story"
@@ -278,14 +283,15 @@ out:
           scaleY: 1
   animations:
     - id: "visual1-animation-in"
-      type: "update"
+      type: "transition"
       targetId: "visual-visual1"
-      tween:
-        x:
-          initialValue: -50
-          keyframes:
-            - duration: 400
-              value: 150
+      next:
+        tween:
+          x:
+            initialValue: -50
+            keyframes:
+              - duration: 400
+                value: 150
   audio: []
 ---
 case: multiple visual items
@@ -776,13 +782,14 @@ in:
           scaleY: 1
       animations:
         fadeIn:
-          type: update
-          tween:
-            alpha:
-              initialValue: 0
-              keyframes:
-                - duration: 500
-                  value: 1
+          type: transition
+          next:
+            tween:
+              alpha:
+                initialValue: 0
+                keyframes:
+                  - duration: 500
+                    value: 1
 out:
   elements:
     - id: "story"
@@ -807,14 +814,15 @@ out:
               height: 1080
   animations:
     - id: "overlay-animation-in"
-      type: "update"
+      type: "transition"
       targetId: "visual-overlay"
-      tween:
-        alpha:
-          initialValue: 0
-          keyframes:
-            - duration: 500
-              value: 1
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 500
+                value: 1
   audio: []
 ---
 case: layout not found - skip item
@@ -1254,4 +1262,239 @@ out:
               width: 320
               height: 180
   animations: []
+  audio: []
+---
+case: add visual with single transition animation reference
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceId: "image1"
+            transformId: "transform1"
+            animations:
+              resourceId: "fadeInTransition"
+    resources:
+      images:
+        image1:
+          fileId: "fade.png"
+      transforms:
+        transform1:
+          x: 50
+          y: 100
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      animations:
+        fadeInTransition:
+          type: transition
+          next:
+            tween:
+              alpha:
+                initialValue: 0
+                keyframes:
+                  - duration: 500
+                    value: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-visual1"
+          type: "sprite"
+          src: "fade.png"
+          x: 50
+          y: 100
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+  animations:
+    - id: "visual1-animation-in"
+      type: "transition"
+      targetId: "visual-visual1"
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 500
+                value: 1
+  audio: []
+---
+case: replace visual with single transition animation reference on shared target
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceId: "image2"
+            transformId: "transform1"
+            animations:
+              resourceId: "crossFade"
+    previousPresentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceId: "image1"
+    resources:
+      images:
+        image2:
+          fileId: "replace.png"
+      transforms:
+        transform1:
+          x: 50
+          y: 100
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      animations:
+        crossFade:
+          type: transition
+          prev:
+            tween:
+              alpha:
+                initialValue: 1
+                keyframes:
+                  - duration: 300
+                    value: 0
+          next:
+            tween:
+              alpha:
+                initialValue: 0
+                keyframes:
+                  - duration: 300
+                    value: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-visual1"
+          type: "sprite"
+          src: "replace.png"
+          x: 50
+          y: 100
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+  animations:
+    - id: "visual1-animation-transition"
+      type: "transition"
+      targetId: "visual-visual1"
+      prev:
+        tween:
+          alpha:
+            initialValue: 1
+            keyframes:
+              - duration: 300
+                value: 0
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 300
+                value: 1
+  audio: []
+---
+case: update visual with single update animation reference on shared target
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceId: "image1"
+            transformId: "transform1"
+            animations:
+              resourceId: "pulse"
+    previousPresentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceId: "image1"
+    resources:
+      images:
+        image1:
+          fileId: "pulse.png"
+      transforms:
+        transform1:
+          x: 50
+          y: 100
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      animations:
+        pulse:
+          type: update
+          tween:
+            alpha:
+              initialValue: 0.5
+              keyframes:
+                - duration: 200
+                  value: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-visual1"
+          type: "sprite"
+          src: "pulse.png"
+          x: 50
+          y: 100
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+  animations:
+    - id: "visual1-animation-update"
+      type: "update"
+      targetId: "visual-visual1"
+      tween:
+        alpha:
+          initialValue: 0.5
+          keyframes:
+            - duration: 200
+              value: 1
   audio: []

@@ -12,7 +12,7 @@ screen:
   height: 1080
   backgroundColor: "#000000"
 resources:
-  layouts:
+  controls:
     base1:
       elements:
         - id: click-area
@@ -24,6 +24,7 @@ resources:
               actions:
                 nextLine: {}
           colorId: layoutColor1
+  layouts:
     dialogueGui:
       name: Dialogue Screen
       elements:
@@ -52,14 +53,15 @@ resources:
   animations:
     fade-in:
       name: Fade In (1 second)
-      type: update
-      tween:
-        alpha:
-          initialValue: 0
-          keyframes:
-            - duration: 1000
-              value: 1
-              easing: linear
+      type: transition
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 1000
+                value: 1
+                easing: linear
   fonts:
     fontDefault:
       fileId: Arial
@@ -90,6 +92,8 @@ story:
           lines:
             - id: line1
               actions:
+                control:
+                  resourceId: base1
                 dialogue:
                   ui:
                     resourceId: dialogueGui
@@ -99,8 +103,7 @@ story:
                 background:
                   resourceId: bg-school
                   animations:
-                    in:
-                      resourceId: fade-in
+                    resourceId: fade-in
             - id: line2
               actions:
                 dialogue:

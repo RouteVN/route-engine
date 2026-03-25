@@ -11,7 +11,7 @@ resources:
       fileId: 3ka3s
     93k22:
       fileId: xk393
-  layouts:
+  controls:
     base1:
       elements:
         - id: af32
@@ -23,6 +23,7 @@ resources:
               actions:
                 nextLine: {}
           colorId: layoutColor1
+  layouts:
     storyScreenLayout:
       name: Story Screen Background
       elements:
@@ -79,7 +80,7 @@ story:
           lines:
             - id: line1
               actions:
-                background:
+                control:
                   resourceId: base1
                 bgm:
                   resourceId: dk392
