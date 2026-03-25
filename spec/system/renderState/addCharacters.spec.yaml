@@ -113,13 +113,14 @@ in:
           height: 200
       animations:
         fadeIn:
-          type: update
-          tween:
-            alpha:
-              initialValue: 0
-              keyframes:
-                - duration: 500
-                  value: 1
+          type: transition
+          next:
+            tween:
+              alpha:
+                initialValue: 0
+                keyframes:
+                  - duration: 500
+                    value: 1
 out:
   elements:
     - id: "story"
@@ -146,14 +147,15 @@ out:
               y: 0
   animations:
     - id: "character-animation-in"
-      type: "update"
+      type: "transition"
       targetId: "character-container-char1-0-body"
-      tween:
-        alpha:
-          initialValue: 0
-          keyframes:
-            - duration: 500
-              value: 1
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 500
+                value: 1
 ---
 case: add character with out animation only (no container created)
 in:
@@ -181,13 +183,14 @@ in:
     resources:
       animations:
         fadeOut:
-          type: update
-          tween:
-            alpha:
-              initialValue: 1
-              keyframes:
-                - duration: 300
-                  value: 0
+          type: transition
+          prev:
+            tween:
+              alpha:
+                initialValue: 1
+                keyframes:
+                  - duration: 300
+                    value: 0
 out:
   elements:
     - id: "story"
@@ -197,14 +200,15 @@ out:
       children: []
   animations:
     - id: "character-animation-out"
-      type: "update"
+      type: "transition"
       targetId: "character-container-char1-0-body"
-      tween:
-        alpha:
-          initialValue: 1
-          keyframes:
-            - duration: 300
-              value: 0
+      prev:
+        tween:
+          alpha:
+            initialValue: 1
+            keyframes:
+              - duration: 300
+                value: 0
 ---
 case: add character with in animation (new character)
 in:
@@ -243,13 +247,14 @@ in:
           height: 200
       animations:
         fadeIn:
-          type: update
-          tween:
-            alpha:
-              initialValue: 0
-              keyframes:
-                - duration: 500
-                  value: 1
+          type: transition
+          next:
+            tween:
+              alpha:
+                initialValue: 0
+                keyframes:
+                  - duration: 500
+                    value: 1
 out:
   elements:
     - id: "story"
@@ -276,14 +281,15 @@ out:
               y: 0
   animations:
     - id: "character-animation-in"
-      type: "update"
+      type: "transition"
       targetId: "character-container-char1-0-body"
-      tween:
-        alpha:
-          initialValue: 0
-          keyframes:
-            - duration: 500
-              value: 1
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 500
+                value: 1
 ---
 case: add character update animation with final tween properties
 in:

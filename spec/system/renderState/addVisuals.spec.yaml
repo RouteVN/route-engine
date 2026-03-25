@@ -132,13 +132,14 @@ in:
           scaleY: 1
       animations:
         fadeIn:
-          type: update
-          tween:
-            alpha:
-              initialValue: 0
-              keyframes:
-                - duration: 500
-                  value: 1
+          type: transition
+          next:
+            tween:
+              alpha:
+                initialValue: 0
+                keyframes:
+                  - duration: 500
+                    value: 1
 out:
   elements:
     - id: "story"
@@ -158,14 +159,15 @@ out:
           scaleY: 1
   animations:
     - id: "visual1-animation-in"
-      type: "update"
+      type: "transition"
       targetId: "visual-visual1"
-      tween:
-        alpha:
-          initialValue: 0
-          keyframes:
-            - duration: 500
-              value: 1
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 500
+                value: 1
   audio: []
 ---
 case: add visual with out animation
@@ -192,13 +194,14 @@ in:
     resources:
       animations:
         fadeOut:
-          type: update
-          tween:
-            alpha:
-              initialValue: 1
-              keyframes:
-                - duration: 300
-                  value: 0
+          type: transition
+          prev:
+            tween:
+              alpha:
+                initialValue: 1
+                keyframes:
+                  - duration: 300
+                    value: 0
 out:
   elements:
     - id: "story"
@@ -208,14 +211,15 @@ out:
       children: []
   animations:
     - id: "visual1-animation-out"
-      type: "update"
+      type: "transition"
       targetId: "visual-visual1"
-      tween:
-        alpha:
-          initialValue: 1
-          keyframes:
-            - duration: 300
-              value: 0
+      prev:
+        tween:
+          alpha:
+            initialValue: 1
+            keyframes:
+              - duration: 300
+                value: 0
   audio: []
 ---
 case: add visual with in animation (no previous state)
@@ -252,13 +256,14 @@ in:
           scaleY: 1
       animations:
         slideIn:
-          type: update
-          tween:
-            x:
-              initialValue: -50
-              keyframes:
-                - duration: 400
-                  value: 150
+          type: transition
+          next:
+            tween:
+              x:
+                initialValue: -50
+                keyframes:
+                  - duration: 400
+                    value: 150
 out:
   elements:
     - id: "story"
@@ -278,14 +283,15 @@ out:
           scaleY: 1
   animations:
     - id: "visual1-animation-in"
-      type: "update"
+      type: "transition"
       targetId: "visual-visual1"
-      tween:
-        x:
-          initialValue: -50
-          keyframes:
-            - duration: 400
-              value: 150
+      next:
+        tween:
+          x:
+            initialValue: -50
+            keyframes:
+              - duration: 400
+                value: 150
   audio: []
 ---
 case: multiple visual items
@@ -776,13 +782,14 @@ in:
           scaleY: 1
       animations:
         fadeIn:
-          type: update
-          tween:
-            alpha:
-              initialValue: 0
-              keyframes:
-                - duration: 500
-                  value: 1
+          type: transition
+          next:
+            tween:
+              alpha:
+                initialValue: 0
+                keyframes:
+                  - duration: 500
+                    value: 1
 out:
   elements:
     - id: "story"
@@ -807,14 +814,15 @@ out:
               height: 1080
   animations:
     - id: "overlay-animation-in"
-      type: "update"
+      type: "transition"
       targetId: "visual-overlay"
-      tween:
-        alpha:
-          initialValue: 0
-          keyframes:
-            - duration: 500
-              value: 1
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 500
+                value: 1
   audio: []
 ---
 case: layout not found - skip item
