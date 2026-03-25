@@ -829,9 +829,7 @@ const pushAnimations = ({
     currentResourceId !== null &&
     currentResourceId !== false;
   const sharedTarget =
-    previousTargetId &&
-    currentTargetId &&
-    previousTargetId === currentTargetId;
+    previousTargetId && currentTargetId && previousTargetId === currentTargetId;
   const lifecycle = getAnimationLifecycle({
     hasPrevious,
     hasCurrent,
@@ -859,7 +857,11 @@ const pushAnimations = ({
       });
     }
 
-    if (animationsDef.out && hasPrevious && previousResourceId !== currentResourceId) {
+    if (
+      animationsDef.out &&
+      hasPrevious &&
+      previousResourceId !== currentResourceId
+    ) {
       const animationId = resolveAnimationResourceId(animationsDef.out);
       assertUpdateAnimationLifecycle({
         animationType: getAnimationType(resources?.animations?.[animationId]),
