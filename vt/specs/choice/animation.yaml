@@ -7,7 +7,7 @@ screen:
   height: 1080
   backgroundColor: "#000000"
 resources:
-  layouts:
+  controls:
     base1:
       elements:
         - id: af32
@@ -19,6 +19,7 @@ resources:
               actions:
                 nextLine: {}
           colorId: layoutColor1
+  layouts:
     choiceLayout:
       name: Choices
       elements:
@@ -140,7 +141,7 @@ story:
           lines:
             - id: line1
               actions:
-                background:
+                control:
                   resourceId: base1
                 dialogue:
                   ui:
@@ -153,8 +154,7 @@ story:
                 choice:
                   resourceId: choiceLayout
                   animations:
-                    in:
-                      resourceId: slideIn
+                    resourceId: slideIn
                   items:
                     - content: Go to the park
                       events:

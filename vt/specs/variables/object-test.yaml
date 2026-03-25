@@ -23,7 +23,7 @@ resources:
           - Sword
           - Shield
           - Potion
-  layouts:
+  controls:
     base1:
       elements:
         - id: clickArea
@@ -35,6 +35,7 @@ resources:
               actions:
                 nextLine: {}
           colorId: layoutColor1
+  layouts:
     objectTestUI:
       name: Object Variable Test Screen
       elements:
@@ -173,7 +174,7 @@ story:
           lines:
             - id: line1
               actions:
-                background:
+                control:
                   resourceId: base1
                 layout:
                   resourceId: objectTestUI

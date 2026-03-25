@@ -1,13 +1,18 @@
 ---
-title: Animation 1
-description: Test animaton in , update, out
+title: Background 1
+description: |
+  Verifies plain background changes with no animation.
+
+  - Line 1: Show the first background
+  - Line 2: Switch to the second background
+  - Line 3: Switch to the third background
 ---
 screen:
   width: 1920
   height: 1080
   backgroundColor: "#000000"
 resources:
-  layouts:
+  controls:
     base1:
       elements:
         - id: af32
@@ -32,35 +37,6 @@ resources:
       fileId: 23jkfa893
       width: 1920
       height: 1080
-  animations:
-    3lkj289:
-      name: Fade In
-      type: update
-      tween:
-        alpha:
-          initialValue: 0
-          keyframes:
-            - duration: 700
-              value: 1
-              easing: linear
-    k38df:
-      name: Fade to half
-      type: update
-      tween:
-        alpha:
-          keyframes:
-            - duration: 700
-              value: 0.5
-              easing: linear
-    8h3js:
-      name: Fade Out
-      type: update
-      tween:
-        alpha:
-          keyframes:
-            - duration: 700
-              value: 0
-              easing: linear
   colors:
     layoutColor1:
       hex: "#000000"
@@ -76,21 +52,15 @@ story:
           lines:
             - id: line1
               actions:
+                control:
+                  resourceId: base1
                 background:
                   resourceId: alkejf3la
-                  animations:
-                    in:
-                      resourceId: 3lkj289
             - id: line2
               actions:
                 background:
                   resourceId: 8a3lkja
-                  animations:
-                    update:
-                      resourceId: k38df
             - id: line3
               actions:
                 background:
-                  animations:
-                    out:
-                      resourceId: 8h3js
+                  resourceId: 3ljdasfjlk32

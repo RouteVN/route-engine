@@ -7,7 +7,7 @@ screen:
   height: 1080
   backgroundColor: "#000000"
 resources:
-  layouts:
+  controls:
     base1:
       elements:
         - id: af32
@@ -79,65 +79,47 @@ resources:
       anchorY: 1
   animations:
     slide_in_left:
-      name: Slide In From Left
-      type: update
-      tween:
-        x:
-          initialValue: -300
-          keyframes:
-            - duration: 1500
-              value: 480
-              easing: easeOutQuad
-        alpha:
-          initialValue: 0
-          keyframes:
-            - duration: 1500
-              value: 1
-              easing: linear
+      name: Fade In Left
+      type: transition
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 1500
+                value: 1
+                easing: linear
     slide_in_right:
-      name: Slide In From Right
-      type: update
-      tween:
-        x:
-          initialValue: 2220
-          keyframes:
-            - duration: 1500
-              value: 1400
-              easing: easeOutQuad
-        alpha:
-          initialValue: 0
-          keyframes:
-            - duration: 1500
-              value: 1
-              easing: linear
+      name: Fade In Right
+      type: transition
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 1500
+                value: 1
+                easing: linear
     slide_out_left:
-      name: Slide Out To Left
-      type: update
-      tween:
-        x:
-          keyframes:
-            - duration: 1500
-              value: -300
-              easing: easeInQuad
-        alpha:
-          keyframes:
-            - duration: 1500
-              value: 0
-              easing: linear
+      name: Fade Out Left
+      type: transition
+      prev:
+        tween:
+          alpha:
+            keyframes:
+              - duration: 1500
+                value: 0
+                easing: linear
     slide_out_right:
-      name: Slide Out To Right
-      type: update
-      tween:
-        x:
-          keyframes:
-            - duration: 1500
-              value: 2220
-              easing: easeInQuad
-        alpha:
-          keyframes:
-            - duration: 1500
-              value: 0
-              easing: linear
+      name: Fade Out Right
+      type: transition
+      prev:
+        tween:
+          alpha:
+            keyframes:
+              - duration: 1500
+                value: 0
+                easing: linear
   colors:
     layoutColor1:
       hex: "#000000"
@@ -153,9 +135,10 @@ story:
           lines:
             - id: line1
               actions:
+                control:
+                  resourceId: base1
                 background:
                   resourceId: alkejf3la
-                  resourceType: image
                 character:
                   items:
                     - id: laj389d
@@ -166,13 +149,11 @@ story:
                         - id: outfit
                           resourceId: 3fjaklj34
                       animations:
-                        in:
-                          resourceId: slide_in_left
+                        resourceId: slide_in_left
             - id: line2
               actions:
                 background:
                   resourceId: alkejf3la
-                  resourceType: image
                 character:
                   items:
                     - id: laj389d
@@ -190,25 +171,16 @@ story:
                         - id: outfit
                           resourceId: spr2
                       animations:
-                        in:
-                          resourceId: slide_in_right
+                        resourceId: slide_in_right
             - id: line3
               actions:
                 background:
                   resourceId: 8a3lkja
-                  resourceType: image
                 character:
                   items:
                     - id: laj389d
-                      transformId: iasdlf
-                      sprites:
-                        - id: base
-                          resourceId: fk4jla893
-                        - id: outfit
-                          resourceId: 3fjaklj34
                       animations:
-                        out:
-                          resourceId: slide_out_left
+                        resourceId: slide_out_left
                     - id: newchar
                       transformId: a32kf3
                       sprites:
@@ -217,25 +189,16 @@ story:
                         - id: outfit
                           resourceId: 3fjaklj34
                       animations:
-                        in:
-                          resourceId: slide_in_left
+                        resourceId: slide_in_left
             - id: line4
               actions:
                 background:
                   resourceId: 8a3lkja
-                  resourceType: image
                 character:
                   items:
                     - id: char2id
-                      transformId: t_right
-                      sprites:
-                        - id: base
-                          resourceId: spr1
-                        - id: outfit
-                          resourceId: spr2
                       animations:
-                        out:
-                          resourceId: slide_out_right
+                        resourceId: slide_out_right
                     - id: newchar
                       transformId: a32kf3
                       sprites:

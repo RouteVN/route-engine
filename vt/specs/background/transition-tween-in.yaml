@@ -1,0 +1,52 @@
+---
+title: Background Transition Tween In
+description: Background image entering on first add with a transition tween.
+specs:
+  - background in should accept transition-type animation resources
+  - the background should be partially onscreen halfway through the transition
+  - the background should settle into its final position after the transition completes
+steps:
+  - action: wait
+    ms: 500
+  - action: screenshot
+  - action: wait
+    ms: 600
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  images:
+    bg-door:
+      fileId: lakjf3lka
+      width: 1920
+      height: 1080
+  animations:
+    bg-slide-in:
+      name: Background Slide In
+      type: transition
+      next:
+        tween:
+          translateX:
+            initialValue: 1
+            keyframes:
+              - duration: 1000
+                value: 0
+                easing: linear
+story:
+  initialSceneId: backgroundScene
+  scenes:
+    backgroundScene:
+      name: Background Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                background:
+                  resourceId: bg-door
+                  animations:
+                    resourceId: bg-slide-in

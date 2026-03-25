@@ -2,6 +2,36 @@ $schema: http://json-schema.org/draft-07/schema#
 title: Presentation Actions Schema
 description: Schema for all presentation actions that handle visual and audio display in visual novel engine
 type: object
+definitions:
+  animationRef:
+    type: object
+    description: Reference to an animation resource
+    properties:
+      resourceId:
+        type: string
+        description: ID of the animation resource to use
+    required: [resourceId]
+    additionalProperties: false
+
+  legacyAnimationSelection:
+    type: object
+    description: Legacy lifecycle-specific animation selection. Prefer a single resourceId reference instead.
+    properties:
+      in:
+        $ref: "#/definitions/animationRef"
+      out:
+        $ref: "#/definitions/animationRef"
+      update:
+        $ref: "#/definitions/animationRef"
+    minProperties: 1
+    additionalProperties: false
+
+  animationSelection:
+    description: Animation selection. Prefer a single resourceId that points to an animation whose type decides update vs transition. Legacy in/out/update remains supported for compatibility.
+    oneOf:
+      - $ref: "#/definitions/animationRef"
+      - $ref: "#/definitions/legacyAnimationSelection"
+
 properties:
   cleanAll:
     type: object
@@ -20,37 +50,7 @@ properties:
         type: string
         description: ID of the background resource to display
       animations:
-        type: object
-        description: Animation effects for background transitions
-        properties:
-          in:
-            type: object
-            description: Animation configuration for background entrance
-            properties:
-              resourceId:
-                type: string
-                description: ID of the animation resource to use
-            required: [resourceId]
-            additionalProperties: false
-          out:
-            type: object
-            description: Animation configuration for background exit
-            properties:
-              resourceId:
-                type: string
-                description: ID of the animation resource to use
-            required: [resourceId]
-            additionalProperties: false
-          update:
-            type: object
-            description: Animation configuration for background update
-            properties:
-              resourceId:
-                type: string
-                description: ID of the animation resource to use
-            required: [resourceId]
-            additionalProperties: false
-        additionalProperties: false
+        $ref: "#/definitions/animationSelection"
     additionalProperties: false
 
   dialogue:
@@ -65,37 +65,7 @@ properties:
             type: string
             description: ID of the dialogue box layout resource
           animations:
-            type: object
-            description: Animation effects for dialogue transitions
-            properties:
-              in:
-                type: object
-                description: Animation configuration for dialogue entrance
-                properties:
-                  resourceId:
-                    type: string
-                    description: ID of the animation resource to use
-                required: [resourceId]
-                additionalProperties: false
-              out:
-                type: object
-                description: Animation configuration for dialogue exit
-                properties:
-                  resourceId:
-                    type: string
-                    description: ID of the animation resource to use
-                required: [resourceId]
-                additionalProperties: false
-              update:
-                type: object
-                description: Animation configuration for dialogue update
-                properties:
-                  resourceId:
-                    type: string
-                    description: ID of the animation resource to use
-                required: [resourceId]
-                additionalProperties: false
-            additionalProperties: false
+            $ref: "#/definitions/animationSelection"
         additionalProperties: false
       mode:
         type: string
@@ -164,37 +134,7 @@ properties:
                     description: ID of the sprite part resource
                 additionalProperties: false
             animations:
-              type: object
-              description: Animation effects for character transitions
-              properties:
-                in:
-                  type: object
-                  description: Animation configuration for character entrance
-                  properties:
-                    resourceId:
-                      type: string
-                      description: ID of the animation resource to use
-                  required: [resourceId]
-                  additionalProperties: false
-                out:
-                  type: object
-                  description: Animation configuration for character exit
-                  properties:
-                    resourceId:
-                      type: string
-                      description: ID of the animation resource to use
-                  required: [resourceId]
-                  additionalProperties: false
-                update:
-                  type: object
-                  description: Animation configuration for character update
-                  properties:
-                    resourceId:
-                      type: string
-                      description: ID of the animation resource to use
-                  required: [resourceId]
-                  additionalProperties: false
-              additionalProperties: false
+              $ref: "#/definitions/animationSelection"
           required: [id, transformId]
           additionalProperties: false
     additionalProperties: false
@@ -225,37 +165,7 @@ properties:
               type: string
               description: ID of the transform where visual appears
             animations:
-              type: object
-              description: Animation effects for visual transitions
-              properties:
-                in:
-                  type: object
-                  description: Animation configuration for visual entrance
-                  properties:
-                    resourceId:
-                      type: string
-                      description: ID of the animation resource to use
-                  required: [resourceId]
-                  additionalProperties: false
-                out:
-                  type: object
-                  description: Animation configuration for visual exit
-                  properties:
-                    resourceId:
-                      type: string
-                      description: ID of the animation resource to use
-                  required: [resourceId]
-                  additionalProperties: false
-                update:
-                  type: object
-                  description: Animation configuration for visual update
-                  properties:
-                    resourceId:
-                      type: string
-                      description: ID of the animation resource to use
-                  required: [resourceId]
-                  additionalProperties: false
-              additionalProperties: false
+              $ref: "#/definitions/animationSelection"
           required: [id]
           additionalProperties: false
     additionalProperties: false
@@ -289,37 +199,7 @@ properties:
               additionalProperties: true
           additionalProperties: false
       animations:
-        type: object
-        description: Animation effects for choice transitions
-        properties:
-          in:
-            type: object
-            description: Animation configuration for choice entrance
-            properties:
-              resourceId:
-                type: string
-                description: ID of the animation resource to use
-            required: [resourceId]
-            additionalProperties: false
-          out:
-            type: object
-            description: Animation configuration for choice exit
-            properties:
-              resourceId:
-                type: string
-                description: ID of the animation resource to use
-            required: [resourceId]
-            additionalProperties: false
-          update:
-            type: object
-            description: Animation configuration for choice update
-            properties:
-              resourceId:
-                type: string
-                description: ID of the animation resource to use
-            required: [resourceId]
-            additionalProperties: false
-        additionalProperties: false
+        $ref: "#/definitions/animationSelection"
     additionalProperties: false
 
   sfx:
@@ -377,37 +257,7 @@ properties:
         type: string
         description: ID of the layout to display
       animations:
-        type: object
-        description: Animation effects for layout transitions
-        properties:
-          in:
-            type: object
-            description: Animation configuration for layout entrance
-            properties:
-              resourceId:
-                type: string
-                description: ID of the animation resource to use
-            required: [resourceId]
-            additionalProperties: false
-          out:
-            type: object
-            description: Animation configuration for layout exit
-            properties:
-              resourceId:
-                type: string
-                description: ID of the animation resource to use
-            required: [resourceId]
-            additionalProperties: false
-          update:
-            type: object
-            description: Animation configuration for layout update
-            properties:
-              resourceId:
-                type: string
-                description: ID of the animation resource to use
-            required: [resourceId]
-            additionalProperties: false
-        additionalProperties: false
+        $ref: "#/definitions/animationSelection"
     additionalProperties: false
 
 additionalProperties: false

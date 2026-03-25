@@ -7,7 +7,7 @@ screen:
   height: 1080
   backgroundColor: "#000000"
 resources:
-  layouts:
+  controls:
     base1:
       elements:
         - id: af32
@@ -19,6 +19,7 @@ resources:
               actions:
                 nextLine: {}
           colorId: layoutColor1
+  layouts:
     menuLayout:
       name: Menu Layout
       elements:
@@ -111,7 +112,7 @@ story:
           lines:
             - id: line1
               actions:
-                background:
+                control:
                   resourceId: base1
                 visual:
                   items:

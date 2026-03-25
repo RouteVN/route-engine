@@ -123,6 +123,10 @@ const init = async () => {
       url: "/public/fighter.png",
       type: "image/png",
     },
+    "mask-diagonal": {
+      url: "/public/mask_diagonal.png",
+      type: "image/png",
+    },
   };
 
   if (!window?.RTGL_VT_DEBUG) {

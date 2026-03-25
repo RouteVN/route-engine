@@ -7,7 +7,7 @@ screen:
   height: 1080
   backgroundColor: "#000000"
 resources:
-  layouts:
+  controls:
     base1:
       elements:
         - id: af32
@@ -59,21 +59,16 @@ resources:
       anchorY: 1
   animations:
     slide_in:
-      name: Slide In From Left
-      type: update
-      tween:
-        x:
-          keyframes:
-            - duration: 1000
-              relative: true
-              value: 600
-              easing: linear
-        alpha:
-          initialValue: 0
-          keyframes:
-            - duration: 1000
-              value: 1
-              easing: linear
+      name: Fade In
+      type: transition
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 1000
+                value: 1
+                easing: linear
     scale_update:
       name: Scale Up
       type: update
@@ -90,13 +85,14 @@ resources:
               easing: linear
     fade_out:
       name: Fade Out
-      type: update
-      tween:
-        alpha:
-          keyframes:
-            - duration: 800
-              value: 0
-              easing: linear
+      type: transition
+      prev:
+        tween:
+          alpha:
+            keyframes:
+              - duration: 800
+                value: 0
+                easing: linear
   colors:
     layoutColor1:
       hex: "#000000"
@@ -112,9 +108,10 @@ story:
           lines:
             - id: line1
               actions:
+                control:
+                  resourceId: base1
                 background:
                   resourceId: alkejf3la
-                  resourceType: image
                 character:
                   items:
                     - id: laj389d
@@ -125,13 +122,11 @@ story:
                         - id: outfit
                           resourceId: 3fjaklj34
                       animations:
-                        in:
-                          resourceId: slide_in
+                        resourceId: slide_in
             - id: line2
               actions:
                 background:
                   resourceId: alkejf3la
-                  resourceType: image
                 character:
                   items:
                     - id: laj389d
@@ -142,16 +137,13 @@ story:
                         - id: outfit
                           resourceId: 3fjaklj34
                       animations:
-                        update:
-                          resourceId: scale_update
+                        resourceId: scale_update
             - id: line3
               actions:
                 background:
                   resourceId: alkejf3la
-                  resourceType: image
                 character:
                   items:
                     - id: laj389d
                       animations:
-                        out:
-                          resourceId: fade_out
+                        resourceId: fade_out

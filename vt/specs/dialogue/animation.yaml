@@ -7,7 +7,7 @@ screen:
   height: 1080
   backgroundColor: "#000000"
 resources:
-  layouts:
+  controls:
     base1:
       elements:
         - id: af32
@@ -19,6 +19,7 @@ resources:
               actions:
                 nextLine: {}
           colorId: layoutColor1
+  layouts:
     dialogueLayout:
       name: Dialogue Screen
       mode: adv
@@ -54,23 +55,25 @@ resources:
   animations:
     fadeIn:
       name: Fade In
-      type: update
-      tween:
-        alpha:
-          initialValue: 0
-          keyframes:
-            - duration: 500
-              value: 1
-              easing: easeOutQuad
+      type: transition
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 500
+                value: 1
+                easing: easeOutQuad
     fadeOut:
       name: Fade Out
-      type: update
-      tween:
-        alpha:
-          keyframes:
-            - duration: 500
-              value: 0
-              easing: easeInQuad
+      type: transition
+      prev:
+        tween:
+          alpha:
+            keyframes:
+              - duration: 500
+                value: 0
+                easing: easeInQuad
     slideUp:
       name: Slide Up
       type: update
@@ -111,14 +114,13 @@ story:
           lines:
             - id: line1
               actions:
-                background:
+                control:
                   resourceId: base1
                 dialogue:
                   ui:
                     resourceId: dialogueLayout
                     animations:
-                      in:
-                        resourceId: fadeIn
+                      resourceId: fadeIn
                   mode: adv
                   content:
                     - text: Hello! The dialogue box just faded in.
@@ -139,6 +141,5 @@ story:
                 dialogue:
                   ui:
                     animations:
-                      out:
-                        resourceId: fadeOut
+                      resourceId: fadeOut
                   clear: true

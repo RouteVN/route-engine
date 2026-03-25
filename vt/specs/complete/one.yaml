@@ -58,7 +58,7 @@ resources:
       type: number
       default: 50
       persistence: global-device
-  layouts:
+  controls:
     base1:
       elements:
         - id: af32
@@ -70,6 +70,7 @@ resources:
               actions:
                 nextLine: {}
           colorId: layoutColor1
+  layouts:
     historyDialogueLayout:
       elements:
         - id: k3jfald
@@ -1311,24 +1312,26 @@ resources:
   animations:
     3lkj289:
       name: Fade In
-      type: update
-      tween:
-        alpha:
-          initialValue: 0
-          keyframes:
-            - duration: 1000
-              value: 1
-              easing: linear
+      type: transition
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 1000
+                value: 1
+                easing: linear
     8h3js:
       name: Fade Out
-      type: update
-      tween:
-        alpha:
-          initialValue: 1
-          keyframes:
-            - duration: 1000
-              value: 0
-              easing: linear
+      type: transition
+      prev:
+        tween:
+          alpha:
+            initialValue: 1
+            keyframes:
+              - duration: 1000
+                value: 0
+                easing: linear
   fonts:
     fontDefault:
       fileId: Arial
@@ -1419,7 +1422,7 @@ story:
           lines:
             - id: line1
               actions:
-                background:
+                control:
                   resourceId: base1
                 visual:
                   items:
@@ -1427,14 +1430,14 @@ story:
                       resourceId: alkejf3la
                       transformId: iasdlf
                       animations:
-                        in: 3lkj289
+                        resourceId: 3lkj289
             - id: line2
               actions:
                 visual:
                   items:
                     - id: 39kdfj231
                       animations:
-                        out: 8h3js
+                        resourceId: 8h3js
             - id: line3
               actions:
                 sectionTransition:
@@ -1548,7 +1551,6 @@ story:
               actions:
                 background:
                   resourceId: storyScreenLayout
-                  resourceType: layout
                 dialogue:
                   mode: adv
                   layoutId: fi3l
@@ -1602,7 +1604,6 @@ story:
               actions:
                 background:
                   resourceId: extraScreenLayout
-                  resourceType: layout
                 dialogue:
                   layoutId: 3jfksdjkadf
                   mode: nvl

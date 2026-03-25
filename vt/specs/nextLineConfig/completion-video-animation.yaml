@@ -119,7 +119,6 @@ story:
               actions:
                 background:
                   resourceId: bg-video
-                  resourceType: video
                 dialogue:
                   content:
                     - text: "Line 2: fromStart on video background."
@@ -128,8 +127,7 @@ story:
                 background:
                   resourceId: bg-moon
                   animations:
-                    in:
-                      resourceId: fade-in-800
+                    resourceId: fade-in-800
                 dialogue:
                   content:
                     - text: "Line 3: fromStart on animation."
@@ -150,7 +148,6 @@ story:
               actions:
                 background:
                   resourceId: bg-video
-                  resourceType: video
                 dialogue:
                   content:
                     - text: "Line 5: fromComplete on video background."
@@ -159,8 +156,7 @@ story:
                 background:
                   resourceId: bg-moon
                   animations:
-                    in:
-                      resourceId: fade-in-800
+                    resourceId: fade-in-800
                 dialogue:
                   content:
                     - text: "Line 6: fromComplete on animation."

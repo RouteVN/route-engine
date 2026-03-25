@@ -11,7 +11,7 @@ resources:
       fileId: dmni32
       width: 1920
       height: 1080
-  layouts:
+  controls:
     base1:
       elements:
         - id: af32
@@ -23,6 +23,7 @@ resources:
               actions:
                 nextLine: {}
           colorId: layoutColor1
+  layouts:
     j3i8dk32:
       name: Title Screen
       elements:
@@ -83,7 +84,7 @@ story:
           lines:
             - id: line1
               actions:
-                background:
+                control:
                   resourceId: base1
                 layout:
                   resourceId: j3i8dk32
