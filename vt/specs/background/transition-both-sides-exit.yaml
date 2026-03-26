@@ -1,0 +1,75 @@
+---
+title: Background Transition Exit With Both Sides
+description: |
+  Background image exiting to transparency with a transition resource that
+  defines both prev and next alpha tweens.
+
+  Only the prev side should matter for this exit lifecycle.
+specs:
+  - background exit should tolerate transition resources that also define next
+  - the background should be partially visible halfway through the transition
+  - the background should be fully cleared after the transition completes
+steps:
+  - action: wait
+    ms: 600
+  - action: screenshot
+  - action: wait
+    ms: 600
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  images:
+    bg-door:
+      fileId: lakjf3lka
+      width: 1920
+      height: 1080
+  animations:
+    bg-fade-exit-both:
+      name: Background Fade Exit With Both Sides
+      type: transition
+      prev:
+        tween:
+          alpha:
+            initialValue: 1
+            keyframes:
+              - duration: 1000
+                value: 0
+                easing: linear
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 1000
+                value: 1
+                easing: linear
+story:
+  initialSceneId: backgroundScene
+  scenes:
+    backgroundScene:
+      name: Background Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                setNextLineConfig:
+                  manual:
+                    enabled: true
+                  auto:
+                    enabled: true
+                    trigger: fromStart
+                    delay: 100
+                  applyMode: singleLine
+                background:
+                  resourceId: bg-door
+            - id: line2
+              actions:
+                background:
+                  animations:
+                    resourceId: bg-fade-exit-both
