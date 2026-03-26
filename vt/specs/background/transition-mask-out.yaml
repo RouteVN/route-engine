@@ -6,16 +6,17 @@ specs:
   - the mask should partially remove the background halfway through the transition
   - the background should be fully cleared after the transition completes
 steps:
-  - action: wait
-    ms: 100
-  - action: click
-    x: 960
-    "y": 540
-  - action: wait
-    ms: 500
+  - action: customEvent
+    name: vt:nextLine
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 500
   - action: screenshot
-  - action: wait
-    ms: 600
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 500
   - action: screenshot
 ---
 screen:
@@ -23,34 +24,24 @@ screen:
   height: 1080
   backgroundColor: "#000000"
 resources:
-  images:
-    bg-door:
-      fileId: lakjf3lka
-      width: 1920
-      height: 1080
-  layouts:
-    bg-door-layout:
-      name: Clickable Door Background
+  controls:
+    base1:
       elements:
-        - id: bg-door-sprite
-          type: sprite
-          imageId: bg-door
-          x: 0
-          y: 0
-          width: 1920
-          height: 1080
         - id: click-area
           type: rect
-          x: 0
-          y: 0
           width: 1920
           height: 1080
-          alpha: 0
+          alpha: 0.001
           click:
             payload:
               actions:
                 nextLine: {}
           colorId: overlayColor
+  images:
+    bg-door:
+      fileId: lakjf3lka
+      width: 1920
+      height: 1080
   animations:
     bg-mask-out:
       name: Background Mask Out
@@ -80,8 +71,10 @@ story:
           lines:
             - id: line1
               actions:
+                control:
+                  resourceId: base1
                 background:
-                  resourceId: bg-door-layout
+                  resourceId: bg-door
             - id: line2
               actions:
                 background:

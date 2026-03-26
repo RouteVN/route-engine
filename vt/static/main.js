@@ -316,6 +316,12 @@ const init = async () => {
     },
   });
 
+  window.addEventListener("vt:nextLine", () => {
+    engine.handleActions({
+      nextLine: {},
+    });
+  });
+
 };
 
 await init();

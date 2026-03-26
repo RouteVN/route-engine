@@ -1,16 +1,22 @@
 ---
 title: Background Transition Tween In
-description: Background image entering on first add with a transition tween.
+description: Background image entering after manual line advance with a transition tween.
 specs:
   - background in should accept transition-type animation resources
   - the background should be partially onscreen halfway through the transition
   - the background should settle into its final position after the transition completes
 steps:
-  - action: wait
-    ms: 500
+  - action: customEvent
+    name: vt:nextLine
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 500
   - action: screenshot
-  - action: wait
-    ms: 600
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 500
   - action: screenshot
 ---
 screen:
@@ -18,6 +24,19 @@ screen:
   height: 1080
   backgroundColor: "#000000"
 resources:
+  controls:
+    base1:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: overlayColor
   images:
     bg-door:
       fileId: lakjf3lka
@@ -35,6 +54,9 @@ resources:
               - duration: 1000
                 value: 0
                 easing: linear
+  colors:
+    overlayColor:
+      hex: "#000000"
 story:
   initialSceneId: backgroundScene
   scenes:
@@ -45,6 +67,10 @@ story:
         main:
           lines:
             - id: line1
+              actions:
+                control:
+                  resourceId: base1
+            - id: line2
               actions:
                 background:
                   resourceId: bg-door

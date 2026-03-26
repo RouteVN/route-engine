@@ -6,7 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const repoRoot = path.resolve(__dirname, "..");
 const targetPath = path.resolve(repoRoot, "vt/static/RouteGraphics.js");
-const defaultVersion = process.env.VT_ROUTE_GRAPHICS_VERSION || "1.1.2";
+const defaultVersion = process.env.VT_ROUTE_GRAPHICS_VERSION || "1.1.3";
 const sourceUrl =
   process.env.VT_ROUTE_GRAPHICS_URL ||
   `https://cdn.jsdelivr.net/npm/route-graphics@${defaultVersion}/dist/RouteGraphics.js`;

@@ -1,7 +1,7 @@
 ---
 title: Background Transition Enter With Both Sides
 description: |
-  Background image entering after an auto line advance with a transition resource
+  Background image entering after a manual line advance with a transition resource
   that defines both prev and next alpha tweens.
 
   Only the next side should matter for this enter lifecycle.
@@ -10,11 +10,17 @@ specs:
   - the background should be partially visible halfway through the transition
   - the background should be fully visible after the transition completes
 steps:
-  - action: wait
-    ms: 600
+  - action: customEvent
+    name: vt:nextLine
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 500
   - action: screenshot
-  - action: wait
-    ms: 600
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 500
   - action: screenshot
 ---
 screen:
@@ -22,6 +28,19 @@ screen:
   height: 1080
   backgroundColor: "#000000"
 resources:
+  controls:
+    base1:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: overlayColor
   images:
     bg-door:
       fileId: lakjf3lka
@@ -44,9 +63,12 @@ resources:
           alpha:
             initialValue: 0
             keyframes:
-              - duration: 1000
-                value: 1
-                easing: linear
+            - duration: 1000
+              value: 1
+              easing: linear
+  colors:
+    overlayColor:
+      hex: "#000000"
 story:
   initialSceneId: backgroundScene
   scenes:
@@ -58,14 +80,8 @@ story:
           lines:
             - id: line1
               actions:
-                setNextLineConfig:
-                  manual:
-                    enabled: true
-                  auto:
-                    enabled: true
-                    trigger: fromStart
-                    delay: 100
-                  applyMode: singleLine
+                control:
+                  resourceId: base1
             - id: line2
               actions:
                 background:
