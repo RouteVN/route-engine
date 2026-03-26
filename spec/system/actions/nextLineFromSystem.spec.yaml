@@ -82,7 +82,6 @@ out:
     nextLineConfig:
       auto: { enabled: false }
     pendingEffects:
-      - name: "render"
       - name: "handleLineActions"
   projectData:
     story:
@@ -136,7 +135,6 @@ out:
         trigger: "fromStart"
         delay: 1500
     pendingEffects:
-      - name: "render"
       - name: "handleLineActions"
       - name: "nextLineConfigTimer"
         payload:
@@ -198,7 +196,6 @@ out:
       applyMode: "persistent"
     pendingEffects:
       - name: "clearNextLineConfigTimer"
-      - name: "render"
       - name: "handleLineActions"
   projectData:
     story:
@@ -253,7 +250,6 @@ out:
         trigger: "fromComplete"
         delay: 2000
     pendingEffects:
-      - name: "render"
       - name: "handleLineActions"
   projectData:
     story:

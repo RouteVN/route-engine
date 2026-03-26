@@ -1,0 +1,166 @@
+---
+title: Dialogue Reveal Click Advance
+description: |
+  Verifies click/next-line behavior around text revealing completion:
+  - a click before completion should complete the current line without advancing
+  - a second click should advance to the next reveal line
+steps:
+  - action: click
+    x: 960
+    y: 540
+  - action: wait
+    ms: 500
+  - action: screenshot
+  - action: click
+    x: 960
+    y: 540
+  - action: wait
+    ms: 120
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  controls:
+    base1:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: overlayColor
+  layouts:
+    revealDialogue:
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 100
+          y: 760
+          width: 1720
+          height: 240
+          colorId: panelColor
+        - id: dialogue-text
+          type: text-revealing
+          x: 140
+          y: 830
+          width: 1640
+          displaySpeed: 28
+          revealEffect: typewriter
+          content: ${dialogue.content}
+          textStyleId: textStyle1
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    overlayColor:
+      hex: "#000000"
+    panelColor:
+      hex: "#4D4D4D"
+    textColor:
+      hex: "#FFFFFF"
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 30
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.25
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: start
+      sections:
+        start:
+          lines:
+            - id: line1
+              actions:
+                control:
+                  resourceId: base1
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: revealDialogue
+                  content:
+                    - text: "Line 1 should complete on the first click without advancing. This sentence is long enough to still be revealing when the first manual next-line action happens."
+            - id: line2
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: revealDialogue
+                  content:
+                    - text: "Line 2 should appear after the second click, and it should still be revealing for long enough to be obvious during manual checking on the candidate page."
+            - id: line3
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: revealDialogue
+                  content:
+                    - text: "Line 3 continues the reveal-only sequence with another deliberately long sentence so you can clearly see the typewriter effect before advancing again."
+            - id: line4
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: revealDialogue
+                  content:
+                    - text: "Line 4 keeps the sequence going as another reveal line, and this text is intentionally extended so the reveal is still visible instead of finishing immediately."
+            - id: line5
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: revealDialogue
+                  content:
+                    - text: "Line 5 is also a visibly revealing line with enough text to make the timing obvious while you click through and verify the interaction behavior."
+            - id: line6
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: revealDialogue
+                  content:
+                    - text: "Line 6 is also reveal-based. This file now isolates reveal completion only."
+            - id: line7
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: revealDialogue
+                  content:
+                    - text: "Line 7 is reveal again. A click during reveal should complete it without advancing."
+            - id: line8
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: revealDialogue
+                  content:
+                    - text: "Line 8 remains reveal-based as well."
+            - id: line9
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: revealDialogue
+                  content:
+                    - text: "Line 9 is the last reveal line in this manual test flow."
+            - id: line10
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: revealDialogue
+                  content:
+                    - text: "Line 10 is the final reveal line."
