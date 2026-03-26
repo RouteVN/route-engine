@@ -72,6 +72,26 @@ The engine will:
 
 ## Methods
 
+### `selectSystemState()`
+
+Returns a cloned snapshot of the full internal system state.
+
+This is intended for tooling, debugging, capture harnesses, and devtools-style
+inspection. It should not be treated as the primary gameplay-facing API for
+normal runtime integration.
+
+The returned value is a snapshot, not the live mutable store object.
+
+```js
+const systemState = engine.selectSystemState();
+
+console.log(systemState.global.nextLineConfig);
+console.log(systemState.contexts.at(-1)?.pointers);
+```
+
+Use this instead of exposing one-off engine selectors such as
+`selectCurrentPointer()`, `selectCurrentLine()`, or `selectNextLineConfig()`.
+
 ## Utilities
 
 ### `resolveLayoutReferences(value, { resources })`
