@@ -6,6 +6,7 @@ import {
   applyVariableOperation,
   filterVariablesByScope,
   diffPresentationState,
+  normalizePersistentPresentationState,
 } from "../util.js";
 import { constructPresentationState } from "./constructPresentationState.js";
 import { constructRenderState } from "./constructRenderState.js";
@@ -435,7 +436,9 @@ export const selectSectionLineChanges = ({ state }, { sectionId }) => {
       changes: changes,
     });
 
-    previousPresentationState = presentationStateAfterLineActions;
+    previousPresentationState = normalizePersistentPresentationState(
+      presentationStateAfterLineActions,
+    );
   }
 
   return { lines: linesWithChanges };
@@ -464,7 +467,9 @@ export const selectPreviousPresentationState = ({ state }) => {
     return presentationData;
   });
 
-  return constructPresentationState(presentationActions);
+  return normalizePersistentPresentationState(
+    constructPresentationState(presentationActions),
+  );
 };
 
 /**
