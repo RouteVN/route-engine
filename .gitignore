@@ -9,5 +9,6 @@ vt/static/RouteEngine.js.map
 vt/static/RouteGraphics.js
 vt/static/renderer.js
 .claude
+.playwright-cli/
 .rettangoli
 .temp/
