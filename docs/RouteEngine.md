@@ -89,9 +89,6 @@ console.log(systemState.global.nextLineConfig);
 console.log(systemState.contexts.at(-1)?.pointers);
 ```
 
-Use this instead of exposing one-off engine selectors such as
-`selectCurrentPointer()`, `selectCurrentLine()`, or `selectNextLineConfig()`.
-
 ## Utilities
 
 ### `resolveLayoutReferences(value, { resources })`
