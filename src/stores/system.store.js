@@ -247,6 +247,10 @@ export const selectNextLineConfig = ({ state }) => {
   return state.global.nextLineConfig;
 };
 
+export const selectSystemState = ({ state }) => {
+  return structuredClone(state);
+};
+
 export const selectSaveSlots = ({ state }) => {
   return state.global.saveSlots;
 };
@@ -1939,6 +1943,7 @@ export const createSystemStore = (initialState) => {
     selectIsLineViewed,
     selectIsResourceViewed,
     selectNextLineConfig,
+    selectSystemState,
     selectSaveSlots,
     selectSaveSlot,
     selectCurrentPointer,

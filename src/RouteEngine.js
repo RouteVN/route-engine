@@ -47,6 +47,10 @@ export default function createRouteEngine(options) {
     };
   };
 
+  const selectSystemState = () => {
+    return _systemStore.selectSystemState();
+  };
+
   const selectSaveSlots = () => {
     return _systemStore.selectSaveSlots();
   };
@@ -108,6 +112,7 @@ export default function createRouteEngine(options) {
     selectPresentationState,
     selectPresentationChanges,
     selectSectionLineChanges,
+    selectSystemState,
     selectSaveSlots,
     handleLineActions,
   };
