@@ -1,10 +1,14 @@
 ---
-title: Background Transition Tween In
-description: Background image entering after manual line advance with a transition tween.
+title: Background Transition Enter With Both Sides
+description: |
+  Background image entering after a manual line advance with a transition resource
+  that defines both prev and next alpha tweens.
+
+  Only the next side should matter for this enter lifecycle.
 specs:
-  - background in should accept transition-type animation resources
-  - the background should be partially onscreen halfway through the transition
-  - the background should settle into its final position after the transition completes
+  - background enter should tolerate transition resources that also define prev
+  - the background should be partially visible halfway through the transition
+  - the background should be fully visible after the transition completes
 steps:
   - action: customEvent
     name: vt:nextLine
@@ -43,17 +47,25 @@ resources:
       width: 1920
       height: 1080
   animations:
-    bg-slide-in:
-      name: Background Slide In
+    bg-fade-enter-both:
+      name: Background Fade Enter With Both Sides
       type: transition
-      next:
+      prev:
         tween:
-          translateX:
+          alpha:
             initialValue: 1
             keyframes:
               - duration: 1000
                 value: 0
                 easing: linear
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+            - duration: 1000
+              value: 1
+              easing: linear
   colors:
     overlayColor:
       hex: "#000000"
@@ -75,4 +87,4 @@ story:
                 background:
                   resourceId: bg-door
                   animations:
-                    resourceId: bg-slide-in
+                    resourceId: bg-fade-enter-both

@@ -6,16 +6,17 @@ specs:
   - the background should be partially moved offscreen halfway through the transition
   - the background should be fully cleared after the transition completes
 steps:
-  - action: wait
-    ms: 100
-  - action: click
-    x: 960
-    "y": 540
-  - action: wait
-    ms: 500
+  - action: customEvent
+    name: vt:nextLine
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 500
   - action: screenshot
-  - action: wait
-    ms: 600
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 500
   - action: screenshot
 ---
 screen:
@@ -23,34 +24,24 @@ screen:
   height: 1080
   backgroundColor: "#000000"
 resources:
-  images:
-    bg-forest:
-      fileId: dmni32
-      width: 1920
-      height: 1080
-  layouts:
-    bg-forest-layout:
-      name: Clickable Forest Background
+  controls:
+    base1:
       elements:
-        - id: bg-forest-sprite
-          type: sprite
-          imageId: bg-forest
-          x: 0
-          y: 0
-          width: 1920
-          height: 1080
         - id: click-area
           type: rect
-          x: 0
-          y: 0
           width: 1920
           height: 1080
-          alpha: 0
+          alpha: 0.001
           click:
             payload:
               actions:
                 nextLine: {}
           colorId: overlayColor
+  images:
+    bg-forest:
+      fileId: dmni32
+      width: 1920
+      height: 1080
   animations:
     bg-slide-out:
       name: Background Slide Out
@@ -77,8 +68,10 @@ story:
           lines:
             - id: line1
               actions:
+                control:
+                  resourceId: base1
                 background:
-                  resourceId: bg-forest-layout
+                  resourceId: bg-forest
             - id: line2
               actions:
                 background:
