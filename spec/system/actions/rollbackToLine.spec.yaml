@@ -63,7 +63,6 @@ out:
   global:
     isLineCompleted: true
     pendingEffects:
-      - name: "render"
       - name: "handleLineActions"
   contexts:
     - variables:
@@ -182,7 +181,6 @@ out:
   global:
     isLineCompleted: true
     pendingEffects:
-      - name: "render"
       - name: "handleLineActions"
   contexts:
     - variables:
@@ -323,7 +321,6 @@ out:
   global:
     isLineCompleted: true
     pendingEffects:
-      - name: "render"
       - name: "handleLineActions"
   contexts:
     - variables:
@@ -424,7 +421,6 @@ out:
   global:
     isLineCompleted: true
     pendingEffects:
-      - name: "render"
       - name: "handleLineActions"
   contexts:
     - variables:
@@ -524,7 +520,6 @@ out:
       volume: 100
     isLineCompleted: true
     pendingEffects:
-      - name: "render"
       - name: "handleLineActions"
   contexts:
     - variables: {}

@@ -187,12 +187,56 @@ out:
             fill: "#FFFFFF"
           hover:
             textStyle:
+              fill: "#FFFF00"
               fontFamily: "Arial"
               fontSize: 24
               fontWeight: "500"
               fontStyle: "normal"
               lineHeight: 1
-              fill: "#FFFF00"
+  animations: []
+---
+case: completed line settles text-revealing dialogue elements
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      dialogue:
+        ui:
+          resourceId: "dialogueLayout"
+        content:
+          - text: "Hello world"
+    resources:
+      layouts:
+        dialogueLayout:
+          elements:
+            - id: "dialogue-text"
+              type: "text-revealing"
+              content: "${dialogue.content}"
+              revealEffect: "typewriter"
+      colors: {}
+      fonts: {}
+      textStyles: {}
+    dialogueUIHidden: false
+    autoMode: false
+    skipMode: false
+    isLineCompleted: true
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "dialogue-text"
+          type: "text-revealing"
+          content:
+            - text: "Hello world"
+          revealEffect: "none"
   animations: []
 ---
 case: resolves colorId in dialogue ui layout elements

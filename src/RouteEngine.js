@@ -21,8 +21,7 @@ export default function createRouteEngine(options) {
   const init = ({ initialState }) => {
     _systemStore = createSystemStore(initialState);
     _renderSequence = 0;
-    _systemStore.appendPendingEffect({ name: "render" });
-    handleLineActions();
+    _systemStore.appendPendingEffect({ name: "handleLineActions" });
     processEffectsUntilEmpty();
   };
 
@@ -101,7 +100,10 @@ export default function createRouteEngine(options) {
     const line = _systemStore.selectCurrentLine();
     if (line?.actions) {
       handleActions(line.actions);
+      return true;
     }
+
+    return false;
   };
 
   return {

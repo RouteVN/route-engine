@@ -151,7 +151,6 @@ out:
         enabled: true
     pendingEffects:
       - name: "render"
-      - name: "render"
       - name: "handleLineActions"
     viewedRegistry:
       sections:
@@ -224,7 +223,6 @@ out:
         delay: 900
       applyMode: "persistent"
     pendingEffects:
-      - name: "render"
       - name: "render"
       - name: "handleLineActions"
       - name: "nextLineConfigTimer"
@@ -300,7 +298,6 @@ out:
     pendingEffects:
       - name: "render"
       - name: "clearNextLineConfigTimer"
-      - name: "render"
       - name: "handleLineActions"
     viewedRegistry:
       sections:
@@ -652,7 +649,6 @@ out:
       manual:
         enabled: true
     pendingEffects:
-      - name: "render"
       - name: "render"
       - name: "handleLineActions"
     viewedRegistry:

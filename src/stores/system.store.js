@@ -1059,9 +1059,6 @@ export const jumpToLine = ({ state }, payload) => {
 
   // Add appropriate pending effects
   state.global.pendingEffects.push({
-    name: "render",
-  });
-  state.global.pendingEffects.push({
     name: "handleLineActions",
   });
 
@@ -1229,9 +1226,6 @@ export const nextLine = ({ state }) => {
     addLineToHistory({ state }, { lineId: nextLine.id });
     resetNextLineConfigIfSingleLine(state);
 
-    state.global.pendingEffects.push({
-      name: "render",
-    });
     state.global.pendingEffects.push({
       name: "handleLineActions",
     });
@@ -1447,9 +1441,6 @@ export const sectionTransition = ({ state }, payload) => {
 
   // Add appropriate pending effects
   state.global.pendingEffects.push({
-    name: "render",
-  });
-  state.global.pendingEffects.push({
     name: "handleLineActions",
   });
 
@@ -1512,10 +1503,6 @@ export const nextLineFromSystem = ({ state }) => {
     // Add line to history for rollback support
     addLineToHistory({ state }, { lineId: nextLine.id });
     resetNextLineConfigIfSingleLine(state);
-
-    state.global.pendingEffects.push({
-      name: "render",
-    });
 
     state.global.pendingEffects.push({
       name: "handleLineActions",
@@ -1923,7 +1910,6 @@ export const rollbackToLine = ({ state }, payload) => {
   state.global.isLineCompleted = true;
 
   // Queue render and line actions
-  state.global.pendingEffects.push({ name: "render" });
   state.global.pendingEffects.push({ name: "handleLineActions" });
 
   return state;
