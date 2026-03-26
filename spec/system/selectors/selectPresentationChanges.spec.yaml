@@ -244,3 +244,63 @@ in:
               sectionId: "section1"
               lineId: "2"
 out: {}
+---
+case: "Ignore previous-line visual animation metadata when state persists"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        visual:
+                          items:
+                            - id: "visual-1"
+                              resourceId: "image-1"
+                              transformId: "center"
+                              animations:
+                                resourceId: "fadeIn"
+                    - id: "2"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out: {}
+---
+case: "Ignore previous-line character animation metadata when state persists"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        character:
+                          items:
+                            - id: "char-1"
+                              transformId: "left"
+                              sprites:
+                                - id: "body"
+                                  resourceId: "body-1"
+                              animations:
+                                resourceId: "fadeIn"
+                    - id: "2"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out: {}
