@@ -218,3 +218,29 @@ in:
               sectionId: "section1"
               lineId: "2"
 out: {}
+---
+case: "Ignore previous-line background animation metadata when state persists"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "bg-school"
+                          animations:
+                            resourceId: "fadeIn"
+                    - id: "2"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out: {}

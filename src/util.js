@@ -633,6 +633,71 @@ export const diffPresentationState = (prev = {}, curr = {}) => {
   return changes;
 };
 
+export const normalizePersistentPresentationState = (state = {}) => {
+  const normalizedState = structuredClone(state);
+
+  const stripAnimationsFromObject = (key) => {
+    if (!normalizedState[key]) {
+      return;
+    }
+
+    delete normalizedState[key].animations;
+
+    if (Object.keys(normalizedState[key]).length === 0) {
+      delete normalizedState[key];
+    }
+  };
+
+  stripAnimationsFromObject("background");
+  stripAnimationsFromObject("layout");
+  stripAnimationsFromObject("choice");
+
+  if (normalizedState.dialogue?.ui) {
+    delete normalizedState.dialogue.ui.animations;
+
+    if (Object.keys(normalizedState.dialogue.ui).length === 0) {
+      delete normalizedState.dialogue.ui;
+    }
+
+    if (Object.keys(normalizedState.dialogue).length === 0) {
+      delete normalizedState.dialogue;
+    }
+  }
+
+  const stripAnimationsFromItems = (key, hasPersistentFields) => {
+    const items = normalizedState[key]?.items;
+    if (!Array.isArray(items)) {
+      return;
+    }
+
+    normalizedState[key].items = items
+      .map((item) => {
+        const normalizedItem = { ...item };
+        delete normalizedItem.animations;
+        return hasPersistentFields(normalizedItem) ? normalizedItem : null;
+      })
+      .filter(Boolean);
+
+    if (normalizedState[key].items.length === 0) {
+      delete normalizedState[key];
+    }
+  };
+
+  stripAnimationsFromItems(
+    "character",
+    (item) =>
+      (item.sprites && item.sprites.length > 0) ||
+      item.transformId ||
+      item.resourceId,
+  );
+  stripAnimationsFromItems(
+    "visual",
+    (item) => item.resourceId || item.transformId,
+  );
+
+  return normalizedState;
+};
+
 const getValueByPath = (source, path) => {
   if (!source || !path) return undefined;
 
