@@ -70,6 +70,18 @@ out:
         read:
           sectionId: "section2"
           lineId: "10"
+      rollback:
+        currentIndex: 1
+        isRestoring: false
+        replayStartIndex: 1
+        baselineVariables: {}
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
+          - sectionId: "section2"
+            lineId: "10"
+            rollbackPolicy: "free"
 ---
 case: section not found - returns unchanged state
 in:

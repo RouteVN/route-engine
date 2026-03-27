@@ -375,3 +375,139 @@ out:
               updateVariableIds:
                 - "act1"
             - id: "3"
+---
+case: rolls back across sections using rollback timeline replay
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                    - id: "2"
+                      actions:
+                        updateVariable:
+                          id: "set-score-10"
+                          operations:
+                            - variableId: score
+                              op: set
+                              value: 10
+                section2:
+                  lines:
+                    - id: "10"
+                      actions:
+                        updateVariable:
+                          id: "add-score-5"
+                          operations:
+                            - variableId: score
+                              op: add
+                              value: 5
+                    - id: "11"
+        resources:
+          variables:
+            score:
+              type: number
+              scope: context
+              default: 0
+      global:
+        isLineCompleted: false
+        pendingEffects: []
+      contexts:
+        - variables:
+            score: 15
+          currentPointerMode: "history"
+          pointers:
+            read:
+              sectionId: "section2"
+              lineId: "10"
+            history:
+              sectionId: "section2"
+              lineId: "11"
+              historySequenceIndex: 0
+          rollback:
+            currentIndex: 2
+            isRestoring: false
+            replayStartIndex: 0
+            baselineVariables:
+              score: 0
+            timeline:
+              - sectionId: "section1"
+                lineId: "1"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "2"
+                rollbackPolicy: "free"
+              - sectionId: "section2"
+                lineId: "10"
+                rollbackPolicy: "free"
+  - offset: -1
+out:
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                - id: "2"
+                  actions:
+                    updateVariable:
+                      id: "set-score-10"
+                      operations:
+                        - variableId: score
+                          op: set
+                          value: 10
+            section2:
+              lines:
+                - id: "10"
+                  actions:
+                    updateVariable:
+                      id: "add-score-5"
+                      operations:
+                        - variableId: score
+                          op: add
+                          value: 5
+                - id: "11"
+    resources:
+      variables:
+        score:
+          type: number
+          scope: context
+          default: 0
+  global:
+    isLineCompleted: true
+    pendingEffects:
+      - name: "clearNextLineConfigTimer"
+      - name: "render"
+  contexts:
+    - variables:
+        score: 10
+      currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "2"
+        history:
+          sectionId: null
+          lineId: null
+          historySequenceIndex: null
+      rollback:
+        currentIndex: 1
+        isRestoring: false
+        replayStartIndex: 0
+        baselineVariables:
+          score: 0
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "2"
+            rollbackPolicy: "free"
+          - sectionId: "section2"
+            lineId: "10"
+            rollbackPolicy: "free"

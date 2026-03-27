@@ -71,6 +71,15 @@ out:
       views: []
       bgm:
         resourceId: __undefined__
+      rollback:
+        currentIndex: 0
+        isRestoring: false
+        replayStartIndex: 0
+        baselineVariables: {}
+        timeline:
+          - sectionId: "section1"
+            lineId: "line1"
+            rollbackPolicy: "free"
       variables: {}
 ---
 case: initialize object type variables with defaults
@@ -179,6 +188,19 @@ out:
       views: []
       bgm:
         resourceId: __undefined__
+      rollback:
+        currentIndex: 0
+        isRestoring: false
+        replayStartIndex: 0
+        baselineVariables:
+          inventory:
+            items:
+              - id: sword
+                name: Steel Sword
+        timeline:
+          - sectionId: "section1"
+            lineId: "line1"
+            rollbackPolicy: "free"
       variables:
         inventory:
           items:
@@ -262,6 +284,16 @@ out:
       views: []
       bgm:
         resourceId: __undefined__
+      rollback:
+        currentIndex: 0
+        isRestoring: false
+        replayStartIndex: 0
+        baselineVariables:
+          settings: {}
+        timeline:
+          - sectionId: "section1"
+            lineId: "line1"
+            rollbackPolicy: "free"
       variables:
         settings: {}
 ---
@@ -365,6 +397,15 @@ out:
       views: []
       bgm:
         resourceId: __undefined__
+      rollback:
+        currentIndex: 0
+        isRestoring: false
+        replayStartIndex: 0
+        baselineVariables: {}
+        timeline:
+          - sectionId: "section1"
+            lineId: "line1"
+            rollbackPolicy: "free"
       variables: {}
 ---
 case: initialize with specific initialLineId
@@ -439,4 +480,13 @@ out:
       views: []
       bgm:
         resourceId: __undefined__
+      rollback:
+        currentIndex: 0
+        isRestoring: false
+        replayStartIndex: 0
+        baselineVariables: {}
+        timeline:
+          - sectionId: "section1"
+            lineId: "line2"
+            rollbackPolicy: "free"
       variables: {}

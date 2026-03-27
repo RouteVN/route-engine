@@ -104,6 +104,18 @@ out:
         read:
           sectionId: "section1"
           lineId: "2"
+      rollback:
+        currentIndex: 1
+        isRestoring: false
+        replayStartIndex: 1
+        baselineVariables: {}
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "2"
+            rollbackPolicy: "free"
 ---
 case: advance to next line when auto is enabled with fromStart trigger (re-queues timer)
 in:
@@ -167,6 +179,18 @@ out:
         read:
           sectionId: "section1"
           lineId: "2"
+      rollback:
+        currentIndex: 1
+        isRestoring: false
+        replayStartIndex: 1
+        baselineVariables: {}
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "2"
+            rollbackPolicy: "free"
 ---
 case: advance resets singleLine applyMode config and does not re-queue timer
 in:
@@ -231,6 +255,18 @@ out:
         read:
           sectionId: "section1"
           lineId: "2"
+      rollback:
+        currentIndex: 1
+        isRestoring: false
+        replayStartIndex: 1
+        baselineVariables: {}
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "2"
+            rollbackPolicy: "free"
 ---
 case: advance to next line when auto is enabled with fromComplete trigger (does not re-queue timer)
 in:
@@ -291,6 +327,18 @@ out:
         read:
           sectionId: "section1"
           lineId: "2"
+      rollback:
+        currentIndex: 1
+        isRestoring: false
+        replayStartIndex: 1
+        baselineVariables: {}
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "2"
+            rollbackPolicy: "free"
 ---
 case: at last line of section with auto disabled
 in:
