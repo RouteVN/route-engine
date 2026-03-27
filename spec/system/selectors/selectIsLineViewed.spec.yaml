@@ -62,7 +62,7 @@ in:
               lastLineId: "10"
   - sectionId: "abc"
     lineId: "10"
-out: false
+out: true
 ---
 case: lineId before lastLineId (numeric comparison)
 in:
@@ -142,7 +142,7 @@ in:
                       actions: {}
   - sectionId: "intro"
     lineId: "3"
-out: false
+out: true
 ---
 case: lineId after lastLineId with projectData
 in:

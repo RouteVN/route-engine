@@ -32,10 +32,7 @@ const handleLineActions = (
   const handledLineActions = engine.handleLineActions();
 
   const renderDispatchCountAfter = getRenderDispatchCount?.() ?? 0;
-  if (
-    renderDispatchCountAfter === renderDispatchCountBefore &&
-    (!handledLineActions || renderDispatchCountBefore === 0)
-  ) {
+  if (renderDispatchCountAfter === renderDispatchCountBefore) {
     render({ engine, routeGraphics, trackRenderDispatch }, payload);
   }
 };

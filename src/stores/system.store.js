@@ -146,7 +146,8 @@ export const selectDialogueUIHidden = ({ state }) => {
 };
 
 export const selectDialogueHistory = ({ state }) => {
-  const lastContext = state.contexts[state.contexts.length - 1];
+  const contexts = Array.isArray(state.contexts) ? state.contexts : [];
+  const lastContext = contexts[contexts.length - 1];
   if (!lastContext) {
     return [];
   }
@@ -214,8 +215,8 @@ export const selectIsLineViewed = ({ state }, payload) => {
     !foundSection.lines ||
     !Array.isArray(foundSection.lines)
   ) {
-    // If we can't find the section or lines, fallback to original behavior
-    return false;
+    // If we can't find the section or lines, fallback to equality only.
+    return section.lastLineId === lineId;
   }
 
   // Find indices of both lines in the lines array
@@ -231,8 +232,8 @@ export const selectIsLineViewed = ({ state }, payload) => {
     return section.lastLineId === lineId;
   }
 
-  // Line is viewed if its index is < last viewed line index
-  return currentLineIndex < lastLineIndex;
+  // Line is viewed if its index is at or before the last viewed line index
+  return currentLineIndex <= lastLineIndex;
 };
 
 export const selectIsResourceViewed = ({ state }, payload) => {
@@ -269,7 +270,8 @@ export const selectSaveSlot = ({ state }, payload) => {
  * @returns {Object} returns.pointer - The pointer configuration for the current mode
  */
 export const selectCurrentPointer = ({ state }) => {
-  const lastContext = state.contexts[state.contexts.length - 1];
+  const contexts = Array.isArray(state.contexts) ? state.contexts : [];
+  const lastContext = contexts[contexts.length - 1];
 
   if (!lastContext) {
     return undefined;
@@ -774,8 +776,14 @@ export const appendPendingEffect = ({ state }, payload) => {
   return state;
 };
 
-export const addViewedLine = ({ state }, payload) => {
-  const { sectionId, lineId } = payload;
+const recordViewedLine = (state, { sectionId, lineId }) => {
+  if (!state.global.viewedRegistry) {
+    state.global.viewedRegistry = {};
+  }
+  if (!Array.isArray(state.global.viewedRegistry.sections)) {
+    state.global.viewedRegistry.sections = [];
+  }
+
   const section = state.global.viewedRegistry.sections.find(
     (section) => section.sectionId === sectionId,
   );
@@ -806,6 +814,10 @@ export const addViewedLine = ({ state }, payload) => {
       lastLineId: lineId,
     });
   }
+};
+
+export const addViewedLine = ({ state }, payload) => {
+  recordViewedLine(state, payload);
 
   state.global.pendingEffects.push({
     name: "render",
@@ -1145,6 +1157,12 @@ export const nextLine = ({ state }) => {
   // If line is not completed, complete it instantly instead of advancing
   if (!state.global.isLineCompleted) {
     state.global.isLineCompleted = true;
+    const pointer = selectCurrentPointer({ state })?.pointer;
+    const sectionId = pointer?.sectionId;
+    const lineId = pointer?.lineId;
+    if (sectionId && lineId) {
+      recordViewedLine(state, { sectionId, lineId });
+    }
     // Clear any running nextLineConfigTimer to prevent auto-advance after manual click
     state.global.pendingEffects.push({ name: "clearNextLineConfigTimer" });
 
@@ -1211,7 +1229,7 @@ export const nextLine = ({ state }) => {
       // Mark current line as viewed before moving
       const currentLineId = lastContext.pointers.read.lineId;
       if (currentLineId && sectionId) {
-        addViewedLine({ state }, { sectionId, lineId: currentLineId });
+        recordViewedLine(state, { sectionId, lineId: currentLineId });
       }
 
       lastContext.pointers.read = {
@@ -1275,6 +1293,13 @@ export const markLineCompleted = ({ state }) => {
       name: "startAutoNextTimer",
       payload: { delay: autoForwardTime },
     });
+  }
+
+  const pointer = selectCurrentPointer({ state })?.pointer;
+  const sectionId = pointer?.sectionId;
+  const lineId = pointer?.lineId;
+  if (sectionId && lineId) {
+    recordViewedLine(state, { sectionId, lineId });
   }
 
   // If nextLineConfig.auto is enabled with fromComplete trigger, start the timer
@@ -1492,6 +1517,11 @@ export const nextLineFromSystem = ({ state }) => {
     const lastContext = state.contexts[state.contexts.length - 1];
 
     if (lastContext) {
+      const currentLineId = lastContext.pointers.read.lineId;
+      if (currentLineId && sectionId) {
+        recordViewedLine(state, { sectionId, lineId: currentLineId });
+      }
+
       lastContext.pointers.read = {
         sectionId,
         lineId: nextLine.id,
