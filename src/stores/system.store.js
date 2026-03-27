@@ -1,3 +1,4 @@
+import { current, isDraft } from "immer";
 import {
   createStore,
   getDefaultVariablesFromProjectData,
@@ -44,6 +45,11 @@ const resetNextLineConfigIfSingleLine = (state) => {
   }
 };
 
+const cloneStateValue = (value) => {
+  const source = isDraft(value) ? current(value) : value;
+  return structuredClone(source);
+};
+
 const createRollbackCheckpoint = ({ sectionId, lineId, rollbackPolicy }) => ({
   sectionId,
   lineId,
@@ -61,7 +67,7 @@ const createRollbackState = ({
     currentIndex: hasInitialPointer ? 0 : -1,
     isRestoring: false,
     replayStartIndex,
-    baselineVariables: structuredClone(baselineVariables ?? {}),
+    baselineVariables: cloneStateValue(baselineVariables ?? {}),
     timeline: hasInitialPointer
       ? [
           createRollbackCheckpoint({
@@ -91,7 +97,7 @@ const ensureRollbackState = (lastContext, options = {}) => {
       lastContext.rollback.replayStartIndex = 0;
     }
     if (lastContext.rollback.baselineVariables === undefined) {
-      lastContext.rollback.baselineVariables = structuredClone(
+      lastContext.rollback.baselineVariables = cloneStateValue(
         lastContext.variables ?? {},
       );
     }
@@ -171,6 +177,39 @@ const applyRollbackableLineActions = (state, payload) => {
   }
 };
 
+const applyRollbackRestorableLineActions = (state, payload) => {
+  const { sectionId, lineId } = payload;
+  const section = selectSection({ state }, { sectionId });
+  const line = section?.lines?.find((item) => item.id === lineId);
+  const actions = line?.actions;
+
+  if (!actions) {
+    return;
+  }
+
+  const restorableActions = {
+    showDialogueUI,
+    hideDialogueUI,
+    toggleDialogueUI,
+    showDialogueHistory,
+    hideDialogueHistory,
+    setNextLineConfig,
+    pushLayeredView,
+    popLayeredView,
+    replaceLastLayeredView,
+    clearLayeredViews,
+  };
+
+  Object.entries(actions).forEach(([actionType, actionPayload]) => {
+    const action = restorableActions[actionType];
+    if (!action) {
+      return;
+    }
+
+    action({ state }, actionPayload);
+  });
+};
+
 const restoreRollbackCheckpoint = (state, checkpointIndex) => {
   const lastContext = state.contexts?.[state.contexts.length - 1];
   if (!lastContext) {
@@ -197,11 +236,20 @@ const restoreRollbackCheckpoint = (state, checkpointIndex) => {
   rollback.isRestoring = true;
   rollback.currentIndex = checkpointIndex;
 
-  lastContext.variables = structuredClone(rollback.baselineVariables ?? {});
+  lastContext.variables = cloneStateValue(rollback.baselineVariables ?? {});
+  state.global.dialogueUIHidden = false;
+  state.global.isDialogueHistoryShowing = false;
+  state.global.nextLineConfig = cloneStateValue(DEFAULT_NEXT_LINE_CONFIG);
+  state.global.layeredViews = [];
+  state.global.isLineCompleted = true;
 
   const replayStartIndex = rollback.replayStartIndex ?? 0;
   for (let i = replayStartIndex; i <= checkpointIndex; i++) {
+    if (i > replayStartIndex) {
+      resetNextLineConfigIfSingleLine(state);
+    }
     applyRollbackableLineActions(state, rollback.timeline[i]);
+    applyRollbackRestorableLineActions(state, rollback.timeline[i]);
   }
 
   lastContext.pointers.read = {
@@ -218,8 +266,11 @@ const restoreRollbackCheckpoint = (state, checkpointIndex) => {
     };
   }
 
-  state.global.isLineCompleted = true;
   rollback.isRestoring = false;
+
+  state.global.pendingEffects = state.global.pendingEffects.filter(
+    (effect) => effect?.name !== "render",
+  );
 
   state.global.pendingEffects.push({
     name: "render",
@@ -1129,8 +1180,8 @@ export const saveSaveSlot = ({ state }, payload) => {
   const slotKey = String(slot);
 
   const currentState = {
-    contexts: structuredClone(state.contexts),
-    viewedRegistry: structuredClone(state.global.viewedRegistry),
+    contexts: cloneStateValue(state.contexts),
+    viewedRegistry: cloneStateValue(state.global.viewedRegistry),
   };
 
   const saveData = {
@@ -1166,8 +1217,10 @@ export const loadSaveSlot = ({ state }, payload) => {
   const slotKey = String(slot);
   const slotData = state.global.saveSlots[slotKey];
   if (slotData) {
-    state.global.viewedRegistry = slotData.state.viewedRegistry;
-    state.contexts = structuredClone(slotData.state.contexts);
+    state.global.viewedRegistry = cloneStateValue(
+      slotData.state.viewedRegistry,
+    );
+    state.contexts = cloneStateValue(slotData.state.contexts);
     state.contexts?.forEach((context) => {
       ensureRollbackState(context, { compatibilityAnchor: !context.rollback });
     });
