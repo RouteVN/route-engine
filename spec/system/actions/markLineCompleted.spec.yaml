@@ -8,12 +8,30 @@ exportName: markLineCompleted
 case: mark line as completed
 in:
   - state:
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
       global:
         isLineCompleted: false
+        viewedRegistry:
+          sections: []
         pendingEffects: []
 out:
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "1"
   global:
     isLineCompleted: true
+    viewedRegistry:
+      sections:
+        - sectionId: "section1"
+          lastLineId: "1"
     pendingEffects:
       - name: render
 ---
