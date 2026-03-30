@@ -1,0 +1,188 @@
+---
+title: Rollback Reveal Complete
+description: Minimal rollback sandbox for text-revealing dialogue. After rolling back, the previous line should already be fully revealed with no replayed text animation.
+specs:
+  - starts on a text-revealing line
+  - provides ten text-revealing lines for manual forward/back testing
+  - rolls back one line
+  - the rolled-back line should render immediately in its completed state
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 80
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 80
+  - action: click
+    x: 180
+    y: 360
+  - action: wait
+    ms: 50
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  characters:
+    narrator:
+      name: Guide
+  layouts:
+    stageLayout:
+      elements:
+        - id: stage
+          type: rect
+          width: 1920
+          height: 1080
+          colorId: bg
+          click:
+            payload:
+              actions:
+                nextLine: {}
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 100
+          y: 760
+          width: 1720
+          height: 240
+          colorId: panel
+        - id: dialogue-text
+          type: text-revealing
+          x: 140
+          y: 835
+          width: 1460
+          content: ${dialogue.content}
+          revealEffect: typewriter
+          displaySpeed: 4
+          textStyleId: textMain
+        - id: rollback-button
+          type: rect
+          x: 100
+          y: 680
+          width: 320
+          height: 60
+          colorId: button
+          click:
+            payload:
+              actions:
+                rollbackByOffset:
+                  offset: -1
+        - id: rollback-label
+          type: text
+          x: 130
+          y: 700
+          content: "[BACK 1 LINE]"
+          textStyleId: textButton
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    bg:
+      hex: "#000000"
+    panel:
+      hex: "#4D4D4D"
+    button:
+      hex: "#737373"
+    fg:
+      hex: "#FFFFFF"
+  textStyles:
+    textMain:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 30
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textButton:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 26
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: scene1
+  scenes:
+    scene1:
+      initialSectionId: section1
+      sections:
+        section1:
+          lines:
+            - id: line1
+              actions:
+                background:
+                  resourceId: stageLayout
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 1 should be fully visible immediately after rollback."
+                  characterId: narrator
+            - id: line2
+              actions:
+                dialogue:
+                  content:
+                    - text: "Line 2 is only here so rollback has a previous checkpoint and should still be mid-reveal when the rollback button is pressed."
+                  characterId: narrator
+            - id: line3
+              actions:
+                dialogue:
+                  content:
+                    - text: "Line 3 gives you another reveal checkpoint so you can keep advancing and verify that going back restores the previous line in its already-finished state."
+                  characterId: narrator
+            - id: line4
+              actions:
+                dialogue:
+                  content:
+                    - text: "Line 4 continues the long reveal sequence. Use the center of the screen to move forward and the back button to step backward one checkpoint at a time."
+                  characterId: narrator
+            - id: line5
+              actions:
+                dialogue:
+                  content:
+                    - text: "Line 5 exists for manual testing depth. The important behavior stays the same: rollback should settle on the prior line without replaying the reveal animation."
+                  characterId: narrator
+            - id: line6
+              actions:
+                dialogue:
+                  content:
+                    - text: "Line 6 keeps the reveal running long enough to make it obvious whether rollback is restoring the final state or incorrectly starting the text animation over."
+                  characterId: narrator
+            - id: line7
+              actions:
+                dialogue:
+                  content:
+                    - text: "Line 7 is another checkpoint in the same sequence. Advancing should still take two clicks on a revealing line, and rolling back should land on a completed prior line."
+                  characterId: narrator
+            - id: line8
+              actions:
+                dialogue:
+                  content:
+                    - text: "Line 8 makes the sandbox easier to walk through repeatedly while checking different rollback points near the middle and the end of the sequence."
+                  characterId: narrator
+            - id: line9
+              actions:
+                dialogue:
+                  content:
+                    - text: "Line 9 is here so you can test rollback near the end of the path and confirm the previous line returns as fully revealed instead of typing in again."
+                  characterId: narrator
+            - id: line10
+              actions:
+                dialogue:
+                  content:
+                    - text: "Line 10 is the final reveal line in this sandbox. From here, backing up should still show line 9 immediately in its settled end state."
+                  characterId: narrator
