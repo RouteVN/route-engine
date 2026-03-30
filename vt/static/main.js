@@ -143,11 +143,6 @@ const init = async () => {
   const assetBufferMap = assetBufferManager.getBufferMap();
 
   const routeGraphics = createRouteGraphics();
-  const isAutomatedVtRun =
-    !!window?.RTGL_VT_DEBUG || !!window.navigator?.webdriver;
-  // Auto-complete only during VT automation so manual candidate browsing keeps
-  // the normal interaction path and does not stack text on rerenders.
-  const autoCompleteRenderedLines = isAutomatedVtRun;
 
   window.takeVtScreenshotBase64 = async (label) => {
     if (label) {
@@ -180,55 +175,6 @@ const init = async () => {
   // Create dedicated ticker for auto mode
   const ticker = new Ticker();
   ticker.start();
-  let latestRenderId = null;
-  let lastHandledRenderCompleteId = null;
-  let handledIdlessRenderComplete = false;
-
-  const trackRenderDispatch = (renderState) => {
-    const renderId =
-      typeof renderState?.id === "string" && renderState.id.length > 0
-        ? renderState.id
-        : null;
-    latestRenderId = renderId;
-    handledIdlessRenderComplete = false;
-  };
-
-  const renderWithTracking = (renderState) => {
-    trackRenderDispatch(renderState);
-    routeGraphics.render(renderState);
-  };
-
-  const shouldHandleRenderComplete = (payload = {}) => {
-    if (payload?.aborted === true) {
-      return false;
-    }
-
-    const completionId =
-      typeof payload?.id === "string" && payload.id.length > 0
-        ? payload.id
-        : null;
-
-    if (completionId) {
-      if (completionId !== latestRenderId) {
-        return false;
-      }
-      if (completionId === lastHandledRenderCompleteId) {
-        return false;
-      }
-      lastHandledRenderCompleteId = completionId;
-      return true;
-    }
-
-    if (latestRenderId !== null) {
-      return false;
-    }
-    if (handledIdlessRenderComplete) {
-      return false;
-    }
-
-    handledIdlessRenderComplete = true;
-    return true;
-  };
 
   const base64ToArrayBuffer = (base64) => {
     const binaryString = window.atob(
@@ -241,28 +187,21 @@ const init = async () => {
     }
     return bytes.buffer;
   };
+  let engine;
+  const effectsHandler = createEffectsHandler({
+    getEngine: () => engine,
+    routeGraphics: {
+      render: (renderState) => {
+        routeGraphics.render(renderState);
+      },
+    },
+    ticker,
+  });
 
-
-  await routeGraphics.init({
-    width: screenWidth,
-    height: screenHeight,
-    plugins,
-    eventHandler: async (eventName, payload) => {
-      console.log("[vt][route-graphics:event]", eventName, payload);
-
-      if (eventName === "renderComplete") {
-        if (!shouldHandleRenderComplete(payload)) {
-          return;
-        }
-        if (autoCompleteRenderedLines) {
-          engine.handleActions({
-            markLineCompleted: {}
-          });
-        }
-        return;
-      }
-      if (payload.actions) {
-        if (payload.actions.saveSaveSlot) {
+  const routeGraphicsEventHandler =
+    effectsHandler.createRouteGraphicsEventHandler({
+      preprocessPayload: async (eventName, payload) => {
+        if (payload?.actions?.saveSaveSlot) {
           const url = await routeGraphics.extractBase64("story");
           const assets = {
             [`saveThumbnailImage:${payload.actions.saveSaveSlot.slot}`]: {
@@ -273,14 +212,19 @@ const init = async () => {
           await routeGraphics.loadAssets(assets);
           payload.actions.saveSaveSlot.thumbnailImage = url;
         }
-        const eventContext = payload?._event
-          ? { _event: payload._event }
-          : payload?.event
-            ? { _event: payload.event }
-            : undefined;
-        engine.handleActions(payload.actions, eventContext);
-      }
-    },
+
+        return payload;
+      },
+      onEvent: async (eventName, payload) => {
+        console.log("[vt][route-graphics:event]", eventName, payload);
+      },
+    });
+
+  await routeGraphics.init({
+    width: screenWidth,
+    height: screenHeight,
+    plugins,
+    eventHandler: routeGraphicsEventHandler,
     onFirstRender: () => {
       window.dispatchEvent(new CustomEvent('vt:ready'));
     },
@@ -294,14 +238,7 @@ const init = async () => {
     e.preventDefault();
   });
 
-  const effectsHandler = createEffectsHandler({
-    getEngine: () => engine,
-    routeGraphics: {
-      render: renderWithTracking,
-    },
-    ticker,
-  });
-  const engine = createRouteEngine({ handlePendingEffects: effectsHandler });
+  engine = createRouteEngine({ handlePendingEffects: effectsHandler });
   const saveSlots = JSON.parse(localStorage.getItem("saveSlots")) || {};
   const globalDeviceVariables = JSON.parse(localStorage.getItem("globalDeviceVariables")) || {};
   const globalAccountVariables = JSON.parse(localStorage.getItem("globalAccountVariables")) || {};

@@ -226,6 +226,13 @@ pointers: {
 - `trigger`: When to advance (`'fromStart'` or `'fromComplete'`)
 - `delay`: Milliseconds to wait before advancing
 
+Global playback modes use a different timing model:
+
+- Global `autoMode` starts its delay after the current line is completed.
+- In practice, completion is driven by Route Graphics `renderComplete`, so text reveal and other tracked render work finish first.
+- Global `skipMode` does not wait for completion; it advances aggressively on its own short timer.
+- `nextLineConfig.auto` is the only built-in auto-like behavior that can intentionally start from line start via `trigger: "fromStart"`.
+
 ## Dialogue Modes
 
 ### ADV Mode (Adventure)
@@ -302,6 +309,14 @@ Tracks content the player has seen:
 
 - **sections**: Array of `{ sectionId, lastLineId }` entries
 - **resources**: Array of `{ resourceId }` entries
+
+For lines, this is intentionally a section-level frontier model:
+
+- `lastLineId` means the furthest seen line reached within that section.
+- Any line at or before that frontier is treated as seen.
+- This assumes section flow is effectively linear, which matches the engine's current use of seen-lines for skip behavior and progress tracking.
+
+The frontier is updated when the current line is completed and also when advancing away from the current line. That keeps the final completed line in a section marked as seen even if there is no later line to move to.
 
 Used for:
 

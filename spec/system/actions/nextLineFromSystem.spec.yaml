@@ -58,6 +58,8 @@ in:
   - state:
       global:
         isLineCompleted: true
+        viewedRegistry:
+          sections: []
         nextLineConfig:
           auto: { enabled: false }
         pendingEffects: []
@@ -79,10 +81,13 @@ in:
 out:
   global:
     isLineCompleted: false
+    viewedRegistry:
+      sections:
+        - sectionId: "section1"
+          lastLineId: "1"
     nextLineConfig:
       auto: { enabled: false }
     pendingEffects:
-      - name: "render"
       - name: "handleLineActions"
   projectData:
     story:
@@ -105,6 +110,8 @@ in:
   - state:
       global:
         isLineCompleted: true
+        viewedRegistry:
+          sections: []
         nextLineConfig:
           auto:
             enabled: true
@@ -130,13 +137,16 @@ in:
 out:
   global:
     isLineCompleted: false
+    viewedRegistry:
+      sections:
+        - sectionId: "section1"
+          lastLineId: "1"
     nextLineConfig:
       auto:
         enabled: true
         trigger: "fromStart"
         delay: 1500
     pendingEffects:
-      - name: "render"
       - name: "handleLineActions"
       - name: "nextLineConfigTimer"
         payload:
@@ -163,6 +173,8 @@ in:
   - state:
       global:
         isLineCompleted: true
+        viewedRegistry:
+          sections: []
         nextLineConfig:
           auto:
             enabled: true
@@ -189,6 +201,10 @@ in:
 out:
   global:
     isLineCompleted: false
+    viewedRegistry:
+      sections:
+        - sectionId: "section1"
+          lastLineId: "1"
     nextLineConfig:
       manual:
         enabled: true
@@ -198,7 +214,6 @@ out:
       applyMode: "persistent"
     pendingEffects:
       - name: "clearNextLineConfigTimer"
-      - name: "render"
       - name: "handleLineActions"
   projectData:
     story:
@@ -228,6 +243,8 @@ in:
             trigger: "fromComplete"
             delay: 2000
         pendingEffects: []
+        viewedRegistry:
+          sections: []
       projectData:
         story:
           scenes:
@@ -253,8 +270,11 @@ out:
         trigger: "fromComplete"
         delay: 2000
     pendingEffects:
-      - name: "render"
       - name: "handleLineActions"
+    viewedRegistry:
+      sections:
+        - sectionId: "section1"
+          lastLineId: "1"
   projectData:
     story:
       scenes:

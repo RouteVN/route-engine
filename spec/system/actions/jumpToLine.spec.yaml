@@ -53,7 +53,6 @@ out:
   global:
     isLineCompleted: false
     pendingEffects:
-      - name: render
       - name: handleLineActions
 ---
 case: jump to specific line in different section
@@ -109,7 +108,6 @@ out:
   global:
     isLineCompleted: false
     pendingEffects:
-      - name: render
       - name: handleLineActions
 ---
 case: return unchanged state when lineId is missing
@@ -321,5 +319,4 @@ out:
     pendingEffects:
       - name: "existingEffect"
         data: "test"
-      - name: render
       - name: handleLineActions

@@ -767,16 +767,57 @@ const createLayoutTemplateData = ({
   };
 };
 
+const normalizeCompletedTextReveal = (node) => {
+  if (Array.isArray(node)) {
+    return node.map((item) => normalizeCompletedTextReveal(item));
+  }
+
+  if (!node || typeof node !== "object") {
+    return node;
+  }
+
+  const normalized = { ...node };
+
+  Object.keys(normalized).forEach((key) => {
+    normalized[key] = normalizeCompletedTextReveal(normalized[key]);
+  });
+
+  if (normalized.type === "text-revealing") {
+    normalized.revealEffect = "none";
+  }
+
+  return normalized;
+};
+
+const settleTextRevealIfCompleted = (
+  node,
+  { isLineCompleted = false, skipTransitionsAndAnimations = false } = {},
+) => {
+  if (!isLineCompleted && !skipTransitionsAndAnimations) {
+    return node;
+  }
+
+  return normalizeCompletedTextReveal(node);
+};
+
 const renderTemplatedLayoutContainer = ({
   container,
   resources,
   templateData,
+  isLineCompleted = false,
+  skipTransitionsAndAnimations = false,
 }) => {
   const processedContainer = parseAndRender(container, templateData, {
     functions: jemplFunctions,
   });
 
-  return resolveLayoutResourceIds(processedContainer, resources);
+  return resolveLayoutResourceIds(
+    settleTextRevealIfCompleted(processedContainer, {
+      isLineCompleted,
+      skipTransitionsAndAnimations,
+    }),
+    resources,
+  );
 };
 
 const toRenderStateKeyboard = (keyboard = {}) => {
@@ -1060,7 +1101,13 @@ export const addBackgroundOrCg = (
           { functions: jemplFunctions },
         );
         storyContainer.children.push(
-          resolveLayoutResourceIds(processedContainer, resources),
+          resolveLayoutResourceIds(
+            settleTextRevealIfCompleted(processedContainer, {
+              isLineCompleted,
+              skipTransitionsAndAnimations,
+            }),
+            resources,
+          ),
         );
       }
     }
@@ -1354,7 +1401,13 @@ export const addVisuals = (
             { functions: jemplFunctions },
           );
           storyContainer.children.push(
-            resolveLayoutResourceIds(processedContainer, resources),
+            resolveLayoutResourceIds(
+              settleTextRevealIfCompleted(processedContainer, {
+                isLineCompleted,
+                skipTransitionsAndAnimations,
+              }),
+              resources,
+            ),
           );
         }
       }
@@ -1496,7 +1549,13 @@ export const addDialogue = (
       const result = parseAndRender(wrappedTemplate, templateData, {
         functions: jemplFunctions,
       });
-      const uiElements = resolveLayoutResourceIds(result?.elements, resources);
+      const uiElements = resolveLayoutResourceIds(
+        settleTextRevealIfCompleted(result?.elements, {
+          isLineCompleted,
+          skipTransitionsAndAnimations,
+        }),
+        resources,
+      );
 
       if (Array.isArray(uiElements)) {
         for (const element of uiElements) {
@@ -1598,7 +1657,10 @@ export const addChoices = (
         },
       );
       const choiceElements = resolveLayoutResourceIds(
-        result?.elements,
+        settleTextRevealIfCompleted(result?.elements, {
+          isLineCompleted,
+          skipTransitionsAndAnimations,
+        }),
         resources,
       );
 
@@ -1648,6 +1710,8 @@ export const addControl = (
     skipMode,
     canRollback,
     saveSlots = [],
+    isLineCompleted,
+    skipTransitionsAndAnimations,
   },
 ) => {
   if (!presentationState.control?.resourceId) {
@@ -1693,6 +1757,8 @@ export const addControl = (
         skipMode,
         canRollback,
       }),
+      isLineCompleted,
+      skipTransitionsAndAnimations,
     }),
   );
 
@@ -1834,6 +1900,8 @@ export const addLayout = (
           skipMode,
           canRollback,
         }),
+        isLineCompleted,
+        skipTransitionsAndAnimations,
       }),
     );
   }
@@ -1879,6 +1947,8 @@ export const addLayeredViews = (
     dialogueHistory = [],
     saveSlots = [],
     screen,
+    isLineCompleted,
+    skipTransitionsAndAnimations,
   },
 ) => {
   const { elements, animations } = state;
@@ -1958,10 +2028,16 @@ export const addLayeredViews = (
 
       const [blocker, ...layoutChildren] = processedLayeredView.children || [];
       const resolvedLayeredView = resolveLayoutResourceIds(
-        {
-          ...processedLayeredView,
-          children: layoutChildren,
-        },
+        settleTextRevealIfCompleted(
+          {
+            ...processedLayeredView,
+            children: layoutChildren,
+          },
+          {
+            isLineCompleted,
+            skipTransitionsAndAnimations,
+          },
+        ),
         resources,
       );
 

@@ -17,13 +17,24 @@ const createTimerState = () => {
   };
 };
 
-const render = ({ engine, routeGraphics }, payload) => {
+const render = ({ engine, routeGraphics, trackRenderDispatch }, payload) => {
   const renderState = engine.selectRenderState();
+  trackRenderDispatch?.(renderState);
   routeGraphics.render(renderState);
 };
 
-const handleLineActions = ({ engine }, payload) => {
-  engine.handleLineActions();
+const handleLineActions = (
+  { engine, routeGraphics, trackRenderDispatch, getRenderDispatchCount },
+  payload,
+) => {
+  const renderDispatchCountBefore = getRenderDispatchCount?.() ?? 0;
+
+  const handledLineActions = engine.handleLineActions();
+
+  const renderDispatchCountAfter = getRenderDispatchCount?.() ?? 0;
+  if (renderDispatchCountAfter === renderDispatchCountBefore) {
+    render({ engine, routeGraphics, trackRenderDispatch }, payload);
+  }
 };
 
 const startAutoNextTimer = ({ engine, ticker, autoTimer }, payload) => {
@@ -187,8 +198,99 @@ const createEffectsHandler = ({ getEngine, routeGraphics, ticker }) => {
   const autoTimer = createTimerState();
   const skipTimer = createTimerState();
   const nextLineConfigTimerState = createTimerState();
+  let latestRenderId = null;
+  let lastHandledRenderCompleteId = null;
+  let handledIdlessRenderComplete = false;
+  let renderDispatchCount = 0;
 
-  return async (pendingEffects) => {
+  const trackRenderDispatch = (renderState) => {
+    const renderId =
+      typeof renderState?.id === "string" && renderState.id.length > 0
+        ? renderState.id
+        : null;
+
+    renderDispatchCount += 1;
+    latestRenderId = renderId;
+    handledIdlessRenderComplete = false;
+  };
+
+  const getRenderDispatchCount = () => renderDispatchCount;
+
+  const shouldHandleRenderComplete = (payload = {}) => {
+    if (payload?.aborted === true) {
+      return false;
+    }
+
+    const completionId =
+      typeof payload?.id === "string" && payload.id.length > 0
+        ? payload.id
+        : null;
+
+    if (completionId) {
+      if (completionId !== latestRenderId) {
+        return false;
+      }
+
+      if (completionId === lastHandledRenderCompleteId) {
+        return false;
+      }
+
+      lastHandledRenderCompleteId = completionId;
+      return true;
+    }
+
+    if (latestRenderId !== null) {
+      return false;
+    }
+
+    if (handledIdlessRenderComplete) {
+      return false;
+    }
+
+    handledIdlessRenderComplete = true;
+    return true;
+  };
+
+  const handleRouteGraphicsEvent = (eventName, payload = {}) => {
+    if (eventName !== "renderComplete") {
+      return false;
+    }
+
+    if (!shouldHandleRenderComplete(payload)) {
+      return false;
+    }
+
+    const engine = getEngine();
+    engine.handleAction("markLineCompleted", {});
+    return true;
+  };
+
+  const createRouteGraphicsEventHandler = ({
+    preprocessPayload,
+    onEvent,
+  } = {}) => {
+    return async (eventName, payload = {}) => {
+      const nextPayload =
+        (await preprocessPayload?.(eventName, payload)) ?? payload;
+
+      handleRouteGraphicsEvent(eventName, nextPayload);
+
+      if (nextPayload?.actions) {
+        const eventContext = nextPayload?._event
+          ? { _event: nextPayload._event }
+          : nextPayload?.event
+            ? { _event: nextPayload.event }
+            : undefined;
+
+        const engine = getEngine();
+        engine.handleActions(nextPayload.actions, eventContext);
+      }
+
+      return onEvent?.(eventName, nextPayload);
+    };
+  };
+
+  const handlePendingEffects = async (pendingEffects) => {
     const engine = getEngine();
 
     // Deduplicate effects by name, keeping only the last occurrence
@@ -207,6 +309,8 @@ const createEffectsHandler = ({ getEngine, routeGraphics, ticker }) => {
       autoTimer,
       skipTimer,
       nextLineConfigTimerState,
+      trackRenderDispatch,
+      getRenderDispatchCount,
     };
 
     for (const effect of uniqueEffects) {
@@ -216,6 +320,12 @@ const createEffectsHandler = ({ getEngine, routeGraphics, ticker }) => {
       }
     }
   };
+
+  handlePendingEffects.handleRouteGraphicsEvent = handleRouteGraphicsEvent;
+  handlePendingEffects.createRouteGraphicsEventHandler =
+    createRouteGraphicsEventHandler;
+
+  return handlePendingEffects;
 };
 
 export default createEffectsHandler;

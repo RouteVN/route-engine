@@ -366,6 +366,13 @@ const presentationState = engine.selectPresentationState();
 | `stopSkipMode`   | -       | Disable skip mode         |
 | `toggleSkipMode` | -       | Toggle skip mode          |
 
+Playback timing semantics:
+
+- Global `autoMode` waits for the current line to complete before starting its `_autoForwardTime` delay.
+- That completion is driven by Route Graphics `renderComplete`, so revealing text and other tracked render work finish first.
+- Global `skipMode` does not use that completion gate; it advances on its own fast timer.
+- `nextLineConfig.auto` is separate and may use `trigger: "fromStart"` or `trigger: "fromComplete"` depending on authored behavior.
+
 ### UI Actions
 
 | Action             | Payload | Description                   |
@@ -389,6 +396,13 @@ const presentationState = engine.selectPresentationState();
 | `addViewedLine`     | `{ sectionId, lineId }` | Mark line as viewed           |
 | `addViewedResource` | `{ resourceId }`        | Mark resource as viewed       |
 | `addToHistory`      | `{ item }`              | Add entry to history sequence |
+
+Seen-line semantics:
+
+- The engine stores seen progress per section as a single frontier: `{ sectionId, lastLineId }`.
+- The frontier line itself counts as seen.
+- Any earlier line in the same section also counts as seen.
+- The frontier is updated when a line is completed and when progression moves away from the current line.
 
 ### Save System Actions
 
