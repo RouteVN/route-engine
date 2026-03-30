@@ -748,6 +748,7 @@ const getStoryContainer = (elements = []) => {
 const createLayoutTemplateData = ({
   variables,
   saveSlots = [],
+  isLineCompleted,
   autoMode,
   skipMode,
   canRollback,
@@ -755,6 +756,7 @@ const createLayoutTemplateData = ({
   return {
     variables,
     saveSlots,
+    isLineCompleted,
     autoMode,
     skipMode,
     canRollback,
@@ -989,6 +991,10 @@ export const addBackgroundOrCg = (
     isLineCompleted,
     skipTransitionsAndAnimations,
     variables,
+    autoMode,
+    skipMode,
+    canRollback,
+    saveSlots = [],
   },
 ) => {
   const { elements, animations } = state;
@@ -1043,7 +1049,14 @@ export const addBackgroundOrCg = (
         };
         const processedContainer = parseAndRender(
           bgContainer,
-          { variables },
+          createLayoutTemplateData({
+            variables,
+            saveSlots,
+            isLineCompleted,
+            autoMode,
+            skipMode,
+            canRollback,
+          }),
           { functions: jemplFunctions },
         );
         storyContainer.children.push(
@@ -1224,6 +1237,10 @@ export const addVisuals = (
     isLineCompleted,
     skipTransitionsAndAnimations,
     variables,
+    autoMode,
+    skipMode,
+    canRollback,
+    saveSlots = [],
   },
 ) => {
   const { elements, animations } = state;
@@ -1326,7 +1343,14 @@ export const addVisuals = (
           };
           const processedContainer = parseAndRender(
             visualContainer,
-            { variables },
+            createLayoutTemplateData({
+              variables,
+              saveSlots,
+              isLineCompleted,
+              autoMode,
+              skipMode,
+              canRollback,
+            }),
             { functions: jemplFunctions },
           );
           storyContainer.children.push(
@@ -1523,6 +1547,11 @@ export const addChoices = (
     isLineCompleted,
     skipTransitionsAndAnimations,
     screen,
+    variables,
+    autoMode,
+    skipMode,
+    canRollback,
+    saveSlots = [],
   },
 ) => {
   const { elements, animations } = state;
@@ -1549,11 +1578,25 @@ export const addChoices = (
     const layout = resources?.layouts[presentationState.choice.resourceId];
     if (layout && layout.elements) {
       const wrappedTemplate = { elements: layout.elements };
-      const result = parseAndRender(wrappedTemplate, {
-        choice: {
-          items: presentationState.choice?.items ?? [],
+      const result = parseAndRender(
+        wrappedTemplate,
+        {
+          ...createLayoutTemplateData({
+            variables,
+            saveSlots,
+            isLineCompleted,
+            autoMode,
+            skipMode,
+            canRollback,
+          }),
+          choice: {
+            items: presentationState.choice?.items ?? [],
+          },
         },
-      });
+        {
+          functions: jemplFunctions,
+        },
+      );
       const choiceElements = resolveLayoutResourceIds(
         result?.elements,
         resources,
@@ -1600,6 +1643,7 @@ export const addControl = (
     presentationState,
     resources = {},
     variables,
+    isLineCompleted,
     autoMode,
     skipMode,
     canRollback,
@@ -1644,6 +1688,7 @@ export const addControl = (
       templateData: createLayoutTemplateData({
         variables,
         saveSlots,
+        isLineCompleted,
         autoMode,
         skipMode,
         canRollback,
@@ -1784,6 +1829,7 @@ export const addLayout = (
         templateData: createLayoutTemplateData({
           variables,
           saveSlots,
+          isLineCompleted,
           autoMode,
           skipMode,
           canRollback,
