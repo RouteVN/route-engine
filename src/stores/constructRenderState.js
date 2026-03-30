@@ -2065,12 +2065,14 @@ export const addLayeredViews = (
       }
 
       if (Array.isArray(layout.transitions)) {
-        pushNormalizedLayoutTransitions({
-          animations,
-          transitions: layout.transitions,
-          defaultTargetId: `layeredView-${index}`,
-          idPrefix: `layeredView-${index}`,
-        });
+        if (!isLineCompleted && !skipTransitionsAndAnimations) {
+          pushNormalizedLayoutTransitions({
+            animations,
+            transitions: layout.transitions,
+            defaultTargetId: `layeredView-${index}`,
+            idPrefix: `layeredView-${index}`,
+          });
+        }
       }
 
       // Create a container for this layeredView

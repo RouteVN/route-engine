@@ -953,6 +953,23 @@ export const selectCurrentPageSlots = (
   return { saveSlots: slots };
 };
 
+const shouldSettleCurrentLinePresentation = (state) => {
+  const lastContext = state.contexts?.[state.contexts.length - 1];
+  const rollback = lastContext?.rollback;
+  if (
+    !rollback ||
+    !Array.isArray(rollback.timeline) ||
+    typeof rollback.currentIndex !== "number"
+  ) {
+    return false;
+  }
+
+  return (
+    rollback.currentIndex >= 0 &&
+    rollback.currentIndex < rollback.timeline.length - 1
+  );
+};
+
 export const selectRenderState = ({ state }) => {
   const presentationState = selectPresentationState({ state });
   const previousPresentationState = selectPreviousPresentationState({ state });
@@ -963,6 +980,8 @@ export const selectRenderState = ({ state }) => {
   };
 
   const { saveSlots } = selectCurrentPageSlots({ state });
+  const settleCurrentLinePresentation =
+    shouldSettleCurrentLinePresentation(state);
 
   const renderState = constructRenderState({
     presentationState,
@@ -975,7 +994,9 @@ export const selectRenderState = ({ state }) => {
     canRollback: selectCanRollback({ state }),
     skipOnlyViewedLines: !allVariables._skipUnseenText,
     isLineCompleted: state.global.isLineCompleted,
-    skipTransitionsAndAnimations: !!allVariables._skipTransitionsAndAnimations,
+    skipTransitionsAndAnimations:
+      !!allVariables._skipTransitionsAndAnimations ||
+      settleCurrentLinePresentation,
     layeredViews: state.global.layeredViews,
     dialogueHistory: selectDialogueHistory({ state }),
     saveSlots,
