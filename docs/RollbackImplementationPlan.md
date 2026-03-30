@@ -116,7 +116,7 @@ Specifically:
 - do not snapshot presentation
 - do not treat variable snapshots as the source of truth
 - on rollback:
-  - reset context variables to the context baseline
+  - reset context variables to the default values of context-scoped variables derived from project data
   - replay rollbackable story actions from the start of the timeline up to the target index
   - move `read` pointer to the target checkpoint
   - reconstruct presentation/render state from restored story state
@@ -182,6 +182,11 @@ rollback: {
   timeline: [],
 }
 ```
+
+Target model rule:
+
+- rollback state should not store a duplicate `baselineVariables` snapshot
+- restore start state should be derived on demand from project-defined defaults for context-scoped variables
 
 Checkpoint shape:
 
@@ -367,7 +372,7 @@ Responsibilities:
 2. stop skip mode
 3. set `rollback.isRestoring = true`
 4. set `rollback.currentIndex`
-5. reset context variables to the context baseline
+5. reset context variables to the default values of context-scoped variables derived from project data
 6. replay rollbackable actions from `timeline[0..checkpointIndex]`
 7. restore `pointers.read`
 8. set `rollback.isRestoring = false`
@@ -459,7 +464,7 @@ So rollback should not attempt to store or restore:
 
 Instead:
 
-1. reset story state to the context baseline
+1. reset story state to the default values of context-scoped variables derived from project data
 2. replay rollbackable timeline entries up to target index
 3. restore pointer to target line
 4. queue normal render effects
@@ -537,10 +542,13 @@ Implementation requirement:
 - loading a save must restore both:
   - `rollback.timeline`
   - `rollback.currentIndex`
+- rollback save data should not store a duplicate `baselineVariables` snapshot
+- restore start state should be recomputed from project data after load
 
 Compatibility requirement:
 
 - define explicit behavior for older saves that do not contain rollback state
+- define whether older saves that still contain `baselineVariables` ignore that field or receive a one-time migration
 
 Recommended default:
 
@@ -589,6 +597,7 @@ Add or migrate tests for:
 15. `rollback.isRestoring` prevents duplicate checkpoint append
 16. `rollback.isRestoring` prevents duplicate `updateVariable` execution
 17. old-save compatibility initializes a minimal rollback timeline correctly
+18. rollback restore start state is derived from project defaults, not serialized baseline snapshots
 
 ### Regression tests for divergence
 
@@ -618,11 +627,12 @@ Recommended order:
 4. add branch truncation logic
 5. add `rollback.isRestoring` guard and restore helper
 6. implement replay-based rollback reconstruction from timeline start
-7. switch `rollbackByOffset` to new timeline
-8. switch UI-facing back flows to true rollback
-9. stop rollback logic from depending on `historySequence`
-10. update docs and tests
-11. evaluate whether `prevLine` / `history` pointer can be simplified or removed later
+7. derive rollback restore start state from project-defined context defaults instead of stored baseline snapshots
+8. switch `rollbackByOffset` to new timeline
+9. switch UI-facing back flows to true rollback
+10. stop rollback logic from depending on `historySequence`
+11. update docs and tests
+12. evaluate whether `prevLine` / `history` pointer can be simplified or removed later
 
 ## Risks
 

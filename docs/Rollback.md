@@ -241,6 +241,7 @@ The exact field names may differ, but the model should support:
 - ordered line checkpoints across section boundaries
 - replaying rollbackable story actions from timeline history
 - an array-index cursor for the current rollback position
+- deriving rollback start state from project-defined context variable defaults
 - a temporary restore guard for rollback reconstruction
 - future rollback policy expansion
 
@@ -265,7 +266,7 @@ The model is:
 
 - rollback timeline stores the visited line sequence
 - each entry identifies a visited line by `sectionId` and `lineId`
-- rollback restoration resets context-scoped story state to the context baseline
+- rollback restoration resets context-scoped story state to the default values of context-scoped variables from project data
 - the engine replays rollbackable story actions from the start of the timeline up to the target timeline index
 - presentation is then reconstructed from the resulting story state
 
@@ -274,6 +275,7 @@ This means:
 - presentation snapshots are never stored
 - context variable snapshots are not the source of truth
 - story state is derived from the rollback timeline
+- rollback state should not store a duplicate `baselineVariables` snapshot when the same start state can be derived from project data
 
 For now, replayability is based on line sequence plus rollbackable action classification.
 
@@ -338,6 +340,7 @@ That means:
 
 - saves must serialize the rollback timeline
 - saves must serialize the current rollback cursor
+- loads must recompute rollback start state from project-defined context variable defaults
 - loading a save must restore rollback ability from that saved point
 
 Compatibility behavior for older saves without rollback timeline should be defined during implementation.

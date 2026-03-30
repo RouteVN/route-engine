@@ -281,8 +281,6 @@ in:
             currentIndex: 2
             isRestoring: false
             replayStartIndex: 0
-            baselineVariables:
-              score: 0
             timeline:
               - sectionId: "sec1"
                 lineId: "line1"
@@ -312,8 +310,6 @@ out:
                 currentIndex: 2
                 isRestoring: false
                 replayStartIndex: 0
-                baselineVariables:
-                  score: 0
                 timeline:
                   - sectionId: "sec1"
                     lineId: "line1"
@@ -343,8 +339,6 @@ out:
                       currentIndex: 2
                       isRestoring: false
                       replayStartIndex: 0
-                      baselineVariables:
-                        score: 0
                       timeline:
                         - sectionId: "sec1"
                           lineId: "line1"
@@ -368,8 +362,6 @@ out:
         currentIndex: 2
         isRestoring: false
         replayStartIndex: 0
-        baselineVariables:
-          score: 0
         timeline:
           - sectionId: "sec1"
             lineId: "line1"

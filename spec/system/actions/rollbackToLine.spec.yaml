@@ -57,8 +57,6 @@ in:
             currentIndex: 3
             isRestoring: false
             replayStartIndex: 0
-            baselineVariables:
-              score: 0
             timeline:
               - sectionId: "section1"
                 lineId: "1"
@@ -137,8 +135,6 @@ out:
         currentIndex: 2
         isRestoring: false
         replayStartIndex: 0
-        baselineVariables:
-          score: 0
         timeline:
           - sectionId: "section1"
             lineId: "1"
@@ -206,8 +202,6 @@ in:
             currentIndex: 2
             isRestoring: false
             replayStartIndex: 0
-            baselineVariables:
-              score: 0
             timeline:
               - sectionId: "section1"
                 lineId: "1"
@@ -284,8 +278,6 @@ out:
         currentIndex: 1
         isRestoring: false
         replayStartIndex: 0
-        baselineVariables:
-          score: 0
         timeline:
           - sectionId: "section1"
             lineId: "1"
@@ -320,7 +312,6 @@ in:
             currentIndex: 1
             isRestoring: false
             replayStartIndex: 0
-            baselineVariables: {}
             timeline:
               - sectionId: "section1"
                 lineId: "1"
@@ -377,8 +368,6 @@ in:
             currentIndex: 2
             isRestoring: false
             replayStartIndex: 0
-            baselineVariables:
-              score: 0
             timeline:
               - sectionId: "section1"
                 lineId: "1"
@@ -449,8 +438,6 @@ out:
         currentIndex: 1
         isRestoring: false
         replayStartIndex: 0
-        baselineVariables:
-          score: 0
         timeline:
           - sectionId: "section1"
             lineId: "1"
@@ -462,7 +449,7 @@ out:
             lineId: "3"
             rollbackPolicy: "free"
 ---
-case: rollback to first line resets to baseline when first checkpoint has no rollbackable actions
+case: rollback to first line resets to context defaults when first checkpoint has no rollbackable actions
 in:
   - state:
       projectData:
@@ -486,7 +473,7 @@ in:
             score:
               type: number
               scope: context
-              default: 0
+              default: 10
       global:
         isLineCompleted: false
         pendingEffects: []
@@ -503,8 +490,6 @@ in:
             currentIndex: 1
             isRestoring: false
             replayStartIndex: 0
-            baselineVariables:
-              score: 10
             timeline:
               - sectionId: "section1"
                 lineId: "1"
@@ -536,7 +521,7 @@ out:
         score:
           type: number
           scope: context
-          default: 0
+          default: 10
   global:
     isLineCompleted: true
     dialogueUIHidden: false
@@ -568,8 +553,6 @@ out:
         currentIndex: 0
         isRestoring: false
         replayStartIndex: 0
-        baselineVariables:
-          score: 10
         timeline:
           - sectionId: "section1"
             lineId: "1"
@@ -621,7 +604,6 @@ in:
             currentIndex: 2
             isRestoring: false
             replayStartIndex: 0
-            baselineVariables: {}
             timeline:
               - sectionId: "section1"
                 lineId: "1"
@@ -690,7 +672,6 @@ out:
         currentIndex: 1
         isRestoring: false
         replayStartIndex: 0
-        baselineVariables: {}
         timeline:
           - sectionId: "section1"
             lineId: "1"

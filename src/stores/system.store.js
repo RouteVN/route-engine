@@ -58,18 +58,28 @@ const createRollbackCheckpoint = ({ sectionId, lineId, rollbackPolicy }) => ({
   rollbackPolicy: rollbackPolicy ?? "free",
 });
 
-const createRollbackState = ({
-  pointer,
-  baselineVariables,
-  replayStartIndex = 0,
-}) => {
+const getRollbackContextVariableDefaults = (projectData) => {
+  const { contextVariableDefaultValues } = getDefaultVariablesFromProjectData(
+    projectData ?? {},
+  );
+  return cloneStateValue(contextVariableDefaultValues);
+};
+
+const removeLegacyRollbackBaseline = (rollback) => {
+  if (!rollback || !("baselineVariables" in rollback)) {
+    return;
+  }
+
+  delete rollback.baselineVariables;
+};
+
+const createRollbackState = ({ pointer, replayStartIndex = 0 }) => {
   const hasInitialPointer = pointer?.sectionId && pointer?.lineId;
 
   return {
     currentIndex: hasInitialPointer ? 0 : -1,
     isRestoring: false,
     replayStartIndex,
-    baselineVariables: cloneStateValue(baselineVariables ?? {}),
     timeline: hasInitialPointer
       ? [
           createRollbackCheckpoint({
@@ -83,6 +93,7 @@ const createRollbackState = ({
 
 const ensureRollbackState = (lastContext, options = {}) => {
   if (lastContext?.rollback) {
+    removeLegacyRollbackBaseline(lastContext.rollback);
     if (!Array.isArray(lastContext.rollback.timeline)) {
       lastContext.rollback.timeline = [];
     }
@@ -98,18 +109,12 @@ const ensureRollbackState = (lastContext, options = {}) => {
     if (typeof lastContext.rollback.replayStartIndex !== "number") {
       lastContext.rollback.replayStartIndex = 0;
     }
-    if (lastContext.rollback.baselineVariables === undefined) {
-      lastContext.rollback.baselineVariables = cloneStateValue(
-        lastContext.variables ?? {},
-      );
-    }
     return lastContext.rollback;
   }
 
   const pointer = lastContext?.pointers?.read;
   lastContext.rollback = createRollbackState({
     pointer,
-    baselineVariables: lastContext?.variables ?? {},
     replayStartIndex: options.compatibilityAnchor ? 1 : 0,
   });
   return lastContext.rollback;
@@ -379,7 +384,9 @@ const restoreRollbackCheckpoint = (state, checkpointIndex) => {
   rollback.currentIndex = checkpointIndex;
 
   try {
-    lastContext.variables = cloneStateValue(rollback.baselineVariables ?? {});
+    lastContext.variables = getRollbackContextVariableDefaults(
+      state.projectData,
+    );
     state.global.dialogueUIHidden = false;
     state.global.isDialogueHistoryShowing = false;
     state.global.nextLineConfig = cloneStateValue(DEFAULT_NEXT_LINE_CONFIG);
@@ -499,7 +506,6 @@ export const createInitialState = (payload) => {
         variables: contextVariableDefaultValues,
         rollback: createRollbackState({
           pointer: initialPointer,
-          baselineVariables: contextVariableDefaultValues,
         }),
       },
     ],
@@ -1343,9 +1349,13 @@ export const setNextLineConfig = ({ state }, payload) => {
 export const saveSaveSlot = ({ state }, payload) => {
   const { slot, thumbnailImage } = payload;
   const slotKey = String(slot);
+  const contexts = cloneStateValue(state.contexts);
+  contexts?.forEach((context) => {
+    removeLegacyRollbackBaseline(context.rollback);
+  });
 
   const currentState = {
-    contexts: cloneStateValue(state.contexts),
+    contexts,
     viewedRegistry: cloneStateValue(state.global.viewedRegistry),
   };
 
@@ -2223,6 +2233,10 @@ export const rollbackToLine = ({ state }, payload) => {
     throw new Error(
       `Line ${lineId} not found in section ${sectionId} rollback timeline`,
     );
+  }
+
+  if (targetLineIndex === rollback.currentIndex) {
+    return state;
   }
 
   return restoreRollbackCheckpoint(state, targetLineIndex);

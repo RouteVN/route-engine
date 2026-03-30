@@ -75,7 +75,6 @@ out:
         currentIndex: 0
         isRestoring: false
         replayStartIndex: 0
-        baselineVariables: {}
         timeline:
           - sectionId: "section1"
             lineId: "line1"
@@ -192,11 +191,6 @@ out:
         currentIndex: 0
         isRestoring: false
         replayStartIndex: 0
-        baselineVariables:
-          inventory:
-            items:
-              - id: sword
-                name: Steel Sword
         timeline:
           - sectionId: "section1"
             lineId: "line1"
@@ -288,8 +282,6 @@ out:
         currentIndex: 0
         isRestoring: false
         replayStartIndex: 0
-        baselineVariables:
-          settings: {}
         timeline:
           - sectionId: "section1"
             lineId: "line1"
@@ -401,7 +393,6 @@ out:
         currentIndex: 0
         isRestoring: false
         replayStartIndex: 0
-        baselineVariables: {}
         timeline:
           - sectionId: "section1"
             lineId: "line1"
@@ -484,7 +475,6 @@ out:
         currentIndex: 0
         isRestoring: false
         replayStartIndex: 0
-        baselineVariables: {}
         timeline:
           - sectionId: "section1"
             lineId: "line2"

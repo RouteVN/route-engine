@@ -19,7 +19,6 @@ in:
             currentIndex: 2
             isRestoring: false
             replayStartIndex: 0
-            baselineVariables: {}
             timeline:
               - sectionId: "section1"
                 lineId: "1"
@@ -49,7 +48,6 @@ in:
             currentIndex: 0
             isRestoring: false
             replayStartIndex: 0
-            baselineVariables: {}
             timeline:
               - sectionId: "section1"
                 lineId: "1"
@@ -71,7 +69,6 @@ in:
             currentIndex: 3
             isRestoring: false
             replayStartIndex: 0
-            baselineVariables: {}
             timeline:
               - sectionId: "section1"
                 lineId: "1"

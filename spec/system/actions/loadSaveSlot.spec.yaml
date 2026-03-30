@@ -45,7 +45,6 @@ out:
         currentIndex: 0
         isRestoring: false
         replayStartIndex: 1
-        baselineVariables: {}
         timeline:
           - sectionId: "sec2"
             lineId: "line2"
@@ -185,10 +184,6 @@ out:
         currentIndex: 0
         isRestoring: false
         replayStartIndex: 1
-        baselineVariables:
-          playerName: "Alice"
-          score: 150
-          soundEnabled: true
         timeline:
           - sectionId: "sec2"
             lineId: "line2"
@@ -218,8 +213,6 @@ in:
                     currentIndex: 2
                     isRestoring: false
                     replayStartIndex: 0
-                    baselineVariables:
-                      score: 0
                     timeline:
                       - sectionId: "sec1"
                         lineId: "line1"
@@ -254,8 +247,6 @@ out:
                 currentIndex: 2
                 isRestoring: false
                 replayStartIndex: 0
-                baselineVariables:
-                  score: 0
                 timeline:
                   - sectionId: "sec1"
                     lineId: "line1"
@@ -282,8 +273,6 @@ out:
         currentIndex: 2
         isRestoring: false
         replayStartIndex: 0
-        baselineVariables:
-          score: 0
         timeline:
           - sectionId: "sec1"
             lineId: "line1"

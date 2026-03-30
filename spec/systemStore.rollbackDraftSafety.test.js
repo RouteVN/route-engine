@@ -156,9 +156,6 @@ describe("system.store rollback/save draft safety", () => {
             currentIndex: 1,
             isRestoring: false,
             replayStartIndex: 0,
-            baselineVariables: {
-              score: 0,
-            },
             timeline: [
               {
                 sectionId: "section1",
@@ -182,7 +179,23 @@ describe("system.store rollback/save draft safety", () => {
 
     expect(
       nextState.global.saveSlots["1"]?.state?.contexts?.[0]?.rollback,
-    ).toEqual(baseState.contexts[0].rollback);
+    ).toEqual({
+      currentIndex: 1,
+      isRestoring: false,
+      replayStartIndex: 0,
+      timeline: [
+        {
+          sectionId: "section1",
+          lineId: "1",
+          rollbackPolicy: "free",
+        },
+        {
+          sectionId: "section1",
+          lineId: "2",
+          rollbackPolicy: "free",
+        },
+      ],
+    });
     vi.restoreAllMocks();
   });
 
@@ -261,7 +274,28 @@ describe("system.store rollback/save draft safety", () => {
       loadSaveSlot({ state: draft }, { slot: 1 });
     });
 
-    expect(nextState.contexts[0].rollback).toEqual(savedRollback);
+    expect(nextState.contexts[0].rollback).toEqual({
+      currentIndex: 2,
+      isRestoring: false,
+      replayStartIndex: 0,
+      timeline: [
+        {
+          sectionId: "section1",
+          lineId: "1",
+          rollbackPolicy: "free",
+        },
+        {
+          sectionId: "section1",
+          lineId: "2",
+          rollbackPolicy: "free",
+        },
+        {
+          sectionId: "section2",
+          lineId: "10",
+          rollbackPolicy: "free",
+        },
+      ],
+    });
     expect(nextState.global.viewedRegistry.sections[0]).toEqual({
       sectionId: "section2",
       lastLineId: "10",
@@ -306,9 +340,6 @@ describe("system.store rollback/save draft safety", () => {
             currentIndex: 2,
             isRestoring: false,
             replayStartIndex: 0,
-            baselineVariables: {
-              score: 0,
-            },
             timeline: [
               {
                 sectionId: "section1",
@@ -390,9 +421,6 @@ describe("system.store rollback/save draft safety", () => {
             currentIndex: 1,
             isRestoring: false,
             replayStartIndex: 0,
-            baselineVariables: {
-              score: 0,
-            },
             timeline: [
               {
                 sectionId: "section1",
@@ -482,9 +510,6 @@ describe("system.store rollback/save draft safety", () => {
             currentIndex: 2,
             isRestoring: false,
             replayStartIndex: 0,
-            baselineVariables: {
-              score: 0,
-            },
             timeline: [
               {
                 sectionId: "section1",
