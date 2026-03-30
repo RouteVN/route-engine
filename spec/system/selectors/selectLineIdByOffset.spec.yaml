@@ -1,14 +1,11 @@
 file: "../../../src/stores/system.store.js"
 group: systemStore selectors
-suites:
-  [
-    selectLineIdByOffset,
-  ]
+suites: [selectLineIdByOffset]
 ---
 suite: selectLineIdByOffset
 exportName: selectLineIdByOffset
 ---
-case: returns previous line with offset -1
+case: returns previous line from rollback timeline
 in:
   - state:
       global: {}
@@ -18,19 +15,27 @@ in:
             read:
               sectionId: "section1"
               lineId: "3"
-          historySequence:
-            - sectionId: "section1"
-              initialState: {}
-              lines:
-                - id: "1"
-                - id: "2"
-                - id: "3"
+          rollback:
+            currentIndex: 2
+            isRestoring: false
+            replayStartIndex: 0
+            baselineVariables: {}
+            timeline:
+              - sectionId: "section1"
+                lineId: "1"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "2"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "3"
+                rollbackPolicy: "free"
   - offset: -1
 out:
   sectionId: "section1"
   lineId: "2"
 ---
-case: returns null when at first line with offset -1
+case: returns null when at first rollback checkpoint with offset -1
 in:
   - state:
       global: {}
@@ -40,15 +45,19 @@ in:
             read:
               sectionId: "section1"
               lineId: "1"
-          historySequence:
-            - sectionId: "section1"
-              initialState: {}
-              lines:
-                - id: "1"
+          rollback:
+            currentIndex: 0
+            isRestoring: false
+            replayStartIndex: 0
+            baselineVariables: {}
+            timeline:
+              - sectionId: "section1"
+                lineId: "1"
+                rollbackPolicy: "free"
   - offset: -1
 out: null
 ---
-case: handles duplicate line entries after backtracking (findLastIndex behavior)
+case: handles duplicate checkpoints after backtracking using rollback cursor
 in:
   - state:
       global: {}
@@ -58,14 +67,24 @@ in:
             read:
               sectionId: "section1"
               lineId: "2"
-          historySequence:
-            - sectionId: "section1"
-              initialState: {}
-              lines:
-                - id: "1"
-                - id: "2"
-                - id: "3"
-                - id: "2"
+          rollback:
+            currentIndex: 3
+            isRestoring: false
+            replayStartIndex: 0
+            baselineVariables: {}
+            timeline:
+              - sectionId: "section1"
+                lineId: "1"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "2"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "3"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "2"
+                rollbackPolicy: "free"
   - offset: -1
 out:
   sectionId: "section1"

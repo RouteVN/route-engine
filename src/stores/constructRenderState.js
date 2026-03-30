@@ -1710,7 +1710,6 @@ export const addControl = (
     skipMode,
     canRollback,
     saveSlots = [],
-    isLineCompleted,
     skipTransitionsAndAnimations,
   },
 ) => {

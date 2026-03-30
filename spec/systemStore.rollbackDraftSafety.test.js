@@ -4,6 +4,8 @@ import {
   loadSaveSlot,
   rollbackByOffset,
   saveSaveSlot,
+  sectionTransition,
+  updateVariable,
 } from "../src/stores/system.store.js";
 
 const createProjectData = () => ({
@@ -39,6 +41,76 @@ const createProjectData = () => ({
               },
               { id: "3" },
             ],
+          },
+          section2: {
+            lines: [{ id: "10" }],
+          },
+        },
+      },
+    },
+  },
+  resources: {
+    variables: {
+      score: {
+        type: "number",
+        scope: "context",
+        default: 0,
+      },
+    },
+  },
+});
+
+const createInvalidRollbackProjectData = () => ({
+  story: {
+    initialSceneId: "scene1",
+    scenes: {
+      scene1: {
+        initialSectionId: "section1",
+        sections: {
+          section1: {
+            lines: [
+              { id: "1" },
+              {
+                id: "2",
+                actions: {
+                  updateVariable: {
+                    id: "invalid-score-toggle",
+                    operations: [
+                      {
+                        variableId: "score",
+                        op: "toggle",
+                      },
+                    ],
+                  },
+                },
+              },
+              { id: "3" },
+            ],
+          },
+        },
+      },
+    },
+  },
+  resources: {
+    variables: {
+      score: {
+        type: "number",
+        scope: "context",
+        default: 0,
+      },
+    },
+  },
+});
+
+const createEventDrivenRollbackProjectData = () => ({
+  story: {
+    initialSceneId: "scene1",
+    scenes: {
+      scene1: {
+        initialSectionId: "section1",
+        sections: {
+          section1: {
+            lines: [{ id: "1" }, { id: "2" }],
           },
           section2: {
             lines: [{ id: "10" }],
@@ -108,8 +180,9 @@ describe("system.store rollback/save draft safety", () => {
       saveSaveSlot({ state: draft }, { slot: 1, thumbnailImage: null });
     });
 
-    expect(nextState.global.saveSlots["1"]?.state?.contexts?.[0]?.rollback)
-      .toEqual(baseState.contexts[0].rollback);
+    expect(
+      nextState.global.saveSlots["1"]?.state?.contexts?.[0]?.rollback,
+    ).toEqual(baseState.contexts[0].rollback);
     vi.restoreAllMocks();
   });
 
@@ -143,7 +216,7 @@ describe("system.store rollback/save draft safety", () => {
     const baseState = {
       global: {
         saveSlots: {
-          "1": {
+          1: {
             slotKey: "1",
             date: 1700000000000,
             image: null,
@@ -278,5 +351,165 @@ describe("system.store rollback/save draft safety", () => {
       },
       applyMode: "persistent",
     });
+  });
+
+  it("rollbackByOffset replays event-driven checkpoint actions on the source line", () => {
+    const state = {
+      projectData: createEventDrivenRollbackProjectData(),
+      global: {
+        autoMode: false,
+        skipMode: false,
+        isLineCompleted: false,
+        dialogueUIHidden: false,
+        isDialogueHistoryShowing: false,
+        nextLineConfig: {
+          manual: {
+            enabled: true,
+            requireLineCompleted: false,
+          },
+          auto: {
+            enabled: false,
+          },
+          applyMode: "persistent",
+        },
+        layeredViews: [],
+        pendingEffects: [],
+        variables: {},
+      },
+      contexts: [
+        {
+          variables: {
+            score: 0,
+          },
+          currentPointerMode: "read",
+          pointers: {
+            read: { sectionId: "section1", lineId: "2" },
+            history: {},
+          },
+          rollback: {
+            currentIndex: 1,
+            isRestoring: false,
+            replayStartIndex: 0,
+            baselineVariables: {
+              score: 0,
+            },
+            timeline: [
+              {
+                sectionId: "section1",
+                lineId: "1",
+                rollbackPolicy: "free",
+              },
+              {
+                sectionId: "section1",
+                lineId: "2",
+                rollbackPolicy: "free",
+              },
+            ],
+          },
+        },
+      ],
+    };
+
+    updateVariable(
+      { state },
+      {
+        id: "choiceScore15",
+        operations: [
+          {
+            variableId: "score",
+            op: "set",
+            value: 15,
+          },
+        ],
+      },
+    );
+    sectionTransition({ state }, { sectionId: "section2" });
+    rollbackByOffset({ state }, { offset: -1 });
+
+    expect(state.contexts[0].variables.score).toBe(15);
+    expect(state.contexts[0].pointers.read).toEqual({
+      sectionId: "section1",
+      lineId: "2",
+    });
+    expect(state.contexts[0].rollback.timeline[1].executedActions).toEqual([
+      {
+        type: "updateVariable",
+        payload: {
+          id: "choiceScore15",
+          operations: [
+            {
+              variableId: "score",
+              op: "set",
+              value: 15,
+            },
+          ],
+        },
+      },
+    ]);
+  });
+
+  it("rollbackByOffset clears the restoring guard when replay throws", () => {
+    const state = {
+      projectData: createInvalidRollbackProjectData(),
+      global: {
+        isLineCompleted: false,
+        dialogueUIHidden: false,
+        isDialogueHistoryShowing: false,
+        nextLineConfig: {
+          manual: {
+            enabled: true,
+            requireLineCompleted: false,
+          },
+          auto: {
+            enabled: false,
+          },
+          applyMode: "persistent",
+        },
+        layeredViews: [],
+        pendingEffects: [],
+      },
+      contexts: [
+        {
+          variables: {
+            score: 0,
+          },
+          currentPointerMode: "read",
+          pointers: {
+            read: { sectionId: "section1", lineId: "3" },
+            history: {},
+          },
+          rollback: {
+            currentIndex: 2,
+            isRestoring: false,
+            replayStartIndex: 0,
+            baselineVariables: {
+              score: 0,
+            },
+            timeline: [
+              {
+                sectionId: "section1",
+                lineId: "1",
+                rollbackPolicy: "free",
+              },
+              {
+                sectionId: "section1",
+                lineId: "2",
+                rollbackPolicy: "free",
+              },
+              {
+                sectionId: "section1",
+                lineId: "3",
+                rollbackPolicy: "free",
+              },
+            ],
+          },
+        },
+      ],
+    };
+
+    expect(() => rollbackByOffset({ state }, { offset: -1 })).toThrow(
+      'Operation "toggle" is not valid for variable "score" of type "number". Valid operations: set, increment, decrement, multiply, divide',
+    );
+    expect(state.contexts[0].rollback.isRestoring).toBe(false);
   });
 });

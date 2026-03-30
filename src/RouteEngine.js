@@ -91,9 +91,14 @@ export default function createRouteEngine(options) {
   const handleActions = (actions, eventContext) => {
     const context = buildActionTemplateContext(eventContext);
     const processedActions = processActionTemplates(actions, context);
-    Object.entries(processedActions).forEach(([actionType, payload]) => {
-      handleAction(actionType, payload);
-    });
+    _systemStore.beginRollbackActionBatch({});
+    try {
+      Object.entries(processedActions).forEach(([actionType, payload]) => {
+        handleAction(actionType, payload);
+      });
+    } finally {
+      _systemStore.endRollbackActionBatch({});
+    }
   };
 
   const handleLineActions = () => {

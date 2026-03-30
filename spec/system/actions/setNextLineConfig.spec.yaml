@@ -356,3 +356,37 @@ out:
     pendingEffects:
       - name: "clearNextLineConfigTimer"
       - name: "render"
+---
+case: suppresses timer side effects during rollback restore
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        nextLineConfig:
+          manual:
+            enabled: true
+          auto:
+            enabled: false
+        pendingEffects: []
+      contexts:
+        - rollback:
+            isRestoring: true
+  - auto:
+      enabled: true
+      trigger: "fromComplete"
+      delay: 2000
+out:
+  global:
+    isLineCompleted: true
+    nextLineConfig:
+      manual:
+        enabled: true
+      auto:
+        enabled: true
+        trigger: "fromComplete"
+        delay: 2000
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - rollback:
+        isRestoring: true

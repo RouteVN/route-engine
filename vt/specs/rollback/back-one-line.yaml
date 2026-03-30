@@ -1,0 +1,413 @@
+---
+title: Rollback Back One Line
+description: A twenty-line rollback sandbox that crosses multiple sections and scenes while exposing only a single-step back action
+specs:
+  - covers twenty visible checkpoints in total
+  - crosses four sections across two scenes
+  - boundary lines enter the next section or scene on a normal screen click
+  - uses only single-step rollback so you can back up one line at a time
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 80
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 80
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 80
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 100
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 100
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 80
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 80
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 80
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 100
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 100
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 80
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 80
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 80
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 100
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 100
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 80
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 80
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 80
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 80
+  - action: click
+    x: 200
+    y: 360
+  - action: wait
+    ms: 150
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  characters:
+    narrator:
+      name: Guide
+  layouts:
+    baseLayout:
+      elements:
+        - id: bg
+          type: rect
+          width: 1920
+          height: 1080
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: bg
+    toSectionA2Layout:
+      elements:
+        - id: bg
+          type: rect
+          width: 1920
+          height: 1080
+          click:
+            payload:
+              actions:
+                sectionTransition:
+                  sectionId: sectionA2
+          colorId: bg
+    toSectionB1Layout:
+      elements:
+        - id: bg
+          type: rect
+          width: 1920
+          height: 1080
+          click:
+            payload:
+              actions:
+                sectionTransition:
+                  sectionId: sectionB1
+          colorId: bg
+    toSectionB2Layout:
+      elements:
+        - id: bg
+          type: rect
+          width: 1920
+          height: 1080
+          click:
+            payload:
+              actions:
+                sectionTransition:
+                  sectionId: sectionB2
+          colorId: bg
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 100
+          y: 760
+          width: 1720
+          height: 240
+          colorId: panel
+        - id: dialogue-text
+          type: text
+          x: 140
+          y: 835
+          width: 1460
+          content: ${dialogue.content[0].text}
+          textStyleId: textMain
+        - id: rollback-button
+          type: rect
+          x: 100
+          y: 680
+          width: 320
+          height: 60
+          colorId: button
+          click:
+            payload:
+              actions:
+                rollbackByOffset:
+                  offset: -1
+        - id: rollback-label
+          type: text
+          x: 130
+          y: 700
+          content: "[BACK 1 LINE]"
+          textStyleId: textButton
+        - id: hint-label
+          type: text
+          x: 1820
+          y: 70
+          anchorX: 1
+          content: "Click screen to advance"
+          textStyleId: textHint
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    bg:
+      hex: "#000000"
+    panel:
+      hex: "#4D4D4D"
+    button:
+      hex: "#737373"
+    fg:
+      hex: "#FFFFFF"
+    fgMuted:
+      hex: "#D9D9D9"
+  textStyles:
+    textMain:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 30
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textButton:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 26
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textHint:
+      fontId: fontDefault
+      colorId: fgMuted
+      fontSize: 28
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: sceneA
+  scenes:
+    sceneA:
+      initialSectionId: sectionA1
+      sections:
+        sectionA1:
+          lines:
+            - id: line1
+              actions:
+                background:
+                  resourceId: baseLayout
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "1/20. Scene A, section A1."
+                  characterId: narrator
+            - id: line2
+              actions:
+                dialogue:
+                  content:
+                    - text: "2/20. Scene A, section A1."
+                  characterId: narrator
+            - id: line3
+              actions:
+                dialogue:
+                  content:
+                    - text: "3/20. Scene A, section A1."
+                  characterId: narrator
+            - id: line4
+              actions:
+                dialogue:
+                  content:
+                    - text: "4/20. Scene A, section A1."
+                  characterId: narrator
+            - id: line5
+              actions:
+                background:
+                  resourceId: toSectionA2Layout
+                dialogue:
+                  content:
+                    - text: "5/20. Boundary checkpoint. Click anywhere to enter scene A, section A2."
+                  characterId: narrator
+        sectionA2:
+          lines:
+            - id: line1
+              actions:
+                background:
+                  resourceId: baseLayout
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "6/20. Scene A, section A2."
+                  characterId: narrator
+            - id: line2
+              actions:
+                dialogue:
+                  content:
+                    - text: "7/20. Scene A, section A2."
+                  characterId: narrator
+            - id: line3
+              actions:
+                dialogue:
+                  content:
+                    - text: "8/20. Scene A, section A2."
+                  characterId: narrator
+            - id: line4
+              actions:
+                dialogue:
+                  content:
+                    - text: "9/20. Scene A, section A2."
+                  characterId: narrator
+            - id: line5
+              actions:
+                background:
+                  resourceId: toSectionB1Layout
+                dialogue:
+                  content:
+                    - text: "10/20. Boundary checkpoint. Click anywhere to enter scene B, section B1."
+                  characterId: narrator
+    sceneB:
+      initialSectionId: sectionB1
+      sections:
+        sectionB1:
+          lines:
+            - id: line1
+              actions:
+                background:
+                  resourceId: baseLayout
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "11/20. Scene B, section B1."
+                  characterId: narrator
+            - id: line2
+              actions:
+                dialogue:
+                  content:
+                    - text: "12/20. Scene B, section B1."
+                  characterId: narrator
+            - id: line3
+              actions:
+                dialogue:
+                  content:
+                    - text: "13/20. Scene B, section B1."
+                  characterId: narrator
+            - id: line4
+              actions:
+                dialogue:
+                  content:
+                    - text: "14/20. Scene B, section B1."
+                  characterId: narrator
+            - id: line5
+              actions:
+                background:
+                  resourceId: toSectionB2Layout
+                dialogue:
+                  content:
+                    - text: "15/20. Boundary checkpoint. Click anywhere to enter scene B, section B2."
+                  characterId: narrator
+        sectionB2:
+          lines:
+            - id: line1
+              actions:
+                background:
+                  resourceId: baseLayout
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "16/20. Scene B, section B2."
+                  characterId: narrator
+            - id: line2
+              actions:
+                dialogue:
+                  content:
+                    - text: "17/20. Scene B, section B2."
+                  characterId: narrator
+            - id: line3
+              actions:
+                dialogue:
+                  content:
+                    - text: "18/20. Scene B, section B2."
+                  characterId: narrator
+            - id: line4
+              actions:
+                dialogue:
+                  content:
+                    - text: "19/20. Scene B, section B2."
+                  characterId: narrator
+            - id: line5
+              actions:
+                dialogue:
+                  content:
+                    - text: "20/20. Final checkpoint. Use BACK 1 LINE to step backward one line at a time."
+                  characterId: narrator
