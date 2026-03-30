@@ -451,6 +451,76 @@ out:
               easing: "linear"
               relative: true
 ---
+case: keep layered view transitions when pushed after line completion
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - resources:
+      layouts:
+        animatedLayout:
+          elements:
+            - type: "text"
+              content: "Animated"
+          transitions:
+            - id: "animated-layout-fade-in"
+              type: "update"
+              tween:
+                alpha:
+                  initialValue: 0
+                  keyframes:
+                    - duration: 500
+                      value: 1
+    variables: {}
+    autoMode: false
+    skipMode: false
+    isLineCompleted: true
+    skipTransitionsAndAnimations: false
+    screen:
+      width: 1920
+      height: 1080
+    layeredViews:
+      - resourceId: animatedLayout
+        resourceType: layout
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+    - id: "layeredView-0"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "layeredView-0-blocker"
+          type: "rect"
+          fill: "transparent"
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          click:
+            payload:
+              actions: {}
+        - type: "text"
+          content: "Animated"
+  animations:
+    - id: "animated-layout-fade-in"
+      type: "update"
+      targetId: "layeredView-0"
+      tween:
+        alpha:
+          initialValue: 0
+          keyframes:
+            - duration: 500
+              value: 1
+---
 case: handle layeredView with nested children
 in:
   - elements:

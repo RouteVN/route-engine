@@ -200,4 +200,48 @@ describe("RouteEngine rollback render state", () => {
     );
     expect(rollbackRender.animations).toEqual([]);
   });
+
+  it("keeps layered view transitions when pushed after line completion", () => {
+    const routeGraphics = {
+      render: vi.fn(),
+    };
+
+    let engine;
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics,
+      ticker: createTicker(),
+    });
+
+    engine = createRouteEngine({
+      handlePendingEffects: effectsHandler,
+    });
+
+    engine.init({
+      initialState: {
+        projectData: createProjectData(),
+      },
+    });
+
+    engine.handleAction("markLineCompleted", {});
+    engine.handleAction("clearLayeredViews", {});
+    engine.handleAction("pushLayeredView", {
+      resourceId: "layeredPanel",
+      resourceType: "layout",
+    });
+
+    const overlayRender = routeGraphics.render.mock.calls.at(-1)?.[0];
+
+    expect(engine.selectSystemState().global.isLineCompleted).toBe(true);
+    expect(findElementById(overlayRender.elements, "panel-text")).toMatchObject({
+      type: "text",
+      content: "Layered panel",
+    });
+    expect(overlayRender.animations).toEqual([
+      expect.objectContaining({
+        id: "panel-fade-in",
+        targetId: "layeredView-0",
+      }),
+    ]);
+  });
 });

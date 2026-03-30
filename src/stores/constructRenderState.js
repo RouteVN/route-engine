@@ -2065,7 +2065,7 @@ export const addLayeredViews = (
       }
 
       if (Array.isArray(layout.transitions)) {
-        if (!isLineCompleted && !skipTransitionsAndAnimations) {
+        if (!skipTransitionsAndAnimations) {
           pushNormalizedLayoutTransitions({
             animations,
             transitions: layout.transitions,
