@@ -1,0 +1,184 @@
+---
+title: Rollback Cross Section
+description: Rollback should replay to a checkpoint in a previous section and restore that section's state
+specs:
+  - advances from a source section into a result section
+  - the result section adds more context state on arrival
+  - rollbackToLine returns directly to the source checkpoint and restores its score
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: click
+    x: 480
+    y: 270
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 150
+  - action: click
+    x: 200
+    y: 360
+  - action: wait
+    ms: 150
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  variables:
+    score:
+      type: number
+      scope: context
+      default: 0
+  characters:
+    narrator:
+      name: Guide
+  layouts:
+    baseLayout:
+      elements:
+        - id: bg
+          type: rect
+          width: 1920
+          height: 1080
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: bg
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 100
+          y: 760
+          width: 1720
+          height: 240
+          colorId: panel
+        - id: dialogue-text
+          type: text
+          x: 140
+          y: 835
+          width: 1320
+          content: ${dialogue.content[0].text}
+          textStyleId: textMain
+        - id: score-display
+          type: text
+          x: 1780
+          y: 70
+          anchorX: 1
+          content: "Score: ${variables.score}"
+          textStyleId: textScore
+        - id: rollback-button
+          type: rect
+          x: 100
+          y: 680
+          width: 320
+          height: 60
+          colorId: button
+          click:
+            payload:
+              actions:
+                rollbackToLine:
+                  sectionId: source
+                  lineId: line2
+        - id: rollback-label
+          type: text
+          x: 130
+          y: 700
+          content: "[BACK TO SOURCE]"
+          textStyleId: textButton
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    bg:
+      hex: "#000000"
+    panel:
+      hex: "#4D4D4D"
+    button:
+      hex: "#737373"
+    fg:
+      hex: "#FFFFFF"
+    fgMuted:
+      hex: "#D9D9D9"
+  textStyles:
+    textMain:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 30
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textScore:
+      fontId: fontDefault
+      colorId: fgMuted
+      fontSize: 32
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    textButton:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 25
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: source
+      sections:
+        source:
+          lines:
+            - id: line1
+              actions:
+                background:
+                  resourceId: baseLayout
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Source line 1. Advance to the checkpoint line."
+                  characterId: narrator
+            - id: line2
+              actions:
+                updateVariable:
+                  id: sourceScore10
+                  operations:
+                    - variableId: score
+                      op: set
+                      value: 10
+                dialogue:
+                  content:
+                    - text: "Source line 2. Score is 10 here."
+                  characterId: narrator
+            - id: line3
+              actions:
+                sectionTransition:
+                  sectionId: result
+        result:
+          lines:
+            - id: line1
+              actions:
+                updateVariable:
+                  id: resultAdd5
+                  operations:
+                    - variableId: score
+                      op: increment
+                      value: 5
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Result line. Score is 15 before rollback."
+                  characterId: narrator

@@ -7,6 +7,99 @@ const jemplFunctions = {
   formatDate,
 };
 
+const LOOP_DIRECTIVE_RE =
+  /^\$for\s+([A-Za-z_][A-Za-z0-9_]*)(?:\s*,\s*([A-Za-z_][A-Za-z0-9_]*))?\s+in\s+(.+):$/;
+
+const resolveTemplatePath = (data, expression) => {
+  const normalized = String(expression || "").trim();
+  if (!normalized) {
+    return undefined;
+  }
+
+  const parts = normalized.match(/[A-Za-z_][A-Za-z0-9_]*|\[\d+\]/g) || [];
+  let current = data;
+  for (const part of parts) {
+    if (part.startsWith("[")) {
+      const index = Number(part.slice(1, -1));
+      current = Array.isArray(current) ? current[index] : undefined;
+      continue;
+    }
+    current = current?.[part];
+  }
+  return current;
+};
+
+const expandLoopTemplates = (node, templateData, options) => {
+  if (Array.isArray(node)) {
+    const expanded = [];
+
+    for (const item of node) {
+      if (
+        item &&
+        typeof item === "object" &&
+        !Array.isArray(item) &&
+        Object.keys(item).length === 1
+      ) {
+        const [maybeLoopKey] = Object.keys(item);
+        const loopMatch = LOOP_DIRECTIVE_RE.exec(maybeLoopKey);
+        if (loopMatch) {
+          const [, itemName, indexName, sourceExpression] = loopMatch;
+          const iterable = resolveTemplatePath(templateData, sourceExpression);
+          if (!Array.isArray(iterable)) {
+            continue;
+          }
+
+          const loopTemplate = Array.isArray(item[maybeLoopKey])
+            ? item[maybeLoopKey]
+            : [];
+          iterable.forEach((loopItem, loopIndex) => {
+            const loopData = {
+              ...templateData,
+              [itemName]: loopItem,
+            };
+            if (indexName) {
+              loopData[indexName] = loopIndex;
+            }
+
+            loopTemplate.forEach((loopNode) => {
+              const expandedLoopNode = expandLoopTemplates(
+                loopNode,
+                loopData,
+                options,
+              );
+              const rendered = parseAndRender(
+                expandedLoopNode,
+                loopData,
+                options,
+              );
+              if (Array.isArray(rendered)) {
+                expanded.push(...rendered);
+              } else {
+                expanded.push(rendered);
+              }
+            });
+          });
+          continue;
+        }
+      }
+
+      expanded.push(expandLoopTemplates(item, templateData, options));
+    }
+
+    return expanded;
+  }
+
+  if (!node || typeof node !== "object") {
+    return node;
+  }
+
+  const expanded = {};
+  Object.entries(node).forEach(([key, value]) => {
+    expanded[key] = expandLoopTemplates(value, templateData, options);
+  });
+  return expanded;
+};
+
 const LEGACY_ANIMATION_TYPE_MAP = {
   live: "update",
   replace: "transition",
@@ -1504,6 +1597,24 @@ export const addDialogue = (
               presentationState.dialogue.content,
               "dialogue.content",
             );
+      const dialogueLines = (presentationState.dialogue?.lines || []).map(
+        (line, index) => {
+          const lineContent = ensureDialogueContentItems(
+            line.content,
+            `dialogue.lines[${index}].content`,
+          );
+
+          return {
+            content: lineContent.map((item) => ({
+              ...item,
+              text: interpolateDialogueText(item.text, { variables }),
+            })),
+            characterName: line.characterId
+              ? resources.characters?.[line.characterId]?.name || ""
+              : "",
+          };
+        },
+      );
 
       const templateData = {
         variables,
@@ -1517,6 +1628,7 @@ export const addDialogue = (
           ? 0
           : (variables?._soundVolume ?? 500),
         textSpeed: variables?._textSpeed ?? 50,
+        dialogueLines,
         dialogue: {
           character: {
             name: character?.name || "",
@@ -1525,30 +1637,21 @@ export const addDialogue = (
             ...item,
             text: interpolateDialogueText(item.text, { variables }),
           })),
-          lines: (presentationState.dialogue?.lines || []).map(
-            (line, index) => {
-              const lineContent = ensureDialogueContentItems(
-                line.content,
-                `dialogue.lines[${index}].content`,
-              );
-
-              return {
-                content: lineContent.map((item) => ({
-                  ...item,
-                  text: interpolateDialogueText(item.text, { variables }),
-                })),
-                characterName: line.characterId
-                  ? resources.characters?.[line.characterId]?.name || ""
-                  : "",
-              };
-            },
-          ),
+          lines: dialogueLines,
         },
       };
 
-      const result = parseAndRender(wrappedTemplate, templateData, {
-        functions: jemplFunctions,
-      });
+      const renderOptions = { functions: jemplFunctions };
+      const expandedTemplate = expandLoopTemplates(
+        wrappedTemplate,
+        templateData,
+        renderOptions,
+      );
+      const result = parseAndRender(
+        expandedTemplate,
+        templateData,
+        renderOptions,
+      );
       const uiElements = resolveLayoutResourceIds(
         settleTextRevealIfCompleted(result?.elements, {
           isLineCompleted,
@@ -1710,7 +1813,6 @@ export const addControl = (
     skipMode,
     canRollback,
     saveSlots = [],
-    isLineCompleted,
     skipTransitionsAndAnimations,
   },
 ) => {

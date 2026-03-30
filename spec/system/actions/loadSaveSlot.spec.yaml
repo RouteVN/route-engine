@@ -41,6 +41,14 @@ out:
   contexts:
     - pointers:
         read: { sectionId: "sec2", lineId: "line2" }
+      rollback:
+        currentIndex: 0
+        isRestoring: false
+        replayStartIndex: 1
+        timeline:
+          - sectionId: "sec2"
+            lineId: "line2"
+            rollbackPolicy: "free"
 ---
 case: load from non-existent slot
 in:
@@ -172,3 +180,106 @@ out:
         playerName: "Alice"
         score: 150
         soundEnabled: true
+      rollback:
+        currentIndex: 0
+        isRestoring: false
+        replayStartIndex: 1
+        timeline:
+          - sectionId: "sec2"
+            lineId: "line2"
+            rollbackPolicy: "free"
+---
+case: load preserves rollback timeline from save data
+in:
+  - state:
+      global:
+        saveSlots:
+          "4":
+            slotKey: "4"
+            date: 1704110600
+            image: "save4.png"
+            state:
+              viewedRegistry:
+                sections:
+                  - sectionId: "sec2"
+                    lastLineId: "line3"
+                resources: []
+              contexts:
+                - pointers:
+                    read: { sectionId: "sec2", lineId: "line3" }
+                  variables:
+                    score: 15
+                  rollback:
+                    currentIndex: 2
+                    isRestoring: false
+                    replayStartIndex: 0
+                    timeline:
+                      - sectionId: "sec1"
+                        lineId: "line1"
+                        rollbackPolicy: "free"
+                      - sectionId: "sec1"
+                        lineId: "line2"
+                        rollbackPolicy: "free"
+                      - sectionId: "sec2"
+                        lineId: "line3"
+                        rollbackPolicy: "free"
+        pendingEffects: []
+  - slot: 4
+out:
+  global:
+    saveSlots:
+      "4":
+        slotKey: "4"
+        date: 1704110600
+        image: "save4.png"
+        state:
+          viewedRegistry:
+            sections:
+              - sectionId: "sec2"
+                lastLineId: "line3"
+            resources: []
+          contexts:
+            - pointers:
+                read: { sectionId: "sec2", lineId: "line3" }
+              variables:
+                score: 15
+              rollback:
+                currentIndex: 2
+                isRestoring: false
+                replayStartIndex: 0
+                timeline:
+                  - sectionId: "sec1"
+                    lineId: "line1"
+                    rollbackPolicy: "free"
+                  - sectionId: "sec1"
+                    lineId: "line2"
+                    rollbackPolicy: "free"
+                  - sectionId: "sec2"
+                    lineId: "line3"
+                    rollbackPolicy: "free"
+    viewedRegistry:
+      sections:
+        - sectionId: "sec2"
+          lastLineId: "line3"
+      resources: []
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - pointers:
+        read: { sectionId: "sec2", lineId: "line3" }
+      variables:
+        score: 15
+      rollback:
+        currentIndex: 2
+        isRestoring: false
+        replayStartIndex: 0
+        timeline:
+          - sectionId: "sec1"
+            lineId: "line1"
+            rollbackPolicy: "free"
+          - sectionId: "sec1"
+            lineId: "line2"
+            rollbackPolicy: "free"
+          - sectionId: "sec2"
+            lineId: "line3"
+            rollbackPolicy: "free"

@@ -1,0 +1,219 @@
+---
+title: Rollback Restores Layered View
+description: Rolling back to a checkpoint should restore the current line layered view state
+specs:
+  - line 2 opens a layered info panel
+  - line 3 clears the layered view
+  - rollback returns to line 2 and restores the info panel
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: click
+    x: 885
+    y: 360
+  - action: click
+    x: 885
+    y: 360
+  - action: wait
+    ms: 120
+  - action: click
+    x: 195
+    y: 360
+  - action: wait
+    ms: 150
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  characters:
+    narrator:
+      name: Guide
+  layouts:
+    baseLayout:
+      elements:
+        - id: bg
+          type: rect
+          width: 1920
+          height: 1080
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: bg
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 100
+          y: 760
+          width: 1720
+          height: 240
+          colorId: panel
+        - id: dialogue-text
+          type: text
+          x: 140
+          y: 835
+          width: 1400
+          content: ${dialogue.content[0].text}
+          textStyleId: textMain
+        - id: rollback-button
+          type: rect
+          x: 100
+          y: 680
+          width: 320
+          height: 60
+          colorId: button
+          click:
+            payload:
+              actions:
+                rollbackByOffset:
+                  offset: -1
+        - id: rollback-label
+          type: text
+          x: 130
+          y: 700
+          content: "[ROLLBACK]"
+          textStyleId: textButton
+        - id: next-button
+          type: rect
+          x: 1540
+          y: 680
+          width: 280
+          height: 60
+          colorId: button
+          click:
+            payload:
+              actions:
+                nextLine: {}
+        - id: next-label
+          type: text
+          x: 1600
+          y: 700
+          content: "[NEXT]"
+          textStyleId: textButton
+    infoPanel:
+      elements:
+        - id: info-panel
+          type: rect
+          x: 500
+          y: 180
+          width: 920
+          height: 220
+          opacity: 0.92
+          colorId: button
+        - id: info-title
+          type: text
+          x: 560
+          y: 225
+          content: "Overlay Restored"
+          textStyleId: textOverlayTitle
+        - id: info-body
+          type: text
+          x: 560
+          y: 290
+          width: 420
+          content: "This panel exists only on line 2."
+          textStyleId: textOverlayBody
+        - id: info-rollback-button
+          type: rect
+          x: 1080
+          y: 325
+          width: 260
+          height: 50
+          colorId: panel
+          click:
+            payload:
+              actions:
+                rollbackByOffset:
+                  offset: -1
+        - id: info-rollback-label
+          type: text
+          x: 1125
+          y: 340
+          content: "[BACK]"
+          textStyleId: textOverlayBody
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    bg:
+      hex: "#000000"
+    panel:
+      hex: "#4D4D4D"
+    button:
+      hex: "#737373"
+    fg:
+      hex: "#FFFFFF"
+    fgMuted:
+      hex: "#D9D9D9"
+  textStyles:
+    textMain:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 30
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textButton:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 28
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textOverlayTitle:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 34
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    textOverlayBody:
+      fontId: fontDefault
+      colorId: fgMuted
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: story
+      sections:
+        story:
+          lines:
+            - id: line1
+              actions:
+                background:
+                  resourceId: baseLayout
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 1. Move forward to the overlay line."
+                  characterId: narrator
+            - id: line2
+              actions:
+                pushLayeredView:
+                  resourceId: infoPanel
+                  resourceType: layout
+                dialogue:
+                  content:
+                    - text: "Line 2. Overlay restored."
+                  characterId: narrator
+            - id: line3
+              actions:
+                clearLayeredViews: {}
+                dialogue:
+                  content:
+                    - text: "Line 3. Overlay is cleared. Roll back one line."
+                  characterId: narrator

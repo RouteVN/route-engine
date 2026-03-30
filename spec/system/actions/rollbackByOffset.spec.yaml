@@ -68,12 +68,17 @@ in:
               sectionId: "section1"
               lineId: "2"
             history: {}
-          historySequence:
-            - sectionId: "section1"
-              initialState: {}
-              lines:
-                - id: "1"
-                - id: "2"
+          rollback:
+            currentIndex: 1
+            isRestoring: false
+            replayStartIndex: 0
+            timeline:
+              - sectionId: "section1"
+                lineId: "1"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "2"
+                rollbackPolicy: "free"
   - {}
 out:
   projectData:
@@ -89,8 +94,19 @@ out:
       variables: {}
   global:
     isLineCompleted: true
+    dialogueUIHidden: false
+    isDialogueHistoryShowing: false
+    layeredViews: []
+    nextLineConfig:
+      manual:
+        enabled: true
+        requireLineCompleted: false
+      auto:
+        enabled: false
+      applyMode: "persistent"
     pendingEffects:
-      - name: "handleLineActions"
+      - name: "clearNextLineConfigTimer"
+      - name: "render"
   contexts:
     - variables: {}
       currentPointerMode: "read"
@@ -102,13 +118,19 @@ out:
           sectionId: null
           lineId: null
           historySequenceIndex: null
-      historySequence:
-        - sectionId: "section1"
-          initialState: {}
-          lines:
-            - id: "1"
+      rollback:
+        currentIndex: 0
+        isRestoring: false
+        replayStartIndex: 0
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "2"
+            rollbackPolicy: "free"
 ---
-case: rolls back one line with offset -1 and reverts variables
+case: rolls back one line with inclusive checkpoint state
 in:
   - state:
       projectData:
@@ -135,7 +157,7 @@ in:
               scope: context
               default: 0
       global:
-        isLineCompleted: true
+        isLineCompleted: false
         pendingEffects: []
       contexts:
         - variables:
@@ -146,16 +168,20 @@ in:
               sectionId: "section1"
               lineId: "3"
             history: {}
-          historySequence:
-            - sectionId: "section1"
-              initialState:
-                score: 0
-              lines:
-                - id: "1"
-                - id: "2"
-                  updateVariableIds:
-                    - "act1"
-                - id: "3"
+          rollback:
+            currentIndex: 2
+            isRestoring: false
+            replayStartIndex: 0
+            timeline:
+              - sectionId: "section1"
+                lineId: "1"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "2"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "3"
+                rollbackPolicy: "free"
   - offset: -1
 out:
   projectData:
@@ -183,11 +209,22 @@ out:
           default: 0
   global:
     isLineCompleted: true
+    dialogueUIHidden: false
+    isDialogueHistoryShowing: false
+    layeredViews: []
+    nextLineConfig:
+      manual:
+        enabled: true
+        requireLineCompleted: false
+      auto:
+        enabled: false
+      applyMode: "persistent"
     pendingEffects:
-      - name: "handleLineActions"
+      - name: "clearNextLineConfigTimer"
+      - name: "render"
   contexts:
     - variables:
-        score: 0
+        score: 10
       currentPointerMode: "read"
       pointers:
         read:
@@ -197,13 +234,20 @@ out:
           sectionId: null
           lineId: null
           historySequenceIndex: null
-      historySequence:
-        - sectionId: "section1"
-          initialState:
-            score: 0
-          lines:
-            - id: "1"
-            - id: "2"
+      rollback:
+        currentIndex: 1
+        isRestoring: false
+        replayStartIndex: 0
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "2"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "3"
+            rollbackPolicy: "free"
 ---
 case: does nothing when at first line with offset -1
 in:
@@ -234,12 +278,14 @@ in:
               sectionId: "section1"
               lineId: "1"
             history: {}
-          historySequence:
-            - sectionId: "section1"
-              initialState:
-                score: 0
-              lines:
-                - id: "1"
+          rollback:
+            currentIndex: 0
+            isRestoring: false
+            replayStartIndex: 0
+            timeline:
+              - sectionId: "section1"
+                lineId: "1"
+                rollbackPolicy: "free"
   - offset: -1
 out:
   projectData:
@@ -268,14 +314,16 @@ out:
           sectionId: "section1"
           lineId: "1"
         history: {}
-      historySequence:
-        - sectionId: "section1"
-          initialState:
-            score: 0
-          lines:
-            - id: "1"
+      rollback:
+        currentIndex: 0
+        isRestoring: false
+        replayStartIndex: 0
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
 ---
-case: handles duplicate line entries correctly (uses last occurrence)
+case: handles duplicate checkpoints using rollback cursor
 in:
   - state:
       projectData:
@@ -295,6 +343,13 @@ in:
                               op: set
                               value: 10
                     - id: "3"
+                      actions:
+                        updateVariable:
+                          id: "act2"
+                          operations:
+                            - variableId: score
+                              op: increment
+                              value: 5
         resources:
           variables:
             score:
@@ -302,7 +357,7 @@ in:
               scope: context
               default: 0
       global:
-        isLineCompleted: true
+        isLineCompleted: false
         pendingEffects: []
       contexts:
         - variables:
@@ -313,17 +368,23 @@ in:
               sectionId: "section1"
               lineId: "2"
             history: {}
-          historySequence:
-            - sectionId: "section1"
-              initialState:
-                score: 0
-              lines:
-                - id: "1"
-                - id: "2"
-                  updateVariableIds:
-                    - "act1"
-                - id: "3"
-                - id: "2"
+          rollback:
+            currentIndex: 3
+            isRestoring: false
+            replayStartIndex: 0
+            timeline:
+              - sectionId: "section1"
+                lineId: "1"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "2"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "3"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "2"
+                rollbackPolicy: "free"
   - offset: -1
 out:
   projectData:
@@ -343,6 +404,13 @@ out:
                           op: set
                           value: 10
                 - id: "3"
+                  actions:
+                    updateVariable:
+                      id: "act2"
+                      operations:
+                        - variableId: score
+                          op: increment
+                          value: 5
     resources:
       variables:
         score:
@@ -351,11 +419,22 @@ out:
           default: 0
   global:
     isLineCompleted: true
+    dialogueUIHidden: false
+    isDialogueHistoryShowing: false
+    layeredViews: []
+    nextLineConfig:
+      manual:
+        enabled: true
+        requireLineCompleted: false
+      auto:
+        enabled: false
+      applyMode: "persistent"
     pendingEffects:
-      - name: "handleLineActions"
+      - name: "clearNextLineConfigTimer"
+      - name: "render"
   contexts:
     - variables:
-        score: 10
+        score: 15
       currentPointerMode: "read"
       pointers:
         read:
@@ -365,13 +444,293 @@ out:
           sectionId: null
           lineId: null
           historySequenceIndex: null
-      historySequence:
-        - sectionId: "section1"
-          initialState:
-            score: 0
-          lines:
-            - id: "1"
-            - id: "2"
-              updateVariableIds:
-                - "act1"
-            - id: "3"
+      rollback:
+        currentIndex: 2
+        isRestoring: false
+        replayStartIndex: 0
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "2"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "3"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "2"
+            rollbackPolicy: "free"
+---
+case: rolls back across sections using rollback timeline replay
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                    - id: "2"
+                      actions:
+                        setNextLineConfig:
+                          manual:
+                            enabled: false
+                            requireLineCompleted: true
+                        updateVariable:
+                          id: "set-score-10"
+                          operations:
+                            - variableId: score
+                              op: set
+                              value: 10
+                section2:
+                  lines:
+                    - id: "10"
+                      actions:
+                        updateVariable:
+                          id: "add-score-5"
+                          operations:
+                            - variableId: score
+                              op: add
+                              value: 5
+                    - id: "11"
+        resources:
+          variables:
+            score:
+              type: number
+              scope: context
+              default: 0
+      global:
+        isLineCompleted: false
+        nextLineConfig:
+          manual:
+            enabled: true
+            requireLineCompleted: false
+          auto:
+            enabled: false
+          applyMode: "persistent"
+        pendingEffects: []
+      contexts:
+        - variables:
+            score: 15
+          currentPointerMode: "history"
+          pointers:
+            read:
+              sectionId: "section2"
+              lineId: "10"
+            history:
+              sectionId: "section2"
+              lineId: "11"
+              historySequenceIndex: 0
+          rollback:
+            currentIndex: 2
+            isRestoring: false
+            replayStartIndex: 0
+            timeline:
+              - sectionId: "section1"
+                lineId: "1"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "2"
+                rollbackPolicy: "free"
+              - sectionId: "section2"
+                lineId: "10"
+                rollbackPolicy: "free"
+  - offset: -1
+out:
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                - id: "2"
+                  actions:
+                    setNextLineConfig:
+                      manual:
+                        enabled: false
+                        requireLineCompleted: true
+                    updateVariable:
+                      id: "set-score-10"
+                      operations:
+                        - variableId: score
+                          op: set
+                          value: 10
+            section2:
+              lines:
+                - id: "10"
+                  actions:
+                    updateVariable:
+                      id: "add-score-5"
+                      operations:
+                        - variableId: score
+                          op: add
+                          value: 5
+                - id: "11"
+    resources:
+      variables:
+        score:
+          type: number
+          scope: context
+          default: 0
+  global:
+    isLineCompleted: true
+    dialogueUIHidden: false
+    isDialogueHistoryShowing: false
+    layeredViews: []
+    nextLineConfig:
+      manual:
+        enabled: false
+        requireLineCompleted: true
+      auto:
+        enabled: false
+      applyMode: "persistent"
+    pendingEffects:
+      - name: "clearNextLineConfigTimer"
+      - name: "render"
+  contexts:
+    - variables:
+        score: 10
+      currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "2"
+        history:
+          sectionId: null
+          lineId: null
+          historySequenceIndex: null
+      rollback:
+        currentIndex: 1
+        isRestoring: false
+        replayStartIndex: 0
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "2"
+            rollbackPolicy: "free"
+          - sectionId: "section2"
+            lineId: "10"
+            rollbackPolicy: "free"
+---
+case: restores nextLineConfig auto without restarting scene timer
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                    - id: "2"
+                      actions:
+                        setNextLineConfig:
+                          auto:
+                            enabled: true
+                            trigger: "fromComplete"
+                            delay: 750
+                    - id: "3"
+        resources:
+          variables: {}
+      global:
+        isLineCompleted: false
+        nextLineConfig:
+          manual:
+            enabled: true
+            requireLineCompleted: false
+          auto:
+            enabled: false
+          applyMode: "persistent"
+        pendingEffects: []
+      contexts:
+        - variables: {}
+          currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "3"
+            history: {}
+          rollback:
+            currentIndex: 2
+            isRestoring: false
+            replayStartIndex: 0
+            timeline:
+              - sectionId: "section1"
+                lineId: "1"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "2"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "3"
+                rollbackPolicy: "free"
+  - offset: -1
+out:
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                - id: "2"
+                  actions:
+                    setNextLineConfig:
+                      auto:
+                        enabled: true
+                        trigger: "fromComplete"
+                        delay: 750
+                - id: "3"
+    resources:
+      variables: {}
+  global:
+    isLineCompleted: true
+    dialogueUIHidden: false
+    isDialogueHistoryShowing: false
+    layeredViews: []
+    nextLineConfig:
+      manual:
+        enabled: true
+        requireLineCompleted: false
+      auto:
+        enabled: true
+        trigger: "fromComplete"
+        delay: 750
+      applyMode: "persistent"
+    pendingEffects:
+      - name: "clearNextLineConfigTimer"
+      - name: "render"
+  contexts:
+    - variables: {}
+      currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "2"
+        history:
+          sectionId: null
+          lineId: null
+          historySequenceIndex: null
+      rollback:
+        currentIndex: 1
+        isRestoring: false
+        replayStartIndex: 0
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "2"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "3"
+            rollbackPolicy: "free"

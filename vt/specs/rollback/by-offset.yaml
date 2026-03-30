@@ -1,0 +1,223 @@
+---
+title: Rollback By Offset
+description: rollbackByOffset should jump back multiple checkpoints and restore score and line state
+specs:
+  - advances through five lines with cumulative score changes
+  - rolls back three checkpoints in one action
+  - restores the earlier line and its score total
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: click
+    x: 480
+    y: 270
+  - action: click
+    x: 480
+    y: 270
+  - action: click
+    x: 480
+    y: 270
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 120
+  - action: click
+    x: 420
+    y: 360
+  - action: wait
+    ms: 150
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  variables:
+    score:
+      type: number
+      scope: context
+      default: 0
+    lineVisited:
+      type: number
+      scope: context
+      default: 1
+  characters:
+    narrator:
+      name: Guide
+  layouts:
+    baseLayout:
+      elements:
+        - id: bg
+          type: rect
+          width: 1920
+          height: 1080
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: bg
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 100
+          y: 760
+          width: 1720
+          height: 240
+          colorId: panel
+        - id: dialogue-text
+          type: text
+          x: 140
+          y: 835
+          width: 1300
+          content: ${dialogue.content[0].text}
+          textStyleId: textMain
+        - id: score-display
+          type: text
+          x: 1780
+          y: 70
+          anchorX: 1
+          content: "Score: ${variables.score}"
+          textStyleId: textScore
+        - id: rollback-three
+          type: rect
+          x: 520
+          y: 680
+          width: 360
+          height: 60
+          colorId: button
+          click:
+            payload:
+              actions:
+                rollbackByOffset:
+                  offset: -3
+        - id: rollback-three-label
+          type: text
+          x: 555
+          y: 700
+          content: "[BACK 3 LINES]"
+          textStyleId: textButton
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    bg:
+      hex: "#000000"
+    panel:
+      hex: "#4D4D4D"
+    button:
+      hex: "#737373"
+    fg:
+      hex: "#FFFFFF"
+    fgMuted:
+      hex: "#D9D9D9"
+    fgSoft:
+      hex: "#A6A6A6"
+  textStyles:
+    textMain:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 30
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textScore:
+      fontId: fontDefault
+      colorId: fgMuted
+      fontSize: 32
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    textLine:
+      fontId: fontDefault
+      colorId: fgSoft
+      fontSize: 28
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textButton:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 26
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: story
+      sections:
+        story:
+          lines:
+            - id: line1
+              actions:
+                background:
+                  resourceId: baseLayout
+                updateVariable:
+                  id: visit1
+                  operations:
+                    - variableId: lineVisited
+                      op: set
+                      value: 1
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 1. Start at score 0."
+                  characterId: narrator
+            - id: line2
+              actions:
+                updateVariable:
+                  id: visit2
+                  operations:
+                    - variableId: score
+                      op: increment
+                      value: 5
+                dialogue:
+                  content:
+                    - text: "Line 2. Score is 5."
+                  characterId: narrator
+            - id: line3
+              actions:
+                updateVariable:
+                  id: visit3
+                  operations:
+                    - variableId: score
+                      op: increment
+                      value: 10
+                dialogue:
+                  content:
+                    - text: "Line 3. Score is 15."
+                  characterId: narrator
+            - id: line4
+              actions:
+                updateVariable:
+                  id: visit4
+                  operations:
+                    - variableId: score
+                      op: increment
+                      value: 15
+                dialogue:
+                  content:
+                    - text: "Line 4. Score is 30."
+                  characterId: narrator
+            - id: line5
+              actions:
+                updateVariable:
+                  id: visit5
+                  operations:
+                    - variableId: score
+                      op: increment
+                      value: 20
+                dialogue:
+                  content:
+                    - text: "Line 5. Score is 50. Roll back three lines."
+                  characterId: narrator

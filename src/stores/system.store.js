@@ -1,3 +1,4 @@
+import { current, isDraft } from "immer";
 import {
   createStore,
   getDefaultVariablesFromProjectData,
@@ -42,6 +43,393 @@ const resetNextLineConfigIfSingleLine = (state) => {
       name: "clearNextLineConfigTimer",
     });
   }
+};
+
+const cloneStateValue = (value) => {
+  const source = isDraft(value) ? current(value) : value;
+  return structuredClone(source);
+};
+
+const rollbackActionBatchStack = [];
+
+const createRollbackCheckpoint = ({ sectionId, lineId, rollbackPolicy }) => ({
+  sectionId,
+  lineId,
+  rollbackPolicy: rollbackPolicy ?? "free",
+});
+
+const getRollbackContextVariableDefaults = (projectData) => {
+  const { contextVariableDefaultValues } = getDefaultVariablesFromProjectData(
+    projectData ?? {},
+  );
+  return cloneStateValue(contextVariableDefaultValues);
+};
+
+const removeLegacyRollbackBaseline = (rollback) => {
+  if (!rollback || !("baselineVariables" in rollback)) {
+    return;
+  }
+
+  delete rollback.baselineVariables;
+};
+
+const createRollbackState = ({ pointer, replayStartIndex = 0 }) => {
+  const hasInitialPointer = pointer?.sectionId && pointer?.lineId;
+
+  return {
+    currentIndex: hasInitialPointer ? 0 : -1,
+    isRestoring: false,
+    replayStartIndex,
+    timeline: hasInitialPointer
+      ? [
+          createRollbackCheckpoint({
+            sectionId: pointer.sectionId,
+            lineId: pointer.lineId,
+          }),
+        ]
+      : [],
+  };
+};
+
+const ensureRollbackState = (lastContext, options = {}) => {
+  if (lastContext?.rollback) {
+    removeLegacyRollbackBaseline(lastContext.rollback);
+    if (!Array.isArray(lastContext.rollback.timeline)) {
+      lastContext.rollback.timeline = [];
+    }
+    if (typeof lastContext.rollback.currentIndex !== "number") {
+      lastContext.rollback.currentIndex =
+        lastContext.rollback.timeline.length > 0
+          ? lastContext.rollback.timeline.length - 1
+          : -1;
+    }
+    if (typeof lastContext.rollback.isRestoring !== "boolean") {
+      lastContext.rollback.isRestoring = false;
+    }
+    if (typeof lastContext.rollback.replayStartIndex !== "number") {
+      lastContext.rollback.replayStartIndex = 0;
+    }
+    return lastContext.rollback;
+  }
+
+  const pointer = lastContext?.pointers?.read;
+  lastContext.rollback = createRollbackState({
+    pointer,
+    replayStartIndex: options.compatibilityAnchor ? 1 : 0,
+  });
+  return lastContext.rollback;
+};
+
+const appendRollbackCheckpoint = (state, payload) => {
+  const lastContext = state.contexts?.[state.contexts.length - 1];
+  if (!lastContext) {
+    return;
+  }
+
+  const rollback = ensureRollbackState(lastContext);
+  if (rollback.isRestoring) {
+    return;
+  }
+
+  if (rollback.currentIndex < rollback.timeline.length - 1) {
+    rollback.timeline = rollback.timeline.slice(0, rollback.currentIndex + 1);
+  }
+
+  const lastCheckpoint = rollback.timeline[rollback.timeline.length - 1];
+  if (
+    lastCheckpoint?.sectionId === payload.sectionId &&
+    lastCheckpoint?.lineId === payload.lineId &&
+    (lastCheckpoint?.rollbackPolicy ?? "free") ===
+      (payload.rollbackPolicy ?? "free")
+  ) {
+    rollback.currentIndex = rollback.timeline.length - 1;
+    return;
+  }
+
+  rollback.timeline.push(createRollbackCheckpoint(payload));
+  rollback.currentIndex = rollback.timeline.length - 1;
+};
+
+const getCurrentRollbackCheckpoint = (state) => {
+  const lastContext = state.contexts?.[state.contexts.length - 1];
+  const rollback = lastContext?.rollback;
+
+  if (
+    !rollback ||
+    rollback.isRestoring ||
+    !Array.isArray(rollback.timeline) ||
+    typeof rollback.currentIndex !== "number"
+  ) {
+    return null;
+  }
+
+  const activeBatch =
+    rollbackActionBatchStack[rollbackActionBatchStack.length - 1];
+  const checkpointIndex =
+    typeof activeBatch?.checkpointIndex === "number"
+      ? activeBatch.checkpointIndex
+      : rollback.currentIndex;
+
+  if (checkpointIndex < 0 || checkpointIndex >= rollback.timeline.length) {
+    return null;
+  }
+
+  if (
+    typeof activeBatch?.checkpointIndex !== "number" &&
+    checkpointIndex < rollback.timeline.length - 1
+  ) {
+    rollback.timeline = rollback.timeline.slice(0, checkpointIndex + 1);
+  }
+
+  return rollback.timeline[checkpointIndex] ?? null;
+};
+
+export const beginRollbackActionBatch = ({ state }) => {
+  const lastContext = state.contexts?.[state.contexts.length - 1];
+  const rollback = lastContext?.rollback;
+  if (
+    !rollback ||
+    rollback.isRestoring ||
+    !Array.isArray(rollback.timeline) ||
+    typeof rollback.currentIndex !== "number" ||
+    rollback.currentIndex < 0 ||
+    rollback.currentIndex >= rollback.timeline.length
+  ) {
+    rollbackActionBatchStack.push({ checkpointIndex: null });
+    return state;
+  }
+
+  if (rollback.currentIndex < rollback.timeline.length - 1) {
+    rollback.timeline = rollback.timeline.slice(0, rollback.currentIndex + 1);
+  }
+
+  rollbackActionBatchStack.push({
+    checkpointIndex: rollback.currentIndex,
+  });
+  return state;
+};
+
+export const endRollbackActionBatch = ({ state }) => {
+  rollbackActionBatchStack.pop();
+  return state;
+};
+
+const recordRollbackAction = (state, actionType, payload) => {
+  const checkpoint = getCurrentRollbackCheckpoint(state);
+  if (!checkpoint) {
+    return;
+  }
+
+  if (!Array.isArray(checkpoint.executedActions)) {
+    checkpoint.executedActions = [];
+  }
+
+  checkpoint.executedActions.push({
+    type: actionType,
+    payload: cloneStateValue(payload),
+  });
+};
+
+const applyRollbackCheckpointUpdateVariable = (state, payload) => {
+  const lastContext = state.contexts?.[state.contexts.length - 1];
+  if (!lastContext) {
+    return;
+  }
+
+  const operations = payload?.operations ?? [];
+  for (const { variableId, op, value } of operations) {
+    const variableConfig = state.projectData.resources?.variables?.[variableId];
+    const scope = variableConfig?.scope;
+    const type = variableConfig?.type;
+
+    validateVariableScope(scope, variableId);
+    validateVariableOperation(type, op, variableId);
+
+    if (scope === "context") {
+      lastContext.variables[variableId] = applyVariableOperation(
+        lastContext.variables[variableId],
+        op,
+        value,
+      );
+    }
+  }
+};
+
+const replayRecordedRollbackActions = (state, checkpoint) => {
+  if (!Array.isArray(checkpoint?.executedActions)) {
+    return false;
+  }
+
+  const restorableActions = {
+    showDialogueUI,
+    hideDialogueUI,
+    toggleDialogueUI,
+    showDialogueHistory,
+    hideDialogueHistory,
+    setNextLineConfig,
+    pushLayeredView,
+    popLayeredView,
+    replaceLastLayeredView,
+    clearLayeredViews,
+  };
+
+  checkpoint.executedActions.forEach(({ type, payload }) => {
+    if (type === "updateVariable") {
+      applyRollbackCheckpointUpdateVariable(state, payload);
+      return;
+    }
+
+    const action = restorableActions[type];
+    if (!action) {
+      return;
+    }
+
+    action({ state }, payload);
+  });
+
+  return true;
+};
+
+const applyRollbackableLineActions = (state, payload) => {
+  const { sectionId, lineId } = payload;
+  const section = selectSection({ state }, { sectionId });
+  const line = section?.lines?.find((item) => item.id === lineId);
+  const updateVariableAction = line?.actions?.updateVariable;
+
+  if (!updateVariableAction) {
+    return;
+  }
+
+  const lastContext = state.contexts?.[state.contexts.length - 1];
+  if (!lastContext) {
+    return;
+  }
+
+  const operations = updateVariableAction.operations || [];
+  for (const { variableId, op, value } of operations) {
+    const variableConfig = state.projectData.resources?.variables?.[variableId];
+    const scope = variableConfig?.scope;
+    const type = variableConfig?.type;
+
+    validateVariableScope(scope, variableId);
+    validateVariableOperation(type, op, variableId);
+
+    if (scope === "context") {
+      lastContext.variables[variableId] = applyVariableOperation(
+        lastContext.variables[variableId],
+        op,
+        value,
+      );
+    }
+  }
+};
+
+const applyRollbackRestorableLineActions = (state, payload) => {
+  const { sectionId, lineId } = payload;
+  const section = selectSection({ state }, { sectionId });
+  const line = section?.lines?.find((item) => item.id === lineId);
+  const actions = line?.actions;
+
+  if (!actions) {
+    return;
+  }
+
+  const restorableActions = {
+    showDialogueUI,
+    hideDialogueUI,
+    toggleDialogueUI,
+    showDialogueHistory,
+    hideDialogueHistory,
+    setNextLineConfig,
+    pushLayeredView,
+    popLayeredView,
+    replaceLastLayeredView,
+    clearLayeredViews,
+  };
+
+  Object.entries(actions).forEach(([actionType, actionPayload]) => {
+    const action = restorableActions[actionType];
+    if (!action) {
+      return;
+    }
+
+    action({ state }, actionPayload);
+  });
+};
+
+const restoreRollbackCheckpoint = (state, checkpointIndex) => {
+  const lastContext = state.contexts?.[state.contexts.length - 1];
+  if (!lastContext) {
+    return state;
+  }
+
+  const rollback = ensureRollbackState(lastContext);
+  const checkpoint = rollback.timeline[checkpointIndex];
+  if (!checkpoint) {
+    return state;
+  }
+
+  if (state.global.autoMode) {
+    stopAutoMode({ state });
+  }
+  if (state.global.skipMode) {
+    stopSkipMode({ state });
+  }
+
+  state.global.pendingEffects.push({
+    name: "clearNextLineConfigTimer",
+  });
+
+  rollback.isRestoring = true;
+  rollback.currentIndex = checkpointIndex;
+
+  try {
+    lastContext.variables = getRollbackContextVariableDefaults(
+      state.projectData,
+    );
+    state.global.dialogueUIHidden = false;
+    state.global.isDialogueHistoryShowing = false;
+    state.global.nextLineConfig = cloneStateValue(DEFAULT_NEXT_LINE_CONFIG);
+    state.global.layeredViews = [];
+    state.global.isLineCompleted = true;
+
+    const replayStartIndex = rollback.replayStartIndex ?? 0;
+    for (let i = replayStartIndex; i <= checkpointIndex; i++) {
+      if (i > replayStartIndex) {
+        resetNextLineConfigIfSingleLine(state);
+      }
+      if (!replayRecordedRollbackActions(state, rollback.timeline[i])) {
+        applyRollbackableLineActions(state, rollback.timeline[i]);
+        applyRollbackRestorableLineActions(state, rollback.timeline[i]);
+      }
+    }
+
+    lastContext.pointers.read = {
+      sectionId: checkpoint.sectionId,
+      lineId: checkpoint.lineId,
+    };
+
+    lastContext.currentPointerMode = "read";
+    if (lastContext.pointers?.history) {
+      lastContext.pointers.history = {
+        sectionId: null,
+        lineId: null,
+        historySequenceIndex: null,
+      };
+    }
+
+    state.global.pendingEffects = state.global.pendingEffects.filter(
+      (effect) => effect?.name !== "render",
+    );
+
+    state.global.pendingEffects.push({
+      name: "render",
+    });
+  } finally {
+    rollback.isRestoring = false;
+  }
+
+  return state;
 };
 
 export const createInitialState = (payload) => {
@@ -116,6 +504,9 @@ export const createInitialState = (payload) => {
           resourceId: undefined,
         },
         variables: contextVariableDefaultValues,
+        rollback: createRollbackState({
+          pointer: initialPointer,
+        }),
       },
     ],
   };
@@ -599,12 +990,14 @@ export const selectRenderState = ({ state }) => {
 export const pushLayeredView = ({ state }, payload) => {
   state.global.layeredViews.push(payload);
   state.global.pendingEffects.push({ name: "render" });
+  recordRollbackAction(state, "pushLayeredView", payload);
   return state;
 };
 
 export const popLayeredView = ({ state }) => {
   state.global.layeredViews.pop();
   state.global.pendingEffects.push({ name: "render" });
+  recordRollbackAction(state, "popLayeredView", undefined);
   return state;
 };
 
@@ -613,12 +1006,14 @@ export const replaceLastLayeredView = ({ state }, payload) => {
     state.global.layeredViews[state.global.layeredViews.length - 1] = payload;
   }
   state.global.pendingEffects.push({ name: "render" });
+  recordRollbackAction(state, "replaceLastLayeredView", payload);
   return state;
 };
 
 export const clearLayeredViews = ({ state }) => {
   state.global.layeredViews = [];
   state.global.pendingEffects.push({ name: "render" });
+  recordRollbackAction(state, "clearLayeredViews", undefined);
   return state;
 };
 
@@ -728,6 +1123,7 @@ export const showDialogueUI = ({ state }) => {
   state.global.pendingEffects.push({
     name: "render",
   });
+  recordRollbackAction(state, "showDialogueUI", undefined);
   return state;
 };
 
@@ -736,6 +1132,7 @@ export const hideDialogueUI = ({ state }) => {
   state.global.pendingEffects.push({
     name: "render",
   });
+  recordRollbackAction(state, "hideDialogueUI", undefined);
   return state;
 };
 
@@ -755,6 +1152,7 @@ export const showDialogueHistory = ({ state }) => {
   state.global.pendingEffects.push({
     name: "render",
   });
+  recordRollbackAction(state, "showDialogueHistory", undefined);
   return state;
 };
 
@@ -763,6 +1161,7 @@ export const hideDialogueHistory = ({ state }) => {
   state.global.pendingEffects.push({
     name: "render",
   });
+  recordRollbackAction(state, "hideDialogueHistory", undefined);
   return state;
 };
 
@@ -864,6 +1263,8 @@ export const setNextLineConfig = ({ state }, payload) => {
   const { manual, auto, applyMode } = payload;
   const previousAutoEnabled = state.global.nextLineConfig.auto?.enabled;
   const previousApplyMode = state.global.nextLineConfig?.applyMode;
+  const isRollbackRestoring =
+    state.contexts?.[state.contexts.length - 1]?.rollback?.isRestoring === true;
 
   // If both manual and auto are provided, do complete replacement
   if (manual && auto) {
@@ -898,7 +1299,11 @@ export const setNextLineConfig = ({ state }, payload) => {
   const currentAutoEnabled = state.global.nextLineConfig.auto?.enabled;
 
   // If auto.enabled state has changed, dispatch timer effects
-  if (currentAutoEnabled === true && !previousAutoEnabled) {
+  if (
+    !isRollbackRestoring &&
+    currentAutoEnabled === true &&
+    !previousAutoEnabled
+  ) {
     const trigger = state.global.nextLineConfig.auto?.trigger;
 
     // Event-based: only start timer immediately if trigger is "fromStart"
@@ -916,7 +1321,11 @@ export const setNextLineConfig = ({ state }, payload) => {
         payload: { delay: state.global.nextLineConfig.auto.delay },
       });
     }
-  } else if (currentAutoEnabled === false && previousAutoEnabled) {
+  } else if (
+    !isRollbackRestoring &&
+    currentAutoEnabled === false &&
+    previousAutoEnabled
+  ) {
     state.global.pendingEffects.push({
       name: "clearNextLineConfigTimer",
     });
@@ -925,6 +1334,7 @@ export const setNextLineConfig = ({ state }, payload) => {
   state.global.pendingEffects.push({
     name: "render",
   });
+  recordRollbackAction(state, "setNextLineConfig", payload);
   return state;
 };
 
@@ -939,10 +1349,14 @@ export const setNextLineConfig = ({ state }, payload) => {
 export const saveSaveSlot = ({ state }, payload) => {
   const { slot, thumbnailImage } = payload;
   const slotKey = String(slot);
+  const contexts = cloneStateValue(state.contexts);
+  contexts?.forEach((context) => {
+    removeLegacyRollbackBaseline(context.rollback);
+  });
 
   const currentState = {
-    contexts: [...state.contexts],
-    viewedRegistry: state.global.viewedRegistry,
+    contexts,
+    viewedRegistry: cloneStateValue(state.global.viewedRegistry),
   };
 
   const saveData = {
@@ -978,8 +1392,13 @@ export const loadSaveSlot = ({ state }, payload) => {
   const slotKey = String(slot);
   const slotData = state.global.saveSlots[slotKey];
   if (slotData) {
-    state.global.viewedRegistry = slotData.state.viewedRegistry;
-    state.contexts = slotData.state.contexts;
+    state.global.viewedRegistry = cloneStateValue(
+      slotData.state.viewedRegistry,
+    );
+    state.contexts = cloneStateValue(slotData.state.contexts);
+    state.contexts?.forEach((context) => {
+      ensureRollbackState(context, { compatibilityAnchor: !context.rollback });
+    });
     state.global.pendingEffects.push({ name: "render" });
   }
   return state;
@@ -1065,9 +1484,6 @@ export const jumpToLine = ({ state }, payload) => {
 
   // Reset line completion state
   state.global.isLineCompleted = false;
-
-  // Add line to history for rollback support
-  addLineToHistory({ state }, { lineId });
 
   // Add appropriate pending effects
   state.global.pendingEffects.push({
@@ -1195,6 +1611,7 @@ export const nextLine = ({ state }) => {
   const pointer = selectCurrentPointer({ state })?.pointer;
   const sectionId = pointer?.sectionId;
   const section = selectSection({ state }, { sectionId });
+  const lastContext = state.contexts[state.contexts.length - 1];
 
   const lines = section?.lines || [];
   const currentLineIndex = lines.findIndex(
@@ -1223,7 +1640,9 @@ export const nextLine = ({ state }) => {
       }
     }
 
-    const lastContext = state.contexts[state.contexts.length - 1];
+    if (lastContext && !lastContext.rollback) {
+      ensureRollbackState(lastContext, { compatibilityAnchor: true });
+    }
 
     if (lastContext) {
       // Mark current line as viewed before moving
@@ -1242,6 +1661,10 @@ export const nextLine = ({ state }) => {
 
     // Add line to history for rollback support
     addLineToHistory({ state }, { lineId: nextLine.id });
+    appendRollbackCheckpoint(state, {
+      sectionId,
+      lineId: nextLine.id,
+    });
     resetNextLineConfigIfSingleLine(state);
 
     state.global.pendingEffects.push({
@@ -1449,6 +1872,10 @@ export const sectionTransition = ({ state }, payload) => {
   // Update current pointer to new section's first line
   const lastContext = state.contexts[state.contexts.length - 1];
   if (lastContext) {
+    if (!lastContext.rollback) {
+      ensureRollbackState(lastContext, { compatibilityAnchor: true });
+    }
+
     lastContext.pointers.read = {
       sectionId,
       lineId: firstLine.id,
@@ -1459,6 +1886,10 @@ export const sectionTransition = ({ state }, payload) => {
 
     // Add first line to history
     addLineToHistory({ state }, { lineId: firstLine.id });
+    appendRollbackCheckpoint(state, {
+      sectionId,
+      lineId: firstLine.id,
+    });
   }
 
   // Reset line completion state
@@ -1486,6 +1917,7 @@ export const nextLineFromSystem = ({ state }) => {
   const pointer = selectCurrentPointer({ state })?.pointer;
   const sectionId = pointer?.sectionId;
   const section = selectSection({ state }, { sectionId });
+  const lastContext = state.contexts[state.contexts.length - 1];
 
   const lines = section?.lines || [];
   const currentLineIndex = lines.findIndex(
@@ -1514,7 +1946,9 @@ export const nextLineFromSystem = ({ state }) => {
       }
     }
 
-    const lastContext = state.contexts[state.contexts.length - 1];
+    if (lastContext && !lastContext.rollback) {
+      ensureRollbackState(lastContext, { compatibilityAnchor: true });
+    }
 
     if (lastContext) {
       const currentLineId = lastContext.pointers.read.lineId;
@@ -1532,6 +1966,10 @@ export const nextLineFromSystem = ({ state }) => {
 
     // Add line to history for rollback support
     addLineToHistory({ state }, { lineId: nextLine.id });
+    appendRollbackCheckpoint(state, {
+      sectionId,
+      lineId: nextLine.id,
+    });
     resetNextLineConfigIfSingleLine(state);
 
     state.global.pendingEffects.push({
@@ -1573,11 +2011,15 @@ export const updateVariable = ({ state }, payload) => {
   }
 
   const lastContext = state.contexts[state.contexts.length - 1];
+  if (lastContext?.rollback?.isRestoring) {
+    return state;
+  }
 
   // Track which scopes are modified
   let contextVariableModified = false;
   let globalDeviceModified = false;
   let globalAccountModified = false;
+  const contextOperations = [];
 
   operations.forEach(({ variableId, op, value }) => {
     const variableConfig = state.projectData.resources?.variables?.[variableId];
@@ -1594,6 +2036,7 @@ export const updateVariable = ({ state }, payload) => {
     // Track which scope was modified
     if (scope === "context") {
       contextVariableModified = true;
+      contextOperations.push({ variableId, op, value });
     } else if (scope === "global-device") {
       globalDeviceModified = true;
     } else if (scope === "global-account") {
@@ -1607,6 +2050,11 @@ export const updateVariable = ({ state }, payload) => {
   // Log updateVariableId to current line's history entry (EVENT SOURCING)
   // Only log if context variables were modified (global variables not tracked for rollback)
   if (contextVariableModified) {
+    recordRollbackAction(state, "updateVariable", {
+      id,
+      operations: contextOperations,
+    });
+
     const historySequence = lastContext.historySequence;
     if (historySequence && historySequence.length > 0) {
       const currentSection = historySequence[historySequence.length - 1];
@@ -1660,57 +2108,7 @@ export const updateVariable = ({ state }, payload) => {
 };
 
 /**
- * Recursively traverses any object/array looking for updateVariable actions with matching ID.
- * This is a generic approach that works regardless of where actions are defined.
- * @param {any} obj - The object to search
- * @param {string} updateVariableId - The ID to find
- * @param {string} parentKey - The key that led to this object (used to detect updateVariable context)
- * @returns {Object|undefined} The action definition or undefined
- */
-const findUpdateVariableRecursive = (obj, updateVariableId, parentKey = "") => {
-  if (obj === null || obj === undefined) return undefined;
-
-  // If this is an updateVariable object with matching ID, return it
-  if (
-    parentKey === "updateVariable" &&
-    typeof obj === "object" &&
-    obj.id === updateVariableId &&
-    Array.isArray(obj.operations)
-  ) {
-    return obj;
-  }
-
-  // Recurse into arrays
-  if (Array.isArray(obj)) {
-    for (const item of obj) {
-      const found = findUpdateVariableRecursive(
-        item,
-        updateVariableId,
-        parentKey,
-      );
-      if (found) return found;
-    }
-    return undefined;
-  }
-
-  // Recurse into objects
-  if (typeof obj === "object") {
-    for (const key of Object.keys(obj)) {
-      const found = findUpdateVariableRecursive(
-        obj[key],
-        updateVariableId,
-        key,
-      );
-      if (found) return found;
-    }
-  }
-
-  return undefined;
-};
-
-/**
- * Selects a line ID by relative offset from current position in history.
- * Uses findLastIndex to handle duplicate line entries after rollback.
+ * Selects a line ID by relative offset from the active rollback timeline.
  *
  * @param {Object} state - Current state object
  * @param {Object} payload - Selector payload
@@ -1735,51 +2133,28 @@ export const selectLineIdByOffset = ({ state }, payload) => {
     return null;
   }
 
-  // Get current position from read pointer
-  const currentSectionId = lastContext.pointers.read?.sectionId;
-  const currentLineId = lastContext.pointers.read?.lineId;
-
-  if (!currentSectionId || !currentLineId) {
+  const rollback = lastContext.rollback;
+  if (
+    !Array.isArray(rollback?.timeline) ||
+    typeof rollback?.currentIndex !== "number"
+  ) {
     return null;
   }
 
-  // Find section in history
-  const historySequence = lastContext.historySequence;
-  const sectionEntry = historySequence?.find(
-    (entry) => entry.sectionId === currentSectionId,
-  );
-
-  if (!sectionEntry?.lines || sectionEntry.lines.length === 0) {
+  const targetIndex = rollback.currentIndex + offset;
+  if (targetIndex < 0 || targetIndex >= rollback.timeline.length) {
     return null;
   }
 
-  // Use findLastIndex to handle duplicate entries after rollback
-  // When user rolls back and moves forward again, same lineIds may appear multiple times
-  const currentIndex = sectionEntry.lines.findLastIndex(
-    (line) => line.id === currentLineId,
-  );
-
-  if (currentIndex === -1) {
-    return null;
-  }
-
-  // Calculate target index
-  const targetIndex = currentIndex + offset;
-
-  // Check bounds (within section only, as per user requirement)
-  if (targetIndex < 0 || targetIndex >= sectionEntry.lines.length) {
-    return null;
-  }
-
-  const targetLine = sectionEntry.lines[targetIndex];
+  const targetLine = rollback.timeline[targetIndex];
   return {
-    sectionId: currentSectionId,
-    lineId: targetLine.id,
+    sectionId: targetLine.sectionId,
+    lineId: targetLine.lineId,
   };
 };
 
 /**
- * Checks if rollback is possible (not at first line of history).
+ * Checks if rollback is possible (not at the first rollback checkpoint).
  * Used for UI to conditionally enable/disable back button.
  *
  * @param {Object} state - Current state object
@@ -1791,8 +2166,7 @@ export const selectCanRollback = ({ state }) => {
 };
 
 /**
- * Rolls back by a relative offset from current position.
- * Convenience action that combines selectLineIdByOffset with rollbackToLine.
+ * Rolls back by a relative offset from the current rollback checkpoint.
  *
  * @param {Object} state - Current state object
  * @param {Object} payload - Action payload
@@ -1813,36 +2187,24 @@ export const rollbackByOffset = ({ state }, payload) => {
     throw new Error("rollbackByOffset requires a negative offset");
   }
 
-  // Get target using the selector
-  const target = selectLineIdByOffset({ state }, { offset });
-
-  if (!target) {
-    // Out of bounds or invalid - do nothing
+  const lastContext = state.contexts?.[state.contexts.length - 1];
+  if (!lastContext) {
     return state;
   }
 
-  // Delegate to rollbackToLine for the actual rollback with variable reversion
-  return rollbackToLine(
-    { state },
-    {
-      sectionId: target.sectionId,
-      lineId: target.lineId,
-    },
-  );
+  const rollback = ensureRollbackState(lastContext, {
+    compatibilityAnchor: !lastContext.rollback,
+  });
+  const targetIndex = rollback.currentIndex + offset;
+  if (targetIndex < 0 || targetIndex >= rollback.timeline.length) {
+    return state;
+  }
+
+  return restoreRollbackCheckpoint(state, targetIndex);
 };
 
 /**
- * Rolls back to a specific line using replay-forward algorithm.
- *
- * Algorithm:
- *   1. Get initialState from current section
- *   2. Reset context variables to initialState
- *   3. For each line in history BEFORE targetLineId:
- *      - For each updateVariableId in line:
- *        - Look up action definition in project data
- *        - Execute the action (apply operations)
- *   4. Set pointer to targetLineId
- *   5. Switch to read mode
+ * Rolls back to a specific line using the active rollback timeline.
  *
  * @param {Object} state - Current state object
  * @param {Object} payload - Action payload
@@ -1858,91 +2220,26 @@ export const rollbackToLine = ({ state }, payload) => {
     throw new Error("No context available for rollbackToLine");
   }
 
-  // Find the section in history
-  const historySequence = lastContext.historySequence;
-  const sectionEntry = historySequence?.find(
-    (entry) => entry.sectionId === sectionId,
+  const rollback = ensureRollbackState(lastContext, {
+    compatibilityAnchor: !lastContext.rollback,
+  });
+  const visibleTimeline = rollback.timeline.slice(0, rollback.currentIndex + 1);
+  const targetLineIndex = visibleTimeline.findLastIndex(
+    (checkpoint) =>
+      checkpoint.sectionId === sectionId && checkpoint.lineId === lineId,
   );
 
-  if (!sectionEntry?.lines) {
+  if (targetLineIndex === -1) {
     throw new Error(
-      `Section ${sectionId} not found in history or has no lines`,
+      `Line ${lineId} not found in section ${sectionId} rollback timeline`,
     );
   }
 
-  // Find target line index by lineId
-  const targetLineIndex = sectionEntry.lines.findIndex(
-    (line) => line.id === lineId,
-  );
-  if (targetLineIndex === -1) {
-    throw new Error(`Line ${lineId} not found in section ${sectionId} history`);
+  if (targetLineIndex === rollback.currentIndex) {
+    return state;
   }
 
-  // Step 1: Reset context variables to initialState
-  const initialState = sectionEntry.initialState || {};
-  lastContext.variables = { ...initialState };
-
-  // Step 2: Replay all actions BEFORE the target line
-  // (We want state as it was BEFORE target line executed)
-  for (let i = 0; i < targetLineIndex; i++) {
-    const lineEntry = sectionEntry.lines[i];
-    const updateVariableIds = lineEntry.updateVariableIds || [];
-
-    for (const actionId of updateVariableIds) {
-      // Look up action definition in project data
-      const actionDef = findUpdateVariableRecursive(
-        state.projectData,
-        actionId,
-      );
-
-      if (!actionDef) {
-        throw new Error(`Action definition not found for ID: ${actionId}`);
-      }
-
-      // Apply the action's operations
-      const operations = actionDef.operations || [];
-      for (const { variableId, op, value } of operations) {
-        const variableConfig =
-          state.projectData.resources?.variables?.[variableId];
-        const scope = variableConfig?.scope;
-
-        // Only apply context-scoped variables during rollback
-        if (scope === "context") {
-          lastContext.variables[variableId] = applyVariableOperation(
-            lastContext.variables[variableId],
-            op,
-            value,
-          );
-        }
-      }
-    }
-  }
-
-  // Step 3: Truncate history to target line position
-  // This removes entries at and after targetLineIndex
-  sectionEntry.lines = sectionEntry.lines.slice(0, targetLineIndex);
-
-  // Step 4: Add target line to history (fresh entry for rollback support)
-  sectionEntry.lines.push({ id: lineId });
-
-  // Step 5: Update pointer to target line
-  lastContext.pointers.read = { sectionId, lineId };
-
-  // Step 6: Switch to read mode (makes choices interactive)
-  lastContext.currentPointerMode = "read";
-  lastContext.pointers.history = {
-    sectionId: null,
-    lineId: null,
-    historySequenceIndex: null,
-  };
-
-  // Skip animations when rolling back - set to true to disable animation
-  state.global.isLineCompleted = true;
-
-  // Queue render and line actions
-  state.global.pendingEffects.push({ name: "handleLineActions" });
-
-  return state;
+  return restoreRollbackCheckpoint(state, targetLineIndex);
 };
 
 /**************************
@@ -1993,6 +2290,8 @@ export const createSystemStore = (initialState) => {
     hideDialogueHistory,
     clearPendingEffects,
     appendPendingEffect,
+    beginRollbackActionBatch,
+    endRollbackActionBatch,
     addViewedLine,
     addViewedResource,
     setNextLineConfig,

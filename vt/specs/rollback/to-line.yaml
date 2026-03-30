@@ -1,6 +1,33 @@
 ---
-title: Rollback Test
-description: Simple visual novel simulation to test variable rollback
+title: Rollback To Line
+description: Direct rollbackToLine should restore the source line and reset context score
+specs:
+  - advances through score-changing lines
+  - uses rollbackToLine to return to the first line
+  - restores score and dialogue content for the target line
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: click
+    x: 480
+    y: 270
+  - action: click
+    x: 480
+    y: 270
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 120
+  - action: click
+    x: 200
+    y: 360
+  - action: wait
+    ms: 150
+  - action: screenshot
 ---
 screen:
   width: 1920
@@ -26,104 +53,83 @@ resources:
             payload:
               actions:
                 nextLine: {}
-          colorId: layoutColor1
-    dialogueUI:
-      name: Dialogue UI
+          colorId: bg
+    dialogueLayout:
       mode: adv
       elements:
-        - id: dialogueBox
+        - id: dialogue-box
           type: rect
           x: 100
-          y: 750
+          y: 760
           width: 1720
-          height: 280
-          opacity: 0.9
-          click:
-            payload:
-              actions:
-                nextLine: {}
-          colorId: layoutColor2
-        - id: charName
+          height: 240
+          colorId: panel
+        - id: dialogue-text
           type: text
-          content: ${dialogue.character.name}
-          x: 150
-          y: 770
-          textStyleId: textStyle1
-        - id: dialogueText
-          type: text
+          x: 140
+          y: 835
+          width: 1400
           content: ${dialogue.content[0].text}
-          x: 150
-          y: 820
-          width: 1620
-          textStyleId: textStyle2
-        - id: scoreDisplay
+          textStyleId: textMain
+        - id: score-display
           type: text
-          content: "Score: ${variables.score}"
-          x: 1700
-          y: 50
+          x: 1780
+          y: 70
           anchorX: 1
-          textStyleId: textStyle3
-        - id: backBtn
-          type: text
-          content: "[BACK to Line 1]"
+          content: "Score: ${variables.score}"
+          textStyleId: textScore
+        - id: rollback-button
+          type: rect
           x: 100
-          y: 700
-          hover:
-            textStyleId: textStyle5
+          y: 680
+          width: 320
+          height: 60
+          colorId: button
           click:
             payload:
               actions:
                 rollbackToLine:
                   sectionId: story
                   lineId: line1
-          textStyleId: textStyle4
+        - id: rollback-label
+          type: text
+          x: 130
+          y: 700
+          content: "[BACK TO LINE 1]"
+          textStyleId: textButton
   fonts:
     fontDefault:
       fileId: Arial
   colors:
-    color1:
-      hex: "#737373"
-    color2:
-      hex: "#D9D9D9"
-    color3:
-      hex: "#A6A6A6"
-    layoutColor1:
+    bg:
       hex: "#000000"
-    layoutColor2:
+    panel:
       hex: "#4D4D4D"
+    button:
+      hex: "#737373"
+    fg:
+      hex: "#FFFFFF"
+    fgMuted:
+      hex: "#D9D9D9"
   textStyles:
-    textStyle1:
+    textMain:
       fontId: fontDefault
-      colorId: color1
-      fontSize: 28
-      fontWeight: bold
-      fontStyle: normal
-      lineHeight: 1.2
-    textStyle2:
-      fontId: fontDefault
-      colorId: color2
-      fontSize: 24
+      colorId: fg
+      fontSize: 30
       fontWeight: "400"
       fontStyle: normal
       lineHeight: 1.2
-    textStyle3:
+    textScore:
       fontId: fontDefault
-      colorId: color3
+      colorId: fgMuted
       fontSize: 32
       fontWeight: bold
       fontStyle: normal
       lineHeight: 1.2
-    textStyle4:
+    textButton:
       fontId: fontDefault
-      colorId: color1
-      fontSize: 28
-      fontWeight: "400"
-      fontStyle: normal
-      lineHeight: 1.2
-    textStyle5:
-      fontId: fontDefault
-      colorId: color3
-      fontSize: 28
+      colorId: fg
+      fontSize: 26
       fontWeight: "400"
       fontStyle: normal
       lineHeight: 1.2
@@ -131,11 +137,9 @@ story:
   initialSceneId: main
   scenes:
     main:
-      name: Main Scene
       initialSectionId: story
       sections:
         story:
-          name: Story
           lines:
             - id: line1
               actions:
@@ -144,43 +148,37 @@ story:
                 dialogue:
                   mode: adv
                   ui:
-                    resourceId: dialogueUI
+                    resourceId: dialogueLayout
                   content:
-                    - text: Welcome! Your current score is 0. Click to continue...
+                    - text: "Line 1. After rollback, score should be back at 0."
                   characterId: narrator
             - id: line2
               actions:
                 dialogue:
                   content:
-                    - text: This is the second line. Nothing changes here yet.
+                    - text: "Line 2. Score is still 0."
                   characterId: narrator
             - id: line3
               actions:
                 updateVariable:
-                  id: uvAddScore
+                  id: add10
                   operations:
                     - variableId: score
                       op: increment
                       value: 10
                 dialogue:
                   content:
-                    - text: You gained +10 points! Watch the score in the corner.
+                    - text: "Line 3. Score increased to 10."
                   characterId: narrator
             - id: line4
               actions:
                 updateVariable:
-                  id: uvAddMore
+                  id: add20
                   operations:
                     - variableId: score
                       op: increment
                       value: 20
                 dialogue:
                   content:
-                    - text: Another +20 points! Now try clicking [BACK] to return to line 1.
-                  characterId: narrator
-            - id: line5
-              actions:
-                dialogue:
-                  content:
-                    - text: If rollback works, your score should reset to 0 when you go back!
+                    - text: "Line 4. Score is now 30. Use rollback."
                   characterId: narrator

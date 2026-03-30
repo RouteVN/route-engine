@@ -1,0 +1,137 @@
+---
+title: Rollback Auto Suppression
+description: Rolling back to a line with scene auto enabled should not restart the line auto timer
+specs:
+  - scene auto advances from line 1 to line 2 on first load
+  - rollback returns to line 1
+  - waiting longer than the auto delay does not advance again after rollback
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 420
+  - action: click
+    x: 195
+    y: 360
+  - action: wait
+    ms: 520
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  characters:
+    narrator:
+      name: Guide
+  layouts:
+    baseLayout:
+      elements:
+        - id: bg
+          type: rect
+          width: 1920
+          height: 1080
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: bg
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 100
+          y: 760
+          width: 1720
+          height: 240
+          colorId: panel
+        - id: dialogue-text
+          type: text
+          x: 140
+          y: 835
+          width: 1400
+          content: ${dialogue.content[0].text}
+          textStyleId: textMain
+        - id: rollback-button
+          type: rect
+          x: 100
+          y: 680
+          width: 320
+          height: 60
+          colorId: button
+          click:
+            payload:
+              actions:
+                rollbackByOffset:
+                  offset: -1
+        - id: rollback-label
+          type: text
+          x: 130
+          y: 700
+          content: "[ROLLBACK]"
+          textStyleId: textButton
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    bg:
+      hex: "#000000"
+    panel:
+      hex: "#4D4D4D"
+    button:
+      hex: "#737373"
+    fg:
+      hex: "#FFFFFF"
+  textStyles:
+    textMain:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 30
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textButton:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 28
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: story
+      sections:
+        story:
+          lines:
+            - id: line1
+              actions:
+                background:
+                  resourceId: baseLayout
+                setNextLineConfig:
+                  manual:
+                    enabled: true
+                  auto:
+                    enabled: true
+                    trigger: fromStart
+                    delay: 250
+                  applyMode: persistent
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 1. After rollback, this line should stay visible."
+                  characterId: narrator
+            - id: line2
+              actions:
+                dialogue:
+                  content:
+                    - text: "Line 2. Roll back, then wait longer than the auto delay."
+                  characterId: narrator

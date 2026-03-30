@@ -43,6 +43,8 @@ vt:
           files: "save"
         - title: "Keyboard"
           files: "keyboard"
+        - title: "Rollback"
+          files: "rollback"
         - title: "Variables"
           files: "variables"
         - title: "initialization"
