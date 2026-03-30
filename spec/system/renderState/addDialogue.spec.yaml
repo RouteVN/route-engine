@@ -94,7 +94,18 @@ in:
           elements:
             - id: "nvl-container"
               type: "container"
-              children: []
+              children:
+                - $for line, i in dialogueLines:
+                    - id: "line-${i}"
+                      type: "container"
+                      children:
+                        - $if line.characterName:
+                            - id: "name-${i}"
+                              type: "text"
+                              content: "${line.characterName}"
+                        - id: "text-${i}"
+                          type: "text"
+                          content: "${line.content[0].text}"
       characters:
         narrator:
           name: "Narrator"
@@ -114,7 +125,34 @@ out:
       children:
         - id: "nvl-container"
           type: "container"
-          children: []
+          children:
+            - id: "line-0"
+              type: "container"
+              children:
+                - id: "name-0"
+                  type: "text"
+                  content: "Narrator"
+                - id: "text-0"
+                  type: "text"
+                  content: "First line"
+            - id: "line-1"
+              type: "container"
+              children:
+                - id: "name-1"
+                  type: "text"
+                  content: "Alice"
+                - id: "text-1"
+                  type: "text"
+                  content: "Second line"
+            - id: "line-2"
+              type: "container"
+              children:
+                - id: "name-2"
+                  type: "text"
+                  content: "Bob"
+                - id: "text-2"
+                  type: "text"
+                  content: "Third line"
   animations: []
 ---
 case: resolves textStyleId in dialogue ui layout elements

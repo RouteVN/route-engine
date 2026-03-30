@@ -28,6 +28,7 @@ Define one stable standard for VT authoring in this repo:
 - Accept an intentional visual change with `rtgl vt accept`.
 - If the sync step needs a different upstream build, point `VT_ROUTE_GRAPHICS_URL` at the desired CDN file.
 - Local VT defaults to `2` Docker workers and a `60000ms` timeout.
+- Local VT reports default to a `0.8%` diff threshold to tolerate small Docker text raster drift.
 - VT is currently local-only. GitHub Actions VT is disabled again until the runner instability is fixed separately.
 
 ## Visual Standard
