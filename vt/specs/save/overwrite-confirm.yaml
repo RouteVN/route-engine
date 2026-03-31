@@ -401,77 +401,69 @@ resources:
       elements:
         - id: confirm-panel
           type: rect
-          width: 760
-          height: 336
-          x: 580
-          y: 372
+          width: 700
+          height: 232
+          x: 610
+          y: 88
           colorId: layoutColor2
         - id: confirm-title
           type: text
-          content: Overwrite Slot ${confirmDialog.confirmActions.saveSlot.slotId}?
-          x: 660
-          y: 426
+          content: Overwrite save?
+          x: 680
+          y: 136
           textStyleId: textStyle4
         - id: confirm-copy
           type: text
-          content: Replace this saved preview.
-          x: 660
-          y: 484
+          content: This will replace the current slot.
+          x: 680
+          y: 186
           textStyleId: textStyle5
-        - id: confirm-preview-slot-1-${saveSlots[0].savedAt}
-          $when: confirmDialog.confirmActions.saveSlot.slotId == 1
-          type: sprite
-          imageId: "saveThumbnailImage:1:${saveSlots[0].savedAt}"
-          x: 1008
-          y: 430
-          width: 280
-          height: 148
-        - id: confirm-preview-slot-2-${saveSlots[1].savedAt}
-          $when: confirmDialog.confirmActions.saveSlot.slotId == 2
-          type: sprite
-          imageId: "saveThumbnailImage:2:${saveSlots[1].savedAt}"
-          x: 1008
-          y: 430
-          width: 280
-          height: 148
         - id: confirm-yes
-          type: rect
+          type: container
           width: 220
           height: 68
           x: 662
-          y: 598
+          y: 248
           click:
             payload:
               actions: ${confirmDialog.confirmActions}
-          colorId: layoutColor3
-        - id: confirm-yes-text
-          type: text
-          content: Overwrite
-          x: 712
-          y: 616
-          click:
-            payload:
-              actions: ${confirmDialog.confirmActions}
-          textStyleId: textStyle3
+          children:
+            - id: confirm-yes-bg
+              type: rect
+              width: 220
+              height: 68
+              x: 0
+              y: 0
+              colorId: layoutColor3
+            - id: confirm-yes-text
+              type: text
+              content: Overwrite
+              x: 50
+              y: 18
+              textStyleId: textStyle3
         - id: confirm-no
-          type: rect
+          type: container
           width: 220
           height: 68
           x: 922
-          y: 598
+          y: 248
           click:
             payload:
               actions: ${confirmDialog.cancelActions}
-          colorId: layoutColor3
-        - id: confirm-no-text
-          type: text
-          content: Cancel
-          x: 988
-          y: 616
-          click:
-            payload:
-              actions: ${confirmDialog.cancelActions}
-          textStyleId: textStyle3
+          children:
+            - id: confirm-no-bg
+              type: rect
+              width: 220
+              height: 68
+              x: 0
+              y: 0
+              colorId: layoutColor3
+            - id: confirm-no-text
+              type: text
+              content: Cancel
+              x: 66
+              y: 18
+              textStyleId: textStyle3
   fonts:
     fontDefault:
       fileId: Arial
