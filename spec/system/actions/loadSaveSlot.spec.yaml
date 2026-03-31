@@ -1,9 +1,9 @@
 file: "../../../src/stores/system.store.js"
-group: systemStore.loadSaveSlot
-suites: [loadSaveSlot]
+group: systemStore.loadSlot
+suites: [loadSlot]
 ---
-suite: loadSaveSlot
-exportName: loadSaveSlot
+suite: loadSlot
+exportName: loadSlot
 ---
 case: load from existing slot
 in:
@@ -11,8 +11,8 @@ in:
       global:
         saveSlots:
           "1":
-            slotKey: "1"
-            date: 1704110400
+            slotId: 1
+            savedAt: 1704110400
             image: "save.png"
             state:
               projectData: { story: { initialSceneId: "loaded" } }
@@ -21,13 +21,13 @@ in:
                 - pointers:
                     read: { sectionId: "sec2", lineId: "line2" }
         pendingEffects: []
-  - slot: 1
+  - slotId: 1
 out:
   global:
     saveSlots:
       "1":
-        slotKey: "1"
-        date: 1704110400
+        slotId: 1
+        savedAt: 1704110400
         image: "save.png"
         state:
           projectData: { story: { initialSceneId: "loaded" } }
@@ -56,7 +56,7 @@ in:
       global:
         saveSlots: {}
         pendingEffects: []
-  - slot: 99
+  - slotId: 99
 out:
   global:
     saveSlots: {}
@@ -68,19 +68,19 @@ in:
       global:
         saveSlots:
           "2":
-            slotKey: "2"
-            date: 1704110500
+            slotId: 2
+            savedAt: 1704110500
             image: "save2.png"
             state:
               level: 10
         pendingEffects: []
-  - slot: 2
+  - slotId: 2
 out:
   global:
     saveSlots:
       "2":
-        slotKey: "2"
-        date: 1704110500
+        slotId: 2
+        savedAt: 1704110500
         image: "save2.png"
         state:
           level: 10
@@ -95,20 +95,20 @@ in:
       global:
         saveSlots:
           "1":
-            slotKey: "1"
-            date: 1704110400
+            slotId: 1
+            savedAt: 1704110400
             image: "save.png"
             state:
               level: 5
         pendingEffects:
           - name: "existingEffect"
-  - slot: 1
+  - slotId: 1
 out:
   global:
     saveSlots:
       "1":
-        slotKey: "1"
-        date: 1704110400
+        slotId: 1
+        savedAt: 1704110400
         image: "save.png"
         state:
           level: 5
@@ -124,8 +124,8 @@ in:
       global:
         saveSlots:
           "1":
-            slotKey: "1"
-            date: 1704110400
+            slotId: 1
+            savedAt: 1704110400
             image: "save.png"
             state:
               viewedRegistry:
@@ -149,13 +149,13 @@ in:
             playerName: "Guest"
             score: 0
             soundEnabled: false
-  - slot: 1
+  - slotId: 1
 out:
   global:
     saveSlots:
       "1":
-        slotKey: "1"
-        date: 1704110400
+        slotId: 1
+        savedAt: 1704110400
         image: "save.png"
         state:
           viewedRegistry:
@@ -195,8 +195,8 @@ in:
       global:
         saveSlots:
           "4":
-            slotKey: "4"
-            date: 1704110600
+            slotId: 4
+            savedAt: 1704110600
             image: "save4.png"
             state:
               viewedRegistry:
@@ -224,13 +224,13 @@ in:
                         lineId: "line3"
                         rollbackPolicy: "free"
         pendingEffects: []
-  - slot: 4
+  - slotId: 4
 out:
   global:
     saveSlots:
       "4":
-        slotKey: "4"
-        date: 1704110600
+        slotId: 4
+        savedAt: 1704110600
         image: "save4.png"
         state:
           viewedRegistry:

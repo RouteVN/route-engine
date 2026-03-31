@@ -408,16 +408,16 @@ Seen-line semantics:
 
 | Action         | Payload                           | Description                |
 | -------------- | --------------------------------- | -------------------------- |
-| `saveSaveSlot` | `{ slot, thumbnailImage? }`       | Save game to a slot        |
-| `loadSaveSlot` | `{ slot }`                        | Load game from a slot      |
+| `saveSlot`     | `{ slotId, thumbnailImage? }`     | Save game to a slot        |
+| `loadSlot`     | `{ slotId }`                      | Load game from a slot      |
 
 Save/load design, requirements, and storage boundaries are documented in [SaveLoad.md](./SaveLoad.md).
 
 Notes:
 
-- `slot` is the authoritative action field; storage normalizes it to string `slotKey`
-- save/load UIs can bind `slot` directly from layout templates such as `${slot.slotNumber}`
-- if slot identity comes from event data, use `_event.*` bindings such as `slot: "_event.slot"`
+- `slotId` is the public action field; storage stringification is internal
+- save/load UIs can bind `slotId` directly from layout templates such as `${slot.slotId}`
+- if slot identity comes from event data, use `_event.*` bindings such as `slotId: "_event.slotId"`
 - example save/load UI copy should stay terse; prefer short labels like `Save`, `Load`, `Page 1`, `Saved`, `Empty`, and `Image`
 - `thumbnailImage` is integration-provided; the engine does not capture screenshots by itself
 - if a save action appears inside a multi-action event payload, the host should prepare/augment the `actions` object and still call `handleActions(...)` once for the whole batch
@@ -445,8 +445,9 @@ The system store exposes these selectors (called internally):
 | `selectIsLineViewed`     | `{ sectionId, lineId }` | Boolean                           |
 | `selectIsResourceViewed` | `{ resourceId }`        | Boolean                           |
 | `selectNextLineConfig`   | -                       | Config object                     |
-| `selectSaveSlots`        | -                       | Save slots object                 |
-| `selectSaveSlot`         | `{ slotKey }`           | Save slot data                    |
+| `selectSaveSlotMap`      | -                       | Save slots object map             |
+| `selectSaveSlot`         | `{ slotId }`            | Save slot data                    |
+| `selectSaveSlotPage`     | `{ slotsPerPage? }`     | Paged save slot list for UI       |
 
 ## Pending Effects
 

@@ -144,10 +144,10 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
         ...payload,
         actions: {
           ...payload.actions,
-          saveSaveSlot: {
-            ...payload.actions.saveSaveSlot,
+          saveSlot: {
+            ...payload.actions.saveSlot,
             thumbnailImage: "data:image/png;base64,updated",
-            date: 1701234567890,
+            savedAt: 1701234567890,
           },
         },
       }),
@@ -155,8 +155,8 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
 
     await eventHandler("click", {
       actions: {
-        saveSaveSlot: {
-          slot: 1,
+        saveSlot: {
+          slotId: 1,
         },
       },
       _event: {
@@ -166,10 +166,10 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
 
     expect(engine.handleActions).toHaveBeenCalledWith(
       {
-        saveSaveSlot: {
-          slot: 1,
+        saveSlot: {
+          slotId: 1,
           thumbnailImage: "data:image/png;base64,updated",
-          date: 1701234567890,
+          savedAt: 1701234567890,
         },
       },
       {

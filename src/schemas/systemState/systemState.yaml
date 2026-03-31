@@ -47,23 +47,23 @@ properties:
 
       saveSlots:
         type: object
-        description: Save game slots indexed by slotKey
+        description: Save game slots indexed by slot id
         properties:
-          "^.+$": # slot key (string like "1", "autosave", etc.)
+          "^.+$":
             type: object
             properties:
-              slotKey:
-                type: string
-              date:
+              slotId:
+                type: [number, string]
+              savedAt:
                 type: integer
                 description: Unix timestamp
               image:
-                type: string
+                type: [string, "null"]
                 description: Base64 screenshot (null if none)
               state:
                 type: object
                 description: Full system state
-            required: [slotKey, date, state]
+            required: [slotId, savedAt, state]
         default: {}
 
       # TODO: don't remember why we need this for

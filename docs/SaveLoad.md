@@ -112,8 +112,8 @@ Save slots must include:
 - `global.viewedRegistry`
 - rollback timeline/cursor inside each saved context
 - slot metadata:
-  - `slotKey`
-  - `date`
+  - `slotId`
+  - `savedAt`
   - `image`
 
 ### What save slots must not include
@@ -196,24 +196,25 @@ Partial application into an invalid runtime shape is not acceptable.
 
 Current store actions are:
 
-- `saveSaveSlot({ slot, thumbnailImage? })`
-- `loadSaveSlot({ slot })`
+- `saveSlot({ slotId, thumbnailImage?, savedAt? })`
+- `loadSlot({ slotId })`
 
 Notes:
 
-- the naming is awkward but currently authoritative in the runtime
 - `thumbnailImage` is UI/host-provided preview data
-- `slot` is the authoritative action field and is normalized to string `slotKey` in storage
+- `slotId` is the public action field
+- storage still uses a stringified object key internally, but that is not part of the authored API
+- compatibility aliases still exist in code for `saveSaveSlot({ slot, thumbnailImage?, date? })` and `loadSaveSlot({ slot })`
 
 ### Store Selectors
 
 Current save/load-related selectors are:
 
-- `selectSaveSlots()`
-- `selectSaveSlot({ slotKey })`
-- `selectCurrentPageSlots({ slotsPerPage? })`
+- `selectSaveSlotMap()`
+- `selectSaveSlot({ slotId })`
+- `selectSaveSlotPage({ slotsPerPage? })`
 
-`selectCurrentPageSlots` is a UI helper for paginated save/load screens. It flattens the current page into slot UI items based on the `loadPage` variable.
+`selectSaveSlotPage` is a UI helper for paginated save/load screens. It flattens the current page into slot UI items based on the `loadPage` variable.
 
 ### Effects
 
@@ -225,20 +226,20 @@ The save/load path crosses the store boundary through effects:
 
 Current behavior:
 
-- `saveSaveSlot` mutates `state.global.saveSlots`
+- `saveSlot` mutates `state.global.saveSlots`
 - then it emits a `saveSlots` effect
 - the effect handler persists the full slot map to `localStorage`
 
 Load is different:
 
-- `loadSaveSlot` only restores in-memory engine state from `state.global.saveSlots`
+- `loadSlot` only restores in-memory engine state from `state.global.saveSlots`
 - it does not read `localStorage` itself
 
 ### Dynamic Slot Selection
 
-The engine contract is based on action payload `slot`.
+The engine contract is based on action payload `slotId`.
 
-The store converts that to string `slotKey` internally, but authored/integration payloads should target `slot`.
+The store stringifies that internally for map lookup, but authored/integration payloads should target `slotId`.
 
 Current supported patterns:
 
@@ -247,8 +248,8 @@ Current supported patterns:
 click:
   payload:
     actions:
-      saveSaveSlot:
-        slot: 1
+      saveSlot:
+        slotId: 1
 ```
 
 ```yaml
@@ -256,8 +257,8 @@ click:
 click:
   payload:
     actions:
-      loadSaveSlot:
-        slot: ${slot.slotNumber}
+      loadSlot:
+        slotId: ${slot.slotId}
 ```
 
 ```yaml
@@ -265,10 +266,10 @@ click:
 click:
   payload:
     _event:
-      slot: 3
+      slotId: 3
     actions:
-      saveSaveSlot:
-        slot: "_event.slot"
+      saveSlot:
+        slotId: "_event.slotId"
 ```
 
 Important details:
@@ -286,7 +287,7 @@ Current recommendation:
 
 For save/load grids rendered from `saveSlots`, direct template binding is the clearer default:
 
-- `slot: ${slot.slotNumber}`
+- `slotId: ${slot.slotId}`
 
 Open design note:
 
@@ -296,15 +297,15 @@ Open design note:
 
 The core engine does not capture screenshots itself.
 
-`saveSaveSlot` simply accepts `thumbnailImage` if the host/integration provides one and stores it as slot `image`.
+`saveSlot` simply accepts `thumbnailImage` if the host/integration provides one and stores it as slot `image`.
 
 Current VT/browser harness behavior:
 
 1. intercept Route Graphics event payloads before action dispatch
-2. detect `payload.actions.saveSaveSlot`
+2. detect `payload.actions.saveSlot`
 3. call `routeGraphics.extractBase64("story")`
-4. inject the result into `payload.actions.saveSaveSlot.thumbnailImage`
-5. also register the captured image as a Route Graphics asset under `saveThumbnailImage:${slot}`
+4. inject the result into `payload.actions.saveSlot.thumbnailImage`
+5. also register the captured image as a Route Graphics asset under `saveThumbnailImage:${slotId}:${savedAt}`
 
 The engine-facing contract is only step 4.
 
@@ -314,13 +315,13 @@ Current recommendation:
 
 - keep thumbnail capture outside the store
 - let the host/integration obtain the screenshot from the active renderer/environment
-- pass the final image string into `saveSaveSlot`
+- pass the final image string into `saveSlot`
 
 Important constraint:
 
 - a single UI event may contain multiple authored actions
 - in that case, the host should still dispatch one `handleActions(...)` call for the whole batch
-- do not split save into a separate `handleAction("saveSaveSlot", ...)` call just because it needs a screenshot
+- do not split save into a separate `handleAction("saveSlot", ...)` call just because it needs a screenshot
 
 Rationale:
 
@@ -331,9 +332,9 @@ Rationale:
 Current simple shape:
 
 ```js
-if (payload?.actions?.saveSaveSlot) {
+if (payload?.actions?.saveSlot) {
   const thumbnailImage = await routeGraphics.extractBase64("story");
-  payload.actions.saveSaveSlot.thumbnailImage = thumbnailImage;
+  payload.actions.saveSlot.thumbnailImage = thumbnailImage;
 }
 ```
 
@@ -341,14 +342,14 @@ Preferred general integration shape:
 
 ```js
 async function prepareActionsForDispatch(actions, routeGraphics) {
-  if (!actions?.saveSaveSlot) {
+  if (!actions?.saveSlot) {
     return actions;
   }
 
   const nextActions = structuredClone(actions);
 
-  if (!nextActions.saveSaveSlot.thumbnailImage) {
-    nextActions.saveSaveSlot.thumbnailImage =
+  if (!nextActions.saveSlot.thumbnailImage) {
+    nextActions.saveSlot.thumbnailImage =
       await routeGraphics.extractBase64("story");
   }
 
@@ -382,7 +383,7 @@ The host app is responsible for:
 - hydrating `initialState.global.saveSlots` from durable storage before engine init
 - hydrating persistent global variables before engine init
 - providing thumbnail image payloads when a save action wants one
-- mapping dynamic UI/event data into the action `slot` field when save/load is triggered from generated UI
+- mapping dynamic UI/event data into the action `slotId` field when save/load is triggered from generated UI
 - executing storage effects emitted by the engine
 
 The system store itself does not own browser storage reads.
@@ -393,8 +394,8 @@ The effective slot structure is:
 
 ```js
 {
-  slotKey: "1",
-  date: 1700000000000,
+  slotId: 1,
+  savedAt: 1700000000000,
   image: "data:image/webp;base64,...", // or null/undefined
   state: {
     viewedRegistry: {
@@ -453,7 +454,7 @@ Current save flow:
 1. clone current `contexts`
 2. strip legacy rollback-only compatibility fields from cloned contexts
 3. clone `global.viewedRegistry`
-4. write `{ slotKey, date, image, state }` into `state.global.saveSlots`
+4. write `{ slotId, savedAt, image, state }` into `state.global.saveSlots`
 5. append `saveSlots` effect
 6. append `render` effect
 
@@ -465,7 +466,7 @@ Persistence to `localStorage` happens later through the effect handler.
 
 Current load flow:
 
-1. look up `state.global.saveSlots[slotKey]`
+1. look up `state.global.saveSlots[String(slotId)]`
 2. if missing, leave state unchanged
 3. clone `slotData.state.viewedRegistry`
 4. clone `slotData.state.contexts`
@@ -498,7 +499,7 @@ The save/load path should validate enough to guarantee a coherent playable state
 
 At minimum:
 
-- `slotKey` should be stringifiable
+- `slotId` should be numeric in authored save/load actions
 - `state.contexts` should be an array with at least one valid context
 - each loaded context should have a valid read pointer
 - `viewedRegistry` should be normalized to a safe shape
@@ -543,7 +544,7 @@ Areas that should be improved next:
 - action/effect schemas should match the actual save/load runtime interfaces
 - dynamic slot-event and thumbnail-capture integration rules should be reflected more explicitly in schemas or host-layer helpers
 - if screenshot capture remains preprocess-based, prefer cloning/augmenting authored actions before dispatch instead of mutating the original event payload in place
-- stale public docs should be aligned with the real `saveSaveSlot` / `loadSaveSlot` naming
+- compatibility aliases should eventually be removed after callers migrate to `saveSlot` / `loadSlot`
 
 ## Non-Goals
 

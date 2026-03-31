@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import { produce } from "immer";
 import {
-  loadSaveSlot,
+  loadSlot,
   rollbackByOffset,
-  saveSaveSlot,
+  saveSlot,
   sectionTransition,
   updateVariable,
 } from "../src/stores/system.store.js";
@@ -131,7 +131,7 @@ const createEventDrivenRollbackProjectData = () => ({
 });
 
 describe("system.store rollback/save draft safety", () => {
-  it("saveSaveSlot does not throw when cloning live draft state", () => {
+  it("saveSlot does not throw when cloning live draft state", () => {
     vi.spyOn(Date, "now").mockReturnValue(1700000000000);
 
     const baseState = {
@@ -174,7 +174,7 @@ describe("system.store rollback/save draft safety", () => {
     };
 
     const nextState = produce(baseState, (draft) => {
-      saveSaveSlot({ state: draft }, { slot: 1, thumbnailImage: null });
+      saveSlot({ state: draft }, { slotId: 1, thumbnailImage: null });
     });
 
     expect(
@@ -199,7 +199,7 @@ describe("system.store rollback/save draft safety", () => {
     vi.restoreAllMocks();
   });
 
-  it("loadSaveSlot does not throw when restoring slot state from a live draft", () => {
+  it("loadSlot does not throw when restoring slot state from a live draft", () => {
     const savedRollback = {
       currentIndex: 2,
       isRestoring: false,
@@ -230,8 +230,8 @@ describe("system.store rollback/save draft safety", () => {
       global: {
         saveSlots: {
           1: {
-            slotKey: "1",
-            date: 1700000000000,
+            slotId: 1,
+            savedAt: 1700000000000,
             image: null,
             state: {
               viewedRegistry: {
@@ -271,7 +271,7 @@ describe("system.store rollback/save draft safety", () => {
     };
 
     const nextState = produce(baseState, (draft) => {
-      loadSaveSlot({ state: draft }, { slot: 1 });
+      loadSlot({ state: draft }, { slotId: 1 });
     });
 
     expect(nextState.contexts[0].rollback).toEqual({

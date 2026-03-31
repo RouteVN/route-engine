@@ -200,7 +200,8 @@ const init = async () => {
   const routeGraphicsEventHandler =
     effectsHandler.createRouteGraphicsEventHandler({
       preprocessPayload: async (eventName, payload) => {
-        if (payload?.actions?.saveSaveSlot) {
+        const saveAction = payload?.actions?.saveSlot;
+        if (saveAction) {
           const saveTimestamp = Date.now();
           let url;
 
@@ -213,7 +214,7 @@ const init = async () => {
           }
           const assets = {
             [
-              `saveThumbnailImage:${payload.actions.saveSaveSlot.slot}:${saveTimestamp}`
+              `saveThumbnailImage:${saveAction.slotId}:${saveTimestamp}`
             ]: {
               buffer: base64ToArrayBuffer(url),
               type: "image/png",
@@ -225,10 +226,10 @@ const init = async () => {
             ...payload,
             actions: {
               ...payload.actions,
-              saveSaveSlot: {
-                ...payload.actions.saveSaveSlot,
+              saveSlot: {
+                ...saveAction,
                 thumbnailImage: url,
-                date: saveTimestamp,
+                savedAt: saveTimestamp,
               },
             },
           };

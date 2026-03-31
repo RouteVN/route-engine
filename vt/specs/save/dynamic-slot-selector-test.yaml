@@ -213,12 +213,12 @@ resources:
           y: 420
           children:
             - $for slot in saveSlots:
-                id: slot_${slot.slotNumber}_container
+                id: slot_${slot.slotId}_container
                 type: container
                 width: 320
                 height: 250
                 children:
-                  - id: slot_${slot.slotNumber}_box
+                  - id: slot_${slot.slotId}_box
                     type: rect
                     x: 0
                     y: 0
@@ -227,21 +227,21 @@ resources:
                     click:
                       payload:
                         actions:
-                          saveSaveSlot:
-                            slot: ${slot.slotNumber}
+                          saveSlot:
+                            slotId: ${slot.slotId}
                     colorId: layoutColor2
-                  - id: slot_${slot.slotNumber}_title
+                  - id: slot_${slot.slotId}_title
                     type: text
-                    content: Slot ${slot.slotNumber}
+                    content: Slot ${slot.slotId}
                     x: 20
                     y: 18
                     click:
                       payload:
                         actions:
-                          saveSaveSlot:
-                            slot: ${slot.slotNumber}
+                          saveSlot:
+                            slotId: ${slot.slotId}
                     textStyleId: textStyle8
-                  - id: slot_${slot.slotNumber}_preview_empty
+                  - id: slot_${slot.slotId}_preview_empty
                     $when: "!slot.image"
                     type: sprite
                     imageId: savePlaceholder
@@ -252,12 +252,12 @@ resources:
                     click:
                       payload:
                         actions:
-                          saveSaveSlot:
-                            slot: ${slot.slotNumber}
-                  - id: slot_${slot.slotNumber}_preview_saved_${slot.date}
+                          saveSlot:
+                            slotId: ${slot.slotId}
+                  - id: slot_${slot.slotId}_preview_saved_${slot.savedAt}
                     $when: slot.image
                     type: sprite
-                    imageId: "saveThumbnailImage:${slot.slotNumber}:${slot.date}"
+                    imageId: "saveThumbnailImage:${slot.slotId}:${slot.savedAt}"
                     x: 20
                     y: 58
                     width: 280
@@ -265,9 +265,9 @@ resources:
                     click:
                       payload:
                         actions:
-                          saveSaveSlot:
-                            slot: ${slot.slotNumber}
-                  - id: slot_${slot.slotNumber}_status
+                          saveSlot:
+                            slotId: ${slot.slotId}
+                  - id: slot_${slot.slotId}_status
                     type: text
                     x: 20
                     y: 216
@@ -277,8 +277,8 @@ resources:
                     click:
                       payload:
                         actions:
-                          saveSaveSlot:
-                            slot: ${slot.slotNumber}
+                          saveSlot:
+                            slotId: ${slot.slotId}
                     textStyleId: textStyle9
   fonts:
     fontDefault:
