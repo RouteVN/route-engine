@@ -29,13 +29,6 @@ resources:
         Escape:
           actions:
             hideConfirmDialog: {}
-      elements:
-        - id: keyboard-hint
-          type: text
-          x: 1380
-          y: 44
-          content: ENTER show / ESC hide
-          textStyleId: textStyle4
   layouts:
     sceneLayout:
       elements:
@@ -46,30 +39,24 @@ resources:
           x: 0
           y: 0
           colorId: layoutColor1
-        - id: scene-title
-          type: text
-          x: 140
-          y: 128
-          content: Confirm Input Sandbox
-          textStyleId: textStyle1
         - id: scene-copy
           type: text
           x: 140
-          y: 206
-          content: Use the buttons or keyboard to open and hide the confirm dialog.
+          y: 138
+          content: Manual confirm input sandbox.
           textStyleId: textStyle2
-        - id: scene-state
+        - id: scene-steps
           type: text
           x: 140
-          y: 270
-          content: State ${variables.confirmState}
+          y: 194
+          content: Click Open. Press ESC to hide. Press ENTER to reopen.
           textStyleId: textStyle3
         - id: open-confirm
           type: container
-          width: 260
+          width: 220
           height: 72
           x: 140
-          y: 360
+          y: 294
           click:
             payload:
               actions:
@@ -85,40 +72,16 @@ resources:
           children:
             - id: open-confirm-bg
               type: rect
-              width: 260
+              width: 220
               height: 72
               x: 0
               y: 0
               colorId: layoutColor4
             - id: open-confirm-text
               type: text
-              x: 58
+              x: 76
               y: 18
-              content: Open Confirm
-              textStyleId: textStyle4
-        - id: hide-confirm
-          type: container
-          width: 260
-          height: 72
-          x: 430
-          y: 360
-          click:
-            payload:
-              actions:
-                hideConfirmDialog: {}
-          children:
-            - id: hide-confirm-bg
-              type: rect
-              width: 260
-              height: 72
-              x: 0
-              y: 0
-              colorId: layoutColor4
-            - id: hide-confirm-text
-              type: text
-              x: 70
-              y: 18
-              content: Hide Confirm
+              content: Open
               textStyleId: textStyle4
     sandboxConfirmLayout:
       elements:
@@ -133,13 +96,13 @@ resources:
           type: text
           x: 680
           y: 320
-          content: Sandbox Confirm
+          content: Confirm
           textStyleId: textStyle1
         - id: confirm-copy
           type: text
           x: 680
           y: 382
-          content: This page is for manual input checks on candidate builds.
+          content: Confirm or cancel the current action.
           textStyleId: textStyle2
         - id: confirm-yes
           type: container
