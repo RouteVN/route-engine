@@ -1,6 +1,6 @@
 ---
 title: Confirm Basic Open
-description: Confirm dialog open over a plain scene.
+description: Confirm dialog opened manually from a plain scene.
 ---
 screen:
   width: 1920
@@ -39,12 +39,44 @@ resources:
           type: text
           x: 188
           y: 286
-          content: Underlay should stay visible but blocked.
+          content: Starts closed. Click Open to show the confirm dialog.
           textStyleId: textStyle2
+        - id: open-confirm
+          type: container
+          width: 220
+          height: 68
+          x: 188
+          y: 336
+          click:
+            payload:
+              actions:
+                showConfirmDialog:
+                  resourceId: basicConfirmLayout
+                  confirmActions:
+                    updateVariable:
+                      id: confirmbasicopen
+                      operations:
+                        - variableId: confirmState
+                          op: set
+                          value: confirmed
+          children:
+            - id: open-confirm-bg
+              type: rect
+              width: 220
+              height: 68
+              x: 0
+              y: 0
+              colorId: layoutColor4
+            - id: open-confirm-text
+              type: text
+              x: 76
+              y: 18
+              content: Open
+              textStyleId: textStyle4
         - id: scene-state
           type: text
           x: 188
-          y: 348
+          y: 432
           content: State ${variables.confirmState}
           textStyleId: textStyle3
     basicConfirmLayout:
@@ -171,12 +203,3 @@ story:
               actions:
                 background:
                   resourceId: sceneLayout
-                showConfirmDialog:
-                  resourceId: basicConfirmLayout
-                  confirmActions:
-                    updateVariable:
-                      id: confirmbasicopen
-                      operations:
-                        - variableId: confirmState
-                          op: set
-                          value: confirmed
