@@ -124,4 +124,59 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
       },
     );
   });
+
+  it("forwards preprocessPayload action changes into handleActions", async () => {
+    const engine = {
+      selectRenderState: vi.fn(() => ({ id: "render-1" })),
+      handleAction: vi.fn(),
+      handleActions: vi.fn(),
+    };
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics: {
+        render: vi.fn(),
+      },
+      ticker: createTicker(),
+    });
+
+    const eventHandler = effectsHandler.createRouteGraphicsEventHandler({
+      preprocessPayload: async (eventName, payload) => ({
+        ...payload,
+        actions: {
+          ...payload.actions,
+          saveSaveSlot: {
+            ...payload.actions.saveSaveSlot,
+            thumbnailImage: "data:image/png;base64,updated",
+            date: 1701234567890,
+          },
+        },
+      }),
+    });
+
+    await eventHandler("click", {
+      actions: {
+        saveSaveSlot: {
+          slot: 1,
+        },
+      },
+      _event: {
+        id: "slot_1_box",
+      },
+    });
+
+    expect(engine.handleActions).toHaveBeenCalledWith(
+      {
+        saveSaveSlot: {
+          slot: 1,
+          thumbnailImage: "data:image/png;base64,updated",
+          date: 1701234567890,
+        },
+      },
+      {
+        _event: {
+          id: "slot_1_box",
+        },
+      },
+    );
+  });
 });
