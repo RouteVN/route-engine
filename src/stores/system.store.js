@@ -1368,7 +1368,7 @@ export const setNextLineConfig = ({ state }, payload) => {
  * @returns {Object} Updated state object
  */
 export const saveSaveSlot = ({ state }, payload) => {
-  const { slot, thumbnailImage } = payload;
+  const { slot, thumbnailImage, date } = payload;
   const slotKey = String(slot);
   const contexts = cloneStateValue(state.contexts);
   contexts?.forEach((context) => {
@@ -1382,7 +1382,7 @@ export const saveSaveSlot = ({ state }, payload) => {
 
   const saveData = {
     slotKey,
-    date: Date.now(),
+    date: typeof date === "number" ? date : Date.now(),
     image: thumbnailImage,
     state: currentState,
   };

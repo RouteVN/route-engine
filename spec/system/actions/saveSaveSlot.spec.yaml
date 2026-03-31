@@ -146,6 +146,52 @@ out:
     - pointers:
         read: { sectionId: "sec1", lineId: "line1" }
 ---
+case: save with explicit timestamp override
+in:
+  - state:
+      global:
+        saveSlots: {}
+        pendingEffects: []
+      projectData:
+        story: { initialSceneId: "test" }
+      contexts:
+        - pointers:
+            read: { sectionId: "sec1", lineId: "line1" }
+  - slot: 1
+    thumbnailImage: "custom_image.png"
+    date: 1701234567890
+out:
+  global:
+    saveSlots:
+      "1":
+        slotKey: "1"
+        date: 1701234567890
+        image: "custom_image.png"
+        state:
+          contexts:
+            - pointers:
+                read: { sectionId: "sec1", lineId: "line1" }
+          viewedRegistry: __undefined__
+    pendingEffects:
+      - name: "saveSlots"
+        payload:
+          saveSlots:
+            "1":
+              slotKey: "1"
+              date: 1701234567890
+              image: "custom_image.png"
+              state:
+                contexts:
+                  - pointers:
+                      read: { sectionId: "sec1", lineId: "line1" }
+                viewedRegistry: __undefined__
+      - name: "render"
+  projectData:
+    story: { initialSceneId: "test" }
+  contexts:
+    - pointers:
+        read: { sectionId: "sec1", lineId: "line1" }
+---
 case: save to slot with existing pending effects
 in:
   - state:

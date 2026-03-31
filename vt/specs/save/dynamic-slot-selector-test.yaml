@@ -6,131 +6,280 @@ screen:
   height: 1080
   backgroundColor: "#000000"
 resources:
+  images:
+    savePlaceholder:
+      fileId: 94lkj289
+      width: 280
+      height: 148
   variables:
     loadPage:
       type: number
       scope: global-device
       default: 1
-  controls:
-    base1:
+    previewFrame:
+      type: string
+      scope: context
+      default: "01 / 20"
+    previewTitle:
+      type: string
+      scope: context
+      default: "Rain"
+    previewDetail:
+      type: string
+      scope: context
+      default: "Station window."
+  characters:
+    narrator:
+      name: ""
+  layouts:
+    readingLayout:
+      name: Story Screen
       elements:
-        - id: clickArea
+        - id: background
           type: rect
           width: 1920
           height: 1080
+          x: 0
+          y: 0
           click:
             payload:
               actions:
-                contextNextLine: {}
+                nextLine: {}
           colorId: layoutColor1
-  layouts:
-    dynamicSlotsTestUI:
-      name: Dynamic Slots Grid Test
+        - id: scene-card
+          type: rect
+          width: 1080
+          height: 260
+          x: 120
+          y: 120
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: layoutColor2
+        - id: scene-title
+          type: text
+          content: ${variables.previewFrame}
+          x: 170
+          y: 165
+          textStyleId: textStyle1
+        - id: scene-subtitle
+          type: text
+          content: ${variables.previewTitle}
+          x: 172
+          y: 228
+          textStyleId: textStyle10
+        - id: scene-detail
+          type: text
+          content: ${variables.previewDetail}
+          x: 174
+          y: 286
+          textStyleId: textStyle2
+    readingDialogueLayout:
+      name: Reading Dialogue
+      mode: adv
       elements:
+        - id: save-button
+          type: rect
+          x: 1670
+          y: 40
+          width: 160
+          height: 64
+          click:
+            payload:
+              actions:
+                pushLayeredView:
+                  resourceId: dynamicSaveMenuLayout
+                  resourceType: layout
+          colorId: layoutColor3
+        - id: save-button-text
+          type: text
+          x: 1720
+          y: 58
+          content: Save
+          click:
+            payload:
+              actions:
+                pushLayeredView:
+                  resourceId: dynamicSaveMenuLayout
+                  resourceType: layout
+          textStyleId: textStyle3
+        - id: dialogue-box
+          type: rect
+          x: 100
+          y: 836
+          width: 1720
+          height: 164
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: layoutColor5
+        - id: dialogue-text
+          type: text
+          x: 150
+          y: 872
+          content: ${dialogue.content[0].text}
+          textStyleId: textStyle11
+    dynamicSaveMenuLayout:
+      name: Dynamic Save Menu
+      elements:
+        - id: save-menu-overlay
+          type: rect
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          opacity: 0.78
+          colorId: layoutColor4
+        - id: save-menu-bg
+          type: rect
+          width: 1360
+          height: 760
+          x: 280
+          y: 160
+          colorId: layoutColor5
         - id: title
           type: text
-          content: Dynamic Save Slots - Selector Test
-          x: 960
-          y: 50
-          anchorX: 0.5
-          textStyleId: textStyle1
+          content: Slots
+          x: 380
+          y: 220
+          textStyleId: textStyle4
         - id: subtitle
           type: text
           content: Page ${variables.loadPage}
-          x: 960
-          y: 100
-          anchorX: 0.5
-          textStyleId: textStyle2
-        - id: pageNav
-          type: container
-          x: 960
-          y: 180
-          anchorX: 0.5
-          children:
-            - id: btnPrevPage
-              type: text
-              content: ← Previous Page
-              x: -150
-              y: 0
-              anchorX: 0.5
-              hover:
-                textStyleId: textStyle4
-              click:
-                payload:
-                  actions:
-                    updateVariable:
-                      id: uv1
-                      operations:
-                        - variableId: loadPage
-                          op: decrement
-              textStyleId: textStyle3
-            - id: btnNextPage
-              type: text
-              content: Next Page →
-              x: 150
-              y: 0
-              anchorX: 0.5
-              hover:
-                textStyleId: textStyle4
-              click:
-                payload:
-                  actions:
-                    updateVariable:
-                      id: uv2
-                      operations:
-                        - variableId: loadPage
-                          op: increment
-              textStyleId: textStyle3
+          x: 380
+          y: 280
+          textStyleId: textStyle5
+        - id: close-btn
+          type: rect
+          width: 140
+          height: 56
+          x: 1460
+          y: 210
+          click:
+            payload:
+              actions:
+                clearLayeredViews: {}
+          colorId: layoutColor3
+        - id: close-btn-text
+          type: text
+          content: Close
+          x: 1502
+          y: 226
+          click:
+            payload:
+              actions:
+                clearLayeredViews: {}
+          textStyleId: textStyle3
+        - id: btnPrevPage
+          type: text
+          content: ← Previous Page
+          x: 400
+          y: 350
+          hover:
+            textStyleId: textStyle7
+          click:
+            payload:
+              actions:
+                updateVariable:
+                  id: prevPage
+                  operations:
+                    - variableId: loadPage
+                      op: decrement
+          textStyleId: textStyle6
+        - id: btnNextPage
+          type: text
+          content: Next Page →
+          x: 1230
+          y: 350
+          hover:
+            textStyleId: textStyle7
+          click:
+            payload:
+              actions:
+                updateVariable:
+                  id: nextPage
+                  operations:
+                    - variableId: loadPage
+                      op: increment
+          textStyleId: textStyle6
         - id: slotsGrid
           type: container
           direction: horizontal
-          gap: 30
-          width: 720
-          x: 960
-          y: 300
-          anchorX: 0.5
+          gap: 28
+          width: 1080
+          x: 360
+          y: 420
           children:
             - $for slot in saveSlots:
                 id: slot_${slot.slotNumber}_container
                 type: container
-                direction: vertical
-                gap: 10
+                width: 320
+                height: 250
                 children:
                   - id: slot_${slot.slotNumber}_box
                     type: rect
-                    width: 200
-                    height: 150
-                    hover:
-                      colorId: layoutColor2
+                    x: 0
+                    y: 0
+                    width: 320
+                    height: 250
                     click:
                       payload:
                         actions:
                           saveSaveSlot:
                             slot: ${slot.slotNumber}
                     colorId: layoutColor2
-                  - id: slot_${slot.slotNumber}_label
+                  - id: slot_${slot.slotNumber}_title
                     type: text
                     content: Slot ${slot.slotNumber}
-                    x: 100
-                    y: 60
-                    anchorX: 0.5
-                    anchorY: 0.5
-                    textStyleId: textStyle5
+                    x: 20
+                    y: 18
+                    click:
+                      payload:
+                        actions:
+                          saveSaveSlot:
+                            slot: ${slot.slotNumber}
+                    textStyleId: textStyle8
+                  - id: slot_${slot.slotNumber}_preview_empty
+                    $when: "!slot.image"
+                    type: sprite
+                    imageId: savePlaceholder
+                    x: 20
+                    y: 58
+                    width: 280
+                    height: 148
+                    click:
+                      payload:
+                        actions:
+                          saveSaveSlot:
+                            slot: ${slot.slotNumber}
+                  - id: slot_${slot.slotNumber}_preview_saved_${slot.date}
+                    $when: slot.image
+                    type: sprite
+                    imageId: "saveThumbnailImage:${slot.slotNumber}:${slot.date}"
+                    x: 20
+                    y: 58
+                    width: 280
+                    height: 148
+                    click:
+                      payload:
+                        actions:
+                          saveSaveSlot:
+                            slot: ${slot.slotNumber}
                   - id: slot_${slot.slotNumber}_status
                     type: text
-                    content: $if{slot.date:Saved:Empty}
-                    x: 100
-                    y: 90
-                    anchorX: 0.5
-                    anchorY: 0.5
-                    textStyleId: textStyle6
-        - id: instructions
-          type: text
-          content: Use Previous/Next to change pages. Click slots to save.
-          x: 960
-          y: 650
-          anchorX: 0.5
-          textStyleId: textStyle7
+                    x: 20
+                    y: 216
+                    content:
+                      $if slot.image: Saved
+                      $else: Empty
+                    click:
+                      payload:
+                        actions:
+                          saveSaveSlot:
+                            slot: ${slot.slotNumber}
+                    textStyleId: textStyle9
   fonts:
     fontDefault:
       fileId: Arial
@@ -138,65 +287,101 @@ resources:
     color1:
       hex: "#FFFFFF"
     color2:
-      hex: "#737373"
+      hex: "#C8C8C8"
     color3:
-      hex: "#D9D9D9"
+      hex: "#B78A3D"
     color4:
-      hex: "#A6A6A6"
+      hex: "#787878"
+    color5:
+      hex: "#A3A3A3"
     layoutColor1:
-      hex: "#000000"
+      hex: "#111111"
     layoutColor2:
-      hex: "#4D4D4D"
+      hex: "#2A2A2A"
+    layoutColor3:
+      hex: "#4A4A4A"
+    layoutColor4:
+      hex: "#050505"
+    layoutColor5:
+      hex: "#1B1B1B"
   textStyles:
     textStyle1:
       fontId: fontDefault
       colorId: color1
-      fontSize: 42
+      fontSize: 50
       fontWeight: bold
       fontStyle: normal
       lineHeight: 1.2
     textStyle2:
       fontId: fontDefault
       colorId: color2
-      fontSize: 32
-      fontWeight: bold
+      fontSize: 26
+      fontWeight: "400"
       fontStyle: normal
-      lineHeight: 1.2
+      lineHeight: 1.3
     textStyle3:
       fontId: fontDefault
       colorId: color1
       fontSize: 24
-      fontWeight: "400"
+      fontWeight: bold
       fontStyle: normal
       lineHeight: 1.2
     textStyle4:
       fontId: fontDefault
-      colorId: color2
-      fontSize: 24
-      fontWeight: "400"
+      colorId: color1
+      fontSize: 46
+      fontWeight: bold
       fontStyle: normal
       lineHeight: 1.2
     textStyle5:
       fontId: fontDefault
-      colorId: color3
-      fontSize: 20
+      colorId: color2
+      fontSize: 30
       fontWeight: "400"
       fontStyle: normal
       lineHeight: 1.2
     textStyle6:
       fontId: fontDefault
-      colorId: color4
-      fontSize: 16
-      fontWeight: "400"
+      colorId: color1
+      fontSize: 26
+      fontWeight: bold
       fontStyle: normal
       lineHeight: 1.2
     textStyle7:
       fontId: fontDefault
-      colorId: color4
-      fontSize: 20
+      colorId: color3
+      fontSize: 26
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle8:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 28
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle9:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 22
       fontWeight: "400"
       fontStyle: normal
       lineHeight: 1.2
+    textStyle10:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 36
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle11:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 28
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.3
 story:
   initialSceneId: main
   scenes:
@@ -209,7 +394,441 @@ story:
           lines:
             - id: line1
               actions:
-                control:
-                  resourceId: base1
-                layout:
-                  resourceId: dynamicSlotsTestUI
+                background:
+                  resourceId: readingLayout
+                updateVariable:
+                  id: line1Preview
+                  operations:
+                    - variableId: previewFrame
+                      op: set
+                      value: "01 / 20"
+                    - variableId: previewTitle
+                      op: set
+                      value: "Rain"
+                    - variableId: previewDetail
+                      op: set
+                      value: "Cold glass. Wet platform."
+                dialogue:
+                  ui:
+                    resourceId: readingDialogueLayout
+                  characterId: narrator
+                  content:
+                    - text: "Line 01. Rain."
+            - id: line2
+              actions:
+                background:
+                  resourceId: readingLayout
+                updateVariable:
+                  id: line2Preview
+                  operations:
+                    - variableId: previewFrame
+                      op: set
+                      value: "02 / 20"
+                    - variableId: previewTitle
+                      op: set
+                      value: "Orange Tram"
+                    - variableId: previewDetail
+                      op: set
+                      value: "Warm light cuts across the room."
+                dialogue:
+                  ui:
+                    resourceId: readingDialogueLayout
+                  characterId: narrator
+                  content:
+                    - text: "Line 02. A bright orange tram glides past the window and throws warm color across the room."
+            - id: line3
+              actions:
+                background:
+                  resourceId: readingLayout
+                updateVariable:
+                  id: line3Preview
+                  operations:
+                    - variableId: previewFrame
+                      op: set
+                      value: "03 / 20"
+                    - variableId: previewTitle
+                      op: set
+                      value: "Lamp Flicker"
+                    - variableId: previewDetail
+                      op: set
+                      value: "Yellow pulse. Short shadow."
+                dialogue:
+                  ui:
+                    resourceId: readingDialogueLayout
+                  characterId: narrator
+                  content:
+                    - text: "Line 03. Lamp flicker."
+            - id: line4
+              actions:
+                background:
+                  resourceId: readingLayout
+                updateVariable:
+                  id: line4Preview
+                  operations:
+                    - variableId: previewFrame
+                      op: set
+                      value: "04 / 20"
+                    - variableId: previewTitle
+                      op: set
+                      value: "Silver Key"
+                    - variableId: previewDetail
+                      op: set
+                      value: "A single key points straight at the menu."
+                dialogue:
+                  ui:
+                    resourceId: readingDialogueLayout
+                  characterId: narrator
+                  content:
+                    - text: "Line 04. Someone left a silver key beside the notebook, angled exactly toward the save button."
+            - id: line5
+              actions:
+                background:
+                  resourceId: readingLayout
+                updateVariable:
+                  id: line5Preview
+                  operations:
+                    - variableId: previewFrame
+                      op: set
+                      value: "05 / 20"
+                    - variableId: previewTitle
+                      op: set
+                      value: "Red Warning"
+                    - variableId: previewDetail
+                      op: set
+                      value: "Panel glow. Sharp contrast."
+                dialogue:
+                  ui:
+                    resourceId: readingDialogueLayout
+                  characterId: narrator
+                  content:
+                    - text: "Line 05. Red warning."
+            - id: line6
+              actions:
+                background:
+                  resourceId: readingLayout
+                updateVariable:
+                  id: line6Preview
+                  operations:
+                    - variableId: previewFrame
+                      op: set
+                      value: "06 / 20"
+                    - variableId: previewTitle
+                      op: set
+                      value: "Tea Steam"
+                    - variableId: previewDetail
+                      op: set
+                      value: "Steam drifts upward and softens the city lights."
+                dialogue:
+                  ui:
+                    resourceId: readingDialogueLayout
+                  characterId: narrator
+                  content:
+                    - text: "Line 06. Steam curls off the tea cup and briefly fogs the glass in front of the city."
+            - id: line7
+              actions:
+                background:
+                  resourceId: readingLayout
+                updateVariable:
+                  id: line7Preview
+                  operations:
+                    - variableId: previewFrame
+                      op: set
+                      value: "07 / 20"
+                    - variableId: previewTitle
+                      op: set
+                      value: "Route Map"
+                    - variableId: previewDetail
+                      op: set
+                      value: "Blue line. Left corner."
+                dialogue:
+                  ui:
+                    resourceId: readingDialogueLayout
+                  characterId: narrator
+                  content:
+                    - text: "Line 07. Route map."
+            - id: line8
+              actions:
+                background:
+                  resourceId: readingLayout
+                updateVariable:
+                  id: line8Preview
+                  operations:
+                    - variableId: previewFrame
+                      op: set
+                      value: "08 / 20"
+                    - variableId: previewTitle
+                      op: set
+                      value: "Platform Eight"
+                    - variableId: previewDetail
+                      op: set
+                      value: "Intercom static repeats the platform call."
+                dialogue:
+                  ui:
+                    resourceId: readingDialogueLayout
+                  characterId: narrator
+                  content:
+                    - text: "Line 08. The intercom crackles, then repeats a clipped message about platform eight."
+            - id: line9
+              actions:
+                background:
+                  resourceId: readingLayout
+                updateVariable:
+                  id: line9Preview
+                  operations:
+                    - variableId: previewFrame
+                      op: set
+                      value: "09 / 20"
+                    - variableId: previewTitle
+                      op: set
+                      value: "Neon Streaks"
+                    - variableId: previewDetail
+                      op: set
+                      value: "Pink line. Wet street."
+                dialogue:
+                  ui:
+                    resourceId: readingDialogueLayout
+                  characterId: narrator
+                  content:
+                    - text: "Line 09. Neon streaks."
+            - id: line10
+              actions:
+                background:
+                  resourceId: readingLayout
+                updateVariable:
+                  id: line10Preview
+                  operations:
+                    - variableId: previewFrame
+                      op: set
+                      value: "10 / 20"
+                    - variableId: previewTitle
+                      op: set
+                      value: "Archive Drawer"
+                    - variableId: previewDetail
+                      value: "Half-open drawer, stamped envelopes, hard shadow."
+                      op: set
+                dialogue:
+                  ui:
+                    resourceId: readingDialogueLayout
+                  characterId: narrator
+                  content:
+                    - text: "Line 10. The archive drawer jams halfway open, revealing a stack of stamped envelopes."
+            - id: line11
+              actions:
+                background:
+                  resourceId: readingLayout
+                updateVariable:
+                  id: line11Preview
+                  operations:
+                    - variableId: previewFrame
+                      op: set
+                      value: "11 / 20"
+                    - variableId: previewTitle
+                      op: set
+                      value: "Violet Scarf"
+                    - variableId: previewDetail
+                      op: set
+                      value: "Soft fabric. Quiet corner."
+                dialogue:
+                  ui:
+                    resourceId: readingDialogueLayout
+                  characterId: narrator
+                  content:
+                    - text: "Line 11. Violet scarf."
+            - id: line12
+              actions:
+                background:
+                  resourceId: readingLayout
+                updateVariable:
+                  id: line12Preview
+                  operations:
+                    - variableId: previewFrame
+                      op: set
+                      value: "12 / 20"
+                    - variableId: previewTitle
+                      op: set
+                      value: "Skipped Minutes"
+                    - variableId: previewDetail
+                      op: set
+                      value: "The clock jumps forward as if part of the scene was cut."
+                dialogue:
+                  ui:
+                    resourceId: readingDialogueLayout
+                  characterId: narrator
+                  content:
+                    - text: "Line 12. The clock skips from 11:58 to 12:04 as if six minutes were cut from the scene."
+            - id: line13
+              actions:
+                background:
+                  resourceId: readingLayout
+                updateVariable:
+                  id: line13Preview
+                  operations:
+                    - variableId: previewFrame
+                      op: set
+                      value: "13 / 20"
+                    - variableId: previewTitle
+                      op: set
+                      value: "Blueprint"
+                    - variableId: previewDetail
+                      op: set
+                      value: "One folded sheet slips free."
+                dialogue:
+                  ui:
+                    resourceId: readingDialogueLayout
+                  characterId: narrator
+                  content:
+                    - text: "Line 13. Blueprint slips free."
+            - id: line14
+              actions:
+                background:
+                  resourceId: readingLayout
+                updateVariable:
+                  id: line14Preview
+                  operations:
+                    - variableId: previewFrame
+                      op: set
+                      value: "14 / 20"
+                    - variableId: previewTitle
+                      op: set
+                      value: "Low Hum"
+                    - variableId: previewDetail
+                      op: set
+                      value: "Every page turn gets louder when the air goes quiet."
+                dialogue:
+                  ui:
+                    resourceId: readingDialogueLayout
+                  characterId: narrator
+                  content:
+                    - text: "Line 14. The air conditioner hum drops low enough that every page turn sounds louder."
+            - id: line15
+              actions:
+                background:
+                  resourceId: readingLayout
+                updateVariable:
+                  id: line15Preview
+                  operations:
+                    - variableId: previewFrame
+                      op: set
+                      value: "15 / 20"
+                    - variableId: previewTitle
+                      op: set
+                      value: "Drone Lights"
+                    - variableId: previewDetail
+                      op: set
+                      value: "Three white dots. Far ceiling."
+                dialogue:
+                  ui:
+                    resourceId: readingDialogueLayout
+                  characterId: narrator
+                  content:
+                    - text: "Line 15. Drone lights."
+            - id: line16
+              actions:
+                background:
+                  resourceId: readingLayout
+                updateVariable:
+                  id: line16Preview
+                  operations:
+                    - variableId: previewFrame
+                      op: set
+                      value: "16 / 20"
+                    - variableId: previewTitle
+                      op: set
+                      value: "Speaker Blink"
+                    - variableId: previewDetail
+                      op: set
+                      value: "One small icon flashes, then the whole room goes still."
+                dialogue:
+                  ui:
+                    resourceId: readingDialogueLayout
+                  characterId: narrator
+                  content:
+                    - text: "Line 16. The speaker icon blinks once on the console, then the room falls completely still."
+            - id: line17
+              actions:
+                background:
+                  resourceId: readingLayout
+                updateVariable:
+                  id: line17Preview
+                  operations:
+                    - variableId: previewFrame
+                      op: set
+                      value: "17 / 20"
+                    - variableId: previewTitle
+                      op: set
+                      value: "Turn Left"
+                    - variableId: previewDetail
+                      op: set
+                      value: "Painted arrow. Plain wall."
+                dialogue:
+                  ui:
+                    resourceId: readingDialogueLayout
+                  characterId: narrator
+                  content:
+                    - text: "Line 17. Turn left."
+            - id: line18
+              actions:
+                background:
+                  resourceId: readingLayout
+                updateVariable:
+                  id: line18Preview
+                  operations:
+                    - variableId: previewFrame
+                      op: set
+                      value: "18 / 20"
+                    - variableId: previewTitle
+                      op: set
+                      value: "Projector Dust"
+                    - variableId: previewDetail
+                      op: set
+                      value: "Particles drift through the beam and turn the corner hazy."
+                dialogue:
+                  ui:
+                    resourceId: readingDialogueLayout
+                  characterId: narrator
+                  content:
+                    - text: "Line 18. Dust lifts in the projector beam and makes the whole corner look underwater."
+            - id: line19
+              actions:
+                background:
+                  resourceId: readingLayout
+                updateVariable:
+                  id: line19Preview
+                  operations:
+                    - variableId: previewFrame
+                      op: set
+                      value: "19 / 20"
+                    - variableId: previewTitle
+                      op: set
+                      value: "Exit Sign"
+                    - variableId: previewDetail
+                      op: set
+                      value: "Green edge. Dark hall."
+                dialogue:
+                  ui:
+                    resourceId: readingDialogueLayout
+                  characterId: narrator
+                  content:
+                    - text: "Line 19. Exit sign."
+            - id: line20
+              actions:
+                background:
+                  resourceId: readingLayout
+                updateVariable:
+                  id: line20Preview
+                  operations:
+                    - variableId: previewFrame
+                      op: set
+                      value: "20 / 20"
+                    - variableId: previewTitle
+                      op: set
+                      value: "Final Checkpoint"
+                    - variableId: previewDetail
+                      op: set
+                      value: "Quiet room. Ready slot. Last frame."
+                dialogue:
+                  ui:
+                    resourceId: readingDialogueLayout
+                  characterId: narrator
+                  content:
+                    - text: "Line 20. Final checkpoint. The room is quiet, the save slot is ready, and the frame should look different."

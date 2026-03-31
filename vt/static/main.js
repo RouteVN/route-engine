@@ -143,7 +143,6 @@ const init = async () => {
   const assetBufferMap = assetBufferManager.getBufferMap();
 
   const routeGraphics = createRouteGraphics();
-
   window.takeVtScreenshotBase64 = async (label) => {
     if (label) {
       return await routeGraphics.extractBase64(label);
@@ -202,15 +201,37 @@ const init = async () => {
     effectsHandler.createRouteGraphicsEventHandler({
       preprocessPayload: async (eventName, payload) => {
         if (payload?.actions?.saveSaveSlot) {
-          const url = await routeGraphics.extractBase64("story");
+          const saveTimestamp = Date.now();
+          let url;
+
+          try {
+            // Capture only the story container so the save menu itself does not
+            // become the slot thumbnail.
+            url = await routeGraphics.extractBase64("story");
+          } catch {
+            url = routeGraphics.canvas.toDataURL("image/png");
+          }
           const assets = {
-            [`saveThumbnailImage:${payload.actions.saveSaveSlot.slot}`]: {
+            [
+              `saveThumbnailImage:${payload.actions.saveSaveSlot.slot}:${saveTimestamp}`
+            ]: {
               buffer: base64ToArrayBuffer(url),
               type: "image/png",
             },
           };
           await routeGraphics.loadAssets(assets);
-          payload.actions.saveSaveSlot.thumbnailImage = url;
+
+          return {
+            ...payload,
+            actions: {
+              ...payload.actions,
+              saveSaveSlot: {
+                ...payload.actions.saveSaveSlot,
+                thumbnailImage: url,
+                date: saveTimestamp,
+              },
+            },
+          };
         }
 
         return payload;
@@ -219,6 +240,8 @@ const init = async () => {
         console.log("[vt][route-graphics:event]", eventName, payload);
       },
     });
+
+  window.__vtHandleRouteGraphicsEvent = routeGraphicsEventHandler;
 
   await routeGraphics.init({
     width: screenWidth,
@@ -252,6 +275,8 @@ const init = async () => {
       projectData
     },
   });
+
+  window.__vtEngine = engine;
 
   window.addEventListener("vt:nextLine", () => {
     engine.handleActions({
