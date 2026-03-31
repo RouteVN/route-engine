@@ -100,6 +100,16 @@ out:
       x: 0
       y: 0
       children:
+        - id: confirmDialog-blocker
+          type: rect
+          fill: transparent
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          click:
+            payload:
+              actions: {}
         - id: confirm-overlay
           type: rect
           width: 1920
@@ -134,4 +144,64 @@ out:
                 saveSlot:
                   slotId: 2
                 hideConfirmDialog: {}
+  animations: []
+---
+case: confirm dialog layouts receive standard layout template data
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - resources:
+      layouts:
+        saveOverwriteConfirmLayout:
+          elements:
+            - id: confirm-slot-${saveSlots[0].slotId}-${isLineCompleted}
+              type: text
+              content: Slot ${saveSlots[0].slotId}
+      colors: {}
+    variables: {}
+    autoMode: false
+    skipMode: false
+    isLineCompleted: true
+    saveSlots:
+      - slotId: 3
+        savedAt: 1700000000000
+        image: data:image/webp;base64,preview
+    confirmDialog:
+      resourceId: saveOverwriteConfirmLayout
+      confirmActions:
+        saveSlot:
+          slotId: 3
+        hideConfirmDialog: {}
+      cancelActions:
+        hideConfirmDialog: {}
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+    - id: "confirmDialog"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: confirmDialog-blocker
+          type: rect
+          fill: transparent
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          click:
+            payload:
+              actions: {}
+        - id: confirm-slot-3-true
+          type: text
+          content: Slot 3
   animations: []

@@ -399,42 +399,47 @@ resources:
                   textStyleId: textStyle9
     saveOverwriteConfirmLayout:
       elements:
-        - id: confirm-overlay
-          type: rect
-          width: 1920
-          height: 1080
-          x: 0
-          y: 0
-          opacity: 0.72
-          colorId: layoutColor4
-          click:
-            payload:
-              actions: ${confirmDialog.cancelActions}
         - id: confirm-panel
           type: rect
-          width: 700
-          height: 300
-          x: 610
-          y: 390
+          width: 760
+          height: 336
+          x: 580
+          y: 372
           colorId: layoutColor2
         - id: confirm-title
           type: text
-          content: Overwrite?
-          x: 820
-          y: 448
+          content: Overwrite Slot ${confirmDialog.confirmActions.saveSlot.slotId}?
+          x: 660
+          y: 426
           textStyleId: textStyle4
         - id: confirm-copy
           type: text
-          content: Replace save.
-          x: 820
-          y: 508
+          content: Replace this saved preview.
+          x: 660
+          y: 484
           textStyleId: textStyle5
+        - id: confirm-preview-slot-1-${saveSlots[0].savedAt}
+          $when: confirmDialog.confirmActions.saveSlot.slotId == 1
+          type: sprite
+          imageId: "saveThumbnailImage:1:${saveSlots[0].savedAt}"
+          x: 1008
+          y: 430
+          width: 280
+          height: 148
+        - id: confirm-preview-slot-2-${saveSlots[1].savedAt}
+          $when: confirmDialog.confirmActions.saveSlot.slotId == 2
+          type: sprite
+          imageId: "saveThumbnailImage:2:${saveSlots[1].savedAt}"
+          x: 1008
+          y: 430
+          width: 280
+          height: 148
         - id: confirm-yes
           type: rect
           width: 220
           height: 68
-          x: 720
-          y: 590
+          x: 662
+          y: 598
           click:
             payload:
               actions: ${confirmDialog.confirmActions}
@@ -442,8 +447,8 @@ resources:
         - id: confirm-yes-text
           type: text
           content: Overwrite
-          x: 770
-          y: 608
+          x: 712
+          y: 616
           click:
             payload:
               actions: ${confirmDialog.confirmActions}
@@ -452,8 +457,8 @@ resources:
           type: rect
           width: 220
           height: 68
-          x: 980
-          y: 590
+          x: 922
+          y: 598
           click:
             payload:
               actions: ${confirmDialog.cancelActions}
@@ -461,8 +466,8 @@ resources:
         - id: confirm-no-text
           type: text
           content: Cancel
-          x: 1046
-          y: 608
+          x: 988
+          y: 616
           click:
             payload:
               actions: ${confirmDialog.cancelActions}

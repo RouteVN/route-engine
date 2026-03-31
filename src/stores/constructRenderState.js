@@ -846,6 +846,8 @@ const createLayoutTemplateData = ({
   skipMode,
   canRollback,
   confirmDialog,
+  historyDialogue = [],
+  characters = {},
 } = {}) => {
   return {
     variables,
@@ -855,6 +857,8 @@ const createLayoutTemplateData = ({
     skipMode,
     canRollback,
     confirmDialog,
+    historyDialogue,
+    characters,
     effectiveSoundVolume: variables?._muteAll
       ? 0
       : (variables?._soundVolume ?? 500),
@@ -893,6 +897,37 @@ const settleTextRevealIfCompleted = (
   }
 
   return normalizeCompletedTextReveal(node);
+};
+
+const createFullscreenClickBlocker = ({
+  id,
+  screen: currentScreen = { width: 1920, height: 1080 },
+}) => ({
+  id,
+  type: "rect",
+  fill: "transparent",
+  width: currentScreen.width,
+  height: currentScreen.height,
+  x: 0,
+  y: 0,
+  click: {
+    payload: {
+      actions: {},
+    },
+  },
+});
+
+const createHistoryDialogueTemplateData = (
+  dialogueHistory = [],
+  characters = {},
+) => {
+  return dialogueHistory.map((item) => {
+    const character = characters?.[item.characterId];
+    return {
+      ...item,
+      characterName: character?.name || "",
+    };
+  });
 };
 
 const renderTemplatedLayoutContainer = ({
@@ -2090,45 +2125,29 @@ export const addLayeredViews = (
         x: 0,
         y: 0,
         children: [
-          {
+          createFullscreenClickBlocker({
             id: `layeredView-${index}-blocker`,
-            type: "rect",
-            fill: "transparent",
-            width: screen.width,
-            height: screen.height,
-            x: 0,
-            y: 0,
-            click: {
-              payload: {
-                actions: {},
-              },
-            },
-          },
+            screen,
+          }),
           ...(layout.elements || []),
         ],
       };
 
-      const historyDialogueWithNames = dialogueHistory.map((item) => {
-        const character = resources.characters?.[item.characterId];
-        return {
-          ...item,
-          characterName: character?.name || "",
-        };
-      });
+      const historyDialogueWithNames = createHistoryDialogueTemplateData(
+        dialogueHistory,
+        resources.characters,
+      );
 
-      const templateData = {
+      const templateData = createLayoutTemplateData({
         variables,
+        saveSlots,
+        isLineCompleted,
         autoMode,
         skipMode,
         canRollback,
-        saveSlots,
-        effectiveSoundVolume: variables?._muteAll
-          ? 0
-          : (variables?._soundVolume ?? 500),
-        textSpeed: variables?._textSpeed ?? 50,
         historyDialogue: historyDialogueWithNames,
         characters: resources.characters || {},
-      };
+      });
 
       const processedLayeredView = parseAndRender(
         layeredViewContainer,
@@ -2169,10 +2188,13 @@ export const addConfirmDialog = (
   {
     resources = {},
     variables,
+    saveSlots = [],
     autoMode,
     skipMode,
     canRollback,
     confirmDialog,
+    dialogueHistory = [],
+    screen,
     isLineCompleted,
     skipTransitionsAndAnimations,
   },
@@ -2203,32 +2225,59 @@ export const addConfirmDialog = (
     type: "container",
     x: 0,
     y: 0,
-    children: layout.elements || [],
+    children: [
+      createFullscreenClickBlocker({
+        id: "confirmDialog-blocker",
+        screen,
+      }),
+      ...(layout.elements || []),
+    ],
   };
+
+  const historyDialogueWithNames = createHistoryDialogueTemplateData(
+    dialogueHistory,
+    resources.characters,
+  );
 
   const processedConfirmDialog = parseAndRender(
     confirmDialogContainer,
     createLayoutTemplateData({
       variables,
+      saveSlots,
+      isLineCompleted,
       autoMode,
       skipMode,
       canRollback,
       confirmDialog,
+      historyDialogue: historyDialogueWithNames,
+      characters: resources.characters || {},
     }),
     {
       functions: jemplFunctions,
     },
   );
 
-  elements.push(
-    resolveLayoutResourceIds(
-      settleTextRevealIfCompleted(processedConfirmDialog, {
+  const [blocker, ...layoutChildren] = processedConfirmDialog.children || [];
+  const resolvedConfirmDialog = resolveLayoutResourceIds(
+    settleTextRevealIfCompleted(
+      {
+        ...processedConfirmDialog,
+        children: layoutChildren,
+      },
+      {
         isLineCompleted,
         skipTransitionsAndAnimations,
-      }),
-      resources,
+      },
     ),
+    resources,
   );
+
+  elements.push({
+    ...resolvedConfirmDialog,
+    children: blocker
+      ? [blocker, ...(resolvedConfirmDialog.children || [])]
+      : resolvedConfirmDialog.children,
+  });
 
   return state;
 };
