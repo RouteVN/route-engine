@@ -968,10 +968,7 @@ export const selectPreviousPresentationState = ({ state }) => {
  *   ]
  * }
  */
-export const selectSaveSlotPage = (
-  { state },
-  { slotsPerPage = 6 } = {},
-) => {
+export const selectSaveSlotPage = ({ state }, { slotsPerPage = 6 } = {}) => {
   const allVariables = {
     ...state.global.variables,
     ...state.contexts[state.contexts.length - 1].variables,
