@@ -226,9 +226,11 @@ resources:
                     height: 250
                     click:
                       payload:
+                        _event:
+                          slotId: ${slot.slotId}
                         actions:
                           saveSlot:
-                            slotId: ${slot.slotId}
+                            slotId: "_event.slotId"
                     colorId: layoutColor2
                   - id: slot_${slot.slotId}_title
                     type: text
@@ -237,9 +239,11 @@ resources:
                     y: 18
                     click:
                       payload:
+                        _event:
+                          slotId: ${slot.slotId}
                         actions:
                           saveSlot:
-                            slotId: ${slot.slotId}
+                            slotId: "_event.slotId"
                     textStyleId: textStyle8
                   - id: slot_${slot.slotId}_preview_empty
                     $when: "!slot.image"
@@ -251,9 +255,11 @@ resources:
                     height: 148
                     click:
                       payload:
+                        _event:
+                          slotId: ${slot.slotId}
                         actions:
                           saveSlot:
-                            slotId: ${slot.slotId}
+                            slotId: "_event.slotId"
                   - id: slot_${slot.slotId}_preview_saved_${slot.savedAt}
                     $when: slot.image
                     type: sprite
@@ -264,9 +270,11 @@ resources:
                     height: 148
                     click:
                       payload:
+                        _event:
+                          slotId: ${slot.slotId}
                         actions:
                           saveSlot:
-                            slotId: ${slot.slotId}
+                            slotId: "_event.slotId"
                   - id: slot_${slot.slotId}_status
                     type: text
                     x: 20
@@ -276,9 +284,11 @@ resources:
                       $else: Empty
                     click:
                       payload:
+                        _event:
+                          slotId: ${slot.slotId}
                         actions:
                           saveSlot:
-                            slotId: ${slot.slotId}
+                            slotId: "_event.slotId"
                     textStyleId: textStyle9
   fonts:
     fontDefault:

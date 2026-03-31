@@ -11,6 +11,7 @@ const projectDataSchemaId = new URL(
   "projectData/projectData.yaml",
   schemaBaseUrl,
 ).href;
+const systemActionsSchemaId = new URL("systemActions.yaml", schemaBaseUrl).href;
 const projectDataSchemaPaths = [
   path.join(schemasRoot, "projectData"),
   path.join(schemasRoot, "presentationActions.yaml"),
@@ -90,7 +91,7 @@ const loadSchemas = () => {
   });
 };
 
-const createValidator = () => {
+const createValidator = (schemaId) => {
   const ajv = new Ajv({
     allErrors: true,
     strict: false,
@@ -100,15 +101,16 @@ const createValidator = () => {
     ajv.addSchema(schema);
   }
 
-  const validate = ajv.getSchema(projectDataSchemaId);
+  const validate = ajv.getSchema(schemaId);
   if (!validate) {
-    throw new Error(`Project data schema "${projectDataSchemaId}" not found`);
+    throw new Error(`Schema "${schemaId}" not found`);
   }
 
   return validate;
 };
 
-const validateProjectData = createValidator();
+const validateProjectData = createValidator(projectDataSchemaId);
+const validateSystemActions = createValidator(systemActionsSchemaId);
 
 const createMinimalProjectData = (overrides = {}) => ({
   screen: {
@@ -205,5 +207,25 @@ describe("projectData schema", () => {
         }),
       ]),
     );
+  });
+
+  it("accepts templated save/load slot ids in system actions", () => {
+    expect(
+      validateSystemActions({
+        saveSlot: {
+          slotId: "${slot.slotId}",
+        },
+      }),
+    ).toBe(true);
+    expect(validateSystemActions.errors).toBeNull();
+
+    expect(
+      validateSystemActions({
+        loadSlot: {
+          slotId: "_event.slotId",
+        },
+      }),
+    ).toBe(true);
+    expect(validateSystemActions.errors).toBeNull();
   });
 });

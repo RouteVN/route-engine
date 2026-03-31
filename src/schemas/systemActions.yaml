@@ -172,8 +172,8 @@ properties:
     description: Save current story state. See the side effect for all the data it stores
     properties:
       slotId:
-        type: number
-        description: Save slot index to save to
+        type: [number, string]
+        description: Save slot index to save to, or a template/event binding that resolves to one
         minimum: 0
       thumbnailImage:
         type: [string, "null"]
@@ -189,8 +189,8 @@ properties:
     description: Load game state from a save slot
     properties:
       slotId:
-        type: number
-        description: Save slot index to load from
+        type: [number, string]
+        description: Save slot index to load from, or a template/event binding that resolves to one
         minimum: 0
     required: [slotId]
     additionalProperties: false
@@ -200,8 +200,8 @@ properties:
     description: Compatibility alias for saveSlot
     properties:
       slot:
-        type: number
-        description: Save slot index to save to
+        type: [number, string]
+        description: Save slot index to save to, or a template/event binding that resolves to one
         minimum: 0
       thumbnailImage:
         type: [string, "null"]
@@ -217,8 +217,8 @@ properties:
     description: Compatibility alias for loadSlot
     properties:
       slot:
-        type: number
-        description: Save slot index to load from
+        type: [number, string]
+        description: Save slot index to load from, or a template/event binding that resolves to one
         minimum: 0
     required: [slot]
     additionalProperties: false

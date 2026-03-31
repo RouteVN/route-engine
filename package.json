@@ -35,6 +35,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "prepare": "husky",
+    "prepack": "bun run build",
     "build": "bun run esbuild.js",
     "lint": "bun run prettier src -c",
     "lint:fix": "bun run prettier src -w",
