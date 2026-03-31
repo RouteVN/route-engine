@@ -392,38 +392,36 @@ The system store itself does not own browser storage reads.
 
 The effective slot structure is:
 
-```js
-{
-  slotId: 1,
-  savedAt: 1700000000000,
-  image: "data:image/webp;base64,...", // or null/undefined
-  state: {
-    viewedRegistry: {
-      sections: [...],
-      resources: [...],
-    },
-    contexts: [
-      {
-        currentPointerMode: "read",
-        pointers: {
-          read: { sectionId: "section1", lineId: "3" },
-          history: { ... },
-        },
-        historySequence: [...],
-        configuration: { ... },
-        views: [...],
-        bgm: { ... },
-        variables: { ... },
-        rollback: {
-          currentIndex: 2,
-          isRestoring: false,
-          replayStartIndex: 0,
-          timeline: [...],
-        },
-      },
-    ],
-  },
-}
+```yaml
+slotId: 1
+savedAt: 1700000000000
+image: data:image/webp;base64,...
+state:
+  viewedRegistry:
+    sections:
+      - ...
+    resources:
+      - ...
+  contexts:
+    - currentPointerMode: read
+      pointers:
+        read:
+          sectionId: section1
+          lineId: "3"
+        history: "..."
+      historySequence:
+        - ...
+      configuration: "..."
+      views:
+        - ...
+      bgm: "..."
+      variables: "..."
+      rollback:
+        currentIndex: 2
+        isRestoring: false
+        replayStartIndex: 0
+        timeline:
+          - ...
 ```
 
 Important constraints:
