@@ -1,0 +1,137 @@
+file: "../../../src/stores/constructRenderState.js"
+group: constructRenderState.addConfirmDialog
+suites: [addConfirmDialog]
+---
+suite: addConfirmDialog
+exportName: addConfirmDialog
+---
+case: return unchanged state when confirmDialog is not present
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - resources: {}
+    variables: {}
+    autoMode: false
+    skipMode: false
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+---
+case: add confirm dialog layout with templated action batches
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - resources:
+      layouts:
+        saveOverwriteConfirmLayout:
+          elements:
+            - id: confirm-overlay
+              type: rect
+              width: 1920
+              height: 1080
+              colorId: overlay
+              click:
+                payload:
+                  actions: ${confirmDialog.cancelActions}
+            - id: confirm-panel
+              type: rect
+              x: 660
+              y: 360
+              width: 600
+              height: 320
+              colorId: panel
+            - id: confirm-title
+              type: text
+              x: 770
+              y: 420
+              content: Overwrite save?
+            - id: confirm-yes
+              type: rect
+              x: 740
+              y: 560
+              width: 180
+              height: 70
+              colorId: confirm
+              click:
+                payload:
+                  actions: ${confirmDialog.confirmActions}
+      colors:
+        overlay:
+          hex: "#000000"
+        panel:
+          hex: "#1F1F1F"
+        confirm:
+          hex: "#404040"
+    variables: {}
+    autoMode: false
+    skipMode: false
+    confirmDialog:
+      resourceId: saveOverwriteConfirmLayout
+      confirmActions:
+        saveSlot:
+          slotId: 2
+        hideConfirmDialog: {}
+      cancelActions:
+        hideConfirmDialog: {}
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+    - id: "confirmDialog"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: confirm-overlay
+          type: rect
+          width: 1920
+          height: 1080
+          fill: "#000000"
+          click:
+            payload:
+              actions:
+                hideConfirmDialog: {}
+        - id: confirm-panel
+          type: rect
+          x: 660
+          y: 360
+          width: 600
+          height: 320
+          fill: "#1F1F1F"
+        - id: confirm-title
+          type: text
+          x: 770
+          y: 420
+          content: Overwrite save?
+        - id: confirm-yes
+          type: rect
+          x: 740
+          y: 560
+          width: 180
+          height: 70
+          fill: "#404040"
+          click:
+            payload:
+              actions:
+                saveSlot:
+                  slotId: 2
+                hideConfirmDialog: {}
+  animations: []

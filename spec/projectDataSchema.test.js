@@ -228,4 +228,27 @@ describe("projectData schema", () => {
     ).toBe(true);
     expect(validateSystemActions.errors).toBeNull();
   });
+
+  it("accepts confirm dialog system actions", () => {
+    expect(
+      validateSystemActions({
+        showConfirmDialog: {
+          resourceId: "saveOverwriteConfirmLayout",
+          confirmActions: {
+            saveSlot: {
+              slotId: "_event.slotId",
+            },
+          },
+        },
+      }),
+    ).toBe(true);
+    expect(validateSystemActions.errors).toBeNull();
+
+    expect(
+      validateSystemActions({
+        hideConfirmDialog: {},
+      }),
+    ).toBe(true);
+    expect(validateSystemActions.errors).toBeNull();
+  });
 });

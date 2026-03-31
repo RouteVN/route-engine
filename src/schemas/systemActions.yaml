@@ -165,6 +165,31 @@ properties:
     additionalProperties: false
 
   ############
+  # Confirm Dialog
+  ############
+  showConfirmDialog:
+    type: object
+    description: Show a transient confirm dialog rendered from a layout resource
+    properties:
+      resourceId:
+        type: string
+        description: Layout resource used to render the confirm dialog
+      confirmActions:
+        type: object
+        description: Action batch dispatched when the confirm button is clicked
+        minProperties: 1
+      cancelActions:
+        type: object
+        description: Optional action batch dispatched when the cancel button is clicked
+    required: [resourceId, confirmActions]
+    additionalProperties: false
+
+  hideConfirmDialog:
+    type: object
+    description: Hide the transient confirm dialog
+    additionalProperties: false
+
+  ############
   # Save and Load
   ############
   saveSlot:

@@ -845,6 +845,7 @@ const createLayoutTemplateData = ({
   autoMode,
   skipMode,
   canRollback,
+  confirmDialog,
 } = {}) => {
   return {
     variables,
@@ -853,6 +854,7 @@ const createLayoutTemplateData = ({
     autoMode,
     skipMode,
     canRollback,
+    confirmDialog,
     effectiveSoundVolume: variables?._muteAll
       ? 0
       : (variables?._soundVolume ?? 500),
@@ -1293,6 +1295,12 @@ export const addCharacters = (
           animationPath: `character.items[${i}].animations`,
           idPrefix: "character",
         });
+        continue;
+      }
+
+      // Animation-only character diffs are valid for removals/updates.
+      // They don't create a new container by themselves.
+      if (item.animations && !sprites && !transformId) {
         continue;
       }
 
@@ -2156,6 +2164,75 @@ export const addLayeredViews = (
   return state;
 };
 
+export const addConfirmDialog = (
+  state,
+  {
+    resources = {},
+    variables,
+    autoMode,
+    skipMode,
+    canRollback,
+    confirmDialog,
+    isLineCompleted,
+    skipTransitionsAndAnimations,
+  },
+) => {
+  const { elements, animations } = state;
+
+  if (!confirmDialog?.resourceId) {
+    return state;
+  }
+
+  const layout = resources.layouts?.[confirmDialog.resourceId];
+  if (!layout) {
+    console.warn(`ConfirmDialog layout not found: ${confirmDialog.resourceId}`);
+    return state;
+  }
+
+  if (Array.isArray(layout.transitions) && !skipTransitionsAndAnimations) {
+    pushNormalizedLayoutTransitions({
+      animations,
+      transitions: layout.transitions,
+      defaultTargetId: "confirmDialog",
+      idPrefix: "confirmDialog",
+    });
+  }
+
+  const confirmDialogContainer = {
+    id: "confirmDialog",
+    type: "container",
+    x: 0,
+    y: 0,
+    children: layout.elements || [],
+  };
+
+  const processedConfirmDialog = parseAndRender(
+    confirmDialogContainer,
+    createLayoutTemplateData({
+      variables,
+      autoMode,
+      skipMode,
+      canRollback,
+      confirmDialog,
+    }),
+    {
+      functions: jemplFunctions,
+    },
+  );
+
+  elements.push(
+    resolveLayoutResourceIds(
+      settleTextRevealIfCompleted(processedConfirmDialog, {
+        isLineCompleted,
+        skipTransitionsAndAnimations,
+      }),
+      resources,
+    ),
+  );
+
+  return state;
+};
+
 export const constructRenderState = (params) => {
   const actions = [
     addControl,
@@ -2169,6 +2246,7 @@ export const constructRenderState = (params) => {
     addSfx,
     addVoice,
     addLayeredViews,
+    addConfirmDialog,
   ];
 
   const executeActions = createSequentialActionsExecutor(

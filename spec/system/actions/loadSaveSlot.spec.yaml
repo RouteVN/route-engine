@@ -9,6 +9,14 @@ case: load from existing slot
 in:
   - state:
       global:
+        confirmDialog:
+          resourceId: saveOverwriteConfirmLayout
+          confirmActions:
+            saveSlot:
+              slotId: 1
+            hideConfirmDialog: {}
+          cancelActions:
+            hideConfirmDialog: {}
         saveSlots:
           "1":
             slotId: 1
@@ -24,6 +32,7 @@ in:
   - slotId: 1
 out:
   global:
+    confirmDialog: null
     saveSlots:
       "1":
         slotId: 1

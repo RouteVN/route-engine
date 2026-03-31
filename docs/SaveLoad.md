@@ -17,6 +17,10 @@ In `route-engine`, save/load is separate from:
 
 Save/load should restore the story to a coherent playable point, not resume every temporary UI or timer detail from the moment the save was made.
 
+Overwrite confirmation for occupied save slots is a related but separate
+transient UI concern. The planned confirm-dialog design is documented in
+[ConfirmDialog.md](./ConfirmDialog.md).
+
 ## Product Summary
 
 The product model for save/load is:
@@ -90,6 +94,12 @@ When the player saves:
 - the viewed registry is captured
 - the slot thumbnail/preview metadata is stored
 - the slot becomes available immediately in save/load UI
+
+If the player attempts to save into an occupied slot:
+
+- the UI should ask for confirmation before overwriting
+- confirming should execute the deferred save
+- cancelling should leave existing slot data unchanged
 
 ### Loading
 

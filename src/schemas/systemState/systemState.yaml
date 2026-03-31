@@ -77,6 +77,20 @@ properties:
         description: Whether the dialogue UI is currently hidden
         default: false
 
+      confirmDialog:
+        type: [object, "null"]
+        description: Transient confirm dialog state
+        properties:
+          resourceId:
+            type: string
+          confirmActions:
+            type: object
+          cancelActions:
+            type: object
+        required: [resourceId, confirmActions, cancelActions]
+        additionalProperties: false
+        default: null
+
       autoMode:
         type: boolean
         description: Whether auto-advance mode is active

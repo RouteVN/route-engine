@@ -74,6 +74,14 @@ case: clear all layeredViews
 in:
   - state:
       global:
+        confirmDialog:
+          resourceId: saveOverwriteConfirmLayout
+          confirmActions:
+            saveSlot:
+              slotId: 1
+            hideConfirmDialog: {}
+          cancelActions:
+            hideConfirmDialog: {}
         layeredViews:
           - resourceId: layout1
             resourceType: layout
@@ -82,6 +90,7 @@ in:
         pendingEffects: []
 out:
   global:
+    confirmDialog: null
     layeredViews: []
     pendingEffects:
       - name: render

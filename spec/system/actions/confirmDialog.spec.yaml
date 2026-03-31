@@ -1,0 +1,87 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.confirmDialog
+suites: [showConfirmDialog, hideConfirmDialog]
+---
+suite: showConfirmDialog
+exportName: showConfirmDialog
+---
+case: stores confirm dialog and auto-appends hide actions
+in:
+  - state:
+      global:
+        pendingEffects: []
+  - resourceId: saveOverwriteConfirmLayout
+    confirmActions:
+      saveSlot:
+        slotId: 3
+out:
+  global:
+    confirmDialog:
+      resourceId: saveOverwriteConfirmLayout
+      confirmActions:
+        saveSlot:
+          slotId: 3
+        hideConfirmDialog: {}
+      cancelActions:
+        hideConfirmDialog: {}
+    pendingEffects:
+      - name: render
+---
+case: preserves authored hide and cancel actions
+in:
+  - state:
+      global:
+        pendingEffects: []
+  - resourceId: saveOverwriteConfirmLayout
+    confirmActions:
+      saveSlot:
+        slotId: 4
+      hideConfirmDialog: {}
+    cancelActions:
+      clearLayeredViews: {}
+out:
+  global:
+    confirmDialog:
+      resourceId: saveOverwriteConfirmLayout
+      confirmActions:
+        saveSlot:
+          slotId: 4
+        hideConfirmDialog: {}
+      cancelActions:
+        clearLayeredViews: {}
+        hideConfirmDialog: {}
+    pendingEffects:
+      - name: render
+---
+suite: hideConfirmDialog
+exportName: hideConfirmDialog
+---
+case: clears existing confirm dialog
+in:
+  - state:
+      global:
+        confirmDialog:
+          resourceId: saveOverwriteConfirmLayout
+          confirmActions:
+            saveSlot:
+              slotId: 2
+            hideConfirmDialog: {}
+          cancelActions:
+            hideConfirmDialog: {}
+        pendingEffects: []
+out:
+  global:
+    confirmDialog: null
+    pendingEffects:
+      - name: render
+---
+case: no-op when confirm dialog is already hidden
+in:
+  - state:
+      global:
+        confirmDialog: null
+        pendingEffects: []
+out:
+  global:
+    confirmDialog: null
+    pendingEffects: []

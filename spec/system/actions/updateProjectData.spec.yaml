@@ -99,6 +99,53 @@ out:
     pendingEffects:
       - name: render
 ---
+case: clear confirm dialog when project data is replaced
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: line1
+                      text: "Original text"
+      global:
+        confirmDialog:
+          resourceId: saveOverwriteConfirmLayout
+          confirmActions:
+            saveSlot:
+              slotId: 1
+            hideConfirmDialog: {}
+          cancelActions:
+            hideConfirmDialog: {}
+        pendingEffects: []
+  -
+    projectData:
+      story:
+        scenes:
+          scene2:
+            sections:
+              section2:
+                lines:
+                  - id: line2
+                    text: "New text"
+out:
+  projectData:
+    story:
+      scenes:
+        scene2:
+          sections:
+            section2:
+              lines:
+                - id: line2
+                  text: "New text"
+  global:
+    confirmDialog: null
+    pendingEffects:
+      - name: render
+---
 case: preserve existing global state except projectData and pendingEffects
 in:
   - state:

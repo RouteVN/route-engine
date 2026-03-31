@@ -1,0 +1,612 @@
+---
+title: Save Overwrite Confirm
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  images:
+    savePlaceholder:
+      fileId: 94lkj289
+      width: 280
+      height: 148
+  variables:
+    previewFrame:
+      type: string
+      scope: context
+      default: "01"
+    previewTitle:
+      type: string
+      scope: context
+      default: "Rain"
+    previewDetail:
+      type: string
+      scope: context
+      default: "Platform window."
+  characters:
+    narrator:
+      name: ""
+  layouts:
+    readingDialogueLayout:
+      mode: adv
+      elements:
+        - id: reading-bg
+          type: rect
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: layoutColor1
+        - id: preview-card
+          type: rect
+          width: 1080
+          height: 260
+          x: 120
+          y: 120
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: layoutColor2
+        - id: preview-frame
+          type: text
+          content: ${variables.previewFrame}
+          x: 170
+          y: 164
+          textStyleId: textStyle1
+        - id: preview-title
+          type: text
+          content: ${variables.previewTitle}
+          x: 172
+          y: 228
+          textStyleId: textStyle10
+        - id: preview-detail
+          type: text
+          content: ${variables.previewDetail}
+          x: 174
+          y: 286
+          textStyleId: textStyle2
+        - id: save-button
+          type: rect
+          x: 1670
+          y: 40
+          width: 160
+          height: 64
+          click:
+            payload:
+              actions:
+                pushLayeredView:
+                  resourceId: saveOverwriteMenuLayout
+          colorId: layoutColor3
+        - id: save-button-text
+          type: text
+          x: 1718
+          y: 58
+          content: Save
+          click:
+            payload:
+              actions:
+                pushLayeredView:
+                  resourceId: saveOverwriteMenuLayout
+          textStyleId: textStyle3
+        - id: dialogue-box
+          type: rect
+          x: 100
+          y: 836
+          width: 1720
+          height: 164
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: layoutColor5
+        - id: dialogue-text
+          type: text
+          x: 150
+          y: 872
+          content: ${dialogue.content[0].text}
+          textStyleId: textStyle11
+    saveOverwriteMenuLayout:
+      elements:
+        - id: save-menu-overlay
+          type: rect
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          opacity: 0.78
+          colorId: layoutColor4
+        - id: save-menu-bg
+          type: rect
+          width: 1100
+          height: 620
+          x: 410
+          y: 200
+          colorId: layoutColor5
+        - id: save-menu-title
+          type: text
+          content: Save
+          x: 500
+          y: 260
+          textStyleId: textStyle4
+        - id: close-btn
+          type: rect
+          width: 140
+          height: 56
+          x: 1330
+          y: 246
+          click:
+            payload:
+              actions:
+                clearLayeredViews: {}
+          colorId: layoutColor3
+        - id: close-btn-text
+          type: text
+          content: Close
+          x: 1372
+          y: 262
+          click:
+            payload:
+              actions:
+                clearLayeredViews: {}
+          textStyleId: textStyle3
+        - id: slot-row
+          type: container
+          direction: horizontal
+          gap: 28
+          x: 500
+          y: 360
+          width: 920
+          children:
+            - id: slot_1_container
+              type: container
+              width: 320
+              height: 250
+              children:
+                - id: slot_1_box_empty
+                  $when: "!saveSlots[0].image"
+                  type: rect
+                  x: 0
+                  y: 0
+                  width: 320
+                  height: 250
+                  click:
+                    payload:
+                      actions:
+                        saveSlot:
+                          slotId: 1
+                  colorId: layoutColor2
+                - id: slot_1_box_saved_${saveSlots[0].savedAt}
+                  $when: saveSlots[0].image
+                  type: rect
+                  x: 0
+                  y: 0
+                  width: 320
+                  height: 250
+                  click:
+                    payload:
+                      actions:
+                        showConfirmDialog:
+                          resourceId: saveOverwriteConfirmLayout
+                          confirmActions:
+                            saveSlot:
+                              slotId: 1
+                  colorId: layoutColor2
+                - id: slot_1_title_empty
+                  $when: "!saveSlots[0].image"
+                  type: text
+                  content: Slot 1
+                  x: 20
+                  y: 18
+                  click:
+                    payload:
+                      actions:
+                        saveSlot:
+                          slotId: 1
+                  textStyleId: textStyle8
+                - id: slot_1_title_saved_${saveSlots[0].savedAt}
+                  $when: saveSlots[0].image
+                  type: text
+                  content: Slot 1
+                  x: 20
+                  y: 18
+                  click:
+                    payload:
+                      actions:
+                        showConfirmDialog:
+                          resourceId: saveOverwriteConfirmLayout
+                          confirmActions:
+                            saveSlot:
+                              slotId: 1
+                  textStyleId: textStyle8
+                - id: slot_1_preview_empty
+                  $when: "!saveSlots[0].image"
+                  type: sprite
+                  imageId: savePlaceholder
+                  x: 20
+                  y: 58
+                  width: 280
+                  height: 148
+                  click:
+                    payload:
+                      actions:
+                        saveSlot:
+                          slotId: 1
+                - id: slot_1_preview_saved_${saveSlots[0].savedAt}
+                  $when: saveSlots[0].image
+                  type: sprite
+                  imageId: "saveThumbnailImage:1:${saveSlots[0].savedAt}"
+                  x: 20
+                  y: 58
+                  width: 280
+                  height: 148
+                  click:
+                    payload:
+                      actions:
+                        showConfirmDialog:
+                          resourceId: saveOverwriteConfirmLayout
+                          confirmActions:
+                            saveSlot:
+                              slotId: 1
+                - id: slot_1_status_empty
+                  $when: "!saveSlots[0].image"
+                  type: text
+                  x: 20
+                  y: 216
+                  content: Empty
+                  click:
+                    payload:
+                      actions:
+                        saveSlot:
+                          slotId: 1
+                  textStyleId: textStyle9
+                - id: slot_1_status_saved_${saveSlots[0].savedAt}
+                  $when: saveSlots[0].image
+                  type: text
+                  x: 20
+                  y: 216
+                  content: Saved
+                  click:
+                    payload:
+                      actions:
+                        showConfirmDialog:
+                          resourceId: saveOverwriteConfirmLayout
+                          confirmActions:
+                            saveSlot:
+                              slotId: 1
+                  textStyleId: textStyle9
+            - id: slot_2_container
+              type: container
+              width: 320
+              height: 250
+              children:
+                - id: slot_2_box_empty
+                  $when: "!saveSlots[1].image"
+                  type: rect
+                  x: 0
+                  y: 0
+                  width: 320
+                  height: 250
+                  click:
+                    payload:
+                      actions:
+                        saveSlot:
+                          slotId: 2
+                  colorId: layoutColor2
+                - id: slot_2_box_saved_${saveSlots[1].savedAt}
+                  $when: saveSlots[1].image
+                  type: rect
+                  x: 0
+                  y: 0
+                  width: 320
+                  height: 250
+                  click:
+                    payload:
+                      actions:
+                        showConfirmDialog:
+                          resourceId: saveOverwriteConfirmLayout
+                          confirmActions:
+                            saveSlot:
+                              slotId: 2
+                  colorId: layoutColor2
+                - id: slot_2_title_empty
+                  $when: "!saveSlots[1].image"
+                  type: text
+                  content: Slot 2
+                  x: 20
+                  y: 18
+                  click:
+                    payload:
+                      actions:
+                        saveSlot:
+                          slotId: 2
+                  textStyleId: textStyle8
+                - id: slot_2_title_saved_${saveSlots[1].savedAt}
+                  $when: saveSlots[1].image
+                  type: text
+                  content: Slot 2
+                  x: 20
+                  y: 18
+                  click:
+                    payload:
+                      actions:
+                        showConfirmDialog:
+                          resourceId: saveOverwriteConfirmLayout
+                          confirmActions:
+                            saveSlot:
+                              slotId: 2
+                  textStyleId: textStyle8
+                - id: slot_2_preview_empty
+                  $when: "!saveSlots[1].image"
+                  type: sprite
+                  imageId: savePlaceholder
+                  x: 20
+                  y: 58
+                  width: 280
+                  height: 148
+                  click:
+                    payload:
+                      actions:
+                        saveSlot:
+                          slotId: 2
+                - id: slot_2_preview_saved_${saveSlots[1].savedAt}
+                  $when: saveSlots[1].image
+                  type: sprite
+                  imageId: "saveThumbnailImage:2:${saveSlots[1].savedAt}"
+                  x: 20
+                  y: 58
+                  width: 280
+                  height: 148
+                  click:
+                    payload:
+                      actions:
+                        showConfirmDialog:
+                          resourceId: saveOverwriteConfirmLayout
+                          confirmActions:
+                            saveSlot:
+                              slotId: 2
+                - id: slot_2_status_empty
+                  $when: "!saveSlots[1].image"
+                  type: text
+                  x: 20
+                  y: 216
+                  content: Empty
+                  click:
+                    payload:
+                      actions:
+                        saveSlot:
+                          slotId: 2
+                  textStyleId: textStyle9
+                - id: slot_2_status_saved_${saveSlots[1].savedAt}
+                  $when: saveSlots[1].image
+                  type: text
+                  x: 20
+                  y: 216
+                  content: Saved
+                  click:
+                    payload:
+                      actions:
+                        showConfirmDialog:
+                          resourceId: saveOverwriteConfirmLayout
+                          confirmActions:
+                            saveSlot:
+                              slotId: 2
+                  textStyleId: textStyle9
+    saveOverwriteConfirmLayout:
+      elements:
+        - id: confirm-overlay
+          type: rect
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          opacity: 0.72
+          colorId: layoutColor4
+          click:
+            payload:
+              actions: ${confirmDialog.cancelActions}
+        - id: confirm-panel
+          type: rect
+          width: 700
+          height: 300
+          x: 610
+          y: 390
+          colorId: layoutColor2
+        - id: confirm-title
+          type: text
+          content: Overwrite?
+          x: 820
+          y: 448
+          textStyleId: textStyle4
+        - id: confirm-copy
+          type: text
+          content: Replace save.
+          x: 820
+          y: 508
+          textStyleId: textStyle5
+        - id: confirm-yes
+          type: rect
+          width: 220
+          height: 68
+          x: 720
+          y: 590
+          click:
+            payload:
+              actions: ${confirmDialog.confirmActions}
+          colorId: layoutColor3
+        - id: confirm-yes-text
+          type: text
+          content: Overwrite
+          x: 770
+          y: 608
+          click:
+            payload:
+              actions: ${confirmDialog.confirmActions}
+          textStyleId: textStyle3
+        - id: confirm-no
+          type: rect
+          width: 220
+          height: 68
+          x: 980
+          y: 590
+          click:
+            payload:
+              actions: ${confirmDialog.cancelActions}
+          colorId: layoutColor3
+        - id: confirm-no-text
+          type: text
+          content: Cancel
+          x: 1046
+          y: 608
+          click:
+            payload:
+              actions: ${confirmDialog.cancelActions}
+          textStyleId: textStyle3
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: "#FFFFFF"
+    color2:
+      hex: "#C8C8C8"
+    color3:
+      hex: "#B78A3D"
+    color4:
+      hex: "#787878"
+    color5:
+      hex: "#A3A3A3"
+    layoutColor1:
+      hex: "#111111"
+    layoutColor2:
+      hex: "#2A2A2A"
+    layoutColor3:
+      hex: "#4A4A4A"
+    layoutColor4:
+      hex: "#050505"
+    layoutColor5:
+      hex: "#1B1B1B"
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 68
+      fontWeight: "700"
+      fontStyle: "normal"
+      lineHeight: 1
+    textStyle2:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 36
+      fontWeight: "400"
+      fontStyle: "normal"
+      lineHeight: 1.2
+    textStyle3:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 28
+      fontWeight: "700"
+      fontStyle: "normal"
+      lineHeight: 1
+    textStyle4:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 42
+      fontWeight: "700"
+      fontStyle: "normal"
+      lineHeight: 1
+    textStyle5:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 28
+      fontWeight: "400"
+      fontStyle: "normal"
+      lineHeight: 1
+    textStyle8:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 28
+      fontWeight: "700"
+      fontStyle: "normal"
+      lineHeight: 1
+    textStyle9:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: "normal"
+      lineHeight: 1
+    textStyle10:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 44
+      fontWeight: "400"
+      fontStyle: "normal"
+      lineHeight: 1
+    textStyle11:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 34
+      fontWeight: "400"
+      fontStyle: "normal"
+      lineHeight: 1.35
+story:
+  initialSceneId: overwrite-confirm
+  scenes:
+    overwrite-confirm:
+      name: Overwrite Confirm
+      initialSectionId: main
+      sections:
+        main:
+          name: Main
+          lines:
+            - id: "1"
+              actions:
+                dialogue:
+                  ui:
+                    resourceId: readingDialogueLayout
+                  content:
+                    - text: "Line 1. Rain against the platform glass."
+            - id: "2"
+              actions:
+                updateVariable:
+                  id: preview02
+                  operations:
+                    - variableId: previewFrame
+                      op: set
+                      value: "02"
+                    - variableId: previewTitle
+                      op: set
+                      value: "Ticket"
+                    - variableId: previewDetail
+                      op: set
+                      value: "Yellow fold."
+                dialogue:
+                  ui:
+                    resourceId: readingDialogueLayout
+                  content:
+                    - text: "Line 2. The ticket stays warm in my fist."
+            - id: "3"
+              actions:
+                updateVariable:
+                  id: preview03
+                  operations:
+                    - variableId: previewFrame
+                      op: set
+                      value: "03"
+                    - variableId: previewTitle
+                      op: set
+                      value: "Tunnel"
+                    - variableId: previewDetail
+                      op: set
+                      value: "Low metal hum."
+                dialogue:
+                  ui:
+                    resourceId: readingDialogueLayout
+                  content:
+                    - text: "Line 3. A low tunnel hum rolls under the station."

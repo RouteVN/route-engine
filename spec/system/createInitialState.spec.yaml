@@ -27,6 +27,7 @@ out:
     skipMode: false
     dialogueUIHidden: false
     isDialogueHistoryShowing: false
+    confirmDialog: null
     viewedRegistry:
       sections: []
       resources: []
@@ -119,6 +120,7 @@ out:
     skipMode: false
     dialogueUIHidden: false
     isDialogueHistoryShowing: false
+    confirmDialog: null
     viewedRegistry:
       sections: []
       resources: []
@@ -228,6 +230,7 @@ out:
     skipMode: false
     dialogueUIHidden: false
     isDialogueHistoryShowing: false
+    confirmDialog: null
     viewedRegistry:
       sections: []
       resources: []
@@ -328,6 +331,7 @@ out:
     skipMode: false
     dialogueUIHidden: false
     isDialogueHistoryShowing: false
+    confirmDialog: null
     viewedRegistry:
       sections: []
       resources: []
@@ -424,6 +428,7 @@ out:
     skipMode: false
     dialogueUIHidden: false
     isDialogueHistoryShowing: false
+    confirmDialog: null
     viewedRegistry:
       sections: []
       resources: []
