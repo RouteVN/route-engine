@@ -41,6 +41,8 @@ vt:
           files: "sfx"
         - title: "Save"
           files: "save"
+        - title: "Confirm"
+          files: "confirm"
         - title: "Keyboard"
           files: "keyboard"
         - title: "Rollback"

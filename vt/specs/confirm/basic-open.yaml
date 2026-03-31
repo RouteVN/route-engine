@@ -1,0 +1,182 @@
+---
+title: Confirm Basic Open
+description: Confirm dialog open over a plain scene.
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  variables:
+    confirmState:
+      type: string
+      scope: context
+      default: idle
+  layouts:
+    sceneLayout:
+      elements:
+        - id: scene-bg
+          type: rect
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          colorId: layoutColor1
+        - id: scene-title
+          type: text
+          x: 140
+          y: 128
+          content: Confirm Basic Open
+          textStyleId: textStyle1
+        - id: scene-card
+          type: rect
+          width: 1160
+          height: 220
+          x: 140
+          y: 220
+          colorId: layoutColor2
+        - id: scene-copy
+          type: text
+          x: 188
+          y: 286
+          content: Underlay should stay visible but blocked.
+          textStyleId: textStyle2
+        - id: scene-state
+          type: text
+          x: 188
+          y: 348
+          content: State ${variables.confirmState}
+          textStyleId: textStyle3
+    basicConfirmLayout:
+      elements:
+        - id: confirm-panel
+          type: rect
+          width: 760
+          height: 260
+          x: 580
+          y: 250
+          colorId: layoutColor3
+        - id: confirm-title
+          type: text
+          x: 660
+          y: 322
+          content: Overwrite save?
+          textStyleId: textStyle1
+        - id: confirm-copy
+          type: text
+          x: 660
+          y: 386
+          content: Confirm and cancel should both dismiss this dialog.
+          textStyleId: textStyle2
+        - id: confirm-yes
+          type: container
+          width: 220
+          height: 68
+          x: 662
+          y: 448
+          click:
+            payload:
+              actions: ${confirmDialog.confirmActions}
+          children:
+            - id: confirm-yes-bg
+              type: rect
+              width: 220
+              height: 68
+              x: 0
+              y: 0
+              colorId: layoutColor4
+            - id: confirm-yes-text
+              type: text
+              x: 70
+              y: 18
+              content: Confirm
+              textStyleId: textStyle4
+        - id: confirm-no
+          type: container
+          width: 220
+          height: 68
+          x: 1038
+          y: 448
+          click:
+            payload:
+              actions: ${confirmDialog.cancelActions}
+          children:
+            - id: confirm-no-bg
+              type: rect
+              width: 220
+              height: 68
+              x: 0
+              y: 0
+              colorId: layoutColor4
+            - id: confirm-no-text
+              type: text
+              x: 82
+              y: 18
+              content: Cancel
+              textStyleId: textStyle4
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: "#FFFFFF"
+    color2:
+      hex: "#B0B0B0"
+    layoutColor1:
+      hex: "#0B0B0B"
+    layoutColor2:
+      hex: "#1E1E1E"
+    layoutColor3:
+      hex: "#262626"
+    layoutColor4:
+      hex: "#3C3C3C"
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 42
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle2:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle3:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 26
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle4:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: confirm
+  scenes:
+    confirm:
+      initialSectionId: start
+      sections:
+        start:
+          lines:
+            - id: line1
+              actions:
+                background:
+                  resourceId: sceneLayout
+                showConfirmDialog:
+                  resourceId: basicConfirmLayout
+                  confirmActions:
+                    updateVariable:
+                      id: confirmbasicopen
+                      operations:
+                        - variableId: confirmState
+                          op: set
+                          value: confirmed
