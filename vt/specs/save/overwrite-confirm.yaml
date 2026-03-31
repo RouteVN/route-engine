@@ -28,8 +28,7 @@ resources:
     narrator:
       name: ""
   layouts:
-    readingDialogueLayout:
-      mode: adv
+    readingLayout:
       elements:
         - id: reading-bg
           type: rect
@@ -94,6 +93,9 @@ resources:
                 pushLayeredView:
                   resourceId: saveOverwriteMenuLayout
           textStyleId: textStyle3
+    readingDialogueLayout:
+      mode: adv
+      elements:
         - id: dialogue-box
           type: rect
           x: 100
@@ -564,6 +566,9 @@ story:
           lines:
             - id: "1"
               actions:
+                background:
+                  resourceId: readingLayout
+                hideDialogueUI: {}
                 dialogue:
                   ui:
                     resourceId: readingDialogueLayout
@@ -571,6 +576,8 @@ story:
                     - text: "Line 1. Rain against the platform glass."
             - id: "2"
               actions:
+                background:
+                  resourceId: readingLayout
                 updateVariable:
                   id: preview02
                   operations:
@@ -590,6 +597,8 @@ story:
                     - text: "Line 2. The ticket stays warm in my fist."
             - id: "3"
               actions:
+                background:
+                  resourceId: readingLayout
                 updateVariable:
                   id: preview03
                   operations:
