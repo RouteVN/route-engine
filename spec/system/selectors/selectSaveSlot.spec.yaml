@@ -14,11 +14,11 @@ in:
       global:
         saveSlots:
           "1":
-            date: "2024-01-01T12:00:00Z"
+            savedAt: "2024-01-01T12:00:00Z"
             image: "base64..."
             state:
               test: "value"
-  - slotKey: "999"
+  - slotId: "999"
 out: __undefined__
 ---
 case: save slot found
@@ -27,64 +27,64 @@ in:
       global:
         saveSlots:
           "1":
-            date: "2024-01-01T12:00:00Z"
+            savedAt: "2024-01-01T12:00:00Z"
             image: "save1.png"
             state:
               level: 5
             score: 1000
           "2":
-            date: "2024-01-02T15:30:00Z"
+            savedAt: "2024-01-02T15:30:00Z"
             image: "save2.png"
             state:
               level: 10
             score: 2500
-  - slotKey: "2"
+  - slotId: "2"
 out:
-  date: "2024-01-02T15:30:00Z"
+  savedAt: "2024-01-02T15:30:00Z"
   image: "save2.png"
   state:
     level: 10
   score: 2500
 ---
-case: save slot found with numeric slotKey
+case: save slot found with numeric slotId
 in:
   - state:
       global:
         saveSlots:
           "3":
-            date: "2024-03-15T20:45:00Z"
+            savedAt: "2024-03-15T20:45:00Z"
             image: "save3.png"
             state:
               completed: true
             playtime: 1200
-  - slotKey: "3"
+  - slotId: "3"
 out:
-  date: "2024-03-15T20:45:00Z"
+  savedAt: "2024-03-15T20:45:00Z"
   image: "save3.png"
   state:
     completed: true
   playtime: 1200
 ---
-case: save slot found with string slotKey
+case: save slot found with string slotId
 in:
   - state:
       global:
         saveSlots:
           "autosave":
-            date: "2024-01-01T12:00:00Z"
+            savedAt: "2024-01-01T12:00:00Z"
             image: "auto.png"
             state:
               auto: true
             lastAction: "dialogue"
           "quicksave":
-            date: "2024-01-01T12:05:00Z"
+            savedAt: "2024-01-01T12:05:00Z"
             image: "quick.png"
             state:
               quick: true
             lastAction: "menu"
-  - slotKey: "autosave"
+  - slotId: "autosave"
 out:
-  date: "2024-01-01T12:00:00Z"
+  savedAt: "2024-01-01T12:00:00Z"
   image: "auto.png"
   state:
     auto: true
@@ -95,5 +95,5 @@ in:
   - state:
       global:
         saveSlots: {}
-  - slotKey: "1"
+  - slotId: "1"
 out: __undefined__

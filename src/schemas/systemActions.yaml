@@ -167,26 +167,58 @@ properties:
   ############
   # Save and Load
   ############
-  # TODO: finalize naming
-  saveSaveSlot:
+  saveSlot:
     type: object
     description: Save current story state. See the side effect for all the data it stores
     properties:
-      slot:
-        type: number
-        description: Save slot index to save to
+      slotId:
+        type: [number, string]
+        description: Save slot index to save to, or a template/event binding that resolves to one
         minimum: 0
-    required: [slot]
+      thumbnailImage:
+        type: [string, "null"]
+        description: Optional thumbnail image as a data URL or external image source
+      savedAt:
+        type: number
+        description: Optional save timestamp override. Mainly useful for deterministic integrations and tests.
+    required: [slotId]
     additionalProperties: false
 
-  # TODO: finalize naming
-  loadSaveSlot:
+  loadSlot:
     type: object
     description: Load game state from a save slot
     properties:
+      slotId:
+        type: [number, string]
+        description: Save slot index to load from, or a template/event binding that resolves to one
+        minimum: 0
+    required: [slotId]
+    additionalProperties: false
+
+  saveSaveSlot:
+    type: object
+    description: Compatibility alias for saveSlot
+    properties:
       slot:
+        type: [number, string]
+        description: Save slot index to save to, or a template/event binding that resolves to one
+        minimum: 0
+      thumbnailImage:
+        type: [string, "null"]
+        description: Optional thumbnail image as a data URL or external image source
+      date:
         type: number
-        description: Save slot index to load from
+        description: Optional save timestamp override. Mainly useful for deterministic integrations and tests.
+    required: [slot]
+    additionalProperties: false
+
+  loadSaveSlot:
+    type: object
+    description: Compatibility alias for loadSlot
+    properties:
+      slot:
+        type: [number, string]
+        description: Save slot index to load from, or a template/event binding that resolves to one
         minimum: 0
     required: [slot]
     additionalProperties: false

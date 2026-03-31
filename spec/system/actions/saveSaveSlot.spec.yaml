@@ -1,9 +1,9 @@
 file: "../../../src/stores/system.store.js"
-group: systemStore.saveSaveSlot
-suites: [saveSaveSlot]
+group: systemStore.saveSlot
+suites: [saveSlot]
 ---
-suite: saveSaveSlot
-exportName: saveSaveSlot
+suite: saveSlot
+exportName: saveSlot
 ---
 case: save to slot 1
 in:
@@ -16,14 +16,14 @@ in:
       contexts:
         - pointers:
             read: { sectionId: "sec1", lineId: "line1" }
-  - slot: 1
+  - slotId: 1
     thumbnailImage: null
 out:
   global:
     saveSlots:
       "1":
-        slotKey: "1"
-        date: 1700000000000
+        slotId: 1
+        savedAt: 1700000000000
         image: null
         state:
           contexts:
@@ -35,8 +35,8 @@ out:
         payload:
           saveSlots:
             "1":
-              slotKey: "1"
-              date: 1700000000000
+              slotId: 1
+              savedAt: 1700000000000
               image: null
               state:
                 contexts:
@@ -61,14 +61,14 @@ in:
       contexts:
         - pointers:
             read: { sectionId: "sec1", lineId: "line1" }
-  - slot: 2
+  - slotId: 2
     thumbnailImage: null
 out:
   global:
     saveSlots:
       "2":
-        slotKey: "2"
-        date: 1700000000000
+        slotId: 2
+        savedAt: 1700000000000
         image: null
         state:
           contexts:
@@ -80,8 +80,8 @@ out:
         payload:
           saveSlots:
             "2":
-              slotKey: "2"
-              date: 1700000000000
+              slotId: 2
+              savedAt: 1700000000000
               image: null
               state:
                 contexts:
@@ -101,8 +101,8 @@ in:
       global:
         saveSlots:
           "1":
-            slotKey: "1"
-            date: 1704110400
+            slotId: 1
+            savedAt: 1704110400
             image: "old_image.png"
             state:
               level: 5
@@ -112,14 +112,14 @@ in:
       contexts:
         - pointers:
             read: { sectionId: "sec1", lineId: "line1" }
-  - slot: 1
+  - slotId: 1
     thumbnailImage: null
 out:
   global:
     saveSlots:
       "1":
-        slotKey: "1"
-        date: 1700000000000
+        slotId: 1
+        savedAt: 1700000000000
         image: null
         state:
           contexts:
@@ -131,9 +131,55 @@ out:
         payload:
           saveSlots:
             "1":
-              slotKey: "1"
-              date: 1700000000000
+              slotId: 1
+              savedAt: 1700000000000
               image: null
+              state:
+                contexts:
+                  - pointers:
+                      read: { sectionId: "sec1", lineId: "line1" }
+                viewedRegistry: __undefined__
+      - name: "render"
+  projectData:
+    story: { initialSceneId: "test" }
+  contexts:
+    - pointers:
+        read: { sectionId: "sec1", lineId: "line1" }
+---
+case: save with explicit timestamp override
+in:
+  - state:
+      global:
+        saveSlots: {}
+        pendingEffects: []
+      projectData:
+        story: { initialSceneId: "test" }
+      contexts:
+        - pointers:
+            read: { sectionId: "sec1", lineId: "line1" }
+  - slotId: 1
+    thumbnailImage: "custom_image.png"
+    savedAt: 1701234567890
+out:
+  global:
+    saveSlots:
+      "1":
+        slotId: 1
+        savedAt: 1701234567890
+        image: "custom_image.png"
+        state:
+          contexts:
+            - pointers:
+                read: { sectionId: "sec1", lineId: "line1" }
+          viewedRegistry: __undefined__
+    pendingEffects:
+      - name: "saveSlots"
+        payload:
+          saveSlots:
+            "1":
+              slotId: 1
+              savedAt: 1701234567890
+              image: "custom_image.png"
               state:
                 contexts:
                   - pointers:
@@ -158,14 +204,14 @@ in:
       contexts:
         - pointers:
             read: { sectionId: "sec1", lineId: "line1" }
-  - slot: 1
+  - slotId: 1
     thumbnailImage: null
 out:
   global:
     saveSlots:
       "1":
-        slotKey: "1"
-        date: 1700000000000
+        slotId: 1
+        savedAt: 1700000000000
         image: null
         state:
           contexts:
@@ -178,8 +224,8 @@ out:
         payload:
           saveSlots:
             "1":
-              slotKey: "1"
-              date: 1700000000000
+              slotId: 1
+              savedAt: 1700000000000
               image: null
               state:
                 contexts:
@@ -211,14 +257,14 @@ in:
             playerName: "Alice"
             score: 150
             soundEnabled: true
-  - slot: 1
+  - slotId: 1
     thumbnailImage: null
 out:
   global:
     saveSlots:
       "1":
-        slotKey: "1"
-        date: 1700000000000
+        slotId: 1
+        savedAt: 1700000000000
         image: null
         state:
           viewedRegistry:
@@ -239,8 +285,8 @@ out:
         payload:
           saveSlots:
             "1":
-              slotKey: "1"
-              date: 1700000000000
+              slotId: 1
+              savedAt: 1700000000000
               image: null
               state:
                 viewedRegistry:
@@ -291,14 +337,14 @@ in:
               - sectionId: "sec2"
                 lineId: "line3"
                 rollbackPolicy: "free"
-  - slot: 3
+  - slotId: 3
     thumbnailImage: null
 out:
   global:
     saveSlots:
       "3":
-        slotKey: "3"
-        date: 1700000000000
+        slotId: 3
+        savedAt: 1700000000000
         image: null
         state:
           contexts:
@@ -326,8 +372,8 @@ out:
         payload:
           saveSlots:
             "3":
-              slotKey: "3"
-              date: 1700000000000
+              slotId: 3
+              savedAt: 1700000000000
               image: null
               state:
                 contexts:

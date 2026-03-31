@@ -15,38 +15,24 @@ oneOf:
     required: [type]
     additionalProperties: false
 
-  - title: Save VN data effect
-    description: Saves visual novel data to localStorage saveSlots
+  - title: Save slots effect
+    description: Persists the full save slot map
     type: object
     properties:
       name:
-        const: saveVnData
-      options:
+        const: saveSlots
+      payload:
         type: object
         properties:
-          saveData:
+          saveSlots:
             type: object
-            description: Save game data
-            properties:
-              date:
-                type: integer
-                description: Save timestamp
-              screenshot:
-                type: string
-                description: Screenshot in base64 format
-              state:
-                type: object
-                description: Game state including sectionId, lineId, history, and settings
-                additionalProperties: true
-          slotIndex:
-            type: integer
-            description: Save slot index
-            minimum: 0
+            description: Save game slots keyed by stringified slot id
+            additionalProperties: true
       priority:
         type: integer
         description: Priority of the effect (lower numbers execute first)
         default: 0
-    required: [name]
+    required: [name, payload]
     additionalProperties: false
 
   - title: Save variables effect

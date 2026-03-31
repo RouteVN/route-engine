@@ -1,6 +1,7 @@
 import { parse } from "https://cdn.jsdelivr.net/npm/yaml@2.7.1/+esm";
 import createRouteEngine, { createEffectsHandler } from "./RouteEngine.js";
 import { Ticker } from "https://cdn.jsdelivr.net/npm/pixi.js@8.0.0/+esm";
+import { createSaveThumbnailAssetId } from "./saveSlotUtils.js";
 
 import createRouteGraphics, {
   createAssetBufferManager,
@@ -14,8 +15,8 @@ import createRouteGraphics, {
   soundPlugin,
   videoPlugin,
   particlesPlugin,
-  animatedSpritePlugin
-} from "./RouteGraphics.js"
+  animatedSpritePlugin,
+} from "./RouteGraphics.js";
 
 const projectData = parse(window.yamlContent);
 
@@ -23,11 +24,11 @@ const init = async () => {
   const screenWidth = projectData?.screen?.width ?? 1920;
   const screenHeight = projectData?.screen?.height ?? 1080;
   const assets = {
-    "lakjf3lka": {
+    lakjf3lka: {
       url: "/public/bg/door.png",
       type: "image/png",
     },
-    "dmni32": {
+    dmni32: {
       url: "/public/bg/forest.png",
       type: "image/png",
     },
@@ -35,31 +36,31 @@ const init = async () => {
       url: "/public/bg/moon.png",
       type: "image/png",
     },
-    "la3lka": {
+    la3lka: {
       url: "/public/circle-blue.png",
       type: "image/png",
     },
-    "a32kf3": {
+    a32kf3: {
       url: "/public/circle-green.png",
       type: "image/png",
     },
-    "x342fga": {
+    x342fga: {
       url: "/public/circle-green-small.png",
       type: "image/png",
     },
-    "char_sprite_1": {
+    char_sprite_1: {
       url: "/public/characters/sprite-1-1.png",
       type: "image/png",
     },
-    "char_sprite_2": {
+    char_sprite_2: {
       url: "/public/characters/sprite-1-2.png",
       type: "image/png",
     },
-    "char_sprite_3": {
+    char_sprite_3: {
       url: "/public/characters/sprite-2-1.png",
       type: "image/png",
     },
-    "char_sprite_4": {
+    char_sprite_4: {
       url: "/public/characters/sprite-2-2.png",
       type: "image/png",
     },
@@ -75,11 +76,11 @@ const init = async () => {
       url: "/public/bgm-1.mp3",
       type: "audio/mpeg",
     },
-    "xk393": {
+    xk393: {
       url: "/public/bgm-2.mp3",
       type: "audio/mpeg",
     },
-    "xj323": {
+    xj323: {
       url: "/public/sfx-1.mp3",
       type: "audio/mpeg",
     },
@@ -87,37 +88,37 @@ const init = async () => {
       url: "/public/sfx-2.wav",
       type: "audio/wav",
     },
-    "vertical_hover_bar": {
+    vertical_hover_bar: {
       url: "/public/vertical_hover_bar.png",
-      type: "image/png"
+      type: "image/png",
     },
-    "vertical_hover_thumb": {
+    vertical_hover_thumb: {
       url: "/public/vertical_hover_thumb.png",
-      type: "image/png"
+      type: "image/png",
     },
-    "vertical_idle_bar": {
+    vertical_idle_bar: {
       url: "/public/vertical_idle_bar.png",
-      type: "image/png"
+      type: "image/png",
     },
-    "vertical_idle_thumb": {
+    vertical_idle_thumb: {
       url: "/public/vertical_idle_thumb.png",
-      type: "image/png"
+      type: "image/png",
     },
-    "horizontal_hover_bar": {
+    horizontal_hover_bar: {
       url: "/public/horizontal_hover_bar.png",
-      type: "image/png"
+      type: "image/png",
     },
-    "horizontal_hover_thumb": {
+    horizontal_hover_thumb: {
       url: "/public/horizontal_hover_thumb.png",
-      type: "image/png"
+      type: "image/png",
     },
-    "horizontal_idle_bar": {
+    horizontal_idle_bar: {
       url: "/public/horizontal_idle_bar.png",
-      type: "image/png"
+      type: "image/png",
     },
-    "horizontal_idle_thumb": {
+    horizontal_idle_thumb: {
       url: "/public/horizontal_idle_thumb.png",
-      type: "image/png"
+      type: "image/png",
     },
     "fighter-spritesheet": {
       url: "/public/fighter.png",
@@ -131,11 +132,11 @@ const init = async () => {
 
   if (!window?.RTGL_VT_DEBUG) {
     Object.assign(assets, {
-      "video_sample": {
+      video_sample: {
         url: "/public/video_sample.mp4",
-        type: "video/mp4"
-      }
-    })
+        type: "video/mp4",
+      },
+    });
   }
 
   const assetBufferManager = createAssetBufferManager();
@@ -143,7 +144,6 @@ const init = async () => {
   const assetBufferMap = assetBufferManager.getBufferMap();
 
   const routeGraphics = createRouteGraphics();
-
   window.takeVtScreenshotBase64 = async (label) => {
     if (label) {
       return await routeGraphics.extractBase64(label);
@@ -162,14 +162,10 @@ const init = async () => {
       textRevealingPlugin,
       videoPlugin,
       particlesPlugin,
-      animatedSpritePlugin
+      animatedSpritePlugin,
     ],
-    animations: [
-      tweenPlugin
-    ],
-    audio: [
-      soundPlugin
-    ]
+    animations: [tweenPlugin],
+    audio: [soundPlugin],
   };
 
   // Create dedicated ticker for auto mode
@@ -201,16 +197,41 @@ const init = async () => {
   const routeGraphicsEventHandler =
     effectsHandler.createRouteGraphicsEventHandler({
       preprocessPayload: async (eventName, payload) => {
-        if (payload?.actions?.saveSaveSlot) {
-          const url = await routeGraphics.extractBase64("story");
+        const saveAction = payload?.actions?.saveSlot;
+        if (saveAction) {
+          const saveTimestamp = Date.now();
+          let url;
+
+          try {
+            // Capture only the story container so the save menu itself does not
+            // become the slot thumbnail.
+            url = await routeGraphics.extractBase64("story");
+          } catch {
+            url = routeGraphics.canvas.toDataURL("image/png");
+          }
           const assets = {
-            [`saveThumbnailImage:${payload.actions.saveSaveSlot.slot}`]: {
+            [createSaveThumbnailAssetId(
+              saveAction.slotId,
+              saveTimestamp,
+              payload,
+            )]: {
               buffer: base64ToArrayBuffer(url),
               type: "image/png",
             },
           };
           await routeGraphics.loadAssets(assets);
-          payload.actions.saveSaveSlot.thumbnailImage = url;
+
+          return {
+            ...payload,
+            actions: {
+              ...payload.actions,
+              saveSlot: {
+                ...saveAction,
+                thumbnailImage: url,
+                savedAt: saveTimestamp,
+              },
+            },
+          };
         }
 
         return payload;
@@ -220,17 +241,19 @@ const init = async () => {
       },
     });
 
+  window.__vtHandleRouteGraphicsEvent = routeGraphicsEventHandler;
+
   await routeGraphics.init({
     width: screenWidth,
     height: screenHeight,
     plugins,
     eventHandler: routeGraphicsEventHandler,
     onFirstRender: () => {
-      window.dispatchEvent(new CustomEvent('vt:ready'));
+      window.dispatchEvent(new CustomEvent("vt:ready"));
     },
     debug: window?.RTGL_VT_DEBUG ?? false,
   });
-  await routeGraphics.loadAssets(assetBufferMap)
+  await routeGraphics.loadAssets(assetBufferMap);
 
   const canvasHost = document.getElementById("canvas");
   canvasHost.appendChild(routeGraphics.canvas);
@@ -240,25 +263,28 @@ const init = async () => {
 
   engine = createRouteEngine({ handlePendingEffects: effectsHandler });
   const saveSlots = JSON.parse(localStorage.getItem("saveSlots")) || {};
-  const globalDeviceVariables = JSON.parse(localStorage.getItem("globalDeviceVariables")) || {};
-  const globalAccountVariables = JSON.parse(localStorage.getItem("globalAccountVariables")) || {};
+  const globalDeviceVariables =
+    JSON.parse(localStorage.getItem("globalDeviceVariables")) || {};
+  const globalAccountVariables =
+    JSON.parse(localStorage.getItem("globalAccountVariables")) || {};
 
   engine.init({
     initialState: {
       global: {
         saveSlots,
-        variables: { ...globalDeviceVariables, ...globalAccountVariables }
+        variables: { ...globalDeviceVariables, ...globalAccountVariables },
       },
-      projectData
+      projectData,
     },
   });
+
+  window.__vtEngine = engine;
 
   window.addEventListener("vt:nextLine", () => {
     engine.handleActions({
       nextLine: {},
     });
   });
-
 };
 
 await init();

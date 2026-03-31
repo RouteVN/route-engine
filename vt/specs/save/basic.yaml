@@ -135,8 +135,8 @@ resources:
           click:
             payload:
               actions:
-                saveSaveSlot:
-                  slot: 1
+                saveSlot:
+                  slotId: 1
           colorId: layoutColor3
         - id: save-slot-1-text
           type: text
@@ -155,8 +155,8 @@ resources:
           click:
             payload:
               actions:
-                saveSaveSlot:
-                  slot: 2
+                saveSlot:
+                  slotId: 2
           colorId: layoutColor3
         - id: save-slot-2-text
           type: text
@@ -175,8 +175,8 @@ resources:
           click:
             payload:
               actions:
-                saveSaveSlot:
-                  slot: 3
+                saveSlot:
+                  slotId: 3
           colorId: layoutColor3
         - id: save-slot-3-text
           type: text
@@ -243,8 +243,8 @@ resources:
           click:
             payload:
               actions:
-                loadSaveSlot:
-                  slot: 1
+                loadSlot:
+                  slotId: 1
           colorId: layoutColor3
         - id: load-slot-1-text
           type: text
@@ -263,8 +263,8 @@ resources:
           click:
             payload:
               actions:
-                loadSaveSlot:
-                  slot: 2
+                loadSlot:
+                  slotId: 2
           colorId: layoutColor3
         - id: load-slot-2-text
           type: text
@@ -283,8 +283,8 @@ resources:
           click:
             payload:
               actions:
-                loadSaveSlot:
-                  slot: 3
+                loadSlot:
+                  slotId: 3
           colorId: layoutColor3
         - id: load-slot-3-text
           type: text

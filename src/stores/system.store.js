@@ -50,6 +50,46 @@ const cloneStateValue = (value) => {
   return structuredClone(source);
 };
 
+const toSlotStorageKey = (slotId) => String(slotId);
+
+const normalizeStoredSlotId = (slotId) => {
+  if (typeof slotId === "number") {
+    return slotId;
+  }
+
+  if (typeof slotId !== "string") {
+    return slotId;
+  }
+
+  const numericSlotId = Number(slotId);
+  return Number.isFinite(numericSlotId) ? numericSlotId : slotId;
+};
+
+const normalizeStoredSaveSlot = (storageKey, saveSlot = {}) => {
+  const normalizedSaveSlot = {
+    ...saveSlot,
+    slotId: normalizeStoredSlotId(
+      saveSlot.slotId ?? saveSlot.slotKey ?? storageKey,
+    ),
+    savedAt:
+      typeof saveSlot.savedAt === "number" ? saveSlot.savedAt : saveSlot.date,
+  };
+
+  delete normalizedSaveSlot.slotKey;
+  delete normalizedSaveSlot.date;
+
+  return normalizedSaveSlot;
+};
+
+const normalizeStoredSaveSlots = (saveSlots = {}) => {
+  return Object.fromEntries(
+    Object.entries(saveSlots).map(([storageKey, saveSlot]) => [
+      storageKey,
+      normalizeStoredSaveSlot(storageKey, saveSlot),
+    ]),
+  );
+};
+
 const rollbackActionBatchStack = [];
 
 const createRollbackCheckpoint = ({ sectionId, lineId, rollbackPolicy }) => ({
@@ -476,7 +516,7 @@ export const createInitialState = (payload) => {
         auto: { ...DEFAULT_NEXT_LINE_CONFIG.auto },
         applyMode: DEFAULT_NEXT_LINE_CONFIG.applyMode,
       },
-      saveSlots,
+      saveSlots: normalizeStoredSaveSlots(saveSlots),
       layeredViews: [],
       variables: globalVariables,
     },
@@ -644,13 +684,14 @@ export const selectSystemState = ({ state }) => {
   return structuredClone(state);
 };
 
-export const selectSaveSlots = ({ state }) => {
+export const selectSaveSlotMap = ({ state }) => {
   return state.global.saveSlots;
 };
 
 export const selectSaveSlot = ({ state }, payload) => {
-  const { slotKey } = payload;
-  return state.global.saveSlots[slotKey];
+  const slotId = payload?.slotId ?? payload?.slot ?? payload?.slotKey;
+  const storageKey = toSlotStorageKey(slotId);
+  return state.global.saveSlots[storageKey];
 };
 
 /**
@@ -883,20 +924,20 @@ export const selectPreviousPresentationState = ({ state }) => {
  * layout properties (width, gap, direction).
  *
  * Each slot object contains:
- * - slotNumber: The unique slot identifier (1, 2, 3, ...)
- * - date: Timestamp when the save was created (if saved)
+ * - slotId: The unique slot identifier (1, 2, 3, ...)
+ * - savedAt: Timestamp when the save was created (if saved)
  * - image: Base64 thumbnail image (if saved)
  * - state: Saved game state data (if saved)
  *
  * @example
  * // Default 6 slots per page
  * // Page 1: slots 1-6, Page 2: slots 7-12, etc.
- * const { saveSlots } = selectCurrentPageSlots({ state });
+ * const { saveSlots } = selectSaveSlotPage({ state });
  * // Returns: [slot1, slot2, slot3, slot4, slot5, slot6]
  *
  * @example
  * // Custom 12 slots per page
- * const { saveSlots } = selectCurrentPageSlots({ state }, { slotsPerPage: 12 });
+ * const { saveSlots } = selectSaveSlotPage({ state }, { slotsPerPage: 12 });
  * // Returns: [slot1, slot2, ..., slot12]
  *
  * @example
@@ -904,33 +945,30 @@ export const selectPreviousPresentationState = ({ state }) => {
  * {
  *   saveSlots: [
  *     {
- *       slotNumber: 1,
- *       date: 1704556800000,
+ *       slotId: 1,
+ *       savedAt: 1704556800000,
  *       image: "data:image/png;base64,iVBORw0KGgoAAAANS...",
  *       state: { contexts: [...], viewedRegistry: {...} }
  *     },
- *     { slotNumber: 2 },  // Empty slot (not saved)
+ *     { slotId: 2 },  // Empty slot (not saved)
  *     {
- *       slotNumber: 3,
- *       date: 1704643200000,
+ *       slotId: 3,
+ *       savedAt: 1704643200000,
  *       image: "data:image/png;base64,iVBORw0KGgoAAAANS...",
  *       state: { contexts: [...], viewedRegistry: {...} }
  *     },
- *     { slotNumber: 4 },  // Empty slot
- *     { slotNumber: 5 },  // Empty slot
+ *     { slotId: 4 },  // Empty slot
+ *     { slotId: 5 },  // Empty slot
  *     {
- *       slotNumber: 6,
- *       date: 1704729600000,
+ *       slotId: 6,
+ *       savedAt: 1704729600000,
  *       image: "data:image/png;base64,iVBORw0KGgoAAAANS...",
  *       state: { contexts: [...], viewedRegistry: {...} }
  *     }
  *   ]
  * }
  */
-export const selectCurrentPageSlots = (
-  { state },
-  { slotsPerPage = 6 } = {},
-) => {
+export const selectSaveSlotPage = ({ state }, { slotsPerPage = 6 } = {}) => {
   const allVariables = {
     ...state.global.variables,
     ...state.contexts[state.contexts.length - 1].variables,
@@ -941,17 +979,22 @@ export const selectCurrentPageSlots = (
   const slots = [];
 
   for (let i = 0; i < slotsPerPage; i++) {
-    const slotNumber = startSlot + i;
+    const slotId = startSlot + i;
     const slotData =
-      (state.global.saveSlots && state.global.saveSlots[slotNumber]) || {};
+      (state.global.saveSlots &&
+        state.global.saveSlots[toSlotStorageKey(slotId)]) ||
+      {};
     slots.push({
-      slotNumber,
       ...slotData,
+      slotId,
     });
   }
 
   return { saveSlots: slots };
 };
+
+export const selectSaveSlots = selectSaveSlotMap;
+export const selectCurrentPageSlots = selectSaveSlotPage;
 
 const shouldSettleCurrentLinePresentation = (state) => {
   const lastContext = state.contexts?.[state.contexts.length - 1];
@@ -979,7 +1022,7 @@ export const selectRenderState = ({ state }) => {
     ...state.contexts[state.contexts.length - 1].variables,
   };
 
-  const { saveSlots } = selectCurrentPageSlots({ state });
+  const { saveSlots } = selectSaveSlotPage({ state });
   const settleCurrentLinePresentation =
     shouldSettleCurrentLinePresentation(state);
 
@@ -1367,9 +1410,12 @@ export const setNextLineConfig = ({ state }, payload) => {
  * @param {string} payload.thumbnailImage - Base64 thumbnail image
  * @returns {Object} Updated state object
  */
-export const saveSaveSlot = ({ state }, payload) => {
-  const { slot, thumbnailImage } = payload;
-  const slotKey = String(slot);
+export const saveSlot = ({ state }, payload) => {
+  const slotId = payload?.slotId ?? payload?.slot;
+  const { thumbnailImage } = payload;
+  const savedAt =
+    typeof payload?.savedAt === "number" ? payload.savedAt : payload?.date;
+  const storageKey = toSlotStorageKey(slotId);
   const contexts = cloneStateValue(state.contexts);
   contexts?.forEach((context) => {
     removeLegacyRollbackBaseline(context.rollback);
@@ -1381,13 +1427,13 @@ export const saveSaveSlot = ({ state }, payload) => {
   };
 
   const saveData = {
-    slotKey,
-    date: Date.now(),
+    slotId: normalizeStoredSlotId(slotId),
+    savedAt: typeof savedAt === "number" ? savedAt : Date.now(),
     image: thumbnailImage,
     state: currentState,
   };
 
-  state.global.saveSlots[slotKey] = saveData;
+  state.global.saveSlots[storageKey] = saveData;
 
   state.global.pendingEffects.push(
     {
@@ -1405,13 +1451,13 @@ export const saveSaveSlot = ({ state }, payload) => {
  * Loads game state from a save slot
  * @param {Object} state - Current state object
  * @param {Object} payload - Action payload
- * @param {number} payload.slot - Save slot number
+ * @param {number} payload.slotId - Save slot number
  * @returns {Object} Updated state object
  */
-export const loadSaveSlot = ({ state }, payload) => {
-  const { slot } = payload;
-  const slotKey = String(slot);
-  const slotData = state.global.saveSlots[slotKey];
+export const loadSlot = ({ state }, payload) => {
+  const slotId = payload?.slotId ?? payload?.slot;
+  const storageKey = toSlotStorageKey(slotId);
+  const slotData = state.global.saveSlots[storageKey];
   if (slotData) {
     state.global.viewedRegistry = cloneStateValue(
       slotData.state.viewedRegistry,
@@ -1424,6 +1470,9 @@ export const loadSaveSlot = ({ state }, payload) => {
   }
   return state;
 };
+
+export const saveSaveSlot = saveSlot;
+export const loadSaveSlot = loadSlot;
 
 /**
  * Updates the entire projectData with new data
@@ -2283,6 +2332,7 @@ export const createSystemStore = (initialState) => {
     selectIsResourceViewed,
     selectNextLineConfig,
     selectSystemState,
+    selectSaveSlotMap,
     selectSaveSlots,
     selectSaveSlot,
     selectCurrentPointer,
@@ -2291,6 +2341,7 @@ export const createSystemStore = (initialState) => {
     selectPresentationState,
     selectPresentationChanges,
     selectSectionLineChanges,
+    selectSaveSlotPage,
     selectCurrentPageSlots,
     selectRenderState,
     selectLayeredViews,
@@ -2316,6 +2367,8 @@ export const createSystemStore = (initialState) => {
     addViewedLine,
     addViewedResource,
     setNextLineConfig,
+    saveSlot,
+    loadSlot,
     saveSaveSlot,
     loadSaveSlot,
     updateProjectData,

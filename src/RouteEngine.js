@@ -50,8 +50,16 @@ export default function createRouteEngine(options) {
     return _systemStore.selectSystemState();
   };
 
-  const selectSaveSlots = () => {
-    return _systemStore.selectSaveSlots();
+  const selectSaveSlotMap = () => {
+    return _systemStore.selectSaveSlotMap();
+  };
+
+  const selectSaveSlot = (payload) => {
+    return _systemStore.selectSaveSlot(payload);
+  };
+
+  const selectSaveSlotPage = (payload) => {
+    return _systemStore.selectSaveSlotPage(payload);
   };
 
   const selectSkipMode = () => {
@@ -120,7 +128,10 @@ export default function createRouteEngine(options) {
     selectPresentationChanges,
     selectSectionLineChanges,
     selectSystemState,
-    selectSaveSlots,
+    selectSaveSlotMap,
+    selectSaveSlot,
+    selectSaveSlotPage,
+    selectSaveSlots: selectSaveSlotMap,
     handleLineActions,
   };
 }

@@ -128,7 +128,8 @@ in:
             enabled: false
         saveSlots:
           slot1:
-            date: 1234567890
+            slotId: "slot1"
+            savedAt: 1234567890
             image: "base64image"
             state: {}
         pendingEffects:
@@ -170,7 +171,8 @@ out:
         enabled: false
     saveSlots:
       slot1:
-        date: 1234567890
+        slotId: "slot1"
+        savedAt: 1234567890
         image: "base64image"
         state: {}
     pendingEffects:

@@ -328,7 +328,7 @@ Used for:
 
 Save slots store:
 
-- `slotKey`: Unique identifier
-- `date`: Unix timestamp
+- `slotId`: Unique identifier
+- `savedAt`: Unix timestamp
 - `image`: Screenshot (base64)
 - `state`: Serialized game state

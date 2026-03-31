@@ -1,10 +1,10 @@
 file: "../../../src/stores/system.store.js"
 group: systemStore selectors
 suites:
-  - selectCurrentPageSlots
+  - selectSaveSlotPage
 ---
-suite: selectCurrentPageSlots
-exportName: selectCurrentPageSlots
+suite: selectSaveSlotPage
+exportName: selectSaveSlotPage
 ---
 case: default 6 slots per page, page 1
 in:
@@ -17,12 +17,12 @@ in:
         - variables: {}
 out:
   saveSlots:
-    - slotNumber: 1
-    - slotNumber: 2
-    - slotNumber: 3
-    - slotNumber: 4
-    - slotNumber: 5
-    - slotNumber: 6
+    - slotId: 1
+    - slotId: 2
+    - slotId: 3
+    - slotId: 4
+    - slotId: 5
+    - slotId: 6
 ---
 case: default 6 slots per page, page 2
 in:
@@ -35,12 +35,12 @@ in:
         - variables: {}
 out:
   saveSlots:
-    - slotNumber: 7
-    - slotNumber: 8
-    - slotNumber: 9
-    - slotNumber: 10
-    - slotNumber: 11
-    - slotNumber: 12
+    - slotId: 7
+    - slotId: 8
+    - slotId: 9
+    - slotId: 10
+    - slotId: 11
+    - slotId: 12
 ---
 case: default 6 slots per page, page 3
 in:
@@ -53,12 +53,12 @@ in:
         - variables: {}
 out:
   saveSlots:
-    - slotNumber: 13
-    - slotNumber: 14
-    - slotNumber: 15
-    - slotNumber: 16
-    - slotNumber: 17
-    - slotNumber: 18
+    - slotId: 13
+    - slotId: 14
+    - slotId: 15
+    - slotId: 16
+    - slotId: 17
+    - slotId: 18
 ---
 case: loadPage defaults to 1 when undefined
 in:
@@ -70,12 +70,12 @@ in:
         - variables: {}
 out:
   saveSlots:
-    - slotNumber: 1
-    - slotNumber: 2
-    - slotNumber: 3
-    - slotNumber: 4
-    - slotNumber: 5
-    - slotNumber: 6
+    - slotId: 1
+    - slotId: 2
+    - slotId: 3
+    - slotId: 4
+    - slotId: 5
+    - slotId: 6
 ---
 case: loadPage from context variables
 in:
@@ -88,12 +88,12 @@ in:
             loadPage: 2
 out:
   saveSlots:
-    - slotNumber: 7
-    - slotNumber: 8
-    - slotNumber: 9
-    - slotNumber: 10
-    - slotNumber: 11
-    - slotNumber: 12
+    - slotId: 7
+    - slotId: 8
+    - slotId: 9
+    - slotId: 10
+    - slotId: 11
+    - slotId: 12
 ---
 case: context variables override global variables
 in:
@@ -107,12 +107,12 @@ in:
             loadPage: 3
 out:
   saveSlots:
-    - slotNumber: 13
-    - slotNumber: 14
-    - slotNumber: 15
-    - slotNumber: 16
-    - slotNumber: 17
-    - slotNumber: 18
+    - slotId: 13
+    - slotId: 14
+    - slotId: 15
+    - slotId: 16
+    - slotId: 17
+    - slotId: 18
 ---
 case: with saved slot data
 in:
@@ -122,29 +122,29 @@ in:
           loadPage: 1
         saveSlots:
           "1":
-            date: 1704556800000
+            savedAt: 1704556800000
             image: "data:image/png;base64,abc123"
             state:
               contexts: []
               viewedRegistry: {}
           "3":
-            date: 1704643200000
+            savedAt: 1704643200000
       contexts:
         - variables: {}
 out:
   saveSlots:
-    - slotNumber: 1
-      date: 1704556800000
+    - slotId: 1
+      savedAt: 1704556800000
       image: "data:image/png;base64,abc123"
       state:
         contexts: []
         viewedRegistry: {}
-    - slotNumber: 2
-    - slotNumber: 3
-      date: 1704643200000
-    - slotNumber: 4
-    - slotNumber: 5
-    - slotNumber: 6
+    - slotId: 2
+    - slotId: 3
+      savedAt: 1704643200000
+    - slotId: 4
+    - slotId: 5
+    - slotId: 6
 ---
 case: custom 12 slots per page
 in:
@@ -158,18 +158,18 @@ in:
   - slotsPerPage: 12
 out:
   saveSlots:
-    - slotNumber: 1
-    - slotNumber: 2
-    - slotNumber: 3
-    - slotNumber: 4
-    - slotNumber: 5
-    - slotNumber: 6
-    - slotNumber: 7
-    - slotNumber: 8
-    - slotNumber: 9
-    - slotNumber: 10
-    - slotNumber: 11
-    - slotNumber: 12
+    - slotId: 1
+    - slotId: 2
+    - slotId: 3
+    - slotId: 4
+    - slotId: 5
+    - slotId: 6
+    - slotId: 7
+    - slotId: 8
+    - slotId: 9
+    - slotId: 10
+    - slotId: 11
+    - slotId: 12
 ---
 case: custom 4 slots per page
 in:
@@ -183,10 +183,10 @@ in:
   - slotsPerPage: 4
 out:
   saveSlots:
-    - slotNumber: 1
-    - slotNumber: 2
-    - slotNumber: 3
-    - slotNumber: 4
+    - slotId: 1
+    - slotId: 2
+    - slotId: 3
+    - slotId: 4
 ---
 case: custom 10 slots per page, page 2
 in:
@@ -200,16 +200,16 @@ in:
   - slotsPerPage: 10
 out:
   saveSlots:
-    - slotNumber: 11
-    - slotNumber: 12
-    - slotNumber: 13
-    - slotNumber: 14
-    - slotNumber: 15
-    - slotNumber: 16
-    - slotNumber: 17
-    - slotNumber: 18
-    - slotNumber: 19
-    - slotNumber: 20
+    - slotId: 11
+    - slotId: 12
+    - slotId: 13
+    - slotId: 14
+    - slotId: 15
+    - slotId: 16
+    - slotId: 17
+    - slotId: 18
+    - slotId: 19
+    - slotId: 20
 ---
 case: undefined saveSlots handled gracefully
 in:
@@ -221,9 +221,9 @@ in:
         - variables: {}
 out:
   saveSlots:
-    - slotNumber: 1
-    - slotNumber: 2
-    - slotNumber: 3
-    - slotNumber: 4
-    - slotNumber: 5
-    - slotNumber: 6
+    - slotId: 1
+    - slotId: 2
+    - slotId: 3
+    - slotId: 4
+    - slotId: 5
+    - slotId: 6
