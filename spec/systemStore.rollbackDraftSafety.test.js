@@ -256,6 +256,18 @@ describe("system.store rollback/save draft safety", () => {
           sections: [],
           resources: [],
         },
+        confirmDialog: {
+          resourceId: "saveOverwriteConfirmLayout",
+          confirmActions: {
+            saveSlot: {
+              slotId: 1,
+            },
+            hideConfirmDialog: {},
+          },
+          cancelActions: {
+            hideConfirmDialog: {},
+          },
+        },
         pendingEffects: [],
       },
       contexts: [
@@ -300,6 +312,7 @@ describe("system.store rollback/save draft safety", () => {
       sectionId: "section2",
       lastLineId: "10",
     });
+    expect(nextState.global.confirmDialog).toBeNull();
   });
 
   it("rollbackByOffset restores variables and current-line system state from a live draft", () => {
@@ -309,6 +322,18 @@ describe("system.store rollback/save draft safety", () => {
         isLineCompleted: false,
         dialogueUIHidden: false,
         isDialogueHistoryShowing: false,
+        confirmDialog: {
+          resourceId: "saveOverwriteConfirmLayout",
+          confirmActions: {
+            saveSlot: {
+              slotId: 2,
+            },
+            hideConfirmDialog: {},
+          },
+          cancelActions: {
+            hideConfirmDialog: {},
+          },
+        },
         nextLineConfig: {
           manual: {
             enabled: true,
@@ -372,6 +397,7 @@ describe("system.store rollback/save draft safety", () => {
       lineId: "2",
     });
     expect(nextState.contexts[0].currentPointerMode).toBe("read");
+    expect(nextState.global.confirmDialog).toBeNull();
     expect(nextState.global.nextLineConfig).toEqual({
       manual: {
         enabled: false,

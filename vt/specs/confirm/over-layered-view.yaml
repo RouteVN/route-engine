@@ -1,0 +1,198 @@
+---
+title: Confirm Over Layered View
+description: Confirm dialog opened on top of another layered view.
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  layouts:
+    sceneLayout:
+      elements:
+        - id: scene-bg
+          type: rect
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          colorId: layoutColor1
+        - id: scene-title
+          type: text
+          x: 140
+          y: 128
+          content: Confirm Over Layered View
+          textStyleId: textStyle1
+        - id: scene-copy
+          type: text
+          x: 140
+          y: 206
+          content: Starts closed. Click Open Stack to show confirm over the menu layer.
+          textStyleId: textStyle2
+        - id: open-stack
+          type: container
+          width: 260
+          height: 72
+          x: 140
+          y: 292
+          click:
+            payload:
+              actions:
+                pushLayeredView:
+                  resourceId: menuLayout
+                showConfirmDialog:
+                  resourceId: layeredConfirmLayout
+                  confirmActions:
+                    clearLayeredViews: {}
+          children:
+            - id: open-stack-bg
+              type: rect
+              width: 260
+              height: 72
+              x: 0
+              y: 0
+              colorId: layoutColor4
+            - id: open-stack-text
+              type: text
+              x: 64
+              y: 18
+              content: Open Stack
+              textStyleId: textStyle4
+    menuLayout:
+      elements:
+        - id: menu-panel
+          type: rect
+          width: 980
+          height: 420
+          x: 470
+          y: 230
+          colorId: layoutColor2
+        - id: menu-title
+          type: text
+          x: 560
+          y: 300
+          content: Underlay Menu
+          textStyleId: textStyle1
+        - id: menu-copy
+          type: text
+          x: 560
+          y: 372
+          content: This layer should remain visible behind the confirm dialog.
+          textStyleId: textStyle2
+    layeredConfirmLayout:
+      elements:
+        - id: confirm-panel
+          type: rect
+          width: 760
+          height: 252
+          x: 580
+          y: 250
+          colorId: layoutColor3
+        - id: confirm-title
+          type: text
+          x: 660
+          y: 320
+          content: Replace slot data?
+          textStyleId: textStyle1
+        - id: confirm-copy
+          type: text
+          x: 660
+          y: 384
+          content: Background layers should stay blocked while this prompt is open.
+          textStyleId: textStyle2
+        - id: confirm-yes
+          type: container
+          width: 220
+          height: 68
+          x: 662
+          y: 432
+          click:
+            payload:
+              actions: ${confirmDialog.confirmActions}
+          children:
+            - id: confirm-yes-bg
+              type: rect
+              width: 220
+              height: 68
+              x: 0
+              y: 0
+              colorId: layoutColor4
+            - id: confirm-yes-text
+              type: text
+              x: 54
+              y: 18
+              content: Continue
+              textStyleId: textStyle4
+        - id: confirm-no
+          type: container
+          width: 220
+          height: 68
+          x: 1038
+          y: 432
+          click:
+            payload:
+              actions: ${confirmDialog.cancelActions}
+          children:
+            - id: confirm-no-bg
+              type: rect
+              width: 220
+              height: 68
+              x: 0
+              y: 0
+              colorId: layoutColor4
+            - id: confirm-no-text
+              type: text
+              x: 82
+              y: 18
+              content: Cancel
+              textStyleId: textStyle4
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: "#FFFFFF"
+    color2:
+      hex: "#B0B0B0"
+    layoutColor1:
+      hex: "#0B0B0B"
+    layoutColor2:
+      hex: "#1B1B1B"
+    layoutColor3:
+      hex: "#262626"
+    layoutColor4:
+      hex: "#3C3C3C"
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 40
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle2:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle4:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: confirm
+  scenes:
+    confirm:
+      initialSectionId: start
+      sections:
+        start:
+          lines:
+            - id: line1
+              actions:
+                background:
+                  resourceId: sceneLayout

@@ -75,10 +75,6 @@ resources:
           x: 174
           y: 286
           textStyleId: textStyle2
-    readingDialogueLayout:
-      name: Reading Dialogue
-      mode: adv
-      elements:
         - id: save-button
           type: rect
           x: 1670
@@ -104,6 +100,10 @@ resources:
                   resourceId: dynamicSaveMenuLayout
                   resourceType: layout
           textStyleId: textStyle3
+    readingDialogueLayout:
+      name: Reading Dialogue
+      mode: adv
+      elements:
         - id: dialogue-box
           type: rect
           x: 100
@@ -406,6 +406,7 @@ story:
               actions:
                 background:
                   resourceId: readingLayout
+                hideDialogueUI: {}
                 updateVariable:
                   id: line1Preview
                   operations:

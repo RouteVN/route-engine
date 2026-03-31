@@ -90,6 +90,63 @@ const normalizeStoredSaveSlots = (saveSlots = {}) => {
   );
 };
 
+const normalizeConfirmDialogActionBatch = (
+  actions,
+  fieldName,
+  { required = false } = {},
+) => {
+  if (actions === undefined) {
+    if (required) {
+      throw new Error(`showConfirmDialog requires ${fieldName}`);
+    }
+
+    return {
+      hideConfirmDialog: {},
+    };
+  }
+
+  if (!actions || typeof actions !== "object" || Array.isArray(actions)) {
+    throw new Error(`showConfirmDialog ${fieldName} must be an action object`);
+  }
+
+  const normalizedActions = cloneStateValue(actions);
+  if (
+    !Object.prototype.hasOwnProperty.call(
+      normalizedActions,
+      "hideConfirmDialog",
+    )
+  ) {
+    normalizedActions.hideConfirmDialog = {};
+  }
+
+  return normalizedActions;
+};
+
+const normalizeConfirmDialogPayload = (payload = {}) => {
+  if (!payload?.resourceId) {
+    throw new Error("showConfirmDialog requires resourceId");
+  }
+
+  return {
+    resourceId: payload.resourceId,
+    confirmActions: normalizeConfirmDialogActionBatch(
+      payload.confirmActions,
+      "confirmActions",
+      { required: true },
+    ),
+    cancelActions: normalizeConfirmDialogActionBatch(
+      payload.cancelActions,
+      "cancelActions",
+    ),
+  };
+};
+
+const clearConfirmDialog = (state) => {
+  if (Object.prototype.hasOwnProperty.call(state.global, "confirmDialog")) {
+    state.global.confirmDialog = null;
+  }
+};
+
 const rollbackActionBatchStack = [];
 
 const createRollbackCheckpoint = ({ sectionId, lineId, rollbackPolicy }) => ({
@@ -431,6 +488,7 @@ const restoreRollbackCheckpoint = (state, checkpointIndex) => {
     state.global.isDialogueHistoryShowing = false;
     state.global.nextLineConfig = cloneStateValue(DEFAULT_NEXT_LINE_CONFIG);
     state.global.layeredViews = [];
+    clearConfirmDialog(state);
     state.global.isLineCompleted = true;
 
     const replayStartIndex = rollback.replayStartIndex ?? 0;
@@ -507,6 +565,7 @@ export const createInitialState = (payload) => {
       skipMode: false,
       dialogueUIHidden: false,
       isDialogueHistoryShowing: false,
+      confirmDialog: null,
       viewedRegistry: {
         sections: [],
         resources: [],
@@ -615,6 +674,10 @@ export const selectDialogueHistory = ({ state }) => {
     });
 
   return historyContent;
+};
+
+export const selectConfirmDialog = ({ state }) => {
+  return state.global.confirmDialog ?? null;
 };
 
 export const selectIsLineViewed = ({ state }, payload) => {
@@ -1041,6 +1104,7 @@ export const selectRenderState = ({ state }) => {
       !!allVariables._skipTransitionsAndAnimations ||
       settleCurrentLinePresentation,
     layeredViews: state.global.layeredViews,
+    confirmDialog: state.global.confirmDialog,
     dialogueHistory: selectDialogueHistory({ state }),
     saveSlots,
     variables: allVariables,
@@ -1051,6 +1115,22 @@ export const selectRenderState = ({ state }) => {
 /**************************
  * Actions
  *************************/
+export const showConfirmDialog = ({ state }, payload) => {
+  state.global.confirmDialog = normalizeConfirmDialogPayload(payload);
+  state.global.pendingEffects.push({ name: "render" });
+  return state;
+};
+
+export const hideConfirmDialog = ({ state }) => {
+  if (!state.global.confirmDialog) {
+    return state;
+  }
+
+  clearConfirmDialog(state);
+  state.global.pendingEffects.push({ name: "render" });
+  return state;
+};
+
 export const pushLayeredView = ({ state }, payload) => {
   state.global.layeredViews.push(payload);
   state.global.pendingEffects.push({ name: "render" });
@@ -1076,6 +1156,7 @@ export const replaceLastLayeredView = ({ state }, payload) => {
 
 export const clearLayeredViews = ({ state }) => {
   state.global.layeredViews = [];
+  clearConfirmDialog(state);
   state.global.pendingEffects.push({ name: "render" });
   recordRollbackAction(state, "clearLayeredViews", undefined);
   return state;
@@ -1466,6 +1547,7 @@ export const loadSlot = ({ state }, payload) => {
     state.contexts?.forEach((context) => {
       ensureRollbackState(context, { compatibilityAnchor: !context.rollback });
     });
+    clearConfirmDialog(state);
     state.global.pendingEffects.push({ name: "render" });
   }
   return state;
@@ -1485,6 +1567,7 @@ export const updateProjectData = ({ state }, payload) => {
   const { projectData } = payload;
 
   state.projectData = projectData;
+  clearConfirmDialog(state);
 
   state.global.pendingEffects.push({
     name: "render",
@@ -2328,6 +2411,7 @@ export const createSystemStore = (initialState) => {
     selectAutoMode,
     selectDialogueUIHidden,
     selectDialogueHistory,
+    selectConfirmDialog,
     selectIsLineViewed,
     selectIsResourceViewed,
     selectNextLineConfig,
@@ -2360,6 +2444,8 @@ export const createSystemStore = (initialState) => {
     toggleDialogueUI,
     showDialogueHistory,
     hideDialogueHistory,
+    showConfirmDialog,
+    hideConfirmDialog,
     clearPendingEffects,
     appendPendingEffect,
     beginRollbackActionBatch,

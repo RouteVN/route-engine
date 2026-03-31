@@ -1,0 +1,209 @@
+---
+title: Confirm Input Sandbox
+description: Manual sandbox for click and keyboard-driven show and hide.
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  variables:
+    confirmState:
+      type: string
+      scope: context
+      default: idle
+  controls:
+    confirmControls:
+      keyboard:
+        Enter:
+          actions:
+            showConfirmDialog:
+              resourceId: sandboxConfirmLayout
+              confirmActions:
+                updateVariable:
+                  id: confirminputkeyboard
+                  operations:
+                    - variableId: confirmState
+                      op: set
+                      value: confirmed
+        Escape:
+          actions:
+            hideConfirmDialog: {}
+  layouts:
+    sceneLayout:
+      elements:
+        - id: scene-bg
+          type: rect
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          colorId: layoutColor1
+        - id: scene-copy
+          type: text
+          x: 140
+          y: 138
+          content: Manual confirm input sandbox.
+          textStyleId: textStyle2
+        - id: scene-steps
+          type: text
+          x: 140
+          y: 194
+          content: Click Open. Press ESC to hide. Press ENTER to reopen.
+          textStyleId: textStyle3
+        - id: open-confirm
+          type: container
+          width: 220
+          height: 72
+          x: 140
+          y: 294
+          click:
+            payload:
+              actions:
+                showConfirmDialog:
+                  resourceId: sandboxConfirmLayout
+                  confirmActions:
+                    updateVariable:
+                      id: confirminputclick
+                      operations:
+                        - variableId: confirmState
+                          op: set
+                          value: confirmed
+          children:
+            - id: open-confirm-bg
+              type: rect
+              width: 220
+              height: 72
+              x: 0
+              y: 0
+              colorId: layoutColor4
+            - id: open-confirm-text
+              type: text
+              x: 76
+              y: 18
+              content: Open
+              textStyleId: textStyle4
+    sandboxConfirmLayout:
+      elements:
+        - id: confirm-panel
+          type: rect
+          width: 720
+          height: 240
+          x: 600
+          y: 250
+          colorId: layoutColor3
+        - id: confirm-title
+          type: text
+          x: 680
+          y: 320
+          content: Confirm
+          textStyleId: textStyle1
+        - id: confirm-copy
+          type: text
+          x: 680
+          y: 382
+          content: Confirm or cancel the current action.
+          textStyleId: textStyle2
+        - id: confirm-yes
+          type: container
+          width: 220
+          height: 68
+          x: 672
+          y: 430
+          click:
+            payload:
+              actions: ${confirmDialog.confirmActions}
+          children:
+            - id: confirm-yes-bg
+              type: rect
+              width: 220
+              height: 68
+              x: 0
+              y: 0
+              colorId: layoutColor4
+            - id: confirm-yes-text
+              type: text
+              x: 64
+              y: 18
+              content: Confirm
+              textStyleId: textStyle4
+        - id: confirm-no
+          type: container
+          width: 220
+          height: 68
+          x: 1028
+          y: 430
+          click:
+            payload:
+              actions: ${confirmDialog.cancelActions}
+          children:
+            - id: confirm-no-bg
+              type: rect
+              width: 220
+              height: 68
+              x: 0
+              y: 0
+              colorId: layoutColor4
+            - id: confirm-no-text
+              type: text
+              x: 82
+              y: 18
+              content: Cancel
+              textStyleId: textStyle4
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    color1:
+      hex: "#FFFFFF"
+    color2:
+      hex: "#B0B0B0"
+    layoutColor1:
+      hex: "#0B0B0B"
+    layoutColor3:
+      hex: "#262626"
+    layoutColor4:
+      hex: "#3C3C3C"
+  textStyles:
+    textStyle1:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 40
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle2:
+      fontId: fontDefault
+      colorId: color2
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle3:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 26
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle4:
+      fontId: fontDefault
+      colorId: color1
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: confirm
+  scenes:
+    confirm:
+      initialSectionId: start
+      sections:
+        start:
+          lines:
+            - id: line1
+              actions:
+                background:
+                  resourceId: sceneLayout
+                control:
+                  resourceId: confirmControls
