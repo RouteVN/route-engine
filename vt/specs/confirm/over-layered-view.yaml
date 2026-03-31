@@ -1,6 +1,6 @@
 ---
 title: Confirm Over Layered View
-description: Confirm dialog rendered on top of another layered view.
+description: Confirm dialog opened on top of another layered view.
 ---
 screen:
   width: 1920
@@ -27,8 +27,37 @@ resources:
           type: text
           x: 140
           y: 206
-          content: The confirm dialog should sit above the menu layer.
+          content: Starts closed. Click Open Stack to show confirm over the menu layer.
           textStyleId: textStyle2
+        - id: open-stack
+          type: container
+          width: 260
+          height: 72
+          x: 140
+          y: 292
+          click:
+            payload:
+              actions:
+                pushLayeredView:
+                  resourceId: menuLayout
+                showConfirmDialog:
+                  resourceId: layeredConfirmLayout
+                  confirmActions:
+                    clearLayeredViews: {}
+          children:
+            - id: open-stack-bg
+              type: rect
+              width: 260
+              height: 72
+              x: 0
+              y: 0
+              colorId: layoutColor4
+            - id: open-stack-text
+              type: text
+              x: 64
+              y: 18
+              content: Open Stack
+              textStyleId: textStyle4
     menuLayout:
       elements:
         - id: menu-panel
@@ -167,9 +196,3 @@ story:
               actions:
                 background:
                   resourceId: sceneLayout
-                pushLayeredView:
-                  resourceId: menuLayout
-                showConfirmDialog:
-                  resourceId: layeredConfirmLayout
-                  confirmActions:
-                    clearLayeredViews: {}
