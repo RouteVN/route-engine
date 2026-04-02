@@ -15,13 +15,13 @@ in:
         nextLineConfig:
           manual:
             enabled: true
-            requireComplete: false
+            requireLineCompleted: false
           auto:
             enabled: false
 out:
   manual:
     enabled: true
-    requireComplete: false
+    requireLineCompleted: false
   auto:
     enabled: false
 ---
@@ -32,13 +32,13 @@ in:
         nextLineConfig:
           manual:
             enabled: false
-            requireComplete: true
+            requireLineCompleted: true
           auto:
             enabled: true
 out:
   manual:
     enabled: false
-    requireComplete: true
+    requireLineCompleted: true
   auto:
     enabled: true
 ---
@@ -56,7 +56,7 @@ in:
         nextLineConfig:
           manual:
             enabled: true
-            requireComplete: true
+            requireLineCompleted: true
             delay: 1000
           auto:
             enabled: true
@@ -65,7 +65,7 @@ in:
 out:
   manual:
     enabled: true
-    requireComplete: true
+    requireLineCompleted: true
     delay: 1000
   auto:
     enabled: true

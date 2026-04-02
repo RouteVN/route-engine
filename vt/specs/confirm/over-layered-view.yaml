@@ -1,6 +1,7 @@
 ---
 title: Confirm Over Layered View
 description: Confirm dialog opened on top of another layered view.
+diffThreshold: 0.85
 ---
 screen:
   width: 1920

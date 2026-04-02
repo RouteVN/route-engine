@@ -95,7 +95,6 @@ out:
   global:
     isLineCompleted: true
     dialogueUIHidden: false
-    isDialogueHistoryShowing: false
     layeredViews: []
     nextLineConfig:
       manual:
@@ -210,7 +209,6 @@ out:
   global:
     isLineCompleted: true
     dialogueUIHidden: false
-    isDialogueHistoryShowing: false
     layeredViews: []
     nextLineConfig:
       manual:
@@ -420,7 +418,6 @@ out:
   global:
     isLineCompleted: true
     dialogueUIHidden: false
-    isDialogueHistoryShowing: false
     layeredViews: []
     nextLineConfig:
       manual:
@@ -580,7 +577,6 @@ out:
   global:
     isLineCompleted: true
     dialogueUIHidden: false
-    isDialogueHistoryShowing: false
     layeredViews: []
     nextLineConfig:
       manual:
@@ -695,7 +691,6 @@ out:
   global:
     isLineCompleted: true
     dialogueUIHidden: false
-    isDialogueHistoryShowing: false
     layeredViews: []
     nextLineConfig:
       manual:

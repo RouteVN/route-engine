@@ -227,6 +227,7 @@ describe("system.store rollback/save draft safety", () => {
     };
 
     const baseState = {
+      projectData: createProjectData(),
       global: {
         saveSlots: {
           1: {
@@ -321,7 +322,6 @@ describe("system.store rollback/save draft safety", () => {
       global: {
         isLineCompleted: false,
         dialogueUIHidden: false,
-        isDialogueHistoryShowing: false,
         confirmDialog: {
           resourceId: "saveOverwriteConfirmLayout",
           confirmActions: {
@@ -418,7 +418,6 @@ describe("system.store rollback/save draft safety", () => {
         skipMode: false,
         isLineCompleted: false,
         dialogueUIHidden: false,
-        isDialogueHistoryShowing: false,
         nextLineConfig: {
           manual: {
             enabled: true,
@@ -508,7 +507,6 @@ describe("system.store rollback/save draft safety", () => {
       global: {
         isLineCompleted: false,
         dialogueUIHidden: false,
-        isDialogueHistoryShowing: false,
         nextLineConfig: {
           manual: {
             enabled: true,

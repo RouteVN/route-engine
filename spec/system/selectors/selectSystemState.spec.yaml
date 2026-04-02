@@ -12,7 +12,7 @@ in:
         nextLineConfig:
           manual:
             enabled: true
-            requireComplete: false
+            requireLineCompleted: false
           auto:
             enabled: false
       contexts:
@@ -37,7 +37,7 @@ out:
     nextLineConfig:
       manual:
         enabled: true
-        requireComplete: false
+        requireLineCompleted: false
       auto:
         enabled: false
   contexts:

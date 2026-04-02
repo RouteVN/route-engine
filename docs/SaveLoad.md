@@ -2,8 +2,6 @@
 
 This document defines the intended product behavior, engine interfaces, and implementation boundaries for save/load in `route-engine`.
 
-It is a design and requirements document, not a guarantee that the current implementation already matches every rule below.
-
 ## Purpose
 
 Save/load lets the player persist a playable story state into a slot and later restore that story state from the slot.
@@ -75,7 +73,6 @@ Examples:
 - `autoMode`
 - `skipMode`
 - `dialogueUIHidden`
-- `isDialogueHistoryShowing`
 - `nextLineConfig`
 - `layeredViews`
 - `isLineCompleted`
@@ -153,7 +150,6 @@ That includes resetting:
 - `autoMode`
 - `skipMode`
 - `dialogueUIHidden`
-- `isDialogueHistoryShowing`
 - `nextLineConfig`
 - `layeredViews`
 - `isLineCompleted`
@@ -476,17 +472,12 @@ Current load flow:
 
 1. look up `state.global.saveSlots[String(slotId)]`
 2. if missing, leave state unchanged
-3. clone `slotData.state.viewedRegistry`
-4. clone `slotData.state.contexts`
-5. normalize rollback state on loaded contexts
-6. append `render` effect
-
-Current implementation note:
-
-- load restores `contexts` and `viewedRegistry`
-- load does not currently rebuild all transient globals from a clean baseline
-
-That gap should be fixed to match the product rules above.
+3. validate and normalize `slotData.state`
+4. normalize `viewedRegistry`
+5. validate each loaded read pointer against current `projectData`
+6. normalize loaded contexts and rollback state
+7. reset transient runtime globals to a clean playable baseline
+8. queue timer-clear effects and append `render`
 
 ## Relationship to Rollback
 
@@ -520,7 +511,7 @@ Compatibility rules should be explicit:
 
 - older saves without rollback state may be normalized
 - legacy rollback-only compatibility fields should be ignored/stripped
-- malformed save data should not be partially applied into live state
+- malformed save data should throw before any live-state mutation is committed
 
 If compatibility is intentionally broken in the future, that should be documented clearly.
 
@@ -546,9 +537,6 @@ The save/load test surface should cover:
 
 Areas that should be improved next:
 
-- load should reset transient runtime globals instead of inheriting them from the pre-load session
-- load should clear runtime timers from the pre-load session
-- malformed slot data should be handled safely and explicitly
 - action/effect schemas should match the actual save/load runtime interfaces
 - dynamic slot-event and thumbnail-capture integration rules should be reflected more explicitly in schemas or host-layer helpers
 - if screenshot capture remains preprocess-based, prefer cloning/augmenting authored actions before dispatch instead of mutating the original event payload in place

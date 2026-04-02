@@ -50,7 +50,77 @@ const cloneStateValue = (value) => {
   return structuredClone(source);
 };
 
+const isRecord = (value) =>
+  value !== null && typeof value === "object" && !Array.isArray(value);
+
 const toSlotStorageKey = (slotId) => String(slotId);
+
+const createDefaultViewedRegistry = () => ({
+  sections: [],
+  resources: [],
+});
+
+const createDefaultHistoryPointer = () => ({
+  sectionId: undefined,
+  lineId: undefined,
+  historySequenceIndex: undefined,
+});
+
+const normalizeLegacyManualNextLineConfig = (manual) => {
+  if (!isRecord(manual)) {
+    return manual;
+  }
+
+  const normalizedManual = { ...manual };
+  if (
+    Object.prototype.hasOwnProperty.call(normalizedManual, "requireComplete") &&
+    !Object.prototype.hasOwnProperty.call(
+      normalizedManual,
+      "requireLineCompleted",
+    )
+  ) {
+    normalizedManual.requireLineCompleted = normalizedManual.requireComplete;
+  }
+
+  delete normalizedManual.requireComplete;
+  return normalizedManual;
+};
+
+const findSectionInProjectData = (projectData, sectionId) => {
+  const scenes = projectData?.story?.scenes ?? {};
+
+  for (const [sceneId, scene] of Object.entries(scenes)) {
+    if (scene?.sections?.[sectionId]) {
+      return {
+        sceneId,
+        section: scene.sections[sectionId],
+      };
+    }
+  }
+
+  return {
+    sceneId: undefined,
+    section: undefined,
+  };
+};
+
+const assertUniqueSectionIds = (projectData) => {
+  const scenes = projectData?.story?.scenes ?? {};
+  const seenSectionIds = new Map();
+
+  for (const [sceneId, scene] of Object.entries(scenes)) {
+    const sections = scene?.sections ?? {};
+    for (const sectionId of Object.keys(sections)) {
+      const previousSceneId = seenSectionIds.get(sectionId);
+      if (previousSceneId !== undefined) {
+        throw new Error(
+          `Duplicate sectionId "${sectionId}" found in scenes "${previousSceneId}" and "${sceneId}". Section IDs must be globally unique.`,
+        );
+      }
+      seenSectionIds.set(sectionId, sceneId);
+    }
+  }
+};
 
 const normalizeStoredSlotId = (slotId) => {
   if (typeof slotId === "number") {
@@ -88,6 +158,374 @@ const normalizeStoredSaveSlots = (saveSlots = {}) => {
       normalizeStoredSaveSlot(storageKey, saveSlot),
     ]),
   );
+};
+
+const normalizeLoadedViewedRegistryEntry = (entry, type, index) => {
+  const keyName = type === "sections" ? "sectionId" : "resourceId";
+
+  if (typeof entry === "string" || typeof entry === "number") {
+    return {
+      [keyName]: String(entry),
+    };
+  }
+
+  if (!isRecord(entry)) {
+    throw new Error(
+      `Malformed save slot viewedRegistry.${type}[${index}] entry.`,
+    );
+  }
+
+  if (typeof entry[keyName] !== "string" || entry[keyName].length === 0) {
+    throw new Error(
+      `Malformed save slot viewedRegistry.${type}[${index}] entry: missing ${keyName}.`,
+    );
+  }
+
+  if (type === "sections") {
+    const normalizedEntry = {
+      sectionId: entry.sectionId,
+    };
+
+    if (
+      entry.lastLineId !== undefined &&
+      entry.lastLineId !== null &&
+      typeof entry.lastLineId !== "string"
+    ) {
+      throw new Error(
+        `Malformed save slot viewedRegistry.sections[${index}] entry: invalid lastLineId.`,
+      );
+    }
+
+    if (typeof entry.lastLineId === "string" && entry.lastLineId.length > 0) {
+      normalizedEntry.lastLineId = entry.lastLineId;
+    }
+
+    return normalizedEntry;
+  }
+
+  return {
+    resourceId: entry.resourceId,
+  };
+};
+
+const normalizeLoadedViewedRegistry = (viewedRegistry) => {
+  if (viewedRegistry === undefined) {
+    return createDefaultViewedRegistry();
+  }
+
+  if (!isRecord(viewedRegistry)) {
+    throw new Error("Malformed save slot viewedRegistry.");
+  }
+
+  if (
+    viewedRegistry.sections !== undefined &&
+    !Array.isArray(viewedRegistry.sections)
+  ) {
+    throw new Error("Malformed save slot viewedRegistry.sections.");
+  }
+
+  if (
+    viewedRegistry.resources !== undefined &&
+    !Array.isArray(viewedRegistry.resources)
+  ) {
+    throw new Error("Malformed save slot viewedRegistry.resources.");
+  }
+
+  const sections = viewedRegistry.sections ?? [];
+  const resources = viewedRegistry.resources ?? [];
+
+  return {
+    sections: Object.values(
+      Object.fromEntries(
+        sections.map((entry, index) => {
+          const normalizedEntry = normalizeLoadedViewedRegistryEntry(
+            entry,
+            "sections",
+            index,
+          );
+          return [normalizedEntry.sectionId, normalizedEntry];
+        }),
+      ),
+    ),
+    resources: Object.values(
+      Object.fromEntries(
+        resources.map((entry, index) => {
+          const normalizedEntry = normalizeLoadedViewedRegistryEntry(
+            entry,
+            "resources",
+            index,
+          );
+          return [normalizedEntry.resourceId, normalizedEntry];
+        }),
+      ),
+    ),
+  };
+};
+
+const normalizeLoadedReadPointer = (pointer, projectData, path) => {
+  if (!isRecord(pointer)) {
+    throw new Error(`Malformed save slot ${path}.`);
+  }
+
+  const { sectionId, lineId } = pointer;
+  if (typeof sectionId !== "string" || sectionId.length === 0) {
+    throw new Error(`Malformed save slot ${path}: missing sectionId.`);
+  }
+  if (typeof lineId !== "string" || lineId.length === 0) {
+    throw new Error(`Malformed save slot ${path}: missing lineId.`);
+  }
+
+  const { sceneId, section } = findSectionInProjectData(projectData, sectionId);
+  if (!section) {
+    throw new Error(
+      `Malformed save slot ${path}: section "${sectionId}" does not exist in projectData.`,
+    );
+  }
+
+  const lineExists = section.lines?.some((line) => line.id === lineId);
+  if (!lineExists) {
+    throw new Error(
+      `Malformed save slot ${path}: line "${lineId}" does not exist in section "${sectionId}".`,
+    );
+  }
+
+  return {
+    sceneId,
+    sectionId,
+    lineId,
+  };
+};
+
+const normalizeLoadedHistoryPointer = (pointer, projectData) => {
+  if (!isRecord(pointer)) {
+    return createDefaultHistoryPointer();
+  }
+
+  if (
+    typeof pointer.sectionId !== "string" ||
+    pointer.sectionId.length === 0 ||
+    typeof pointer.lineId !== "string" ||
+    pointer.lineId.length === 0
+  ) {
+    return createDefaultHistoryPointer();
+  }
+
+  try {
+    return {
+      ...normalizeLoadedReadPointer(
+        pointer,
+        projectData,
+        "contexts[*].pointers.history",
+      ),
+      historySequenceIndex:
+        typeof pointer.historySequenceIndex === "number"
+          ? pointer.historySequenceIndex
+          : undefined,
+    };
+  } catch {
+    return createDefaultHistoryPointer();
+  }
+};
+
+const normalizeLoadedHistorySequence = (historySequence) => {
+  if (!Array.isArray(historySequence)) {
+    return [];
+  }
+
+  return historySequence.flatMap((entry) => {
+    if (!isRecord(entry) || typeof entry.sectionId !== "string") {
+      return [];
+    }
+
+    return [
+      {
+        sectionId: entry.sectionId,
+        initialState: isRecord(entry.initialState)
+          ? cloneStateValue(entry.initialState)
+          : {},
+        lines: Array.isArray(entry.lines)
+          ? entry.lines
+              .filter((line) => isRecord(line) && typeof line.id === "string")
+              .map((line) => {
+                const normalizedLine = { id: line.id };
+                if (Array.isArray(line.updateVariableIds)) {
+                  normalizedLine.updateVariableIds = cloneStateValue(
+                    line.updateVariableIds,
+                  );
+                }
+                return normalizedLine;
+              })
+          : [],
+      },
+    ];
+  });
+};
+
+const normalizeLoadedRollback = (rollback, readPointer, projectData) => {
+  if (!isRecord(rollback) || !Array.isArray(rollback.timeline)) {
+    return createRollbackState({
+      pointer: readPointer,
+      replayStartIndex: 1,
+    });
+  }
+
+  const timeline = rollback.timeline.flatMap((checkpoint, index) => {
+    if (!isRecord(checkpoint)) {
+      return [];
+    }
+
+    try {
+      const normalizedPointer = normalizeLoadedReadPointer(
+        checkpoint,
+        projectData,
+        `rollback.timeline[${index}]`,
+      );
+      const normalizedCheckpoint = createRollbackCheckpoint({
+        sectionId: normalizedPointer.sectionId,
+        lineId: normalizedPointer.lineId,
+        rollbackPolicy: checkpoint.rollbackPolicy,
+      });
+
+      if (Array.isArray(checkpoint.executedActions)) {
+        normalizedCheckpoint.executedActions = cloneStateValue(
+          checkpoint.executedActions,
+        );
+      }
+
+      return [normalizedCheckpoint];
+    } catch {
+      return [];
+    }
+  });
+
+  if (timeline.length === 0) {
+    return createRollbackState({
+      pointer: readPointer,
+      replayStartIndex: 1,
+    });
+  }
+
+  let currentIndex =
+    typeof rollback.currentIndex === "number"
+      ? Math.trunc(rollback.currentIndex)
+      : timeline.length - 1;
+
+  if (currentIndex < 0 || currentIndex >= timeline.length) {
+    currentIndex = timeline.length - 1;
+  }
+
+  const checkpointAtCurrentIndex = timeline[currentIndex];
+  if (
+    checkpointAtCurrentIndex?.sectionId !== readPointer.sectionId ||
+    checkpointAtCurrentIndex?.lineId !== readPointer.lineId
+  ) {
+    const matchingIndex = timeline.findLastIndex(
+      (checkpoint) =>
+        checkpoint.sectionId === readPointer.sectionId &&
+        checkpoint.lineId === readPointer.lineId,
+    );
+
+    if (matchingIndex >= 0) {
+      currentIndex = matchingIndex;
+    } else {
+      timeline.push(
+        createRollbackCheckpoint({
+          sectionId: readPointer.sectionId,
+          lineId: readPointer.lineId,
+        }),
+      );
+      currentIndex = timeline.length - 1;
+    }
+  }
+
+  const replayStartIndex =
+    typeof rollback.replayStartIndex === "number"
+      ? Math.min(
+          Math.max(Math.trunc(rollback.replayStartIndex), 0),
+          currentIndex,
+        )
+      : 0;
+
+  return {
+    currentIndex,
+    isRestoring: false,
+    replayStartIndex,
+    timeline,
+  };
+};
+
+const normalizeLoadedContext = (context, projectData, index) => {
+  if (!isRecord(context)) {
+    throw new Error(`Malformed save slot contexts[${index}] entry.`);
+  }
+
+  const contextVariableDefaults =
+    getRollbackContextVariableDefaults(projectData);
+  const readPointer = normalizeLoadedReadPointer(
+    context.pointers?.read,
+    projectData,
+    `contexts[${index}].pointers.read`,
+  );
+
+  if (context.variables !== undefined && !isRecord(context.variables)) {
+    throw new Error(`Malformed save slot contexts[${index}].variables entry.`);
+  }
+
+  const historyPointer = normalizeLoadedHistoryPointer(
+    context.pointers?.history,
+    projectData,
+  );
+
+  const normalizedContext = {
+    currentPointerMode:
+      context.currentPointerMode === "history" && historyPointer.lineId
+        ? "history"
+        : "read",
+    pointers: {
+      read: readPointer,
+      history: historyPointer,
+    },
+    historySequence: normalizeLoadedHistorySequence(context.historySequence),
+    configuration: isRecord(context.configuration)
+      ? cloneStateValue(context.configuration)
+      : {},
+    views: Array.isArray(context.views) ? cloneStateValue(context.views) : [],
+    bgm: isRecord(context.bgm)
+      ? cloneStateValue(context.bgm)
+      : {
+          resourceId: undefined,
+        },
+    variables: {
+      ...contextVariableDefaults,
+      ...(context.variables ? cloneStateValue(context.variables) : {}),
+    },
+    rollback: normalizeLoadedRollback(
+      context.rollback,
+      readPointer,
+      projectData,
+    ),
+  };
+
+  return normalizedContext;
+};
+
+const normalizeLoadedSlotState = (slotState, projectData) => {
+  if (!isRecord(slotState)) {
+    throw new Error("Malformed save slot state.");
+  }
+
+  if (!Array.isArray(slotState.contexts) || slotState.contexts.length === 0) {
+    throw new Error(
+      "Malformed save slot state: contexts must be a non-empty array.",
+    );
+  }
+
+  return {
+    viewedRegistry: normalizeLoadedViewedRegistry(slotState.viewedRegistry),
+    contexts: slotState.contexts.map((context, index) =>
+      normalizeLoadedContext(context, projectData, index),
+    ),
+  };
 };
 
 const normalizeConfirmDialogActionBatch = (
@@ -361,8 +799,6 @@ const replayRecordedRollbackActions = (state, checkpoint) => {
     showDialogueUI,
     hideDialogueUI,
     toggleDialogueUI,
-    showDialogueHistory,
-    hideDialogueHistory,
     setNextLineConfig,
     pushLayeredView,
     popLayeredView,
@@ -435,8 +871,6 @@ const applyRollbackRestorableLineActions = (state, payload) => {
     showDialogueUI,
     hideDialogueUI,
     toggleDialogueUI,
-    showDialogueHistory,
-    hideDialogueHistory,
     setNextLineConfig,
     pushLayeredView,
     popLayeredView,
@@ -485,7 +919,7 @@ const restoreRollbackCheckpoint = (state, checkpointIndex) => {
       state.projectData,
     );
     state.global.dialogueUIHidden = false;
-    state.global.isDialogueHistoryShowing = false;
+    delete state.global.isDialogueHistoryShowing;
     state.global.nextLineConfig = cloneStateValue(DEFAULT_NEXT_LINE_CONFIG);
     state.global.layeredViews = [];
     clearConfirmDialog(state);
@@ -535,6 +969,8 @@ export const createInitialState = (payload) => {
   const global = payload.global ?? {};
   const { saveSlots = {}, variables: loadedGlobalVariables = {} } = global;
 
+  assertUniqueSectionIds(projectData);
+
   const initialSceneId = projectData.story.initialSceneId;
   const initialScene = projectData.story.scenes[initialSceneId];
   const initialSectionId = initialScene.initialSectionId;
@@ -564,7 +1000,6 @@ export const createInitialState = (payload) => {
       autoMode: false,
       skipMode: false,
       dialogueUIHidden: false,
-      isDialogueHistoryShowing: false,
       confirmDialog: null,
       viewedRegistry: {
         sections: [],
@@ -757,6 +1192,13 @@ export const selectSaveSlot = ({ state }, payload) => {
   return state.global.saveSlots[storageKey];
 };
 
+export const selectAllVariables = ({ state }) => {
+  return {
+    ...(state.global?.variables ?? {}),
+    ...(state.contexts?.[state.contexts.length - 1]?.variables ?? {}),
+  };
+};
+
 /**
  * Selects the current pointer from the last context
  * @param {Object} state - Current state object
@@ -789,17 +1231,7 @@ export const selectCurrentPointer = ({ state }) => {
  */
 export const selectSection = ({ state }, payload) => {
   const { sectionId } = payload;
-  const scenes = state.projectData?.story?.scenes || {};
-
-  // Search through all scenes to find the section
-  for (const sceneId in scenes) {
-    const scene = scenes[sceneId];
-    if (scene.sections && scene.sections[sectionId]) {
-      return scene.sections[sectionId];
-    }
-  }
-
-  return undefined;
+  return findSectionInProjectData(state.projectData, sectionId).section;
 };
 
 /**
@@ -1291,25 +1723,6 @@ export const toggleDialogueUI = ({ state }) => {
   return state;
 };
 
-export const showDialogueHistory = ({ state }) => {
-  const dialogueHistory = selectDialogueHistory({ state });
-  state.global.isDialogueHistoryShowing = true;
-  state.global.pendingEffects.push({
-    name: "render",
-  });
-  recordRollbackAction(state, "showDialogueHistory", undefined);
-  return state;
-};
-
-export const hideDialogueHistory = ({ state }) => {
-  state.global.isDialogueHistoryShowing = false;
-  state.global.pendingEffects.push({
-    name: "render",
-  });
-  recordRollbackAction(state, "hideDialogueHistory", undefined);
-  return state;
-};
-
 export const clearPendingEffects = ({ state }) => {
   state.global.pendingEffects = [];
   return state;
@@ -1405,7 +1818,8 @@ export const addViewedResource = ({ state }, payload) => {
  * If only one configuration is provided, performs partial merge with existing config.
  */
 export const setNextLineConfig = ({ state }, payload) => {
-  const { manual, auto, applyMode } = payload;
+  const manual = normalizeLegacyManualNextLineConfig(payload.manual);
+  const { auto, applyMode } = payload;
   const previousAutoEnabled = state.global.nextLineConfig.auto?.enabled;
   const previousApplyMode = state.global.nextLineConfig?.applyMode;
   const isRollbackRestoring =
@@ -1540,15 +1954,27 @@ export const loadSlot = ({ state }, payload) => {
   const storageKey = toSlotStorageKey(slotId);
   const slotData = state.global.saveSlots[storageKey];
   if (slotData) {
-    state.global.viewedRegistry = cloneStateValue(
-      slotData.state.viewedRegistry,
+    const normalizedSlotState = normalizeLoadedSlotState(
+      slotData.state,
+      state.projectData,
     );
-    state.contexts = cloneStateValue(slotData.state.contexts);
-    state.contexts?.forEach((context) => {
-      ensureRollbackState(context, { compatibilityAnchor: !context.rollback });
-    });
+
+    state.global.viewedRegistry = normalizedSlotState.viewedRegistry;
+    state.contexts = normalizedSlotState.contexts;
+    state.global.autoMode = false;
+    state.global.skipMode = false;
+    state.global.dialogueUIHidden = false;
+    delete state.global.isDialogueHistoryShowing;
+    state.global.nextLineConfig = cloneStateValue(DEFAULT_NEXT_LINE_CONFIG);
+    state.global.layeredViews = [];
+    state.global.isLineCompleted = true;
     clearConfirmDialog(state);
-    state.global.pendingEffects.push({ name: "render" });
+    state.global.pendingEffects.push(
+      { name: "clearAutoNextTimer" },
+      { name: "clearSkipNextTimer" },
+      { name: "clearNextLineConfigTimer" },
+      { name: "render" },
+    );
   }
   return state;
 };
@@ -1565,6 +1991,8 @@ export const loadSaveSlot = loadSlot;
  */
 export const updateProjectData = ({ state }, payload) => {
   const { projectData } = payload;
+
+  assertUniqueSectionIds(projectData);
 
   state.projectData = projectData;
   clearConfirmDialog(state);
@@ -2419,6 +2847,7 @@ export const createSystemStore = (initialState) => {
     selectSaveSlotMap,
     selectSaveSlots,
     selectSaveSlot,
+    selectAllVariables,
     selectCurrentPointer,
     selectSection,
     selectCurrentLine,
@@ -2442,8 +2871,6 @@ export const createSystemStore = (initialState) => {
     showDialogueUI,
     hideDialogueUI,
     toggleDialogueUI,
-    showDialogueHistory,
-    hideDialogueHistory,
     showConfirmDialog,
     hideConfirmDialog,
     clearPendingEffects,

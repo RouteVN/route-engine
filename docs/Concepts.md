@@ -74,6 +74,8 @@ Static, read-only data that defines the visual novel content:
   - Layout rect elements should reference shared colors with `colorId` and optional `hover.colorId` / `click.colorId` / `rightClick.colorId`
   - Authored inline `textStyle` objects, authored sprite `src` / `hover.src` / `click.src` fields, and authored rect `fill` / `hover.fill` / `click.fill` / `rightClick.fill` fields in layout elements are invalid and fail fast at render-state construction
 - **story**: Scenes, sections, and lines that define the narrative flow
+  - Scene containers remain part of authored story structure
+  - Section IDs are globally unique across scenes and are the primary runtime routing key
 
 Project data is loaded once and never mutated during runtime.
 
@@ -153,6 +155,7 @@ All contexts share global state but maintain their own:
 ## Pointers
 
 Pointers are the core navigation mechanism in route-engine. A pointer tracks the current position in the story by referencing a `sectionId` and `lineId`.
+Section IDs are globally unique, so section lookup is scene-agnostic at runtime even though scenes still exist in authored project data.
 
 ### Pointer Structure
 
@@ -162,6 +165,9 @@ pointer: {
   lineId: 'line_42'
 }
 ```
+
+Some runtime paths may also carry `sceneId` as additional metadata, but the
+authoritative lookup key is the globally unique `sectionId`.
 
 The pointer always points to a specific line within a specific section. The engine uses this to:
 

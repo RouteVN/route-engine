@@ -139,7 +139,7 @@ properties:
               enabled:
                 type: boolean
                 default: true
-              requireComplete:
+              requireLineCompleted:
                 type: boolean
                 default: false
             additionalProperties: false

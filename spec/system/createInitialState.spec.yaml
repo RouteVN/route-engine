@@ -26,7 +26,6 @@ out:
     autoMode: false
     skipMode: false
     dialogueUIHidden: false
-    isDialogueHistoryShowing: false
     confirmDialog: null
     viewedRegistry:
       sections: []
@@ -119,7 +118,6 @@ out:
     autoMode: false
     skipMode: false
     dialogueUIHidden: false
-    isDialogueHistoryShowing: false
     confirmDialog: null
     viewedRegistry:
       sections: []
@@ -229,7 +227,6 @@ out:
     autoMode: false
     skipMode: false
     dialogueUIHidden: false
-    isDialogueHistoryShowing: false
     confirmDialog: null
     viewedRegistry:
       sections: []
@@ -330,7 +327,6 @@ out:
     autoMode: false
     skipMode: false
     dialogueUIHidden: false
-    isDialogueHistoryShowing: false
     confirmDialog: null
     viewedRegistry:
       sections: []
@@ -427,7 +423,6 @@ out:
     autoMode: false
     skipMode: false
     dialogueUIHidden: false
-    isDialogueHistoryShowing: false
     confirmDialog: null
     viewedRegistry:
       sections: []
@@ -485,3 +480,26 @@ out:
             lineId: "line2"
             rollbackPolicy: "free"
       variables: {}
+---
+case: throws when section ids are duplicated across scenes
+in:
+  - global:
+    projectData:
+      story:
+        initialSceneId: "scene1"
+        scenes:
+          scene1:
+            initialSectionId: "shared"
+            sections:
+              shared:
+                lines:
+                  - id: "line1"
+                    actions: {}
+          scene2:
+            initialSectionId: "shared"
+            sections:
+              shared:
+                lines:
+                  - id: "line2"
+                    actions: {}
+throws: 'Duplicate sectionId "shared" found in scenes "scene1" and "scene2". Section IDs must be globally unique.'
