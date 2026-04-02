@@ -217,12 +217,22 @@ const normalizeLoadedViewedRegistry = (viewedRegistry) => {
     throw new Error("Malformed save slot viewedRegistry.");
   }
 
-  const sections = Array.isArray(viewedRegistry.sections)
-    ? viewedRegistry.sections
-    : [];
-  const resources = Array.isArray(viewedRegistry.resources)
-    ? viewedRegistry.resources
-    : [];
+  if (
+    viewedRegistry.sections !== undefined &&
+    !Array.isArray(viewedRegistry.sections)
+  ) {
+    throw new Error("Malformed save slot viewedRegistry.sections.");
+  }
+
+  if (
+    viewedRegistry.resources !== undefined &&
+    !Array.isArray(viewedRegistry.resources)
+  ) {
+    throw new Error("Malformed save slot viewedRegistry.resources.");
+  }
+
+  const sections = viewedRegistry.sections ?? [];
+  const resources = viewedRegistry.resources ?? [];
 
   return {
     sections: Object.values(
@@ -1959,12 +1969,12 @@ export const loadSlot = ({ state }, payload) => {
     state.global.layeredViews = [];
     state.global.isLineCompleted = true;
     clearConfirmDialog(state);
-    state.global.pendingEffects = [
+    state.global.pendingEffects.push(
       { name: "clearAutoNextTimer" },
       { name: "clearSkipNextTimer" },
       { name: "clearNextLineConfigTimer" },
       { name: "render" },
-    ];
+    );
   }
   return state;
 };

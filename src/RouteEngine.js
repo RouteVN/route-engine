@@ -79,7 +79,13 @@ export default function createRouteEngine(options) {
   };
 
   const buildActionTemplateContext = (eventContext) => {
-    if (!eventContext) return undefined;
+    if (!eventContext) {
+      return {
+        variables: _systemStore.selectAllVariables
+          ? _systemStore.selectAllVariables()
+          : undefined,
+      };
+    }
     if (Object.prototype.hasOwnProperty.call(eventContext, "event")) {
       throw new Error(
         'eventContext key "event" is no longer supported. Use "_event".',
