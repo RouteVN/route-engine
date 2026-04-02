@@ -45,7 +45,6 @@ out:
     skipMode: false
     isDialogueUIVisible: true
     pendingEffects:
-      - name: "render"
       - name: "handleLineActions"
   projectData:
     story:

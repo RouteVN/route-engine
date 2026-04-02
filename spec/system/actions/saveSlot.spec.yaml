@@ -5,6 +5,20 @@ suites: [saveSlot]
 suite: saveSlot
 exportName: saveSlot
 ---
+case: throw when slotId is missing
+in:
+  - state:
+      global:
+        saveSlots: {}
+        pendingEffects: []
+      projectData:
+        story: { initialSceneId: "test" }
+      contexts:
+        - pointers:
+            read: { sectionId: "sec1", lineId: "line1" }
+  - thumbnailImage: null
+throws: "saveSlot requires slotId"
+---
 case: save to slot 1
 in:
   - state:
@@ -22,6 +36,7 @@ out:
   global:
     saveSlots:
       "1":
+        formatVersion: 1
         slotId: 1
         savedAt: 1700000000000
         image: null
@@ -35,6 +50,7 @@ out:
         payload:
           saveSlots:
             "1":
+              formatVersion: 1
               slotId: 1
               savedAt: 1700000000000
               image: null
@@ -67,6 +83,7 @@ out:
   global:
     saveSlots:
       "2":
+        formatVersion: 1
         slotId: 2
         savedAt: 1700000000000
         image: null
@@ -80,6 +97,7 @@ out:
         payload:
           saveSlots:
             "2":
+              formatVersion: 1
               slotId: 2
               savedAt: 1700000000000
               image: null
@@ -118,6 +136,7 @@ out:
   global:
     saveSlots:
       "1":
+        formatVersion: 1
         slotId: 1
         savedAt: 1700000000000
         image: null
@@ -131,6 +150,7 @@ out:
         payload:
           saveSlots:
             "1":
+              formatVersion: 1
               slotId: 1
               savedAt: 1700000000000
               image: null
@@ -164,6 +184,7 @@ out:
   global:
     saveSlots:
       "1":
+        formatVersion: 1
         slotId: 1
         savedAt: 1701234567890
         image: "custom_image.png"
@@ -177,6 +198,7 @@ out:
         payload:
           saveSlots:
             "1":
+              formatVersion: 1
               slotId: 1
               savedAt: 1701234567890
               image: "custom_image.png"
@@ -210,6 +232,7 @@ out:
   global:
     saveSlots:
       "1":
+        formatVersion: 1
         slotId: 1
         savedAt: 1700000000000
         image: null
@@ -224,6 +247,7 @@ out:
         payload:
           saveSlots:
             "1":
+              formatVersion: 1
               slotId: 1
               savedAt: 1700000000000
               image: null
@@ -263,6 +287,7 @@ out:
   global:
     saveSlots:
       "1":
+        formatVersion: 1
         slotId: 1
         savedAt: 1700000000000
         image: null
@@ -285,6 +310,7 @@ out:
         payload:
           saveSlots:
             "1":
+              formatVersion: 1
               slotId: 1
               savedAt: 1700000000000
               image: null
@@ -343,6 +369,7 @@ out:
   global:
     saveSlots:
       "3":
+        formatVersion: 1
         slotId: 3
         savedAt: 1700000000000
         image: null
@@ -372,6 +399,7 @@ out:
         payload:
           saveSlots:
             "3":
+              formatVersion: 1
               slotId: 3
               savedAt: 1700000000000
               image: null

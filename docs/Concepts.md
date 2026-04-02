@@ -95,7 +95,6 @@ Mutable runtime state managed by the system store. Key components:
 - **contexts**: Stack of isolated game contexts (supports title screen, gameplay, replays)
   - `currentPointerMode`: Either `'read'` or `'history'`
   - `pointers`: Position trackers (read pointer and history pointer)
-  - `historySequence`: Navigation history
   - `configuration`: Context-specific settings
   - `views`: Layered view stack
   - `bgm`: Current background music
@@ -270,6 +269,9 @@ Side effects queued during action execution:
 - `handleLineActions`: Process actions attached to a line
 - `startAutoNextTimer` / `clearAutoNextTimer`: Auto mode timers
 - `startSkipNextTimer` / `clearSkipNextTimer`: Skip mode timers
+- `nextLineConfigTimer` / `clearNextLineConfigTimer`: Authored next-line timers
+
+The built-in `createEffectsHandler(...)` coalesces only the latest occurrence of replaceable built-in effects such as `render`, timer effects, line-action dispatch, and persistence effects. Custom effect names are preserved and must be handled explicitly.
 
 ## Store Architecture
 

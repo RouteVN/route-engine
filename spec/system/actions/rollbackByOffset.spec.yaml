@@ -116,7 +116,87 @@ out:
         history:
           sectionId: null
           lineId: null
-          historySequenceIndex: null
+      rollback:
+        currentIndex: 0
+        isRestoring: false
+        replayStartIndex: 0
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "2"
+            rollbackPolicy: "free"
+---
+case: rollback uses the checkpoint timeline even when history state is absent
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                    - id: "2"
+        resources:
+          variables: {}
+      global:
+        isLineCompleted: true
+        pendingEffects: []
+      contexts:
+        - variables: {}
+          currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+          rollback:
+            currentIndex: 1
+            isRestoring: false
+            replayStartIndex: 0
+            timeline:
+              - sectionId: "section1"
+                lineId: "1"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "2"
+                rollbackPolicy: "free"
+  - offset: -1
+out:
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                - id: "2"
+    resources:
+      variables: {}
+  global:
+    isLineCompleted: true
+    dialogueUIHidden: false
+    layeredViews: []
+    nextLineConfig:
+      manual:
+        enabled: true
+        requireLineCompleted: false
+      auto:
+        enabled: false
+      applyMode: "persistent"
+    pendingEffects:
+      - name: "clearNextLineConfigTimer"
+      - name: "render"
+  contexts:
+    - variables: {}
+      currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "1"
       rollback:
         currentIndex: 0
         isRestoring: false
@@ -231,7 +311,6 @@ out:
         history:
           sectionId: null
           lineId: null
-          historySequenceIndex: null
       rollback:
         currentIndex: 1
         isRestoring: false
@@ -440,7 +519,6 @@ out:
         history:
           sectionId: null
           lineId: null
-          historySequenceIndex: null
       rollback:
         currentIndex: 2
         isRestoring: false
@@ -520,7 +598,6 @@ in:
             history:
               sectionId: "section2"
               lineId: "11"
-              historySequenceIndex: 0
           rollback:
             currentIndex: 2
             isRestoring: false
@@ -599,7 +676,6 @@ out:
         history:
           sectionId: null
           lineId: null
-          historySequenceIndex: null
       rollback:
         currentIndex: 1
         isRestoring: false
@@ -714,7 +790,6 @@ out:
         history:
           sectionId: null
           lineId: null
-          historySequenceIndex: null
       rollback:
         currentIndex: 1
         isRestoring: false

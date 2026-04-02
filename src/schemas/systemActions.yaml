@@ -1,39 +1,24 @@
 $schema: http://json-schema.org/draft-07/schema#
 title: System Actions Schema
-description: Schema for all system actions that handle state management and navigation in visual novel engine
+description: Schema for authored/public system actions in the Route Engine runtime
 type: object
 properties:
-  #########
-  # Line navigation
-  #########
-  contextNextLine:
+  nextLine:
     type: object
-    description: Advance to next line
+    description: Advance to the next line or complete the current line if it is still revealing
     properties: {}
-      # TODO: not sure if we need this
-      # forceSkipAutonext:
-      #   type: boolean
-      #   description: Force skip auto-next behavior
-      #   default: false
-      # TODO: not sure if we need this
-      # targetMode:
-      #   type: string
-      #   description: Target mode for the next line operation
-      #   enum: [main, replay]
     additionalProperties: false
 
-  contextPrevLine:
+  prevLine:
     type: object
-    description: Go to previous line, this will usually trigger history mode
+    description: Navigate backward within the current section using the history pointer
+    properties:
+      sectionId:
+        type: string
+        description: Optional section ID. Defaults to the current read section when omitted.
     additionalProperties: false
 
-  # TODO: finalize naming
-  contextLineCompleted:
-    type: object
-    description: Handle completion of a line (internal action)
-    additionalProperties: false
-
-  contextUpdateNextConfig:
+  setNextLineConfig:
     type: object
     description: Control how the line can be advanced
     properties:
@@ -47,126 +32,87 @@ properties:
           requireLineCompleted:
             type: boolean
             default: false
-            description: Only allow manual advance after line completes
+            description: Only allow manual advance after line completion
         additionalProperties: false
       auto:
         type: object
-        description: Auto-advance configuration (presence enables it)
         properties:
+          enabled:
+            type: boolean
+            default: false
+            description: Enable auto-advance
+          trigger:
+            type: string
+            enum: [fromStart, fromComplete]
+            default: fromComplete
+            description: When to start timing for auto advance
           delay:
-            type: object
-            properties:
-              trigger:
-                type: string
-                enum: [fromStart, fromComplete]
-                default: fromComplete
-                description: When to start timing for auto advance
-              time:
-                type: number
-                minimum: 0
-                default: 1000
-                description: Delay in milliseconds before advancing
+            type: number
+            minimum: 0
+            default: 1000
+            description: Delay in milliseconds before advancing
         additionalProperties: false
       applyMode:
         type: string
         enum: [singleLine, persistent]
         default: persistent
-        description: Whether this config is consumed after one line advance or kept until changed
+        description: Whether this config is consumed after one line or kept until changed
     additionalProperties: false
 
-  #####
-  # Misc
-  #####
-  updateVariable:
-    type: object
-    description: Update game variables
-    properties:
-      id:
-        type: string
-        description: Unique identifier for this updateVariable action (for rollback reference)
-        pattern: "^[a-zA-Z0-9]+$"
-      operations:
-        type: array
-        description: Array of variable operations to perform
-        items:
-          type: object
-          properties:
-            variableId:
-              type: string
-              description: ID of the variable to update
-            op:
-              type: string
-              description: Operation to perform on the variable
-              enum: [set, increment, decrement, multiply, divide, toggle]
-            value:
-              description: Value to use in the operation
-              oneOf:
-                - type: string
-                - type: number
-                - type: boolean
-          required: [variableId, op]
-          additionalProperties: false
-        minItems: 1
-    required: [id, operations]
-    additionalProperties: false
-  # TODO: remove this
-  # clearCurrentMode:
-  #   type: object
-  #   description: Clear current mode and switch to a new one
-  #   properties:
-  #     mode:
-  #       type: string
-  #       description: Mode to switch to
-  #       enum: [read, menu, history, title]
-  #   required: [mode]
-  #   additionalProperties: false
-
-  globalClearSideEffects:
-    type: object
-    description: Clear all pending effects (internal action)
-    additionalProperties: false
-
-  ############
-  # Read mode related state
-  ############
-  globalStartAutoMode:
+  startAutoMode:
     type: object
     description: Start auto-advance mode
+    properties: {}
     additionalProperties: false
 
-  globalStopAutoMode:
+  stopAutoMode:
     type: object
     description: Stop auto-advance mode
+    properties: {}
     additionalProperties: false
 
-  globalToggleAutoMode:
+  toggleAutoMode:
     type: object
-    description: Toggle auto-advance mode on/off
+    description: Toggle auto-advance mode
+    properties: {}
     additionalProperties: false
 
-  globalStartSkipMode:
+  startSkipMode:
     type: object
-    description: Start skip mode for fast-forwarding
+    description: Start skip mode
+    properties: {}
     additionalProperties: false
 
-  globalStopSkipMode:
+  stopSkipMode:
     type: object
     description: Stop skip mode
+    properties: {}
     additionalProperties: false
 
-  globalToggleSkipMode:
+  toggleSkipMode:
     type: object
-    description: Toggle skip mode on/off
+    description: Toggle skip mode
+    properties: {}
     additionalProperties: false
 
-  globalToggleUIHidden:
+  showDialogueUI:
     type: object
-    description: Toggle visibility of UI elements such a dialogue or others
+    description: Show the dialogue UI
+    properties: {}
     additionalProperties: false
 
-  ############
-  # Confirm Dialog
-  ############
+  hideDialogueUI:
+    type: object
+    description: Hide the dialogue UI
+    properties: {}
+    additionalProperties: false
+
+  toggleDialogueUI:
+    type: object
+    description: Toggle dialogue UI visibility
+    properties: {}
+    additionalProperties: false
+
   showConfirmDialog:
     type: object
     description: Show a transient confirm dialog rendered from a layout resource
@@ -187,14 +133,12 @@ properties:
   hideConfirmDialog:
     type: object
     description: Hide the transient confirm dialog
+    properties: {}
     additionalProperties: false
 
-  ############
-  # Save and Load
-  ############
   saveSlot:
     type: object
-    description: Save current story state. See the side effect for all the data it stores
+    description: Save current story state to a slot
     properties:
       slotId:
         type: [number, string]
@@ -205,7 +149,7 @@ properties:
         description: Optional thumbnail image as a data URL or external image source
       savedAt:
         type: number
-        description: Optional save timestamp override. Mainly useful for deterministic integrations and tests.
+        description: Optional save timestamp override
     required: [slotId]
     additionalProperties: false
 
@@ -220,100 +164,117 @@ properties:
     required: [slotId]
     additionalProperties: false
 
-  saveSaveSlot:
+  sectionTransition:
     type: object
-    description: Compatibility alias for saveSlot
-    properties:
-      slot:
-        type: [number, string]
-        description: Save slot index to save to, or a template/event binding that resolves to one
-        minimum: 0
-      thumbnailImage:
-        type: [string, "null"]
-        description: Optional thumbnail image as a data URL or external image source
-      date:
-        type: number
-        description: Optional save timestamp override. Mainly useful for deterministic integrations and tests.
-    required: [slot]
-    additionalProperties: false
-
-  loadSaveSlot:
-    type: object
-    description: Compatibility alias for loadSlot
-    properties:
-      slot:
-        type: [number, string]
-        description: Save slot index to load from, or a template/event binding that resolves to one
-        minimum: 0
-    required: [slot]
-    additionalProperties: false
-
-  ############
-  # View Layer System
-  ############
-  # The view layer system manages a stack of UI layers that can be pushed, popped, and replaced.
-  # Each layer can be fullscreen, layeredView (blocks interaction with layers below), or floating (shows layers below).
-  # The system maintains a linear stack where Layer 0 is the base/main view.
-  #
-  # Layer Types:
-  # - fullscreen: Covers entire display, layers below are hidden
-  # - layeredView: Blocks interaction with layers below but may show them
-  # - floating: Shows on top of layers below, allows interaction with underlying layers
-  #
-  # Common Patterns:
-  # - pushViewLayer() → popViewLayer() for normal navigation with back history
-  # - pushViewLayer() → clearViewLayers() → pushViewLayer() for layeredView flows
-  # - replaceViewLayer() for form flows where back navigation should be preserved
-  #
-  # Examples:
-  # Main Menu (layer 0) → Settings (layer 1) → Confirmation Dialog (layer 2)
-  # popViewLayer() returns to Settings
-  # clearViewLayers() removes all layers, returns to base
-  #
-  contextSectionTransition:
-    type: object
-    description: Navigate to specific section
+    description: Navigate to the first line of a section
     properties:
       sectionId:
         type: string
         description: Target section ID
-      # sceneId:
-      #   type: string
-      #   description: Target scene ID (optional)
-      # TODO: figure out the main and replay mode
-      mode:
-        type: string
-        description: Navigation mode
-        enum: [main, replay]
+    required: [sectionId]
     additionalProperties: false
-  contextPushViewLayer:
+
+  jumpToLine:
     type: object
-    description: Push a new view layer onto the layer stack (can be layeredView, fullscreen, or floating)
+    description: Jump to a specific line, optionally in a different section
+    properties:
+      sectionId:
+        type: string
+        description: Target section ID. Defaults to the current section when omitted.
+      lineId:
+        type: string
+        description: Target line ID
+    required: [lineId]
+    additionalProperties: false
+
+  pushLayeredView:
+    type: object
+    description: Push a layered view onto the UI stack
     properties:
       resourceId:
         type: string
-        description: ID of the view layer resource to display
+        description: Layered-view resource to display
     required: [resourceId]
     additionalProperties: false
 
-  contextPopViewLayer:
+  popLayeredView:
     type: object
-    description: Remove the current view layer from the layer stack and return to the previous layer
+    description: Pop the current layered view
+    properties: {}
     additionalProperties: false
 
-  contextClearViewLayers:
+  replaceLastLayeredView:
     type: object
-    description: Remove all view layers from the stack except the base layer (main view)
-    additionalProperties: false
-
-  contextReplaceViewLayer:
-    type: object
-    description: Replace the current view layer with a new one (no back history)
+    description: Replace the current layered view without clearing the rest of the stack
     properties:
       resourceId:
         type: string
-        description: ID of the replacement view layer resource to display
+        description: Layered-view resource to display
     required: [resourceId]
+    additionalProperties: false
+
+  clearLayeredViews:
+    type: object
+    description: Clear all layered views
+    properties: {}
+    additionalProperties: false
+
+  rollbackByOffset:
+    type: object
+    description: Roll back relative to the active rollback checkpoint
+    properties:
+      offset:
+        type: integer
+        maximum: -1
+        default: -1
+        description: Negative rollback offset
+    additionalProperties: false
+
+  rollbackToLine:
+    type: object
+    description: Roll back to a specific line in the visible rollback timeline
+    properties:
+      sectionId:
+        type: string
+        description: Target section ID
+      lineId:
+        type: string
+        description: Target line ID
+    required: [sectionId, lineId]
+    additionalProperties: false
+
+  updateVariable:
+    type: object
+    description: Update game variables
+    properties:
+      id:
+        type: string
+        description: Unique identifier for this updateVariable action
+        pattern: "^[a-zA-Z0-9]+$"
+      operations:
+        type: array
+        description: Variable operations to perform
+        items:
+          type: object
+          properties:
+            variableId:
+              type: string
+              description: ID of the variable to update
+            op:
+              type: string
+              description: Operation to perform on the variable
+              enum: [set, increment, decrement, multiply, divide, toggle]
+            value:
+              description: Value to use in the operation
+              oneOf:
+                - type: string
+                - type: number
+                - type: boolean
+                - type: object
+          required: [variableId, op]
+          additionalProperties: false
+        minItems: 1
+    required: [id, operations]
     additionalProperties: false
 
 additionalProperties: false

@@ -1,22 +1,24 @@
 $schema: http://json-schema.org/draft-07/schema#
-title: Effects Schema
-description: Schema for pending effects in the visual novel engine system state
-oneOf:
+title: Pending Effects Schema
+description: Schema for pending effects queued by the Route Engine runtime
+anyOf:
   - title: Render effect
-    description: Triggers a render operation
     type: object
     properties:
-      type:
+      name:
         const: render
-      priority:
-        type: integer
-        description: Priority of the effect (lower numbers execute first)
-        default: 0
-    required: [type]
+    required: [name]
+    additionalProperties: false
+
+  - title: Handle line actions effect
+    type: object
+    properties:
+      name:
+        const: handleLineActions
+    required: [name]
     additionalProperties: false
 
   - title: Save slots effect
-    description: Persists the full save slot map
     type: object
     properties:
       name:
@@ -26,142 +28,114 @@ oneOf:
         properties:
           saveSlots:
             type: object
-            description: Save game slots keyed by stringified slot id
+            description: Save slots keyed by stringified slot ID
             additionalProperties: true
-      priority:
-        type: integer
-        description: Priority of the effect (lower numbers execute first)
-        default: 0
+        required: [saveSlots]
+        additionalProperties: false
     required: [name, payload]
     additionalProperties: false
 
-  - title: Save variables effect
-    description: Saves global-device variables to localStorage
-    type: object
-    properties:
-      type:
-        const: saveVariables
-      priority:
-        type: integer
-        description: Priority of the effect (lower numbers execute first)
-        default: 0
-    required: [type]
-    additionalProperties: false
-
   - title: Save global-device variables effect
-    description: Saves global-device variables to localStorage
     type: object
     properties:
-      type:
+      name:
         const: saveGlobalDeviceVariables
       payload:
         type: object
-        description: Global-device variables to save
         properties:
           globalDeviceVariables:
             type: object
-            description: Global-device scoped variables
             additionalProperties: true
-      priority:
-        type: integer
-        description: Priority of effect (lower numbers execute first)
-        default: 0
-    required: [type]
+        required: [globalDeviceVariables]
+        additionalProperties: false
+    required: [name, payload]
     additionalProperties: false
 
   - title: Save global-account variables effect
-    description: Saves global-account variables to localStorage
     type: object
     properties:
-      type:
+      name:
         const: saveGlobalAccountVariables
       payload:
         type: object
-        description: Global-account variables to save
         properties:
           globalAccountVariables:
             type: object
-            description: Global-account scoped variables
             additionalProperties: true
-      priority:
-        type: integer
-        description: Priority of effect (lower numbers execute first)
-        default: 0
-    required: [type]
+        required: [globalAccountVariables]
+        additionalProperties: false
+    required: [name, payload]
     additionalProperties: false
 
   - title: Start auto next timer effect
-    description: Starts the auto-advance timer
     type: object
     properties:
-      type:
+      name:
         const: startAutoNextTimer
-      priority:
-        type: integer
-        description: Priority of the effect (lower numbers execute first)
-        default: 0
-    required: [type]
+      payload:
+        type: object
+        properties:
+          delay:
+            type: number
+            minimum: 0
+        additionalProperties: false
+    required: [name, payload]
     additionalProperties: false
 
   - title: Clear auto next timer effect
-    description: Clears the auto-advance timer
     type: object
     properties:
-      type:
+      name:
         const: clearAutoNextTimer
-      priority:
-        type: integer
-        description: Priority of the effect (lower numbers execute first)
-        default: 0
-    required: [type]
+    required: [name]
     additionalProperties: false
 
   - title: Start skip next timer effect
-    description: Starts the skip mode timer
     type: object
     properties:
-      type:
+      name:
         const: startSkipNextTimer
-      priority:
-        type: integer
-        description: Priority of the effect (lower numbers execute first)
-        default: 0
-    required: [type]
+    required: [name]
     additionalProperties: false
 
   - title: Clear skip next timer effect
-    description: Clears the skip mode timer
     type: object
     properties:
-      type:
+      name:
         const: clearSkipNextTimer
-      priority:
-        type: integer
-        description: Priority of the effect (lower numbers execute first)
-        default: 0
-    required: [type]
+    required: [name]
     additionalProperties: false
 
-  - title: Start timer effect
-    description: Starts a custom timer with payload
+  - title: Next line config timer effect
     type: object
     properties:
-      type:
-        const: startTimer
-      timerId:
-        type: string
-        description: Unique identifier for the timer
+      name:
+        const: nextLineConfigTimer
       payload:
         type: object
-        description: Payload to execute when timer expires
-        additionalProperties: true
-      delay:
-        type: integer
-        description: Delay in milliseconds before executing payload
-        minimum: 0
-      priority:
-        type: integer
-        description: Priority of the effect (lower numbers execute first)
-        default: 0
-    required: [type, timerId, payload, delay]
+        properties:
+          delay:
+            type: number
+            minimum: 0
+        required: [delay]
+        additionalProperties: false
+    required: [name, payload]
     additionalProperties: false
+
+  - title: Clear next line config timer effect
+    type: object
+    properties:
+      name:
+        const: clearNextLineConfigTimer
+    required: [name]
+    additionalProperties: false
+
+  - title: Custom effect
+    type: object
+    properties:
+      name:
+        type: string
+      payload:
+        description: Optional custom payload for integration-specific effects
+    required: [name]
+    additionalProperties: true

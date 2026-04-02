@@ -200,4 +200,28 @@ describe("RouteEngine selectSystemState", () => {
       },
     ]);
   });
+
+  it("restores the pending-effect queue when effect handling throws before the batch is processed", () => {
+    const engine = createRouteEngine({
+      handlePendingEffects: (pendingEffects) => {
+        if (pendingEffects.some((effect) => effect.name === "customEffect")) {
+          throw new Error('Unhandled pending effect "customEffect".');
+        }
+      },
+    });
+
+    engine.init({
+      initialState: {
+        projectData: createMinimalProjectData(),
+      },
+    });
+
+    expect(() =>
+      engine.handleAction("appendPendingEffect", { name: "customEffect" }),
+    ).toThrow('Unhandled pending effect "customEffect".');
+
+    expect(engine.selectSystemState().global.pendingEffects).toEqual([
+      { name: "customEffect" },
+    ]);
+  });
 });
