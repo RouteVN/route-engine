@@ -339,8 +339,9 @@ const normalizeLoadedHistorySequence = (historySequence) => {
               .map((line) => {
                 const normalizedLine = { id: line.id };
                 if (Array.isArray(line.updateVariableIds)) {
-                  normalizedLine.updateVariableIds =
-                    cloneStateValue(line.updateVariableIds);
+                  normalizedLine.updateVariableIds = cloneStateValue(
+                    line.updateVariableIds,
+                  );
                 }
                 return normalizedLine;
               })
@@ -429,7 +430,10 @@ const normalizeLoadedRollback = (rollback, readPointer, projectData) => {
 
   const replayStartIndex =
     typeof rollback.replayStartIndex === "number"
-      ? Math.min(Math.max(Math.trunc(rollback.replayStartIndex), 0), currentIndex)
+      ? Math.min(
+          Math.max(Math.trunc(rollback.replayStartIndex), 0),
+          currentIndex,
+        )
       : 0;
 
   return {
@@ -445,7 +449,8 @@ const normalizeLoadedContext = (context, projectData, index) => {
     throw new Error(`Malformed save slot contexts[${index}] entry.`);
   }
 
-  const contextVariableDefaults = getRollbackContextVariableDefaults(projectData);
+  const contextVariableDefaults =
+    getRollbackContextVariableDefaults(projectData);
   const readPointer = normalizeLoadedReadPointer(
     context.pointers?.read,
     projectData,
@@ -453,9 +458,7 @@ const normalizeLoadedContext = (context, projectData, index) => {
   );
 
   if (context.variables !== undefined && !isRecord(context.variables)) {
-    throw new Error(
-      `Malformed save slot contexts[${index}].variables entry.`,
-    );
+    throw new Error(`Malformed save slot contexts[${index}].variables entry.`);
   }
 
   const historyPointer = normalizeLoadedHistoryPointer(
@@ -486,7 +489,11 @@ const normalizeLoadedContext = (context, projectData, index) => {
       ...contextVariableDefaults,
       ...(context.variables ? cloneStateValue(context.variables) : {}),
     },
-    rollback: normalizeLoadedRollback(context.rollback, readPointer, projectData),
+    rollback: normalizeLoadedRollback(
+      context.rollback,
+      readPointer,
+      projectData,
+    ),
   };
 
   return normalizedContext;
@@ -498,7 +505,9 @@ const normalizeLoadedSlotState = (slotState, projectData) => {
   }
 
   if (!Array.isArray(slotState.contexts) || slotState.contexts.length === 0) {
-    throw new Error("Malformed save slot state: contexts must be a non-empty array.");
+    throw new Error(
+      "Malformed save slot state: contexts must be a non-empty array.",
+    );
   }
 
   return {
