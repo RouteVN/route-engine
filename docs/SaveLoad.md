@@ -446,6 +446,7 @@ At initialization:
 - `createInitialState` receives `payload.global.saveSlots`
 - `createInitialState` also receives preloaded persistent global variables
 - those become part of initial in-memory system state
+- hydrated save slots are validated immediately, including required `formatVersion`
 
 This means startup hydration is split:
 

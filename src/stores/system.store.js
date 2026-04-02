@@ -136,9 +136,31 @@ const normalizeStoredSlotId = (slotId) => {
   return Number.isFinite(numericSlotId) ? numericSlotId : slotId;
 };
 
+const normalizeSaveSlotFormatVersion = (formatVersion) => {
+  if (!Number.isInteger(formatVersion) || formatVersion < 1) {
+    throw new Error("Malformed save slot formatVersion.");
+  }
+
+  if (formatVersion !== CURRENT_SAVE_FORMAT_VERSION) {
+    throw new Error(`Unsupported save slot formatVersion "${formatVersion}".`);
+  }
+
+  return formatVersion;
+};
+
 const normalizeStoredSaveSlot = (storageKey, saveSlot = {}) => {
+  let formatVersion;
+  try {
+    formatVersion = normalizeSaveSlotFormatVersion(saveSlot.formatVersion);
+  } catch (error) {
+    throw new Error(
+      `Hydrated save slot "${storageKey}" failed validation: ${error.message}`,
+    );
+  }
+
   const normalizedSaveSlot = {
     ...saveSlot,
+    formatVersion,
     slotId: normalizeStoredSlotId(
       saveSlot.slotId ?? saveSlot.slotKey ?? storageKey,
     ),
@@ -498,15 +520,7 @@ const normalizeLoadedSaveSlot = (saveSlot, projectData) => {
     throw new Error("Malformed save slot.");
   }
 
-  const formatVersion = saveSlot.formatVersion;
-
-  if (!Number.isInteger(formatVersion) || formatVersion < 1) {
-    throw new Error("Malformed save slot formatVersion.");
-  }
-
-  if (formatVersion !== CURRENT_SAVE_FORMAT_VERSION) {
-    throw new Error(`Unsupported save slot formatVersion "${formatVersion}".`);
-  }
+  const formatVersion = normalizeSaveSlotFormatVersion(saveSlot.formatVersion);
 
   return {
     ...saveSlot,

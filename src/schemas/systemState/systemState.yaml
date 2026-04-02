@@ -51,7 +51,7 @@ defs:
           type: object
           properties:
             resourceId:
-              type: string
+              type: [string, number]
           required: [resourceId]
           additionalProperties: false
     required: [sections, resources]

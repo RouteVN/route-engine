@@ -184,4 +184,51 @@ describe("systemState schema", () => {
     expect(validateSystemState(systemState)).toBe(true);
     expect(validateSystemState.errors).toBeNull();
   });
+
+  it("accepts numeric viewed resource IDs in runtime state", () => {
+    const engine = createRouteEngine({
+      handlePendingEffects: () => {},
+    });
+
+    engine.init({
+      initialState: {
+        projectData: createMinimalProjectData(),
+      },
+    });
+
+    engine.handleAction("addViewedResource", {
+      resourceId: 42,
+    });
+
+    const systemState = toJsonSnapshot(engine.selectSystemState());
+
+    expect(systemState.global.viewedRegistry.resources).toEqual([
+      { resourceId: 42 },
+    ]);
+    expect(validateSystemState(systemState)).toBe(true);
+    expect(validateSystemState.errors).toBeNull();
+  });
+
+  it("rejects malformed built-in pending effects", () => {
+    const engine = createRouteEngine({
+      handlePendingEffects: () => {},
+    });
+
+    engine.init({
+      initialState: {
+        projectData: createMinimalProjectData(),
+      },
+    });
+
+    const systemState = toJsonSnapshot(engine.selectSystemState());
+    systemState.global.pendingEffects = [
+      {
+        name: "render",
+        payload: { oops: true },
+      },
+    ];
+
+    expect(validateSystemState(systemState)).toBe(false);
+    expect(validateSystemState.errors).not.toBeNull();
+  });
 });

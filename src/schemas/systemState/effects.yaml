@@ -139,3 +139,20 @@ anyOf:
         description: Optional custom payload for integration-specific effects
     required: [name]
     additionalProperties: true
+    not:
+      type: object
+      properties:
+        name:
+          enum:
+            - render
+            - handleLineActions
+            - saveSlots
+            - saveGlobalDeviceVariables
+            - saveGlobalAccountVariables
+            - startAutoNextTimer
+            - clearAutoNextTimer
+            - startSkipNextTimer
+            - clearSkipNextTimer
+            - nextLineConfigTimer
+            - clearNextLineConfigTimer
+      required: [name]
