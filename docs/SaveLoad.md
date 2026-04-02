@@ -115,6 +115,7 @@ When the player loads:
 
 Save slots must include:
 
+- `formatVersion`
 - current `contexts`
 - `global.viewedRegistry`
 - rollback timeline/cursor inside each saved context
@@ -210,7 +211,7 @@ Notes:
 - `thumbnailImage` is UI/host-provided preview data
 - `slotId` is the public action field
 - storage still uses a stringified object key internally, but that is not part of the authored API
-- compatibility aliases still exist in code for `saveSaveSlot({ slot, thumbnailImage?, date? })` and `loadSaveSlot({ slot })`
+- saved slot entries now carry an explicit `formatVersion`
 
 ### Store Selectors
 
@@ -399,6 +400,7 @@ The system store itself does not own browser storage reads.
 The effective slot structure is:
 
 ```yaml
+formatVersion: 1
 slotId: 1
 savedAt: 1700000000000
 image: data:image/webp;base64,...
@@ -415,8 +417,6 @@ state:
           sectionId: section1
           lineId: "3"
         history: "..."
-      historySequence:
-        - ...
       configuration: "..."
       views:
         - ...
@@ -432,6 +432,7 @@ state:
 
 Important constraints:
 
+- `formatVersion` is required on every loadable save slot
 - `state.contexts` is authoritative for story restoration
 - `state.viewedRegistry` is authoritative for seen-state restoration
 - runtime-only globals are not part of this slot payload
@@ -445,6 +446,7 @@ At initialization:
 - `createInitialState` receives `payload.global.saveSlots`
 - `createInitialState` also receives preloaded persistent global variables
 - those become part of initial in-memory system state
+- hydrated save slots are validated immediately, including required `formatVersion`
 
 This means startup hydration is split:
 
@@ -456,7 +458,7 @@ This means startup hydration is split:
 Current save flow:
 
 1. clone current `contexts`
-2. strip legacy rollback-only compatibility fields from cloned contexts
+2. strip obsolete rollback-only compatibility fields from cloned contexts
 3. clone `global.viewedRegistry`
 4. write `{ slotId, savedAt, image, state }` into `state.global.saveSlots`
 5. append `saveSlots` effect
@@ -509,8 +511,11 @@ Older save formats may exist.
 
 Compatibility rules should be explicit:
 
+- new saves should always write an explicit `formatVersion`
+- missing or invalid `formatVersion` values should fail fast before mutation
 - older saves without rollback state may be normalized
-- legacy rollback-only compatibility fields should be ignored/stripped
+- obsolete rollback-only compatibility fields should be ignored/stripped
+- unsupported future `formatVersion` values should fail fast before mutation
 - malformed save data should throw before any live-state mutation is committed
 
 If compatibility is intentionally broken in the future, that should be documented clearly.
@@ -532,15 +537,6 @@ The save/load test surface should cover:
 - load clears prior auto/skip/next-line timers
 - load does not replace persistent global variables from slot data
 - load rejects or safely normalizes malformed slot payloads
-
-## Current Gaps To Improve
-
-Areas that should be improved next:
-
-- action/effect schemas should match the actual save/load runtime interfaces
-- dynamic slot-event and thumbnail-capture integration rules should be reflected more explicitly in schemas or host-layer helpers
-- if screenshot capture remains preprocess-based, prefer cloning/augmenting authored actions before dispatch instead of mutating the original event payload in place
-- compatibility aliases should eventually be removed after callers migrate to `saveSlot` / `loadSlot`
 
 ## Non-Goals
 

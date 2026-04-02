@@ -231,6 +231,7 @@ describe("system.store rollback/save draft safety", () => {
       global: {
         saveSlots: {
           1: {
+            formatVersion: 1,
             slotId: 1,
             savedAt: 1700000000000,
             image: null,
@@ -358,7 +359,6 @@ describe("system.store rollback/save draft safety", () => {
             history: {
               sectionId: "section2",
               lineId: "10",
-              historySequenceIndex: 0,
             },
           },
           rollback: {

@@ -179,4 +179,86 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
       },
     );
   });
+
+  it("coalesces replaceable effects by name and keeps the last payload", () => {
+    const ticker = createTicker();
+    const engine = {
+      selectRenderState: vi.fn(() => ({ id: "render-1" })),
+      handleAction: vi.fn(),
+      handleInternalAction: vi.fn(),
+      handleActions: vi.fn(),
+    };
+    const routeGraphics = {
+      render: vi.fn(),
+    };
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics,
+      ticker,
+    });
+
+    effectsHandler([
+      { name: "render" },
+      { name: "nextLineConfigTimer", payload: { delay: 20 } },
+      { name: "render" },
+      { name: "nextLineConfigTimer", payload: { delay: 50 } },
+    ]);
+
+    expect(routeGraphics.render).toHaveBeenCalledTimes(1);
+    expect(ticker.add).toHaveBeenCalledTimes(1);
+
+    const timerCallback = ticker.add.mock.calls[0][0];
+    timerCallback({ deltaMS: 50 });
+
+    expect(engine.handleInternalAction).toHaveBeenCalledWith(
+      "nextLineFromSystem",
+      {},
+    );
+  });
+
+  it("preserves unknown effects in order when an unhandled-effect callback is provided", () => {
+    const unhandledEffects = [];
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => ({
+        selectRenderState: vi.fn(() => ({ id: "render-1" })),
+        handleAction: vi.fn(),
+        handleActions: vi.fn(),
+      }),
+      routeGraphics: {
+        render: vi.fn(),
+      },
+      ticker: createTicker(),
+      handleUnhandledEffect: (effect) => {
+        unhandledEffects.push(effect);
+      },
+    });
+
+    effectsHandler([
+      { name: "customEffect", payload: { index: 1 } },
+      { name: "customEffect", payload: { index: 2 } },
+    ]);
+
+    expect(unhandledEffects).toEqual([
+      { name: "customEffect", payload: { index: 1 } },
+      { name: "customEffect", payload: { index: 2 } },
+    ]);
+  });
+
+  it("throws for unknown effects when no unhandled-effect callback is provided", () => {
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => ({
+        selectRenderState: vi.fn(() => ({ id: "render-1" })),
+        handleAction: vi.fn(),
+        handleActions: vi.fn(),
+      }),
+      routeGraphics: {
+        render: vi.fn(),
+      },
+      ticker: createTicker(),
+    });
+
+    expect(() => effectsHandler([{ name: "customEffect" }])).toThrow(
+      'Unhandled pending effect "customEffect".',
+    );
+  });
 });

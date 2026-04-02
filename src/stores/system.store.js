@@ -23,6 +23,8 @@ const DEFAULT_NEXT_LINE_CONFIG = {
   applyMode: "persistent",
 };
 
+const CURRENT_SAVE_FORMAT_VERSION = 1;
+
 const resetNextLineConfigIfSingleLine = (state) => {
   const applyMode = state.global.nextLineConfig?.applyMode ?? "persistent";
   if (applyMode !== "singleLine") {
@@ -63,7 +65,6 @@ const createDefaultViewedRegistry = () => ({
 const createDefaultHistoryPointer = () => ({
   sectionId: undefined,
   lineId: undefined,
-  historySequenceIndex: undefined,
 });
 
 const normalizeLegacyManualNextLineConfig = (manual) => {
@@ -135,9 +136,31 @@ const normalizeStoredSlotId = (slotId) => {
   return Number.isFinite(numericSlotId) ? numericSlotId : slotId;
 };
 
+const normalizeSaveSlotFormatVersion = (formatVersion) => {
+  if (!Number.isInteger(formatVersion) || formatVersion < 1) {
+    throw new Error("Malformed save slot formatVersion.");
+  }
+
+  if (formatVersion !== CURRENT_SAVE_FORMAT_VERSION) {
+    throw new Error(`Unsupported save slot formatVersion "${formatVersion}".`);
+  }
+
+  return formatVersion;
+};
+
 const normalizeStoredSaveSlot = (storageKey, saveSlot = {}) => {
+  let formatVersion;
+  try {
+    formatVersion = normalizeSaveSlotFormatVersion(saveSlot.formatVersion);
+  } catch (error) {
+    throw new Error(
+      `Hydrated save slot "${storageKey}" failed validation: ${error.message}`,
+    );
+  }
+
   const normalizedSaveSlot = {
     ...saveSlot,
+    formatVersion,
     slotId: normalizeStoredSlotId(
       saveSlot.slotId ?? saveSlot.slotKey ?? storageKey,
     ),
@@ -311,54 +334,19 @@ const normalizeLoadedHistoryPointer = (pointer, projectData) => {
   }
 
   try {
+    const normalizedPointer = normalizeLoadedReadPointer(
+      pointer,
+      projectData,
+      "contexts[*].pointers.history",
+    );
+
     return {
-      ...normalizeLoadedReadPointer(
-        pointer,
-        projectData,
-        "contexts[*].pointers.history",
-      ),
-      historySequenceIndex:
-        typeof pointer.historySequenceIndex === "number"
-          ? pointer.historySequenceIndex
-          : undefined,
+      sectionId: normalizedPointer.sectionId,
+      lineId: normalizedPointer.lineId,
     };
   } catch {
     return createDefaultHistoryPointer();
   }
-};
-
-const normalizeLoadedHistorySequence = (historySequence) => {
-  if (!Array.isArray(historySequence)) {
-    return [];
-  }
-
-  return historySequence.flatMap((entry) => {
-    if (!isRecord(entry) || typeof entry.sectionId !== "string") {
-      return [];
-    }
-
-    return [
-      {
-        sectionId: entry.sectionId,
-        initialState: isRecord(entry.initialState)
-          ? cloneStateValue(entry.initialState)
-          : {},
-        lines: Array.isArray(entry.lines)
-          ? entry.lines
-              .filter((line) => isRecord(line) && typeof line.id === "string")
-              .map((line) => {
-                const normalizedLine = { id: line.id };
-                if (Array.isArray(line.updateVariableIds)) {
-                  normalizedLine.updateVariableIds = cloneStateValue(
-                    line.updateVariableIds,
-                  );
-                }
-                return normalizedLine;
-              })
-          : [],
-      },
-    ];
-  });
 };
 
 const normalizeLoadedRollback = (rollback, readPointer, projectData) => {
@@ -485,7 +473,6 @@ const normalizeLoadedContext = (context, projectData, index) => {
       read: readPointer,
       history: historyPointer,
     },
-    historySequence: normalizeLoadedHistorySequence(context.historySequence),
     configuration: isRecord(context.configuration)
       ? cloneStateValue(context.configuration)
       : {},
@@ -525,6 +512,20 @@ const normalizeLoadedSlotState = (slotState, projectData) => {
     contexts: slotState.contexts.map((context, index) =>
       normalizeLoadedContext(context, projectData, index),
     ),
+  };
+};
+
+const normalizeLoadedSaveSlot = (saveSlot, projectData) => {
+  if (!isRecord(saveSlot)) {
+    throw new Error("Malformed save slot.");
+  }
+
+  const formatVersion = normalizeSaveSlotFormatVersion(saveSlot.formatVersion);
+
+  return {
+    ...saveSlot,
+    formatVersion,
+    state: normalizeLoadedSlotState(saveSlot.state, projectData),
   };
 };
 
@@ -946,7 +947,6 @@ const restoreRollbackCheckpoint = (state, checkpointIndex) => {
       lastContext.pointers.history = {
         sectionId: null,
         lineId: null,
-        historySequenceIndex: null,
       };
     }
 
@@ -1022,16 +1022,8 @@ export const createInitialState = (payload) => {
           history: {
             sectionId: undefined,
             lineId: undefined,
-            historySequenceIndex: undefined,
           },
         },
-        historySequence: [
-          {
-            sectionId: initialPointer.sectionId,
-            initialState: { ...contextVariableDefaultValues },
-            lines: [{ id: initialPointer.lineId }],
-          },
-        ],
         configuration: {},
         views: [],
         bgm: {
@@ -1187,7 +1179,7 @@ export const selectSaveSlotMap = ({ state }) => {
 };
 
 export const selectSaveSlot = ({ state }, payload) => {
-  const slotId = payload?.slotId ?? payload?.slot ?? payload?.slotKey;
+  const slotId = payload?.slotId;
   const storageKey = toSlotStorageKey(slotId);
   return state.global.saveSlots[storageKey];
 };
@@ -1901,15 +1893,17 @@ export const setNextLineConfig = ({ state }, payload) => {
  * Saves current game state to a slot
  * @param {Object} state - Current state object
  * @param {Object} payload - Action payload
- * @param {number} payload.slot - Save slot number
+ * @param {number|string} payload.slotId - Save slot identifier
  * @param {string} payload.thumbnailImage - Base64 thumbnail image
  * @returns {Object} Updated state object
  */
 export const saveSlot = ({ state }, payload) => {
-  const slotId = payload?.slotId ?? payload?.slot;
+  const slotId = payload?.slotId;
+  if (slotId === undefined || slotId === null || slotId === "") {
+    throw new Error("saveSlot requires slotId");
+  }
   const { thumbnailImage } = payload;
-  const savedAt =
-    typeof payload?.savedAt === "number" ? payload.savedAt : payload?.date;
+  const savedAt = payload?.savedAt;
   const storageKey = toSlotStorageKey(slotId);
   const contexts = cloneStateValue(state.contexts);
   contexts?.forEach((context) => {
@@ -1922,6 +1916,7 @@ export const saveSlot = ({ state }, payload) => {
   };
 
   const saveData = {
+    formatVersion: CURRENT_SAVE_FORMAT_VERSION,
     slotId: normalizeStoredSlotId(slotId),
     savedAt: typeof savedAt === "number" ? savedAt : Date.now(),
     image: thumbnailImage,
@@ -1950,17 +1945,17 @@ export const saveSlot = ({ state }, payload) => {
  * @returns {Object} Updated state object
  */
 export const loadSlot = ({ state }, payload) => {
-  const slotId = payload?.slotId ?? payload?.slot;
+  const slotId = payload?.slotId;
+  if (slotId === undefined || slotId === null || slotId === "") {
+    throw new Error("loadSlot requires slotId");
+  }
   const storageKey = toSlotStorageKey(slotId);
   const slotData = state.global.saveSlots[storageKey];
   if (slotData) {
-    const normalizedSlotState = normalizeLoadedSlotState(
-      slotData.state,
-      state.projectData,
-    );
+    const normalizedSlot = normalizeLoadedSaveSlot(slotData, state.projectData);
 
-    state.global.viewedRegistry = normalizedSlotState.viewedRegistry;
-    state.contexts = normalizedSlotState.contexts;
+    state.global.viewedRegistry = normalizedSlot.state.viewedRegistry;
+    state.contexts = normalizedSlot.state.contexts;
     state.global.autoMode = false;
     state.global.skipMode = false;
     state.global.dialogueUIHidden = false;
@@ -1978,9 +1973,6 @@ export const loadSlot = ({ state }, payload) => {
   }
   return state;
 };
-
-export const saveSaveSlot = saveSlot;
-export const loadSaveSlot = loadSlot;
 
 /**
  * Updates the entire projectData with new data
@@ -2070,71 +2062,6 @@ export const jumpToLine = ({ state }, payload) => {
   state.global.pendingEffects.push({
     name: "handleLineActions",
   });
-
-  return state;
-};
-
-/**
- * Adds a section entry to the historySequence of the last context.
- * Captures initialState (context variables snapshot) when entering the section.
- * NOTE: This should only be called when transitioning to a new section.
- * @param {Object} state - Current state object
- * @param {Object} payload - Action payload
- * @param {Object} payload.item - The historySequence item to add
- * @param {string} payload.item.sectionId - The section ID for the history entry
- * @returns {Object} Updated state object
- */
-export const addToHistorySequence = ({ state }, payload) => {
-  const { item } = payload;
-
-  // Get the last context (assuming we want to add to the most recent context)
-  const lastContext = state.contexts[state.contexts.length - 1];
-
-  if (lastContext && lastContext.historySequence) {
-    // Capture initialState: snapshot of all context variables at section entry
-    const initialState = { ...lastContext.variables };
-
-    lastContext.historySequence.push({
-      sectionId: item.sectionId,
-      initialState, // Captured ONCE when entering section
-      lines: [], // Initialize empty lines array for line-level tracking
-    });
-  }
-
-  state.global.pendingEffects.push({
-    name: "render",
-  });
-  return state;
-};
-
-/**
- * Adds a line entry to the current section's history sequence.
- * Should be called when entering a new line, BEFORE actions execute.
- * @param {Object} state - Current state object
- * @param {Object} payload - Action payload
- * @param {string} payload.lineId - The line ID to add
- * @returns {Object} Updated state object
- */
-export const addLineToHistory = ({ state }, payload) => {
-  const { lineId } = payload;
-  const lastContext = state.contexts[state.contexts.length - 1];
-
-  if (!lastContext?.historySequence) {
-    return state;
-  }
-
-  const historySequence = lastContext.historySequence;
-  if (historySequence.length === 0) {
-    return state;
-  }
-
-  const currentSection = historySequence[historySequence.length - 1];
-  if (!currentSection.lines) {
-    currentSection.lines = [];
-  }
-
-  // Add new line entry (updateVariableIds will be added by updateVariable if executed)
-  currentSection.lines.push({ id: lineId });
 
   return state;
 };
@@ -2240,8 +2167,6 @@ export const nextLine = ({ state }) => {
 
     state.global.isLineCompleted = false;
 
-    // Add line to history for rollback support
-    addLineToHistory({ state }, { lineId: nextLine.id });
     appendRollbackCheckpoint(state, {
       sectionId,
       lineId: nextLine.id,
@@ -2329,7 +2254,8 @@ export const prevLine = ({ state }, payload) => {
   // if (state.global.nextLineConfig.manual.enabled === false) {
   //   return state;
   // }
-  const { sectionId } = payload;
+  const sectionId =
+    payload?.sectionId ?? selectCurrentPointer({ state })?.pointer?.sectionId;
   const section = selectSection({ state }, { sectionId });
 
   // Return early if section doesn't exist
@@ -2462,11 +2388,6 @@ export const sectionTransition = ({ state }, payload) => {
       lineId: firstLine.id,
     };
 
-    // Add new section to historySequence for rollback support
-    addToHistorySequence({ state }, { item: { sectionId } });
-
-    // Add first line to history
-    addLineToHistory({ state }, { lineId: firstLine.id });
     appendRollbackCheckpoint(state, {
       sectionId,
       lineId: firstLine.id,
@@ -2545,8 +2466,6 @@ export const nextLineFromSystem = ({ state }) => {
 
     state.global.isLineCompleted = false;
 
-    // Add line to history for rollback support
-    addLineToHistory({ state }, { lineId: nextLine.id });
     appendRollbackCheckpoint(state, {
       sectionId,
       lineId: nextLine.id,
@@ -2628,28 +2547,11 @@ export const updateVariable = ({ state }, payload) => {
     target[variableId] = applyVariableOperation(target[variableId], op, value);
   });
 
-  // Log updateVariableId to current line's history entry (EVENT SOURCING)
-  // Only log if context variables were modified (global variables not tracked for rollback)
   if (contextVariableModified) {
     recordRollbackAction(state, "updateVariable", {
       id,
       operations: contextOperations,
     });
-
-    const historySequence = lastContext.historySequence;
-    if (historySequence && historySequence.length > 0) {
-      const currentSection = historySequence[historySequence.length - 1];
-      if (currentSection.lines && currentSection.lines.length > 0) {
-        const currentLineEntry =
-          currentSection.lines[currentSection.lines.length - 1];
-        // Initialize array if not present
-        if (!currentLineEntry.updateVariableIds) {
-          currentLineEntry.updateVariableIds = [];
-        }
-        // Log the action ID (not the state, not the operations - just the ID)
-        currentLineEntry.updateVariableIds.push(id);
-      }
-    }
   }
 
   // Save global-device variables if any were modified
@@ -2882,13 +2784,9 @@ export const createSystemStore = (initialState) => {
     setNextLineConfig,
     saveSlot,
     loadSlot,
-    saveSaveSlot,
-    loadSaveSlot,
     updateProjectData,
     sectionTransition,
     jumpToLine,
-    addToHistorySequence,
-    addLineToHistory,
     nextLine,
     markLineCompleted,
     prevLine,

@@ -14,7 +14,15 @@ export default function createRouteEngine(options) {
     while (_systemStore.selectPendingEffects().length > 0) {
       const snapshot = [..._systemStore.selectPendingEffects()];
       _systemStore.clearPendingEffects();
-      handlePendingEffects(snapshot);
+      try {
+        handlePendingEffects(snapshot);
+      } catch (error) {
+        _systemStore.clearPendingEffects();
+        snapshot.forEach((effect) => {
+          _systemStore.appendPendingEffect(effect);
+        });
+        throw error;
+      }
     }
   };
 
@@ -78,6 +86,10 @@ export default function createRouteEngine(options) {
     processEffectsUntilEmpty();
   };
 
+  const handleInternalAction = (actionType, payload) => {
+    handleAction(actionType, payload);
+  };
+
   const buildActionTemplateContext = (eventContext) => {
     if (!eventContext) {
       return {
@@ -128,6 +140,7 @@ export default function createRouteEngine(options) {
   return {
     init,
     handleAction,
+    handleInternalAction,
     handleActions,
     selectRenderState,
     selectPresentationState,

@@ -5,6 +5,96 @@ suites: [rollbackToLine]
 suite: rollbackToLine
 exportName: rollbackToLine
 ---
+case: rollbackToLine uses the checkpoint timeline even when history state is absent
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                    - id: "2"
+                    - id: "3"
+        resources:
+          variables: {}
+      global:
+        isLineCompleted: false
+        pendingEffects: []
+      contexts:
+        - variables: {}
+          currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "3"
+          rollback:
+            currentIndex: 2
+            isRestoring: false
+            replayStartIndex: 0
+            timeline:
+              - sectionId: "section1"
+                lineId: "1"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "2"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "3"
+                rollbackPolicy: "free"
+  - sectionId: "section1"
+    lineId: "2"
+out:
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                - id: "2"
+                - id: "3"
+    resources:
+      variables: {}
+  global:
+    isLineCompleted: true
+    dialogueUIHidden: false
+    layeredViews: []
+    nextLineConfig:
+      manual:
+        enabled: true
+        requireLineCompleted: false
+      auto:
+        enabled: false
+      applyMode: "persistent"
+    pendingEffects:
+      - name: "clearNextLineConfigTimer"
+      - name: "render"
+  contexts:
+    - variables: {}
+      currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "2"
+      rollback:
+        currentIndex: 1
+        isRestoring: false
+        replayStartIndex: 0
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "2"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "3"
+            rollbackPolicy: "free"
+---
 case: restores target checkpoint state inclusively
 in:
   - state:
@@ -129,7 +219,6 @@ out:
         history:
           sectionId: null
           lineId: null
-          historySequenceIndex: null
       rollback:
         currentIndex: 2
         isRestoring: false
@@ -271,7 +360,6 @@ out:
         history:
           sectionId: null
           lineId: null
-          historySequenceIndex: null
       rollback:
         currentIndex: 1
         isRestoring: false
@@ -430,7 +518,6 @@ out:
         history:
           sectionId: null
           lineId: null
-          historySequenceIndex: null
       rollback:
         currentIndex: 1
         isRestoring: false
@@ -544,7 +631,6 @@ out:
         history:
           sectionId: null
           lineId: null
-          historySequenceIndex: null
       rollback:
         currentIndex: 0
         isRestoring: false
@@ -662,7 +748,6 @@ out:
         history:
           sectionId: null
           lineId: null
-          historySequenceIndex: null
       rollback:
         currentIndex: 1
         isRestoring: false

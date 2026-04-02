@@ -141,7 +141,7 @@ engine.handleActions({
     manual: { enabled: false },
     auto: { enabled: true, trigger: "fromComplete", delay: 2000 },
   },
-  markLineCompleted: {},
+  startAutoMode: {},
 });
 
 // With event context (for slider/input events)
@@ -385,7 +385,6 @@ Playback timing semantics:
 
 | Action              | Payload              | Description                    |
 | ------------------- | -------------------- | ------------------------------ |
-| `markLineCompleted` | -                    | Mark current line as completed |
 | `setNextLineConfig` | `{ manual?, auto? }` | Configure line advancement     |
 | `updateProjectData` | `{ projectData }`    | Replace project data           |
 
@@ -395,7 +394,6 @@ Playback timing semantics:
 | ------------------- | ----------------------- | ----------------------------- |
 | `addViewedLine`     | `{ sectionId, lineId }` | Mark line as viewed           |
 | `addViewedResource` | `{ resourceId }`        | Mark resource as viewed       |
-| `addToHistory`      | `{ item }`              | Add entry to history sequence |
 
 Seen-line semantics:
 
@@ -422,12 +420,18 @@ Notes:
 - `thumbnailImage` is integration-provided; the engine does not capture screenshots by itself
 - if a save action appears inside a multi-action event payload, the host should prepare/augment the `actions` object and still call `handleActions(...)` once for the whole batch
 
-### Effect Actions
+### Internal Store Actions
+
+These actions exist inside the store/runtime but are not part of the stable authored/public API surface:
 
 | Action                | Payload                | Description            |
 | --------------------- | ---------------------- | ---------------------- |
-| `appendPendingEffect` | `{ name, ...options }` | Queue a side effect    |
-| `clearPendingEffects` | -                      | Clear the effect queue |
+| `markLineCompleted`   | -                      | Internal render-complete transition |
+| `nextLineFromSystem`  | -                      | Internal timer-driven advance       |
+| `appendPendingEffect` | `{ name, ...options }` | Queue a side effect                |
+| `clearPendingEffects` | -                      | Clear the effect queue             |
+
+Use these only if you are extending engine internals or writing engine-level tests.
 
 ## Available Selectors
 
@@ -457,6 +461,12 @@ Effects queued by actions for external handling:
 | ------------------- | ------------------------------ |
 | `render`            | Re-render the current state    |
 | `handleLineActions` | Process current line's actions |
+
+Built-in effect handling notes:
+
+- `createEffectsHandler(...)` coalesces only the latest occurrence of replaceable built-in effects such as `render`, timer start/clear effects, `handleLineActions`, and persistence effects.
+- Unknown effect names are not silently dropped; `createEffectsHandler(...)` throws unless you provide `handleUnhandledEffect`.
+- The coalescing rule is specific to the built-in effect handler, not the store queue itself.
 
 ## Line Actions (Presentation)
 

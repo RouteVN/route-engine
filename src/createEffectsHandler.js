@@ -58,7 +58,7 @@ const startAutoNextTimer = ({ engine, ticker, autoTimer }, payload) => {
       autoTimer.setCallback(null);
       autoTimer.setElapsed(0);
       // Advance to next line - markLineCompleted will restart timer when ready
-      engine.handleAction("nextLineFromSystem", {});
+      dispatchInternalAction(engine, "nextLineFromSystem", {});
     }
   };
 
@@ -95,7 +95,7 @@ const startSkipNextTimer = ({ engine, ticker, skipTimer }, payload) => {
     // Skip advance every 30ms
     if (skipTimer.getElapsed() >= 30) {
       skipTimer.setElapsed(0);
-      engine.handleAction("nextLineFromSystem", {});
+      dispatchInternalAction(engine, "nextLineFromSystem", {});
     }
   };
 
@@ -136,7 +136,7 @@ const nextLineConfigTimer = (
     if (nextLineConfigTimerState.getElapsed() >= delay) {
       nextLineConfigTimerState.setElapsed(0);
       // Use the dedicated system action
-      engine.handleAction("nextLineFromSystem", {});
+      dispatchInternalAction(engine, "nextLineFromSystem", {});
       // Stop this timer instance; the action will re-queue it if needed
       ticker.remove(newCallback);
       nextLineConfigTimerState.setCallback(null);
@@ -194,7 +194,58 @@ const effects = {
   clearNextLineConfigTimer,
 };
 
-const createEffectsHandler = ({ getEngine, routeGraphics, ticker }) => {
+const COALESCIBLE_EFFECT_NAMES = new Set([
+  "render",
+  "handleLineActions",
+  "saveSlots",
+  "saveGlobalDeviceVariables",
+  "saveGlobalAccountVariables",
+  "startAutoNextTimer",
+  "clearAutoNextTimer",
+  "startSkipNextTimer",
+  "clearSkipNextTimer",
+  "nextLineConfigTimer",
+  "clearNextLineConfigTimer",
+]);
+
+const dispatchInternalAction = (engine, actionType, payload) => {
+  const dispatch =
+    engine.handleInternalAction ?? engine.handleAction?.bind(engine);
+  dispatch?.(actionType, payload);
+};
+
+const coalescePendingEffects = (pendingEffects = []) => {
+  const seenCoalescedEffects = new Set();
+  const normalizedEffects = [];
+
+  for (let index = pendingEffects.length - 1; index >= 0; index -= 1) {
+    const effect = pendingEffects[index];
+    if (typeof effect?.name !== "string" || effect.name.length === 0) {
+      throw new Error("Pending effect is missing a valid name.");
+    }
+
+    if (!COALESCIBLE_EFFECT_NAMES.has(effect.name)) {
+      normalizedEffects.unshift(effect);
+      continue;
+    }
+
+    if (seenCoalescedEffects.has(effect.name)) {
+      continue;
+    }
+
+    seenCoalescedEffects.add(effect.name);
+    normalizedEffects.unshift(effect);
+  }
+
+  return normalizedEffects;
+};
+
+const createEffectsHandler = ({
+  getEngine,
+  routeGraphics,
+  ticker,
+  handleUnhandledEffect,
+}) => {
   const autoTimer = createTimerState();
   const skipTimer = createTimerState();
   const nextLineConfigTimerState = createTimerState();
@@ -261,7 +312,7 @@ const createEffectsHandler = ({ getEngine, routeGraphics, ticker }) => {
     }
 
     const engine = getEngine();
-    engine.handleAction("markLineCompleted", {});
+    dispatchInternalAction(engine, "markLineCompleted", {});
     return true;
   };
 
@@ -290,17 +341,15 @@ const createEffectsHandler = ({ getEngine, routeGraphics, ticker }) => {
     };
   };
 
-  const handlePendingEffects = async (pendingEffects) => {
+  const handlePendingEffects = (pendingEffects) => {
     const engine = getEngine();
+    const normalizedEffects = coalescePendingEffects(pendingEffects);
 
-    // Deduplicate effects by name, keeping only the last occurrence
-    const deduplicatedEffects = pendingEffects.reduce((acc, effect) => {
-      acc[effect.name] = effect;
-      return acc;
-    }, {});
-
-    // Convert back to array and process deduplicated effects
-    const uniqueEffects = Object.values(deduplicatedEffects);
+    normalizedEffects.forEach((effect) => {
+      if (!effects[effect.name] && !handleUnhandledEffect) {
+        throw new Error(`Unhandled pending effect "${effect.name}".`);
+      }
+    });
 
     const deps = {
       engine,
@@ -313,11 +362,14 @@ const createEffectsHandler = ({ getEngine, routeGraphics, ticker }) => {
       getRenderDispatchCount,
     };
 
-    for (const effect of uniqueEffects) {
+    for (const effect of normalizedEffects) {
       const handler = effects[effect.name];
       if (handler) {
         handler(deps, effect.payload);
+        continue;
       }
+
+      handleUnhandledEffect(effect, deps);
     }
   };
 
