@@ -12,14 +12,14 @@ in:
         nextLineConfig:
           manual:
             enabled: true
-            requireComplete: false
+            requireLineCompleted: false
           auto:
             trigger: "fromComplete"
             delay: 1000
         pendingEffects: []
   - manual:
       enabled: false
-      requireComplete: true
+      requireLineCompleted: true
     auto:
       trigger: "fromStart"
       delay: 2000
@@ -28,7 +28,7 @@ out:
     nextLineConfig:
       manual:
         enabled: false
-        requireComplete: true
+        requireLineCompleted: true
       auto:
         trigger: "fromStart"
         delay: 2000
@@ -42,20 +42,20 @@ in:
         nextLineConfig:
           manual:
             enabled: true
-            requireComplete: false
+            requireLineCompleted: false
           auto:
             trigger: "fromComplete"
             delay: 1000
         pendingEffects: []
   - manual:
       enabled: false
-      requireComplete: true
+      requireLineCompleted: true
 out:
   global:
     nextLineConfig:
       manual:
         enabled: false
-        requireComplete: true
+        requireLineCompleted: true
       auto:
         trigger: "fromComplete"
         delay: 1000
@@ -69,7 +69,7 @@ in:
         nextLineConfig:
           manual:
             enabled: true
-            requireComplete: false
+            requireLineCompleted: false
           auto:
             trigger: "fromComplete"
             delay: 1000
@@ -82,7 +82,7 @@ out:
     nextLineConfig:
       manual:
         enabled: true
-        requireComplete: false
+        requireLineCompleted: false
       auto:
         trigger: "fromStart"
         delay: 500
@@ -96,7 +96,7 @@ in:
         nextLineConfig:
           manual:
             enabled: true
-            requireComplete: false
+            requireLineCompleted: false
           auto:
             trigger: "fromComplete"
             delay: 1000
@@ -108,7 +108,7 @@ out:
     nextLineConfig:
       manual:
         enabled: true
-        requireComplete: false
+        requireLineCompleted: false
       auto:
         trigger: "fromComplete"
         delay: 1000
@@ -123,7 +123,7 @@ in:
         nextLineConfig:
           manual:
             enabled: true
-            requireComplete: false
+            requireLineCompleted: false
           auto:
             trigger: "fromComplete"
             delay: 1000
@@ -132,7 +132,7 @@ in:
             data: "test"
   - manual:
       enabled: false
-      requireComplete: false
+      requireLineCompleted: false
     auto:
       trigger: "fromComplete"
       delay: 1500
@@ -141,7 +141,7 @@ out:
     nextLineConfig:
       manual:
         enabled: false
-        requireComplete: false
+        requireLineCompleted: false
       auto:
         trigger: "fromComplete"
         delay: 1500
@@ -157,14 +157,14 @@ in:
         nextLineConfig:
           manual:
             enabled: true
-            requireComplete: true
+            requireLineCompleted: true
           auto:
             trigger: "fromStart"
             delay: 3000
         pendingEffects: []
   - manual:
       enabled: true
-      requireComplete: true
+      requireLineCompleted: true
     auto:
       trigger: "fromStart"
       delay: 3000
@@ -173,7 +173,7 @@ out:
     nextLineConfig:
       manual:
         enabled: true
-        requireComplete: true
+        requireLineCompleted: true
       auto:
         trigger: "fromStart"
         delay: 3000
@@ -187,7 +187,7 @@ in:
         nextLineConfig:
           manual:
             enabled: true
-            requireComplete: false
+            requireLineCompleted: false
           auto:
             trigger: "fromComplete"
             delay: 1000
@@ -213,7 +213,7 @@ in:
         nextLineConfig:
           manual:
             enabled: true
-            requireComplete: false
+            requireLineCompleted: false
           auto:
             trigger: "fromComplete"
             delay: 1000

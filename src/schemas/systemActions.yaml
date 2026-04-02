@@ -44,7 +44,7 @@ properties:
             type: boolean
             default: true
             description: Allow manual advance via user input
-          requireComplete:
+          requireLineCompleted:
             type: boolean
             default: false
             description: Only allow manual advance after line completes

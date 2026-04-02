@@ -5,10 +5,33 @@ suites: [loadSlot]
 suite: loadSlot
 exportName: loadSlot
 ---
-case: load from existing slot
+case: load from existing slot resets transient runtime state
 in:
   - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                sec2:
+                  lines:
+                    - id: line2
+                      actions: {}
       global:
+        autoMode: true
+        skipMode: true
+        dialogueUIHidden: true
+        layeredViews:
+          - resourceId: overlay
+        nextLineConfig:
+          manual:
+            enabled: false
+            requireLineCompleted: true
+          auto:
+            enabled: true
+            trigger: fromStart
+            delay: 250
+          applyMode: singleLine
         confirmDialog:
           resourceId: saveOverwriteConfirmLayout
           confirmActions:
@@ -21,43 +44,84 @@ in:
           "1":
             slotId: 1
             savedAt: 1704110400
-            image: "save.png"
+            image: save.png
             state:
-              projectData: { story: { initialSceneId: "loaded" } }
-              global:
               contexts:
                 - pointers:
-                    read: { sectionId: "sec2", lineId: "line2" }
-        pendingEffects: []
+                    read:
+                      sectionId: sec2
+                      lineId: line2
+        pendingEffects:
+          - name: existingEffect
   - slotId: 1
 out:
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            sec2:
+              lines:
+                - id: line2
+                  actions: {}
   global:
+    autoMode: false
+    skipMode: false
+    dialogueUIHidden: false
+    layeredViews: []
+    isLineCompleted: true
     confirmDialog: null
+    viewedRegistry:
+      sections: []
+      resources: []
+    nextLineConfig:
+      manual:
+        enabled: true
+        requireLineCompleted: false
+      auto:
+        enabled: false
+      applyMode: persistent
     saveSlots:
       "1":
         slotId: 1
         savedAt: 1704110400
-        image: "save.png"
+        image: save.png
         state:
-          projectData: { story: { initialSceneId: "loaded" } }
-          global:
           contexts:
             - pointers:
-                read: { sectionId: "sec2", lineId: "line2" }
-    viewedRegistry: __undefined__
+                read:
+                  sectionId: sec2
+                  lineId: line2
     pendingEffects:
-      - name: "render"
+      - name: clearAutoNextTimer
+      - name: clearSkipNextTimer
+      - name: clearNextLineConfigTimer
+      - name: render
   contexts:
-    - pointers:
-        read: { sectionId: "sec2", lineId: "line2" }
+    - currentPointerMode: read
+      pointers:
+        read:
+          sceneId: scene1
+          sectionId: sec2
+          lineId: line2
+        history:
+          sectionId: __undefined__
+          lineId: __undefined__
+          historySequenceIndex: __undefined__
+      historySequence: []
+      configuration: {}
+      views: []
+      bgm:
+        resourceId: __undefined__
+      variables: {}
       rollback:
         currentIndex: 0
         isRestoring: false
         replayStartIndex: 1
         timeline:
-          - sectionId: "sec2"
-            lineId: "line2"
-            rollbackPolicy: "free"
+          - sectionId: sec2
+            lineId: line2
+            rollbackPolicy: free
 ---
 case: load from non-existent slot
 in:
@@ -71,80 +135,77 @@ out:
     saveSlots: {}
     pendingEffects: []
 ---
-case: load from slot 2
+case: load throws when slot state has no contexts
 in:
   - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                sec1:
+                  lines:
+                    - id: line1
+                      actions: {}
       global:
         saveSlots:
           "2":
             slotId: 2
             savedAt: 1704110500
-            image: "save2.png"
+            image: save2.png
             state:
               level: 10
         pendingEffects: []
   - slotId: 2
-out:
-  global:
-    saveSlots:
-      "2":
-        slotId: 2
-        savedAt: 1704110500
-        image: "save2.png"
-        state:
-          level: 10
-    viewedRegistry: __undefined__
-    pendingEffects:
-      - name: "render"
-  contexts: __undefined__
+throws: "Malformed save slot state: contexts must be a non-empty array."
 ---
-case: load with existing pending effects
+case: load normalizes legacy viewed registry entries and context variables
 in:
   - state:
+      projectData:
+        resources:
+          variables:
+            playerName:
+              type: string
+              scope: context
+              default: Guest
+            score:
+              type: number
+              scope: context
+              default: 0
+            soundEnabled:
+              type: boolean
+              scope: context
+              default: false
+        story:
+          scenes:
+            scene1:
+              sections:
+                sec1:
+                  lines:
+                    - id: line1
+                      actions: {}
+                sec2:
+                  lines:
+                    - id: line2
+                      actions: {}
       global:
         saveSlots:
           "1":
             slotId: 1
             savedAt: 1704110400
-            image: "save.png"
-            state:
-              level: 5
-        pendingEffects:
-          - name: "existingEffect"
-  - slotId: 1
-out:
-  global:
-    saveSlots:
-      "1":
-        slotId: 1
-        savedAt: 1704110400
-        image: "save.png"
-        state:
-          level: 5
-    viewedRegistry: __undefined__
-    pendingEffects:
-      - name: "existingEffect"
-      - name: "render"
-  contexts: __undefined__
----
-case: load with context variables
-in:
-  - state:
-      global:
-        saveSlots:
-          "1":
-            slotId: 1
-            savedAt: 1704110400
-            image: "save.png"
+            image: save.png
             state:
               viewedRegistry:
-                sections: ["sec2"]
-                resources: []
+                sections: [sec2]
+                resources: [bg-1]
               contexts:
                 - pointers:
-                    read: { sectionId: "sec2", lineId: "line2" }
+                    read:
+                      sectionId: sec2
+                      lineId: line2
                   variables:
-                    playerName: "Alice"
+                    playerName: Alice
                     score: 150
                     soundEnabled: true
         viewedRegistry:
@@ -153,40 +214,101 @@ in:
         pendingEffects: []
       contexts:
         - pointers:
-            read: { sectionId: "sec1", lineId: "line1" }
+            read:
+              sectionId: sec1
+              lineId: line1
           variables:
-            playerName: "Guest"
+            playerName: Guest
             score: 0
             soundEnabled: false
   - slotId: 1
 out:
+  projectData:
+    resources:
+      variables:
+        playerName:
+          type: string
+          scope: context
+          default: Guest
+        score:
+          type: number
+          scope: context
+          default: 0
+        soundEnabled:
+          type: boolean
+          scope: context
+          default: false
+    story:
+      scenes:
+        scene1:
+          sections:
+            sec1:
+              lines:
+                - id: line1
+                  actions: {}
+            sec2:
+              lines:
+                - id: line2
+                  actions: {}
   global:
+    autoMode: false
+    skipMode: false
+    dialogueUIHidden: false
+    layeredViews: []
+    isLineCompleted: true
+    nextLineConfig:
+      manual:
+        enabled: true
+        requireLineCompleted: false
+      auto:
+        enabled: false
+      applyMode: persistent
     saveSlots:
       "1":
         slotId: 1
         savedAt: 1704110400
-        image: "save.png"
+        image: save.png
         state:
           viewedRegistry:
-            sections: ["sec2"]
-            resources: []
+            sections: [sec2]
+            resources: [bg-1]
           contexts:
             - pointers:
-                read: { sectionId: "sec2", lineId: "line2" }
+                read:
+                  sectionId: sec2
+                  lineId: line2
               variables:
-                playerName: "Alice"
+                playerName: Alice
                 score: 150
                 soundEnabled: true
     viewedRegistry:
-      sections: ["sec2"]
-      resources: []
+      sections:
+        - sectionId: sec2
+      resources:
+        - resourceId: bg-1
     pendingEffects:
-      - name: "render"
+      - name: clearAutoNextTimer
+      - name: clearSkipNextTimer
+      - name: clearNextLineConfigTimer
+      - name: render
   contexts:
-    - pointers:
-        read: { sectionId: "sec2", lineId: "line2" }
+    - currentPointerMode: read
+      pointers:
+        read:
+          sceneId: scene1
+          sectionId: sec2
+          lineId: line2
+        history:
+          sectionId: __undefined__
+          lineId: __undefined__
+          historySequenceIndex: __undefined__
+      historySequence: []
+      configuration: {}
+      views: []
+      bgm:
+        resourceId: __undefined__
       variables:
-        playerName: "Alice"
+        playerName: Alice
         score: 150
         soundEnabled: true
       rollback:
@@ -194,28 +316,51 @@ out:
         isRestoring: false
         replayStartIndex: 1
         timeline:
-          - sectionId: "sec2"
-            lineId: "line2"
-            rollbackPolicy: "free"
+          - sectionId: sec2
+            lineId: line2
+            rollbackPolicy: free
 ---
 case: load preserves rollback timeline from save data
 in:
   - state:
+      projectData:
+        resources:
+          variables:
+            score:
+              type: number
+              scope: context
+              default: 0
+        story:
+          scenes:
+            scene1:
+              sections:
+                sec1:
+                  lines:
+                    - id: line1
+                      actions: {}
+                    - id: line2
+                      actions: {}
+                sec2:
+                  lines:
+                    - id: line3
+                      actions: {}
       global:
         saveSlots:
           "4":
             slotId: 4
             savedAt: 1704110600
-            image: "save4.png"
+            image: save4.png
             state:
               viewedRegistry:
                 sections:
-                  - sectionId: "sec2"
-                    lastLineId: "line3"
+                  - sectionId: sec2
+                    lastLineId: line3
                 resources: []
               contexts:
                 - pointers:
-                    read: { sectionId: "sec2", lineId: "line3" }
+                    read:
+                      sectionId: sec2
+                      lineId: line3
                   variables:
                     score: 15
                   rollback:
@@ -223,33 +368,68 @@ in:
                     isRestoring: false
                     replayStartIndex: 0
                     timeline:
-                      - sectionId: "sec1"
-                        lineId: "line1"
-                        rollbackPolicy: "free"
-                      - sectionId: "sec1"
-                        lineId: "line2"
-                        rollbackPolicy: "free"
-                      - sectionId: "sec2"
-                        lineId: "line3"
-                        rollbackPolicy: "free"
+                      - sectionId: sec1
+                        lineId: line1
+                        rollbackPolicy: free
+                      - sectionId: sec1
+                        lineId: line2
+                        rollbackPolicy: free
+                      - sectionId: sec2
+                        lineId: line3
+                        rollbackPolicy: free
         pendingEffects: []
   - slotId: 4
 out:
+  projectData:
+    resources:
+      variables:
+        score:
+          type: number
+          scope: context
+          default: 0
+    story:
+      scenes:
+        scene1:
+          sections:
+            sec1:
+              lines:
+                - id: line1
+                  actions: {}
+                - id: line2
+                  actions: {}
+            sec2:
+              lines:
+                - id: line3
+                  actions: {}
   global:
+    autoMode: false
+    skipMode: false
+    dialogueUIHidden: false
+    layeredViews: []
+    isLineCompleted: true
+    nextLineConfig:
+      manual:
+        enabled: true
+        requireLineCompleted: false
+      auto:
+        enabled: false
+      applyMode: persistent
     saveSlots:
       "4":
         slotId: 4
         savedAt: 1704110600
-        image: "save4.png"
+        image: save4.png
         state:
           viewedRegistry:
             sections:
-              - sectionId: "sec2"
-                lastLineId: "line3"
+              - sectionId: sec2
+                lastLineId: line3
             resources: []
           contexts:
             - pointers:
-                read: { sectionId: "sec2", lineId: "line3" }
+                read:
+                  sectionId: sec2
+                  lineId: line3
               variables:
                 score: 15
               rollback:
@@ -257,25 +437,41 @@ out:
                 isRestoring: false
                 replayStartIndex: 0
                 timeline:
-                  - sectionId: "sec1"
-                    lineId: "line1"
-                    rollbackPolicy: "free"
-                  - sectionId: "sec1"
-                    lineId: "line2"
-                    rollbackPolicy: "free"
-                  - sectionId: "sec2"
-                    lineId: "line3"
-                    rollbackPolicy: "free"
+                  - sectionId: sec1
+                    lineId: line1
+                    rollbackPolicy: free
+                  - sectionId: sec1
+                    lineId: line2
+                    rollbackPolicy: free
+                  - sectionId: sec2
+                    lineId: line3
+                    rollbackPolicy: free
     viewedRegistry:
       sections:
-        - sectionId: "sec2"
-          lastLineId: "line3"
+        - sectionId: sec2
+          lastLineId: line3
       resources: []
     pendingEffects:
-      - name: "render"
+      - name: clearAutoNextTimer
+      - name: clearSkipNextTimer
+      - name: clearNextLineConfigTimer
+      - name: render
   contexts:
-    - pointers:
-        read: { sectionId: "sec2", lineId: "line3" }
+    - currentPointerMode: read
+      pointers:
+        read:
+          sceneId: scene1
+          sectionId: sec2
+          lineId: line3
+        history:
+          sectionId: __undefined__
+          lineId: __undefined__
+          historySequenceIndex: __undefined__
+      historySequence: []
+      configuration: {}
+      views: []
+      bgm:
+        resourceId: __undefined__
       variables:
         score: 15
       rollback:
@@ -283,12 +479,12 @@ out:
         isRestoring: false
         replayStartIndex: 0
         timeline:
-          - sectionId: "sec1"
-            lineId: "line1"
-            rollbackPolicy: "free"
-          - sectionId: "sec1"
-            lineId: "line2"
-            rollbackPolicy: "free"
-          - sectionId: "sec2"
-            lineId: "line3"
-            rollbackPolicy: "free"
+          - sectionId: sec1
+            lineId: line1
+            rollbackPolicy: free
+          - sectionId: sec1
+            lineId: line2
+            rollbackPolicy: free
+          - sectionId: sec2
+            lineId: line3
+            rollbackPolicy: free

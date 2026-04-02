@@ -115,7 +115,7 @@ describe("RouteEngine selectSystemState", () => {
       initialState: {
         global: {
           nextLineConfig: {
-            manual: { enabled: true, requireComplete: false },
+            manual: { enabled: true, requireLineCompleted: false },
             auto: { enabled: false },
           },
         },
