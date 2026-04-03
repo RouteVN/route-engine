@@ -1,6 +1,6 @@
 ---
 title: Dialogue Skip Timing
-description: Minimal skip timing sandbox with 100 numbered lines. With the current 100ms skip cadence, the stable browser path should be on line 2 around 40ms after enabling skip.
+description: Minimal skip timing sandbox with 100 numbered lines. With the current 80ms skip cadence, the stable browser path is already around line 4 by the 40ms screenshot checkpoint after enabling skip.
 skipInitialScreenshot: true
 viewport:
   id: capture

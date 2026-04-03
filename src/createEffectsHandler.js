@@ -17,7 +17,7 @@ const createTimerState = () => {
   };
 };
 
-const DEFAULT_SKIP_NEXT_DELAY_MS = 100;
+const DEFAULT_SKIP_NEXT_DELAY_MS = 80;
 
 const render = ({ engine, routeGraphics, trackRenderDispatch }, payload) => {
   const renderState = engine.selectRenderState();

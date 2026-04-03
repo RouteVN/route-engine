@@ -238,7 +238,7 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
 
     const skipTimerCallback = ticker.add.mock.calls[0][0];
 
-    skipTimerCallback({ deltaMS: 99 });
+    skipTimerCallback({ deltaMS: 79 });
     expect(engine.handleInternalAction).not.toHaveBeenCalled();
 
     skipTimerCallback({ deltaMS: 1 });
@@ -249,7 +249,7 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
       {},
     );
 
-    skipTimerCallback({ deltaMS: 99 });
+    skipTimerCallback({ deltaMS: 79 });
     expect(engine.handleInternalAction).toHaveBeenCalledTimes(1);
 
     skipTimerCallback({ deltaMS: 1 });
