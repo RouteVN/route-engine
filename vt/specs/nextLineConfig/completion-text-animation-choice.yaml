@@ -135,7 +135,7 @@ story:
                   ui:
                     resourceId: dialogueLayout
                   content:
-                    - text: "Line 1: text-revealing must complete before auto-next."
+                    - text: "Line 1: text-revealing must complete before auto-next, and this sentence is intentionally long enough to wrap so the reveal gate is easy to see in the snapshot and while stepping through the page."
             - id: line2
               actions:
                 background:
@@ -144,17 +144,17 @@ story:
                     resourceId: fade-in-1s
                 dialogue:
                   content:
-                    - text: "Line 2: background fade-in animation must complete before auto-next."
+                    - text: "Line 2: the background fade-in animation must complete before auto-next, and this copy stays longer so the reveal timing and the animation gate are both visible during the same phase."
             - id: line3
               actions:
                 dialogue:
                   content:
-                    - text: "Line 3: auto should continue here."
+                    - text: "Line 3: auto should continue here, but the dialogue is extended so this intermediate reveal state also wraps across multiple lines instead of collapsing to a single short row."
             - id: line4
               actions:
                 dialogue:
                   content:
-                    - text: "Line 4: choice is visible. auto must stop on this line."
+                    - text: "Line 4: the choice is visible and auto must stop on this line, so the prompt is longer here as well to keep the reveal text stretched over multiple lines above the options."
                 choice:
                   resourceId: choiceLayout
                   items:
@@ -173,4 +173,4 @@ story:
                     enabled: false
                 dialogue:
                   content:
-                    - text: "Line 5: reached after selecting a choice."
+                    - text: "Line 5: this is reached after selecting a choice, and the longer sentence keeps the final reveal line visually consistent with the rest of the text-wrapping coverage in this spec."

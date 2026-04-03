@@ -130,7 +130,7 @@ story:
                   ui:
                     resourceId: dialogueLayout
                   content:
-                    - text: "Line 1 should be fully visible immediately after rollback."
+                    - text: "Line 1 should be fully visible immediately after rollback, and this opening sentence is intentionally long enough to wrap so the restored completed state is obvious at a glance."
                   characterId: narrator
             - id: line2
               actions:

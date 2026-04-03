@@ -131,7 +131,7 @@ story:
                   ui:
                     resourceId: revealDialogue
                   content:
-                    - text: "Line 6 is also reveal-based. This file now isolates reveal completion only."
+                    - text: "Line 6 is also reveal-based, and this file now isolates reveal completion only so the wrapped text stays on screen long enough to judge whether the first click completes instead of advancing."
             - id: line7
               actions:
                 dialogue:
@@ -139,7 +139,7 @@ story:
                   ui:
                     resourceId: revealDialogue
                   content:
-                    - text: "Line 7 is reveal again. A click during reveal should complete it without advancing."
+                    - text: "Line 7 keeps the same reveal-only behavior, with enough additional wording to wrap across multiple lines so a click during reveal should still complete it without jumping ahead."
             - id: line8
               actions:
                 dialogue:
@@ -147,7 +147,7 @@ story:
                   ui:
                     resourceId: revealDialogue
                   content:
-                    - text: "Line 8 remains reveal-based as well."
+                    - text: "Line 8 remains reveal-based as well, and the extra wording here is only for layout coverage so the dialogue box shows a second or third line while the typewriter effect runs."
             - id: line9
               actions:
                 dialogue:
@@ -155,7 +155,7 @@ story:
                   ui:
                     resourceId: revealDialogue
                   content:
-                    - text: "Line 9 is the last reveal line in this manual test flow."
+                    - text: "Line 9 is the last reveal line in this manual test flow, and it stays deliberately verbose so the final stretch of the sequence still demonstrates wrapped text under reveal timing."
             - id: line10
               actions:
                 dialogue:
@@ -163,4 +163,4 @@ story:
                   ui:
                     resourceId: revealDialogue
                   content:
-                    - text: "Line 10 is the final reveal line."
+                    - text: "Line 10 is the final reveal line, and it also uses a longer sentence so the closing state of this sandbox still spans more than one rendered row in the dialogue box."
