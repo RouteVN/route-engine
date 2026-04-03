@@ -1,0 +1,828 @@
+---
+title: Dialogue Skip Timing
+description: Minimal skip timing sandbox with 100 numbered lines. With the current 80ms skip cadence, the stable browser path is already around line 4 by the 40ms screenshot checkpoint after enabling skip.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: click
+    x: 805
+    y: 55
+  - action: wait
+    ms: 40
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  variables:
+    _skipUnseenText:
+      type: boolean
+      scope: global-device
+      default: true
+  characters:
+    narrator:
+      name: Narrator
+  layouts:
+    stageLayout:
+      elements:
+        - id: stage
+          type: rect
+          width: 1920
+          height: 1080
+          colorId: bg
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 100
+          y: 760
+          width: 1720
+          height: 220
+          colorId: panel
+        - id: dialogue-text
+          type: text
+          x: 140
+          y: 835
+          width: 1200
+          content: ${dialogue.content[0].text}
+          textStyleId: textMain
+        - id: skip-button
+          type: rect
+          x: 1500
+          y: 70
+          width: 220
+          height: 70
+          colorId: button
+          click:
+            payload:
+              actions:
+                toggleSkipMode: {}
+        - id: skip-label
+          type: text
+          x: 1562
+          y: 92
+          content: "[SKIP]"
+          textStyleId: textButton
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    bg:
+      hex: "#000000"
+    panel:
+      hex: "#4D4D4D"
+    button:
+      hex: "#737373"
+    fg:
+      hex: "#FFFFFF"
+  textStyles:
+    textMain:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 34
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textButton:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 28
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: section1
+      sections:
+        section1:
+          lines:
+            - id: line1
+              actions:
+                background:
+                  resourceId: stageLayout
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 1"
+                  characterId: narrator
+            - id: line2
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 2"
+                  characterId: narrator
+            - id: line3
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 3"
+                  characterId: narrator
+            - id: line4
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 4"
+                  characterId: narrator
+            - id: line5
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 5"
+                  characterId: narrator
+            - id: line6
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 6"
+                  characterId: narrator
+            - id: line7
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 7"
+                  characterId: narrator
+            - id: line8
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 8"
+                  characterId: narrator
+            - id: line9
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 9"
+                  characterId: narrator
+            - id: line10
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 10"
+                  characterId: narrator
+            - id: line11
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 11"
+                  characterId: narrator
+            - id: line12
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 12"
+                  characterId: narrator
+            - id: line13
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 13"
+                  characterId: narrator
+            - id: line14
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 14"
+                  characterId: narrator
+            - id: line15
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 15"
+                  characterId: narrator
+            - id: line16
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 16"
+                  characterId: narrator
+            - id: line17
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 17"
+                  characterId: narrator
+            - id: line18
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 18"
+                  characterId: narrator
+            - id: line19
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 19"
+                  characterId: narrator
+            - id: line20
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 20"
+                  characterId: narrator
+            - id: line21
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 21"
+                  characterId: narrator
+            - id: line22
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 22"
+                  characterId: narrator
+            - id: line23
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 23"
+                  characterId: narrator
+            - id: line24
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 24"
+                  characterId: narrator
+            - id: line25
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 25"
+                  characterId: narrator
+            - id: line26
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 26"
+                  characterId: narrator
+            - id: line27
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 27"
+                  characterId: narrator
+            - id: line28
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 28"
+                  characterId: narrator
+            - id: line29
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 29"
+                  characterId: narrator
+            - id: line30
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 30"
+                  characterId: narrator
+            - id: line31
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 31"
+                  characterId: narrator
+            - id: line32
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 32"
+                  characterId: narrator
+            - id: line33
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 33"
+                  characterId: narrator
+            - id: line34
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 34"
+                  characterId: narrator
+            - id: line35
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 35"
+                  characterId: narrator
+            - id: line36
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 36"
+                  characterId: narrator
+            - id: line37
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 37"
+                  characterId: narrator
+            - id: line38
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 38"
+                  characterId: narrator
+            - id: line39
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 39"
+                  characterId: narrator
+            - id: line40
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 40"
+                  characterId: narrator
+            - id: line41
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 41"
+                  characterId: narrator
+            - id: line42
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 42"
+                  characterId: narrator
+            - id: line43
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 43"
+                  characterId: narrator
+            - id: line44
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 44"
+                  characterId: narrator
+            - id: line45
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 45"
+                  characterId: narrator
+            - id: line46
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 46"
+                  characterId: narrator
+            - id: line47
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 47"
+                  characterId: narrator
+            - id: line48
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 48"
+                  characterId: narrator
+            - id: line49
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 49"
+                  characterId: narrator
+            - id: line50
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 50"
+                  characterId: narrator
+            - id: line51
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 51"
+                  characterId: narrator
+            - id: line52
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 52"
+                  characterId: narrator
+            - id: line53
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 53"
+                  characterId: narrator
+            - id: line54
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 54"
+                  characterId: narrator
+            - id: line55
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 55"
+                  characterId: narrator
+            - id: line56
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 56"
+                  characterId: narrator
+            - id: line57
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 57"
+                  characterId: narrator
+            - id: line58
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 58"
+                  characterId: narrator
+            - id: line59
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 59"
+                  characterId: narrator
+            - id: line60
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 60"
+                  characterId: narrator
+            - id: line61
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 61"
+                  characterId: narrator
+            - id: line62
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 62"
+                  characterId: narrator
+            - id: line63
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 63"
+                  characterId: narrator
+            - id: line64
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 64"
+                  characterId: narrator
+            - id: line65
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 65"
+                  characterId: narrator
+            - id: line66
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 66"
+                  characterId: narrator
+            - id: line67
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 67"
+                  characterId: narrator
+            - id: line68
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 68"
+                  characterId: narrator
+            - id: line69
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 69"
+                  characterId: narrator
+            - id: line70
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 70"
+                  characterId: narrator
+            - id: line71
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 71"
+                  characterId: narrator
+            - id: line72
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 72"
+                  characterId: narrator
+            - id: line73
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 73"
+                  characterId: narrator
+            - id: line74
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 74"
+                  characterId: narrator
+            - id: line75
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 75"
+                  characterId: narrator
+            - id: line76
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 76"
+                  characterId: narrator
+            - id: line77
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 77"
+                  characterId: narrator
+            - id: line78
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 78"
+                  characterId: narrator
+            - id: line79
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 79"
+                  characterId: narrator
+            - id: line80
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 80"
+                  characterId: narrator

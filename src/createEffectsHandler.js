@@ -17,6 +17,8 @@ const createTimerState = () => {
   };
 };
 
+const DEFAULT_SKIP_NEXT_DELAY_MS = 80;
+
 const render = ({ engine, routeGraphics, trackRenderDispatch }, payload) => {
   const renderState = engine.selectRenderState();
   trackRenderDispatch?.(renderState);
@@ -92,8 +94,8 @@ const startSkipNextTimer = ({ engine, ticker, skipTimer }, payload) => {
   const newCallback = (time) => {
     skipTimer.addElapsed(time.deltaMS);
 
-    // Skip advance every 30ms
-    if (skipTimer.getElapsed() >= 30) {
+    const delay = payload?.delay ?? DEFAULT_SKIP_NEXT_DELAY_MS;
+    if (skipTimer.getElapsed() >= delay) {
       skipTimer.setElapsed(0);
       dispatchInternalAction(engine, "nextLineFromSystem", {});
     }
