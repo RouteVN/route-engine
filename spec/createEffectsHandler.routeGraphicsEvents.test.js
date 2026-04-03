@@ -216,6 +216,51 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
     );
   });
 
+  it("waits for the slower skip cadence before advancing again", () => {
+    const ticker = createTicker();
+    const engine = {
+      selectRenderState: vi.fn(() => ({ id: "render-1" })),
+      handleAction: vi.fn(),
+      handleInternalAction: vi.fn(),
+      handleActions: vi.fn(),
+    };
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics: {
+        render: vi.fn(),
+      },
+      ticker,
+    });
+
+    effectsHandler([{ name: "startSkipNextTimer" }]);
+
+    expect(ticker.add).toHaveBeenCalledTimes(1);
+
+    const skipTimerCallback = ticker.add.mock.calls[0][0];
+
+    skipTimerCallback({ deltaMS: 99 });
+    expect(engine.handleInternalAction).not.toHaveBeenCalled();
+
+    skipTimerCallback({ deltaMS: 1 });
+    expect(engine.handleInternalAction).toHaveBeenCalledTimes(1);
+    expect(engine.handleInternalAction).toHaveBeenNthCalledWith(
+      1,
+      "nextLineFromSystem",
+      {},
+    );
+
+    skipTimerCallback({ deltaMS: 99 });
+    expect(engine.handleInternalAction).toHaveBeenCalledTimes(1);
+
+    skipTimerCallback({ deltaMS: 1 });
+    expect(engine.handleInternalAction).toHaveBeenCalledTimes(2);
+    expect(engine.handleInternalAction).toHaveBeenNthCalledWith(
+      2,
+      "nextLineFromSystem",
+      {},
+    );
+  });
+
   it("preserves unknown effects in order when an unhandled-effect callback is provided", () => {
     const unhandledEffects = [];
     const effectsHandler = createEffectsHandler({
