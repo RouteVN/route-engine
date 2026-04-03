@@ -1,0 +1,218 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore.actions
+suites: [resetStorySession]
+---
+suite: resetStorySession
+exportName: resetStorySession
+---
+case: reset story session preserves pointer and clears story-local session state
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            score:
+              type: number
+              scope: context
+              default: 0
+            hasKey:
+              type: boolean
+              scope: context
+              default: false
+            volume:
+              type: number
+              scope: global-device
+              default: 80
+            unlockedEnding:
+              type: boolean
+              scope: global-account
+              default: false
+        story:
+          initialSceneId: scene1
+          scenes:
+            scene1:
+              initialSectionId: title
+              sections:
+                title:
+                  lines:
+                    - id: intro
+                      actions: {}
+                    - id: titleLine
+                      actions: {}
+                gameStart:
+                  lines:
+                    - id: gameLine
+                      actions: {}
+      global:
+        autoMode: true
+        skipMode: true
+        dialogueUIHidden: true
+        confirmDialog:
+          resourceId: resetConfirm
+          confirmActions:
+            hideConfirmDialog: {}
+          cancelActions:
+            hideConfirmDialog: {}
+        viewedRegistry:
+          sections:
+            - sectionId: title
+              lastLineId: titleLine
+          resources:
+            - resourceId: cg1
+        nextLineConfig:
+          manual:
+            enabled: false
+            requireLineCompleted: true
+          auto:
+            enabled: true
+            trigger: fromStart
+            delay: 250
+          applyMode: singleLine
+        layeredViews:
+          - resourceId: overlay
+        isLineCompleted: false
+        variables:
+          volume: 15
+          unlockedEnding: true
+        saveSlots:
+          "1":
+            formatVersion: 1
+            slotId: 1
+            savedAt: 1704110400
+            image: save.png
+            state:
+              contexts:
+                - pointers:
+                    read:
+                      sectionId: title
+                      lineId: titleLine
+        pendingEffects:
+          - name: existingEffect
+      contexts:
+        - currentPointerMode: history
+          pointers:
+            read:
+              sectionId: title
+              lineId: titleLine
+            history:
+              sectionId: title
+              lineId: intro
+          configuration:
+            page: 2
+          views:
+            - resourceId: contextOverlay
+          bgm:
+            resourceId: bgm_theme
+          variables:
+            score: 9
+            hasKey: true
+          rollback:
+            currentIndex: 1
+            isRestoring: false
+            replayStartIndex: 0
+            timeline:
+              - sectionId: title
+                lineId: intro
+                rollbackPolicy: free
+              - sectionId: title
+                lineId: titleLine
+                rollbackPolicy: free
+  - {}
+out:
+  projectData:
+    resources:
+      variables:
+        score:
+          type: number
+          scope: context
+          default: 0
+        hasKey:
+          type: boolean
+          scope: context
+          default: false
+        volume:
+          type: number
+          scope: global-device
+          default: 80
+        unlockedEnding:
+          type: boolean
+          scope: global-account
+          default: false
+    story:
+      initialSceneId: scene1
+      scenes:
+        scene1:
+          initialSectionId: title
+          sections:
+            title:
+              lines:
+                - id: intro
+                  actions: {}
+                - id: titleLine
+                  actions: {}
+            gameStart:
+              lines:
+                - id: gameLine
+                  actions: {}
+  global:
+    autoMode: false
+    skipMode: false
+    dialogueUIHidden: false
+    confirmDialog: null
+    viewedRegistry:
+      sections: []
+      resources: []
+    nextLineConfig:
+      manual:
+        enabled: true
+        requireLineCompleted: false
+      auto:
+        enabled: false
+      applyMode: persistent
+    layeredViews: []
+    isLineCompleted: true
+    variables:
+      volume: 15
+      unlockedEnding: true
+    saveSlots:
+      "1":
+        formatVersion: 1
+        slotId: 1
+        savedAt: 1704110400
+        image: save.png
+        state:
+          contexts:
+            - pointers:
+                read:
+                  sectionId: title
+                  lineId: titleLine
+    pendingEffects:
+      - name: existingEffect
+      - name: clearAutoNextTimer
+      - name: clearSkipNextTimer
+      - name: clearNextLineConfigTimer
+      - name: render
+  contexts:
+    - currentPointerMode: read
+      pointers:
+        read:
+          sectionId: title
+          lineId: titleLine
+        history:
+          sectionId: __undefined__
+          lineId: __undefined__
+      configuration: {}
+      views: []
+      bgm:
+        resourceId: __undefined__
+      variables:
+        score: 0
+        hasKey: false
+      rollback:
+        currentIndex: 0
+        isRestoring: false
+        replayStartIndex: 0
+        timeline:
+          - sectionId: title
+            lineId: titleLine
+            rollbackPolicy: free

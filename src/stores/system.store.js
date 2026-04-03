@@ -25,6 +25,12 @@ const DEFAULT_NEXT_LINE_CONFIG = {
 
 const CURRENT_SAVE_FORMAT_VERSION = 1;
 
+const createDefaultNextLineConfig = () => ({
+  manual: { ...DEFAULT_NEXT_LINE_CONFIG.manual },
+  auto: { ...DEFAULT_NEXT_LINE_CONFIG.auto },
+  applyMode: DEFAULT_NEXT_LINE_CONFIG.applyMode,
+});
+
 const resetNextLineConfigIfSingleLine = (state) => {
   const applyMode = state.global.nextLineConfig?.applyMode ?? "persistent";
   if (applyMode !== "singleLine") {
@@ -34,9 +40,7 @@ const resetNextLineConfigIfSingleLine = (state) => {
   const wasAutoEnabled = state.global.nextLineConfig?.auto?.enabled === true;
 
   state.global.nextLineConfig = {
-    manual: { ...DEFAULT_NEXT_LINE_CONFIG.manual },
-    auto: { ...DEFAULT_NEXT_LINE_CONFIG.auto },
-    applyMode: DEFAULT_NEXT_LINE_CONFIG.applyMode,
+    ...createDefaultNextLineConfig(),
   };
 
   // Ensure stale timers cannot fire after single-line config is consumed.
@@ -65,6 +69,10 @@ const createDefaultViewedRegistry = () => ({
 const createDefaultHistoryPointer = () => ({
   sectionId: undefined,
   lineId: undefined,
+});
+
+const createDefaultBgmState = () => ({
+  resourceId: undefined,
 });
 
 const normalizeLegacyManualNextLineConfig = (manual) => {
@@ -588,6 +596,33 @@ const clearConfirmDialog = (state) => {
 
 const rollbackActionBatchStack = [];
 
+const getActiveRollbackActionBatch = () =>
+  rollbackActionBatchStack[rollbackActionBatchStack.length - 1] ?? null;
+
+const setActiveRollbackBatchCheckpoint = (checkpointIndex) => {
+  const activeBatch = getActiveRollbackActionBatch();
+  if (activeBatch) {
+    activeBatch.checkpointIndex = checkpointIndex;
+  }
+};
+
+const markPendingStorySessionReset = () => {
+  const activeBatch = getActiveRollbackActionBatch();
+  if (activeBatch) {
+    activeBatch.pendingStorySessionReset = true;
+  }
+};
+
+const consumePendingStorySessionReset = () => {
+  const activeBatch = getActiveRollbackActionBatch();
+  if (!activeBatch?.pendingStorySessionReset) {
+    return false;
+  }
+
+  delete activeBatch.pendingStorySessionReset;
+  return true;
+};
+
 const createRollbackCheckpoint = ({ sectionId, lineId, rollbackPolicy }) => ({
   sectionId,
   lineId,
@@ -599,6 +634,40 @@ const getRollbackContextVariableDefaults = (projectData) => {
     projectData ?? {},
   );
   return cloneStateValue(contextVariableDefaultValues);
+};
+
+const createDefaultContextState = ({ pointer, projectData }) => ({
+  currentPointerMode: "read",
+  pointers: {
+    read: cloneStateValue(pointer),
+    history: createDefaultHistoryPointer(),
+  },
+  configuration: {},
+  views: [],
+  bgm: createDefaultBgmState(),
+  variables: getRollbackContextVariableDefaults(projectData),
+  rollback: createRollbackState({
+    pointer,
+  }),
+});
+
+const resetStorySessionTransientGlobals = (state) => {
+  state.global.autoMode = false;
+  state.global.skipMode = false;
+  state.global.dialogueUIHidden = false;
+  delete state.global.isDialogueHistoryShowing;
+  clearConfirmDialog(state);
+  state.global.viewedRegistry = createDefaultViewedRegistry();
+  state.global.nextLineConfig = createDefaultNextLineConfig();
+  state.global.layeredViews = [];
+  state.global.isLineCompleted = true;
+
+  state.global.pendingEffects.push(
+    { name: "clearAutoNextTimer" },
+    { name: "clearSkipNextTimer" },
+    { name: "clearNextLineConfigTimer" },
+    { name: "render" },
+  );
 };
 
 const removeLegacyRollbackBaseline = (rollback) => {
@@ -983,7 +1052,7 @@ export const createInitialState = (payload) => {
   };
 
   // Get default variables from project data
-  const { contextVariableDefaultValues, globalVariablesDefaultValues } =
+  const { globalVariablesDefaultValues } =
     getDefaultVariablesFromProjectData(projectData);
 
   // Merge with loaded globalVariablesDefaultValues from localStorage (if provided)
@@ -1001,39 +1070,14 @@ export const createInitialState = (payload) => {
       skipMode: false,
       dialogueUIHidden: false,
       confirmDialog: null,
-      viewedRegistry: {
-        sections: [],
-        resources: [],
-      },
-      nextLineConfig: {
-        manual: { ...DEFAULT_NEXT_LINE_CONFIG.manual },
-        auto: { ...DEFAULT_NEXT_LINE_CONFIG.auto },
-        applyMode: DEFAULT_NEXT_LINE_CONFIG.applyMode,
-      },
+      viewedRegistry: createDefaultViewedRegistry(),
+      nextLineConfig: createDefaultNextLineConfig(),
       saveSlots: normalizeStoredSaveSlots(saveSlots),
       layeredViews: [],
       variables: globalVariables,
     },
     contexts: [
-      {
-        currentPointerMode: "read",
-        pointers: {
-          read: initialPointer,
-          history: {
-            sectionId: undefined,
-            lineId: undefined,
-          },
-        },
-        configuration: {},
-        views: [],
-        bgm: {
-          resourceId: undefined,
-        },
-        variables: contextVariableDefaultValues,
-        rollback: createRollbackState({
-          pointer: initialPointer,
-        }),
-      },
+      createDefaultContextState({ pointer: initialPointer, projectData }),
     ],
   };
   return state;
@@ -1725,6 +1769,25 @@ export const appendPendingEffect = ({ state }, payload) => {
   return state;
 };
 
+export const resetStorySession = ({ state }) => {
+  const lastContext = state.contexts?.[state.contexts.length - 1];
+  const readPointer = lastContext?.pointers?.read;
+
+  if (!lastContext || !readPointer?.sectionId || !readPointer?.lineId) {
+    return state;
+  }
+
+  state.contexts[state.contexts.length - 1] = createDefaultContextState({
+    pointer: readPointer,
+    projectData: state.projectData,
+  });
+  resetStorySessionTransientGlobals(state);
+  markPendingStorySessionReset();
+  setActiveRollbackBatchCheckpoint(0);
+
+  return state;
+};
+
 const recordViewedLine = (state, { sectionId, lineId }) => {
   if (!state.global.viewedRegistry) {
     state.global.viewedRegistry = {};
@@ -1960,7 +2023,7 @@ export const loadSlot = ({ state }, payload) => {
     state.global.skipMode = false;
     state.global.dialogueUIHidden = false;
     delete state.global.isDialogueHistoryShowing;
-    state.global.nextLineConfig = cloneStateValue(DEFAULT_NEXT_LINE_CONFIG);
+    state.global.nextLineConfig = createDefaultNextLineConfig();
     state.global.layeredViews = [];
     state.global.isLineCompleted = true;
     clearConfirmDialog(state);
@@ -2054,6 +2117,13 @@ export const jumpToLine = ({ state }, payload) => {
     sectionId: targetSectionId,
     lineId: lineId,
   };
+
+  if (consumePendingStorySessionReset()) {
+    lastContext.rollback = createRollbackState({
+      pointer: lastContext.pointers.read,
+    });
+    setActiveRollbackBatchCheckpoint(lastContext.rollback.currentIndex);
+  }
 
   // Reset line completion state
   state.global.isLineCompleted = false;
@@ -2388,10 +2458,17 @@ export const sectionTransition = ({ state }, payload) => {
       lineId: firstLine.id,
     };
 
-    appendRollbackCheckpoint(state, {
-      sectionId,
-      lineId: firstLine.id,
-    });
+    if (consumePendingStorySessionReset()) {
+      lastContext.rollback = createRollbackState({
+        pointer: lastContext.pointers.read,
+      });
+      setActiveRollbackBatchCheckpoint(lastContext.rollback.currentIndex);
+    } else {
+      appendRollbackCheckpoint(state, {
+        sectionId,
+        lineId: firstLine.id,
+      });
+    }
   }
 
   // Reset line completion state
@@ -2775,6 +2852,7 @@ export const createSystemStore = (initialState) => {
     toggleDialogueUI,
     showConfirmDialog,
     hideConfirmDialog,
+    resetStorySession,
     clearPendingEffects,
     appendPendingEffect,
     beginRollbackActionBatch,

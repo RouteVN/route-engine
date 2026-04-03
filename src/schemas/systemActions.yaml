@@ -164,6 +164,12 @@ properties:
     required: [slotId]
     additionalProperties: false
 
+  resetStorySession:
+    type: object
+    description: Reset story-local session state while preserving the current read pointer
+    properties: {}
+    additionalProperties: false
+
   sectionTransition:
     type: object
     description: Navigate to the first line of a section

@@ -91,6 +91,83 @@ const createRollbackChoiceProjectData = () => ({
   },
 });
 
+const createSessionResetProjectData = () => ({
+  screen: {
+    width: 1920,
+    height: 1080,
+    backgroundColor: "#000000",
+  },
+  resources: {
+    layouts: {},
+    sounds: {},
+    images: {},
+    videos: {},
+    sprites: {},
+    characters: {},
+    variables: {
+      score: {
+        type: "number",
+        scope: "context",
+        default: 0,
+      },
+    },
+    transforms: {},
+    sectionTransitions: {},
+    animations: {},
+    fonts: {},
+    colors: {},
+    textStyles: {},
+  },
+  story: {
+    initialSceneId: "scene1",
+    scenes: {
+      scene1: {
+        initialSectionId: "title",
+        sections: {
+          title: {
+            lines: [
+              {
+                id: "titleLine",
+                actions: {
+                  updateVariable: {
+                    id: "seedTitleScore",
+                    operations: [
+                      {
+                        variableId: "score",
+                        op: "set",
+                        value: 7,
+                      },
+                    ],
+                  },
+                },
+              },
+            ],
+          },
+          gameStart: {
+            lines: [
+              {
+                id: "gameLine",
+                actions: {
+                  updateVariable: {
+                    id: "seedGameScore",
+                    operations: [
+                      {
+                        variableId: "score",
+                        op: "increment",
+                        value: 1,
+                      },
+                    ],
+                  },
+                },
+              },
+            ],
+          },
+        },
+      },
+    },
+  },
+});
+
 const createRouteEngineWithInlineEffects = () => {
   let engine;
   const handlePendingEffects = (pendingEffects) => {
@@ -223,5 +300,63 @@ describe("RouteEngine selectSystemState", () => {
     expect(engine.selectSystemState().global.pendingEffects).toEqual([
       { name: "customEffect" },
     ]);
+  });
+
+  it("anchors a reset+transition batch at the destination section with fresh story-local state", () => {
+    const engine = createRouteEngineWithInlineEffects();
+
+    engine.init({
+      initialState: {
+        projectData: createSessionResetProjectData(),
+      },
+    });
+
+    expect(engine.selectSystemState().contexts[0].variables.score).toBe(7);
+
+    engine.handleActions({
+      resetStorySession: {},
+      sectionTransition: {
+        sectionId: "gameStart",
+      },
+    });
+
+    const state = engine.selectSystemState();
+
+    expect(state.contexts[0].pointers.read).toEqual({
+      sectionId: "gameStart",
+      lineId: "gameLine",
+    });
+    expect(state.contexts[0].variables.score).toBe(1);
+    expect(state.global.viewedRegistry).toEqual({
+      sections: [],
+      resources: [],
+    });
+    expect(state.contexts[0].rollback).toEqual({
+      currentIndex: 0,
+      isRestoring: false,
+      replayStartIndex: 0,
+      timeline: [
+        {
+          sectionId: "gameStart",
+          lineId: "gameLine",
+          rollbackPolicy: "free",
+          executedActions: [
+            {
+              type: "updateVariable",
+              payload: {
+                id: "seedGameScore",
+                operations: [
+                  {
+                    variableId: "score",
+                    op: "increment",
+                    value: 1,
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    });
   });
 });
