@@ -2081,21 +2081,21 @@ export const addLayout = (
 
     storyContainer.children.push(
       renderTemplatedLayoutContainer({
-      container: layoutContainer,
-      resources,
-      templateData: createLayoutTemplateData({
+        container: layoutContainer,
+        resources,
+        templateData: createLayoutTemplateData({
           variables,
           saveSlots,
           isLineCompleted,
           autoMode,
           skipMode,
           canRollback,
+        }),
+        isLineCompleted,
+        skipMode,
+        skipTransitionsAndAnimations,
       }),
-      isLineCompleted,
-      skipMode,
-      skipTransitionsAndAnimations,
-    }),
-  );
+    );
   }
 
   // Handle layout animations
