@@ -866,9 +866,13 @@ const createLayoutTemplateData = ({
   };
 };
 
-const normalizeCompletedTextReveal = (node) => {
+const SKIP_TEXT_REVEAL_SPEED = 100;
+
+const normalizeTextRevealNodes = (node, transformTextRevealNode) => {
   if (Array.isArray(node)) {
-    return node.map((item) => normalizeCompletedTextReveal(item));
+    return node.map((item) =>
+      normalizeTextRevealNodes(item, transformTextRevealNode),
+    );
   }
 
   if (!node || typeof node !== "object") {
@@ -878,25 +882,60 @@ const normalizeCompletedTextReveal = (node) => {
   const normalized = { ...node };
 
   Object.keys(normalized).forEach((key) => {
-    normalized[key] = normalizeCompletedTextReveal(normalized[key]);
+    normalized[key] = normalizeTextRevealNodes(
+      normalized[key],
+      transformTextRevealNode,
+    );
   });
 
   if (normalized.type === "text-revealing") {
-    normalized.revealEffect = "none";
+    return transformTextRevealNode(normalized);
   }
 
   return normalized;
 };
 
+const normalizeCompletedTextReveal = (node) =>
+  normalizeTextRevealNodes(node, (textRevealNode) => ({
+    ...textRevealNode,
+    revealEffect: "none",
+  }));
+
+const normalizeSkipTextReveal = (node) =>
+  normalizeTextRevealNodes(node, (textRevealNode) => {
+    const resolvedBaseSpeed = Number(
+      textRevealNode.speed ?? textRevealNode.displaySpeed,
+    );
+    const nextSpeed = Number.isFinite(resolvedBaseSpeed)
+      ? Math.max(resolvedBaseSpeed, SKIP_TEXT_REVEAL_SPEED)
+      : SKIP_TEXT_REVEAL_SPEED;
+
+    return {
+      ...textRevealNode,
+      speed: nextSpeed,
+      ...(Object.prototype.hasOwnProperty.call(textRevealNode, "displaySpeed")
+        ? { displaySpeed: nextSpeed }
+        : {}),
+    };
+  });
+
 const settleTextRevealIfCompleted = (
   node,
-  { isLineCompleted = false, skipTransitionsAndAnimations = false } = {},
+  {
+    isLineCompleted = false,
+    skipMode = false,
+    skipTransitionsAndAnimations = false,
+  } = {},
 ) => {
-  if (!isLineCompleted && !skipTransitionsAndAnimations) {
-    return node;
+  if (isLineCompleted || skipTransitionsAndAnimations) {
+    return normalizeCompletedTextReveal(node);
   }
 
-  return normalizeCompletedTextReveal(node);
+  if (skipMode) {
+    return normalizeSkipTextReveal(node);
+  }
+
+  return node;
 };
 
 const createFullscreenClickBlocker = ({
@@ -935,6 +974,7 @@ const renderTemplatedLayoutContainer = ({
   resources,
   templateData,
   isLineCompleted = false,
+  skipMode = false,
   skipTransitionsAndAnimations = false,
 }) => {
   const processedContainer = parseAndRender(container, templateData, {
@@ -944,6 +984,7 @@ const renderTemplatedLayoutContainer = ({
   return resolveLayoutResourceIds(
     settleTextRevealIfCompleted(processedContainer, {
       isLineCompleted,
+      skipMode,
       skipTransitionsAndAnimations,
     }),
     resources,
@@ -1234,6 +1275,7 @@ export const addBackgroundOrCg = (
           resolveLayoutResourceIds(
             settleTextRevealIfCompleted(processedContainer, {
               isLineCompleted,
+              skipMode,
               skipTransitionsAndAnimations,
             }),
             resources,
@@ -1540,6 +1582,7 @@ export const addVisuals = (
             resolveLayoutResourceIds(
               settleTextRevealIfCompleted(processedContainer, {
                 isLineCompleted,
+                skipMode,
                 skipTransitionsAndAnimations,
               }),
               resources,
@@ -1698,6 +1741,7 @@ export const addDialogue = (
       const uiElements = resolveLayoutResourceIds(
         settleTextRevealIfCompleted(result?.elements, {
           isLineCompleted,
+          skipMode,
           skipTransitionsAndAnimations,
         }),
         resources,
@@ -1805,6 +1849,7 @@ export const addChoices = (
       const choiceElements = resolveLayoutResourceIds(
         settleTextRevealIfCompleted(result?.elements, {
           isLineCompleted,
+          skipMode,
           skipTransitionsAndAnimations,
         }),
         resources,
@@ -1903,6 +1948,7 @@ export const addControl = (
         canRollback,
       }),
       isLineCompleted,
+      skipMode,
       skipTransitionsAndAnimations,
     }),
   );
@@ -2046,6 +2092,7 @@ export const addLayout = (
           canRollback,
         }),
         isLineCompleted,
+        skipMode,
         skipTransitionsAndAnimations,
       }),
     );
@@ -2166,6 +2213,7 @@ export const addLayeredViews = (
           },
           {
             isLineCompleted,
+            skipMode,
             skipTransitionsAndAnimations,
           },
         ),
@@ -2266,6 +2314,7 @@ export const addConfirmDialog = (
       },
       {
         isLineCompleted,
+        skipMode,
         skipTransitionsAndAnimations,
       },
     ),

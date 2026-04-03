@@ -277,6 +277,53 @@ out:
           revealEffect: "none"
   animations: []
 ---
+case: skip mode accelerates text-revealing dialogue elements
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      dialogue:
+        ui:
+          resourceId: "dialogueLayout"
+        content:
+          - text: "Hello world"
+    resources:
+      layouts:
+        dialogueLayout:
+          elements:
+            - id: "dialogue-text"
+              type: "text-revealing"
+              content: "${dialogue.content}"
+              displaySpeed: 30
+              revealEffect: "typewriter"
+      colors: {}
+      fonts: {}
+      textStyles: {}
+    dialogueUIHidden: false
+    autoMode: false
+    skipMode: true
+    isLineCompleted: false
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "dialogue-text"
+          type: "text-revealing"
+          content:
+            - text: "Hello world"
+          displaySpeed: 100
+          speed: 100
+          revealEffect: "typewriter"
+  animations: []
+---
 case: resolves colorId in dialogue ui layout elements
 in:
   - elements:
