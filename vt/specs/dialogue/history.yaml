@@ -134,7 +134,7 @@ resources:
                     textStyleId: textStyle5
                   - id: history-text-${i}
                     type: text
-                    content: ${item.content[0].text}
+                    content: ${item.text}
                     textStyleId: textStyle6
         - id: close-button-bg
           type: rect

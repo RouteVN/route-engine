@@ -71,6 +71,14 @@ const createDefaultHistoryPointer = () => ({
   lineId: undefined,
 });
 
+const buildDialogueHistoryText = (content) => {
+  if (!Array.isArray(content)) {
+    return "";
+  }
+
+  return content.map((item) => item?.text ?? "").join("");
+};
+
 const createDefaultBgmState = () => ({
   resourceId: undefined,
 });
@@ -1138,7 +1146,10 @@ export const selectDialogueHistory = ({ state }) => {
         characterName = character?.name || "";
       }
       return {
+        sectionId,
+        lineId: line.id,
         content: dialogue.content,
+        text: buildDialogueHistoryText(dialogue.content),
         characterId: dialogue.characterId,
         characterName: characterName,
       };
