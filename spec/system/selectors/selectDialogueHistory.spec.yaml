@@ -54,6 +54,7 @@ in:
 out:
   - characterId: "char1"
     characterName: ""
+    text: "Hello world"
     content:
       - text: "Hello world"
 ---
@@ -101,14 +102,17 @@ in:
 out:
   - characterId: "char1"
     characterName: ""
+    text: "First line"
     content:
       - text: "First line"
   - characterId: "char2"
     characterName: ""
+    text: "Second line"
     content:
       - text: "Second line"
   - characterId: "char1"
     characterName: ""
+    text: "Third line"
     content:
       - text: "Third line"
 ---
@@ -156,14 +160,17 @@ in:
 out:
   - characterId: "char1"
     characterName: ""
+    text: "First dialogue"
     content:
       - text: "First dialogue"
   - characterId: "char2"
     characterName: ""
+    text: "Second dialogue"
     content:
       - text: "Second dialogue"
   - characterId: __undefined__
     characterName: ""
+    text: "Third dialogue"
     content:
       - text: "Third dialogue"
 ---
@@ -275,10 +282,12 @@ in:
 out:
   - characterId: __undefined__
     characterName: ""
+    text: "Narrator text"
     content:
       - text: "Narrator text"
   - characterId: "char1"
     characterName: ""
+    text: "Character text"
     content:
       - text: "Character text"
 ---
@@ -311,6 +320,7 @@ in:
 out:
   - characterId: "char1"
     characterName: ""
+    text: "First partSecond partThird part"
     content:
       - text: "First part"
       - text: "Second part"

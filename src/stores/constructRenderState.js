@@ -962,8 +962,16 @@ const createHistoryDialogueTemplateData = (
 ) => {
   return dialogueHistory.map((item) => {
     const character = characters?.[item.characterId];
+    const text =
+      typeof item.text === "string"
+        ? item.text
+        : Array.isArray(item.content)
+          ? item.content.map((part) => part?.text ?? "").join("")
+          : "";
+
     return {
       ...item,
+      text,
       characterName: character?.name || "",
     };
   });

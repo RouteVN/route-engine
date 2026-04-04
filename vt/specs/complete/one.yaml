@@ -110,7 +110,7 @@ resources:
                 - $for item, i in historyDialogue:
                     id: kl2j3flk23-${i}
                     type: text
-                    content: ${item.content}
+                    content: ${item.text}
                     height: 80
                     width: 500
                     textStyleId: textStyle2
