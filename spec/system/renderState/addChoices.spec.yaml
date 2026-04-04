@@ -115,8 +115,7 @@ out:
             payload:
               _interactionSource: "choice"
               actions:
-                nextLine:
-                  _interactionSource: "choice"
+                nextLine: {}
   animations: []
 ---
 case: tags non-nextLine choice clicks at the payload level

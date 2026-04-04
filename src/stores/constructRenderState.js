@@ -960,18 +960,17 @@ const createFullscreenClickBlocker = ({
 
 const tagChoiceInteractionSource = (node) => {
   if (Array.isArray(node)) {
-    return node.map((item) => tagChoiceInteractionSource(item));
+    return node.map(tagChoiceInteractionSource);
   }
 
   if (!node || typeof node !== "object") {
     return node;
   }
 
-  const taggedNode = { ...node };
-
-  Object.keys(taggedNode).forEach((key) => {
-    taggedNode[key] = tagChoiceInteractionSource(taggedNode[key]);
-  });
+  const taggedNode = {};
+  for (const [key, value] of Object.entries(node)) {
+    taggedNode[key] = tagChoiceInteractionSource(value);
+  }
 
   const clickPayload = taggedNode.click?.payload;
   if (
@@ -982,18 +981,6 @@ const tagChoiceInteractionSource = (node) => {
     return taggedNode;
   }
 
-  const actions = clickPayload.actions;
-  const nextLineAction =
-    actions &&
-    typeof actions === "object" &&
-    !Array.isArray(actions) &&
-    Object.prototype.hasOwnProperty.call(actions, "nextLine")
-      ? {
-          ...actions.nextLine,
-          _interactionSource: "choice",
-        }
-      : undefined;
-
   return {
     ...taggedNode,
     click: {
@@ -1001,14 +988,6 @@ const tagChoiceInteractionSource = (node) => {
       payload: {
         ...clickPayload,
         _interactionSource: "choice",
-        ...(nextLineAction
-          ? {
-              actions: {
-                ...actions,
-                nextLine: nextLineAction,
-              },
-            }
-          : {}),
       },
     },
   };
