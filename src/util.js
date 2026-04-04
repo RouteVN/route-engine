@@ -737,19 +737,58 @@ const resolveEventBindingString = (value, eventData) => {
   return resolved;
 };
 
-const resolveEventBindings = (value, eventData) => {
+const OPAQUE_ACTION_BRANCHES = {
+  updateProjectData: new Set(["projectData"]),
+  showConfirmDialog: new Set(["confirmActions", "cancelActions"]),
+};
+
+const isOpaqueActionBranch = (path, key) => {
+  const parentKey = path[path.length - 1];
+  if (!parentKey) {
+    return false;
+  }
+
+  return OPAQUE_ACTION_BRANCHES[parentKey]?.has(key) === true;
+};
+
+const resolveEventBindings = (value, eventData, path = []) => {
   if (Array.isArray(value)) {
-    return value.map((item) => resolveEventBindings(item, eventData));
+    return value.map((item) => resolveEventBindings(item, eventData, path));
   }
   if (value && typeof value === "object") {
     return Object.fromEntries(
       Object.entries(value).map(([key, nestedValue]) => [
         key,
-        resolveEventBindings(nestedValue, eventData),
+        isOpaqueActionBranch(path, key)
+          ? nestedValue
+          : resolveEventBindings(nestedValue, eventData, [...path, key]),
       ]),
     );
   }
   return resolveEventBindingString(value, eventData);
+};
+
+const renderActionTemplates = (value, context, path = []) => {
+  if (Array.isArray(value)) {
+    return value.map((item) => renderActionTemplates(item, context, path));
+  }
+
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, nestedValue]) => [
+        key,
+        isOpaqueActionBranch(path, key)
+          ? nestedValue
+          : renderActionTemplates(nestedValue, context, [...path, key]),
+      ]),
+    );
+  }
+
+  if (typeof value === "string") {
+    return parseAndRender(value, context);
+  }
+
+  return value;
 };
 
 /**
@@ -771,5 +810,5 @@ export const processActionTemplates = (actions, context) => {
   }
 
   const eventResolvedActions = resolveEventBindings(actions, context._event);
-  return parseAndRender(eventResolvedActions, context);
+  return renderActionTemplates(eventResolvedActions, context);
 };
