@@ -1225,12 +1225,51 @@ export const selectNextLineConfig = ({ state }) => {
   return state.global.nextLineConfig;
 };
 
-export const selectIsChoiceVisible = ({ state }) => {
-  if (!selectCurrentPointer({ state })?.pointer) {
+const selectChoiceVisibilityState = ({ state }) => {
+  const pointer = selectCurrentPointer({ state })?.pointer;
+  if (!pointer) {
     return false;
   }
 
-  return !!selectPresentationState({ state })?.choice;
+  const sectionId = pointer?.sectionId;
+  const lineId = pointer?.lineId;
+  const section = selectSection({ state }, { sectionId });
+  const lines = section?.lines || [];
+  const currentLineIndex = lines.findIndex((line) => line.id === lineId);
+
+  if (currentLineIndex < 0) {
+    return false;
+  }
+
+  let isChoiceVisible = false;
+  for (const line of lines.slice(0, currentLineIndex + 1)) {
+    const actions = line?.actions;
+    if (
+      !actions ||
+      !Object.prototype.hasOwnProperty.call(actions, "choice")
+    ) {
+      isChoiceVisible = false;
+      continue;
+    }
+
+    const choice = actions.choice;
+    if (choice?.resourceId) {
+      isChoiceVisible = true;
+      continue;
+    }
+
+    // `choice: { animations: ... }` should preserve the previous choice state,
+    // while `choice: {}` explicitly clears it.
+    if (!choice?.animations) {
+      isChoiceVisible = false;
+    }
+  }
+
+  return isChoiceVisible;
+};
+
+export const selectIsChoiceVisible = ({ state }) => {
+  return selectChoiceVisibilityState({ state });
 };
 
 export const selectSystemState = ({ state }) => {

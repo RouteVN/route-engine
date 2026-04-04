@@ -974,15 +974,25 @@ const tagChoiceInteractionSource = (node) => {
   });
 
   const clickPayload = taggedNode.click?.payload;
-  const actions = clickPayload?.actions;
   if (
-    !actions ||
-    typeof actions !== "object" ||
-    Array.isArray(actions) ||
-    !Object.prototype.hasOwnProperty.call(actions, "nextLine")
+    !clickPayload ||
+    typeof clickPayload !== "object" ||
+    Array.isArray(clickPayload)
   ) {
     return taggedNode;
   }
+
+  const actions = clickPayload.actions;
+  const nextLineAction =
+    actions &&
+    typeof actions === "object" &&
+    !Array.isArray(actions) &&
+    Object.prototype.hasOwnProperty.call(actions, "nextLine")
+      ? {
+          ...actions.nextLine,
+          _interactionSource: "choice",
+        }
+      : undefined;
 
   return {
     ...taggedNode,
@@ -990,13 +1000,15 @@ const tagChoiceInteractionSource = (node) => {
       ...taggedNode.click,
       payload: {
         ...clickPayload,
-        actions: {
-          ...actions,
-          nextLine: {
-            ...(actions.nextLine || {}),
-            _interactionSource: "choice",
-          },
-        },
+        _interactionSource: "choice",
+        ...(nextLineAction
+          ? {
+              actions: {
+                ...actions,
+                nextLine: nextLineAction,
+              },
+            }
+          : {}),
       },
     },
   };
