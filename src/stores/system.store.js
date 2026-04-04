@@ -1225,7 +1225,10 @@ export const selectNextLineConfig = ({ state }) => {
   return state.global.nextLineConfig;
 };
 
-const selectVisibleChoiceResourceId = ({ state, pointer: targetPointer } = {}) => {
+const selectVisibleChoiceResourceId = ({
+  state,
+  pointer: targetPointer,
+} = {}) => {
   const pointer = targetPointer ?? selectCurrentPointer({ state })?.pointer;
   if (!pointer) {
     return undefined;
