@@ -266,7 +266,6 @@ const createChoiceBlockingProjectData = () => ({
               {
                 id: "line3",
                 actions: {
-                  choice: {},
                   dialogue: {
                     mode: "adv",
                     ui: {
@@ -275,6 +274,22 @@ const createChoiceBlockingProjectData = () => ({
                     content: [
                       {
                         text: "After choice",
+                      },
+                    ],
+                  },
+                },
+              },
+              {
+                id: "line4",
+                actions: {
+                  dialogue: {
+                    mode: "adv",
+                    ui: {
+                      resourceId: "staticDialogue",
+                    },
+                    content: [
+                      {
+                        text: "After line 3",
                       },
                     ],
                   },
@@ -523,5 +538,14 @@ describe("RouteEngine line completion flow", () => {
 
     state = engine.selectSystemState();
     expect(state.contexts.at(-1).pointers.read.lineId).toBe("line3");
+    expect(engine.selectPresentationState().choice).toBeUndefined();
+
+    engine.handleAction("markLineCompleted", {});
+    engine.handleActions({
+      nextLine: {},
+    });
+
+    state = engine.selectSystemState();
+    expect(state.contexts.at(-1).pointers.read.lineId).toBe("line4");
   });
 });

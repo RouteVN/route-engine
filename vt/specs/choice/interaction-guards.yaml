@@ -6,6 +6,7 @@ specs:
   - entering the choice line forces auto mode off and exposes the choice state
   - auto, skip, and background clicks do not change the state while the choice is visible
   - the choice button still advances to the next line
+  - the line after the choice can advance normally even without an explicit choice clear action
 skipInitialScreenshot: true
 viewport:
   id: capture
@@ -42,6 +43,12 @@ steps:
   - action: click
     x: 940
     y: 222
+  - action: wait
+    ms: 150
+  - action: screenshot
+  - action: click
+    x: 150
+    y: 400
   - action: wait
     ms: 150
   - action: screenshot
@@ -257,7 +264,11 @@ story:
                       content: Continue from choice
             - id: line3
               actions:
-                choice: {}
                 dialogue:
                   content:
                     - text: "Line 3: reached from the choice button."
+            - id: line4
+              actions:
+                dialogue:
+                  content:
+                    - text: "Line 4: next-line input works normally after the choice."

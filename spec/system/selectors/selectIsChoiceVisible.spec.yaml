@@ -74,6 +74,34 @@ in:
               lineId: "line2"
 out: false
 ---
+case: false when a later line omits choice after an earlier choice line
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "line1"
+                      actions:
+                        choice:
+                          resourceId: "choice-ui"
+                          items: []
+                    - id: "line2"
+                      actions:
+                        dialogue:
+                          content:
+                            - text: "after choice"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "line2"
+out: false
+---
 case: true when current line only updates choice animations
 in:
   - state:

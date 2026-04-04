@@ -1226,7 +1226,11 @@ export const selectNextLineConfig = ({ state }) => {
 };
 
 export const selectIsChoiceVisible = ({ state }) => {
-  return !!selectVisibleChoiceResourceId({ state });
+  if (!selectCurrentPointer({ state })?.pointer) {
+    return false;
+  }
+
+  return !!selectPresentationState({ state })?.choice;
 };
 
 export const selectSystemState = ({ state }) => {
@@ -1305,44 +1309,6 @@ export const selectCurrentLine = ({ state }) => {
   }
 
   return section.lines.find((line) => line.id === lineId);
-};
-
-const selectVisibleChoiceResourceId = ({ state }) => {
-  const pointer = selectCurrentPointer({ state })?.pointer;
-  const sectionId = pointer?.sectionId;
-  const lineId = pointer?.lineId;
-  const section = selectSection({ state }, { sectionId });
-  const lines = section?.lines || [];
-  const currentLineIndex = lines.findIndex((line) => line.id === lineId);
-
-  if (currentLineIndex < 0) {
-    return undefined;
-  }
-
-  let visibleChoiceResourceId;
-  const currentLines = lines.slice(0, currentLineIndex + 1);
-  currentLines.forEach((line) => {
-    if (
-      !line?.actions ||
-      !Object.prototype.hasOwnProperty.call(line.actions, "choice")
-    ) {
-      return;
-    }
-
-    const choice = line.actions.choice;
-    if (!choice?.resourceId) {
-      // `choice: {}` clears the currently visible choice.
-      // Choice animations without resourceId should not change visibility.
-      if (!choice?.animations) {
-        visibleChoiceResourceId = undefined;
-      }
-      return;
-    }
-
-    visibleChoiceResourceId = choice.resourceId;
-  });
-
-  return visibleChoiceResourceId;
 };
 
 export const selectPresentationState = ({ state }) => {
