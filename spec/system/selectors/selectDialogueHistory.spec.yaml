@@ -52,7 +52,9 @@ in:
               sectionId: "section1"
               lineId: "1"
 out:
-  - characterId: "char1"
+  - sectionId: "section1"
+    lineId: "1"
+    characterId: "char1"
     characterName: ""
     text: "Hello world"
     content:
@@ -100,17 +102,23 @@ in:
               sectionId: "section1"
               lineId: "3"
 out:
-  - characterId: "char1"
+  - sectionId: "section1"
+    lineId: "1"
+    characterId: "char1"
     characterName: ""
     text: "First line"
     content:
       - text: "First line"
-  - characterId: "char2"
+  - sectionId: "section1"
+    lineId: "2"
+    characterId: "char2"
     characterName: ""
     text: "Second line"
     content:
       - text: "Second line"
-  - characterId: "char1"
+  - sectionId: "section1"
+    lineId: "3"
+    characterId: "char1"
     characterName: ""
     text: "Third line"
     content:
@@ -158,17 +166,23 @@ in:
               sectionId: "section1"
               lineId: "5"
 out:
-  - characterId: "char1"
+  - sectionId: "section1"
+    lineId: "1"
+    characterId: "char1"
     characterName: ""
     text: "First dialogue"
     content:
       - text: "First dialogue"
-  - characterId: "char2"
+  - sectionId: "section1"
+    lineId: "3"
+    characterId: "char2"
     characterName: ""
     text: "Second dialogue"
     content:
       - text: "Second dialogue"
-  - characterId: __undefined__
+  - sectionId: "section1"
+    lineId: "5"
+    characterId: __undefined__
     characterName: ""
     text: "Third dialogue"
     content:
@@ -280,12 +294,16 @@ in:
               sectionId: "section1"
               lineId: "2"
 out:
-  - characterId: __undefined__
+  - sectionId: "section1"
+    lineId: "1"
+    characterId: __undefined__
     characterName: ""
     text: "Narrator text"
     content:
       - text: "Narrator text"
-  - characterId: "char1"
+  - sectionId: "section1"
+    lineId: "2"
+    characterId: "char1"
     characterName: ""
     text: "Character text"
     content:
@@ -318,7 +336,9 @@ in:
               sectionId: "section1"
               lineId: "1"
 out:
-  - characterId: "char1"
+  - sectionId: "section1"
+    lineId: "1"
+    characterId: "char1"
     characterName: ""
     text: "First partSecond partThird part"
     content:
