@@ -135,6 +135,159 @@ const createProjectData = () => ({
   },
 });
 
+const createChoiceBlockingProjectData = () => ({
+  screen: {
+    width: 1920,
+    height: 1080,
+    backgroundColor: "#000000",
+  },
+  resources: {
+    layouts: {
+      staticDialogue: {
+        mode: "adv",
+        elements: [
+          {
+            id: "dialogue-text",
+            type: "text",
+            content: "${dialogue.content[0].text}",
+            textStyleId: "body",
+          },
+        ],
+      },
+      choiceLayout: {
+        elements: [
+          {
+            id: "choice-button",
+            type: "button",
+            text: "Continue",
+            click: {
+              payload: {
+                actions: {
+                  nextLine: {},
+                },
+              },
+            },
+          },
+        ],
+      },
+    },
+    sounds: {},
+    images: {},
+    videos: {},
+    sprites: {},
+    characters: {},
+    variables: {},
+    transforms: {},
+    sectionTransitions: {},
+    animations: {},
+    fonts: {
+      bodyFont: {
+        fileId: "Arial",
+      },
+    },
+    colors: {
+      bodyColor: {
+        hex: "#FFFFFF",
+      },
+    },
+    textStyles: {
+      body: {
+        fontId: "bodyFont",
+        colorId: "bodyColor",
+        fontSize: 24,
+        fontWeight: "400",
+        fontStyle: "normal",
+        lineHeight: 1.2,
+      },
+    },
+    controls: {},
+  },
+  story: {
+    initialSceneId: "scene1",
+    scenes: {
+      scene1: {
+        initialSectionId: "section1",
+        sections: {
+          section1: {
+            lines: [
+              {
+                id: "line1",
+                actions: {
+                  startAutoMode: {},
+                  setNextLineConfig: {
+                    manual: {
+                      enabled: true,
+                    },
+                    auto: {
+                      enabled: true,
+                      trigger: "fromStart",
+                      delay: 900,
+                    },
+                    applyMode: "persistent",
+                  },
+                  dialogue: {
+                    mode: "adv",
+                    ui: {
+                      resourceId: "staticDialogue",
+                    },
+                    content: [
+                      {
+                        text: "Line 1",
+                      },
+                    ],
+                  },
+                },
+              },
+              {
+                id: "line2",
+                actions: {
+                  dialogue: {
+                    mode: "adv",
+                    ui: {
+                      resourceId: "staticDialogue",
+                    },
+                    content: [
+                      {
+                        text: "Make a choice",
+                      },
+                    ],
+                  },
+                  choice: {
+                    resourceId: "choiceLayout",
+                    items: [
+                      {
+                        id: "choice-a",
+                        content: "Continue",
+                      },
+                    ],
+                  },
+                },
+              },
+              {
+                id: "line3",
+                actions: {
+                  choice: {},
+                  dialogue: {
+                    mode: "adv",
+                    ui: {
+                      resourceId: "staticDialogue",
+                    },
+                    content: [
+                      {
+                        text: "After choice",
+                      },
+                    ],
+                  },
+                },
+              },
+            ],
+          },
+        },
+      },
+    },
+  },
+});
+
 const findElementById = (elements, id) => {
   for (const element of elements || []) {
     if (element?.id === id) {
@@ -178,24 +331,24 @@ describe("RouteEngine line completion flow", () => {
     });
 
     const initialRender = getRenderState(routeGraphics, 0);
-    expect(findElementById(initialRender.elements, "dialogue-text")).toMatchObject(
-      {
-        type: "text-revealing",
-        revealEffect: "typewriter",
-      },
-    );
+    expect(
+      findElementById(initialRender.elements, "dialogue-text"),
+    ).toMatchObject({
+      type: "text-revealing",
+      revealEffect: "typewriter",
+    });
 
     engine.handleActions({
       nextLine: {},
     });
 
     const completedRender = getRenderState(routeGraphics, 1);
-    expect(findElementById(completedRender.elements, "dialogue-text")).toMatchObject(
-      {
-        type: "text-revealing",
-        revealEffect: "none",
-      },
-    );
+    expect(
+      findElementById(completedRender.elements, "dialogue-text"),
+    ).toMatchObject({
+      type: "text-revealing",
+      revealEffect: "none",
+    });
 
     engine.handleActions({
       nextLine: {},
@@ -203,20 +356,20 @@ describe("RouteEngine line completion flow", () => {
 
     const advancedRender = getLastRenderState(routeGraphics);
     expect(routeGraphics.render).toHaveBeenCalledTimes(3);
-    expect(engine.selectSystemState().contexts.at(-1).pointers.read.lineId).toBe(
-      "line2",
-    );
-    expect(findElementById(advancedRender.elements, "dialogue-text")).toMatchObject(
-      {
-        type: "text-revealing",
-        revealEffect: "typewriter",
-        content: [
-          {
-            text: "Line 2 should be the next reveal line after the second click.",
-          },
-        ],
-      },
-    );
+    expect(
+      engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
+    ).toBe("line2");
+    expect(
+      findElementById(advancedRender.elements, "dialogue-text"),
+    ).toMatchObject({
+      type: "text-revealing",
+      revealEffect: "typewriter",
+      content: [
+        {
+          text: "Line 2 should be the next reveal line after the second click.",
+        },
+      ],
+    });
   });
 
   it("advances immediately after a natural renderComplete marks the line complete", () => {
@@ -249,32 +402,32 @@ describe("RouteEngine line completion flow", () => {
     ).toBe(true);
 
     const completedRender = getRenderState(routeGraphics, 1);
-    expect(findElementById(completedRender.elements, "dialogue-text")).toMatchObject(
-      {
-        type: "text-revealing",
-        revealEffect: "none",
-      },
-    );
+    expect(
+      findElementById(completedRender.elements, "dialogue-text"),
+    ).toMatchObject({
+      type: "text-revealing",
+      revealEffect: "none",
+    });
 
     engine.handleActions({
       nextLine: {},
     });
 
     const advancedRender = getLastRenderState(routeGraphics);
-    expect(engine.selectSystemState().contexts.at(-1).pointers.read.lineId).toBe(
-      "line2",
-    );
-    expect(findElementById(advancedRender.elements, "dialogue-text")).toMatchObject(
-      {
-        type: "text-revealing",
-        revealEffect: "typewriter",
-        content: [
-          {
-            text: "Line 2 should be the next reveal line after the second click.",
-          },
-        ],
-      },
-    );
+    expect(
+      engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
+    ).toBe("line2");
+    expect(
+      findElementById(advancedRender.elements, "dialogue-text"),
+    ).toMatchObject({
+      type: "text-revealing",
+      revealEffect: "typewriter",
+      content: [
+        {
+          text: "Line 2 should be the next reveal line after the second click.",
+        },
+      ],
+    });
 
     expect(
       effectsHandler.handleRouteGraphicsEvent("renderComplete", {
@@ -284,31 +437,91 @@ describe("RouteEngine line completion flow", () => {
     ).toBe(true);
 
     const line2CompletedRender = getLastRenderState(routeGraphics);
-    expect(findElementById(line2CompletedRender.elements, "dialogue-text")).toMatchObject(
-      {
-        type: "text-revealing",
-        revealEffect: "none",
-      },
-    );
+    expect(
+      findElementById(line2CompletedRender.elements, "dialogue-text"),
+    ).toMatchObject({
+      type: "text-revealing",
+      revealEffect: "none",
+    });
 
     engine.handleActions({
       nextLine: {},
     });
 
     const line3Render = getLastRenderState(routeGraphics);
-    expect(engine.selectSystemState().contexts.at(-1).pointers.read.lineId).toBe(
-      "line3",
-    );
-    expect(findElementById(line3Render.elements, "dialogue-text")).toMatchObject(
-      {
-        type: "text-revealing",
-        revealEffect: "typewriter",
-        content: [
-          {
-            text: "Line 3 should be reached with one click after line 2 completes naturally.",
-          },
-        ],
+    expect(
+      engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
+    ).toBe("line3");
+    expect(
+      findElementById(line3Render.elements, "dialogue-text"),
+    ).toMatchObject({
+      type: "text-revealing",
+      revealEffect: "typewriter",
+      content: [
+        {
+          text: "Line 3 should be reached with one click after line 2 completes naturally.",
+        },
+      ],
+    });
+  });
+
+  it("stops active playback on a choice line and still allows choice-origin nextLine", () => {
+    const routeGraphics = {
+      render: vi.fn(),
+    };
+    let engine;
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics,
+      ticker: createTicker(),
+    });
+    engine = createRouteEngine({
+      handlePendingEffects: effectsHandler,
+    });
+
+    engine.init({
+      initialState: {
+        projectData: createChoiceBlockingProjectData(),
       },
-    );
+    });
+
+    expect(engine.selectSystemState().global.autoMode).toBe(true);
+    expect(engine.selectSystemState().global.nextLineConfig.auto).toEqual({
+      enabled: true,
+      trigger: "fromStart",
+      delay: 900,
+    });
+
+    engine.handleAction("markLineCompleted", {});
+    engine.handleActions({
+      nextLine: {},
+    });
+
+    let state = engine.selectSystemState();
+    expect(state.contexts.at(-1).pointers.read.lineId).toBe("line2");
+    expect(state.global.autoMode).toBe(false);
+    expect(state.global.skipMode).toBe(false);
+    expect(state.global.nextLineConfig.auto).toEqual({
+      enabled: true,
+      trigger: "fromStart",
+      delay: 900,
+    });
+
+    engine.handleActions({
+      nextLine: {},
+    });
+
+    state = engine.selectSystemState();
+    expect(state.contexts.at(-1).pointers.read.lineId).toBe("line2");
+
+    engine.handleAction("markLineCompleted", {});
+    engine.handleActions({
+      nextLine: {
+        _interactionSource: "choice",
+      },
+    });
+
+    state = engine.selectSystemState();
+    expect(state.contexts.at(-1).pointers.read.lineId).toBe("line3");
   });
 });

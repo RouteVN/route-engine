@@ -1,0 +1,214 @@
+---
+title: Choice Interaction Guards
+description: Choice visibility stops active playback, blocks background/control advance, and still allows choice-origin nextLine.
+---
+screen:
+  width: 1280
+  height: 720
+  backgroundColor: "#101010"
+resources:
+  controls:
+    guardControls:
+      elements:
+        - id: bg-hit
+          type: rect
+          x: 0
+          y: 0
+          width: 1280
+          height: 720
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: backgroundColor
+        - id: auto-button
+          type: rect
+          x: 40
+          y: 40
+          width: 220
+          height: 68
+          click:
+            payload:
+              actions:
+                toggleAutoMode: {}
+          colorId: buttonColor
+        - id: auto-label
+          type: text
+          x: 96
+          y: 62
+          content: AUTO
+          textStyleId: statusText
+        - id: skip-button
+          type: rect
+          x: 40
+          y: 126
+          width: 220
+          height: 68
+          click:
+            payload:
+              actions:
+                toggleSkipMode: {}
+          colorId: buttonColor
+        - id: skip-label
+          type: text
+          x: 100
+          y: 148
+          content: SKIP
+          textStyleId: statusText
+        - id: auto-status-on
+          $when: autoMode
+          type: text
+          x: 300
+          y: 52
+          content: "AUTO: ON"
+          textStyleId: statusText
+        - id: auto-status-off
+          $when: "!autoMode"
+          type: text
+          x: 300
+          y: 52
+          content: "AUTO: OFF"
+          textStyleId: statusText
+        - id: skip-status-on
+          $when: skipMode
+          type: text
+          x: 300
+          y: 138
+          content: "SKIP: ON"
+          textStyleId: statusText
+        - id: skip-status-off
+          $when: "!skipMode"
+          type: text
+          x: 300
+          y: 138
+          content: "SKIP: OFF"
+          textStyleId: statusText
+        - id: choice-status-on
+          $when: isChoiceVisible
+          type: text
+          x: 300
+          y: 224
+          content: "CHOICE: ON"
+          textStyleId: statusText
+        - id: choice-status-off
+          $when: "!isChoiceVisible"
+          type: text
+          x: 300
+          y: 224
+          content: "CHOICE: OFF"
+          textStyleId: statusText
+        - id: helper-copy
+          type: text
+          x: 40
+          y: 300
+          width: 520
+          content: Background click advances when allowed. Auto and skip buttons must do nothing while a choice is visible.
+          textStyleId: helperText
+  layouts:
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 40
+          y: 520
+          width: 1200
+          height: 150
+          colorId: dialogueColor
+        - id: dialogue-text
+          type: text
+          x: 72
+          y: 566
+          width: 1140
+          content: ${dialogue.content[0].text}
+          textStyleId: dialogueText
+    choiceLayout:
+      elements:
+        - id: choice-button-bg
+          type: rect
+          x: 680
+          y: 180
+          width: 520
+          height: 84
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: choiceColor
+        - id: choice-button-text
+          type: text
+          x: 720
+          y: 208
+          content: ${choice.items[0].content}
+          textStyleId: statusText
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    textColor:
+      hex: "#F4F1E8"
+    backgroundColor:
+      hex: "#171717"
+    buttonColor:
+      hex: "#264653"
+    dialogueColor:
+      hex: "#2A2A2A"
+    choiceColor:
+      hex: "#9C6644"
+  textStyles:
+    statusText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 28
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    helperText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 22
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.35
+    dialogueText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 30
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.25
+story:
+  initialSceneId: choiceGuards
+  scenes:
+    choiceGuards:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                control:
+                  resourceId: guardControls
+                startAutoMode: {}
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 1: auto mode starts here, then the engine should stop it when the choice line appears."
+            - id: line2
+              actions:
+                dialogue:
+                  content:
+                    - text: "Line 2: choice is visible. Background advance is blocked, auto and skip cannot be turned on, and the choice button should still continue."
+                choice:
+                  resourceId: choiceLayout
+                  items:
+                    - id: continue
+                      content: Continue from choice
+            - id: line3
+              actions:
+                choice: {}
+                dialogue:
+                  content:
+                    - text: "Line 3: reached from the choice button."

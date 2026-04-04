@@ -1225,6 +1225,10 @@ export const selectNextLineConfig = ({ state }) => {
   return state.global.nextLineConfig;
 };
 
+export const selectIsChoiceVisible = ({ state }) => {
+  return !!selectVisibleChoiceResourceId({ state });
+};
+
 export const selectSystemState = ({ state }) => {
   return structuredClone(state);
 };
@@ -1576,6 +1580,7 @@ export const selectRenderState = ({ state }) => {
     dialogueUIHidden: state.global.dialogueUIHidden,
     autoMode: state.global.autoMode,
     skipMode: state.global.skipMode,
+    isChoiceVisible: selectIsChoiceVisible({ state }),
     canRollback: selectCanRollback({ state }),
     skipOnlyViewedLines: !allVariables._skipUnseenText,
     isLineCompleted: state.global.isLineCompleted,
@@ -1641,7 +1646,49 @@ export const clearLayeredViews = ({ state }) => {
   return state;
 };
 
+export const enforceChoiceVisibilityConstraints = ({ state }) => {
+  if (!selectIsChoiceVisible({ state })) {
+    return state;
+  }
+
+  let needsRender = false;
+
+  if (state.global.autoMode) {
+    state.global.autoMode = false;
+    state.global.pendingEffects.push({
+      name: "clearAutoNextTimer",
+    });
+    needsRender = true;
+  }
+
+  if (state.global.skipMode) {
+    state.global.skipMode = false;
+    state.global.pendingEffects.push({
+      name: "clearSkipNextTimer",
+    });
+    needsRender = true;
+  }
+
+  if (state.global.nextLineConfig?.auto?.enabled) {
+    state.global.pendingEffects.push({
+      name: "clearNextLineConfigTimer",
+    });
+  }
+
+  if (needsRender) {
+    state.global.pendingEffects.push({
+      name: "render",
+    });
+  }
+
+  return state;
+};
+
 export const startAutoMode = ({ state }) => {
+  if (selectIsChoiceVisible({ state })) {
+    return state;
+  }
+
   if (state.global.skipMode) {
     state.global.skipMode = false;
     state.global.pendingEffects.push({
@@ -1682,6 +1729,10 @@ export const stopAutoMode = ({ state }) => {
 
 export const toggleAutoMode = ({ state }) => {
   const autoMode = state.global.autoMode;
+  if (selectIsChoiceVisible({ state }) && !autoMode) {
+    return state;
+  }
+
   if (autoMode) {
     stopAutoMode({ state });
   } else {
@@ -1694,6 +1745,10 @@ export const startSkipMode = ({ state }) => {
   // if (state.global.nextLineConfig.manual.enabled === false) {
   //   return state;
   // }
+
+  if (selectIsChoiceVisible({ state })) {
+    return state;
+  }
 
   if (state.global.autoMode) {
     state.global.autoMode = false;
@@ -1734,6 +1789,10 @@ export const toggleSkipMode = ({ state }) => {
   // }
 
   const skipMode = selectSkipMode({ state });
+  if (selectIsChoiceVisible({ state }) && !skipMode) {
+    return state;
+  }
+
   if (skipMode) {
     stopSkipMode({ state });
   } else {
@@ -1922,10 +1981,12 @@ export const setNextLineConfig = ({ state }, payload) => {
   }
 
   const currentAutoEnabled = state.global.nextLineConfig.auto?.enabled;
+  const isChoiceVisible = selectIsChoiceVisible({ state });
 
   // If auto.enabled state has changed, dispatch timer effects
   if (
     !isRollbackRestoring &&
+    !isChoiceVisible &&
     currentAutoEnabled === true &&
     !previousAutoEnabled
   ) {
@@ -2147,7 +2208,7 @@ export const jumpToLine = ({ state }, payload) => {
   return state;
 };
 
-export const nextLine = ({ state }) => {
+export const nextLine = ({ state }, payload) => {
   //const isAutoOrSkip = state.global.autoMode || state.global.skipMode;
 
   if (!state.global.nextLineConfig.manual.enabled) {
@@ -2156,6 +2217,11 @@ export const nextLine = ({ state }) => {
 
   if (state.global.dialogueUIHidden) {
     showDialogueUI({ state });
+    return state;
+  }
+
+  const isChoiceInteraction = payload?._interactionSource === "choice";
+  if (selectIsChoiceVisible({ state }) && !isChoiceInteraction) {
     return state;
   }
 
@@ -2295,9 +2361,10 @@ export const markLineCompleted = ({ state }) => {
     return state;
   }
   state.global.isLineCompleted = true;
+  const isChoiceVisible = selectIsChoiceVisible({ state });
 
   // If auto mode is on, start the delay timer to advance after completion
-  if (state.global.autoMode) {
+  if (state.global.autoMode && !isChoiceVisible) {
     const autoForwardTime = state.global.variables._autoForwardTime ?? 1000;
     state.global.pendingEffects.push({
       name: "startAutoNextTimer",
@@ -2314,7 +2381,7 @@ export const markLineCompleted = ({ state }) => {
 
   // If nextLineConfig.auto is enabled with fromComplete trigger, start the timer
   const nextLineConfig = state.global.nextLineConfig;
-  if (nextLineConfig?.auto?.enabled) {
+  if (nextLineConfig?.auto?.enabled && !isChoiceVisible) {
     const trigger = nextLineConfig.auto.trigger;
     // Default trigger is "fromComplete", so start timer if not explicitly "fromStart"
     if (trigger !== "fromStart") {
@@ -2500,7 +2567,7 @@ export const nextLineFromSystem = ({ state }) => {
   }
 
   // Auto/skip/scene timers should pause when an interactive choice is visible.
-  if (selectVisibleChoiceResourceId({ state })) {
+  if (selectIsChoiceVisible({ state })) {
     return state;
   }
 
@@ -2827,6 +2894,7 @@ export const createSystemStore = (initialState) => {
     selectPendingEffects,
     selectSkipMode,
     selectAutoMode,
+    selectIsChoiceVisible,
     selectDialogueUIHidden,
     selectDialogueHistory,
     selectConfirmDialog,
@@ -2885,6 +2953,7 @@ export const createSystemStore = (initialState) => {
     popLayeredView,
     replaceLastLayeredView,
     clearLayeredViews,
+    enforceChoiceVisibilityConstraints,
     updateVariable,
     nextLineFromSystem,
   };

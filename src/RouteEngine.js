@@ -131,6 +131,7 @@ export default function createRouteEngine(options) {
     const line = _systemStore.selectCurrentLine();
     if (line?.actions) {
       handleActions(line.actions);
+      _systemStore.enforceChoiceVisibilityConstraints({});
       return true;
     }
 

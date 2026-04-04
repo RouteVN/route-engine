@@ -106,3 +106,56 @@ out:
         payload:
           delay: 1000
       - name: render
+---
+case: do not start auto mode when a choice is visible
+in:
+  - state:
+      global:
+        autoMode: false
+        isLineCompleted: true
+        pendingEffects: []
+        variables:
+          _autoForwardTime: 1000
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        choice:
+                          resourceId: "choice-ui"
+                          items: []
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions:
+                    choice:
+                      resourceId: "choice-ui"
+                      items: []
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "1"
+  global:
+    autoMode: false
+    isLineCompleted: true
+    variables:
+      _autoForwardTime: 1000
+    pendingEffects: []
