@@ -1244,10 +1244,7 @@ const selectChoiceVisibilityState = ({ state }) => {
   let isChoiceVisible = false;
   for (const line of lines.slice(0, currentLineIndex + 1)) {
     const actions = line?.actions;
-    if (
-      !actions ||
-      !Object.prototype.hasOwnProperty.call(actions, "choice")
-    ) {
+    if (!actions || !Object.prototype.hasOwnProperty.call(actions, "choice")) {
       isChoiceVisible = false;
       continue;
     }
