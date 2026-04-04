@@ -39,19 +39,112 @@ out:
       x: 0
       y: 0
       children:
-        - id: "choice-blocker"
-          type: "rect"
-          fill: "transparent"
-          width: 1920
-          height: 1080
-          x: 0
-          y: 0
-          click:
-            payload:
-              actions: {}
         - type: "button"
           id: "choice-button"
           text: "Select an option"
+  animations: []
+---
+case: tags choice click payloads and exposes choice visibility template data
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      choice:
+        resourceId: "choiceLayout"
+        items:
+          - id: "choice1"
+            text: "Option 1"
+    resources:
+      layouts:
+        choiceLayout:
+          elements:
+            - id: "choice-copy"
+              type: "text"
+              content:
+                $if isChoiceVisible: "Choice shown"
+                $else: "Choice hidden"
+            - id: "choice-button"
+              type: "button"
+              text: "Continue"
+              click:
+                payload:
+                  actions:
+                    nextLine: {}
+    screen:
+      width: 1920
+      height: 1080
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "choice-copy"
+          type: "text"
+          content: "Choice shown"
+        - id: "choice-button"
+          type: "button"
+          text: "Continue"
+          click:
+            payload:
+              _interactionSource: "choice"
+              actions:
+                nextLine:
+                  _interactionSource: "choice"
+  animations: []
+---
+case: tags non-nextLine choice clicks at the payload level
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      choice:
+        resourceId: "choiceLayout"
+        items:
+          - id: "choice1"
+            text: "Option 1"
+    resources:
+      layouts:
+        choiceLayout:
+          elements:
+            - id: "choice-button"
+              type: "button"
+              text: "Go"
+              click:
+                payload:
+                  actions:
+                    sectionTransition:
+                      sectionId: "next-section"
+    screen:
+      width: 1920
+      height: 1080
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "choice-button"
+          type: "button"
+          text: "Go"
+          click:
+            payload:
+              _interactionSource: "choice"
+              actions:
+                sectionTransition:
+                  sectionId: "next-section"
   animations: []
 ---
 case: multiple choice layout elements
@@ -94,16 +187,6 @@ out:
       x: 0
       y: 0
       children:
-        - id: "choice-blocker"
-          type: "rect"
-          fill: "transparent"
-          width: 1920
-          height: 1080
-          x: 0
-          y: 0
-          click:
-            payload:
-              actions: {}
         - type: "container"
           id: "choices"
           children:
@@ -185,16 +268,6 @@ out:
       x: 0
       y: 0
       children:
-        - id: "choice-blocker"
-          type: "rect"
-          fill: "transparent"
-          width: 1920
-          height: 1080
-          x: 0
-          y: 0
-          click:
-            payload:
-              actions: {}
         - id: "choice-label"
           type: "text"
           content: "Select an option"
@@ -242,16 +315,6 @@ out:
       x: 0
       y: 0
       children:
-        - id: "choice-blocker"
-          type: "rect"
-          fill: "transparent"
-          width: 1920
-          height: 1080
-          x: 0
-          y: 0
-          click:
-            payload:
-              actions: {}
         - id: "choice-panel"
           type: "rect"
           width: 500
@@ -294,16 +357,6 @@ out:
       x: 0
       y: 0
       children:
-        - id: "choice-blocker"
-          type: "rect"
-          fill: "transparent"
-          width: 1920
-          height: 1080
-          x: 0
-          y: 0
-          click:
-            payload:
-              actions: {}
         - id: "choice-image"
           type: "sprite"
           src: "choice-frame.png"
@@ -367,17 +420,7 @@ out:
       type: "container"
       x: 0
       y: 0
-      children:
-        - id: "choice-blocker"
-          type: "rect"
-          fill: "transparent"
-          width: 1920
-          height: 1080
-          x: 0
-          y: 0
-          click:
-            payload:
-              actions: {}
+      children: []
   animations: []
 ---
 case: layout has no elements - return unchanged state
@@ -408,17 +451,7 @@ out:
       type: "container"
       x: 0
       y: 0
-      children:
-        - id: "choice-blocker"
-          type: "rect"
-          fill: "transparent"
-          width: 1920
-          height: 1080
-          x: 0
-          y: 0
-          click:
-            payload:
-              actions: {}
+      children: []
   animations: []
 ---
 case: no choice items - still add layout elements
@@ -450,16 +483,6 @@ out:
       x: 0
       y: 0
       children:
-        - id: "choice-blocker"
-          type: "rect"
-          fill: "transparent"
-          width: 1920
-          height: 1080
-          x: 0
-          y: 0
-          click:
-            payload:
-              actions: {}
         - type: "text"
           content: "No choices available"
   animations: []

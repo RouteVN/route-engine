@@ -1,6 +1,28 @@
 ---
 title: nextLineConfig with Choice
 description: Scene auto (fromStart) should pause when a choice is visible
+specs:
+  - scene auto advances from line 1 to line 3 without manual input
+  - once the choice is visible on line 3, waiting longer than the configured delay does not advance to line 4
+  - the first choice button still advances to line 4 when clicked
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 1920
+  height: 1080
+steps:
+  - action: wait
+    ms: 2300
+  - action: screenshot
+  - action: wait
+    ms: 1300
+  - action: screenshot
+  - action: click
+    x: 960
+    y: 400
+  - action: wait
+    ms: 150
+  - action: screenshot
 ---
 screen:
   width: 1920

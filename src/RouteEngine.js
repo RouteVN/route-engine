@@ -78,6 +78,10 @@ export default function createRouteEngine(options) {
     return _systemStore.selectAutoMode();
   };
 
+  const selectIsChoiceVisible = () => {
+    return _systemStore.selectIsChoiceVisible();
+  };
+
   const handleAction = (actionType, payload) => {
     if (!_systemStore[actionType]) {
       return;
@@ -151,6 +155,7 @@ export default function createRouteEngine(options) {
     selectSaveSlot,
     selectSaveSlotPage,
     selectSaveSlots: selectSaveSlotMap,
+    selectIsChoiceVisible,
     handleLineActions,
   };
 }

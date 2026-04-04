@@ -211,3 +211,77 @@ out:
         delay: 1500
     pendingEffects:
       - name: render
+---
+case: mark line as completed with a visible choice does not start playback timers
+in:
+  - state:
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+      global:
+        isLineCompleted: false
+        autoMode: true
+        variables:
+          _autoForwardTime: 1000
+        nextLineConfig:
+          manual:
+            enabled: true
+          auto:
+            enabled: true
+            trigger: "fromComplete"
+            delay: 2000
+        viewedRegistry:
+          sections: []
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        choice:
+                          resourceId: "choice-ui"
+                          items: []
+out:
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "1"
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions:
+                    choice:
+                      resourceId: "choice-ui"
+                      items: []
+  global:
+    isLineCompleted: true
+    autoMode: true
+    variables:
+      _autoForwardTime: 1000
+    nextLineConfig:
+      manual:
+        enabled: true
+      auto:
+        enabled: true
+        trigger: "fromComplete"
+        delay: 2000
+    viewedRegistry:
+      sections:
+        - sectionId: "section1"
+          lastLineId: "1"
+    pendingEffects:
+      - name: render

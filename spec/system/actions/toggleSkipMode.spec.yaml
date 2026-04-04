@@ -106,3 +106,52 @@ out:
         data: test
       - name: clearSkipNextTimer
       - name: render
+---
+case: do not toggle skip mode on when a choice is visible
+in:
+  - state:
+      global:
+        skipMode: false
+        autoMode: false
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        choice:
+                          resourceId: "choice-ui"
+                          items: []
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions:
+                    choice:
+                      resourceId: "choice-ui"
+                      items: []
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "1"
+  global:
+    skipMode: false
+    autoMode: false
+    pendingEffects: []

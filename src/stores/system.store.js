@@ -1225,6 +1225,57 @@ export const selectNextLineConfig = ({ state }) => {
   return state.global.nextLineConfig;
 };
 
+const selectVisibleChoiceResourceId = ({
+  state,
+  pointer: targetPointer,
+} = {}) => {
+  const pointer = targetPointer ?? selectCurrentPointer({ state })?.pointer;
+  if (!pointer) {
+    return undefined;
+  }
+
+  const sectionId = pointer?.sectionId;
+  const lineId = pointer?.lineId;
+  const section = selectSection({ state }, { sectionId });
+  const lines = section?.lines || [];
+  const currentLineIndex = lines.findIndex((line) => line.id === lineId);
+
+  if (currentLineIndex < 0) {
+    return undefined;
+  }
+
+  let visibleChoiceResourceId;
+  for (const line of lines.slice(0, currentLineIndex + 1)) {
+    const actions = line?.actions;
+    if (actions?.cleanAll) {
+      visibleChoiceResourceId = undefined;
+    }
+
+    if (!actions || !Object.prototype.hasOwnProperty.call(actions, "choice")) {
+      visibleChoiceResourceId = undefined;
+      continue;
+    }
+
+    const choice = actions.choice;
+    if (choice?.resourceId) {
+      visibleChoiceResourceId = choice.resourceId;
+      continue;
+    }
+
+    // `choice: { animations: ... }` should preserve the previous choice state,
+    // while `choice: {}` explicitly clears it.
+    if (!choice?.animations) {
+      visibleChoiceResourceId = undefined;
+    }
+  }
+
+  return visibleChoiceResourceId;
+};
+
+export const selectIsChoiceVisible = ({ state }) => {
+  return !!selectVisibleChoiceResourceId({ state });
+};
+
 export const selectSystemState = ({ state }) => {
   return structuredClone(state);
 };
@@ -1301,44 +1352,6 @@ export const selectCurrentLine = ({ state }) => {
   }
 
   return section.lines.find((line) => line.id === lineId);
-};
-
-const selectVisibleChoiceResourceId = ({ state }) => {
-  const pointer = selectCurrentPointer({ state })?.pointer;
-  const sectionId = pointer?.sectionId;
-  const lineId = pointer?.lineId;
-  const section = selectSection({ state }, { sectionId });
-  const lines = section?.lines || [];
-  const currentLineIndex = lines.findIndex((line) => line.id === lineId);
-
-  if (currentLineIndex < 0) {
-    return undefined;
-  }
-
-  let visibleChoiceResourceId;
-  const currentLines = lines.slice(0, currentLineIndex + 1);
-  currentLines.forEach((line) => {
-    if (
-      !line?.actions ||
-      !Object.prototype.hasOwnProperty.call(line.actions, "choice")
-    ) {
-      return;
-    }
-
-    const choice = line.actions.choice;
-    if (!choice?.resourceId) {
-      // `choice: {}` clears the currently visible choice.
-      // Choice animations without resourceId should not change visibility.
-      if (!choice?.animations) {
-        visibleChoiceResourceId = undefined;
-      }
-      return;
-    }
-
-    visibleChoiceResourceId = choice.resourceId;
-  });
-
-  return visibleChoiceResourceId;
 };
 
 export const selectPresentationState = ({ state }) => {
@@ -1576,6 +1589,7 @@ export const selectRenderState = ({ state }) => {
     dialogueUIHidden: state.global.dialogueUIHidden,
     autoMode: state.global.autoMode,
     skipMode: state.global.skipMode,
+    isChoiceVisible: selectIsChoiceVisible({ state }),
     canRollback: selectCanRollback({ state }),
     skipOnlyViewedLines: !allVariables._skipUnseenText,
     isLineCompleted: state.global.isLineCompleted,
@@ -1641,7 +1655,50 @@ export const clearLayeredViews = ({ state }) => {
   return state;
 };
 
+const stopPlaybackForEnteredChoiceLine = (state) => {
+  if (state.global.autoMode) {
+    state.global.autoMode = false;
+    state.global.pendingEffects.push({
+      name: "clearAutoNextTimer",
+    });
+  }
+
+  if (state.global.skipMode) {
+    state.global.skipMode = false;
+    state.global.pendingEffects.push({
+      name: "clearSkipNextTimer",
+    });
+  }
+
+  if (state.global.nextLineConfig?.auto?.enabled) {
+    state.global.pendingEffects.push({
+      name: "clearNextLineConfigTimer",
+    });
+  }
+};
+
+const queueEnteredLineEffects = (state, pointer) => {
+  state.global.isLineCompleted = false;
+
+  const isChoiceVisible = !!selectVisibleChoiceResourceId({ state, pointer });
+  if (isChoiceVisible) {
+    stopPlaybackForEnteredChoiceLine(state);
+  }
+
+  state.global.pendingEffects.push({
+    name: "handleLineActions",
+  });
+
+  return {
+    isChoiceVisible,
+  };
+};
+
 export const startAutoMode = ({ state }) => {
+  if (selectIsChoiceVisible({ state })) {
+    return state;
+  }
+
   if (state.global.skipMode) {
     state.global.skipMode = false;
     state.global.pendingEffects.push({
@@ -1682,6 +1739,10 @@ export const stopAutoMode = ({ state }) => {
 
 export const toggleAutoMode = ({ state }) => {
   const autoMode = state.global.autoMode;
+  if (selectIsChoiceVisible({ state }) && !autoMode) {
+    return state;
+  }
+
   if (autoMode) {
     stopAutoMode({ state });
   } else {
@@ -1694,6 +1755,10 @@ export const startSkipMode = ({ state }) => {
   // if (state.global.nextLineConfig.manual.enabled === false) {
   //   return state;
   // }
+
+  if (selectIsChoiceVisible({ state })) {
+    return state;
+  }
 
   if (state.global.autoMode) {
     state.global.autoMode = false;
@@ -1734,6 +1799,10 @@ export const toggleSkipMode = ({ state }) => {
   // }
 
   const skipMode = selectSkipMode({ state });
+  if (selectIsChoiceVisible({ state }) && !skipMode) {
+    return state;
+  }
+
   if (skipMode) {
     stopSkipMode({ state });
   } else {
@@ -1922,10 +1991,12 @@ export const setNextLineConfig = ({ state }, payload) => {
   }
 
   const currentAutoEnabled = state.global.nextLineConfig.auto?.enabled;
+  const isChoiceVisible = selectIsChoiceVisible({ state });
 
   // If auto.enabled state has changed, dispatch timer effects
   if (
     !isRollbackRestoring &&
+    !isChoiceVisible &&
     currentAutoEnabled === true &&
     !previousAutoEnabled
   ) {
@@ -2136,18 +2207,12 @@ export const jumpToLine = ({ state }, payload) => {
     setActiveRollbackBatchCheckpoint(lastContext.rollback.currentIndex);
   }
 
-  // Reset line completion state
-  state.global.isLineCompleted = false;
-
-  // Add appropriate pending effects
-  state.global.pendingEffects.push({
-    name: "handleLineActions",
-  });
+  queueEnteredLineEffects(state, lastContext.pointers.read);
 
   return state;
 };
 
-export const nextLine = ({ state }) => {
+export const nextLine = ({ state }, payload) => {
   //const isAutoOrSkip = state.global.autoMode || state.global.skipMode;
 
   if (!state.global.nextLineConfig.manual.enabled) {
@@ -2156,6 +2221,13 @@ export const nextLine = ({ state }) => {
 
   if (state.global.dialogueUIHidden) {
     showDialogueUI({ state });
+    return state;
+  }
+
+  if (
+    selectIsChoiceVisible({ state }) &&
+    payload?._interactionSource !== "choice"
+  ) {
     return state;
   }
 
@@ -2246,21 +2318,19 @@ export const nextLine = ({ state }) => {
       };
     }
 
-    state.global.isLineCompleted = false;
-
     appendRollbackCheckpoint(state, {
       sectionId,
       lineId: nextLine.id,
     });
     resetNextLineConfigIfSingleLine(state);
-
-    state.global.pendingEffects.push({
-      name: "handleLineActions",
+    const { isChoiceVisible } = queueEnteredLineEffects(state, {
+      sectionId,
+      lineId: nextLine.id,
     });
 
     // Keep scene auto mode running after manual advances (e.g. choice click -> nextLine).
     const nextLineConfig = state.global.nextLineConfig;
-    if (nextLineConfig?.auto?.enabled) {
+    if (nextLineConfig?.auto?.enabled && !isChoiceVisible) {
       const trigger = nextLineConfig.auto.trigger;
       if (trigger === "fromStart") {
         state.global.pendingEffects.push({
@@ -2295,9 +2365,10 @@ export const markLineCompleted = ({ state }) => {
     return state;
   }
   state.global.isLineCompleted = true;
+  const isChoiceVisible = selectIsChoiceVisible({ state });
 
   // If auto mode is on, start the delay timer to advance after completion
-  if (state.global.autoMode) {
+  if (state.global.autoMode && !isChoiceVisible) {
     const autoForwardTime = state.global.variables._autoForwardTime ?? 1000;
     state.global.pendingEffects.push({
       name: "startAutoNextTimer",
@@ -2314,7 +2385,7 @@ export const markLineCompleted = ({ state }) => {
 
   // If nextLineConfig.auto is enabled with fromComplete trigger, start the timer
   const nextLineConfig = state.global.nextLineConfig;
-  if (nextLineConfig?.auto?.enabled) {
+  if (nextLineConfig?.auto?.enabled && !isChoiceVisible) {
     const trigger = nextLineConfig.auto.trigger;
     // Default trigger is "fromComplete", so start timer if not explicitly "fromStart"
     if (trigger !== "fromStart") {
@@ -2482,13 +2553,7 @@ export const sectionTransition = ({ state }, payload) => {
     }
   }
 
-  // Reset line completion state
-  state.global.isLineCompleted = false;
-
-  // Add appropriate pending effects
-  state.global.pendingEffects.push({
-    name: "handleLineActions",
-  });
+  queueEnteredLineEffects(state, lastContext?.pointers?.read);
 
   return state;
 };
@@ -2500,7 +2565,7 @@ export const nextLineFromSystem = ({ state }) => {
   }
 
   // Auto/skip/scene timers should pause when an interactive choice is visible.
-  if (selectVisibleChoiceResourceId({ state })) {
+  if (selectIsChoiceVisible({ state })) {
     return state;
   }
 
@@ -2552,21 +2617,19 @@ export const nextLineFromSystem = ({ state }) => {
       };
     }
 
-    state.global.isLineCompleted = false;
-
     appendRollbackCheckpoint(state, {
       sectionId,
       lineId: nextLine.id,
     });
     resetNextLineConfigIfSingleLine(state);
-
-    state.global.pendingEffects.push({
-      name: "handleLineActions",
+    const { isChoiceVisible } = queueEnteredLineEffects(state, {
+      sectionId,
+      lineId: nextLine.id,
     });
 
     // Only start timer immediately if trigger is "fromStart"
     // For "fromComplete" trigger, markLineCompleted will start it when renderComplete fires
-    if (state.global.nextLineConfig.auto?.enabled) {
+    if (state.global.nextLineConfig.auto?.enabled && !isChoiceVisible) {
       const trigger = state.global.nextLineConfig.auto.trigger;
       if (trigger === "fromStart") {
         state.global.pendingEffects.push({
@@ -2827,6 +2890,7 @@ export const createSystemStore = (initialState) => {
     selectPendingEffects,
     selectSkipMode,
     selectAutoMode,
+    selectIsChoiceVisible,
     selectDialogueUIHidden,
     selectDialogueHistory,
     selectConfirmDialog,

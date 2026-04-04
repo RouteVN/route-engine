@@ -844,6 +844,7 @@ const createLayoutTemplateData = ({
   isLineCompleted,
   autoMode,
   skipMode,
+  isChoiceVisible,
   canRollback,
   confirmDialog,
   historyDialogue = [],
@@ -855,6 +856,7 @@ const createLayoutTemplateData = ({
     isLineCompleted,
     autoMode,
     skipMode,
+    isChoiceVisible,
     canRollback,
     confirmDialog,
     historyDialogue,
@@ -955,6 +957,61 @@ const createFullscreenClickBlocker = ({
     },
   },
 });
+
+const tagChoiceInteractionSource = (node) => {
+  if (Array.isArray(node)) {
+    return node.map(tagChoiceInteractionSource);
+  }
+
+  if (!node || typeof node !== "object") {
+    return node;
+  }
+
+  const taggedNode = {};
+  for (const [key, value] of Object.entries(node)) {
+    taggedNode[key] = tagChoiceInteractionSource(value);
+  }
+
+  const clickPayload = taggedNode.click?.payload;
+  if (
+    !clickPayload ||
+    typeof clickPayload !== "object" ||
+    Array.isArray(clickPayload)
+  ) {
+    return taggedNode;
+  }
+
+  const actions = clickPayload.actions;
+  const nextLineAction =
+    actions &&
+    typeof actions === "object" &&
+    !Array.isArray(actions) &&
+    Object.prototype.hasOwnProperty.call(actions, "nextLine")
+      ? {
+          ...actions.nextLine,
+          _interactionSource: "choice",
+        }
+      : undefined;
+
+  return {
+    ...taggedNode,
+    click: {
+      ...taggedNode.click,
+      payload: {
+        ...clickPayload,
+        _interactionSource: "choice",
+        ...(nextLineAction
+          ? {
+              actions: {
+                ...actions,
+                nextLine: nextLineAction,
+              },
+            }
+          : {}),
+      },
+    },
+  };
+};
 
 const createHistoryDialogueTemplateData = (
   dialogueHistory = [],
@@ -1213,6 +1270,7 @@ export const addBackgroundOrCg = (
     variables,
     autoMode,
     skipMode,
+    isChoiceVisible,
     canRollback,
     saveSlots = [],
   },
@@ -1275,6 +1333,7 @@ export const addBackgroundOrCg = (
             isLineCompleted,
             autoMode,
             skipMode,
+            isChoiceVisible,
             canRollback,
           }),
           { functions: jemplFunctions },
@@ -1472,6 +1531,7 @@ export const addVisuals = (
     variables,
     autoMode,
     skipMode,
+    isChoiceVisible,
     canRollback,
     saveSlots = [],
   },
@@ -1582,6 +1642,7 @@ export const addVisuals = (
               isLineCompleted,
               autoMode,
               skipMode,
+              isChoiceVisible,
               canRollback,
             }),
             { functions: jemplFunctions },
@@ -1639,6 +1700,7 @@ export const addDialogue = (
     dialogueUIHidden,
     autoMode,
     skipMode,
+    isChoiceVisible,
     canRollback,
     skipOnlyViewedLines,
     isLineCompleted,
@@ -1714,6 +1776,7 @@ export const addDialogue = (
         variables,
         autoMode,
         skipMode,
+        isChoiceVisible,
         canRollback,
         skipOnlyViewedLines,
         isLineCompleted,
@@ -1801,12 +1864,13 @@ export const addChoices = (
     presentationState,
     previousPresentationState,
     resources,
+    screen,
     isLineCompleted,
     skipTransitionsAndAnimations,
-    screen,
     variables,
     autoMode,
     skipMode,
+    isChoiceVisible,
     canRollback,
     saveSlots = [],
   },
@@ -1816,21 +1880,6 @@ export const addChoices = (
     // Find the story container
     const storyContainer = getStoryContainer(elements);
     if (!storyContainer) return state;
-
-    storyContainer.children.push({
-      id: "choice-blocker",
-      type: "rect",
-      fill: "transparent",
-      width: screen.width,
-      height: screen.height,
-      x: 0,
-      y: 0,
-      click: {
-        payload: {
-          actions: {},
-        },
-      },
-    });
 
     const layout = resources?.layouts[presentationState.choice.resourceId];
     if (layout && layout.elements) {
@@ -1844,6 +1893,7 @@ export const addChoices = (
             isLineCompleted,
             autoMode,
             skipMode,
+            isChoiceVisible: isChoiceVisible ?? !!presentationState.choice,
             canRollback,
           }),
           choice: {
@@ -1854,13 +1904,15 @@ export const addChoices = (
           functions: jemplFunctions,
         },
       );
-      const choiceElements = resolveLayoutResourceIds(
-        settleTextRevealIfCompleted(result?.elements, {
-          isLineCompleted,
-          skipMode,
-          skipTransitionsAndAnimations,
-        }),
-        resources,
+      const choiceElements = tagChoiceInteractionSource(
+        resolveLayoutResourceIds(
+          settleTextRevealIfCompleted(result?.elements, {
+            isLineCompleted,
+            skipMode,
+            skipTransitionsAndAnimations,
+          }),
+          resources,
+        ),
       );
 
       if (Array.isArray(choiceElements)) {
@@ -1907,6 +1959,7 @@ export const addControl = (
     isLineCompleted,
     autoMode,
     skipMode,
+    isChoiceVisible,
     canRollback,
     saveSlots = [],
     skipTransitionsAndAnimations,
@@ -1953,6 +2006,7 @@ export const addControl = (
         isLineCompleted,
         autoMode,
         skipMode,
+        isChoiceVisible,
         canRollback,
       }),
       isLineCompleted,
@@ -2048,6 +2102,7 @@ export const addLayout = (
     variables,
     autoMode,
     skipMode,
+    isChoiceVisible,
     canRollback,
     saveSlots = [],
     isLineCompleted,
@@ -2097,6 +2152,7 @@ export const addLayout = (
           isLineCompleted,
           autoMode,
           skipMode,
+          isChoiceVisible,
           canRollback,
         }),
         isLineCompleted,
@@ -2142,6 +2198,7 @@ export const addLayeredViews = (
     variables,
     autoMode,
     skipMode,
+    isChoiceVisible,
     canRollback,
     layeredViews = [],
     dialogueHistory = [],
@@ -2199,6 +2256,7 @@ export const addLayeredViews = (
         isLineCompleted,
         autoMode,
         skipMode,
+        isChoiceVisible,
         canRollback,
         historyDialogue: historyDialogueWithNames,
         characters: resources.characters || {},
@@ -2247,6 +2305,7 @@ export const addConfirmDialog = (
     saveSlots = [],
     autoMode,
     skipMode,
+    isChoiceVisible,
     canRollback,
     confirmDialog,
     dialogueHistory = [],
@@ -2303,6 +2362,7 @@ export const addConfirmDialog = (
       isLineCompleted,
       autoMode,
       skipMode,
+      isChoiceVisible,
       canRollback,
       confirmDialog,
       historyDialogue: historyDialogueWithNames,

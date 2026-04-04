@@ -1,0 +1,202 @@
+---
+title: Choice Stops Active Skip
+description: Skip mode should be turned off as soon as a choice becomes visible, and the choice should remain interactive.
+specs:
+  - skip mode is visibly on before the choice line is entered
+  - entering the choice line forces skip mode off
+  - waiting on the choice line does not re-enable skip or advance the story
+  - the choice button still advances after skip has been stopped
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 1280
+  height: 720
+steps:
+  - action: wait
+    ms: 200
+  - action: click
+    x: 395
+    y: 217
+  - action: wait
+    ms: 40
+  - action: screenshot
+  - action: wait
+    ms: 220
+  - action: screenshot
+  - action: wait
+    ms: 220
+  - action: screenshot
+  - action: click
+    x: 790
+    y: 291
+  - action: wait
+    ms: 150
+  - action: screenshot
+---
+screen:
+  width: 1280
+  height: 720
+  backgroundColor: "#101010"
+resources:
+  variables:
+    _skipUnseenText:
+      type: boolean
+      scope: global-device
+      default: true
+  controls:
+    guardControls:
+      elements:
+        - id: bg-hit
+          type: rect
+          x: 0
+          y: 0
+          width: 1280
+          height: 720
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: backgroundColor
+        - id: skip-button
+          type: rect
+          x: 40
+          y: 40
+          width: 220
+          height: 68
+          click:
+            payload:
+              actions:
+                toggleSkipMode: {}
+          colorId: choiceColor
+        - id: skip-label
+          type: text
+          x: 100
+          y: 62
+          content: SKIP
+          textStyleId: statusText
+        - id: skip-status-on
+          $when: skipMode
+          type: text
+          x: 300
+          y: 56
+          content: "SKIP: ON"
+          textStyleId: statusText
+        - id: skip-status-off
+          $when: "!skipMode"
+          type: text
+          x: 300
+          y: 56
+          content: "SKIP: OFF"
+          textStyleId: statusText
+        - id: choice-status-on
+          $when: isChoiceVisible
+          type: text
+          x: 300
+          y: 102
+          content: "CHOICE: ON"
+          textStyleId: statusText
+        - id: choice-status-off
+          $when: "!isChoiceVisible"
+          type: text
+          x: 300
+          y: 102
+          content: "CHOICE: OFF"
+          textStyleId: statusText
+  layouts:
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 40
+          y: 520
+          width: 1200
+          height: 150
+          colorId: dialogueColor
+        - id: dialogue-text
+          type: text
+          x: 72
+          y: 566
+          width: 1140
+          content: ${dialogue.content[0].text}
+          textStyleId: dialogueText
+    choiceLayout:
+      elements:
+        - id: choice-button-bg
+          type: rect
+          x: 680
+          y: 180
+          width: 520
+          height: 84
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: choiceColor
+        - id: choice-button-text
+          type: text
+          x: 720
+          y: 208
+          content: ${choice.items[0].content}
+          textStyleId: statusText
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    textColor:
+      hex: "#F4F1E8"
+    backgroundColor:
+      hex: "#171717"
+    dialogueColor:
+      hex: "#2A2A2A"
+    choiceColor:
+      hex: "#9C6644"
+  textStyles:
+    statusText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 28
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    dialogueText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 30
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.25
+story:
+  initialSceneId: choiceGuards
+  scenes:
+    choiceGuards:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                control:
+                  resourceId: guardControls
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 1: turn on skip here, then the next choice line should stop it."
+            - id: line2
+              actions:
+                dialogue:
+                  content:
+                    - text: "Line 2: the choice is visible and skip must already be off."
+                choice:
+                  resourceId: choiceLayout
+                  items:
+                    - id: continue
+                      content: Continue from choice
+            - id: line3
+              actions:
+                choice: {}
+                dialogue:
+                  content:
+                    - text: "Line 3: reached from the choice after skip was stopped."

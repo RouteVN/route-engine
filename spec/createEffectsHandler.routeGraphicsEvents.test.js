@@ -91,6 +91,7 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
       selectRenderState: vi.fn(() => ({ id: "render-1" })),
       handleAction: vi.fn(),
       handleActions: vi.fn(),
+      selectIsChoiceVisible: vi.fn(() => false),
     };
     const effectsHandler = createEffectsHandler({
       getEngine: () => engine,
@@ -130,6 +131,7 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
       selectRenderState: vi.fn(() => ({ id: "render-1" })),
       handleAction: vi.fn(),
       handleActions: vi.fn(),
+      selectIsChoiceVisible: vi.fn(() => false),
     };
     const effectsHandler = createEffectsHandler({
       getEngine: () => engine,
@@ -175,6 +177,99 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
       {
         _event: {
           id: "slot_1_box",
+        },
+      },
+    );
+  });
+
+  it("does not forward non-choice actions while a choice is visible", async () => {
+    const engine = {
+      selectRenderState: vi.fn(() => ({ id: "render-1" })),
+      handleAction: vi.fn(),
+      handleActions: vi.fn(),
+      selectIsChoiceVisible: vi.fn(() => true),
+    };
+    const preprocessPayload = vi.fn();
+    const onEvent = vi.fn();
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics: {
+        render: vi.fn(),
+      },
+      ticker: createTicker(),
+    });
+
+    const payload = {
+      actions: {
+        updateVariable: {
+          id: "blocked",
+          operations: [
+            {
+              variableId: "marker",
+              op: "set",
+              value: "blocked",
+            },
+          ],
+        },
+      },
+      _event: {
+        x: 10,
+        y: 20,
+      },
+    };
+
+    const eventHandler = effectsHandler.createRouteGraphicsEventHandler({
+      preprocessPayload,
+      onEvent,
+    });
+
+    await eventHandler("click", payload);
+
+    expect(preprocessPayload).not.toHaveBeenCalled();
+    expect(engine.handleActions).not.toHaveBeenCalled();
+    expect(onEvent).toHaveBeenCalledWith("click", payload);
+  });
+
+  it("still forwards choice-tagged actions while a choice is visible", async () => {
+    const engine = {
+      selectRenderState: vi.fn(() => ({ id: "render-1" })),
+      handleAction: vi.fn(),
+      handleActions: vi.fn(),
+      selectIsChoiceVisible: vi.fn(() => true),
+    };
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics: {
+        render: vi.fn(),
+      },
+      ticker: createTicker(),
+    });
+
+    const eventHandler = effectsHandler.createRouteGraphicsEventHandler();
+
+    await eventHandler("click", {
+      _interactionSource: "choice",
+      actions: {
+        sectionTransition: {
+          sectionId: "next-section",
+        },
+      },
+      _event: {
+        x: 10,
+        y: 20,
+      },
+    });
+
+    expect(engine.handleActions).toHaveBeenCalledWith(
+      {
+        sectionTransition: {
+          sectionId: "next-section",
+        },
+      },
+      {
+        _event: {
+          x: 10,
+          y: 20,
         },
       },
     );

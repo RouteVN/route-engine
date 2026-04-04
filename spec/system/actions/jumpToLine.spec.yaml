@@ -110,6 +110,79 @@ out:
     pendingEffects:
       - name: handleLineActions
 ---
+case: jump to a choice line stops active playback and clears timers
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: line1
+                      text: "First line"
+                    - id: line2
+                      actions:
+                        choice:
+                          resourceId: "choice-ui"
+                          items: []
+      contexts:
+        - pointers:
+            read:
+              sectionId: section1
+              lineId: line1
+      global:
+        isLineCompleted: true
+        autoMode: true
+        skipMode: true
+        nextLineConfig:
+          manual:
+            enabled: true
+          auto:
+            enabled: true
+            trigger: "fromStart"
+            delay: 1500
+        pendingEffects: []
+  -
+    lineId: line2
+out:
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: line1
+                  text: "First line"
+                - id: line2
+                  actions:
+                    choice:
+                      resourceId: "choice-ui"
+                      items: []
+  contexts:
+    - pointers:
+        read:
+          sectionId: section1
+          lineId: line2
+  global:
+    isLineCompleted: false
+    autoMode: false
+    skipMode: false
+    nextLineConfig:
+      manual:
+        enabled: true
+      auto:
+        enabled: true
+        trigger: "fromStart"
+        delay: 1500
+    pendingEffects:
+      - name: clearAutoNextTimer
+      - name: clearSkipNextTimer
+      - name: clearNextLineConfigTimer
+      - name: handleLineActions
+---
 case: return unchanged state when lineId is missing
 in:
   - state:

@@ -1,0 +1,173 @@
+---
+title: Choice Blocks Non-Choice Actions
+description: Non-choice clicks must be dropped before they can dispatch actions while a choice is visible.
+specs:
+  - the marker stays idle when a non-choice control is clicked while a choice is visible
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 1280
+  height: 720
+steps:
+  - action: wait
+    ms: 200
+  - action: screenshot
+  - action: click
+    x: 410
+    y: 285
+  - action: wait
+    ms: 150
+  - action: screenshot
+---
+screen:
+  width: 1280
+  height: 720
+  backgroundColor: "#151515"
+resources:
+  variables:
+    blockedMarker:
+      type: string
+      scope: context
+      default: idle
+  controls:
+    backgroundControl:
+      elements:
+        - id: panel-hit
+          type: rect
+          x: 24
+          y: 24
+          width: 540
+          height: 250
+          colorId: panelColor
+          click:
+            payload:
+              actions:
+                updateVariable:
+                  id: markerbg
+                  operations:
+                    - variableId: blockedMarker
+                      op: set
+                      value: background
+        - id: marker-label
+          type: text
+          x: 40
+          y: 58
+          content: "MARKER: ${variables.blockedMarker}"
+          textStyleId: statusText
+        - id: choice-label-on
+          $when: isChoiceVisible
+          type: text
+          x: 40
+          y: 106
+          content: "CHOICE: ON"
+          textStyleId: statusText
+        - id: choice-label-off
+          $when: "!isChoiceVisible"
+          type: text
+          x: 40
+          y: 106
+          content: "CHOICE: OFF"
+          textStyleId: statusText
+        - id: helper-copy
+          type: text
+          x: 40
+          y: 158
+          width: 480
+          content: This panel click should be ignored while the choice is visible, then work again after the choice advances.
+          textStyleId: helperText
+  layouts:
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 40
+          y: 520
+          width: 1200
+          height: 150
+          colorId: dialogueColor
+        - id: dialogue-text
+          type: text
+          x: 72
+          y: 566
+          width: 1140
+          content: ${dialogue.content[0].text}
+          textStyleId: dialogueText
+    choiceLayout:
+      elements:
+        - id: choice-button
+          type: rect
+          x: 680
+          y: 180
+          width: 520
+          height: 84
+          colorId: choiceColor
+          click:
+            payload:
+              actions:
+                nextLine: {}
+        - id: choice-button-text
+          type: text
+          x: 722
+          y: 208
+          content: ${choice.items[0].content}
+          textStyleId: statusText
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    textColor:
+      hex: "#F3EEDD"
+    backgroundColor:
+      hex: "#151515"
+    dialogueColor:
+      hex: "#272727"
+    panelColor:
+      hex: "#1F3A3D"
+    choiceColor:
+      hex: "#7F5539"
+  textStyles:
+    statusText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 28
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    helperText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 22
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.35
+    dialogueText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 30
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.25
+story:
+  initialSceneId: choiceBlocks
+  scenes:
+    choiceBlocks:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                control:
+                  resourceId: backgroundControl
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 1: the choice is visible now, so the panel click must not dispatch its updateVariable action."
+                choice:
+                  resourceId: choiceLayout
+                  items:
+                    - id: continue
+                      content: Continue

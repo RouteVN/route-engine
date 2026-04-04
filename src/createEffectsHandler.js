@@ -318,13 +318,53 @@ const createEffectsHandler = ({
     return true;
   };
 
+  const isChoiceInteractionPayload = (payload = {}) => {
+    if (payload?._interactionSource === "choice") {
+      return true;
+    }
+
+    const actions = payload?.actions;
+    if (!actions || typeof actions !== "object" || Array.isArray(actions)) {
+      return false;
+    }
+
+    return Object.values(actions).some(
+      (actionPayload) => actionPayload?._interactionSource === "choice",
+    );
+  };
+
+  const shouldBlockChoiceActions = (engine, payload = {}) => {
+    if (!payload?.actions) {
+      return false;
+    }
+
+    if (typeof engine?.selectIsChoiceVisible !== "function") {
+      return false;
+    }
+
+    if (!engine.selectIsChoiceVisible()) {
+      return false;
+    }
+
+    return !isChoiceInteractionPayload(payload);
+  };
+
   const createRouteGraphicsEventHandler = ({
     preprocessPayload,
     onEvent,
   } = {}) => {
     return async (eventName, payload = {}) => {
+      const engine = getEngine();
+      if (shouldBlockChoiceActions(engine, payload)) {
+        return onEvent?.(eventName, payload);
+      }
+
       const nextPayload =
         (await preprocessPayload?.(eventName, payload)) ?? payload;
+
+      if (shouldBlockChoiceActions(engine, nextPayload)) {
+        return onEvent?.(eventName, nextPayload);
+      }
 
       handleRouteGraphicsEvent(eventName, nextPayload);
 
@@ -335,7 +375,6 @@ const createEffectsHandler = ({
             ? { _event: nextPayload.event }
             : undefined;
 
-        const engine = getEngine();
         engine.handleActions(nextPayload.actions, eventContext);
       }
 

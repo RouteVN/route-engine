@@ -278,6 +278,93 @@ out:
             lineId: "2"
             rollbackPolicy: "free"
 ---
+case: move to a choice line stops auto playback and clears the scene timer
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        autoMode: true
+        nextLineConfig:
+          manual:
+            enabled: true
+          auto:
+            enabled: true
+            trigger: "fromStart"
+            delay: 900
+        pendingEffects: []
+        viewedRegistry:
+          sections: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions:
+                        choice:
+                          resourceId: "choice-ui"
+                          items: []
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  global:
+    isLineCompleted: false
+    autoMode: false
+    nextLineConfig:
+      manual:
+        enabled: true
+      auto:
+        enabled: true
+        trigger: "fromStart"
+        delay: 900
+    pendingEffects:
+      - name: "clearAutoNextTimer"
+      - name: "clearNextLineConfigTimer"
+      - name: "handleLineActions"
+    viewedRegistry:
+      sections:
+        - sectionId: "section1"
+          lastLineId: "1"
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions: {}
+                - id: "2"
+                  actions:
+                    choice:
+                      resourceId: "choice-ui"
+                      items: []
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "2"
+      rollback:
+        currentIndex: 1
+        isRestoring: false
+        replayStartIndex: 1
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "2"
+            rollbackPolicy: "free"
+---
 case: move to next line resets singleLine applyMode config
 in:
   - state:
@@ -505,6 +592,290 @@ out:
         read:
           sectionId: "section1"
           lineId: "2"
+---
+case: complete a visible choice line in place before it can advance
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        nextLineConfig:
+          manual:
+            enabled: true
+        pendingEffects: []
+        viewedRegistry:
+          sections: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        choice:
+                          resourceId: "choice-ui"
+                          items: []
+                    - id: "2"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  global:
+    isLineCompleted: false
+    nextLineConfig:
+      manual:
+        enabled: true
+    pendingEffects: []
+    viewedRegistry:
+      sections: []
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions:
+                    choice:
+                      resourceId: "choice-ui"
+                      items: []
+                - id: "2"
+                  actions: {}
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "1"
+---
+case: do not advance an untagged next line on a completed choice line
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        nextLineConfig:
+          manual:
+            enabled: true
+        pendingEffects: []
+        viewedRegistry:
+          sections: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        choice:
+                          resourceId: "choice-ui"
+                          items: []
+                    - id: "2"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+  - {}
+out:
+  global:
+    isLineCompleted: true
+    nextLineConfig:
+      manual:
+        enabled: true
+    pendingEffects: []
+    viewedRegistry:
+      sections: []
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions:
+                    choice:
+                      resourceId: "choice-ui"
+                      items: []
+                - id: "2"
+                  actions: {}
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "1"
+---
+case: allow tagged next line on a completed choice line
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        nextLineConfig:
+          manual:
+            enabled: true
+        pendingEffects: []
+        viewedRegistry:
+          sections: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        choice:
+                          resourceId: "choice-ui"
+                          items: []
+                    - id: "2"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+  - _interactionSource: "choice"
+out:
+  global:
+    isLineCompleted: false
+    nextLineConfig:
+      manual:
+        enabled: true
+    pendingEffects:
+      - name: "handleLineActions"
+    viewedRegistry:
+      sections:
+        - sectionId: "section1"
+          lastLineId: "1"
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions:
+                    choice:
+                      resourceId: "choice-ui"
+                      items: []
+                - id: "2"
+                  actions: {}
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "2"
+      rollback:
+        currentIndex: 1
+        isRestoring: false
+        replayStartIndex: 1
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "2"
+            rollbackPolicy: "free"
+---
+case: allow next line on a later line when the previous choice is no longer in presentation
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        nextLineConfig:
+          manual:
+            enabled: true
+        pendingEffects: []
+        viewedRegistry:
+          sections: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        choice:
+                          resourceId: "choice-ui"
+                          items: []
+                    - id: "2"
+                      actions:
+                        dialogue:
+                          content:
+                            - text: "after choice"
+                    - id: "3"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  global:
+    isLineCompleted: false
+    nextLineConfig:
+      manual:
+        enabled: true
+    pendingEffects:
+      - name: "handleLineActions"
+    viewedRegistry:
+      sections:
+        - sectionId: "section1"
+          lastLineId: "2"
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions:
+                    choice:
+                      resourceId: "choice-ui"
+                      items: []
+                - id: "2"
+                  actions:
+                    dialogue:
+                      content:
+                        - text: "after choice"
+                - id: "3"
+                  actions: {}
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "3"
+      rollback:
+        currentIndex: 1
+        isRestoring: false
+        replayStartIndex: 1
+        timeline:
+          - sectionId: "section1"
+            lineId: "2"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "3"
+            rollbackPolicy: "free"
 ---
 case: no section found
 in:
