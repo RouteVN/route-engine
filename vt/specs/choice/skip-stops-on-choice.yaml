@@ -1,11 +1,11 @@
 ---
-title: Choice Interaction Guards
-description: Choice visibility stops active playback, blocks background/control advance, and still allows choice-origin nextLine.
+title: Choice Stops Active Skip
+description: Skip mode should be turned off as soon as a choice becomes visible, and the choice should remain interactive.
 specs:
-  - auto mode is visibly on before the choice line is entered
-  - entering the choice line forces auto mode off and exposes the choice state
-  - auto, skip, and background clicks do not change the state while the choice is visible
-  - the choice button still advances to the next line
+  - skip mode is visibly on before the choice line is entered
+  - entering the choice line forces skip mode off
+  - waiting on the choice line does not re-enable skip or advance the story
+  - the choice button still advances after skip has been stopped
 skipInitialScreenshot: true
 viewport:
   id: capture
@@ -14,30 +14,17 @@ viewport:
 steps:
   - action: wait
     ms: 200
-  - action: screenshot
-  - action: click
-    x: 150
-    y: 400
-  - action: wait
-    ms: 150
-  - action: screenshot
   - action: click
     x: 150
     y: 74
   - action: wait
-    ms: 120
+    ms: 40
   - action: screenshot
-  - action: click
-    x: 150
-    y: 160
   - action: wait
-    ms: 120
+    ms: 220
   - action: screenshot
-  - action: click
-    x: 150
-    y: 400
   - action: wait
-    ms: 120
+    ms: 220
   - action: screenshot
   - action: click
     x: 940
@@ -52,10 +39,10 @@ screen:
   backgroundColor: "#101010"
 resources:
   variables:
-    _autoForwardTime:
-      type: number
+    _skipUnseenText:
+      type: boolean
       scope: global-device
-      default: 5000
+      default: true
   controls:
     guardControls:
       elements:
@@ -70,7 +57,7 @@ resources:
               actions:
                 nextLine: {}
           colorId: backgroundColor
-        - id: auto-button
+        - id: skip-button
           type: rect
           x: 40
           y: 40
@@ -79,80 +66,42 @@ resources:
           click:
             payload:
               actions:
-                toggleAutoMode: {}
-          colorId: buttonColor
-        - id: auto-label
-          type: text
-          x: 96
-          y: 62
-          content: AUTO
-          textStyleId: statusText
-        - id: skip-button
-          type: rect
-          x: 40
-          y: 126
-          width: 220
-          height: 68
-          click:
-            payload:
-              actions:
                 toggleSkipMode: {}
-          colorId: buttonColor
+          colorId: choiceColor
         - id: skip-label
           type: text
           x: 100
-          y: 148
+          y: 62
           content: SKIP
-          textStyleId: statusText
-        - id: auto-status-on
-          $when: autoMode
-          type: text
-          x: 300
-          y: 52
-          content: "AUTO: ON"
-          textStyleId: statusText
-        - id: auto-status-off
-          $when: "!autoMode"
-          type: text
-          x: 300
-          y: 52
-          content: "AUTO: OFF"
           textStyleId: statusText
         - id: skip-status-on
           $when: skipMode
           type: text
           x: 300
-          y: 138
+          y: 56
           content: "SKIP: ON"
           textStyleId: statusText
         - id: skip-status-off
           $when: "!skipMode"
           type: text
           x: 300
-          y: 138
+          y: 56
           content: "SKIP: OFF"
           textStyleId: statusText
         - id: choice-status-on
           $when: isChoiceVisible
           type: text
           x: 300
-          y: 224
+          y: 102
           content: "CHOICE: ON"
           textStyleId: statusText
         - id: choice-status-off
           $when: "!isChoiceVisible"
           type: text
           x: 300
-          y: 224
+          y: 102
           content: "CHOICE: OFF"
           textStyleId: statusText
-        - id: helper-copy
-          type: text
-          x: 40
-          y: 300
-          width: 520
-          content: Background click advances when allowed. Auto and skip buttons must do nothing while a choice is visible.
-          textStyleId: helperText
   layouts:
     dialogueLayout:
       mode: adv
@@ -198,8 +147,6 @@ resources:
       hex: "#F4F1E8"
     backgroundColor:
       hex: "#171717"
-    buttonColor:
-      hex: "#264653"
     dialogueColor:
       hex: "#2A2A2A"
     choiceColor:
@@ -212,13 +159,6 @@ resources:
       fontWeight: "400"
       fontStyle: normal
       lineHeight: 1.2
-    helperText:
-      fontId: fontDefault
-      colorId: textColor
-      fontSize: 22
-      fontWeight: "400"
-      fontStyle: normal
-      lineHeight: 1.35
     dialogueText:
       fontId: fontDefault
       colorId: textColor
@@ -238,18 +178,17 @@ story:
               actions:
                 control:
                   resourceId: guardControls
-                startAutoMode: {}
                 dialogue:
                   mode: adv
                   ui:
                     resourceId: dialogueLayout
                   content:
-                    - text: "Line 1: auto mode starts here, then the engine should stop it when the choice line appears."
+                    - text: "Line 1: turn on skip here, then the next choice line should stop it."
             - id: line2
               actions:
                 dialogue:
                   content:
-                    - text: "Line 2: choice is visible. Background advance is blocked, auto and skip cannot be turned on, and the choice button should still continue."
+                    - text: "Line 2: the choice is visible and skip must already be off."
                 choice:
                   resourceId: choiceLayout
                   items:
@@ -260,4 +199,4 @@ story:
                 choice: {}
                 dialogue:
                   content:
-                    - text: "Line 3: reached from the choice button."
+                    - text: "Line 3: reached from the choice after skip was stopped."
