@@ -1225,10 +1225,10 @@ export const selectNextLineConfig = ({ state }) => {
   return state.global.nextLineConfig;
 };
 
-const selectChoiceVisibilityState = ({ state }) => {
+const selectVisibleChoiceResourceId = ({ state }) => {
   const pointer = selectCurrentPointer({ state })?.pointer;
   if (!pointer) {
-    return false;
+    return undefined;
   }
 
   const sectionId = pointer?.sectionId;
@@ -1238,35 +1238,39 @@ const selectChoiceVisibilityState = ({ state }) => {
   const currentLineIndex = lines.findIndex((line) => line.id === lineId);
 
   if (currentLineIndex < 0) {
-    return false;
+    return undefined;
   }
 
-  let isChoiceVisible = false;
+  let visibleChoiceResourceId;
   for (const line of lines.slice(0, currentLineIndex + 1)) {
     const actions = line?.actions;
+    if (actions?.cleanAll) {
+      visibleChoiceResourceId = undefined;
+    }
+
     if (!actions || !Object.prototype.hasOwnProperty.call(actions, "choice")) {
-      isChoiceVisible = false;
+      visibleChoiceResourceId = undefined;
       continue;
     }
 
     const choice = actions.choice;
     if (choice?.resourceId) {
-      isChoiceVisible = true;
+      visibleChoiceResourceId = choice.resourceId;
       continue;
     }
 
     // `choice: { animations: ... }` should preserve the previous choice state,
     // while `choice: {}` explicitly clears it.
     if (!choice?.animations) {
-      isChoiceVisible = false;
+      visibleChoiceResourceId = undefined;
     }
   }
 
-  return isChoiceVisible;
+  return visibleChoiceResourceId;
 };
 
 export const selectIsChoiceVisible = ({ state }) => {
-  return selectChoiceVisibilityState({ state });
+  return !!selectVisibleChoiceResourceId({ state });
 };
 
 export const selectSystemState = ({ state }) => {
@@ -2219,11 +2223,6 @@ export const nextLine = ({ state }, payload) => {
 
   if (state.global.dialogueUIHidden) {
     showDialogueUI({ state });
-    return state;
-  }
-
-  const isChoiceInteraction = payload?._interactionSource === "choice";
-  if (selectIsChoiceVisible({ state }) && !isChoiceInteraction) {
     return state;
   }
 

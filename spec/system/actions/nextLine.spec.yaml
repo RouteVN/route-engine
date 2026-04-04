@@ -506,7 +506,7 @@ out:
           sectionId: "section1"
           lineId: "2"
 ---
-case: do not complete or advance when a choice is visible from non-choice input
+case: complete a visible choice line in place before it can advance
 in:
   - state:
       global:
@@ -539,13 +539,17 @@ in:
               lineId: "1"
 out:
   global:
-    isLineCompleted: false
+    isLineCompleted: true
     nextLineConfig:
       manual:
         enabled: true
-    pendingEffects: []
+    pendingEffects:
+      - name: "clearNextLineConfigTimer"
+      - name: "render"
     viewedRegistry:
-      sections: []
+      sections:
+        - sectionId: "section1"
+          lastLineId: "1"
   projectData:
     story:
       scenes:
@@ -567,7 +571,7 @@ out:
           sectionId: "section1"
           lineId: "1"
 ---
-case: allow next line when the interaction comes from a choice button
+case: allow next line on a completed choice line without requiring a choice tag
 in:
   - state:
       global:
@@ -598,7 +602,6 @@ in:
             read:
               sectionId: "section1"
               lineId: "1"
-  - _interactionSource: "choice"
 out:
   global:
     isLineCompleted: false
