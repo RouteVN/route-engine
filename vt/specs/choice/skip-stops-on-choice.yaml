@@ -15,8 +15,8 @@ steps:
   - action: wait
     ms: 200
   - action: click
-    x: 150
-    y: 74
+    x: 395
+    y: 217
   - action: wait
     ms: 40
   - action: screenshot
@@ -27,8 +27,8 @@ steps:
     ms: 220
   - action: screenshot
   - action: click
-    x: 940
-    y: 222
+    x: 790
+    y: 291
   - action: wait
     ms: 150
   - action: screenshot

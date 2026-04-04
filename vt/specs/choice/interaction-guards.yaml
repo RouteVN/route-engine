@@ -1,6 +1,6 @@
 ---
 title: Choice Interaction Guards
-description: Choice visibility stops active playback, blocks background/control advance, and still allows choice-origin nextLine.
+description: Choice visibility stops active playback, blocks nextLine and auto/skip toggles, and still allows the choice to advance.
 specs:
   - auto mode is visibly on before the choice line is entered
   - entering the choice line forces auto mode off and exposes the choice state
@@ -17,38 +17,38 @@ steps:
     ms: 200
   - action: screenshot
   - action: click
-    x: 150
-    y: 400
+    x: 395
+    y: 380
   - action: wait
     ms: 150
   - action: screenshot
   - action: click
-    x: 150
-    y: 74
+    x: 395
+    y: 217
   - action: wait
     ms: 120
   - action: screenshot
   - action: click
-    x: 150
-    y: 160
+    x: 395
+    y: 260
   - action: wait
     ms: 120
   - action: screenshot
   - action: click
-    x: 150
-    y: 400
+    x: 395
+    y: 380
   - action: wait
     ms: 120
   - action: screenshot
   - action: click
-    x: 940
-    y: 222
+    x: 790
+    y: 291
   - action: wait
     ms: 150
   - action: screenshot
   - action: click
-    x: 150
-    y: 400
+    x: 395
+    y: 380
   - action: wait
     ms: 150
   - action: screenshot
@@ -158,7 +158,7 @@ resources:
           x: 40
           y: 300
           width: 520
-          content: Background click advances when allowed. Auto and skip buttons must do nothing while a choice is visible.
+          content: Background nextLine advances when allowed. Auto and skip toggles must do nothing while a choice is visible.
           textStyleId: helperText
   layouts:
     dialogueLayout:
@@ -256,7 +256,7 @@ story:
               actions:
                 dialogue:
                   content:
-                    - text: "Line 2: choice is visible. Background advance is blocked, auto and skip cannot be turned on, and the choice button should still continue."
+                    - text: "Line 2: choice is visible. Background nextLine is blocked, auto and skip cannot be turned on, and the choice button should still continue."
                 choice:
                   resourceId: choiceLayout
                   items:

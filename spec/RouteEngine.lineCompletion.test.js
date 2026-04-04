@@ -480,7 +480,7 @@ describe("RouteEngine line completion flow", () => {
     });
   });
 
-  it("stops active playback on a choice line and still allows public nextLine", () => {
+  it("stops active playback on a choice line and only allows choice-tagged nextLine", () => {
     const routeGraphics = {
       render: vi.fn(),
     };
@@ -531,7 +531,9 @@ describe("RouteEngine line completion flow", () => {
 
     engine.handleAction("markLineCompleted", {});
     engine.handleActions({
-      nextLine: {},
+      nextLine: {
+        _interactionSource: "choice",
+      },
     });
 
     state = engine.selectSystemState();

@@ -206,14 +206,15 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
           operations: [
             {
               variableId: "marker",
-              op: "=",
-              value: "_event",
+              op: "set",
+              value: "blocked",
             },
           ],
         },
       },
       _event: {
-        view: globalThis,
+        x: 10,
+        y: 20,
       },
     };
 

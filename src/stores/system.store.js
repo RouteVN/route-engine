@@ -2224,6 +2224,13 @@ export const nextLine = ({ state }, payload) => {
     return state;
   }
 
+  if (
+    selectIsChoiceVisible({ state }) &&
+    payload?._interactionSource !== "choice"
+  ) {
+    return state;
+  }
+
   // If line is not completed, complete it instantly instead of advancing
   if (!state.global.isLineCompleted) {
     state.global.isLineCompleted = true;

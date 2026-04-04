@@ -626,17 +626,13 @@ in:
               lineId: "1"
 out:
   global:
-    isLineCompleted: true
+    isLineCompleted: false
     nextLineConfig:
       manual:
         enabled: true
-    pendingEffects:
-      - name: "clearNextLineConfigTimer"
-      - name: "render"
+    pendingEffects: []
     viewedRegistry:
-      sections:
-        - sectionId: "section1"
-          lastLineId: "1"
+      sections: []
   projectData:
     story:
       scenes:
@@ -658,7 +654,7 @@ out:
           sectionId: "section1"
           lineId: "1"
 ---
-case: allow next line on a completed choice line without requiring a choice tag
+case: do not advance an untagged next line on a completed choice line
 in:
   - state:
       global:
@@ -689,6 +685,69 @@ in:
             read:
               sectionId: "section1"
               lineId: "1"
+  - {}
+out:
+  global:
+    isLineCompleted: true
+    nextLineConfig:
+      manual:
+        enabled: true
+    pendingEffects: []
+    viewedRegistry:
+      sections: []
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions:
+                    choice:
+                      resourceId: "choice-ui"
+                      items: []
+                - id: "2"
+                  actions: {}
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "1"
+---
+case: allow tagged next line on a completed choice line
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        nextLineConfig:
+          manual:
+            enabled: true
+        pendingEffects: []
+        viewedRegistry:
+          sections: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        choice:
+                          resourceId: "choice-ui"
+                          items: []
+                    - id: "2"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+  - _interactionSource: "choice"
 out:
   global:
     isLineCompleted: false

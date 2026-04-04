@@ -13,8 +13,8 @@ steps:
     ms: 200
   - action: screenshot
   - action: click
-    x: 180
-    y: 210
+    x: 410
+    y: 285
   - action: wait
     ms: 150
   - action: screenshot
@@ -46,7 +46,7 @@ resources:
                   id: markerbg
                   operations:
                     - variableId: blockedMarker
-                      op: "="
+                      op: set
                       value: background
         - id: marker-label
           type: text

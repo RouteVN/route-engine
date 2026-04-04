@@ -981,6 +981,18 @@ const tagChoiceInteractionSource = (node) => {
     return taggedNode;
   }
 
+  const actions = clickPayload.actions;
+  const nextLineAction =
+    actions &&
+    typeof actions === "object" &&
+    !Array.isArray(actions) &&
+    Object.prototype.hasOwnProperty.call(actions, "nextLine")
+      ? {
+          ...actions.nextLine,
+          _interactionSource: "choice",
+        }
+      : undefined;
+
   return {
     ...taggedNode,
     click: {
@@ -988,6 +1000,14 @@ const tagChoiceInteractionSource = (node) => {
       payload: {
         ...clickPayload,
         _interactionSource: "choice",
+        ...(nextLineAction
+          ? {
+              actions: {
+                ...actions,
+                nextLine: nextLineAction,
+              },
+            }
+          : {}),
       },
     },
   };
@@ -1894,19 +1914,6 @@ export const addChoices = (
           resources,
         ),
       );
-
-      const hasChoiceElements = Array.isArray(choiceElements)
-        ? choiceElements.length > 0
-        : !!choiceElements;
-
-      if (hasChoiceElements) {
-        storyContainer.children.push(
-          createFullscreenClickBlocker({
-            id: "choice-blocker",
-            screen,
-          }),
-        );
-      }
 
       if (Array.isArray(choiceElements)) {
         for (const element of choiceElements) {

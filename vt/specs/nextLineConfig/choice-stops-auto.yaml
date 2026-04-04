@@ -19,7 +19,7 @@ steps:
   - action: screenshot
   - action: click
     x: 960
-    y: 260
+    y: 400
   - action: wait
     ms: 150
   - action: screenshot

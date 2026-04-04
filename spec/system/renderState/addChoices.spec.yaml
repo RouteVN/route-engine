@@ -39,22 +39,12 @@ out:
       x: 0
       y: 0
       children:
-        - id: "choice-blocker"
-          type: "rect"
-          fill: "transparent"
-          width: 1920
-          height: 1080
-          x: 0
-          y: 0
-          click:
-            payload:
-              actions: {}
         - type: "button"
           id: "choice-button"
           text: "Select an option"
   animations: []
 ---
-case: tags nextLine actions from choice buttons and exposes choice visibility template data
+case: tags choice click payloads and exposes choice visibility template data
 in:
   - elements:
       - id: "story"
@@ -95,16 +85,6 @@ out:
       x: 0
       y: 0
       children:
-        - id: "choice-blocker"
-          type: "rect"
-          fill: "transparent"
-          width: 1920
-          height: 1080
-          x: 0
-          y: 0
-          click:
-            payload:
-              actions: {}
         - id: "choice-copy"
           type: "text"
           content: "Choice shown"
@@ -115,7 +95,8 @@ out:
             payload:
               _interactionSource: "choice"
               actions:
-                nextLine: {}
+                nextLine:
+                  _interactionSource: "choice"
   animations: []
 ---
 case: tags non-nextLine choice clicks at the payload level
@@ -155,16 +136,6 @@ out:
       x: 0
       y: 0
       children:
-        - id: "choice-blocker"
-          type: "rect"
-          fill: "transparent"
-          width: 1920
-          height: 1080
-          x: 0
-          y: 0
-          click:
-            payload:
-              actions: {}
         - id: "choice-button"
           type: "button"
           text: "Go"
@@ -216,16 +187,6 @@ out:
       x: 0
       y: 0
       children:
-        - id: "choice-blocker"
-          type: "rect"
-          fill: "transparent"
-          width: 1920
-          height: 1080
-          x: 0
-          y: 0
-          click:
-            payload:
-              actions: {}
         - type: "container"
           id: "choices"
           children:
@@ -307,16 +268,6 @@ out:
       x: 0
       y: 0
       children:
-        - id: "choice-blocker"
-          type: "rect"
-          fill: "transparent"
-          width: 1920
-          height: 1080
-          x: 0
-          y: 0
-          click:
-            payload:
-              actions: {}
         - id: "choice-label"
           type: "text"
           content: "Select an option"
@@ -364,16 +315,6 @@ out:
       x: 0
       y: 0
       children:
-        - id: "choice-blocker"
-          type: "rect"
-          fill: "transparent"
-          width: 1920
-          height: 1080
-          x: 0
-          y: 0
-          click:
-            payload:
-              actions: {}
         - id: "choice-panel"
           type: "rect"
           width: 500
@@ -416,16 +357,6 @@ out:
       x: 0
       y: 0
       children:
-        - id: "choice-blocker"
-          type: "rect"
-          fill: "transparent"
-          width: 1920
-          height: 1080
-          x: 0
-          y: 0
-          click:
-            payload:
-              actions: {}
         - id: "choice-image"
           type: "sprite"
           src: "choice-frame.png"
@@ -552,16 +483,6 @@ out:
       x: 0
       y: 0
       children:
-        - id: "choice-blocker"
-          type: "rect"
-          fill: "transparent"
-          width: 1920
-          height: 1080
-          x: 0
-          y: 0
-          click:
-            payload:
-              actions: {}
         - type: "text"
           content: "No choices available"
   animations: []
