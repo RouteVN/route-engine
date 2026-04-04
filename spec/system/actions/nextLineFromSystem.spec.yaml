@@ -190,6 +190,94 @@ out:
             lineId: "2"
             rollbackPolicy: "free"
 ---
+case: advance to a choice line stops active playback and clears timers
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        autoMode: true
+        skipMode: true
+        variables:
+          _skipUnseenText: true
+        viewedRegistry:
+          sections: []
+        nextLineConfig:
+          auto:
+            enabled: true
+            trigger: "fromStart"
+            delay: 1500
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                    - id: "2"
+                      actions:
+                        choice:
+                          resourceId: "choice-ui"
+                          items: []
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  global:
+    isLineCompleted: false
+    autoMode: false
+    skipMode: false
+    variables:
+      _skipUnseenText: true
+    viewedRegistry:
+      sections:
+        - sectionId: "section1"
+          lastLineId: "1"
+    nextLineConfig:
+      auto:
+        enabled: true
+        trigger: "fromStart"
+        delay: 1500
+    pendingEffects:
+      - name: "clearAutoNextTimer"
+      - name: "clearSkipNextTimer"
+      - name: "clearNextLineConfigTimer"
+      - name: "handleLineActions"
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                - id: "2"
+                  actions:
+                    choice:
+                      resourceId: "choice-ui"
+                      items: []
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "2"
+      rollback:
+        currentIndex: 1
+        isRestoring: false
+        replayStartIndex: 1
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "2"
+            rollbackPolicy: "free"
+---
 case: advance resets singleLine applyMode config and does not re-queue timer
 in:
   - state:

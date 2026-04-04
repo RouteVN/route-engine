@@ -1225,8 +1225,8 @@ export const selectNextLineConfig = ({ state }) => {
   return state.global.nextLineConfig;
 };
 
-const selectVisibleChoiceResourceId = ({ state }) => {
-  const pointer = selectCurrentPointer({ state })?.pointer;
+const selectVisibleChoiceResourceId = ({ state, pointer: targetPointer } = {}) => {
+  const pointer = targetPointer ?? selectCurrentPointer({ state })?.pointer;
   if (!pointer) {
     return undefined;
   }
@@ -1652,19 +1652,12 @@ export const clearLayeredViews = ({ state }) => {
   return state;
 };
 
-export const enforceChoiceVisibilityConstraints = ({ state }) => {
-  if (!selectIsChoiceVisible({ state })) {
-    return state;
-  }
-
-  let needsRender = false;
-
+const stopPlaybackForEnteredChoiceLine = (state) => {
   if (state.global.autoMode) {
     state.global.autoMode = false;
     state.global.pendingEffects.push({
       name: "clearAutoNextTimer",
     });
-    needsRender = true;
   }
 
   if (state.global.skipMode) {
@@ -1672,7 +1665,6 @@ export const enforceChoiceVisibilityConstraints = ({ state }) => {
     state.global.pendingEffects.push({
       name: "clearSkipNextTimer",
     });
-    needsRender = true;
   }
 
   if (state.global.nextLineConfig?.auto?.enabled) {
@@ -1680,14 +1672,23 @@ export const enforceChoiceVisibilityConstraints = ({ state }) => {
       name: "clearNextLineConfigTimer",
     });
   }
+};
 
-  if (needsRender) {
-    state.global.pendingEffects.push({
-      name: "render",
-    });
+const queueEnteredLineEffects = (state, pointer) => {
+  state.global.isLineCompleted = false;
+
+  const isChoiceVisible = !!selectVisibleChoiceResourceId({ state, pointer });
+  if (isChoiceVisible) {
+    stopPlaybackForEnteredChoiceLine(state);
   }
 
-  return state;
+  state.global.pendingEffects.push({
+    name: "handleLineActions",
+  });
+
+  return {
+    isChoiceVisible,
+  };
 };
 
 export const startAutoMode = ({ state }) => {
@@ -2203,13 +2204,7 @@ export const jumpToLine = ({ state }, payload) => {
     setActiveRollbackBatchCheckpoint(lastContext.rollback.currentIndex);
   }
 
-  // Reset line completion state
-  state.global.isLineCompleted = false;
-
-  // Add appropriate pending effects
-  state.global.pendingEffects.push({
-    name: "handleLineActions",
-  });
+  queueEnteredLineEffects(state, lastContext.pointers.read);
 
   return state;
 };
@@ -2313,21 +2308,19 @@ export const nextLine = ({ state }, payload) => {
       };
     }
 
-    state.global.isLineCompleted = false;
-
     appendRollbackCheckpoint(state, {
       sectionId,
       lineId: nextLine.id,
     });
     resetNextLineConfigIfSingleLine(state);
-
-    state.global.pendingEffects.push({
-      name: "handleLineActions",
+    const { isChoiceVisible } = queueEnteredLineEffects(state, {
+      sectionId,
+      lineId: nextLine.id,
     });
 
     // Keep scene auto mode running after manual advances (e.g. choice click -> nextLine).
     const nextLineConfig = state.global.nextLineConfig;
-    if (nextLineConfig?.auto?.enabled) {
+    if (nextLineConfig?.auto?.enabled && !isChoiceVisible) {
       const trigger = nextLineConfig.auto.trigger;
       if (trigger === "fromStart") {
         state.global.pendingEffects.push({
@@ -2550,13 +2543,7 @@ export const sectionTransition = ({ state }, payload) => {
     }
   }
 
-  // Reset line completion state
-  state.global.isLineCompleted = false;
-
-  // Add appropriate pending effects
-  state.global.pendingEffects.push({
-    name: "handleLineActions",
-  });
+  queueEnteredLineEffects(state, lastContext?.pointers?.read);
 
   return state;
 };
@@ -2620,21 +2607,19 @@ export const nextLineFromSystem = ({ state }) => {
       };
     }
 
-    state.global.isLineCompleted = false;
-
     appendRollbackCheckpoint(state, {
       sectionId,
       lineId: nextLine.id,
     });
     resetNextLineConfigIfSingleLine(state);
-
-    state.global.pendingEffects.push({
-      name: "handleLineActions",
+    const { isChoiceVisible } = queueEnteredLineEffects(state, {
+      sectionId,
+      lineId: nextLine.id,
     });
 
     // Only start timer immediately if trigger is "fromStart"
     // For "fromComplete" trigger, markLineCompleted will start it when renderComplete fires
-    if (state.global.nextLineConfig.auto?.enabled) {
+    if (state.global.nextLineConfig.auto?.enabled && !isChoiceVisible) {
       const trigger = state.global.nextLineConfig.auto.trigger;
       if (trigger === "fromStart") {
         state.global.pendingEffects.push({
@@ -2954,7 +2939,6 @@ export const createSystemStore = (initialState) => {
     popLayeredView,
     replaceLastLayeredView,
     clearLayeredViews,
-    enforceChoiceVisibilityConstraints,
     updateVariable,
     nextLineFromSystem,
   };

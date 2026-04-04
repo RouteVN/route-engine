@@ -278,6 +278,93 @@ out:
             lineId: "2"
             rollbackPolicy: "free"
 ---
+case: move to a choice line stops auto playback and clears the scene timer
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        autoMode: true
+        nextLineConfig:
+          manual:
+            enabled: true
+          auto:
+            enabled: true
+            trigger: "fromStart"
+            delay: 900
+        pendingEffects: []
+        viewedRegistry:
+          sections: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions:
+                        choice:
+                          resourceId: "choice-ui"
+                          items: []
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  global:
+    isLineCompleted: false
+    autoMode: false
+    nextLineConfig:
+      manual:
+        enabled: true
+      auto:
+        enabled: true
+        trigger: "fromStart"
+        delay: 900
+    pendingEffects:
+      - name: "clearAutoNextTimer"
+      - name: "clearNextLineConfigTimer"
+      - name: "handleLineActions"
+    viewedRegistry:
+      sections:
+        - sectionId: "section1"
+          lastLineId: "1"
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions: {}
+                - id: "2"
+                  actions:
+                    choice:
+                      resourceId: "choice-ui"
+                      items: []
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "2"
+      rollback:
+        currentIndex: 1
+        isRestoring: false
+        replayStartIndex: 1
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "2"
+            rollbackPolicy: "free"
+---
 case: move to next line resets singleLine applyMode config
 in:
   - state:
