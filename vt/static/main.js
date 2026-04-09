@@ -23,6 +23,35 @@ import createRouteGraphics, {
 
 const projectData = parse(window.yamlContent);
 const namespace = `vt:${window.location.pathname}`;
+const isVtCaptureMode = () =>
+  window?.RTGL_VT_DEBUG === true || navigator.webdriver === true;
+
+const downscaleBase64Image = async (base64, scale = 0.5) => {
+  if (!isVtCaptureMode() || scale === 1) {
+    return base64;
+  }
+
+  const blob = await (await fetch(base64)).blob();
+  const bitmap = await createImageBitmap(blob);
+  const canvas = document.createElement("canvas");
+
+  canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+  canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    bitmap.close?.();
+    throw new Error("Failed to create VT screenshot canvas.");
+  }
+
+  context.imageSmoothingEnabled = true;
+  context.imageSmoothingQuality = "high";
+  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close?.();
+
+  return canvas.toDataURL("image/png");
+};
 
 const init = async () => {
   const screenWidth = projectData?.screen?.width ?? 1920;
@@ -149,11 +178,15 @@ const init = async () => {
 
   const routeGraphics = createRouteGraphics();
   window.takeVtScreenshotBase64 = async (label) => {
-    if (label) {
-      return await routeGraphics.extractBase64(label);
+    let base64;
+
+    try {
+      base64 = await routeGraphics.extractBase64(label);
+    } catch {
+      base64 = routeGraphics.canvas.toDataURL("image/png");
     }
 
-    return routeGraphics.canvas.toDataURL("image/png");
+    return await downscaleBase64Image(base64);
   };
 
   const plugins = {
