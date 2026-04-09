@@ -27,12 +27,13 @@ const engine = createRouteEngine({
 
 ## Initialization
 
-### `init({ initialState })`
+### `init({ initialState, namespace })`
 
 Initializes the engine with project data and global settings.
 
 ```js
 engine.init({
+  namespace: "my-visual-novel",
   initialState: {
     projectData: {
       resources: {
@@ -58,6 +59,11 @@ engine.init({
   },
 });
 ```
+
+For browser-backed save/load hydration, the runtime also exports
+`createIndexedDbPersistence({ namespace })`. Use the same `namespace` both when
+loading persisted data before init and when calling `engine.init(...)` so
+different visual novels on the same domain do not share persistence.
 
 Localization is not implemented in the current runtime. The planned
 patch-based l10n model is documented in [L10n.md](./L10n.md).

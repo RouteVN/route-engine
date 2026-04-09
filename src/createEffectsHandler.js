@@ -1,3 +1,5 @@
+import { createIndexedDbPersistence } from "./indexedDbPersistence.js";
+
 const createTimerState = () => {
   let elapsed = 0;
   let callback = null;
@@ -164,21 +166,21 @@ const clearNextLineConfigTimer = (
   nextLineConfigTimerState.setElapsed(0);
 };
 
-const saveSlots = ({}, payload) => {
-  localStorage.setItem("saveSlots", JSON.stringify(payload.saveSlots));
-};
-
-const saveGlobalDeviceVariables = ({}, payload) => {
-  localStorage.setItem(
-    "globalDeviceVariables",
-    JSON.stringify(payload.globalDeviceVariables),
+const saveSlots = ({ enqueuePersistenceWrite }, payload) => {
+  enqueuePersistenceWrite((persistence) =>
+    persistence.saveSlots(payload?.saveSlots),
   );
 };
 
-const saveGlobalAccountVariables = ({}, payload) => {
-  localStorage.setItem(
-    "globalAccountVariables",
-    JSON.stringify(payload.globalAccountVariables),
+const saveGlobalDeviceVariables = ({ enqueuePersistenceWrite }, payload) => {
+  enqueuePersistenceWrite((persistence) =>
+    persistence.saveGlobalDeviceVariables(payload?.globalDeviceVariables),
+  );
+};
+
+const saveGlobalAccountVariables = ({ enqueuePersistenceWrite }, payload) => {
+  enqueuePersistenceWrite((persistence) =>
+    persistence.saveGlobalAccountVariables(payload?.globalAccountVariables),
   );
 };
 
@@ -247,14 +249,54 @@ const createEffectsHandler = ({
   routeGraphics,
   ticker,
   handleUnhandledEffect,
+  handlePersistenceError,
+  indexedDB,
+  persistence: providedPersistence,
+  namespace,
 }) => {
   const autoTimer = createTimerState();
   const skipTimer = createTimerState();
   const nextLineConfigTimerState = createTimerState();
+  let persistence = providedPersistence ?? null;
+  let persistenceWriteQueue = Promise.resolve();
   let latestRenderId = null;
   let lastHandledRenderCompleteId = null;
   let handledIdlessRenderComplete = false;
   let renderDispatchCount = 0;
+
+  const reportPersistenceError = (error) => {
+    if (handlePersistenceError) {
+      handlePersistenceError(error);
+      return;
+    }
+
+    console.error("RouteEngine persistence write failed.", error);
+  };
+
+  const getPersistence = () => {
+    if (persistence) {
+      return persistence;
+    }
+
+    const engine = getEngine();
+    persistence = createIndexedDbPersistence({
+      indexedDB,
+      namespace: namespace ?? engine?.getNamespace?.(),
+    });
+    return persistence;
+  };
+
+  const enqueuePersistenceWrite = (write) => {
+    persistenceWriteQueue = persistenceWriteQueue
+      .catch(() => undefined)
+      .then(() => {
+        const persistenceAdapter = getPersistence();
+        return write(persistenceAdapter);
+      })
+      .catch((error) => {
+        reportPersistenceError(error);
+      });
+  };
 
   const trackRenderDispatch = (renderState) => {
     const renderId =
@@ -362,6 +404,7 @@ const createEffectsHandler = ({
       nextLineConfigTimerState,
       trackRenderDispatch,
       getRenderDispatchCount,
+      enqueuePersistenceWrite,
     };
 
     for (const effect of normalizedEffects) {

@@ -1,4 +1,5 @@
 import { createSystemStore } from "./stores/system.store.js";
+import { normalizeNamespace } from "./indexedDbPersistence.js";
 import { processActionTemplates } from "./util.js";
 
 /**
@@ -7,6 +8,7 @@ import { processActionTemplates } from "./util.js";
 export default function createRouteEngine(options) {
   let _systemStore;
   let _renderSequence = 0;
+  let _namespace = null;
 
   const { handlePendingEffects } = options;
 
@@ -26,11 +28,16 @@ export default function createRouteEngine(options) {
     }
   };
 
-  const init = ({ initialState }) => {
+  const init = ({ initialState, namespace }) => {
     _systemStore = createSystemStore(initialState);
     _renderSequence = 0;
+    _namespace = normalizeNamespace(namespace);
     _systemStore.appendPendingEffect({ name: "handleLineActions" });
     processEffectsUntilEmpty();
+  };
+
+  const getNamespace = () => {
+    return _namespace;
   };
 
   const selectPresentationState = () => {
@@ -152,5 +159,6 @@ export default function createRouteEngine(options) {
     selectSaveSlotPage,
     selectSaveSlots: selectSaveSlotMap,
     handleLineActions,
+    getNamespace,
   };
 }
