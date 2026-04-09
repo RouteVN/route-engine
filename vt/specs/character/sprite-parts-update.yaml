@@ -6,13 +6,13 @@ description: |
   replace path.
 specs:
   - the initial screenshot should show one composed grayscale character with a neutral face
-  - advancing should swap only the face part while keeping the same character target
+  - the post-advance screenshot should swap only the face part while keeping the same character target
   - the halfway screenshot should show the smiling face and an in-progress scale update
   - the final screenshot should settle on the smiling face at the final scale
 steps:
-  - action: screenshot
   - action: customEvent
     name: vt:nextLine
+  - action: screenshot
   - action: customEvent
     name: snapShotKeyFrame
     detail:
@@ -69,12 +69,12 @@ resources:
         scaleX:
           keyframes:
             - duration: 600
-              value: 1.12
+              value: 1.2
               easing: linear
         scaleY:
           keyframes:
             - duration: 600
-              value: 1.12
+              value: 1.2
               easing: linear
   colors:
     overlayColor:
