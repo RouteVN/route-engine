@@ -341,7 +341,33 @@ const ensureDialogueContentItems = (content, path) => {
   return content;
 };
 
-const getCharacterContainerId = (item, index = 0) => {
+const getDuplicateItemIds = (items = []) => {
+  const counts = new Map();
+
+  for (const item of items) {
+    if (!item?.id) {
+      continue;
+    }
+
+    counts.set(item.id, (counts.get(item.id) ?? 0) + 1);
+  }
+
+  return new Set(
+    Array.from(counts.entries())
+      .filter(([, count]) => count > 1)
+      .map(([id]) => id),
+  );
+};
+
+const getCharacterContainerId = (
+  item,
+  index = 0,
+  duplicateCharacterIds = new Set(),
+) => {
+  if (!duplicateCharacterIds.has(item?.id)) {
+    return `character-container-${item.id}`;
+  }
+
   const spritePartIds =
     item?.sprites?.map(({ resourceId }) => resourceId) || [];
 
@@ -1419,6 +1445,8 @@ export const addCharacters = (
 
     const items = presentationState.character.items || [];
     const previousItems = previousPresentationState?.character?.items || [];
+    const duplicateCharacterIds = getDuplicateItemIds(items);
+    const previousDuplicateCharacterIds = getDuplicateItemIds(previousItems);
 
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
@@ -1434,7 +1462,11 @@ export const addCharacters = (
       const currentHasSprites = sprites && sprites.length > 0;
       const previousContainerId =
         previousItemIndex >= 0
-          ? getCharacterContainerId(previousItem, previousItemIndex)
+          ? getCharacterContainerId(
+              previousItem,
+              previousItemIndex,
+              previousDuplicateCharacterIds,
+            )
           : undefined;
 
       if (
@@ -1471,7 +1503,11 @@ export const addCharacters = (
         continue;
       }
 
-      const containerId = getCharacterContainerId(item, i);
+      const containerId = getCharacterContainerId(
+        item,
+        i,
+        duplicateCharacterIds,
+      );
       const transform = resources.transforms[transformId];
       if (!transform) {
         console.warn("Transform not found:", transformId);

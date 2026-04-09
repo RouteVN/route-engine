@@ -51,7 +51,7 @@ out:
       y: 0
       children:
         - type: "container"
-          id: "character-container-char1-0-body-face"
+          id: "character-container-char1"
           x: 100
           y: 200
           anchorX: 0.5
@@ -61,14 +61,14 @@ out:
           scaleY: 1
           children:
             - type: "sprite"
-              id: "character-container-char1-0-body-face-body"
+              id: "character-container-char1-body"
               src: "body.png"
               width: 200
               height: 200
               x: 0
               y: 0
             - type: "sprite"
-              id: "character-container-char1-0-body-face-face"
+              id: "character-container-char1-face"
               src: "face.png"
               width: 200
               height: 200
@@ -128,7 +128,7 @@ out:
       y: 0
       children:
         - type: "container"
-          id: "character-container-char1-0-body"
+          id: "character-container-char1"
           x: 50
           y: 100
           anchorX: 0
@@ -138,7 +138,7 @@ out:
           scaleY: 1
           children:
             - type: "sprite"
-              id: "character-container-char1-0-body-body"
+              id: "character-container-char1-body"
               src: "body.png"
               width: 200
               height: 200
@@ -147,7 +147,7 @@ out:
   animations:
     - id: "character-animation-in"
       type: "transition"
-      targetId: "character-container-char1-0-body"
+      targetId: "character-container-char1"
       next:
         tween:
           alpha:
@@ -199,7 +199,7 @@ out:
   animations:
     - id: "character-animation-out"
       type: "transition"
-      targetId: "character-container-char1-0-body"
+      targetId: "character-container-char1"
       prev:
         tween:
           alpha:
@@ -260,7 +260,7 @@ out:
       y: 0
       children:
         - type: "container"
-          id: "character-container-char1-0-body"
+          id: "character-container-char1"
           x: 0
           y: 0
           anchorX: 0.5
@@ -270,7 +270,7 @@ out:
           scaleY: 1
           children:
             - type: "sprite"
-              id: "character-container-char1-0-body-body"
+              id: "character-container-char1-body"
               src: "body.png"
               width: 200
               height: 200
@@ -279,7 +279,7 @@ out:
   animations:
     - id: "character-animation-in"
       type: "transition"
-      targetId: "character-container-char1-0-body"
+      targetId: "character-container-char1"
       next:
         tween:
           alpha:
@@ -351,7 +351,7 @@ out:
       y: 0
       children:
         - type: "container"
-          id: "character-container-char1-0-body"
+          id: "character-container-char1"
           x: 0
           y: 0
           anchorX: 0.5
@@ -361,7 +361,7 @@ out:
           scaleY: 1
           children:
             - type: "sprite"
-              id: "character-container-char1-0-body-body"
+              id: "character-container-char1-body"
               src: "body.png"
               width: 200
               height: 200
@@ -370,7 +370,7 @@ out:
   animations:
     - id: "character-animation-update"
       type: "update"
-      targetId: "character-container-char1-0-body"
+      targetId: "character-container-char1"
       tween:
         scaleX:
           keyframes:
@@ -381,6 +381,120 @@ out:
           keyframes:
             - duration: 2000
               value: 2.2
+              easing: easeOutQuad
+---
+case: keep stable character target when swapping a sprite part on update
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      character:
+        items:
+          - id: "char1"
+            transformId: "transform1"
+            sprites:
+              - id: "body"
+                resourceId: "body"
+              - id: "face"
+                resourceId: "face-smile"
+            animations:
+              resourceId: "scaleUp"
+    previousPresentationState:
+      character:
+        items:
+          - id: "char1"
+            sprites:
+              - id: "body"
+                resourceId: "body"
+              - id: "face"
+                resourceId: "face-neutral"
+    resources:
+      transforms:
+        transform1:
+          x: 240
+          y: 320
+          anchorX: 0.5
+          anchorY: 1
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      images:
+        body:
+          fileId: "body.png"
+          width: 200
+          height: 300
+        face-neutral:
+          fileId: "face-neutral.png"
+          width: 200
+          height: 300
+        face-smile:
+          fileId: "face-smile.png"
+          width: 200
+          height: 300
+      animations:
+        scaleUp:
+          type: update
+          tween:
+            scaleX:
+              keyframes:
+                - duration: 600
+                  value: 1.1
+                  easing: easeOutQuad
+            scaleY:
+              keyframes:
+                - duration: 600
+                  value: 1.1
+                  easing: easeOutQuad
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - type: "container"
+          id: "character-container-char1"
+          x: 240
+          y: 320
+          anchorX: 0.5
+          anchorY: 1
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - type: "sprite"
+              id: "character-container-char1-body"
+              src: "body.png"
+              width: 200
+              height: 300
+              x: 0
+              y: 0
+            - type: "sprite"
+              id: "character-container-char1-face"
+              src: "face-smile.png"
+              width: 200
+              height: 300
+              x: 0
+              y: 0
+  animations:
+    - id: "character-animation-update"
+      type: "update"
+      targetId: "character-container-char1"
+      tween:
+        scaleX:
+          keyframes:
+            - duration: 600
+              value: 1.1
+              easing: easeOutQuad
+        scaleY:
+          keyframes:
+            - duration: 600
+              value: 1.1
               easing: easeOutQuad
 ---
 case: multiple characters with different sprites
@@ -446,7 +560,7 @@ out:
       y: 0
       children:
         - type: "container"
-          id: "character-container-char1-0-body-face"
+          id: "character-container-char1"
           x: 100
           y: 100
           anchorX: 0.5
@@ -456,21 +570,21 @@ out:
           scaleY: 1
           children:
             - type: "sprite"
-              id: "character-container-char1-0-body-face-body"
+              id: "character-container-char1-body"
               src: "char1_body.png"
               width: 200
               height: 200
               x: 0
               y: 0
             - type: "sprite"
-              id: "character-container-char1-0-body-face-face"
+              id: "character-container-char1-face"
               src: "char1_face.png"
               width: 200
               height: 200
               x: 0
               y: 0
         - type: "container"
-          id: "character-container-char2-1-body2"
+          id: "character-container-char2"
           x: 200
           y: 100
           anchorX: 0.5
@@ -480,10 +594,98 @@ out:
           scaleY: 1
           children:
             - type: "sprite"
-              id: "character-container-char2-1-body2-body2"
+              id: "character-container-char2-body2"
               src: "char2_body.png"
               width: 200
               height: 200
+              x: 0
+              y: 0
+  animations: []
+---
+case: keep legacy distinct ids when duplicate character ids are authored
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      character:
+        items:
+          - id: "char1"
+            transformId: "transform1"
+            sprites:
+              - id: "body"
+                resourceId: "body"
+          - id: "char1"
+            transformId: "transform2"
+            sprites:
+              - id: "body"
+                resourceId: "body"
+    resources:
+      transforms:
+        transform1:
+          x: 100
+          y: 100
+          anchorX: 0.5
+          anchorY: 1
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+        transform2:
+          x: 300
+          y: 100
+          anchorX: 0.5
+          anchorY: 1
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      images:
+        body:
+          fileId: "body.png"
+          width: 200
+          height: 300
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - type: "container"
+          id: "character-container-char1-0-body"
+          x: 100
+          y: 100
+          anchorX: 0.5
+          anchorY: 1
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - type: "sprite"
+              id: "character-container-char1-0-body-body"
+              src: "body.png"
+              width: 200
+              height: 300
+              x: 0
+              y: 0
+        - type: "container"
+          id: "character-container-char1-1-body"
+          x: 300
+          y: 100
+          anchorX: 0.5
+          anchorY: 1
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - type: "sprite"
+              id: "character-container-char1-1-body-body"
+              src: "body.png"
+              width: 200
+              height: 300
               x: 0
               y: 0
   animations: []
@@ -715,7 +917,7 @@ out:
       y: 0
       children:
         - type: "container"
-          id: "character-container-char1-0-body"
+          id: "character-container-char1"
           x: 500
           y: 200
           anchorX: 0.5
@@ -725,7 +927,7 @@ out:
           scaleY: 1
           children:
             - type: "sprite"
-              id: "character-container-char1-0-body-body"
+              id: "character-container-char1-body"
               src: "body.png"
               width: 200
               height: 200
@@ -774,7 +976,7 @@ out:
       y: 0
       children:
         - type: "container"
-          id: "character-container-char1-0-body"
+          id: "character-container-char1"
           x: 100
           y: 600
           anchorX: 0.5
@@ -784,7 +986,7 @@ out:
           scaleY: 1
           children:
             - type: "sprite"
-              id: "character-container-char1-0-body-body"
+              id: "character-container-char1-body"
               src: "body.png"
               width: 200
               height: 200
@@ -834,7 +1036,7 @@ out:
       y: 0
       children:
         - type: "container"
-          id: "character-container-char1-0-body"
+          id: "character-container-char1"
           x: 300
           y: 400
           anchorX: 0.5
@@ -844,7 +1046,7 @@ out:
           scaleY: 1
           children:
             - type: "sprite"
-              id: "character-container-char1-0-body-body"
+              id: "character-container-char1-body"
               src: "body.png"
               width: 200
               height: 200
@@ -893,7 +1095,7 @@ out:
       y: 0
       children:
         - type: "container"
-          id: "character-container-char1-0-body"
+          id: "character-container-char1"
           x: 0
           y: 200
           anchorX: 0.5
@@ -903,7 +1105,7 @@ out:
           scaleY: 1
           children:
             - type: "sprite"
-              id: "character-container-char1-0-body-body"
+              id: "character-container-char1-body"
               src: "body.png"
               width: 200
               height: 200

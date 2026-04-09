@@ -1,0 +1,116 @@
+---
+title: Character Sprite Parts Update
+description: |
+  Same-character sprite-part swaps should preserve the composed character target
+  so update animations still run on the container instead of degrading into a
+  replace path.
+specs:
+  - the initial screenshot should show one composed grayscale character with a neutral face
+  - advancing should swap only the face part while keeping the same character target
+  - the halfway screenshot should show the smiling face and an in-progress scale update
+  - the final screenshot should settle on the smiling face at the final scale
+steps:
+  - action: screenshot
+  - action: customEvent
+    name: vt:nextLine
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 300
+  - action: screenshot
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 300
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  controls:
+    base1:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: overlayColor
+  images:
+    parts-body:
+      fileId: character_parts_body
+      width: 620
+      height: 960
+    parts-face-neutral:
+      fileId: character_parts_face_neutral
+      width: 620
+      height: 960
+    parts-face-smile:
+      fileId: character_parts_face_smile
+      width: 620
+      height: 960
+  transforms:
+    center-stage:
+      x: 960
+      y: 1080
+      anchorX: 0.5
+      anchorY: 1
+  animations:
+    part-swap-scale:
+      name: Character Part Swap Scale
+      type: update
+      tween:
+        scaleX:
+          keyframes:
+            - duration: 600
+              value: 1.12
+              easing: linear
+        scaleY:
+          keyframes:
+            - duration: 600
+              value: 1.12
+              easing: linear
+  colors:
+    overlayColor:
+      hex: "#000000"
+story:
+  initialSceneId: characterPartsScene
+  scenes:
+    characterPartsScene:
+      name: Character Parts Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                control:
+                  resourceId: base1
+                character:
+                  items:
+                    - id: grayscale-hero
+                      transformId: center-stage
+                      sprites:
+                        - id: body
+                          resourceId: parts-body
+                        - id: face
+                          resourceId: parts-face-neutral
+            - id: line2
+              actions:
+                character:
+                  items:
+                    - id: grayscale-hero
+                      transformId: center-stage
+                      sprites:
+                        - id: body
+                          resourceId: parts-body
+                        - id: face
+                          resourceId: parts-face-smile
+                      animations:
+                        resourceId: part-swap-scale
