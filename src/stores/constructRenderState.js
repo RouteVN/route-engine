@@ -1311,7 +1311,8 @@ export const addBackgroundOrCg = (
     if (currentBackgroundResourceId) {
       const { images = {}, videos = {} } = resources;
       const background =
-        images[currentBackgroundResourceId] || videos[currentBackgroundResourceId];
+        images[currentBackgroundResourceId] ||
+        videos[currentBackgroundResourceId];
       if (background) {
         const isVideo = videos[currentBackgroundResourceId] !== undefined;
         const element = {
