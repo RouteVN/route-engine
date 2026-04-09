@@ -1,5 +1,8 @@
 import { parse } from "https://cdn.jsdelivr.net/npm/yaml@2.7.1/+esm";
-import createRouteEngine, { createEffectsHandler } from "./RouteEngine.js";
+import createRouteEngine, {
+  createEffectsHandler,
+  createIndexedDbPersistence,
+} from "./RouteEngine.js";
 import { Ticker } from "https://cdn.jsdelivr.net/npm/pixi.js@8.0.0/+esm";
 import { createSaveThumbnailAssetId } from "./saveSlotUtils.js";
 
@@ -19,6 +22,7 @@ import createRouteGraphics, {
 } from "./RouteGraphics.js";
 
 const projectData = parse(window.yamlContent);
+const namespace = `vt:${window.location.pathname}`;
 
 const init = async () => {
   const screenWidth = projectData?.screen?.width ?? 1920;
@@ -183,9 +187,14 @@ const init = async () => {
     }
     return bytes.buffer;
   };
+  const persistence = createIndexedDbPersistence({ namespace });
+  const { saveSlots, globalDeviceVariables, globalAccountVariables } =
+    await persistence.load();
+
   let engine;
   const effectsHandler = createEffectsHandler({
     getEngine: () => engine,
+    persistence,
     routeGraphics: {
       render: (renderState) => {
         routeGraphics.render(renderState);
@@ -262,13 +271,9 @@ const init = async () => {
   });
 
   engine = createRouteEngine({ handlePendingEffects: effectsHandler });
-  const saveSlots = JSON.parse(localStorage.getItem("saveSlots")) || {};
-  const globalDeviceVariables =
-    JSON.parse(localStorage.getItem("globalDeviceVariables")) || {};
-  const globalAccountVariables =
-    JSON.parse(localStorage.getItem("globalAccountVariables")) || {};
 
   engine.init({
+    namespace,
     initialState: {
       global: {
         saveSlots,
@@ -279,6 +284,8 @@ const init = async () => {
   });
 
   window.__vtEngine = engine;
+  window.__vtPersistence = persistence;
+  window.__vtNamespace = persistence.namespace;
 
   window.addEventListener("vt:nextLine", () => {
     engine.handleActions({

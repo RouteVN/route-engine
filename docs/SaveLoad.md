@@ -235,12 +235,12 @@ Current behavior:
 
 - `saveSlot` mutates `state.global.saveSlots`
 - then it emits a `saveSlots` effect
-- the effect handler persists the full slot map to `localStorage`
+- the built-in browser persistence helper persists the full slot map to IndexedDB
 
 Load is different:
 
 - `loadSlot` only restores in-memory engine state from `state.global.saveSlots`
-- it does not read `localStorage` itself
+- it does not read IndexedDB itself
 
 ### Dynamic Slot Selection
 
@@ -389,6 +389,7 @@ The host app is responsible for:
 
 - hydrating `initialState.global.saveSlots` from durable storage before engine init
 - hydrating persistent global variables before engine init
+- choosing and reusing a per-VN `namespace` during persistence hydration and `engine.init(...)`
 - providing thumbnail image payloads when a save action wants one
 - mapping dynamic UI/event data into the action `slotId` field when save/load is triggered from generated UI
 - executing storage effects emitted by the engine
@@ -466,7 +467,7 @@ Current save flow:
 
 The store writes to the in-memory slot map first.
 
-Persistence to `localStorage` happens later through the effect handler.
+Persistence to IndexedDB happens later through the effect handler.
 
 ### Load Flow
 
