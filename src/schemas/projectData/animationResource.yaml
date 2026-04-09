@@ -192,7 +192,7 @@ properties:
   type:
     type: string
     enum: [update, transition]
-    description: Animation structure. Legacy `live` and `replace` payloads are normalized during render-state construction, but authored project data should use `update` and `transition`.
+    description: Animation structure. Only `update` and `transition` are supported.
   complete:
     type: object
     properties:

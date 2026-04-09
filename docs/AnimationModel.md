@@ -2,10 +2,8 @@
 
 ## Status
 
-This note records the intended animation model and authoring direction.
-
-Some current engine schema and fixtures still expose `in/out/update` fields.
-Those are compatibility shapes. The target design is the one described below.
+This note records the current animation model and the background-specific
+behavior implemented in the engine.
 
 ## Decision
 
@@ -22,7 +20,7 @@ There are only two structural animation kinds:
 
 `in`, `out`, and `replace` are not separate structural types. They are semantic cases of `transition`.
 
-At the engine authoring layer, the direction is to converge on a single animation reference:
+At the engine authoring layer, animations use a single reference:
 
 ```yaml
 background:
@@ -36,11 +34,13 @@ The referenced animation resource declares the structural type through its own `
 - `type: update`
 - `type: transition`
 
-That means the engine does not need separate author-facing fields like:
+Legacy resource types such as `live` and `replace` are not supported.
+
+The legacy wrapper fields are no longer supported:
 
 - `animations.in.resourceId`
 - `animations.out.resourceId`
-- `animations.replace.resourceId`
+- `animations.update.resourceId`
 
 ## Motivation
 
@@ -68,6 +68,55 @@ In practice:
 
 If a `transition` resolves to the same compatible visual subject on both sides, the runtime may optimize execution into a single-subject tween. That is an execution optimization, not a separate authoring concept.
 
+## Current Background Behavior
+
+Background animation dispatch is based on resolved presentation state, not only
+the raw action shape.
+
+### Animations-only background actions
+
+If a line provides:
+
+```yaml
+background:
+  animations:
+    resourceId: bg-slide-out
+```
+
+and a background already exists in presentation state, the engine resolves the
+next background as:
+
+- same `resourceId` as the currently resolved background
+- updated `animations`
+
+That means this shape means "animate the current background from state", not
+"remove the background".
+
+### Same-subject transitions
+
+Because the comparison is done against resolved previous and next presentation
+state:
+
+- repeating the same `background.resourceId` with a `transition` animates
+- omitting `background.resourceId` and providing only `background.animations`
+  still animates if the background persists from state
+
+For persisted backgrounds, the runtime treats the resolved subject as both the
+`prev` and `next` side of the `transition`.
+
+### Background update fallback
+
+Background currently has one narrow compatibility fallback:
+
+- if the referenced animation resource is `type: update`
+- and the resolved lifecycle is not true `update`
+- and there is an incoming background target
+
+the engine animates the incoming background target instead of throwing.
+
+This fallback exists for background enter/replace handling only. It should be
+treated as compatibility behavior, not the general rule for all element types.
+
 ## State Rule
 
 Animation-only values are not written back into stored presentation state.
@@ -84,6 +133,11 @@ On completion:
 - `update` commits the authored next state
 - `transition` commits the authored next state if `next` exists
 - `transition` commits removal if `next` does not exist
+
+For backgrounds specifically, an animations-only action may still resolve to a
+persistent next background state if the previous presentation state already has
+one. In that case the persisted `resourceId` comes from state resolution, not
+from animation transforms being written back.
 
 ## Consequences
 

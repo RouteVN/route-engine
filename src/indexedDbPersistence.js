@@ -196,6 +196,70 @@ const writeNamespaceRecord = async ({
   });
 };
 
+const clearNamespaceRecord = async ({
+  databasePromise,
+  objectStoreName,
+  namespace,
+}) => {
+  const database = await databasePromise;
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(objectStoreName, "readwrite");
+    const store = transaction.objectStore(objectStoreName);
+    const deleteRequest = store.delete(namespace);
+    let settled = false;
+
+    const rejectOnce = (error) => {
+      if (settled) {
+        return;
+      }
+
+      settled = true;
+      reject(error);
+    };
+
+    const resolveOnce = () => {
+      if (settled) {
+        return;
+      }
+
+      settled = true;
+      resolve();
+    };
+
+    deleteRequest.onerror = () => {
+      rejectOnce(
+        deleteRequest.error ??
+          new Error(
+            `Failed to clear persisted namespace "${namespace}" from IndexedDB.`,
+          ),
+      );
+    };
+
+    transaction.oncomplete = () => {
+      resolveOnce();
+    };
+
+    transaction.onerror = () => {
+      rejectOnce(
+        transaction.error ??
+          new Error(
+            `IndexedDB transaction failed while clearing namespace "${namespace}".`,
+          ),
+      );
+    };
+
+    transaction.onabort = () => {
+      rejectOnce(
+        transaction.error ??
+          new Error(
+            `IndexedDB transaction aborted while clearing namespace "${namespace}".`,
+          ),
+      );
+    };
+  });
+};
+
 export const createIndexedDbPersistence = (options = {}) => {
   const {
     indexedDB: indexedDBOverride,
@@ -226,6 +290,12 @@ export const createIndexedDbPersistence = (options = {}) => {
         ...normalizePersistedState(record),
       };
     },
+    clear: async () =>
+      clearNamespaceRecord({
+        databasePromise,
+        objectStoreName,
+        namespace: resolvedNamespace,
+      }),
     saveSlots: async (saveSlots) =>
       writeNamespaceRecord({
         databasePromise,

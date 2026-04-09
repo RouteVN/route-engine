@@ -1,6 +1,6 @@
 {
   "name": "route-engine-js",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "description": "A lightweight Visual Novel engine built in JavaScript for creating interactive narrative games with branching storylines",
   "repository": {
     "type": "git",
@@ -45,7 +45,7 @@
     "vt:docker": "bun scripts/sync-vt-route-graphics.js && bun run esbuild.js && docker run --rm ${VT_DOCKER_ARGS:-} --user $(id -u):$(id -g) -e RTGL_VT_DEBUG=true -v \"$PWD:/app\" -w /app docker.io/han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.10 rtgl vt screenshot --wait-event vt:ready --concurrency ${VT_DOCKER_CONCURRENCY:-2} --timeout ${VT_DOCKER_TIMEOUT:-60000}",
     "vt:report": "bun run vt:docker && rtgl vt report --diff-threshold ${VT_REPORT_DIFF_THRESHOLD:-0.8}",
     "vt:accept": "rtgl vt accept",
-    "serve": "bun run esbuild.js && bunx serve -p 3004 .rettangoli/vt/_site"
+    "serve": "bun run vt:generate && bunx serve -p 3004 .rettangoli/vt/_site"
   },
   "dependencies": {
     "immer": "^10.1.1",

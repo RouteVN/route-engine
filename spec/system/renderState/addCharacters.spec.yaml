@@ -76,7 +76,7 @@ out:
               y: 0
   animations: []
 ---
-case: add character with in animation
+case: add character with single transition animation reference
 in:
   - elements:
       - id: "story"
@@ -94,8 +94,7 @@ in:
               - id: "body"
                 resourceId: "body"
             animations:
-              in:
-                resourceId: "fadeIn"
+              resourceId: "fadeIn"
     resources:
       transforms:
         transform1:
@@ -157,7 +156,7 @@ out:
               - duration: 500
                 value: 1
 ---
-case: add character with out animation only (no container created)
+case: add character with transition animation on removal (no container created)
 in:
   - elements:
       - id: "story"
@@ -171,8 +170,7 @@ in:
         items:
           - id: "char1"
             animations:
-              out:
-                resourceId: "fadeOut"
+              resourceId: "fadeOut"
     previousPresentationState:
       character:
         items:
@@ -210,7 +208,7 @@ out:
               - duration: 300
                 value: 0
 ---
-case: add character with in animation (new character)
+case: add character with single transition animation reference (new character)
 in:
   - elements:
       - id: "story"
@@ -228,8 +226,7 @@ in:
               - id: "body"
                 resourceId: "body"
             animations:
-              in:
-                resourceId: "fadeIn"
+              resourceId: "fadeIn"
     resources:
       transforms:
         transform1:
@@ -291,7 +288,7 @@ out:
               - duration: 500
                 value: 1
 ---
-case: add character update animation with final tween properties
+case: add character update animation with single reference and final tween properties
 in:
   - elements:
       - id: "story"
@@ -309,8 +306,7 @@ in:
               - id: "body"
                 resourceId: "body"
             animations:
-              update:
-                resourceId: "scaleUp"
+              resourceId: "scaleUp"
     previousPresentationState:
       character:
         items:

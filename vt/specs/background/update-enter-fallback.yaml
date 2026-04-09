@@ -40,8 +40,8 @@ resources:
                 nextLine: {}
           colorId: overlayColor
   images:
-    bg-door:
-      fileId: lakjf3lka
+    bg-forest:
+      fileId: dmni32
       width: 1920
       height: 1080
   animations:
@@ -80,6 +80,6 @@ story:
             - id: line2
               actions:
                 background:
-                  resourceId: bg-door
+                  resourceId: bg-forest
                   animations:
                     resourceId: bg-update-fade-in

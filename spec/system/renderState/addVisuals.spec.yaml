@@ -98,7 +98,7 @@ in:
       transforms: {}
 throws: 'Transform "missing" not found for visual item "visual1"'
 ---
-case: add visual with in animation
+case: add visual with single transition animation reference
 in:
   - elements:
       - id: "story"
@@ -115,8 +115,7 @@ in:
             resourceId: "image1"
             transformId: "transform1"
             animations:
-              in:
-                resourceId: "fadeIn"
+              resourceId: "fadeIn"
     resources:
       images:
         image1:
@@ -170,7 +169,7 @@ out:
                 value: 1
   audio: []
 ---
-case: add visual with out animation
+case: add visual with transition animation on removal
 in:
   - elements:
       - id: "story"
@@ -185,7 +184,7 @@ in:
         items:
           - id: "visual1"
             animations:
-              out: "fadeOut"
+              resourceId: "fadeOut"
     previousPresentationState:
       visual:
         items:
@@ -222,7 +221,7 @@ out:
                 value: 0
   audio: []
 ---
-case: add visual with in animation (no previous state)
+case: add visual with single transition animation reference (no previous state)
 in:
   - elements:
       - id: "story"
@@ -239,8 +238,7 @@ in:
             resourceId: "image1"
             transformId: "transform1"
             animations:
-              in:
-                resourceId: "slideIn"
+              resourceId: "slideIn"
     resources:
       images:
         image1:
@@ -740,7 +738,7 @@ out:
   animations: []
   audio: []
 ---
-case: add visual layout with in animation
+case: add visual layout with single transition animation reference
 in:
   - elements:
       - id: "story"
@@ -757,8 +755,7 @@ in:
             resourceId: "overlayLayout"
             transformId: "transform1"
             animations:
-              in:
-                resourceId: "fadeIn"
+              resourceId: "fadeIn"
     resources:
       layouts:
         overlayLayout:
