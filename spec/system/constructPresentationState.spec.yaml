@@ -197,6 +197,19 @@ out:
     content:
       - text: "Hello!"
 ---
+case: preserve existing background resource when next line only adds animations
+in:
+  - - background:
+        resourceId: "bg-school"
+    - background:
+        animations:
+          resourceId: "fade-in"
+out:
+  background:
+    resourceId: "bg-school"
+    animations:
+      resourceId: "fade-in"
+---
 case: clear animations across multiple lines
 in:
   - - background:

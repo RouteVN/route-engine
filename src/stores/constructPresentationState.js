@@ -64,7 +64,12 @@ export const background = (state, presentation) => {
     );
 
     if (animationsOnly) {
-      state.background = animState;
+      state.background = state.background?.resourceId
+        ? {
+            ...structuredClone(state.background),
+            ...animState,
+          }
+        : animState;
       return;
     }
 

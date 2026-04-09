@@ -1,14 +1,15 @@
 ---
 title: Background Transition Exit With Both Sides
 description: |
-  Background image exiting to transparency with a transition resource that
+  Background image animating in place with a transition resource that
   defines both prev and next alpha tweens.
 
-  Only the prev side should matter for this exit lifecycle.
+  When the same background still resolves from state, the transition should
+  run against that single persisted background target.
 specs:
-  - background exit should tolerate transition resources that also define next
+  - background should tolerate transition resources that define both prev and next without repeating resourceId
   - the background should be partially visible halfway through the transition
-  - the background should be fully cleared after the transition completes
+  - the background should remain resolved from state after the transition completes
 steps:
   - action: customEvent
     name: vt:nextLine

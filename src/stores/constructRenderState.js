@@ -1096,6 +1096,7 @@ const pushAnimations = ({
   currentTargetId,
   animationPath,
   idPrefix,
+  allowIncomingUpdateFallback = false,
 }) => {
   if (!animationsDef) return;
 
@@ -1180,13 +1181,21 @@ const pushAnimations = ({
   const animationId = resolveAnimationResourceId(animationsDef);
   const animation = resources?.animations?.[animationId];
   const animationType = getAnimationType(animation);
+  const canFallbackIncomingUpdate =
+    allowIncomingUpdateFallback &&
+    animationType === "update" &&
+    lifecycle !== "update" &&
+    hasCurrent &&
+    currentTargetId;
 
-  assertUpdateAnimationLifecycle({
-    animationType,
-    animationId,
-    animationPath,
-    lifecycle,
-  });
+  if (!canFallbackIncomingUpdate) {
+    assertUpdateAnimationLifecycle({
+      animationType,
+      animationId,
+      animationPath,
+      lifecycle,
+    });
+  }
 
   if (animationType === "update") {
     if (
@@ -1195,6 +1204,14 @@ const pushAnimations = ({
       previousResourceId === currentResourceId &&
       sharedTarget
     ) {
+      pushAnimationInstance({
+        animations,
+        resources,
+        animationId,
+        instanceId: `${idPrefix}-animation-update`,
+        targetId: currentTargetId,
+      });
+    } else if (canFallbackIncomingUpdate) {
       pushAnimationInstance({
         animations,
         resources,
@@ -1283,16 +1300,22 @@ export const addBackgroundOrCg = (
       return state;
     }
 
-    if (presentationState.background.resourceId) {
+    const previousBackgroundResourceId =
+      previousPresentationState?.background?.resourceId;
+    const currentBackgroundResourceId =
+      presentationState.background.resourceId ??
+      (presentationState.background.animations
+        ? previousBackgroundResourceId
+        : undefined);
+
+    if (currentBackgroundResourceId) {
       const { images = {}, videos = {} } = resources;
       const background =
-        images[presentationState.background.resourceId] ||
-        videos[presentationState.background.resourceId];
+        images[currentBackgroundResourceId] || videos[currentBackgroundResourceId];
       if (background) {
-        const isVideo =
-          videos[presentationState.background.resourceId] !== undefined;
+        const isVideo = videos[currentBackgroundResourceId] !== undefined;
         const element = {
-          id: `bg-cg-${presentationState.background.resourceId}`,
+          id: `bg-cg-${currentBackgroundResourceId}`,
           type: isVideo ? "video" : "sprite",
           x: 0,
           y: 0,
@@ -1316,12 +1339,12 @@ export const addBackgroundOrCg = (
       }
     }
 
-    if (presentationState.background.resourceId) {
+    if (currentBackgroundResourceId) {
       const { layouts = {} } = resources;
-      const layout = layouts[presentationState.background.resourceId];
+      const layout = layouts[currentBackgroundResourceId];
       if (layout) {
         const bgContainer = {
-          id: `bg-cg-${presentationState.background.resourceId}`,
+          id: `bg-cg-${currentBackgroundResourceId}`,
           type: "container",
           children: layout.elements,
         };
@@ -1356,24 +1379,21 @@ export const addBackgroundOrCg = (
       !isLineCompleted &&
       !skipTransitionsAndAnimations
     ) {
-      const previousResourceId =
-        previousPresentationState?.background?.resourceId;
-      const currentResourceId = presentationState.background.resourceId;
-
       pushAnimations({
         animations,
         animationsDef: presentationState.background.animations,
         resources,
-        previousResourceId,
-        currentResourceId,
-        previousTargetId: previousResourceId
-          ? `bg-cg-${previousResourceId}`
+        previousResourceId: previousBackgroundResourceId,
+        currentResourceId: currentBackgroundResourceId,
+        previousTargetId: previousBackgroundResourceId
+          ? `bg-cg-${previousBackgroundResourceId}`
           : undefined,
-        currentTargetId: currentResourceId
-          ? `bg-cg-${currentResourceId}`
+        currentTargetId: currentBackgroundResourceId
+          ? `bg-cg-${currentBackgroundResourceId}`
           : undefined,
         animationPath: "background.animations",
         idPrefix: "bg-cg",
+        allowIncomingUpdateFallback: true,
       });
     }
   }

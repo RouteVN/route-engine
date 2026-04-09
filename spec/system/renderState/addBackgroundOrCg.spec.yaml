@@ -745,27 +745,14 @@ out:
               - duration: 500
                 value: 1
 ---
-case: remove background with transition animation reference that defines both prev and next
+case: animate persisted background with transition animation reference when resourceId is omitted
 in:
   - elements:
       - id: "story"
         type: "container"
         x: 0
         y: 0
-        children:
-          - id: "bg-cg-bg1"
-            type: "sprite"
-            alpha: 1
-            anchorX: 0
-            anchorY: 0
-            rotation: 0
-            scaleX: 1
-            scaleY: 1
-            x: 0
-            y: 0
-            src: "image1.png"
-            width: 1920
-            height: 1080
+        children: []
     animations: []
   - presentationState:
       background:
@@ -818,7 +805,7 @@ out:
           width: 1920
           height: 1080
   animations:
-    - id: "bg-cg-animation-out"
+    - id: "bg-cg-animation-transition"
       type: "transition"
       targetId: "bg-cg-bg1"
       prev:
@@ -899,7 +886,7 @@ out:
             - duration: 250
               value: 1
 ---
-case: throw when single update animation reference is used for background enter
+case: animate incoming background when single update animation reference is used on enter
 in:
   - elements:
       - id: "story"
@@ -928,7 +915,36 @@ in:
               keyframes:
                 - duration: 500
                   value: 1
-throws: '[background.animations] Animation "fadeIn" has type "update", but update animations can only be used when the same target persists across the state change. Use type "transition" for enter, exit, and replace.'
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "bg-cg-bg1"
+          type: "sprite"
+          alpha: 1
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          x: 0
+          y: 0
+          src: "image1.png"
+          width: 1920
+          height: 1080
+  animations:
+    - id: "bg-cg-animation-update"
+      type: "update"
+      targetId: "bg-cg-bg1"
+      tween:
+        alpha:
+          initialValue: 0
+          keyframes:
+            - duration: 500
+              value: 1
 ---
 case: throw when legacy background in animation references update type
 in:

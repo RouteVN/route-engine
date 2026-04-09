@@ -1,10 +1,10 @@
 ---
 title: Background Transition Tween Out
-description: Background image exiting to transparency with a transition tween.
+description: Background image animating with a transition tween while the same background persists in state.
 specs:
-  - background out should accept transition-type animation resources
+  - background should accept transition-type animation resources without repeating resourceId
   - the background should be partially moved offscreen halfway through the transition
-  - the background should be fully cleared after the transition completes
+  - the background should remain resolved from state after the transition completes
 steps:
   - action: customEvent
     name: vt:nextLine
