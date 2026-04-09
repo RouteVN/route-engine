@@ -390,6 +390,7 @@ The host app is responsible for:
 - hydrating `initialState.global.saveSlots` from durable storage before engine init
 - hydrating persistent global variables before engine init
 - choosing and reusing a per-VN `namespace` during persistence hydration and `engine.init(...)`
+- calling `createIndexedDbPersistence({ namespace }).clear()` when the host wants to wipe one VN's persisted data
 - providing thumbnail image payloads when a save action wants one
 - mapping dynamic UI/event data into the action `slotId` field when save/load is triggered from generated UI
 - executing storage effects emitted by the engine

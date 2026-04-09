@@ -100,31 +100,46 @@ const expandLoopTemplates = (node, templateData, options) => {
   return expanded;
 };
 
-const LEGACY_ANIMATION_TYPE_MAP = {
-  live: "update",
-  replace: "transition",
-};
-
-const cloneAndNormalizeAnimation = (animation) => {
-  const normalized = structuredClone(animation);
-
-  if (typeof normalized.type === "string") {
-    normalized.type =
-      LEGACY_ANIMATION_TYPE_MAP[normalized.type] || normalized.type;
+const assertSupportedAnimationType = ({
+  animationType,
+  animationId,
+  animationPath,
+}) => {
+  if (animationType === undefined) {
+    return;
   }
 
-  return normalized;
+  if (animationType === "update" || animationType === "transition") {
+    return;
+  }
+
+  throw new Error(
+    `[${animationPath}] Animation "${animationId}" has unsupported type "${animationType}". Use "update" or "transition".`,
+  );
 };
 
-const createAnimationInstance = ({ id, targetId, animation }) => {
-  const normalized = cloneAndNormalizeAnimation(animation);
+const createAnimationInstance = ({
+  id,
+  targetId,
+  animation,
+  animationPath = "animation",
+}) => {
+  const normalized = structuredClone(animation);
+  assertSupportedAnimationType({
+    animationType: normalized.type,
+    animationId: id,
+    animationPath,
+  });
   delete normalized.name;
   normalized.id = id;
   normalized.targetId = targetId;
   return normalized;
 };
 
-const getAnimationType = (animation) => {
+const getAnimationType = (
+  animation,
+  { animationId = "animation", animationPath = "animation" } = {},
+) => {
   if (!animation || typeof animation !== "object" || Array.isArray(animation)) {
     return undefined;
   }
@@ -133,7 +148,13 @@ const getAnimationType = (animation) => {
     return undefined;
   }
 
-  return LEGACY_ANIMATION_TYPE_MAP[animation.type] || animation.type;
+  assertSupportedAnimationType({
+    animationType: animation.type,
+    animationId,
+    animationPath,
+  });
+
+  return animation.type;
 };
 
 const resolveAnimationResourceId = (animationDef) => {
@@ -166,12 +187,26 @@ const hasLegacyAnimationLifecycleConfig = (animationsDef) => {
   );
 };
 
+const assertNoLegacyAnimationLifecycleConfig = (
+  animationsDef,
+  animationPath,
+) => {
+  if (!hasLegacyAnimationLifecycleConfig(animationsDef)) {
+    return;
+  }
+
+  throw new Error(
+    `[${animationPath}] Legacy animations.in/out/update is no longer supported. Use a single animations.resourceId reference.`,
+  );
+};
+
 const pushAnimationInstance = ({
   animations,
   resources,
   animationId,
   instanceId,
   targetId,
+  animationPath = "animation",
 }) => {
   if (!animationId || !targetId) {
     return false;
@@ -187,6 +222,7 @@ const pushAnimationInstance = ({
       id: instanceId,
       targetId,
       animation,
+      animationPath,
     }),
   );
 
@@ -234,12 +270,20 @@ const assertUpdateAnimationLifecycle = ({
   );
 };
 
-const cloneAnimation = (animation, { defaultTargetId, defaultId } = {}) => {
+const cloneAnimation = (
+  animation,
+  { defaultTargetId, defaultId, animationPath = "animation" } = {},
+) => {
   if (!animation || typeof animation !== "object" || Array.isArray(animation)) {
     return animation;
   }
 
-  const normalized = cloneAndNormalizeAnimation(animation);
+  const normalized = structuredClone(animation);
+  assertSupportedAnimationType({
+    animationType: normalized.type,
+    animationId: normalized.id ?? defaultId,
+    animationPath,
+  });
   normalized.id ??= defaultId;
   normalized.targetId ??= defaultTargetId;
   return normalized;
@@ -250,12 +294,14 @@ const pushNormalizedLayoutTransitions = ({
   transitions,
   defaultTargetId,
   idPrefix,
+  animationPathPrefix = idPrefix,
 }) => {
   transitions.forEach((transition, index) => {
     animations.push(
       cloneAnimation(transition, {
         defaultTargetId,
         defaultId: `${idPrefix}-transition-${index}`,
+        animationPath: `${animationPathPrefix}.transitions[${index}]`,
       }),
     );
   });
@@ -1096,6 +1142,7 @@ const pushAnimations = ({
   currentTargetId,
   animationPath,
   idPrefix,
+  allowIncomingUpdateFallback = false,
 }) => {
   if (!animationsDef) return;
 
@@ -1117,76 +1164,29 @@ const pushAnimations = ({
     sharedTarget,
   });
 
-  if (hasLegacyAnimationLifecycleConfig(animationsDef)) {
-    if (animationsDef.in && !hasPrevious) {
-      const animationId = resolveAnimationResourceId(animationsDef.in);
-      assertUpdateAnimationLifecycle({
-        animationType: getAnimationType(resources?.animations?.[animationId]),
-        animationId,
-        animationPath: `${animationPath}.in`,
-        lifecycle: "enter",
-      });
-
-      pushAnimationInstance({
-        animations,
-        resources,
-        animationId,
-        instanceId: `${idPrefix}-animation-in`,
-        targetId: currentTargetId,
-      });
-    }
-
-    if (
-      animationsDef.out &&
-      hasPrevious &&
-      previousResourceId !== currentResourceId
-    ) {
-      const animationId = resolveAnimationResourceId(animationsDef.out);
-      assertUpdateAnimationLifecycle({
-        animationType: getAnimationType(resources?.animations?.[animationId]),
-        animationId,
-        animationPath: `${animationPath}.out`,
-        lifecycle: "exit",
-      });
-
-      pushAnimationInstance({
-        animations,
-        resources,
-        animationId,
-        instanceId: `${idPrefix}-animation-out`,
-        targetId: previousTargetId,
-      });
-    }
-
-    if (
-      animationsDef.update &&
-      hasPrevious &&
-      hasCurrent &&
-      previousResourceId === currentResourceId &&
-      sharedTarget
-    ) {
-      pushAnimationInstance({
-        animations,
-        resources,
-        animationId: resolveAnimationResourceId(animationsDef.update),
-        instanceId: `${idPrefix}-animation-update`,
-        targetId: currentTargetId,
-      });
-    }
-
-    return;
-  }
+  assertNoLegacyAnimationLifecycleConfig(animationsDef, animationPath);
 
   const animationId = resolveAnimationResourceId(animationsDef);
   const animation = resources?.animations?.[animationId];
-  const animationType = getAnimationType(animation);
-
-  assertUpdateAnimationLifecycle({
-    animationType,
+  const animationType = getAnimationType(animation, {
     animationId,
     animationPath,
-    lifecycle,
   });
+  const canFallbackIncomingUpdate =
+    allowIncomingUpdateFallback &&
+    animationType === "update" &&
+    lifecycle !== "update" &&
+    hasCurrent &&
+    currentTargetId;
+
+  if (!canFallbackIncomingUpdate) {
+    assertUpdateAnimationLifecycle({
+      animationType,
+      animationId,
+      animationPath,
+      lifecycle,
+    });
+  }
 
   if (animationType === "update") {
     if (
@@ -1201,6 +1201,16 @@ const pushAnimations = ({
         animationId,
         instanceId: `${idPrefix}-animation-update`,
         targetId: currentTargetId,
+        animationPath,
+      });
+    } else if (canFallbackIncomingUpdate) {
+      pushAnimationInstance({
+        animations,
+        resources,
+        animationId,
+        instanceId: `${idPrefix}-animation-update`,
+        targetId: currentTargetId,
+        animationPath,
       });
     }
 
@@ -1215,6 +1225,7 @@ const pushAnimations = ({
         animationId,
         instanceId: `${idPrefix}-animation-transition`,
         targetId: currentTargetId,
+        animationPath,
       });
 
       return;
@@ -1227,6 +1238,7 @@ const pushAnimations = ({
         animationId,
         instanceId: `${idPrefix}-animation-out`,
         targetId: previousTargetId,
+        animationPath,
       });
     }
 
@@ -1237,6 +1249,7 @@ const pushAnimations = ({
         animationId,
         instanceId: `${idPrefix}-animation-in`,
         targetId: currentTargetId,
+        animationPath,
       });
     }
   }
@@ -1283,16 +1296,23 @@ export const addBackgroundOrCg = (
       return state;
     }
 
-    if (presentationState.background.resourceId) {
+    const previousBackgroundResourceId =
+      previousPresentationState?.background?.resourceId;
+    const currentBackgroundResourceId =
+      presentationState.background.resourceId ??
+      (presentationState.background.animations
+        ? previousBackgroundResourceId
+        : undefined);
+
+    if (currentBackgroundResourceId) {
       const { images = {}, videos = {} } = resources;
       const background =
-        images[presentationState.background.resourceId] ||
-        videos[presentationState.background.resourceId];
+        images[currentBackgroundResourceId] ||
+        videos[currentBackgroundResourceId];
       if (background) {
-        const isVideo =
-          videos[presentationState.background.resourceId] !== undefined;
+        const isVideo = videos[currentBackgroundResourceId] !== undefined;
         const element = {
-          id: `bg-cg-${presentationState.background.resourceId}`,
+          id: `bg-cg-${currentBackgroundResourceId}`,
           type: isVideo ? "video" : "sprite",
           x: 0,
           y: 0,
@@ -1316,12 +1336,12 @@ export const addBackgroundOrCg = (
       }
     }
 
-    if (presentationState.background.resourceId) {
+    if (currentBackgroundResourceId) {
       const { layouts = {} } = resources;
-      const layout = layouts[presentationState.background.resourceId];
+      const layout = layouts[currentBackgroundResourceId];
       if (layout) {
         const bgContainer = {
-          id: `bg-cg-${presentationState.background.resourceId}`,
+          id: `bg-cg-${currentBackgroundResourceId}`,
           type: "container",
           children: layout.elements,
         };
@@ -1356,24 +1376,21 @@ export const addBackgroundOrCg = (
       !isLineCompleted &&
       !skipTransitionsAndAnimations
     ) {
-      const previousResourceId =
-        previousPresentationState?.background?.resourceId;
-      const currentResourceId = presentationState.background.resourceId;
-
       pushAnimations({
         animations,
         animationsDef: presentationState.background.animations,
         resources,
-        previousResourceId,
-        currentResourceId,
-        previousTargetId: previousResourceId
-          ? `bg-cg-${previousResourceId}`
+        previousResourceId: previousBackgroundResourceId,
+        currentResourceId: currentBackgroundResourceId,
+        previousTargetId: previousBackgroundResourceId
+          ? `bg-cg-${previousBackgroundResourceId}`
           : undefined,
-        currentTargetId: currentResourceId
-          ? `bg-cg-${currentResourceId}`
+        currentTargetId: currentBackgroundResourceId
+          ? `bg-cg-${currentBackgroundResourceId}`
           : undefined,
         animationPath: "background.animations",
         idPrefix: "bg-cg",
+        allowIncomingUpdateFallback: true,
       });
     }
   }
@@ -2131,6 +2148,7 @@ export const addLayout = (
         transitions: layout.transitions,
         defaultTargetId: `layout-${presentationState.layout.resourceId}`,
         idPrefix: `layout-${presentationState.layout.resourceId}`,
+        animationPathPrefix: "layout",
       });
     }
 
@@ -2226,6 +2244,7 @@ export const addLayeredViews = (
             transitions: layout.transitions,
             defaultTargetId: `layeredView-${index}`,
             idPrefix: `layeredView-${index}`,
+            animationPathPrefix: `layeredViews[${index}]`,
           });
         }
       }
@@ -2332,6 +2351,7 @@ export const addConfirmDialog = (
       transitions: layout.transitions,
       defaultTargetId: "confirmDialog",
       idPrefix: "confirmDialog",
+      animationPathPrefix: "confirmDialog",
     });
   }
 

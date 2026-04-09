@@ -1,10 +1,12 @@
 ---
-title: Background Transition Mask Out
-description: Background image animating with a mask-driven transition while the same background persists in state.
+title: Background Update Enter Fallback
+description: |
+  Background enter should animate the incoming image even when the referenced
+  animation resource is typed as `update`.
 specs:
-  - background should accept transition-type animation resources without repeating resourceId
-  - the mask should partially remove the background halfway through the transition
-  - the background should remain resolved from state after the transition completes
+  - background enter should animate the incoming image for update-type animation resources
+  - the background should be partially visible halfway through the update tween
+  - the background should be fully visible after the update tween completes
 steps:
   - action: customEvent
     name: vt:nextLine
@@ -38,24 +40,26 @@ resources:
                 nextLine: {}
           colorId: overlayColor
   images:
-    bg-door:
-      fileId: lakjf3lka
+    bg-forest:
+      fileId: dmni32
       width: 1920
       height: 1080
   animations:
-    bg-mask-out:
-      name: Background Mask Out
-      type: transition
-      mask:
-        kind: single
-        texture: mask-diagonal
-        channel: red
-        softness: 0.06
-        progress:
+    bg-update-fade-in:
+      name: Background Update Fade In
+      type: update
+      tween:
+        alpha:
           initialValue: 0
           keyframes:
             - duration: 1000
               value: 1
+              easing: linear
+        x:
+          initialValue: 1920
+          keyframes:
+            - duration: 1000
+              value: 0
               easing: linear
   colors:
     overlayColor:
@@ -73,10 +77,9 @@ story:
               actions:
                 control:
                   resourceId: base1
-                background:
-                  resourceId: bg-door
             - id: line2
               actions:
                 background:
+                  resourceId: bg-forest
                   animations:
-                    resourceId: bg-mask-out
+                    resourceId: bg-update-fade-in

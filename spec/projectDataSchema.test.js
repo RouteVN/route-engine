@@ -209,6 +209,99 @@ describe("projectData schema", () => {
     );
   });
 
+  it("rejects legacy animations.in/out/update selection objects", () => {
+    const projectData = createMinimalProjectData({
+      story: {
+        initialSceneId: "scene1",
+        scenes: {
+          scene1: {
+            name: "Scene 1",
+            initialSectionId: "section1",
+            sections: {
+              section1: {
+                name: "Section 1",
+                lines: [
+                  {
+                    id: "line1",
+                    actions: {
+                      background: {
+                        resourceId: "bg1",
+                        animations: {
+                          in: {
+                            resourceId: "fadeIn",
+                          },
+                        },
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+    });
+
+    expect(validateProjectData(projectData)).toBe(false);
+    expect(validateProjectData.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          instancePath:
+            "/story/scenes/scene1/sections/section1/lines/0/actions/background/animations",
+        }),
+      ]),
+    );
+  });
+
+  it("rejects legacy animation resource types", () => {
+    const projectData = createMinimalProjectData({
+      resources: {
+        animations: {
+          fadeIn: {
+            type: "live",
+            tween: {
+              alpha: {
+                keyframes: [
+                  {
+                    duration: 500,
+                    value: 1,
+                  },
+                ],
+              },
+            },
+          },
+          crossFade: {
+            type: "replace",
+            next: {
+              tween: {
+                alpha: {
+                  keyframes: [
+                    {
+                      duration: 500,
+                      value: 1,
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    expect(validateProjectData(projectData)).toBe(false);
+    expect(validateProjectData.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          instancePath: "/resources/animations/fadeIn/type",
+        }),
+        expect.objectContaining({
+          instancePath: "/resources/animations/crossFade/type",
+        }),
+      ]),
+    );
+  });
+
   it("accepts templated save/load slot ids in system actions", () => {
     expect(
       validateSystemActions({

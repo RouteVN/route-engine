@@ -63,6 +63,18 @@ class FakeObjectStore {
 
     return request;
   }
+
+  delete(key) {
+    const request = new FakeRequest();
+
+    this.transaction.track(() => {
+      this.definition.records.delete(key);
+      request.result = undefined;
+      request.onsuccess?.({ target: request });
+    });
+
+    return request;
+  }
 }
 
 class FakeTransaction {
@@ -260,6 +272,44 @@ describe("indexedDbPersistence", () => {
     ).toThrowError(
       "createIndexedDbPersistence requires a non-empty namespace.",
     );
+  });
+
+  it("clears persisted data for a single namespace", async () => {
+    const indexedDB = createFakeIndexedDB();
+    const alphaPersistence = createIndexedDbPersistence({
+      indexedDB,
+      namespace: "vn-alpha",
+    });
+    const betaPersistence = createIndexedDbPersistence({
+      indexedDB,
+      namespace: "vn-beta",
+    });
+
+    await alphaPersistence.saveSlots({
+      1: {
+        slotId: 1,
+        savedAt: 1700000000000,
+      },
+    });
+    await betaPersistence.saveGlobalAccountVariables({
+      routeUnlocked: true,
+    });
+
+    await alphaPersistence.clear();
+
+    expect(await alphaPersistence.load()).toEqual({
+      saveSlots: {},
+      globalDeviceVariables: {},
+      globalAccountVariables: {},
+    });
+
+    expect(await betaPersistence.load()).toEqual({
+      saveSlots: {},
+      globalDeviceVariables: {},
+      globalAccountVariables: {
+        routeUnlocked: true,
+      },
+    });
   });
 
   it("normalizes namespace values", () => {

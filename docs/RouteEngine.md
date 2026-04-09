@@ -63,7 +63,9 @@ engine.init({
 For browser-backed save/load hydration, the runtime also exports
 `createIndexedDbPersistence({ namespace })`. Use the same `namespace` both when
 loading persisted data before init and when calling `engine.init(...)` so
-different visual novels on the same domain do not share persistence.
+different visual novels on the same domain do not share persistence. The
+returned adapter also exposes `clear()` to delete persisted data for that
+namespace.
 
 Localization is not implemented in the current runtime. The planned
 patch-based l10n model is documented in [L10n.md](./L10n.md).
@@ -389,18 +391,18 @@ Playback timing semantics:
 
 ### State Management Actions
 
-| Action              | Payload              | Description                    |
-| ------------------- | -------------------- | ------------------------------ |
-| `setNextLineConfig` | `{ manual?, auto? }` | Configure line advancement     |
-| `updateProjectData` | `{ projectData }`    | Replace project data           |
+| Action              | Payload              | Description                     |
+| ------------------- | -------------------- | ------------------------------- |
+| `setNextLineConfig` | `{ manual?, auto? }` | Configure line advancement      |
+| `updateProjectData` | `{ projectData }`    | Replace project data            |
 | `resetStorySession` | -                    | Reset story-local session state |
 
 ### Registry Actions
 
-| Action              | Payload                 | Description                   |
-| ------------------- | ----------------------- | ----------------------------- |
-| `addViewedLine`     | `{ sectionId, lineId }` | Mark line as viewed           |
-| `addViewedResource` | `{ resourceId }`        | Mark resource as viewed       |
+| Action              | Payload                 | Description             |
+| ------------------- | ----------------------- | ----------------------- |
+| `addViewedLine`     | `{ sectionId, lineId }` | Mark line as viewed     |
+| `addViewedResource` | `{ resourceId }`        | Mark resource as viewed |
 
 Seen-line semantics:
 
@@ -411,10 +413,10 @@ Seen-line semantics:
 
 ### Save System Actions
 
-| Action         | Payload                           | Description                |
-| -------------- | --------------------------------- | -------------------------- |
-| `saveSlot`     | `{ slotId, thumbnailImage? }`     | Save game to a slot        |
-| `loadSlot`     | `{ slotId }`                      | Load game from a slot      |
+| Action     | Payload                       | Description           |
+| ---------- | ----------------------------- | --------------------- |
+| `saveSlot` | `{ slotId, thumbnailImage? }` | Save game to a slot   |
+| `loadSlot` | `{ slotId }`                  | Load game from a slot |
 
 Save/load design, requirements, and storage boundaries are documented in [SaveLoad.md](./SaveLoad.md).
 Story-session reset semantics are documented in [StorySessionReset.md](./StorySessionReset.md).
@@ -432,12 +434,12 @@ Notes:
 
 These actions exist inside the store/runtime but are not part of the stable authored/public API surface:
 
-| Action                | Payload                | Description            |
-| --------------------- | ---------------------- | ---------------------- |
+| Action                | Payload                | Description                         |
+| --------------------- | ---------------------- | ----------------------------------- |
 | `markLineCompleted`   | -                      | Internal render-complete transition |
 | `nextLineFromSystem`  | -                      | Internal timer-driven advance       |
-| `appendPendingEffect` | `{ name, ...options }` | Queue a side effect                |
-| `clearPendingEffects` | -                      | Clear the effect queue             |
+| `appendPendingEffect` | `{ name, ...options }` | Queue a side effect                 |
+| `clearPendingEffects` | -                      | Clear the effect queue              |
 
 Use these only if you are extending engine internals or writing engine-level tests.
 

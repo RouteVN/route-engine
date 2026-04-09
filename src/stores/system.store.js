@@ -1063,7 +1063,7 @@ export const createInitialState = (payload) => {
   const { globalVariablesDefaultValues } =
     getDefaultVariablesFromProjectData(projectData);
 
-  // Merge with loaded globalVariablesDefaultValues from localStorage (if provided)
+  // Merge with loaded global variables from persisted browser storage (if provided)
   const globalVariables = {
     ...globalVariablesDefaultValues,
     ...loadedGlobalVariables,

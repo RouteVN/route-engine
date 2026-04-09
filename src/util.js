@@ -636,6 +636,14 @@ export const diffPresentationState = (prev = {}, curr = {}) => {
 export const normalizePersistentPresentationState = (state = {}) => {
   const normalizedState = structuredClone(state);
 
+  if (normalizedState.background) {
+    delete normalizedState.background.animations;
+
+    if (!normalizedState.background.resourceId) {
+      delete normalizedState.background;
+    }
+  }
+
   const stripAnimationsFromObject = (key) => {
     if (!normalizedState[key]) {
       return;
@@ -648,7 +656,6 @@ export const normalizePersistentPresentationState = (state = {}) => {
     }
   };
 
-  stripAnimationsFromObject("background");
   stripAnimationsFromObject("layout");
   stripAnimationsFromObject("choice");
 

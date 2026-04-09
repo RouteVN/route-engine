@@ -115,9 +115,7 @@ in:
   - - background:
         resourceId: "bg-school"
         animations:
-          in:
-            fade:
-              duration: 500
+          resourceId: "fade"
     - dialogue:
         mode: "adv"
         content:
@@ -138,9 +136,7 @@ in:
           - id: "sakura"
             resourceId: "char-sakura"
             animations:
-              in:
-                slide:
-                  from: "left"
+              resourceId: "slide"
     - dialogue:
         mode: "adv"
         content:
@@ -163,9 +159,7 @@ in:
           - id: "sparkle"
             resourceId: "effect-sparkle"
             animations:
-              in:
-                fade:
-                  duration: 300
+              resourceId: "fade"
     - dialogue:
         mode: "adv"
         content:
@@ -197,14 +191,25 @@ out:
     content:
       - text: "Hello!"
 ---
+case: preserve existing background resource when next line only adds animations
+in:
+  - - background:
+        resourceId: "bg-school"
+    - background:
+        animations:
+          resourceId: "fade-in"
+out:
+  background:
+    resourceId: "bg-school"
+    animations:
+      resourceId: "fade-in"
+---
 case: clear animations across multiple lines
 in:
   - - background:
         resourceId: "bg-school"
         animations:
-          in:
-            fade:
-              duration: 500
+          resourceId: "fade"
     - dialogue:
         mode: "adv"
         content:
@@ -228,8 +233,7 @@ in:
           - id: "char-1"
             resourceId: "res-1"
             animations:
-              in:
-                fade: {}
+              resourceId: "fade"
           - id: "char-2"
             resourceId: "res-2"
     - dialogue:

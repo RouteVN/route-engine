@@ -310,7 +310,7 @@ out:
             - duration: 300
               value: 0
 ---
-case: normalize legacy live layout transitions to update
+case: reject unsupported legacy live layout transitions
 in:
   - elements:
       - id: "story"
@@ -350,33 +350,7 @@ out:
       x: 0
       y: 0
       children: []
-    - id: "layeredView-0"
-      type: "container"
-      x: 0
-      y: 0
-      children:
-        - id: "layeredView-0-blocker"
-          type: "rect"
-          fill: "transparent"
-          width: 1920
-          height: 1080
-          x: 0
-          y: 0
-          click:
-            payload:
-              actions: {}
-        - type: "text"
-          content: "Animated"
-  animations:
-    - id: "animated-layout-fade-in"
-      type: "update"
-      targetId: "layeredView-0"
-      tween:
-        alpha:
-          initialValue: 0
-          keyframes:
-            - duration: 500
-              value: 1
+throws: '[layeredViews[0].transitions[0]] Animation "animated-layout-fade-in" has unsupported type "live". Use "update" or "transition".'
 ---
 case: add layered view child animation with explicit target id
 in:

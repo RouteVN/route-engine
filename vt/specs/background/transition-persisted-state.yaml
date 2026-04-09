@@ -1,10 +1,12 @@
 ---
-title: Background Transition Mask Out
-description: Background image animating with a mask-driven transition while the same background persists in state.
+title: Background Transition Persisted State
+description: |
+  Background animation-only actions should resolve the current background from
+  presentation state when the line omits `resourceId`.
 specs:
-  - background should accept transition-type animation resources without repeating resourceId
-  - the mask should partially remove the background halfway through the transition
-  - the background should remain resolved from state after the transition completes
+  - background should animate without repeating resourceId when the same background persists in state
+  - the background should still be visible on the following line because state persistence is preserved
+  - the transition line should not clear the background from presentation state
 steps:
   - action: customEvent
     name: vt:nextLine
@@ -17,6 +19,9 @@ steps:
     name: snapShotKeyFrame
     detail:
       deltaMS: 500
+  - action: screenshot
+  - action: customEvent
+    name: vt:nextLine
   - action: screenshot
 ---
 screen:
@@ -43,20 +48,17 @@ resources:
       width: 1920
       height: 1080
   animations:
-    bg-mask-out:
-      name: Background Mask Out
+    bg-persisted-shift:
+      name: Background Persisted Shift
       type: transition
-      mask:
-        kind: single
-        texture: mask-diagonal
-        channel: red
-        softness: 0.06
-        progress:
-          initialValue: 0
-          keyframes:
-            - duration: 1000
-              value: 1
-              easing: linear
+      next:
+        tween:
+          translateX:
+            initialValue: 1
+            keyframes:
+              - duration: 1000
+                value: 0
+                easing: linear
   colors:
     overlayColor:
       hex: "#000000"
@@ -79,4 +81,6 @@ story:
               actions:
                 background:
                   animations:
-                    resourceId: bg-mask-out
+                    resourceId: bg-persisted-shift
+            - id: line3
+              actions: {}

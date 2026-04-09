@@ -13,24 +13,9 @@ definitions:
     required: [resourceId]
     additionalProperties: false
 
-  legacyAnimationSelection:
-    type: object
-    description: Legacy lifecycle-specific animation selection. Prefer a single resourceId reference instead.
-    properties:
-      in:
-        $ref: "#/definitions/animationRef"
-      out:
-        $ref: "#/definitions/animationRef"
-      update:
-        $ref: "#/definitions/animationRef"
-    minProperties: 1
-    additionalProperties: false
-
   animationSelection:
-    description: Animation selection. Prefer a single resourceId that points to an animation whose type decides update vs transition. Legacy in/out/update remains supported for compatibility.
-    oneOf:
-      - $ref: "#/definitions/animationRef"
-      - $ref: "#/definitions/legacyAnimationSelection"
+    description: Animation selection. Provide a single resourceId whose animation type decides update vs transition.
+    $ref: "#/definitions/animationRef"
 
 properties:
   cleanAll:
