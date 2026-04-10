@@ -26,6 +26,13 @@ out:
     autoMode: false
     skipMode: false
     dialogueUIHidden: false
+    dialogueTextSpeed: 50
+    autoForwardDelay: 1000
+    skipUnseenText: false
+    skipTransitionsAndAnimations: false
+    soundVolume: 500
+    musicVolume: 500
+    muteAll: false
     confirmDialog: null
     viewedRegistry:
       sections: []
@@ -112,6 +119,13 @@ out:
     autoMode: false
     skipMode: false
     dialogueUIHidden: false
+    dialogueTextSpeed: 50
+    autoForwardDelay: 1000
+    skipUnseenText: false
+    skipTransitionsAndAnimations: false
+    soundVolume: 500
+    musicVolume: 500
+    muteAll: false
     confirmDialog: null
     viewedRegistry:
       sections: []
@@ -211,6 +225,13 @@ out:
     autoMode: false
     skipMode: false
     dialogueUIHidden: false
+    dialogueTextSpeed: 50
+    autoForwardDelay: 1000
+    skipUnseenText: false
+    skipTransitionsAndAnimations: false
+    soundVolume: 500
+    musicVolume: 500
+    muteAll: false
     confirmDialog: null
     viewedRegistry:
       sections: []
@@ -304,6 +325,13 @@ out:
     autoMode: false
     skipMode: false
     dialogueUIHidden: false
+    dialogueTextSpeed: 50
+    autoForwardDelay: 1000
+    skipUnseenText: false
+    skipTransitionsAndAnimations: false
+    soundVolume: 500
+    musicVolume: 500
+    muteAll: false
     confirmDialog: null
     viewedRegistry:
       sections: []
@@ -394,6 +422,13 @@ out:
     autoMode: false
     skipMode: false
     dialogueUIHidden: false
+    dialogueTextSpeed: 50
+    autoForwardDelay: 1000
+    skipUnseenText: false
+    skipTransitionsAndAnimations: false
+    soundVolume: 500
+    musicVolume: 500
+    muteAll: false
     confirmDialog: null
     viewedRegistry:
       sections: []

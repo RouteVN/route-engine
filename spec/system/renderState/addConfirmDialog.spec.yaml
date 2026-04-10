@@ -159,14 +159,15 @@ in:
       layouts:
         saveOverwriteConfirmLayout:
           elements:
-            - id: confirm-slot-${saveSlots[0].slotId}-${isLineCompleted}
+            - id: confirm-slot-${saveSlots[0].slotId}-${runtime.isLineCompleted}
               type: text
               content: Slot ${saveSlots[0].slotId}
       colors: {}
     variables: {}
-    autoMode: false
-    skipMode: false
-    isLineCompleted: true
+    runtime:
+      autoMode: false
+      skipMode: false
+      isLineCompleted: true
     saveSlots:
       - slotId: 3
         savedAt: 1700000000000

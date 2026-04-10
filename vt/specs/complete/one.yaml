@@ -1071,7 +1071,7 @@ resources:
                   actions:
                     toggleAutoMode: {}
               textStyleId:
-                $if autoMode: textStyle9
+                $if runtime.autoMode: textStyle9
                 $else: textStyle2
             - id: dialogue-action-skip
               type: text
@@ -1087,7 +1087,7 @@ resources:
                   actions:
                     toggleSkipMode: {}
               textStyleId:
-                $if skipMode: textStyle9
+                $if runtime.skipMode: textStyle9
                 $else: textStyle2
             - id: dialogue-action-history
               type: text

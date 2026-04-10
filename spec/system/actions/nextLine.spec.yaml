@@ -976,13 +976,12 @@ out:
           sectionId: "section1"
           lineId: "1"
 ---
-case: skip mode stops at unviewed line when _skipUnseenText is undefined
+case: skip mode stops at unviewed line when skipUnseenText is undefined
 in:
   - state:
       global:
         isLineCompleted: true
         skipMode: true
-        variables: {}
         nextLineConfig:
           manual:
             enabled: true
@@ -1012,7 +1011,6 @@ out:
   global:
     isLineCompleted: true
     skipMode: false
-    variables: {}
     nextLineConfig:
       manual:
         enabled: true
@@ -1041,14 +1039,13 @@ out:
           sectionId: "section1"
           lineId: "1"
 ---
-case: skip mode stops at unviewed line when _skipUnseenText is false
+case: skip mode stops at unviewed line when skipUnseenText is false
 in:
   - state:
       global:
         isLineCompleted: true
         skipMode: true
-        variables:
-          _skipUnseenText: false
+        skipUnseenText: false
         nextLineConfig:
           manual:
             enabled: true
@@ -1078,8 +1075,7 @@ out:
   global:
     isLineCompleted: true
     skipMode: false
-    variables:
-      _skipUnseenText: false
+    skipUnseenText: false
     nextLineConfig:
       manual:
         enabled: true
@@ -1108,14 +1104,13 @@ out:
           sectionId: "section1"
           lineId: "1"
 ---
-case: skip mode continues when _skipUnseenText is true (skip all)
+case: skip mode continues when skipUnseenText is true (skip all)
 in:
   - state:
       global:
         isLineCompleted: true
         skipMode: true
-        variables:
-          _skipUnseenText: true
+        skipUnseenText: true
         nextLineConfig:
           manual:
             enabled: true
@@ -1147,8 +1142,7 @@ out:
   global:
     isLineCompleted: false
     skipMode: true
-    variables:
-      _skipUnseenText: true
+    skipUnseenText: true
     nextLineConfig:
       manual:
         enabled: true

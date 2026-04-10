@@ -183,6 +183,18 @@ defs:
       variables:
         type: object
         additionalProperties: true
+      runtime:
+        type: object
+        properties:
+          saveLoadPagination:
+            type: integer
+            minimum: 1
+          menuPage:
+            type: string
+          menuEntryPoint:
+            type: string
+        required: [saveLoadPagination, menuPage, menuEntryPoint]
+        additionalProperties: false
       rollback:
         $ref: "#/defs/rollbackState"
     required:
@@ -218,6 +230,20 @@ properties:
         additionalProperties:
           $ref: "#/defs/saveSlotEntry"
       dialogueUIHidden:
+        type: boolean
+      dialogueTextSpeed:
+        type: number
+      autoForwardDelay:
+        type: number
+      skipUnseenText:
+        type: boolean
+      skipTransitionsAndAnimations:
+        type: boolean
+      soundVolume:
+        type: number
+      musicVolume:
+        type: number
+      muteAll:
         type: boolean
       confirmDialog:
         type: [object, "null"]
@@ -255,6 +281,13 @@ properties:
         variables,
         saveSlots,
         dialogueUIHidden,
+        dialogueTextSpeed,
+        autoForwardDelay,
+        skipUnseenText,
+        skipTransitionsAndAnimations,
+        soundVolume,
+        musicVolume,
+        muteAll,
         confirmDialog,
         autoMode,
         skipMode,

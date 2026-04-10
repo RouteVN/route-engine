@@ -67,6 +67,22 @@ anyOf:
     required: [name, payload]
     additionalProperties: false
 
+  - title: Save runtime effect
+    type: object
+    properties:
+      name:
+        const: saveGlobalRuntime
+      payload:
+        type: object
+        properties:
+          globalRuntime:
+            type: object
+            additionalProperties: true
+        required: [globalRuntime]
+        additionalProperties: false
+    required: [name, payload]
+    additionalProperties: false
+
   - title: Start auto next timer effect
     type: object
     properties:

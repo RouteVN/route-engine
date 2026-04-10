@@ -65,7 +65,7 @@ resources:
               actions:
                 toggleSkipMode: {}
           textStyleId:
-            $if skipMode: textStyle3
+            $if runtime.skipMode: textStyle3
             $else: textStyle1
         - id: skip-all-button
           type: text
@@ -79,7 +79,7 @@ resources:
               actions:
                 toggleSkipOnlyViewedLines: {}
           textStyleId:
-            $if skipOnlyViewedLines: textStyle1
+            $if !runtime.skipUnseenText: textStyle1
             $else: textStyle3
   fonts:
     fontDefault:

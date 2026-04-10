@@ -10,11 +10,10 @@ case: default 6 slots per page, page 1
 in:
   - state:
       global:
-        variables:
-          loadPage: 1
         saveSlots: {}
       contexts:
-        - variables: {}
+        - runtime:
+            saveLoadPagination: 1
 out:
   saveSlots:
     - slotId: 1
@@ -28,11 +27,10 @@ case: default 6 slots per page, page 2
 in:
   - state:
       global:
-        variables:
-          loadPage: 2
         saveSlots: {}
       contexts:
-        - variables: {}
+        - runtime:
+            saveLoadPagination: 2
 out:
   saveSlots:
     - slotId: 7
@@ -46,11 +44,10 @@ case: default 6 slots per page, page 3
 in:
   - state:
       global:
-        variables:
-          loadPage: 3
         saveSlots: {}
       contexts:
-        - variables: {}
+        - runtime:
+            saveLoadPagination: 3
 out:
   saveSlots:
     - slotId: 13
@@ -60,14 +57,13 @@ out:
     - slotId: 17
     - slotId: 18
 ---
-case: loadPage defaults to 1 when undefined
+case: saveLoadPagination defaults to 1 when undefined
 in:
   - state:
       global:
-        variables: {}
         saveSlots: {}
       contexts:
-        - variables: {}
+        - {}
 out:
   saveSlots:
     - slotId: 1
@@ -77,15 +73,14 @@ out:
     - slotId: 5
     - slotId: 6
 ---
-case: loadPage from context variables
+case: saveLoadPagination from context runtime
 in:
   - state:
       global:
-        variables: {}
         saveSlots: {}
       contexts:
-        - variables:
-            loadPage: 2
+        - runtime:
+            saveLoadPagination: 2
 out:
   saveSlots:
     - slotId: 7
@@ -95,31 +90,31 @@ out:
     - slotId: 11
     - slotId: 12
 ---
-case: context variables override global variables
+case: unrelated variables do not affect save slot pagination
 in:
   - state:
       global:
         variables:
-          loadPage: 1
+          pageCounter: 1
         saveSlots: {}
       contexts:
         - variables:
-            loadPage: 3
+            pageCounter: 3
+          runtime:
+            saveLoadPagination: 2
 out:
   saveSlots:
-    - slotId: 13
-    - slotId: 14
-    - slotId: 15
-    - slotId: 16
-    - slotId: 17
-    - slotId: 18
+    - slotId: 7
+    - slotId: 8
+    - slotId: 9
+    - slotId: 10
+    - slotId: 11
+    - slotId: 12
 ---
 case: with saved slot data
 in:
   - state:
       global:
-        variables:
-          loadPage: 1
         saveSlots:
           "1":
             savedAt: 1704556800000
@@ -130,7 +125,8 @@ in:
           "3":
             savedAt: 1704643200000
       contexts:
-        - variables: {}
+        - runtime:
+            saveLoadPagination: 1
 out:
   saveSlots:
     - slotId: 1
@@ -150,11 +146,10 @@ case: custom 12 slots per page
 in:
   - state:
       global:
-        variables:
-          loadPage: 1
         saveSlots: {}
       contexts:
-        - variables: {}
+        - runtime:
+            saveLoadPagination: 1
   - slotsPerPage: 12
 out:
   saveSlots:
@@ -175,11 +170,10 @@ case: custom 4 slots per page
 in:
   - state:
       global:
-        variables:
-          loadPage: 1
         saveSlots: {}
       contexts:
-        - variables: {}
+        - runtime:
+            saveLoadPagination: 1
   - slotsPerPage: 4
 out:
   saveSlots:
@@ -192,11 +186,10 @@ case: custom 10 slots per page, page 2
 in:
   - state:
       global:
-        variables:
-          loadPage: 2
         saveSlots: {}
       contexts:
-        - variables: {}
+        - runtime:
+            saveLoadPagination: 2
   - slotsPerPage: 10
 out:
   saveSlots:
@@ -214,11 +207,10 @@ out:
 case: undefined saveSlots handled gracefully
 in:
   - state:
-      global:
-        variables:
-          loadPage: 1
+      global: {}
       contexts:
-        - variables: {}
+        - runtime:
+            saveLoadPagination: 1
 out:
   saveSlots:
     - slotId: 1

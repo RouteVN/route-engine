@@ -58,11 +58,6 @@ screen:
   height: 720
   backgroundColor: "#101010"
 resources:
-  variables:
-    _autoForwardTime:
-      type: number
-      scope: device
-      default: 5000
   controls:
     guardControls:
       elements:
@@ -112,28 +107,28 @@ resources:
           content: SKIP
           textStyleId: statusText
         - id: auto-status-on
-          $when: autoMode
+          $when: runtime.autoMode
           type: text
           x: 300
           y: 52
           content: "AUTO: ON"
           textStyleId: statusText
         - id: auto-status-off
-          $when: "!autoMode"
+          $when: "!runtime.autoMode"
           type: text
           x: 300
           y: 52
           content: "AUTO: OFF"
           textStyleId: statusText
         - id: skip-status-on
-          $when: skipMode
+          $when: runtime.skipMode
           type: text
           x: 300
           y: 138
           content: "SKIP: ON"
           textStyleId: statusText
         - id: skip-status-off
-          $when: "!skipMode"
+          $when: "!runtime.skipMode"
           type: text
           x: 300
           y: 138
@@ -243,6 +238,8 @@ story:
           lines:
             - id: line1
               actions:
+                setAutoForwardDelay:
+                  value: 5000
                 control:
                   resourceId: guardControls
                 startAutoMode: {}

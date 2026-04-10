@@ -244,7 +244,7 @@ in:
               width: 300
               height: 120
               colorId:
-                $if autoMode: "activeColor"
+                $if runtime.autoMode: "activeColor"
                 $else: "idleColor"
               hover:
                 colorId: "hoverColor"
@@ -262,8 +262,9 @@ in:
         clickColor:
           hex: "#404040"
     variables: {}
-    autoMode: true
-    skipMode: false
+    runtime:
+      autoMode: true
+      skipMode: false
 out:
   elements:
     - id: "story"
@@ -373,7 +374,7 @@ in:
               type: "text"
               content: "Styled"
               textStyleId:
-                $if autoMode: "active"
+                $if runtime.autoMode: "active"
                 $else: "idle"
       textStyles:
         idle:
@@ -399,8 +400,9 @@ in:
         activeColor:
           hex: "#FF0000"
     variables: {}
-    autoMode: true
-    skipMode: false
+    runtime:
+      autoMode: true
+      skipMode: false
 out:
   elements:
     - id: "story"
@@ -444,7 +446,7 @@ in:
             - id: "layout-image"
               type: "sprite"
               imageId:
-                $if autoMode: "activePreview"
+                $if runtime.autoMode: "activePreview"
                 $else: "idlePreview"
               hoverImageId: "hoverPreview"
               clickImageId: "clickPreview"
@@ -466,8 +468,9 @@ in:
           width: 400
           height: 225
     variables: {}
-    autoMode: true
-    skipMode: false
+    runtime:
+      autoMode: true
+      skipMode: false
 out:
   elements:
     - id: "story"

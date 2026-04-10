@@ -12,14 +12,12 @@ in:
         autoMode: false
         isLineCompleted: false
         pendingEffects: []
-        variables:
-          _autoForwardTime: 1000
+        autoForwardDelay: 1000
 out:
   global:
     autoMode: true
     isLineCompleted: false
-    variables:
-      _autoForwardTime: 1000
+    autoForwardDelay: 1000
     pendingEffects:
       - name: clearAutoNextTimer
       - name: render
@@ -31,14 +29,12 @@ in:
         autoMode: false
         isLineCompleted: true
         pendingEffects: []
-        variables:
-          _autoForwardTime: 1000
+        autoForwardDelay: 1000
 out:
   global:
     autoMode: true
     isLineCompleted: true
-    variables:
-      _autoForwardTime: 1000
+    autoForwardDelay: 1000
     pendingEffects:
       - name: clearAutoNextTimer
       - name: startAutoNextTimer
@@ -53,14 +49,12 @@ in:
         autoMode: true
         isLineCompleted: false
         pendingEffects: []
-        variables:
-          _autoForwardTime: 1000
+        autoForwardDelay: 1000
 out:
   global:
     autoMode: false
     isLineCompleted: false
-    variables:
-      _autoForwardTime: 1000
+    autoForwardDelay: 1000
     pendingEffects:
       - name: clearAutoNextTimer
       - name: render
@@ -73,13 +67,11 @@ in:
         skipMode: true
         isLineCompleted: false
         pendingEffects: []
-        variables:
-          _autoForwardTime: 1000
+        autoForwardDelay: 1000
 out:
   global:
     autoMode: true
-    variables:
-      _autoForwardTime: 1000
+    autoForwardDelay: 1000
     skipMode: false
     isLineCompleted: false
     pendingEffects:
@@ -95,13 +87,11 @@ in:
         skipMode: true
         isLineCompleted: false
         pendingEffects: []
-        variables:
-          _autoForwardTime: 1000
+        autoForwardDelay: 1000
 out:
   global:
     autoMode: false
-    variables:
-      _autoForwardTime: 1000
+    autoForwardDelay: 1000
     skipMode: true
     isLineCompleted: false
     pendingEffects:
@@ -117,14 +107,12 @@ in:
         pendingEffects:
           - name: existingEffect
             data: test
-        variables:
-          _autoForwardTime: 1000
+        autoForwardDelay: 1000
 out:
   global:
     autoMode: true
     isLineCompleted: false
-    variables:
-      _autoForwardTime: 1000
+    autoForwardDelay: 1000
     pendingEffects:
       - name: existingEffect
         data: test
@@ -140,35 +128,31 @@ in:
         pendingEffects:
           - name: existingEffect
             data: test
-        variables:
-          _autoForwardTime: 1000
+        autoForwardDelay: 1000
 out:
   global:
     autoMode: false
     isLineCompleted: false
-    variables:
-      _autoForwardTime: 1000
+    autoForwardDelay: 1000
     pendingEffects:
       - name: existingEffect
         data: test
       - name: clearAutoNextTimer
       - name: render
 ---
-case: toggle auto mode with custom _autoForwardTime
+case: toggle auto mode with custom autoForwardDelay
 in:
   - state:
       global:
         autoMode: false
         isLineCompleted: true
         pendingEffects: []
-        variables:
-          _autoForwardTime: 2500
+        autoForwardDelay: 2500
 out:
   global:
     autoMode: true
     isLineCompleted: true
-    variables:
-      _autoForwardTime: 2500
+    autoForwardDelay: 2500
     pendingEffects:
       - name: clearAutoNextTimer
       - name: startAutoNextTimer
@@ -176,19 +160,17 @@ out:
           delay: 2500
       - name: render
 ---
-case: toggle auto mode with default _autoForwardTime (not set)
+case: toggle auto mode with default autoForwardDelay (not set)
 in:
   - state:
       global:
         autoMode: false
         isLineCompleted: true
         pendingEffects: []
-        variables: {}
 out:
   global:
     autoMode: true
     isLineCompleted: true
-    variables: {}
     pendingEffects:
       - name: clearAutoNextTimer
       - name: startAutoNextTimer
@@ -203,8 +185,7 @@ in:
         autoMode: false
         isLineCompleted: true
         pendingEffects: []
-        variables:
-          _autoForwardTime: 1000
+        autoForwardDelay: 1000
       projectData:
         story:
           scenes:
@@ -245,6 +226,5 @@ out:
   global:
     autoMode: false
     isLineCompleted: true
-    variables:
-      _autoForwardTime: 1000
+    autoForwardDelay: 1000
     pendingEffects: []

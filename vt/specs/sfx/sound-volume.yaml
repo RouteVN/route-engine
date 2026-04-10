@@ -6,15 +6,6 @@ screen:
   height: 1080
   backgroundColor: "#000000"
 resources:
-  variables:
-    _soundVolume:
-      type: number
-      scope: device
-      default: 500
-    _muteAll:
-      type: boolean
-      scope: device
-      default: false
   layouts:
     main:
       elements:
@@ -23,7 +14,7 @@ resources:
           x: 960
           y: 100
           anchorX: 0.5
-          content: "Sound Volume: ${variables._soundVolume}"
+          content: "Sound Volume: ${runtime.soundVolume}"
           textStyleId: textStyle1
         - id: vol-250
           type: text
@@ -66,10 +57,10 @@ resources:
           x: 960
           y: 500
           anchorX: 0.5
-          content: Play at _soundVolume
+          content: Play at runtime.soundVolume
           click:
             soundSrc: xj323
-            soundVolume: ${effectiveSoundVolume}
+            soundVolume: ${runtime.soundVolume}
           textStyleId: textStyle3
   fonts:
     fontDefault:

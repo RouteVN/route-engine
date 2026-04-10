@@ -184,11 +184,18 @@ const saveGlobalAccountVariables = ({ enqueuePersistenceWrite }, payload) => {
   );
 };
 
+const saveGlobalRuntime = ({ enqueuePersistenceWrite }, payload) => {
+  enqueuePersistenceWrite((persistence) =>
+    persistence.saveGlobalRuntime(payload?.globalRuntime),
+  );
+};
+
 const effects = {
   render,
   saveSlots,
   saveGlobalDeviceVariables,
   saveGlobalAccountVariables,
+  saveGlobalRuntime,
   handleLineActions,
   startAutoNextTimer,
   clearAutoNextTimer,
@@ -204,6 +211,7 @@ const COALESCIBLE_EFFECT_NAMES = new Set([
   "saveSlots",
   "saveGlobalDeviceVariables",
   "saveGlobalAccountVariables",
+  "saveGlobalRuntime",
   "startAutoNextTimer",
   "clearAutoNextTimer",
   "startSkipNextTimer",

@@ -11,6 +11,16 @@ import {
 } from "../util.js";
 import { constructPresentationState } from "./constructPresentationState.js";
 import { constructRenderState } from "./constructRenderState.js";
+import {
+  CONTEXT_RUNTIME_DEFAULTS,
+  CONTEXT_RUNTIME_FIELDS,
+  GLOBAL_RUNTIME_DEFAULTS,
+  PERSISTED_GLOBAL_RUNTIME_FIELDS,
+  pickPersistedGlobalRuntime,
+  RUNTIME_FIELD_TYPES,
+  selectRuntimeFromState,
+  selectRuntimeValueFromState,
+} from "../runtimeFields.js";
 
 const DEFAULT_NEXT_LINE_CONFIG = {
   manual: {
@@ -474,11 +484,23 @@ const normalizeLoadedContext = (context, projectData, index) => {
   if (context.variables !== undefined && !isRecord(context.variables)) {
     throw new Error(`Malformed save slot contexts[${index}].variables entry.`);
   }
+  if (context.runtime !== undefined && !isRecord(context.runtime)) {
+    throw new Error(`Malformed save slot contexts[${index}].runtime entry.`);
+  }
 
   const historyPointer = normalizeLoadedHistoryPointer(
     context.pointers?.history,
     projectData,
   );
+
+  const loadedContextVariables = context.variables
+    ? cloneStateValue(context.variables)
+    : {};
+  const loadedContextRuntime = createInitialContextRuntimeState({
+    loadedContextRuntime: isRecord(context.runtime)
+      ? cloneStateValue(context.runtime)
+      : {},
+  });
 
   const normalizedContext = {
     currentPointerMode:
@@ -500,7 +522,7 @@ const normalizeLoadedContext = (context, projectData, index) => {
         },
     variables: {
       ...contextVariableDefaults,
-      ...(context.variables ? cloneStateValue(context.variables) : {}),
+      ...loadedContextVariables,
     },
     rollback: normalizeLoadedRollback(
       context.rollback,
@@ -508,6 +530,10 @@ const normalizeLoadedContext = (context, projectData, index) => {
       projectData,
     ),
   };
+
+  if (loadedContextRuntime) {
+    normalizedContext.runtime = loadedContextRuntime;
+  }
 
   return normalizedContext;
 };
@@ -642,6 +668,162 @@ const getRollbackContextVariableDefaults = (projectData) => {
     projectData ?? {},
   );
   return cloneStateValue(contextVariableDefaultValues);
+};
+
+const createDefaultContextRuntimeState = () => ({
+  ...cloneStateValue(CONTEXT_RUNTIME_DEFAULTS),
+});
+
+const normalizeLoadedRuntimeFields = ({
+  loadedRuntime,
+  runtimeIds,
+  defaults = {},
+  path,
+}) => {
+  if (loadedRuntime === undefined) {
+    return {
+      runtimeState: cloneStateValue(defaults),
+      hasLoadedValues: false,
+    };
+  }
+
+  if (!isRecord(loadedRuntime)) {
+    throw new Error(`Malformed ${path}.`);
+  }
+
+  const runtimeState = cloneStateValue(defaults);
+  let hasLoadedValues = false;
+
+  runtimeIds.forEach((runtimeId) => {
+    if (loadedRuntime[runtimeId] === undefined) {
+      return;
+    }
+
+    runtimeState[runtimeId] = normalizeRuntimeValue(
+      runtimeId,
+      cloneStateValue(loadedRuntime[runtimeId]),
+    );
+    hasLoadedValues = true;
+  });
+
+  return {
+    runtimeState,
+    hasLoadedValues,
+  };
+};
+
+const createInitialGlobalRuntimeState = ({ loadedGlobalRuntime = {} }) => {
+  return normalizeLoadedRuntimeFields({
+    loadedRuntime: loadedGlobalRuntime,
+    runtimeIds: PERSISTED_GLOBAL_RUNTIME_FIELDS,
+    defaults: GLOBAL_RUNTIME_DEFAULTS,
+    path: "global.runtime",
+  }).runtimeState;
+};
+
+const createInitialContextRuntimeState = ({ loadedContextRuntime = {} }) => {
+  const { runtimeState, hasLoadedValues } = normalizeLoadedRuntimeFields({
+    loadedRuntime: loadedContextRuntime,
+    runtimeIds: CONTEXT_RUNTIME_FIELDS,
+    defaults: createDefaultContextRuntimeState(),
+    path: "context.runtime",
+  });
+
+  return hasLoadedValues ? runtimeState : undefined;
+};
+
+const getCurrentContext = (state) => {
+  const contexts = Array.isArray(state?.contexts) ? state.contexts : [];
+  return contexts[contexts.length - 1];
+};
+
+const ensureContextRuntimeState = (context) => {
+  if (!context.runtime) {
+    context.runtime = createDefaultContextRuntimeState();
+    return context.runtime;
+  }
+
+  CONTEXT_RUNTIME_FIELDS.forEach((runtimeId) => {
+    if (context.runtime[runtimeId] === undefined) {
+      context.runtime[runtimeId] = cloneStateValue(
+        CONTEXT_RUNTIME_DEFAULTS[runtimeId],
+      );
+    }
+  });
+
+  return context.runtime;
+};
+
+const getPersistedGlobalRuntime = (state) => {
+  return pickPersistedGlobalRuntime(state.global);
+};
+
+const queueGlobalRuntimePersistence = (state) => {
+  state.global.pendingEffects.push({
+    name: "saveGlobalRuntime",
+    payload: {
+      globalRuntime: getPersistedGlobalRuntime(state),
+    },
+  });
+};
+
+const getRuntimeFieldType = (runtimeId) => {
+  return RUNTIME_FIELD_TYPES[runtimeId];
+};
+
+const assertRuntimeValueType = (runtimeId, value) => {
+  const type = getRuntimeFieldType(runtimeId);
+
+  if (type === "number") {
+    if (typeof value !== "number" || !Number.isFinite(value)) {
+      throw new Error(`${runtimeId} requires a finite numeric value`);
+    }
+    return;
+  }
+
+  if (type === "boolean") {
+    if (typeof value !== "boolean") {
+      throw new Error(`${runtimeId} requires a boolean value`);
+    }
+    return;
+  }
+
+  if (type === "string") {
+    if (typeof value !== "string") {
+      throw new Error(`${runtimeId} requires a string value`);
+    }
+    return;
+  }
+
+  throw new Error(`Unsupported runtime field "${runtimeId}"`);
+};
+
+const normalizeRuntimeValue = (runtimeId, value) => {
+  assertRuntimeValueType(runtimeId, value);
+
+  if (runtimeId === "saveLoadPagination") {
+    return Math.max(1, Math.trunc(value));
+  }
+
+  return value;
+};
+
+const applyRuntimeValue = (state, runtimeId, value) => {
+  const normalizedValue = normalizeRuntimeValue(runtimeId, value);
+
+  if (runtimeId in CONTEXT_RUNTIME_DEFAULTS) {
+    const context = getCurrentContext(state);
+    if (!context) {
+      return normalizedValue;
+    }
+
+    const runtimeState = ensureContextRuntimeState(context);
+    runtimeState[runtimeId] = normalizedValue;
+    return normalizedValue;
+  }
+
+  state.global[runtimeId] = normalizedValue;
+  return normalizedValue;
 };
 
 const createDefaultContextState = ({ pointer, projectData }) => ({
@@ -882,6 +1064,11 @@ const replayRecordedRollbackActions = (state, checkpoint) => {
     popLayeredView,
     replaceLastLayeredView,
     clearLayeredViews,
+    setSaveLoadPagination,
+    incrementSaveLoadPagination,
+    decrementSaveLoadPagination,
+    setMenuPage,
+    setMenuEntryPoint,
   };
 
   checkpoint.executedActions.forEach(({ type, payload }) => {
@@ -996,6 +1183,7 @@ const restoreRollbackCheckpoint = (state, checkpointIndex) => {
     lastContext.variables = getRollbackContextVariableDefaults(
       state.projectData,
     );
+    delete lastContext.runtime;
     state.global.dialogueUIHidden = false;
     delete state.global.isDialogueHistoryShowing;
     state.global.nextLineConfig = cloneStateValue(DEFAULT_NEXT_LINE_CONFIG);
@@ -1044,7 +1232,11 @@ const restoreRollbackCheckpoint = (state, checkpointIndex) => {
 export const createInitialState = (payload) => {
   const { projectData } = payload;
   const global = payload.global ?? {};
-  const { saveSlots = {}, variables: loadedGlobalVariables = {} } = global;
+  const {
+    saveSlots = {},
+    variables: loadedGlobalVariables = {},
+    runtime: loadedGlobalRuntime = {},
+  } = global;
 
   assertUniqueSectionIds(projectData);
 
@@ -1072,17 +1264,16 @@ export const createInitialState = (payload) => {
   const state = {
     projectData,
     global: {
-      isLineCompleted: false,
       pendingEffects: [],
-      autoMode: false,
-      skipMode: false,
-      dialogueUIHidden: false,
       confirmDialog: null,
       viewedRegistry: createDefaultViewedRegistry(),
       nextLineConfig: createDefaultNextLineConfig(),
       saveSlots: normalizeStoredSaveSlots(saveSlots),
       layeredViews: [],
       variables: globalVariables,
+      ...createInitialGlobalRuntimeState({
+        loadedGlobalRuntime,
+      }),
     },
     contexts: [
       createDefaultContextState({ pointer: initialPointer, projectData }),
@@ -1290,10 +1481,18 @@ export const selectSaveSlot = ({ state }, payload) => {
   return state.global.saveSlots[storageKey];
 };
 
+export const selectRuntime = ({ state }) => {
+  return selectRuntimeFromState(state);
+};
+
+export const selectRuntimeValue = ({ state }, payload) => {
+  return selectRuntimeValueFromState(state, payload?.runtimeId);
+};
+
 export const selectAllVariables = ({ state }) => {
   return {
     ...(state.global?.variables ?? {}),
-    ...(state.contexts?.[state.contexts.length - 1]?.variables ?? {}),
+    ...(getCurrentContext(state)?.variables ?? {}),
   };
 };
 
@@ -1462,8 +1661,7 @@ export const selectPreviousPresentationState = ({ state }) => {
 };
 
 /**
- * Selects the save slots to display on the current page based on loadPage variable
- * and page configuration. Returns a flat array of slots for the current page.
+ * Selects the save slots to display on the current save/load pagination page.
  *
  * @param {Object} params - The selector parameters
  * @param {Object} params.state - The full application state
@@ -1474,7 +1672,7 @@ export const selectPreviousPresentationState = ({ state }) => {
  *
  * @description
  * This selector calculates which save slots should be displayed on the current page
- * based on the `loadPage` variable and slots per page configuration. It returns a
+ * based on the current `saveLoadPagination` runtime value and slots per page configuration. It returns a
  * flat array of slots. The UI layer handles wrapping slots into rows using container
  * layout properties (width, gap, direction).
  *
@@ -1524,12 +1722,9 @@ export const selectPreviousPresentationState = ({ state }) => {
  * }
  */
 export const selectSaveSlotPage = ({ state }, { slotsPerPage = 6 } = {}) => {
-  const allVariables = {
-    ...state.global.variables,
-    ...state.contexts[state.contexts.length - 1].variables,
-  };
-  const loadPage = allVariables.loadPage ?? 1;
-  const startSlot = (loadPage - 1) * slotsPerPage + 1;
+  const runtime = selectRuntime({ state });
+  const saveLoadPagination = runtime.saveLoadPagination ?? 1;
+  const startSlot = (saveLoadPagination - 1) * slotsPerPage + 1;
 
   const slots = [];
 
@@ -1571,11 +1766,9 @@ const shouldSettleCurrentLinePresentation = (state) => {
 export const selectRenderState = ({ state }) => {
   const presentationState = selectPresentationState({ state });
   const previousPresentationState = selectPreviousPresentationState({ state });
+  const runtime = selectRuntime({ state });
 
-  const allVariables = {
-    ...state.global.variables,
-    ...state.contexts[state.contexts.length - 1].variables,
-  };
+  const allVariables = selectAllVariables({ state });
 
   const { saveSlots } = selectSaveSlotPage({ state });
   const settleCurrentLinePresentation =
@@ -1586,21 +1779,21 @@ export const selectRenderState = ({ state }) => {
     previousPresentationState,
     resources: state.projectData.resources,
     screen: state.projectData.screen,
-    dialogueUIHidden: state.global.dialogueUIHidden,
-    autoMode: state.global.autoMode,
-    skipMode: state.global.skipMode,
+    dialogueUIHidden: runtime.dialogueUIHidden,
+    autoMode: runtime.autoMode,
+    skipMode: runtime.skipMode,
     isChoiceVisible: selectIsChoiceVisible({ state }),
     canRollback: selectCanRollback({ state }),
-    skipOnlyViewedLines: !allVariables._skipUnseenText,
-    isLineCompleted: state.global.isLineCompleted,
+    skipOnlyViewedLines: !runtime.skipUnseenText,
+    isLineCompleted: runtime.isLineCompleted,
     skipTransitionsAndAnimations:
-      !!allVariables._skipTransitionsAndAnimations ||
-      settleCurrentLinePresentation,
+      !!runtime.skipTransitionsAndAnimations || settleCurrentLinePresentation,
     layeredViews: state.global.layeredViews,
     confirmDialog: state.global.confirmDialog,
     dialogueHistory: selectDialogueHistory({ state }),
     saveSlots,
     variables: allVariables,
+    runtime,
   });
   return renderState;
 };
@@ -1713,10 +1906,11 @@ export const startAutoMode = ({ state }) => {
   // Only start timer immediately if line is already completed
   // Otherwise, markLineCompleted will start it when renderComplete fires
   if (state.global.isLineCompleted) {
-    const autoForwardTime = state.global.variables._autoForwardTime ?? 1000;
     state.global.pendingEffects.push({
       name: "startAutoNextTimer",
-      payload: { delay: autoForwardTime },
+      payload: {
+        delay: selectRuntimeValueFromState(state, "autoForwardDelay"),
+      },
     });
   }
 
@@ -1837,6 +2031,109 @@ export const toggleDialogueUI = ({ state }) => {
     hideDialogueUI({ state });
   }
   return state;
+};
+
+const setGlobalRuntimeField = (state, runtimeId, value) => {
+  applyRuntimeValue(state, runtimeId, value);
+  queueGlobalRuntimePersistence(state);
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+  return state;
+};
+
+const setContextRuntimeField = (state, runtimeId, value, actionType) => {
+  const normalizedValue = applyRuntimeValue(state, runtimeId, value);
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+  recordRollbackAction(state, actionType, {
+    value: normalizedValue,
+  });
+  return state;
+};
+
+export const setDialogueTextSpeed = ({ state }, payload) => {
+  return setGlobalRuntimeField(state, "dialogueTextSpeed", payload?.value);
+};
+
+export const setAutoForwardDelay = ({ state }, payload) => {
+  return setGlobalRuntimeField(state, "autoForwardDelay", payload?.value);
+};
+
+export const setSkipUnseenText = ({ state }, payload) => {
+  return setGlobalRuntimeField(state, "skipUnseenText", payload?.value);
+};
+
+export const setSkipTransitionsAndAnimations = ({ state }, payload) => {
+  return setGlobalRuntimeField(
+    state,
+    "skipTransitionsAndAnimations",
+    payload?.value,
+  );
+};
+
+export const setSoundVolume = ({ state }, payload) => {
+  return setGlobalRuntimeField(state, "soundVolume", payload?.value);
+};
+
+export const setMusicVolume = ({ state }, payload) => {
+  return setGlobalRuntimeField(state, "musicVolume", payload?.value);
+};
+
+export const setMuteAll = ({ state }, payload) => {
+  return setGlobalRuntimeField(state, "muteAll", payload?.value);
+};
+
+export const setSaveLoadPagination = ({ state }, payload) => {
+  return setContextRuntimeField(
+    state,
+    "saveLoadPagination",
+    payload?.value,
+    "setSaveLoadPagination",
+  );
+};
+
+export const incrementSaveLoadPagination = ({ state }) => {
+  const nextValue =
+    selectRuntimeValueFromState(state, "saveLoadPagination") + 1;
+  setContextRuntimeField(
+    state,
+    "saveLoadPagination",
+    nextValue,
+    "incrementSaveLoadPagination",
+  );
+  return state;
+};
+
+export const decrementSaveLoadPagination = ({ state }) => {
+  const nextValue =
+    selectRuntimeValueFromState(state, "saveLoadPagination") - 1;
+  setContextRuntimeField(
+    state,
+    "saveLoadPagination",
+    nextValue,
+    "decrementSaveLoadPagination",
+  );
+  return state;
+};
+
+export const setMenuPage = ({ state }, payload) => {
+  return setContextRuntimeField(
+    state,
+    "menuPage",
+    payload?.value,
+    "setMenuPage",
+  );
+};
+
+export const setMenuEntryPoint = ({ state }, payload) => {
+  return setContextRuntimeField(
+    state,
+    "menuEntryPoint",
+    payload?.value,
+    "setMenuEntryPoint",
+  );
 };
 
 export const clearPendingEffects = ({ state }) => {
@@ -2245,10 +2542,11 @@ export const nextLine = ({ state }, payload) => {
 
     // If auto mode is on, continue auto-advancing after the skip
     if (state.global.autoMode) {
-      const autoForwardTime = state.global.variables._autoForwardTime ?? 1000;
       state.global.pendingEffects.push({
         name: "startAutoNextTimer",
-        payload: { delay: autoForwardTime },
+        payload: {
+          delay: selectRuntimeValueFromState(state, "autoForwardDelay"),
+        },
       });
     }
 
@@ -2284,7 +2582,10 @@ export const nextLine = ({ state }, payload) => {
     const nextLine = lines[nextLineIndex];
 
     // Check if skip mode should stop at unviewed lines
-    const skipOnlyViewedLines = !state.global.variables?._skipUnseenText;
+    const skipOnlyViewedLines = !selectRuntimeValueFromState(
+      state,
+      "skipUnseenText",
+    );
     if (state.global.skipMode && skipOnlyViewedLines) {
       const isNextLineViewed = selectIsLineViewed(
         { state },
@@ -2369,10 +2670,11 @@ export const markLineCompleted = ({ state }) => {
 
   // If auto mode is on, start the delay timer to advance after completion
   if (state.global.autoMode && !isChoiceVisible) {
-    const autoForwardTime = state.global.variables._autoForwardTime ?? 1000;
     state.global.pendingEffects.push({
       name: "startAutoNextTimer",
-      payload: { delay: autoForwardTime },
+      payload: {
+        delay: selectRuntimeValueFromState(state, "autoForwardDelay"),
+      },
     });
   }
 
@@ -2584,7 +2886,10 @@ export const nextLineFromSystem = ({ state }) => {
     const nextLine = lines[nextLineIndex];
 
     // Check if skip mode should stop at unviewed lines
-    const skipOnlyViewedLines = !state.global.variables?._skipUnseenText;
+    const skipOnlyViewedLines = !selectRuntimeValueFromState(
+      state,
+      "skipUnseenText",
+    );
     if (state.global.skipMode && skipOnlyViewedLines) {
       const isNextLineViewed = selectIsLineViewed(
         { state },
@@ -2901,6 +3206,8 @@ export const createSystemStore = (initialState) => {
     selectSaveSlotMap,
     selectSaveSlots,
     selectSaveSlot,
+    selectRuntime,
+    selectRuntimeValue,
     selectAllVariables,
     selectCurrentPointer,
     selectSection,
@@ -2925,6 +3232,18 @@ export const createSystemStore = (initialState) => {
     showDialogueUI,
     hideDialogueUI,
     toggleDialogueUI,
+    setDialogueTextSpeed,
+    setAutoForwardDelay,
+    setSkipUnseenText,
+    setSkipTransitionsAndAnimations,
+    setSoundVolume,
+    setMusicVolume,
+    setMuteAll,
+    setSaveLoadPagination,
+    incrementSaveLoadPagination,
+    decrementSaveLoadPagination,
+    setMenuPage,
+    setMenuEntryPoint,
     showConfirmDialog,
     hideConfirmDialog,
     resetStorySession,

@@ -83,6 +83,31 @@ describe("RouteEngine action templating", () => {
     expect(engine.selectSystemState().contexts[0].variables.score).toBe(7);
   });
 
+  it("resolves ${runtime.*} bindings from engine runtime state", () => {
+    const engine = createRouteEngine({
+      handlePendingEffects: () => {},
+    });
+
+    engine.init({
+      initialState: {
+        global: {
+          runtime: {
+            dialogueTextSpeed: 73,
+          },
+        },
+        projectData: createMinimalProjectData(),
+      },
+    });
+
+    engine.handleActions({
+      setDialogueTextSpeed: {
+        value: "${runtime.dialogueTextSpeed}",
+      },
+    });
+
+    expect(engine.selectRuntime().dialogueTextSpeed).toBe(73);
+  });
+
   it("resolves ${variables.*} bindings for authored line actions without event context", () => {
     let engine;
     const handlePendingEffects = (pendingEffects) => {

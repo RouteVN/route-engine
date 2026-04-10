@@ -52,7 +52,7 @@ resources:
               actions:
                 toggleAutoMode: {}
           textStyleId:
-            $if autoMode: textStyle2
+            $if runtime.autoMode: textStyle2
             $else: textStyle1
         - id: skip-button
           type: text
@@ -66,7 +66,7 @@ resources:
               actions:
                 toggleSkipMode: {}
           textStyleId:
-            $if skipMode: textStyle2
+            $if runtime.skipMode: textStyle2
             $else: textStyle1
         - id: speed-slow-button
           type: text
