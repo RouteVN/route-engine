@@ -21,11 +21,11 @@ in:
               default: false
             volume:
               type: number
-              scope: global-device
+              scope: device
               default: 80
             unlockedEnding:
               type: boolean
-              scope: global-account
+              scope: account
               default: false
         story:
           initialSceneId: scene1
@@ -132,11 +132,11 @@ out:
           default: false
         volume:
           type: number
-          scope: global-device
+          scope: device
           default: 80
         unlockedEnding:
           type: boolean
-          scope: global-account
+          scope: account
           default: false
     story:
       initialSceneId: scene1

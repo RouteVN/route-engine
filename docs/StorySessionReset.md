@@ -18,7 +18,7 @@ where the engine should:
 - clear rollback/session-local history
 - clear seen/viewed state
 - clear transient runtime UI/playback state
-- preserve `global-device` and `global-account` variables
+- preserve `device` and `account` variables
 
 without introducing dedicated `startGame` / `exitGame` engine actions.
 
@@ -58,7 +58,7 @@ When `resetStorySession` runs, the engine should:
 ### Preserve
 
 - current context read pointer
-- `global.variables` for `global-device` and `global-account`
+- `global.variables` for `device` and `account`
 - `projectData`
 - `global.saveSlots`
 
@@ -233,7 +233,7 @@ actions:
 - resets rollback to a single checkpoint anchored at the current read pointer
 - clears `viewedRegistry.sections`
 - clears `viewedRegistry.resources`
-- preserves `global-device` and `global-account` variables
+- preserves `device` and `account` variables
 - clears transient globals and queues timer-clear effects
 - appends effects instead of replacing the pending queue
 - when ordered after `sectionTransition` in the same batch, anchors rollback at

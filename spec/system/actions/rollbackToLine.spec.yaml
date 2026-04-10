@@ -667,7 +667,7 @@ in:
           variables:
             volume:
               type: number
-              scope: global-device
+              scope: device
               default: 50
       global:
         variables:
@@ -720,7 +720,7 @@ out:
       variables:
         volume:
           type: number
-          scope: global-device
+          scope: device
           default: 50
   global:
     variables:

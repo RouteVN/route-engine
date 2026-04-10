@@ -433,8 +433,8 @@ Rollback restores:
 
 Rollback does not restore:
 
-- global-device variables
-- global-account variables
+- device variables
+- account variables
 - seen registries
 
 Implementation rule:

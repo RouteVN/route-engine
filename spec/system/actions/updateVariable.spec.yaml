@@ -42,7 +42,7 @@ out:
     - variables:
         playerName: "Alice"
 ---
-case: set global-device variable
+case: set device variable
 in:
   - state:
       projectData:
@@ -50,7 +50,7 @@ in:
           variables:
             volume:
               type: number
-              scope: global-device
+              scope: device
               default: 50
       global:
         variables:
@@ -69,7 +69,7 @@ out:
       variables:
         volume:
           type: number
-          scope: global-device
+          scope: device
           default: 50
   global:
     variables:
@@ -83,7 +83,7 @@ out:
   contexts:
     - variables: {}
 ---
-case: set global-account variable
+case: set account variable
 in:
   - state:
       projectData:
@@ -91,7 +91,7 @@ in:
           variables:
             achievement1:
               type: boolean
-              scope: global-account
+              scope: account
               default: false
       global:
         variables:
@@ -110,7 +110,7 @@ out:
       variables:
         achievement1:
           type: boolean
-          scope: global-account
+          scope: account
           default: false
   global:
     variables:
@@ -196,7 +196,7 @@ out:
     - variables:
         soundEnabled: false
 ---
-case: toggle global-device boolean
+case: toggle device boolean
 in:
   - state:
       projectData:
@@ -204,7 +204,7 @@ in:
           variables:
             notificationsOn:
               type: boolean
-              scope: global-device
+              scope: device
               default: false
       global:
         variables:
@@ -222,7 +222,7 @@ out:
       variables:
         notificationsOn:
           type: boolean
-          scope: global-device
+          scope: device
           default: false
   global:
     variables:
@@ -248,11 +248,11 @@ in:
               default: 0
             volume:
               type: number
-              scope: global-device
+              scope: device
               default: 50
             achievement1:
               type: boolean
-              scope: global-account
+              scope: account
               default: false
       global:
         variables:
@@ -282,11 +282,11 @@ out:
           default: 0
         volume:
           type: number
-          scope: global-device
+          scope: device
           default: 50
         achievement1:
           type: boolean
-          scope: global-account
+          scope: account
           default: false
   global:
     variables:
@@ -564,7 +564,7 @@ in:
       - variableId: badVar
         op: set
         value: 10
-throws: "Invalid variable scope: invalid for variable badVar. Expected one of: context, global-device, global-account"
+throws: "Invalid variable scope: invalid for variable badVar. Expected one of: context, device, account"
 ---
 case: error - unknown variable type
 in:
@@ -723,7 +723,7 @@ out:
             - id: sword
               name: Steel Sword
 ---
-case: set global-device object variable
+case: set device object variable
 in:
   - state:
       projectData:
@@ -731,7 +731,7 @@ in:
           variables:
             pageButtons:
               type: object
-              scope: global-device
+              scope: device
               default:
                 items: []
       global:
@@ -757,7 +757,7 @@ out:
       variables:
         pageButtons:
           type: object
-          scope: global-device
+          scope: device
           default:
             items: []
   global:

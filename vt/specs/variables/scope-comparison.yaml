@@ -1,6 +1,6 @@
 ---
 title: Variable Scopes Comparison
-description: Demonstrates context, global-device, and global-account variable scopes
+description: Demonstrates context, device, and account variable scopes
 ---
 screen:
   width: 1920
@@ -18,19 +18,19 @@ resources:
       default: Town Square
     textSpeed:
       type: number
-      scope: global-device
+      scope: device
       default: 50
     volume:
       type: number
-      scope: global-device
+      scope: device
       default: 80
     totalPlaythroughs:
       type: number
-      scope: global-account
+      scope: account
       default: 0
     secretUnlocked:
       type: boolean
-      scope: global-account
+      scope: account
       default: false
   controls:
     base1:
@@ -176,30 +176,30 @@ resources:
                           op: set
                           value: Dark Forest
               textStyleId: textStyle9
-        - id: global-deviceSection
+        - id: deviceSection
           type: container
           x: 100
           y: 450
           children:
-            - id: global-deviceTitle
+            - id: deviceTitle
               type: text
               content: GLOBAL-DEVICE SCOPE
               x: 0
               y: 0
               textStyleId: textStyle2
-            - id: global-deviceDesc
+            - id: deviceDesc
               type: text
               content: Settings stored on this device
               x: 0
               y: 40
               textStyleId: textStyle3
-            - id: global-deviceDesc2
+            - id: deviceDesc2
               type: text
               content: ✓ Persists across sessions
               x: 0
               y: 70
               textStyleId: textStyle4
-            - id: global-deviceDesc3
+            - id: deviceDesc3
               type: text
               content: ✗ NOT in save slots
               x: 0
@@ -314,30 +314,30 @@ resources:
                           op: decrement
                           value: 10
               textStyleId: textStyle7
-        - id: global-accountSection
+        - id: accountSection
           type: container
           x: 100
           y: 750
           children:
-            - id: global-accountTitle
+            - id: accountTitle
               type: text
               content: GLOBAL-ACCOUNT SCOPE
               x: 0
               y: 0
               textStyleId: textStyle2
-            - id: global-accountDesc
+            - id: accountDesc
               type: text
               content: Achievements across all playthroughs
               x: 0
               y: 40
               textStyleId: textStyle3
-            - id: global-accountDesc2
+            - id: accountDesc2
               type: text
               content: ✓ Persists forever
               x: 0
               y: 70
               textStyleId: textStyle4
-            - id: global-accountDesc3
+            - id: accountDesc3
               type: text
               content: ✓ Shared across saves
               x: 0
@@ -447,43 +447,43 @@ resources:
               x: 350
               y: 100
               textStyleId: textStyle4
-            - id: global-deviceRow
+            - id: deviceRow
               type: text
               content: Device
               x: 0
               y: 140
               textStyleId: textStyle4
-            - id: global-deviceSaved
+            - id: deviceSaved
               type: text
               content: ✗ No
               x: 200
               y: 140
               textStyleId: textStyle4
-            - id: global-devicePersist
+            - id: devicePersist
               type: text
               content: ✓ Yes
               x: 350
               y: 140
               textStyleId: textStyle4
-            - id: global-accountRow
+            - id: accountRow
               type: text
               content: Global
               x: 0
               y: 180
               textStyleId: textStyle4
-            - id: global-accountSaved
+            - id: accountSaved
               type: text
               content: ✗ No*
               x: 200
               y: 180
               textStyleId: textStyle4
-            - id: global-accountPersist
+            - id: accountPersist
               type: text
               content: ✓ Yes
               x: 350
               y: 180
               textStyleId: textStyle4
-            - id: global-accountNote
+            - id: accountNote
               type: text
               content: "* Shared across all saves"
               x: 0

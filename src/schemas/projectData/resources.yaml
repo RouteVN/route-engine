@@ -309,7 +309,7 @@ properties:
             enum: [string, boolean, number, object]
           scope:
             type: string
-            enum: [context, global-device, global-account]
+            enum: [context, device, account]
           default:
             description: Default initial value for the variable. Runtime accepts any YAML value and uses it as-is
         additionalProperties: true

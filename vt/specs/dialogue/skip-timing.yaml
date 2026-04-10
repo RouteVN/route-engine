@@ -22,7 +22,7 @@ resources:
   variables:
     _skipUnseenText:
       type: boolean
-      scope: global-device
+      scope: device
       default: true
   characters:
     narrator:

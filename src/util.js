@@ -347,7 +347,7 @@ export const getVariableDefaultValue = (config, variableId) => {
  *   resources: {
  *     variables: {
  *       playerName: { type: 'string', scope: 'context', default: 'Player' },
- *       volume: { type: 'number', scope: 'global-device', default: 50 }
+ *       volume: { type: 'number', scope: 'device', default: 50 }
  *     }
  *   }
  * };
@@ -370,7 +370,7 @@ export const getDefaultVariablesFromProjectData = (projectData) => {
       if (config.scope === "context") {
         contextVariableDefaultValues[variableId] = value;
       } else {
-        // global-device and global-account scopes both go to globalVariablesDefaultValues
+        // device and account scopes both go to globalVariablesDefaultValues
         globalVariablesDefaultValues[variableId] = value;
       }
     },
@@ -388,12 +388,12 @@ export const getDefaultVariablesFromProjectData = (projectData) => {
  * @throws {Error} If scope is missing or invalid
  *
  * @example
- * validateVariableScope('runtime', 'score') // No error
+ * validateVariableScope('device', 'score') // No error
  * validateVariableScope('invalid', 'score') // Throws Error
  * validateVariableScope(undefined, 'score') // Throws Error
  */
 export const validateVariableScope = (scope, variableId) => {
-  const VALID_SCOPES = ["context", "global-device", "global-account"];
+  const VALID_SCOPES = ["context", "device", "account"];
 
   if (!scope) {
     throw new Error(`Variable scope is required for variable: ${variableId}`);
@@ -491,17 +491,17 @@ export const applyVariableOperation = (currentValue, op, value) => {
  *
  * @param {Object} variables - Object containing variable values
  * @param {Object} variableConfigs - Variable configuration objects with scope information
- * @param {string} targetScope - Scope to filter by (context, global-device, or global-account)
+ * @param {string} targetScope - Scope to filter by (context, device, or account)
  * @returns {Object} New object containing only variables matching the target scope
  *
  * @example
  * const vars = { score: 100, volume: 80, achievement: true };
  * const configs = {
  *   score: { scope: 'context' },
- *   volume: { scope: 'global-device' },
- *   achievement: { scope: 'global-account' }
+ *   volume: { scope: 'device' },
+ *   achievement: { scope: 'account' }
  * };
- * filterVariablesByScope(vars, configs, 'global-device') // { volume: 80 }
+ * filterVariablesByScope(vars, configs, 'device') // { volume: 80 }
  * filterVariablesByScope(vars, configs, 'context') // { score: 100 }
  */
 export const filterVariablesByScope = (

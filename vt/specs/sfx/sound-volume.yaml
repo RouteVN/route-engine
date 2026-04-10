@@ -9,11 +9,11 @@ resources:
   variables:
     _soundVolume:
       type: number
-      scope: global-device
+      scope: device
       default: 500
     _muteAll:
       type: boolean
-      scope: global-device
+      scope: device
       default: false
   layouts:
     main:

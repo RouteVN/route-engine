@@ -14,7 +14,7 @@ resources:
   variables:
     loadPage:
       type: number
-      scope: global-device
+      scope: device
       default: 1
     previewFrame:
       type: string
