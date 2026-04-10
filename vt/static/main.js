@@ -97,6 +97,18 @@ const init = async () => {
       url: "/public/characters/sprite-2-2.png",
       type: "image/png",
     },
+    character_parts_body: {
+      url: "/public/characters/parts-body-base.png",
+      type: "image/png",
+    },
+    character_parts_face_neutral: {
+      url: "/public/characters/parts-face-neutral.png",
+      type: "image/png",
+    },
+    character_parts_face_smile: {
+      url: "/public/characters/parts-face-smile.png",
+      type: "image/png",
+    },
     "94lkj289": {
       url: "/public/logo1.png",
       type: "image/png",
