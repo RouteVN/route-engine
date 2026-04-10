@@ -13,11 +13,11 @@ resources:
       default: true
     notificationsOn:
       type: boolean
-      scope: global-device
+      scope: device
       default: false
     tutorialCompleted:
       type: boolean
-      scope: global-account
+      scope: account
       default: false
   controls:
     base1:

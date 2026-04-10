@@ -20,7 +20,7 @@ context:
   - in game point systems
 
 
-global-device
+device
 - stored per device, saved globally in device
 - will persist over restarts
 - not saved in save data
@@ -28,9 +28,9 @@ global-device
   - audio volume
   - text display speed
 
-global-account
+account
 - persists across game/story starts
-- unlike global-device, should be tied to the user in cloud systems.
+- unlike device, should be tied to the user in cloud systems.
 - example:
   - show extra section only when user has completed a specifc route or entire story
 
@@ -42,5 +42,4 @@ boolean, string, number/integer, object, array, enum, etc...
 ## Actions
 
 need action to edit/mutate variable values. currently I think we have only basic increment
-
 

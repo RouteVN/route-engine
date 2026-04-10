@@ -35,7 +35,7 @@ anyOf:
     required: [name, payload]
     additionalProperties: false
 
-  - title: Save global-device variables effect
+  - title: Save device variables effect
     type: object
     properties:
       name:
@@ -51,7 +51,7 @@ anyOf:
     required: [name, payload]
     additionalProperties: false
 
-  - title: Save global-account variables effect
+  - title: Save account variables effect
     type: object
     properties:
       name:

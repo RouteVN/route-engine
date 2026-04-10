@@ -61,7 +61,7 @@ resources:
   variables:
     _autoForwardTime:
       type: number
-      scope: global-device
+      scope: device
       default: 5000
   controls:
     guardControls:

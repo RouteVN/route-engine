@@ -57,7 +57,7 @@ resources:
     textSpeed:
       type: number
       default: 50
-      persistence: global-device
+      persistence: device
   controls:
     base1:
       elements:

@@ -9,7 +9,7 @@ resources:
   variables:
     sliderValue:
       type: number
-      scope: global-device
+      scope: device
       default: 50
   images:
     horizontal_idle_thumb:

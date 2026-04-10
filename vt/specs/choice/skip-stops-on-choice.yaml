@@ -41,7 +41,7 @@ resources:
   variables:
     _skipUnseenText:
       type: boolean
-      scope: global-device
+      scope: device
       default: true
   controls:
     guardControls:

@@ -13,7 +13,7 @@ resources:
       default: Guest
     currentStatus:
       type: string
-      scope: global-account
+      scope: account
       default: Idle
   controls:
     base1:

@@ -210,7 +210,7 @@ properties:
           $ref: "./effects.yaml"
       variables:
         type: object
-        description: Global-device and global-account variables
+        description: Device- and account-scoped variables
         additionalProperties: true
       saveSlots:
         type: object

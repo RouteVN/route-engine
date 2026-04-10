@@ -2688,9 +2688,9 @@ export const updateVariable = ({ state }, payload) => {
     if (scope === "context") {
       contextVariableModified = true;
       contextOperations.push({ variableId, op, value });
-    } else if (scope === "global-device") {
+    } else if (scope === "device") {
       globalDeviceModified = true;
-    } else if (scope === "global-account") {
+    } else if (scope === "account") {
       globalAccountModified = true;
     }
 
@@ -2705,12 +2705,12 @@ export const updateVariable = ({ state }, payload) => {
     });
   }
 
-  // Save global-device variables if any were modified
+  // Save device-scoped variables if any were modified
   if (globalDeviceModified) {
     const globalDeviceVars = filterVariablesByScope(
       state.global.variables,
       state.projectData.resources?.variables,
-      "global-device",
+      "device",
     );
     state.global.pendingEffects.push({
       name: "saveGlobalDeviceVariables",
@@ -2720,12 +2720,12 @@ export const updateVariable = ({ state }, payload) => {
     });
   }
 
-  // Save global-account variables if any were modified
+  // Save account-scoped variables if any were modified
   if (globalAccountModified) {
     const globalAccountVars = filterVariablesByScope(
       state.global.variables,
       state.projectData.resources?.variables,
-      "global-account",
+      "account",
     );
     state.global.pendingEffects.push({
       name: "saveGlobalAccountVariables",

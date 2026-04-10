@@ -57,8 +57,8 @@ Rollback data lives inside context state and is therefore part of saved story st
 
 Persistent global variables are variables with scope:
 
-- `global-device`
-- `global-account`
+- `device`
+- `account`
 
 These are not story-local and should not be stored inside save slot state.
 
@@ -161,7 +161,7 @@ This is a product decision, not an implementation detail.
 
 ### Persistent globals stay outside save slots
 
-`global-device` and `global-account` variables are intentionally not saved into slots.
+`device` and `account` variables are intentionally not saved into slots.
 
 Load should not roll them back or replace them from slot data.
 

@@ -90,7 +90,7 @@ in:
                   name: Steel Sword
           pageButtons:
             type: object
-            scope: global-device
+            scope: device
             default:
               items:
                 - label: A
@@ -142,7 +142,7 @@ out:
                 name: Steel Sword
         pageButtons:
           type: object
-          scope: global-device
+          scope: device
           default:
             items:
               - label: A
@@ -277,15 +277,15 @@ in:
         variables:
           volume:
             type: number
-            scope: global-device
+            scope: device
             default: 50
           achievement1:
             type: boolean
-            scope: global-account
+            scope: account
             default: false
           newVariable:
             type: string
-            scope: global-device
+            scope: device
             default: "default"
       story:
         initialSceneId: "scene1"
@@ -326,15 +326,15 @@ out:
       variables:
         volume:
           type: number
-          scope: global-device
+          scope: device
           default: 50
         achievement1:
           type: boolean
-          scope: global-account
+          scope: account
           default: false
         newVariable:
           type: string
-          scope: global-device
+          scope: device
           default: "default"
     story:
       initialSceneId: "scene1"

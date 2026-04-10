@@ -9,7 +9,7 @@ resources:
   variables:
     count:
       type: number
-      scope: global-account
+      scope: account
       default: 0
   images:
     dmni32:
