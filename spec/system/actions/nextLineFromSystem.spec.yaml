@@ -197,8 +197,7 @@ in:
         isLineCompleted: true
         autoMode: true
         skipMode: true
-        variables:
-          _skipUnseenText: true
+        skipUnseenText: true
         viewedRegistry:
           sections: []
         nextLineConfig:
@@ -231,8 +230,7 @@ out:
     isLineCompleted: false
     autoMode: false
     skipMode: false
-    variables:
-      _skipUnseenText: true
+    skipUnseenText: true
     viewedRegistry:
       sections:
         - sectionId: "section1"

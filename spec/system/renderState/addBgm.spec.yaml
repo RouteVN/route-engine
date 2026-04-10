@@ -24,8 +24,8 @@ in:
       sounds:
         backgroundMusic:
           fileId: "bgm.mp3"
-    variables:
-      _musicVolume: 700
+    runtime:
+      musicVolume: 700
 out:
   elements:
     - id: "story"
@@ -94,8 +94,8 @@ in:
       sounds:
         customMusic:
           fileId: "custom.mp3"
-    variables:
-      _musicVolume: 300
+    runtime:
+      musicVolume: 300
 out:
   elements:
     - id: "story"

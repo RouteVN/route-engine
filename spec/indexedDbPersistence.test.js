@@ -257,12 +257,14 @@ describe("indexedDbPersistence", () => {
         textSpeed: 42,
       },
       globalAccountVariables: {},
+      globalRuntime: {},
     });
 
     expect(await betaPersistence.load()).toEqual({
       saveSlots: {},
       globalDeviceVariables: {},
       globalAccountVariables: {},
+      globalRuntime: {},
     });
   });
 
@@ -301,6 +303,7 @@ describe("indexedDbPersistence", () => {
       saveSlots: {},
       globalDeviceVariables: {},
       globalAccountVariables: {},
+      globalRuntime: {},
     });
 
     expect(await betaPersistence.load()).toEqual({
@@ -309,6 +312,7 @@ describe("indexedDbPersistence", () => {
       globalAccountVariables: {
         routeUnlocked: true,
       },
+      globalRuntime: {},
     });
   });
 
@@ -372,6 +376,7 @@ describe("indexedDbPersistence", () => {
       globalAccountVariables: {
         unlockedChapter: 3,
       },
+      globalRuntime: {},
     });
   });
 });

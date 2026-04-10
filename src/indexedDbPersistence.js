@@ -6,6 +6,7 @@ const createEmptyPersistedState = () => ({
   saveSlots: {},
   globalDeviceVariables: {},
   globalAccountVariables: {},
+  globalRuntime: {},
 });
 
 const isPlainObject = (value) =>
@@ -25,6 +26,9 @@ const normalizePersistedState = (value = {}) => {
       normalizedValue.globalAccountVariables,
     )
       ? normalizedValue.globalAccountVariables
+      : {},
+    globalRuntime: isPlainObject(normalizedValue.globalRuntime)
+      ? normalizedValue.globalRuntime
       : {},
   };
 };
@@ -325,6 +329,15 @@ export const createIndexedDbPersistence = (options = {}) => {
           globalAccountVariables: isPlainObject(globalAccountVariables)
             ? globalAccountVariables
             : {},
+        },
+      }),
+    saveGlobalRuntime: async (globalRuntime) =>
+      writeNamespaceRecord({
+        databasePromise,
+        objectStoreName,
+        namespace: resolvedNamespace,
+        patch: {
+          globalRuntime: isPlainObject(globalRuntime) ? globalRuntime : {},
         },
       }),
   };

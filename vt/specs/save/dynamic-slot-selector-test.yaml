@@ -12,10 +12,6 @@ resources:
       width: 280
       height: 148
   variables:
-    loadPage:
-      type: number
-      scope: device
-      default: 1
     previewFrame:
       type: string
       scope: context
@@ -147,7 +143,7 @@ resources:
           textStyleId: textStyle4
         - id: subtitle
           type: text
-          content: Page ${variables.loadPage}
+          content: Page ${runtime.saveLoadPagination}
           x: 380
           y: 280
           textStyleId: textStyle5
@@ -182,11 +178,7 @@ resources:
           click:
             payload:
               actions:
-                updateVariable:
-                  id: prevPage
-                  operations:
-                    - variableId: loadPage
-                      op: decrement
+                decrementSaveLoadPagination: {}
           textStyleId: textStyle6
         - id: btnNextPage
           type: text
@@ -198,11 +190,7 @@ resources:
           click:
             payload:
               actions:
-                updateVariable:
-                  id: nextPage
-                  operations:
-                    - variableId: loadPage
-                      op: increment
+                incrementSaveLoadPagination: {}
           textStyleId: textStyle6
         - id: slotsGrid
           type: container

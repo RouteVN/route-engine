@@ -38,11 +38,6 @@ screen:
   height: 720
   backgroundColor: "#101010"
 resources:
-  variables:
-    _skipUnseenText:
-      type: boolean
-      scope: device
-      default: true
   controls:
     guardControls:
       elements:
@@ -75,14 +70,14 @@ resources:
           content: SKIP
           textStyleId: statusText
         - id: skip-status-on
-          $when: skipMode
+          $when: runtime.skipMode
           type: text
           x: 300
           y: 56
           content: "SKIP: ON"
           textStyleId: statusText
         - id: skip-status-off
-          $when: "!skipMode"
+          $when: "!runtime.skipMode"
           type: text
           x: 300
           y: 56
@@ -176,6 +171,8 @@ story:
           lines:
             - id: line1
               actions:
+                setSkipUnseenText:
+                  value: true
                 control:
                   resourceId: guardControls
                 dialogue:

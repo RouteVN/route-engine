@@ -19,11 +19,6 @@ screen:
   height: 1080
   backgroundColor: "#000000"
 resources:
-  variables:
-    _skipUnseenText:
-      type: boolean
-      scope: device
-      default: true
   characters:
     narrator:
       name: Narrator
@@ -106,6 +101,8 @@ story:
           lines:
             - id: line1
               actions:
+                setSkipUnseenText:
+                  value: true
                 background:
                   resourceId: stageLayout
                 dialogue:

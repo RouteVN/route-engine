@@ -85,6 +85,10 @@ export default function createRouteEngine(options) {
     return _systemStore.selectAutoMode();
   };
 
+  const selectRuntime = () => {
+    return _systemStore.selectRuntime();
+  };
+
   const selectIsChoiceVisible = () => {
     return _systemStore.selectIsChoiceVisible();
   };
@@ -107,6 +111,7 @@ export default function createRouteEngine(options) {
         variables: _systemStore.selectAllVariables
           ? _systemStore.selectAllVariables()
           : undefined,
+        runtime: _systemStore.selectRuntime ? _systemStore.selectRuntime() : {},
       };
     }
     if (Object.prototype.hasOwnProperty.call(eventContext, "event")) {
@@ -122,6 +127,7 @@ export default function createRouteEngine(options) {
       ...additionalContext,
       _event,
       variables,
+      runtime: _systemStore.selectRuntime ? _systemStore.selectRuntime() : {},
     };
   };
 
@@ -162,6 +168,7 @@ export default function createRouteEngine(options) {
     selectSaveSlot,
     selectSaveSlotPage,
     selectSaveSlots: selectSaveSlotMap,
+    selectRuntime,
     selectIsChoiceVisible,
     handleLineActions,
     getNamespace,

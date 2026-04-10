@@ -113,6 +113,110 @@ properties:
     properties: {}
     additionalProperties: false
 
+  setDialogueTextSpeed:
+    type: object
+    description: Set dialogue reveal speed
+    properties:
+      value:
+        type: number
+    required: [value]
+    additionalProperties: false
+
+  setAutoForwardDelay:
+    type: object
+    description: Set auto mode delay in milliseconds
+    properties:
+      value:
+        type: number
+        minimum: 0
+    required: [value]
+    additionalProperties: false
+
+  setSkipUnseenText:
+    type: object
+    description: Set whether skip mode should include unseen text
+    properties:
+      value:
+        type: boolean
+    required: [value]
+    additionalProperties: false
+
+  setSkipTransitionsAndAnimations:
+    type: object
+    description: Set whether transitions and animations should be skipped
+    properties:
+      value:
+        type: boolean
+    required: [value]
+    additionalProperties: false
+
+  setSoundVolume:
+    type: object
+    description: Set effective SFX volume
+    properties:
+      value:
+        type: number
+    required: [value]
+    additionalProperties: false
+
+  setMusicVolume:
+    type: object
+    description: Set effective music volume
+    properties:
+      value:
+        type: number
+    required: [value]
+    additionalProperties: false
+
+  setMuteAll:
+    type: object
+    description: Set whether all sound output is muted
+    properties:
+      value:
+        type: boolean
+    required: [value]
+    additionalProperties: false
+
+  setSaveLoadPagination:
+    type: object
+    description: Set the current save/load pagination page
+    properties:
+      value:
+        type: integer
+        minimum: 1
+    required: [value]
+    additionalProperties: false
+
+  incrementSaveLoadPagination:
+    type: object
+    description: Increment the current save/load pagination page
+    properties: {}
+    additionalProperties: false
+
+  decrementSaveLoadPagination:
+    type: object
+    description: Decrement the current save/load pagination page
+    properties: {}
+    additionalProperties: false
+
+  setMenuPage:
+    type: object
+    description: Set the current menu page
+    properties:
+      value:
+        type: string
+    required: [value]
+    additionalProperties: false
+
+  setMenuEntryPoint:
+    type: object
+    description: Set the current menu entry point
+    properties:
+      value:
+        type: string
+    required: [value]
+    additionalProperties: false
+
   showConfirmDialog:
     type: object
     description: Show a transient confirm dialog rendered from a layout resource

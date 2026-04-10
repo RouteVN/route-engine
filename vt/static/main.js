@@ -233,8 +233,12 @@ const init = async () => {
     return bytes.buffer;
   };
   const persistence = createIndexedDbPersistence({ namespace });
-  const { saveSlots, globalDeviceVariables, globalAccountVariables } =
-    await persistence.load();
+  const {
+    saveSlots,
+    globalDeviceVariables,
+    globalAccountVariables,
+    globalRuntime,
+  } = await persistence.load();
 
   let engine;
   const effectsHandler = createEffectsHandler({
@@ -323,6 +327,7 @@ const init = async () => {
       global: {
         saveSlots,
         variables: { ...globalDeviceVariables, ...globalAccountVariables },
+        runtime: globalRuntime,
       },
       projectData,
     },

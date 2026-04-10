@@ -910,8 +910,17 @@ const getStoryContainer = (elements = []) => {
   return elements.find((element) => element.id === "story");
 };
 
+const getEffectiveSoundVolume = (runtime = {}) => {
+  return runtime?.muteAll ? 0 : (runtime?.soundVolume ?? 500);
+};
+
+const getEffectiveMusicVolume = (runtime = {}) => {
+  return runtime?.muteAll ? 0 : (runtime?.musicVolume ?? 500);
+};
+
 const createLayoutTemplateData = ({
   variables,
+  runtime,
   saveSlots = [],
   isLineCompleted,
   autoMode,
@@ -921,22 +930,37 @@ const createLayoutTemplateData = ({
   confirmDialog,
   historyDialogue = [],
   characters = {},
+  dialogueUIHidden,
+  skipOnlyViewedLines,
+  skipTransitionsAndAnimations,
 } = {}) => {
+  const resolvedRuntime = {
+    dialogueTextSpeed: runtime?.dialogueTextSpeed ?? 50,
+    autoForwardDelay: runtime?.autoForwardDelay ?? 1000,
+    skipUnseenText: runtime?.skipUnseenText ?? false,
+    skipTransitionsAndAnimations:
+      runtime?.skipTransitionsAndAnimations ?? false,
+    soundVolume: runtime?.soundVolume ?? 500,
+    musicVolume: runtime?.musicVolume ?? 500,
+    muteAll: runtime?.muteAll ?? false,
+    saveLoadPagination: runtime?.saveLoadPagination ?? 1,
+    menuPage: runtime?.menuPage ?? "",
+    menuEntryPoint: runtime?.menuEntryPoint ?? "",
+    autoMode: runtime?.autoMode ?? autoMode ?? false,
+    skipMode: runtime?.skipMode ?? skipMode ?? false,
+    dialogueUIHidden: runtime?.dialogueUIHidden ?? dialogueUIHidden ?? false,
+    isLineCompleted: runtime?.isLineCompleted ?? isLineCompleted ?? false,
+  };
+
   return {
     variables,
+    runtime: resolvedRuntime,
     saveSlots,
-    isLineCompleted,
-    autoMode,
-    skipMode,
     isChoiceVisible,
     canRollback,
     confirmDialog,
     historyDialogue,
     characters,
-    effectiveSoundVolume: variables?._muteAll
-      ? 0
-      : (variables?._soundVolume ?? 500),
-    textSpeed: variables?._textSpeed ?? 50,
   };
 };
 
@@ -1307,6 +1331,7 @@ export const addBackgroundOrCg = (
     isLineCompleted,
     skipTransitionsAndAnimations,
     variables,
+    runtime,
     autoMode,
     skipMode,
     isChoiceVisible,
@@ -1375,12 +1400,14 @@ export const addBackgroundOrCg = (
           bgContainer,
           createLayoutTemplateData({
             variables,
+            runtime,
             saveSlots,
             isLineCompleted,
             autoMode,
             skipMode,
             isChoiceVisible,
             canRollback,
+            skipTransitionsAndAnimations,
           }),
           { functions: jemplFunctions },
         );
@@ -1582,6 +1609,7 @@ export const addVisuals = (
     isLineCompleted,
     skipTransitionsAndAnimations,
     variables,
+    runtime,
     autoMode,
     skipMode,
     isChoiceVisible,
@@ -1691,12 +1719,14 @@ export const addVisuals = (
             visualContainer,
             createLayoutTemplateData({
               variables,
+              runtime,
               saveSlots,
               isLineCompleted,
               autoMode,
               skipMode,
               isChoiceVisible,
               canRollback,
+              skipTransitionsAndAnimations,
             }),
             { functions: jemplFunctions },
           );
@@ -1759,6 +1789,7 @@ export const addDialogue = (
     isLineCompleted,
     skipTransitionsAndAnimations,
     variables,
+    runtime,
     saveSlots = [],
   },
 ) => {
@@ -1824,20 +1855,25 @@ export const addDialogue = (
           };
         },
       );
-
-      const templateData = {
+      const resolvedRuntime = createLayoutTemplateData({
         variables,
+        runtime,
+        isLineCompleted,
         autoMode,
         skipMode,
         isChoiceVisible,
         canRollback,
+        dialogueUIHidden,
         skipOnlyViewedLines,
-        isLineCompleted,
+        skipTransitionsAndAnimations,
+      }).runtime;
+
+      const templateData = {
+        variables,
+        runtime: resolvedRuntime,
+        isChoiceVisible,
+        canRollback,
         saveSlots,
-        effectiveSoundVolume: variables?._muteAll
-          ? 0
-          : (variables?._soundVolume ?? 500),
-        textSpeed: variables?._textSpeed ?? 50,
         dialogueLines,
         dialogue: {
           character: {
@@ -1921,6 +1957,7 @@ export const addChoices = (
     isLineCompleted,
     skipTransitionsAndAnimations,
     variables,
+    runtime,
     autoMode,
     skipMode,
     isChoiceVisible,
@@ -1942,12 +1979,14 @@ export const addChoices = (
         {
           ...createLayoutTemplateData({
             variables,
+            runtime,
             saveSlots,
             isLineCompleted,
             autoMode,
             skipMode,
             isChoiceVisible: isChoiceVisible ?? !!presentationState.choice,
             canRollback,
+            skipTransitionsAndAnimations,
           }),
           choice: {
             items: presentationState.choice?.items ?? [],
@@ -2009,6 +2048,7 @@ export const addControl = (
     presentationState,
     resources = {},
     variables,
+    runtime,
     isLineCompleted,
     autoMode,
     skipMode,
@@ -2055,12 +2095,14 @@ export const addControl = (
       resources,
       templateData: createLayoutTemplateData({
         variables,
+        runtime,
         saveSlots,
         isLineCompleted,
         autoMode,
         skipMode,
         isChoiceVisible,
         canRollback,
+        skipTransitionsAndAnimations,
       }),
       isLineCompleted,
       skipMode,
@@ -2071,7 +2113,10 @@ export const addControl = (
   return state;
 };
 
-export const addBgm = (state, { presentationState, resources, variables }) => {
+export const addBgm = (
+  state,
+  { presentationState, resources, runtime, variables },
+) => {
   const { elements, audio } = state;
   if (presentationState.bgm && resources) {
     // Find the story container
@@ -2080,18 +2125,17 @@ export const addBgm = (state, { presentationState, resources, variables }) => {
 
     const audioResource = resources.sounds[presentationState.bgm.resourceId];
     if (!audioResource) return state;
-
-    // Calculate effective music volume respecting _muteAll and _musicVolume
-    const effectiveMusicVolume = variables?._muteAll
-      ? 0
-      : (variables?._musicVolume ?? 500);
+    const resolvedRuntime = createLayoutTemplateData({
+      variables,
+      runtime,
+    }).runtime;
 
     audio.push({
       id: "bgm",
       type: "sound",
       src: audioResource.fileId,
       loop: presentationState.bgm.loop ?? true,
-      volume: effectiveMusicVolume,
+      volume: getEffectiveMusicVolume(resolvedRuntime),
       delay: presentationState.bgm.delay ?? null,
     });
   }
@@ -2153,6 +2197,7 @@ export const addLayout = (
     previousPresentationState,
     resources = {},
     variables,
+    runtime,
     autoMode,
     skipMode,
     isChoiceVisible,
@@ -2202,12 +2247,14 @@ export const addLayout = (
         resources,
         templateData: createLayoutTemplateData({
           variables,
+          runtime,
           saveSlots,
           isLineCompleted,
           autoMode,
           skipMode,
           isChoiceVisible,
           canRollback,
+          skipTransitionsAndAnimations,
         }),
         isLineCompleted,
         skipMode,
@@ -2250,6 +2297,7 @@ export const addLayeredViews = (
   {
     resources = {},
     variables,
+    runtime,
     autoMode,
     skipMode,
     isChoiceVisible,
@@ -2307,6 +2355,7 @@ export const addLayeredViews = (
 
       const templateData = createLayoutTemplateData({
         variables,
+        runtime,
         saveSlots,
         isLineCompleted,
         autoMode,
@@ -2315,6 +2364,7 @@ export const addLayeredViews = (
         canRollback,
         historyDialogue: historyDialogueWithNames,
         characters: resources.characters || {},
+        skipTransitionsAndAnimations,
       });
 
       const processedLayeredView = parseAndRender(
@@ -2357,6 +2407,7 @@ export const addConfirmDialog = (
   {
     resources = {},
     variables,
+    runtime,
     saveSlots = [],
     autoMode,
     skipMode,
@@ -2414,6 +2465,7 @@ export const addConfirmDialog = (
     confirmDialogContainer,
     createLayoutTemplateData({
       variables,
+      runtime,
       saveSlots,
       isLineCompleted,
       autoMode,
@@ -2423,6 +2475,7 @@ export const addConfirmDialog = (
       confirmDialog,
       historyDialogue: historyDialogueWithNames,
       characters: resources.characters || {},
+      skipTransitionsAndAnimations,
     }),
     {
       functions: jemplFunctions,
