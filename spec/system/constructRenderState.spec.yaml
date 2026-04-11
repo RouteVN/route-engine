@@ -82,13 +82,13 @@ out:
         - id: "bg-cg-bgImage"
           type: "sprite"
           alpha: 1
-          anchorX: 0
-          anchorY: 0
+          anchorX: 0.5
+          anchorY: 0.5
           rotation: 0
           scaleX: 1
           scaleY: 1
-          x: 0
-          y: 0
+          x: 960
+          y: 540
           src: "background.jpg"
           width: 1920
           height: 1080
@@ -139,13 +139,13 @@ out:
         - id: "bg-cg-newBg"
           type: "sprite"
           alpha: 1
-          anchorX: 0
-          anchorY: 0
+          anchorX: 0.5
+          anchorY: 0.5
           rotation: 0
           scaleX: 1
           scaleY: 1
-          x: 0
-          y: 0
+          x: 960
+          y: 540
           src: "new-background.jpg"
           width: 1920
           height: 1080

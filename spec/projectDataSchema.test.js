@@ -11,6 +11,10 @@ const projectDataSchemaId = new URL(
   "projectData/projectData.yaml",
   schemaBaseUrl,
 ).href;
+const presentationActionsSchemaId = new URL(
+  "presentationActions.yaml",
+  schemaBaseUrl,
+).href;
 const systemActionsSchemaId = new URL("systemActions.yaml", schemaBaseUrl).href;
 const projectDataSchemaPaths = [
   path.join(schemasRoot, "projectData"),
@@ -110,6 +114,7 @@ const createValidator = (schemaId) => {
 };
 
 const validateProjectData = createValidator(projectDataSchemaId);
+const validatePresentationActions = createValidator(presentationActionsSchemaId);
 const validateSystemActions = createValidator(systemActionsSchemaId);
 
 const createMinimalProjectData = (overrides = {}) => ({
@@ -145,6 +150,18 @@ describe("projectData schema", () => {
   it("accepts minimal valid projectData", () => {
     expect(validateProjectData(createMinimalProjectData())).toBe(true);
     expect(validateProjectData.errors).toBeNull();
+  });
+
+  it("accepts background transformId in presentation actions", () => {
+    expect(
+      validatePresentationActions({
+        background: {
+          resourceId: "bg1",
+          transformId: "centerStage",
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
   });
 
   it("parses all VT YAML specs", () => {
