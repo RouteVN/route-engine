@@ -393,10 +393,7 @@ const getRequiredVisualTransform = (resources, item) => {
   return transform;
 };
 
-const getBackgroundTransform = (
-  resources,
-  background = {},
-) => {
+const getBackgroundTransform = (resources, background = {}) => {
   if (!background?.transformId) {
     return undefined;
   }
