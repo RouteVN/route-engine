@@ -1,0 +1,42 @@
+---
+title: Background Transform Image
+description: |
+  Image backgrounds should honor an authored transformId instead of always
+  using the centered default placement.
+
+  - the image background should render at the authored transform x/y
+  - the authored transform anchor should override the default 0.5/0.5 anchor
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  images:
+    bg-card:
+      fileId: dmni32
+      width: 640
+      height: 360
+  transforms:
+    top-left-card:
+      x: 120
+      y: 90
+      anchorX: 0
+      anchorY: 0
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+story:
+  initialSceneId: backgroundScene
+  scenes:
+    backgroundScene:
+      name: Background Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                background:
+                  resourceId: bg-card
+                  transformId: top-left-card

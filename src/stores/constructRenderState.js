@@ -393,6 +393,24 @@ const getRequiredVisualTransform = (resources, item) => {
   return transform;
 };
 
+const getBackgroundTransform = (
+  resources,
+  background = {},
+) => {
+  if (!background?.transformId) {
+    return undefined;
+  }
+
+  const transform = resources.transforms?.[background.transformId];
+  if (!transform) {
+    throw new Error(
+      `Transform "${background.transformId}" not found for background`,
+    );
+  }
+
+  return transform;
+};
+
 const getTextStyleResources = (resources = {}) => resources.textStyles || {};
 const getImageResources = (resources = {}) => resources.images || {};
 const getColorResources = (resources = {}) => resources.colors || {};
@@ -1328,6 +1346,7 @@ export const addBackgroundOrCg = (
     presentationState,
     previousPresentationState,
     resources = {},
+    screen = { width: 1920, height: 1080 },
     isLineCompleted,
     skipTransitionsAndAnimations,
     variables,
@@ -1346,6 +1365,10 @@ export const addBackgroundOrCg = (
     if (!storyContainer) {
       return state;
     }
+    const authoredBackgroundTransform = getBackgroundTransform(
+      resources,
+      presentationState.background,
+    );
 
     const previousBackgroundResourceId =
       previousPresentationState?.background?.resourceId;
@@ -1362,20 +1385,30 @@ export const addBackgroundOrCg = (
         videos[currentBackgroundResourceId];
       if (background) {
         const isVideo = videos[currentBackgroundResourceId] !== undefined;
+        const backgroundTransform = {
+          x: (screen?.width ?? 1920) / 2,
+          y: (screen?.height ?? 1080) / 2,
+          anchorX: 0.5,
+          anchorY: 0.5,
+          rotation: 0,
+          scaleX: 1,
+          scaleY: 1,
+          ...authoredBackgroundTransform,
+        };
         const element = {
           id: `bg-cg-${currentBackgroundResourceId}`,
           type: isVideo ? "video" : "sprite",
-          x: 0,
-          y: 0,
+          x: backgroundTransform.x,
+          y: backgroundTransform.y,
           src: background.fileId,
           width: background.width,
           height: background.height,
           alpha: 1,
-          anchorX: 0,
-          anchorY: 0,
-          rotation: 0,
-          scaleX: 1,
-          scaleY: 1,
+          anchorX: backgroundTransform.anchorX,
+          anchorY: backgroundTransform.anchorY,
+          rotation: backgroundTransform.rotation,
+          scaleX: backgroundTransform.scaleX,
+          scaleY: backgroundTransform.scaleY,
         };
 
         if (isVideo) {
@@ -1396,6 +1429,18 @@ export const addBackgroundOrCg = (
           type: "container",
           children: layout.elements,
         };
+        if (authoredBackgroundTransform) {
+          Object.assign(bgContainer, {
+            x: 0,
+            y: 0,
+            anchorX: 0,
+            anchorY: 0,
+            rotation: 0,
+            scaleX: 1,
+            scaleY: 1,
+            ...authoredBackgroundTransform,
+          });
+        }
         const processedContainer = parseAndRender(
           bgContainer,
           createLayoutTemplateData({

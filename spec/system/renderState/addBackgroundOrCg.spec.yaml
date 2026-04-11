@@ -33,17 +33,87 @@ out:
         - id: "bg-cg-bg1"
           type: "sprite"
           alpha: 1
-          anchorX: 0
-          anchorY: 0
+          anchorX: 0.5
+          anchorY: 0.5
           rotation: 0
           scaleX: 1
           scaleY: 1
-          x: 0
-          y: 0
+          x: 960
+          y: 540
           src: "image1.png"
           width: 1920
           height: 1080
   animations: []
+---
+case: add background image with transform to story container
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      background:
+        resourceId: "bg1"
+        transformId: "bgTransform"
+    resources:
+      images:
+        bg1:
+          fileId: "image1.png"
+          width: 1920
+          height: 1080
+      transforms:
+        bgTransform:
+          x: 200
+          y: 300
+          anchorX: 0
+          anchorY: 1
+          scaleX: 1.25
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "bg-cg-bg1"
+          type: "sprite"
+          alpha: 1
+          anchorX: 0
+          anchorY: 1
+          rotation: 0
+          scaleX: 1.25
+          scaleY: 1
+          x: 200
+          y: 300
+          src: "image1.png"
+          width: 1920
+          height: 1080
+  animations: []
+---
+case: unknown background transformId should throw clear error
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      background:
+        resourceId: "bg1"
+        transformId: "missing"
+    resources:
+      images:
+        bg1:
+          fileId: "image1.png"
+          width: 1920
+          height: 1080
+      transforms: {}
+throws: 'Transform "missing" not found for background'
 ---
 case: add background with single transition animation reference
 in:
@@ -85,13 +155,13 @@ out:
         - id: "bg-cg-bg1"
           type: "sprite"
           alpha: 1
-          anchorX: 0
-          anchorY: 0
+          anchorX: 0.5
+          anchorY: 0.5
           rotation: 0
           scaleX: 1
           scaleY: 1
-          x: 0
-          y: 0
+          x: 960
+          y: 540
           src: "image1.png"
           width: 1920
           height: 1080
@@ -179,13 +249,13 @@ out:
         - id: "bg-cg-bg1"
           type: "sprite"
           alpha: 1
-          anchorX: 0
-          anchorY: 0
+          anchorX: 0.5
+          anchorY: 0.5
           rotation: 0
           scaleX: 1
           scaleY: 1
-          x: 0
-          y: 0
+          x: 960
+          y: 540
           src: "image1.png"
           width: 1920
           height: 1080
@@ -247,13 +317,13 @@ out:
         - id: "bg-cg-bg1"
           type: "sprite"
           alpha: 1
-          anchorX: 0
-          anchorY: 0
+          anchorX: 0.5
+          anchorY: 0.5
           rotation: 0
           scaleX: 1
           scaleY: 1
-          x: 0
-          y: 0
+          x: 960
+          y: 540
           src: "new.jpg"
           width: 1920
           height: 1080
@@ -440,13 +510,13 @@ out:
         - id: "bg-cg-bg2"
           type: "sprite"
           alpha: 1
-          anchorX: 0
-          anchorY: 0
+          anchorX: 0.5
+          anchorY: 0.5
           rotation: 0
           scaleX: 1
           scaleY: 1
-          x: 0
-          y: 0
+          x: 960
+          y: 540
           src: "background.jpg"
           width: 1920
           height: 1080
@@ -518,6 +588,64 @@ out:
                 fontStyle: "normal"
                 lineHeight: 1
                 fill: "#FFFFFF"
+  animations: []
+---
+case: add background layout with transform
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      background:
+        resourceId: "bgLayout"
+        transformId: "bgTransform"
+    resources:
+      layouts:
+        bgLayout:
+          elements:
+            - id: "bg-panel"
+              type: "rect"
+              width: 100
+              height: 50
+              colorId: "panel"
+      colors:
+        panel:
+          hex: "#000000"
+      transforms:
+        bgTransform:
+          x: 400
+          y: 250
+          anchorX: 0
+          anchorY: 0
+          rotation: 12
+          scaleX: 0.75
+          scaleY: 1.1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "bg-cg-bgLayout"
+          type: "container"
+          x: 400
+          y: 250
+          anchorX: 0
+          anchorY: 0
+          rotation: 12
+          scaleX: 0.75
+          scaleY: 1.1
+          children:
+            - id: "bg-panel"
+              type: "rect"
+              width: 100
+              height: 50
+              fill: "#000000"
   animations: []
 ---
 case: resolves colorId in background layout elements
@@ -642,13 +770,13 @@ out:
         - id: "bg-cg-bg1"
           type: "sprite"
           alpha: 1
-          anchorX: 0
-          anchorY: 0
+          anchorX: 0.5
+          anchorY: 0.5
           rotation: 0
           scaleX: 1
           scaleY: 1
-          x: 0
-          y: 0
+          x: 960
+          y: 540
           src: "image1.png"
           width: 1920
           height: 1080
@@ -711,13 +839,13 @@ out:
         - id: "bg-cg-bg1"
           type: "sprite"
           alpha: 1
-          anchorX: 0
-          anchorY: 0
+          anchorX: 0.5
+          anchorY: 0.5
           rotation: 0
           scaleX: 1
           scaleY: 1
-          x: 0
-          y: 0
+          x: 960
+          y: 540
           src: "image1.png"
           width: 1920
           height: 1080
@@ -789,13 +917,13 @@ out:
         - id: "bg-cg-bg1"
           type: "sprite"
           alpha: 1
-          anchorX: 0
-          anchorY: 0
+          anchorX: 0.5
+          anchorY: 0.5
           rotation: 0
           scaleX: 1
           scaleY: 1
-          x: 0
-          y: 0
+          x: 960
+          y: 540
           src: "image1.png"
           width: 1920
           height: 1080
@@ -860,13 +988,13 @@ out:
         - id: "bg-cg-bg1"
           type: "sprite"
           alpha: 1
-          anchorX: 0
-          anchorY: 0
+          anchorX: 0.5
+          anchorY: 0.5
           rotation: 0
           scaleX: 1
           scaleY: 1
-          x: 0
-          y: 0
+          x: 960
+          y: 540
           src: "new.jpg"
           width: 1920
           height: 1080
@@ -920,13 +1048,13 @@ out:
         - id: "bg-cg-bg1"
           type: "sprite"
           alpha: 1
-          anchorX: 0
-          anchorY: 0
+          anchorX: 0.5
+          anchorY: 0.5
           rotation: 0
           scaleX: 1
           scaleY: 1
-          x: 0
-          y: 0
+          x: 960
+          y: 540
           src: "image1.png"
           width: 1920
           height: 1080

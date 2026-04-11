@@ -1,0 +1,79 @@
+---
+title: Background Transform Layout
+description: |
+  Layout backgrounds should honor an authored transformId when one is provided.
+
+  - the background layout container should render at the authored transform x/y
+  - the authored transform anchor should control the layout container position
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  layouts:
+    bg-layout:
+      elements:
+        - id: panel
+          type: rect
+          width: 340
+          height: 180
+          colorId: fg30
+        - id: panel-title
+          type: text
+          x: 24
+          y: 26
+          content: Transform
+          textStyleId: titleStyle
+        - id: panel-subtitle
+          type: text
+          x: 24
+          y: 88
+          content: Background
+          textStyleId: bodyStyle
+  transforms:
+    lower-right-panel:
+      x: 1820
+      y: 1020
+      anchorX: 1
+      anchorY: 1
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    fg100:
+      hex: "#FFFFFF"
+    fg30:
+      hex: "#4D4D4D"
+  textStyles:
+    titleStyle:
+      fontId: fontDefault
+      colorId: fg100
+      fontSize: 34
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    bodyStyle:
+      fontId: fontDefault
+      colorId: fg100
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: backgroundScene
+  scenes:
+    backgroundScene:
+      name: Background Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                background:
+                  resourceId: bg-layout
+                  transformId: lower-right-panel
