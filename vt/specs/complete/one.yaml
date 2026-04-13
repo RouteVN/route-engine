@@ -1473,7 +1473,7 @@ story:
                   characterId: ajf34a
                 voice:
                   fileId: 39csl
-                  volume: 0.5
+                  volume: 50
             - id: line4
               actions:
                 dialogue:

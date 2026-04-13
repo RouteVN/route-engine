@@ -99,7 +99,7 @@ out:
       type: "sound"
       src: "audio/cde.mp3"
       loop: true
-      volume: 500
+      volume: 50
       delay: null
   global: {}
 ---
@@ -153,6 +153,6 @@ out:
       type: "sound"
       src: "audio/cde.mp3"
       loop: true
-      volume: 500
+      volume: 50
       delay: null
   global: {}

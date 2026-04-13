@@ -30,8 +30,8 @@ out:
     autoForwardDelay: 1000
     skipUnseenText: false
     skipTransitionsAndAnimations: false
-    soundVolume: 500
-    musicVolume: 500
+    soundVolume: 50
+    musicVolume: 50
     muteAll: false
     confirmDialog: null
     viewedRegistry:
@@ -123,8 +123,8 @@ out:
     autoForwardDelay: 1000
     skipUnseenText: false
     skipTransitionsAndAnimations: false
-    soundVolume: 500
-    musicVolume: 500
+    soundVolume: 50
+    musicVolume: 50
     muteAll: false
     confirmDialog: null
     viewedRegistry:
@@ -229,8 +229,8 @@ out:
     autoForwardDelay: 1000
     skipUnseenText: false
     skipTransitionsAndAnimations: false
-    soundVolume: 500
-    musicVolume: 500
+    soundVolume: 50
+    musicVolume: 50
     muteAll: false
     confirmDialog: null
     viewedRegistry:
@@ -329,8 +329,8 @@ out:
     autoForwardDelay: 1000
     skipUnseenText: false
     skipTransitionsAndAnimations: false
-    soundVolume: 500
-    musicVolume: 500
+    soundVolume: 50
+    musicVolume: 50
     muteAll: false
     confirmDialog: null
     viewedRegistry:
@@ -426,8 +426,8 @@ out:
     autoForwardDelay: 1000
     skipUnseenText: false
     skipTransitionsAndAnimations: false
-    soundVolume: 500
-    musicVolume: 500
+    soundVolume: 50
+    musicVolume: 50
     muteAll: false
     confirmDialog: null
     viewedRegistry:

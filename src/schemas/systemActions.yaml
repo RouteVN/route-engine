@@ -156,6 +156,8 @@ properties:
     properties:
       value:
         type: number
+        minimum: 0
+        maximum: 100
     required: [value]
     additionalProperties: false
 
@@ -165,6 +167,8 @@ properties:
     properties:
       value:
         type: number
+        minimum: 0
+        maximum: 100
     required: [value]
     additionalProperties: false
 

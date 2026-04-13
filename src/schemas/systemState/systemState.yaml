@@ -241,8 +241,12 @@ properties:
         type: boolean
       soundVolume:
         type: number
+        minimum: 0
+        maximum: 100
       musicVolume:
         type: number
+        minimum: 0
+        maximum: 100
       muteAll:
         type: boolean
       confirmDialog:

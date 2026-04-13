@@ -16,41 +16,41 @@ resources:
           anchorX: 0.5
           content: "Sound Volume: ${runtime.soundVolume}"
           textStyleId: textStyle1
-        - id: vol-250
+        - id: vol-25
           type: text
           x: 400
           y: 300
-          content: "250"
+          content: "25"
           click:
             soundSrc: xj323
-            soundVolume: 250
+            soundVolume: 25
           textStyleId: textStyle2
-        - id: vol-500
+        - id: vol-50
           type: text
           x: 700
           y: 300
-          content: "500"
+          content: "50"
           click:
             soundSrc: xj323
-            soundVolume: 500
+            soundVolume: 50
           textStyleId: textStyle2
-        - id: vol-750
+        - id: vol-75
           type: text
           x: 1000
           y: 300
-          content: "750"
+          content: "75"
           click:
             soundSrc: xj323
-            soundVolume: 750
+            soundVolume: 75
           textStyleId: textStyle2
-        - id: vol-1000
+        - id: vol-100
           type: text
           x: 1300
           y: 300
-          content: "1000"
+          content: "100"
           click:
             soundSrc: xj323
-            soundVolume: 1000
+            soundVolume: 100
           textStyleId: textStyle2
         - id: play-dynamic
           type: text
