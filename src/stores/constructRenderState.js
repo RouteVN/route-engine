@@ -408,6 +408,38 @@ const getBackgroundTransform = (resources, background = {}) => {
   return transform;
 };
 
+const resolveBackgroundKind = (resources = {}, resourceId) => {
+  if (!resourceId) {
+    return undefined;
+  }
+
+  if (resources.images?.[resourceId]) {
+    return "sprite";
+  }
+
+  if (resources.videos?.[resourceId]) {
+    return "video";
+  }
+
+  if (resources.layouts?.[resourceId]) {
+    return "container";
+  }
+
+  return undefined;
+};
+
+const resolveBackgroundTargetId = ({ resourceId, kind }) => {
+  if (!resourceId) {
+    return undefined;
+  }
+
+  if (kind) {
+    return `bg-cg-background-${kind}`;
+  }
+
+  return `bg-cg-${resourceId}`;
+};
+
 const getTextStyleResources = (resources = {}) => resources.textStyles || {};
 const getImageResources = (resources = {}) => resources.images || {};
 const getColorResources = (resources = {}) => resources.colors || {};
@@ -1374,6 +1406,14 @@ export const addBackgroundOrCg = (
       (presentationState.background.animations
         ? previousBackgroundResourceId
         : undefined);
+    const previousBackgroundKind = resolveBackgroundKind(
+      resources,
+      previousBackgroundResourceId,
+    );
+    const currentBackgroundKind = resolveBackgroundKind(
+      resources,
+      currentBackgroundResourceId,
+    );
 
     if (currentBackgroundResourceId) {
       const { images = {}, videos = {} } = resources;
@@ -1393,7 +1433,10 @@ export const addBackgroundOrCg = (
           ...authoredBackgroundTransform,
         };
         const element = {
-          id: `bg-cg-${currentBackgroundResourceId}`,
+          id: resolveBackgroundTargetId({
+            resourceId: currentBackgroundResourceId,
+            kind: isVideo ? "video" : "sprite",
+          }),
           type: isVideo ? "video" : "sprite",
           x: backgroundTransform.x,
           y: backgroundTransform.y,
@@ -1422,7 +1465,10 @@ export const addBackgroundOrCg = (
       const layout = layouts[currentBackgroundResourceId];
       if (layout) {
         const bgContainer = {
-          id: `bg-cg-${currentBackgroundResourceId}`,
+          id: resolveBackgroundTargetId({
+            resourceId: currentBackgroundResourceId,
+            kind: "container",
+          }),
           type: "container",
           children: layout.elements,
         };
@@ -1477,12 +1523,14 @@ export const addBackgroundOrCg = (
         resources,
         previousResourceId: previousBackgroundResourceId,
         currentResourceId: currentBackgroundResourceId,
-        previousTargetId: previousBackgroundResourceId
-          ? `bg-cg-${previousBackgroundResourceId}`
-          : undefined,
-        currentTargetId: currentBackgroundResourceId
-          ? `bg-cg-${currentBackgroundResourceId}`
-          : undefined,
+        previousTargetId: resolveBackgroundTargetId({
+          resourceId: previousBackgroundResourceId,
+          kind: previousBackgroundKind,
+        }),
+        currentTargetId: resolveBackgroundTargetId({
+          resourceId: currentBackgroundResourceId,
+          kind: currentBackgroundKind,
+        }),
         animationPath: "background.animations",
         idPrefix: "bg-cg",
         allowIncomingUpdateFallback: true,
