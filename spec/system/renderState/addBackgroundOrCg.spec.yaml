@@ -30,7 +30,7 @@ out:
       x: 0
       y: 0
       children:
-        - id: "bg-cg-bg1"
+        - id: "bg-cg-background-sprite"
           type: "sprite"
           alpha: 1
           anchorX: 0.5
@@ -78,7 +78,7 @@ out:
       x: 0
       y: 0
       children:
-        - id: "bg-cg-bg1"
+        - id: "bg-cg-background-sprite"
           type: "sprite"
           alpha: 1
           anchorX: 0
@@ -152,7 +152,7 @@ out:
       x: 0
       y: 0
       children:
-        - id: "bg-cg-bg1"
+        - id: "bg-cg-background-sprite"
           type: "sprite"
           alpha: 1
           anchorX: 0.5
@@ -168,7 +168,7 @@ out:
   animations:
     - id: "bg-cg-animation-in"
       type: "transition"
-      targetId: "bg-cg-bg1"
+      targetId: "bg-cg-background-sprite"
       next:
         tween:
           alpha:
@@ -246,7 +246,7 @@ out:
       x: 0
       y: 0
       children:
-        - id: "bg-cg-bg1"
+        - id: "bg-cg-background-sprite"
           type: "sprite"
           alpha: 1
           anchorX: 0.5
@@ -314,7 +314,7 @@ out:
           src: "old.jpg"
           width: 1920
           height: 1080
-        - id: "bg-cg-bg1"
+        - id: "bg-cg-background-sprite"
           type: "sprite"
           alpha: 1
           anchorX: 0.5
@@ -330,7 +330,7 @@ out:
   animations:
     - id: "bg-cg-animation-update"
       type: "update"
-      targetId: "bg-cg-bg1"
+      targetId: "bg-cg-background-sprite"
       tween:
         alpha:
           initialValue: 1
@@ -507,7 +507,7 @@ out:
         - id: "existingChild"
           type: "text"
           content: "Hello"
-        - id: "bg-cg-bg2"
+        - id: "bg-cg-background-sprite"
           type: "sprite"
           alpha: 1
           anchorX: 0.5
@@ -525,7 +525,7 @@ out:
       type: "existing"
     - id: "bg-cg-animation-in"
       type: "transition"
-      targetId: "bg-cg-bg2"
+      targetId: "bg-cg-background-sprite"
       next:
         tween:
           x:
@@ -575,7 +575,7 @@ out:
       x: 0
       y: 0
       children:
-        - id: "bg-cg-bgLayout"
+        - id: "bg-cg-background-container"
           type: "container"
           children:
             - id: "bg-label"
@@ -631,7 +631,7 @@ out:
       x: 0
       y: 0
       children:
-        - id: "bg-cg-bgLayout"
+        - id: "bg-cg-background-container"
           type: "container"
           x: 400
           y: 250
@@ -679,7 +679,7 @@ out:
       x: 0
       y: 0
       children:
-        - id: "bg-cg-coloredLayout"
+        - id: "bg-cg-background-container"
           type: "container"
           children:
             - id: "bg-panel"
@@ -720,7 +720,7 @@ out:
       x: 0
       y: 0
       children:
-        - id: "bg-cg-imageLayout"
+        - id: "bg-cg-background-container"
           type: "container"
           children:
             - id: "bg-image"
@@ -767,7 +767,7 @@ out:
       x: 0
       y: 0
       children:
-        - id: "bg-cg-bg1"
+        - id: "bg-cg-background-sprite"
           type: "sprite"
           alpha: 1
           anchorX: 0.5
@@ -783,7 +783,7 @@ out:
   animations:
     - id: "bg-cg-animation-in"
       type: "transition"
-      targetId: "bg-cg-bg1"
+      targetId: "bg-cg-background-sprite"
       next:
         tween:
           alpha:
@@ -836,7 +836,7 @@ out:
       x: 0
       y: 0
       children:
-        - id: "bg-cg-bg1"
+        - id: "bg-cg-background-sprite"
           type: "sprite"
           alpha: 1
           anchorX: 0.5
@@ -852,7 +852,7 @@ out:
   animations:
     - id: "bg-cg-animation-in"
       type: "transition"
-      targetId: "bg-cg-bg1"
+      targetId: "bg-cg-background-sprite"
       prev:
         tween:
           alpha:
@@ -914,7 +914,7 @@ out:
       x: 0
       y: 0
       children:
-        - id: "bg-cg-bg1"
+        - id: "bg-cg-background-sprite"
           type: "sprite"
           alpha: 1
           anchorX: 0.5
@@ -930,7 +930,7 @@ out:
   animations:
     - id: "bg-cg-animation-transition"
       type: "transition"
-      targetId: "bg-cg-bg1"
+      targetId: "bg-cg-background-sprite"
       prev:
         tween:
           alpha:
@@ -985,7 +985,7 @@ out:
       x: 0
       y: 0
       children:
-        - id: "bg-cg-bg1"
+        - id: "bg-cg-background-sprite"
           type: "sprite"
           alpha: 1
           anchorX: 0.5
@@ -1001,7 +1001,7 @@ out:
   animations:
     - id: "bg-cg-animation-update"
       type: "update"
-      targetId: "bg-cg-bg1"
+      targetId: "bg-cg-background-sprite"
       tween:
         alpha:
           initialValue: 0.2
@@ -1045,7 +1045,7 @@ out:
       x: 0
       y: 0
       children:
-        - id: "bg-cg-bg1"
+        - id: "bg-cg-background-sprite"
           type: "sprite"
           alpha: 1
           anchorX: 0.5
@@ -1061,7 +1061,7 @@ out:
   animations:
     - id: "bg-cg-animation-update"
       type: "update"
-      targetId: "bg-cg-bg1"
+      targetId: "bg-cg-background-sprite"
       tween:
         alpha:
           initialValue: 0

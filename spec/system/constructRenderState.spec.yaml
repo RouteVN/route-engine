@@ -23,7 +23,7 @@ out:
       x: 0
       y: 0
       children:
-        - id: "bg-cg-mainBackground"
+        - id: "bg-cg-background-container"
           type: "container"
           children:
             - type: "container"
@@ -79,7 +79,7 @@ out:
               y: 0
               width: 100
               height: 100
-        - id: "bg-cg-bgImage"
+        - id: "bg-cg-background-sprite"
           type: "sprite"
           alpha: 1
           anchorX: 0.5
@@ -131,12 +131,12 @@ out:
       x: 0
       y: 0
       children:
-        - id: "bg-cg-oldBg"
+        - id: "bg-cg-background-container"
           type: "container"
           children:
             - type: "container"
               id: "old-container"
-        - id: "bg-cg-newBg"
+        - id: "bg-cg-background-sprite"
           type: "sprite"
           alpha: 1
           anchorX: 0.5
