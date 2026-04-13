@@ -958,11 +958,11 @@ const getStoryContainer = (elements = []) => {
 };
 
 const getEffectiveSoundVolume = (runtime = {}) => {
-  return runtime?.muteAll ? 0 : (runtime?.soundVolume ?? 500);
+  return runtime?.muteAll ? 0 : (runtime?.soundVolume ?? 50);
 };
 
 const getEffectiveMusicVolume = (runtime = {}) => {
-  return runtime?.muteAll ? 0 : (runtime?.musicVolume ?? 500);
+  return runtime?.muteAll ? 0 : (runtime?.musicVolume ?? 50);
 };
 
 const createLayoutTemplateData = ({
@@ -987,8 +987,8 @@ const createLayoutTemplateData = ({
     skipUnseenText: runtime?.skipUnseenText ?? false,
     skipTransitionsAndAnimations:
       runtime?.skipTransitionsAndAnimations ?? false,
-    soundVolume: runtime?.soundVolume ?? 500,
-    musicVolume: runtime?.musicVolume ?? 500,
+    soundVolume: runtime?.soundVolume ?? 50,
+    musicVolume: runtime?.musicVolume ?? 50,
     muteAll: runtime?.muteAll ?? false,
     saveLoadPagination: runtime?.saveLoadPagination ?? 1,
     menuPage: runtime?.menuPage ?? "",
@@ -1453,7 +1453,7 @@ export const addBackgroundOrCg = (
 
         if (isVideo) {
           element.loop = presentationState.background.loop ?? false;
-          element.volume = background.volume ?? 500;
+          element.volume = background.volume ?? 50;
         }
 
         storyContainer.children.push(element);
@@ -1779,7 +1779,7 @@ export const addVisuals = (
 
             if (isVideo) {
               element.loop = resource.loop ?? false;
-              element.volume = resource.volume ?? 500;
+              element.volume = resource.volume ?? 50;
             }
 
             storyContainer.children.push(element);
@@ -2247,7 +2247,7 @@ export const addSfx = (state, { presentationState, resources }) => {
         type: "sound",
         src: audioResource.fileId,
         loop: item.loop ?? audioResource.loop ?? false,
-        volume: item.volume ?? audioResource.volume ?? 500,
+        volume: item.volume ?? audioResource.volume ?? 50,
         delay: item.delay ?? audioResource.delay ?? null,
       });
     }
@@ -2269,7 +2269,7 @@ export const addVoice = (state, { presentationState, resources }) => {
     id: `voice-${fileId}`,
     type: "sound",
     src: fileId,
-    volume: volume ?? 500,
+    volume: volume ?? 50,
     loop: loop ?? false,
   });
 

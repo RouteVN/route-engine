@@ -25,7 +25,7 @@ in:
         backgroundMusic:
           fileId: "bgm.mp3"
     runtime:
-      musicVolume: 700
+      musicVolume: 70
 out:
   elements:
     - id: "story"
@@ -39,7 +39,7 @@ out:
       type: "sound"
       src: "bgm.mp3"
       loop: true
-      volume: 700
+      volume: 70
       delay: 0
 ---
 case: add bgm with default values
@@ -72,7 +72,7 @@ out:
       type: "sound"
       src: "simple.mp3"
       loop: true
-      volume: 500
+      volume: 50
       delay: null
 ---
 case: add bgm with custom settings
@@ -95,7 +95,7 @@ in:
         customMusic:
           fileId: "custom.mp3"
     runtime:
-      musicVolume: 300
+      musicVolume: 30
 out:
   elements:
     - id: "story"
@@ -109,7 +109,7 @@ out:
       type: "sound"
       src: "custom.mp3"
       loop: false
-      volume: 300
+      volume: 30
       delay: 1000
 ---
 case: no presentationState.bgm - return unchanged state
@@ -128,7 +128,7 @@ in:
         backgroundMusic:
           fileId: "bgm.mp3"
           loop: true
-          volume: 700
+          volume: 70
 out:
   elements:
     - id: "story"
@@ -155,7 +155,7 @@ in:
         backgroundMusic:
           fileId: "bgm.mp3"
           loop: true
-          volume: 700
+          volume: 70
 out:
   elements:
     - id: "notStory"
@@ -182,7 +182,7 @@ in:
         existing:
           fileId: "existing.mp3"
           loop: true
-          volume: 700
+          volume: 70
 out:
   elements:
     - id: "story"

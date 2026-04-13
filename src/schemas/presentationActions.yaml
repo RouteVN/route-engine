@@ -210,7 +210,7 @@ properties:
               description: Whether the sound effect loops
             volume:
               type: number
-              description: Sound effect volume from 0 to 1000
+              description: Sound effect volume from 0 to 100
             delay:
               type: number
               description: Delay before the sound effect starts in milliseconds
