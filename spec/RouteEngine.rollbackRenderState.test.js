@@ -151,7 +151,7 @@ const createProjectData = () => ({
 });
 
 describe("RouteEngine rollback render state", () => {
-  it("restores rollbacked lines directly in their settled end state", () => {
+  it("restores rollbacked lines directly in their settled end state without transient layered views", () => {
     const routeGraphics = {
       render: vi.fn(),
     };
@@ -192,12 +192,7 @@ describe("RouteEngine rollback render state", () => {
         revealEffect: "none",
       },
     );
-    expect(findElementById(rollbackRender.elements, "panel-text")).toMatchObject(
-      {
-        type: "text",
-        content: "Layered panel",
-      },
-    );
+    expect(findElementById(rollbackRender.elements, "panel-text")).toBeNull();
     expect(rollbackRender.animations).toEqual([]);
   });
 

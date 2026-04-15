@@ -131,10 +131,12 @@ export default function createRouteEngine(options) {
     };
   };
 
-  const handleActions = (actions, eventContext) => {
+  const handleActions = (actions, eventContext, options = {}) => {
     const context = buildActionTemplateContext(eventContext);
     const processedActions = processActionTemplates(actions, context);
-    _systemStore.beginRollbackActionBatch({});
+    _systemStore.beginRollbackActionBatch({
+      source: options.rollbackSource,
+    });
     try {
       Object.entries(processedActions).forEach(([actionType, payload]) => {
         handleAction(actionType, payload);
@@ -147,7 +149,9 @@ export default function createRouteEngine(options) {
   const handleLineActions = () => {
     const line = _systemStore.selectCurrentLine();
     if (line?.actions) {
-      handleActions(line.actions);
+      handleActions(line.actions, undefined, {
+        rollbackSource: "line",
+      });
       return true;
     }
 

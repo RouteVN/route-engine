@@ -209,6 +209,43 @@ const normalizeStoredSaveSlots = (saveSlots = {}) => {
   );
 };
 
+const sanitizePersistedRollbackExecutedActions = (executedActions) => {
+  if (!Array.isArray(executedActions)) {
+    return undefined;
+  }
+
+  const sanitizedExecutedActions = executedActions.filter(({ type }) =>
+    shouldPersistRollbackActionType(type),
+  );
+
+  return sanitizedExecutedActions.length > 0
+    ? sanitizedExecutedActions
+    : undefined;
+};
+
+const sanitizePersistedRollback = (rollback) => {
+  if (!isRecord(rollback) || !Array.isArray(rollback.timeline)) {
+    return;
+  }
+
+  rollback.timeline.forEach((checkpoint) => {
+    if (!isRecord(checkpoint)) {
+      return;
+    }
+
+    const sanitizedExecutedActions = sanitizePersistedRollbackExecutedActions(
+      checkpoint.executedActions,
+    );
+
+    if (sanitizedExecutedActions) {
+      checkpoint.executedActions = sanitizedExecutedActions;
+      return;
+    }
+
+    delete checkpoint.executedActions;
+  });
+};
+
 const normalizeLoadedViewedRegistryEntry = (entry, type, index) => {
   const keyName = type === "sections" ? "sectionId" : "resourceId";
 
@@ -400,10 +437,11 @@ const normalizeLoadedRollback = (rollback, readPointer, projectData) => {
         rollbackPolicy: checkpoint.rollbackPolicy,
       });
 
-      if (Array.isArray(checkpoint.executedActions)) {
-        normalizedCheckpoint.executedActions = cloneStateValue(
-          checkpoint.executedActions,
-        );
+      const sanitizedExecutedActions = sanitizePersistedRollbackExecutedActions(
+        cloneStateValue(checkpoint.executedActions),
+      );
+      if (sanitizedExecutedActions) {
+        normalizedCheckpoint.executedActions = sanitizedExecutedActions;
       }
 
       return [normalizedCheckpoint];
@@ -629,6 +667,8 @@ const clearConfirmDialog = (state) => {
 };
 
 const rollbackActionBatchStack = [];
+const ROLLBACK_ACTION_SOURCE_LINE = "line";
+const ROLLBACK_ACTION_SOURCE_INTERACTION = "interaction";
 
 const createRollbackCheckpoint = ({ sectionId, lineId, rollbackPolicy }) => ({
   sectionId,
@@ -971,7 +1011,11 @@ const getCurrentRollbackCheckpoint = (state) => {
   return rollback.timeline[checkpointIndex] ?? null;
 };
 
-export const beginRollbackActionBatch = ({ state }) => {
+export const beginRollbackActionBatch = ({ state }, payload = {}) => {
+  const source =
+    payload?.source === ROLLBACK_ACTION_SOURCE_LINE
+      ? ROLLBACK_ACTION_SOURCE_LINE
+      : ROLLBACK_ACTION_SOURCE_INTERACTION;
   const lastContext = state.contexts?.[state.contexts.length - 1];
   const rollback = lastContext?.rollback;
   if (
@@ -982,7 +1026,7 @@ export const beginRollbackActionBatch = ({ state }) => {
     rollback.currentIndex < 0 ||
     rollback.currentIndex >= rollback.timeline.length
   ) {
-    rollbackActionBatchStack.push({ checkpointIndex: null });
+    rollbackActionBatchStack.push({ checkpointIndex: null, source });
     return state;
   }
 
@@ -992,6 +1036,7 @@ export const beginRollbackActionBatch = ({ state }) => {
 
   rollbackActionBatchStack.push({
     checkpointIndex: rollback.currentIndex,
+    source,
   });
   return state;
 };
@@ -1002,6 +1047,13 @@ export const endRollbackActionBatch = ({ state }) => {
 };
 
 const recordRollbackAction = (state, actionType, payload) => {
+  const activeBatch =
+    rollbackActionBatchStack[rollbackActionBatchStack.length - 1];
+  const source = activeBatch?.source ?? ROLLBACK_ACTION_SOURCE_INTERACTION;
+  if (!shouldRecordRollbackActionType(actionType, source)) {
+    return;
+  }
+
   const checkpoint = getCurrentRollbackCheckpoint(state);
   if (!checkpoint) {
     return;
@@ -1044,77 +1096,15 @@ const applyRollbackCheckpointUpdateVariable = (state, payload) => {
 
 const replayRecordedRollbackActions = (state, checkpoint) => {
   if (!Array.isArray(checkpoint?.executedActions)) {
-    return false;
+    return;
   }
-
-  const restorableActions = {
-    showDialogueUI,
-    hideDialogueUI,
-    toggleDialogueUI,
-    setNextLineConfig,
-    pushLayeredView,
-    popLayeredView,
-    replaceLastLayeredView,
-    clearLayeredViews,
-    setSaveLoadPagination,
-    incrementSaveLoadPagination,
-    decrementSaveLoadPagination,
-    setMenuPage,
-    setMenuEntryPoint,
-  };
 
   checkpoint.executedActions.forEach(({ type, payload }) => {
-    if (type === "updateVariable") {
-      applyRollbackCheckpointUpdateVariable(state, payload);
-      return;
-    }
-
-    const action = restorableActions[type];
-    if (!action) {
-      return;
-    }
-
-    action({ state }, payload);
+    replayRecordedRollbackAction(state, type, payload);
   });
-
-  return true;
 };
 
-const applyRollbackableLineActions = (state, payload) => {
-  const { sectionId, lineId } = payload;
-  const section = selectSection({ state }, { sectionId });
-  const line = section?.lines?.find((item) => item.id === lineId);
-  const updateVariableAction = line?.actions?.updateVariable;
-
-  if (!updateVariableAction) {
-    return;
-  }
-
-  const lastContext = state.contexts?.[state.contexts.length - 1];
-  if (!lastContext) {
-    return;
-  }
-
-  const operations = updateVariableAction.operations || [];
-  for (const { variableId, op, value } of operations) {
-    const variableConfig = state.projectData.resources?.variables?.[variableId];
-    const scope = variableConfig?.scope;
-    const type = variableConfig?.type;
-
-    validateVariableScope(scope, variableId);
-    validateVariableOperation(type, op, variableId);
-
-    if (scope === "context") {
-      lastContext.variables[variableId] = applyVariableOperation(
-        lastContext.variables[variableId],
-        op,
-        value,
-      );
-    }
-  }
-};
-
-const applyRollbackRestorableLineActions = (state, payload) => {
+const replayRollbackLineActions = (state, payload) => {
   const { sectionId, lineId } = payload;
   const section = selectSection({ state }, { sectionId });
   const line = section?.lines?.find((item) => item.id === lineId);
@@ -1124,24 +1114,8 @@ const applyRollbackRestorableLineActions = (state, payload) => {
     return;
   }
 
-  const restorableActions = {
-    showDialogueUI,
-    hideDialogueUI,
-    toggleDialogueUI,
-    setNextLineConfig,
-    pushLayeredView,
-    popLayeredView,
-    replaceLastLayeredView,
-    clearLayeredViews,
-  };
-
   Object.entries(actions).forEach(([actionType, actionPayload]) => {
-    const action = restorableActions[actionType];
-    if (!action) {
-      return;
-    }
-
-    action({ state }, actionPayload);
+    replayRollbackLineAction(state, actionType, actionPayload);
   });
 };
 
@@ -1188,10 +1162,8 @@ const restoreRollbackCheckpoint = (state, checkpointIndex) => {
       if (i > replayStartIndex) {
         resetNextLineConfigIfSingleLine(state);
       }
-      if (!replayRecordedRollbackActions(state, rollback.timeline[i])) {
-        applyRollbackableLineActions(state, rollback.timeline[i]);
-        applyRollbackRestorableLineActions(state, rollback.timeline[i]);
-      }
+      replayRollbackLineActions(state, rollback.timeline[i]);
+      replayRecordedRollbackActions(state, rollback.timeline[i]);
     }
 
     lastContext.pointers.read = {
@@ -2382,6 +2354,7 @@ export const saveSlot = ({ state }, payload) => {
   const contexts = cloneStateValue(state.contexts);
   contexts?.forEach((context) => {
     removeLegacyRollbackBaseline(context.rollback);
+    sanitizePersistedRollback(context.rollback);
   });
 
   const currentState = {
@@ -3017,6 +2990,51 @@ export const updateVariable = ({ state }, payload) => {
     name: "render",
   });
   return state;
+};
+
+const replayStoreActionForRollback =
+  (action) =>
+  (state, payload) =>
+    action({ state }, payload);
+
+const ROLLBACK_ACTION_DEFINITIONS = {
+  updateVariable: {
+    recordSources: [ROLLBACK_ACTION_SOURCE_INTERACTION],
+    replayLine: applyRollbackCheckpointUpdateVariable,
+    replayRecorded: applyRollbackCheckpointUpdateVariable,
+    persistInSaveSlot: true,
+  },
+  showDialogueUI: {
+    replayLine: replayStoreActionForRollback(showDialogueUI),
+  },
+  hideDialogueUI: {
+    replayLine: replayStoreActionForRollback(hideDialogueUI),
+  },
+  toggleDialogueUI: {
+    replayLine: replayStoreActionForRollback(toggleDialogueUI),
+  },
+  setNextLineConfig: {
+    replayLine: replayStoreActionForRollback(setNextLineConfig),
+  },
+};
+
+const getRollbackActionDefinition = (actionType) =>
+  ROLLBACK_ACTION_DEFINITIONS[actionType] ?? null;
+
+const shouldPersistRollbackActionType = (actionType) =>
+  getRollbackActionDefinition(actionType)?.persistInSaveSlot === true;
+
+const shouldRecordRollbackActionType = (actionType, source) => {
+  const recordSources = getRollbackActionDefinition(actionType)?.recordSources;
+  return Array.isArray(recordSources) && recordSources.includes(source);
+};
+
+const replayRecordedRollbackAction = (state, actionType, payload) => {
+  getRollbackActionDefinition(actionType)?.replayRecorded?.(state, payload);
+};
+
+const replayRollbackLineAction = (state, actionType, payload) => {
+  getRollbackActionDefinition(actionType)?.replayLine?.(state, payload);
 };
 
 /**
