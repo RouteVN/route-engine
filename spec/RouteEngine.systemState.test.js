@@ -91,7 +91,7 @@ const createRollbackChoiceProjectData = () => ({
   },
 });
 
-const createSessionResetProjectData = () => ({
+const createResetStoryAtSectionProjectData = () => ({
   screen: {
     width: 1920,
     height: 1080,
@@ -302,22 +302,19 @@ describe("RouteEngine selectSystemState", () => {
     ]);
   });
 
-  it("anchors a reset+transition batch at the destination section with fresh story-local state", () => {
+  it("resets story-local state and enters the destination section", () => {
     const engine = createRouteEngineWithInlineEffects();
 
     engine.init({
       initialState: {
-        projectData: createSessionResetProjectData(),
+        projectData: createResetStoryAtSectionProjectData(),
       },
     });
 
     expect(engine.selectSystemState().contexts[0].variables.score).toBe(7);
 
-    engine.handleActions({
-      resetStorySession: {},
-      sectionTransition: {
-        sectionId: "gameStart",
-      },
+    engine.handleAction("resetStoryAtSection", {
+      sectionId: "gameStart",
     });
 
     const state = engine.selectSystemState();
@@ -358,5 +355,49 @@ describe("RouteEngine selectSystemState", () => {
         },
       ],
     });
+  });
+
+  it("leaves the current story state untouched when resetStoryAtSection targets a missing section", () => {
+    const engine = createRouteEngineWithInlineEffects();
+
+    engine.init({
+      initialState: {
+        projectData: createResetStoryAtSectionProjectData(),
+      },
+    });
+
+    engine.handleAction("resetStoryAtSection", {
+      sectionId: "missing",
+    });
+
+    const state = engine.selectSystemState();
+
+    expect(state.contexts[0].pointers.read).toMatchObject({
+      sectionId: "title",
+      lineId: "titleLine",
+    });
+    expect(state.contexts[0].variables.score).toBe(7);
+    expect(state.contexts[0].rollback.timeline).toEqual([
+      {
+        sectionId: "title",
+        lineId: "titleLine",
+        rollbackPolicy: "free",
+        executedActions: [
+          {
+            type: "updateVariable",
+            payload: {
+              id: "seedTitleScore",
+              operations: [
+                {
+                  variableId: "score",
+                  op: "set",
+                  value: 7,
+                },
+              ],
+            },
+          },
+        ],
+      },
+    ]);
   });
 });

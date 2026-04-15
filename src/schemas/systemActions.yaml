@@ -272,10 +272,14 @@ properties:
     required: [slotId]
     additionalProperties: false
 
-  resetStorySession:
+  resetStoryAtSection:
     type: object
-    description: Reset story-local session state while preserving the current read pointer
-    properties: {}
+    description: Reset story-local state and enter the first line of a section
+    properties:
+      sectionId:
+        type: string
+        description: Target section ID
+    required: [sectionId]
     additionalProperties: false
 
   sectionTransition:

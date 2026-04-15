@@ -395,7 +395,7 @@ Playback timing semantics:
 | ------------------- | -------------------- | ------------------------------- |
 | `setNextLineConfig` | `{ manual?, auto? }` | Configure line advancement      |
 | `updateProjectData` | `{ projectData }`    | Replace project data            |
-| `resetStorySession` | -                    | Reset story-local session state |
+| `resetStoryAtSection` | `{ sectionId }`    | Reset story-local state and enter a section |
 
 ### Registry Actions
 
@@ -419,7 +419,7 @@ Seen-line semantics:
 | `loadSlot` | `{ slotId }`                  | Load game from a slot |
 
 Save/load design, requirements, and storage boundaries are documented in [SaveLoad.md](./SaveLoad.md).
-Story-session reset semantics are documented in [StorySessionReset.md](./StorySessionReset.md).
+Destructive fresh-start navigation semantics are documented in [ResetStoryAtSection.md](./ResetStoryAtSection.md).
 
 Notes:
 

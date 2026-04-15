@@ -630,33 +630,6 @@ const clearConfirmDialog = (state) => {
 
 const rollbackActionBatchStack = [];
 
-const getActiveRollbackActionBatch = () =>
-  rollbackActionBatchStack[rollbackActionBatchStack.length - 1] ?? null;
-
-const setActiveRollbackBatchCheckpoint = (checkpointIndex) => {
-  const activeBatch = getActiveRollbackActionBatch();
-  if (activeBatch) {
-    activeBatch.checkpointIndex = checkpointIndex;
-  }
-};
-
-const markPendingStorySessionReset = () => {
-  const activeBatch = getActiveRollbackActionBatch();
-  if (activeBatch) {
-    activeBatch.pendingStorySessionReset = true;
-  }
-};
-
-const consumePendingStorySessionReset = () => {
-  const activeBatch = getActiveRollbackActionBatch();
-  if (!activeBatch?.pendingStorySessionReset) {
-    return false;
-  }
-
-  delete activeBatch.pendingStorySessionReset;
-  return true;
-};
-
 const createRollbackCheckpoint = ({ sectionId, lineId, rollbackPolicy }) => ({
   sectionId,
   lineId,
@@ -841,7 +814,26 @@ const createDefaultContextState = ({ pointer, projectData }) => ({
   }),
 });
 
-const resetStorySessionTransientGlobals = (state) => {
+const resetCurrentStoryState = (state) => {
+  const lastContext = state.contexts?.[state.contexts.length - 1];
+  const readPointer = lastContext?.pointers?.read;
+
+  if (!lastContext || !readPointer?.sectionId || !readPointer?.lineId) {
+    return null;
+  }
+
+  const resetContext = createDefaultContextState({
+    pointer: readPointer,
+    projectData: state.projectData,
+  });
+
+  state.contexts[state.contexts.length - 1] = resetContext;
+  resetStoryStateTransientGlobals(state);
+
+  return resetContext;
+};
+
+const resetStoryStateTransientGlobals = (state) => {
   state.global.autoMode = false;
   state.global.skipMode = false;
   state.global.dialogueUIHidden = false;
@@ -2146,23 +2138,63 @@ export const appendPendingEffect = ({ state }, payload) => {
   return state;
 };
 
-export const resetStorySession = ({ state }) => {
-  const lastContext = state.contexts?.[state.contexts.length - 1];
-  const readPointer = lastContext?.pointers?.read;
-
-  if (!lastContext || !readPointer?.sectionId || !readPointer?.lineId) {
+const transitionToSection = (state, { sectionId, resetStoryState = false }) => {
+  const targetSection = selectSection({ state }, { sectionId });
+  if (!targetSection) {
+    console.warn(`Section not found: ${sectionId}`);
     return state;
   }
 
-  state.contexts[state.contexts.length - 1] = createDefaultContextState({
-    pointer: readPointer,
-    projectData: state.projectData,
-  });
-  resetStorySessionTransientGlobals(state);
-  markPendingStorySessionReset();
-  setActiveRollbackBatchCheckpoint(0);
+  const firstLine = targetSection.lines?.[0];
+  if (!firstLine) {
+    console.warn(`Section ${sectionId} has no lines`);
+    return state;
+  }
+
+  if (resetStoryState && !resetCurrentStoryState(state)) {
+    return state;
+  }
+
+  if (state.global.autoMode) {
+    stopAutoMode({ state });
+  }
+  if (state.global.skipMode) {
+    stopSkipMode({ state });
+  }
+
+  const lastContext = state.contexts?.[state.contexts.length - 1];
+  if (lastContext) {
+    if (!lastContext.rollback) {
+      ensureRollbackState(lastContext, { compatibilityAnchor: true });
+    }
+
+    lastContext.pointers.read = {
+      sectionId,
+      lineId: firstLine.id,
+    };
+
+    if (resetStoryState) {
+      lastContext.rollback = createRollbackState({
+        pointer: lastContext.pointers.read,
+      });
+    } else {
+      appendRollbackCheckpoint(state, {
+        sectionId,
+        lineId: firstLine.id,
+      });
+    }
+  }
+
+  queueEnteredLineEffects(state, lastContext?.pointers?.read);
 
   return state;
+};
+
+export const resetStoryAtSection = ({ state }, payload) => {
+  return transitionToSection(state, {
+    sectionId: payload?.sectionId,
+    resetStoryState: true,
+  });
 };
 
 const recordViewedLine = (state, { sectionId, lineId }) => {
@@ -2497,13 +2529,6 @@ export const jumpToLine = ({ state }, payload) => {
     lineId: lineId,
   };
 
-  if (consumePendingStorySessionReset()) {
-    lastContext.rollback = createRollbackState({
-      pointer: lastContext.pointers.read,
-    });
-    setActiveRollbackBatchCheckpoint(lastContext.rollback.currentIndex);
-  }
-
   queueEnteredLineEffects(state, lastContext.pointers.read);
 
   return state;
@@ -2803,61 +2828,9 @@ export const prevLine = ({ state }, payload) => {
  * - Logs warnings if section or lines not found
  */
 export const sectionTransition = ({ state }, payload) => {
-  const { sectionId } = payload;
-
-  // if (state.global.nextLineConfig.manual.enabled === false) {
-  //   return state;
-  // }
-  // Validate section exists
-  const targetSection = selectSection({ state }, { sectionId });
-  if (!targetSection) {
-    console.warn(`Section not found: ${sectionId}`);
-    return state;
-  }
-
-  // Get first line of target section
-  const firstLine = targetSection.lines?.[0];
-  if (!firstLine) {
-    console.warn(`Section ${sectionId} has no lines`);
-    return state;
-  }
-
-  // Stop auto/skip modes on section transition
-  if (state.global.autoMode) {
-    stopAutoMode({ state });
-  }
-  if (state.global.skipMode) {
-    stopSkipMode({ state });
-  }
-
-  // Update current pointer to new section's first line
-  const lastContext = state.contexts[state.contexts.length - 1];
-  if (lastContext) {
-    if (!lastContext.rollback) {
-      ensureRollbackState(lastContext, { compatibilityAnchor: true });
-    }
-
-    lastContext.pointers.read = {
-      sectionId,
-      lineId: firstLine.id,
-    };
-
-    if (consumePendingStorySessionReset()) {
-      lastContext.rollback = createRollbackState({
-        pointer: lastContext.pointers.read,
-      });
-      setActiveRollbackBatchCheckpoint(lastContext.rollback.currentIndex);
-    } else {
-      appendRollbackCheckpoint(state, {
-        sectionId,
-        lineId: firstLine.id,
-      });
-    }
-  }
-
-  queueEnteredLineEffects(state, lastContext?.pointers?.read);
-
-  return state;
+  return transitionToSection(state, {
+    sectionId: payload?.sectionId,
+  });
 };
 
 export const nextLineFromSystem = ({ state }) => {
@@ -3246,7 +3219,7 @@ export const createSystemStore = (initialState) => {
     setMenuEntryPoint,
     showConfirmDialog,
     hideConfirmDialog,
-    resetStorySession,
+    resetStoryAtSection,
     clearPendingEffects,
     appendPendingEffect,
     beginRollbackActionBatch,
