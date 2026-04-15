@@ -2992,10 +2992,8 @@ export const updateVariable = ({ state }, payload) => {
   return state;
 };
 
-const replayStoreActionForRollback =
-  (action) =>
-  (state, payload) =>
-    action({ state }, payload);
+const replayStoreActionForRollback = (action) => (state, payload) =>
+  action({ state }, payload);
 
 const ROLLBACK_ACTION_DEFINITIONS = {
   updateVariable: {
