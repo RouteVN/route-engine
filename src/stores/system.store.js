@@ -3002,15 +3002,6 @@ const ROLLBACK_ACTION_DEFINITIONS = {
     replayRecorded: applyRollbackCheckpointUpdateVariable,
     persistInSaveSlot: true,
   },
-  showDialogueUI: {
-    replayLine: replayStoreActionForRollback(showDialogueUI),
-  },
-  hideDialogueUI: {
-    replayLine: replayStoreActionForRollback(hideDialogueUI),
-  },
-  toggleDialogueUI: {
-    replayLine: replayStoreActionForRollback(toggleDialogueUI),
-  },
   setNextLineConfig: {
     replayLine: replayStoreActionForRollback(setNextLineConfig),
   },
