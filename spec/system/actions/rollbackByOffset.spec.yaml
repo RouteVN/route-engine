@@ -804,3 +804,100 @@ out:
           - sectionId: "section1"
             lineId: "3"
             rollbackPolicy: "free"
+---
+case: keeps dialogue UI visible when rolling back to a line that hid it on entry
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        hideDialogueUI: {}
+                    - id: "2"
+        resources:
+          variables: {}
+      global:
+        isLineCompleted: false
+        dialogueUIHidden: false
+        nextLineConfig:
+          manual:
+            enabled: true
+            requireLineCompleted: false
+          auto:
+            enabled: false
+          applyMode: "persistent"
+        pendingEffects: []
+      contexts:
+        - variables: {}
+          currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+            history: {}
+          rollback:
+            currentIndex: 1
+            isRestoring: false
+            replayStartIndex: 0
+            timeline:
+              - sectionId: "section1"
+                lineId: "1"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "2"
+                rollbackPolicy: "free"
+  - offset: -1
+out:
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions:
+                    hideDialogueUI: {}
+                - id: "2"
+    resources:
+      variables: {}
+  global:
+    isLineCompleted: true
+    dialogueUIHidden: false
+    layeredViews: []
+    nextLineConfig:
+      manual:
+        enabled: true
+        requireLineCompleted: false
+      auto:
+        enabled: false
+      applyMode: "persistent"
+    pendingEffects:
+      - name: "clearNextLineConfigTimer"
+      - name: "render"
+  contexts:
+    - variables: {}
+      currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "1"
+        history:
+          sectionId: null
+          lineId: null
+      rollback:
+        currentIndex: 0
+        isRestoring: false
+        replayStartIndex: 0
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "2"
+            rollbackPolicy: "free"

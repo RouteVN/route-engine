@@ -1,0 +1,265 @@
+---
+title: Load Rollback Does Not Reopen Save Overlay
+description: Loading a slot should not let rollback reopen a transient save layered view captured in slot history
+specs:
+  - a save overlay is opened on the earlier checkpoint
+  - the overlay saves after transitioning into a later section
+  - loading that slot and rolling back should not restore the transient overlay
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: click
+    x: 832
+    y: 44
+  - action: wait
+    ms: 90
+  - action: click
+    x: 477
+    y: 192
+  - action: wait
+    ms: 120
+  - action: click
+    x: 478
+    y: 257
+  - action: wait
+    ms: 150
+  - action: click
+    x: 140
+    y: 350
+  - action: wait
+    ms: 150
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  characters:
+    narrator:
+      name: Guide
+  layouts:
+    entryLayout:
+      elements:
+        - id: entry-bg
+          type: rect
+          width: 1920
+          height: 1080
+          colorId: bg
+        - id: entry-card
+          type: rect
+          x: 120
+          y: 120
+          width: 1240
+          height: 240
+          colorId: panel
+        - id: entry-heading
+          type: text
+          x: 170
+          y: 176
+          content: "Entry checkpoint"
+          textStyleId: textHeading
+        - id: save-button
+          type: rect
+          x: 1500
+          y: 60
+          width: 300
+          height: 72
+          colorId: button
+          click:
+            payload:
+              actions:
+                pushLayeredView:
+                  resourceId: saveMenuLayout
+                  resourceType: layout
+        - id: save-button-label
+          type: text
+          x: 1602
+          y: 84
+          content: "[SAVE]"
+          textStyleId: textButton
+    afterSaveLayout:
+      elements:
+        - id: after-save-bg
+          type: rect
+          width: 1920
+          height: 1080
+          colorId: bg
+        - id: after-save-card
+          type: rect
+          x: 120
+          y: 120
+          width: 1240
+          height: 240
+          colorId: panel
+        - id: after-save-heading
+          type: text
+          x: 170
+          y: 176
+          content: "Saved checkpoint"
+          textStyleId: textHeading
+        - id: rollback-button
+          type: rect
+          x: 100
+          y: 680
+          width: 340
+          height: 64
+          colorId: button
+          click:
+            payload:
+              actions:
+                rollbackByOffset:
+                  offset: -1
+        - id: rollback-label
+          type: text
+          x: 140
+          y: 700
+          content: "[BACK]"
+          textStyleId: textButton
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 100
+          y: 780
+          width: 1720
+          height: 220
+          colorId: panel
+        - id: dialogue-text
+          type: text
+          x: 150
+          y: 844
+          width: 1460
+          content: ${dialogue.content[0].text}
+          textStyleId: textMain
+    saveMenuLayout:
+      elements:
+        - id: save-overlay
+          type: rect
+          width: 1920
+          height: 1080
+          opacity: 0.78
+          colorId: bg
+        - id: save-panel
+          type: rect
+          x: 460
+          y: 220
+          width: 1000
+          height: 420
+          colorId: button
+        - id: save-title
+          type: text
+          x: 660
+          y: 284
+          content: "Transient Save Menu"
+          textStyleId: textHeading
+        - id: save-and-go-button
+          type: rect
+          x: 600
+          y: 360
+          width: 720
+          height: 92
+          colorId: panel
+          click:
+            payload:
+              actions:
+                sectionTransition:
+                  sectionId: afterSave
+                saveSlot:
+                  slotId: 1
+        - id: save-and-go-label
+          type: text
+          x: 780
+          y: 388
+          content: "[SAVE AND GO]"
+          textStyleId: textButton
+        - id: load-slot-button
+          type: rect
+          x: 600
+          y: 490
+          width: 720
+          height: 92
+          colorId: panel
+          click:
+            payload:
+              actions:
+                loadSlot:
+                  slotId: 1
+        - id: load-slot-label
+          type: text
+          x: 816
+          y: 518
+          content: "[LOAD SLOT]"
+          textStyleId: textButton
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    bg:
+      hex: "#000000"
+    panel:
+      hex: "#4D4D4D"
+    button:
+      hex: "#737373"
+    fg:
+      hex: "#FFFFFF"
+    fgMuted:
+      hex: "#D9D9D9"
+  textStyles:
+    textMain:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 30
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textButton:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 30
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textHeading:
+      fontId: fontDefault
+      colorId: fgMuted
+      fontSize: 36
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: entry
+      sections:
+        entry:
+          lines:
+            - id: line1
+              actions:
+                background:
+                  resourceId: entryLayout
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Entry checkpoint. Load then back should stay clean."
+                  characterId: narrator
+        afterSave:
+          lines:
+            - id: line2
+              actions:
+                background:
+                  resourceId: afterSaveLayout
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Loaded checkpoint. Back returns to entry."
+                  characterId: narrator

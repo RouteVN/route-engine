@@ -168,6 +168,106 @@ const createResetStoryAtSectionProjectData = () => ({
   },
 });
 
+const createSaveLoadRollbackOverlayProjectData = () => ({
+  screen: {
+    width: 1920,
+    height: 1080,
+    backgroundColor: "#000000",
+  },
+  resources: {
+    layouts: {
+      saveMenuLayout: {
+        elements: [],
+      },
+    },
+    sounds: {},
+    images: {},
+    videos: {},
+    sprites: {},
+    characters: {},
+    variables: {},
+    transforms: {},
+    sectionTransitions: {},
+    animations: {},
+    fonts: {},
+    colors: {},
+    textStyles: {},
+  },
+  story: {
+    initialSceneId: "scene1",
+    scenes: {
+      scene1: {
+        initialSectionId: "entry",
+        sections: {
+          entry: {
+            lines: [
+              {
+                id: "line1",
+                actions: {},
+              },
+            ],
+          },
+          afterSave: {
+            lines: [
+              {
+                id: "line2",
+                actions: {},
+              },
+            ],
+          },
+        },
+      },
+    },
+  },
+});
+
+const createDialogueUIRollbackProjectData = () => ({
+  screen: {
+    width: 1920,
+    height: 1080,
+    backgroundColor: "#000000",
+  },
+  resources: {
+    layouts: {},
+    sounds: {},
+    images: {},
+    videos: {},
+    sprites: {},
+    characters: {},
+    variables: {},
+    transforms: {},
+    sectionTransitions: {},
+    animations: {},
+    fonts: {},
+    colors: {},
+    textStyles: {},
+  },
+  story: {
+    initialSceneId: "scene1",
+    scenes: {
+      scene1: {
+        initialSectionId: "section1",
+        sections: {
+          section1: {
+            lines: [
+              {
+                id: "line1",
+                actions: {
+                  hideDialogueUI: {},
+                },
+              },
+              {
+                id: "line2",
+                actions: {},
+              },
+            ],
+          },
+        },
+      },
+    },
+  },
+});
+
 const createRouteEngineWithInlineEffects = () => {
   let engine;
   const handlePendingEffects = (pendingEffects) => {
@@ -337,21 +437,6 @@ describe("RouteEngine selectSystemState", () => {
           sectionId: "gameStart",
           lineId: "gameLine",
           rollbackPolicy: "free",
-          executedActions: [
-            {
-              type: "updateVariable",
-              payload: {
-                id: "seedGameScore",
-                operations: [
-                  {
-                    variableId: "score",
-                    op: "increment",
-                    value: 1,
-                  },
-                ],
-              },
-            },
-          ],
         },
       ],
     });
@@ -382,22 +467,98 @@ describe("RouteEngine selectSystemState", () => {
         sectionId: "title",
         lineId: "titleLine",
         rollbackPolicy: "free",
-        executedActions: [
-          {
-            type: "updateVariable",
-            payload: {
-              id: "seedTitleScore",
-              operations: [
-                {
-                  variableId: "score",
-                  op: "set",
-                  value: 7,
-                },
-              ],
-            },
-          },
-        ],
       },
     ]);
+  });
+
+  it("does not reopen transient layered views when rolling back after load", () => {
+    const engine = createRouteEngineWithInlineEffects();
+
+    engine.init({
+      initialState: {
+        projectData: createSaveLoadRollbackOverlayProjectData(),
+      },
+    });
+
+    engine.handleActions({
+      pushLayeredView: {
+        resourceId: "saveMenuLayout",
+        resourceType: "layout",
+      },
+    });
+    engine.handleActions({
+      sectionTransition: {
+        sectionId: "afterSave",
+      },
+      saveSlot: {
+        slotId: 1,
+      },
+    });
+
+    let state = engine.selectSystemState();
+    expect(state.global.saveSlots["1"].state.contexts[0].rollback.timeline).toEqual(
+      [
+        {
+          sectionId: "entry",
+          lineId: "line1",
+          rollbackPolicy: "free",
+        },
+        {
+          sectionId: "afterSave",
+          lineId: "line2",
+          rollbackPolicy: "free",
+        },
+      ],
+    );
+
+    engine.handleAction("loadSlot", { slotId: 1 });
+
+    state = engine.selectSystemState();
+    expect(state.contexts[0].pointers.read).toMatchObject({
+      sectionId: "afterSave",
+      lineId: "line2",
+    });
+    expect(state.global.layeredViews).toEqual([]);
+
+    engine.handleAction("rollbackByOffset", { offset: -1 });
+
+    state = engine.selectSystemState();
+    expect(state.contexts[0].pointers.read).toEqual({
+      sectionId: "entry",
+      lineId: "line1",
+    });
+    expect(state.global.layeredViews).toEqual([]);
+  });
+
+  it("does not restore dialogue UI visibility changes authored on the rollback target line", () => {
+    const engine = createRouteEngineWithInlineEffects();
+
+    engine.init({
+      initialState: {
+        projectData: createDialogueUIRollbackProjectData(),
+      },
+    });
+
+    expect(engine.selectSystemState().global.dialogueUIHidden).toBe(true);
+
+    engine.handleAction("markLineCompleted", {});
+    engine.handleAction("nextLine", {});
+    engine.handleAction("nextLine", {});
+
+    let state = engine.selectSystemState();
+    expect(state.contexts[0].pointers.read).toEqual({
+      sectionId: "section1",
+      lineId: "line2",
+    });
+    expect(state.global.dialogueUIHidden).toBe(false);
+
+    engine.handleAction("rollbackByOffset", { offset: -1 });
+
+    state = engine.selectSystemState();
+    expect(state.contexts[0].pointers.read).toEqual({
+      sectionId: "section1",
+      lineId: "line1",
+    });
+    expect(state.global.dialogueUIHidden).toBe(false);
   });
 });
