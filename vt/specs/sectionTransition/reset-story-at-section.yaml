@@ -1,0 +1,248 @@
+---
+title: Reset Story At Section
+description: "resetStoryAtSection should start fresh gameplay and fresh title runs without leaving rollback access to the previous section."
+specs:
+  - the title screen seeds a dirty context score before Start is pressed
+  - Start uses resetStoryAtSection and the game section begins from score 0 + its own line action
+  - rollback on the first gameplay checkpoint does not return to the title section
+  - returning to title with the same option also clears rollback to gameplay
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: click
+    x: 480
+    y: 302
+  - action: wait
+    ms: 150
+  - action: click
+    x: 170
+    y: 460
+  - action: wait
+    ms: 150
+  - action: screenshot
+  - action: click
+    x: 480
+    y: 302
+  - action: wait
+    ms: 150
+  - action: click
+    x: 170
+    y: 460
+  - action: wait
+    ms: 150
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+  backgroundColor: "#000000"
+resources:
+  variables:
+    score:
+      type: number
+      scope: context
+      default: 0
+  layouts:
+    titleLayout:
+      elements:
+        - id: title-bg
+          type: rect
+          width: 960
+          height: 540
+          colorId: bg
+        - id: title-card
+          type: rect
+          x: 180
+          y: 80
+          width: 600
+          height: 150
+          colorId: panel
+        - id: title-heading
+          type: text
+          x: 480
+          y: 128
+          anchorX: 0.5
+          content: TITLE SCREEN
+          textStyleId: heading
+        - id: title-score
+          type: text
+          x: 480
+          y: 184
+          anchorX: 0.5
+          content: "Score: ${variables.score}"
+          textStyleId: body
+        - id: start-button
+          type: rect
+          x: 300
+          y: 260
+          width: 360
+          height: 84
+          colorId: button
+          click:
+            payload:
+              actions:
+                resetStoryAtSection:
+                  sectionId: game
+        - id: start-label
+          type: text
+          x: 480
+          y: 289
+          anchorX: 0.5
+          content: START
+          textStyleId: buttonText
+        - id: title-rollback-button
+          type: rect
+          x: 60
+          y: 430
+          width: 220
+          height: 60
+          colorId: buttonMuted
+          click:
+            payload:
+              actions:
+                rollbackByOffset:
+                  offset: -1
+        - id: title-rollback-label
+          type: text
+          x: 170
+          y: 450
+          anchorX: 0.5
+          content: ROLLBACK
+          textStyleId: body
+    gameLayout:
+      elements:
+        - id: game-bg
+          type: rect
+          width: 960
+          height: 540
+          colorId: bg
+        - id: game-card
+          type: rect
+          x: 180
+          y: 80
+          width: 600
+          height: 150
+          colorId: panel
+        - id: game-heading
+          type: text
+          x: 480
+          y: 128
+          anchorX: 0.5
+          content: GAME SCREEN
+          textStyleId: heading
+        - id: game-score
+          type: text
+          x: 480
+          y: 184
+          anchorX: 0.5
+          content: "Score: ${variables.score}"
+          textStyleId: body
+        - id: return-button
+          type: rect
+          x: 300
+          y: 260
+          width: 360
+          height: 84
+          colorId: button
+          click:
+            payload:
+              actions:
+                resetStoryAtSection:
+                  sectionId: title
+        - id: return-label
+          type: text
+          x: 480
+          y: 289
+          anchorX: 0.5
+          content: RETURN TO TITLE
+          textStyleId: buttonText
+        - id: game-rollback-button
+          type: rect
+          x: 60
+          y: 430
+          width: 220
+          height: 60
+          colorId: buttonMuted
+          click:
+            payload:
+              actions:
+                rollbackByOffset:
+                  offset: -1
+        - id: game-rollback-label
+          type: text
+          x: 170
+          y: 450
+          anchorX: 0.5
+          content: ROLLBACK
+          textStyleId: body
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    bg:
+      hex: "#000000"
+    panel:
+      hex: "#4D4D4D"
+    button:
+      hex: "#737373"
+    buttonMuted:
+      hex: "#5A5A5A"
+    fg:
+      hex: "#FFFFFF"
+    fgMuted:
+      hex: "#D9D9D9"
+  textStyles:
+    heading:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 34
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    body:
+      fontId: fontDefault
+      colorId: fgMuted
+      fontSize: 28
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    buttonText:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 28
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: title
+      sections:
+        title:
+          lines:
+            - id: titleLine
+              actions:
+                updateVariable:
+                  id: seedTitleScore
+                  operations:
+                    - variableId: score
+                      op: set
+                      value: 7
+                background:
+                  resourceId: titleLayout
+        game:
+          lines:
+            - id: gameLine
+              actions:
+                updateVariable:
+                  id: seedGameScore
+                  operations:
+                    - variableId: score
+                      op: increment
+                      value: 1
+                background:
+                  resourceId: gameLayout

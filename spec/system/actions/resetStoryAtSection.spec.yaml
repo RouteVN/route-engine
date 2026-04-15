@@ -1,11 +1,11 @@
 file: "../../../src/stores/system.store.js"
 group: systemStore.actions
-suites: [resetStorySession]
+suites: [resetStoryAtSection]
 ---
-suite: resetStorySession
-exportName: resetStorySession
+suite: resetStoryAtSection
+exportName: resetStoryAtSection
 ---
-case: reset story session preserves pointer and clears story-local session state
+case: reset story at section clears story-local state and anchors rollback at the destination
 in:
   - state:
       projectData:
@@ -42,7 +42,9 @@ in:
                 gameStart:
                   lines:
                     - id: gameLine
-                      actions: {}
+                      actions:
+                        background:
+                          resourceId: bg2
       global:
         autoMode: true
         skipMode: true
@@ -117,7 +119,7 @@ in:
               - sectionId: title
                 lineId: titleLine
                 rollbackPolicy: free
-  - {}
+  - sectionId: gameStart
 out:
   projectData:
     resources:
@@ -153,7 +155,9 @@ out:
             gameStart:
               lines:
                 - id: gameLine
-                  actions: {}
+                  actions:
+                    background:
+                      resourceId: bg2
   global:
     autoMode: false
     skipMode: false
@@ -170,7 +174,7 @@ out:
         enabled: false
       applyMode: persistent
     layeredViews: []
-    isLineCompleted: true
+    isLineCompleted: false
     variables:
       volume: 15
       unlockedEnding: true
@@ -192,12 +196,13 @@ out:
       - name: clearSkipNextTimer
       - name: clearNextLineConfigTimer
       - name: render
+      - name: handleLineActions
   contexts:
     - currentPointerMode: read
       pointers:
         read:
-          sectionId: title
-          lineId: titleLine
+          sectionId: gameStart
+          lineId: gameLine
         history:
           sectionId: __undefined__
           lineId: __undefined__
@@ -213,6 +218,114 @@ out:
         isRestoring: false
         replayStartIndex: 0
         timeline:
-          - sectionId: title
-            lineId: titleLine
+          - sectionId: gameStart
+            lineId: gameLine
             rollbackPolicy: free
+---
+case: section not found leaves state unchanged
+in:
+  - state:
+      projectData:
+        story:
+          initialSceneId: scene1
+          scenes:
+            scene1:
+              initialSectionId: title
+              sections:
+                title:
+                  lines:
+                    - id: titleLine
+                      actions: {}
+      global:
+        pendingEffects: []
+        autoMode: true
+        skipMode: true
+      contexts:
+        - currentPointerMode: read
+          pointers:
+            read:
+              sectionId: title
+              lineId: titleLine
+          variables:
+            score: 4
+  - sectionId: missing
+out:
+  projectData:
+    story:
+      initialSceneId: scene1
+      scenes:
+        scene1:
+          initialSectionId: title
+          sections:
+            title:
+              lines:
+                - id: titleLine
+                  actions: {}
+  global:
+    pendingEffects: []
+    autoMode: true
+    skipMode: true
+  contexts:
+    - currentPointerMode: read
+      pointers:
+        read:
+          sectionId: title
+          lineId: titleLine
+      variables:
+        score: 4
+---
+case: empty destination section leaves state unchanged
+in:
+  - state:
+      projectData:
+        story:
+          initialSceneId: scene1
+          scenes:
+            scene1:
+              initialSectionId: title
+              sections:
+                title:
+                  lines:
+                    - id: titleLine
+                      actions: {}
+                empty:
+                  lines: []
+      global:
+        pendingEffects: []
+        autoMode: true
+        skipMode: true
+      contexts:
+        - currentPointerMode: read
+          pointers:
+            read:
+              sectionId: title
+              lineId: titleLine
+          variables:
+            score: 4
+  - sectionId: empty
+out:
+  projectData:
+    story:
+      initialSceneId: scene1
+      scenes:
+        scene1:
+          initialSectionId: title
+          sections:
+            title:
+              lines:
+                - id: titleLine
+                  actions: {}
+            empty:
+              lines: []
+  global:
+    pendingEffects: []
+    autoMode: true
+    skipMode: true
+  contexts:
+    - currentPointerMode: read
+      pointers:
+        read:
+          sectionId: title
+          lineId: titleLine
+      variables:
+        score: 4
