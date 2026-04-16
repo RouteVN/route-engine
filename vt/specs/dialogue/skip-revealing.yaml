@@ -1,6 +1,6 @@
 ---
 title: Dialogue Skip Revealing
-description: 80-line skip sandbox using text-revealing dialogue. It is intended to isolate skip-time reveal behavior, so the screenshot checkpoint lands before the 80ms skip advance and shows line 1 already fully revealed.
+description: 80-line skip sandbox using text-revealing dialogue. It isolates skip-time reveal behavior, and the stable browser path now lands on line 2 already fully revealed by the 20ms screenshot checkpoint.
 skipInitialScreenshot: true
 viewport:
   id: capture
