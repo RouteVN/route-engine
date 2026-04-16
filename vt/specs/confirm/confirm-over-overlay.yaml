@@ -1,6 +1,6 @@
 ---
-title: Confirm Over Layered View
-description: Confirm dialog opened on top of another layered view.
+title: Confirm Over Overlay
+description: Confirm dialog opened on top of another overlay.
 diffThreshold: 0.85
 ---
 screen:
@@ -22,7 +22,7 @@ resources:
           type: text
           x: 140
           y: 128
-          content: Confirm Over Layered View
+          content: Confirm Over Overlay
           textStyleId: textStyle1
         - id: scene-copy
           type: text
@@ -39,12 +39,12 @@ resources:
           click:
             payload:
               actions:
-                pushLayeredView:
+                pushOverlay:
                   resourceId: menuLayout
                 showConfirmDialog:
-                  resourceId: layeredConfirmLayout
+                  resourceId: overlayConfirmLayout
                   confirmActions:
-                    clearLayeredViews: {}
+                    clearOverlays: {}
           children:
             - id: open-stack-bg
               type: rect
@@ -80,7 +80,7 @@ resources:
           y: 372
           content: This layer should remain visible behind the confirm dialog.
           textStyleId: textStyle2
-    layeredConfirmLayout:
+    overlayConfirmLayout:
       elements:
         - id: confirm-panel
           type: rect

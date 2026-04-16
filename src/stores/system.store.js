@@ -881,7 +881,7 @@ const resetStoryStateTransientGlobals = (state) => {
   clearConfirmDialog(state);
   state.global.viewedRegistry = createDefaultViewedRegistry();
   state.global.nextLineConfig = createDefaultNextLineConfig();
-  state.global.layeredViews = [];
+  state.global.overlayStack = [];
   state.global.isLineCompleted = true;
 
   state.global.pendingEffects.push(
@@ -1153,7 +1153,7 @@ const restoreRollbackCheckpoint = (state, checkpointIndex) => {
     state.global.dialogueUIHidden = false;
     delete state.global.isDialogueHistoryShowing;
     state.global.nextLineConfig = cloneStateValue(DEFAULT_NEXT_LINE_CONFIG);
-    state.global.layeredViews = [];
+    state.global.overlayStack = [];
     clearConfirmDialog(state);
     state.global.isLineCompleted = true;
 
@@ -1233,7 +1233,7 @@ export const createInitialState = (payload) => {
       viewedRegistry: createDefaultViewedRegistry(),
       nextLineConfig: createDefaultNextLineConfig(),
       saveSlots: normalizeStoredSaveSlots(saveSlots),
-      layeredViews: [],
+      overlayStack: [],
       variables: globalVariables,
       ...createInitialGlobalRuntimeState({
         loadedGlobalRuntime,
@@ -1249,8 +1249,8 @@ export const createInitialState = (payload) => {
 /**************************
  * Selectors
  *************************/
-export const selectLayeredViews = ({ state }) => {
-  return state.global.layeredViews || [];
+export const selectOverlayStack = ({ state }) => {
+  return state.global.overlayStack || [];
 };
 
 export const selectPendingEffects = ({ state }) => {
@@ -1752,7 +1752,7 @@ export const selectRenderState = ({ state }) => {
     isLineCompleted: runtime.isLineCompleted,
     skipTransitionsAndAnimations:
       !!runtime.skipTransitionsAndAnimations || settleCurrentLinePresentation,
-    layeredViews: state.global.layeredViews,
+    overlayStack: state.global.overlayStack,
     confirmDialog: state.global.confirmDialog,
     dialogueHistory: selectDialogueHistory({ state }),
     saveSlots,
@@ -1781,34 +1781,34 @@ export const hideConfirmDialog = ({ state }) => {
   return state;
 };
 
-export const pushLayeredView = ({ state }, payload) => {
-  state.global.layeredViews.push(payload);
+export const pushOverlay = ({ state }, payload) => {
+  state.global.overlayStack.push(payload);
   state.global.pendingEffects.push({ name: "render" });
-  recordRollbackAction(state, "pushLayeredView", payload);
+  recordRollbackAction(state, "pushOverlay", payload);
   return state;
 };
 
-export const popLayeredView = ({ state }) => {
-  state.global.layeredViews.pop();
+export const popOverlay = ({ state }) => {
+  state.global.overlayStack.pop();
   state.global.pendingEffects.push({ name: "render" });
-  recordRollbackAction(state, "popLayeredView", undefined);
+  recordRollbackAction(state, "popOverlay", undefined);
   return state;
 };
 
-export const replaceLastLayeredView = ({ state }, payload) => {
-  if (state.global.layeredViews.length > 0) {
-    state.global.layeredViews[state.global.layeredViews.length - 1] = payload;
+export const replaceLastOverlay = ({ state }, payload) => {
+  if (state.global.overlayStack.length > 0) {
+    state.global.overlayStack[state.global.overlayStack.length - 1] = payload;
   }
   state.global.pendingEffects.push({ name: "render" });
-  recordRollbackAction(state, "replaceLastLayeredView", payload);
+  recordRollbackAction(state, "replaceLastOverlay", payload);
   return state;
 };
 
-export const clearLayeredViews = ({ state }) => {
-  state.global.layeredViews = [];
+export const clearOverlays = ({ state }) => {
+  state.global.overlayStack = [];
   clearConfirmDialog(state);
   state.global.pendingEffects.push({ name: "render" });
-  recordRollbackAction(state, "clearLayeredViews", undefined);
+  recordRollbackAction(state, "clearOverlays", undefined);
   return state;
 };
 
@@ -2408,7 +2408,7 @@ export const loadSlot = ({ state }, payload) => {
     state.global.dialogueUIHidden = false;
     delete state.global.isDialogueHistoryShowing;
     state.global.nextLineConfig = createDefaultNextLineConfig();
-    state.global.layeredViews = [];
+    state.global.overlayStack = [];
     state.global.isLineCompleted = true;
     clearConfirmDialog(state);
     state.global.pendingEffects.push(
@@ -3198,7 +3198,7 @@ export const createSystemStore = (initialState) => {
     selectSaveSlotPage,
     selectCurrentPageSlots,
     selectRenderState,
-    selectLayeredViews,
+    selectOverlayStack,
     selectLineIdByOffset,
     selectCanRollback,
 
@@ -3244,10 +3244,10 @@ export const createSystemStore = (initialState) => {
     prevLine,
     rollbackToLine,
     rollbackByOffset,
-    pushLayeredView,
-    popLayeredView,
-    replaceLastLayeredView,
-    clearLayeredViews,
+    pushOverlay,
+    popOverlay,
+    replaceLastOverlay,
+    clearOverlays,
     updateVariable,
     nextLineFromSystem,
   };

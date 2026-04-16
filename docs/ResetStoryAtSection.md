@@ -69,7 +69,7 @@ The destination line then runs as normal through queued `handleLineActions`.
   - `skipMode = false`
   - `dialogueUIHidden = false`
   - `confirmDialog = null`
-  - `layeredViews = []`
+  - `overlayStack = []`
   - `nextLineConfig = DEFAULT_NEXT_LINE_CONFIG`
 
 After the destination line is entered, normal line-entry behavior applies, so

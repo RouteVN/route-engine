@@ -268,7 +268,7 @@ properties:
         $ref: "#/defs/nextLineConfig"
       viewedRegistry:
         $ref: "#/defs/viewedRegistry"
-      layeredViews:
+      overlayStack:
         type: array
         items:
           type: object
@@ -297,7 +297,7 @@ properties:
         skipMode,
         nextLineConfig,
         viewedRegistry,
-        layeredViews,
+        overlayStack,
         isLineCompleted,
       ]
     additionalProperties: false

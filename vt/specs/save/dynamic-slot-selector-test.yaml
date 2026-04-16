@@ -80,7 +80,7 @@ resources:
           click:
             payload:
               actions:
-                pushLayeredView:
+                pushOverlay:
                   resourceId: dynamicSaveMenuLayout
                   resourceType: layout
           colorId: layoutColor3
@@ -92,7 +92,7 @@ resources:
           click:
             payload:
               actions:
-                pushLayeredView:
+                pushOverlay:
                   resourceId: dynamicSaveMenuLayout
                   resourceType: layout
           textStyleId: textStyle3
@@ -156,7 +156,7 @@ resources:
           click:
             payload:
               actions:
-                clearLayeredViews: {}
+                clearOverlays: {}
           colorId: layoutColor3
         - id: close-btn-text
           type: text
@@ -166,7 +166,7 @@ resources:
           click:
             payload:
               actions:
-                clearLayeredViews: {}
+                clearOverlays: {}
           textStyleId: textStyle3
         - id: btnPrevPage
           type: text

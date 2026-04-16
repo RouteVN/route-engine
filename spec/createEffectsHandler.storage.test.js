@@ -19,26 +19,27 @@ describe("createEffectsHandler storage effects", () => {
     vi.unstubAllGlobals();
   });
 
-  it("throws when localStorage quota is exceeded while saving saveSlots", () => {
+  it("reports persistence errors when saving saveSlots exceeds quota", async () => {
     const quotaExceededError = new Error("quota exceeded");
     quotaExceededError.name = "QuotaExceededError";
 
-    const setItem = vi.fn().mockImplementation(() => {
+    const saveSlotsWrite = vi.fn().mockImplementation(() => {
       throw quotaExceededError;
-    });
-
-    vi.stubGlobal("localStorage", {
-      setItem,
     });
 
     const routeGraphics = {
       render: vi.fn(),
     };
+    const handlePersistenceError = vi.fn();
 
     const effectsHandler = createEffectsHandler({
       getEngine: createEngine,
       routeGraphics,
       ticker: createTicker(),
+      persistence: {
+        saveSlots: saveSlotsWrite,
+      },
+      handlePersistenceError,
     });
 
     const saveSlots = {
@@ -57,25 +58,28 @@ describe("createEffectsHandler storage effects", () => {
       },
     };
 
-    expect(() => {
-      effectsHandler([
-        {
-          name: "saveSlots",
-          payload: {
-            saveSlots,
-          },
+    effectsHandler([
+      {
+        name: "saveSlots",
+        payload: {
+          saveSlots,
         },
-        {
-          name: "render",
-        },
-      ]);
-    }).toThrow(quotaExceededError);
+      },
+      {
+        name: "render",
+      },
+    ]);
 
-    expect(setItem).toHaveBeenCalledTimes(1);
-    expect(setItem).toHaveBeenCalledWith(
-      "saveSlots",
-      JSON.stringify(saveSlots),
-    );
-    expect(routeGraphics.render).not.toHaveBeenCalled();
+    await vi.waitFor(() => {
+      expect(saveSlotsWrite).toHaveBeenCalledTimes(1);
+    });
+    expect(saveSlotsWrite).toHaveBeenCalledWith(saveSlots);
+
+    await vi.waitFor(() => {
+      expect(handlePersistenceError).toHaveBeenCalledTimes(1);
+    });
+    expect(handlePersistenceError).toHaveBeenCalledWith(quotaExceededError);
+    expect(routeGraphics.render).toHaveBeenCalledTimes(1);
+    expect(routeGraphics.render).toHaveBeenCalledWith({ id: "render-1" });
   });
 });

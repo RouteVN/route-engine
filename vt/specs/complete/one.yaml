@@ -96,7 +96,7 @@ resources:
               eventName: system
               eventPayload:
                 actions:
-                  clearLastLayeredView: {}
+                  popOverlay: {}
               textStyleId: textStyle1
             - id: 32kljfsf3
               type: container
@@ -115,7 +115,7 @@ resources:
                     height: 80
                     width: 500
                     textStyleId: textStyle2
-    layeredViewGalleryItemLayout:
+    overlayGalleryItemLayout:
       elements:
         - id: afk2lkas
           type: container
@@ -144,7 +144,7 @@ resources:
                         - variableId: activeGalleryFileIndex
                           op: set
                           value: 0
-                    clearLastLayeredView: {}
+                    popOverlay: {}
     creditsLayout:
       transitions:
         - id: 932fsdf
@@ -280,7 +280,7 @@ resources:
           rightClickEventName: system
           rightClickEventPayload:
             actions:
-              addLayeredView:
+              pushOverlay:
                 resourceId: dafkjkl3
                 resourceType: layout
               updateVariable:
@@ -330,7 +330,7 @@ resources:
               rightClickEventName: system
               rightClickEventPayload:
                 actions:
-                  clearLastLayeredView: {}
+                  popOverlay: {}
               colorId: layoutColor2
             - id: 9fdadf
               $when: variables.currentMenuTabId == "options"
@@ -705,8 +705,8 @@ resources:
                                       - variableId: activeGalleryFileIndex
                                         op: set
                                         value: 0
-                                addLayeredView:
-                                  resourceId: layeredViewGalleryItemLayout
+                                pushOverlay:
+                                  resourceId: overlayGalleryItemLayout
                             - id: 3fadje2-${item.label}
                               type: text
                               x: 20
@@ -815,7 +815,7 @@ resources:
               eventName: system
               eventPayload:
                 actions:
-                  clearLastLayeredView: {}
+                  popOverlay: {}
                   sectionTransition:
                     sectionId: 3k3s9sd
               x: 0
@@ -980,7 +980,7 @@ resources:
               eventName: system
               eventPayload:
                 actions:
-                  clearLastLayeredView: {}
+                  popOverlay: {}
                   sectionTransition:
                     mode: read
                     sectionId: l3kjfawelf
@@ -997,7 +997,7 @@ resources:
               eventName: system
               eventPayload:
                 actions:
-                  clearLastLayeredView: {}
+                  popOverlay: {}
               x: 0
               y: 0
               hover:
@@ -1115,7 +1115,7 @@ resources:
               eventName: system
               eventPayload:
                 actions:
-                  addLayeredView:
+                  pushOverlay:
                     resourceId: historyDialogueLayout
               textStyleId:
                 $if showDialogueHistory: textStyle9
@@ -1141,7 +1141,7 @@ resources:
                       - variableId: isMainMenu
                         op: set
                         value: false
-                  addLayeredView:
+                  pushOverlay:
                     resourceId: dafkjkl3
               textStyleId: textStyle2
             - id: dialogue-action-hide
@@ -1171,7 +1171,7 @@ resources:
                   prevLine: {}
               textStyleId: textStyle2
     f3jik32isdf:
-      name: Exit Application LayeredView
+      name: Exit Application Overlay
       elements:
         - id: 23kjrasdf
           type: container
@@ -1205,7 +1205,7 @@ resources:
               eventName: system
               eventPayload:
                 actions:
-                  clearLastLayeredView: {}
+                  popOverlay: {}
               hover:
                 textStyleId: textStyle5
               textStyleId: textStyle1
@@ -1243,7 +1243,7 @@ resources:
               content: XLoad Load
               click:
                 payload:
-                  addLayeredView:
+                  pushOverlay:
                     resourceId: dafkjkl3
                   updateVariable:
                     id: uv20
@@ -1263,7 +1263,7 @@ resources:
               eventName: system
               eventPayload:
                 actions:
-                  addLayeredView:
+                  pushOverlay:
                     resourceId: dafkjkl3
                   updateVariable:
                     id: uv21
@@ -1283,7 +1283,7 @@ resources:
               eventName: system
               eventPayload:
                 actions:
-                  addLayeredView:
+                  pushOverlay:
                     resourceId: f3jik32isdf
               hover:
                 textStyleId: textStyle5

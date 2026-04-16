@@ -74,7 +74,7 @@ Examples:
 - `skipMode`
 - `dialogueUIHidden`
 - `nextLineConfig`
-- `layeredViews`
+- `overlayStack`
 - `isLineCompleted`
 - `pendingEffects`
 - live timer callbacks and in-flight timing state
@@ -152,7 +152,7 @@ That includes resetting:
 - `skipMode`
 - `dialogueUIHidden`
 - `nextLineConfig`
-- `layeredViews`
+- `overlayStack`
 - `isLineCompleted`
 
 It also includes clearing runtime timers/effects that belong to the prior live session.

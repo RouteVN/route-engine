@@ -58,7 +58,7 @@ in:
         autoMode: true
         skipMode: true
         dialogueUIHidden: true
-        layeredViews:
+        overlayStack:
           - resourceId: overlay
         nextLineConfig:
           manual:
@@ -106,7 +106,7 @@ out:
     autoMode: false
     skipMode: false
     dialogueUIHidden: false
-    layeredViews: []
+    overlayStack: []
     isLineCompleted: true
     confirmDialog: null
     viewedRegistry:
@@ -385,7 +385,7 @@ out:
     autoMode: false
     skipMode: false
     dialogueUIHidden: false
-    layeredViews: []
+    overlayStack: []
     isLineCompleted: true
     nextLineConfig:
       manual:
@@ -536,7 +536,7 @@ out:
     autoMode: false
     skipMode: false
     dialogueUIHidden: false
-    layeredViews: []
+    overlayStack: []
     isLineCompleted: true
     nextLineConfig:
       manual:

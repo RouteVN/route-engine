@@ -345,7 +345,7 @@ describe("system.store rollback/save draft safety", () => {
           },
           applyMode: "persistent",
         },
-        layeredViews: [],
+        overlayStack: [],
         pendingEffects: [],
       },
       contexts: [
@@ -428,7 +428,7 @@ describe("system.store rollback/save draft safety", () => {
           },
           applyMode: "persistent",
         },
-        layeredViews: [],
+        overlayStack: [],
         pendingEffects: [],
         variables: {},
       },
@@ -517,7 +517,7 @@ describe("system.store rollback/save draft safety", () => {
           },
           applyMode: "persistent",
         },
-        layeredViews: [],
+        overlayStack: [],
         pendingEffects: [],
       },
       contexts: [

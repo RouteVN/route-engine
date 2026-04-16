@@ -38,7 +38,7 @@ in:
         slotId: 4
       hideConfirmDialog: {}
     cancelActions:
-      clearLayeredViews: {}
+      clearOverlays: {}
 out:
   global:
     confirmDialog:
@@ -48,7 +48,7 @@ out:
           slotId: 4
         hideConfirmDialog: {}
       cancelActions:
-        clearLayeredViews: {}
+        clearOverlays: {}
         hideConfirmDialog: {}
     pendingEffects:
       - name: render

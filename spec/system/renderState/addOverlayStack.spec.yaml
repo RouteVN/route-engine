@@ -1,11 +1,11 @@
 file: "../../../src/stores/constructRenderState.js"
-group: constructRenderState.addLayeredViews
-suites: [addLayeredViews]
+group: constructRenderState.addOverlayStack
+suites: [addOverlayStack]
 ---
-suite: addLayeredViews
-exportName: addLayeredViews
+suite: addOverlayStack
+exportName: addOverlayStack
 ---
-case: return unchanged state when layeredViews array is empty
+case: return unchanged state when overlayStack array is empty
 in:
   - elements:
       - id: "story"
@@ -18,7 +18,7 @@ in:
     variables: {}
     autoMode: false
     skipMode: false
-    layeredViews: []
+    overlayStack: []
 out:
   elements:
     - id: "story"
@@ -28,7 +28,7 @@ out:
       children: []
   animations: []
 ---
-case: return unchanged state when layeredViews is undefined
+case: return unchanged state when overlayStack is undefined
 in:
   - elements:
       - id: "story"
@@ -50,7 +50,7 @@ out:
       children: []
   animations: []
 ---
-case: add single layeredView layout to elements
+case: add single overlay layout to elements
 in:
   - elements:
       - id: "story"
@@ -61,18 +61,18 @@ in:
     animations: []
   - resources:
       layouts:
-        layeredViewLayout:
+        overlayLayout:
           elements:
             - type: "text"
-              content: "LayeredView content"
+              content: "Overlay content"
     variables: {}
     autoMode: false
     skipMode: false
     screen:
       width: 1920
       height: 1080
-    layeredViews:
-      - resourceId: layeredViewLayout
+    overlayStack:
+      - resourceId: overlayLayout
         resourceType: layout
 out:
   elements:
@@ -81,12 +81,12 @@ out:
       x: 0
       y: 0
       children: []
-    - id: "layeredView-0"
+    - id: "overlayStack-0"
       type: "container"
       x: 0
       y: 0
       children:
-        - id: "layeredView-0-blocker"
+        - id: "overlayStack-0-blocker"
           type: "rect"
           fill: "transparent"
           width: 1920
@@ -97,10 +97,10 @@ out:
             payload:
               actions: {}
         - type: "text"
-          content: "LayeredView content"
+          content: "Overlay content"
   animations: []
 ---
-case: add multiple layeredViews with correct indices
+case: add multiple overlays with correct indices
 in:
   - elements:
       - id: "story"
@@ -125,7 +125,7 @@ in:
     screen:
       width: 1920
       height: 1080
-    layeredViews:
+    overlayStack:
       - resourceId: menuLayout
         resourceType: layout
       - resourceId: overlayLayout
@@ -137,12 +137,12 @@ out:
       x: 0
       y: 0
       children: []
-    - id: "layeredView-0"
+    - id: "overlayStack-0"
       type: "container"
       x: 0
       y: 0
       children:
-        - id: "layeredView-0-blocker"
+        - id: "overlayStack-0-blocker"
           type: "rect"
           fill: "transparent"
           width: 1920
@@ -154,12 +154,12 @@ out:
               actions: {}
         - type: "text"
           content: "Menu"
-    - id: "layeredView-1"
+    - id: "overlayStack-1"
       type: "container"
       x: 0
       y: 0
       children:
-        - id: "layeredView-1-blocker"
+        - id: "overlayStack-1-blocker"
           type: "rect"
           fill: "transparent"
           width: 1920
@@ -173,7 +173,7 @@ out:
           src: "overlay.png"
   animations: []
 ---
-case: skip layeredView when layout resource not found
+case: skip overlay when layout resource not found
 in:
   - elements:
       - id: "story"
@@ -194,7 +194,7 @@ in:
     screen:
       width: 1920
       height: 1080
-    layeredViews:
+    overlayStack:
       - resourceId: missingLayout
         resourceType: layout
       - resourceId: existingLayout
@@ -206,12 +206,12 @@ out:
       x: 0
       y: 0
       children: []
-    - id: "layeredView-1"
+    - id: "overlayStack-1"
       type: "container"
       x: 0
       y: 0
       children:
-        - id: "layeredView-1-blocker"
+        - id: "overlayStack-1-blocker"
           type: "rect"
           fill: "transparent"
           width: 1920
@@ -263,7 +263,7 @@ in:
     screen:
       width: 1920
       height: 1080
-    layeredViews:
+    overlayStack:
       - resourceId: animatedLayout
         resourceType: layout
 out:
@@ -273,12 +273,12 @@ out:
       x: 0
       y: 0
       children: []
-    - id: "layeredView-0"
+    - id: "overlayStack-0"
       type: "container"
       x: 0
       y: 0
       children:
-        - id: "layeredView-0-blocker"
+        - id: "overlayStack-0-blocker"
           type: "rect"
           fill: "transparent"
           width: 1920
@@ -293,7 +293,7 @@ out:
   animations:
     - id: "animated-layout-fade-in"
       type: "update"
-      targetId: "layeredView-0"
+      targetId: "overlayStack-0"
       tween:
         alpha:
           initialValue: 0
@@ -302,7 +302,7 @@ out:
               value: 1
     - id: "animated-layout-slide-up"
       type: "update"
-      targetId: "layeredView-0"
+      targetId: "overlayStack-0"
       tween:
         y:
           initialValue: 20
@@ -340,7 +340,7 @@ in:
     screen:
       width: 1920
       height: 1080
-    layeredViews:
+    overlayStack:
       - resourceId: animatedLayout
         resourceType: layout
 out:
@@ -350,9 +350,9 @@ out:
       x: 0
       y: 0
       children: []
-throws: '[layeredViews[0].transitions[0]] Animation "animated-layout-fade-in" has unsupported type "live". Use "update" or "transition".'
+throws: '[overlayStack[0].transitions[0]] Animation "animated-layout-fade-in" has unsupported type "live". Use "update" or "transition".'
 ---
-case: add layered view child animation with explicit target id
+case: add overlay child animation with explicit target id
 in:
   - elements:
       - id: "story"
@@ -385,7 +385,7 @@ in:
     screen:
       width: 1920
       height: 1080
-    layeredViews:
+    overlayStack:
       - resourceId: creditsLayout
         resourceType: layout
 out:
@@ -395,12 +395,12 @@ out:
       x: 0
       y: 0
       children: []
-    - id: "layeredView-0"
+    - id: "overlayStack-0"
       type: "container"
       x: 0
       y: 0
       children:
-        - id: "layeredView-0-blocker"
+        - id: "overlayStack-0-blocker"
           type: "rect"
           fill: "transparent"
           width: 1920
@@ -425,7 +425,7 @@ out:
               easing: "linear"
               relative: true
 ---
-case: keep layered view transitions when pushed after line completion
+case: keep overlay transitions when pushed after line completion
 in:
   - elements:
       - id: "story"
@@ -457,7 +457,7 @@ in:
     screen:
       width: 1920
       height: 1080
-    layeredViews:
+    overlayStack:
       - resourceId: animatedLayout
         resourceType: layout
 out:
@@ -467,12 +467,12 @@ out:
       x: 0
       y: 0
       children: []
-    - id: "layeredView-0"
+    - id: "overlayStack-0"
       type: "container"
       x: 0
       y: 0
       children:
-        - id: "layeredView-0-blocker"
+        - id: "overlayStack-0-blocker"
           type: "rect"
           fill: "transparent"
           width: 1920
@@ -487,7 +487,7 @@ out:
   animations:
     - id: "animated-layout-fade-in"
       type: "update"
-      targetId: "layeredView-0"
+      targetId: "overlayStack-0"
       tween:
         alpha:
           initialValue: 0
@@ -495,7 +495,7 @@ out:
             - duration: 500
               value: 1
 ---
-case: handle layeredView with nested children
+case: handle overlay with nested children
 in:
   - elements:
       - id: "story"
@@ -522,7 +522,7 @@ in:
     screen:
       width: 1920
       height: 1080
-    layeredViews:
+    overlayStack:
       - resourceId: nestedLayout
         resourceType: layout
 out:
@@ -532,12 +532,12 @@ out:
       x: 0
       y: 0
       children: []
-    - id: "layeredView-0"
+    - id: "overlayStack-0"
       type: "container"
       x: 0
       y: 0
       children:
-        - id: "layeredView-0-blocker"
+        - id: "overlayStack-0-blocker"
           type: "rect"
           fill: "transparent"
           width: 1920
@@ -557,7 +557,7 @@ out:
               src: "icon.png"
   animations: []
 ---
-case: handle layeredView with empty elements array
+case: handle overlay with empty elements array
 in:
   - elements:
       - id: "story"
@@ -576,7 +576,7 @@ in:
     screen:
       width: 1920
       height: 1080
-    layeredViews:
+    overlayStack:
       - resourceId: emptyLayout
         resourceType: layout
 out:
@@ -586,12 +586,12 @@ out:
       x: 0
       y: 0
       children: []
-    - id: "layeredView-0"
+    - id: "overlayStack-0"
       type: "container"
       x: 0
       y: 0
       children:
-        - id: "layeredView-0-blocker"
+        - id: "overlayStack-0-blocker"
           type: "rect"
           fill: "transparent"
           width: 1920
@@ -603,7 +603,7 @@ out:
               actions: {}
   animations: []
 ---
-case: resolves textStyleId in layeredView layout elements
+case: resolves textStyleId in overlay layout elements
 in:
   - elements:
       - id: "story"
@@ -614,9 +614,9 @@ in:
     animations: []
   - resources:
       layouts:
-        styledLayeredView:
+        styledOverlay:
           elements:
-            - id: "layered-label"
+            - id: "overlay-label"
               type: "text"
               content: "Overlay"
               textStyleId: "body"
@@ -640,8 +640,8 @@ in:
     screen:
       width: 1920
       height: 1080
-    layeredViews:
-      - resourceId: styledLayeredView
+    overlayStack:
+      - resourceId: styledOverlay
         resourceType: layout
 out:
   elements:
@@ -650,12 +650,12 @@ out:
       x: 0
       y: 0
       children: []
-    - id: "layeredView-0"
+    - id: "overlayStack-0"
       type: "container"
       x: 0
       y: 0
       children:
-        - id: "layeredView-0-blocker"
+        - id: "overlayStack-0-blocker"
           type: "rect"
           fill: "transparent"
           width: 1920
@@ -665,7 +665,7 @@ out:
           click:
             payload:
               actions: {}
-        - id: "layered-label"
+        - id: "overlay-label"
           type: "text"
           content: "Overlay"
           textStyle:
@@ -677,7 +677,7 @@ out:
             fill: "#FFFFFF"
   animations: []
 ---
-case: resolves colorId in layeredView layout elements
+case: resolves colorId in overlay layout elements
 in:
   - elements:
       - id: "story"
@@ -688,9 +688,9 @@ in:
     animations: []
   - resources:
       layouts:
-        coloredLayeredView:
+        coloredOverlay:
           elements:
-            - id: "layered-panel"
+            - id: "overlay-panel"
               type: "rect"
               width: 1920
               height: 1080
@@ -704,8 +704,8 @@ in:
     screen:
       width: 1920
       height: 1080
-    layeredViews:
-      - resourceId: coloredLayeredView
+    overlayStack:
+      - resourceId: coloredOverlay
         resourceType: layout
 out:
   elements:
@@ -714,12 +714,12 @@ out:
       x: 0
       y: 0
       children: []
-    - id: "layeredView-0"
+    - id: "overlayStack-0"
       type: "container"
       x: 0
       y: 0
       children:
-        - id: "layeredView-0-blocker"
+        - id: "overlayStack-0-blocker"
           type: "rect"
           fill: "transparent"
           width: 1920
@@ -729,14 +729,14 @@ out:
           click:
             payload:
               actions: {}
-        - id: "layered-panel"
+        - id: "overlay-panel"
           type: "rect"
           width: 1920
           height: 1080
           fill: "#000000"
   animations: []
 ---
-case: resolves imageId in layeredView layout elements
+case: resolves imageId in overlay layout elements
 in:
   - elements:
       - id: "story"
@@ -747,9 +747,9 @@ in:
     animations: []
   - resources:
       layouts:
-        imageLayeredView:
+        imageOverlay:
           elements:
-            - id: "layered-image"
+            - id: "overlay-image"
               type: "sprite"
               imageId: "overlayImage"
       images:
@@ -763,8 +763,8 @@ in:
     screen:
       width: 1920
       height: 1080
-    layeredViews:
-      - resourceId: imageLayeredView
+    overlayStack:
+      - resourceId: imageOverlay
         resourceType: layout
 out:
   elements:
@@ -773,12 +773,12 @@ out:
       x: 0
       y: 0
       children: []
-    - id: "layeredView-0"
+    - id: "overlayStack-0"
       type: "container"
       x: 0
       y: 0
       children:
-        - id: "layeredView-0-blocker"
+        - id: "overlayStack-0-blocker"
           type: "rect"
           fill: "transparent"
           width: 1920
@@ -788,7 +788,7 @@ out:
           click:
             payload:
               actions: {}
-        - id: "layered-image"
+        - id: "overlay-image"
           type: "sprite"
           src: "overlay.png"
           width: 640

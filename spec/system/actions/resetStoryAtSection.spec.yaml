@@ -70,7 +70,7 @@ in:
             trigger: fromStart
             delay: 250
           applyMode: singleLine
-        layeredViews:
+        overlayStack:
           - resourceId: overlay
         isLineCompleted: false
         variables:
@@ -173,7 +173,7 @@ out:
       auto:
         enabled: false
       applyMode: persistent
-    layeredViews: []
+    overlayStack: []
     isLineCompleted: false
     variables:
       volume: 15
