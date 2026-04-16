@@ -104,7 +104,8 @@ resources:
               height: 500
               width: 500
               scroll: true
-              gap: 10
+              gapX: 10
+              gapY: 10
               y: 120
               children:
                 - $for item, i in historyDialogue:
@@ -388,7 +389,8 @@ resources:
                   y: 100
                   width: 1400
                   direction: horizontal
-                  gap: 20
+                  gapX: 20
+                  gapY: 20
                   children:
                     - $for item in saveDataArray:
                         - id: feakjl-${item.id}
@@ -431,7 +433,8 @@ resources:
                   x: 300
                   y: 800
                   direction: horizontal
-                  gap: 20
+                  gapX: 20
+                  gapY: 20
                   children:
                     - id: page-prev
                       type: text
@@ -455,7 +458,8 @@ resources:
                     - id: save-container-page-nums-container
                       type: container
                       direction: horizontal
-                      gap: 20
+                      gapX: 20
+                      gapY: 20
                       width: 900
                       children:
                         - $for item, i in variables.savePages.items:
@@ -511,7 +515,8 @@ resources:
                   y: 100
                   width: 1400
                   direction: horizontal
-                  gap: 20
+                  gapX: 20
+                  gapY: 20
                   children:
                     - $for item in saveDataArray:
                         - id: ${item.id}
@@ -559,7 +564,8 @@ resources:
                   x: 300
                   y: 800
                   direction: horizontal
-                  gap: 20
+                  gapX: 20
+                  gapY: 20
                   children:
                     - id: page-prev
                       type: text
@@ -583,7 +589,8 @@ resources:
                     - id: save-container-page-nums-container
                       type: container
                       direction: horizontal
-                      gap: 20
+                      gapX: 20
+                      gapY: 20
                       width: 900
                       children:
                         - $for item, i in variables.savePages.items:
@@ -639,7 +646,8 @@ resources:
                   y: 300
                   width: 1400
                   direction: vertical
-                  gap: 30
+                  gapX: 30
+                  gapY: 30
                   children:
                     - id: languages-item-source
                       type: text
@@ -667,7 +675,8 @@ resources:
                   y: 100
                   width: 1400
                   direction: horizontal
-                  gap: 20
+                  gapX: 20
+                  gapY: 20
                   children:
                     - $for item, i in variables.gallery.items:
                         - id: 32fe-${item.label}
@@ -726,7 +735,8 @@ resources:
                   y: 100
                   width: 1400
                   direction: horizontal
-                  gap: 20
+                  gapX: 20
+                  gapY: 20
                   children:
                     - id: ef3ef13k1
                       type: sprite
@@ -758,7 +768,8 @@ resources:
                   y: 100
                   width: 1400
                   direction: vertical
-                  gap: 20
+                  gapX: 20
+                  gapY: 20
                   children:
                     - id: fjkl2jk
                       type: text
@@ -789,7 +800,8 @@ resources:
                   textStyleId: textStyle8
         - id: menu-container
           direction: vertical
-          gap: 20
+          gapX: 20
+          gapY: 20
           type: container
           x: 100
           y: 540
@@ -1017,7 +1029,8 @@ resources:
             - id: 3kjfasdkfj
               type: container
               direction: vertical
-              gap: 20
+              gapX: 20
+              gapY: 20
               children:
                 - $for line, i in dialogue.lines:
                     - id: dialogue-text-${i}
@@ -1055,7 +1068,8 @@ resources:
           x: 100
           y: 600
           direction: horizontal
-          gap: 20
+          gapX: 20
+          gapY: 20
           children:
             - id: dialogue-action-button
               type: text
@@ -1208,7 +1222,8 @@ resources:
         - id: container
           type: container
           direction: horizontal
-          gap: 20
+          gapX: 20
+          gapY: 20
           x: 560
           y: 540
           children:

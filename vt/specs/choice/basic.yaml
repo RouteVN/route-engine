@@ -31,7 +31,8 @@ resources:
           type: container
           x: 100
           y: 100
-          gap: 80
+          gapX: 80
+          gapY: 80
           direction: vertical
           children:
             - $each: item, i in choice.items

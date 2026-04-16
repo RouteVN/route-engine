@@ -119,14 +119,16 @@ resources:
           width: 940
           height: 450
           scroll: true
-          gap: 15
+          gapX: 15
+          gapY: 15
           children:
             - $for item, i in historyDialogue:
                 id: history-item-${i}
                 type: container
                 direction: vertical
                 width: 920
-                gap: 5
+                gapX: 5
+                gapY: 5
                 children:
                   - id: history-character-${i}
                     type: text

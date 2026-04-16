@@ -63,7 +63,8 @@ resources:
           x: 240
           y: 220
           direction: vertical
-          gap: 20
+          gapX: 20
+          gapY: 20
           children:
             - $each: item, i in choice.items
               id: choice-item-${i}

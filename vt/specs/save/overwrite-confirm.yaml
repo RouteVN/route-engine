@@ -160,7 +160,8 @@ resources:
         - id: slot-row
           type: container
           direction: horizontal
-          gap: 28
+          gapX: 28
+          gapY: 28
           x: 500
           y: 360
           width: 920
