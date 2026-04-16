@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import createRouteEngine from "../src/RouteEngine.js";
 
-const createProjectData = () => {
+const createProjectData = (variables = {}) => {
   return {
     screen: {
       width: 1920,
@@ -15,7 +15,7 @@ const createProjectData = () => {
       videos: {},
       sprites: {},
       characters: {},
-      variables: {},
+      variables,
       transforms: {},
       sectionTransitions: {},
       animations: {},
@@ -101,6 +101,95 @@ describe("RouteEngine showConfirmDialog deferred action templates", () => {
         hideConfirmDialog: {},
       },
       cancelActions: {
+        hideConfirmDialog: {},
+      },
+    });
+  });
+
+  it("resolves top-level showConfirmDialog templates while leaving nested deferred batches untouched", () => {
+    const engine = createRouteEngine({
+      handlePendingEffects: () => {},
+    });
+
+    engine.init({
+      initialState: {
+        projectData: createProjectData({
+          confirmLayoutId: {
+            type: "string",
+            scope: "device",
+            default: "confirm-layout",
+          },
+          deferredVariableId: {
+            type: "string",
+            scope: "device",
+            default: "deferred-marker",
+          },
+          cancelSectionId: {
+            type: "string",
+            scope: "context",
+            default: "section-cancel",
+          },
+        }),
+      },
+    });
+
+    expect(() => {
+      engine.handleActions(
+        {
+          showConfirmDialog: {
+            resourceId: "${variables.confirmLayoutId}",
+            confirmActions: {
+              updateVariable: {
+                id: "confirm-action",
+                operations: [
+                  {
+                    variableId: "${variables.deferredVariableId}",
+                    op: "set",
+                    value: "_event.value",
+                  },
+                ],
+              },
+            },
+            cancelActions: {
+              sectionTransition: {
+                sectionId: "${variables.cancelSectionId}",
+              },
+            },
+          },
+        },
+        {
+          _event: {
+            id: "open-dialog-button",
+            value: 42,
+          },
+          variables: {
+            confirmLayoutId: "wrong-layout",
+            deferredVariableId: "wrong-deferred-marker",
+            cancelSectionId: "wrong-section-cancel",
+          },
+        },
+      );
+    }).not.toThrow();
+
+    expect(engine.selectSystemState().global.confirmDialog).toEqual({
+      resourceId: "confirm-layout",
+      confirmActions: {
+        updateVariable: {
+          id: "confirm-action",
+          operations: [
+            {
+              variableId: "${variables.deferredVariableId}",
+              op: "set",
+              value: "_event.value",
+            },
+          ],
+        },
+        hideConfirmDialog: {},
+      },
+      cancelActions: {
+        sectionTransition: {
+          sectionId: "${variables.cancelSectionId}",
+        },
         hideConfirmDialog: {},
       },
     });
