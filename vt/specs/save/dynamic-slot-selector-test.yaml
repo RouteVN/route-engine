@@ -195,7 +195,8 @@ resources:
         - id: slotsGrid
           type: container
           direction: horizontal
-          gap: 28
+          gapX: 28
+          gapY: 28
           width: 1080
           x: 360
           y: 420

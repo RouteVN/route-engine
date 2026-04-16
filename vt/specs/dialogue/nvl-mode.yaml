@@ -56,13 +56,15 @@ resources:
           x: 100
           y: 80
           direction: vertical
-          gap: 30
+          gapX: 30
+          gapY: 30
           children:
             - $for line, i in dialogue.lines:
                 - id: line-${i}
                   type: container
                   direction: horizontal
-                  gap: 10
+                  gapX: 10
+                  gapY: 10
                   children:
                     - $if line.characterName:
                         - id: name-${i}
