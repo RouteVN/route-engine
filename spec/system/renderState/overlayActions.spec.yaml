@@ -1,34 +1,34 @@
 file: "../../../src/stores/system.store.js"
-group: systemStore.layeredViewsActions
-suites: [pushLayeredView, popLayeredView, replaceLastLayeredView, clearLayeredViews]
+group: systemStore.overlayActions
+suites: [pushOverlay, popOverlay, replaceLastOverlay, clearOverlays]
 ---
-suite: pushLayeredView
-exportName: pushLayeredView
+suite: pushOverlay
+exportName: pushOverlay
 ---
-case: push a layeredView to empty array
+case: push an overlay to an empty stack
 in:
   - state:
       global:
-        layeredViews: []
+        overlayStack: []
         pendingEffects: []
   - resourceId: layout1
     resourceType: layout
 out:
   global:
-    layeredViews:
+    overlayStack:
       - resourceId: layout1
         resourceType: layout
     pendingEffects:
       - name: render
 ---
-suite: popLayeredView
-exportName: popLayeredView
+suite: popOverlay
+exportName: popOverlay
 ---
-case: pop last layeredView from array
+case: pop last overlay from array
 in:
   - state:
       global:
-        layeredViews:
+        overlayStack:
           - resourceId: layout1
             resourceType: layout
           - resourceId: layout2
@@ -36,20 +36,20 @@ in:
         pendingEffects: []
 out:
   global:
-    layeredViews:
+    overlayStack:
       - resourceId: layout1
         resourceType: layout
     pendingEffects:
       - name: render
 ---
-suite: replaceLastLayeredView
-exportName: replaceLastLayeredView
+suite: replaceLastOverlay
+exportName: replaceLastOverlay
 ---
-case: replace last layeredView in array
+case: replace last overlay in array
 in:
   - state:
       global:
-        layeredViews:
+        overlayStack:
           - resourceId: layout1
             resourceType: layout
           - resourceId: layout2
@@ -59,7 +59,7 @@ in:
     resourceType: layout
 out:
   global:
-    layeredViews:
+    overlayStack:
       - resourceId: layout1
         resourceType: layout
       - resourceId: layout3
@@ -67,10 +67,10 @@ out:
     pendingEffects:
       - name: render
 ---
-suite: clearLayeredViews
-exportName: clearLayeredViews
+suite: clearOverlays
+exportName: clearOverlays
 ---
-case: clear all layeredViews
+case: clear all overlays
 in:
   - state:
       global:
@@ -82,7 +82,7 @@ in:
             hideConfirmDialog: {}
           cancelActions:
             hideConfirmDialog: {}
-        layeredViews:
+        overlayStack:
           - resourceId: layout1
             resourceType: layout
           - resourceId: layout2
@@ -91,6 +91,6 @@ in:
 out:
   global:
     confirmDialog: null
-    layeredViews: []
+    overlayStack: []
     pendingEffects:
       - name: render

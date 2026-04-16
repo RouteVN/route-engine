@@ -15,7 +15,7 @@ The first target use case is save-slot overwrite confirmation:
 - cancelling should dismiss the dialog without changing slot data
 
 The design below intentionally treats this as a dedicated confirm-dialog system,
-not as a generic use of layered views.
+not as a generic use of overlays.
 
 ## Product Goals
 
@@ -31,16 +31,16 @@ not as a generic use of layered views.
 
 - a fully generic modal/dialogue framework
 - a generic deferred-action queue for arbitrary features
-- making layered views responsible for carrying deferred action payloads
+- making overlays responsible for carrying deferred action payloads
 
 ## Why This Is A Special System
 
-Layered views already exist, but they are a presentation overlay mechanism.
+Overlays already exist, but they are a presentation overlay mechanism.
 They currently store arbitrary payload objects in state, yet their template data
 only receives generic UI/runtime fields such as `variables`, `saveSlots`, and
 `historyDialogue`.
 
-While it is technically possible to extend layered views with custom
+While it is technically possible to extend overlays with custom
 `templateData`, that would make save overwrite confirmation depend on a more
 generic and less explicit payload-passthrough mechanism. The chosen direction is
 to keep confirm dialogs as a dedicated transient concept in system state.
@@ -124,19 +124,19 @@ Template injection is preferred because:
 - it works with the current templating model
 - it preserves authored freedom over structure and nesting
 
-## Why Layered View Payload Injection Is Not Preferred
+## Why Overlay Payload Injection Is Not Preferred
 
 Another alternative was:
 
-1. `pushLayeredView(...)`
-2. pass deferred actions through layered-view payload/template data
+1. `pushOverlay(...)`
+2. pass deferred actions through overlay payload/template data
 3. have the confirm layout dispatch those actions
 
 This works technically, but it has several downsides:
 
-- it uses layered views as a deferred-action carrier rather than just an overlay
-- it broadens the layered-view contract for a very specific product need
-- layered-view actions are currently rollback-restorable, which is the wrong
+- it uses overlays as a deferred-action carrier rather than just an overlay
+- it broadens the overlay contract for a very specific product need
+- overlay actions are currently rollback-restorable, which is the wrong
   default lifecycle for a transient confirm prompt
 - it mixes confirm-dialog behavior with a more generic presentation feature
 
@@ -249,7 +249,7 @@ This matches the same reasoning already used for:
 
 - `autoMode`
 - `skipMode`
-- `layeredViews`
+- `overlayStack`
 - `nextLineConfig`
 
 ## Rollback Rules
@@ -261,7 +261,7 @@ The intended rule is:
 - `confirmDialog` should not be rollback-restored
 
 In practice, that means the confirm-dialog actions should not be recorded as
-rollback-restorable UI state in the same way layered views currently are.
+rollback-restorable UI state in the same way overlays currently are.
 
 If rollback occurs while a confirm dialog is visible, the expected result is
 that the dialog disappears and the story returns to the rollback target.
@@ -272,7 +272,7 @@ The confirm dialog should render above:
 
 - base story render
 - dialogue UI
-- layered views
+- overlays
 
 That makes it behave as a true modal prompt.
 
@@ -314,14 +314,14 @@ Pros:
 - clean transient lifecycle
 - easy to exclude from save/load
 - easier to exclude from rollback restoration
-- keeps save overwrite semantics separate from layered views
+- keeps save overwrite semantics separate from overlays
 
 Cons:
 
 - requires new system state and actions
 - adds a dedicated render step
 
-### Layered View Payload Passthrough
+### Overlay Payload Passthrough
 
 Pros:
 
@@ -331,7 +331,7 @@ Pros:
 Cons:
 
 - wrong abstraction for this product need
-- would expand the layered-view contract
+- would expand the overlay contract
 - would likely inherit incorrect rollback semantics
 - harder to explain as a save/confirm-specific feature
 
@@ -368,7 +368,7 @@ Chosen combination:
 
 ## Open Questions
 
-- Should `clearLayeredViews` also hide `confirmDialog` automatically if both are
+- Should `clearOverlays` also hide `confirmDialog` automatically if both are
   visible?
 - Do we want one reusable confirm layout by convention, or should each feature
   provide its own `resourceId`?

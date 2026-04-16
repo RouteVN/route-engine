@@ -95,7 +95,7 @@ out:
   global:
     isLineCompleted: true
     dialogueUIHidden: false
-    layeredViews: []
+    overlayStack: []
     nextLineConfig:
       manual:
         enabled: true
@@ -179,7 +179,7 @@ out:
   global:
     isLineCompleted: true
     dialogueUIHidden: false
-    layeredViews: []
+    overlayStack: []
     nextLineConfig:
       manual:
         enabled: true
@@ -289,7 +289,7 @@ out:
   global:
     isLineCompleted: true
     dialogueUIHidden: false
-    layeredViews: []
+    overlayStack: []
     nextLineConfig:
       manual:
         enabled: true
@@ -497,7 +497,7 @@ out:
   global:
     isLineCompleted: true
     dialogueUIHidden: false
-    layeredViews: []
+    overlayStack: []
     nextLineConfig:
       manual:
         enabled: true
@@ -654,7 +654,7 @@ out:
   global:
     isLineCompleted: true
     dialogueUIHidden: false
-    layeredViews: []
+    overlayStack: []
     nextLineConfig:
       manual:
         enabled: false
@@ -767,7 +767,7 @@ out:
   global:
     isLineCompleted: true
     dialogueUIHidden: false
-    layeredViews: []
+    overlayStack: []
     nextLineConfig:
       manual:
         enabled: true
@@ -869,7 +869,7 @@ out:
   global:
     isLineCompleted: true
     dialogueUIHidden: false
-    layeredViews: []
+    overlayStack: []
     nextLineConfig:
       manual:
         enabled: true

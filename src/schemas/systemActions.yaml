@@ -305,35 +305,35 @@ properties:
     required: [lineId]
     additionalProperties: false
 
-  pushLayeredView:
+  pushOverlay:
     type: object
-    description: Push a layered view onto the UI stack
+    description: Push an overlay onto the UI stack
     properties:
       resourceId:
         type: string
-        description: Layered-view resource to display
+        description: Overlay layout resource to display
     required: [resourceId]
     additionalProperties: false
 
-  popLayeredView:
+  popOverlay:
     type: object
-    description: Pop the current layered view
+    description: Pop the current overlay
     properties: {}
     additionalProperties: false
 
-  replaceLastLayeredView:
+  replaceLastOverlay:
     type: object
-    description: Replace the current layered view without clearing the rest of the stack
+    description: Replace the current overlay without clearing the rest of the stack
     properties:
       resourceId:
         type: string
-        description: Layered-view resource to display
+        description: Overlay layout resource to display
     required: [resourceId]
     additionalProperties: false
 
-  clearLayeredViews:
+  clearOverlays:
     type: object
-    description: Clear all layered views
+    description: Clear all overlays
     properties: {}
     additionalProperties: false
 

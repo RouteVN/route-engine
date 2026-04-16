@@ -96,7 +96,7 @@ Mutable runtime state managed by the system store. Key components:
   - `currentPointerMode`: Either `'read'` or `'history'`
   - `pointers`: Position trackers (read pointer and history pointer)
   - `configuration`: Context-specific settings
-  - `views`: Layered view stack
+  - `views`: Overlay stack
   - `bgm`: Current background music
   - `variables`: Game variables
 

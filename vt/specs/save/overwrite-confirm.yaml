@@ -79,7 +79,7 @@ resources:
           click:
             payload:
               actions:
-                pushLayeredView:
+                pushOverlay:
                   resourceId: saveOverwriteMenuLayout
           colorId: layoutColor3
         - id: save-button-text
@@ -90,7 +90,7 @@ resources:
           click:
             payload:
               actions:
-                pushLayeredView:
+                pushOverlay:
                   resourceId: saveOverwriteMenuLayout
           textStyleId: textStyle3
     readingDialogueLayout:
@@ -145,7 +145,7 @@ resources:
           click:
             payload:
               actions:
-                clearLayeredViews: {}
+                clearOverlays: {}
           colorId: layoutColor3
         - id: close-btn-text
           type: text
@@ -155,7 +155,7 @@ resources:
           click:
             payload:
               actions:
-                clearLayeredViews: {}
+                clearOverlays: {}
           textStyleId: textStyle3
         - id: slot-row
           type: container

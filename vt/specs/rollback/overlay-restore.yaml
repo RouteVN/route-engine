@@ -1,9 +1,9 @@
 ---
-title: Rollback Keeps Transient Layered View Cleared
-description: Rolling back to a checkpoint should not restore a transient layered view
+title: Rollback Keeps Transient Overlay Cleared
+description: Rolling back to a checkpoint should not restore a transient overlay
 specs:
-  - line 2 opens a layered info panel
-  - line 3 clears the layered view
+  - line 2 opens an overlay info panel
+  - line 3 clears the overlay
   - rollback returns to line 2 without restoring the transient panel
 skipInitialScreenshot: true
 viewport:
@@ -203,7 +203,7 @@ story:
                   characterId: narrator
             - id: line2
               actions:
-                pushLayeredView:
+                pushOverlay:
                   resourceId: infoPanel
                   resourceType: layout
                 dialogue:
@@ -212,7 +212,7 @@ story:
                   characterId: narrator
             - id: line3
               actions:
-                clearLayeredViews: {}
+                clearOverlays: {}
                 dialogue:
                   content:
                     - text: "Line 3. Overlay is cleared. Roll back one line."

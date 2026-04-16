@@ -1,6 +1,6 @@
 ---
 title: Load Rollback Does Not Reopen Save Overlay
-description: Loading a slot should not let rollback reopen a transient save layered view captured in slot history
+description: Loading a slot should not let rollback reopen a transient save overlay captured in slot history
 specs:
   - a save overlay is opened on the earlier checkpoint
   - the overlay saves after transitioning into a later section
@@ -72,7 +72,7 @@ resources:
           click:
             payload:
               actions:
-                pushLayeredView:
+                pushOverlay:
                   resourceId: saveMenuLayout
                   resourceType: layout
         - id: save-button-label

@@ -76,7 +76,7 @@ resources:
           click:
             payload:
               actions:
-                pushLayeredView:
+                pushOverlay:
                   resourceId: historyLayout
                   resourceType: layout
           textStyleId: textStyle2
@@ -93,7 +93,7 @@ resources:
           click:
             payload:
               actions:
-                popLayeredView: {}
+                popOverlay: {}
           colorId: layoutColor2
         - id: history-panel
           type: rect
@@ -147,7 +147,7 @@ resources:
           click:
             payload:
               actions:
-                popLayeredView: {}
+                popOverlay: {}
           colorId: layoutColor3
         - id: close-button-text
           type: text

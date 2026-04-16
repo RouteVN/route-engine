@@ -34,7 +34,7 @@ resources:
           click:
             payload:
               actions:
-                pushLayeredView:
+                pushOverlay:
                   resourceId: saveMenuLayout
                   resourceType: layout
           colorId: layoutColor3
@@ -55,7 +55,7 @@ resources:
           click:
             payload:
               actions:
-                pushLayeredView:
+                pushOverlay:
                   resourceId: loadMenuLayout
                   resourceType: layout
           colorId: layoutColor3
@@ -116,7 +116,7 @@ resources:
           click:
             payload:
               actions:
-                clearLayeredViews: {}
+                clearOverlays: {}
           colorId: layoutColor3
         - id: close-text
           type: text
@@ -224,7 +224,7 @@ resources:
           click:
             payload:
               actions:
-                clearLayeredViews: {}
+                clearOverlays: {}
           colorId: layoutColor3
         - id: load-close-text
           type: text

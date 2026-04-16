@@ -1,5 +1,5 @@
 ---
-title: Layered Views Test
+title: Overlays Test
 ---
 screen:
   width: 1920
@@ -16,7 +16,7 @@ resources:
           colorId: layoutColor1
         - id: title
           type: text
-          content: Layered Views Test
+          content: Overlays Test
           x: 700
           y: 100
           textStyleId: textStyle1
@@ -29,13 +29,13 @@ resources:
           click:
             payload:
               actions:
-                pushLayeredView:
+                pushOverlay:
                   resourceId: menuLayout
                   resourceType: layout
           colorId: color2
         - id: pushMenuText
           type: text
-          content: Push Menu Layer
+          content: Push Menu Overlay
           x: 140
           y: 325
           textStyleId: textStyle2
@@ -48,13 +48,13 @@ resources:
           click:
             payload:
               actions:
-                pushLayeredView:
+                pushOverlay:
                   resourceId: overlayLayout
                   resourceType: layout
           colorId: color2
         - id: pushOverlayText
           type: text
-          content: Push Overlay Layer
+          content: Push Overlay
           x: 115
           y: 425
           textStyleId: textStyle2
@@ -67,11 +67,11 @@ resources:
           click:
             payload:
               actions:
-                popLayeredView: {}
+                popOverlay: {}
           colorId: color2
         - id: popText
           type: text
-          content: Pop Layer
+          content: Pop Overlay
           x: 180
           y: 525
           textStyleId: textStyle2
@@ -84,13 +84,13 @@ resources:
           click:
             payload:
               actions:
-                replaceLastLayeredView:
+                replaceLastOverlay:
                   resourceId: animatedLayout
                   resourceType: layout
           colorId: color2
         - id: replaceText
           type: text
-          content: Replace Last Layer
+          content: Replace Last Overlay
           x: 115
           y: 625
           textStyleId: textStyle2
@@ -103,11 +103,11 @@ resources:
           click:
             payload:
               actions:
-                clearLayeredViews: {}
+                clearOverlays: {}
           colorId: color2
         - id: clearText
           type: text
-          content: Clear All Layers
+          content: Clear Overlays
           x: 135
           y: 725
           textStyleId: textStyle2
@@ -122,7 +122,7 @@ resources:
           colorId: layoutColor2
         - id: menuText
           type: text
-          content: Menu Layer
+          content: Menu Overlay
           x: 900
           y: 300
           textStyleId: textStyle3
@@ -137,7 +137,7 @@ resources:
           colorId: layoutColor2
         - id: overlayText
           type: text
-          content: Overlay Layer
+          content: Overlay
           x: 1340
           y: 520
           textStyleId: textStyle4
@@ -152,7 +152,7 @@ resources:
           colorId: color2
         - id: animatedText
           type: text
-          content: Replaced Layer
+          content: Replacement Overlay
           x: 1290
           y: 760
           textStyleId: textStyle5

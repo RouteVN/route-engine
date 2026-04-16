@@ -471,7 +471,7 @@ describe("RouteEngine selectSystemState", () => {
     ]);
   });
 
-  it("does not reopen transient layered views when rolling back after load", () => {
+  it("does not reopen transient overlays when rolling back after load", () => {
     const engine = createRouteEngineWithInlineEffects();
 
     engine.init({
@@ -481,7 +481,7 @@ describe("RouteEngine selectSystemState", () => {
     });
 
     engine.handleActions({
-      pushLayeredView: {
+      pushOverlay: {
         resourceId: "saveMenuLayout",
         resourceType: "layout",
       },
@@ -518,7 +518,7 @@ describe("RouteEngine selectSystemState", () => {
       sectionId: "afterSave",
       lineId: "line2",
     });
-    expect(state.global.layeredViews).toEqual([]);
+    expect(state.global.overlayStack).toEqual([]);
 
     engine.handleAction("rollbackByOffset", { offset: -1 });
 
@@ -527,7 +527,7 @@ describe("RouteEngine selectSystemState", () => {
       sectionId: "entry",
       lineId: "line1",
     });
-    expect(state.global.layeredViews).toEqual([]);
+    expect(state.global.overlayStack).toEqual([]);
   });
 
   it("does not restore dialogue UI visibility changes authored on the rollback target line", () => {

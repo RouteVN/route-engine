@@ -43,12 +43,12 @@ const createProjectData = () => ({
           },
         ],
       },
-      layeredPanel: {
+      overlayPanel: {
         elements: [
           {
             id: "panel-text",
             type: "text",
-            content: "Layered panel",
+            content: "Overlay panel",
             textStyleId: "body",
           },
         ],
@@ -108,8 +108,8 @@ const createProjectData = () => ({
               {
                 id: "line1",
                 actions: {
-                  pushLayeredView: {
-                    resourceId: "layeredPanel",
+                  pushOverlay: {
+                    resourceId: "overlayPanel",
                     resourceType: "layout",
                   },
                   dialogue: {
@@ -128,7 +128,7 @@ const createProjectData = () => ({
               {
                 id: "line2",
                 actions: {
-                  clearLayeredViews: {},
+                  clearOverlays: {},
                   dialogue: {
                     mode: "adv",
                     ui: {
@@ -151,7 +151,7 @@ const createProjectData = () => ({
 });
 
 describe("RouteEngine rollback render state", () => {
-  it("restores rollbacked lines directly in their settled end state without transient layered views", () => {
+  it("restores rollbacked lines directly in their settled end state without transient overlays", () => {
     const routeGraphics = {
       render: vi.fn(),
     };
@@ -196,7 +196,7 @@ describe("RouteEngine rollback render state", () => {
     expect(rollbackRender.animations).toEqual([]);
   });
 
-  it("keeps layered view transitions when pushed after line completion", () => {
+  it("keeps overlay transitions when pushed after line completion", () => {
     const routeGraphics = {
       render: vi.fn(),
     };
@@ -219,9 +219,9 @@ describe("RouteEngine rollback render state", () => {
     });
 
     engine.handleAction("markLineCompleted", {});
-    engine.handleAction("clearLayeredViews", {});
-    engine.handleAction("pushLayeredView", {
-      resourceId: "layeredPanel",
+    engine.handleAction("clearOverlays", {});
+    engine.handleAction("pushOverlay", {
+      resourceId: "overlayPanel",
       resourceType: "layout",
     });
 
@@ -230,12 +230,12 @@ describe("RouteEngine rollback render state", () => {
     expect(engine.selectSystemState().global.isLineCompleted).toBe(true);
     expect(findElementById(overlayRender.elements, "panel-text")).toMatchObject({
       type: "text",
-      content: "Layered panel",
+      content: "Overlay panel",
     });
     expect(overlayRender.animations).toEqual([
       expect.objectContaining({
         id: "panel-fade-in",
-        targetId: "layeredView-0",
+        targetId: "overlayStack-0",
       }),
     ]);
   });

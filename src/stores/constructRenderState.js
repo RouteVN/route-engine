@@ -2382,7 +2382,7 @@ export const addLayout = (
   return state;
 };
 
-export const addLayeredViews = (
+export const addOverlayStack = (
   state,
   {
     resources = {},
@@ -2392,7 +2392,7 @@ export const addLayeredViews = (
     skipMode,
     isChoiceVisible,
     canRollback,
-    layeredViews = [],
+    overlayStack = [],
     dialogueHistory = [],
     saveSlots = [],
     screen,
@@ -2401,13 +2401,13 @@ export const addLayeredViews = (
   },
 ) => {
   const { elements, animations } = state;
-  if (layeredViews && layeredViews.length > 0) {
-    // Add each layeredView as an overlay
-    layeredViews.forEach((layeredView, index) => {
-      const layout = resources.layouts[layeredView.resourceId];
+  if (overlayStack && overlayStack.length > 0) {
+    // Add each overlay from the stack above the base presentation.
+    overlayStack.forEach((overlay, index) => {
+      const layout = resources.layouts[overlay.resourceId];
 
       if (!layout) {
-        console.warn(`LayeredView layout not found: ${layeredView.resourceId}`);
+        console.warn(`Overlay layout not found: ${overlay.resourceId}`);
         return;
       }
 
@@ -2416,22 +2416,22 @@ export const addLayeredViews = (
           pushNormalizedLayoutTransitions({
             animations,
             transitions: layout.transitions,
-            defaultTargetId: `layeredView-${index}`,
-            idPrefix: `layeredView-${index}`,
-            animationPathPrefix: `layeredViews[${index}]`,
+            defaultTargetId: `overlayStack-${index}`,
+            idPrefix: `overlayStack-${index}`,
+            animationPathPrefix: `overlayStack[${index}]`,
           });
         }
       }
 
-      // Create a container for this layeredView
-      const layeredViewContainer = {
-        id: `layeredView-${index}`,
+      // Create a container for this overlay
+      const overlayContainer = {
+        id: `overlayStack-${index}`,
         type: "container",
         x: 0,
         y: 0,
         children: [
           createFullscreenClickBlocker({
-            id: `layeredView-${index}-blocker`,
+            id: `overlayStack-${index}-blocker`,
             screen,
           }),
           ...(layout.elements || []),
@@ -2457,19 +2457,19 @@ export const addLayeredViews = (
         skipTransitionsAndAnimations,
       });
 
-      const processedLayeredView = parseAndRender(
-        layeredViewContainer,
+      const processedOverlay = parseAndRender(
+        overlayContainer,
         templateData,
         {
           functions: jemplFunctions,
         },
       );
 
-      const [blocker, ...layoutChildren] = processedLayeredView.children || [];
-      const resolvedLayeredView = resolveLayoutResourceIds(
+      const [blocker, ...layoutChildren] = processedOverlay.children || [];
+      const resolvedOverlay = resolveLayoutResourceIds(
         settleTextRevealIfCompleted(
           {
-            ...processedLayeredView,
+            ...processedOverlay,
             children: layoutChildren,
           },
           {
@@ -2482,10 +2482,10 @@ export const addLayeredViews = (
       );
 
       elements.push({
-        ...resolvedLayeredView,
+        ...resolvedOverlay,
         children: blocker
-          ? [blocker, ...(resolvedLayeredView.children || [])]
-          : resolvedLayeredView.children,
+          ? [blocker, ...(resolvedOverlay.children || [])]
+          : resolvedOverlay.children,
       });
     });
   }
@@ -2610,7 +2610,7 @@ export const constructRenderState = (params) => {
     addBgm,
     addSfx,
     addVoice,
-    addLayeredViews,
+    addOverlayStack,
     addConfirmDialog,
   ];
 
