@@ -114,3 +114,87 @@ in:
   - event:
       value: 75
 throws: 'Action template context key "event" is no longer supported. Use "_event".'
+---
+case: resolves top-level confirm dialog fields while preserving deferred confirm and cancel batches
+in:
+  - showConfirmDialog:
+      resourceId: "${variables.confirmLayoutId}"
+      confirmActions:
+        updateVariable:
+          id: deferred-confirm
+          operations:
+            - variableId: "${variables.deferredVariableId}"
+              op: set
+              value: "_event.value"
+      cancelActions:
+        sectionTransition:
+          sectionId: "${variables.cancelSectionId}"
+    updateVariable:
+      id: immediate
+      operations:
+        - variableId: marker
+          op: set
+          value: "_event.value"
+  - _event:
+      value: 12
+    variables:
+      confirmLayoutId: confirm-layout
+      deferredVariableId: deferred-marker
+      cancelSectionId: section-cancel
+out:
+  showConfirmDialog:
+    resourceId: confirm-layout
+    confirmActions:
+      updateVariable:
+        id: deferred-confirm
+        operations:
+          - variableId: "${variables.deferredVariableId}"
+            op: set
+            value: "_event.value"
+    cancelActions:
+      sectionTransition:
+        sectionId: "${variables.cancelSectionId}"
+  updateVariable:
+    id: immediate
+    operations:
+      - variableId: marker
+        op: set
+        value: 12
+---
+case: does not throw when deferred confirm dialog batches contain unresolved _event bindings
+in:
+  - showConfirmDialog:
+      resourceId: confirm-layout
+      confirmActions:
+        updateVariable:
+          id: deferred-confirm
+          operations:
+            - variableId: marker
+              op: set
+              value: "_event.missing"
+      cancelActions:
+        updateVariable:
+          id: deferred-cancel
+          operations:
+            - variableId: marker
+              op: set
+              value: "_event.alsoMissing"
+  - _event:
+      id: open-dialog
+out:
+  showConfirmDialog:
+    resourceId: confirm-layout
+    confirmActions:
+      updateVariable:
+        id: deferred-confirm
+        operations:
+          - variableId: marker
+            op: set
+            value: "_event.missing"
+    cancelActions:
+      updateVariable:
+        id: deferred-cancel
+        operations:
+          - variableId: marker
+            op: set
+            value: "_event.alsoMissing"
