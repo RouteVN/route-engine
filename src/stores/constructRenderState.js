@@ -2457,13 +2457,9 @@ export const addOverlayStack = (
         skipTransitionsAndAnimations,
       });
 
-      const processedOverlay = parseAndRender(
-        overlayContainer,
-        templateData,
-        {
-          functions: jemplFunctions,
-        },
-      );
+      const processedOverlay = parseAndRender(overlayContainer, templateData, {
+        functions: jemplFunctions,
+      });
 
       const [blocker, ...layoutChildren] = processedOverlay.children || [];
       const resolvedOverlay = resolveLayoutResourceIds(
