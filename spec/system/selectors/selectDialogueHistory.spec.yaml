@@ -233,7 +233,7 @@ out:
     content:
       - text: "Second line"
 ---
-case: persistCharacter keeps the alias when the same speaker id repeats
+case: explicit repeated speaker id clears the alias back to the resource name
 in:
   - state:
       global:
@@ -285,8 +285,8 @@ out:
     lineId: "2"
     characterId: "char1"
     character:
-      name: "Alias"
-    characterName: "Alias"
+      name: "Alice"
+    characterName: "Alice"
     text: "Second line"
     content:
       - text: "Second line"
