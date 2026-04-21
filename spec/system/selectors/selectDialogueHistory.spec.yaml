@@ -60,6 +60,44 @@ out:
     content:
       - text: "Hello world"
 ---
+case: history uses characterName override when provided
+in:
+  - state:
+      global:
+        isLineCompleted: false
+      projectData:
+        resources:
+          characters:
+            char1:
+              name: "Alice"
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          characterId: "char1"
+                          characterName: "Alias"
+                          content:
+                            - text: "Hello world"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  - sectionId: "section1"
+    lineId: "1"
+    characterId: "char1"
+    characterName: "Alias"
+    text: "Hello world"
+    content:
+      - text: "Hello world"
+---
 case: multiple lines with dialogue up to current position
 in:
   - state:
@@ -123,6 +161,61 @@ out:
     text: "Third line"
     content:
       - text: "Third line"
+---
+case: persistCharacter keeps the speaker across later dialogue lines
+in:
+  - state:
+      global:
+        isLineCompleted: false
+      projectData:
+        resources:
+          characters:
+            char1:
+              name: "Alice"
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          characterId: "char1"
+                          characterName: "Alias"
+                          persistCharacter: true
+                          content:
+                            - text: "First line"
+                    - id: "2"
+                      actions:
+                        background:
+                          resourceId: "bg1"
+                    - id: "3"
+                      actions:
+                        dialogue:
+                          content:
+                            - text: "Second line"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "3"
+out:
+  - sectionId: "section1"
+    lineId: "1"
+    characterId: "char1"
+    characterName: "Alias"
+    text: "First line"
+    content:
+      - text: "First line"
+  - sectionId: "section1"
+    lineId: "3"
+    characterId: "char1"
+    characterName: "Alias"
+    text: "Second line"
+    content:
+      - text: "Second line"
 ---
 case: lines without dialogue are filtered out
 in:

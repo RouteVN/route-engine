@@ -1289,26 +1289,40 @@ export const selectDialogueHistory = ({ state }) => {
   );
   const linesUpToCurrent = section.lines.slice(0, currentLineIndex + 1);
 
-  // Filter for lines that have dialogue content
-  const historyContent = linesUpToCurrent
-    .filter((line) => line.actions?.dialogue)
-    .map((line) => {
-      const dialogue = line.actions.dialogue;
-      let characterName = "";
-      if (dialogue.characterId) {
-        const character =
-          state.projectData.resources?.characters?.[dialogue.characterId];
-        characterName = character?.name || "";
-      }
-      return {
-        sectionId,
-        lineId: line.id,
-        content: dialogue.content,
-        text: buildDialogueHistoryText(dialogue.content),
-        characterId: dialogue.characterId,
-        characterName: characterName,
-      };
+  const historyContent = [];
+  let presentationState = {};
+
+  for (const line of linesUpToCurrent) {
+    const lineActions = line.actions || {};
+    presentationState = constructPresentationState([
+      presentationState,
+      lineActions,
+    ]);
+
+    if (!lineActions.dialogue) {
+      continue;
+    }
+
+    const dialogueState = presentationState.dialogue || {};
+    let characterName = "";
+
+    if (dialogueState.character?.name !== undefined) {
+      characterName = dialogueState.character.name;
+    } else if (dialogueState.characterId) {
+      const character =
+        state.projectData.resources?.characters?.[dialogueState.characterId];
+      characterName = character?.name || "";
+    }
+
+    historyContent.push({
+      sectionId,
+      lineId: line.id,
+      content: lineActions.dialogue.content,
+      text: buildDialogueHistoryText(lineActions.dialogue.content),
+      characterId: dialogueState.characterId,
+      characterName,
     });
+  }
 
   return historyContent;
 };

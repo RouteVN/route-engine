@@ -1,0 +1,217 @@
+---
+title: Dialogue Character Persist
+description: Verifies that dialogue characterName overrides the resource name and persistCharacter keeps the same speaker label on following lines and in dialogue history.
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 80
+  - action: screenshot
+  - action: click
+    x: 798
+    y: 30
+  - action: wait
+    ms: 80
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  controls:
+    base1:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          colorId: bg
+          click:
+            payload:
+              actions:
+                nextLine: {}
+  layouts:
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 80
+          y: 760
+          width: 1760
+          height: 240
+          colorId: panel
+        - id: dialogue-name
+          type: text
+          x: 120
+          y: 800
+          content: ${dialogue.character.name}
+          textStyleId: textName
+        - id: dialogue-text
+          type: text
+          x: 120
+          y: 860
+          width: 1300
+          content: ${dialogue.content[0].text}
+          textStyleId: textBody
+        - id: history-button
+          type: rect
+          x: 1500
+          y: 40
+          width: 260
+          height: 80
+          colorId: button
+          click:
+            payload:
+              actions:
+                pushOverlay:
+                  resourceId: historyLayout
+                  resourceType: layout
+        - id: history-label
+          type: text
+          x: 1566
+          y: 66
+          content: History
+          textStyleId: textButton
+    historyLayout:
+      elements:
+        - id: history-bg
+          type: rect
+          x: 0
+          y: 0
+          width: 1920
+          height: 1080
+          opacity: 0.82
+          colorId: bg
+        - id: history-panel
+          type: rect
+          x: 360
+          y: 140
+          width: 1200
+          height: 760
+          colorId: panel
+        - id: history-title
+          type: text
+          x: 450
+          y: 200
+          content: Dialogue History
+          textStyleId: textTitle
+        - id: history-list
+          type: container
+          x: 450
+          y: 280
+          width: 1020
+          direction: vertical
+          gapX: 20
+          gapY: 20
+          children:
+            - $for item, i in historyDialogue:
+                id: history-item-${i}
+                type: container
+                direction: vertical
+                width: 1020
+                gapX: 8
+                gapY: 8
+                children:
+                  - id: history-name-${i}
+                    type: text
+                    content: ${item.characterName}
+                    textStyleId: textHistoryName
+                  - id: history-text-${i}
+                    type: text
+                    content: ${item.text}
+                    textStyleId: textHistoryBody
+  characters:
+    alice:
+      name: Alice
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    bg:
+      hex: "#000000"
+    panel:
+      hex: "#4D4D4D"
+    button:
+      hex: "#737373"
+    fg:
+      hex: "#FFFFFF"
+    fgMuted:
+      hex: "#D9D9D9"
+  textStyles:
+    textName:
+      fontId: fontDefault
+      colorId: fgMuted
+      fontSize: 30
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    textBody:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 28
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textButton:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 28
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textTitle:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 36
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    textHistoryName:
+      fontId: fontDefault
+      colorId: fgMuted
+      fontSize: 22
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    textHistoryBody:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 22
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      name: Main
+      initialSectionId: start
+      sections:
+        start:
+          name: Start
+          lines:
+            - id: line1
+              actions:
+                control:
+                  resourceId: base1
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  characterId: alice
+                  characterName: Alias
+                  persistCharacter: true
+                  content:
+                    - text: Line one uses the alias instead of the character resource name.
+            - id: line2
+              actions:
+                dialogue:
+                  content:
+                    - text: Line two omits speaker fields, so the alias should persist.

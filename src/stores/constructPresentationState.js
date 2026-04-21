@@ -42,6 +42,28 @@ const processItemsWithAnimations = (items, hasResourceFn) => {
   };
 };
 
+const hasOwnProperty = (value, key) =>
+  Object.prototype.hasOwnProperty.call(value, key);
+
+const resolveDialogueCharacterName = (dialogueAction) => {
+  if (!dialogueAction) {
+    return undefined;
+  }
+
+  if (hasOwnProperty(dialogueAction, "characterName")) {
+    return dialogueAction.characterName;
+  }
+
+  if (
+    dialogueAction.character &&
+    hasOwnProperty(dialogueAction.character, "name")
+  ) {
+    return dialogueAction.character.name;
+  }
+
+  return undefined;
+};
+
 /**
  * Creates the initial presentation state
  * @returns {Object} Empty initial state object
@@ -96,7 +118,10 @@ export const dialogue = (state, presentation) => {
   if (!presentation.dialogue) {
     if (state.dialogue && state.dialogue.mode === "adv") {
       state.dialogue.content = undefined;
-      state.dialogue.characterId = undefined;
+      if (state.dialogue.persistCharacter !== true) {
+        delete state.dialogue.characterId;
+        delete state.dialogue.character;
+      }
     }
     return;
   }
@@ -144,14 +169,37 @@ export const dialogue = (state, presentation) => {
   if (presentation.dialogue.content !== undefined) {
     state.dialogue.content = presentation.dialogue.content;
   }
-  // Always clear characterId, then set if provided with a value
-  delete state.dialogue.characterId;
-  if (presentation.dialogue.characterId) {
-    state.dialogue.characterId = presentation.dialogue.characterId;
-  }
-  if (presentation.dialogue.character) {
-    state.dialogue.character = { ...presentation.dialogue.character };
+
+  const persistCharacter = hasOwnProperty(
+    presentation.dialogue,
+    "persistCharacter",
+  )
+    ? presentation.dialogue.persistCharacter === true
+    : state.dialogue.persistCharacter === true;
+
+  if (persistCharacter) {
+    state.dialogue.persistCharacter = true;
   } else {
+    delete state.dialogue.persistCharacter;
+  }
+
+  const hasCharacterId = hasOwnProperty(presentation.dialogue, "characterId");
+  const characterName = resolveDialogueCharacterName(presentation.dialogue);
+  const hasCharacterName = characterName !== undefined;
+
+  if (hasCharacterId) {
+    if (presentation.dialogue.characterId) {
+      state.dialogue.characterId = presentation.dialogue.characterId;
+    } else {
+      delete state.dialogue.characterId;
+    }
+  } else if (!persistCharacter) {
+    delete state.dialogue.characterId;
+  }
+
+  if (hasCharacterName) {
+    state.dialogue.character = { name: characterName };
+  } else if (hasCharacterId || !persistCharacter) {
     delete state.dialogue.character;
   }
 
@@ -171,10 +219,16 @@ export const dialogue = (state, presentation) => {
     state.dialogue?.mode === "nvl" &&
     presentation.dialogue.content !== undefined
   ) {
-    state.dialogue.lines.push({
+    const dialogueLine = {
       content: presentation.dialogue.content,
-      characterId: presentation.dialogue.characterId || null,
-    });
+      characterId: state.dialogue.characterId ?? null,
+    };
+
+    if (state.dialogue.character) {
+      dialogueLine.characterName = state.dialogue.character.name;
+    }
+
+    state.dialogue.lines.push(dialogueLine);
   }
 };
 

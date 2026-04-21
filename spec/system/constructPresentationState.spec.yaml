@@ -110,6 +110,85 @@ out:
     content:
       - text: "Hi"
 ---
+case: dialogue characterName creates a character override
+in:
+  - - dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "simple-dialogue"
+        characterId: "alice"
+        characterName: "Alias"
+        content:
+          - text: "Hello"
+out:
+  dialogue:
+    mode: "adv"
+    ui:
+      resourceId: "simple-dialogue"
+    characterId: "alice"
+    character:
+      name: "Alias"
+    content:
+      - text: "Hello"
+---
+case: dialogue speaker persists when persistCharacter is true
+in:
+  - - dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "simple-dialogue"
+        characterId: "alice"
+        characterName: "Alias"
+        persistCharacter: true
+        content:
+          - text: "Hello"
+    - dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "simple-dialogue"
+        content:
+          - text: "Hi again"
+out:
+  dialogue:
+    mode: "adv"
+    ui:
+      resourceId: "simple-dialogue"
+    characterId: "alice"
+    character:
+      name: "Alias"
+    persistCharacter: true
+    content:
+      - text: "Hi again"
+---
+case: dialogue characterName override clears when speaker changes
+in:
+  - - dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "simple-dialogue"
+        characterId: "alice"
+        characterName: "Alias"
+        persistCharacter: true
+        content:
+          - text: "Hello"
+    - dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "simple-dialogue"
+        characterId: "bob"
+        persistCharacter: true
+        content:
+          - text: "Hi"
+out:
+  dialogue:
+    mode: "adv"
+    ui:
+      resourceId: "simple-dialogue"
+    characterId: "bob"
+    persistCharacter: true
+    content:
+      - text: "Hi"
+---
 case: clear background animations when next presentation has no background action
 in:
   - - background:
@@ -385,6 +464,42 @@ out:
       - content:
           - text: "New page starts here"
         characterId: null
+---
+case: nvl-mode-lines-persist-character-override
+in:
+  - - dialogue:
+        mode: "nvl"
+        ui:
+          resourceId: "nvl-layout"
+        characterId: "alice"
+        characterName: "Alias"
+        persistCharacter: true
+        content:
+          - text: "First line"
+    - dialogue:
+        mode: "nvl"
+        content:
+          - text: "Second line"
+out:
+  dialogue:
+    mode: "nvl"
+    ui:
+      resourceId: "nvl-layout"
+    characterId: "alice"
+    character:
+      name: "Alias"
+    persistCharacter: true
+    content:
+      - text: "Second line"
+    lines:
+      - content:
+          - text: "First line"
+        characterId: "alice"
+        characterName: "Alias"
+      - content:
+          - text: "Second line"
+        characterId: "alice"
+        characterName: "Alias"
 ---
 case: nvl-mode-switch-from-adv
 in:

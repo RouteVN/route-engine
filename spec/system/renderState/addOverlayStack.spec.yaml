@@ -100,6 +100,65 @@ out:
           content: "Overlay content"
   animations: []
 ---
+case: overlay history keeps explicit characterName override
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - resources:
+      layouts:
+        historyLayout:
+          elements:
+            - id: "history-name"
+              type: "text"
+              content: "${historyDialogue[0].characterName}"
+      characters:
+        alice:
+          name: "Alice"
+    variables: {}
+    autoMode: false
+    skipMode: false
+    screen:
+      width: 1920
+      height: 1080
+    dialogueHistory:
+      - characterId: "alice"
+        characterName: "Alias"
+        text: "Hello"
+    overlayStack:
+      - resourceId: historyLayout
+        resourceType: layout
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+    - id: "overlayStack-0"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "overlayStack-0-blocker"
+          type: "rect"
+          fill: "transparent"
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          click:
+            payload:
+              actions: {}
+        - id: "history-name"
+          type: "text"
+          content: "Alias"
+  animations: []
+---
 case: add multiple overlays with correct indices
 in:
   - elements:

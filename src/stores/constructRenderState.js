@@ -1172,7 +1172,10 @@ const createHistoryDialogueTemplateData = (
     return {
       ...item,
       text,
-      characterName: character?.name || "",
+      characterName:
+        item.characterName !== undefined
+          ? item.characterName
+          : character?.name || "",
     };
   });
 };
@@ -1939,9 +1942,12 @@ export const addDialogue = (
               ...item,
               text: interpolateDialogueText(item.text, { variables }),
             })),
-            characterName: line.characterId
-              ? resources.characters?.[line.characterId]?.name || ""
-              : "",
+            characterName:
+              line.characterName !== undefined
+                ? line.characterName
+                : line.characterId
+                  ? resources.characters?.[line.characterId]?.name || ""
+                  : "",
           };
         },
       );

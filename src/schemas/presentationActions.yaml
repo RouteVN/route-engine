@@ -70,9 +70,15 @@ properties:
       characterId:
         type: string
         description: ID of the character speaking
+      characterName:
+        type: string
+        description: Override character display name for this dialogue line
+      persistCharacter:
+        type: boolean
+        description: Keep the current characterId and characterName for following dialogue lines until changed or cleared
       character:
         type: object
-        description: Override character properties
+        description: Legacy character override properties
         properties:
           name:
             type: string
