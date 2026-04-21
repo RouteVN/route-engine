@@ -110,7 +110,29 @@ out:
     content:
       - text: "Hi"
 ---
-case: dialogue characterName creates a character override
+case: dialogue character override creates a character override
+in:
+  - - dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "simple-dialogue"
+        characterId: "alice"
+        character:
+          name: "Alias"
+        content:
+          - text: "Hello"
+out:
+  dialogue:
+    mode: "adv"
+    ui:
+      resourceId: "simple-dialogue"
+    characterId: "alice"
+    character:
+      name: "Alias"
+    content:
+      - text: "Hello"
+---
+case: dialogue characterName alias still creates a character override
 in:
   - - dialogue:
         mode: "adv"
@@ -138,7 +160,8 @@ in:
         ui:
           resourceId: "simple-dialogue"
         characterId: "alice"
-        characterName: "Alias"
+        character:
+          name: "Alias"
         persistCharacter: true
         content:
           - text: "Hello"
@@ -160,14 +183,15 @@ out:
     content:
       - text: "Hi again"
 ---
-case: dialogue characterName override clears when speaker changes
+case: dialogue character override clears when speaker changes
 in:
   - - dialogue:
         mode: "adv"
         ui:
           resourceId: "simple-dialogue"
         characterId: "alice"
-        characterName: "Alias"
+        character:
+          name: "Alias"
         persistCharacter: true
         content:
           - text: "Hello"
@@ -472,7 +496,8 @@ in:
         ui:
           resourceId: "nvl-layout"
         characterId: "alice"
-        characterName: "Alias"
+        character:
+          name: "Alias"
         persistCharacter: true
         content:
           - text: "First line"
@@ -495,11 +520,13 @@ out:
       - content:
           - text: "First line"
         characterId: "alice"
-        characterName: "Alias"
+        character:
+          name: "Alias"
       - content:
           - text: "Second line"
         characterId: "alice"
-        characterName: "Alias"
+        character:
+          name: "Alias"
 ---
 case: nvl-mode-switch-from-adv
 in:

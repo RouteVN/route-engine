@@ -50,15 +50,15 @@ const resolveDialogueCharacterName = (dialogueAction) => {
     return undefined;
   }
 
-  if (hasOwnProperty(dialogueAction, "characterName")) {
-    return dialogueAction.characterName;
-  }
-
   if (
     dialogueAction.character &&
     hasOwnProperty(dialogueAction.character, "name")
   ) {
     return dialogueAction.character.name;
+  }
+
+  if (hasOwnProperty(dialogueAction, "characterName")) {
+    return dialogueAction.characterName;
   }
 
   return undefined;
@@ -225,7 +225,7 @@ export const dialogue = (state, presentation) => {
     };
 
     if (state.dialogue.character) {
-      dialogueLine.characterName = state.dialogue.character.name;
+      dialogueLine.character = { ...state.dialogue.character };
     }
 
     state.dialogue.lines.push(dialogueLine);

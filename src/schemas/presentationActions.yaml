@@ -72,13 +72,13 @@ properties:
         description: ID of the character speaking
       characterName:
         type: string
-        description: Override character display name for this dialogue line
+        description: Compatibility alias for character.name
       persistCharacter:
         type: boolean
-        description: Keep the current characterId and characterName for following dialogue lines until changed or cleared
+        description: Keep the current characterId and character override for following dialogue lines until changed or cleared
       character:
         type: object
-        description: Legacy character override properties
+        description: Character override properties
         properties:
           name:
             type: string

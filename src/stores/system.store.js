@@ -1320,6 +1320,9 @@ export const selectDialogueHistory = ({ state }) => {
       content: lineActions.dialogue.content,
       text: buildDialogueHistoryText(lineActions.dialogue.content),
       characterId: dialogueState.characterId,
+      character: {
+        name: characterName,
+      },
       characterName,
     });
   }

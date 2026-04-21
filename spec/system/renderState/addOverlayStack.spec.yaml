@@ -100,7 +100,7 @@ out:
           content: "Overlay content"
   animations: []
 ---
-case: overlay history keeps explicit characterName override
+case: overlay history keeps explicit character override
 in:
   - elements:
       - id: "story"
@@ -115,7 +115,7 @@ in:
           elements:
             - id: "history-name"
               type: "text"
-              content: "${historyDialogue[0].characterName}"
+              content: "${historyDialogue[0].character.name}"
       characters:
         alice:
           name: "Alice"
@@ -127,7 +127,8 @@ in:
       height: 1080
     dialogueHistory:
       - characterId: "alice"
-        characterName: "Alias"
+        character:
+          name: "Alias"
         text: "Hello"
     overlayStack:
       - resourceId: historyLayout

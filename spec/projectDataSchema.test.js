@@ -166,13 +166,28 @@ describe("projectData schema", () => {
     expect(validatePresentationActions.errors).toBeNull();
   });
 
-  it("accepts dialogue characterName and persistCharacter in presentation actions", () => {
+  it("accepts dialogue character override and persistCharacter in presentation actions", () => {
+    expect(
+      validatePresentationActions({
+        dialogue: {
+          characterId: "alice",
+          character: {
+            name: "Alias",
+          },
+          persistCharacter: true,
+          content: [{ text: "Hello" }],
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+  });
+
+  it("accepts dialogue characterName as a compatibility alias", () => {
     expect(
       validatePresentationActions({
         dialogue: {
           characterId: "alice",
           characterName: "Alias",
-          persistCharacter: true,
           content: [{ text: "Hello" }],
         },
       }),

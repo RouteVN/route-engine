@@ -1,6 +1,6 @@
 ---
 title: Dialogue Character Persist
-description: Verifies that dialogue characterName overrides the resource name and persistCharacter keeps the same speaker label on following lines and in dialogue history.
+description: Verifies that dialogue character.name overrides the resource name and persistCharacter keeps the same speaker label on following lines and in dialogue history.
 viewport:
   id: capture
   width: 960
@@ -121,7 +121,7 @@ resources:
                 children:
                   - id: history-name-${i}
                     type: text
-                    content: ${item.characterName}
+                    content: ${item.character.name}
                     textStyleId: textHistoryName
                   - id: history-text-${i}
                     type: text
@@ -206,7 +206,8 @@ story:
                   ui:
                     resourceId: dialogueLayout
                   characterId: alice
-                  characterName: Alias
+                  character:
+                    name: Alias
                   persistCharacter: true
                   content:
                     - text: Line one uses the alias instead of the character resource name.

@@ -322,7 +322,9 @@ const line = {
     background: { resourceId: "bg_school" },
     dialogue: {
       characterId: "protagonist",
-      characterName: "Hero",
+      character: {
+        name: "Hero",
+      },
       persistCharacter: true,
       content: [{ text: "Hello!" }],
     },
@@ -490,7 +492,7 @@ Actions that can be attached to lines to control presentation:
 | Action       | Properties                                                                                     | Description                                                                                       |
 | ------------ | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | `background` | `{ resourceId, animations? }`                                                                  | Set background/CG                                                                                 |
-| `dialogue`   | `{ characterId?, characterName?, persistCharacter?, character?, content, mode?, ui?, clear? }` | Display dialogue                                                                                  |
+| `dialogue`   | `{ characterId?, character?, persistCharacter?, characterName?, content, mode?, ui?, clear? }` | Display dialogue                                                                                  |
 | `character`  | `{ items }`                                                                                    | Display character sprites. Each item can have optional `x` and `y` to override transform position |
 | `visual`     | `{ items }`                                                                                    | Display visual elements                                                                           |
 | `bgm`        | `{ resourceId, loop?, volume?, delay? }`                                                       | Play background music                                                                             |

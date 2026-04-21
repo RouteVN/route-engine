@@ -55,12 +55,14 @@ out:
   - sectionId: "section1"
     lineId: "1"
     characterId: "char1"
+    character:
+      name: ""
     characterName: ""
     text: "Hello world"
     content:
       - text: "Hello world"
 ---
-case: history uses characterName override when provided
+case: history uses character override when provided
 in:
   - state:
       global:
@@ -80,7 +82,8 @@ in:
                       actions:
                         dialogue:
                           characterId: "char1"
-                          characterName: "Alias"
+                          character:
+                            name: "Alias"
                           content:
                             - text: "Hello world"
       contexts:
@@ -93,6 +96,8 @@ out:
   - sectionId: "section1"
     lineId: "1"
     characterId: "char1"
+    character:
+      name: "Alias"
     characterName: "Alias"
     text: "Hello world"
     content:
@@ -143,6 +148,8 @@ out:
   - sectionId: "section1"
     lineId: "1"
     characterId: "char1"
+    character:
+      name: ""
     characterName: ""
     text: "First line"
     content:
@@ -150,6 +157,8 @@ out:
   - sectionId: "section1"
     lineId: "2"
     characterId: "char2"
+    character:
+      name: ""
     characterName: ""
     text: "Second line"
     content:
@@ -157,6 +166,8 @@ out:
   - sectionId: "section1"
     lineId: "3"
     characterId: "char1"
+    character:
+      name: ""
     characterName: ""
     text: "Third line"
     content:
@@ -182,7 +193,8 @@ in:
                       actions:
                         dialogue:
                           characterId: "char1"
-                          characterName: "Alias"
+                          character:
+                            name: "Alias"
                           persistCharacter: true
                           content:
                             - text: "First line"
@@ -205,6 +217,8 @@ out:
   - sectionId: "section1"
     lineId: "1"
     characterId: "char1"
+    character:
+      name: "Alias"
     characterName: "Alias"
     text: "First line"
     content:
@@ -212,6 +226,8 @@ out:
   - sectionId: "section1"
     lineId: "3"
     characterId: "char1"
+    character:
+      name: "Alias"
     characterName: "Alias"
     text: "Second line"
     content:
@@ -262,6 +278,8 @@ out:
   - sectionId: "section1"
     lineId: "1"
     characterId: "char1"
+    character:
+      name: ""
     characterName: ""
     text: "First dialogue"
     content:
@@ -269,6 +287,8 @@ out:
   - sectionId: "section1"
     lineId: "3"
     characterId: "char2"
+    character:
+      name: ""
     characterName: ""
     text: "Second dialogue"
     content:
@@ -276,6 +296,8 @@ out:
   - sectionId: "section1"
     lineId: "5"
     characterId: __undefined__
+    character:
+      name: ""
     characterName: ""
     text: "Third dialogue"
     content:
@@ -390,6 +412,8 @@ out:
   - sectionId: "section1"
     lineId: "1"
     characterId: __undefined__
+    character:
+      name: ""
     characterName: ""
     text: "Narrator text"
     content:
@@ -397,6 +421,8 @@ out:
   - sectionId: "section1"
     lineId: "2"
     characterId: "char1"
+    character:
+      name: ""
     characterName: ""
     text: "Character text"
     content:
@@ -432,6 +458,8 @@ out:
   - sectionId: "section1"
     lineId: "1"
     characterId: "char1"
+    character:
+      name: ""
     characterName: ""
     text: "First partSecond partThird part"
     content:

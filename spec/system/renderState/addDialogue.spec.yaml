@@ -86,6 +86,9 @@ in:
             - id: "dialogue-name"
               type: "text"
               content: "${dialogue.character.name}"
+            - id: "dialogue-id"
+              type: "text"
+              content: "${dialogue.characterId}"
             - id: "dialogue-text"
               type: "text"
               content: "${dialogue.content[0].text}"
@@ -105,6 +108,9 @@ out:
         - id: "dialogue-name"
           type: "text"
           content: "Alias"
+        - id: "dialogue-id"
+          type: "text"
+          content: "alice"
         - id: "dialogue-text"
           type: "text"
           content: "Hello world"
@@ -204,7 +210,7 @@ out:
                   content: "Third line"
   animations: []
 ---
-case: nvl-template-prefers-line-characterName-override
+case: nvl-template-prefers-line-character-name-override
 in:
   - elements:
       - id: "story"
@@ -222,7 +228,8 @@ in:
           - content:
               - text: "First line"
             characterId: "alice"
-            characterName: "Alias"
+            character:
+              name: "Alias"
           - content:
               - text: "Second line"
             characterId: "bob"
@@ -237,10 +244,10 @@ in:
                     - id: "line-${i}"
                       type: "container"
                       children:
-                        - $if line.characterName:
+                        - $if line.character.name:
                             - id: "name-${i}"
                               type: "text"
-                              content: "${line.characterName}"
+                              content: "${line.character.name}"
       characters:
         alice:
           name: "Alice"
