@@ -183,6 +183,38 @@ out:
     content:
       - text: "Hi again"
 ---
+case: dialogue character override persists when the same speaker id repeats
+in:
+  - - dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "simple-dialogue"
+        characterId: "alice"
+        character:
+          name: "Alias"
+        persistCharacter: true
+        content:
+          - text: "Hello"
+    - dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "simple-dialogue"
+        characterId: "alice"
+        persistCharacter: true
+        content:
+          - text: "Hi again"
+out:
+  dialogue:
+    mode: "adv"
+    ui:
+      resourceId: "simple-dialogue"
+    characterId: "alice"
+    character:
+      name: "Alias"
+    persistCharacter: true
+    content:
+      - text: "Hi again"
+---
 case: dialogue character override clears when speaker changes
 in:
   - - dialogue:

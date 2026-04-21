@@ -183,13 +183,17 @@ export const dialogue = (state, presentation) => {
     delete state.dialogue.persistCharacter;
   }
 
+  const previousCharacterId = state.dialogue.characterId;
   const hasCharacterId = hasOwnProperty(presentation.dialogue, "characterId");
   const characterName = resolveDialogueCharacterName(presentation.dialogue);
   const hasCharacterName = characterName !== undefined;
+  const nextCharacterId = hasCharacterId
+    ? presentation.dialogue.characterId || undefined
+    : previousCharacterId;
 
   if (hasCharacterId) {
-    if (presentation.dialogue.characterId) {
-      state.dialogue.characterId = presentation.dialogue.characterId;
+    if (nextCharacterId) {
+      state.dialogue.characterId = nextCharacterId;
     } else {
       delete state.dialogue.characterId;
     }
@@ -199,7 +203,10 @@ export const dialogue = (state, presentation) => {
 
   if (hasCharacterName) {
     state.dialogue.character = { name: characterName };
-  } else if (hasCharacterId || !persistCharacter) {
+  } else if (
+    !persistCharacter ||
+    (hasCharacterId && nextCharacterId !== previousCharacterId)
+  ) {
     delete state.dialogue.character;
   }
 
