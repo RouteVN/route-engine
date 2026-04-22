@@ -969,6 +969,8 @@ const createLayoutTemplateData = ({
   variables,
   runtime,
   saveSlots = [],
+  dialogueState,
+  includeInactiveAdvDialogue = false,
   isLineCompleted,
   autoMode,
   skipMode,
@@ -998,8 +1000,13 @@ const createLayoutTemplateData = ({
     dialogueUIHidden: runtime?.dialogueUIHidden ?? dialogueUIHidden ?? false,
     isLineCompleted: runtime?.isLineCompleted ?? isLineCompleted ?? false,
   };
-
-  return {
+  const dialogue = createDialogueTemplateData({
+    dialogueState,
+    includeInactiveAdvDialogue,
+    characters,
+    variables,
+  });
+  const templateData = {
     variables,
     runtime: resolvedRuntime,
     saveSlots,
@@ -1009,6 +1016,13 @@ const createLayoutTemplateData = ({
     historyDialogue,
     characters,
   };
+
+  if (dialogue) {
+    templateData.dialogue = dialogue;
+    templateData.dialogueLines = dialogue.lines;
+  }
+
+  return templateData;
 };
 
 const SKIP_TEXT_REVEAL_SPEED = 100;
@@ -1185,6 +1199,92 @@ const createHistoryDialogueTemplateData = (
       characterName,
     };
   });
+};
+
+const hasActiveDialogueTemplateData = (dialogueState) => {
+  if (!dialogueState) {
+    return false;
+  }
+
+  // ADV keeps a persisted shell between lines so dialogue UI can remain mounted,
+  // but generic templated layouts should only see active dialogue content.
+  if (dialogueState.mode === "adv" && dialogueState.content === undefined) {
+    return false;
+  }
+
+  return true;
+};
+
+const createDialogueTemplateData = ({
+  dialogueState,
+  includeInactiveAdvDialogue = false,
+  characters = {},
+  variables,
+} = {}) => {
+  if (
+    !includeInactiveAdvDialogue &&
+    !hasActiveDialogueTemplateData(dialogueState)
+  ) {
+    return undefined;
+  }
+
+  let character;
+  if (dialogueState.characterId) {
+    character = characters?.[dialogueState.characterId];
+  }
+
+  if (dialogueState.character) {
+    character = {
+      ...character,
+      name: dialogueState.character.name,
+    };
+  }
+
+  const dialogueContent =
+    dialogueState.content === undefined
+      ? [{ text: "" }]
+      : ensureDialogueContentItems(dialogueState.content, "dialogue.content");
+  const dialogueLines = (dialogueState.lines || []).map((line, index) => {
+    const lineContent = ensureDialogueContentItems(
+      line.content,
+      `dialogue.lines[${index}].content`,
+    );
+    const characterName =
+      line.character?.name !== undefined
+        ? line.character.name
+        : line.characterName !== undefined
+          ? line.characterName
+          : line.characterId
+            ? characters?.[line.characterId]?.name || ""
+            : "";
+
+    return {
+      ...line,
+      content: lineContent.map((item) => ({
+        ...item,
+        text: interpolateDialogueText(item.text, { variables }),
+      })),
+      character: {
+        ...(line.character || {}),
+        name: characterName,
+      },
+      characterName,
+    };
+  });
+
+  return {
+    characterId: dialogueState.characterId,
+    persistCharacter: dialogueState.persistCharacter,
+    character: {
+      ...(dialogueState.character || {}),
+      name: character?.name || "",
+    },
+    content: dialogueContent.map((item) => ({
+      ...item,
+      text: interpolateDialogueText(item.text, { variables }),
+    })),
+    lines: dialogueLines,
+  };
 };
 
 const renderTemplatedLayoutContainer = ({
@@ -1500,11 +1600,13 @@ export const addBackgroundOrCg = (
             variables,
             runtime,
             saveSlots,
+            dialogueState: presentationState.dialogue,
             isLineCompleted,
             autoMode,
             skipMode,
             isChoiceVisible,
             canRollback,
+            characters: resources.characters || {},
             skipTransitionsAndAnimations,
           }),
           { functions: jemplFunctions },
@@ -1821,11 +1923,13 @@ export const addVisuals = (
               variables,
               runtime,
               saveSlots,
+              dialogueState: presentationState.dialogue,
               isLineCompleted,
               autoMode,
               skipMode,
               isChoiceVisible,
               canRollback,
+              characters: resources.characters || {},
               skipTransitionsAndAnimations,
             }),
             { functions: jemplFunctions },
@@ -1915,91 +2019,23 @@ export const addDialogue = (
     const { layouts = {} } = resources;
     const uiLayout = layouts[presentationState.dialogue.ui.resourceId];
     if (uiLayout) {
-      let character;
-      if (presentationState.dialogue.characterId) {
-        character =
-          resources.characters[presentationState.dialogue.characterId];
-      }
-
-      // Check if there's a character object override
-      if (presentationState.dialogue.character) {
-        character = {
-          ...character,
-          name: presentationState.dialogue.character.name,
-        };
-      }
-
       const wrappedTemplate = { elements: uiLayout.elements };
-      const dialogueContent =
-        presentationState.dialogue?.content === undefined
-          ? [{ text: "" }]
-          : ensureDialogueContentItems(
-              presentationState.dialogue.content,
-              "dialogue.content",
-            );
-      const dialogueLines = (presentationState.dialogue?.lines || []).map(
-        (line, index) => {
-          const lineContent = ensureDialogueContentItems(
-            line.content,
-            `dialogue.lines[${index}].content`,
-          );
-          const characterName =
-            line.character?.name !== undefined
-              ? line.character.name
-              : line.characterName !== undefined
-                ? line.characterName
-                : line.characterId
-                  ? resources.characters?.[line.characterId]?.name || ""
-                  : "";
-
-          return {
-            ...line,
-            content: lineContent.map((item) => ({
-              ...item,
-              text: interpolateDialogueText(item.text, { variables }),
-            })),
-            character: {
-              ...(line.character || {}),
-              name: characterName,
-            },
-            characterName,
-          };
-        },
-      );
-      const resolvedRuntime = createLayoutTemplateData({
+      const templateData = createLayoutTemplateData({
         variables,
         runtime,
+        saveSlots,
+        dialogueState: presentationState.dialogue,
+        includeInactiveAdvDialogue: true,
         isLineCompleted,
         autoMode,
         skipMode,
         isChoiceVisible,
         canRollback,
+        characters: resources.characters || {},
         dialogueUIHidden,
         skipOnlyViewedLines,
         skipTransitionsAndAnimations,
-      }).runtime;
-
-      const templateData = {
-        variables,
-        runtime: resolvedRuntime,
-        isChoiceVisible,
-        canRollback,
-        saveSlots,
-        dialogueLines,
-        dialogue: {
-          characterId: presentationState.dialogue.characterId,
-          persistCharacter: presentationState.dialogue.persistCharacter,
-          character: {
-            ...(presentationState.dialogue.character || {}),
-            name: character?.name || "",
-          },
-          content: dialogueContent.map((item) => ({
-            ...item,
-            text: interpolateDialogueText(item.text, { variables }),
-          })),
-          lines: dialogueLines,
-        },
-      };
+      });
 
       const renderOptions = { functions: jemplFunctions };
       const expandedTemplate = expandLoopTemplates(
@@ -2095,11 +2131,13 @@ export const addChoices = (
             variables,
             runtime,
             saveSlots,
+            dialogueState: presentationState.dialogue,
             isLineCompleted,
             autoMode,
             skipMode,
             isChoiceVisible: isChoiceVisible ?? !!presentationState.choice,
             canRollback,
+            characters: resources.characters || {},
             skipTransitionsAndAnimations,
           }),
           choice: {
@@ -2211,11 +2249,13 @@ export const addControl = (
         variables,
         runtime,
         saveSlots,
+        dialogueState: presentationState.dialogue,
         isLineCompleted,
         autoMode,
         skipMode,
         isChoiceVisible,
         canRollback,
+        characters: resources.characters || {},
         skipTransitionsAndAnimations,
       }),
       isLineCompleted,
@@ -2363,11 +2403,13 @@ export const addLayout = (
           variables,
           runtime,
           saveSlots,
+          dialogueState: presentationState.dialogue,
           isLineCompleted,
           autoMode,
           skipMode,
           isChoiceVisible,
           canRollback,
+          characters: resources.characters || {},
           skipTransitionsAndAnimations,
         }),
         isLineCompleted,
@@ -2409,6 +2451,7 @@ export const addLayout = (
 export const addOverlayStack = (
   state,
   {
+    presentationState,
     resources = {},
     variables,
     runtime,
@@ -2471,6 +2514,7 @@ export const addOverlayStack = (
         variables,
         runtime,
         saveSlots,
+        dialogueState: presentationState?.dialogue,
         isLineCompleted,
         autoMode,
         skipMode,
@@ -2515,6 +2559,7 @@ export const addOverlayStack = (
 export const addConfirmDialog = (
   state,
   {
+    presentationState,
     resources = {},
     variables,
     runtime,
@@ -2577,6 +2622,7 @@ export const addConfirmDialog = (
       variables,
       runtime,
       saveSlots,
+      dialogueState: presentationState?.dialogue,
       isLineCompleted,
       autoMode,
       skipMode,

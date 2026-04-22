@@ -116,6 +116,56 @@ out:
           content: "Hello world"
   animations: []
 ---
+case: persisted adv shell keeps dialogue template data for dialogue ui
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "dialogueLayout"
+        characterId: "alice"
+        persistCharacter: true
+    resources:
+      layouts:
+        dialogueLayout:
+          elements:
+            - id: "dialogue-name"
+              type: "text"
+              content: "${dialogue.character.name}"
+            - id: "dialogue-text"
+              type: "text-revealing"
+              content: "${dialogue.content}"
+              revealEffect: "typewriter"
+      characters:
+        alice:
+          name: "Alice"
+    dialogueUIHidden: false
+    autoMode: false
+    skipMode: false
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "dialogue-name"
+          type: "text"
+          content: "Alice"
+        - id: "dialogue-text"
+          type: "text-revealing"
+          content:
+            - text: ""
+          revealEffect: "typewriter"
+  animations: []
+---
 case: nvl-template-receives-lines
 in:
   - elements:
