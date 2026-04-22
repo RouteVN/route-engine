@@ -970,6 +970,7 @@ const createLayoutTemplateData = ({
   runtime,
   saveSlots = [],
   dialogueState,
+  includeInactiveAdvDialogue = false,
   isLineCompleted,
   autoMode,
   skipMode,
@@ -1001,6 +1002,7 @@ const createLayoutTemplateData = ({
   };
   const dialogue = createDialogueTemplateData({
     dialogueState,
+    includeInactiveAdvDialogue,
     characters,
     variables,
   });
@@ -1215,10 +1217,14 @@ const hasActiveDialogueTemplateData = (dialogueState) => {
 
 const createDialogueTemplateData = ({
   dialogueState,
+  includeInactiveAdvDialogue = false,
   characters = {},
   variables,
 } = {}) => {
-  if (!hasActiveDialogueTemplateData(dialogueState)) {
+  if (
+    !includeInactiveAdvDialogue &&
+    !hasActiveDialogueTemplateData(dialogueState)
+  ) {
     return undefined;
   }
 
@@ -2019,6 +2025,7 @@ export const addDialogue = (
         runtime,
         saveSlots,
         dialogueState: presentationState.dialogue,
+        includeInactiveAdvDialogue: true,
         isLineCompleted,
         autoMode,
         skipMode,
