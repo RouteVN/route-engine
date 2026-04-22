@@ -364,6 +364,30 @@ const presentationState = engine.selectPresentationState();
 // }
 ```
 
+### `selectSectionLineChanges({ sectionId, includePresentationState? })`
+
+Returns the per-line presentation diff for an entire section.
+
+By default each line entry only includes `changes`. Pass
+`includePresentationState: true` to also include the full end-state
+`presentationState` after that line has been applied.
+
+```js
+const sectionLineChanges = engine.selectSectionLineChanges({
+  sectionId: "section1",
+  includePresentationState: true,
+});
+// {
+//   lines: [
+//     {
+//       id: "line-1",
+//       changes: { ... },
+//       presentationState: { ... }
+//     }
+//   ]
+// }
+```
+
 ## Available Actions
 
 ### Navigation Actions

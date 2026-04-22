@@ -290,6 +290,79 @@ out:
     - id: "2"
       changes: {}
 ---
+case: "Include per-line presentationState when requested"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          ui:
+                            resourceId: "dialogue-box"
+                          mode: "adv"
+                          characterId: "char1"
+                          persistCharacter: true
+                          content:
+                            - text: "Hello"
+                    - id: "2"
+                      actions:
+                        dialogue:
+                          content:
+                            - text: "Still here"
+                    - id: "3"
+                      actions: {}
+  - sectionId: "section1"
+    includePresentationState: true
+out:
+  lines:
+    - id: "1"
+      changes:
+        dialogue:
+          changeType: "add"
+          data:
+            ui:
+              resourceId: "dialogue-box"
+            mode: "adv"
+            characterId: "char1"
+            persistCharacter: true
+            content:
+              - text: "Hello"
+      presentationState:
+        dialogue:
+          ui:
+            resourceId: "dialogue-box"
+          mode: "adv"
+          characterId: "char1"
+          persistCharacter: true
+          content:
+            - text: "Hello"
+    - id: "2"
+      changes: {}
+      presentationState:
+        dialogue:
+          ui:
+            resourceId: "dialogue-box"
+          mode: "adv"
+          characterId: "char1"
+          persistCharacter: true
+          content:
+            - text: "Still here"
+    - id: "3"
+      changes: {}
+      presentationState:
+        dialogue:
+          ui:
+            resourceId: "dialogue-box"
+          mode: "adv"
+          characterId: "char1"
+          persistCharacter: true
+---
 case: "Background animation metadata should not create duplicate next-line changes"
 in:
   - state:
