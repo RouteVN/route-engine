@@ -167,6 +167,53 @@ out:
           children: []
   animations: []
 ---
+case: generic layout ignores persisted ADV dialogue shells
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "dialogueLayout"
+      layout:
+        resourceId: "conditionalLayout"
+    resources:
+      layouts:
+        conditionalLayout:
+          elements:
+            - $if dialogue:
+                - id: "dialogue-present"
+                  type: "text"
+                  content: "${dialogue.content[0].text}"
+            - id: "always-present"
+              type: "text"
+              content: "No active dialogue"
+    variables: {}
+    autoMode: false
+    skipMode: false
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "layout-conditionalLayout"
+          type: "container"
+          x: 0
+          y: 0
+          children:
+            - id: "always-present"
+              type: "text"
+              content: "No active dialogue"
+  animations: []
+---
 case: resolves textStyleId in layout elements
 in:
   - elements:

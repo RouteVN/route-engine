@@ -1199,12 +1199,26 @@ const createHistoryDialogueTemplateData = (
   });
 };
 
+const hasActiveDialogueTemplateData = (dialogueState) => {
+  if (!dialogueState) {
+    return false;
+  }
+
+  // ADV keeps a persisted shell between lines so dialogue UI can remain mounted,
+  // but generic templated layouts should only see active dialogue content.
+  if (dialogueState.mode === "adv" && dialogueState.content === undefined) {
+    return false;
+  }
+
+  return true;
+};
+
 const createDialogueTemplateData = ({
   dialogueState,
   characters = {},
   variables,
 } = {}) => {
-  if (!dialogueState) {
+  if (!hasActiveDialogueTemplateData(dialogueState)) {
     return undefined;
   }
 
