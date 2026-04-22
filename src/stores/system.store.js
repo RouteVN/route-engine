@@ -1578,10 +1578,10 @@ export const selectPresentationChanges = ({ state }) => {
   );
 };
 
-export const selectSectionLineChanges = ({ state }, { sectionId }) => {
+const buildSectionLineEntries = ({ state }, { sectionId }) => {
   const section = selectSection({ state }, { sectionId });
   if (!section?.lines) {
-    return { lines: [] };
+    return [];
   }
 
   const linesWithChanges = [];
@@ -1603,6 +1603,7 @@ export const selectSectionLineChanges = ({ state }, { sectionId }) => {
     linesWithChanges.push({
       id: line.id,
       changes: changes,
+      presentationState: presentationStateAfterLineActions,
     });
 
     previousPresentationState = normalizePersistentPresentationState(
@@ -1610,7 +1611,29 @@ export const selectSectionLineChanges = ({ state }, { sectionId }) => {
     );
   }
 
-  return { lines: linesWithChanges };
+  return linesWithChanges;
+};
+
+export const selectSectionLineChanges = (
+  { state },
+  { sectionId, includePresentationState = false },
+) => {
+  const linesWithChanges = buildSectionLineEntries(
+    { state },
+    {
+      sectionId,
+    },
+  );
+
+  if (includePresentationState) {
+    return {
+      lines: linesWithChanges,
+    };
+  }
+
+  return {
+    lines: linesWithChanges.map(({ presentationState, ...line }) => line),
+  };
 };
 
 export const selectPreviousPresentationState = ({ state }) => {
