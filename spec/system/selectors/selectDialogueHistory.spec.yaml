@@ -55,7 +55,50 @@ out:
   - sectionId: "section1"
     lineId: "1"
     characterId: "char1"
+    character:
+      name: ""
     characterName: ""
+    text: "Hello world"
+    content:
+      - text: "Hello world"
+---
+case: history uses character override when provided
+in:
+  - state:
+      global:
+        isLineCompleted: false
+      projectData:
+        resources:
+          characters:
+            char1:
+              name: "Alice"
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          characterId: "char1"
+                          character:
+                            name: "Alias"
+                          content:
+                            - text: "Hello world"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  - sectionId: "section1"
+    lineId: "1"
+    characterId: "char1"
+    character:
+      name: "Alias"
+    characterName: "Alias"
     text: "Hello world"
     content:
       - text: "Hello world"
@@ -105,6 +148,8 @@ out:
   - sectionId: "section1"
     lineId: "1"
     characterId: "char1"
+    character:
+      name: ""
     characterName: ""
     text: "First line"
     content:
@@ -112,6 +157,8 @@ out:
   - sectionId: "section1"
     lineId: "2"
     characterId: "char2"
+    character:
+      name: ""
     characterName: ""
     text: "Second line"
     content:
@@ -119,10 +166,130 @@ out:
   - sectionId: "section1"
     lineId: "3"
     characterId: "char1"
+    character:
+      name: ""
     characterName: ""
     text: "Third line"
     content:
       - text: "Third line"
+---
+case: persistCharacter keeps the speaker across later dialogue lines
+in:
+  - state:
+      global:
+        isLineCompleted: false
+      projectData:
+        resources:
+          characters:
+            char1:
+              name: "Alice"
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          characterId: "char1"
+                          character:
+                            name: "Alias"
+                          persistCharacter: true
+                          content:
+                            - text: "First line"
+                    - id: "2"
+                      actions:
+                        background:
+                          resourceId: "bg1"
+                    - id: "3"
+                      actions:
+                        dialogue:
+                          content:
+                            - text: "Second line"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "3"
+out:
+  - sectionId: "section1"
+    lineId: "1"
+    characterId: "char1"
+    character:
+      name: "Alias"
+    characterName: "Alias"
+    text: "First line"
+    content:
+      - text: "First line"
+  - sectionId: "section1"
+    lineId: "3"
+    characterId: "char1"
+    character:
+      name: "Alias"
+    characterName: "Alias"
+    text: "Second line"
+    content:
+      - text: "Second line"
+---
+case: explicit repeated speaker id clears the alias back to the resource name
+in:
+  - state:
+      global:
+        isLineCompleted: false
+      projectData:
+        resources:
+          characters:
+            char1:
+              name: "Alice"
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          characterId: "char1"
+                          character:
+                            name: "Alias"
+                          persistCharacter: true
+                          content:
+                            - text: "First line"
+                    - id: "2"
+                      actions:
+                        dialogue:
+                          characterId: "char1"
+                          persistCharacter: true
+                          content:
+                            - text: "Second line"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  - sectionId: "section1"
+    lineId: "1"
+    characterId: "char1"
+    character:
+      name: "Alias"
+    characterName: "Alias"
+    text: "First line"
+    content:
+      - text: "First line"
+  - sectionId: "section1"
+    lineId: "2"
+    characterId: "char1"
+    character:
+      name: "Alice"
+    characterName: "Alice"
+    text: "Second line"
+    content:
+      - text: "Second line"
 ---
 case: lines without dialogue are filtered out
 in:
@@ -169,6 +336,8 @@ out:
   - sectionId: "section1"
     lineId: "1"
     characterId: "char1"
+    character:
+      name: ""
     characterName: ""
     text: "First dialogue"
     content:
@@ -176,6 +345,8 @@ out:
   - sectionId: "section1"
     lineId: "3"
     characterId: "char2"
+    character:
+      name: ""
     characterName: ""
     text: "Second dialogue"
     content:
@@ -183,6 +354,8 @@ out:
   - sectionId: "section1"
     lineId: "5"
     characterId: __undefined__
+    character:
+      name: ""
     characterName: ""
     text: "Third dialogue"
     content:
@@ -297,6 +470,8 @@ out:
   - sectionId: "section1"
     lineId: "1"
     characterId: __undefined__
+    character:
+      name: ""
     characterName: ""
     text: "Narrator text"
     content:
@@ -304,6 +479,8 @@ out:
   - sectionId: "section1"
     lineId: "2"
     characterId: "char1"
+    character:
+      name: ""
     characterName: ""
     text: "Character text"
     content:
@@ -339,6 +516,8 @@ out:
   - sectionId: "section1"
     lineId: "1"
     characterId: "char1"
+    character:
+      name: ""
     characterName: ""
     text: "First partSecond partThird part"
     content:

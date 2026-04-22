@@ -320,7 +320,14 @@ const line = {
   id: "line_1",
   actions: {
     background: { resourceId: "bg_school" },
-    dialogue: { characterId: "protagonist", content: [{ text: "Hello!" }] },
+    dialogue: {
+      characterId: "protagonist",
+      character: {
+        name: "Hero",
+      },
+      persistCharacter: true,
+      content: [{ text: "Hello!" }],
+    },
     bgm: { resourceId: "music_1" },
   },
 };
@@ -347,7 +354,12 @@ Returns the current presentation state.
 const presentationState = engine.selectPresentationState();
 // {
 //   background: { resourceId: 'bg_school' },
-//   dialogue: { characterId: 'protagonist', content: [...] },
+//   dialogue: {
+//     characterId: 'protagonist',
+//     character: { name: 'Hero' },
+//     persistCharacter: true,
+//     content: [...]
+//   },
 //   bgm: { resourceId: 'music_1', loop: true }
 // }
 ```
@@ -391,11 +403,11 @@ Playback timing semantics:
 
 ### State Management Actions
 
-| Action              | Payload              | Description                     |
-| ------------------- | -------------------- | ------------------------------- |
-| `setNextLineConfig` | `{ manual?, auto? }` | Configure line advancement      |
-| `updateProjectData` | `{ projectData }`    | Replace project data            |
-| `resetStoryAtSection` | `{ sectionId }`    | Reset story-local state and enter a section |
+| Action                | Payload              | Description                                 |
+| --------------------- | -------------------- | ------------------------------------------- |
+| `setNextLineConfig`   | `{ manual?, auto? }` | Configure line advancement                  |
+| `updateProjectData`   | `{ projectData }`    | Replace project data                        |
+| `resetStoryAtSection` | `{ sectionId }`      | Reset story-local state and enter a section |
 
 ### Registry Actions
 
@@ -482,17 +494,83 @@ Built-in effect handling notes:
 
 Actions that can be attached to lines to control presentation:
 
-| Action       | Properties                                                  | Description                                                                                       |
-| ------------ | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `background` | `{ resourceId, animations? }`                               | Set background/CG                                                                                 |
-| `dialogue`   | `{ characterId?, character?, content, mode?, ui?, clear? }` | Display dialogue                                                                                  |
-| `character`  | `{ items }`                                                 | Display character sprites. Each item can have optional `x` and `y` to override transform position |
-| `visual`     | `{ items }`                                                 | Display visual elements                                                                           |
-| `bgm`        | `{ resourceId, loop?, volume?, delay? }`                    | Play background music                                                                             |
-| `sfx`        | `{ items }`                                                 | Play sound effects                                                                                |
-| `voice`      | `{ fileId, volume?, loop? }`                                | Play voice audio                                                                                  |
-| `animation`  | `{ ... }`                                                   | Apply animations                                                                                  |
-| `layout`     | `{ resourceId }`                                            | Display layout                                                                                    |
-| `control`    | `{ resourceId }`                                            | Activate control bindings and control UI                                                          |
-| `choice`     | `{ resourceId, items }`                                     | Display choice menu                                                                               |
-| `cleanAll`   | `true`                                                      | Clear all presentation state                                                                      |
+| Action       | Properties                                                                     | Description                                                                                       |
+| ------------ | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| `background` | `{ resourceId, animations? }`                                                  | Set background/CG                                                                                 |
+| `dialogue`   | `{ characterId?, character?, persistCharacter?, content, mode?, ui?, clear? }` | Display dialogue                                                                                  |
+| `character`  | `{ items }`                                                                    | Display character sprites. Each item can have optional `x` and `y` to override transform position |
+| `visual`     | `{ items }`                                                                    | Display visual elements                                                                           |
+| `bgm`        | `{ resourceId, loop?, volume?, delay? }`                                       | Play background music                                                                             |
+| `sfx`        | `{ items }`                                                                    | Play sound effects                                                                                |
+| `voice`      | `{ fileId, volume?, loop? }`                                                   | Play voice audio                                                                                  |
+| `animation`  | `{ ... }`                                                                      | Apply animations                                                                                  |
+| `layout`     | `{ resourceId }`                                                               | Display layout                                                                                    |
+| `control`    | `{ resourceId }`                                                               | Activate control bindings and control UI                                                          |
+| `choice`     | `{ resourceId, items }`                                                        | Display choice menu                                                                               |
+| `cleanAll`   | `true`                                                                         | Clear all presentation state                                                                      |
+
+### Dialogue Speaker Fields
+
+Use `dialogue.character.name` for new authored content. `dialogue.characterName` is still accepted, but only as a compatibility alias for older content and tools, so it is intentionally omitted from the public action summary above.
+
+Preferred authored shape:
+
+```yaml
+dialogue:
+  characterId: alice
+  character:
+    name: Alias
+  persistCharacter: true
+  content:
+    - text: Hello
+```
+
+Field semantics:
+
+- `characterId` is the speaker identity. It selects the character resource and its default display name.
+- `character.name` is only a display-name override.
+- `persistCharacter: true` means later dialogue lines that omit speaker fields reuse the previous `characterId` and `character` override.
+- If a later dialogue line explicitly provides `characterId` without `character.name`, the previous override is cleared and the displayed name falls back to the character resource name.
+- If a later dialogue line provides a new `character.name`, that override replaces the previous one.
+
+Examples:
+
+```yaml
+# Omitted speaker fields keep the persisted alias.
+- dialogue:
+    characterId: alice
+    character:
+      name: Alias
+    persistCharacter: true
+    content:
+      - text: Hello
+- dialogue:
+    content:
+      - text: Hi again
+```
+
+The second line still displays `Alias`.
+
+```yaml
+# Explicit characterId resets the speaker to the resource name
+# unless character.name is provided again.
+- dialogue:
+    characterId: alice
+    character:
+      name: Alias
+    persistCharacter: true
+    content:
+      - text: Hello
+- dialogue:
+    characterId: alice
+    content:
+      - text: Hi again
+```
+
+The second line displays `Alice`, not `Alias`.
+
+Template/runtime paths:
+
+- Active dialogue layouts should use `${dialogue.character.name}`.
+- NVL line-item layouts should prefer `${line.character.name}`. `${line.characterName}` remains available as a compatibility alias.
+- Dialogue history layouts should prefer `${item.character.name}`. `${item.characterName}` remains available as a compatibility alias.

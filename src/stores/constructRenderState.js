@@ -1162,6 +1162,12 @@ const createHistoryDialogueTemplateData = (
 ) => {
   return dialogueHistory.map((item) => {
     const character = characters?.[item.characterId];
+    const characterName =
+      item.character?.name !== undefined
+        ? item.character.name
+        : item.characterName !== undefined
+          ? item.characterName
+          : character?.name || "";
     const text =
       typeof item.text === "string"
         ? item.text
@@ -1172,7 +1178,11 @@ const createHistoryDialogueTemplateData = (
     return {
       ...item,
       text,
-      characterName: character?.name || "",
+      character: {
+        ...(item.character || {}),
+        name: characterName,
+      },
+      characterName,
     };
   });
 };
@@ -1933,15 +1943,26 @@ export const addDialogue = (
             line.content,
             `dialogue.lines[${index}].content`,
           );
+          const characterName =
+            line.character?.name !== undefined
+              ? line.character.name
+              : line.characterName !== undefined
+                ? line.characterName
+                : line.characterId
+                  ? resources.characters?.[line.characterId]?.name || ""
+                  : "";
 
           return {
+            ...line,
             content: lineContent.map((item) => ({
               ...item,
               text: interpolateDialogueText(item.text, { variables }),
             })),
-            characterName: line.characterId
-              ? resources.characters?.[line.characterId]?.name || ""
-              : "",
+            character: {
+              ...(line.character || {}),
+              name: characterName,
+            },
+            characterName,
           };
         },
       );
@@ -1966,7 +1987,10 @@ export const addDialogue = (
         saveSlots,
         dialogueLines,
         dialogue: {
+          characterId: presentationState.dialogue.characterId,
+          persistCharacter: presentationState.dialogue.persistCharacter,
           character: {
+            ...(presentationState.dialogue.character || {}),
             name: character?.name || "",
           },
           content: dialogueContent.map((item) => ({

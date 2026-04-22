@@ -61,6 +61,61 @@ out:
       children: []
   animations: []
 ---
+case: character override name replaces character resource name
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      dialogue:
+        ui:
+          resourceId: "dialogueLayout"
+        characterId: "alice"
+        character:
+          name: "Alias"
+        content:
+          - text: "Hello world"
+    resources:
+      layouts:
+        dialogueLayout:
+          elements:
+            - id: "dialogue-name"
+              type: "text"
+              content: "${dialogue.character.name}"
+            - id: "dialogue-id"
+              type: "text"
+              content: "${dialogue.characterId}"
+            - id: "dialogue-text"
+              type: "text"
+              content: "${dialogue.content[0].text}"
+      characters:
+        alice:
+          name: "Alice"
+    dialogueUIHidden: false
+    autoMode: false
+    skipMode: false
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "dialogue-name"
+          type: "text"
+          content: "Alias"
+        - id: "dialogue-id"
+          type: "text"
+          content: "alice"
+        - id: "dialogue-text"
+          type: "text"
+          content: "Hello world"
+  animations: []
+---
 case: nvl-template-receives-lines
 in:
   - elements:
@@ -153,6 +208,76 @@ out:
                 - id: "text-2"
                   type: "text"
                   content: "Third line"
+  animations: []
+---
+case: nvl-template-prefers-line-character-name-override
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      dialogue:
+        mode: "nvl"
+        ui:
+          resourceId: "nvl-layout"
+        lines:
+          - content:
+              - text: "First line"
+            characterId: "alice"
+            character:
+              name: "Alias"
+          - content:
+              - text: "Second line"
+            characterId: "bob"
+    resources:
+      layouts:
+        nvl-layout:
+          elements:
+            - id: "nvl-container"
+              type: "container"
+              children:
+                - $for line, i in dialogueLines:
+                    - id: "line-${i}"
+                      type: "container"
+                      children:
+                        - $if line.character.name:
+                            - id: "name-${i}"
+                              type: "text"
+                              content: "${line.character.name}"
+      characters:
+        alice:
+          name: "Alice"
+        bob:
+          name: "Bob"
+    dialogueUIHidden: false
+    autoMode: false
+    skipMode: false
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "nvl-container"
+          type: "container"
+          children:
+            - id: "line-0"
+              type: "container"
+              children:
+                - id: "name-0"
+                  type: "text"
+                  content: "Alias"
+            - id: "line-1"
+              type: "container"
+              children:
+                - id: "name-1"
+                  type: "text"
+                  content: "Bob"
   animations: []
 ---
 case: resolves textStyleId in dialogue ui layout elements

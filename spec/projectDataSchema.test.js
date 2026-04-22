@@ -114,7 +114,9 @@ const createValidator = (schemaId) => {
 };
 
 const validateProjectData = createValidator(projectDataSchemaId);
-const validatePresentationActions = createValidator(presentationActionsSchemaId);
+const validatePresentationActions = createValidator(
+  presentationActionsSchemaId,
+);
 const validateSystemActions = createValidator(systemActionsSchemaId);
 
 const createMinimalProjectData = (overrides = {}) => ({
@@ -158,6 +160,35 @@ describe("projectData schema", () => {
         background: {
           resourceId: "bg1",
           transformId: "centerStage",
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+  });
+
+  it("accepts dialogue character override and persistCharacter in presentation actions", () => {
+    expect(
+      validatePresentationActions({
+        dialogue: {
+          characterId: "alice",
+          character: {
+            name: "Alias",
+          },
+          persistCharacter: true,
+          content: [{ text: "Hello" }],
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+  });
+
+  it("accepts dialogue characterName as a compatibility alias", () => {
+    expect(
+      validatePresentationActions({
+        dialogue: {
+          characterId: "alice",
+          characterName: "Alias",
+          content: [{ text: "Hello" }],
         },
       }),
     ).toBe(true);
