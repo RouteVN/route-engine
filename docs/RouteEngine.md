@@ -622,17 +622,20 @@ Shared template roots:
 - `isChoiceVisible`
 - `canRollback`
 
-Optional roots are added only when the corresponding state is active:
+Roots with special presence semantics:
 
-- `dialogue`
-- `dialogueLines`
-- `choice`
-- `historyDialogue`
-- `confirmDialog`
+- `dialogue` and `dialogueLines` are added only when active dialogue template
+  data exists
+- `choice` is added by the choice-layout render path when a choice is active
+- `historyDialogue` is always present in the shared template data and defaults
+  to `[]`
+- `confirmDialog` is always present in the shared template data and is
+  `undefined` when no confirm dialog is active
 
-This omission is intentional. When no active dialogue state exists, the runtime
-does not materialize `dialogue: {}` or `dialogueLines: []`. Existing truthiness
-checks such as `$if dialogue` therefore keep their previous behavior.
+The dialogue omission is intentional. When no active dialogue state exists, the
+runtime does not materialize `dialogue: {}` or `dialogueLines: []`. Existing
+truthiness checks such as `$if dialogue` therefore keep their previous
+behavior.
 
 Dialogue template shape:
 
