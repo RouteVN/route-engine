@@ -160,6 +160,74 @@ out:
           content: "Alias"
   animations: []
 ---
+case: overlay layout receives dialogue template data
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      dialogue:
+        characterId: "alice"
+        lines:
+          - characterId: "alice"
+            content:
+              - text: "First line"
+    resources:
+      layouts:
+        overlayLayout:
+          elements:
+            - id: "speaker-id"
+              type: "text"
+              content: "${dialogue.characterId}"
+            - id: "line-name"
+              type: "text"
+              content: "${dialogue.lines[0].characterName}"
+      characters:
+        alice:
+          name: "Alice"
+    variables: {}
+    autoMode: false
+    skipMode: false
+    screen:
+      width: 1920
+      height: 1080
+    overlayStack:
+      - resourceId: overlayLayout
+        resourceType: layout
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+    - id: "overlayStack-0"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "overlayStack-0-blocker"
+          type: "rect"
+          fill: "transparent"
+          width: 1920
+          height: 1080
+          x: 0
+          y: 0
+          click:
+            payload:
+              actions: {}
+        - id: "speaker-id"
+          type: "text"
+          content: "alice"
+        - id: "line-name"
+          type: "text"
+          content: "Alice"
+  animations: []
+---
 case: add multiple overlays with correct indices
 in:
   - elements:

@@ -140,3 +140,63 @@ out:
                 fill: "#FFFFFF"
   animations: []
   global: {}
+---
+case: control layout receives dialogue template data
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    global: {}
+  - presentationState:
+      dialogue:
+        characterId: "alice"
+        character:
+          name: "Alias"
+        lines:
+          - characterId: "alice"
+            content:
+              - text: "First line"
+      control:
+        resourceId: "hud"
+    resources:
+      controls:
+        hud:
+          elements:
+            - id: "speaker-id"
+              type: "text"
+              content: "${dialogue.characterId}"
+            - id: "line-name"
+              type: "text"
+              content: "${dialogueLines[0].characterName}"
+      characters:
+        alice:
+          name: "Alice"
+    variables: {}
+    autoMode: false
+    skipMode: false
+    canRollback: true
+    saveSlots: []
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "control-hud"
+          type: "container"
+          x: 0
+          y: 0
+          children:
+            - id: "speaker-id"
+              type: "text"
+              content: "alice"
+            - id: "line-name"
+              type: "text"
+              content: "Alice"
+  animations: []
+  global: {}
