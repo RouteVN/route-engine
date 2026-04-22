@@ -66,15 +66,15 @@ resources:
                   gapX: 10
                   gapY: 10
                   children:
-                    - $if line.characterName:
-                        - id: name-${i}
-                          type: text
-                          content: "${line.characterName}:"
-                          textStyleId: textStyle3
-                    - id: text-${i}
+                - $if line.character.name:
+                    - id: name-${i}
                       type: text
-                      content: ${line.content[0].text}
-                      textStyleId: textStyle4
+                      content: "${line.character.name}:"
+                      textStyleId: textStyle3
+                - id: text-${i}
+                  type: text
+                  content: ${line.content[0].text}
+                  textStyleId: textStyle4
   characters:
     alice:
       name: Alice

@@ -69,20 +69,20 @@ properties:
         description: The dialogue text content
       characterId:
         type: string
-        description: ID of the character speaking
+        description: Speaker identity. If provided without character.name, the displayed name falls back to the character resource name.
       characterName:
         type: string
-        description: Compatibility alias for character.name
+        description: Compatibility alias for character.name. Do not use in new content.
       persistCharacter:
         type: boolean
-        description: Keep the current characterId and character override for following dialogue lines until changed or cleared
+        description: Keep the current characterId and character override for following dialogue lines when later dialogue actions omit speaker fields. An explicit characterId still resets the speaker and clears any prior override unless character.name is also provided.
       character:
         type: object
-        description: Character override properties
+        description: Canonical character override properties for authored dialogue actions
         properties:
           name:
             type: string
-            description: Override character name
+            description: Override the displayed character name for this dialogue line
         additionalProperties: false
       clear:
         type: boolean

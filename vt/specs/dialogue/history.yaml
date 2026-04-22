@@ -132,7 +132,7 @@ resources:
                 children:
                   - id: history-character-${i}
                     type: text
-                    content: ${item.characterName}
+                    content: ${item.character.name}
                     textStyleId: textStyle5
                   - id: history-text-${i}
                     type: text
