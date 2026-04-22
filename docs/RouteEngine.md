@@ -598,3 +598,84 @@ Template/runtime paths:
 - Active dialogue layouts should use `${dialogue.character.name}`.
 - NVL line-item layouts should prefer `${line.character.name}`. `${line.characterName}` remains available as a compatibility alias.
 - Dialogue history layouts should prefer `${item.character.name}`. `${item.characterName}` remains available as a compatibility alias.
+
+### Shared Layout Template Data
+
+All layout-backed UI surfaces render against the same base template-data
+contract:
+
+- dialogue UI layouts
+- generic `layout` presentation layouts
+- `control` layouts
+- `choice` layouts
+- overlays
+- confirm dialogs
+- background/CG layouts that render layout elements
+- layout-backed visual items
+
+Shared template roots:
+
+- `variables`
+- `runtime`
+- `saveSlots`
+- `characters`
+- `isChoiceVisible`
+- `canRollback`
+
+Optional roots are added only when the corresponding state is active:
+
+- `dialogue`
+- `dialogueLines`
+- `choice`
+- `historyDialogue`
+- `confirmDialog`
+
+This omission is intentional. When no active dialogue state exists, the runtime
+does not materialize `dialogue: {}` or `dialogueLines: []`. Existing truthiness
+checks such as `$if dialogue` therefore keep their previous behavior.
+
+Dialogue template shape:
+
+```yaml
+dialogue:
+  characterId: alice
+  persistCharacter: true
+  character:
+    name: Alias
+  content:
+    - text: Hello
+  lines:
+    - characterId: alice
+      character:
+        name: Alice
+      characterName: Alice
+      content:
+        - text: Hello
+```
+
+Compatibility notes:
+
+- `dialogue.characterId` is available anywhere the shared layout template data
+  is used, not only inside the dedicated dialogue UI.
+- `dialogue.character.name` remains the preferred speaker display-name path.
+- `dialogueLines` remains a compatibility alias for `dialogue.lines`.
+- `line.characterName` remains a compatibility alias for `line.character.name`.
+- Existing authored templates that rely on `line.characterName` or
+  `dialogueLines` do not need to change.
+
+Examples:
+
+```yaml
+# Generic layout or control condition
+$when: 'dialogue.characterId == "alice"'
+```
+
+```yaml
+# Preferred display-name path
+content: "${dialogue.character.name}"
+```
+
+```yaml
+# Compatibility alias still supported
+content: "${dialogueLines[0].characterName}"
+```
