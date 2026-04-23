@@ -65,9 +65,6 @@ out:
           sceneId: "scene1"
           sectionId: "section1"
           lineId: "line1"
-        history:
-          sectionId: __undefined__
-          lineId: __undefined__
       configuration: {}
       views: []
       bgm:
@@ -178,9 +175,6 @@ out:
           sceneId: "scene1"
           sectionId: "section1"
           lineId: "line1"
-        history:
-          sectionId: __undefined__
-          lineId: __undefined__
       configuration: {}
       views: []
       bgm:
@@ -269,9 +263,6 @@ out:
           sceneId: "scene1"
           sectionId: "section1"
           lineId: "line1"
-        history:
-          sectionId: __undefined__
-          lineId: __undefined__
       configuration: {}
       views: []
       bgm:
@@ -381,9 +372,6 @@ out:
           sceneId: "scene1"
           sectionId: "section1"
           lineId: "line1"
-        history:
-          sectionId: __undefined__
-          lineId: __undefined__
       configuration: {}
       views: []
       bgm:
@@ -464,9 +452,6 @@ out:
           sceneId: "scene1"
           sectionId: "section1"
           lineId: "line2"
-        history:
-          sectionId: __undefined__
-          lineId: __undefined__
       configuration: {}
       views: []
       bgm:

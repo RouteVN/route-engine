@@ -440,7 +440,6 @@ describe("system.store rollback/save draft safety", () => {
           currentPointerMode: "read",
           pointers: {
             read: { sectionId: "section1", lineId: "2" },
-            history: {},
           },
           rollback: {
             currentIndex: 1,
@@ -528,7 +527,6 @@ describe("system.store rollback/save draft safety", () => {
           currentPointerMode: "read",
           pointers: {
             read: { sectionId: "section1", lineId: "3" },
-            history: {},
           },
           rollback: {
             currentIndex: 2,

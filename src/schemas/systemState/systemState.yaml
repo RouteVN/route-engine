@@ -20,16 +20,6 @@ defs:
     required: [sectionId, lineId]
     additionalProperties: false
 
-  historyPointer:
-    type: object
-    description: Alternate pointer used by history navigation
-    properties:
-      sectionId:
-        type: [string, "null"]
-      lineId:
-        type: [string, "null"]
-    additionalProperties: false
-
   viewedRegistry:
     type: object
     description: Registry of viewed content
@@ -157,15 +147,13 @@ defs:
     properties:
       currentPointerMode:
         type: string
-        enum: [read, history]
+        enum: [read]
       pointers:
         type: object
         properties:
           read:
             $ref: "#/defs/readPointer"
-          history:
-            $ref: "#/defs/historyPointer"
-        required: [read, history]
+        required: [read]
         additionalProperties: false
       configuration:
         $ref: "./configuration.yaml"

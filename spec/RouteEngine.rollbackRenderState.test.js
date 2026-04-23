@@ -502,7 +502,7 @@ describe("RouteEngine rollback render state", () => {
     }
   });
 
-  it("keeps inherited persistent background playback when prevLine enters history", () => {
+  it("restores inherited persistent backgrounds in their settled state when rolling back", () => {
     const routeGraphics = {
       render: vi.fn(),
     };
@@ -552,22 +552,25 @@ describe("RouteEngine rollback render state", () => {
       ).toBe("line3");
 
       nowSpy.mockReturnValue(1004);
-      engine.handleAction("prevLine", {});
+      engine.handleAction("rollbackByOffset", { offset: -1 });
 
-      const historyRender = routeGraphics.render.mock.calls.at(-1)?.[0];
+      const rollbackRender = routeGraphics.render.mock.calls.at(-1)?.[0];
       const lastContext = engine.selectSystemState().contexts.at(-1);
+      const restoredBackground = findElementById(
+        rollbackRender.elements,
+        "bg-cg-background-sprite",
+      );
 
-      expect(lastContext.currentPointerMode).toBe("history");
-      expect(lastContext.pointers.history.lineId).toBe("line2");
-      expect(historyRender.animations).toEqual([
+      expect(lastContext.currentPointerMode).toBe("read");
+      expect(lastContext.pointers.read.lineId).toBe("line2");
+      expect(restoredBackground).toEqual(
         expect.objectContaining({
-          id: "bg-cg-animation-transition",
-          targetId: "bg-cg-background-sprite",
-          playback: {
-            continuity: "persistent",
-          },
+          id: "bg-cg-background-sprite",
+          src: "bg-door.png",
+          alpha: 1,
         }),
-      ]);
+      );
+      expect(rollbackRender.animations).toEqual([]);
     } finally {
       nowSpy.mockRestore();
     }

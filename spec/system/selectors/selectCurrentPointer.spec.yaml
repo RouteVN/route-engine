@@ -23,14 +23,13 @@ in:
         - currentPointerMode: "read"
           pointers:
             read: { sectionId: "intro", lineId: "1" }
-            history: { sectionId: "intro", lineId: "1" }
 out:
   currentPointerMode: "read"
   pointer:
     sectionId: "intro"
     lineId: "1"
 ---
-case: single context with history pointer
+case: legacy history mode still resolves the read pointer
 in:
   - state:
       global: {}
@@ -38,12 +37,11 @@ in:
         - currentPointerMode: "history"
           pointers:
             read: { sectionId: "intro", lineId: "1" }
-            history: { sectionId: "section1", lineId: "5" }
 out:
-  currentPointerMode: "history"
+  currentPointerMode: "read"
   pointer:
-    sectionId: "section1"
-    lineId: "5"
+    sectionId: "intro"
+    lineId: "1"
 ---
 case: multiple contexts (should select last one)
 in:
@@ -53,22 +51,19 @@ in:
         - currentPointerMode: "read"
           pointers:
             read: { sectionId: "intro", lineId: "1" }
-            history: { sectionId: "intro", lineId: "1" }
         - currentPointerMode: "menu"
           pointers:
             read: { sectionId: undefined, lineId: undefined }
-            history: { sectionId: "menu", lineId: "save" }
         - currentPointerMode: "history"
           pointers:
-            read: { sectionId: undefined, lineId: undefined }
-            history: { sectionId: "inventory", lineId: "items" }
+            read: { sectionId: "inventory", lineId: "items" }
 out:
-  currentPointerMode: "history"
+  currentPointerMode: "read"
   pointer:
     sectionId: "inventory"
     lineId: "items"
 ---
-case: context with missing pointer mode
+case: context with invalid pointer mode falls back to read
 in:
   - state:
       global: {}
@@ -76,9 +71,11 @@ in:
         - currentPointerMode: "nonexistent"
           pointers:
             read: { sectionId: "intro", lineId: "1" }
-            history: { sectionId: "intro", lineId: "1" }
 out:
-  currentPointerMode: "nonexistent"
+  currentPointerMode: "read"
+  pointer:
+    sectionId: "intro"
+    lineId: "1"
 ---
 case: context with missing pointers object
 in:
@@ -101,7 +98,6 @@ in:
               lineId: 42
               metadata: { scene: "dialogue", character: "hero" }
               flags: ["canSkip", "hasChoices"]
-            history: { sectionId: "intro", lineId: "1" }
 out:
   currentPointerMode: "read"
   pointer:

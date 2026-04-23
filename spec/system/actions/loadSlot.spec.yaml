@@ -144,9 +144,6 @@ out:
           sceneId: scene1
           sectionId: sec2
           lineId: line2
-        history:
-          sectionId: __undefined__
-          lineId: __undefined__
       configuration: {}
       views: []
       bgm:
@@ -430,9 +427,6 @@ out:
           sceneId: scene1
           sectionId: sec2
           lineId: line2
-        history:
-          sectionId: __undefined__
-          lineId: __undefined__
       configuration: {}
       views: []
       bgm:
@@ -595,9 +589,6 @@ out:
           sceneId: scene1
           sectionId: sec2
           lineId: line3
-        history:
-          sectionId: __undefined__
-          lineId: __undefined__
       configuration: {}
       views: []
       bgm:

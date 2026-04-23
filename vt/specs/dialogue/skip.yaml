@@ -77,7 +77,10 @@ resources:
           click:
             payload:
               actions:
-                toggleSkipOnlyViewedLines: {}
+                setSkipUnseenText:
+                  value:
+                    $if runtime.skipUnseenText: false
+                    $else: true
           textStyleId:
             $if !runtime.skipUnseenText: textStyle1
             $else: textStyle3

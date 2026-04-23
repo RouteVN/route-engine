@@ -203,9 +203,6 @@ out:
         read:
           sectionId: gameStart
           lineId: gameLine
-        history:
-          sectionId: __undefined__
-          lineId: __undefined__
       configuration: {}
       views: []
       bgm:

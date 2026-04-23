@@ -228,7 +228,7 @@ out:
       content:
         - text: "Different section"
 ---
-case: history mode pointer
+case: legacy history mode still resolves from the read pointer
 in:
   - state:
       global:
@@ -258,18 +258,15 @@ in:
       contexts:
         - currentPointerMode: "history"
           pointers:
-            history:
-              sectionId: "section1"
-              lineId: "1"
             read:
               sectionId: "section1"
               lineId: "2"
 out:
-  id: "1"
+  id: "2"
   actions:
     dialogue:
       content:
-        - text: "First line"
+        - text: "Second line"
 ---
 case: pointer without lineId
 in:

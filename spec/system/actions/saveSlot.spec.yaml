@@ -14,7 +14,8 @@ in:
       projectData:
         story: { initialSceneId: "test" }
       contexts:
-        - pointers:
+        - currentPointerMode: read
+          pointers:
             read: { sectionId: "sec1", lineId: "line1" }
   - thumbnailImage: null
 throws: "saveSlot requires slotId"
@@ -28,7 +29,8 @@ in:
       projectData:
         story: { initialSceneId: "test" }
       contexts:
-        - pointers:
+        - currentPointerMode: read
+          pointers:
             read: { sectionId: "sec1", lineId: "line1" }
   - slotId: 1
     thumbnailImage: null
@@ -42,7 +44,8 @@ out:
         image: null
         state:
           contexts:
-            - pointers:
+            - currentPointerMode: read
+              pointers:
                 read: { sectionId: "sec1", lineId: "line1" }
           viewedRegistry: __undefined__
     pendingEffects:
@@ -56,14 +59,16 @@ out:
               image: null
               state:
                 contexts:
-                  - pointers:
+                  - currentPointerMode: read
+                    pointers:
                       read: { sectionId: "sec1", lineId: "line1" }
                 viewedRegistry: __undefined__
       - name: "render"
   projectData:
     story: { initialSceneId: "test" }
   contexts:
-    - pointers:
+    - currentPointerMode: read
+      pointers:
         read: { sectionId: "sec1", lineId: "line1" }
 ---
 case: save to slot 2
@@ -75,7 +80,8 @@ in:
       projectData:
         story: { initialSceneId: "test" }
       contexts:
-        - pointers:
+        - currentPointerMode: read
+          pointers:
             read: { sectionId: "sec1", lineId: "line1" }
   - slotId: 2
     thumbnailImage: null
@@ -89,7 +95,8 @@ out:
         image: null
         state:
           contexts:
-            - pointers:
+            - currentPointerMode: read
+              pointers:
                 read: { sectionId: "sec1", lineId: "line1" }
           viewedRegistry: __undefined__
     pendingEffects:
@@ -103,14 +110,16 @@ out:
               image: null
               state:
                 contexts:
-                  - pointers:
+                  - currentPointerMode: read
+                    pointers:
                       read: { sectionId: "sec1", lineId: "line1" }
                 viewedRegistry: __undefined__
       - name: "render"
   projectData:
     story: { initialSceneId: "test" }
   contexts:
-    - pointers:
+    - currentPointerMode: read
+      pointers:
         read: { sectionId: "sec1", lineId: "line1" }
 ---
 case: overwrite existing save slot
@@ -128,7 +137,8 @@ in:
       projectData:
         story: { initialSceneId: "test" }
       contexts:
-        - pointers:
+        - currentPointerMode: read
+          pointers:
             read: { sectionId: "sec1", lineId: "line1" }
   - slotId: 1
     thumbnailImage: null
@@ -142,7 +152,8 @@ out:
         image: null
         state:
           contexts:
-            - pointers:
+            - currentPointerMode: read
+              pointers:
                 read: { sectionId: "sec1", lineId: "line1" }
           viewedRegistry: __undefined__
     pendingEffects:
@@ -156,14 +167,16 @@ out:
               image: null
               state:
                 contexts:
-                  - pointers:
+                  - currentPointerMode: read
+                    pointers:
                       read: { sectionId: "sec1", lineId: "line1" }
                 viewedRegistry: __undefined__
       - name: "render"
   projectData:
     story: { initialSceneId: "test" }
   contexts:
-    - pointers:
+    - currentPointerMode: read
+      pointers:
         read: { sectionId: "sec1", lineId: "line1" }
 ---
 case: save with explicit timestamp override
@@ -175,7 +188,8 @@ in:
       projectData:
         story: { initialSceneId: "test" }
       contexts:
-        - pointers:
+        - currentPointerMode: read
+          pointers:
             read: { sectionId: "sec1", lineId: "line1" }
   - slotId: 1
     thumbnailImage: "custom_image.png"
@@ -190,7 +204,8 @@ out:
         image: "custom_image.png"
         state:
           contexts:
-            - pointers:
+            - currentPointerMode: read
+              pointers:
                 read: { sectionId: "sec1", lineId: "line1" }
           viewedRegistry: __undefined__
     pendingEffects:
@@ -204,14 +219,16 @@ out:
               image: "custom_image.png"
               state:
                 contexts:
-                  - pointers:
+                  - currentPointerMode: read
+                    pointers:
                       read: { sectionId: "sec1", lineId: "line1" }
                 viewedRegistry: __undefined__
       - name: "render"
   projectData:
     story: { initialSceneId: "test" }
   contexts:
-    - pointers:
+    - currentPointerMode: read
+      pointers:
         read: { sectionId: "sec1", lineId: "line1" }
 ---
 case: save to slot with existing pending effects
@@ -224,7 +241,8 @@ in:
       projectData:
         story: { initialSceneId: "test" }
       contexts:
-        - pointers:
+        - currentPointerMode: read
+          pointers:
             read: { sectionId: "sec1", lineId: "line1" }
   - slotId: 1
     thumbnailImage: null
@@ -238,7 +256,8 @@ out:
         image: null
         state:
           contexts:
-            - pointers:
+            - currentPointerMode: read
+              pointers:
                 read: { sectionId: "sec1", lineId: "line1" }
           viewedRegistry: __undefined__
     pendingEffects:
@@ -253,14 +272,16 @@ out:
               image: null
               state:
                 contexts:
-                  - pointers:
+                  - currentPointerMode: read
+                    pointers:
                       read: { sectionId: "sec1", lineId: "line1" }
                 viewedRegistry: __undefined__
       - name: "render"
   projectData:
     story: { initialSceneId: "test" }
   contexts:
-    - pointers:
+    - currentPointerMode: read
+      pointers:
         read: { sectionId: "sec1", lineId: "line1" }
 ---
 case: save with context variables
@@ -275,7 +296,8 @@ in:
       projectData:
         story: { initialSceneId: "test" }
       contexts:
-        - pointers:
+        - currentPointerMode: read
+          pointers:
             read: { sectionId: "sec1", lineId: "line1" }
           variables:
             playerName: "Alice"
@@ -296,7 +318,8 @@ out:
             sections: ["sec1"]
             resources: []
           contexts:
-            - pointers:
+            - currentPointerMode: read
+              pointers:
                 read: { sectionId: "sec1", lineId: "line1" }
               variables:
                 playerName: "Alice"
@@ -319,7 +342,8 @@ out:
                   sections: ["sec1"]
                   resources: []
                 contexts:
-                  - pointers:
+                  - currentPointerMode: read
+                    pointers:
                       read: { sectionId: "sec1", lineId: "line1" }
                     variables:
                       playerName: "Alice"
@@ -329,7 +353,8 @@ out:
   projectData:
     story: { initialSceneId: "test" }
   contexts:
-    - pointers:
+    - currentPointerMode: read
+      pointers:
         read: { sectionId: "sec1", lineId: "line1" }
       variables:
         playerName: "Alice"
@@ -345,7 +370,8 @@ in:
       projectData:
         story: { initialSceneId: "test" }
       contexts:
-        - pointers:
+        - currentPointerMode: read
+          pointers:
             read: { sectionId: "sec2", lineId: "line3" }
           variables:
             score: 15
@@ -375,7 +401,8 @@ out:
         image: null
         state:
           contexts:
-            - pointers:
+            - currentPointerMode: read
+              pointers:
                 read: { sectionId: "sec2", lineId: "line3" }
               variables:
                 score: 15
@@ -405,7 +432,8 @@ out:
               image: null
               state:
                 contexts:
-                  - pointers:
+                  - currentPointerMode: read
+                    pointers:
                       read: { sectionId: "sec2", lineId: "line3" }
                     variables:
                       score: 15
@@ -428,7 +456,8 @@ out:
   projectData:
     story: { initialSceneId: "test" }
   contexts:
-    - pointers:
+    - currentPointerMode: read
+      pointers:
         read: { sectionId: "sec2", lineId: "line3" }
       variables:
         score: 15

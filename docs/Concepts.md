@@ -93,8 +93,8 @@ Mutable runtime state managed by the system store. Key components:
   - `isLineCompleted`: Whether current line animation finished
 
 - **contexts**: Stack of isolated game contexts (supports title screen, gameplay, replays)
-  - `currentPointerMode`: Either `'read'` or `'history'`
-  - `pointers`: Position trackers (read pointer and history pointer)
+  - `currentPointerMode`: Always `'read'`
+  - `pointers`: Position tracker for the active read location
   - `configuration`: Context-specific settings
   - `views`: Overlay stack
   - `bgm`: Current background music
@@ -147,7 +147,7 @@ Contexts provide isolated environments for different game states:
 All contexts share global state but maintain their own:
 
 - Pointer positions
-- History sequences
+- Rollback timelines
 - Variables
 - View stacks
 
@@ -192,29 +192,18 @@ const nextLine = section.lines[currentIndex + 1];
 pointer.lineId = nextLine.id;
 ```
 
-### Pointer Modes
+### Active Pointer
 
-Each context maintains two pointers with different purposes:
+Each context maintains a single active read pointer:
 
 ```js
 pointers: {
-  read: { sectionId: '...', lineId: '...' },    // Current playback position
-  history: { sectionId: '...', lineId: '...' }  // History review position
+  read: { sectionId: '...', lineId: '...' }
 }
 ```
 
-**Read Mode (`'read'`)**
-
-- Normal playback mode
-- The read pointer advances through lines sequentially
-- Used during active gameplay
-
-**History Mode (`'history'`)**
-
-- Review mode for navigating back through previously viewed content
-- Uses a separate history pointer while preserving the read pointer position
-- Allows players to re-read past dialogue without losing their place
-- Switching back to read mode returns to the preserved read pointer position
+- The read pointer advances through lines sequentially during gameplay.
+- Back navigation is handled by the rollback timeline, not a separate history pointer.
 
 ## Line Navigation
 
@@ -255,7 +244,7 @@ Novel-style display where lines accumulate on screen. Text is appended rather th
 Functions that mutate system state. Examples:
 
 - `nextLine`: Advance to next line
-- `prevLine`: Go back in history
+- `rollbackByOffset`: Go back through rollback checkpoints
 - `sectionTransition`: Jump to a different section
 - `jumpToLine`: Jump to specific line
 - `toggleAutoMode` / `toggleSkipMode`: Control playback

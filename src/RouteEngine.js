@@ -12,7 +12,6 @@ const PERSISTENT_PLAYBACK_RESET_ACTIONS = new Set([
   "resetStoryAtSection",
   "rollbackByOffset",
   "rollbackToLine",
-  "prevLine",
   "updateProjectData",
 ]);
 
@@ -20,7 +19,6 @@ const PERSISTENT_PLAYBACK_RESTORE_ACTIONS = new Set([
   "loadSlot",
   "rollbackByOffset",
   "rollbackToLine",
-  "prevLine",
 ]);
 
 /**
