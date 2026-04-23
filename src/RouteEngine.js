@@ -16,6 +16,13 @@ const PERSISTENT_PLAYBACK_RESET_ACTIONS = new Set([
   "updateProjectData",
 ]);
 
+const PERSISTENT_PLAYBACK_RESTORE_ACTIONS = new Set([
+  "loadSlot",
+  "rollbackByOffset",
+  "rollbackToLine",
+  "prevLine",
+]);
+
 /**
  * Creates a RouteEngine instance.
  */
@@ -24,21 +31,40 @@ export default function createRouteEngine(options) {
   let _renderSequence = 0;
   let _namespace = null;
   let _persistentAnimationSessions = new Map();
+  let _restoredPersistentAnimationSessions = new Map();
+  let _renderPersistentAnimationMetadata = new Map();
 
   const { handlePendingEffects } = options;
+
+  const snapshotPersistentAnimationSessions = (
+    sessions = new Map(),
+    now = Date.now(),
+  ) => {
+    return new Map(
+      Array.from(sessions.entries())
+        .filter(([, session]) => now < session.expiresAt)
+        .map(([continuationKey, session]) => [
+          continuationKey,
+          {
+            animation: structuredClone(session.animation),
+            startedAt: session.startedAt,
+            expiresAt: session.expiresAt,
+          },
+        ]),
+    );
+  };
+
+  const collectSessionAnimations = (sessions = new Map()) => {
+    return Array.from(sessions.values()).map((session) =>
+      structuredClone(session.animation),
+    );
+  };
 
   const pruneExpiredPersistentAnimationSessions = (now = Date.now()) => {
     _persistentAnimationSessions = new Map(
       Array.from(_persistentAnimationSessions.entries()).filter(
         ([, session]) => now < session.expiresAt,
       ),
-    );
-  };
-
-  const selectActivePersistentAnimations = (now = Date.now()) => {
-    pruneExpiredPersistentAnimationSessions(now);
-    return Array.from(_persistentAnimationSessions.values()).map((session) =>
-      structuredClone(session.animation),
     );
   };
 
@@ -63,6 +89,8 @@ export default function createRouteEngine(options) {
     _renderSequence = 0;
     _namespace = normalizeNamespace(namespace);
     _persistentAnimationSessions = new Map();
+    _restoredPersistentAnimationSessions = new Map();
+    _renderPersistentAnimationMetadata = new Map();
     _systemStore.appendPendingEffect({ name: "handleLineActions" });
     processEffectsUntilEmpty();
   };
@@ -83,28 +111,70 @@ export default function createRouteEngine(options) {
     return _systemStore.selectSectionLineChanges(payload);
   };
 
-  const buildRenderState = () => {
+  const buildRenderState = (options = {}) => {
     _renderSequence += 1;
+    const builtAt = Date.now();
+    pruneExpiredPersistentAnimationSessions(builtAt);
+
+    const activePersistentAnimationSessions =
+      snapshotPersistentAnimationSessions(
+        _persistentAnimationSessions,
+        builtAt,
+      );
+    const restoredPersistentAnimationSessions =
+      options?.allowRestoredInheritedPersistentBackgroundAnimations === true
+        ? snapshotPersistentAnimationSessions(
+            _restoredPersistentAnimationSessions,
+            builtAt,
+          )
+        : new Map();
     const renderState = _systemStore.selectRenderState({
-      activePersistentAnimations: selectActivePersistentAnimations(),
+      activePersistentAnimations: collectSessionAnimations(
+        activePersistentAnimationSessions,
+      ),
+      restoredPersistentAnimations: collectSessionAnimations(
+        restoredPersistentAnimationSessions,
+      ),
+      allowRestoredInheritedPersistentBackgroundAnimations:
+        options?.allowRestoredInheritedPersistentBackgroundAnimations === true,
     });
-    return {
+    const nextRenderState = {
       ...renderState,
       id: `render-${_renderSequence}`,
     };
+
+    _renderPersistentAnimationMetadata.set(nextRenderState.id, {
+      builtAt,
+      persistentAnimationSessions: new Map([
+        ...restoredPersistentAnimationSessions.entries(),
+        ...activePersistentAnimationSessions.entries(),
+      ]),
+      usedRestoredPersistentAnimationSessions:
+        options?.allowRestoredInheritedPersistentBackgroundAnimations === true,
+    });
+
+    return nextRenderState;
   };
 
-  const selectRenderState = () => {
-    return buildRenderState();
+  const selectRenderState = (options = {}) => {
+    return buildRenderState(options);
   };
 
-  const prepareRenderState = () => {
-    return buildRenderState();
+  const prepareRenderState = (options = {}) => {
+    return buildRenderState(options);
   };
 
   const commitRenderState = (renderState) => {
-    const now = Date.now();
-    pruneExpiredPersistentAnimationSessions(now);
+    const renderId =
+      typeof renderState?.id === "string" && renderState.id.length > 0
+        ? renderState.id
+        : null;
+    const renderMetadata = renderId
+      ? _renderPersistentAnimationMetadata.get(renderId)
+      : null;
+    if (renderId) {
+      _renderPersistentAnimationMetadata.delete(renderId);
+    }
 
     const nextSessions = new Map();
     collectPersistentAnimationContinuations(renderState?.animations).forEach(
@@ -116,12 +186,14 @@ export default function createRouteEngine(options) {
         }
 
         const existingSession =
+          renderMetadata?.persistentAnimationSessions?.get(continuationKey) ??
           _persistentAnimationSessions.get(continuationKey);
         const durationMs = Math.max(
           0,
           getAnimationInstanceDurationMs(animationInstance),
         );
-        const startedAt = existingSession?.startedAt ?? now;
+        const startedAt =
+          existingSession?.startedAt ?? renderMetadata?.builtAt ?? Date.now();
 
         nextSessions.set(continuationKey, {
           animation: structuredClone(animationInstance),
@@ -132,6 +204,9 @@ export default function createRouteEngine(options) {
     );
 
     _persistentAnimationSessions = nextSessions;
+    if (renderMetadata?.usedRestoredPersistentAnimationSessions) {
+      _restoredPersistentAnimationSessions = new Map();
+    }
   };
 
   const selectSystemState = () => {
@@ -172,6 +247,12 @@ export default function createRouteEngine(options) {
     }
 
     if (PERSISTENT_PLAYBACK_RESET_ACTIONS.has(actionType)) {
+      if (PERSISTENT_PLAYBACK_RESTORE_ACTIONS.has(actionType)) {
+        _restoredPersistentAnimationSessions =
+          snapshotPersistentAnimationSessions(_persistentAnimationSessions);
+      } else {
+        _restoredPersistentAnimationSessions = new Map();
+      }
       _persistentAnimationSessions = new Map();
     }
 

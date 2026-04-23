@@ -637,7 +637,12 @@ export const normalizePersistentPresentationState = (state = {}) => {
   const normalizedState = structuredClone(state);
 
   if (normalizedState.background) {
-    delete normalizedState.background.animations;
+    if (
+      normalizedState.background.animations?.playback?.continuity !==
+      "persistent"
+    ) {
+      delete normalizedState.background.animations;
+    }
 
     if (!normalizedState.background.resourceId) {
       delete normalizedState.background;

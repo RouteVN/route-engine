@@ -1185,6 +1185,9 @@ const restoreRollbackCheckpoint = (state, checkpointIndex) => {
 
     state.global.pendingEffects.push({
       name: "render",
+      payload: {
+        allowRestoredInheritedPersistentBackgroundAnimations: true,
+      },
     });
   } finally {
     rollback.isRestoring = false;
@@ -1773,6 +1776,8 @@ export const selectRenderState = ({ state }, options = {}) => {
   const currentLineActions = selectCurrentLine({ state })?.actions ?? {};
   const runtime = selectRuntime({ state });
   const activePersistentAnimations = options?.activePersistentAnimations ?? [];
+  const restoredPersistentAnimations =
+    options?.restoredPersistentAnimations ?? [];
 
   const allVariables = selectAllVariables({ state });
 
@@ -1802,6 +1807,9 @@ export const selectRenderState = ({ state }, options = {}) => {
     variables: allVariables,
     runtime,
     activePersistentAnimations,
+    restoredPersistentAnimations,
+    allowRestoredInheritedPersistentBackgroundAnimations:
+      options?.allowRestoredInheritedPersistentBackgroundAnimations === true,
   });
   return renderState;
 };
@@ -2459,7 +2467,12 @@ export const loadSlot = ({ state }, payload) => {
       { name: "clearAutoNextTimer" },
       { name: "clearSkipNextTimer" },
       { name: "clearNextLineConfigTimer" },
-      { name: "render" },
+      {
+        name: "render",
+        payload: {
+          allowRestoredInheritedPersistentBackgroundAnimations: true,
+        },
+      },
     );
   }
   return state;
@@ -2768,7 +2781,10 @@ export const prevLine = ({ state }, payload) => {
 
   // Get current history pointer or use read pointer as fallback
   const currentPointer =
-    lastContext.pointers.history || lastContext.pointers.read;
+    lastContext.currentPointerMode === "history" &&
+    lastContext.pointers.history?.lineId
+      ? lastContext.pointers.history
+      : lastContext.pointers.read;
 
   // If we're already in history mode, keep history pointer and move it back
   // Otherwise, switch to history mode and initialize it (only if we have a valid currentPointer)
@@ -2805,6 +2821,9 @@ export const prevLine = ({ state }, payload) => {
     // Add render effect for mode change
     state.global.pendingEffects.push({
       name: "render",
+      payload: {
+        allowRestoredInheritedPersistentBackgroundAnimations: true,
+      },
     });
 
     return state;
@@ -2825,6 +2844,9 @@ export const prevLine = ({ state }, payload) => {
 
     state.global.pendingEffects.push({
       name: "render",
+      payload: {
+        allowRestoredInheritedPersistentBackgroundAnimations: true,
+      },
     });
   }
 

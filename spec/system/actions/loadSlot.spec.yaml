@@ -137,6 +137,8 @@ out:
       - name: clearSkipNextTimer
       - name: clearNextLineConfigTimer
       - name: render
+        payload:
+          allowRestoredInheritedPersistentBackgroundAnimations: true
   contexts:
     - currentPointerMode: read
       pointers:
@@ -423,6 +425,8 @@ out:
       - name: clearSkipNextTimer
       - name: clearNextLineConfigTimer
       - name: render
+        payload:
+          allowRestoredInheritedPersistentBackgroundAnimations: true
   contexts:
     - currentPointerMode: read
       pointers:
@@ -588,6 +592,8 @@ out:
       - name: clearSkipNextTimer
       - name: clearNextLineConfigTimer
       - name: render
+        payload:
+          allowRestoredInheritedPersistentBackgroundAnimations: true
   contexts:
     - currentPointerMode: read
       pointers:

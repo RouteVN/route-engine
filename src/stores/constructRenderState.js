@@ -313,6 +313,8 @@ const shouldEmitAnimationSelection = ({
   isLineCompleted,
   skipTransitionsAndAnimations,
   activePersistentAnimations,
+  restoredPersistentAnimations,
+  allowRestoredInheritedPersistentBackgroundAnimations = false,
   isAuthoredOnCurrentLine = true,
 }) => {
   if (
@@ -327,10 +329,26 @@ const shouldEmitAnimationSelection = ({
     return true;
   }
 
-  return hasPersistentAnimationContinuation({
-    animationInstances,
-    activePersistentAnimations,
-  });
+  if (
+    hasPersistentAnimationContinuation({
+      animationInstances,
+      activePersistentAnimations,
+    })
+  ) {
+    return true;
+  }
+
+  if (
+    !isAuthoredOnCurrentLine &&
+    allowRestoredInheritedPersistentBackgroundAnimations
+  ) {
+    return hasPersistentAnimationContinuation({
+      animationInstances,
+      activePersistentAnimations: restoredPersistentAnimations,
+    });
+  }
+
+  return false;
 };
 
 const hasLegacyAnimationLifecycleConfig = (animationsDef) => {
@@ -1655,6 +1673,8 @@ export const addBackgroundOrCg = (
     variables,
     runtime,
     activePersistentAnimations,
+    restoredPersistentAnimations,
+    allowRestoredInheritedPersistentBackgroundAnimations = false,
     autoMode,
     skipMode,
     isChoiceVisible,
@@ -1818,6 +1838,8 @@ export const addBackgroundOrCg = (
         isLineCompleted,
         skipTransitionsAndAnimations,
         activePersistentAnimations,
+        restoredPersistentAnimations,
+        allowRestoredInheritedPersistentBackgroundAnimations,
         isAuthoredOnCurrentLine: isBackgroundAnimationAuthoredOnCurrentLine,
       })
     ) {
