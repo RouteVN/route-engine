@@ -395,7 +395,8 @@ const sectionLineChanges = engine.selectSectionLineChanges({
 | Action              | Payload                  | Description                                                 |
 | ------------------- | ------------------------ | ----------------------------------------------------------- |
 | `nextLine`          | -                        | Advance to the next line (respects `nextLineConfig.manual`) |
-| `prevLine`          | `{ sectionId }`          | Navigate to previous line (enters history mode)             |
+| `rollbackByOffset`  | `{ offset? }`            | Roll back relative to the active rollback checkpoint        |
+| `rollbackToLine`    | `{ sectionId, lineId }`  | Roll back to a specific line in the rollback timeline       |
 | `jumpToLine`        | `{ sectionId?, lineId }` | Jump to specific line                                       |
 | `sectionTransition` | `{ sectionId }`          | Transition to a different section                           |
 
@@ -486,7 +487,7 @@ The system store exposes these selectors (called internally):
 | Selector                 | Parameters              | Returns                           |
 | ------------------------ | ----------------------- | --------------------------------- |
 | `selectPendingEffects`   | -                       | Array of pending effects          |
-| `selectCurrentPointer`   | -                       | `{ currentPointerMode, pointer }` |
+| `selectCurrentPointer`   | -                       | `{ currentPointerMode: "read", pointer }` |
 | `selectCurrentLine`      | -                       | Current line object               |
 | `selectSection`          | `{ sectionId }`         | Section object                    |
 | `selectAutoMode`         | -                       | Boolean                           |

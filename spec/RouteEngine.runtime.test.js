@@ -224,6 +224,94 @@ describe("RouteEngine runtime", () => {
     expect(runtimeText.children[0].content).toBe(77);
   });
 
+  it("renders runtime-driven boolean action payloads into authored layouts", () => {
+    const projectData = createProjectData(
+      {},
+      {
+        scenes: {
+          scene1: {
+            initialSectionId: "section1",
+            sections: {
+              section1: {
+                lines: [
+                  {
+                    id: "line1",
+                    actions: {
+                      layout: {
+                        resourceId: "skipHud",
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+    );
+
+    projectData.resources.layouts.skipHud = {
+      elements: [
+        {
+          id: "skip-all-button",
+          type: "text",
+          content: "Skip All",
+          click: {
+            payload: {
+              actions: {
+                setSkipUnseenText: {
+                  value: {
+                    "$if runtime.skipUnseenText": false,
+                    $else: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      ],
+    };
+
+    const engine = createRouteEngine({
+      handlePendingEffects: () => {},
+    });
+
+    engine.init({
+      initialState: {
+        global: {
+          runtime: {
+            skipUnseenText: false,
+          },
+        },
+        projectData,
+      },
+    });
+
+    let renderState = engine.selectRenderState();
+    let storyContainer = renderState.elements.find(
+      (element) => element.id === "story",
+    );
+    let layoutContainer = storyContainer.children.find(
+      (element) => element.id === "layout-skipHud",
+    );
+
+    expect(
+      layoutContainer.children[0].click.payload.actions.setSkipUnseenText.value,
+    ).toBe(true);
+
+    engine.handleAction("setSkipUnseenText", { value: true });
+
+    renderState = engine.selectRenderState();
+    storyContainer = renderState.elements.find((element) => element.id === "story");
+    layoutContainer = storyContainer.children.find(
+      (element) => element.id === "layout-skipHud",
+    );
+
+    expect(
+      layoutContainer.children[0].click.payload.actions.setSkipUnseenText.value,
+    ).toBe(false);
+  });
+
   it("does not expose duplicate top-level runtime fields to authored layouts", () => {
     const engine = createRouteEngine({
       handlePendingEffects: () => {},

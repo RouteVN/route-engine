@@ -76,11 +76,6 @@ const createDefaultViewedRegistry = () => ({
   resources: [],
 });
 
-const createDefaultHistoryPointer = () => ({
-  sectionId: undefined,
-  lineId: undefined,
-});
-
 const buildDialogueHistoryText = (content) => {
   if (!Array.isArray(content)) {
     return "";
@@ -382,36 +377,6 @@ const normalizeLoadedReadPointer = (pointer, projectData, path) => {
   };
 };
 
-const normalizeLoadedHistoryPointer = (pointer, projectData) => {
-  if (!isRecord(pointer)) {
-    return createDefaultHistoryPointer();
-  }
-
-  if (
-    typeof pointer.sectionId !== "string" ||
-    pointer.sectionId.length === 0 ||
-    typeof pointer.lineId !== "string" ||
-    pointer.lineId.length === 0
-  ) {
-    return createDefaultHistoryPointer();
-  }
-
-  try {
-    const normalizedPointer = normalizeLoadedReadPointer(
-      pointer,
-      projectData,
-      "contexts[*].pointers.history",
-    );
-
-    return {
-      sectionId: normalizedPointer.sectionId,
-      lineId: normalizedPointer.lineId,
-    };
-  } catch {
-    return createDefaultHistoryPointer();
-  }
-};
-
 const normalizeLoadedRollback = (rollback, readPointer, projectData) => {
   if (!isRecord(rollback) || !Array.isArray(rollback.timeline)) {
     return createRollbackState({
@@ -526,11 +491,6 @@ const normalizeLoadedContext = (context, projectData, index) => {
     throw new Error(`Malformed save slot contexts[${index}].runtime entry.`);
   }
 
-  const historyPointer = normalizeLoadedHistoryPointer(
-    context.pointers?.history,
-    projectData,
-  );
-
   const loadedContextVariables = context.variables
     ? cloneStateValue(context.variables)
     : {};
@@ -541,13 +501,9 @@ const normalizeLoadedContext = (context, projectData, index) => {
   });
 
   const normalizedContext = {
-    currentPointerMode:
-      context.currentPointerMode === "history" && historyPointer.lineId
-        ? "history"
-        : "read",
+    currentPointerMode: "read",
     pointers: {
       read: readPointer,
-      history: historyPointer,
     },
     configuration: isRecord(context.configuration)
       ? cloneStateValue(context.configuration)
@@ -843,7 +799,6 @@ const createDefaultContextState = ({ pointer, projectData }) => ({
   currentPointerMode: "read",
   pointers: {
     read: cloneStateValue(pointer),
-    history: createDefaultHistoryPointer(),
   },
   configuration: {},
   views: [],
@@ -853,6 +808,24 @@ const createDefaultContextState = ({ pointer, projectData }) => ({
     pointer,
   }),
 });
+
+const ensureReadPointerState = (context) => {
+  if (!context) {
+    return null;
+  }
+
+  context.currentPointerMode = "read";
+
+  if (!isRecord(context.pointers)) {
+    context.pointers = {};
+  }
+
+  if (Object.prototype.hasOwnProperty.call(context.pointers, "history")) {
+    delete context.pointers.history;
+  }
+
+  return context.pointers;
+};
 
 const resetCurrentStoryState = (state) => {
   const lastContext = state.contexts?.[state.contexts.length - 1];
@@ -1166,18 +1139,11 @@ const restoreRollbackCheckpoint = (state, checkpointIndex) => {
       replayRecordedRollbackActions(state, rollback.timeline[i]);
     }
 
-    lastContext.pointers.read = {
+    const pointers = ensureReadPointerState(lastContext);
+    pointers.read = {
       sectionId: checkpoint.sectionId,
       lineId: checkpoint.lineId,
     };
-
-    lastContext.currentPointerMode = "read";
-    if (lastContext.pointers?.history) {
-      lastContext.pointers.history = {
-        sectionId: null,
-        lineId: null,
-      };
-    }
 
     state.global.pendingEffects = state.global.pendingEffects.filter(
       (effect) => effect?.name !== "render",
@@ -1478,11 +1444,11 @@ export const selectAllVariables = ({ state }) => {
 };
 
 /**
- * Selects the current pointer from the last context
+ * Selects the current read pointer from the last context
  * @param {Object} state - Current state object
  * @returns {Object} Current pointer object with currentPointerMode and pointer properties
- * @returns {string} returns.currentPointerMode - The current pointer mode identifier
- * @returns {Object} returns.pointer - The pointer configuration for the current mode
+ * @returns {string} returns.currentPointerMode - Always "read"
+ * @returns {Object} returns.pointer - The active read pointer configuration
  */
 export const selectCurrentPointer = ({ state }) => {
   const contexts = Array.isArray(state.contexts) ? state.contexts : [];
@@ -1492,11 +1458,9 @@ export const selectCurrentPointer = ({ state }) => {
     return undefined;
   }
 
-  const pointer = lastContext.pointers?.[lastContext.currentPointerMode];
-
   return {
-    currentPointerMode: lastContext.currentPointerMode,
-    pointer,
+    currentPointerMode: "read",
+    pointer: lastContext.pointers?.read,
   };
 };
 
@@ -2183,18 +2147,19 @@ const transitionToSection = (state, { sectionId, resetStoryState = false }) => {
 
   const lastContext = state.contexts?.[state.contexts.length - 1];
   if (lastContext) {
+    const pointers = ensureReadPointerState(lastContext);
     if (!lastContext.rollback) {
       ensureRollbackState(lastContext, { compatibilityAnchor: true });
     }
 
-    lastContext.pointers.read = {
+    pointers.read = {
       sectionId,
       lineId: firstLine.id,
     };
 
     if (resetStoryState) {
       lastContext.rollback = createRollbackState({
-        pointer: lastContext.pointers.read,
+        pointer: pointers.read,
       });
     } else {
       appendRollbackCheckpoint(state, {
@@ -2400,6 +2365,7 @@ export const saveSlot = ({ state }, payload) => {
   const storageKey = toSlotStorageKey(slotId);
   const contexts = cloneStateValue(state.contexts);
   contexts?.forEach((context) => {
+    ensureReadPointerState(context);
     removeLegacyRollbackBaseline(context.rollback);
     sanitizePersistedRollback(context.rollback);
   });
@@ -2546,12 +2512,13 @@ export const jumpToLine = ({ state }, payload) => {
   }
 
   // Update current pointer to new line
-  lastContext.pointers.read = {
+  const pointers = ensureReadPointerState(lastContext);
+  pointers.read = {
     sectionId: targetSectionId,
     lineId: lineId,
   };
 
-  queueEnteredLineEffects(state, lastContext.pointers.read);
+  queueEnteredLineEffects(state, pointers.read);
 
   return state;
 };
@@ -2654,13 +2621,14 @@ export const nextLine = ({ state }, payload) => {
     }
 
     if (lastContext) {
+      const pointers = ensureReadPointerState(lastContext);
       // Mark current line as viewed before moving
-      const currentLineId = lastContext.pointers.read.lineId;
+      const currentLineId = pointers.read?.lineId;
       if (currentLineId && sectionId) {
         recordViewedLine(state, { sectionId, lineId: currentLineId });
       }
 
-      lastContext.pointers.read = {
+      pointers.read = {
         sectionId,
         lineId: nextLine.id,
       };
@@ -2700,13 +2668,6 @@ export const nextLine = ({ state }, payload) => {
   return state;
 };
 
-/**
- * Navigate to the previous line using history pointer
- * @param {Object} state - Current state object
- * @param {Object} payload - Action payload
- * @param {string} payload.sectionId - The section ID to navigate in
- * @returns {Object} Updated state object
- */
 export const markLineCompleted = ({ state }) => {
   // Guard: if already completed, no action needed (prevents duplicate renders)
   if (state.global.isLineCompleted) {
@@ -2748,94 +2709,6 @@ export const markLineCompleted = ({ state }) => {
   state.global.pendingEffects.push({
     name: "render",
   });
-  return state;
-};
-
-export const prevLine = ({ state }, payload) => {
-  // if (state.global.nextLineConfig.manual.enabled === false) {
-  //   return state;
-  // }
-  const sectionId =
-    payload?.sectionId ?? selectCurrentPointer({ state })?.pointer?.sectionId;
-  const section = selectSection({ state }, { sectionId });
-
-  // Return early if section doesn't exist
-  if (!section || !section.lines || section.lines.length === 0) {
-    return state;
-  }
-
-  const lines = section.lines;
-  const lastContext = state.contexts[state.contexts.length - 1];
-
-  if (!lastContext || !lastContext.pointers) {
-    return state;
-  }
-
-  // Get current history pointer or use read pointer as fallback
-  const currentPointer =
-    lastContext.currentPointerMode === "history" &&
-    lastContext.pointers.history?.lineId
-      ? lastContext.pointers.history
-      : lastContext.pointers.read;
-
-  // If we're already in history mode, keep history pointer and move it back
-  // Otherwise, switch to history mode and initialize it (only if we have a valid currentPointer)
-  if (
-    lastContext.currentPointerMode !== "history" ||
-    !lastContext.pointers.history
-  ) {
-    // Only switch to history mode if we have a valid current pointer to work with
-    if (!currentPointer) {
-      return state;
-    }
-
-    // Switch to history mode, initialize history pointer with current position
-    lastContext.currentPointerMode = "history";
-    lastContext.pointers.history = {
-      sectionId,
-      lineId: currentPointer?.lineId,
-    };
-
-    // Immediately move to previous line after switching to history mode
-    const currentLineIndex = lines.findIndex(
-      (line) => line.id === currentPointer.lineId,
-    );
-    const prevLineIndex = currentLineIndex - 1;
-
-    if (prevLineIndex >= 0 && prevLineIndex < lines.length) {
-      const prevLine = lines[prevLineIndex];
-      lastContext.pointers.history = {
-        sectionId,
-        lineId: prevLine.id,
-      };
-    }
-
-    // Add render effect for mode change
-    state.global.pendingEffects.push({
-      name: "render",
-    });
-
-    return state;
-  }
-
-  // Already in history mode, move history pointer to previous line
-  const currentLineIndex = lines.findIndex(
-    (line) => line.id === lastContext.pointers.history.lineId,
-  );
-  const prevLineIndex = currentLineIndex - 1;
-
-  if (prevLineIndex >= 0 && prevLineIndex < lines.length) {
-    const prevLine = lines[prevLineIndex];
-    lastContext.pointers.history = {
-      sectionId,
-      lineId: prevLine.id,
-    };
-
-    state.global.pendingEffects.push({
-      name: "render",
-    });
-  }
-
   return state;
 };
 
@@ -2909,12 +2782,13 @@ export const nextLineFromSystem = ({ state }) => {
     }
 
     if (lastContext) {
-      const currentLineId = lastContext.pointers.read.lineId;
+      const pointers = ensureReadPointerState(lastContext);
+      const currentLineId = pointers.read?.lineId;
       if (currentLineId && sectionId) {
         recordViewedLine(state, { sectionId, lineId: currentLineId });
       }
 
-      lastContext.pointers.read = {
+      pointers.read = {
         sectionId,
         lineId: nextLine.id,
       };
@@ -3293,7 +3167,6 @@ export const createSystemStore = (initialState) => {
     jumpToLine,
     nextLine,
     markLineCompleted,
-    prevLine,
     rollbackToLine,
     rollbackByOffset,
     pushOverlay,

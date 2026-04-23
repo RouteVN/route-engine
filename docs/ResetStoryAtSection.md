@@ -57,8 +57,6 @@ The destination line then runs as normal through queued `handleLineActions`.
   - replaced with project defaults for `scope: context`
 - current context pointer mode:
   - forced to `read`
-- current context history pointer:
-  - cleared
 - current context rollback:
   - replaced with a single checkpoint anchored at the destination line
 - viewed state:

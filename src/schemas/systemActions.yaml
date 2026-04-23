@@ -9,15 +9,6 @@ properties:
     properties: {}
     additionalProperties: false
 
-  prevLine:
-    type: object
-    description: Navigate backward within the current section using the history pointer
-    properties:
-      sectionId:
-        type: string
-        description: Optional section ID. Defaults to the current read section when omitted.
-    additionalProperties: false
-
   setNextLineConfig:
     type: object
     description: Control how the line can be advanced

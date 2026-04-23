@@ -418,7 +418,6 @@ state:
         read:
           sectionId: section1
           lineId: "3"
-        history: "..."
       configuration: "..."
       views:
         - ...

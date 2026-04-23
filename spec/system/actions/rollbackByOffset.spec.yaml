@@ -67,7 +67,6 @@ in:
             read:
               sectionId: "section1"
               lineId: "2"
-            history: {}
           rollback:
             currentIndex: 1
             isRestoring: false
@@ -113,9 +112,6 @@ out:
         read:
           sectionId: "section1"
           lineId: "1"
-        history:
-          sectionId: null
-          lineId: null
       rollback:
         currentIndex: 0
         isRestoring: false
@@ -246,7 +242,6 @@ in:
             read:
               sectionId: "section1"
               lineId: "3"
-            history: {}
           rollback:
             currentIndex: 2
             isRestoring: false
@@ -308,9 +303,6 @@ out:
         read:
           sectionId: "section1"
           lineId: "2"
-        history:
-          sectionId: null
-          lineId: null
       rollback:
         currentIndex: 1
         isRestoring: false
@@ -354,7 +346,6 @@ in:
             read:
               sectionId: "section1"
               lineId: "1"
-            history: {}
           rollback:
             currentIndex: 0
             isRestoring: false
@@ -390,7 +381,6 @@ out:
         read:
           sectionId: "section1"
           lineId: "1"
-        history: {}
       rollback:
         currentIndex: 0
         isRestoring: false
@@ -444,7 +434,6 @@ in:
             read:
               sectionId: "section1"
               lineId: "2"
-            history: {}
           rollback:
             currentIndex: 3
             isRestoring: false
@@ -516,9 +505,6 @@ out:
         read:
           sectionId: "section1"
           lineId: "3"
-        history:
-          sectionId: null
-          lineId: null
       rollback:
         currentIndex: 2
         isRestoring: false
@@ -673,9 +659,6 @@ out:
         read:
           sectionId: "section1"
           lineId: "2"
-        history:
-          sectionId: null
-          lineId: null
       rollback:
         currentIndex: 1
         isRestoring: false
@@ -729,7 +712,6 @@ in:
             read:
               sectionId: "section1"
               lineId: "3"
-            history: {}
           rollback:
             currentIndex: 2
             isRestoring: false
@@ -787,9 +769,6 @@ out:
         read:
           sectionId: "section1"
           lineId: "2"
-        history:
-          sectionId: null
-          lineId: null
       rollback:
         currentIndex: 1
         isRestoring: false
@@ -839,7 +818,6 @@ in:
             read:
               sectionId: "section1"
               lineId: "2"
-            history: {}
           rollback:
             currentIndex: 1
             isRestoring: false
@@ -887,9 +865,6 @@ out:
         read:
           sectionId: "section1"
           lineId: "1"
-        history:
-          sectionId: null
-          lineId: null
       rollback:
         currentIndex: 0
         isRestoring: false
