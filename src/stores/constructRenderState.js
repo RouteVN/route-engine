@@ -190,6 +190,25 @@ const resolveAnimationPlayback = (animationDef) => {
   return animationDef.playback;
 };
 
+const isPersistentAnimationPlayback = (animationDef) =>
+  resolveAnimationPlayback(animationDef)?.continuity === "persistent";
+
+const shouldEmitAnimationSelection = ({
+  animationsDef,
+  isLineCompleted,
+  skipTransitionsAndAnimations,
+}) => {
+  if (!animationsDef || skipTransitionsAndAnimations) {
+    return false;
+  }
+
+  if (!isLineCompleted) {
+    return true;
+  }
+
+  return isPersistentAnimationPlayback(animationsDef);
+};
+
 const hasLegacyAnimationLifecycleConfig = (animationsDef) => {
   if (
     !animationsDef ||
@@ -1447,13 +1466,19 @@ const pushAnimations = ({
   }
 
   if (animationType === "transition") {
+    const sharedTransitionInstanceId = `${idPrefix}-animation-transition`;
+    const enterTransitionInstanceId =
+      playback?.continuity === "persistent"
+        ? sharedTransitionInstanceId
+        : `${idPrefix}-animation-in`;
+
     if (hasPrevious && hasCurrent && sharedTarget) {
       pushAnimationInstance({
         animations,
         resources,
         animationId,
         playback,
-        instanceId: `${idPrefix}-animation-transition`,
+        instanceId: sharedTransitionInstanceId,
         targetId: currentTargetId,
         animationPath,
       });
@@ -1479,7 +1504,7 @@ const pushAnimations = ({
         resources,
         animationId,
         playback,
-        instanceId: `${idPrefix}-animation-in`,
+        instanceId: enterTransitionInstanceId,
         targetId: currentTargetId,
         animationPath,
       });
@@ -1650,9 +1675,11 @@ export const addBackgroundOrCg = (
     }
 
     if (
-      presentationState.background.animations &&
-      !isLineCompleted &&
-      !skipTransitionsAndAnimations
+      shouldEmitAnimationSelection({
+        animationsDef: presentationState.background.animations,
+        isLineCompleted,
+        skipTransitionsAndAnimations,
+      })
     ) {
       pushAnimations({
         animations,
@@ -1728,8 +1755,11 @@ export const addCharacters = (
         !sprites &&
         !transformId &&
         previousHasSprites &&
-        !isLineCompleted &&
-        !skipTransitionsAndAnimations
+        shouldEmitAnimationSelection({
+          animationsDef: item.animations,
+          isLineCompleted,
+          skipTransitionsAndAnimations,
+        })
       ) {
         pushAnimations({
           animations,
@@ -1802,9 +1832,11 @@ export const addCharacters = (
 
       // Add animation support (except out, which is handled above)
       if (
-        item.animations &&
-        !isLineCompleted &&
-        !skipTransitionsAndAnimations
+        shouldEmitAnimationSelection({
+          animationsDef: item.animations,
+          isLineCompleted,
+          skipTransitionsAndAnimations,
+        })
       ) {
         pushAnimations({
           animations,
@@ -1973,9 +2005,11 @@ export const addVisuals = (
       }
 
       if (
-        item.animations &&
-        !isLineCompleted &&
-        !skipTransitionsAndAnimations
+        shouldEmitAnimationSelection({
+          animationsDef: item.animations,
+          isLineCompleted,
+          skipTransitionsAndAnimations,
+        })
       ) {
         const previousItems = previousPresentationState?.visual?.items || [];
         const previousItem = previousItems.find((p) => p.id === item.id);
@@ -2094,9 +2128,11 @@ export const addDialogue = (
 
   // Handle dialogue UI animations
   if (
-    presentationState.dialogue.ui?.animations &&
-    !isLineCompleted &&
-    !skipTransitionsAndAnimations
+    shouldEmitAnimationSelection({
+      animationsDef: presentationState.dialogue.ui?.animations,
+      isLineCompleted,
+      skipTransitionsAndAnimations,
+    })
   ) {
     pushAnimations({
       animations,
@@ -2195,9 +2231,11 @@ export const addChoices = (
 
     // Handle choice animations
     if (
-      presentationState.choice.animations &&
-      !isLineCompleted &&
-      !skipTransitionsAndAnimations
+      shouldEmitAnimationSelection({
+        animationsDef: presentationState.choice.animations,
+        isLineCompleted,
+        skipTransitionsAndAnimations,
+      })
     ) {
       pushAnimations({
         animations,
@@ -2446,9 +2484,11 @@ export const addLayout = (
 
   // Handle layout animations
   if (
-    presentationState.layout?.animations &&
-    !isLineCompleted &&
-    !skipTransitionsAndAnimations
+    shouldEmitAnimationSelection({
+      animationsDef: presentationState.layout?.animations,
+      isLineCompleted,
+      skipTransitionsAndAnimations,
+    })
   ) {
     const previousResourceId = previousPresentationState?.layout?.resourceId;
     const currentResourceId = presentationState.layout?.resourceId;

@@ -227,7 +227,100 @@ out:
               x: 0
               y: 0
   animations:
-    - id: "character-animation-in"
+    - id: "character-animation-transition"
+      type: "transition"
+      targetId: "character-container-char1"
+      playback:
+        continuity: "persistent"
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 500
+                value: 1
+---
+case: keep persistent character animation selection after line completion
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      character:
+        items:
+          - id: "char1"
+            transformId: "transform1"
+            sprites:
+              - id: "body"
+                resourceId: "body"
+            animations:
+              resourceId: "fadeIn"
+              playback:
+                continuity: "persistent"
+    previousPresentationState:
+      character:
+        items:
+          - id: "char1"
+            transformId: "transform1"
+            sprites:
+              - id: "body"
+                resourceId: "body"
+    isLineCompleted: true
+    resources:
+      transforms:
+        transform1:
+          x: 50
+          y: 100
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      images:
+        body:
+          fileId: "body.png"
+          width: 200
+          height: 200
+      animations:
+        fadeIn:
+          type: transition
+          next:
+            tween:
+              alpha:
+                initialValue: 0
+                keyframes:
+                  - duration: 500
+                    value: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - type: "container"
+          id: "character-container-char1"
+          x: 50
+          y: 100
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - type: "sprite"
+              id: "character-container-char1-body"
+              src: "body.png"
+              width: 200
+              height: 200
+              x: 0
+              y: 0
+  animations:
+    - id: "character-animation-transition"
       type: "transition"
       targetId: "character-container-char1"
       playback:
