@@ -1,0 +1,393 @@
+---
+title: Background Playback Persistent Transition Dialogue Continuity
+skipInitialScreenshot: true
+description: |
+  A persistent background transition should stay in flight while dialogue
+  advances across many lines instead of restarting on each line render.
+
+  - line 1 starts a long-running persistent background transition
+  - manual dialogue advances move through at least 10 lines
+  - every dialogue line reasserts the same transition payload
+  - the background fade should keep progressing instead of jumping back
+steps:
+  - action: wait
+    ms: 400
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 400
+  - action: screenshot
+  - action: click
+    x: 960
+    y: 540
+  - action: wait
+    ms: 800
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 800
+  - action: screenshot
+  - action: click
+    x: 960
+    y: 540
+  - action: wait
+    ms: 800
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 800
+  - action: screenshot
+  - action: click
+    x: 960
+    y: 540
+  - action: wait
+    ms: 800
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 800
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  images:
+    bg-door:
+      fileId: lakjf3lka
+      width: 1920
+      height: 1080
+  animations:
+    bg-fade-in:
+      type: transition
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 10000
+                value: 1
+                easing: linear
+  controls:
+    advanceToLine2:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                jumpToLine:
+                  lineId: line2
+          colorId: overlayColor
+    advanceToLine3:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                jumpToLine:
+                  lineId: line3
+          colorId: overlayColor
+    advanceToLine4:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                jumpToLine:
+                  lineId: line4
+          colorId: overlayColor
+    advanceToLine5:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                jumpToLine:
+                  lineId: line5
+          colorId: overlayColor
+    advanceToLine6:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                jumpToLine:
+                  lineId: line6
+          colorId: overlayColor
+    advanceToLine7:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                jumpToLine:
+                  lineId: line7
+          colorId: overlayColor
+    advanceToLine8:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                jumpToLine:
+                  lineId: line8
+          colorId: overlayColor
+    advanceToLine9:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                jumpToLine:
+                  lineId: line9
+          colorId: overlayColor
+    advanceToLine10:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                jumpToLine:
+                  lineId: line10
+          colorId: overlayColor
+  layouts:
+    persistentDialogue:
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 100
+          y: 780
+          width: 1720
+          height: 220
+          alpha: 0.92
+          colorId: panelColor
+        - id: dialogue-text
+          type: text
+          x: 150
+          y: 845
+          width: 1620
+          content: ${dialogue.content[0].text}
+          textStyleId: dialogueText
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    overlayColor:
+      hex: "#000000"
+    panelColor:
+      hex: "#4D4D4D"
+    textColor:
+      hex: "#FFFFFF"
+  textStyles:
+    dialogueText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 30
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.25
+story:
+  initialSceneId: backgroundScene
+  scenes:
+    backgroundScene:
+      name: Background Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                control:
+                  resourceId: advanceToLine2
+                background:
+                  resourceId: bg-door
+                  animations:
+                    resourceId: bg-fade-in
+                    playback:
+                      continuity: persistent
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: persistentDialogue
+                  content:
+                    - text: "Line 1: the door fades in slowly while the dialogue sequence starts."
+            - id: line2
+              actions:
+                control:
+                  resourceId: advanceToLine3
+                background:
+                  resourceId: bg-door
+                  animations:
+                    resourceId: bg-fade-in
+                    playback:
+                      continuity: persistent
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: persistentDialogue
+                  content:
+                    - text: "Line 2: the scene re-renders, but the same transition should keep its current progress."
+            - id: line3
+              actions:
+                control:
+                  resourceId: advanceToLine4
+                background:
+                  resourceId: bg-door
+                  animations:
+                    resourceId: bg-fade-in
+                    playback:
+                      continuity: persistent
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: persistentDialogue
+                  content:
+                    - text: "Line 3: this is another ordinary dialogue advance, not a fresh transition start."
+            - id: line4
+              actions:
+                control:
+                  resourceId: advanceToLine5
+                background:
+                  resourceId: bg-door
+                  animations:
+                    resourceId: bg-fade-in
+                    playback:
+                      continuity: persistent
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: persistentDialogue
+                  content:
+                    - text: "Line 4: the fade should be brighter now, with no jump back toward black."
+            - id: line5
+              actions:
+                control:
+                  resourceId: advanceToLine6
+                background:
+                  resourceId: bg-door
+                  animations:
+                    resourceId: bg-fade-in
+                    playback:
+                      continuity: persistent
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: persistentDialogue
+                  content:
+                    - text: "Line 5: this line exists only to keep proving continuity across repeated dialogue renders."
+            - id: line6
+              actions:
+                control:
+                  resourceId: advanceToLine7
+                background:
+                  resourceId: bg-door
+                  animations:
+                    resourceId: bg-fade-in
+                    playback:
+                      continuity: persistent
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: persistentDialogue
+                  content:
+                    - text: "Line 6: if persistence were broken, the door would restart its fade on every line."
+            - id: line7
+              actions:
+                control:
+                  resourceId: advanceToLine8
+                background:
+                  resourceId: bg-door
+                  animations:
+                    resourceId: bg-fade-in
+                    playback:
+                      continuity: persistent
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: persistentDialogue
+                  content:
+                    - text: "Line 7: instead, the background should keep climbing from the exact prior alpha."
+            - id: line8
+              actions:
+                control:
+                  resourceId: advanceToLine9
+                background:
+                  resourceId: bg-door
+                  animations:
+                    resourceId: bg-fade-in
+                    playback:
+                      continuity: persistent
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: persistentDialogue
+                  content:
+                    - text: "Line 8: later dialogue lines matter because they force more full scene renders."
+            - id: line9
+              actions:
+                control:
+                  resourceId: advanceToLine10
+                background:
+                  resourceId: bg-door
+                  animations:
+                    resourceId: bg-fade-in
+                    playback:
+                      continuity: persistent
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: persistentDialogue
+                  content:
+                    - text: "Line 9: the fade should now be well underway, not back near its original alpha."
+            - id: line10
+              actions:
+                background:
+                  resourceId: bg-door
+                  animations:
+                    resourceId: bg-fade-in
+                    playback:
+                      continuity: persistent
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: persistentDialogue
+                  content:
+                    - text: "Line 10: the final dialogue line should still inherit the same long-running transition."

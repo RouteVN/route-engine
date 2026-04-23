@@ -122,6 +122,7 @@ const createAnimationInstance = ({
   id,
   targetId,
   animation,
+  playback,
   animationPath = "animation",
 }) => {
   const normalized = structuredClone(animation);
@@ -131,8 +132,12 @@ const createAnimationInstance = ({
     animationPath,
   });
   delete normalized.name;
+  delete normalized.playback;
   normalized.id = id;
   normalized.targetId = targetId;
+  if (playback) {
+    normalized.playback = structuredClone(playback);
+  }
   return normalized;
 };
 
@@ -173,6 +178,115 @@ const resolveAnimationResourceId = (animationDef) => {
   return animationDef.resourceId;
 };
 
+const resolveAnimationPlayback = (animationDef) => {
+  if (
+    !animationDef ||
+    typeof animationDef !== "object" ||
+    Array.isArray(animationDef)
+  ) {
+    return undefined;
+  }
+
+  return animationDef.playback;
+};
+
+const isPersistentAnimationInstance = (animationInstance) =>
+  animationInstance?.playback?.continuity === "persistent";
+
+const sortObjectKeysDeep = (value) => {
+  if (Array.isArray(value)) {
+    return value.map(sortObjectKeysDeep);
+  }
+
+  if (!value || typeof value !== "object") {
+    return value;
+  }
+
+  return Object.keys(value)
+    .sort()
+    .reduce((sorted, key) => {
+      sorted[key] = sortObjectKeysDeep(value[key]);
+      return sorted;
+    }, {});
+};
+
+export const getPersistentAnimationContinuationKey = (animationInstance) => {
+  if (
+    !animationInstance ||
+    typeof animationInstance !== "object" ||
+    Array.isArray(animationInstance)
+  ) {
+    return null;
+  }
+
+  const normalized = structuredClone(animationInstance);
+  delete normalized.playback;
+  return JSON.stringify(sortObjectKeysDeep(normalized));
+};
+
+export const collectPersistentAnimationContinuations = (animations = []) =>
+  animations
+    .filter((animationInstance) =>
+      isPersistentAnimationInstance(animationInstance),
+    )
+    .map((animationInstance) => structuredClone(animationInstance));
+
+const hasPersistentAnimationContinuation = ({
+  animationInstances,
+  activePersistentAnimations,
+}) => {
+  if (
+    !Array.isArray(animationInstances) ||
+    animationInstances.length === 0 ||
+    !Array.isArray(activePersistentAnimations) ||
+    activePersistentAnimations.length === 0
+  ) {
+    return false;
+  }
+
+  const activeContinuationKeys = new Set(
+    activePersistentAnimations
+      .map(getPersistentAnimationContinuationKey)
+      .filter(Boolean),
+  );
+
+  return animationInstances.some((animationInstance) => {
+    if (!isPersistentAnimationInstance(animationInstance)) {
+      return false;
+    }
+
+    const continuationKey =
+      getPersistentAnimationContinuationKey(animationInstance);
+    return continuationKey
+      ? activeContinuationKeys.has(continuationKey)
+      : false;
+  });
+};
+
+const shouldEmitAnimationSelection = ({
+  animationInstances,
+  isLineCompleted,
+  skipTransitionsAndAnimations,
+  activePersistentAnimations,
+}) => {
+  if (
+    !Array.isArray(animationInstances) ||
+    animationInstances.length === 0 ||
+    skipTransitionsAndAnimations
+  ) {
+    return false;
+  }
+
+  if (!isLineCompleted) {
+    return true;
+  }
+
+  return hasPersistentAnimationContinuation({
+    animationInstances,
+    activePersistentAnimations,
+  });
+};
+
 const hasLegacyAnimationLifecycleConfig = (animationsDef) => {
   if (
     !animationsDef ||
@@ -200,10 +314,10 @@ const assertNoLegacyAnimationLifecycleConfig = (
   );
 };
 
-const pushAnimationInstance = ({
-  animations,
+const createAnimationInstanceIfPossible = ({
   resources,
   animationId,
+  playback,
   instanceId,
   targetId,
   animationPath = "animation",
@@ -214,19 +328,16 @@ const pushAnimationInstance = ({
 
   const animation = resources?.animations?.[animationId];
   if (!animation) {
-    return false;
+    return null;
   }
 
-  animations.push(
-    createAnimationInstance({
-      id: instanceId,
-      targetId,
-      animation,
-      animationPath,
-    }),
-  );
-
-  return true;
+  return createAnimationInstance({
+    id: instanceId,
+    targetId,
+    animation,
+    playback,
+    animationPath,
+  });
 };
 
 const getAnimationLifecycle = ({
@@ -1339,8 +1450,7 @@ const toRenderStateKeyboard = (keyboard = {}) => {
  * @param {string} params.animationPath - Source path for error reporting
  * @param {string} params.idPrefix - Prefix for animation IDs
  */
-const pushAnimations = ({
-  animations,
+const createAnimationInstances = ({
   animationsDef,
   resources,
   previousResourceId,
@@ -1351,7 +1461,25 @@ const pushAnimations = ({
   idPrefix,
   allowIncomingUpdateFallback = false,
 }) => {
-  if (!animationsDef) return;
+  if (!animationsDef) {
+    return [];
+  }
+
+  const animationInstances = [];
+  const appendAnimationInstance = ({ instanceId, targetId }) => {
+    const animationInstance = createAnimationInstanceIfPossible({
+      resources,
+      animationId,
+      playback,
+      instanceId,
+      targetId,
+      animationPath,
+    });
+
+    if (animationInstance) {
+      animationInstances.push(animationInstance);
+    }
+  };
 
   const hasPrevious =
     previousResourceId !== undefined &&
@@ -1374,6 +1502,7 @@ const pushAnimations = ({
   assertNoLegacyAnimationLifecycleConfig(animationsDef, animationPath);
 
   const animationId = resolveAnimationResourceId(animationsDef);
+  const playback = resolveAnimationPlayback(animationsDef);
   const animation = resources?.animations?.[animationId];
   const animationType = getAnimationType(animation, {
     animationId,
@@ -1402,64 +1531,52 @@ const pushAnimations = ({
       previousResourceId === currentResourceId &&
       sharedTarget
     ) {
-      pushAnimationInstance({
-        animations,
-        resources,
-        animationId,
+      appendAnimationInstance({
         instanceId: `${idPrefix}-animation-update`,
         targetId: currentTargetId,
-        animationPath,
       });
     } else if (canFallbackIncomingUpdate) {
-      pushAnimationInstance({
-        animations,
-        resources,
-        animationId,
+      appendAnimationInstance({
         instanceId: `${idPrefix}-animation-update`,
         targetId: currentTargetId,
-        animationPath,
       });
     }
 
-    return;
+    return animationInstances;
   }
 
   if (animationType === "transition") {
+    const sharedTransitionInstanceId = `${idPrefix}-animation-transition`;
+    const enterTransitionInstanceId =
+      playback?.continuity === "persistent"
+        ? sharedTransitionInstanceId
+        : `${idPrefix}-animation-in`;
+
     if (hasPrevious && hasCurrent && sharedTarget) {
-      pushAnimationInstance({
-        animations,
-        resources,
-        animationId,
-        instanceId: `${idPrefix}-animation-transition`,
+      appendAnimationInstance({
+        instanceId: sharedTransitionInstanceId,
         targetId: currentTargetId,
-        animationPath,
       });
 
-      return;
+      return animationInstances;
     }
 
     if (hasPrevious) {
-      pushAnimationInstance({
-        animations,
-        resources,
-        animationId,
+      appendAnimationInstance({
         instanceId: `${idPrefix}-animation-out`,
         targetId: previousTargetId,
-        animationPath,
       });
     }
 
     if (hasCurrent) {
-      pushAnimationInstance({
-        animations,
-        resources,
-        animationId,
-        instanceId: `${idPrefix}-animation-in`,
+      appendAnimationInstance({
+        instanceId: enterTransitionInstanceId,
         targetId: currentTargetId,
-        animationPath,
       });
     }
   }
+
+  return animationInstances;
 };
 
 export const createInitialState = () => {
@@ -1490,6 +1607,7 @@ export const addBackgroundOrCg = (
     skipTransitionsAndAnimations,
     variables,
     runtime,
+    activePersistentAnimations,
     autoMode,
     skipMode,
     isChoiceVisible,
@@ -1624,29 +1742,33 @@ export const addBackgroundOrCg = (
       }
     }
 
+    const backgroundAnimationInstances = createAnimationInstances({
+      animationsDef: presentationState.background.animations,
+      resources,
+      previousResourceId: previousBackgroundResourceId,
+      currentResourceId: currentBackgroundResourceId,
+      previousTargetId: resolveBackgroundTargetId({
+        resourceId: previousBackgroundResourceId,
+        kind: previousBackgroundKind,
+      }),
+      currentTargetId: resolveBackgroundTargetId({
+        resourceId: currentBackgroundResourceId,
+        kind: currentBackgroundKind,
+      }),
+      animationPath: "background.animations",
+      idPrefix: "bg-cg",
+      allowIncomingUpdateFallback: true,
+    });
+
     if (
-      presentationState.background.animations &&
-      !isLineCompleted &&
-      !skipTransitionsAndAnimations
+      shouldEmitAnimationSelection({
+        animationInstances: backgroundAnimationInstances,
+        isLineCompleted,
+        skipTransitionsAndAnimations,
+        activePersistentAnimations,
+      })
     ) {
-      pushAnimations({
-        animations,
-        animationsDef: presentationState.background.animations,
-        resources,
-        previousResourceId: previousBackgroundResourceId,
-        currentResourceId: currentBackgroundResourceId,
-        previousTargetId: resolveBackgroundTargetId({
-          resourceId: previousBackgroundResourceId,
-          kind: previousBackgroundKind,
-        }),
-        currentTargetId: resolveBackgroundTargetId({
-          resourceId: currentBackgroundResourceId,
-          kind: currentBackgroundKind,
-        }),
-        animationPath: "background.animations",
-        idPrefix: "bg-cg",
-        allowIncomingUpdateFallback: true,
-      });
+      animations.push(...backgroundAnimationInstances);
     }
   }
   return state;
@@ -1664,6 +1786,7 @@ export const addCharacters = (
     resources,
     isLineCompleted,
     skipTransitionsAndAnimations,
+    activePersistentAnimations,
   },
 ) => {
   const { elements, animations } = state;
@@ -1698,25 +1821,34 @@ export const addCharacters = (
             )
           : undefined;
 
+      const characterAnimationInstances = createAnimationInstances({
+        animationsDef: item.animations,
+        resources,
+        previousResourceId: previousContainerId,
+        currentResourceId: currentHasSprites
+          ? getCharacterContainerId(item, i, duplicateCharacterIds)
+          : undefined,
+        previousTargetId: previousContainerId,
+        currentTargetId: currentHasSprites
+          ? getCharacterContainerId(item, i, duplicateCharacterIds)
+          : undefined,
+        animationPath: `character.items[${i}].animations`,
+        idPrefix: "character",
+      });
+
       if (
         item.animations &&
         !sprites &&
         !transformId &&
         previousHasSprites &&
-        !isLineCompleted &&
-        !skipTransitionsAndAnimations
+        shouldEmitAnimationSelection({
+          animationInstances: characterAnimationInstances,
+          isLineCompleted,
+          skipTransitionsAndAnimations,
+          activePersistentAnimations,
+        })
       ) {
-        pushAnimations({
-          animations,
-          animationsDef: item.animations,
-          resources,
-          previousResourceId: previousContainerId,
-          currentResourceId: undefined,
-          previousTargetId: previousContainerId,
-          currentTargetId: undefined,
-          animationPath: `character.items[${i}].animations`,
-          idPrefix: "character",
-        });
+        animations.push(...characterAnimationInstances);
         continue;
       }
 
@@ -1777,21 +1909,14 @@ export const addCharacters = (
 
       // Add animation support (except out, which is handled above)
       if (
-        item.animations &&
-        !isLineCompleted &&
-        !skipTransitionsAndAnimations
+        shouldEmitAnimationSelection({
+          animationInstances: characterAnimationInstances,
+          isLineCompleted,
+          skipTransitionsAndAnimations,
+          activePersistentAnimations,
+        })
       ) {
-        pushAnimations({
-          animations,
-          animationsDef: item.animations,
-          resources,
-          previousResourceId: previousContainerId,
-          currentResourceId: containerId,
-          previousTargetId: previousContainerId,
-          currentTargetId: containerId,
-          animationPath: `character.items[${i}].animations`,
-          idPrefix: "character",
-        });
+        animations.push(...characterAnimationInstances);
       }
     }
   }
@@ -1812,6 +1937,7 @@ export const addVisuals = (
     skipTransitionsAndAnimations,
     variables,
     runtime,
+    activePersistentAnimations,
     autoMode,
     skipMode,
     isChoiceVisible,
@@ -1947,27 +2073,30 @@ export const addVisuals = (
         }
       }
 
-      if (
-        item.animations &&
-        !isLineCompleted &&
-        !skipTransitionsAndAnimations
-      ) {
-        const previousItems = previousPresentationState?.visual?.items || [];
-        const previousItem = previousItems.find((p) => p.id === item.id);
+      const previousItems = previousPresentationState?.visual?.items || [];
+      const previousItem = previousItems.find((p) => p.id === item.id);
+      const visualAnimationInstances = createAnimationInstances({
+        animationsDef: item.animations,
+        resources,
+        previousResourceId: previousItem?.resourceId,
+        currentResourceId: item.resourceId,
+        previousTargetId: previousItem?.resourceId
+          ? `visual-${item.id}`
+          : undefined,
+        currentTargetId: item.resourceId ? `visual-${item.id}` : undefined,
+        animationPath: `visual.items[${item.id}].animations`,
+        idPrefix: item.id,
+      });
 
-        pushAnimations({
-          animations,
-          animationsDef: item.animations,
-          resources,
-          previousResourceId: previousItem?.resourceId,
-          currentResourceId: item.resourceId,
-          previousTargetId: previousItem?.resourceId
-            ? `visual-${item.id}`
-            : undefined,
-          currentTargetId: item.resourceId ? `visual-${item.id}` : undefined,
-          animationPath: `visual.items[${item.id}].animations`,
-          idPrefix: item.id,
-        });
+      if (
+        shouldEmitAnimationSelection({
+          animationInstances: visualAnimationInstances,
+          isLineCompleted,
+          skipTransitionsAndAnimations,
+          activePersistentAnimations,
+        })
+      ) {
+        animations.push(...visualAnimationInstances);
       }
     }
   }
@@ -1994,6 +2123,7 @@ export const addDialogue = (
     skipTransitionsAndAnimations,
     variables,
     runtime,
+    activePersistentAnimations,
     saveSlots = [],
   },
 ) => {
@@ -2067,27 +2197,31 @@ export const addDialogue = (
     }
   }
 
+  const dialogueAnimationInstances = createAnimationInstances({
+    animationsDef: presentationState.dialogue.ui?.animations,
+    resources,
+    previousResourceId: previousPresentationState?.dialogue?.ui?.resourceId,
+    currentResourceId: presentationState.dialogue.ui?.resourceId,
+    previousTargetId: previousPresentationState?.dialogue?.ui?.resourceId
+      ? "dialogue-container"
+      : undefined,
+    currentTargetId: presentationState.dialogue.ui?.resourceId
+      ? "dialogue-container"
+      : undefined,
+    animationPath: "dialogue.ui.animations",
+    idPrefix: "dialogue-ui",
+  });
+
   // Handle dialogue UI animations
   if (
-    presentationState.dialogue.ui?.animations &&
-    !isLineCompleted &&
-    !skipTransitionsAndAnimations
+    shouldEmitAnimationSelection({
+      animationInstances: dialogueAnimationInstances,
+      isLineCompleted,
+      skipTransitionsAndAnimations,
+      activePersistentAnimations,
+    })
   ) {
-    pushAnimations({
-      animations,
-      animationsDef: presentationState.dialogue.ui.animations,
-      resources,
-      previousResourceId: previousPresentationState?.dialogue?.ui?.resourceId,
-      currentResourceId: presentationState.dialogue.ui?.resourceId,
-      previousTargetId: previousPresentationState?.dialogue?.ui?.resourceId
-        ? "dialogue-container"
-        : undefined,
-      currentTargetId: presentationState.dialogue.ui?.resourceId
-        ? "dialogue-container"
-        : undefined,
-      animationPath: "dialogue.ui.animations",
-      idPrefix: "dialogue-ui",
-    });
+    animations.push(...dialogueAnimationInstances);
   }
 
   return state;
@@ -2112,6 +2246,7 @@ export const addChoices = (
     skipMode,
     isChoiceVisible,
     canRollback,
+    activePersistentAnimations,
     saveSlots = [],
   },
 ) => {
@@ -2168,27 +2303,31 @@ export const addChoices = (
       }
     }
 
+    const choiceAnimationInstances = createAnimationInstances({
+      animationsDef: presentationState.choice.animations,
+      resources,
+      previousResourceId: previousPresentationState?.choice?.resourceId,
+      currentResourceId: presentationState.choice.resourceId,
+      previousTargetId: previousPresentationState?.choice?.resourceId
+        ? "choice-container"
+        : undefined,
+      currentTargetId: presentationState.choice.resourceId
+        ? "choice-container"
+        : undefined,
+      animationPath: "choice.animations",
+      idPrefix: "choice",
+    });
+
     // Handle choice animations
     if (
-      presentationState.choice.animations &&
-      !isLineCompleted &&
-      !skipTransitionsAndAnimations
+      shouldEmitAnimationSelection({
+        animationInstances: choiceAnimationInstances,
+        isLineCompleted,
+        skipTransitionsAndAnimations,
+        activePersistentAnimations,
+      })
     ) {
-      pushAnimations({
-        animations,
-        animationsDef: presentationState.choice.animations,
-        resources,
-        previousResourceId: previousPresentationState?.choice?.resourceId,
-        currentResourceId: presentationState.choice.resourceId,
-        previousTargetId: previousPresentationState?.choice?.resourceId
-          ? "choice-container"
-          : undefined,
-        currentTargetId: presentationState.choice.resourceId
-          ? "choice-container"
-          : undefined,
-        animationPath: "choice.animations",
-        idPrefix: "choice",
-      });
+      animations.push(...choiceAnimationInstances);
     }
   }
   return state;
@@ -2359,6 +2498,7 @@ export const addLayout = (
     saveSlots = [],
     isLineCompleted,
     skipTransitionsAndAnimations,
+    activePersistentAnimations,
   },
 ) => {
   const { elements, animations } = state;
@@ -2419,30 +2559,33 @@ export const addLayout = (
     );
   }
 
+  const previousResourceId = previousPresentationState?.layout?.resourceId;
+  const currentResourceId = presentationState.layout?.resourceId;
+  const layoutAnimationInstances = createAnimationInstances({
+    animationsDef: presentationState.layout?.animations,
+    resources,
+    previousResourceId,
+    currentResourceId,
+    previousTargetId: previousResourceId
+      ? `layout-${previousResourceId}`
+      : undefined,
+    currentTargetId: currentResourceId
+      ? `layout-${currentResourceId}`
+      : undefined,
+    animationPath: "layout.animations",
+    idPrefix: "layout",
+  });
+
   // Handle layout animations
   if (
-    presentationState.layout?.animations &&
-    !isLineCompleted &&
-    !skipTransitionsAndAnimations
+    shouldEmitAnimationSelection({
+      animationInstances: layoutAnimationInstances,
+      isLineCompleted,
+      skipTransitionsAndAnimations,
+      activePersistentAnimations,
+    })
   ) {
-    const previousResourceId = previousPresentationState?.layout?.resourceId;
-    const currentResourceId = presentationState.layout?.resourceId;
-
-    pushAnimations({
-      animations,
-      animationsDef: presentationState.layout.animations,
-      resources,
-      previousResourceId,
-      currentResourceId,
-      previousTargetId: previousResourceId
-        ? `layout-${previousResourceId}`
-        : undefined,
-      currentTargetId: currentResourceId
-        ? `layout-${currentResourceId}`
-        : undefined,
-      animationPath: "layout.animations",
-      idPrefix: "layout",
-    });
+    animations.push(...layoutAnimationInstances);
   }
 
   return state;

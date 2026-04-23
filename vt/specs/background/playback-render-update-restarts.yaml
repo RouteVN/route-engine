@@ -1,0 +1,134 @@
+---
+title: Background Playback Render Update Restarts
+skipInitialScreenshot: true
+description: |
+  An explicitly render-scoped background update animation should restart after
+  an unrelated same-line render.
+
+  - line 1 establishes the background and auto-advances into line 2
+  - line 2 starts the render-scoped update animation with line 1 as previous state
+  - the toggle button causes an unrelated render on line 2
+  - the background should restart from the beginning instead of continuing
+steps:
+  - action: wait
+    ms: 250
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 1200
+  - action: screenshot
+  - action: click
+    x: 90
+    y: 50
+  - action: wait
+    ms: 80
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 300
+  - action: screenshot
+  - action: click
+    x: 90
+    y: 50
+  - action: wait
+    ms: 80
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 300
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  images:
+    bg-forest:
+      fileId: dmni32
+      width: 1920
+      height: 1080
+  animations:
+    bg-pan:
+      type: update
+      tween:
+        x:
+          keyframes:
+            - duration: 3000
+              value: 1440
+              easing: linear
+  variables:
+    probe:
+      type: boolean
+      scope: context
+      default: false
+  controls:
+    continuityToggle:
+      elements:
+        - id: toggle-hit
+          type: rect
+          x: 40
+          y: 40
+          width: 280
+          height: 120
+          colorId: fg30
+          click:
+            payload:
+              actions:
+                updateVariable:
+                  id: toggleProbe
+                  operations:
+                    - variableId: probe
+                      op: toggle
+        - id: toggle-indicator-off
+          $when: "!variables.probe"
+          type: rect
+          x: 360
+          y: 40
+          width: 120
+          height: 120
+          colorId: fg30
+        - id: toggle-indicator-on
+          $when: variables.probe
+          type: rect
+          x: 360
+          y: 40
+          width: 120
+          height: 120
+          colorId: fg100
+  colors:
+    fg100:
+      hex: "#FFFFFF"
+    fg30:
+      hex: "#4D4D4D"
+story:
+  initialSceneId: backgroundScene
+  scenes:
+    backgroundScene:
+      name: Background Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                setNextLineConfig:
+                  auto:
+                    enabled: true
+                    trigger: fromStart
+                    delay: 150
+                  applyMode: singleLine
+                control:
+                  resourceId: continuityToggle
+                background:
+                  resourceId: bg-forest
+            - id: line2
+              actions:
+                control:
+                  resourceId: continuityToggle
+                background:
+                  resourceId: bg-forest
+                  animations:
+                    resourceId: bg-pan
+                    playback:
+                      continuity: render

@@ -337,6 +337,23 @@ out:
     animations:
       resourceId: "fade-in"
 ---
+case: preserve action-level playback when next line only adds background animations
+in:
+  - - background:
+        resourceId: "bg-school"
+    - background:
+        animations:
+          resourceId: "fade-in"
+          playback:
+            continuity: "persistent"
+out:
+  background:
+    resourceId: "bg-school"
+    animations:
+      resourceId: "fade-in"
+      playback:
+        continuity: "persistent"
+---
 case: clear animations across multiple lines
 in:
   - - background:

@@ -156,6 +156,241 @@ out:
               - duration: 500
                 value: 1
 ---
+case: add character animation playback continuity from action payload
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      character:
+        items:
+          - id: "char1"
+            transformId: "transform1"
+            sprites:
+              - id: "body"
+                resourceId: "body"
+            animations:
+              resourceId: "fadeIn"
+              playback:
+                continuity: "persistent"
+    resources:
+      transforms:
+        transform1:
+          x: 50
+          y: 100
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      images:
+        body:
+          fileId: "body.png"
+          width: 200
+          height: 200
+      animations:
+        fadeIn:
+          type: transition
+          next:
+            tween:
+              alpha:
+                initialValue: 0
+                keyframes:
+                  - duration: 500
+                    value: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - type: "container"
+          id: "character-container-char1"
+          x: 50
+          y: 100
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - type: "sprite"
+              id: "character-container-char1-body"
+              src: "body.png"
+              width: 200
+              height: 200
+              x: 0
+              y: 0
+  animations:
+    - id: "character-animation-transition"
+      type: "transition"
+      targetId: "character-container-char1"
+      playback:
+        continuity: "persistent"
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 500
+                value: 1
+---
+case: keep persistent character animation selection after line completion when continuation is active
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      character:
+        items:
+          - id: "char1"
+            transformId: "transform1"
+            sprites:
+              - id: "body"
+                resourceId: "body"
+            animations:
+              resourceId: "fadeIn"
+              playback:
+                continuity: "persistent"
+    previousPresentationState:
+      character:
+        items:
+          - id: "char1"
+            transformId: "transform1"
+            sprites:
+              - id: "body"
+                resourceId: "body"
+    isLineCompleted: true
+    activePersistentAnimations:
+      - id: "character-animation-transition"
+        type: "transition"
+        targetId: "character-container-char1"
+        playback:
+          continuity: "persistent"
+        next:
+          tween:
+            alpha:
+              initialValue: 0
+              keyframes:
+                - duration: 500
+                  value: 1
+    resources:
+      transforms:
+        transform1:
+          x: 50
+          y: 100
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      images:
+        body:
+          fileId: "body.png"
+          width: 200
+          height: 200
+      animations:
+        fadeIn:
+          type: transition
+          next:
+            tween:
+              alpha:
+                initialValue: 0
+                keyframes:
+                  - duration: 500
+                    value: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - type: "container"
+          id: "character-container-char1"
+          x: 50
+          y: 100
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - type: "sprite"
+              id: "character-container-char1-body"
+              src: "body.png"
+              width: 200
+              height: 200
+              x: 0
+              y: 0
+  animations:
+    - id: "character-animation-transition"
+      type: "transition"
+      targetId: "character-container-char1"
+      playback:
+        continuity: "persistent"
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 500
+                value: 1
+---
+case: skip completed character removal transition without an active continuation
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      character:
+        items:
+          - id: "char1"
+            animations:
+              resourceId: "fadeOut"
+              playback:
+                continuity: "persistent"
+    previousPresentationState:
+      character:
+        items:
+          - id: "char1"
+            sprites:
+              - id: "body"
+                resourceId: "body"
+    isLineCompleted: true
+    resources:
+      animations:
+        fadeOut:
+          type: transition
+          prev:
+            tween:
+              alpha:
+                initialValue: 1
+                keyframes:
+                  - duration: 300
+                    value: 0
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+---
 case: add character with transition animation on removal (no container created)
 in:
   - elements:
