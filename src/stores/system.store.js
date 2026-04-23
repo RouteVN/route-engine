@@ -1770,6 +1770,7 @@ const shouldSettleCurrentLinePresentation = (state) => {
 export const selectRenderState = ({ state }, options = {}) => {
   const presentationState = selectPresentationState({ state });
   const previousPresentationState = selectPreviousPresentationState({ state });
+  const currentLineActions = selectCurrentLine({ state })?.actions ?? {};
   const runtime = selectRuntime({ state });
   const activePersistentAnimations = options?.activePersistentAnimations ?? [];
 
@@ -1782,6 +1783,7 @@ export const selectRenderState = ({ state }, options = {}) => {
   const renderState = constructRenderState({
     presentationState,
     previousPresentationState,
+    currentLineActions,
     resources: state.projectData.resources,
     screen: state.projectData.screen,
     dialogueUIHidden: runtime.dialogueUIHidden,

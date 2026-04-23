@@ -7,7 +7,7 @@ description: |
 
   - line 1 starts a long-running persistent background transition
   - manual dialogue advances move through at least 10 lines
-  - every dialogue line reasserts the same transition payload
+  - later lines do not restate the background animation
   - the background fade should keep progressing instead of jumping back
 steps:
   - action: wait
@@ -253,12 +253,6 @@ story:
               actions:
                 control:
                   resourceId: advanceToLine3
-                background:
-                  resourceId: bg-door
-                  animations:
-                    resourceId: bg-fade-in
-                    playback:
-                      continuity: persistent
                 dialogue:
                   mode: adv
                   ui:
@@ -269,12 +263,6 @@ story:
               actions:
                 control:
                   resourceId: advanceToLine4
-                background:
-                  resourceId: bg-door
-                  animations:
-                    resourceId: bg-fade-in
-                    playback:
-                      continuity: persistent
                 dialogue:
                   mode: adv
                   ui:
@@ -285,12 +273,6 @@ story:
               actions:
                 control:
                   resourceId: advanceToLine5
-                background:
-                  resourceId: bg-door
-                  animations:
-                    resourceId: bg-fade-in
-                    playback:
-                      continuity: persistent
                 dialogue:
                   mode: adv
                   ui:
@@ -301,12 +283,6 @@ story:
               actions:
                 control:
                   resourceId: advanceToLine6
-                background:
-                  resourceId: bg-door
-                  animations:
-                    resourceId: bg-fade-in
-                    playback:
-                      continuity: persistent
                 dialogue:
                   mode: adv
                   ui:
@@ -317,12 +293,6 @@ story:
               actions:
                 control:
                   resourceId: advanceToLine7
-                background:
-                  resourceId: bg-door
-                  animations:
-                    resourceId: bg-fade-in
-                    playback:
-                      continuity: persistent
                 dialogue:
                   mode: adv
                   ui:
@@ -333,12 +303,6 @@ story:
               actions:
                 control:
                   resourceId: advanceToLine8
-                background:
-                  resourceId: bg-door
-                  animations:
-                    resourceId: bg-fade-in
-                    playback:
-                      continuity: persistent
                 dialogue:
                   mode: adv
                   ui:
@@ -349,12 +313,6 @@ story:
               actions:
                 control:
                   resourceId: advanceToLine9
-                background:
-                  resourceId: bg-door
-                  animations:
-                    resourceId: bg-fade-in
-                    playback:
-                      continuity: persistent
                 dialogue:
                   mode: adv
                   ui:
@@ -365,12 +323,6 @@ story:
               actions:
                 control:
                   resourceId: advanceToLine10
-                background:
-                  resourceId: bg-door
-                  animations:
-                    resourceId: bg-fade-in
-                    playback:
-                      continuity: persistent
                 dialogue:
                   mode: adv
                   ui:
@@ -379,12 +331,6 @@ story:
                     - text: "Line 9: the fade should now be well underway, not back near its original alpha."
             - id: line10
               actions:
-                background:
-                  resourceId: bg-door
-                  animations:
-                    resourceId: bg-fade-in
-                    playback:
-                      continuity: persistent
                 dialogue:
                   mode: adv
                   ui:

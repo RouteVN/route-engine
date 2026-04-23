@@ -92,6 +92,29 @@ next background as:
 That means this shape means "animate the current background from state", not
 "remove the background".
 
+### Persistent background playback selection
+
+If a background animation uses:
+
+```yaml
+background:
+  resourceId: bg-school
+  animations:
+    resourceId: bg-dissolve
+    playback:
+      continuity: persistent
+```
+
+the animation selection stays attached to that resolved background across later
+lines while the background itself is unchanged.
+
+In practice:
+
+- later lines do not need to repeat the same `background.animations` payload
+- the selection keeps applying while the resolved background stays the same
+- the selection stops when the background changes or a later background action
+  replaces the animation selection
+
 ### Same-subject transitions
 
 Because the comparison is done against resolved previous and next presentation

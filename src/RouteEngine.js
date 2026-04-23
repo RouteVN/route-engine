@@ -1,7 +1,11 @@
 import { createSystemStore } from "./stores/system.store.js";
 import { normalizeNamespace } from "./indexedDbPersistence.js";
 import { processActionTemplates } from "./util.js";
-import { collectPersistentAnimationContinuations } from "./stores/constructRenderState.js";
+import {
+  collectPersistentAnimationContinuations,
+  getAnimationInstanceDurationMs,
+  getPersistentAnimationContinuationKey,
+} from "./stores/constructRenderState.js";
 
 const PERSISTENT_PLAYBACK_RESET_ACTIONS = new Set([
   "loadSlot",
@@ -19,9 +23,24 @@ export default function createRouteEngine(options) {
   let _systemStore;
   let _renderSequence = 0;
   let _namespace = null;
-  let _activePersistentAnimations = [];
+  let _persistentAnimationSessions = new Map();
 
   const { handlePendingEffects } = options;
+
+  const pruneExpiredPersistentAnimationSessions = (now = Date.now()) => {
+    _persistentAnimationSessions = new Map(
+      Array.from(_persistentAnimationSessions.entries()).filter(
+        ([, session]) => now < session.expiresAt,
+      ),
+    );
+  };
+
+  const selectActivePersistentAnimations = (now = Date.now()) => {
+    pruneExpiredPersistentAnimationSessions(now);
+    return Array.from(_persistentAnimationSessions.values()).map((session) =>
+      structuredClone(session.animation),
+    );
+  };
 
   const processEffectsUntilEmpty = () => {
     while (_systemStore.selectPendingEffects().length > 0) {
@@ -43,7 +62,7 @@ export default function createRouteEngine(options) {
     _systemStore = createSystemStore(initialState);
     _renderSequence = 0;
     _namespace = normalizeNamespace(namespace);
-    _activePersistentAnimations = [];
+    _persistentAnimationSessions = new Map();
     _systemStore.appendPendingEffect({ name: "handleLineActions" });
     processEffectsUntilEmpty();
   };
@@ -67,7 +86,7 @@ export default function createRouteEngine(options) {
   const buildRenderState = () => {
     _renderSequence += 1;
     const renderState = _systemStore.selectRenderState({
-      activePersistentAnimations: _activePersistentAnimations,
+      activePersistentAnimations: selectActivePersistentAnimations(),
     });
     return {
       ...renderState,
@@ -84,9 +103,35 @@ export default function createRouteEngine(options) {
   };
 
   const commitRenderState = (renderState) => {
-    _activePersistentAnimations = collectPersistentAnimationContinuations(
-      renderState?.animations,
+    const now = Date.now();
+    pruneExpiredPersistentAnimationSessions(now);
+
+    const nextSessions = new Map();
+    collectPersistentAnimationContinuations(renderState?.animations).forEach(
+      (animationInstance) => {
+        const continuationKey =
+          getPersistentAnimationContinuationKey(animationInstance);
+        if (!continuationKey) {
+          return;
+        }
+
+        const existingSession =
+          _persistentAnimationSessions.get(continuationKey);
+        const durationMs = Math.max(
+          0,
+          getAnimationInstanceDurationMs(animationInstance),
+        );
+        const startedAt = existingSession?.startedAt ?? now;
+
+        nextSessions.set(continuationKey, {
+          animation: structuredClone(animationInstance),
+          startedAt,
+          expiresAt: startedAt + durationMs,
+        });
+      },
     );
+
+    _persistentAnimationSessions = nextSessions;
   };
 
   const selectSystemState = () => {
@@ -127,7 +172,7 @@ export default function createRouteEngine(options) {
     }
 
     if (PERSISTENT_PLAYBACK_RESET_ACTIONS.has(actionType)) {
-      _activePersistentAnimations = [];
+      _persistentAnimationSessions = new Map();
     }
 
     _systemStore[actionType](payload);

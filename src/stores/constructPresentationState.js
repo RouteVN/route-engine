@@ -45,6 +45,9 @@ const processItemsWithAnimations = (items, hasResourceFn) => {
 const hasOwnProperty = (value, key) =>
   Object.prototype.hasOwnProperty.call(value, key);
 
+const hasPersistentAnimationSelection = (value) =>
+  value?.animations?.playback?.continuity === "persistent";
+
 const resolveDialogueCharacterName = (dialogueAction) => {
   if (!dialogueAction) {
     return undefined;
@@ -100,10 +103,27 @@ export const background = (state, presentation) => {
       return;
     }
 
-    state.background = structuredClone(presentation.background);
+    const nextBackground = structuredClone(presentation.background);
+    const previousBackground = state.background;
+
+    if (
+      previousBackground?.resourceId === nextBackground.resourceId &&
+      previousBackground?.transformId === nextBackground.transformId &&
+      !hasOwnProperty(nextBackground, "animations") &&
+      hasPersistentAnimationSelection(previousBackground)
+    ) {
+      nextBackground.animations = structuredClone(
+        previousBackground.animations,
+      );
+    }
+
+    state.background = nextBackground;
   } else {
-    // Only clear animations if they exist
-    if (state.background?.animations) {
+    // Only clear transient animation selections when the background persists.
+    if (
+      state.background?.animations &&
+      !hasPersistentAnimationSelection(state.background)
+    ) {
       state.background.animations = {};
     }
   }

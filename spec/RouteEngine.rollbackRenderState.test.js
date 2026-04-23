@@ -421,4 +421,69 @@ describe("RouteEngine rollback render state", () => {
     expect(engine.selectSystemState().global.isLineCompleted).toBe(true);
     expect(restoredRender.animations).toEqual([]);
   });
+
+  it("does not replay an inherited persistent background animation after it has finished", () => {
+    const routeGraphics = {
+      render: vi.fn(),
+    };
+
+    let engine;
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics,
+      ticker: createTicker(),
+      persistence: createNoopPersistence(),
+    });
+
+    engine = createRouteEngine({
+      handlePendingEffects: effectsHandler,
+    });
+
+    const nowSpy = vi.spyOn(Date, "now");
+
+    try {
+      nowSpy.mockReturnValue(0);
+      engine.init({
+        initialState: {
+          projectData: createPersistentBackgroundProjectData(),
+        },
+      });
+
+      const initialRender = routeGraphics.render.mock.calls.at(-1)?.[0];
+      expect(initialRender.animations).toEqual([
+        expect.objectContaining({
+          id: "bg-cg-animation-transition",
+          targetId: "bg-cg-background-sprite",
+          playback: {
+            continuity: "persistent",
+          },
+        }),
+      ]);
+
+      nowSpy.mockReturnValue(10001);
+      expect(
+        effectsHandler.handleRouteGraphicsEvent("renderComplete", {
+          id: initialRender.id,
+          aborted: false,
+        }),
+      ).toBe(true);
+
+      const completedRender = routeGraphics.render.mock.calls.at(-1)?.[0];
+      expect(engine.selectSystemState().global.isLineCompleted).toBe(true);
+      expect(completedRender.animations).toEqual([]);
+
+      nowSpy.mockReturnValue(10002);
+      engine.handleActions({
+        nextLine: {},
+      });
+
+      const advancedRender = routeGraphics.render.mock.calls.at(-1)?.[0];
+      expect(
+        engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
+      ).toBe("line2");
+      expect(advancedRender.animations).toEqual([]);
+    } finally {
+      nowSpy.mockRestore();
+    }
+  });
 });

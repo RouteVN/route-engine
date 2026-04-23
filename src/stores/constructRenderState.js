@@ -190,6 +190,9 @@ const resolveAnimationPlayback = (animationDef) => {
   return animationDef.playback;
 };
 
+const hasOwnProperty = (value, key) =>
+  Object.prototype.hasOwnProperty.call(value, key);
+
 const isPersistentAnimationInstance = (animationInstance) =>
   animationInstance?.playback?.continuity === "persistent";
 
@@ -231,6 +234,48 @@ export const collectPersistentAnimationContinuations = (animations = []) =>
     )
     .map((animationInstance) => structuredClone(animationInstance));
 
+const getTweenPropertyDurationMs = (tweenProperty) => {
+  if (!Array.isArray(tweenProperty?.keyframes)) {
+    return 0;
+  }
+
+  return tweenProperty.keyframes.reduce((total, keyframe) => {
+    const duration =
+      typeof keyframe?.duration === "number" &&
+      Number.isFinite(keyframe.duration)
+        ? keyframe.duration
+        : 0;
+    return total + duration;
+  }, 0);
+};
+
+const getTweenDurationMs = (tween) => {
+  if (!tween || typeof tween !== "object" || Array.isArray(tween)) {
+    return 0;
+  }
+
+  return Object.values(tween).reduce((maxDuration, tweenProperty) => {
+    return Math.max(maxDuration, getTweenPropertyDurationMs(tweenProperty));
+  }, 0);
+};
+
+export const getAnimationInstanceDurationMs = (animationInstance) => {
+  if (
+    !animationInstance ||
+    typeof animationInstance !== "object" ||
+    Array.isArray(animationInstance)
+  ) {
+    return 0;
+  }
+
+  return Math.max(
+    getTweenDurationMs(animationInstance.tween),
+    getTweenDurationMs(animationInstance.prev?.tween),
+    getTweenDurationMs(animationInstance.next?.tween),
+    getTweenPropertyDurationMs(animationInstance.mask?.progress),
+  );
+};
+
 const hasPersistentAnimationContinuation = ({
   animationInstances,
   activePersistentAnimations,
@@ -268,6 +313,7 @@ const shouldEmitAnimationSelection = ({
   isLineCompleted,
   skipTransitionsAndAnimations,
   activePersistentAnimations,
+  isAuthoredOnCurrentLine = true,
 }) => {
   if (
     !Array.isArray(animationInstances) ||
@@ -277,7 +323,7 @@ const shouldEmitAnimationSelection = ({
     return false;
   }
 
-  if (!isLineCompleted) {
+  if (isAuthoredOnCurrentLine && !isLineCompleted) {
     return true;
   }
 
@@ -1601,6 +1647,7 @@ export const addBackgroundOrCg = (
   {
     presentationState,
     previousPresentationState,
+    currentLineActions,
     resources = {},
     screen = { width: 1920, height: 1080 },
     isLineCompleted,
@@ -1617,6 +1664,11 @@ export const addBackgroundOrCg = (
 ) => {
   const { elements, animations } = state;
   if (presentationState.background) {
+    const isBackgroundAnimationAuthoredOnCurrentLine =
+      currentLineActions === undefined
+        ? true
+        : hasOwnProperty(currentLineActions?.background ?? {}, "animations");
+
     // Find the story container
     const storyContainer = elements.find((el) => el.id === "story");
     if (!storyContainer) {
@@ -1766,6 +1818,7 @@ export const addBackgroundOrCg = (
         isLineCompleted,
         skipTransitionsAndAnimations,
         activePersistentAnimations,
+        isAuthoredOnCurrentLine: isBackgroundAnimationAuthoredOnCurrentLine,
       })
     ) {
       animations.push(...backgroundAnimationInstances);
