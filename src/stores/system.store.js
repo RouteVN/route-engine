@@ -1185,9 +1185,6 @@ const restoreRollbackCheckpoint = (state, checkpointIndex) => {
 
     state.global.pendingEffects.push({
       name: "render",
-      payload: {
-        allowRestoredInheritedPersistentBackgroundAnimations: true,
-      },
     });
   } finally {
     rollback.isRestoring = false;
@@ -1808,8 +1805,6 @@ export const selectRenderState = ({ state }, options = {}) => {
     runtime,
     activePersistentAnimations,
     restoredPersistentAnimations,
-    allowRestoredInheritedPersistentBackgroundAnimations:
-      options?.allowRestoredInheritedPersistentBackgroundAnimations === true,
   });
   return renderState;
 };
@@ -2469,9 +2464,6 @@ export const loadSlot = ({ state }, payload) => {
       { name: "clearNextLineConfigTimer" },
       {
         name: "render",
-        payload: {
-          allowRestoredInheritedPersistentBackgroundAnimations: true,
-        },
       },
     );
   }
@@ -2821,9 +2813,6 @@ export const prevLine = ({ state }, payload) => {
     // Add render effect for mode change
     state.global.pendingEffects.push({
       name: "render",
-      payload: {
-        allowRestoredInheritedPersistentBackgroundAnimations: true,
-      },
     });
 
     return state;
@@ -2844,9 +2833,6 @@ export const prevLine = ({ state }, payload) => {
 
     state.global.pendingEffects.push({
       name: "render",
-      payload: {
-        allowRestoredInheritedPersistentBackgroundAnimations: true,
-      },
     });
   }
 

@@ -106,8 +106,6 @@ out:
     pendingEffects:
       - name: "clearNextLineConfigTimer"
       - name: "render"
-        payload:
-          allowRestoredInheritedPersistentBackgroundAnimations: true
   contexts:
     - variables: {}
       currentPointerMode: "read"
@@ -192,8 +190,6 @@ out:
     pendingEffects:
       - name: "clearNextLineConfigTimer"
       - name: "render"
-        payload:
-          allowRestoredInheritedPersistentBackgroundAnimations: true
   contexts:
     - variables: {}
       currentPointerMode: "read"
@@ -304,8 +300,6 @@ out:
     pendingEffects:
       - name: "clearNextLineConfigTimer"
       - name: "render"
-        payload:
-          allowRestoredInheritedPersistentBackgroundAnimations: true
   contexts:
     - variables:
         score: 10
@@ -514,8 +508,6 @@ out:
     pendingEffects:
       - name: "clearNextLineConfigTimer"
       - name: "render"
-        payload:
-          allowRestoredInheritedPersistentBackgroundAnimations: true
   contexts:
     - variables:
         score: 15
@@ -673,8 +665,6 @@ out:
     pendingEffects:
       - name: "clearNextLineConfigTimer"
       - name: "render"
-        payload:
-          allowRestoredInheritedPersistentBackgroundAnimations: true
   contexts:
     - variables:
         score: 10
@@ -790,8 +780,6 @@ out:
     pendingEffects:
       - name: "clearNextLineConfigTimer"
       - name: "render"
-        payload:
-          allowRestoredInheritedPersistentBackgroundAnimations: true
   contexts:
     - variables: {}
       currentPointerMode: "read"
@@ -892,8 +880,6 @@ out:
     pendingEffects:
       - name: "clearNextLineConfigTimer"
       - name: "render"
-        payload:
-          allowRestoredInheritedPersistentBackgroundAnimations: true
   contexts:
     - variables: {}
       currentPointerMode: "read"

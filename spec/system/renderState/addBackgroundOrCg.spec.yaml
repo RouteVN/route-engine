@@ -502,7 +502,6 @@ in:
             continuity: "persistent"
     currentLineActions: {}
     isLineCompleted: true
-    allowRestoredInheritedPersistentBackgroundAnimations: true
     restoredPersistentAnimations:
       - id: "bg-cg-animation-transition"
         type: "transition"
@@ -593,7 +592,6 @@ in:
           playback:
             continuity: "persistent"
     isLineCompleted: true
-    allowRestoredInheritedPersistentBackgroundAnimations: true
     restoredPersistentAnimations:
       - id: "bg-cg-animation-transition"
         type: "transition"

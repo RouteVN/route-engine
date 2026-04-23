@@ -7,12 +7,6 @@ anyOf:
     properties:
       name:
         const: render
-      payload:
-        type: object
-        properties:
-          allowRestoredInheritedPersistentBackgroundAnimations:
-            type: boolean
-        additionalProperties: false
     required: [name]
     additionalProperties: false
 

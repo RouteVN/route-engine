@@ -116,13 +116,15 @@ export default function createRouteEngine(options) {
     const builtAt = Date.now();
     pruneExpiredPersistentAnimationSessions(builtAt);
 
+    const shouldUseRestoredPersistentAnimationSessions =
+      _restoredPersistentAnimationSessions.size > 0;
     const activePersistentAnimationSessions =
       snapshotPersistentAnimationSessions(
         _persistentAnimationSessions,
         builtAt,
       );
     const restoredPersistentAnimationSessions =
-      options?.allowRestoredInheritedPersistentBackgroundAnimations === true
+      shouldUseRestoredPersistentAnimationSessions
         ? snapshotPersistentAnimationSessions(
             _restoredPersistentAnimationSessions,
             builtAt,
@@ -135,8 +137,6 @@ export default function createRouteEngine(options) {
       restoredPersistentAnimations: collectSessionAnimations(
         restoredPersistentAnimationSessions,
       ),
-      allowRestoredInheritedPersistentBackgroundAnimations:
-        options?.allowRestoredInheritedPersistentBackgroundAnimations === true,
     });
     const nextRenderState = {
       ...renderState,
@@ -150,7 +150,7 @@ export default function createRouteEngine(options) {
         ...activePersistentAnimationSessions.entries(),
       ]),
       usedRestoredPersistentAnimationSessions:
-        options?.allowRestoredInheritedPersistentBackgroundAnimations === true,
+        shouldUseRestoredPersistentAnimationSessions,
     });
 
     return nextRenderState;

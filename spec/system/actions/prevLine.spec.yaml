@@ -34,8 +34,6 @@ out:
   global:
     pendingEffects:
       - name: "render"
-        payload:
-          allowRestoredInheritedPersistentBackgroundAnimations: true
   projectData:
     story:
       scenes:
@@ -90,8 +88,6 @@ out:
   global:
     pendingEffects:
       - name: "render"
-        payload:
-          allowRestoredInheritedPersistentBackgroundAnimations: true
   projectData:
     story:
       scenes:
@@ -146,8 +142,6 @@ out:
   global:
     pendingEffects:
       - name: "render"
-        payload:
-          allowRestoredInheritedPersistentBackgroundAnimations: true
   projectData:
     story:
       scenes:
