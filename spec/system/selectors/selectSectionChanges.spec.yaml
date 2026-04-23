@@ -363,6 +363,63 @@ out:
           characterId: "char1"
           persistCharacter: true
 ---
+case: "Include carried persistent background animations in per-line presentationState"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "bg-school"
+                          animations:
+                            resourceId: "fadeIn"
+                            playback:
+                              continuity: "persistent"
+                    - id: "2"
+                      actions:
+                        dialogue:
+                          content:
+                            - text: "Still fading"
+  - sectionId: "section1"
+    includePresentationState: true
+out:
+  lines:
+    - id: "1"
+      changes:
+        background:
+          changeType: "add"
+          data:
+            resourceId: "bg-school"
+            animations:
+              resourceId: "fadeIn"
+              playback:
+                continuity: "persistent"
+      presentationState:
+        background:
+          resourceId: "bg-school"
+          animations:
+            resourceId: "fadeIn"
+            playback:
+              continuity: "persistent"
+    - id: "2"
+      changes: {}
+      presentationState:
+        background:
+          resourceId: "bg-school"
+          animations:
+            resourceId: "fadeIn"
+            playback:
+              continuity: "persistent"
+        dialogue:
+          content:
+            - text: "Still fading"
+---
 case: "Background animation metadata should not create duplicate next-line changes"
 in:
   - state:

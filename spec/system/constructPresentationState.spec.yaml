@@ -13,6 +13,62 @@ out:
   background:
     resourceId: "mainBackground"
 ---
+case: persistent background animation survives later lines that omit background
+in:
+  - - background:
+        resourceId: "mainBackground"
+        animations:
+          resourceId: "bgFade"
+          playback:
+            continuity: "persistent"
+    - dialogue:
+        mode: "adv"
+        content:
+          - text: "Next line"
+out:
+  background:
+    resourceId: "mainBackground"
+    animations:
+      resourceId: "bgFade"
+      playback:
+        continuity: "persistent"
+  dialogue:
+    mode: "adv"
+    content:
+      - text: "Next line"
+---
+case: persistent background animation survives same-background reassertion without animations
+in:
+  - - background:
+        resourceId: "mainBackground"
+        animations:
+          resourceId: "bgFade"
+          playback:
+            continuity: "persistent"
+    - background:
+        resourceId: "mainBackground"
+out:
+  background:
+    resourceId: "mainBackground"
+    animations:
+      resourceId: "bgFade"
+      playback:
+        continuity: "persistent"
+---
+case: persistent background animation clears when background is modified
+in:
+  - - background:
+        resourceId: "mainBackground"
+        animations:
+          resourceId: "bgFade"
+          playback:
+            continuity: "persistent"
+    - background:
+        resourceId: "altBackground"
+out:
+  background:
+    resourceId: "altBackground"
+---
 case: construct presentation state with control action
 in:
   - - control:

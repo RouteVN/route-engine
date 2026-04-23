@@ -1770,8 +1770,11 @@ const shouldSettleCurrentLinePresentation = (state) => {
 export const selectRenderState = ({ state }, options = {}) => {
   const presentationState = selectPresentationState({ state });
   const previousPresentationState = selectPreviousPresentationState({ state });
+  const currentLineActions = selectCurrentLine({ state })?.actions ?? {};
   const runtime = selectRuntime({ state });
   const activePersistentAnimations = options?.activePersistentAnimations ?? [];
+  const restoredPersistentAnimations =
+    options?.restoredPersistentAnimations ?? [];
 
   const allVariables = selectAllVariables({ state });
 
@@ -1782,6 +1785,7 @@ export const selectRenderState = ({ state }, options = {}) => {
   const renderState = constructRenderState({
     presentationState,
     previousPresentationState,
+    currentLineActions,
     resources: state.projectData.resources,
     screen: state.projectData.screen,
     dialogueUIHidden: runtime.dialogueUIHidden,
@@ -1800,6 +1804,7 @@ export const selectRenderState = ({ state }, options = {}) => {
     variables: allVariables,
     runtime,
     activePersistentAnimations,
+    restoredPersistentAnimations,
   });
   return renderState;
 };
@@ -2457,7 +2462,9 @@ export const loadSlot = ({ state }, payload) => {
       { name: "clearAutoNextTimer" },
       { name: "clearSkipNextTimer" },
       { name: "clearNextLineConfigTimer" },
-      { name: "render" },
+      {
+        name: "render",
+      },
     );
   }
   return state;
@@ -2766,7 +2773,10 @@ export const prevLine = ({ state }, payload) => {
 
   // Get current history pointer or use read pointer as fallback
   const currentPointer =
-    lastContext.pointers.history || lastContext.pointers.read;
+    lastContext.currentPointerMode === "history" &&
+    lastContext.pointers.history?.lineId
+      ? lastContext.pointers.history
+      : lastContext.pointers.read;
 
   // If we're already in history mode, keep history pointer and move it back
   // Otherwise, switch to history mode and initialize it (only if we have a valid currentPointer)

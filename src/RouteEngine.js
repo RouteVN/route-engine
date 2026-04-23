@@ -1,7 +1,11 @@
 import { createSystemStore } from "./stores/system.store.js";
 import { normalizeNamespace } from "./indexedDbPersistence.js";
 import { processActionTemplates } from "./util.js";
-import { collectPersistentAnimationContinuations } from "./stores/constructRenderState.js";
+import {
+  collectPersistentAnimationContinuations,
+  getAnimationInstanceDurationMs,
+  getPersistentAnimationContinuationKey,
+} from "./stores/constructRenderState.js";
 
 const PERSISTENT_PLAYBACK_RESET_ACTIONS = new Set([
   "loadSlot",
@@ -12,6 +16,13 @@ const PERSISTENT_PLAYBACK_RESET_ACTIONS = new Set([
   "updateProjectData",
 ]);
 
+const PERSISTENT_PLAYBACK_RESTORE_ACTIONS = new Set([
+  "loadSlot",
+  "rollbackByOffset",
+  "rollbackToLine",
+  "prevLine",
+]);
+
 /**
  * Creates a RouteEngine instance.
  */
@@ -19,9 +30,43 @@ export default function createRouteEngine(options) {
   let _systemStore;
   let _renderSequence = 0;
   let _namespace = null;
-  let _activePersistentAnimations = [];
+  let _persistentAnimationSessions = new Map();
+  let _restoredPersistentAnimationSessions = new Map();
+  let _renderPersistentAnimationMetadata = new Map();
 
   const { handlePendingEffects } = options;
+
+  const snapshotPersistentAnimationSessions = (
+    sessions = new Map(),
+    now = Date.now(),
+  ) => {
+    return new Map(
+      Array.from(sessions.entries())
+        .filter(([, session]) => now < session.expiresAt)
+        .map(([continuationKey, session]) => [
+          continuationKey,
+          {
+            animation: structuredClone(session.animation),
+            startedAt: session.startedAt,
+            expiresAt: session.expiresAt,
+          },
+        ]),
+    );
+  };
+
+  const collectSessionAnimations = (sessions = new Map()) => {
+    return Array.from(sessions.values()).map((session) =>
+      structuredClone(session.animation),
+    );
+  };
+
+  const pruneExpiredPersistentAnimationSessions = (now = Date.now()) => {
+    _persistentAnimationSessions = new Map(
+      Array.from(_persistentAnimationSessions.entries()).filter(
+        ([, session]) => now < session.expiresAt,
+      ),
+    );
+  };
 
   const processEffectsUntilEmpty = () => {
     while (_systemStore.selectPendingEffects().length > 0) {
@@ -43,7 +88,9 @@ export default function createRouteEngine(options) {
     _systemStore = createSystemStore(initialState);
     _renderSequence = 0;
     _namespace = normalizeNamespace(namespace);
-    _activePersistentAnimations = [];
+    _persistentAnimationSessions = new Map();
+    _restoredPersistentAnimationSessions = new Map();
+    _renderPersistentAnimationMetadata = new Map();
     _systemStore.appendPendingEffect({ name: "handleLineActions" });
     processEffectsUntilEmpty();
   };
@@ -64,29 +111,102 @@ export default function createRouteEngine(options) {
     return _systemStore.selectSectionLineChanges(payload);
   };
 
-  const buildRenderState = () => {
+  const buildRenderState = (options = {}) => {
     _renderSequence += 1;
+    const builtAt = Date.now();
+    pruneExpiredPersistentAnimationSessions(builtAt);
+
+    const shouldUseRestoredPersistentAnimationSessions =
+      _restoredPersistentAnimationSessions.size > 0;
+    const activePersistentAnimationSessions =
+      snapshotPersistentAnimationSessions(
+        _persistentAnimationSessions,
+        builtAt,
+      );
+    const restoredPersistentAnimationSessions =
+      shouldUseRestoredPersistentAnimationSessions
+        ? snapshotPersistentAnimationSessions(
+            _restoredPersistentAnimationSessions,
+            builtAt,
+          )
+        : new Map();
     const renderState = _systemStore.selectRenderState({
-      activePersistentAnimations: _activePersistentAnimations,
+      activePersistentAnimations: collectSessionAnimations(
+        activePersistentAnimationSessions,
+      ),
+      restoredPersistentAnimations: collectSessionAnimations(
+        restoredPersistentAnimationSessions,
+      ),
     });
-    return {
+    const nextRenderState = {
       ...renderState,
       id: `render-${_renderSequence}`,
     };
+
+    _renderPersistentAnimationMetadata.set(nextRenderState.id, {
+      builtAt,
+      persistentAnimationSessions: new Map([
+        ...restoredPersistentAnimationSessions.entries(),
+        ...activePersistentAnimationSessions.entries(),
+      ]),
+      usedRestoredPersistentAnimationSessions:
+        shouldUseRestoredPersistentAnimationSessions,
+    });
+
+    return nextRenderState;
   };
 
-  const selectRenderState = () => {
-    return buildRenderState();
+  const selectRenderState = (options = {}) => {
+    return buildRenderState(options);
   };
 
-  const prepareRenderState = () => {
-    return buildRenderState();
+  const prepareRenderState = (options = {}) => {
+    return buildRenderState(options);
   };
 
   const commitRenderState = (renderState) => {
-    _activePersistentAnimations = collectPersistentAnimationContinuations(
-      renderState?.animations,
+    const renderId =
+      typeof renderState?.id === "string" && renderState.id.length > 0
+        ? renderState.id
+        : null;
+    const renderMetadata = renderId
+      ? _renderPersistentAnimationMetadata.get(renderId)
+      : null;
+    if (renderId) {
+      _renderPersistentAnimationMetadata.delete(renderId);
+    }
+
+    const nextSessions = new Map();
+    collectPersistentAnimationContinuations(renderState?.animations).forEach(
+      (animationInstance) => {
+        const continuationKey =
+          getPersistentAnimationContinuationKey(animationInstance);
+        if (!continuationKey) {
+          return;
+        }
+
+        const existingSession =
+          renderMetadata?.persistentAnimationSessions?.get(continuationKey) ??
+          _persistentAnimationSessions.get(continuationKey);
+        const durationMs = Math.max(
+          0,
+          getAnimationInstanceDurationMs(animationInstance),
+        );
+        const startedAt =
+          existingSession?.startedAt ?? renderMetadata?.builtAt ?? Date.now();
+
+        nextSessions.set(continuationKey, {
+          animation: structuredClone(animationInstance),
+          startedAt,
+          expiresAt: startedAt + durationMs,
+        });
+      },
     );
+
+    _persistentAnimationSessions = nextSessions;
+    if (renderMetadata?.usedRestoredPersistentAnimationSessions) {
+      _restoredPersistentAnimationSessions = new Map();
+    }
   };
 
   const selectSystemState = () => {
@@ -127,7 +247,13 @@ export default function createRouteEngine(options) {
     }
 
     if (PERSISTENT_PLAYBACK_RESET_ACTIONS.has(actionType)) {
-      _activePersistentAnimations = [];
+      if (PERSISTENT_PLAYBACK_RESTORE_ACTIONS.has(actionType)) {
+        _restoredPersistentAnimationSessions =
+          snapshotPersistentAnimationSessions(_persistentAnimationSessions);
+      } else {
+        _restoredPersistentAnimationSessions = new Map();
+      }
+      _persistentAnimationSessions = new Map();
     }
 
     _systemStore[actionType](payload);

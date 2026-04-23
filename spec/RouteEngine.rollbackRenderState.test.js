@@ -157,7 +157,9 @@ const createProjectData = () => ({
   },
 });
 
-const createPersistentBackgroundProjectData = () => ({
+const createPersistentBackgroundProjectData = ({
+  continuationLineCount = 1,
+} = {}) => ({
   screen: {
     width: 1920,
     height: 1080,
@@ -255,8 +257,8 @@ const createPersistentBackgroundProjectData = () => ({
                   },
                 },
               },
-              {
-                id: "line2",
+              ...Array.from({ length: continuationLineCount }, (_, index) => ({
+                id: `line${index + 2}`,
                 actions: {
                   dialogue: {
                     mode: "adv",
@@ -264,11 +266,16 @@ const createPersistentBackgroundProjectData = () => ({
                       resourceId: "advDialogue",
                     },
                     content: [
-                      { text: "Line 2 exists so the save can restore line 1." },
+                      {
+                        text:
+                          index === 0
+                            ? "Line 2 exists so the save can restore line 1."
+                            : `Line ${index + 2} keeps the background fade inherited from line 1.`,
+                      },
                     ],
                   },
                 },
-              },
+              })),
             ],
           },
         },
@@ -420,5 +427,256 @@ describe("RouteEngine rollback render state", () => {
     ).toBe("line1");
     expect(engine.selectSystemState().global.isLineCompleted).toBe(true);
     expect(restoredRender.animations).toEqual([]);
+  });
+
+  it("keeps inherited persistent background playback when loadSlot restores a later line", () => {
+    const routeGraphics = {
+      render: vi.fn(),
+    };
+
+    let engine;
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics,
+      ticker: createTicker(),
+      persistence: createNoopPersistence(),
+    });
+
+    engine = createRouteEngine({
+      handlePendingEffects: effectsHandler,
+    });
+
+    const nowSpy = vi.spyOn(Date, "now");
+
+    try {
+      nowSpy.mockReturnValue(0);
+      engine.init({
+        initialState: {
+          projectData: createPersistentBackgroundProjectData(),
+        },
+      });
+
+      nowSpy.mockReturnValue(1000);
+      engine.handleAction("markLineCompleted", {});
+
+      nowSpy.mockReturnValue(1001);
+      engine.handleActions({
+        nextLine: {},
+      });
+
+      const line2Render = routeGraphics.render.mock.calls.at(-1)?.[0];
+      expect(
+        engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
+      ).toBe("line2");
+      expect(line2Render.animations).toEqual([
+        expect.objectContaining({
+          id: "bg-cg-animation-transition",
+          targetId: "bg-cg-background-sprite",
+          playback: {
+            continuity: "persistent",
+          },
+        }),
+      ]);
+
+      engine.handleAction("saveSlot", { slotId: 1 });
+
+      nowSpy.mockReturnValue(1002);
+      engine.handleAction("loadSlot", { slotId: 1 });
+
+      const restoredRender = routeGraphics.render.mock.calls.at(-1)?.[0];
+      expect(
+        engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
+      ).toBe("line2");
+      expect(engine.selectSystemState().global.isLineCompleted).toBe(true);
+      expect(restoredRender.animations).toEqual([
+        expect.objectContaining({
+          id: "bg-cg-animation-transition",
+          targetId: "bg-cg-background-sprite",
+          playback: {
+            continuity: "persistent",
+          },
+        }),
+      ]);
+    } finally {
+      nowSpy.mockRestore();
+    }
+  });
+
+  it("keeps inherited persistent background playback when prevLine enters history", () => {
+    const routeGraphics = {
+      render: vi.fn(),
+    };
+
+    let engine;
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics,
+      ticker: createTicker(),
+      persistence: createNoopPersistence(),
+    });
+
+    engine = createRouteEngine({
+      handlePendingEffects: effectsHandler,
+    });
+
+    const nowSpy = vi.spyOn(Date, "now");
+
+    try {
+      nowSpy.mockReturnValue(0);
+      engine.init({
+        initialState: {
+          projectData: createPersistentBackgroundProjectData({
+            continuationLineCount: 2,
+          }),
+        },
+      });
+
+      nowSpy.mockReturnValue(1000);
+      engine.handleAction("markLineCompleted", {});
+
+      nowSpy.mockReturnValue(1001);
+      engine.handleActions({
+        nextLine: {},
+      });
+
+      nowSpy.mockReturnValue(1002);
+      engine.handleAction("markLineCompleted", {});
+
+      nowSpy.mockReturnValue(1003);
+      engine.handleActions({
+        nextLine: {},
+      });
+
+      expect(
+        engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
+      ).toBe("line3");
+
+      nowSpy.mockReturnValue(1004);
+      engine.handleAction("prevLine", {});
+
+      const historyRender = routeGraphics.render.mock.calls.at(-1)?.[0];
+      const lastContext = engine.selectSystemState().contexts.at(-1);
+
+      expect(lastContext.currentPointerMode).toBe("history");
+      expect(lastContext.pointers.history.lineId).toBe("line2");
+      expect(historyRender.animations).toEqual([
+        expect.objectContaining({
+          id: "bg-cg-animation-transition",
+          targetId: "bg-cg-background-sprite",
+          playback: {
+            continuity: "persistent",
+          },
+        }),
+      ]);
+    } finally {
+      nowSpy.mockRestore();
+    }
+  });
+
+  it("does not replay an inherited persistent background animation after it has finished", () => {
+    const routeGraphics = {
+      render: vi.fn(),
+    };
+
+    let engine;
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics,
+      ticker: createTicker(),
+      persistence: createNoopPersistence(),
+    });
+
+    engine = createRouteEngine({
+      handlePendingEffects: effectsHandler,
+    });
+
+    const nowSpy = vi.spyOn(Date, "now");
+
+    try {
+      nowSpy.mockReturnValue(0);
+      engine.init({
+        initialState: {
+          projectData: createPersistentBackgroundProjectData(),
+        },
+      });
+
+      const initialRender = routeGraphics.render.mock.calls.at(-1)?.[0];
+      expect(initialRender.animations).toEqual([
+        expect.objectContaining({
+          id: "bg-cg-animation-transition",
+          targetId: "bg-cg-background-sprite",
+          playback: {
+            continuity: "persistent",
+          },
+        }),
+      ]);
+
+      nowSpy.mockReturnValue(10001);
+      expect(
+        effectsHandler.handleRouteGraphicsEvent("renderComplete", {
+          id: initialRender.id,
+          aborted: false,
+        }),
+      ).toBe(true);
+
+      const completedRender = routeGraphics.render.mock.calls.at(-1)?.[0];
+      expect(engine.selectSystemState().global.isLineCompleted).toBe(true);
+      expect(completedRender.animations).toEqual([]);
+
+      nowSpy.mockReturnValue(10002);
+      engine.handleActions({
+        nextLine: {},
+      });
+
+      const advancedRender = routeGraphics.render.mock.calls.at(-1)?.[0];
+      expect(
+        engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
+      ).toBe("line2");
+      expect(advancedRender.animations).toEqual([]);
+    } finally {
+      nowSpy.mockRestore();
+    }
+  });
+
+  it("does not renew persistent background playback when commit crosses the expiry boundary", () => {
+    const routeGraphics = {
+      render: vi.fn(),
+    };
+
+    let engine;
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics,
+      ticker: createTicker(),
+      persistence: createNoopPersistence(),
+    });
+
+    engine = createRouteEngine({
+      handlePendingEffects: effectsHandler,
+    });
+
+    const nowSpy = vi.spyOn(Date, "now");
+
+    try {
+      nowSpy.mockReturnValue(0);
+      engine.init({
+        initialState: {
+          projectData: createPersistentBackgroundProjectData(),
+        },
+      });
+
+      nowSpy.mockReturnValue(9999);
+      const preExpiryRender = engine.prepareRenderState();
+
+      nowSpy.mockReturnValue(10001);
+      engine.commitRenderState(preExpiryRender);
+      engine.handleAction("markLineCompleted", {});
+
+      const completedRender = routeGraphics.render.mock.calls.at(-1)?.[0];
+      expect(engine.selectSystemState().global.isLineCompleted).toBe(true);
+      expect(completedRender.animations).toEqual([]);
+    } finally {
+      nowSpy.mockRestore();
+    }
   });
 });

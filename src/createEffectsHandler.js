@@ -23,7 +23,7 @@ const DEFAULT_SKIP_NEXT_DELAY_MS = 80;
 
 const render = ({ engine, routeGraphics, trackRenderDispatch }, payload) => {
   const renderState =
-    engine.prepareRenderState?.() ?? engine.selectRenderState();
+    engine.prepareRenderState?.(payload) ?? engine.selectRenderState(payload);
   trackRenderDispatch?.(renderState);
   routeGraphics.render(renderState);
   engine.commitRenderState?.(renderState);
