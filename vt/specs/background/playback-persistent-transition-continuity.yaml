@@ -1,20 +1,21 @@
 ---
 title: Background Playback Persistent Transition Continuity
+skipInitialScreenshot: true
 description: |
   A persistent background transition should stay in flight across unrelated
   same-line renders instead of restarting its enter fade.
 
-  - line 1 has no background
-  - line 2 starts a persistent transition on the background
+  - line 1 has no background and auto-advances into line 2
+  - line 2 starts the persistent transition with line 1 as previous state
   - the toggle button causes unrelated renders on line 2
   - the transition alpha should keep progressing instead of jumping back
 steps:
-  - action: customEvent
-    name: vt:nextLine
+  - action: wait
+    ms: 250
   - action: customEvent
     name: snapShotKeyFrame
     detail:
-      deltaMS: 400
+      deltaMS: 1200
   - action: screenshot
   - action: click
     x: 90
@@ -24,7 +25,7 @@ steps:
   - action: customEvent
     name: snapShotKeyFrame
     detail:
-      deltaMS: 100
+      deltaMS: 300
   - action: screenshot
   - action: click
     x: 90
@@ -34,7 +35,7 @@ steps:
   - action: customEvent
     name: snapShotKeyFrame
     detail:
-      deltaMS: 200
+      deltaMS: 600
   - action: screenshot
 ---
 screen:
@@ -55,7 +56,7 @@ resources:
           alpha:
             initialValue: 0
             keyframes:
-              - duration: 1000
+              - duration: 3000
                 value: 1
                 easing: linear
   variables:
@@ -113,6 +114,12 @@ story:
           lines:
             - id: line1
               actions:
+                setNextLineConfig:
+                  auto:
+                    enabled: true
+                    trigger: fromStart
+                    delay: 150
+                  applyMode: singleLine
                 control:
                   resourceId: continuityToggle
             - id: line2
