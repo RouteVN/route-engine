@@ -1,0 +1,127 @@
+---
+title: Background Playback Persistent Transition Continuity
+description: |
+  A persistent background transition should stay in flight across unrelated
+  same-line renders instead of restarting its enter fade.
+
+  - line 1 has no background
+  - line 2 starts a persistent transition on the background
+  - the toggle button causes unrelated renders on line 2
+  - the transition alpha should keep progressing instead of jumping back
+steps:
+  - action: customEvent
+    name: vt:nextLine
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 400
+  - action: screenshot
+  - action: click
+    x: 90
+    y: 50
+  - action: wait
+    ms: 80
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 100
+  - action: screenshot
+  - action: click
+    x: 90
+    y: 50
+  - action: wait
+    ms: 80
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 200
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  images:
+    bg-door:
+      fileId: lakjf3lka
+      width: 1920
+      height: 1080
+  animations:
+    bg-fade-in:
+      type: transition
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 1000
+                value: 1
+                easing: linear
+  variables:
+    probe:
+      type: boolean
+      scope: context
+      default: false
+  controls:
+    continuityToggle:
+      elements:
+        - id: toggle-hit
+          type: rect
+          x: 40
+          y: 40
+          width: 280
+          height: 120
+          colorId: fg30
+          click:
+            payload:
+              actions:
+                updateVariable:
+                  id: toggleProbe
+                  operations:
+                    - variableId: probe
+                      op: toggle
+        - id: toggle-indicator-off
+          $when: "!variables.probe"
+          type: rect
+          x: 360
+          y: 40
+          width: 120
+          height: 120
+          colorId: fg30
+        - id: toggle-indicator-on
+          $when: variables.probe
+          type: rect
+          x: 360
+          y: 40
+          width: 120
+          height: 120
+          colorId: fg100
+  colors:
+    fg100:
+      hex: "#FFFFFF"
+    fg30:
+      hex: "#4D4D4D"
+story:
+  initialSceneId: backgroundScene
+  scenes:
+    backgroundScene:
+      name: Background Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                control:
+                  resourceId: continuityToggle
+            - id: line2
+              actions:
+                control:
+                  resourceId: continuityToggle
+                background:
+                  resourceId: bg-door
+                  animations:
+                    resourceId: bg-fade-in
+                    playback:
+                      continuity: persistent

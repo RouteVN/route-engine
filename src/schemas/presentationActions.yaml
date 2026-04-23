@@ -3,6 +3,17 @@ title: Presentation Actions Schema
 description: Schema for all presentation actions that handle visual and audio display in visual novel engine
 type: object
 definitions:
+  animationPlayback:
+    type: object
+    description: Playback contract applied at the action payload layer
+    properties:
+      continuity:
+        type: string
+        enum: [render, persistent]
+        description: Whether animation continuity is render-scoped or persists across later renders while the action remains active
+    required: [continuity]
+    additionalProperties: false
+
   animationRef:
     type: object
     description: Reference to an animation resource
@@ -10,6 +21,8 @@ definitions:
       resourceId:
         type: string
         description: ID of the animation resource to use
+      playback:
+        $ref: "#/definitions/animationPlayback"
     required: [resourceId]
     additionalProperties: false
 

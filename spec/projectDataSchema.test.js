@@ -166,6 +166,23 @@ describe("projectData schema", () => {
     expect(validatePresentationActions.errors).toBeNull();
   });
 
+  it("accepts animation playback continuity in presentation action payloads", () => {
+    expect(
+      validatePresentationActions({
+        background: {
+          resourceId: "bg1",
+          animations: {
+            resourceId: "fadeIn",
+            playback: {
+              continuity: "persistent",
+            },
+          },
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+  });
+
   it("accepts dialogue character override and persistCharacter in presentation actions", () => {
     expect(
       validatePresentationActions({
@@ -345,6 +362,46 @@ describe("projectData schema", () => {
         }),
         expect.objectContaining({
           instancePath: "/resources/animations/crossFade/type",
+        }),
+      ]),
+    );
+  });
+
+  it("rejects animation playback continuity authored on resources", () => {
+    const projectData = createMinimalProjectData({
+      resources: {
+        animations: {
+          fadeIn: {
+            type: "transition",
+            playback: {
+              continuity: "persistent",
+            },
+            next: {
+              tween: {
+                alpha: {
+                  keyframes: [
+                    {
+                      duration: 500,
+                      value: 1,
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    expect(validateProjectData(projectData)).toBe(false);
+    expect(validateProjectData.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          instancePath: "/resources/animations/fadeIn",
+          keyword: "additionalProperties",
+          params: expect.objectContaining({
+            additionalProperty: "playback",
+          }),
         }),
       ]),
     );

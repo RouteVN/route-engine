@@ -1,0 +1,146 @@
+---
+title: Character Playback Persistent Update Continuity
+description: |
+  A persistent character update animation should continue across unrelated
+  same-line renders triggered by action payload changes.
+
+  - line 1 establishes the character
+  - line 2 starts a persistent character update animation
+  - the toggle button causes unrelated renders on line 2
+  - the character should keep progressing instead of restarting
+steps:
+  - action: customEvent
+    name: vt:nextLine
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 400
+  - action: screenshot
+  - action: click
+    x: 90
+    y: 50
+  - action: wait
+    ms: 80
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 100
+  - action: screenshot
+  - action: click
+    x: 90
+    y: 50
+  - action: wait
+    ms: 80
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 200
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  images:
+    char-hero:
+      fileId: char_sprite_1
+      width: 553
+      height: 865
+  transforms:
+    hero-left:
+      x: 420
+      y: 1080
+      anchorX: 0.5
+      anchorY: 1
+      scaleX: 1
+      scaleY: 1
+      rotation: 0
+  animations:
+    hero-slide:
+      type: update
+      tween:
+        x:
+          keyframes:
+            - duration: 1000
+              value: 1080
+              easing: linear
+  variables:
+    probe:
+      type: boolean
+      scope: context
+      default: false
+  controls:
+    continuityToggle:
+      elements:
+        - id: toggle-hit
+          type: rect
+          x: 40
+          y: 40
+          width: 280
+          height: 120
+          colorId: fg30
+          click:
+            payload:
+              actions:
+                updateVariable:
+                  id: toggleProbe
+                  operations:
+                    - variableId: probe
+                      op: toggle
+        - id: toggle-indicator-off
+          $when: "!variables.probe"
+          type: rect
+          x: 360
+          y: 40
+          width: 120
+          height: 120
+          colorId: fg30
+        - id: toggle-indicator-on
+          $when: variables.probe
+          type: rect
+          x: 360
+          y: 40
+          width: 120
+          height: 120
+          colorId: fg100
+  colors:
+    fg100:
+      hex: "#FFFFFF"
+    fg30:
+      hex: "#4D4D4D"
+story:
+  initialSceneId: characterScene
+  scenes:
+    characterScene:
+      name: Character Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                control:
+                  resourceId: continuityToggle
+                character:
+                  items:
+                    - id: hero
+                      transformId: hero-left
+                      sprites:
+                        - id: base
+                          resourceId: char-hero
+            - id: line2
+              actions:
+                control:
+                  resourceId: continuityToggle
+                character:
+                  items:
+                    - id: hero
+                      transformId: hero-left
+                      sprites:
+                        - id: base
+                          resourceId: char-hero
+                      animations:
+                        resourceId: hero-slide
+                        playback:
+                          continuity: persistent

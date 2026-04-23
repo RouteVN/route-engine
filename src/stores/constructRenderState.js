@@ -122,6 +122,7 @@ const createAnimationInstance = ({
   id,
   targetId,
   animation,
+  playback,
   animationPath = "animation",
 }) => {
   const normalized = structuredClone(animation);
@@ -131,8 +132,12 @@ const createAnimationInstance = ({
     animationPath,
   });
   delete normalized.name;
+  delete normalized.playback;
   normalized.id = id;
   normalized.targetId = targetId;
+  if (playback) {
+    normalized.playback = structuredClone(playback);
+  }
   return normalized;
 };
 
@@ -173,6 +178,18 @@ const resolveAnimationResourceId = (animationDef) => {
   return animationDef.resourceId;
 };
 
+const resolveAnimationPlayback = (animationDef) => {
+  if (
+    !animationDef ||
+    typeof animationDef !== "object" ||
+    Array.isArray(animationDef)
+  ) {
+    return undefined;
+  }
+
+  return animationDef.playback;
+};
+
 const hasLegacyAnimationLifecycleConfig = (animationsDef) => {
   if (
     !animationsDef ||
@@ -204,6 +221,7 @@ const pushAnimationInstance = ({
   animations,
   resources,
   animationId,
+  playback,
   instanceId,
   targetId,
   animationPath = "animation",
@@ -222,6 +240,7 @@ const pushAnimationInstance = ({
       id: instanceId,
       targetId,
       animation,
+      playback,
       animationPath,
     }),
   );
@@ -1374,6 +1393,7 @@ const pushAnimations = ({
   assertNoLegacyAnimationLifecycleConfig(animationsDef, animationPath);
 
   const animationId = resolveAnimationResourceId(animationsDef);
+  const playback = resolveAnimationPlayback(animationsDef);
   const animation = resources?.animations?.[animationId];
   const animationType = getAnimationType(animation, {
     animationId,
@@ -1406,6 +1426,7 @@ const pushAnimations = ({
         animations,
         resources,
         animationId,
+        playback,
         instanceId: `${idPrefix}-animation-update`,
         targetId: currentTargetId,
         animationPath,
@@ -1415,6 +1436,7 @@ const pushAnimations = ({
         animations,
         resources,
         animationId,
+        playback,
         instanceId: `${idPrefix}-animation-update`,
         targetId: currentTargetId,
         animationPath,
@@ -1430,6 +1452,7 @@ const pushAnimations = ({
         animations,
         resources,
         animationId,
+        playback,
         instanceId: `${idPrefix}-animation-transition`,
         targetId: currentTargetId,
         animationPath,
@@ -1443,6 +1466,7 @@ const pushAnimations = ({
         animations,
         resources,
         animationId,
+        playback,
         instanceId: `${idPrefix}-animation-out`,
         targetId: previousTargetId,
         animationPath,
@@ -1454,6 +1478,7 @@ const pushAnimations = ({
         animations,
         resources,
         animationId,
+        playback,
         instanceId: `${idPrefix}-animation-in`,
         targetId: currentTargetId,
         animationPath,
