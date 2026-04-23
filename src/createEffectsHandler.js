@@ -22,9 +22,11 @@ const createTimerState = () => {
 const DEFAULT_SKIP_NEXT_DELAY_MS = 80;
 
 const render = ({ engine, routeGraphics, trackRenderDispatch }, payload) => {
-  const renderState = engine.selectRenderState();
+  const renderState =
+    engine.prepareRenderState?.() ?? engine.selectRenderState();
   trackRenderDispatch?.(renderState);
   routeGraphics.render(renderState);
+  engine.commitRenderState?.(renderState);
 };
 
 const handleLineActions = (

@@ -1,6 +1,16 @@
 import { createSystemStore } from "./stores/system.store.js";
 import { normalizeNamespace } from "./indexedDbPersistence.js";
 import { processActionTemplates } from "./util.js";
+import { collectPersistentAnimationContinuations } from "./stores/constructRenderState.js";
+
+const PERSISTENT_PLAYBACK_RESET_ACTIONS = new Set([
+  "loadSlot",
+  "resetStoryAtSection",
+  "rollbackByOffset",
+  "rollbackToLine",
+  "prevLine",
+  "updateProjectData",
+]);
 
 /**
  * Creates a RouteEngine instance.
@@ -9,6 +19,7 @@ export default function createRouteEngine(options) {
   let _systemStore;
   let _renderSequence = 0;
   let _namespace = null;
+  let _activePersistentAnimations = [];
 
   const { handlePendingEffects } = options;
 
@@ -32,6 +43,7 @@ export default function createRouteEngine(options) {
     _systemStore = createSystemStore(initialState);
     _renderSequence = 0;
     _namespace = normalizeNamespace(namespace);
+    _activePersistentAnimations = [];
     _systemStore.appendPendingEffect({ name: "handleLineActions" });
     processEffectsUntilEmpty();
   };
@@ -52,13 +64,29 @@ export default function createRouteEngine(options) {
     return _systemStore.selectSectionLineChanges(payload);
   };
 
-  const selectRenderState = () => {
+  const buildRenderState = () => {
     _renderSequence += 1;
-    const renderState = _systemStore.selectRenderState();
+    const renderState = _systemStore.selectRenderState({
+      activePersistentAnimations: _activePersistentAnimations,
+    });
     return {
       ...renderState,
       id: `render-${_renderSequence}`,
     };
+  };
+
+  const selectRenderState = () => {
+    return buildRenderState();
+  };
+
+  const prepareRenderState = () => {
+    return buildRenderState();
+  };
+
+  const commitRenderState = (renderState) => {
+    _activePersistentAnimations = collectPersistentAnimationContinuations(
+      renderState?.animations,
+    );
   };
 
   const selectSystemState = () => {
@@ -97,6 +125,11 @@ export default function createRouteEngine(options) {
     if (!_systemStore[actionType]) {
       return;
     }
+
+    if (PERSISTENT_PLAYBACK_RESET_ACTIONS.has(actionType)) {
+      _activePersistentAnimations = [];
+    }
+
     _systemStore[actionType](payload);
     processEffectsUntilEmpty();
   };
@@ -164,6 +197,8 @@ export default function createRouteEngine(options) {
     handleInternalAction,
     handleActions,
     selectRenderState,
+    prepareRenderState,
+    commitRenderState,
     selectPresentationState,
     selectPresentationChanges,
     selectSectionLineChanges,

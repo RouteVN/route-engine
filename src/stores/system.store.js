@@ -1767,10 +1767,11 @@ const shouldSettleCurrentLinePresentation = (state) => {
   );
 };
 
-export const selectRenderState = ({ state }) => {
+export const selectRenderState = ({ state }, options = {}) => {
   const presentationState = selectPresentationState({ state });
   const previousPresentationState = selectPreviousPresentationState({ state });
   const runtime = selectRuntime({ state });
+  const activePersistentAnimations = options?.activePersistentAnimations ?? [];
 
   const allVariables = selectAllVariables({ state });
 
@@ -1798,6 +1799,7 @@ export const selectRenderState = ({ state }) => {
     saveSlots,
     variables: allVariables,
     runtime,
+    activePersistentAnimations,
   });
   return renderState;
 };
