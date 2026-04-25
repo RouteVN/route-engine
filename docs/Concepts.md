@@ -87,7 +87,8 @@ Mutable runtime state managed by the system store. Key components:
   - `pendingEffects`: Queue of side effects to execute
   - `autoMode` / `skipMode`: Playback mode flags
   - `dialogueUIHidden`: UI visibility toggle
-  - `viewedRegistry`: Tracks which sections/lines have been seen
+  - `viewedRegistry`: Slot-local seen snapshot used by current save/load behavior
+  - `accountViewedRegistry`: Account-level seen registry used by skip-unseen checks
   - `nextLineConfig`: Controls line advancement behavior
   - `saveSlots`: Save game data
   - `isLineCompleted`: Whether current line animation finished
@@ -99,6 +100,18 @@ Mutable runtime state managed by the system store. Key components:
   - `views`: Overlay stack
   - `bgm`: Current background music
   - `variables`: Game variables
+  - `rollback`: Active branch timeline for rollback navigation
+
+### History and Seen State
+
+The engine has separate concepts that should not be collapsed:
+
+- `historyDialogue`: A render-time dialogue backlog projection for the current section. It is used by layouts and does not restore state.
+- `context.rollback.timeline`: The active path for rollback navigation in the current context. It crosses sections and is saved with slots, but abandoned future checkpoints are removed when the player rolls back and branches.
+- `global.viewedRegistry`: The current slot-local seen snapshot. It is saved into slots and restored from slots.
+- `global.accountViewedRegistry`: The account-level seen snapshot. It is persisted outside slots and is not replaced by `loadSlot`.
+
+`runtime.skipUnseenText` is a device-level preference. The seen data it checks is account-level: skip-unseen uses `global.accountViewedRegistry`, not slot `viewedRegistry` or `rollback.timeline`.
 
 ### Presentation State
 

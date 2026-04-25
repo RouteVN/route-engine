@@ -37,6 +37,9 @@ out:
     viewedRegistry:
       sections: []
       resources: []
+    accountViewedRegistry:
+      sections: []
+      resources: []
     nextLineConfig:
       manual:
         enabled: true
@@ -125,6 +128,9 @@ out:
     muteAll: false
     confirmDialog: null
     viewedRegistry:
+      sections: []
+      resources: []
+    accountViewedRegistry:
       sections: []
       resources: []
     nextLineConfig:
@@ -230,6 +236,9 @@ out:
     viewedRegistry:
       sections: []
       resources: []
+    accountViewedRegistry:
+      sections: []
+      resources: []
     nextLineConfig:
       manual:
         enabled: true
@@ -327,6 +336,9 @@ out:
     viewedRegistry:
       sections: []
       resources: []
+    accountViewedRegistry:
+      sections: []
+      resources: []
     nextLineConfig:
       manual:
         enabled: true
@@ -419,6 +431,9 @@ out:
     muteAll: false
     confirmDialog: null
     viewedRegistry:
+      sections: []
+      resources: []
+    accountViewedRegistry:
       sections: []
       resources: []
     nextLineConfig:

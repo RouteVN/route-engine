@@ -82,4 +82,46 @@ describe("createEffectsHandler storage effects", () => {
     expect(routeGraphics.render).toHaveBeenCalledTimes(1);
     expect(routeGraphics.render).toHaveBeenCalledWith({ id: "render-1" });
   });
+
+  it("reports a persistence adapter error when applyScopedDataUpdates is missing", async () => {
+    const handlePersistenceError = vi.fn();
+
+    const effectsHandler = createEffectsHandler({
+      getEngine: createEngine,
+      routeGraphics: {
+        render: vi.fn(),
+      },
+      ticker: createTicker(),
+      persistence: {
+        saveSlots: vi.fn(),
+      },
+      handlePersistenceError,
+    });
+
+    effectsHandler([
+      {
+        name: "applyScopedDataUpdates",
+        payload: {
+          updates: [
+            {
+              scope: "account",
+              path: "viewedRegistry",
+              op: "markViewed",
+              value: {
+                sections: [{ sectionId: "prologue", lineId: "line2" }],
+              },
+            },
+          ],
+        },
+      },
+    ]);
+
+    await vi.waitFor(() => {
+      expect(handlePersistenceError).toHaveBeenCalledTimes(1);
+    });
+    expect(handlePersistenceError.mock.calls[0][0]).toBeInstanceOf(Error);
+    expect(handlePersistenceError.mock.calls[0][0].message).toBe(
+      "RouteEngine persistence adapter must implement applyScopedDataUpdates.",
+    );
+  });
 });

@@ -50,6 +50,7 @@ The destination line then runs as normal through queued `handleLineActions`.
 - `projectData`
 - `global.saveSlots`
 - `global.variables` for `device` and `account` scopes
+- `global.accountViewedRegistry`
 
 ## What It Resets
 
@@ -59,7 +60,7 @@ The destination line then runs as normal through queued `handleLineActions`.
   - forced to `read`
 - current context rollback:
   - replaced with a single checkpoint anchored at the destination line
-- viewed state:
+- slot-local viewed state:
   - `viewedRegistry.sections = []`
   - `viewedRegistry.resources = []`
 - transient runtime globals:
@@ -105,8 +106,8 @@ resetStoryAtSection:
 
 The difference is intentional:
 
-- `sectionTransition` preserves rollback/viewed state/context variables
-- `resetStoryAtSection` clears them
+- `sectionTransition` preserves rollback, slot-local viewed state, account viewed state, and context variables
+- `resetStoryAtSection` clears rollback, slot-local viewed state, and context variables, but preserves account viewed state
 
 ## Examples
 

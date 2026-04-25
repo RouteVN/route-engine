@@ -53,6 +53,8 @@ For the current model, that means:
 
 Rollback data lives inside context state and is therefore part of saved story state.
 
+`accountViewedRegistry` is not saved inside slots. It is account-scoped persistent data and is loaded through the global persistence path.
+
 ### Persistent Global Variables
 
 Persistent global variables are variables with scope:
@@ -63,6 +65,12 @@ Persistent global variables are variables with scope:
 These are not story-local and should not be stored inside save slot state.
 
 They persist through their own storage path.
+
+The account-level viewed registry follows the same rule: it persists outside slots and is not restored or backfilled from a slot. Loading a slot ignores that slot's `viewedRegistry` for account-level seen state.
+
+The built-in IndexedDB adapter stores account-scoped data per browser namespace. A host that needs cross-device account persistence should provide a persistence adapter that maps `applyScopedDataUpdates` account operations and load hydration to account storage.
+
+`applyScopedDataUpdates` is a public runtime-facing persistence contract. Its full interface is documented in [ScopedDataUpdates.md](./ScopedDataUpdates.md).
 
 ### Transient Runtime State
 
@@ -230,12 +238,17 @@ The save/load path crosses the store boundary through effects:
 - `saveSlots`
 - `saveGlobalDeviceVariables`
 - `saveGlobalAccountVariables`
+- `saveGlobalRuntime`
+- `applyScopedDataUpdates`
+
+`saveGlobalDeviceVariables` and `saveGlobalAccountVariables` are legacy full-snapshot effects. New scoped writes should use `applyScopedDataUpdates`.
 
 Current behavior:
 
 - `saveSlot` mutates `state.global.saveSlots`
 - then it emits a `saveSlots` effect
 - the built-in browser persistence helper persists the full slot map to IndexedDB
+- scoped data emits `applyScopedDataUpdates` with ordered operations such as `variables.<id>` `set` and account `viewedRegistry` `markViewed`
 
 Load is different:
 
@@ -389,6 +402,8 @@ The host app is responsible for:
 
 - hydrating `initialState.global.saveSlots` from durable storage before engine init
 - hydrating persistent global variables before engine init
+- hydrating `initialState.global.accountViewedRegistry` before engine init
+- hydrating `initialState.global.runtime` before engine init, including device preferences such as `skipUnseenText`
 - choosing and reusing a per-VN `namespace` during persistence hydration and `engine.init(...)`
 - calling `createIndexedDbPersistence({ namespace }).clear()` when the host wants to wipe one VN's persisted data
 - providing thumbnail image payloads when a save action wants one
@@ -435,8 +450,16 @@ Important constraints:
 
 - `formatVersion` is required on every loadable save slot
 - `state.contexts` is authoritative for story restoration
-- `state.viewedRegistry` is authoritative for seen-state restoration
+- `state.viewedRegistry` is authoritative for slot-local seen-state restoration
 - runtime-only globals are not part of this slot payload
+- account-level viewed state is not part of this slot payload
+
+`state.contexts[*].rollback.timeline` and `state.viewedRegistry` are different save-scope concepts:
+
+- `rollback.timeline` is the active branch history for rollback navigation. It can cross sections, and it is pruned when the player rolls back and then advances onto a different branch.
+- `viewedRegistry` is the slot-local seen snapshot. It is monotonic within the slot and is not reconstructed from rollback history.
+
+Neither field is the account-level "seen ever" registry. Skip-unseen text uses `accountViewedRegistry`, which lives outside save slot state and is not replaced by `loadSlot`.
 
 ## How It Works Today
 
@@ -446,6 +469,8 @@ At initialization:
 
 - `createInitialState` receives `payload.global.saveSlots`
 - `createInitialState` also receives preloaded persistent global variables
+- `createInitialState` receives `payload.global.accountViewedRegistry`
+- `createInitialState` receives `payload.global.runtime`
 - those become part of initial in-memory system state
 - hydrated save slots are validated immediately, including required `formatVersion`
 
@@ -453,6 +478,8 @@ This means startup hydration is split:
 
 - slot map comes from the host app into store initialization
 - persistent globals come from the host app into store initialization
+- account-level viewed state comes from the host app into store initialization
+- device runtime preferences come from the host app into store initialization
 
 ### Save Flow
 
@@ -480,7 +507,8 @@ Current load flow:
 5. validate each loaded read pointer against current `projectData`
 6. normalize loaded contexts and rollback state
 7. reset transient runtime globals to a clean playable baseline
-8. queue timer-clear effects and append `render`
+8. leave `accountViewedRegistry` unchanged
+9. queue timer-clear effects and append `render`
 
 ## Relationship to Rollback
 
@@ -492,6 +520,24 @@ Required behavior:
 - loading must preserve rollback ability from the loaded point
 - old saves without rollback state may be upgraded to a minimal rollback state
 - rollback restore start state is recomputed from project defaults, not from saved baseline snapshots
+
+Rollback history is save-local. Loading slot A replaces the in-memory contexts with slot A's contexts, including its rollback timeline and cursor. Loading slot B then replaces those with slot B's timeline and cursor.
+
+Rollback history should be read as "the active path for this saved run." It is not an append-only audit log of every branch the player has ever visited, and it is not account-global.
+
+The active path is preserved across normal section transitions. If the player rolls back and takes a new path, the old future after the rollback point is intentionally discarded. The common prefix before the rollback point remains.
+
+## Relationship to Seen State
+
+The current slot payload also stores `state.viewedRegistry`. This is slot state today: saving snapshots it, and loading replaces the current registry with the slot's registry.
+
+That makes `viewedRegistry` different from rollback history:
+
+- rollback history answers "where can this save roll back to?"
+- slot viewed state answers "what had this save marked viewed when it was saved?"
+- account viewed state answers "what has this player ever seen across saves?"
+
+Skip-unseen text uses account viewed state. `saveSlot` is not the authoritative write for that registry, and `loadSlot` does not overwrite or backfill it. Slot-local `state.viewedRegistry` is ignored for account viewed state, including when loading older slots.
 
 ## Validation and Compatibility Rules
 

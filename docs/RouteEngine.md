@@ -436,10 +436,10 @@ Playback timing semantics:
 
 ### Registry Actions
 
-| Action              | Payload                 | Description             |
-| ------------------- | ----------------------- | ----------------------- |
-| `addViewedLine`     | `{ sectionId, lineId }` | Mark line as viewed     |
-| `addViewedResource` | `{ resourceId }`        | Mark resource as viewed |
+| Action              | Payload                 | Description                                      |
+| ------------------- | ----------------------- | ------------------------------------------------ |
+| `addViewedLine`     | `{ sectionId, lineId }` | Mark line as viewed in slot and account state    |
+| `addViewedResource` | `{ resourceId }`        | Mark resource as viewed in slot and account state |
 
 Seen-line semantics:
 
@@ -447,6 +447,9 @@ Seen-line semantics:
 - The frontier line itself counts as seen.
 - Any earlier line in the same section also counts as seen.
 - The frontier is updated when a line is completed and when progression moves away from the current line.
+- Slot-local viewed state is saved in save slots as `global.viewedRegistry`.
+- Account-level viewed state is persisted outside save slots as `global.accountViewedRegistry`.
+- Skip-unseen checks use account-level viewed state; `runtime.skipUnseenText` only controls whether skip may pass unseen account content.
 
 ### Save System Actions
 
@@ -484,21 +487,23 @@ Use these only if you are extending engine internals or writing engine-level tes
 
 The system store exposes these selectors (called internally):
 
-| Selector                 | Parameters              | Returns                           |
-| ------------------------ | ----------------------- | --------------------------------- |
-| `selectPendingEffects`   | -                       | Array of pending effects          |
-| `selectCurrentPointer`   | -                       | `{ currentPointerMode: "read", pointer }` |
-| `selectCurrentLine`      | -                       | Current line object               |
-| `selectSection`          | `{ sectionId }`         | Section object                    |
-| `selectAutoMode`         | -                       | Boolean                           |
-| `selectSkipMode`         | -                       | Boolean                           |
-| `selectDialogueUIHidden` | -                       | Boolean                           |
-| `selectIsLineViewed`     | `{ sectionId, lineId }` | Boolean                           |
-| `selectIsResourceViewed` | `{ resourceId }`        | Boolean                           |
-| `selectNextLineConfig`   | -                       | Config object                     |
-| `selectSaveSlotMap`      | -                       | Save slots object map             |
-| `selectSaveSlot`         | `{ slotId }`            | Save slot data                    |
-| `selectSaveSlotPage`     | `{ slotsPerPage? }`     | Paged save slot list for UI       |
+| Selector                         | Parameters              | Returns                                |
+| -------------------------------- | ----------------------- | -------------------------------------- |
+| `selectPendingEffects`           | -                       | Array of pending effects               |
+| `selectCurrentPointer`           | -                       | `{ currentPointerMode: "read", pointer }` |
+| `selectCurrentLine`              | -                       | Current line object                    |
+| `selectSection`                  | `{ sectionId }`         | Section object                         |
+| `selectAutoMode`                 | -                       | Boolean                                |
+| `selectSkipMode`                 | -                       | Boolean                                |
+| `selectDialogueUIHidden`         | -                       | Boolean                                |
+| `selectIsLineViewed`             | `{ sectionId, lineId }` | Slot-local viewed boolean              |
+| `selectIsLineAccountViewed`      | `{ sectionId, lineId }` | Account-level viewed boolean           |
+| `selectIsResourceViewed`         | `{ resourceId }`        | Slot-local viewed boolean              |
+| `selectIsResourceAccountViewed`  | `{ resourceId }`        | Account-level viewed boolean           |
+| `selectNextLineConfig`           | -                       | Config object                          |
+| `selectSaveSlotMap`              | -                       | Save slots object map                  |
+| `selectSaveSlot`                 | `{ slotId }`            | Save slot data                         |
+| `selectSaveSlotPage`             | `{ slotsPerPage? }`     | Paged save slot list for UI            |
 
 ## Pending Effects
 
@@ -508,10 +513,14 @@ Effects queued by actions for external handling:
 | ------------------- | ------------------------------ |
 | `render`            | Re-render the current state    |
 | `handleLineActions` | Process current line's actions |
+| `applyScopedDataUpdates` | Persist ordered scoped data operations |
+
+`applyScopedDataUpdates` is a public runtime-facing persistence contract. Its full interface and semantics are documented in [ScopedDataUpdates.md](./ScopedDataUpdates.md).
 
 Built-in effect handling notes:
 
-- `createEffectsHandler(...)` coalesces only the latest occurrence of replaceable built-in effects such as `render`, timer start/clear effects, `handleLineActions`, and persistence effects.
+- `createEffectsHandler(...)` coalesces only the latest occurrence of replaceable built-in effects such as `render`, timer start/clear effects, `handleLineActions`, and full-snapshot persistence effects.
+- `applyScopedDataUpdates` is incremental and ordered, so it must not be last-write coalesced by effect name.
 - Unknown effect names are not silently dropped; `createEffectsHandler(...)` throws unless you provide `handleUnhandledEffect`.
 - The coalescing rule is specific to the built-in effect handler, not the store queue itself.
 

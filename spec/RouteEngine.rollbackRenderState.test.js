@@ -12,6 +12,7 @@ const createNoopPersistence = () => ({
   saveGlobalDeviceVariables: vi.fn().mockResolvedValue(undefined),
   saveGlobalAccountVariables: vi.fn().mockResolvedValue(undefined),
   saveGlobalRuntime: vi.fn().mockResolvedValue(undefined),
+  applyScopedDataUpdates: vi.fn().mockResolvedValue(undefined),
 });
 
 const findElementById = (elements, id) => {

@@ -5,7 +5,6 @@ import {
   validateVariableScope,
   validateVariableOperation,
   applyVariableOperation,
-  filterVariablesByScope,
   diffPresentationState,
   normalizePersistentPresentationState,
 } from "../util.js";
@@ -75,6 +74,21 @@ const createDefaultViewedRegistry = () => ({
   sections: [],
   resources: [],
 });
+
+const ensureViewedRegistryShape = (registry) => {
+  if (!isRecord(registry)) {
+    return createDefaultViewedRegistry();
+  }
+
+  if (!Array.isArray(registry.sections)) {
+    registry.sections = [];
+  }
+  if (!Array.isArray(registry.resources)) {
+    registry.resources = [];
+  }
+
+  return registry;
+};
 
 const buildDialogueHistoryText = (content) => {
   if (!Array.isArray(content)) {
@@ -241,7 +255,12 @@ const sanitizePersistedRollback = (rollback) => {
   });
 };
 
-const normalizeLoadedViewedRegistryEntry = (entry, type, index) => {
+const normalizeLoadedViewedRegistryEntry = (
+  entry,
+  type,
+  index,
+  path = "save slot viewedRegistry",
+) => {
   const keyName = type === "sections" ? "sectionId" : "resourceId";
 
   if (typeof entry === "string" || typeof entry === "number") {
@@ -251,14 +270,12 @@ const normalizeLoadedViewedRegistryEntry = (entry, type, index) => {
   }
 
   if (!isRecord(entry)) {
-    throw new Error(
-      `Malformed save slot viewedRegistry.${type}[${index}] entry.`,
-    );
+    throw new Error(`Malformed ${path}.${type}[${index}] entry.`);
   }
 
   if (typeof entry[keyName] !== "string" || entry[keyName].length === 0) {
     throw new Error(
-      `Malformed save slot viewedRegistry.${type}[${index}] entry: missing ${keyName}.`,
+      `Malformed ${path}.${type}[${index}] entry: missing ${keyName}.`,
     );
   }
 
@@ -273,7 +290,7 @@ const normalizeLoadedViewedRegistryEntry = (entry, type, index) => {
       typeof entry.lastLineId !== "string"
     ) {
       throw new Error(
-        `Malformed save slot viewedRegistry.sections[${index}] entry: invalid lastLineId.`,
+        `Malformed ${path}.sections[${index}] entry: invalid lastLineId.`,
       );
     }
 
@@ -289,27 +306,30 @@ const normalizeLoadedViewedRegistryEntry = (entry, type, index) => {
   };
 };
 
-const normalizeLoadedViewedRegistry = (viewedRegistry) => {
+const normalizeLoadedViewedRegistry = (
+  viewedRegistry,
+  path = "save slot viewedRegistry",
+) => {
   if (viewedRegistry === undefined) {
     return createDefaultViewedRegistry();
   }
 
   if (!isRecord(viewedRegistry)) {
-    throw new Error("Malformed save slot viewedRegistry.");
+    throw new Error(`Malformed ${path}.`);
   }
 
   if (
     viewedRegistry.sections !== undefined &&
     !Array.isArray(viewedRegistry.sections)
   ) {
-    throw new Error("Malformed save slot viewedRegistry.sections.");
+    throw new Error(`Malformed ${path}.sections.`);
   }
 
   if (
     viewedRegistry.resources !== undefined &&
     !Array.isArray(viewedRegistry.resources)
   ) {
-    throw new Error("Malformed save slot viewedRegistry.resources.");
+    throw new Error(`Malformed ${path}.resources.`);
   }
 
   const sections = viewedRegistry.sections ?? [];
@@ -323,6 +343,7 @@ const normalizeLoadedViewedRegistry = (viewedRegistry) => {
             entry,
             "sections",
             index,
+            path,
           );
           return [normalizedEntry.sectionId, normalizedEntry];
         }),
@@ -335,6 +356,7 @@ const normalizeLoadedViewedRegistry = (viewedRegistry) => {
             entry,
             "resources",
             index,
+            path,
           );
           return [normalizedEntry.resourceId, normalizedEntry];
         }),
@@ -1166,6 +1188,7 @@ export const createInitialState = (payload) => {
     saveSlots = {},
     variables: loadedGlobalVariables = {},
     runtime: loadedGlobalRuntime = {},
+    accountViewedRegistry: loadedAccountViewedRegistry = {},
   } = global;
 
   assertUniqueSectionIds(projectData);
@@ -1197,6 +1220,10 @@ export const createInitialState = (payload) => {
       pendingEffects: [],
       confirmDialog: null,
       viewedRegistry: createDefaultViewedRegistry(),
+      accountViewedRegistry: normalizeLoadedViewedRegistry(
+        loadedAccountViewedRegistry,
+        "accountViewedRegistry",
+      ),
       nextLineConfig: createDefaultNextLineConfig(),
       saveSlots: normalizeStoredSaveSlots(saveSlots),
       overlayStack: [],
@@ -1300,11 +1327,10 @@ export const selectConfirmDialog = ({ state }) => {
   return state.global.confirmDialog ?? null;
 };
 
-export const selectIsLineViewed = ({ state }, payload) => {
+const selectIsLineViewedInRegistry = ({ state, registry }, payload) => {
   const { sectionId, lineId } = payload;
-  const section = state.global.viewedRegistry.sections.find(
-    (section) => section.sectionId === sectionId,
-  );
+  const sections = Array.isArray(registry?.sections) ? registry.sections : [];
+  const section = sections.find((section) => section.sectionId === sectionId);
 
   if (!section) {
     return false;
@@ -1350,13 +1376,44 @@ export const selectIsLineViewed = ({ state }, payload) => {
   return currentLineIndex <= lastLineIndex;
 };
 
-export const selectIsResourceViewed = ({ state }, payload) => {
+const selectIsResourceViewedInRegistry = ({ registry }, payload) => {
   const { resourceId } = payload;
-  const resource = state.global.viewedRegistry.resources.find(
+  const resources = Array.isArray(registry?.resources)
+    ? registry.resources
+    : [];
+  const resource = resources.find(
     (resource) => resource.resourceId === resourceId,
   );
 
   return !!resource;
+};
+
+export const selectIsLineViewed = ({ state }, payload) => {
+  return selectIsLineViewedInRegistry(
+    { state, registry: state.global.viewedRegistry },
+    payload,
+  );
+};
+
+export const selectIsLineAccountViewed = ({ state }, payload) => {
+  return selectIsLineViewedInRegistry(
+    { state, registry: state.global.accountViewedRegistry },
+    payload,
+  );
+};
+
+export const selectIsResourceViewed = ({ state }, payload) => {
+  return selectIsResourceViewedInRegistry(
+    { registry: state.global.viewedRegistry },
+    payload,
+  );
+};
+
+export const selectIsResourceAccountViewed = ({ state }, payload) => {
+  return selectIsResourceViewedInRegistry(
+    { registry: state.global.accountViewedRegistry },
+    payload,
+  );
 };
 
 export const selectNextLineConfig = ({ state }) => {
@@ -1735,6 +1792,11 @@ export const selectRenderState = ({ state }, options = {}) => {
   const presentationState = selectPresentationState({ state });
   const previousPresentationState = selectPreviousPresentationState({ state });
   const currentLineActions = selectCurrentLine({ state })?.actions ?? {};
+  const { sectionId } = selectCurrentPointer({ state }).pointer;
+  const { sceneId: currentSceneId } = findSectionInProjectData(
+    state.projectData,
+    sectionId,
+  );
   const runtime = selectRuntime({ state });
   const activePersistentAnimations = options?.activePersistentAnimations ?? [];
   const restoredPersistentAnimations =
@@ -1751,6 +1813,7 @@ export const selectRenderState = ({ state }, options = {}) => {
     previousPresentationState,
     currentLineActions,
     resources: state.projectData.resources,
+    currentSceneId,
     screen: state.projectData.screen,
     dialogueUIHidden: runtime.dialogueUIHidden,
     autoMode: runtime.autoMode,
@@ -2181,22 +2244,86 @@ export const resetStoryAtSection = ({ state }, payload) => {
   });
 };
 
-const recordViewedLine = (state, { sectionId, lineId }) => {
-  if (!state.global.viewedRegistry) {
+const ensureSlotViewedRegistry = (state) => {
+  if (!isRecord(state.global.viewedRegistry)) {
     state.global.viewedRegistry = {};
   }
-  if (!Array.isArray(state.global.viewedRegistry.sections)) {
-    state.global.viewedRegistry.sections = [];
+  return state.global.viewedRegistry;
+};
+
+const ensureAccountViewedRegistry = (state) => {
+  state.global.accountViewedRegistry = ensureViewedRegistryShape(
+    state.global.accountViewedRegistry,
+  );
+  return state.global.accountViewedRegistry;
+};
+
+const queueScopedDataPersistence = (state, updates) => {
+  if (!Array.isArray(updates) || updates.length === 0) {
+    return;
   }
 
-  const section = state.global.viewedRegistry.sections.find(
+  state.global.pendingEffects.push({
+    name: "applyScopedDataUpdates",
+    payload: {
+      updates: updates.map((update) => ({
+        scope: update.scope,
+        path: update.path,
+        op: update.op,
+        value: cloneStateValue(update.value),
+      })),
+    },
+  });
+};
+
+const queueAccountViewedRegistryPatchPersistence = (
+  state,
+  viewedRegistryPatch,
+) => {
+  queueScopedDataPersistence(state, [
+    {
+      scope: "account",
+      path: "viewedRegistry",
+      op: "markViewed",
+      value: {
+        sections: (Array.isArray(viewedRegistryPatch?.sections)
+          ? viewedRegistryPatch.sections
+          : []
+        ).map((section) => ({
+          sectionId: section.sectionId,
+          ...(section.lastLineId === undefined
+            ? {}
+            : { lineId: section.lastLineId }),
+        })),
+        resources: Array.isArray(viewedRegistryPatch?.resources)
+          ? viewedRegistryPatch.resources
+          : [],
+      },
+    },
+  ]);
+};
+
+const recordViewedLineInRegistry = (state, registry, { sectionId, lineId }) => {
+  if (!sectionId || !lineId) {
+    return false;
+  }
+
+  const viewedRegistry = isRecord(registry) ? registry : {};
+  if (!Array.isArray(viewedRegistry.sections)) {
+    viewedRegistry.sections = [];
+  }
+  const section = viewedRegistry.sections.find(
     (section) => section.sectionId === sectionId,
   );
 
   if (section) {
+    if (section.lastLineId === undefined) {
+      return false;
+    }
+
     // Update existing section only if new line is after the current lastLineId
     const foundSection = selectSection({ state }, { sectionId });
-    if (foundSection?.lines && section.lastLineId !== undefined) {
+    if (foundSection?.lines) {
       const lastLineIndex = foundSection.lines.findIndex(
         (line) => line.id === section.lastLineId,
       );
@@ -2206,17 +2333,48 @@ const recordViewedLine = (state, { sectionId, lineId }) => {
 
       // Update only if newLineIndex is greater (later in the section) or if lastLineId not found
       if (lastLineIndex === -1 || newLineIndex > lastLineIndex) {
+        if (section.lastLineId === lineId) {
+          return false;
+        }
         section.lastLineId = lineId;
+        return true;
       }
     } else {
       // Fallback: if we can't find the section or lastLineId is undefined, just update
+      if (section.lastLineId === lineId) {
+        return false;
+      }
       section.lastLineId = lineId;
+      return true;
     }
+
+    return false;
   } else {
     // Add new section
-    state.global.viewedRegistry.sections.push({
+    viewedRegistry.sections.push({
       sectionId,
       lastLineId: lineId,
+    });
+    return true;
+  }
+};
+
+const recordViewedLine = (state, payload) => {
+  recordViewedLineInRegistry(state, ensureSlotViewedRegistry(state), payload);
+  if (state.global.accountViewedRegistry === undefined) {
+    return;
+  }
+
+  const accountChanged = recordViewedLineInRegistry(
+    state,
+    ensureAccountViewedRegistry(state),
+    payload,
+  );
+
+  if (accountChanged) {
+    queueAccountViewedRegistryPatchPersistence(state, {
+      sections: [{ sectionId: payload.sectionId, lastLineId: payload.lineId }],
+      resources: [],
     });
   }
 };
@@ -2232,15 +2390,36 @@ export const addViewedLine = ({ state }, payload) => {
 
 export const addViewedResource = ({ state }, payload) => {
   const { resourceId } = payload;
-  const existingResource = state.global.viewedRegistry.resources.find(
+  const slotRegistry = ensureSlotViewedRegistry(state);
+  if (!Array.isArray(slotRegistry.resources)) {
+    slotRegistry.resources = [];
+  }
+  const existingResource = slotRegistry.resources.find(
     (resource) => resource.resourceId === resourceId,
   );
 
   if (!existingResource) {
     // Add new resource only if it doesn't already exist
-    state.global.viewedRegistry.resources.push({
+    slotRegistry.resources.push({
       resourceId,
     });
+  }
+
+  if (state.global.accountViewedRegistry !== undefined) {
+    const accountRegistry = ensureAccountViewedRegistry(state);
+    const existingAccountResource = accountRegistry.resources.find(
+      (resource) => resource.resourceId === resourceId,
+    );
+
+    if (!existingAccountResource) {
+      accountRegistry.resources.push({
+        resourceId,
+      });
+      queueAccountViewedRegistryPatchPersistence(state, {
+        sections: [],
+        resources: [{ resourceId }],
+      });
+    }
   }
 
   state.global.pendingEffects.push({
@@ -2601,7 +2780,7 @@ export const nextLine = ({ state }, payload) => {
       "skipUnseenText",
     );
     if (state.global.skipMode && skipOnlyViewedLines) {
-      const isNextLineViewed = selectIsLineViewed(
+      const isNextLineViewed = selectIsLineAccountViewed(
         { state },
         {
           sectionId,
@@ -2762,7 +2941,7 @@ export const nextLineFromSystem = ({ state }) => {
       "skipUnseenText",
     );
     if (state.global.skipMode && skipOnlyViewedLines) {
-      const isNextLineViewed = selectIsLineViewed(
+      const isNextLineViewed = selectIsLineAccountViewed(
         { state },
         {
           sectionId,
@@ -2845,8 +3024,7 @@ export const updateVariable = ({ state }, payload) => {
 
   // Track which scopes are modified
   let contextVariableModified = false;
-  let globalDeviceModified = false;
-  let globalAccountModified = false;
+  const globalUpdates = [];
   const contextOperations = [];
 
   operations.forEach(({ variableId, op, value }) => {
@@ -2861,18 +3039,22 @@ export const updateVariable = ({ state }, payload) => {
     const target =
       scope === "context" ? lastContext.variables : state.global.variables;
 
-    // Track which scope was modified
     if (scope === "context") {
       contextVariableModified = true;
       contextOperations.push({ variableId, op, value });
-    } else if (scope === "device") {
-      globalDeviceModified = true;
-    } else if (scope === "account") {
-      globalAccountModified = true;
     }
 
     // Use pure helper to apply operation
     target[variableId] = applyVariableOperation(target[variableId], op, value);
+
+    if (scope === "device" || scope === "account") {
+      globalUpdates.push({
+        scope,
+        path: `variables.${variableId}`,
+        op: "set",
+        value: cloneStateValue(target[variableId]),
+      });
+    }
   });
 
   if (contextVariableModified) {
@@ -2882,35 +3064,7 @@ export const updateVariable = ({ state }, payload) => {
     });
   }
 
-  // Save device-scoped variables if any were modified
-  if (globalDeviceModified) {
-    const globalDeviceVars = filterVariablesByScope(
-      state.global.variables,
-      state.projectData.resources?.variables,
-      "device",
-    );
-    state.global.pendingEffects.push({
-      name: "saveGlobalDeviceVariables",
-      payload: {
-        globalDeviceVariables: globalDeviceVars,
-      },
-    });
-  }
-
-  // Save account-scoped variables if any were modified
-  if (globalAccountModified) {
-    const globalAccountVars = filterVariablesByScope(
-      state.global.variables,
-      state.projectData.resources?.variables,
-      "account",
-    );
-    state.global.pendingEffects.push({
-      name: "saveGlobalAccountVariables",
-      payload: {
-        globalAccountVariables: globalAccountVars,
-      },
-    });
-  }
+  queueScopedDataPersistence(state, globalUpdates);
 
   state.global.pendingEffects.push({
     name: "render",
@@ -3106,7 +3260,9 @@ export const createSystemStore = (initialState) => {
     selectDialogueHistory,
     selectConfirmDialog,
     selectIsLineViewed,
+    selectIsLineAccountViewed,
     selectIsResourceViewed,
+    selectIsResourceAccountViewed,
     selectNextLineConfig,
     selectSystemState,
     selectSaveSlotMap,

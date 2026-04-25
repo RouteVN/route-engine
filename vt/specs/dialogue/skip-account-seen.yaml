@@ -1,0 +1,164 @@
+---
+title: Dialogue Skip Account Seen
+description: Skip-unseen should use account-level viewed state after slot-local viewed state is reset.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: click
+    x: 100
+    y: 100
+  - action: wait
+    ms: 120
+  - action: click
+    x: 805
+    y: 55
+  - action: wait
+    ms: 120
+  - action: click
+    x: 685
+    y: 55
+  - action: wait
+    ms: 200
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  characters:
+    narrator:
+      name: Narrator
+  layouts:
+    stageLayout:
+      elements:
+        - id: stage
+          type: rect
+          x: 0
+          y: 0
+          width: 1920
+          height: 1080
+          colorId: bg
+          click:
+            payload:
+              actions:
+                nextLine: {}
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: panel
+          type: rect
+          x: 100
+          y: 760
+          width: 1720
+          height: 220
+          colorId: panel
+        - id: dialogue-text
+          type: text
+          x: 140
+          y: 835
+          width: 1200
+          content: ${dialogue.content[0].text}
+          textStyleId: textMain
+        - id: skip-button
+          type: rect
+          x: 1260
+          y: 70
+          width: 220
+          height: 70
+          colorId: button
+          click:
+            payload:
+              actions:
+                toggleSkipMode: {}
+        - id: skip-label
+          type: text
+          x: 1322
+          y: 92
+          content: Skip
+          textStyleId: textButton
+        - id: reset-button
+          type: rect
+          x: 1500
+          y: 70
+          width: 220
+          height: 70
+          colorId: button
+          click:
+            payload:
+              actions:
+                resetStoryAtSection:
+                  sectionId: section1
+        - id: reset-label
+          type: text
+          x: 1545
+          y: 92
+          content: Reset
+          textStyleId: textButton
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    bg:
+      hex: "#000000"
+    panel:
+      hex: "#4D4D4D"
+    button:
+      hex: "#737373"
+    fg:
+      hex: "#FFFFFF"
+  textStyles:
+    textMain:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 34
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textButton:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 28
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: section1
+      sections:
+        section1:
+          lines:
+            - id: line1
+              actions:
+                background:
+                  resourceId: stageLayout
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 1: slot viewed was reset"
+                  characterId: narrator
+            - id: line2
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 2: reached through account seen state"
+                  characterId: narrator
+            - id: line3
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 3: should remain unseen"
+                  characterId: narrator
