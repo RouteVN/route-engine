@@ -51,10 +51,106 @@ properties:
                           type: string
                           description: Unique identifier for the line
                         actions:
-                          allOf:
-                            - $ref: "../presentationActions.yaml"
-                            - $ref: "../systemActions.yaml"
+                          type: object
                           description: Actions
+                          properties:
+                            cleanAll:
+                              $ref: "../presentationActions.yaml#/properties/cleanAll"
+                            background:
+                              $ref: "../presentationActions.yaml#/properties/background"
+                            dialogue:
+                              $ref: "../presentationActions.yaml#/properties/dialogue"
+                            character:
+                              $ref: "../presentationActions.yaml#/properties/character"
+                            visual:
+                              $ref: "../presentationActions.yaml#/properties/visual"
+                            choice:
+                              $ref: "../presentationActions.yaml#/properties/choice"
+                            sfx:
+                              $ref: "../presentationActions.yaml#/properties/sfx"
+                            bgm:
+                              $ref: "../presentationActions.yaml#/properties/bgm"
+                            voice:
+                              $ref: "../presentationActions.yaml#/properties/voice"
+                            control:
+                              $ref: "../presentationActions.yaml#/properties/control"
+                            layout:
+                              $ref: "../presentationActions.yaml#/properties/layout"
+                            nextLine:
+                              $ref: "../systemActions.yaml#/properties/nextLine"
+                            setNextLineConfig:
+                              $ref: "../systemActions.yaml#/properties/setNextLineConfig"
+                            startAutoMode:
+                              $ref: "../systemActions.yaml#/properties/startAutoMode"
+                            stopAutoMode:
+                              $ref: "../systemActions.yaml#/properties/stopAutoMode"
+                            toggleAutoMode:
+                              $ref: "../systemActions.yaml#/properties/toggleAutoMode"
+                            startSkipMode:
+                              $ref: "../systemActions.yaml#/properties/startSkipMode"
+                            stopSkipMode:
+                              $ref: "../systemActions.yaml#/properties/stopSkipMode"
+                            toggleSkipMode:
+                              $ref: "../systemActions.yaml#/properties/toggleSkipMode"
+                            showDialogueUI:
+                              $ref: "../systemActions.yaml#/properties/showDialogueUI"
+                            hideDialogueUI:
+                              $ref: "../systemActions.yaml#/properties/hideDialogueUI"
+                            toggleDialogueUI:
+                              $ref: "../systemActions.yaml#/properties/toggleDialogueUI"
+                            setDialogueTextSpeed:
+                              $ref: "../systemActions.yaml#/properties/setDialogueTextSpeed"
+                            setAutoForwardDelay:
+                              $ref: "../systemActions.yaml#/properties/setAutoForwardDelay"
+                            setSkipUnseenText:
+                              $ref: "../systemActions.yaml#/properties/setSkipUnseenText"
+                            setSkipTransitionsAndAnimations:
+                              $ref: "../systemActions.yaml#/properties/setSkipTransitionsAndAnimations"
+                            setSoundVolume:
+                              $ref: "../systemActions.yaml#/properties/setSoundVolume"
+                            setMusicVolume:
+                              $ref: "../systemActions.yaml#/properties/setMusicVolume"
+                            setMuteAll:
+                              $ref: "../systemActions.yaml#/properties/setMuteAll"
+                            setSaveLoadPagination:
+                              $ref: "../systemActions.yaml#/properties/setSaveLoadPagination"
+                            incrementSaveLoadPagination:
+                              $ref: "../systemActions.yaml#/properties/incrementSaveLoadPagination"
+                            decrementSaveLoadPagination:
+                              $ref: "../systemActions.yaml#/properties/decrementSaveLoadPagination"
+                            setMenuPage:
+                              $ref: "../systemActions.yaml#/properties/setMenuPage"
+                            setMenuEntryPoint:
+                              $ref: "../systemActions.yaml#/properties/setMenuEntryPoint"
+                            showConfirmDialog:
+                              $ref: "../systemActions.yaml#/properties/showConfirmDialog"
+                            hideConfirmDialog:
+                              $ref: "../systemActions.yaml#/properties/hideConfirmDialog"
+                            saveSlot:
+                              $ref: "../systemActions.yaml#/properties/saveSlot"
+                            loadSlot:
+                              $ref: "../systemActions.yaml#/properties/loadSlot"
+                            resetStoryAtSection:
+                              $ref: "../systemActions.yaml#/properties/resetStoryAtSection"
+                            sectionTransition:
+                              $ref: "../systemActions.yaml#/properties/sectionTransition"
+                            jumpToLine:
+                              $ref: "../systemActions.yaml#/properties/jumpToLine"
+                            pushOverlay:
+                              $ref: "../systemActions.yaml#/properties/pushOverlay"
+                            popOverlay:
+                              $ref: "../systemActions.yaml#/properties/popOverlay"
+                            replaceLastOverlay:
+                              $ref: "../systemActions.yaml#/properties/replaceLastOverlay"
+                            clearOverlays:
+                              $ref: "../systemActions.yaml#/properties/clearOverlays"
+                            rollbackByOffset:
+                              $ref: "../systemActions.yaml#/properties/rollbackByOffset"
+                            rollbackToLine:
+                              $ref: "../systemActions.yaml#/properties/rollbackToLine"
+                            updateVariable:
+                              $ref: "../systemActions.yaml#/properties/updateVariable"
+                          additionalProperties: false
 
                       required: [id, actions]
                       additionalProperties: false

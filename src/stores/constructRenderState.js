@@ -2528,21 +2528,56 @@ export const addSfx = (state, { presentationState, resources }) => {
   return state;
 };
 
-export const addVoice = (state, { presentationState, resources }) => {
+const resolveVoiceResource = (resources, currentSceneId, resourceId) => {
+  if (!currentSceneId || !resourceId) {
+    return undefined;
+  }
+
+  return resources?.voices?.[currentSceneId]?.[resourceId];
+};
+
+const getEffectiveVoiceVolume = (voice = {}, resolvedRuntime = {}) => {
+  if (resolvedRuntime.muteAll) {
+    return 0;
+  }
+
+  return voice.volume ?? resolvedRuntime.soundVolume ?? 50;
+};
+
+export const addVoice = (
+  state,
+  { presentationState, resources, currentSceneId, runtime, variables },
+) => {
   const { audio } = state;
 
   if (!presentationState?.voice) {
     return state;
   }
 
-  const { fileId, volume, loop } = presentationState.voice;
+  const voice = presentationState.voice;
+  const { resourceId, loop, delay } = voice;
+  const voiceResource = resolveVoiceResource(
+    resources,
+    currentSceneId,
+    resourceId,
+  );
+
+  if (!voiceResource) {
+    return state;
+  }
+
+  const resolvedRuntime = createLayoutTemplateData({
+    variables,
+    runtime,
+  }).runtime;
 
   audio.push({
-    id: `voice-${fileId}`,
+    id: `voice-${currentSceneId}-${resourceId}`,
     type: "sound",
-    src: fileId,
-    volume: volume ?? 50,
+    src: voiceResource.fileId,
+    volume: getEffectiveVoiceVolume(voice, resolvedRuntime),
     loop: loop ?? false,
+    delay: delay ?? null,
   });
 
   return state;

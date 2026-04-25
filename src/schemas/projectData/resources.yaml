@@ -165,6 +165,29 @@ properties:
         additionalProperties: false
     additionalProperties: false
 
+  voices:
+    type: object
+    description: Voice line assets grouped by scene ID
+    patternProperties:
+      "^.+$":
+        type: object
+        description: Voice resources for one scene
+        patternProperties:
+          "^.+$":
+            type: object
+            description: Voice resource
+            properties:
+              fileId:
+                type: string
+                description: Reference to the voice audio file resource
+              fileType:
+                type: string
+                description: File type
+            required: [fileId]
+            additionalProperties: false
+        additionalProperties: false
+    additionalProperties: false
+
   colors:
     type: object
     description: Color resources referenced by textStyles and layout rect colorId fields

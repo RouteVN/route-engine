@@ -5,7 +5,7 @@ suites: [addVoice]
 suite: addVoice
 exportName: addVoice
 ---
-case: add voice audio to story container
+case: add voice audio from current scene resources
 in:
   - elements:
       - id: "story"
@@ -17,10 +17,15 @@ in:
     audio: []
   - presentationState:
       voice:
-        fileId: "voice.mp3"
+        resourceId: "alice_001"
         volume: 80
         loop: false
-    resources: {}
+    resources:
+      voices:
+        scene_intro:
+          alice_001:
+            fileId: "voices/scene_intro/alice_001.ogg"
+    currentSceneId: "scene_intro"
 out:
   elements:
     - id: "story"
@@ -30,13 +35,14 @@ out:
       children: []
   animations: []
   audio:
-    - id: "voice-voice.mp3"
+    - id: "voice-scene_intro-alice_001"
       type: "sound"
-      src: "voice.mp3"
+      src: "voices/scene_intro/alice_001.ogg"
       volume: 80
       loop: false
+      delay: null
 ---
-case: add voice with default values
+case: voice defaults to runtime sound volume
 in:
   - elements:
       - id: "story"
@@ -48,8 +54,15 @@ in:
     audio: []
   - presentationState:
       voice:
-        fileId: "simpleVoice.mp3"
-    resources: {}
+        resourceId: "alice_001"
+    resources:
+      voices:
+        scene_intro:
+          alice_001:
+            fileId: "voices/scene_intro/alice_001.ogg"
+    currentSceneId: "scene_intro"
+    runtime:
+      soundVolume: 65
 out:
   elements:
     - id: "story"
@@ -59,13 +72,49 @@ out:
       children: []
   animations: []
   audio:
-    - id: "voice-simpleVoice.mp3"
+    - id: "voice-scene_intro-alice_001"
       type: "sound"
-      src: "simpleVoice.mp3"
+      src: "voices/scene_intro/alice_001.ogg"
+      volume: 65
+      loop: false
+      delay: null
+---
+case: voice falls back to default sound volume when runtime is missing
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      voice:
+        resourceId: "alice_001"
+    resources:
+      voices:
+        scene_intro:
+          alice_001:
+            fileId: "voices/scene_intro/alice_001.ogg"
+    currentSceneId: "scene_intro"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio:
+    - id: "voice-scene_intro-alice_001"
+      type: "sound"
+      src: "voices/scene_intro/alice_001.ogg"
       volume: 50
       loop: false
+      delay: null
 ---
-case: add voice with loop enabled
+case: voice with loop and delay
 in:
   - elements:
       - id: "story"
@@ -77,10 +126,16 @@ in:
     audio: []
   - presentationState:
       voice:
-        fileId: "loopingVoice.mp3"
+        resourceId: "loopingVoice"
         volume: 60
         loop: true
-    resources: {}
+        delay: 250
+    resources:
+      voices:
+        scene_intro:
+          loopingVoice:
+            fileId: "voices/scene_intro/looping.ogg"
+    currentSceneId: "scene_intro"
 out:
   elements:
     - id: "story"
@@ -90,11 +145,51 @@ out:
       children: []
   animations: []
   audio:
-    - id: "voice-loopingVoice.mp3"
+    - id: "voice-scene_intro-loopingVoice"
       type: "sound"
-      src: "loopingVoice.mp3"
+      src: "voices/scene_intro/looping.ogg"
       volume: 60
       loop: true
+      delay: 250
+---
+case: mute all forces voice volume to zero
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      voice:
+        resourceId: "alice_001"
+        volume: 80
+    resources:
+      voices:
+        scene_intro:
+          alice_001:
+            fileId: "voices/scene_intro/alice_001.ogg"
+    currentSceneId: "scene_intro"
+    runtime:
+      muteAll: true
+      soundVolume: 65
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio:
+    - id: "voice-scene_intro-alice_001"
+      type: "sound"
+      src: "voices/scene_intro/alice_001.ogg"
+      volume: 0
+      loop: false
+      delay: null
 ---
 case: no presentationState.voice - return unchanged state
 in:
@@ -107,7 +202,12 @@ in:
     animations: []
     audio: []
   - presentationState: {}
-    resources: {}
+    resources:
+      voices:
+        scene_intro:
+          alice_001:
+            fileId: "voices/scene_intro/alice_001.ogg"
+    currentSceneId: "scene_intro"
 out:
   elements:
     - id: "story"
@@ -118,34 +218,7 @@ out:
   animations: []
   audio: []
 ---
-case: story container does not exist - return unchanged state
-in:
-  - elements:
-      - id: "notStory"
-        type: "container"
-        children: []
-    animations: []
-    audio: []
-  - presentationState:
-      voice:
-        fileId: "voice.mp3"
-        volume: 70
-        loop: false
-    resources: {}
-out:
-  elements:
-    - id: "notStory"
-      type: "container"
-      children: []
-  animations: []
-  audio:
-    - id: "voice-voice.mp3"
-      type: "sound"
-      src: "voice.mp3"
-      volume: 70
-      loop: false
----
-case: null presentationState - return unchanged state
+case: missing current scene returns unchanged state
 in:
   - elements:
       - id: "story"
@@ -155,8 +228,14 @@ in:
         children: []
     animations: []
     audio: []
-  - presentationState: null
-    resources: {}
+  - presentationState:
+      voice:
+        resourceId: "alice_001"
+    resources:
+      voices:
+        scene_intro:
+          alice_001:
+            fileId: "voices/scene_intro/alice_001.ogg"
 out:
   elements:
     - id: "story"
@@ -167,7 +246,7 @@ out:
   animations: []
   audio: []
 ---
-case: voice with custom volume and loop
+case: missing voice resource returns unchanged state
 in:
   - elements:
       - id: "story"
@@ -179,10 +258,13 @@ in:
     audio: []
   - presentationState:
       voice:
-        fileId: "customVoice.mp3"
-        volume: 30
-        loop: true
-    resources: {}
+        resourceId: "missingVoice"
+    resources:
+      voices:
+        scene_intro:
+          alice_001:
+            fileId: "voices/scene_intro/alice_001.ogg"
+    currentSceneId: "scene_intro"
 out:
   elements:
     - id: "story"
@@ -191,14 +273,9 @@ out:
       y: 0
       children: []
   animations: []
-  audio:
-    - id: "voice-customVoice.mp3"
-      type: "sound"
-      src: "customVoice.mp3"
-      volume: 30
-      loop: true
+  audio: []
 ---
-case: null resources - still works (voice doesn't use resources)
+case: same voice id resolves from current scene only
 in:
   - elements:
       - id: "story"
@@ -210,10 +287,16 @@ in:
     audio: []
   - presentationState:
       voice:
-        fileId: "voice.mp3"
-        volume: 70
-        loop: false
-    resources: null
+        resourceId: "shared_001"
+    resources:
+      voices:
+        scene_intro:
+          shared_001:
+            fileId: "voices/scene_intro/shared.ogg"
+        scene_two:
+          shared_001:
+            fileId: "voices/scene_two/shared.ogg"
+    currentSceneId: "scene_two"
 out:
   elements:
     - id: "story"
@@ -223,8 +306,9 @@ out:
       children: []
   animations: []
   audio:
-    - id: "voice-voice.mp3"
+    - id: "voice-scene_two-shared_001"
       type: "sound"
-      src: "voice.mp3"
-      volume: 70
+      src: "voices/scene_two/shared.ogg"
+      volume: 50
       loop: false
+      delay: null

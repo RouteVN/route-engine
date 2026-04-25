@@ -212,6 +212,81 @@ describe("projectData schema", () => {
     expect(validatePresentationActions.errors).toBeNull();
   });
 
+  it("accepts scene-grouped voice resources and voice presentation actions", () => {
+    expect(
+      validatePresentationActions({
+        voice: {
+          resourceId: "alice_001",
+          volume: 75,
+          loop: false,
+          delay: 120,
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+
+    expect(
+      validateProjectData(
+        createMinimalProjectData({
+          resources: {
+            voices: {
+              scene1: {
+                alice_001: {
+                  fileId: "voices/scene1/alice_001.ogg",
+                },
+              },
+            },
+          },
+          story: {
+            initialSceneId: "scene1",
+            scenes: {
+              scene1: {
+                name: "Scene 1",
+                initialSectionId: "section1",
+                sections: {
+                  section1: {
+                    name: "Section 1",
+                    lines: [
+                      {
+                        id: "line1",
+                        actions: {
+                          voice: {
+                            resourceId: "alice_001",
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        }),
+      ),
+    ).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
+
+  it("rejects raw fileId on voice presentation actions", () => {
+    expect(
+      validatePresentationActions({
+        voice: {
+          fileId: "voices/scene1/alice_001.ogg",
+        },
+      }),
+    ).toBe(false);
+    expect(validatePresentationActions.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          keyword: "additionalProperties",
+          params: expect.objectContaining({
+            additionalProperty: "fileId",
+          }),
+        }),
+      ]),
+    );
+  });
+
   it("parses all VT YAML specs", () => {
     const vtSpecsRoot = path.join(repoRoot, "vt", "specs");
     const vtSpecPaths = collectYamlFiles(vtSpecsRoot);
