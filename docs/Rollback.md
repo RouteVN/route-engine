@@ -14,6 +14,7 @@ Rollback is not the same as dialogue history.
 
 - `Back` means rollback.
 - `History` is a separate read-only feature and is out of scope for this document.
+- Neither rollback nor dialogue history is an account-level "seen ever" record.
 
 ## Product Summary
 
@@ -28,7 +29,7 @@ The rollback model for `route-engine` is:
 - Seen-line tracking does not roll back.
 - Persistent/global device/account variables do not roll back.
 - Rollback stops auto mode and skip mode.
-- If the user rolls back and then advances again, future rollback history after that point is discarded and replaced by the new branch.
+- If the user rolls back and then advances again, future rollback history after that point is discarded and replaced by the new branch. The shared past before the rollback point remains in the timeline.
 - Rollback timeline is stored in save data and restored on load.
 
 ## Terminology
@@ -46,6 +47,8 @@ History means showing previously displayed dialogue in a read-only UI.
 History does not change story state.
 
 History is a separate feature and should not be conflated with rollback.
+
+In the current engine, dialogue history is a render-time projection for the current section. It is not the same data as `rollback.timeline`, and it is not a durable all-sections visit log.
 
 ### Checkpoint
 
@@ -137,6 +140,25 @@ Rationale:
 
 This means rollback history must be modeled as a single ordered timeline per context, not only as isolated per-section history buckets.
 
+## Timeline Scope
+
+`rollback.timeline` is the ordered history of the current active story branch for a context.
+
+It keeps the playable path from the start of that context/run through the current rollback cursor. Section transitions append to the same timeline, so normal story movement across sections remains one continuous rollback path.
+
+When the player rolls back and then advances again, the abandoned future after the rollback point is removed. For example:
+
+1. player reaches `A -> B -> C -> D`
+2. player rolls back to `B`
+3. player advances to `E`
+4. timeline becomes `A -> B -> E`
+
+This does not lose the shared past. It intentionally discards only the branch the player is no longer on.
+
+`rollback.timeline` is therefore suitable for save-local "active path from the beginning of this run" semantics. It is not suitable for account-level "everything this player has ever seen" semantics.
+
+The timeline can be reset by destructive story navigation, such as `resetStoryAtSection`, which creates a new context-local rollback timeline anchored at the destination section.
+
 ## Rollback Scope
 
 ### State that rolls back
@@ -168,6 +190,8 @@ Consequence:
 
 - after rollback, previously seen content remains seen even if the player later diverges onto a different branch
 - skip behavior may still treat previously seen branch content as seen
+
+For skip-unseen behavior, rollback history is the wrong source of truth. The engine uses `accountViewedRegistry`, a monotonic seen registry outside slot rollback state, when the product meaning is "seen by this account across all saves."
 
 This is intentional for v1.
 

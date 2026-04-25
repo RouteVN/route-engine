@@ -64,8 +64,6 @@ in:
   - state:
       global:
         isLineCompleted: false
-        viewedRegistry:
-          sections: []
         nextLineConfig:
           manual:
             enabled: true
@@ -90,10 +88,6 @@ in:
 out:
   global:
     isLineCompleted: true
-    viewedRegistry:
-      sections:
-        - sectionId: "section1"
-          lastLineId: "1"
     nextLineConfig:
       manual:
         enabled: true
@@ -127,8 +121,6 @@ in:
           manual:
             enabled: true
         pendingEffects: []
-        viewedRegistry:
-          sections: []
       projectData:
         story:
           scenes:
@@ -157,10 +149,6 @@ out:
         enabled: true
     pendingEffects:
       - name: "handleLineActions"
-    viewedRegistry:
-      sections:
-        - sectionId: "section1"
-          lastLineId: "1"
   projectData:
     story:
       scenes:
@@ -206,8 +194,6 @@ in:
             delay: 900
           applyMode: "persistent"
         pendingEffects: []
-        viewedRegistry:
-          sections: []
       projectData:
         story:
           scenes:
@@ -243,10 +229,6 @@ out:
       - name: "nextLineConfigTimer"
         payload:
           delay: 900
-    viewedRegistry:
-      sections:
-        - sectionId: "section1"
-          lastLineId: "1"
   projectData:
     story:
       scenes:
@@ -292,8 +274,6 @@ in:
             trigger: "fromStart"
             delay: 900
         pendingEffects: []
-        viewedRegistry:
-          sections: []
       projectData:
         story:
           scenes:
@@ -329,10 +309,6 @@ out:
       - name: "clearAutoNextTimer"
       - name: "clearNextLineConfigTimer"
       - name: "handleLineActions"
-    viewedRegistry:
-      sections:
-        - sectionId: "section1"
-          lastLineId: "1"
   projectData:
     story:
       scenes:
@@ -379,8 +355,6 @@ in:
             delay: 1500
           applyMode: "singleLine"
         pendingEffects: []
-        viewedRegistry:
-          sections: []
       projectData:
         story:
           scenes:
@@ -411,10 +385,6 @@ out:
     pendingEffects:
       - name: "clearNextLineConfigTimer"
       - name: "handleLineActions"
-    viewedRegistry:
-      sections:
-        - sectionId: "section1"
-          lastLineId: "1"
   projectData:
     story:
       scenes:
@@ -453,8 +423,6 @@ in:
           manual:
             enabled: true
         pendingEffects: []
-        viewedRegistry:
-          sections: []
       projectData:
         story:
           scenes:
@@ -501,10 +469,6 @@ out:
         enabled: true
     pendingEffects:
       - name: "handleLineActions"
-    viewedRegistry:
-      sections:
-        - sectionId: "section1"
-          lastLineId: "2"
   projectData:
     story:
       scenes:
@@ -602,8 +566,6 @@ in:
           manual:
             enabled: true
         pendingEffects: []
-        viewedRegistry:
-          sections: []
       projectData:
         story:
           scenes:
@@ -631,8 +593,6 @@ out:
       manual:
         enabled: true
     pendingEffects: []
-    viewedRegistry:
-      sections: []
   projectData:
     story:
       scenes:
@@ -663,8 +623,6 @@ in:
           manual:
             enabled: true
         pendingEffects: []
-        viewedRegistry:
-          sections: []
       projectData:
         story:
           scenes:
@@ -693,8 +651,6 @@ out:
       manual:
         enabled: true
     pendingEffects: []
-    viewedRegistry:
-      sections: []
   projectData:
     story:
       scenes:
@@ -725,8 +681,6 @@ in:
           manual:
             enabled: true
         pendingEffects: []
-        viewedRegistry:
-          sections: []
       projectData:
         story:
           scenes:
@@ -756,10 +710,6 @@ out:
         enabled: true
     pendingEffects:
       - name: "handleLineActions"
-    viewedRegistry:
-      sections:
-        - sectionId: "section1"
-          lastLineId: "1"
   projectData:
     story:
       scenes:
@@ -801,8 +751,6 @@ in:
           manual:
             enabled: true
         pendingEffects: []
-        viewedRegistry:
-          sections: []
       projectData:
         story:
           scenes:
@@ -836,10 +784,6 @@ out:
         enabled: true
     pendingEffects:
       - name: "handleLineActions"
-    viewedRegistry:
-      sections:
-        - sectionId: "section1"
-          lastLineId: "2"
   projectData:
     story:
       scenes:
@@ -986,10 +930,6 @@ in:
           manual:
             enabled: true
         pendingEffects: []
-        viewedRegistry:
-          sections:
-            - sectionId: "section1"
-              lastLineId: "1"
       projectData:
         story:
           scenes:
@@ -1017,10 +957,6 @@ out:
     pendingEffects:
       - name: "clearSkipNextTimer"
       - name: "render"
-    viewedRegistry:
-      sections:
-        - sectionId: "section1"
-          lastLineId: "1"
   projectData:
     story:
       scenes:
@@ -1050,10 +986,6 @@ in:
           manual:
             enabled: true
         pendingEffects: []
-        viewedRegistry:
-          sections:
-            - sectionId: "section1"
-              lastLineId: "1"
       projectData:
         story:
           scenes:
@@ -1082,10 +1014,6 @@ out:
     pendingEffects:
       - name: "clearSkipNextTimer"
       - name: "render"
-    viewedRegistry:
-      sections:
-        - sectionId: "section1"
-          lastLineId: "1"
   projectData:
     story:
       scenes:
@@ -1115,10 +1043,6 @@ in:
           manual:
             enabled: true
         pendingEffects: []
-        viewedRegistry:
-          sections:
-            - sectionId: "section1"
-              lastLineId: "1"
       projectData:
         story:
           scenes:
@@ -1148,10 +1072,6 @@ out:
         enabled: true
     pendingEffects:
       - name: "handleLineActions"
-    viewedRegistry:
-      sections:
-        - sectionId: "section1"
-          lastLineId: "1"
   projectData:
     story:
       scenes:
@@ -1231,10 +1151,6 @@ out:
         payload:
           delay: 2000
       - name: "render"
-    viewedRegistry:
-      sections:
-        - sectionId: "section1"
-          lastLineId: "1"
   projectData:
     story:
       scenes:
@@ -1298,10 +1214,6 @@ out:
     pendingEffects:
       - name: "clearNextLineConfigTimer"
       - name: "render"
-    viewedRegistry:
-      sections:
-        - sectionId: "section1"
-          lastLineId: "1"
   projectData:
     story:
       scenes:

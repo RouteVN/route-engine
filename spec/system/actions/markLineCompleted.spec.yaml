@@ -16,8 +16,6 @@ in:
               lineId: "1"
       global:
         isLineCompleted: false
-        viewedRegistry:
-          sections: []
         pendingEffects: []
 out:
   contexts:
@@ -28,10 +26,6 @@ out:
           lineId: "1"
   global:
     isLineCompleted: true
-    viewedRegistry:
-      sections:
-        - sectionId: "section1"
-          lastLineId: "1"
     pendingEffects:
       - name: render
 ---
@@ -226,8 +220,6 @@ in:
             enabled: true
             trigger: "fromComplete"
             delay: 2000
-        viewedRegistry:
-          sections: []
         pendingEffects: []
       projectData:
         story:
@@ -271,9 +263,5 @@ out:
         enabled: true
         trigger: "fromComplete"
         delay: 2000
-    viewedRegistry:
-      sections:
-        - sectionId: "section1"
-          lastLineId: "1"
     pendingEffects:
       - name: render

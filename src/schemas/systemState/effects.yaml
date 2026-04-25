@@ -83,6 +83,81 @@ anyOf:
     required: [name, payload]
     additionalProperties: false
 
+  - title: Apply scoped data updates effect
+    type: object
+    properties:
+      name:
+        const: applyScopedDataUpdates
+      payload:
+        type: object
+        properties:
+          updates:
+            type: array
+            items:
+              anyOf:
+                - title: Variable set update
+                  type: object
+                  properties:
+                    scope:
+                      enum:
+                        - device
+                        - account
+                    path:
+                      type: string
+                      pattern: "^variables\\..+$"
+                    op:
+                      const: set
+                    value:
+                      description: Variable value.
+                  required: [scope, path, op, value]
+                  additionalProperties: false
+
+                - title: Account viewed registry update
+                  type: object
+                  properties:
+                    scope:
+                      const: account
+                    path:
+                      const: viewedRegistry
+                    op:
+                      const: markViewed
+                    value:
+                      type: object
+                      properties:
+                        sections:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              sectionId:
+                                type: string
+                                minLength: 1
+                              lineId:
+                                type: string
+                                minLength: 1
+                            required: [sectionId]
+                            additionalProperties: false
+                        resources:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              resourceId:
+                                type: string
+                                minLength: 1
+                            required: [resourceId]
+                            additionalProperties: false
+                      anyOf:
+                        - required: [sections]
+                        - required: [resources]
+                      additionalProperties: false
+                  required: [scope, path, op, value]
+                  additionalProperties: false
+        required: [updates]
+        additionalProperties: false
+    required: [name, payload]
+    additionalProperties: false
+
   - title: Start auto next timer effect
     type: object
     properties:
@@ -165,6 +240,8 @@ anyOf:
             - saveSlots
             - saveGlobalDeviceVariables
             - saveGlobalAccountVariables
+            - saveGlobalRuntime
+            - applyScopedDataUpdates
             - startAutoNextTimer
             - clearAutoNextTimer
             - startSkipNextTimer

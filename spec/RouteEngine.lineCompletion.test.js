@@ -7,6 +7,14 @@ const createTicker = () => ({
   remove: vi.fn(),
 });
 
+const createPersistence = () => ({
+  saveSlots: vi.fn().mockResolvedValue(undefined),
+  saveGlobalDeviceVariables: vi.fn().mockResolvedValue(undefined),
+  saveGlobalAccountVariables: vi.fn().mockResolvedValue(undefined),
+  saveGlobalRuntime: vi.fn().mockResolvedValue(undefined),
+  applyScopedDataUpdates: vi.fn().mockResolvedValue(undefined),
+});
+
 const createProjectData = () => ({
   screen: {
     width: 1920,
@@ -332,6 +340,7 @@ describe("RouteEngine line completion flow", () => {
     let engine;
     const effectsHandler = createEffectsHandler({
       getEngine: () => engine,
+      persistence: createPersistence(),
       routeGraphics,
       ticker: createTicker(),
     });
@@ -394,6 +403,7 @@ describe("RouteEngine line completion flow", () => {
     let engine;
     const effectsHandler = createEffectsHandler({
       getEngine: () => engine,
+      persistence: createPersistence(),
       routeGraphics,
       ticker: createTicker(),
     });
@@ -487,6 +497,7 @@ describe("RouteEngine line completion flow", () => {
     let engine;
     const effectsHandler = createEffectsHandler({
       getEngine: () => engine,
+      persistence: createPersistence(),
       routeGraphics,
       ticker: createTicker(),
     });

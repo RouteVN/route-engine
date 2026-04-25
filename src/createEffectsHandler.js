@@ -192,12 +192,24 @@ const saveGlobalRuntime = ({ enqueuePersistenceWrite }, payload) => {
   );
 };
 
+const applyScopedDataUpdates = ({ enqueuePersistenceWrite }, payload) => {
+  enqueuePersistenceWrite((persistence) => {
+    if (typeof persistence.applyScopedDataUpdates !== "function") {
+      throw new Error(
+        "RouteEngine persistence adapter must implement applyScopedDataUpdates.",
+      );
+    }
+    return persistence.applyScopedDataUpdates(payload?.updates);
+  });
+};
+
 const effects = {
   render,
   saveSlots,
   saveGlobalDeviceVariables,
   saveGlobalAccountVariables,
   saveGlobalRuntime,
+  applyScopedDataUpdates,
   handleLineActions,
   startAutoNextTimer,
   clearAutoNextTimer,

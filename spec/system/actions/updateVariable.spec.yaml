@@ -75,10 +75,13 @@ out:
     variables:
       volume: 80
     pendingEffects:
-      - name: "saveGlobalDeviceVariables"
+      - name: applyScopedDataUpdates
         payload:
-          globalDeviceVariables:
-            volume: 80
+          updates:
+            - scope: device
+              path: variables.volume
+              op: set
+              value: 80
       - name: "render"
   contexts:
     - variables: {}
@@ -116,10 +119,13 @@ out:
     variables:
       achievement1: true
     pendingEffects:
-      - name: "saveGlobalAccountVariables"
+      - name: applyScopedDataUpdates
         payload:
-          globalAccountVariables:
-            achievement1: true
+          updates:
+            - scope: account
+              path: variables.achievement1
+              op: set
+              value: true
       - name: "render"
   contexts:
     - variables: {}
@@ -228,10 +234,13 @@ out:
     variables:
       notificationsOn: true
     pendingEffects:
-      - name: "saveGlobalDeviceVariables"
+      - name: applyScopedDataUpdates
         payload:
-          globalDeviceVariables:
-            notificationsOn: true
+          updates:
+            - scope: device
+              path: variables.notificationsOn
+              op: set
+              value: true
       - name: "render"
   contexts:
     - variables: {}
@@ -293,14 +302,17 @@ out:
       volume: 80
       achievement1: true
     pendingEffects:
-      - name: "saveGlobalDeviceVariables"
+      - name: applyScopedDataUpdates
         payload:
-          globalDeviceVariables:
-            volume: 80
-      - name: "saveGlobalAccountVariables"
-        payload:
-          globalAccountVariables:
-            achievement1: true
+          updates:
+            - scope: device
+              path: variables.volume
+              op: set
+              value: 80
+            - scope: account
+              path: variables.achievement1
+              op: set
+              value: true
       - name: "render"
   contexts:
     - variables:
@@ -769,15 +781,18 @@ out:
           - label: Q
             value: 0
     pendingEffects:
-      - name: "saveGlobalDeviceVariables"
+      - name: applyScopedDataUpdates
         payload:
-          globalDeviceVariables:
-            pageButtons:
-              items:
-                - label: A
-                  value: -1
-                - label: Q
-                  value: 0
+          updates:
+            - scope: device
+              path: variables.pageButtons
+              op: set
+              value:
+                items:
+                  - label: A
+                    value: -1
+                  - label: Q
+                    value: 0
       - name: "render"
   contexts:
     - variables: {}

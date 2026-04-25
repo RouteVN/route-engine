@@ -185,7 +185,7 @@ describe("systemState schema", () => {
     expect(validateSystemState.errors).toBeNull();
   });
 
-  it("accepts numeric viewed resource IDs in runtime state", () => {
+  it("accepts numeric viewed resource IDs in account viewed state", () => {
     const engine = createRouteEngine({
       handlePendingEffects: () => {},
     });
@@ -202,7 +202,7 @@ describe("systemState schema", () => {
 
     const systemState = toJsonSnapshot(engine.selectSystemState());
 
-    expect(systemState.global.viewedRegistry.resources).toEqual([
+    expect(systemState.global.accountViewedRegistry.resources).toEqual([
       { resourceId: 42 },
     ]);
     expect(validateSystemState(systemState)).toBe(true);

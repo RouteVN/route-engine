@@ -49,9 +49,10 @@ Saved story state is the subset of runtime state needed to resume the story cohe
 For the current model, that means:
 
 - `contexts`
-- `viewedRegistry`
 
 Rollback data lives inside context state and is therefore part of saved story state.
+
+`accountViewedRegistry` is not saved inside slots. It is account-scoped persistent data and is loaded through the global persistence path.
 
 ### Persistent Global Variables
 
@@ -63,6 +64,12 @@ Persistent global variables are variables with scope:
 These are not story-local and should not be stored inside save slot state.
 
 They persist through their own storage path.
+
+The account-level viewed registry follows the same rule: it persists outside slots and is not restored or backfilled from a slot.
+
+The built-in IndexedDB adapter stores account-scoped data per browser namespace. A host that needs cross-device account persistence should provide a persistence adapter that maps `applyScopedDataUpdates` account operations and load hydration to account storage.
+
+`applyScopedDataUpdates` is a public runtime-facing persistence contract. Its full interface is documented in [ScopedDataUpdates.md](./ScopedDataUpdates.md).
 
 ### Transient Runtime State
 
@@ -88,7 +95,6 @@ When the player saves:
 - the current story position is captured
 - the current story-local variables are captured
 - the current rollback timeline/cursor is captured
-- the viewed registry is captured
 - the slot thumbnail/preview metadata is stored
 - the slot becomes available immediately in save/load UI
 
@@ -105,7 +111,6 @@ When the player loads:
 - the engine returns to the saved story position
 - saved story-local variables are restored
 - saved rollback ability is restored
-- seen/viewed registry is restored from the slot
 - transient runtime state is reinitialized to clean defaults
 - the result is a coherent playable state, not a hybrid of pre-load and post-load runtime state
 
@@ -117,7 +122,6 @@ Save slots must include:
 
 - `formatVersion`
 - current `contexts`
-- `global.viewedRegistry`
 - rollback timeline/cursor inside each saved context
 - slot metadata:
   - `slotId`
@@ -230,12 +234,17 @@ The save/load path crosses the store boundary through effects:
 - `saveSlots`
 - `saveGlobalDeviceVariables`
 - `saveGlobalAccountVariables`
+- `saveGlobalRuntime`
+- `applyScopedDataUpdates`
+
+`saveGlobalDeviceVariables` and `saveGlobalAccountVariables` are legacy full-snapshot effects. New scoped writes should use `applyScopedDataUpdates`.
 
 Current behavior:
 
 - `saveSlot` mutates `state.global.saveSlots`
 - then it emits a `saveSlots` effect
 - the built-in browser persistence helper persists the full slot map to IndexedDB
+- scoped data emits `applyScopedDataUpdates` with ordered operations such as `variables.<id>` `set` and account `viewedRegistry` `markViewed`
 
 Load is different:
 
@@ -389,6 +398,8 @@ The host app is responsible for:
 
 - hydrating `initialState.global.saveSlots` from durable storage before engine init
 - hydrating persistent global variables before engine init
+- hydrating `initialState.global.accountViewedRegistry` before engine init
+- hydrating `initialState.global.runtime` before engine init, including device preferences such as `skipUnseenText`
 - choosing and reusing a per-VN `namespace` during persistence hydration and `engine.init(...)`
 - calling `createIndexedDbPersistence({ namespace }).clear()` when the host wants to wipe one VN's persisted data
 - providing thumbnail image payloads when a save action wants one
@@ -407,11 +418,6 @@ slotId: 1
 savedAt: 1700000000000
 image: data:image/webp;base64,...
 state:
-  viewedRegistry:
-    sections:
-      - ...
-    resources:
-      - ...
   contexts:
     - currentPointerMode: read
       pointers:
@@ -435,8 +441,12 @@ Important constraints:
 
 - `formatVersion` is required on every loadable save slot
 - `state.contexts` is authoritative for story restoration
-- `state.viewedRegistry` is authoritative for seen-state restoration
 - runtime-only globals are not part of this slot payload
+- account-level viewed state is not part of this slot payload
+
+`state.contexts[*].rollback.timeline` is the active branch history for rollback navigation. It can cross sections, and it is pruned when the player rolls back and then advances onto a different branch.
+
+Skip-unseen text uses `accountViewedRegistry`, which lives outside save slot state and is not replaced by `loadSlot`.
 
 ## How It Works Today
 
@@ -446,6 +456,8 @@ At initialization:
 
 - `createInitialState` receives `payload.global.saveSlots`
 - `createInitialState` also receives preloaded persistent global variables
+- `createInitialState` receives `payload.global.accountViewedRegistry`
+- `createInitialState` receives `payload.global.runtime`
 - those become part of initial in-memory system state
 - hydrated save slots are validated immediately, including required `formatVersion`
 
@@ -453,6 +465,8 @@ This means startup hydration is split:
 
 - slot map comes from the host app into store initialization
 - persistent globals come from the host app into store initialization
+- account-level viewed state comes from the host app into store initialization
+- device runtime preferences come from the host app into store initialization
 
 ### Save Flow
 
@@ -460,10 +474,9 @@ Current save flow:
 
 1. clone current `contexts`
 2. strip obsolete rollback-only compatibility fields from cloned contexts
-3. clone `global.viewedRegistry`
-4. write `{ slotId, savedAt, image, state }` into `state.global.saveSlots`
-5. append `saveSlots` effect
-6. append `render` effect
+3. write `{ slotId, savedAt, image, state }` into `state.global.saveSlots`
+4. append `saveSlots` effect
+5. append `render` effect
 
 The store writes to the in-memory slot map first.
 
@@ -476,10 +489,10 @@ Current load flow:
 1. look up `state.global.saveSlots[String(slotId)]`
 2. if missing, leave state unchanged
 3. validate and normalize `slotData.state`
-4. normalize `viewedRegistry`
-5. validate each loaded read pointer against current `projectData`
-6. normalize loaded contexts and rollback state
-7. reset transient runtime globals to a clean playable baseline
+4. validate each loaded read pointer against current `projectData`
+5. normalize loaded contexts and rollback state
+6. reset transient runtime globals to a clean playable baseline
+7. leave account viewed state unchanged
 8. queue timer-clear effects and append `render`
 
 ## Relationship to Rollback
@@ -493,6 +506,18 @@ Required behavior:
 - old saves without rollback state may be upgraded to a minimal rollback state
 - rollback restore start state is recomputed from project defaults, not from saved baseline snapshots
 
+Rollback history is save-local. Loading slot A replaces the in-memory contexts with slot A's contexts, including its rollback timeline and cursor. Loading slot B then replaces those with slot B's timeline and cursor.
+
+Rollback history should be read as "the active path for this saved run." It is not an append-only audit log of every branch the player has ever visited, and it is not account-global.
+
+The active path is preserved across normal section transitions. If the player rolls back and takes a new path, the old future after the rollback point is intentionally discarded. The common prefix before the rollback point remains.
+
+## Relationship to Seen State
+
+Save slots no longer store seen state. The account viewed registry answers "what has this player ever seen across saves?" and is persisted through scoped account storage, not `saveSlot`.
+
+Skip-unseen text uses account viewed state. `saveSlot` is not the authoritative write for that registry, and `loadSlot` does not overwrite or backfill it.
+
 ## Validation and Compatibility Rules
 
 ### Validation
@@ -504,7 +529,6 @@ At minimum:
 - `slotId` should be numeric in authored save/load actions
 - `state.contexts` should be an array with at least one valid context
 - each loaded context should have a valid read pointer
-- `viewedRegistry` should be normalized to a safe shape
 
 ### Compatibility
 
@@ -530,7 +554,7 @@ The save/load test surface should cover:
 - save overwrites an existing slot deterministically
 - save preserves rollback timeline/cursor
 - save/load works against live Immer drafts
-- load from existing slot restores contexts and viewed registry
+- load from existing slot restores contexts without restoring viewed registry
 - load from missing slot leaves state unchanged
 - load restores rollback timeline/cursor from slot data
 - load initializes a minimal rollback timeline for older saves without rollback data

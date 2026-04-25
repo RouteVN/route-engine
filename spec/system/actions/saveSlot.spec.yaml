@@ -47,7 +47,6 @@ out:
             - currentPointerMode: read
               pointers:
                 read: { sectionId: "sec1", lineId: "line1" }
-          viewedRegistry: __undefined__
     pendingEffects:
       - name: "saveSlots"
         payload:
@@ -62,7 +61,6 @@ out:
                   - currentPointerMode: read
                     pointers:
                       read: { sectionId: "sec1", lineId: "line1" }
-                viewedRegistry: __undefined__
       - name: "render"
   projectData:
     story: { initialSceneId: "test" }
@@ -98,7 +96,6 @@ out:
             - currentPointerMode: read
               pointers:
                 read: { sectionId: "sec1", lineId: "line1" }
-          viewedRegistry: __undefined__
     pendingEffects:
       - name: "saveSlots"
         payload:
@@ -113,7 +110,6 @@ out:
                   - currentPointerMode: read
                     pointers:
                       read: { sectionId: "sec1", lineId: "line1" }
-                viewedRegistry: __undefined__
       - name: "render"
   projectData:
     story: { initialSceneId: "test" }
@@ -155,7 +151,6 @@ out:
             - currentPointerMode: read
               pointers:
                 read: { sectionId: "sec1", lineId: "line1" }
-          viewedRegistry: __undefined__
     pendingEffects:
       - name: "saveSlots"
         payload:
@@ -170,7 +165,6 @@ out:
                   - currentPointerMode: read
                     pointers:
                       read: { sectionId: "sec1", lineId: "line1" }
-                viewedRegistry: __undefined__
       - name: "render"
   projectData:
     story: { initialSceneId: "test" }
@@ -207,7 +201,6 @@ out:
             - currentPointerMode: read
               pointers:
                 read: { sectionId: "sec1", lineId: "line1" }
-          viewedRegistry: __undefined__
     pendingEffects:
       - name: "saveSlots"
         payload:
@@ -222,7 +215,6 @@ out:
                   - currentPointerMode: read
                     pointers:
                       read: { sectionId: "sec1", lineId: "line1" }
-                viewedRegistry: __undefined__
       - name: "render"
   projectData:
     story: { initialSceneId: "test" }
@@ -259,7 +251,6 @@ out:
             - currentPointerMode: read
               pointers:
                 read: { sectionId: "sec1", lineId: "line1" }
-          viewedRegistry: __undefined__
     pendingEffects:
       - name: "existingEffect"
       - name: "saveSlots"
@@ -275,7 +266,6 @@ out:
                   - currentPointerMode: read
                     pointers:
                       read: { sectionId: "sec1", lineId: "line1" }
-                viewedRegistry: __undefined__
       - name: "render"
   projectData:
     story: { initialSceneId: "test" }
@@ -290,9 +280,6 @@ in:
       global:
         saveSlots: {}
         pendingEffects: []
-        viewedRegistry:
-          sections: ["sec1"]
-          resources: []
       projectData:
         story: { initialSceneId: "test" }
       contexts:
@@ -314,9 +301,6 @@ out:
         savedAt: 1700000000000
         image: null
         state:
-          viewedRegistry:
-            sections: ["sec1"]
-            resources: []
           contexts:
             - currentPointerMode: read
               pointers:
@@ -325,9 +309,6 @@ out:
                 playerName: "Alice"
                 score: 150
                 soundEnabled: true
-    viewedRegistry:
-      sections: ["sec1"]
-      resources: []
     pendingEffects:
       - name: "saveSlots"
         payload:
@@ -338,9 +319,6 @@ out:
               savedAt: 1700000000000
               image: null
               state:
-                viewedRegistry:
-                  sections: ["sec1"]
-                  resources: []
                 contexts:
                   - currentPointerMode: read
                     pointers:
@@ -420,7 +398,6 @@ out:
                   - sectionId: "sec2"
                     lineId: "line3"
                     rollbackPolicy: "free"
-          viewedRegistry: __undefined__
     pendingEffects:
       - name: "saveSlots"
         payload:
@@ -451,7 +428,6 @@ out:
                         - sectionId: "sec2"
                           lineId: "line3"
                           rollbackPolicy: "free"
-                viewedRegistry: __undefined__
       - name: "render"
   projectData:
     story: { initialSceneId: "test" }

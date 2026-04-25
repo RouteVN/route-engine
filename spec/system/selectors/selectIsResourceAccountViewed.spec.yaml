@@ -1,18 +1,15 @@
 file: "../../../src/stores/system.store.js"
 group: systemStore selectors
-suites:
-  [
-    selectIsResourceViewed,
-  ]
+suites: [selectIsResourceAccountViewed]
 ---
-suite: selectIsResourceViewed
-exportName: selectIsResourceViewed
+suite: selectIsResourceAccountViewed
+exportName: selectIsResourceAccountViewed
 ---
 case: resource not found
 in:
   - state:
       global:
-        viewedRegistry:
+        accountViewedRegistry:
           resources:
             - resourceId: "existing_resource.jpg"
             - resourceId: "another_resource.png"
@@ -23,7 +20,7 @@ case: resource found
 in:
   - state:
       global:
-        viewedRegistry:
+        accountViewedRegistry:
           resources:
             - resourceId: "image1.jpg"
             - resourceId: "sound1.mp3"
@@ -35,7 +32,7 @@ case: empty resources registry
 in:
   - state:
       global:
-        viewedRegistry:
+        accountViewedRegistry:
           resources: []
   - resourceId: "any_resource.png"
 out: false
@@ -44,7 +41,7 @@ case: check first resource
 in:
   - state:
       global:
-        viewedRegistry:
+        accountViewedRegistry:
           resources:
             - resourceId: "first_resource.jpg"
             - resourceId: "second_resource.png"
@@ -55,7 +52,7 @@ case: check last resource
 in:
   - state:
       global:
-        viewedRegistry:
+        accountViewedRegistry:
           resources:
             - resourceId: "resource1.jpg"
             - resourceId: "resource2.png"
@@ -67,7 +64,7 @@ case: numeric resourceId found
 in:
   - state:
       global:
-        viewedRegistry:
+        accountViewedRegistry:
           resources:
             - resourceId: 42
             - resourceId: "text_resource.jpg"
@@ -78,7 +75,7 @@ case: numeric resourceId not found
 in:
   - state:
       global:
-        viewedRegistry:
+        accountViewedRegistry:
           resources:
             - resourceId: "text_resource.jpg"
             - resourceId: "image_resource.png"
@@ -89,7 +86,7 @@ case: resource with special characters found
 in:
   - state:
       global:
-        viewedRegistry:
+        accountViewedRegistry:
           resources:
             - resourceId: "resource-with-dash.jpg"
             - resourceId: "resource_with_underscore.png"

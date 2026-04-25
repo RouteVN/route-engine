@@ -163,11 +163,6 @@ in:
         autoMode: true
         skipMode: false
         dialogueUIHidden: true
-        viewedRegistry:
-          sections:
-            - sectionId: "viewedSection"
-          resources:
-            - resourceId: "viewedResource"
         nextLineConfig:
           manual:
             enabled: true
@@ -206,11 +201,6 @@ out:
     autoMode: true
     skipMode: false
     dialogueUIHidden: true
-    viewedRegistry:
-      sections:
-        - sectionId: "viewedSection"
-      resources:
-        - resourceId: "viewedResource"
     nextLineConfig:
       manual:
         enabled: true

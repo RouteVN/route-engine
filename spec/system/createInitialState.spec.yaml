@@ -34,7 +34,7 @@ out:
     musicVolume: 50
     muteAll: false
     confirmDialog: null
-    viewedRegistry:
+    accountViewedRegistry:
       sections: []
       resources: []
     nextLineConfig:
@@ -124,7 +124,7 @@ out:
     musicVolume: 50
     muteAll: false
     confirmDialog: null
-    viewedRegistry:
+    accountViewedRegistry:
       sections: []
       resources: []
     nextLineConfig:
@@ -227,7 +227,7 @@ out:
     musicVolume: 50
     muteAll: false
     confirmDialog: null
-    viewedRegistry:
+    accountViewedRegistry:
       sections: []
       resources: []
     nextLineConfig:
@@ -324,7 +324,7 @@ out:
     musicVolume: 50
     muteAll: false
     confirmDialog: null
-    viewedRegistry:
+    accountViewedRegistry:
       sections: []
       resources: []
     nextLineConfig:
@@ -418,7 +418,7 @@ out:
     musicVolume: 50
     muteAll: false
     confirmDialog: null
-    viewedRegistry:
+    accountViewedRegistry:
       sections: []
       resources: []
     nextLineConfig:

@@ -424,10 +424,7 @@ describe("RouteEngine selectSystemState", () => {
       lineId: "gameLine",
     });
     expect(state.contexts[0].variables.score).toBe(1);
-    expect(state.global.viewedRegistry).toEqual({
-      sections: [],
-      resources: [],
-    });
+    expect(state.global).not.toHaveProperty("viewedRegistry");
     expect(state.contexts[0].rollback).toEqual({
       currentIndex: 0,
       isRestoring: false,

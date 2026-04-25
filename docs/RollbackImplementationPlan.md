@@ -35,14 +35,12 @@ Out of scope:
 
 ## Current State
 
-The current engine has two different backward-navigation concepts:
+The previous engine mixed history-pointer navigation with rollback. That has
+been removed from gameplay back behavior.
 
-1. `prevLine`
-- moves a `history` pointer
-- behaves like preview/history navigation
-- does not represent the intended final `Back` semantics
+The current rollback entry points are:
 
-2. `rollbackToLine` / `rollbackByOffset`
+1. `rollbackToLine` / `rollbackByOffset`
 - resets context variables to a section `initialState`
 - replays recorded `updateVariable` actions
 - is limited by the current section-oriented history structure
@@ -216,7 +214,6 @@ Do not remove these immediately:
 - `historySequence`
 - `pointers.history`
 - `currentPointerMode`
-- `prevLine`
 
 Reason:
 
@@ -227,8 +224,8 @@ But rollback actions should stop depending on them as the new timeline becomes a
 
 Recommended deprecation stance:
 
-- `prevLine` and history pointers may remain temporarily for non-rollback features
-- they should no longer be considered part of gameplay back semantics
+- history pointers may remain temporarily for non-rollback features
+- they should not be considered part of gameplay back semantics
 
 ### Phase 3: Decommission old rollback dependencies
 
@@ -339,15 +336,11 @@ Presentation should still appear correctly because it is derived from the restor
 
 ## Rollback Action Design
 
-### Replace `prevLine` as gameplay back
+### Gameplay Back Uses Rollback
 
-`Back` in gameplay should no longer use `prevLine`.
-
-Instead:
+`Back` in gameplay should call rollback directly:
 
 - UI-facing back action should call `rollbackByOffset({ offset: -1 })`
-
-`prevLine` may remain temporarily for history/log work, but it should not be the primary gameplay back implementation.
 
 ### `rollbackByOffset`
 
@@ -632,7 +625,7 @@ Recommended order:
 9. switch UI-facing back flows to true rollback
 10. stop rollback logic from depending on `historySequence`
 11. update docs and tests
-12. evaluate whether `prevLine` / `history` pointer can be simplified or removed later
+12. evaluate whether history pointers can be simplified or removed later
 
 ## Risks
 

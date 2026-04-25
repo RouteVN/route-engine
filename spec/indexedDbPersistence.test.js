@@ -245,6 +245,23 @@ describe("indexedDbPersistence", () => {
     await alphaPersistence.saveGlobalDeviceVariables({
       textSpeed: 42,
     });
+    await alphaPersistence.applyScopedDataUpdates([
+      {
+        scope: "device",
+        path: "variables.textSpeed",
+        op: "set",
+        value: 60,
+      },
+      {
+        scope: "account",
+        path: "viewedRegistry",
+        op: "markViewed",
+        value: {
+          sections: [{ sectionId: "prologue", lineId: "line2" }],
+          resources: [],
+        },
+      },
+    ]);
 
     expect(await alphaPersistence.load()).toEqual({
       saveSlots: {
@@ -254,10 +271,14 @@ describe("indexedDbPersistence", () => {
         },
       },
       globalDeviceVariables: {
-        textSpeed: 42,
+        textSpeed: 60,
       },
       globalAccountVariables: {},
       globalRuntime: {},
+      accountViewedRegistry: {
+        sections: [{ sectionId: "prologue", lastLineId: "line2" }],
+        resources: [],
+      },
     });
 
     expect(await betaPersistence.load()).toEqual({
@@ -265,6 +286,7 @@ describe("indexedDbPersistence", () => {
       globalDeviceVariables: {},
       globalAccountVariables: {},
       globalRuntime: {},
+      accountViewedRegistry: {},
     });
   });
 
@@ -274,6 +296,78 @@ describe("indexedDbPersistence", () => {
     ).toThrowError(
       "createIndexedDbPersistence requires a non-empty namespace.",
     );
+  });
+
+  it("merges account viewed registry scoped data patches", async () => {
+    const persistence = createIndexedDbPersistence({
+      indexedDB: createFakeIndexedDB(),
+      namespace: "viewed-patch-vn",
+    });
+
+    await persistence.applyScopedDataUpdates([
+      {
+        scope: "account",
+        path: "viewedRegistry",
+        op: "markViewed",
+        value: {
+          sections: [{ sectionId: "common", lineId: "line2" }],
+          resources: [{ resourceId: "bg-1" }],
+        },
+      },
+      {
+        scope: "account",
+        path: "variables.routeUnlocked",
+        op: "set",
+        value: true,
+      },
+    ]);
+    await persistence.applyScopedDataUpdates([
+      {
+        scope: "account",
+        path: "viewedRegistry",
+        op: "markViewed",
+        value: {
+          sections: [
+            { sectionId: "common", lineId: "line3" },
+            { sectionId: "branch" },
+          ],
+          resources: [{ resourceId: "bg-2" }],
+        },
+      },
+      {
+        scope: "device",
+        path: "variables.textSpeed",
+        op: "set",
+        value: 42,
+      },
+    ]);
+    await persistence.applyScopedDataUpdates([
+      {
+        scope: "account",
+        path: "viewedRegistry",
+        op: "markViewed",
+        value: {
+          sections: [{ sectionId: "branch", lineId: "branch-line-1" }],
+          resources: [{ resourceId: "bg-1" }],
+        },
+      },
+    ]);
+
+    expect(await persistence.load()).toMatchObject({
+      globalDeviceVariables: {
+        textSpeed: 42,
+      },
+      globalAccountVariables: {
+        routeUnlocked: true,
+      },
+      accountViewedRegistry: {
+        sections: [
+          { sectionId: "common", lastLineId: "line3" },
+          { sectionId: "branch" },
+        ],
+        resources: [{ resourceId: "bg-1" }, { resourceId: "bg-2" }],
+      },
+    });
   });
 
   it("clears persisted data for a single namespace", async () => {
@@ -304,6 +398,7 @@ describe("indexedDbPersistence", () => {
       globalDeviceVariables: {},
       globalAccountVariables: {},
       globalRuntime: {},
+      accountViewedRegistry: {},
     });
 
     expect(await betaPersistence.load()).toEqual({
@@ -313,6 +408,7 @@ describe("indexedDbPersistence", () => {
         routeUnlocked: true,
       },
       globalRuntime: {},
+      accountViewedRegistry: {},
     });
   });
 
@@ -349,11 +445,50 @@ describe("indexedDbPersistence", () => {
         },
       },
       {
-        name: "saveGlobalAccountVariables",
+        name: "applyScopedDataUpdates",
         payload: {
-          globalAccountVariables: {
-            unlockedChapter: 3,
-          },
+          updates: [
+            {
+              scope: "account",
+              path: "variables.unlockedChapter",
+              op: "set",
+              value: 3,
+            },
+            {
+              scope: "account",
+              path: "viewedRegistry",
+              op: "markViewed",
+              value: {
+                sections: [{ sectionId: "common", lineId: "line4" }],
+                resources: [],
+              },
+            },
+          ],
+        },
+      },
+      {
+        name: "applyScopedDataUpdates",
+        payload: {
+          updates: [
+            {
+              scope: "account",
+              path: "viewedRegistry",
+              op: "markViewed",
+              value: {
+                sections: [{ sectionId: "common", lineId: "line4" }],
+                resources: [],
+              },
+            },
+            {
+              scope: "account",
+              path: "viewedRegistry",
+              op: "markViewed",
+              value: {
+                sections: [{ sectionId: "branch", lineId: "line1" }],
+                resources: [{ resourceId: "cg-1" }],
+              },
+            },
+          ],
         },
       },
     ]);
@@ -377,6 +512,13 @@ describe("indexedDbPersistence", () => {
         unlockedChapter: 3,
       },
       globalRuntime: {},
+      accountViewedRegistry: {
+        sections: [
+          { sectionId: "common", lastLineId: "line4" },
+          { sectionId: "branch", lastLineId: "line1" },
+        ],
+        resources: [{ resourceId: "cg-1" }],
+      },
     });
   });
 });

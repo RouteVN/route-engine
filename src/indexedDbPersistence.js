@@ -7,10 +7,157 @@ const createEmptyPersistedState = () => ({
   globalDeviceVariables: {},
   globalAccountVariables: {},
   globalRuntime: {},
+  accountViewedRegistry: {},
 });
 
 const isPlainObject = (value) =>
   Object.prototype.toString.call(value) === "[object Object]";
+
+const VARIABLE_PATH_PREFIX = "variables.";
+
+const normalizeMarkViewedValue = (value = {}) => {
+  const markViewedValue = isPlainObject(value) ? value : {};
+
+  return {
+    sections: (Array.isArray(markViewedValue.sections)
+      ? markViewedValue.sections
+      : []
+    )
+      .map((section) => {
+        if (typeof section === "string" || typeof section === "number") {
+          return { sectionId: String(section) };
+        }
+
+        if (
+          !isPlainObject(section) ||
+          typeof section.sectionId !== "string" ||
+          section.sectionId.length === 0
+        ) {
+          return null;
+        }
+
+        return {
+          sectionId: section.sectionId,
+          ...(typeof section.lineId === "string"
+            ? { lineId: section.lineId }
+            : {}),
+        };
+      })
+      .filter(Boolean),
+    resources: (Array.isArray(markViewedValue.resources)
+      ? markViewedValue.resources
+      : []
+    )
+      .map((resource) => {
+        if (typeof resource === "string" || typeof resource === "number") {
+          return { resourceId: String(resource) };
+        }
+
+        if (
+          !isPlainObject(resource) ||
+          typeof resource.resourceId !== "string" ||
+          resource.resourceId.length === 0
+        ) {
+          return null;
+        }
+
+        return { resourceId: resource.resourceId };
+      })
+      .filter(Boolean),
+  };
+};
+
+const normalizeStoredViewedRegistry = (value = {}) => {
+  const registry = isPlainObject(value) ? value : {};
+
+  return {
+    sections: (Array.isArray(registry.sections) ? registry.sections : [])
+      .map((section) => {
+        if (typeof section === "string" || typeof section === "number") {
+          return { sectionId: String(section) };
+        }
+
+        if (
+          !isPlainObject(section) ||
+          typeof section.sectionId !== "string" ||
+          section.sectionId.length === 0
+        ) {
+          return null;
+        }
+
+        return {
+          sectionId: section.sectionId,
+          ...(typeof section.lastLineId === "string"
+            ? { lastLineId: section.lastLineId }
+            : {}),
+        };
+      })
+      .filter(Boolean),
+    resources: (Array.isArray(registry.resources) ? registry.resources : [])
+      .map((resource) => {
+        if (typeof resource === "string" || typeof resource === "number") {
+          return { resourceId: String(resource) };
+        }
+
+        if (
+          !isPlainObject(resource) ||
+          typeof resource.resourceId !== "string" ||
+          resource.resourceId.length === 0
+        ) {
+          return null;
+        }
+
+        return { resourceId: resource.resourceId };
+      })
+      .filter(Boolean),
+  };
+};
+
+const markViewedInRegistry = (currentRegistry, markViewedValue) => {
+  const current = normalizeStoredViewedRegistry(currentRegistry);
+  const markViewed = normalizeMarkViewedValue(markViewedValue);
+  const sections = current.sections.map((section) => ({ ...section }));
+  const resources = current.resources.map((resource) => ({ ...resource }));
+
+  markViewed.sections.forEach((sectionPatch) => {
+    const existing = sections.find(
+      (section) => section.sectionId === sectionPatch.sectionId,
+    );
+
+    if (!existing) {
+      sections.push({
+        sectionId: sectionPatch.sectionId,
+        ...(sectionPatch.lineId === undefined
+          ? {}
+          : { lastLineId: sectionPatch.lineId }),
+      });
+      return;
+    }
+
+    if (existing.lastLineId === undefined) {
+      return;
+    }
+
+    if (sectionPatch.lineId === undefined) {
+      delete existing.lastLineId;
+      return;
+    }
+
+    existing.lastLineId = sectionPatch.lineId;
+  });
+
+  markViewed.resources.forEach((resourcePatch) => {
+    const existing = resources.find(
+      (resource) => resource.resourceId === resourcePatch.resourceId,
+    );
+
+    if (!existing) {
+      resources.push({ ...resourcePatch });
+    }
+  });
+
+  return { sections, resources };
+};
 
 const normalizePersistedState = (value = {}) => {
   const normalizedValue = isPlainObject(value) ? value : {};
@@ -30,7 +177,109 @@ const normalizePersistedState = (value = {}) => {
     globalRuntime: isPlainObject(normalizedValue.globalRuntime)
       ? normalizedValue.globalRuntime
       : {},
+    accountViewedRegistry: isPlainObject(normalizedValue.accountViewedRegistry)
+      ? normalizedValue.accountViewedRegistry
+      : {},
   };
+};
+
+const normalizeScopedDataUpdates = (updates = []) => {
+  if (updates === undefined) {
+    return [];
+  }
+
+  if (!Array.isArray(updates)) {
+    throw new Error("applyScopedDataUpdates requires an updates array.");
+  }
+
+  return updates.map((update, index) => {
+    if (!isPlainObject(update)) {
+      throw new Error(
+        `Malformed applyScopedDataUpdates.updates[${index}] entry.`,
+      );
+    }
+
+    const variableId = update.path?.startsWith(VARIABLE_PATH_PREFIX)
+      ? update.path.slice(VARIABLE_PATH_PREFIX.length)
+      : null;
+
+    if (variableId !== null) {
+      if (!["device", "account"].includes(update.scope)) {
+        throw new Error(
+          `Unsupported applyScopedDataUpdates scope "${update.scope}" at updates[${index}].`,
+        );
+      }
+      if (variableId.length === 0) {
+        throw new Error(
+          `Malformed applyScopedDataUpdates path "${update.path}" at updates[${index}].`,
+        );
+      }
+      if (update.op !== "set") {
+        throw new Error(
+          `Unsupported applyScopedDataUpdates operation "${update.op}" at updates[${index}].`,
+        );
+      }
+
+      return {
+        scope: update.scope,
+        path: update.path,
+        op: update.op,
+        value: update.value,
+        variableId,
+      };
+    }
+
+    if (update.path === "viewedRegistry") {
+      if (update.scope !== "account") {
+        throw new Error(
+          `Unsupported applyScopedDataUpdates scope "${update.scope}" at updates[${index}].`,
+        );
+      }
+      if (update.op !== "markViewed") {
+        throw new Error(
+          `Unsupported applyScopedDataUpdates operation "${update.op}" at updates[${index}].`,
+        );
+      }
+
+      return update;
+    }
+
+    if (typeof update.path !== "string") {
+      throw new Error(
+        `Malformed applyScopedDataUpdates path at updates[${index}].`,
+      );
+    }
+
+    throw new Error(
+      `Unsupported applyScopedDataUpdates path "${update.path}" at updates[${index}].`,
+    );
+  });
+};
+
+const createPersistedStatePatch = (currentRecord, updates) => {
+  const nextPatch = {};
+
+  normalizeScopedDataUpdates(updates).forEach((update) => {
+    if (update.path === "viewedRegistry") {
+      nextPatch.accountViewedRegistry = markViewedInRegistry(
+        nextPatch.accountViewedRegistry ?? currentRecord.accountViewedRegistry,
+        update.value,
+      );
+      return;
+    }
+
+    const field =
+      update.scope === "device"
+        ? "globalDeviceVariables"
+        : "globalAccountVariables";
+    nextPatch[field] = {
+      ...currentRecord[field],
+      ...nextPatch[field],
+      [update.variableId]: update.value,
+    };
+  });
+
+  return nextPatch;
 };
 
 export const normalizeNamespace = (value) => {
@@ -157,12 +406,14 @@ const writeNamespaceRecord = async ({
 
     readRequest.onsuccess = () => {
       const currentRecord = normalizePersistedState(readRequest.result);
+      const resolvedPatch =
+        typeof patch === "function" ? patch(currentRecord) : patch;
       const nextRecord = {
         namespace,
         version: PERSISTENCE_RECORD_VERSION,
         ...createEmptyPersistedState(),
         ...currentRecord,
-        ...patch,
+        ...resolvedPatch,
       };
 
       const writeRequest = store.put(nextRecord);
@@ -339,6 +590,14 @@ export const createIndexedDbPersistence = (options = {}) => {
         patch: {
           globalRuntime: isPlainObject(globalRuntime) ? globalRuntime : {},
         },
+      }),
+    applyScopedDataUpdates: async (updates) =>
+      writeNamespaceRecord({
+        databasePromise,
+        objectStoreName,
+        namespace: resolvedNamespace,
+        patch: (currentRecord) =>
+          createPersistedStatePatch(currentRecord, updates),
       }),
   };
 };
