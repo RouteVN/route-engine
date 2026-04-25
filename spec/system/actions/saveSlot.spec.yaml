@@ -280,9 +280,6 @@ in:
       global:
         saveSlots: {}
         pendingEffects: []
-        viewedRegistry:
-          sections: ["sec1"]
-          resources: []
       projectData:
         story: { initialSceneId: "test" }
       contexts:
@@ -312,9 +309,6 @@ out:
                 playerName: "Alice"
                 score: 150
                 soundEnabled: true
-    viewedRegistry:
-      sections: ["sec1"]
-      resources: []
     pendingEffects:
       - name: "saveSlots"
         payload:

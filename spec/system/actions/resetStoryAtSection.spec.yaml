@@ -55,12 +55,6 @@ in:
             hideConfirmDialog: {}
           cancelActions:
             hideConfirmDialog: {}
-        viewedRegistry:
-          sections:
-            - sectionId: title
-              lastLineId: titleLine
-          resources:
-            - resourceId: cg1
         nextLineConfig:
           manual:
             enabled: false
@@ -163,9 +157,6 @@ out:
     skipMode: false
     dialogueUIHidden: false
     confirmDialog: null
-    viewedRegistry:
-      sections: []
-      resources: []
     nextLineConfig:
       manual:
         enabled: true

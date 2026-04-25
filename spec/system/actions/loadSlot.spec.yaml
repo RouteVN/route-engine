@@ -221,110 +221,7 @@ in:
   - slotId: 2
 throws: 'Unsupported save slot formatVersion "2".'
 ---
-case: load ignores obsolete slot viewed registry data
-in:
-  - state:
-      projectData:
-        story:
-          scenes:
-            scene1:
-              sections:
-                sec1:
-                  lines:
-                    - id: line1
-                      actions: {}
-      global:
-        viewedRegistry:
-          sections:
-            - sectionId: current
-              lastLineId: current-line
-          resources:
-            - resourceId: current-resource
-        saveSlots:
-          "2":
-            formatVersion: 1
-            slotId: 2
-            savedAt: 1704110500
-            image: save2.png
-            state:
-              viewedRegistry:
-                sections: {}
-                resources: {}
-              contexts:
-                - pointers:
-                    read:
-                      sectionId: sec1
-                      lineId: line1
-        pendingEffects: []
-  - slotId: 2
-out:
-  projectData:
-    story:
-      scenes:
-        scene1:
-          sections:
-            sec1:
-              lines:
-                - id: line1
-                  actions: {}
-  global:
-    viewedRegistry:
-      sections:
-        - sectionId: current
-          lastLineId: current-line
-      resources:
-        - resourceId: current-resource
-    autoMode: false
-    skipMode: false
-    dialogueUIHidden: false
-    overlayStack: []
-    isLineCompleted: true
-    nextLineConfig:
-      manual:
-        enabled: true
-        requireLineCompleted: false
-      auto:
-        enabled: false
-      applyMode: persistent
-    saveSlots:
-      "2":
-        formatVersion: 1
-        slotId: 2
-        savedAt: 1704110500
-        image: save2.png
-        state:
-          contexts:
-            - pointers:
-                read:
-                  sectionId: sec1
-                  lineId: line1
-    pendingEffects:
-      - name: clearAutoNextTimer
-      - name: clearSkipNextTimer
-      - name: clearNextLineConfigTimer
-      - name: render
-  contexts:
-    - currentPointerMode: read
-      pointers:
-        read:
-          sceneId: scene1
-          sectionId: sec1
-          lineId: line1
-      configuration: {}
-      views: []
-      bgm:
-        resourceId: __undefined__
-      variables: {}
-      rollback:
-        currentIndex: 0
-        isRestoring: false
-        replayStartIndex: 1
-        timeline:
-          - sectionId: sec1
-            lineId: line1
-            rollbackPolicy: free
----
-case: load normalizes context variables and drops obsolete slot viewed registry
+case: load normalizes context variables
 in:
   - state:
       projectData:
@@ -362,9 +259,6 @@ in:
             savedAt: 1704110400
             image: save.png
             state:
-              viewedRegistry:
-                sections: [sec2]
-                resources: [bg-1]
               contexts:
                 - pointers:
                     read:
@@ -374,9 +268,6 @@ in:
                     playerName: Alice
                     score: 150
                     soundEnabled: true
-        viewedRegistry:
-          sections: []
-          resources: []
         pendingEffects: []
       contexts:
         - pointers:
@@ -445,9 +336,6 @@ out:
                 playerName: Alice
                 score: 150
                 soundEnabled: true
-    viewedRegistry:
-      sections: []
-      resources: []
     pendingEffects:
       - name: clearAutoNextTimer
       - name: clearSkipNextTimer

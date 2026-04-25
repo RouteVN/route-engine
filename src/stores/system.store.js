@@ -183,22 +183,6 @@ const normalizeSaveSlotFormatVersion = (formatVersion) => {
   return formatVersion;
 };
 
-const omitSaveSlotViewedRegistry = (saveSlot) => {
-  if (
-    !isRecord(saveSlot?.state) ||
-    !Object.prototype.hasOwnProperty.call(saveSlot.state, "viewedRegistry")
-  ) {
-    return saveSlot;
-  }
-
-  const nextSaveSlot = {
-    ...saveSlot,
-    state: { ...saveSlot.state },
-  };
-  delete nextSaveSlot.state.viewedRegistry;
-  return nextSaveSlot;
-};
-
 const normalizeStoredSaveSlot = (storageKey, saveSlot = {}) => {
   let formatVersion;
   try {
@@ -222,7 +206,7 @@ const normalizeStoredSaveSlot = (storageKey, saveSlot = {}) => {
   delete normalizedSaveSlot.slotKey;
   delete normalizedSaveSlot.date;
 
-  return omitSaveSlotViewedRegistry(normalizedSaveSlot);
+  return normalizedSaveSlot;
 };
 
 const normalizeStoredSaveSlots = (saveSlots = {}) => {
@@ -323,33 +307,33 @@ const normalizeLoadedViewedRegistryEntry = (
 };
 
 const normalizeLoadedViewedRegistry = (
-  viewedRegistry,
+  registryValue,
   path = "viewedRegistry",
 ) => {
-  if (viewedRegistry === undefined) {
+  if (registryValue === undefined) {
     return createDefaultViewedRegistry();
   }
 
-  if (!isRecord(viewedRegistry)) {
+  if (!isRecord(registryValue)) {
     throw new Error(`Malformed ${path}.`);
   }
 
   if (
-    viewedRegistry.sections !== undefined &&
-    !Array.isArray(viewedRegistry.sections)
+    registryValue.sections !== undefined &&
+    !Array.isArray(registryValue.sections)
   ) {
     throw new Error(`Malformed ${path}.sections.`);
   }
 
   if (
-    viewedRegistry.resources !== undefined &&
-    !Array.isArray(viewedRegistry.resources)
+    registryValue.resources !== undefined &&
+    !Array.isArray(registryValue.resources)
   ) {
     throw new Error(`Malformed ${path}.resources.`);
   }
 
-  const sections = viewedRegistry.sections ?? [];
-  const resources = viewedRegistry.resources ?? [];
+  const sections = registryValue.sections ?? [];
+  const resources = registryValue.resources ?? [];
 
   return {
     sections: Object.values(
@@ -889,7 +873,6 @@ const resetStoryStateTransientGlobals = (state) => {
   state.global.dialogueUIHidden = false;
   delete state.global.isDialogueHistoryShowing;
   clearConfirmDialog(state);
-  state.global.viewedRegistry = createDefaultViewedRegistry();
   state.global.nextLineConfig = createDefaultNextLineConfig();
   state.global.overlayStack = [];
   state.global.isLineCompleted = true;
@@ -1234,7 +1217,6 @@ export const createInitialState = (payload) => {
     global: {
       pendingEffects: [],
       confirmDialog: null,
-      viewedRegistry: createDefaultViewedRegistry(),
       accountViewedRegistry: normalizeLoadedViewedRegistry(
         loadedAccountViewedRegistry,
         "accountViewedRegistry",
@@ -1342,7 +1324,7 @@ export const selectConfirmDialog = ({ state }) => {
   return state.global.confirmDialog ?? null;
 };
 
-const selectIsLineViewedInRegistry = ({ state, registry }, payload) => {
+const selectIsLineSeenInRegistry = ({ state, registry }, payload) => {
   const { sectionId, lineId } = payload;
   const sections = Array.isArray(registry?.sections) ? registry.sections : [];
   const section = sections.find((section) => section.sectionId === sectionId);
@@ -1391,7 +1373,7 @@ const selectIsLineViewedInRegistry = ({ state, registry }, payload) => {
   return currentLineIndex <= lastLineIndex;
 };
 
-const selectIsResourceViewedInRegistry = ({ registry }, payload) => {
+const selectIsResourceSeenInRegistry = ({ registry }, payload) => {
   const { resourceId } = payload;
   const resources = Array.isArray(registry?.resources)
     ? registry.resources
@@ -1403,29 +1385,15 @@ const selectIsResourceViewedInRegistry = ({ registry }, payload) => {
   return !!resource;
 };
 
-export const selectIsLineViewed = ({ state }, payload) => {
-  return selectIsLineViewedInRegistry(
-    { state, registry: state.global.viewedRegistry },
-    payload,
-  );
-};
-
 export const selectIsLineAccountViewed = ({ state }, payload) => {
-  return selectIsLineViewedInRegistry(
+  return selectIsLineSeenInRegistry(
     { state, registry: state.global.accountViewedRegistry },
     payload,
   );
 };
 
-export const selectIsResourceViewed = ({ state }, payload) => {
-  return selectIsResourceViewedInRegistry(
-    { registry: state.global.viewedRegistry },
-    payload,
-  );
-};
-
 export const selectIsResourceAccountViewed = ({ state }, payload) => {
-  return selectIsResourceViewedInRegistry(
+  return selectIsResourceSeenInRegistry(
     { registry: state.global.accountViewedRegistry },
     payload,
   );
@@ -2259,13 +2227,6 @@ export const resetStoryAtSection = ({ state }, payload) => {
   });
 };
 
-const ensureSlotViewedRegistry = (state) => {
-  if (!isRecord(state.global.viewedRegistry)) {
-    state.global.viewedRegistry = {};
-  }
-  return state.global.viewedRegistry;
-};
-
 const ensureAccountViewedRegistry = (state) => {
   state.global.accountViewedRegistry = ensureViewedRegistryShape(
     state.global.accountViewedRegistry,
@@ -2293,7 +2254,7 @@ const queueScopedDataPersistence = (state, updates) => {
 
 const queueAccountViewedRegistryPatchPersistence = (
   state,
-  viewedRegistryPatch,
+  accountViewedPatch,
 ) => {
   queueScopedDataPersistence(state, [
     {
@@ -2301,8 +2262,8 @@ const queueAccountViewedRegistryPatchPersistence = (
       path: "viewedRegistry",
       op: "markViewed",
       value: {
-        sections: (Array.isArray(viewedRegistryPatch?.sections)
-          ? viewedRegistryPatch.sections
+        sections: (Array.isArray(accountViewedPatch?.sections)
+          ? accountViewedPatch.sections
           : []
         ).map((section) => ({
           sectionId: section.sectionId,
@@ -2310,8 +2271,8 @@ const queueAccountViewedRegistryPatchPersistence = (
             ? {}
             : { lineId: section.lastLineId }),
         })),
-        resources: Array.isArray(viewedRegistryPatch?.resources)
-          ? viewedRegistryPatch.resources
+        resources: Array.isArray(accountViewedPatch?.resources)
+          ? accountViewedPatch.resources
           : [],
       },
     },
@@ -2323,11 +2284,11 @@ const recordViewedLineInRegistry = (state, registry, { sectionId, lineId }) => {
     return false;
   }
 
-  const viewedRegistry = isRecord(registry) ? registry : {};
-  if (!Array.isArray(viewedRegistry.sections)) {
-    viewedRegistry.sections = [];
+  const targetRegistry = isRecord(registry) ? registry : {};
+  if (!Array.isArray(targetRegistry.sections)) {
+    targetRegistry.sections = [];
   }
-  const section = viewedRegistry.sections.find(
+  const section = targetRegistry.sections.find(
     (section) => section.sectionId === sectionId,
   );
 
@@ -2366,7 +2327,7 @@ const recordViewedLineInRegistry = (state, registry, { sectionId, lineId }) => {
     return false;
   } else {
     // Add new section
-    viewedRegistry.sections.push({
+    targetRegistry.sections.push({
       sectionId,
       lastLineId: lineId,
     });
@@ -2375,7 +2336,6 @@ const recordViewedLineInRegistry = (state, registry, { sectionId, lineId }) => {
 };
 
 const recordViewedLine = (state, payload) => {
-  recordViewedLineInRegistry(state, ensureSlotViewedRegistry(state), payload);
   if (state.global.accountViewedRegistry === undefined) {
     return;
   }
@@ -2405,21 +2365,6 @@ export const addViewedLine = ({ state }, payload) => {
 
 export const addViewedResource = ({ state }, payload) => {
   const { resourceId } = payload;
-  const slotRegistry = ensureSlotViewedRegistry(state);
-  if (!Array.isArray(slotRegistry.resources)) {
-    slotRegistry.resources = [];
-  }
-  const existingResource = slotRegistry.resources.find(
-    (resource) => resource.resourceId === resourceId,
-  );
-
-  if (!existingResource) {
-    // Add new resource only if it doesn't already exist
-    slotRegistry.resources.push({
-      resourceId,
-    });
-  }
-
   if (state.global.accountViewedRegistry !== undefined) {
     const accountRegistry = ensureAccountViewedRegistry(state);
     const existingAccountResource = accountRegistry.resources.find(
@@ -2607,7 +2552,6 @@ export const loadSlot = ({ state }, payload) => {
   if (slotData) {
     const normalizedSlot = normalizeLoadedSaveSlot(slotData, state.projectData);
 
-    state.global.saveSlots[storageKey] = omitSaveSlotViewedRegistry(slotData);
     state.contexts = normalizedSlot.state.contexts;
     state.global.autoMode = false;
     state.global.skipMode = false;
@@ -3273,9 +3217,7 @@ export const createSystemStore = (initialState) => {
     selectDialogueUIHidden,
     selectDialogueHistory,
     selectConfirmDialog,
-    selectIsLineViewed,
     selectIsLineAccountViewed,
-    selectIsResourceViewed,
     selectIsResourceAccountViewed,
     selectNextLineConfig,
     selectSystemState,

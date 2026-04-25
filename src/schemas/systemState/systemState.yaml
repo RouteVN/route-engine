@@ -20,7 +20,7 @@ defs:
     required: [sectionId, lineId]
     additionalProperties: false
 
-  viewedRegistry:
+  accountViewedRegistry:
     type: object
     description: Registry of viewed content
     properties:
@@ -252,10 +252,8 @@ properties:
         type: boolean
       nextLineConfig:
         $ref: "#/defs/nextLineConfig"
-      viewedRegistry:
-        $ref: "#/defs/viewedRegistry"
       accountViewedRegistry:
-        $ref: "#/defs/viewedRegistry"
+        $ref: "#/defs/accountViewedRegistry"
       overlayStack:
         type: array
         items:
@@ -284,7 +282,6 @@ properties:
         autoMode,
         skipMode,
         nextLineConfig,
-        viewedRegistry,
         accountViewedRegistry,
         overlayStack,
         isLineCompleted,

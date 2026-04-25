@@ -60,9 +60,6 @@ The destination line then runs as normal through queued `handleLineActions`.
   - forced to `read`
 - current context rollback:
   - replaced with a single checkpoint anchored at the destination line
-- runtime viewed state:
-  - `viewedRegistry.sections = []`
-  - `viewedRegistry.resources = []`
 - transient runtime globals:
   - `autoMode = false`
   - `skipMode = false`

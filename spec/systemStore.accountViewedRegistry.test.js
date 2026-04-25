@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  addViewedLine,
+  addViewedResource,
   createInitialState,
   loadSlot,
   markLineCompleted,
@@ -66,10 +68,6 @@ describe("account viewed registry", () => {
         resources: [],
       },
     });
-    state.global.viewedRegistry = {
-      sections: [],
-      resources: [],
-    };
 
     nextLine({ state }, {});
 
@@ -80,17 +78,13 @@ describe("account viewed registry", () => {
     expect(state.global.skipMode).toBe(true);
   });
 
-  it("does not let slot viewed state bypass skip-unseen gating", () => {
+  it("stops skip-unseen when account viewed state has not reached the line", () => {
     const state = createReadySkipState({
       accountViewedRegistry: {
         sections: [],
         resources: [],
       },
     });
-    state.global.viewedRegistry = {
-      sections: [{ sectionId: "section1", lastLineId: "line2" }],
-      resources: [],
-    };
 
     nextLine({ state }, {});
 
@@ -170,7 +164,77 @@ describe("account viewed registry", () => {
     });
   });
 
-  it("drops obsolete slot viewed state instead of merging it into account viewed state", () => {
+  it("addViewedLine writes account viewed state", () => {
+    const state = createInitialState({
+      projectData: createProjectData(),
+    });
+
+    addViewedLine(
+      { state },
+      {
+        sectionId: "section1",
+        lineId: "line2",
+      },
+    );
+
+    expect(state.global.accountViewedRegistry).toEqual({
+      sections: [{ sectionId: "section1", lastLineId: "line2" }],
+      resources: [],
+    });
+    expect(state.global.pendingEffects).toEqual([
+      {
+        name: "applyScopedDataUpdates",
+        payload: {
+          updates: [
+            {
+              scope: "account",
+              path: "viewedRegistry",
+              op: "markViewed",
+              value: {
+                sections: [{ sectionId: "section1", lineId: "line2" }],
+                resources: [],
+              },
+            },
+          ],
+        },
+      },
+      { name: "render" },
+    ]);
+  });
+
+  it("addViewedResource writes account viewed state", () => {
+    const state = createInitialState({
+      projectData: createProjectData(),
+    });
+
+    addViewedResource({ state }, { resourceId: "cg-1" });
+
+    expect(state.global.accountViewedRegistry).toEqual({
+      sections: [],
+      resources: [{ resourceId: "cg-1" }],
+    });
+    expect(state.global.pendingEffects).toEqual([
+      {
+        name: "applyScopedDataUpdates",
+        payload: {
+          updates: [
+            {
+              scope: "account",
+              path: "viewedRegistry",
+              op: "markViewed",
+              value: {
+                sections: [],
+                resources: [{ resourceId: "cg-1" }],
+              },
+            },
+          ],
+        },
+      },
+      { name: "render" },
+    ]);
+  });
+
+  it("does not replace account viewed state when loading a slot", () => {
     const state = createInitialState({
       projectData: createProjectData(),
       global: {
@@ -184,10 +248,6 @@ describe("account viewed registry", () => {
             slotId: 1,
             savedAt: 1700000000000,
             state: {
-              viewedRegistry: {
-                sections: [{ sectionId: "section1", lastLineId: "line1" }],
-                resources: [{ resourceId: "slot-cg" }],
-              },
               contexts: [
                 {
                   currentPointerMode: "read",
@@ -232,11 +292,6 @@ describe("account viewed registry", () => {
       sections: [{ sectionId: "section1", lastLineId: "line3" }],
       resources: [{ resourceId: "account-cg" }],
     });
-    expect(state.global.viewedRegistry).toEqual({
-      sections: [],
-      resources: [],
-    });
-    expect(state.global.saveSlots["1"].state.viewedRegistry).toBeUndefined();
     expect(state.global.pendingEffects).not.toContainEqual(
       expect.objectContaining({ name: "applyScopedDataUpdates" }),
     );

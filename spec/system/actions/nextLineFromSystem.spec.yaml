@@ -58,8 +58,6 @@ in:
   - state:
       global:
         isLineCompleted: true
-        viewedRegistry:
-          sections: []
         nextLineConfig:
           auto: { enabled: false }
         pendingEffects: []
@@ -81,10 +79,6 @@ in:
 out:
   global:
     isLineCompleted: false
-    viewedRegistry:
-      sections:
-        - sectionId: "section1"
-          lastLineId: "1"
     nextLineConfig:
       auto: { enabled: false }
     pendingEffects:
@@ -121,8 +115,6 @@ in:
   - state:
       global:
         isLineCompleted: true
-        viewedRegistry:
-          sections: []
         nextLineConfig:
           auto:
             enabled: true
@@ -148,10 +140,6 @@ in:
 out:
   global:
     isLineCompleted: false
-    viewedRegistry:
-      sections:
-        - sectionId: "section1"
-          lastLineId: "1"
     nextLineConfig:
       auto:
         enabled: true
@@ -198,8 +186,6 @@ in:
         autoMode: true
         skipMode: true
         skipUnseenText: true
-        viewedRegistry:
-          sections: []
         nextLineConfig:
           auto:
             enabled: true
@@ -231,10 +217,6 @@ out:
     autoMode: false
     skipMode: false
     skipUnseenText: true
-    viewedRegistry:
-      sections:
-        - sectionId: "section1"
-          lastLineId: "1"
     nextLineConfig:
       auto:
         enabled: true
@@ -281,8 +263,6 @@ in:
   - state:
       global:
         isLineCompleted: true
-        viewedRegistry:
-          sections: []
         nextLineConfig:
           auto:
             enabled: true
@@ -309,10 +289,6 @@ in:
 out:
   global:
     isLineCompleted: false
-    viewedRegistry:
-      sections:
-        - sectionId: "section1"
-          lastLineId: "1"
     nextLineConfig:
       manual:
         enabled: true
@@ -362,8 +338,6 @@ in:
             trigger: "fromComplete"
             delay: 2000
         pendingEffects: []
-        viewedRegistry:
-          sections: []
       projectData:
         story:
           scenes:
@@ -390,10 +364,6 @@ out:
         delay: 2000
     pendingEffects:
       - name: "handleLineActions"
-    viewedRegistry:
-      sections:
-        - sectionId: "section1"
-          lastLineId: "1"
   projectData:
     story:
       scenes:

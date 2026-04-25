@@ -34,9 +34,6 @@ out:
     musicVolume: 50
     muteAll: false
     confirmDialog: null
-    viewedRegistry:
-      sections: []
-      resources: []
     accountViewedRegistry:
       sections: []
       resources: []
@@ -127,9 +124,6 @@ out:
     musicVolume: 50
     muteAll: false
     confirmDialog: null
-    viewedRegistry:
-      sections: []
-      resources: []
     accountViewedRegistry:
       sections: []
       resources: []
@@ -233,9 +227,6 @@ out:
     musicVolume: 50
     muteAll: false
     confirmDialog: null
-    viewedRegistry:
-      sections: []
-      resources: []
     accountViewedRegistry:
       sections: []
       resources: []
@@ -333,9 +324,6 @@ out:
     musicVolume: 50
     muteAll: false
     confirmDialog: null
-    viewedRegistry:
-      sections: []
-      resources: []
     accountViewedRegistry:
       sections: []
       resources: []
@@ -430,9 +418,6 @@ out:
     musicVolume: 50
     muteAll: false
     confirmDialog: null
-    viewedRegistry:
-      sections: []
-      resources: []
     accountViewedRegistry:
       sections: []
       resources: []

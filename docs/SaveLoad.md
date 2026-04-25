@@ -65,7 +65,7 @@ These are not story-local and should not be stored inside save slot state.
 
 They persist through their own storage path.
 
-The account-level viewed registry follows the same rule: it persists outside slots and is not restored or backfilled from a slot. Loading a slot ignores obsolete slot `viewedRegistry` data.
+The account-level viewed registry follows the same rule: it persists outside slots and is not restored or backfilled from a slot.
 
 The built-in IndexedDB adapter stores account-scoped data per browser namespace. A host that needs cross-device account persistence should provide a persistence adapter that maps `applyScopedDataUpdates` account operations and load hydration to account storage.
 
@@ -489,12 +489,11 @@ Current load flow:
 1. look up `state.global.saveSlots[String(slotId)]`
 2. if missing, leave state unchanged
 3. validate and normalize `slotData.state`
-4. drop obsolete slot `viewedRegistry` data if present
-5. validate each loaded read pointer against current `projectData`
-6. normalize loaded contexts and rollback state
-7. reset transient runtime globals to a clean playable baseline
-8. leave viewed/account viewed registries unchanged
-9. queue timer-clear effects and append `render`
+4. validate each loaded read pointer against current `projectData`
+5. normalize loaded contexts and rollback state
+6. reset transient runtime globals to a clean playable baseline
+7. leave account viewed state unchanged
+8. queue timer-clear effects and append `render`
 
 ## Relationship to Rollback
 
@@ -517,7 +516,7 @@ The active path is preserved across normal section transitions. If the player ro
 
 Save slots no longer store seen state. The account viewed registry answers "what has this player ever seen across saves?" and is persisted through scoped account storage, not `saveSlot`.
 
-Skip-unseen text uses account viewed state. `saveSlot` is not the authoritative write for that registry, and `loadSlot` does not overwrite or backfill it. Obsolete slot `viewedRegistry` data is ignored and dropped in memory rather than migrated.
+Skip-unseen text uses account viewed state. `saveSlot` is not the authoritative write for that registry, and `loadSlot` does not overwrite or backfill it.
 
 ## Validation and Compatibility Rules
 
@@ -540,7 +539,6 @@ Compatibility rules should be explicit:
 - new saves should always write an explicit `formatVersion`
 - missing or invalid `formatVersion` values should fail fast before mutation
 - older saves without rollback state may be normalized
-- obsolete slot `viewedRegistry` data should be ignored/stripped
 - obsolete rollback-only compatibility fields should be ignored/stripped
 - unsupported future `formatVersion` values should fail fast before mutation
 - malformed save data should throw before any live-state mutation is committed

@@ -137,10 +137,6 @@ describe("system.store rollback/save draft safety", () => {
     const baseState = {
       global: {
         saveSlots: {},
-        viewedRegistry: {
-          sections: [{ sectionId: "section1", lastLineId: "2" }],
-          resources: [],
-        },
         pendingEffects: [],
       },
       projectData: createProjectData(),
@@ -236,10 +232,6 @@ describe("system.store rollback/save draft safety", () => {
             savedAt: 1700000000000,
             image: null,
             state: {
-              viewedRegistry: {
-                sections: [{ sectionId: "section2", lastLineId: "10" }],
-                resources: [],
-              },
               contexts: [
                 {
                   pointers: {
@@ -253,10 +245,6 @@ describe("system.store rollback/save draft safety", () => {
               ],
             },
           },
-        },
-        viewedRegistry: {
-          sections: [],
-          resources: [],
         },
         confirmDialog: {
           resourceId: "saveOverwriteConfirmLayout",
@@ -310,11 +298,6 @@ describe("system.store rollback/save draft safety", () => {
         },
       ],
     });
-    expect(nextState.global.viewedRegistry).toEqual({
-      sections: [],
-      resources: [],
-    });
-    expect(nextState.global.saveSlots[1].state.viewedRegistry).toBeUndefined();
     expect(nextState.global.confirmDialog).toBeNull();
   });
 

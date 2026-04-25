@@ -107,10 +107,9 @@ The engine has separate concepts that should not be collapsed:
 
 - `historyDialogue`: A render-time dialogue backlog projection for the current section. It is used by layouts and does not restore state.
 - `context.rollback.timeline`: The active path for rollback navigation in the current context. It crosses sections and is saved with slots, but abandoned future checkpoints are removed when the player rolls back and branches.
-- `global.viewedRegistry`: The current runtime seen snapshot. It is not saved into slots and is not restored by `loadSlot`.
 - `global.accountViewedRegistry`: The account-level seen snapshot. It is persisted outside slots and is not replaced by `loadSlot`.
 
-`runtime.skipUnseenText` is a device-level preference. The seen data it checks is account-level: skip-unseen uses `global.accountViewedRegistry`, not slot `viewedRegistry` or `rollback.timeline`.
+`runtime.skipUnseenText` is a device-level preference. The seen data it checks is account-level: skip-unseen uses `global.accountViewedRegistry`, not save slots or `rollback.timeline`.
 
 ### Presentation State
 

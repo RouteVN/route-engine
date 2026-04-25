@@ -1,18 +1,15 @@
 file: "../../../src/stores/system.store.js"
 group: systemStore selectors
-suites:
-  [
-    selectIsLineViewed,
-  ]
+suites: [selectIsLineAccountViewed]
 ---
-suite: selectIsLineViewed
-exportName: selectIsLineViewed
+suite: selectIsLineAccountViewed
+exportName: selectIsLineAccountViewed
 ---
 case: section not found
 in:
   - state:
       global:
-        viewedRegistry:
+        accountViewedRegistry:
           sections:
             - sectionId: "abc"
               lastLineId: "10"
@@ -24,7 +21,7 @@ case: section fully viewed (lastLineId undefined) with lineId
 in:
   - state:
       global:
-        viewedRegistry:
+        accountViewedRegistry:
           sections:
             - sectionId: "abc"
   - sectionId: "abc"
@@ -35,7 +32,7 @@ case: section fully viewed (lastLineId undefined) without lineId
 in:
   - state:
       global:
-        viewedRegistry:
+        accountViewedRegistry:
           sections:
             - sectionId: "abc"
   - sectionId: "abc"
@@ -45,7 +42,7 @@ case: section exists with lastLineId, no lineId provided
 in:
   - state:
       global:
-        viewedRegistry:
+        accountViewedRegistry:
           sections:
             - sectionId: "abc"
               lastLineId: "10"
@@ -56,7 +53,7 @@ case: lineId equals lastLineId
 in:
   - state:
       global:
-        viewedRegistry:
+        accountViewedRegistry:
           sections:
             - sectionId: "abc"
               lastLineId: "10"
@@ -68,7 +65,7 @@ case: lineId before lastLineId (numeric comparison)
 in:
   - state:
       global:
-        viewedRegistry:
+        accountViewedRegistry:
           sections:
             - sectionId: "abc"
               lastLineId: "10"
@@ -80,7 +77,7 @@ case: lineId after lastLineId (numeric comparison)
 in:
   - state:
       global:
-        viewedRegistry:
+        accountViewedRegistry:
           sections:
             - sectionId: "abc"
               lastLineId: "10"
@@ -92,7 +89,7 @@ case: lineId before lastLineId with projectData (index comparison)
 in:
   - state:
       global:
-        viewedRegistry:
+        accountViewedRegistry:
           sections:
             - sectionId: "intro"
               lastLineId: "3"
@@ -121,7 +118,7 @@ case: lineId equals lastLineId with projectData
 in:
   - state:
       global:
-        viewedRegistry:
+        accountViewedRegistry:
           sections:
             - sectionId: "intro"
               lastLineId: "3"
@@ -148,7 +145,7 @@ case: lineId after lastLineId with projectData
 in:
   - state:
       global:
-        viewedRegistry:
+        accountViewedRegistry:
           sections:
             - sectionId: "intro"
               lastLineId: "2"
@@ -175,7 +172,7 @@ case: lineId not found in projectData lines
 in:
   - state:
       global:
-        viewedRegistry:
+        accountViewedRegistry:
           sections:
             - sectionId: "intro"
               lastLineId: "3"
@@ -200,7 +197,7 @@ case: lastLineId not found in projectData lines
 in:
   - state:
       global:
-        viewedRegistry:
+        accountViewedRegistry:
           sections:
             - sectionId: "intro"
               lastLineId: "99"
@@ -225,7 +222,7 @@ case: section found in projectData but no lines array
 in:
   - state:
       global:
-        viewedRegistry:
+        accountViewedRegistry:
           sections:
             - sectionId: "intro"
               lastLineId: "2"
@@ -234,8 +231,7 @@ in:
           scenes:
             scene1:
               sections:
-                intro:
-                  {}
+                intro: {}
                   # No lines array
   - sectionId: "intro"
     lineId: "1"
@@ -245,7 +241,7 @@ case: complex section structure with multiple line types
 in:
   - state:
       global:
-        viewedRegistry:
+        accountViewedRegistry:
           sections:
             - sectionId: "section1"
               lastLineId: "line3"
@@ -274,7 +270,7 @@ case: multiple sections, check viewed section
 in:
   - state:
       global:
-        viewedRegistry:
+        accountViewedRegistry:
           sections:
             - sectionId: "abc"
               lastLineId: "10"
@@ -289,7 +285,7 @@ case: multiple sections, check unviewed section
 in:
   - state:
       global:
-        viewedRegistry:
+        accountViewedRegistry:
           sections:
             - sectionId: "abc"
               lastLineId: "10"

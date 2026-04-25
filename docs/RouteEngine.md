@@ -436,10 +436,10 @@ Playback timing semantics:
 
 ### Registry Actions
 
-| Action              | Payload                 | Description                                       |
-| ------------------- | ----------------------- | ------------------------------------------------- |
-| `addViewedLine`     | `{ sectionId, lineId }` | Mark line as viewed in runtime and account state     |
-| `addViewedResource` | `{ resourceId }`        | Mark resource as viewed in runtime and account state |
+| Action              | Payload                 | Description                              |
+| ------------------- | ----------------------- | ---------------------------------------- |
+| `addViewedLine`     | `{ sectionId, lineId }` | Mark line as viewed in account state     |
+| `addViewedResource` | `{ resourceId }`        | Mark resource as viewed in account state |
 
 Seen-line semantics:
 
@@ -447,7 +447,6 @@ Seen-line semantics:
 - The frontier line itself counts as seen.
 - Any earlier line in the same section also counts as seen.
 - The frontier is updated when a line is completed and when progression moves away from the current line.
-- Save slots do not store `global.viewedRegistry`.
 - Account-level viewed state is persisted outside save slots as `global.accountViewedRegistry`.
 - Skip-unseen checks use account-level viewed state; `runtime.skipUnseenText` only controls whether skip may pass unseen account content.
 
@@ -496,9 +495,7 @@ The system store exposes these selectors (called internally):
 | `selectAutoMode`                | -                       | Boolean                                   |
 | `selectSkipMode`                | -                       | Boolean                                   |
 | `selectDialogueUIHidden`        | -                       | Boolean                                   |
-| `selectIsLineViewed`            | `{ sectionId, lineId }` | Runtime viewed boolean                    |
 | `selectIsLineAccountViewed`     | `{ sectionId, lineId }` | Account-level viewed boolean              |
-| `selectIsResourceViewed`        | `{ resourceId }`        | Runtime viewed boolean                    |
 | `selectIsResourceAccountViewed` | `{ resourceId }`        | Account-level viewed boolean              |
 | `selectNextLineConfig`          | -                       | Config object                             |
 | `selectSaveSlotMap`             | -                       | Save slots object map                     |
