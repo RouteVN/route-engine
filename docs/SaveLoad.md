@@ -49,7 +49,6 @@ Saved story state is the subset of runtime state needed to resume the story cohe
 For the current model, that means:
 
 - `contexts`
-- `viewedRegistry`
 
 Rollback data lives inside context state and is therefore part of saved story state.
 
@@ -66,7 +65,7 @@ These are not story-local and should not be stored inside save slot state.
 
 They persist through their own storage path.
 
-The account-level viewed registry follows the same rule: it persists outside slots and is not restored or backfilled from a slot. Loading a slot ignores that slot's `viewedRegistry` for account-level seen state.
+The account-level viewed registry follows the same rule: it persists outside slots and is not restored or backfilled from a slot. Loading a slot ignores obsolete slot `viewedRegistry` data.
 
 The built-in IndexedDB adapter stores account-scoped data per browser namespace. A host that needs cross-device account persistence should provide a persistence adapter that maps `applyScopedDataUpdates` account operations and load hydration to account storage.
 
@@ -96,7 +95,6 @@ When the player saves:
 - the current story position is captured
 - the current story-local variables are captured
 - the current rollback timeline/cursor is captured
-- the viewed registry is captured
 - the slot thumbnail/preview metadata is stored
 - the slot becomes available immediately in save/load UI
 
@@ -113,7 +111,6 @@ When the player loads:
 - the engine returns to the saved story position
 - saved story-local variables are restored
 - saved rollback ability is restored
-- seen/viewed registry is restored from the slot
 - transient runtime state is reinitialized to clean defaults
 - the result is a coherent playable state, not a hybrid of pre-load and post-load runtime state
 
@@ -125,7 +122,6 @@ Save slots must include:
 
 - `formatVersion`
 - current `contexts`
-- `global.viewedRegistry`
 - rollback timeline/cursor inside each saved context
 - slot metadata:
   - `slotId`
@@ -422,11 +418,6 @@ slotId: 1
 savedAt: 1700000000000
 image: data:image/webp;base64,...
 state:
-  viewedRegistry:
-    sections:
-      - ...
-    resources:
-      - ...
   contexts:
     - currentPointerMode: read
       pointers:
@@ -450,16 +441,12 @@ Important constraints:
 
 - `formatVersion` is required on every loadable save slot
 - `state.contexts` is authoritative for story restoration
-- `state.viewedRegistry` is authoritative for slot-local seen-state restoration
 - runtime-only globals are not part of this slot payload
 - account-level viewed state is not part of this slot payload
 
-`state.contexts[*].rollback.timeline` and `state.viewedRegistry` are different save-scope concepts:
+`state.contexts[*].rollback.timeline` is the active branch history for rollback navigation. It can cross sections, and it is pruned when the player rolls back and then advances onto a different branch.
 
-- `rollback.timeline` is the active branch history for rollback navigation. It can cross sections, and it is pruned when the player rolls back and then advances onto a different branch.
-- `viewedRegistry` is the slot-local seen snapshot. It is monotonic within the slot and is not reconstructed from rollback history.
-
-Neither field is the account-level "seen ever" registry. Skip-unseen text uses `accountViewedRegistry`, which lives outside save slot state and is not replaced by `loadSlot`.
+Skip-unseen text uses `accountViewedRegistry`, which lives outside save slot state and is not replaced by `loadSlot`.
 
 ## How It Works Today
 
@@ -487,10 +474,9 @@ Current save flow:
 
 1. clone current `contexts`
 2. strip obsolete rollback-only compatibility fields from cloned contexts
-3. clone `global.viewedRegistry`
-4. write `{ slotId, savedAt, image, state }` into `state.global.saveSlots`
-5. append `saveSlots` effect
-6. append `render` effect
+3. write `{ slotId, savedAt, image, state }` into `state.global.saveSlots`
+4. append `saveSlots` effect
+5. append `render` effect
 
 The store writes to the in-memory slot map first.
 
@@ -503,11 +489,11 @@ Current load flow:
 1. look up `state.global.saveSlots[String(slotId)]`
 2. if missing, leave state unchanged
 3. validate and normalize `slotData.state`
-4. normalize `viewedRegistry`
+4. drop obsolete slot `viewedRegistry` data if present
 5. validate each loaded read pointer against current `projectData`
 6. normalize loaded contexts and rollback state
 7. reset transient runtime globals to a clean playable baseline
-8. leave `accountViewedRegistry` unchanged
+8. leave viewed/account viewed registries unchanged
 9. queue timer-clear effects and append `render`
 
 ## Relationship to Rollback
@@ -529,15 +515,9 @@ The active path is preserved across normal section transitions. If the player ro
 
 ## Relationship to Seen State
 
-The current slot payload also stores `state.viewedRegistry`. This is slot state today: saving snapshots it, and loading replaces the current registry with the slot's registry.
+Save slots no longer store seen state. The account viewed registry answers "what has this player ever seen across saves?" and is persisted through scoped account storage, not `saveSlot`.
 
-That makes `viewedRegistry` different from rollback history:
-
-- rollback history answers "where can this save roll back to?"
-- slot viewed state answers "what had this save marked viewed when it was saved?"
-- account viewed state answers "what has this player ever seen across saves?"
-
-Skip-unseen text uses account viewed state. `saveSlot` is not the authoritative write for that registry, and `loadSlot` does not overwrite or backfill it. Slot-local `state.viewedRegistry` is ignored for account viewed state, including when loading older slots.
+Skip-unseen text uses account viewed state. `saveSlot` is not the authoritative write for that registry, and `loadSlot` does not overwrite or backfill it. Obsolete slot `viewedRegistry` data is ignored and dropped in memory rather than migrated.
 
 ## Validation and Compatibility Rules
 
@@ -550,7 +530,6 @@ At minimum:
 - `slotId` should be numeric in authored save/load actions
 - `state.contexts` should be an array with at least one valid context
 - each loaded context should have a valid read pointer
-- `viewedRegistry` should be normalized to a safe shape
 
 ### Compatibility
 
@@ -561,6 +540,7 @@ Compatibility rules should be explicit:
 - new saves should always write an explicit `formatVersion`
 - missing or invalid `formatVersion` values should fail fast before mutation
 - older saves without rollback state may be normalized
+- obsolete slot `viewedRegistry` data should be ignored/stripped
 - obsolete rollback-only compatibility fields should be ignored/stripped
 - unsupported future `formatVersion` values should fail fast before mutation
 - malformed save data should throw before any live-state mutation is committed
@@ -576,7 +556,7 @@ The save/load test surface should cover:
 - save overwrites an existing slot deterministically
 - save preserves rollback timeline/cursor
 - save/load works against live Immer drafts
-- load from existing slot restores contexts and viewed registry
+- load from existing slot restores contexts without restoring viewed registry
 - load from missing slot leaves state unchanged
 - load restores rollback timeline/cursor from slot data
 - load initializes a minimal rollback timeline for older saves without rollback data

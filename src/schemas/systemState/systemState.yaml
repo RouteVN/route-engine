@@ -120,8 +120,6 @@ defs:
       contexts:
         type: array
         minItems: 1
-      viewedRegistry:
-        $ref: "#/defs/viewedRegistry"
     required: [contexts]
     additionalProperties: false
 

@@ -181,6 +181,7 @@ describe("systemState schema", () => {
     const systemState = toJsonSnapshot(engine.selectSystemState());
 
     expect(systemState.global.saveSlots["1"].formatVersion).toBe(1);
+    expect(systemState.global.saveSlots["1"].state.viewedRegistry).toBeUndefined();
     expect(validateSystemState(systemState)).toBe(true);
     expect(validateSystemState.errors).toBeNull();
   });

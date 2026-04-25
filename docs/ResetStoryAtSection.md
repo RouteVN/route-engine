@@ -60,7 +60,7 @@ The destination line then runs as normal through queued `handleLineActions`.
   - forced to `read`
 - current context rollback:
   - replaced with a single checkpoint anchored at the destination line
-- slot-local viewed state:
+- runtime viewed state:
   - `viewedRegistry.sections = []`
   - `viewedRegistry.resources = []`
 - transient runtime globals:
@@ -106,8 +106,8 @@ resetStoryAtSection:
 
 The difference is intentional:
 
-- `sectionTransition` preserves rollback, slot-local viewed state, account viewed state, and context variables
-- `resetStoryAtSection` clears rollback, slot-local viewed state, and context variables, but preserves account viewed state
+- `sectionTransition` preserves rollback, runtime viewed state, account viewed state, and context variables
+- `resetStoryAtSection` clears rollback, runtime viewed state, and context variables, but preserves account viewed state
 
 ## Examples
 

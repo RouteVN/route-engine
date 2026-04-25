@@ -183,6 +183,22 @@ const normalizeSaveSlotFormatVersion = (formatVersion) => {
   return formatVersion;
 };
 
+const omitSaveSlotViewedRegistry = (saveSlot) => {
+  if (
+    !isRecord(saveSlot?.state) ||
+    !Object.prototype.hasOwnProperty.call(saveSlot.state, "viewedRegistry")
+  ) {
+    return saveSlot;
+  }
+
+  const nextSaveSlot = {
+    ...saveSlot,
+    state: { ...saveSlot.state },
+  };
+  delete nextSaveSlot.state.viewedRegistry;
+  return nextSaveSlot;
+};
+
 const normalizeStoredSaveSlot = (storageKey, saveSlot = {}) => {
   let formatVersion;
   try {
@@ -206,7 +222,7 @@ const normalizeStoredSaveSlot = (storageKey, saveSlot = {}) => {
   delete normalizedSaveSlot.slotKey;
   delete normalizedSaveSlot.date;
 
-  return normalizedSaveSlot;
+  return omitSaveSlotViewedRegistry(normalizedSaveSlot);
 };
 
 const normalizeStoredSaveSlots = (saveSlots = {}) => {
@@ -259,7 +275,7 @@ const normalizeLoadedViewedRegistryEntry = (
   entry,
   type,
   index,
-  path = "save slot viewedRegistry",
+  path = "viewedRegistry",
 ) => {
   const keyName = type === "sections" ? "sectionId" : "resourceId";
 
@@ -308,7 +324,7 @@ const normalizeLoadedViewedRegistryEntry = (
 
 const normalizeLoadedViewedRegistry = (
   viewedRegistry,
-  path = "save slot viewedRegistry",
+  path = "viewedRegistry",
 ) => {
   if (viewedRegistry === undefined) {
     return createDefaultViewedRegistry();
@@ -566,7 +582,6 @@ const normalizeLoadedSlotState = (slotState, projectData) => {
   }
 
   return {
-    viewedRegistry: normalizeLoadedViewedRegistry(slotState.viewedRegistry),
     contexts: slotState.contexts.map((context, index) =>
       normalizeLoadedContext(context, projectData, index),
     ),
@@ -1726,14 +1741,14 @@ export const selectPreviousPresentationState = ({ state }) => {
  *       slotId: 1,
  *       savedAt: 1704556800000,
  *       image: "data:image/png;base64,iVBORw0KGgoAAAANS...",
- *       state: { contexts: [...], viewedRegistry: {...} }
+ *       state: { contexts: [...] }
  *     },
  *     { slotId: 2 },  // Empty slot (not saved)
  *     {
  *       slotId: 3,
  *       savedAt: 1704643200000,
  *       image: "data:image/png;base64,iVBORw0KGgoAAAANS...",
- *       state: { contexts: [...], viewedRegistry: {...} }
+ *       state: { contexts: [...] }
  *     },
  *     { slotId: 4 },  // Empty slot
  *     { slotId: 5 },  // Empty slot
@@ -1741,7 +1756,7 @@ export const selectPreviousPresentationState = ({ state }) => {
  *       slotId: 6,
  *       savedAt: 1704729600000,
  *       image: "data:image/png;base64,iVBORw0KGgoAAAANS...",
- *       state: { contexts: [...], viewedRegistry: {...} }
+ *       state: { contexts: [...] }
  *     }
  *   ]
  * }
@@ -2551,7 +2566,6 @@ export const saveSlot = ({ state }, payload) => {
 
   const currentState = {
     contexts,
-    viewedRegistry: cloneStateValue(state.global.viewedRegistry),
   };
 
   const saveData = {
@@ -2593,7 +2607,7 @@ export const loadSlot = ({ state }, payload) => {
   if (slotData) {
     const normalizedSlot = normalizeLoadedSaveSlot(slotData, state.projectData);
 
-    state.global.viewedRegistry = normalizedSlot.state.viewedRegistry;
+    state.global.saveSlots[storageKey] = omitSaveSlotViewedRegistry(slotData);
     state.contexts = normalizedSlot.state.contexts;
     state.global.autoMode = false;
     state.global.skipMode = false;

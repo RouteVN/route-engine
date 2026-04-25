@@ -170,7 +170,7 @@ describe("account viewed registry", () => {
     });
   });
 
-  it("does not merge loaded slot viewed state into account viewed state", () => {
+  it("drops obsolete slot viewed state instead of merging it into account viewed state", () => {
     const state = createInitialState({
       projectData: createProjectData(),
       global: {
@@ -233,9 +233,10 @@ describe("account viewed registry", () => {
       resources: [{ resourceId: "account-cg" }],
     });
     expect(state.global.viewedRegistry).toEqual({
-      sections: [{ sectionId: "section1", lastLineId: "line1" }],
-      resources: [{ resourceId: "slot-cg" }],
+      sections: [],
+      resources: [],
     });
+    expect(state.global.saveSlots["1"].state.viewedRegistry).toBeUndefined();
     expect(state.global.pendingEffects).not.toContainEqual(
       expect.objectContaining({ name: "applyScopedDataUpdates" }),
     );

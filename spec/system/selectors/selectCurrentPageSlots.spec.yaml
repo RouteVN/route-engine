@@ -121,7 +121,6 @@ in:
             image: "data:image/png;base64,abc123"
             state:
               contexts: []
-              viewedRegistry: {}
           "3":
             savedAt: 1704643200000
       contexts:
@@ -134,7 +133,6 @@ out:
       image: "data:image/png;base64,abc123"
       state:
         contexts: []
-        viewedRegistry: {}
     - slotId: 2
     - slotId: 3
       savedAt: 1704643200000

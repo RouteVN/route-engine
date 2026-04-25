@@ -310,10 +310,11 @@ describe("system.store rollback/save draft safety", () => {
         },
       ],
     });
-    expect(nextState.global.viewedRegistry.sections[0]).toEqual({
-      sectionId: "section2",
-      lastLineId: "10",
+    expect(nextState.global.viewedRegistry).toEqual({
+      sections: [],
+      resources: [],
     });
+    expect(nextState.global.saveSlots[1].state.viewedRegistry).toBeUndefined();
     expect(nextState.global.confirmDialog).toBeNull();
   });
 

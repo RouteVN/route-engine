@@ -50,10 +50,6 @@ describe("createEffectsHandler storage effects", () => {
         image: "data:image/jpeg;base64,thumbnail",
         state: {
           contexts: [{ id: "context-1" }],
-          viewedRegistry: {
-            sections: [],
-            resources: [],
-          },
         },
       },
     };

@@ -139,7 +139,7 @@ Rules:
 
 ## Storage Notes
 
-Save slots must not store this effect payload. Save slots keep slot-local story state only.
+Save slots must not store this effect payload. Save slots keep story context state only.
 
 The built-in browser persistence adapter may store scoped data in its existing storage shape for compatibility, but the public write interface should remain `applyScopedDataUpdates`.
 

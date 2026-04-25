@@ -109,9 +109,6 @@ out:
     overlayStack: []
     isLineCompleted: true
     confirmDialog: null
-    viewedRegistry:
-      sections: []
-      resources: []
     nextLineConfig:
       manual:
         enabled: true
@@ -224,7 +221,7 @@ in:
   - slotId: 2
 throws: 'Unsupported save slot formatVersion "2".'
 ---
-case: load throws when viewed registry sections are not an array
+case: load ignores obsolete slot viewed registry data
 in:
   - state:
       projectData:
@@ -237,6 +234,12 @@ in:
                     - id: line1
                       actions: {}
       global:
+        viewedRegistry:
+          sections:
+            - sectionId: current
+              lastLineId: current-line
+          resources:
+            - resourceId: current-resource
         saveSlots:
           "2":
             formatVersion: 1
@@ -246,36 +249,6 @@ in:
             state:
               viewedRegistry:
                 sections: {}
-              contexts:
-                - pointers:
-                    read:
-                      sectionId: sec1
-                      lineId: line1
-        pendingEffects: []
-  - slotId: 2
-throws: "Malformed save slot viewedRegistry.sections."
----
-case: load throws when viewed registry resources are not an array
-in:
-  - state:
-      projectData:
-        story:
-          scenes:
-            scene1:
-              sections:
-                sec1:
-                  lines:
-                    - id: line1
-                      actions: {}
-      global:
-        saveSlots:
-          "2":
-            formatVersion: 1
-            slotId: 2
-            savedAt: 1704110500
-            image: save2.png
-            state:
-              viewedRegistry:
                 resources: {}
               contexts:
                 - pointers:
@@ -284,9 +257,74 @@ in:
                       lineId: line1
         pendingEffects: []
   - slotId: 2
-throws: "Malformed save slot viewedRegistry.resources."
+out:
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            sec1:
+              lines:
+                - id: line1
+                  actions: {}
+  global:
+    viewedRegistry:
+      sections:
+        - sectionId: current
+          lastLineId: current-line
+      resources:
+        - resourceId: current-resource
+    autoMode: false
+    skipMode: false
+    dialogueUIHidden: false
+    overlayStack: []
+    isLineCompleted: true
+    nextLineConfig:
+      manual:
+        enabled: true
+        requireLineCompleted: false
+      auto:
+        enabled: false
+      applyMode: persistent
+    saveSlots:
+      "2":
+        formatVersion: 1
+        slotId: 2
+        savedAt: 1704110500
+        image: save2.png
+        state:
+          contexts:
+            - pointers:
+                read:
+                  sectionId: sec1
+                  lineId: line1
+    pendingEffects:
+      - name: clearAutoNextTimer
+      - name: clearSkipNextTimer
+      - name: clearNextLineConfigTimer
+      - name: render
+  contexts:
+    - currentPointerMode: read
+      pointers:
+        read:
+          sceneId: scene1
+          sectionId: sec1
+          lineId: line1
+      configuration: {}
+      views: []
+      bgm:
+        resourceId: __undefined__
+      variables: {}
+      rollback:
+        currentIndex: 0
+        isRestoring: false
+        replayStartIndex: 1
+        timeline:
+          - sectionId: sec1
+            lineId: line1
+            rollbackPolicy: free
 ---
-case: load normalizes older viewed registry entries and context variables
+case: load normalizes context variables and drops obsolete slot viewed registry
 in:
   - state:
       projectData:
@@ -398,9 +436,6 @@ out:
         savedAt: 1704110400
         image: save.png
         state:
-          viewedRegistry:
-            sections: [sec2]
-            resources: [bg-1]
           contexts:
             - pointers:
                 read:
@@ -411,10 +446,8 @@ out:
                 score: 150
                 soundEnabled: true
     viewedRegistry:
-      sections:
-        - sectionId: sec2
-      resources:
-        - resourceId: bg-1
+      sections: []
+      resources: []
     pendingEffects:
       - name: clearAutoNextTimer
       - name: clearSkipNextTimer
@@ -476,11 +509,6 @@ in:
             savedAt: 1704110600
             image: save4.png
             state:
-              viewedRegistry:
-                sections:
-                  - sectionId: sec2
-                    lastLineId: line3
-                resources: []
               contexts:
                 - pointers:
                     read:
@@ -546,11 +574,6 @@ out:
         savedAt: 1704110600
         image: save4.png
         state:
-          viewedRegistry:
-            sections:
-              - sectionId: sec2
-                lastLineId: line3
-            resources: []
           contexts:
             - pointers:
                 read:
@@ -572,11 +595,6 @@ out:
                   - sectionId: sec2
                     lineId: line3
                     rollbackPolicy: free
-    viewedRegistry:
-      sections:
-        - sectionId: sec2
-          lastLineId: line3
-      resources: []
     pendingEffects:
       - name: clearAutoNextTimer
       - name: clearSkipNextTimer
