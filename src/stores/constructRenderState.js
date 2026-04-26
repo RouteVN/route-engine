@@ -1480,21 +1480,74 @@ const renderTemplatedLayoutContainer = ({
   );
 };
 
-const toRenderStateKeyboard = (keyboard = {}) => {
-  if (!keyboard || typeof keyboard !== "object" || Array.isArray(keyboard)) {
-    return undefined;
+const toKeyboardPayload = (value, fallback = {}) => {
+  if (value?.payload && typeof value.payload === "object") {
+    return structuredClone(value.payload);
   }
 
-  return Object.fromEntries(
-    Object.entries(keyboard).map(([key, value]) => [
-      key,
-      {
-        payload: {
-          actions: structuredClone(value?.actions || {}),
+  if (value?.actions && typeof value.actions === "object") {
+    return {
+      actions: structuredClone(value.actions),
+    };
+  }
+
+  return structuredClone(fallback);
+};
+
+const assignRenderStateKeyboardPhase = ({
+  renderStateKeyboard,
+  keyboard,
+  phase,
+}) => {
+  if (!keyboard || typeof keyboard !== "object" || Array.isArray(keyboard)) {
+    return;
+  }
+
+  Object.entries(keyboard).forEach(([key, value]) => {
+    const currentEntry = renderStateKeyboard[key] ?? {};
+    const phasedValue = phase === "keydown" ? value?.keydown : value?.keyup;
+
+    if (phase === "keydown" && phasedValue && typeof phasedValue === "object") {
+      renderStateKeyboard[key] = {
+        ...currentEntry,
+        keydown: {
+          payload: toKeyboardPayload(phasedValue),
         },
+      };
+      if (value?.keyup && typeof value.keyup === "object") {
+        renderStateKeyboard[key].keyup = {
+          payload: toKeyboardPayload(value.keyup),
+        };
+      }
+      return;
+    }
+
+    renderStateKeyboard[key] = {
+      ...currentEntry,
+      [phase]: {
+        payload: toKeyboardPayload(value),
       },
-    ]),
-  );
+    };
+  });
+};
+
+const toRenderStateKeyboard = (keyboard = {}, keyup = {}) => {
+  const renderStateKeyboard = {};
+
+  assignRenderStateKeyboardPhase({
+    renderStateKeyboard,
+    keyboard,
+    phase: "keydown",
+  });
+  assignRenderStateKeyboardPhase({
+    renderStateKeyboard,
+    keyboard: keyup,
+    phase: "keyup",
+  });
+
+  return Object.keys(renderStateKeyboard).length > 0
+    ? renderStateKeyboard
+    : undefined;
 };
 
 /**
@@ -2427,7 +2480,10 @@ export const addControl = (
     return state;
   }
 
-  const keyboardMapping = toRenderStateKeyboard(control.keyboard);
+  const keyboardMapping = toRenderStateKeyboard(
+    control.keyboard,
+    control.keyup,
+  );
   if (keyboardMapping && Object.keys(keyboardMapping).length > 0) {
     state.global.keyboard = keyboardMapping;
   }

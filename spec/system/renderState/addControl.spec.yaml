@@ -51,6 +51,10 @@ in:
             space:
               actions:
                 toggleDialogueUI: {}
+          keyup:
+            enter:
+              actions:
+                toggleAutoMode: {}
     variables: {}
 out:
   elements:
@@ -63,13 +67,19 @@ out:
   global:
     keyboard:
       enter:
-        payload:
-          actions:
-            nextLine: {}
+        keydown:
+          payload:
+            actions:
+              nextLine: {}
+        keyup:
+          payload:
+            actions:
+              toggleAutoMode: {}
       space:
-        payload:
-          actions:
-            toggleDialogueUI: {}
+        keydown:
+          payload:
+            actions:
+              toggleDialogueUI: {}
 ---
 case: render control elements like layout elements
 in:
