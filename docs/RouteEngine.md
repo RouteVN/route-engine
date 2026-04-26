@@ -506,10 +506,10 @@ The system store exposes these selectors (called internally):
 
 Effects queued by actions for external handling:
 
-| Effect              | Description                    |
-| ------------------- | ------------------------------ |
-| `render`            | Re-render the current state    |
-| `handleLineActions` | Process current line's actions |
+| Effect                   | Description                            |
+| ------------------------ | -------------------------------------- |
+| `render`                 | Re-render the current state            |
+| `handleLineActions`      | Process current line's actions         |
 | `applyScopedDataUpdates` | Persist ordered scoped data operations |
 
 `applyScopedDataUpdates` is a public runtime-facing persistence contract. Its full interface and semantics are documented in [ScopedDataUpdates.md](./ScopedDataUpdates.md).
@@ -533,7 +533,7 @@ Actions that can be attached to lines to control presentation:
 | `visual`     | `{ items }`                                                                    | Display visual elements                                                                           |
 | `bgm`        | `{ resourceId, loop?, volume?, delay? }`                                       | Play background music                                                                             |
 | `sfx`        | `{ items }`                                                                    | Play sound effects                                                                                |
-| `voice`      | `{ fileId, volume?, loop? }`                                                   | Play voice audio                                                                                  |
+| `voice`      | `{ resourceId, volume?, loop?, delay? }`                                       | Play voice audio from `resources.voices[currentSceneId][resourceId]`                              |
 | `animation`  | `{ ... }`                                                                      | Apply animations                                                                                  |
 | `layout`     | `{ resourceId }`                                                               | Display layout                                                                                    |
 | `control`    | `{ resourceId }`                                                               | Activate control bindings and control UI                                                          |
@@ -605,6 +605,36 @@ Template/runtime paths:
 - Active dialogue layouts should use `${dialogue.character.name}`.
 - NVL line-item layouts should prefer `${line.character.name}`. `${line.characterName}` remains available as a compatibility alias.
 - Dialogue history layouts should prefer `${item.character.name}`. `${item.characterName}` remains available as a compatibility alias.
+
+### Voice Resources
+
+Voice assets are grouped by scene under `resources.voices`. The line action only
+stores the scene-local `resourceId`; the engine resolves the scene from the
+current section. If `voice.volume` is omitted, the emitted audio uses
+`runtime.soundVolume`; `runtime.muteAll` forces voice volume to `0`.
+
+```yaml
+resources:
+  voices:
+    scene_intro:
+      alice_001:
+        fileId: voices/scene_intro/alice_001.ogg
+
+story:
+  scenes:
+    scene_intro:
+      sections:
+        opening:
+          lines:
+            - id: line_001
+              actions:
+                dialogue:
+                  content:
+                    - text: "You're late."
+                voice:
+                  resourceId: alice_001
+                  volume: 80
+```
 
 ### Shared Layout Template Data
 

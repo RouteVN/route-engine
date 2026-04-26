@@ -246,6 +246,28 @@ properties:
         description: ID of the background music resource
     additionalProperties: false
 
+  voice:
+    type: object
+    description: Voice audio for the current line. The resourceId is resolved from resources.voices[currentSceneId]
+    properties:
+      resourceId:
+        type: string
+        description: ID of the voice resource within the current scene's voice group
+      volume:
+        type: number
+        minimum: 0
+        maximum: 100
+        description: Voice volume from 0 to 100. Defaults to runtime.soundVolume
+      loop:
+        type: boolean
+        description: Whether the voice audio loops
+      delay:
+        type: number
+        minimum: 0
+        description: Delay before the voice audio starts in milliseconds
+    required: [resourceId]
+    additionalProperties: false
+
   control:
     type: object
     description: Sets the active control resource

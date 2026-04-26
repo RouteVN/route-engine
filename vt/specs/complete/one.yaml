@@ -6,6 +6,12 @@ screen:
   height: 1080
   backgroundColor: "#000000"
 resources:
+  voices:
+    ajfl3a:
+      ajf34a_line2:
+        fileId: xj323
+      ajf34a_line3:
+        fileId: 39csl
   variables:
     savePages:
       type: object
@@ -1479,7 +1485,7 @@ story:
                     - text: This is the beginning of an amazing story.
                   characterId: ajf34a
                 voice:
-                  fileId: xj323
+                  resourceId: ajf34a_line2
                   loop: true
             - id: line3
               actions:
@@ -1488,7 +1494,7 @@ story:
                     - text: I hope you enjoy your time here.
                   characterId: ajf34a
                 voice:
-                  fileId: 39csl
+                  resourceId: ajf34a_line3
                   volume: 50
             - id: line4
               actions:

@@ -68,6 +68,7 @@ Static, read-only data that defines the visual novel content:
 
 - **resources**: Images, audio, animations, transforms, layouts, characters, fonts, colors, and `textStyles`
   - Localization is not implemented in the current runtime. The planned patch-based model is documented in `docs/L10n.md`
+  - Voice audio is stored under `resources.voices[sceneId][voiceId]` and line actions reference the scene-local `voiceId`
   - Layout text elements should reference shared styles with `textStyleId`
   - `resources.colors[*].hex` should be opaque hex only; text fill and stroke transparency should be authored on `resources.textStyles` with `colorAlpha` / `strokeAlpha`, not inside `resources.colors`
   - Layout sprite elements should reference images with `imageId` and optional `hoverImageId` / `clickImageId`
