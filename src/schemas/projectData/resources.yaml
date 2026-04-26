@@ -287,13 +287,34 @@ properties:
         properties:
           keyboard:
             type: object
-            description: Key-to-action mappings owned by the control resource
+            description: Keydown key-to-action mappings owned by the control resource
             additionalProperties:
               type: object
               properties:
                 actions:
                   type: object
-              required: [actions]
+                payload:
+                  type: object
+                keydown:
+                  type: object
+                  properties:
+                    payload:
+                      type: object
+                keyup:
+                  type: object
+                  properties:
+                    payload:
+                      type: object
+          keyup:
+            type: object
+            description: Keyup key-to-action mappings owned by the control resource
+            additionalProperties:
+              type: object
+              properties:
+                actions:
+                  type: object
+                payload:
+                  type: object
           elements:
             type: array
             description: Array of UI elements authored with textStyleId, imageId, and colorId references
