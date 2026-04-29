@@ -88,7 +88,7 @@ properties:
         description: Compatibility alias for character.name. Do not use in new content.
       persistCharacter:
         type: boolean
-        description: Keep the current characterId and character override for following dialogue lines when later dialogue actions omit speaker fields. An explicit characterId still resets the speaker and clears any prior override unless character.name is also provided.
+        description: Keep the current characterId and character override for following dialogue lines when later dialogue actions omit speaker fields. An explicit characterId still resets the speaker and clears any prior override unless character.name or character.sprite is also provided.
       character:
         type: object
         description: Canonical character override properties for authored dialogue actions
@@ -96,6 +96,30 @@ properties:
           name:
             type: string
             description: Override the displayed character name for this dialogue line
+          sprite:
+            type: object
+            description: Layered dialogue speaker sprite group. All items share the same transform and animation selection.
+            properties:
+              transformId:
+                type: string
+                description: ID of the transform where the dialogue speaker sprite group appears
+              items:
+                type: array
+                description: Sprite layers that make up the dialogue speaker sprite group
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: Stable identifier for the sprite layer
+                    resourceId:
+                      type: string
+                      description: ID of the image resource for this sprite layer
+                  required: [id, resourceId]
+                  additionalProperties: false
+              animations:
+                $ref: "#/definitions/animationSelection"
+            additionalProperties: false
         additionalProperties: false
       clear:
         type: boolean

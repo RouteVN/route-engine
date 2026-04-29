@@ -304,3 +304,117 @@ in:
               sectionId: "section1"
               lineId: "2"
 out: {}
+---
+case: "Detect added dialogue character sprite without dialogue ui"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions:
+                        dialogue:
+                          character:
+                            sprite:
+                              transformId: "dialogue-left"
+                              items:
+                                - id: "base"
+                                  resourceId: "alice-base"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  dialogue:
+    changeType: "add"
+    data:
+      character:
+        sprite:
+          transformId: "dialogue-left"
+          items:
+            - id: "base"
+              resourceId: "alice-base"
+---
+case: "Detect updated dialogue character sprite without dialogue ui"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          character:
+                            sprite:
+                              transformId: "dialogue-left"
+                              items:
+                                - id: "base"
+                                  resourceId: "alice-base"
+                    - id: "2"
+                      actions:
+                        dialogue:
+                          character:
+                            sprite:
+                              transformId: "dialogue-left"
+                              items:
+                                - id: "base"
+                                  resourceId: "alice-alt-base"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  dialogue:
+    changeType: "update"
+    data:
+      character:
+        sprite:
+          transformId: "dialogue-left"
+          items:
+            - id: "base"
+              resourceId: "alice-alt-base"
+---
+case: "Ignore previous-line dialogue character sprite animation metadata when state persists"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          character:
+                            sprite:
+                              transformId: "dialogue-left"
+                              items:
+                                - id: "base"
+                                  resourceId: "alice-base"
+                              animations:
+                                resourceId: "portrait-in"
+                    - id: "2"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out: {}

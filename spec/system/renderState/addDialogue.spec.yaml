@@ -116,6 +116,190 @@ out:
           content: "Hello world"
   animations: []
 ---
+case: dialogue character sprite renders layered image group above dialogue ui
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      dialogue:
+        ui:
+          resourceId: "dialogueLayout"
+        characterId: "alice"
+        character:
+          name: "Alias"
+          sprite:
+            transformId: "dialoguePortraitLeft"
+            items:
+              - id: "base"
+                resourceId: "aliceBody"
+              - id: "face"
+                resourceId: "aliceSmile"
+            animations:
+              resourceId: "portraitIn"
+        content:
+          - text: "Hello world"
+    previousPresentationState: {}
+    resources:
+      transforms:
+        dialoguePortraitLeft:
+          x: 240
+          y: 900
+          anchorX: 0.5
+          anchorY: 1
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      images:
+        aliceBody:
+          fileId: "alice-body.png"
+          width: 320
+          height: 640
+        aliceSmile:
+          fileId: "alice-smile.png"
+          width: 320
+          height: 640
+      layouts:
+        dialogueLayout:
+          elements:
+            - id: "dialogue-name"
+              type: "text"
+              content: "${dialogue.character.name}"
+            - id: "dialogue-sprite-resource"
+              type: "text"
+              content: "${dialogue.character.sprite.items[1].resourceId}"
+            - id: "dialogue-text"
+              type: "text"
+              content: "${dialogue.content[0].text}"
+      animations:
+        portraitIn:
+          type: transition
+          next:
+            tween:
+              alpha:
+                initialValue: 0
+                keyframes:
+                  - duration: 500
+                    value: 1
+    dialogueUIHidden: false
+    autoMode: false
+    skipMode: false
+    isLineCompleted: false
+    skipTransitionsAndAnimations: false
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "dialogue-name"
+          type: "text"
+          content: "Alias"
+        - id: "dialogue-sprite-resource"
+          type: "text"
+          content: "aliceSmile"
+        - id: "dialogue-text"
+          type: "text"
+          content: "Hello world"
+        - type: "container"
+          id: "dialogue-character-sprite"
+          x: 240
+          y: 900
+          anchorX: 0.5
+          anchorY: 1
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - type: "sprite"
+              id: "dialogue-character-sprite-base"
+              src: "alice-body.png"
+              width: 320
+              height: 640
+              x: 0
+              y: 0
+            - type: "sprite"
+              id: "dialogue-character-sprite-face"
+              src: "alice-smile.png"
+              width: 320
+              height: 640
+              x: 0
+              y: 0
+  animations:
+    - id: "dialogue-character-sprite-animation-in"
+      type: "transition"
+      targetId: "dialogue-character-sprite"
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 500
+                value: 1
+---
+case: dialogue character sprite supports animation-only removal
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      dialogue:
+        character:
+          sprite:
+            animations:
+              resourceId: "portraitOut"
+        content:
+          - text: "Goodbye"
+    previousPresentationState:
+      dialogue:
+        character:
+          sprite:
+            transformId: "dialoguePortraitLeft"
+            items:
+              - id: "base"
+                resourceId: "aliceBody"
+    resources:
+      animations:
+        portraitOut:
+          type: transition
+          prev:
+            tween:
+              alpha:
+                keyframes:
+                  - duration: 500
+                    value: 0
+    dialogueUIHidden: false
+    autoMode: false
+    skipMode: false
+    isLineCompleted: false
+    skipTransitionsAndAnimations: false
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations:
+    - id: "dialogue-character-sprite-animation-out"
+      type: "transition"
+      targetId: "dialogue-character-sprite"
+      prev:
+        tween:
+          alpha:
+            keyframes:
+              - duration: 500
+                value: 0
+---
 case: persisted adv shell keeps dialogue template data for dialogue ui
 in:
   - elements:

@@ -103,6 +103,61 @@ out:
     content:
       - text: "Hello world"
 ---
+case: history keeps dialogue character sprite metadata
+in:
+  - state:
+      global:
+        isLineCompleted: false
+      projectData:
+        resources:
+          characters:
+            char1:
+              name: "Alice"
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          characterId: "char1"
+                          character:
+                            name: "Alias"
+                            sprite:
+                              transformId: "dialogue-left"
+                              items:
+                                - id: "base"
+                                  resourceId: "alice-base"
+                                - id: "face"
+                                  resourceId: "alice-smile"
+                          content:
+                            - text: "Hello world"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  - sectionId: "section1"
+    lineId: "1"
+    characterId: "char1"
+    character:
+      name: "Alias"
+      sprite:
+        transformId: "dialogue-left"
+        items:
+          - id: "base"
+            resourceId: "alice-base"
+          - id: "face"
+            resourceId: "alice-smile"
+    characterName: "Alias"
+    text: "Hello world"
+    content:
+      - text: "Hello world"
+---
 case: multiple lines with dialogue up to current position
 in:
   - state:

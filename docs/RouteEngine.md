@@ -525,20 +525,20 @@ Built-in effect handling notes:
 
 Actions that can be attached to lines to control presentation:
 
-| Action       | Properties                                                                     | Description                                                                                       |
-| ------------ | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
-| `background` | `{ resourceId, animations? }`                                                  | Set background/CG                                                                                 |
-| `dialogue`   | `{ characterId?, character?, persistCharacter?, content, mode?, ui?, clear? }` | Display dialogue                                                                                  |
-| `character`  | `{ items }`                                                                    | Display character sprites. Each item can have optional `x` and `y` to override transform position |
-| `visual`     | `{ items }`                                                                    | Display visual elements                                                                           |
-| `bgm`        | `{ resourceId, loop?, volume?, delay? }`                                       | Play background music                                                                             |
-| `sfx`        | `{ items }`                                                                    | Play sound effects                                                                                |
-| `voice`      | `{ resourceId, volume?, loop?, delay? }`                                       | Play voice audio from `resources.voices[currentSceneId][resourceId]`                              |
-| `animation`  | `{ ... }`                                                                      | Apply animations                                                                                  |
-| `layout`     | `{ resourceId }`                                                               | Display layout                                                                                    |
-| `control`    | `{ resourceId }`                                                               | Activate control bindings and control UI                                                          |
-| `choice`     | `{ resourceId, items }`                                                        | Display choice menu                                                                               |
-| `cleanAll`   | `true`                                                                         | Clear all presentation state                                                                      |
+| Action       | Properties                                                                                       | Description                                                                                       |
+| ------------ | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| `background` | `{ resourceId, animations? }`                                                                    | Set background/CG                                                                                 |
+| `dialogue`   | `{ characterId?, character?, character.sprite?, persistCharacter?, content, mode?, ui?, clear? }` | Display dialogue                                                                                  |
+| `character`  | `{ items }`                                                                                      | Display character sprites. Each item can have optional `x` and `y` to override transform position |
+| `visual`     | `{ items }`                                                                                      | Display visual elements                                                                           |
+| `bgm`        | `{ resourceId, loop?, volume?, delay? }`                                                         | Play background music                                                                             |
+| `sfx`        | `{ items }`                                                                                      | Play sound effects                                                                                |
+| `voice`      | `{ resourceId, volume?, loop?, delay? }`                                                         | Play voice audio from `resources.voices[currentSceneId][resourceId]`                              |
+| `animation`  | `{ ... }`                                                                                        | Apply animations                                                                                  |
+| `layout`     | `{ resourceId }`                                                                                 | Display layout                                                                                    |
+| `control`    | `{ resourceId }`                                                                                 | Activate control bindings and control UI                                                          |
+| `choice`     | `{ resourceId, items }`                                                                          | Display choice menu                                                                               |
+| `cleanAll`   | `true`                                                                                           | Clear all presentation state                                                                      |
 
 ### Dialogue Speaker Fields
 
@@ -551,6 +551,15 @@ dialogue:
   characterId: alice
   character:
     name: Alias
+    sprite:
+      transformId: dialoguePortraitLeft
+      items:
+        - id: base
+          resourceId: aliceBody
+        - id: face
+          resourceId: aliceSmile
+      animations:
+        resourceId: portraitIn
   persistCharacter: true
   content:
     - text: Hello
@@ -560,9 +569,58 @@ Field semantics:
 
 - `characterId` is the speaker identity. It selects the character resource and its default display name.
 - `character.name` is only a display-name override.
+- `character.sprite` is an optional layered speaker sprite group rendered with the dialogue action.
 - `persistCharacter: true` means later dialogue lines that omit speaker fields reuse the previous `characterId` and `character` override.
-- If a later dialogue line explicitly provides `characterId` without `character.name`, the previous override is cleared and the displayed name falls back to the character resource name.
-- If a later dialogue line provides a new `character.name`, that override replaces the previous one.
+- If a later dialogue line explicitly provides `characterId` without `character.name` or `character.sprite`, the previous override is cleared and the displayed name falls back to the character resource name.
+- If a later dialogue line omits `characterId` but provides `character.name` or
+  `character.sprite` while `persistCharacter` is active, the provided fields
+  update the persisted speaker and omitted fields keep their previous values.
+
+### Dialogue Character Sprites
+
+`dialogue.character.sprite` renders one dialogue speaker sprite group. It uses a
+single transform and animation selection for all sprite layers.
+
+```yaml
+dialogue:
+  characterId: alice
+  character:
+    sprite:
+      transformId: dialoguePortraitLeft
+      items:
+        - id: base
+          resourceId: aliceBody
+        - id: face
+          resourceId: aliceSmile
+      animations:
+        resourceId: portraitIn
+        playback:
+          continuity: render
+  content:
+    - text: Hello
+```
+
+Runtime behavior:
+
+- `sprite.transformId` resolves through `resources.transforms`.
+- `sprite.items[].resourceId` resolves through `resources.images`.
+- `sprite.animations.resourceId` resolves through `resources.animations`.
+- The rendered container id is `dialogue-character-sprite`.
+- Sprite layer ids are `dialogue-character-sprite-${item.id}`.
+- The sprite group is added after the dialogue UI layout elements, so the
+  portrait can render above the UI when they overlap.
+- An animation-only `character.sprite` payload can animate out the previous
+  dialogue sprite group:
+
+```yaml
+dialogue:
+  character:
+    sprite:
+      animations:
+        resourceId: portraitOut
+  content:
+    - text: Goodbye
+```
 
 Examples:
 
@@ -603,8 +661,11 @@ The second line displays `Alice`, not `Alias`.
 Template/runtime paths:
 
 - Active dialogue layouts should use `${dialogue.character.name}`.
+- Active dialogue layouts can inspect sprite metadata at paths such as `${dialogue.character.sprite.items[0].resourceId}`.
 - NVL line-item layouts should prefer `${line.character.name}`. `${line.characterName}` remains available as a compatibility alias.
+- NVL line-item layouts can inspect sprite metadata at `${line.character.sprite}`.
 - Dialogue history layouts should prefer `${item.character.name}`. `${item.characterName}` remains available as a compatibility alias.
+- Dialogue history layouts can inspect sprite metadata at `${item.character.sprite}`.
 
 ### Voice Resources
 
@@ -682,12 +743,24 @@ dialogue:
   persistCharacter: true
   character:
     name: Alias
+    sprite:
+      transformId: dialoguePortraitLeft
+      items:
+        - id: base
+          resourceId: aliceBody
+        - id: face
+          resourceId: aliceSmile
   content:
     - text: Hello
   lines:
     - characterId: alice
       character:
         name: Alice
+        sprite:
+          transformId: dialoguePortraitLeft
+          items:
+            - id: base
+              resourceId: aliceBody
       characterName: Alice
       content:
         - text: Hello
@@ -698,6 +771,8 @@ Compatibility notes:
 - `dialogue.characterId` is available anywhere the shared layout template data
   is used, not only inside the dedicated dialogue UI.
 - `dialogue.character.name` remains the preferred speaker display-name path.
+- `dialogue.character.sprite`, `line.character.sprite`, and
+  `item.character.sprite` expose the authored dialogue sprite metadata.
 - `dialogueLines` remains a compatibility alias for `dialogue.lines`.
 - `line.characterName` remains a compatibility alias for `line.character.name`.
 - Existing authored templates that rely on `line.characterName` or

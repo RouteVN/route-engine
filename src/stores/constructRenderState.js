@@ -1341,18 +1341,38 @@ const tagChoiceInteractionSource = (node) => {
   };
 };
 
+const createDialogueCharacterTemplateData = ({
+  characterId,
+  character,
+  characterName,
+  characters = {},
+} = {}) => {
+  const resourceCharacter = characterId ? characters?.[characterId] : undefined;
+  const resolvedName =
+    character?.name !== undefined
+      ? character.name
+      : characterName !== undefined
+        ? characterName
+        : resourceCharacter?.name || "";
+
+  return {
+    ...(resourceCharacter || {}),
+    ...(character || {}),
+    name: resolvedName,
+  };
+};
+
 const createHistoryDialogueTemplateData = (
   dialogueHistory = [],
   characters = {},
 ) => {
   return dialogueHistory.map((item) => {
-    const character = characters?.[item.characterId];
-    const characterName =
-      item.character?.name !== undefined
-        ? item.character.name
-        : item.characterName !== undefined
-          ? item.characterName
-          : character?.name || "";
+    const character = createDialogueCharacterTemplateData({
+      characterId: item.characterId,
+      character: item.character,
+      characterName: item.characterName,
+      characters,
+    });
     const text =
       typeof item.text === "string"
         ? item.text
@@ -1363,11 +1383,8 @@ const createHistoryDialogueTemplateData = (
     return {
       ...item,
       text,
-      character: {
-        ...(item.character || {}),
-        name: characterName,
-      },
-      characterName,
+      character,
+      characterName: character.name,
     };
   });
 };
@@ -1399,18 +1416,6 @@ const createDialogueTemplateData = ({
     return undefined;
   }
 
-  let character;
-  if (dialogueState.characterId) {
-    character = characters?.[dialogueState.characterId];
-  }
-
-  if (dialogueState.character) {
-    character = {
-      ...character,
-      name: dialogueState.character.name,
-    };
-  }
-
   const dialogueContent =
     dialogueState.content === undefined
       ? [{ text: "" }]
@@ -1420,14 +1425,12 @@ const createDialogueTemplateData = ({
       line.content,
       `dialogue.lines[${index}].content`,
     );
-    const characterName =
-      line.character?.name !== undefined
-        ? line.character.name
-        : line.characterName !== undefined
-          ? line.characterName
-          : line.characterId
-            ? characters?.[line.characterId]?.name || ""
-            : "";
+    const character = createDialogueCharacterTemplateData({
+      characterId: line.characterId,
+      character: line.character,
+      characterName: line.characterName,
+      characters,
+    });
 
     return {
       ...line,
@@ -1435,21 +1438,20 @@ const createDialogueTemplateData = ({
         ...item,
         text: interpolateDialogueText(item.text, { variables }),
       })),
-      character: {
-        ...(line.character || {}),
-        name: characterName,
-      },
-      characterName,
+      character,
+      characterName: character.name,
     };
+  });
+  const character = createDialogueCharacterTemplateData({
+    characterId: dialogueState.characterId,
+    character: dialogueState.character,
+    characters,
   });
 
   return {
     characterId: dialogueState.characterId,
     persistCharacter: dialogueState.persistCharacter,
-    character: {
-      ...(dialogueState.character || {}),
-      name: character?.name || "",
-    },
+    character,
     content: dialogueContent.map((item) => ({
       ...item,
       text: interpolateDialogueText(item.text, { variables }),
@@ -2225,6 +2227,123 @@ export const addVisuals = (
   return state;
 };
 
+const DIALOGUE_CHARACTER_SPRITE_CONTAINER_ID = "dialogue-character-sprite";
+
+const hasRenderableDialogueCharacterSprite = (sprite) =>
+  !!sprite?.transformId &&
+  Array.isArray(sprite.items) &&
+  sprite.items.length > 0;
+
+const addDialogueCharacterSprite = (
+  state,
+  {
+    presentationState,
+    previousPresentationState,
+    resources = {},
+    isLineCompleted,
+    skipTransitionsAndAnimations,
+    activePersistentAnimations,
+  },
+) => {
+  const { animations } = state;
+  const storyContainer = getStoryContainer(state.elements);
+  if (!storyContainer) {
+    return state;
+  }
+
+  const sprite = presentationState.dialogue?.character?.sprite;
+  const previousSprite = previousPresentationState?.dialogue?.character?.sprite;
+  const hasCurrentSprite = hasRenderableDialogueCharacterSprite(sprite);
+  const hasPreviousSprite =
+    hasRenderableDialogueCharacterSprite(previousSprite);
+  const spriteAnimationInstances = createAnimationInstances({
+    animationsDef: sprite?.animations,
+    resources,
+    previousResourceId: hasPreviousSprite
+      ? DIALOGUE_CHARACTER_SPRITE_CONTAINER_ID
+      : undefined,
+    currentResourceId: hasCurrentSprite
+      ? DIALOGUE_CHARACTER_SPRITE_CONTAINER_ID
+      : undefined,
+    previousTargetId: hasPreviousSprite
+      ? DIALOGUE_CHARACTER_SPRITE_CONTAINER_ID
+      : undefined,
+    currentTargetId: hasCurrentSprite
+      ? DIALOGUE_CHARACTER_SPRITE_CONTAINER_ID
+      : undefined,
+    animationPath: "dialogue.character.sprite.animations",
+    idPrefix: "dialogue-character-sprite",
+  });
+
+  if (!hasCurrentSprite) {
+    if (
+      sprite?.animations &&
+      hasPreviousSprite &&
+      shouldEmitAnimationSelection({
+        animationInstances: spriteAnimationInstances,
+        isLineCompleted,
+        skipTransitionsAndAnimations,
+        activePersistentAnimations,
+      })
+    ) {
+      animations.push(...spriteAnimationInstances);
+    }
+    return state;
+  }
+
+  const transform = resources.transforms?.[sprite.transformId];
+  if (!transform) {
+    console.warn("Transform not found:", sprite.transformId);
+    return state;
+  }
+
+  const spriteContainer = {
+    type: "container",
+    id: DIALOGUE_CHARACTER_SPRITE_CONTAINER_ID,
+    x: transform.x,
+    y: transform.y,
+    anchorX: transform.anchorX,
+    anchorY: transform.anchorY,
+    rotation: transform.rotation,
+    scaleX: transform.scaleX,
+    scaleY: transform.scaleY,
+    children: [],
+  };
+
+  for (const item of sprite.items) {
+    const imageResource = resources.images?.[item.resourceId];
+    if (!imageResource) {
+      console.warn(`Image resource not found: ${item.resourceId}`);
+      continue;
+    }
+
+    spriteContainer.children.push({
+      type: "sprite",
+      id: `${DIALOGUE_CHARACTER_SPRITE_CONTAINER_ID}-${item.id}`,
+      src: imageResource.fileId,
+      width: imageResource.width,
+      height: imageResource.height,
+      x: 0,
+      y: 0,
+    });
+  }
+
+  storyContainer.children.push(spriteContainer);
+
+  if (
+    shouldEmitAnimationSelection({
+      animationInstances: spriteAnimationInstances,
+      isLineCompleted,
+      skipTransitionsAndAnimations,
+      activePersistentAnimations,
+    })
+  ) {
+    animations.push(...spriteAnimationInstances);
+  }
+
+  return state;
+};
+
 /**
  *
  * @param {Object} params
@@ -2318,6 +2437,15 @@ export const addDialogue = (
       }
     }
   }
+
+  addDialogueCharacterSprite(state, {
+    presentationState,
+    previousPresentationState,
+    resources,
+    isLineCompleted,
+    skipTransitionsAndAnimations,
+    activePersistentAnimations,
+  });
 
   const dialogueAnimationInstances = createAnimationInstances({
     animationsDef: presentationState.dialogue.ui?.animations,

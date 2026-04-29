@@ -239,6 +239,147 @@ out:
     content:
       - text: "Hi again"
 ---
+case: dialogue character sprite persists with speaker and clears animation when later omitted
+in:
+  - - dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "simple-dialogue"
+        characterId: "alice"
+        character:
+          name: "Alias"
+          sprite:
+            transformId: "dialogue-left"
+            items:
+              - id: "base"
+                resourceId: "alice-base"
+              - id: "face"
+                resourceId: "alice-smile"
+            animations:
+              resourceId: "portrait-in"
+        persistCharacter: true
+        content:
+          - text: "Hello"
+    - dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "simple-dialogue"
+        content:
+          - text: "Hi again"
+out:
+  dialogue:
+    mode: "adv"
+    ui:
+      resourceId: "simple-dialogue"
+    characterId: "alice"
+    character:
+      name: "Alias"
+      sprite:
+        transformId: "dialogue-left"
+        items:
+          - id: "base"
+            resourceId: "alice-base"
+          - id: "face"
+            resourceId: "alice-smile"
+        animations: {}
+    persistCharacter: true
+    content:
+      - text: "Hi again"
+---
+case: dialogue character sprite accepts animation-only removal payload
+in:
+  - - dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "simple-dialogue"
+        characterId: "alice"
+        character:
+          name: "Alias"
+          sprite:
+            transformId: "dialogue-left"
+            items:
+              - id: "base"
+                resourceId: "alice-base"
+        persistCharacter: true
+        content:
+          - text: "Hello"
+    - dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "simple-dialogue"
+        character:
+          sprite:
+            animations:
+              resourceId: "portrait-out"
+        persistCharacter: true
+        content:
+          - text: "Bye"
+out:
+  dialogue:
+    mode: "adv"
+    ui:
+      resourceId: "simple-dialogue"
+    characterId: "alice"
+    character:
+      name: "Alias"
+      sprite:
+        animations:
+          resourceId: "portrait-out"
+    persistCharacter: true
+    content:
+      - text: "Bye"
+---
+case: nvl dialogue character sprite animation clears on later non-dialogue line
+in:
+  - - dialogue:
+        mode: "nvl"
+        characterId: "alice"
+        character:
+          sprite:
+            transformId: "dialogue-left"
+            items:
+              - id: "base"
+                resourceId: "alice-base"
+              - id: "face"
+                resourceId: "alice-smile"
+            animations:
+              resourceId: "portrait-in"
+        content:
+          - text: "Hello"
+    - background:
+        resourceId: "bg-school"
+out:
+  background:
+    resourceId: "bg-school"
+  dialogue:
+    mode: "nvl"
+    characterId: "alice"
+    character:
+      sprite:
+        transformId: "dialogue-left"
+        items:
+          - id: "base"
+            resourceId: "alice-base"
+          - id: "face"
+            resourceId: "alice-smile"
+        animations: {}
+    content:
+      - text: "Hello"
+    lines:
+      - content:
+          - text: "Hello"
+        characterId: "alice"
+        character:
+          sprite:
+            transformId: "dialogue-left"
+            items:
+              - id: "base"
+                resourceId: "alice-base"
+              - id: "face"
+                resourceId: "alice-smile"
+            animations:
+              resourceId: "portrait-in"
+---
 case: dialogue character override clears when the same speaker id repeats explicitly
 in:
   - - dialogue:

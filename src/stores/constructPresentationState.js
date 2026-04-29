@@ -67,6 +67,34 @@ const resolveDialogueCharacterName = (dialogueAction) => {
   return undefined;
 };
 
+const hasDialogueCharacterSprite = (dialogueAction) =>
+  !!dialogueAction?.character &&
+  hasOwnProperty(dialogueAction.character, "sprite");
+
+const resolveDialogueCharacterFields = (dialogueAction) => {
+  const fields = {};
+  let hasFields = false;
+  const characterName = resolveDialogueCharacterName(dialogueAction);
+
+  if (characterName !== undefined) {
+    fields.name = characterName;
+    hasFields = true;
+  }
+
+  if (hasDialogueCharacterSprite(dialogueAction)) {
+    fields.sprite = structuredClone(dialogueAction.character.sprite);
+    hasFields = true;
+  }
+
+  return hasFields ? fields : undefined;
+};
+
+const clearDialogueCharacterSpriteAnimations = (dialogueState) => {
+  if (dialogueState?.character?.sprite?.animations) {
+    dialogueState.character.sprite.animations = {};
+  }
+};
+
 /**
  * Creates the initial presentation state
  * @returns {Object} Empty initial state object
@@ -136,11 +164,15 @@ export const background = (state, presentation) => {
  */
 export const dialogue = (state, presentation) => {
   if (!presentation.dialogue) {
-    if (state.dialogue && state.dialogue.mode === "adv") {
-      state.dialogue.content = undefined;
-      if (state.dialogue.persistCharacter !== true) {
-        delete state.dialogue.characterId;
-        delete state.dialogue.character;
+    if (state.dialogue) {
+      clearDialogueCharacterSpriteAnimations(state.dialogue);
+
+      if (state.dialogue.mode === "adv") {
+        state.dialogue.content = undefined;
+        if (state.dialogue.persistCharacter !== true) {
+          delete state.dialogue.characterId;
+          delete state.dialogue.character;
+        }
       }
     }
     return;
@@ -204,8 +236,9 @@ export const dialogue = (state, presentation) => {
   }
 
   const hasCharacterId = hasOwnProperty(presentation.dialogue, "characterId");
-  const characterName = resolveDialogueCharacterName(presentation.dialogue);
-  const hasCharacterName = characterName !== undefined;
+  const characterFields = resolveDialogueCharacterFields(presentation.dialogue);
+  const hasCharacterFields = characterFields !== undefined;
+  const hasCharacterSprite = hasDialogueCharacterSprite(presentation.dialogue);
 
   if (hasCharacterId) {
     if (presentation.dialogue.characterId) {
@@ -217,10 +250,20 @@ export const dialogue = (state, presentation) => {
     delete state.dialogue.characterId;
   }
 
-  if (hasCharacterName) {
-    state.dialogue.character = { name: characterName };
+  if (hasCharacterFields) {
+    state.dialogue.character =
+      !hasCharacterId && persistCharacter && state.dialogue.character
+        ? {
+            ...structuredClone(state.dialogue.character),
+            ...characterFields,
+          }
+        : characterFields;
   } else if (hasCharacterId || !persistCharacter) {
     delete state.dialogue.character;
+  }
+
+  if (!hasCharacterSprite) {
+    clearDialogueCharacterSpriteAnimations(state.dialogue);
   }
 
   // Handle clear action
@@ -245,7 +288,7 @@ export const dialogue = (state, presentation) => {
     };
 
     if (state.dialogue.character) {
-      dialogueLine.character = { ...state.dialogue.character };
+      dialogueLine.character = structuredClone(state.dialogue.character);
     }
 
     state.dialogue.lines.push(dialogueLine);

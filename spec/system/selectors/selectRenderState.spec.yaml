@@ -103,6 +103,97 @@ out:
       delay: null
   global: {}
 ---
+case: nvl dialogue character sprite does not replay stale animation on later non-dialogue line
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: false
+        skipMode: false
+        isDialogueUIVisible: true
+      projectData:
+        resources:
+          transforms:
+            dialogue-left:
+              x: 240
+              y: 900
+              anchorX: 0.5
+              anchorY: 1
+              rotation: 0
+              scaleX: 1
+              scaleY: 1
+          images:
+            alice-base:
+              fileId: "alice-base.png"
+              width: 320
+              height: 640
+          animations:
+            portrait-in:
+              type: transition
+              next:
+                tween:
+                  alpha:
+                    initialValue: 0
+                    keyframes:
+                      - duration: 500
+                        value: 1
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          mode: "nvl"
+                          characterId: "alice"
+                          character:
+                            sprite:
+                              transformId: "dialogue-left"
+                              items:
+                                - id: "base"
+                                  resourceId: "alice-base"
+                              animations:
+                                resourceId: "portrait-in"
+                          content:
+                            - text: "Hello"
+                    - id: "2"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - type: "container"
+          id: "dialogue-character-sprite"
+          x: 240
+          y: 900
+          anchorX: 0.5
+          anchorY: 1
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - type: "sprite"
+              id: "dialogue-character-sprite-base"
+              src: "alice-base.png"
+              width: 320
+              height: 640
+              x: 0
+              y: 0
+  animations: []
+  audio: []
+  global: {}
+---
 case: multiple lines and actions last line
 in:
   - state:

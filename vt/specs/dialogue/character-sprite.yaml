@@ -1,0 +1,120 @@
+---
+title: Dialogue Character Sprite
+description: Dialogue actions can render a layered speaker sprite with shared transform and dialogue UI.
+specs:
+  - the initial screenshot should show a layered speaker portrait above the dialogue UI
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  controls:
+    base1:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: overlayColor
+  images:
+    parts-body:
+      fileId: character_parts_body
+      width: 620
+      height: 960
+    parts-face-smile:
+      fileId: character_parts_face_smile
+      width: 620
+      height: 960
+  transforms:
+    dialogue-left:
+      x: 520
+      y: 1080
+      anchorX: 0.5
+      anchorY: 1
+  layouts:
+    dialogue-layout:
+      elements:
+        - id: dialogue-panel
+          type: rect
+          x: 180
+          y: 790
+          width: 1560
+          height: 250
+          opacity: 0.9
+          colorId: panelColor
+        - id: dialogue-name
+          type: text
+          x: 420
+          y: 830
+          content: ${dialogue.character.name}
+          textStyleId: nameStyle
+        - id: dialogue-text
+          type: text
+          x: 420
+          y: 890
+          content: ${dialogue.content[0].text}
+          textStyleId: textStyle
+  characters:
+    alice:
+      name: Alice
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    overlayColor:
+      hex: "#000000"
+    panelColor:
+      hex: "#4D4D4D"
+    nameColor:
+      hex: "#D9D9D9"
+    textColor:
+      hex: "#FFFFFF"
+  textStyles:
+    nameStyle:
+      fontId: fontDefault
+      colorId: nameColor
+      fontSize: 30
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 26
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: dialogueSpriteScene
+  scenes:
+    dialogueSpriteScene:
+      name: Dialogue Sprite Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                control:
+                  resourceId: base1
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogue-layout
+                  characterId: alice
+                  character:
+                    sprite:
+                      transformId: dialogue-left
+                      items:
+                        - id: body
+                          resourceId: parts-body
+                        - id: face
+                          resourceId: parts-face-smile
+                  content:
+                    - text: This line renders a layered dialogue portrait.
