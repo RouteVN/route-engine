@@ -143,6 +143,117 @@ const createProjectData = () => ({
   },
 });
 
+const createAppendRevealProjectData = () => ({
+  screen: {
+    width: 1920,
+    height: 1080,
+    backgroundColor: "#000000",
+  },
+  resources: {
+    layouts: {
+      revealDialogue: {
+        mode: "adv",
+        elements: [
+          {
+            id: "dialogue-text",
+            type: "text-revealing",
+            content: "${dialogue.content}",
+            initialRevealedCharacters: "${dialogue.initialRevealedCharacters}",
+            revealEffect: "typewriter",
+            displaySpeed: 30,
+            textStyleId: "body",
+          },
+        ],
+      },
+    },
+    sounds: {},
+    images: {},
+    videos: {},
+    sprites: {},
+    characters: {},
+    variables: {},
+    transforms: {},
+    sectionTransitions: {},
+    animations: {},
+    fonts: {
+      bodyFont: {
+        fileId: "Arial",
+      },
+    },
+    colors: {
+      bodyColor: {
+        hex: "#FFFFFF",
+      },
+    },
+    textStyles: {
+      body: {
+        fontId: "bodyFont",
+        colorId: "bodyColor",
+        fontSize: 24,
+        fontWeight: "400",
+        fontStyle: "normal",
+        lineHeight: 1.2,
+      },
+    },
+    controls: {},
+  },
+  story: {
+    initialSceneId: "scene1",
+    scenes: {
+      scene1: {
+        initialSectionId: "section1",
+        sections: {
+          section1: {
+            lines: [
+              {
+                id: "line1",
+                actions: {
+                  dialogue: {
+                    mode: "adv",
+                    ui: {
+                      resourceId: "revealDialogue",
+                    },
+                    content: [
+                      {
+                        text: "Held prefix: ",
+                      },
+                    ],
+                  },
+                },
+              },
+              {
+                id: "line2",
+                actions: {
+                  dialogue: {
+                    append: true,
+                    content: [
+                      {
+                        text: "continuing with appended text.",
+                      },
+                    ],
+                  },
+                },
+              },
+              {
+                id: "line3",
+                actions: {
+                  dialogue: {
+                    content: [
+                      {
+                        text: "Replacement starts over.",
+                      },
+                    ],
+                  },
+                },
+              },
+            ],
+          },
+        },
+      },
+    },
+  },
+});
+
 const createChoiceBlockingProjectData = () => ({
   screen: {
     width: 1920,
@@ -393,6 +504,116 @@ describe("RouteEngine line completion flow", () => {
           text: "Line 2 should be the next reveal line after the second click.",
         },
       ],
+    });
+  });
+
+  it("completes appended ADV dialogue before advancing past the continuation", () => {
+    const routeGraphics = {
+      render: vi.fn(),
+    };
+    let engine;
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      persistence: createPersistence(),
+      routeGraphics,
+      ticker: createTicker(),
+    });
+    engine = createRouteEngine({
+      handlePendingEffects: effectsHandler,
+    });
+
+    engine.init({
+      initialState: {
+        projectData: createAppendRevealProjectData(),
+      },
+    });
+
+    const prefix = "Held prefix: ";
+
+    engine.handleActions({
+      nextLine: {},
+    });
+
+    let state = engine.selectSystemState();
+    expect(state.contexts.at(-1).pointers.read.lineId).toBe("line1");
+    expect(state.global.isLineCompleted).toBe(true);
+    expect(
+      findElementById(
+        getLastRenderState(routeGraphics).elements,
+        "dialogue-text",
+      ),
+    ).toMatchObject({
+      revealEffect: "none",
+      content: [
+        {
+          text: prefix,
+        },
+      ],
+      initialRevealedCharacters: 0,
+    });
+
+    engine.handleActions({
+      nextLine: {},
+    });
+
+    state = engine.selectSystemState();
+    expect(state.contexts.at(-1).pointers.read.lineId).toBe("line2");
+    expect(state.global.isLineCompleted).toBe(false);
+    expect(
+      findElementById(
+        getLastRenderState(routeGraphics).elements,
+        "dialogue-text",
+      ),
+    ).toMatchObject({
+      revealEffect: "typewriter",
+      content: [
+        {
+          text: prefix,
+        },
+        {
+          text: "continuing with appended text.",
+        },
+      ],
+      initialRevealedCharacters: prefix.length,
+    });
+
+    engine.handleActions({
+      nextLine: {},
+    });
+
+    state = engine.selectSystemState();
+    expect(state.contexts.at(-1).pointers.read.lineId).toBe("line2");
+    expect(state.global.isLineCompleted).toBe(true);
+    expect(
+      findElementById(
+        getLastRenderState(routeGraphics).elements,
+        "dialogue-text",
+      ),
+    ).toMatchObject({
+      revealEffect: "none",
+      initialRevealedCharacters: prefix.length,
+    });
+
+    engine.handleActions({
+      nextLine: {},
+    });
+
+    state = engine.selectSystemState();
+    expect(state.contexts.at(-1).pointers.read.lineId).toBe("line3");
+    expect(state.global.isLineCompleted).toBe(false);
+    expect(
+      findElementById(
+        getLastRenderState(routeGraphics).elements,
+        "dialogue-text",
+      ),
+    ).toMatchObject({
+      revealEffect: "typewriter",
+      content: [
+        {
+          text: "Replacement starts over.",
+        },
+      ],
+      initialRevealedCharacters: 0,
     });
   });
 

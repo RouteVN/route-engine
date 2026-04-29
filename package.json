@@ -1,6 +1,6 @@
 {
   "name": "route-engine-js",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "description": "A lightweight Visual Novel engine built in JavaScript for creating interactive narrative games with branching storylines",
   "repository": {
     "type": "git",
@@ -58,7 +58,7 @@
     "ajv": "^8.18.0",
     "husky": "^9.1.7",
     "prettier": "^3.7.4",
-    "route-graphics": "1.10.0",
+    "route-graphics": "1.12.3",
     "vitest": "^4.0.16"
   }
 }

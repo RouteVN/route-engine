@@ -600,6 +600,46 @@ out:
     content:
       - text: "Hello!"
 ---
+case: adv-mode-appends-dialogue-content-with-reveal-prefix
+in:
+  - - dialogue:
+        mode: "adv"
+        characterId: "alice"
+        content:
+          - text: "Held prefix: "
+    - dialogue:
+        append: true
+        content:
+          - text: "continued suffix"
+out:
+  dialogue:
+    mode: "adv"
+    characterId: "alice"
+    content:
+      - text: "Held prefix: "
+      - text: "continued suffix"
+    initialRevealedContent:
+      - text: "Held prefix: "
+---
+case: adv-mode-replacing-dialogue-content-clears-reveal-prefix
+in:
+  - - dialogue:
+        mode: "adv"
+        content:
+          - text: "Held prefix: "
+    - dialogue:
+        append: true
+        content:
+          - text: "continued suffix"
+    - dialogue:
+        content:
+          - text: "Replacement"
+out:
+  dialogue:
+    mode: "adv"
+    content:
+      - text: "Replacement"
+---
 case: nvl-mode-lines-accumulate
 in:
   - - dialogue:
@@ -637,6 +677,34 @@ out:
       - content:
           - text: "Third line"
         characterId: "bob"
+---
+case: nvl-mode-append-flag-does-not-create-adv-reveal-prefix
+in:
+  - - dialogue:
+        mode: "nvl"
+        ui:
+          resourceId: "nvl-layout"
+        content:
+          - text: "First line"
+    - dialogue:
+        mode: "nvl"
+        append: true
+        content:
+          - text: "Second line"
+out:
+  dialogue:
+    mode: "nvl"
+    ui:
+      resourceId: "nvl-layout"
+    content:
+      - text: "Second line"
+    lines:
+      - content:
+          - text: "First line"
+        characterId: null
+      - content:
+          - text: "Second line"
+        characterId: null
 ---
 case: nvl-mode-lines-accumulate-with-implicit-mode
 in:
@@ -829,6 +897,33 @@ out:
       - content:
           - text: "NVL line"
         characterId: "narrator"
+---
+case: nvl-mode-switch-to-adv-with-append-starts-fresh-adv-content
+in:
+  - - dialogue:
+        mode: "nvl"
+        ui:
+          resourceId: "nvl-layout"
+        content:
+          - text: "NVL line"
+    - dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "adv-layout"
+        append: true
+        content:
+          - text: "ADV line"
+out:
+  dialogue:
+    mode: "adv"
+    ui:
+      resourceId: "adv-layout"
+    content:
+      - text: "ADV line"
+    lines:
+      - content:
+          - text: "NVL line"
+        characterId: null
 ---
 case: nvl-mode-clearPage-adv-ignored
 in:

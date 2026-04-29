@@ -512,6 +512,12 @@ const ensureDialogueContentItems = (content, path) => {
   return content;
 };
 
+const getDialogueContentTextLength = ({ content, path, variables }) =>
+  ensureDialogueContentItems(content, path).reduce((length, item) => {
+    const text = interpolateDialogueText(item.text, { variables });
+    return length + `${text ?? ""}`.length;
+  }, 0);
+
 const getDuplicateItemIds = (items = []) => {
   const counts = new Map();
 
@@ -1420,6 +1426,14 @@ const createDialogueTemplateData = ({
     dialogueState.content === undefined
       ? [{ text: "" }]
       : ensureDialogueContentItems(dialogueState.content, "dialogue.content");
+  const initialRevealedCharacters =
+    dialogueState.content === undefined
+      ? 0
+      : getDialogueContentTextLength({
+          content: dialogueState.initialRevealedContent,
+          path: "dialogue.initialRevealedContent",
+          variables,
+        });
   const dialogueLines = (dialogueState.lines || []).map((line, index) => {
     const lineContent = ensureDialogueContentItems(
       line.content,
@@ -1456,6 +1470,7 @@ const createDialogueTemplateData = ({
       ...item,
       text: interpolateDialogueText(item.text, { variables }),
     })),
+    initialRevealedCharacters,
     lines: dialogueLines,
   };
 };

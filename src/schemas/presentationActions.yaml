@@ -80,6 +80,9 @@ properties:
             text:
               type: string
         description: The dialogue text content
+      append:
+        type: boolean
+        description: In ADV mode, append content to the current dialogue content and reveal only the appended suffix when the dialogue layout binds dialogue.initialRevealedCharacters to text-revealing.initialRevealedCharacters.
       characterId:
         type: string
         description: Speaker identity. If provided without character.name, the displayed name falls back to the character resource name.
