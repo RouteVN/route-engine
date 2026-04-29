@@ -786,6 +786,7 @@ const resolveEventBindingString = (value, eventData) => {
 };
 
 const OPAQUE_ACTION_BRANCHES = {
+  conditional: new Set(["branches"]),
   updateProjectData: new Set(["projectData"]),
   showConfirmDialog: new Set(["confirmActions", "cancelActions"]),
 };

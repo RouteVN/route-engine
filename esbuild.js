@@ -1,6 +1,8 @@
-import esbuild from "esbuild";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+
+const esbuildBin = path.resolve("node_modules", ".bin", "esbuild");
 
 const copyVtRouteGraphicsBundle = () => {
   const source = path.resolve(
@@ -21,32 +23,37 @@ const copyVtRouteGraphicsBundle = () => {
   fs.copyFileSync(source, target);
 };
 
-esbuild
-  .build({
-    bundle: true,
-    minify: true,
-    sourcemap: false,
-    format: "esm",
-    outfile: `./dist/RouteEngine.js`,
-    entryPoints: [`src/index.js`],
-  })
-  .then(() => console.log("Build completed"))
-  .catch(() => {
-    console.log("Build failed");
+const runEsbuild = (args) => {
+  const result = spawnSync(esbuildBin, args, {
+    stdio: "inherit",
   });
+
+  if (result.error) {
+    throw result.error;
+  }
+
+  if (result.status !== 0) {
+    process.exit(result.status ?? 1);
+  }
+};
 
 copyVtRouteGraphicsBundle();
 
-esbuild
-  .build({
-    bundle: true,
-    minify: true,
-    sourcemap: true,
-    format: "esm",
-    outfile: `./vt/static/RouteEngine.js`,
-    entryPoints: [`src/index.js`],
-  })
-  .then(() => console.log("Build completed"))
-  .catch(() => {
-    console.log("Build failed");
-  });
+runEsbuild([
+  "src/index.js",
+  "--bundle",
+  "--minify",
+  "--format=esm",
+  "--outfile=./dist/RouteEngine.js",
+]);
+
+runEsbuild([
+  "src/index.js",
+  "--bundle",
+  "--minify",
+  "--sourcemap",
+  "--format=esm",
+  "--outfile=./vt/static/RouteEngine.js",
+]);
+
+console.log("Build completed");

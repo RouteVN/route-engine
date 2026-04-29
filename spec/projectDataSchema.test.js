@@ -552,4 +552,78 @@ describe("projectData schema", () => {
     ).toBe(true);
     expect(validateSystemActions.errors).toBeNull();
   });
+
+  it("accepts conditional system actions", () => {
+    expect(
+      validateSystemActions({
+        conditional: {
+          branches: [
+            {
+              when: {
+                gte: [{ var: "variables.trust" }, 70],
+              },
+              actions: {
+                jumpToLine: {
+                  lineId: "trustedRoute",
+                },
+              },
+            },
+            {
+              actions: {
+                jumpToLine: {
+                  lineId: "fallbackRoute",
+                },
+              },
+            },
+          ],
+        },
+      }),
+    ).toBe(true);
+    expect(validateSystemActions.errors).toBeNull();
+  });
+
+  it("accepts conditional actions on story lines", () => {
+    expect(
+      validateProjectData(
+        createMinimalProjectData({
+          story: {
+            initialSceneId: "scene1",
+            scenes: {
+              scene1: {
+                name: "Scene 1",
+                initialSectionId: "section1",
+                sections: {
+                  section1: {
+                    name: "Section 1",
+                    lines: [
+                      {
+                        id: "line1",
+                        actions: {
+                          conditional: {
+                            branches: [
+                              {
+                                when: {
+                                  eq: [{ var: "variables.role" }, "admin"],
+                                },
+                                actions: {
+                                  jumpToLine: {
+                                    lineId: "adminRoute",
+                                  },
+                                },
+                              },
+                            ],
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        }),
+      ),
+    ).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
 });

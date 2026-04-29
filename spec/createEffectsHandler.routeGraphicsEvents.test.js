@@ -272,6 +272,9 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
           y: 20,
         },
       },
+      {
+        interactionSource: "choice",
+      },
     );
   });
 

@@ -1,6 +1,7 @@
 import { createSystemStore } from "./stores/system.store.js";
 import { normalizeNamespace } from "./indexedDbPersistence.js";
 import { processActionTemplates } from "./util.js";
+import { evaluateCondition } from "jempl";
 import {
   collectPersistentAnimationContinuations,
   getAnimationInstanceDurationMs,
@@ -20,6 +21,12 @@ const PERSISTENT_PLAYBACK_RESTORE_ACTIONS = new Set([
   "rollbackByOffset",
   "rollbackToLine",
 ]);
+
+const CONDITIONAL_ACTION_TYPE = "conditional";
+const CHOICE_INTERACTION_SOURCE = "choice";
+
+const isRecord = (value) =>
+  value !== null && typeof value === "object" && !Array.isArray(value);
 
 /**
  * Creates a RouteEngine instance.
@@ -239,6 +246,21 @@ export default function createRouteEngine(options) {
     return _systemStore.selectIsChoiceVisible();
   };
 
+  const applyInteractionSource = (actionType, payload, options = {}) => {
+    if (
+      options.interactionSource !== CHOICE_INTERACTION_SOURCE ||
+      actionType !== "nextLine" ||
+      !isRecord(payload)
+    ) {
+      return payload;
+    }
+
+    return {
+      ...payload,
+      _interactionSource: CHOICE_INTERACTION_SOURCE,
+    };
+  };
+
   const handleAction = (actionType, payload) => {
     if (!_systemStore[actionType]) {
       return;
@@ -288,16 +310,82 @@ export default function createRouteEngine(options) {
     };
   };
 
+  const assertConditionalActionPayload = (payload) => {
+    if (!isRecord(payload)) {
+      throw new Error("conditional action payload must be an object");
+    }
+
+    if (!Array.isArray(payload.branches)) {
+      throw new Error("conditional action requires branches array");
+    }
+
+    if (payload.branches.length === 0) {
+      throw new Error("conditional action requires at least one branch");
+    }
+  };
+
+  const assertConditionalBranch = (branch, index, branchCount) => {
+    if (!isRecord(branch)) {
+      throw new Error(`conditional branch at index ${index} must be an object`);
+    }
+
+    if (!isRecord(branch.actions)) {
+      throw new Error(
+        `conditional branch at index ${index} requires actions object`,
+      );
+    }
+
+    if (
+      !Object.prototype.hasOwnProperty.call(branch, "when") &&
+      index !== branchCount - 1
+    ) {
+      throw new Error("conditional else branch must be the last branch");
+    }
+  };
+
+  const handleConditionalAction = (payload, context, options) => {
+    assertConditionalActionPayload(payload);
+
+    for (let index = 0; index < payload.branches.length; index += 1) {
+      const branch = payload.branches[index];
+      assertConditionalBranch(branch, index, payload.branches.length);
+
+      const hasCondition = Object.prototype.hasOwnProperty.call(branch, "when");
+      if (hasCondition && !evaluateCondition(branch.when, context)) {
+        continue;
+      }
+
+      processActionEntries(branch.actions, context, options);
+      return;
+    }
+  };
+
+  const handleActionEntry = (actionType, payload, context, options) => {
+    if (actionType === CONDITIONAL_ACTION_TYPE) {
+      handleConditionalAction(payload, context, options);
+      return;
+    }
+
+    handleAction(
+      actionType,
+      applyInteractionSource(actionType, payload, options),
+    );
+  };
+
+  const processActionEntries = (actions, context, options) => {
+    const processedActions = processActionTemplates(actions, context);
+    Object.entries(processedActions).forEach(([actionType, payload]) => {
+      handleActionEntry(actionType, payload, context, options);
+    });
+  };
+
   const handleActions = (actions, eventContext, options = {}) => {
     const context = buildActionTemplateContext(eventContext);
-    const processedActions = processActionTemplates(actions, context);
     _systemStore.beginRollbackActionBatch({
       source: options.rollbackSource,
     });
     try {
-      Object.entries(processedActions).forEach(([actionType, payload]) => {
-        handleAction(actionType, payload);
-      });
+      processActionEntries(actions, context, options);
     } finally {
       _systemStore.endRollbackActionBatch({});
     }

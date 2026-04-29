@@ -1,0 +1,208 @@
+---
+title: Choice Conditional Actions
+description: A choice click can execute a conditional action and use the first true branch.
+specs:
+  - the initial line shows a choice button
+  - clicking the choice evaluates conditional branches from the choice action payload
+  - the first matching branch updates state and jumps to the trusted route
+  - false and fallback branches are not executed
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 150
+  - action: screenshot
+  - action: click
+    x: 480
+    y: 180
+  - action: wait
+    ms: 180
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  variables:
+    trust:
+      type: number
+      scope: context
+      default: 80
+    score:
+      type: number
+      scope: context
+      default: 0
+  characters:
+    narrator:
+      name: Guide
+  layouts:
+    backgroundLayout:
+      elements:
+        - id: background
+          type: rect
+          width: 1920
+          height: 1080
+          colorId: bg
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 120
+          y: 760
+          width: 1680
+          height: 220
+          colorId: panel
+        - id: dialogue-text
+          type: text
+          x: 160
+          y: 825
+          width: 1200
+          content: ${dialogue.content[0].text}
+          textStyleId: textMain
+        - id: score-display
+          type: text
+          x: 1760
+          y: 80
+          anchorX: 1
+          content: "Score: ${variables.score}"
+          textStyleId: textMuted
+    choiceLayout:
+      elements:
+        - id: trusted-choice-button
+          type: rect
+          x: 600
+          y: 300
+          width: 720
+          height: 120
+          colorId: button
+          click:
+            payload:
+              actions:
+                conditional:
+                  branches:
+                    - when:
+                        lt:
+                          - var: variables.trust
+                          - 30
+                      actions:
+                        updateVariable:
+                          id: lowTrustScore
+                          operations:
+                            - variableId: score
+                              op: set
+                              value: 1
+                        jumpToLine:
+                          lineId: lowTrust
+                    - when:
+                        gte:
+                          - var: variables.trust
+                          - 70
+                      actions:
+                        updateVariable:
+                          id: trustedScore
+                          operations:
+                            - variableId: score
+                              op: set
+                              value: 7
+                        jumpToLine:
+                          lineId: trusted
+                    - actions:
+                        updateVariable:
+                          id: fallbackScore
+                          operations:
+                            - variableId: score
+                              op: set
+                              value: 3
+                        jumpToLine:
+                          lineId: fallback
+        - id: trusted-choice-label
+          type: text
+          x: 670
+          y: 338
+          content: ${choice.items[0].content}
+          textStyleId: textMain
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    bg:
+      hex: "#000000"
+    panel:
+      hex: "#4D4D4D"
+    button:
+      hex: "#737373"
+    fg:
+      hex: "#FFFFFF"
+    fgMuted:
+      hex: "#D9D9D9"
+  textStyles:
+    textMain:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 36
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textMuted:
+      fontId: fontDefault
+      colorId: fgMuted
+      fontSize: 34
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: source
+      sections:
+        source:
+          lines:
+            - id: start
+              actions:
+                background:
+                  resourceId: backgroundLayout
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Pick the conditional choice. Trust is high enough for the trusted route."
+                  characterId: narrator
+                choice:
+                  resourceId: choiceLayout
+                  items:
+                    - id: trusted
+                      content: "Take trusted route"
+            - id: trusted
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Trusted route selected."
+                  characterId: narrator
+            - id: lowTrust
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Low trust branch should not be visible."
+                  characterId: narrator
+            - id: fallback
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Fallback branch should not be visible."
+                  characterId: narrator
