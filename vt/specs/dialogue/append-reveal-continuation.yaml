@@ -1,0 +1,151 @@
+---
+title: Dialogue Append Reveal Continuation
+description: |
+  Verifies ADV dialogue.append continues text-revealing from the existing
+  prefix for both typewriter and softWipe dialogue elements.
+steps:
+  - action: click
+    x: 960
+    y: 540
+  - action: wait
+    ms: 80
+  - action: screenshot
+  - action: click
+    x: 960
+    y: 540
+  - action: wait
+    ms: 80
+  - action: screenshot
+  - action: click
+    x: 960
+    y: 540
+  - action: wait
+    ms: 80
+  - action: screenshot
+  - action: click
+    x: 960
+    y: 540
+  - action: wait
+    ms: 80
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#111111"
+resources:
+  controls:
+    base:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: transparent
+  layouts:
+    revealDialogue:
+      mode: adv
+      elements:
+        - id: dialogue-panel
+          type: rect
+          x: 100
+          y: 690
+          width: 1720
+          height: 310
+          colorId: panel
+        - id: typewriter-label
+          type: text
+          x: 140
+          y: 730
+          content: TYPEWRITER
+          textStyleId: label
+        - id: typewriter-text
+          type: text-revealing
+          x: 140
+          y: 780
+          width: 1600
+          speed: 16
+          revealEffect: typewriter
+          content: ${dialogue.content}
+          initialRevealedCharacters: ${dialogue.initialRevealedCharacters}
+          textStyleId: body
+        - id: soft-wipe-label
+          type: text
+          x: 140
+          y: 865
+          content: SOFT WIPE
+          textStyleId: label
+        - id: soft-wipe-text
+          type: text-revealing
+          x: 140
+          y: 915
+          width: 1600
+          speed: 16
+          revealEffect: softWipe
+          softWipe:
+            easing: linear
+            softness: 0.75
+          content: ${dialogue.content}
+          initialRevealedCharacters: ${dialogue.initialRevealedCharacters}
+          textStyleId: body
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    transparent:
+      hex: "#000000"
+    panel:
+      hex: "#2B2F36"
+    labelColor:
+      hex: "#8BD3FF"
+    textColor:
+      hex: "#FFFFFF"
+  textStyles:
+    label:
+      fontId: fontDefault
+      colorId: labelColor
+      fontSize: 24
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1
+    body:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 32
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: start
+      sections:
+        start:
+          lines:
+            - id: line1
+              actions:
+                control:
+                  resourceId: base
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: revealDialogue
+                  content:
+                    - text: "Held prefix stays visible before the new sentence begins: "
+            - id: line2
+              actions:
+                dialogue:
+                  append: true
+                  content:
+                    - text: "continuing from the same visible dialogue line with enough text to still be mid-reveal in the capture."
+            - id: line3
+              actions:
+                dialogue:
+                  content:
+                    - text: "Replacement starts over on a fresh dialogue line."

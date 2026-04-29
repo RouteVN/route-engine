@@ -228,6 +228,48 @@ out:
     content:
       - text: "Third line"
 ---
+case: appended ADV dialogue content updates the previous history entry
+in:
+  - state:
+      global:
+        isLineCompleted: false
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          characterId: "char1"
+                          content:
+                            - text: "Held prefix: "
+                    - id: "2"
+                      actions:
+                        dialogue:
+                          append: true
+                          content:
+                            - text: "continued suffix"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  - sectionId: "section1"
+    lineId: "1"
+    characterId: "char1"
+    character:
+      name: ""
+    characterName: ""
+    text: "Held prefix: continued suffix"
+    content:
+      - text: "Held prefix: "
+      - text: "continued suffix"
+---
 case: persistCharacter keeps the speaker across later dialogue lines
 in:
   - state:

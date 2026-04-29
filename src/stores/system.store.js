@@ -99,6 +99,25 @@ const buildDialogueHistoryText = (content) => {
   return content.map((item) => item?.text ?? "").join("");
 };
 
+const createDialogueHistoryEntry = ({
+  sectionId,
+  lineId,
+  content,
+  dialogueState,
+  characterName,
+}) => ({
+  sectionId,
+  lineId,
+  content,
+  text: buildDialogueHistoryText(content),
+  characterId: dialogueState.characterId,
+  character: {
+    ...(dialogueState.character || {}),
+    name: characterName,
+  },
+  characterName,
+});
+
 const createDefaultBgmState = () => ({
   resourceId: undefined,
 });
@@ -1305,18 +1324,30 @@ export const selectDialogueHistory = ({ state }) => {
       characterName = character?.name || "";
     }
 
-    historyContent.push({
+    const historyEntry = createDialogueHistoryEntry({
       sectionId,
       lineId: line.id,
-      content: lineActions.dialogue.content,
-      text: buildDialogueHistoryText(lineActions.dialogue.content),
-      characterId: dialogueState.characterId,
-      character: {
-        ...(dialogueState.character || {}),
-        name: characterName,
-      },
+      content:
+        lineActions.dialogue.append === true
+          ? dialogueState.content
+          : lineActions.dialogue.content,
+      dialogueState,
       characterName,
     });
+
+    if (lineActions.dialogue.append === true && historyContent.length > 0) {
+      historyContent[historyContent.length - 1] = {
+        ...historyContent[historyContent.length - 1],
+        content: historyEntry.content,
+        text: historyEntry.text,
+        characterId: historyEntry.characterId,
+        character: historyEntry.character,
+        characterName: historyEntry.characterName,
+      };
+      continue;
+    }
+
+    historyContent.push(historyEntry);
   }
 
   return historyContent;

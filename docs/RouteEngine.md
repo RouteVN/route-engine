@@ -567,20 +567,20 @@ Built-in effect handling notes:
 
 Actions that can be attached to lines to control presentation:
 
-| Action       | Properties                                                                                        | Description                                                                                       |
-| ------------ | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `background` | `{ resourceId, animations? }`                                                                     | Set background/CG                                                                                 |
-| `dialogue`   | `{ characterId?, character?, character.sprite?, persistCharacter?, content, mode?, ui?, clear? }` | Display dialogue                                                                                  |
-| `character`  | `{ items }`                                                                                       | Display character sprites. Each item can have optional `x` and `y` to override transform position |
-| `visual`     | `{ items }`                                                                                       | Display visual elements                                                                           |
-| `bgm`        | `{ resourceId, loop?, volume?, delay? }`                                                          | Play background music                                                                             |
-| `sfx`        | `{ items }`                                                                                       | Play sound effects                                                                                |
-| `voice`      | `{ resourceId, volume?, loop?, delay? }`                                                          | Play voice audio from `resources.voices[currentSceneId][resourceId]`                              |
-| `animation`  | `{ ... }`                                                                                         | Apply animations                                                                                  |
-| `layout`     | `{ resourceId }`                                                                                  | Display layout                                                                                    |
-| `control`    | `{ resourceId }`                                                                                  | Activate control bindings and control UI                                                          |
-| `choice`     | `{ resourceId, items }`                                                                           | Display choice menu                                                                               |
-| `cleanAll`   | `true`                                                                                            | Clear all presentation state                                                                      |
+| Action       | Properties                                                                                                 | Description                                                                                       |
+| ------------ | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `background` | `{ resourceId, animations? }`                                                                              | Set background/CG                                                                                 |
+| `dialogue`   | `{ characterId?, character?, character.sprite?, persistCharacter?, content, append?, mode?, ui?, clear? }` | Display dialogue                                                                                  |
+| `character`  | `{ items }`                                                                                                | Display character sprites. Each item can have optional `x` and `y` to override transform position |
+| `visual`     | `{ items }`                                                                                                | Display visual elements                                                                           |
+| `bgm`        | `{ resourceId, loop?, volume?, delay? }`                                                                   | Play background music                                                                             |
+| `sfx`        | `{ items }`                                                                                                | Play sound effects                                                                                |
+| `voice`      | `{ resourceId, volume?, loop?, delay? }`                                                                   | Play voice audio from `resources.voices[currentSceneId][resourceId]`                              |
+| `animation`  | `{ ... }`                                                                                                  | Apply animations                                                                                  |
+| `layout`     | `{ resourceId }`                                                                                           | Display layout                                                                                    |
+| `control`    | `{ resourceId }`                                                                                           | Activate control bindings and control UI                                                          |
+| `choice`     | `{ resourceId, items }`                                                                                    | Display choice menu                                                                               |
+| `cleanAll`   | `true`                                                                                                     | Clear all presentation state                                                                      |
 
 ### Dialogue Speaker Fields
 
@@ -617,6 +617,38 @@ Field semantics:
 - If a later dialogue line omits `characterId` but provides `character.name` or
   `character.sprite` while `persistCharacter` is active, the provided fields
   update the persisted speaker and omitted fields keep their previous values.
+
+### Dialogue Append Reveal
+
+In ADV mode, `dialogue.append: true` appends the line content to the current
+dialogue content instead of replacing it. The engine exposes
+`dialogue.initialRevealedCharacters` to dialogue layouts so a `text-revealing`
+element can keep the existing prefix visible and reveal only the appended suffix.
+When an append action omits speaker fields, the current speaker is kept for the
+continuation; explicit `characterId` or `character` fields still update it.
+
+```yaml
+dialogue:
+  ui:
+    resourceId: advDialogue
+  content:
+    - text: "Held prefix: "
+
+dialogue:
+  append: true
+  content:
+    - text: "continuing from the same visible line."
+```
+
+The dialogue layout should pass the template value through to Route Graphics:
+
+```yaml
+- id: dialogue-text
+  type: text-revealing
+  content: ${dialogue.content}
+  initialRevealedCharacters: ${dialogue.initialRevealedCharacters}
+  revealEffect: typewriter
+```
 
 ### Dialogue Character Sprites
 

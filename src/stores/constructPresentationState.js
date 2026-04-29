@@ -95,6 +95,28 @@ const clearDialogueCharacterSpriteAnimations = (dialogueState) => {
   }
 };
 
+const applyDialogueContent = ({ dialogueState, content, append = false }) => {
+  if (!append || !Array.isArray(content)) {
+    dialogueState.content = content;
+    delete dialogueState.initialRevealedContent;
+    return;
+  }
+
+  const previousContent = Array.isArray(dialogueState.content)
+    ? dialogueState.content
+    : [];
+
+  if (previousContent.length > 0) {
+    dialogueState.initialRevealedContent = previousContent.map((item) =>
+      structuredClone(item),
+    );
+  } else {
+    delete dialogueState.initialRevealedContent;
+  }
+
+  dialogueState.content = [...previousContent, ...content];
+};
+
 /**
  * Creates the initial presentation state
  * @returns {Object} Empty initial state object
@@ -169,6 +191,7 @@ export const dialogue = (state, presentation) => {
 
       if (state.dialogue.mode === "adv") {
         state.dialogue.content = undefined;
+        delete state.dialogue.initialRevealedContent;
         if (state.dialogue.persistCharacter !== true) {
           delete state.dialogue.characterId;
           delete state.dialogue.character;
@@ -182,6 +205,7 @@ export const dialogue = (state, presentation) => {
   if (!state.dialogue) {
     state.dialogue = {};
   }
+  const previousDialogueMode = state.dialogue.mode;
 
   // Copy all dialogue properties including ui
   if (presentation.dialogue.ui) {
@@ -217,9 +241,19 @@ export const dialogue = (state, presentation) => {
     state.dialogue.mode = "nvl";
   }
 
+  const isAppendingAdvDialogueContent =
+    presentation.dialogue.append === true &&
+    previousDialogueMode !== "nvl" &&
+    state.dialogue?.mode !== "nvl" &&
+    Array.isArray(presentation.dialogue.content);
+
   // Update content and character
   if (presentation.dialogue.content !== undefined) {
-    state.dialogue.content = presentation.dialogue.content;
+    applyDialogueContent({
+      dialogueState: state.dialogue,
+      content: presentation.dialogue.content,
+      append: isAppendingAdvDialogueContent,
+    });
   }
 
   const persistCharacter = hasOwnProperty(
@@ -246,7 +280,7 @@ export const dialogue = (state, presentation) => {
     } else {
       delete state.dialogue.characterId;
     }
-  } else if (!persistCharacter) {
+  } else if (!persistCharacter && !isAppendingAdvDialogueContent) {
     delete state.dialogue.characterId;
   }
 
@@ -258,7 +292,10 @@ export const dialogue = (state, presentation) => {
             ...characterFields,
           }
         : characterFields;
-  } else if (hasCharacterId || !persistCharacter) {
+  } else if (
+    hasCharacterId ||
+    (!persistCharacter && !isAppendingAdvDialogueContent)
+  ) {
     delete state.dialogue.character;
   }
 
