@@ -438,8 +438,19 @@ const createEffectsHandler = ({
           : nextPayload?.event
             ? { _event: nextPayload.event }
             : undefined;
+        const actionOptions = nextPayload?._interactionSource
+          ? { interactionSource: nextPayload._interactionSource }
+          : undefined;
 
-        engine.handleActions(nextPayload.actions, eventContext);
+        if (actionOptions) {
+          engine.handleActions(
+            nextPayload.actions,
+            eventContext,
+            actionOptions,
+          );
+        } else {
+          engine.handleActions(nextPayload.actions, eventContext);
+        }
       }
 
       return onEvent?.(eventName, nextPayload);

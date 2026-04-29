@@ -400,6 +400,48 @@ const sectionLineChanges = engine.selectSectionLineChanges({
 | `jumpToLine`        | `{ sectionId?, lineId }` | Jump to specific line                                       |
 | `sectionTransition` | `{ sectionId }`          | Transition to a different section                           |
 
+### Conditional Actions
+
+Use `conditional` to evaluate ordered branches and execute the first matching
+branch. `when` uses Jempl condition syntax, including semantic JSON conditions.
+A branch without `when` is treated as `else` and should be last.
+
+```yaml
+actions:
+  conditional:
+    branches:
+      - when:
+          gte:
+            - var: variables.trust
+            - 70
+        actions:
+          jumpToLine:
+            lineId: trustedRoute
+      - actions:
+          jumpToLine:
+            lineId: guardedRoute
+```
+
+The same action can be used inside choice click payloads:
+
+```yaml
+events:
+  click:
+    payload:
+      actions:
+        conditional:
+          branches:
+            - when:
+                eq:
+                  - var: variables.role
+                  - admin
+              actions:
+                jumpToLine:
+                  lineId: adminRoute
+            - actions:
+                nextLine: {}
+```
+
 ### Playback Mode Actions
 
 | Action           | Payload | Description               |
@@ -525,20 +567,20 @@ Built-in effect handling notes:
 
 Actions that can be attached to lines to control presentation:
 
-| Action       | Properties                                                                                       | Description                                                                                       |
-| ------------ | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
-| `background` | `{ resourceId, animations? }`                                                                    | Set background/CG                                                                                 |
+| Action       | Properties                                                                                        | Description                                                                                       |
+| ------------ | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `background` | `{ resourceId, animations? }`                                                                     | Set background/CG                                                                                 |
 | `dialogue`   | `{ characterId?, character?, character.sprite?, persistCharacter?, content, mode?, ui?, clear? }` | Display dialogue                                                                                  |
-| `character`  | `{ items }`                                                                                      | Display character sprites. Each item can have optional `x` and `y` to override transform position |
-| `visual`     | `{ items }`                                                                                      | Display visual elements                                                                           |
-| `bgm`        | `{ resourceId, loop?, volume?, delay? }`                                                         | Play background music                                                                             |
-| `sfx`        | `{ items }`                                                                                      | Play sound effects                                                                                |
-| `voice`      | `{ resourceId, volume?, loop?, delay? }`                                                         | Play voice audio from `resources.voices[currentSceneId][resourceId]`                              |
-| `animation`  | `{ ... }`                                                                                        | Apply animations                                                                                  |
-| `layout`     | `{ resourceId }`                                                                                 | Display layout                                                                                    |
-| `control`    | `{ resourceId }`                                                                                 | Activate control bindings and control UI                                                          |
-| `choice`     | `{ resourceId, items }`                                                                          | Display choice menu                                                                               |
-| `cleanAll`   | `true`                                                                                           | Clear all presentation state                                                                      |
+| `character`  | `{ items }`                                                                                       | Display character sprites. Each item can have optional `x` and `y` to override transform position |
+| `visual`     | `{ items }`                                                                                       | Display visual elements                                                                           |
+| `bgm`        | `{ resourceId, loop?, volume?, delay? }`                                                          | Play background music                                                                             |
+| `sfx`        | `{ items }`                                                                                       | Play sound effects                                                                                |
+| `voice`      | `{ resourceId, volume?, loop?, delay? }`                                                          | Play voice audio from `resources.voices[currentSceneId][resourceId]`                              |
+| `animation`  | `{ ... }`                                                                                         | Apply animations                                                                                  |
+| `layout`     | `{ resourceId }`                                                                                  | Display layout                                                                                    |
+| `control`    | `{ resourceId }`                                                                                  | Activate control bindings and control UI                                                          |
+| `choice`     | `{ resourceId, items }`                                                                           | Display choice menu                                                                               |
+| `cleanAll`   | `true`                                                                                            | Clear all presentation state                                                                      |
 
 ### Dialogue Speaker Fields
 
