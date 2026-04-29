@@ -290,6 +290,106 @@ out:
     - id: "2"
       changes: {}
 ---
+case: "Detect dialogue character sprite addition and update without dialogue ui"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions:
+                        dialogue:
+                          character:
+                            sprite:
+                              transformId: "dialogue-left"
+                              items:
+                                - id: "base"
+                                  resourceId: "alice-base"
+                    - id: "3"
+                      actions:
+                        dialogue:
+                          character:
+                            sprite:
+                              transformId: "dialogue-left"
+                              items:
+                                - id: "base"
+                                  resourceId: "alice-alt-base"
+  - sectionId: "section1"
+out:
+  lines:
+    - id: "1"
+      changes: {}
+    - id: "2"
+      changes:
+        dialogue:
+          changeType: "add"
+          data:
+            character:
+              sprite:
+                transformId: "dialogue-left"
+                items:
+                  - id: "base"
+                    resourceId: "alice-base"
+    - id: "3"
+      changes:
+        dialogue:
+          changeType: "update"
+          data:
+            character:
+              sprite:
+                transformId: "dialogue-left"
+                items:
+                  - id: "base"
+                    resourceId: "alice-alt-base"
+---
+case: "Ignore previous-line dialogue character sprite animation metadata when sprite persists"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          character:
+                            sprite:
+                              transformId: "dialogue-left"
+                              items:
+                                - id: "base"
+                                  resourceId: "alice-base"
+                              animations:
+                                resourceId: "portrait-in"
+                    - id: "2"
+                      actions: {}
+  - sectionId: "section1"
+out:
+  lines:
+    - id: "1"
+      changes:
+        dialogue:
+          changeType: "add"
+          data:
+            character:
+              sprite:
+                transformId: "dialogue-left"
+                items:
+                  - id: "base"
+                    resourceId: "alice-base"
+                animations:
+                  resourceId: "portrait-in"
+    - id: "2"
+      changes: {}
+---
 case: "Include per-line presentationState when requested"
 in:
   - state:

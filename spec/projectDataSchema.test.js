@@ -199,6 +199,34 @@ describe("projectData schema", () => {
     expect(validatePresentationActions.errors).toBeNull();
   });
 
+  it("accepts layered dialogue character sprite groups in presentation actions", () => {
+    expect(
+      validatePresentationActions({
+        dialogue: {
+          characterId: "alice",
+          character: {
+            name: "Alias",
+            sprite: {
+              transformId: "dialoguePortraitLeft",
+              items: [
+                { id: "base", resourceId: "aliceBody" },
+                { id: "face", resourceId: "aliceSmile" },
+              ],
+              animations: {
+                resourceId: "portraitIn",
+                playback: {
+                  continuity: "render",
+                },
+              },
+            },
+          },
+          content: [{ text: "Hello" }],
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+  });
+
   it("accepts dialogue characterName as a compatibility alias", () => {
     expect(
       validatePresentationActions({

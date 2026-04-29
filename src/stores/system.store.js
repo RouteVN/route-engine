@@ -1311,6 +1311,7 @@ export const selectDialogueHistory = ({ state }) => {
       text: buildDialogueHistoryText(lineActions.dialogue.content),
       characterId: dialogueState.characterId,
       character: {
+        ...(dialogueState.character || {}),
         name: characterName,
       },
       characterName,

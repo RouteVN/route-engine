@@ -123,7 +123,7 @@ const presentationState = constructPresentationState(presentations);
 Presentation state includes:
 
 - `background`: Current background or CG
-- `dialogue`: Speaker, text content, mode (ADV/NVL)
+- `dialogue`: Speaker, layered speaker sprite, text content, mode (ADV/NVL)
 - `character`: Character sprites and positions
 - `visual`: Additional visual elements
 - `bgm` / `sfx` / `voice`: Audio configuration

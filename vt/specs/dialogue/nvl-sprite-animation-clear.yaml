@@ -1,0 +1,90 @@
+---
+title: Dialogue NVL Sprite Animation Clear
+description: NVL dialogue speaker sprites persist across non-dialogue lines without replaying stale animation selections.
+specs:
+  - the portrait should remain fully visible after advancing to a non-dialogue line
+steps:
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 600
+  - action: customEvent
+    name: vt:nextLine
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 50
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  controls:
+    base1:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: overlayColor
+  images:
+    parts-body:
+      fileId: character_parts_body
+      width: 620
+      height: 960
+  transforms:
+    dialogue-left:
+      x: 520
+      y: 1080
+      anchorX: 0.5
+      anchorY: 1
+  animations:
+    portrait-in:
+      name: Portrait In
+      type: transition
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 600
+                value: 1
+                easing: linear
+  colors:
+    overlayColor:
+      hex: "#000000"
+story:
+  initialSceneId: dialogueNvlSpriteScene
+  scenes:
+    dialogueNvlSpriteScene:
+      name: Dialogue NVL Sprite Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                control:
+                  resourceId: base1
+                dialogue:
+                  mode: nvl
+                  characterId: alice
+                  character:
+                    sprite:
+                      transformId: dialogue-left
+                      items:
+                        - id: base
+                          resourceId: parts-body
+                      animations:
+                        resourceId: portrait-in
+                  content:
+                    - text: The portrait enters on the first NVL line.
+            - id: line2
+              actions: {}

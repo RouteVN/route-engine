@@ -552,30 +552,50 @@ export const formatDate = (timestamp, format = "DD/MM/YYYY - HH:mm") => {
 };
 
 /**
- * Compares two dialogue states, flagging changes only for ui updates.
- * Ignores content and characterId changes to reduce noise.
- * If the ui is removed, it's considered a delete action.
+ * Compares two dialogue states, flagging changes only for renderable dialogue
+ * asset updates. Ignores content, characterId, and speaker name changes to
+ * reduce noise.
  * @param {Object} prevDialogue - Previous dialogue state
  * @param {Object} currDialogue - Current dialogue state
  * @returns {Object|null} Change object or null if no significant change
  */
 const diffDialogue = (prevDialogue, currDialogue) => {
-  const prevUi = prevDialogue?.ui;
-  const currUi = currDialogue?.ui;
+  const toRenderableDialogueState = (dialogue) => {
+    if (!dialogue) {
+      return undefined;
+    }
 
-  if (JSON.stringify(prevUi) === JSON.stringify(currUi)) {
+    const renderableState = {};
+    if (dialogue.ui) {
+      renderableState.ui = dialogue.ui;
+    }
+
+    const sprite = dialogue.character?.sprite;
+    if (sprite && Object.keys(sprite).length > 0) {
+      renderableState.sprite = sprite;
+    }
+
+    return Object.keys(renderableState).length > 0
+      ? renderableState
+      : undefined;
+  };
+
+  const prevRenderable = toRenderableDialogueState(prevDialogue);
+  const currRenderable = toRenderableDialogueState(currDialogue);
+
+  if (JSON.stringify(prevRenderable) === JSON.stringify(currRenderable)) {
     return null;
   }
 
-  if (prevUi && !currUi) {
+  if (prevRenderable && !currRenderable) {
     return { changeType: "delete", data: prevDialogue };
   }
 
-  if (currUi && !prevDialogue) {
+  if (currRenderable && !prevRenderable) {
     return { changeType: "add", data: currDialogue };
   }
 
-  if (currUi && prevDialogue) {
+  if (currRenderable && prevRenderable) {
     return { changeType: "update", data: currDialogue };
   }
 
@@ -669,6 +689,22 @@ export const normalizePersistentPresentationState = (state = {}) => {
 
     if (Object.keys(normalizedState.dialogue.ui).length === 0) {
       delete normalizedState.dialogue.ui;
+    }
+
+    if (Object.keys(normalizedState.dialogue).length === 0) {
+      delete normalizedState.dialogue;
+    }
+  }
+
+  if (normalizedState.dialogue?.character?.sprite) {
+    delete normalizedState.dialogue.character.sprite.animations;
+
+    if (Object.keys(normalizedState.dialogue.character.sprite).length === 0) {
+      delete normalizedState.dialogue.character.sprite;
+    }
+
+    if (Object.keys(normalizedState.dialogue.character).length === 0) {
+      delete normalizedState.dialogue.character;
     }
 
     if (Object.keys(normalizedState.dialogue).length === 0) {
