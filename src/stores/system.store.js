@@ -1,4 +1,5 @@
 import { current, isDraft } from "immer";
+import { evaluateCondition } from "jempl";
 import {
   createStore,
   getDefaultVariablesFromProjectData,
@@ -3034,7 +3035,73 @@ export const updateVariable = ({ state }, payload) => {
 const replayStoreActionForRollback = (action) => (state, payload) =>
   action({ state }, payload);
 
+const buildRollbackConditionContext = (state) => ({
+  variables: {
+    ...(state.global?.variables ?? {}),
+    ...(getCurrentContext(state)?.variables ?? {}),
+  },
+  runtime: selectRuntimeFromState(state),
+});
+
+const assertRollbackConditionalPayload = (payload) => {
+  if (!isRecord(payload)) {
+    throw new Error("conditional action payload must be an object");
+  }
+
+  if (!Array.isArray(payload.branches)) {
+    throw new Error("conditional action requires branches array");
+  }
+
+  if (payload.branches.length === 0) {
+    throw new Error("conditional action requires at least one branch");
+  }
+};
+
+const assertRollbackConditionalBranch = (branch, index, branchCount) => {
+  if (!isRecord(branch)) {
+    throw new Error(`conditional branch at index ${index} must be an object`);
+  }
+
+  if (!isRecord(branch.actions)) {
+    throw new Error(
+      `conditional branch at index ${index} requires actions object`,
+    );
+  }
+
+  if (
+    !Object.prototype.hasOwnProperty.call(branch, "when") &&
+    index !== branchCount - 1
+  ) {
+    throw new Error("conditional else branch must be the last branch");
+  }
+};
+
+const replayRollbackConditionalAction = (state, payload) => {
+  assertRollbackConditionalPayload(payload);
+
+  for (let index = 0; index < payload.branches.length; index += 1) {
+    const branch = payload.branches[index];
+    assertRollbackConditionalBranch(branch, index, payload.branches.length);
+
+    const hasCondition = Object.prototype.hasOwnProperty.call(branch, "when");
+    if (
+      hasCondition &&
+      !evaluateCondition(branch.when, buildRollbackConditionContext(state))
+    ) {
+      continue;
+    }
+
+    Object.entries(branch.actions).forEach(([actionType, actionPayload]) => {
+      replayRollbackLineAction(state, actionType, actionPayload);
+    });
+    return;
+  }
+};
+
 const ROLLBACK_ACTION_DEFINITIONS = {
+  conditional: {
+    replayLine: replayRollbackConditionalAction,
+  },
   updateVariable: {
     recordSources: [ROLLBACK_ACTION_SOURCE_INTERACTION],
     replayLine: applyRollbackCheckpointUpdateVariable,

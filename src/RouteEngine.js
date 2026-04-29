@@ -261,7 +261,7 @@ export default function createRouteEngine(options) {
     };
   };
 
-  const handleAction = (actionType, payload) => {
+  const dispatchStoreAction = (actionType, payload) => {
     if (!_systemStore[actionType]) {
       return;
     }
@@ -278,6 +278,24 @@ export default function createRouteEngine(options) {
 
     _systemStore[actionType](payload);
     processEffectsUntilEmpty();
+  };
+
+  const handleAction = (actionType, payload, eventContext, options = {}) => {
+    if (actionType === CONDITIONAL_ACTION_TYPE) {
+      const context = buildActionTemplateContext(eventContext);
+      const processedActions = processActionTemplates(
+        { [actionType]: payload },
+        context,
+      );
+      handleConditionalAction(
+        processedActions[actionType],
+        eventContext,
+        options,
+      );
+      return;
+    }
+
+    dispatchStoreAction(actionType, payload);
   };
 
   const handleInternalAction = (actionType, payload) => {
@@ -343,49 +361,55 @@ export default function createRouteEngine(options) {
     }
   };
 
-  const handleConditionalAction = (payload, context, options) => {
+  const handleConditionalAction = (payload, eventContext, options) => {
     assertConditionalActionPayload(payload);
 
     for (let index = 0; index < payload.branches.length; index += 1) {
       const branch = payload.branches[index];
       assertConditionalBranch(branch, index, payload.branches.length);
 
+      const conditionContext = buildActionTemplateContext(eventContext);
       const hasCondition = Object.prototype.hasOwnProperty.call(branch, "when");
-      if (hasCondition && !evaluateCondition(branch.when, context)) {
+      if (hasCondition && !evaluateCondition(branch.when, conditionContext)) {
         continue;
       }
 
-      processActionEntries(branch.actions, context, options);
+      processActionEntries(branch.actions, eventContext, options);
       return;
     }
   };
 
-  const handleActionEntry = (actionType, payload, context, options) => {
+  const handleActionEntry = (actionType, payload, eventContext, options) => {
+    const context = buildActionTemplateContext(eventContext);
+    const processedActions = processActionTemplates(
+      { [actionType]: payload },
+      context,
+    );
+    const processedPayload = processedActions[actionType];
+
     if (actionType === CONDITIONAL_ACTION_TYPE) {
-      handleConditionalAction(payload, context, options);
+      handleConditionalAction(processedPayload, eventContext, options);
       return;
     }
 
-    handleAction(
+    dispatchStoreAction(
       actionType,
-      applyInteractionSource(actionType, payload, options),
+      applyInteractionSource(actionType, processedPayload, options),
     );
   };
 
-  const processActionEntries = (actions, context, options) => {
-    const processedActions = processActionTemplates(actions, context);
-    Object.entries(processedActions).forEach(([actionType, payload]) => {
-      handleActionEntry(actionType, payload, context, options);
+  const processActionEntries = (actions, eventContext, options) => {
+    Object.entries(actions).forEach(([actionType, payload]) => {
+      handleActionEntry(actionType, payload, eventContext, options);
     });
   };
 
   const handleActions = (actions, eventContext, options = {}) => {
-    const context = buildActionTemplateContext(eventContext);
     _systemStore.beginRollbackActionBatch({
       source: options.rollbackSource,
     });
     try {
-      processActionEntries(actions, context, options);
+      processActionEntries(actions, eventContext, options);
     } finally {
       _systemStore.endRollbackActionBatch({});
     }

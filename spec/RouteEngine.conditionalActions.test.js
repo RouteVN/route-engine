@@ -86,6 +86,19 @@ const setScoreAction = (id, value) => ({
   },
 });
 
+const setTrustAction = (id, value) => ({
+  updateVariable: {
+    id,
+    operations: [
+      {
+        variableId: "trust",
+        op: "set",
+        value,
+      },
+    ],
+  },
+});
+
 describe("RouteEngine conditional actions", () => {
   it("executes only the first matching branch", () => {
     const engine = createEngine(createProjectData({ trust: 80 }));
@@ -108,6 +121,50 @@ describe("RouteEngine conditional actions", () => {
     });
 
     expect(engine.selectSystemState().contexts[0].variables.score).toBe(1);
+  });
+
+  it("evaluates each conditional against state mutated by earlier actions in the same batch", () => {
+    const engine = createEngine(createProjectData({ trust: 20 }));
+
+    engine.handleActions({
+      ...setTrustAction("raiseTrust", 80),
+      conditional: {
+        branches: [
+          {
+            when: {
+              gte: [{ var: "variables.trust" }, 70],
+            },
+            actions: setScoreAction("trusted", 7),
+          },
+          {
+            actions: setScoreAction("fallback", 1),
+          },
+        ],
+      },
+    });
+
+    expect(engine.selectSystemState().contexts[0].variables.trust).toBe(80);
+    expect(engine.selectSystemState().contexts[0].variables.score).toBe(7);
+  });
+
+  it("dispatches conditional actions through the single-action API", () => {
+    const engine = createEngine(createProjectData({ trust: 80 }));
+
+    engine.handleAction("conditional", {
+      branches: [
+        {
+          when: {
+            gte: [{ var: "variables.trust" }, 70],
+          },
+          actions: setScoreAction("singleConditional", 5),
+        },
+        {
+          actions: setScoreAction("fallback", 1),
+        },
+      ],
+    });
+
+    expect(engine.selectSystemState().contexts[0].variables.score).toBe(5);
   });
 
   it("supports semantic JSON conditions with any and in operators", () => {
@@ -284,6 +341,70 @@ describe("RouteEngine conditional actions", () => {
     expect(
       engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
     ).toBe("trustedRoute");
+  });
+
+  it("replays selected authored line conditional branches during rollback restoration", () => {
+    let engine;
+    const handlePendingEffects = (effects) => {
+      effects.forEach((effect) => {
+        if (effect.name === "handleLineActions") {
+          engine.handleLineActions();
+        }
+      });
+    };
+
+    engine = createRouteEngine({
+      handlePendingEffects,
+    });
+    engine.init({
+      initialState: {
+        projectData: createProjectData({
+          trust: 90,
+          lineActions: {
+            conditional: {
+              branches: [
+                {
+                  when: {
+                    gte: [{ var: "variables.trust" }, 70],
+                  },
+                  actions: setScoreAction("trustedLineReplay", 7),
+                },
+                {
+                  actions: setScoreAction("fallbackLineReplay", 1),
+                },
+              ],
+            },
+          },
+          extraLines: [
+            {
+              id: "line2",
+              actions: {},
+            },
+          ],
+        }),
+      },
+    });
+
+    expect(engine.selectSystemState().contexts[0].variables.score).toBe(7);
+
+    engine.handleAction("markLineCompleted", {});
+    engine.handleAction("nextLine", {});
+    expect(engine.selectSystemState().contexts.at(-1).pointers.read).toEqual({
+      sectionId: "section1",
+      lineId: "line2",
+    });
+
+    engine.handleAction("rollbackToLine", {
+      sectionId: "section1",
+      lineId: "line1",
+    });
+
+    const state = engine.selectSystemState();
+    expect(state.contexts[0].pointers.read).toEqual({
+      sectionId: "section1",
+      lineId: "line1",
+    });
+    expect(state.contexts[0].variables.score).toBe(7);
   });
 
   it("only renders event bindings in the selected branch", () => {
