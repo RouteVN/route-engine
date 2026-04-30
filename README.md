@@ -6,6 +6,7 @@ A Visual Novel engine built in JavaScript
 
 - [Concepts](docs/Concepts.md) - Core architecture and data flow
 - [API Reference](docs/RouteEngine.md) - Engine methods and actions
+- [Audio](docs/Audio.md) - Planned channel-based audio render model
 
 ## Community
 
