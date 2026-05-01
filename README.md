@@ -6,6 +6,7 @@ A Visual Novel engine built in JavaScript
 
 - [Concepts](docs/Concepts.md) - Core architecture and data flow
 - [API Reference](docs/RouteEngine.md) - Engine methods and actions
+- [Computed Variables](docs/ComputedVariables.md) - Locked interface for derived read-only variables
 
 ## Community
 

@@ -2,7 +2,10 @@ import { current, isDraft } from "immer";
 import { evaluateCondition } from "jempl";
 import {
   createStore,
+  filterStoredVariables,
   getDefaultVariablesFromProjectData,
+  isComputedVariableConfig,
+  selectVariablesWithComputedValues,
   validateVariableScope,
   validateVariableOperation,
   applyVariableOperation,
@@ -534,7 +537,10 @@ const normalizeLoadedContext = (context, projectData, index) => {
   }
 
   const loadedContextVariables = context.variables
-    ? cloneStateValue(context.variables)
+    ? filterStoredVariables(
+        cloneStateValue(context.variables),
+        projectData.resources?.variables ?? {},
+      )
     : {};
   const loadedContextRuntime = createInitialContextRuntimeState({
     loadedContextRuntime: isRecord(context.runtime)
@@ -1094,6 +1100,13 @@ const applyRollbackCheckpointUpdateVariable = (state, payload) => {
     const scope = variableConfig?.scope;
     const type = variableConfig?.type;
 
+    if (isComputedVariableConfig(variableConfig)) {
+      throw new Error(`Cannot update computed variable: ${variableId}`);
+    }
+    if (variableConfig?.readonly === true) {
+      throw new Error(`Cannot update readonly variable: ${variableId}`);
+    }
+
     validateVariableScope(scope, variableId);
     validateVariableOperation(type, op, variableId);
 
@@ -1229,7 +1242,10 @@ export const createInitialState = (payload) => {
   // Merge with loaded global variables from persisted browser storage (if provided)
   const globalVariables = {
     ...globalVariablesDefaultValues,
-    ...loadedGlobalVariables,
+    ...filterStoredVariables(
+      loadedGlobalVariables,
+      projectData.resources?.variables ?? {},
+    ),
   };
 
   const state = {
@@ -1510,10 +1526,16 @@ export const selectRuntimeValue = ({ state }, payload) => {
 };
 
 export const selectAllVariables = ({ state }) => {
-  return {
+  const variables = {
     ...(state.global?.variables ?? {}),
     ...(getCurrentContext(state)?.variables ?? {}),
   };
+
+  return selectVariablesWithComputedValues({
+    variables,
+    runtime: selectRuntimeFromState(state),
+    variableConfigs: state.projectData.resources?.variables ?? {},
+  });
 };
 
 /**
@@ -2619,6 +2641,21 @@ export const updateProjectData = ({ state }, payload) => {
   assertUniqueSectionIds(projectData);
 
   state.projectData = projectData;
+  const variableConfigs = projectData?.resources?.variables ?? {};
+  if (Object.prototype.hasOwnProperty.call(state.global ?? {}, "variables")) {
+    state.global.variables = filterStoredVariables(
+      state.global.variables,
+      variableConfigs,
+    );
+  }
+  state.contexts?.forEach((context) => {
+    if (Object.prototype.hasOwnProperty.call(context ?? {}, "variables")) {
+      context.variables = filterStoredVariables(
+        context.variables,
+        variableConfigs,
+      );
+    }
+  });
   clearConfirmDialog(state);
 
   state.global.pendingEffects.push({
@@ -3023,6 +3060,13 @@ export const updateVariable = ({ state }, payload) => {
     const scope = variableConfig?.scope;
     const type = variableConfig?.type;
 
+    if (isComputedVariableConfig(variableConfig)) {
+      throw new Error(`Cannot update computed variable: ${variableId}`);
+    }
+    if (variableConfig?.readonly === true) {
+      throw new Error(`Cannot update readonly variable: ${variableId}`);
+    }
+
     // Use pure helpers for validation
     validateVariableScope(scope, variableId);
     validateVariableOperation(type, op, variableId);
@@ -3067,10 +3111,15 @@ const replayStoreActionForRollback = (action) => (state, payload) =>
   action({ state }, payload);
 
 const buildRollbackConditionContext = (state) => ({
-  variables: {
-    ...(state.global?.variables ?? {}),
-    ...(getCurrentContext(state)?.variables ?? {}),
-  },
+  variables: selectVariablesWithComputedValues({
+    variables: {
+      ...(state.global?.variables ?? {}),
+      ...(getCurrentContext(state)?.variables ?? {}),
+    },
+    runtime: selectRuntimeFromState(state),
+    variableConfigs: state.projectData.resources?.variables ?? {},
+    eager: false,
+  }),
   runtime: selectRuntimeFromState(state),
 });
 

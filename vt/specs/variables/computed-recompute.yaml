@@ -1,0 +1,212 @@
+---
+title: Computed Variables Recompute
+description: Computed expression and branch values update after a stored variable changes.
+specs:
+  - initial layout renders a computed percent and branch result
+  - clicking damage updates hp and recomputes dependent computed values
+  - the same click runs a conditional action against the recomputed value
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 150
+  - action: screenshot
+  - action: click
+    x: 660
+    y: 390
+  - action: wait
+    ms: 150
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  variables:
+    hp:
+      type: number
+      scope: context
+      default: 40
+    maxHp:
+      type: number
+      scope: context
+      default: 80
+    outcome:
+      type: string
+      scope: context
+      default: waiting
+    hpPercent:
+      type: number
+      scope: context
+      computed:
+        expr:
+          round:
+            - mul:
+                - div:
+                    - var: variables.hp
+                    - var: variables.maxHp
+                - 100
+    hpState:
+      type: string
+      scope: context
+      computed:
+        branches:
+          - when:
+              lte:
+                - var: variables.hpPercent
+                - 25
+            expr: critical
+          - when:
+              lt:
+                - var: variables.hpPercent
+                - 75
+            expr: wounded
+        default:
+          expr: stable
+  layouts:
+    computedPanel:
+      elements:
+        - id: background
+          type: rect
+          width: 1920
+          height: 1080
+          colorId: bg
+        - id: panel
+          type: rect
+          x: 260
+          y: 190
+          width: 1400
+          height: 700
+          colorId: panel
+        - id: title
+          type: text
+          content: Computed Variables
+          x: 320
+          y: 250
+          textStyleId: title
+        - id: hpValue
+          type: text
+          content: "HP: ${variables.hp}/${variables.maxHp}"
+          x: 360
+          y: 380
+          textStyleId: main
+        - id: percentValue
+          type: text
+          content: "Percent: ${variables.hpPercent}"
+          x: 360
+          y: 470
+          textStyleId: main
+        - id: stateValue
+          type: text
+          content: "State: ${variables.hpState}"
+          x: 360
+          y: 560
+          textStyleId: main
+        - id: outcomeValue
+          type: text
+          content: "Outcome: ${variables.outcome}"
+          x: 360
+          y: 650
+          textStyleId: muted
+        - id: damageButton
+          type: rect
+          x: 1220
+          y: 720
+          width: 400
+          height: 120
+          colorId: button
+          click:
+            payload:
+              actions:
+                updateVariable:
+                  id: applyDamage
+                  operations:
+                    - variableId: hp
+                      op: set
+                      value: 20
+                conditional:
+                  branches:
+                    - when:
+                        eq:
+                          - var: variables.hpState
+                          - critical
+                      actions:
+                        updateVariable:
+                          id: criticalOutcome
+                          operations:
+                            - variableId: outcome
+                              op: set
+                              value: critical branch
+                    - actions:
+                        updateVariable:
+                          id: fallbackOutcome
+                          operations:
+                            - variableId: outcome
+                              op: set
+                              value: fallback branch
+        - id: damageLabel
+          type: text
+          content: Set HP To 20
+          x: 1420
+          y: 760
+          anchorX: 0.5
+          textStyleId: buttonText
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    bg:
+      hex: "#000000"
+    panel:
+      hex: "#4D4D4D"
+    button:
+      hex: "#737373"
+    fg:
+      hex: "#FFFFFF"
+    fgMuted:
+      hex: "#D9D9D9"
+  textStyles:
+    title:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 56
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    main:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 44
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    muted:
+      fontId: fontDefault
+      colorId: fgMuted
+      fontSize: 40
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    buttonText:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 34
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: start
+      sections:
+        start:
+          lines:
+            - id: line1
+              actions:
+                layout:
+                  resourceId: computedPanel

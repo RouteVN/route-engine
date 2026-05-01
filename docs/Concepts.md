@@ -68,6 +68,7 @@ Static, read-only data that defines the visual novel content:
 
 - **resources**: Images, audio, animations, transforms, layouts, characters, fonts, colors, and `textStyles`
   - Localization is not implemented in the current runtime. The planned patch-based model is documented in `docs/L10n.md`
+  - Computed variables are derived read-only values declared under `resources.variables[*].computed`; their authored interface is documented in `docs/ComputedVariables.md`
   - Voice audio is stored under `resources.voices[sceneId][voiceId]` and line actions reference the scene-local `voiceId`
   - Layout text elements should reference shared styles with `textStyleId`
   - `resources.colors[*].hex` should be opaque hex only; text fill and stroke transparency should be authored on `resources.textStyles` with `colorAlpha` / `strokeAlpha`, not inside `resources.colors`
@@ -99,7 +100,7 @@ Mutable runtime state managed by the system store. Key components:
   - `configuration`: Context-specific settings
   - `views`: Overlay stack
   - `bgm`: Current background music
-  - `variables`: Game variables
+  - `variables`: Stored game variables. Computed variables are projected from state and resources when template data is built; they are not stored here.
   - `rollback`: Active branch timeline for rollback navigation
 
 ### History and Seen State

@@ -130,6 +130,69 @@ const createEventDrivenRollbackProjectData = () => ({
   },
 });
 
+const createComputedConditionalRollbackProjectData = () => ({
+  story: {
+    initialSceneId: "scene1",
+    scenes: {
+      scene1: {
+        initialSectionId: "section1",
+        sections: {
+          section1: {
+            lines: [
+              { id: "1" },
+              {
+                id: "2",
+                actions: {
+                  conditional: {
+                    branches: [
+                      {
+                        when: {
+                          eq: [{ var: "variables.score" }, 0],
+                        },
+                        actions: {
+                          updateVariable: {
+                            id: "conditionalScore",
+                            operations: [
+                              {
+                                variableId: "score",
+                                op: "set",
+                                value: 7,
+                              },
+                            ],
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+              { id: "3" },
+            ],
+          },
+        },
+      },
+    },
+  },
+  resources: {
+    variables: {
+      score: {
+        type: "number",
+        scope: "context",
+        default: 0,
+      },
+      unrelatedBadge: {
+        type: "object",
+        scope: "context",
+        computed: {
+          value: {
+            items: [{ label: "Draft object literal" }],
+          },
+        },
+      },
+    },
+  },
+});
+
 describe("system.store rollback/save draft safety", () => {
   it("saveSlot does not throw when cloning live draft state", () => {
     vi.spyOn(Date, "now").mockReturnValue(1700000000000);
@@ -542,5 +605,71 @@ describe("system.store rollback/save draft safety", () => {
       'Operation "toggle" is not valid for variable "score" of type "number". Valid operations: set, increment, decrement, multiply, divide',
     );
     expect(state.contexts[0].rollback.isRestoring).toBe(false);
+  });
+
+  it("rollback conditional replay does not eagerly clone computed object literals from a live draft", () => {
+    const baseState = {
+      projectData: createComputedConditionalRollbackProjectData(),
+      global: {
+        isLineCompleted: false,
+        dialogueUIHidden: false,
+        nextLineConfig: {
+          manual: {
+            enabled: true,
+            requireLineCompleted: false,
+          },
+          auto: {
+            enabled: false,
+          },
+          applyMode: "persistent",
+        },
+        overlayStack: [],
+        pendingEffects: [],
+        variables: {},
+      },
+      contexts: [
+        {
+          variables: {
+            score: 0,
+          },
+          currentPointerMode: "read",
+          pointers: {
+            read: { sectionId: "section1", lineId: "3" },
+          },
+          rollback: {
+            currentIndex: 2,
+            isRestoring: false,
+            replayStartIndex: 0,
+            timeline: [
+              {
+                sectionId: "section1",
+                lineId: "1",
+                rollbackPolicy: "free",
+              },
+              {
+                sectionId: "section1",
+                lineId: "2",
+                rollbackPolicy: "free",
+              },
+              {
+                sectionId: "section1",
+                lineId: "3",
+                rollbackPolicy: "free",
+              },
+            ],
+          },
+        },
+      ],
+    };
+
+    const nextState = produce(baseState, (draft) => {
+      rollbackByOffset({ state: draft }, { offset: -1 });
+    });
+
+    expect(nextState.contexts[0].variables.score).toBe(7);
+    expect(nextState.contexts[0].pointers.read).toEqual({
+      sectionId: "section1",
+      lineId: "2",
+    });
   });
 });

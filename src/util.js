@@ -1,5 +1,5 @@
-import { produce } from "immer";
-import { parseAndRender } from "jempl";
+import { current, isDraft, produce } from "immer";
+import { evaluateCondition, parseAndRender } from "jempl";
 
 /**
  * Creates a store with selectors and actions from a single object definition.
@@ -333,6 +333,598 @@ export const getVariableDefaultValue = (config, variableId) => {
   }
 };
 
+const hasOwn = (object, key) =>
+  Object.prototype.hasOwnProperty.call(object ?? {}, key);
+
+const isRecord = (value) =>
+  value !== null && typeof value === "object" && !Array.isArray(value);
+
+const cloneDataValue = (value) => {
+  const source = isDraft(value) ? current(value) : value;
+  return structuredClone(source);
+};
+
+export const isComputedVariableConfig = (config) => hasOwn(config, "computed");
+
+export const filterStoredVariables = (variables = {}, variableConfigs = {}) =>
+  Object.fromEntries(
+    Object.entries(variables ?? {}).filter(
+      ([variableId]) => !isComputedVariableConfig(variableConfigs[variableId]),
+    ),
+  );
+
+const parseVariablePath = (path) =>
+  String(path)
+    .replace(/\[(\d+)\]/g, ".$1")
+    .split(".")
+    .filter(Boolean);
+
+const resolvePathFrom = (value, pathParts) => {
+  let currentValue = value;
+
+  for (const part of pathParts) {
+    if (currentValue === undefined || currentValue === null) {
+      return undefined;
+    }
+    currentValue = currentValue[part];
+  }
+
+  return currentValue;
+};
+
+const resolveComputedPath = (path, context = {}) => {
+  if (typeof path !== "string" || path.trim() === "") {
+    throw new Error("Computed expression var requires a non-empty string path");
+  }
+
+  const pathParts = parseVariablePath(path);
+  const [root, variableId, ...nestedPath] = pathParts;
+
+  if (root === "variables") {
+    if (!variableId) {
+      return context.variables;
+    }
+
+    const variableValue =
+      typeof context.resolveVariable === "function"
+        ? context.resolveVariable(variableId)
+        : context.variables?.[variableId];
+    return resolvePathFrom(variableValue, nestedPath);
+  }
+
+  if (root === "runtime") {
+    return resolvePathFrom(context.runtime, pathParts.slice(1));
+  }
+
+  return resolvePathFrom(context, pathParts);
+};
+
+const assertOperandList = (operator, operands, expectedLength) => {
+  if (!Array.isArray(operands)) {
+    throw new Error(
+      `Computed expression operator "${operator}" requires an array`,
+    );
+  }
+
+  if (expectedLength !== undefined && operands.length !== expectedLength) {
+    throw new Error(
+      `Computed expression operator "${operator}" requires ${expectedLength} operand(s)`,
+    );
+  }
+};
+
+const assertAtLeastOneOperand = (operator, operands) => {
+  if (!Array.isArray(operands)) {
+    throw new Error(
+      `Computed expression operator "${operator}" requires an array`,
+    );
+  }
+
+  if (operands.length === 0) {
+    throw new Error(
+      `Computed expression operator "${operator}" requires at least one operand`,
+    );
+  }
+};
+
+const assertNumber = (operator, value) => {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new Error(
+      `Computed expression operator "${operator}" requires finite numeric operands`,
+    );
+  }
+};
+
+const evaluateOperandList = (operator, operands, context, expectedLength) => {
+  assertOperandList(operator, operands, expectedLength);
+  return operands.map((operand) =>
+    evaluateComputedExpression(operand, context),
+  );
+};
+
+const evaluateNumericOperandList = (
+  operator,
+  operands,
+  context,
+  expectedLength,
+) => {
+  const values = evaluateOperandList(
+    operator,
+    operands,
+    context,
+    expectedLength,
+  );
+  values.forEach((value) => assertNumber(operator, value));
+  return values;
+};
+
+const evaluateComputedOperator = (operator, operands, context) => {
+  switch (operator) {
+    case "var":
+      return resolveComputedPath(operands, context);
+    case "add": {
+      const [left, right] = evaluateNumericOperandList(
+        operator,
+        operands,
+        context,
+        2,
+      );
+      return left + right;
+    }
+    case "sub": {
+      const [left, right] = evaluateNumericOperandList(
+        operator,
+        operands,
+        context,
+        2,
+      );
+      return left - right;
+    }
+    case "mul": {
+      const [left, right] = evaluateNumericOperandList(
+        operator,
+        operands,
+        context,
+        2,
+      );
+      return left * right;
+    }
+    case "div": {
+      const [left, right] = evaluateNumericOperandList(
+        operator,
+        operands,
+        context,
+        2,
+      );
+      return left / right;
+    }
+    case "mod": {
+      const [left, right] = evaluateNumericOperandList(
+        operator,
+        operands,
+        context,
+        2,
+      );
+      return left % right;
+    }
+    case "neg": {
+      const [value] = evaluateNumericOperandList(
+        operator,
+        operands,
+        context,
+        1,
+      );
+      return -value;
+    }
+    case "round": {
+      const [value] = evaluateNumericOperandList(
+        operator,
+        operands,
+        context,
+        1,
+      );
+      return Math.round(value);
+    }
+    case "floor": {
+      const [value] = evaluateNumericOperandList(
+        operator,
+        operands,
+        context,
+        1,
+      );
+      return Math.floor(value);
+    }
+    case "ceil": {
+      const [value] = evaluateNumericOperandList(
+        operator,
+        operands,
+        context,
+        1,
+      );
+      return Math.ceil(value);
+    }
+    case "min": {
+      const [left, right] = evaluateNumericOperandList(
+        operator,
+        operands,
+        context,
+        2,
+      );
+      return Math.min(left, right);
+    }
+    case "max": {
+      const [left, right] = evaluateNumericOperandList(
+        operator,
+        operands,
+        context,
+        2,
+      );
+      return Math.max(left, right);
+    }
+    case "clamp": {
+      const [value, min, max] = evaluateNumericOperandList(
+        operator,
+        operands,
+        context,
+        3,
+      );
+      return Math.min(max, Math.max(min, value));
+    }
+    case "eq": {
+      const [left, right] = evaluateOperandList(operator, operands, context, 2);
+      return left == right;
+    }
+    case "neq": {
+      const [left, right] = evaluateOperandList(operator, operands, context, 2);
+      return left != right;
+    }
+    case "gt": {
+      const [left, right] = evaluateOperandList(operator, operands, context, 2);
+      return left > right;
+    }
+    case "gte": {
+      const [left, right] = evaluateOperandList(operator, operands, context, 2);
+      return left >= right;
+    }
+    case "lt": {
+      const [left, right] = evaluateOperandList(operator, operands, context, 2);
+      return left < right;
+    }
+    case "lte": {
+      const [left, right] = evaluateOperandList(operator, operands, context, 2);
+      return left <= right;
+    }
+    case "in": {
+      const [left, right] = evaluateOperandList(operator, operands, context, 2);
+      return Array.isArray(right) ? right.includes(left) : false;
+    }
+    case "and":
+    case "all": {
+      assertAtLeastOneOperand(operator, operands);
+      return operands.every((operand) =>
+        Boolean(evaluateComputedExpression(operand, context)),
+      );
+    }
+    case "or":
+    case "any": {
+      assertAtLeastOneOperand(operator, operands);
+      return operands.some((operand) =>
+        Boolean(evaluateComputedExpression(operand, context)),
+      );
+    }
+    case "not": {
+      const [value] = evaluateOperandList(operator, operands, context, 1);
+      return !value;
+    }
+    case "length": {
+      const [value] = evaluateOperandList(operator, operands, context, 1);
+      if (typeof value === "string" || Array.isArray(value)) {
+        return value.length;
+      }
+      if (isRecord(value)) {
+        return Object.keys(value).length;
+      }
+      return 0;
+    }
+    case "includes": {
+      const [collection, value] = evaluateOperandList(
+        operator,
+        operands,
+        context,
+        2,
+      );
+      if (typeof collection === "string") {
+        return collection.includes(value);
+      }
+      return Array.isArray(collection) ? collection.includes(value) : false;
+    }
+    case "literal":
+      return cloneDataValue(operands);
+    default:
+      throw new Error(`Unknown computed expression operator: ${operator}`);
+  }
+};
+
+export const evaluateComputedExpression = (expr, context = {}) => {
+  if (expr === null || typeof expr !== "object") {
+    return expr;
+  }
+
+  if (Array.isArray(expr)) {
+    throw new Error(
+      "Computed expression arrays are not valid; use value for literal arrays",
+    );
+  }
+
+  const entries = Object.entries(expr);
+  if (entries.length !== 1) {
+    throw new Error(
+      "Computed expression objects must contain exactly one operator",
+    );
+  }
+
+  const [[operator, operands]] = entries;
+  return evaluateComputedOperator(operator, operands, context);
+};
+
+const evaluateComputedCondition = (condition, context = {}) => {
+  return evaluateCondition(condition, {
+    variables: context.variables,
+    runtime: context.runtime,
+  });
+};
+
+const assertComputedResultConfig = (resultConfig, path) => {
+  if (!isRecord(resultConfig)) {
+    throw new Error(`${path} must be an object`);
+  }
+
+  const hasExpr = hasOwn(resultConfig, "expr");
+  const hasValue = hasOwn(resultConfig, "value");
+  if (hasExpr === hasValue) {
+    throw new Error(`${path} must contain exactly one of expr or value`);
+  }
+};
+
+const evaluateComputedResultConfig = (resultConfig, path, context) => {
+  assertComputedResultConfig(resultConfig, path);
+
+  if (hasOwn(resultConfig, "value")) {
+    return cloneDataValue(resultConfig.value);
+  }
+
+  return evaluateComputedExpression(resultConfig.expr, context);
+};
+
+export const evaluateComputedVariable = (
+  computedConfig,
+  context = {},
+  variableId = "unknown",
+) => {
+  if (!isRecord(computedConfig)) {
+    throw new Error(
+      `Computed variable "${variableId}" computed must be an object`,
+    );
+  }
+
+  const hasExpr = hasOwn(computedConfig, "expr");
+  const hasValue = hasOwn(computedConfig, "value");
+  const hasBranches = hasOwn(computedConfig, "branches");
+
+  if (hasBranches) {
+    if (hasExpr || hasValue) {
+      throw new Error(
+        `Computed variable "${variableId}" cannot combine branches with expr or value`,
+      );
+    }
+
+    if (!Array.isArray(computedConfig.branches)) {
+      throw new Error(
+        `Computed variable "${variableId}" branches must be an array`,
+      );
+    }
+    if (computedConfig.branches.length === 0) {
+      throw new Error(
+        `Computed variable "${variableId}" branches must not be empty`,
+      );
+    }
+    if (!isRecord(computedConfig.default)) {
+      throw new Error(`Computed variable "${variableId}" requires default`);
+    }
+
+    for (let index = 0; index < computedConfig.branches.length; index += 1) {
+      const branch = computedConfig.branches[index];
+      if (!isRecord(branch)) {
+        throw new Error(
+          `Computed variable "${variableId}" branch ${index} must be an object`,
+        );
+      }
+      if (!hasOwn(branch, "when")) {
+        throw new Error(
+          `Computed variable "${variableId}" branch ${index} requires when`,
+        );
+      }
+
+      if (evaluateComputedCondition(branch.when, context)) {
+        return evaluateComputedResultConfig(
+          branch,
+          `Computed variable "${variableId}" branch ${index}`,
+          context,
+        );
+      }
+    }
+
+    return evaluateComputedResultConfig(
+      computedConfig.default,
+      `Computed variable "${variableId}" default`,
+      context,
+    );
+  }
+
+  if (hasExpr === hasValue) {
+    throw new Error(
+      `Computed variable "${variableId}" must contain exactly one of expr, value, or branches`,
+    );
+  }
+
+  return evaluateComputedResultConfig(
+    computedConfig,
+    `Computed variable "${variableId}"`,
+    context,
+  );
+};
+
+export const assertComputedVariableValueType = (variableId, type, value) => {
+  switch (type) {
+    case "number":
+      if (typeof value !== "number" || !Number.isFinite(value)) {
+        throw new Error(
+          `Computed variable "${variableId}" expected type number, got ${Array.isArray(value) ? "array" : typeof value}`,
+        );
+      }
+      return;
+    case "boolean":
+      if (typeof value !== "boolean") {
+        throw new Error(
+          `Computed variable "${variableId}" expected type boolean, got ${Array.isArray(value) ? "array" : typeof value}`,
+        );
+      }
+      return;
+    case "string":
+      if (typeof value !== "string") {
+        throw new Error(
+          `Computed variable "${variableId}" expected type string, got ${Array.isArray(value) ? "array" : typeof value}`,
+        );
+      }
+      return;
+    case "object":
+      if (value === null || typeof value !== "object") {
+        throw new Error(
+          `Computed variable "${variableId}" expected type object, got ${typeof value}`,
+        );
+      }
+      return;
+    default:
+      throw new Error(
+        `Invalid variable type: ${type} for computed variable ${variableId}`,
+      );
+  }
+};
+
+export const selectVariablesWithComputedValues = ({
+  variables = {},
+  runtime = {},
+  variableConfigs = {},
+  eager = true,
+} = {}) => {
+  const storedVariables = filterStoredVariables(variables, variableConfigs);
+  const computedVariableIds = Object.entries(variableConfigs)
+    .filter(([, config]) => isComputedVariableConfig(config))
+    .map(([variableId]) => variableId);
+  const resolvedComputedVariables = {};
+  const resolvingVariableIds = [];
+
+  const resolveVariable = (variableId) => {
+    if (hasOwn(resolvedComputedVariables, variableId)) {
+      return resolvedComputedVariables[variableId];
+    }
+
+    const variableConfig = variableConfigs[variableId];
+    if (!isComputedVariableConfig(variableConfig)) {
+      return storedVariables[variableId];
+    }
+
+    const existingStackIndex = resolvingVariableIds.indexOf(variableId);
+    if (existingStackIndex >= 0) {
+      const cycle = [
+        ...resolvingVariableIds.slice(existingStackIndex),
+        variableId,
+      ].join(" -> ");
+      throw new Error(`Computed variable cycle detected: ${cycle}`);
+    }
+
+    resolvingVariableIds.push(variableId);
+    try {
+      const value = evaluateComputedVariable(
+        variableConfig.computed,
+        computedContext,
+        variableId,
+      );
+      assertComputedVariableValueType(variableId, variableConfig.type, value);
+      resolvedComputedVariables[variableId] = value;
+      return value;
+    } finally {
+      resolvingVariableIds.pop();
+    }
+  };
+
+  const variablesProxy = new Proxy(
+    {},
+    {
+      get: (_target, property) => {
+        if (typeof property !== "string") {
+          return undefined;
+        }
+        return resolveVariable(property);
+      },
+      has: (_target, property) =>
+        typeof property === "string" &&
+        (hasOwn(storedVariables, property) ||
+          computedVariableIds.includes(property)),
+      ownKeys: () => [
+        ...new Set([...Object.keys(storedVariables), ...computedVariableIds]),
+      ],
+      getOwnPropertyDescriptor: (_target, property) => {
+        if (
+          typeof property !== "string" ||
+          (!hasOwn(storedVariables, property) &&
+            !computedVariableIds.includes(property))
+        ) {
+          return undefined;
+        }
+
+        return {
+          enumerable: true,
+          configurable: true,
+        };
+      },
+    },
+  );
+
+  const computedContext = {
+    variables: variablesProxy,
+    runtime,
+    resolveVariable,
+  };
+
+  if (!eager) {
+    return variablesProxy;
+  }
+
+  computedVariableIds.forEach((variableId) => {
+    resolveVariable(variableId);
+  });
+
+  return {
+    ...storedVariables,
+    ...resolvedComputedVariables,
+  };
+};
+
+export const resolveComputedVariables = ({
+  variables = {},
+  runtime = {},
+  variableConfigs,
+  projectData,
+} = {}) => {
+  return selectVariablesWithComputedValues({
+    variables,
+    runtime,
+    variableConfigs: variableConfigs ?? projectData?.resources?.variables ?? {},
+    eager: true,
+  });
+};
+
 /**
  * Gets default variable values from project data, categorizing them by scope
  * Pure function - throws error for invalid variable types or scopes
@@ -365,6 +957,10 @@ export const getDefaultVariablesFromProjectData = (projectData) => {
 
   Object.entries(projectData.resources.variables).forEach(
     ([variableId, config]) => {
+      if (isComputedVariableConfig(config)) {
+        return;
+      }
+
       const value = getVariableDefaultValue(config, variableId);
 
       if (config.scope === "context") {
