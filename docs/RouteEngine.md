@@ -342,9 +342,15 @@ const renderState = engine.selectRenderState();
 // {
 //   elements: [{ id: 'story', type: 'container', children: [...] }],
 //   animations: [...],
-//   audio: [...]
+//   audio: [...],
+//   audioEffects: [...]
 // }
 ```
+
+Audio render-state normalization is documented in
+[`docs/Audio.md`](./Audio.md). Route Graphics 1.15.0 owns the renderer-facing
+`audio` / `audioEffects` contract; Route Engine maps `bgm`, `sfx`, and `voice`
+actions into that contract.
 
 ### `selectPresentationState()`
 
@@ -573,9 +579,9 @@ Actions that can be attached to lines to control presentation:
 | `dialogue`   | `{ characterId?, character?, character.sprite?, persistCharacter?, content, append?, mode?, ui?, clear? }` | Display dialogue                                                                                  |
 | `character`  | `{ items }`                                                                                                | Display character sprites. Each item can have optional `x` and `y` to override transform position |
 | `visual`     | `{ items }`                                                                                                | Display visual elements                                                                           |
-| `bgm`        | `{ resourceId, loop?, volume?, delay? }`                                                                   | Play background music                                                                             |
-| `sfx`        | `{ items }`                                                                                                | Play sound effects                                                                                |
-| `voice`      | `{ resourceId, volume?, loop?, delay? }`                                                                   | Play voice audio from `resources.voices[currentSceneId][resourceId]`                              |
+| `bgm`        | `{ resourceId, loop?, volume?, delay? }`                                                                   | Play background music; see [Audio Render Mapping](./Audio.md) for renderer output                 |
+| `sfx`        | `{ items }`                                                                                                | Play sound effects; see [Audio Render Mapping](./Audio.md) for renderer output                    |
+| `voice`      | `{ resourceId, volume?, loop?, delay? }`                                                                   | Play voice audio from `resources.voices[currentSceneId][resourceId]`; see [Audio](./Audio.md)     |
 | `animation`  | `{ ... }`                                                                                                  | Apply animations                                                                                  |
 | `layout`     | `{ resourceId }`                                                                                           | Display layout                                                                                    |
 | `control`    | `{ resourceId }`                                                                                           | Activate control bindings and control UI                                                          |
@@ -745,8 +751,13 @@ Template/runtime paths:
 
 Voice assets are grouped by scene under `resources.voices`. The line action only
 stores the scene-local `resourceId`; the engine resolves the scene from the
-current section. If `voice.volume` is omitted, the emitted audio uses
-`runtime.soundVolume`; `runtime.muteAll` forces voice volume to `0`.
+current section.
+
+For the Route Graphics 1.15.0 channel-audio target, `runtime.soundVolume` maps
+to the generated `voice` channel volume, `runtime.muteAll` maps to channel
+`muted`, and `voice.volume` maps to the generated child sound volume. The child
+sound ID must include a playback-instance component so repeated use of the same
+voice asset can replay. See [Audio Render Mapping](./Audio.md).
 
 ```yaml
 resources:

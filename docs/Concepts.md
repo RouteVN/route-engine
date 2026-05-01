@@ -146,7 +146,8 @@ Render state structure:
 
 - `elements`: Tree of renderable elements (containers, sprites, text)
 - `animations`: Renderer animation descriptors to apply
-- `audio`: Sound effects and music to play
+- `audio`: Route Graphics audio nodes for music, sound effects, and voice
+- `audioEffects`: Route Graphics audio automation/effect descriptors
 
 ## Contexts
 
