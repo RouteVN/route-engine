@@ -78,6 +78,18 @@ The engine will:
 4. Trigger pending effects handler
 5. Clear pending effects
 
+## Project Data Interfaces
+
+### Computed Variables
+
+Computed variables are derived read-only values declared under
+`resources.variables[*].computed`. They are exposed through the same
+`variables.*` template namespace as stored variables, but are not persisted or
+updated directly.
+
+The locked authored interface is documented in
+[ComputedVariables.md](./ComputedVariables.md).
+
 ## Methods
 
 ### `selectSystemState()`
@@ -122,6 +134,27 @@ const resolvedElements = resolveLayoutReferences(layout.elements, {
   resources: projectData.resources,
 });
 ```
+
+### `resolveComputedVariables({ projectData?, variableConfigs?, variables?, runtime? })`
+
+Evaluates computed variables with the same logic used by the engine.
+
+```js
+import { resolveComputedVariables } from "rvn-temp";
+
+const variables = resolveComputedVariables({
+  projectData,
+  variables: {
+    hp: 40,
+    maxHp: 100,
+  },
+  runtime,
+});
+```
+
+Pass either full `projectData` or `variableConfigs`. The returned object merges
+stored variables with resolved computed variables and ignores stale computed
+keys from the input `variables` object.
 
 ### `handleAction(actionType, payload)`
 

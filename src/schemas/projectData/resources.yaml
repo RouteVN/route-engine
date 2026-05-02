@@ -346,6 +346,9 @@ properties:
       "^.+$":
         type: object
         description: Variable value
+        allOf:
+          - not:
+              required: [computed, default]
         required: [type, scope]
         properties:
           type:
@@ -356,7 +359,83 @@ properties:
             enum: [context, device, account]
           default:
             description: Default initial value for the variable. Runtime accepts any YAML value and uses it as-is
+          readonly:
+            type: boolean
+            description: Prevent updateVariable from mutating a stored variable
+          computed:
+            $ref: "#/definitions/computedVariable"
         additionalProperties: true
     additionalProperties: false
 
 additionalProperties: false
+
+definitions:
+  computedVariable:
+    type: object
+    description: Derived variable declaration. Presence implies read-only behavior.
+    properties:
+      expr:
+        description: Evaluated expression
+      value:
+        description: Literal computed value
+      branches:
+        type: array
+        minItems: 1
+        items:
+          $ref: "#/definitions/computedVariableBranch"
+      default:
+        $ref: "#/definitions/computedVariableResult"
+    oneOf:
+      - required: [expr]
+        not:
+          anyOf:
+            - required: [value]
+            - required: [branches]
+            - required: [default]
+      - required: [value]
+        not:
+          anyOf:
+            - required: [expr]
+            - required: [branches]
+            - required: [default]
+      - required: [branches, default]
+        not:
+          anyOf:
+            - required: [expr]
+            - required: [value]
+    additionalProperties: false
+
+  computedVariableBranch:
+    type: object
+    required: [when]
+    oneOf:
+      - required: [expr]
+        not:
+          required: [value]
+      - required: [value]
+        not:
+          required: [expr]
+    properties:
+      when:
+        description: Condition using the same authored condition shape as conditional actions
+      expr:
+        description: Evaluated expression
+      value:
+        description: Literal value
+    additionalProperties: false
+
+  computedVariableResult:
+    type: object
+    properties:
+      expr:
+        description: Evaluated expression
+      value:
+        description: Literal value
+    oneOf:
+      - required: [expr]
+        not:
+          required: [value]
+      - required: [value]
+        not:
+          required: [expr]
+    additionalProperties: false

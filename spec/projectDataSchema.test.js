@@ -626,4 +626,132 @@ describe("projectData schema", () => {
     ).toBe(true);
     expect(validateProjectData.errors).toBeNull();
   });
+
+  it("accepts computed variable declarations", () => {
+    expect(
+      validateProjectData(
+        createMinimalProjectData({
+          resources: {
+            variables: {
+              hp: {
+                type: "number",
+                scope: "context",
+                default: 80,
+              },
+              maxHp: {
+                type: "number",
+                scope: "context",
+                default: 100,
+              },
+              hpPercent: {
+                type: "number",
+                scope: "context",
+                computed: {
+                  branches: [
+                    {
+                      when: {
+                        lte: [{ var: "variables.maxHp" }, 0],
+                      },
+                      expr: 0,
+                    },
+                  ],
+                  default: {
+                    expr: {
+                      round: [
+                        {
+                          mul: [
+                            {
+                              div: [
+                                { var: "variables.hp" },
+                                { var: "variables.maxHp" },
+                              ],
+                            },
+                            100,
+                          ],
+                        },
+                      ],
+                    },
+                  },
+                },
+              },
+              hpBadge: {
+                type: "object",
+                scope: "context",
+                computed: {
+                  value: {
+                    text: "OK",
+                    colorId: "green",
+                  },
+                },
+              },
+            },
+          },
+        }),
+      ),
+    ).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
+
+  it("rejects computed variables with top-level defaults", () => {
+    expect(
+      validateProjectData(
+        createMinimalProjectData({
+          resources: {
+            variables: {
+              hpPercent: {
+                type: "number",
+                scope: "context",
+                default: 0,
+                computed: {
+                  expr: 80,
+                },
+              },
+            },
+          },
+        }),
+      ),
+    ).toBe(false);
+    expect(validateProjectData.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          instancePath: "/resources/variables/hpPercent",
+          keyword: "not",
+        }),
+      ]),
+    );
+  });
+
+  it("rejects computed branches without explicit defaults", () => {
+    expect(
+      validateProjectData(
+        createMinimalProjectData({
+          resources: {
+            variables: {
+              hpState: {
+                type: "string",
+                scope: "context",
+                computed: {
+                  branches: [
+                    {
+                      when: {
+                        lte: [{ var: "variables.hp" }, 0],
+                      },
+                      expr: "down",
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        }),
+      ),
+    ).toBe(false);
+    expect(validateProjectData.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          instancePath: "/resources/variables/hpState/computed",
+        }),
+      ]),
+    );
+  });
 });

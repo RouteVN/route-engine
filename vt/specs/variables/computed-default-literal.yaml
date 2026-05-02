@@ -1,0 +1,132 @@
+---
+title: Computed Variables Default And Literal
+description: Computed branches can fall back to default results and expose literal object values.
+specs:
+  - branch default result renders when no condition matches
+  - literal object computed values render through nested template paths
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  variables:
+    level:
+      type: number
+      scope: context
+      default: 3
+    rankState:
+      type: string
+      scope: context
+      computed:
+        branches:
+          - when:
+              gte:
+                - var: variables.level
+                - 10
+            expr: elite
+          - when:
+              gte:
+                - var: variables.level
+                - 5
+            expr: veteran
+        default:
+          expr: rookie
+    badge:
+      type: object
+      scope: context
+      computed:
+        value:
+          label: Field Badge
+          rank: 3
+  layouts:
+    defaultLiteralPanel:
+      elements:
+        - id: background
+          type: rect
+          width: 1920
+          height: 1080
+          colorId: bg
+        - id: panel
+          type: rect
+          x: 300
+          y: 240
+          width: 1320
+          height: 560
+          colorId: panel
+        - id: title
+          type: text
+          content: Computed Default And Literal
+          x: 360
+          y: 310
+          textStyleId: title
+        - id: level
+          type: text
+          content: "Level: ${variables.level}"
+          x: 420
+          y: 460
+          textStyleId: main
+        - id: rankState
+          type: text
+          content: "Rank State: ${variables.rankState}"
+          x: 420
+          y: 550
+          textStyleId: main
+        - id: badgeLabel
+          type: text
+          content: "Badge: ${variables.badge.label}"
+          x: 420
+          y: 640
+          textStyleId: main
+        - id: badgeRank
+          type: text
+          content: "Badge Rank: ${variables.badge.rank}"
+          x: 420
+          y: 730
+          textStyleId: muted
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    bg:
+      hex: "#000000"
+    panel:
+      hex: "#4D4D4D"
+    fg:
+      hex: "#FFFFFF"
+    fgMuted:
+      hex: "#D9D9D9"
+  textStyles:
+    title:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 52
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    main:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 44
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    muted:
+      fontId: fontDefault
+      colorId: fgMuted
+      fontSize: 40
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: start
+      sections:
+        start:
+          lines:
+            - id: line1
+              actions:
+                layout:
+                  resourceId: defaultLiteralPanel
