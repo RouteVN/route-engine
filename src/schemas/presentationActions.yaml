@@ -236,6 +236,51 @@ properties:
         $ref: "#/definitions/animationSelection"
     additionalProperties: false
 
+  form:
+    type: object
+    description: Blocking input form configuration
+    properties:
+      id:
+        type: string
+        description: Optional stable form ID. Defaults to resourceId.
+      resourceId:
+        type: string
+        description: ID of the form layout UI element
+      fields:
+        type: object
+        description: Form fields keyed by layout field ID
+        additionalProperties:
+          type: object
+          properties:
+            variableId:
+              type: string
+              description: Variable to receive the submitted value
+            required:
+              type: boolean
+              default: false
+            trim:
+              type: boolean
+              default: false
+            placeholder:
+              type: string
+            multiline:
+              type: boolean
+              default: false
+            maxLength:
+              type: integer
+              minimum: 0
+          required: [variableId]
+          additionalProperties: false
+      submitActions:
+        type: object
+        description: Actions to execute after a valid submit
+      cancelActions:
+        type: object
+        description: Actions to execute after cancelling the form
+      animations:
+        $ref: "#/definitions/animationSelection"
+    additionalProperties: false
+
   sfx:
     type: object
     description: Sound effects configuration

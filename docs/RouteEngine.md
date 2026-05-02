@@ -613,7 +613,52 @@ Actions that can be attached to lines to control presentation:
 | `layout`     | `{ resourceId }`                                                                                           | Display layout                                                                                    |
 | `control`    | `{ resourceId }`                                                                                           | Activate control bindings and control UI                                                          |
 | `choice`     | `{ resourceId, items }`                                                                                    | Display choice menu                                                                               |
+| `form`       | `{ resourceId, fields, submitActions?, cancelActions? }`                                                   | Display a blocking multi-input form                                                               |
 | `cleanAll`   | `true`                                                                                                     | Clear all presentation state                                                                      |
+
+### Forms
+
+Forms are blocking presentation actions for Route Graphics `input` elements.
+Edits stay in transient form drafts until the user submits a valid form. On a
+valid submit, the engine commits every field to its configured variable, then
+runs the authored `submitActions`.
+
+The layout should bind buttons to prepared form action batches, matching the
+confirm-dialog style:
+
+```yaml
+click:
+  payload:
+    actions: ${form.submitActions}
+```
+
+Inputs opt into a field by name:
+
+```yaml
+- id: name-input
+  type: input
+  field: name
+```
+
+Story action:
+
+```yaml
+form:
+  resourceId: profileForm
+  fields:
+    name:
+      variableId: playerName
+      required: true
+      trim: true
+      placeholder: Name
+    code:
+      variableId: playerCode
+      required: true
+  submitActions:
+    nextLine: {}
+  cancelActions:
+    rollbackByOffset: {}
+```
 
 ### Dialogue Speaker Fields
 
@@ -825,6 +870,7 @@ Shared template roots:
 - `saveSlots`
 - `characters`
 - `isChoiceVisible`
+- `isFormVisible`
 - `canRollback`
 
 Roots with special presence semantics:
@@ -832,6 +878,7 @@ Roots with special presence semantics:
 - `dialogue` and `dialogueLines` are added only when active dialogue template
   data exists
 - `choice` is added by the choice-layout render path when a choice is active
+- `form` is added by the form-layout render path when a form is active
 - `historyDialogue` is always present in the shared template data and defaults
   to `[]`
 - `confirmDialog` is always present in the shared template data and is

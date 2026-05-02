@@ -278,6 +278,68 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
     );
   });
 
+  it("blocks non-form actions while a form is visible and forwards matching form payloads", async () => {
+    const engine = {
+      selectRenderState: vi.fn(() => ({ id: "render-1" })),
+      handleAction: vi.fn(),
+      handleActions: vi.fn(),
+      selectActiveInteraction: vi.fn(() => ({
+        source: "form",
+        formKey: "section1:line1:profileForm",
+      })),
+    };
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics: {
+        render: vi.fn(),
+      },
+      ticker: createTicker(),
+    });
+
+    const eventHandler = effectsHandler.createRouteGraphicsEventHandler();
+
+    await eventHandler("click", {
+      actions: {
+        nextLine: {},
+      },
+    });
+
+    expect(engine.handleActions).not.toHaveBeenCalled();
+
+    await eventHandler("change", {
+      _interactionSource: "form",
+      _formKey: "section1:line1:profileForm",
+      actions: {
+        updateFormField: {
+          formKey: "section1:line1:profileForm",
+          field: "name",
+          value: "_event.value",
+        },
+      },
+      _event: {
+        value: "Ada",
+      },
+    });
+
+    expect(engine.handleActions).toHaveBeenCalledWith(
+      {
+        updateFormField: {
+          formKey: "section1:line1:profileForm",
+          field: "name",
+          value: "_event.value",
+        },
+      },
+      {
+        _event: {
+          value: "Ada",
+        },
+      },
+      {
+        interactionSource: "form",
+      },
+    );
+  });
+
   it("coalesces replaceable effects by name and keeps the last payload", () => {
     const ticker = createTicker();
     const engine = {

@@ -1,0 +1,252 @@
+---
+title: Form Cancel
+description: Confirm-style cancel actions discard typed drafts and run the cancel action batch.
+specs:
+  - typing multiple inputs keeps field values as drafts while variables stay unchanged
+  - clicking cancel through ${form.cancelActions} hides the form and advances
+  - cancel does not commit field drafts to variables
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 1280
+  height: 720
+steps:
+  - action: wait
+    ms: 200
+  - action: screenshot
+  - action: click
+    x: 500
+    y: 277
+  - action: keypress
+    key: X
+  - action: click
+    x: 500
+    y: 362
+  - action: keypress
+    key: Y
+  - action: wait
+    ms: 120
+  - action: screenshot
+  - action: click
+    x: 500
+    y: 490
+  - action: wait
+    ms: 180
+  - action: screenshot
+---
+screen:
+  width: 1280
+  height: 720
+  backgroundColor: "#111111"
+resources:
+  controls:
+    formControls:
+      elements:
+        - id: form-visible
+          $when: isFormVisible
+          type: text
+          x: 44
+          y: 42
+          content: "FORM: ON"
+          textStyleId: labelText
+        - id: form-hidden
+          $when: "!isFormVisible"
+          type: text
+          x: 44
+          y: 42
+          content: "FORM: OFF"
+          textStyleId: labelText
+  layouts:
+    cancelForm:
+      elements:
+        - id: form-panel
+          type: rect
+          x: 340
+          y: 135
+          width: 600
+          height: 455
+          colorId: panelColor
+        - id: form-title
+          type: text
+          x: 390
+          y: 165
+          content: "Cancel Draft"
+          textStyleId: titleText
+        - id: variable-preview
+          type: text
+          x: 390
+          y: 215
+          content: "Variables: [${variables.playerName}]/[${variables.playerCode}]"
+          textStyleId: smallText
+        - id: name-label
+          type: text
+          x: 390
+          y: 267
+          content: "Name"
+          textStyleId: labelText
+        - id: name-input
+          type: input
+          field: name
+          x: 490
+          y: 255
+          width: 360
+          height: 52
+          textStyleId: inputText
+        - id: code-label
+          type: text
+          x: 390
+          y: 352
+          content: "Code"
+          textStyleId: labelText
+        - id: code-input
+          type: input
+          field: code
+          x: 490
+          y: 340
+          width: 360
+          height: 52
+          textStyleId: inputText
+        - id: cancel-button
+          type: rect
+          x: 390
+          y: 465
+          width: 190
+          height: 58
+          colorId: cancelColor
+          click:
+            payload:
+              actions: ${form.cancelActions}
+        - id: cancel-label
+          type: text
+          x: 448
+          y: 481
+          content: "Cancel"
+          textStyleId: buttonText
+        - id: submit-button
+          type: rect
+          x: 660
+          y: 465
+          width: 190
+          height: 58
+          colorId: submitColor
+          click:
+            payload:
+              actions: ${form.submitActions}
+        - id: submit-label
+          type: text
+          x: 716
+          y: 481
+          content: "Submit"
+          textStyleId: buttonText
+    resultLayout:
+      elements:
+        - id: result-title
+          type: text
+          x: 390
+          y: 255
+          content: "Cancelled"
+          textStyleId: titleText
+        - id: result-status
+          type: text
+          x: 390
+          y: 320
+          content: "Status: ${variables.formStatus}"
+          textStyleId: labelText
+        - id: result-values
+          type: text
+          x: 390
+          y: 365
+          content: "Name: [${variables.playerName}]  Code: [${variables.playerCode}]"
+          textStyleId: labelText
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    panelColor:
+      hex: "#243B53"
+    submitColor:
+      hex: "#2A9D8F"
+    cancelColor:
+      hex: "#7C3AED"
+    textColor:
+      hex: "#F7F7F2"
+    inputTextColor:
+      hex: "#111111"
+  textStyles:
+    titleText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 40
+      lineHeight: 1.2
+    labelText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 26
+      lineHeight: 1.25
+    smallText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 21
+      lineHeight: 1.2
+    buttonText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 28
+      lineHeight: 1.2
+    inputText:
+      fontId: fontDefault
+      colorId: inputTextColor
+      fontSize: 24
+      lineHeight: 1.2
+  variables:
+    playerName:
+      type: string
+      scope: context
+      default: ""
+    playerCode:
+      type: string
+      scope: context
+      default: ""
+    formStatus:
+      type: string
+      scope: context
+      default: idle
+story:
+  initialSceneId: formScene
+  scenes:
+    formScene:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: formLine
+              actions:
+                control:
+                  resourceId: formControls
+                form:
+                  resourceId: cancelForm
+                  fields:
+                    name:
+                      variableId: playerName
+                      required: true
+                      trim: true
+                      placeholder: Name
+                    code:
+                      variableId: playerCode
+                      required: true
+                      trim: true
+                      placeholder: Code
+                  submitActions:
+                    nextLine: {}
+                  cancelActions:
+                    updateVariable:
+                      id: formcancelstatus
+                      operations:
+                        - variableId: formStatus
+                          op: set
+                          value: cancelled
+                    nextLine: {}
+            - id: resultLine
+              actions:
+                layout:
+                  resourceId: resultLayout

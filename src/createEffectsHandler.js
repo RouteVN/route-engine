@@ -382,8 +382,53 @@ const createEffectsHandler = ({
     return true;
   };
 
-  const isChoiceInteractionPayload = (payload = {}) => {
-    if (payload?._interactionSource === "choice") {
+  const getActiveInteraction = (engine) => {
+    if (typeof engine?.selectActiveInteraction === "function") {
+      return engine.selectActiveInteraction();
+    }
+
+    if (
+      typeof engine?.selectIsChoiceVisible === "function" &&
+      engine.selectIsChoiceVisible()
+    ) {
+      return {
+        source: "choice",
+      };
+    }
+
+    return null;
+  };
+
+  const matchesInteraction = (value, activeInteraction) => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      return false;
+    }
+
+    if (value._interactionSource !== activeInteraction?.source) {
+      return false;
+    }
+
+    if (
+      activeInteraction.source === "form" &&
+      value._formKey &&
+      value._formKey !== activeInteraction.formKey
+    ) {
+      return false;
+    }
+
+    if (
+      activeInteraction.source === "form" &&
+      value.formKey &&
+      value.formKey !== activeInteraction.formKey
+    ) {
+      return false;
+    }
+
+    return true;
+  };
+
+  const isInteractionPayload = (payload = {}, activeInteraction) => {
+    if (matchesInteraction(payload, activeInteraction)) {
       return true;
     }
 
@@ -392,25 +437,22 @@ const createEffectsHandler = ({
       return false;
     }
 
-    return Object.values(actions).some(
-      (actionPayload) => actionPayload?._interactionSource === "choice",
+    return Object.values(actions).some((actionPayload) =>
+      matchesInteraction(actionPayload, activeInteraction),
     );
   };
 
-  const shouldBlockChoiceActions = (engine, payload = {}) => {
+  const shouldBlockInteractionActions = (engine, payload = {}) => {
     if (!payload?.actions) {
       return false;
     }
 
-    if (typeof engine?.selectIsChoiceVisible !== "function") {
+    const activeInteraction = getActiveInteraction(engine);
+    if (!activeInteraction) {
       return false;
     }
 
-    if (!engine.selectIsChoiceVisible()) {
-      return false;
-    }
-
-    return !isChoiceInteractionPayload(payload);
+    return !isInteractionPayload(payload, activeInteraction);
   };
 
   const createRouteGraphicsEventHandler = ({
@@ -419,14 +461,14 @@ const createEffectsHandler = ({
   } = {}) => {
     return async (eventName, payload = {}) => {
       const engine = getEngine();
-      if (shouldBlockChoiceActions(engine, payload)) {
+      if (shouldBlockInteractionActions(engine, payload)) {
         return onEvent?.(eventName, payload);
       }
 
       const nextPayload =
         (await preprocessPayload?.(eventName, payload)) ?? payload;
 
-      if (shouldBlockChoiceActions(engine, nextPayload)) {
+      if (shouldBlockInteractionActions(engine, nextPayload)) {
         return onEvent?.(eventName, nextPayload);
       }
 

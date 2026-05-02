@@ -66,6 +66,8 @@ properties:
                               $ref: "../presentationActions.yaml#/properties/visual"
                             choice:
                               $ref: "../presentationActions.yaml#/properties/choice"
+                            form:
+                              $ref: "../presentationActions.yaml#/properties/form"
                             sfx:
                               $ref: "../presentationActions.yaml#/properties/sfx"
                             bgm:
@@ -152,6 +154,12 @@ properties:
                               $ref: "../systemActions.yaml#/properties/rollbackToLine"
                             updateVariable:
                               $ref: "../systemActions.yaml#/properties/updateVariable"
+                            updateFormField:
+                              $ref: "../systemActions.yaml#/properties/updateFormField"
+                            submitForm:
+                              $ref: "../systemActions.yaml#/properties/submitForm"
+                            cancelForm:
+                              $ref: "../systemActions.yaml#/properties/cancelForm"
                           additionalProperties: false
 
                       required: [id, actions]

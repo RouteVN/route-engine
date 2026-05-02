@@ -37,6 +37,8 @@ const DEFAULT_NEXT_LINE_CONFIG = {
 };
 
 const CURRENT_SAVE_FORMAT_VERSION = 1;
+const CHOICE_INTERACTION_SOURCE = "choice";
+const FORM_INTERACTION_SOURCE = "form";
 
 const createDefaultNextLineConfig = () => ({
   manual: { ...DEFAULT_NEXT_LINE_CONFIG.manual },
@@ -669,6 +671,212 @@ const clearConfirmDialog = (state) => {
   }
 };
 
+const ensureFormDrafts = (state) => {
+  if (!isRecord(state.global.formDrafts)) {
+    state.global.formDrafts = {};
+  }
+
+  return state.global.formDrafts;
+};
+
+const clearFormDrafts = (state) => {
+  if (Object.prototype.hasOwnProperty.call(state.global, "formDrafts")) {
+    state.global.formDrafts = {};
+  }
+};
+
+const getFormId = (form) => {
+  const id = form?.id ?? form?.resourceId;
+  return typeof id === "string" && id.length > 0 ? id : undefined;
+};
+
+const buildFormKey = (pointer, formId) => {
+  const sectionId = pointer?.sectionId;
+  const lineId = pointer?.lineId;
+  if (!sectionId || !lineId || !formId) {
+    return undefined;
+  }
+
+  return `${sectionId}:${lineId}:${formId}`;
+};
+
+const normalizeFormValue = (value) => String(value ?? "");
+
+const normalizeFormStoredValue = (field, value) => {
+  const normalizedValue = normalizeFormValue(value);
+  return field?.trim === true ? normalizedValue.trim() : normalizedValue;
+};
+
+const getFormFieldDefinitions = (form) => {
+  if (!isRecord(form?.fields)) {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(form.fields)
+      .filter(([, field]) => isRecord(field))
+      .map(([fieldId, field]) => [
+        fieldId,
+        {
+          id: fieldId,
+          ...cloneStateValue(field),
+        },
+      ]),
+  );
+};
+
+const getFormDraft = (state, formKey) => {
+  if (!formKey || !isRecord(state.global.formDrafts)) {
+    return undefined;
+  }
+
+  const draft = state.global.formDrafts[formKey];
+  return isRecord(draft) ? draft : undefined;
+};
+
+const ensureFormDraft = (state, formKey) => {
+  const formDrafts = ensureFormDrafts(state);
+  if (!isRecord(formDrafts[formKey])) {
+    formDrafts[formKey] = {
+      values: {},
+      touched: {},
+      errors: {},
+      submitted: false,
+    };
+  }
+
+  const draft = formDrafts[formKey];
+  if (!isRecord(draft.values)) {
+    draft.values = {};
+  }
+  if (!isRecord(draft.touched)) {
+    draft.touched = {};
+  }
+  if (!isRecord(draft.errors)) {
+    draft.errors = {};
+  }
+  if (typeof draft.submitted !== "boolean") {
+    draft.submitted = false;
+  }
+
+  return draft;
+};
+
+const validateFormFieldValue = (field, value) => {
+  const storedValue = normalizeFormStoredValue(field, value);
+  if (field?.required === true && storedValue.length === 0) {
+    return "required";
+  }
+
+  return null;
+};
+
+const selectPresentationStateForPointer = ({ state, pointer }) => {
+  if (!pointer?.sectionId || !pointer?.lineId) {
+    return {};
+  }
+
+  const section = selectSection({ state }, { sectionId: pointer.sectionId });
+  const lines = section?.lines || [];
+  const currentLineIndex = lines.findIndex(
+    (line) => line.id === pointer.lineId,
+  );
+
+  if (currentLineIndex < 0) {
+    return {};
+  }
+
+  return constructPresentationState(
+    lines.slice(0, currentLineIndex + 1).map((line) => line.actions || {}),
+  );
+};
+
+const buildFormTemplateData = ({ state, form, pointer }) => {
+  if (!form?.resourceId) {
+    return null;
+  }
+
+  const formId = getFormId(form);
+  const formKey = buildFormKey(pointer, formId);
+  if (!formId || !formKey) {
+    return null;
+  }
+
+  const draft = getFormDraft(state, formKey);
+  const fieldDefinitions = getFormFieldDefinitions(form);
+  const variables = selectAllVariables({ state });
+  const fields = {};
+  const fieldList = [];
+  const values = {};
+  let valid = true;
+
+  Object.entries(fieldDefinitions).forEach(([fieldId, field]) => {
+    const initialValue = normalizeFormValue(variables?.[field.variableId]);
+    const value = Object.prototype.hasOwnProperty.call(
+      draft?.values ?? {},
+      fieldId,
+    )
+      ? normalizeFormValue(draft.values[fieldId])
+      : initialValue;
+    const touched = draft?.touched?.[fieldId] === true;
+    const fieldError = validateFormFieldValue(field, value);
+    const visibleError = draft?.submitted || touched ? fieldError : null;
+    const maxLength =
+      typeof field.maxLength === "number"
+        ? Math.max(0, Math.round(field.maxLength))
+        : undefined;
+    const renderedField = {
+      id: fieldId,
+      variableId: field.variableId,
+      value,
+      initialValue,
+      valid: !fieldError,
+      error: visibleError,
+      touched,
+      required: field.required === true,
+      trim: field.trim === true,
+      placeholder:
+        field.placeholder === undefined ? "" : String(field.placeholder),
+      multiline: field.multiline === true,
+      ...(maxLength !== undefined ? { maxLength } : {}),
+    };
+
+    if (fieldError) {
+      valid = false;
+    }
+
+    fields[fieldId] = renderedField;
+    fieldList.push(renderedField);
+    values[fieldId] = value;
+  });
+
+  return {
+    id: formId,
+    key: formKey,
+    resourceId: form.resourceId,
+    animations: form.animations,
+    valid,
+    submitted: draft?.submitted === true,
+    fields,
+    fieldList,
+    values,
+    submitActions: {
+      submitForm: {
+        formId,
+        formKey,
+        actions: cloneStateValue(form.submitActions ?? {}),
+      },
+    },
+    cancelActions: {
+      cancelForm: {
+        formId,
+        formKey,
+        actions: cloneStateValue(form.cancelActions ?? {}),
+      },
+    },
+  };
+};
+
 const rollbackActionBatchStack = [];
 const ROLLBACK_ACTION_SOURCE_LINE = "line";
 const ROLLBACK_ACTION_SOURCE_INTERACTION = "interaction";
@@ -899,6 +1107,7 @@ const resetStoryStateTransientGlobals = (state) => {
   state.global.dialogueUIHidden = false;
   delete state.global.isDialogueHistoryShowing;
   clearConfirmDialog(state);
+  clearFormDrafts(state);
   state.global.nextLineConfig = createDefaultNextLineConfig();
   state.global.overlayStack = [];
   state.global.isLineCompleted = true;
@@ -1181,6 +1390,7 @@ const restoreRollbackCheckpoint = (state, checkpointIndex) => {
     state.global.nextLineConfig = cloneStateValue(DEFAULT_NEXT_LINE_CONFIG);
     state.global.overlayStack = [];
     clearConfirmDialog(state);
+    clearFormDrafts(state);
     state.global.isLineCompleted = true;
 
     const replayStartIndex = rollback.replayStartIndex ?? 0;
@@ -1253,6 +1463,7 @@ export const createInitialState = (payload) => {
     global: {
       pendingEffects: [],
       confirmDialog: null,
+      formDrafts: {},
       accountViewedRegistry: normalizeLoadedViewedRegistry(
         loadedAccountViewedRegistry,
         "accountViewedRegistry",
@@ -1371,6 +1582,45 @@ export const selectDialogueHistory = ({ state }) => {
 
 export const selectConfirmDialog = ({ state }) => {
   return state.global.confirmDialog ?? null;
+};
+
+export const selectActiveForm = ({ state }, { pointer } = {}) => {
+  const activePointer = pointer ?? selectCurrentPointer({ state })?.pointer;
+  const presentationState = selectPresentationStateForPointer({
+    state,
+    pointer: activePointer,
+  });
+
+  return buildFormTemplateData({
+    state,
+    form: presentationState.form,
+    pointer: activePointer,
+  });
+};
+
+export const selectIsFormVisible = ({ state }, { pointer } = {}) => {
+  return !!selectActiveForm({ state }, { pointer });
+};
+
+export const selectActiveInteraction = ({ state }, { pointer } = {}) => {
+  const activeForm = selectActiveForm({ state }, { pointer });
+  if (activeForm) {
+    return {
+      source: FORM_INTERACTION_SOURCE,
+      formId: activeForm.id,
+      formKey: activeForm.key,
+    };
+  }
+
+  const choiceResourceId = selectVisibleChoiceResourceId({ state, pointer });
+  if (choiceResourceId) {
+    return {
+      source: CHOICE_INTERACTION_SOURCE,
+      resourceId: choiceResourceId,
+    };
+  }
+
+  return null;
 };
 
 const selectIsLineSeenInRegistry = ({ state, registry }, payload) => {
@@ -1839,6 +2089,8 @@ export const selectRenderState = ({ state }, options = {}) => {
   const activePersistentAnimations = options?.activePersistentAnimations ?? [];
   const restoredPersistentAnimations =
     options?.restoredPersistentAnimations ?? [];
+  const activeForm = selectActiveForm({ state });
+  const isChoiceVisible = selectIsChoiceVisible({ state });
 
   const allVariables = selectAllVariables({ state });
 
@@ -1856,7 +2108,8 @@ export const selectRenderState = ({ state }, options = {}) => {
     dialogueUIHidden: runtime.dialogueUIHidden,
     autoMode: runtime.autoMode,
     skipMode: runtime.skipMode,
-    isChoiceVisible: selectIsChoiceVisible({ state }),
+    isChoiceVisible,
+    isFormVisible: !!activeForm,
     canRollback: selectCanRollback({ state }),
     skipOnlyViewedLines: !runtime.skipUnseenText,
     isLineCompleted: runtime.isLineCompleted,
@@ -1864,6 +2117,7 @@ export const selectRenderState = ({ state }, options = {}) => {
       !!runtime.skipTransitionsAndAnimations || settleCurrentLinePresentation,
     overlayStack: state.global.overlayStack,
     confirmDialog: state.global.confirmDialog,
+    form: activeForm,
     dialogueHistory: selectDialogueHistory({ state }),
     saveSlots,
     variables: allVariables,
@@ -1919,12 +2173,13 @@ export const replaceLastOverlay = ({ state }, payload) => {
 export const clearOverlays = ({ state }) => {
   state.global.overlayStack = [];
   clearConfirmDialog(state);
+  clearFormDrafts(state);
   state.global.pendingEffects.push({ name: "render" });
   recordRollbackAction(state, "clearOverlays", undefined);
   return state;
 };
 
-const stopPlaybackForEnteredChoiceLine = (state) => {
+const stopPlaybackForEnteredBlockingLine = (state) => {
   if (state.global.autoMode) {
     state.global.autoMode = false;
     state.global.pendingEffects.push({
@@ -1949,9 +2204,14 @@ const stopPlaybackForEnteredChoiceLine = (state) => {
 const queueEnteredLineEffects = (state, pointer) => {
   state.global.isLineCompleted = false;
 
-  const isChoiceVisible = !!selectVisibleChoiceResourceId({ state, pointer });
-  if (isChoiceVisible) {
-    stopPlaybackForEnteredChoiceLine(state);
+  clearFormDrafts(state);
+
+  const activeInteraction = selectActiveInteraction({ state }, { pointer });
+  const isChoiceVisible =
+    activeInteraction?.source === CHOICE_INTERACTION_SOURCE;
+  const isFormVisible = activeInteraction?.source === FORM_INTERACTION_SOURCE;
+  if (activeInteraction) {
+    stopPlaybackForEnteredBlockingLine(state);
   }
 
   state.global.pendingEffects.push({
@@ -1960,11 +2220,13 @@ const queueEnteredLineEffects = (state, pointer) => {
 
   return {
     isChoiceVisible,
+    isFormVisible,
+    activeInteraction,
   };
 };
 
 export const startAutoMode = ({ state }) => {
-  if (selectIsChoiceVisible({ state })) {
+  if (selectActiveInteraction({ state })) {
     return state;
   }
 
@@ -2009,7 +2271,7 @@ export const stopAutoMode = ({ state }) => {
 
 export const toggleAutoMode = ({ state }) => {
   const autoMode = state.global.autoMode;
-  if (selectIsChoiceVisible({ state }) && !autoMode) {
+  if (selectActiveInteraction({ state }) && !autoMode) {
     return state;
   }
 
@@ -2026,7 +2288,7 @@ export const startSkipMode = ({ state }) => {
   //   return state;
   // }
 
-  if (selectIsChoiceVisible({ state })) {
+  if (selectActiveInteraction({ state })) {
     return state;
   }
 
@@ -2069,7 +2331,7 @@ export const toggleSkipMode = ({ state }) => {
   // }
 
   const skipMode = selectSkipMode({ state });
-  if (selectIsChoiceVisible({ state }) && !skipMode) {
+  if (selectActiveInteraction({ state }) && !skipMode) {
     return state;
   }
 
@@ -2498,12 +2760,12 @@ export const setNextLineConfig = ({ state }, payload) => {
   }
 
   const currentAutoEnabled = state.global.nextLineConfig.auto?.enabled;
-  const isChoiceVisible = selectIsChoiceVisible({ state });
+  const activeInteraction = selectActiveInteraction({ state });
 
   // If auto.enabled state has changed, dispatch timer effects
   if (
     !isRollbackRestoring &&
-    !isChoiceVisible &&
+    !activeInteraction &&
     currentAutoEnabled === true &&
     !previousAutoEnabled
   ) {
@@ -2616,6 +2878,7 @@ export const loadSlot = ({ state }, payload) => {
     state.global.overlayStack = [];
     state.global.isLineCompleted = true;
     clearConfirmDialog(state);
+    clearFormDrafts(state);
     state.global.pendingEffects.push(
       { name: "clearAutoNextTimer" },
       { name: "clearSkipNextTimer" },
@@ -2657,6 +2920,7 @@ export const updateProjectData = ({ state }, payload) => {
     }
   });
   clearConfirmDialog(state);
+  clearFormDrafts(state);
 
   state.global.pendingEffects.push({
     name: "render",
@@ -2742,9 +3006,10 @@ export const nextLine = ({ state }, payload) => {
     return state;
   }
 
+  const activeInteraction = selectActiveInteraction({ state });
   if (
-    selectIsChoiceVisible({ state }) &&
-    payload?._interactionSource !== "choice"
+    activeInteraction &&
+    payload?._interactionSource !== activeInteraction.source
   ) {
     return state;
   }
@@ -2846,14 +3111,14 @@ export const nextLine = ({ state }, payload) => {
       lineId: nextLine.id,
     });
     resetNextLineConfigIfSingleLine(state);
-    const { isChoiceVisible } = queueEnteredLineEffects(state, {
+    const { activeInteraction } = queueEnteredLineEffects(state, {
       sectionId,
       lineId: nextLine.id,
     });
 
     // Keep scene auto mode running after manual advances (e.g. choice click -> nextLine).
     const nextLineConfig = state.global.nextLineConfig;
-    if (nextLineConfig?.auto?.enabled && !isChoiceVisible) {
+    if (nextLineConfig?.auto?.enabled && !activeInteraction) {
       const trigger = nextLineConfig.auto.trigger;
       if (trigger === "fromStart") {
         state.global.pendingEffects.push({
@@ -2881,10 +3146,10 @@ export const markLineCompleted = ({ state }) => {
     return state;
   }
   state.global.isLineCompleted = true;
-  const isChoiceVisible = selectIsChoiceVisible({ state });
+  const activeInteraction = selectActiveInteraction({ state });
 
   // If auto mode is on, start the delay timer to advance after completion
-  if (state.global.autoMode && !isChoiceVisible) {
+  if (state.global.autoMode && !activeInteraction) {
     state.global.pendingEffects.push({
       name: "startAutoNextTimer",
       payload: {
@@ -2902,7 +3167,7 @@ export const markLineCompleted = ({ state }) => {
 
   // If nextLineConfig.auto is enabled with fromComplete trigger, start the timer
   const nextLineConfig = state.global.nextLineConfig;
-  if (nextLineConfig?.auto?.enabled && !isChoiceVisible) {
+  if (nextLineConfig?.auto?.enabled && !activeInteraction) {
     const trigger = nextLineConfig.auto.trigger;
     // Default trigger is "fromComplete", so start timer if not explicitly "fromStart"
     if (trigger !== "fromStart") {
@@ -2944,8 +3209,8 @@ export const nextLineFromSystem = ({ state }) => {
     return state;
   }
 
-  // Auto/skip/scene timers should pause when an interactive choice is visible.
-  if (selectIsChoiceVisible({ state })) {
+  // Auto/skip/scene timers should pause when a blocking interaction is visible.
+  if (selectActiveInteraction({ state })) {
     return state;
   }
 
@@ -3006,14 +3271,14 @@ export const nextLineFromSystem = ({ state }) => {
       lineId: nextLine.id,
     });
     resetNextLineConfigIfSingleLine(state);
-    const { isChoiceVisible } = queueEnteredLineEffects(state, {
+    const { activeInteraction } = queueEnteredLineEffects(state, {
       sectionId,
       lineId: nextLine.id,
     });
 
     // Only start timer immediately if trigger is "fromStart"
     // For "fromComplete" trigger, markLineCompleted will start it when renderComplete fires
-    if (state.global.nextLineConfig.auto?.enabled && !isChoiceVisible) {
+    if (state.global.nextLineConfig.auto?.enabled && !activeInteraction) {
       const trigger = state.global.nextLineConfig.auto.trigger;
       if (trigger === "fromStart") {
         state.global.pendingEffects.push({
@@ -3032,6 +3297,222 @@ export const nextLineFromSystem = ({ state }) => {
   }
 
   return state;
+};
+
+const getActiveFormForPayload = (state, payload = {}) => {
+  const activeForm = selectActiveForm({ state });
+  if (!activeForm) {
+    return null;
+  }
+
+  if (payload.formKey && payload.formKey !== activeForm.key) {
+    return null;
+  }
+
+  if (payload.formId && payload.formId !== activeForm.id) {
+    return null;
+  }
+
+  return activeForm;
+};
+
+const validateFormCommitTarget = (state, field) => {
+  if (!field.variableId) {
+    throw new Error(`form field "${field.id}" requires variableId`);
+  }
+
+  const variableConfig =
+    state.projectData.resources?.variables?.[field.variableId];
+  const scope = variableConfig?.scope;
+  const type = variableConfig?.type;
+
+  if (isComputedVariableConfig(variableConfig)) {
+    throw new Error(`Cannot update computed variable: ${field.variableId}`);
+  }
+  if (variableConfig?.readonly === true) {
+    throw new Error(`Cannot update readonly variable: ${field.variableId}`);
+  }
+
+  validateVariableScope(scope, field.variableId);
+  validateVariableOperation(type, "set", field.variableId);
+
+  return {
+    variableConfig,
+    scope,
+  };
+};
+
+const createSubmittedFormContext = (activeForm, values) => ({
+  id: activeForm.id,
+  key: activeForm.key,
+  valid: true,
+  values: cloneStateValue(values),
+  fields: cloneStateValue(activeForm.fields),
+  fieldList: cloneStateValue(activeForm.fieldList),
+});
+
+export const updateFormField = ({ state }, payload = {}) => {
+  const activeForm = getActiveFormForPayload(state, payload);
+  const fieldId = payload.field;
+  if (!activeForm?.fields?.[fieldId]) {
+    return state;
+  }
+
+  const draft = ensureFormDraft(state, activeForm.key);
+  const value = normalizeFormValue(payload.value);
+  const field = activeForm.fields[fieldId];
+  const error = validateFormFieldValue(field, value);
+
+  draft.values[fieldId] = value;
+  draft.touched[fieldId] = true;
+  if (error) {
+    draft.errors[fieldId] = error;
+  } else {
+    delete draft.errors[fieldId];
+  }
+
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+  return state;
+};
+
+export const submitForm = ({ state }, payload = {}) => {
+  const activeForm = getActiveFormForPayload(state, payload);
+  if (!activeForm) {
+    return {
+      submitted: false,
+      valid: false,
+      reason: "inactive",
+    };
+  }
+
+  const draft = ensureFormDraft(state, activeForm.key);
+  draft.submitted = true;
+
+  const storedValues = {};
+  const errors = {};
+  Object.entries(activeForm.fields).forEach(([fieldId, field]) => {
+    const value = Object.prototype.hasOwnProperty.call(draft.values, fieldId)
+      ? draft.values[fieldId]
+      : field.value;
+    const error = validateFormFieldValue(field, value);
+    draft.touched[fieldId] = true;
+    if (error) {
+      errors[fieldId] = error;
+    }
+
+    storedValues[fieldId] = normalizeFormStoredValue(field, value);
+  });
+
+  draft.errors = errors;
+
+  if (Object.keys(errors).length > 0) {
+    state.global.pendingEffects.push({
+      name: "render",
+    });
+    return {
+      submitted: true,
+      valid: false,
+      errors: cloneStateValue(errors),
+      form: {
+        id: activeForm.id,
+        key: activeForm.key,
+        values: cloneStateValue(storedValues),
+      },
+    };
+  }
+
+  const lastContext = state.contexts[state.contexts.length - 1];
+  if (lastContext?.rollback?.isRestoring) {
+    return {
+      submitted: false,
+      valid: false,
+      reason: "restoring",
+    };
+  }
+
+  let contextVariableModified = false;
+  const globalUpdates = [];
+  const contextOperations = [];
+
+  Object.entries(activeForm.fields).forEach(([fieldId, field]) => {
+    const { scope } = validateFormCommitTarget(state, field);
+    const target =
+      scope === "context" ? lastContext.variables : state.global.variables;
+    const value = storedValues[fieldId];
+
+    target[field.variableId] = applyVariableOperation(
+      target[field.variableId],
+      "set",
+      value,
+    );
+
+    if (scope === "context") {
+      contextVariableModified = true;
+      contextOperations.push({
+        variableId: field.variableId,
+        op: "set",
+        value,
+      });
+    }
+
+    if (scope === "device" || scope === "account") {
+      globalUpdates.push({
+        scope,
+        path: `variables.${field.variableId}`,
+        op: "set",
+        value: cloneStateValue(target[field.variableId]),
+      });
+    }
+  });
+
+  if (contextVariableModified) {
+    recordRollbackAction(state, "updateVariable", {
+      id: "submitForm",
+      operations: contextOperations,
+    });
+  }
+
+  queueScopedDataPersistence(state, globalUpdates);
+
+  const formContext = createSubmittedFormContext(activeForm, storedValues);
+  delete state.global.formDrafts[activeForm.key];
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+
+  return {
+    submitted: true,
+    valid: true,
+    form: formContext,
+  };
+};
+
+export const cancelForm = ({ state }, payload = {}) => {
+  const activeForm = getActiveFormForPayload(state, payload);
+  if (!activeForm) {
+    return {
+      cancelled: false,
+      reason: "inactive",
+    };
+  }
+
+  delete state.global.formDrafts?.[activeForm.key];
+  state.global.pendingEffects.push({
+    name: "render",
+  });
+
+  return {
+    cancelled: true,
+    form: {
+      id: activeForm.id,
+      key: activeForm.key,
+      values: cloneStateValue(activeForm.values),
+      fields: cloneStateValue(activeForm.fields),
+      fieldList: cloneStateValue(activeForm.fieldList),
+    },
+  };
 };
 
 export const updateVariable = ({ state }, payload) => {
@@ -3362,6 +3843,9 @@ export const createSystemStore = (initialState) => {
     selectSkipMode,
     selectAutoMode,
     selectIsChoiceVisible,
+    selectIsFormVisible,
+    selectActiveInteraction,
+    selectActiveForm,
     selectDialogueUIHidden,
     selectDialogueHistory,
     selectConfirmDialog,
@@ -3433,6 +3917,9 @@ export const createSystemStore = (initialState) => {
     popOverlay,
     replaceLastOverlay,
     clearOverlays,
+    updateFormField,
+    submitForm,
+    cancelForm,
     updateVariable,
     nextLineFromSystem,
   };
