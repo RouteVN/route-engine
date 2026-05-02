@@ -161,6 +161,10 @@ properties:
           fileType:
             type: string
             description: File type
+          startDelayMs:
+            type: number
+            minimum: 0
+            description: Default start offset before playback begins, in milliseconds
         required: [fileId]
         additionalProperties: false
     additionalProperties: false

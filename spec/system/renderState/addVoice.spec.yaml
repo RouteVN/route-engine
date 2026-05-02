@@ -40,7 +40,7 @@ out:
       src: "voices/scene_intro/alice_001.ogg"
       volume: 80
       loop: false
-      delay: null
+      startDelayMs: null
 ---
 case: voice defaults to runtime sound volume
 in:
@@ -77,7 +77,7 @@ out:
       src: "voices/scene_intro/alice_001.ogg"
       volume: 65
       loop: false
-      delay: null
+      startDelayMs: null
 ---
 case: voice falls back to default sound volume when runtime is missing
 in:
@@ -112,9 +112,9 @@ out:
       src: "voices/scene_intro/alice_001.ogg"
       volume: 50
       loop: false
-      delay: null
+      startDelayMs: null
 ---
-case: voice with loop and delay
+case: voice with loop and startDelayMs
 in:
   - elements:
       - id: "story"
@@ -129,7 +129,7 @@ in:
         resourceId: "loopingVoice"
         volume: 60
         loop: true
-        delay: 250
+        startDelayMs: 250
     resources:
       voices:
         scene_intro:
@@ -150,7 +150,7 @@ out:
       src: "voices/scene_intro/looping.ogg"
       volume: 60
       loop: true
-      delay: 250
+      startDelayMs: 250
 ---
 case: mute all forces voice volume to zero
 in:
@@ -189,7 +189,7 @@ out:
       src: "voices/scene_intro/alice_001.ogg"
       volume: 0
       loop: false
-      delay: null
+      startDelayMs: null
 ---
 case: no presentationState.voice - return unchanged state
 in:
@@ -311,4 +311,4 @@ out:
       src: "voices/scene_two/shared.ogg"
       volume: 50
       loop: false
-      delay: null
+      startDelayMs: null

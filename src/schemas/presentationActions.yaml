@@ -257,11 +257,11 @@ properties:
             volume:
               type: number
               description: Sound effect volume from 0 to 100
-            delay:
+            startDelayMs:
               type: number
-              description: Delay before the sound effect starts in milliseconds
-        required: [id, resourceId]
-        additionalProperties: false
+              description: Start offset before the sound effect begins, in milliseconds
+          required: [id, resourceId]
+          additionalProperties: false
     additionalProperties: false
 
   bgm:
@@ -271,6 +271,13 @@ properties:
       resourceId:
         type: string
         description: ID of the background music resource
+      loop:
+        type: boolean
+        description: Whether the background music loops
+      startDelayMs:
+        type: number
+        minimum: 0
+        description: Start offset before the background music begins, in milliseconds
     additionalProperties: false
 
   voice:
@@ -288,10 +295,10 @@ properties:
       loop:
         type: boolean
         description: Whether the voice audio loops
-      delay:
+      startDelayMs:
         type: number
         minimum: 0
-        description: Delay before the voice audio starts in milliseconds
+        description: Start offset before the voice audio begins, in milliseconds
     required: [resourceId]
     additionalProperties: false
 
