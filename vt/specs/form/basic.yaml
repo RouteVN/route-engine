@@ -4,6 +4,7 @@ description: Blocking multi-input form with required validation and submit actio
 specs:
   - background nextLine clicks are blocked while the form is visible
   - empty submit keeps the form visible and shows required errors
+  - filled inputs stay visible before submit
   - filling both inputs and clicking submit commits variables and advances
 skipInitialScreenshot: true
 viewport:
@@ -36,6 +37,9 @@ steps:
     y: 345
   - action: keypress
     key: B
+  - action: wait
+    ms: 120
+  - action: screenshot
   - action: click
     x: 720
     y: 445
