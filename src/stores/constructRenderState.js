@@ -1152,8 +1152,10 @@ const createLayoutTemplateData = ({
   autoMode,
   skipMode,
   isChoiceVisible,
+  isFormVisible,
   canRollback,
   confirmDialog,
+  form,
   historyDialogue = [],
   characters = {},
   dialogueUIHidden,
@@ -1188,8 +1190,10 @@ const createLayoutTemplateData = ({
     runtime: resolvedRuntime,
     saveSlots,
     isChoiceVisible,
+    isFormVisible,
     canRollback,
     confirmDialog,
+    form,
     historyDialogue,
     characters,
   };
@@ -1345,6 +1349,128 @@ const tagChoiceInteractionSource = (node) => {
       },
     },
   };
+};
+
+const FORM_EVENT_KEYS = new Set([
+  "click",
+  "change",
+  "submit",
+  "focusEvent",
+  "blurEvent",
+  "selectionChange",
+  "compositionStart",
+  "compositionUpdate",
+  "compositionEnd",
+]);
+
+const mergeEventActions = (eventConfig, actions) => {
+  const payload =
+    eventConfig?.payload &&
+    typeof eventConfig.payload === "object" &&
+    !Array.isArray(eventConfig.payload)
+      ? eventConfig.payload
+      : {};
+  const existingActions =
+    payload.actions && typeof payload.actions === "object"
+      ? payload.actions
+      : {};
+
+  return {
+    ...(eventConfig || {}),
+    payload: {
+      ...payload,
+      actions: {
+        ...existingActions,
+        ...actions,
+      },
+    },
+  };
+};
+
+const enrichFormInputs = (node, form) => {
+  if (Array.isArray(node)) {
+    return node.map((item) => enrichFormInputs(item, form));
+  }
+
+  if (!node || typeof node !== "object") {
+    return node;
+  }
+
+  const enrichedNode = {};
+  for (const [key, value] of Object.entries(node)) {
+    enrichedNode[key] = enrichFormInputs(value, form);
+  }
+
+  if (enrichedNode.type !== "input" || typeof enrichedNode.field !== "string") {
+    return enrichedNode;
+  }
+
+  const field = form?.fields?.[enrichedNode.field];
+  if (!field) {
+    return enrichedNode;
+  }
+
+  const updateFormField = {
+    updateFormField: {
+      formId: form.id,
+      formKey: form.key,
+      field: field.id,
+      value: "_event.value",
+      _interactionSource: "form",
+    },
+  };
+
+  return {
+    ...enrichedNode,
+    value: field.value,
+    placeholder:
+      enrichedNode.placeholder === undefined
+        ? field.placeholder
+        : enrichedNode.placeholder,
+    multiline:
+      enrichedNode.multiline === undefined
+        ? field.multiline
+        : enrichedNode.multiline,
+    ...(enrichedNode.maxLength === undefined && field.maxLength !== undefined
+      ? { maxLength: field.maxLength }
+      : {}),
+    change: mergeEventActions(enrichedNode.change, updateFormField),
+    submit: mergeEventActions(enrichedNode.submit, form.submitActions),
+  };
+};
+
+const tagFormInteractionSource = (node, form) => {
+  if (Array.isArray(node)) {
+    return node.map((item) => tagFormInteractionSource(item, form));
+  }
+
+  if (!node || typeof node !== "object") {
+    return node;
+  }
+
+  const taggedNode = {};
+  for (const [key, value] of Object.entries(node)) {
+    taggedNode[key] = tagFormInteractionSource(value, form);
+  }
+
+  for (const eventKey of FORM_EVENT_KEYS) {
+    const payload = taggedNode[eventKey]?.payload;
+    if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+      continue;
+    }
+
+    taggedNode[eventKey] = {
+      ...taggedNode[eventKey],
+      payload: {
+        ...payload,
+        _interactionSource: "form",
+        _formId: form.id,
+        _formKey: form.key,
+      },
+    };
+  }
+
+  return taggedNode;
 };
 
 const createDialogueCharacterTemplateData = ({
@@ -1743,7 +1869,9 @@ export const addBackgroundOrCg = (
     autoMode,
     skipMode,
     isChoiceVisible,
+    isFormVisible,
     canRollback,
+    form,
     saveSlots = [],
   },
 ) => {
@@ -1860,7 +1988,9 @@ export const addBackgroundOrCg = (
             autoMode,
             skipMode,
             isChoiceVisible,
+            isFormVisible,
             canRollback,
+            form,
             characters: resources.characters || {},
             skipTransitionsAndAnimations,
           }),
@@ -2080,7 +2210,9 @@ export const addVisuals = (
     autoMode,
     skipMode,
     isChoiceVisible,
+    isFormVisible,
     canRollback,
+    form,
     saveSlots = [],
   },
 ) => {
@@ -2193,7 +2325,9 @@ export const addVisuals = (
               autoMode,
               skipMode,
               isChoiceVisible,
+              isFormVisible,
               canRollback,
+              form,
               characters: resources.characters || {},
               skipTransitionsAndAnimations,
             }),
@@ -2373,7 +2507,9 @@ export const addDialogue = (
     autoMode,
     skipMode,
     isChoiceVisible,
+    isFormVisible,
     canRollback,
+    form,
     skipOnlyViewedLines,
     isLineCompleted,
     skipTransitionsAndAnimations,
@@ -2416,7 +2552,9 @@ export const addDialogue = (
         autoMode,
         skipMode,
         isChoiceVisible,
+        isFormVisible,
         canRollback,
+        form,
         characters: resources.characters || {},
         dialogueUIHidden,
         skipOnlyViewedLines,
@@ -2510,7 +2648,9 @@ export const addChoices = (
     autoMode,
     skipMode,
     isChoiceVisible,
+    isFormVisible,
     canRollback,
+    form,
     activePersistentAnimations,
     saveSlots = [],
   },
@@ -2536,7 +2676,9 @@ export const addChoices = (
             autoMode,
             skipMode,
             isChoiceVisible: isChoiceVisible ?? !!presentationState.choice,
+            isFormVisible,
             canRollback,
+            form,
             characters: resources.characters || {},
             skipTransitionsAndAnimations,
           }),
@@ -2598,6 +2740,116 @@ export const addChoices = (
   return state;
 };
 
+export const addForm = (
+  state,
+  {
+    presentationState,
+    previousPresentationState,
+    resources,
+    screen,
+    isLineCompleted,
+    skipTransitionsAndAnimations,
+    variables,
+    runtime,
+    autoMode,
+    skipMode,
+    isChoiceVisible,
+    isFormVisible,
+    canRollback,
+    activePersistentAnimations,
+    saveSlots = [],
+    form,
+  },
+) => {
+  const { elements, animations } = state;
+  if (!form?.resourceId || !resources) {
+    return state;
+  }
+
+  const storyContainer = getStoryContainer(elements);
+  if (!storyContainer) {
+    return state;
+  }
+
+  const layout = resources?.layouts?.[form.resourceId];
+  if (!layout) {
+    console.warn(`Form layout not found: ${form.resourceId}`);
+    return state;
+  }
+
+  const formContainer = {
+    id: "form-container",
+    type: "container",
+    x: 0,
+    y: 0,
+    children: layout.elements || [],
+  };
+
+  const templateData = {
+    ...createLayoutTemplateData({
+      variables,
+      runtime,
+      saveSlots,
+      dialogueState: presentationState.dialogue,
+      isLineCompleted,
+      autoMode,
+      skipMode,
+      isChoiceVisible,
+      isFormVisible,
+      canRollback,
+      characters: resources.characters || {},
+      skipTransitionsAndAnimations,
+      form,
+    }),
+    form,
+  };
+
+  const processedForm = parseAndRender(formContainer, templateData, {
+    functions: jemplFunctions,
+  });
+  const formElements = tagFormInteractionSource(
+    resolveLayoutResourceIds(
+      settleTextRevealIfCompleted(enrichFormInputs(processedForm, form), {
+        isLineCompleted,
+        skipMode,
+        skipTransitionsAndAnimations,
+      }),
+      resources,
+    ),
+    form,
+  );
+
+  if (formElements) {
+    storyContainer.children.push(formElements);
+  }
+
+  const formAnimationInstances = createAnimationInstances({
+    animationsDef: form.animations,
+    resources,
+    previousResourceId: previousPresentationState?.form?.resourceId,
+    currentResourceId: form.resourceId,
+    previousTargetId: previousPresentationState?.form?.resourceId
+      ? "form-container"
+      : undefined,
+    currentTargetId: form.resourceId ? "form-container" : undefined,
+    animationPath: "form.animations",
+    idPrefix: "form",
+  });
+
+  if (
+    shouldEmitAnimationSelection({
+      animationInstances: formAnimationInstances,
+      isLineCompleted,
+      skipTransitionsAndAnimations,
+      activePersistentAnimations,
+    })
+  ) {
+    animations.push(...formAnimationInstances);
+  }
+
+  return state;
+};
+
 export const addControl = (
   state,
   {
@@ -2609,7 +2861,9 @@ export const addControl = (
     autoMode,
     skipMode,
     isChoiceVisible,
+    isFormVisible,
     canRollback,
+    form,
     saveSlots = [],
     skipTransitionsAndAnimations,
   },
@@ -2661,7 +2915,9 @@ export const addControl = (
         autoMode,
         skipMode,
         isChoiceVisible,
+        isFormVisible,
         canRollback,
+        form,
         characters: resources.characters || {},
         skipTransitionsAndAnimations,
       }),
@@ -2797,7 +3053,9 @@ export const addLayout = (
     autoMode,
     skipMode,
     isChoiceVisible,
+    isFormVisible,
     canRollback,
+    form,
     saveSlots = [],
     isLineCompleted,
     skipTransitionsAndAnimations,
@@ -2851,7 +3109,9 @@ export const addLayout = (
           autoMode,
           skipMode,
           isChoiceVisible,
+          isFormVisible,
           canRollback,
+          form,
           characters: resources.characters || {},
           skipTransitionsAndAnimations,
         }),
@@ -2904,7 +3164,9 @@ export const addOverlayStack = (
     autoMode,
     skipMode,
     isChoiceVisible,
+    isFormVisible,
     canRollback,
+    form,
     overlayStack = [],
     dialogueHistory = [],
     saveSlots = [],
@@ -2965,7 +3227,9 @@ export const addOverlayStack = (
         autoMode,
         skipMode,
         isChoiceVisible,
+        isFormVisible,
         canRollback,
+        form,
         historyDialogue: historyDialogueWithNames,
         characters: resources.characters || {},
         skipTransitionsAndAnimations,
@@ -3013,7 +3277,9 @@ export const addConfirmDialog = (
     autoMode,
     skipMode,
     isChoiceVisible,
+    isFormVisible,
     canRollback,
+    form,
     confirmDialog,
     dialogueHistory = [],
     screen,
@@ -3073,7 +3339,9 @@ export const addConfirmDialog = (
       autoMode,
       skipMode,
       isChoiceVisible,
+      isFormVisible,
       canRollback,
+      form,
       confirmDialog,
       historyDialogue: historyDialogueWithNames,
       characters: resources.characters || {},
@@ -3118,6 +3386,7 @@ export const constructRenderState = (params) => {
     addVisuals,
     addDialogue,
     addChoices,
+    addForm,
     addLayout,
     addBgm,
     addSfx,

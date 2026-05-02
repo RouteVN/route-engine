@@ -1,4 +1,8 @@
+import { current, isDraft } from "immer";
 import { createSequentialActionsExecutor } from "../util.js";
+
+const clonePresentationValue = (value) =>
+  structuredClone(isDraft(value) ? current(value) : value);
 
 /**
  * Helper to handle animations-only state when no resource is provided
@@ -14,7 +18,7 @@ const getAnimationsOnlyState = (presentation, hasResourceFn) => {
   if (!hasResourceFn(presentation) && presentation.animations) {
     return {
       animationsOnly: true,
-      state: { animations: structuredClone(presentation.animations) },
+      state: { animations: clonePresentationValue(presentation.animations) },
     };
   }
 
@@ -33,7 +37,7 @@ const processItemsWithAnimations = (items, hasResourceFn) => {
   }
 
   const processedItems = items
-    .map((item) => structuredClone(item))
+    .map((item) => clonePresentationValue(item))
     .filter((item) => hasResourceFn(item) || item.animations);
 
   return {
@@ -82,7 +86,7 @@ const resolveDialogueCharacterFields = (dialogueAction) => {
   }
 
   if (hasDialogueCharacterSprite(dialogueAction)) {
-    fields.sprite = structuredClone(dialogueAction.character.sprite);
+    fields.sprite = clonePresentationValue(dialogueAction.character.sprite);
     hasFields = true;
   }
 
@@ -108,7 +112,7 @@ const applyDialogueContent = ({ dialogueState, content, append = false }) => {
 
   if (previousContent.length > 0) {
     dialogueState.initialRevealedContent = previousContent.map((item) =>
-      structuredClone(item),
+      clonePresentationValue(item),
     );
   } else {
     delete dialogueState.initialRevealedContent;
@@ -141,7 +145,7 @@ export const background = (state, presentation) => {
     if (animationsOnly) {
       state.background = state.background?.resourceId
         ? {
-            ...structuredClone(state.background),
+            ...clonePresentationValue(state.background),
             ...animState,
           }
         : animState;
@@ -153,7 +157,7 @@ export const background = (state, presentation) => {
       return;
     }
 
-    const nextBackground = structuredClone(presentation.background);
+    const nextBackground = clonePresentationValue(presentation.background);
     const previousBackground = state.background;
 
     if (
@@ -162,7 +166,7 @@ export const background = (state, presentation) => {
       !hasOwnProperty(nextBackground, "animations") &&
       hasPersistentAnimationSelection(previousBackground)
     ) {
-      nextBackground.animations = structuredClone(
+      nextBackground.animations = clonePresentationValue(
         previousBackground.animations,
       );
     }
@@ -288,7 +292,7 @@ export const dialogue = (state, presentation) => {
     state.dialogue.character =
       !hasCharacterId && persistCharacter && state.dialogue.character
         ? {
-            ...structuredClone(state.dialogue.character),
+            ...clonePresentationValue(state.dialogue.character),
             ...characterFields,
           }
         : characterFields;
@@ -325,7 +329,7 @@ export const dialogue = (state, presentation) => {
     };
 
     if (state.dialogue.character) {
-      dialogueLine.character = structuredClone(state.dialogue.character);
+      dialogueLine.character = clonePresentationValue(state.dialogue.character);
     }
 
     state.dialogue.lines.push(dialogueLine);
@@ -504,6 +508,37 @@ export const choice = (state, presentation) => {
   }
 };
 
+/**
+ * Applies form from presentation to state
+ * @param {Object} state - The current state of the system
+ * @param {Object} presentation - The presentation to apply
+ */
+export const form = (state, presentation) => {
+  if (presentation.form) {
+    const { animationsOnly, state: animState } = getAnimationsOnlyState(
+      presentation.form,
+      (p) => !!p.resourceId,
+    );
+
+    if (animationsOnly) {
+      state.form = {
+        ...state.form,
+        ...animState,
+      };
+      return;
+    }
+
+    if (!presentation.form.resourceId) {
+      delete state.form;
+      return;
+    }
+
+    state.form = clonePresentationValue(presentation.form);
+  } else if (state.form) {
+    delete state.form;
+  }
+};
+
 export const control = (state, presentation) => {
   if (presentation.control) {
     if (!presentation.control.resourceId) {
@@ -554,6 +589,7 @@ export const constructPresentationState = (presentations) => {
     animation,
     layout,
     choice,
+    form,
     control,
     voice,
   ];

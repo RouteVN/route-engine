@@ -1,0 +1,252 @@
+---
+title: Form Basic
+description: Blocking multi-input form with required validation and submit actions.
+specs:
+  - background nextLine clicks are blocked while the form is visible
+  - empty submit keeps the form visible and shows required errors
+  - filled inputs stay visible before submit
+  - filling both inputs and clicking submit commits variables and advances
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 1280
+  height: 720
+steps:
+  - action: wait
+    ms: 200
+  - action: screenshot
+  - action: click
+    x: 40
+    y: 40
+  - action: wait
+    ms: 120
+  - action: screenshot
+  - action: click
+    x: 720
+    y: 445
+  - action: wait
+    ms: 120
+  - action: screenshot
+  - action: click
+    x: 520
+    y: 260
+  - action: keypress
+    key: A
+  - action: click
+    x: 520
+    y: 345
+  - action: keypress
+    key: B
+  - action: wait
+    ms: 120
+  - action: screenshot
+  - action: click
+    x: 720
+    y: 445
+  - action: wait
+    ms: 180
+  - action: screenshot
+---
+screen:
+  width: 1280
+  height: 720
+  backgroundColor: "#111111"
+resources:
+  controls:
+    formControls:
+      elements:
+        - id: background-hit
+          type: rect
+          x: 0
+          y: 0
+          width: 1280
+          height: 720
+          colorId: backgroundColor
+          click:
+            payload:
+              actions:
+                nextLine: {}
+        - id: form-visible
+          $when: isFormVisible
+          type: text
+          x: 44
+          y: 42
+          content: "FORM: ON"
+          textStyleId: labelText
+        - id: form-hidden
+          $when: "!isFormVisible"
+          type: text
+          x: 44
+          y: 42
+          content: "FORM: OFF"
+          textStyleId: labelText
+  layouts:
+    profileForm:
+      elements:
+        - id: form-panel
+          type: rect
+          x: 360
+          y: 150
+          width: 560
+          height: 390
+          colorId: panelColor
+        - id: form-title
+          type: text
+          x: 410
+          y: 185
+          content: "Profile"
+          textStyleId: titleText
+        - id: name-label
+          type: text
+          x: 410
+          y: 242
+          content: "Name"
+          textStyleId: labelText
+        - id: name-input
+          type: input
+          field: name
+          x: 510
+          y: 230
+          width: 330
+          height: 52
+          textStyleId: inputText
+        - id: name-error
+          $when: form.fields.name.error
+          type: text
+          x: 510
+          y: 288
+          content: "Name is required"
+          textStyleId: errorText
+        - id: code-label
+          type: text
+          x: 410
+          y: 327
+          content: "Code"
+          textStyleId: labelText
+        - id: code-input
+          type: input
+          field: code
+          x: 510
+          y: 315
+          width: 330
+          height: 52
+          textStyleId: inputText
+        - id: code-error
+          $when: form.fields.code.error
+          type: text
+          x: 510
+          y: 373
+          content: "Code is required"
+          textStyleId: errorText
+        - id: submit-button
+          type: rect
+          x: 650
+          y: 420
+          width: 190
+          height: 58
+          colorId: submitColor
+          click:
+            payload:
+              actions: ${form.submitActions}
+        - id: submit-label
+          type: text
+          x: 706
+          y: 436
+          content: "Submit"
+          textStyleId: buttonText
+    resultLayout:
+      elements:
+        - id: result-title
+          type: text
+          x: 410
+          y: 260
+          content: "Submitted"
+          textStyleId: titleText
+        - id: result-values
+          type: text
+          x: 410
+          y: 330
+          content: "Name: ${variables.playerName}  Code: ${variables.playerCode}"
+          textStyleId: labelText
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    backgroundColor:
+      hex: "#111111"
+    panelColor:
+      hex: "#243B53"
+    submitColor:
+      hex: "#2A9D8F"
+    textColor:
+      hex: "#F7F7F2"
+    inputTextColor:
+      hex: "#111111"
+    errorColor:
+      hex: "#FFB4A2"
+  textStyles:
+    titleText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 42
+      lineHeight: 1.2
+    labelText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 26
+      lineHeight: 1.25
+    buttonText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 28
+      lineHeight: 1.2
+    inputText:
+      fontId: fontDefault
+      colorId: inputTextColor
+      fontSize: 24
+      lineHeight: 1.2
+    errorText:
+      fontId: fontDefault
+      colorId: errorColor
+      fontSize: 19
+      lineHeight: 1.2
+  variables:
+    playerName:
+      type: string
+      scope: context
+      default: ""
+    playerCode:
+      type: string
+      scope: context
+      default: ""
+story:
+  initialSceneId: formScene
+  scenes:
+    formScene:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: formLine
+              actions:
+                control:
+                  resourceId: formControls
+                form:
+                  resourceId: profileForm
+                  fields:
+                    name:
+                      variableId: playerName
+                      required: true
+                      trim: true
+                      placeholder: Name
+                    code:
+                      variableId: playerCode
+                      required: true
+                      trim: true
+                      placeholder: Code
+                  submitActions:
+                    nextLine: {}
+            - id: resultLine
+              actions:
+                layout:
+                  resourceId: resultLayout

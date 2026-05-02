@@ -246,6 +246,27 @@ properties:
             type: object
         required: [resourceId, confirmActions, cancelActions]
         additionalProperties: false
+      formDrafts:
+        type: object
+        description: Transient active-form draft values keyed by form key
+        additionalProperties:
+          type: object
+          properties:
+            values:
+              type: object
+              additionalProperties: true
+            touched:
+              type: object
+              additionalProperties:
+                type: boolean
+            errors:
+              type: object
+              additionalProperties:
+                type: string
+            submitted:
+              type: boolean
+          required: [values, touched, errors, submitted]
+          additionalProperties: false
       autoMode:
         type: boolean
       skipMode:
@@ -279,6 +300,7 @@ properties:
         musicVolume,
         muteAll,
         confirmDialog,
+        formDrafts,
         autoMode,
         skipMode,
         nextLineConfig,

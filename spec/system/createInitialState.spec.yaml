@@ -34,6 +34,7 @@ out:
     musicVolume: 50
     muteAll: false
     confirmDialog: null
+    formDrafts: {}
     accountViewedRegistry:
       sections: []
       resources: []
@@ -124,6 +125,7 @@ out:
     musicVolume: 50
     muteAll: false
     confirmDialog: null
+    formDrafts: {}
     accountViewedRegistry:
       sections: []
       resources: []
@@ -227,6 +229,7 @@ out:
     musicVolume: 50
     muteAll: false
     confirmDialog: null
+    formDrafts: {}
     accountViewedRegistry:
       sections: []
       resources: []
@@ -324,6 +327,7 @@ out:
     musicVolume: 50
     muteAll: false
     confirmDialog: null
+    formDrafts: {}
     accountViewedRegistry:
       sections: []
       resources: []
@@ -418,6 +422,7 @@ out:
     musicVolume: 50
     muteAll: false
     confirmDialog: null
+    formDrafts: {}
     accountViewedRegistry:
       sections: []
       resources: []

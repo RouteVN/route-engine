@@ -72,10 +72,14 @@ export const createStore = (
         func(transformSelectorFirstArgument(state), ...args);
     } else {
       actions[name] = (...args) => {
-        const newState = produce(state, (draft) =>
-          func(transformActionFirstArgument(draft), ...args),
-        );
+        let actionResult;
+        const newState = produce(state, (draft) => {
+          const result = func(transformActionFirstArgument(draft), ...args);
+          actionResult =
+            result !== undefined && !isDraft(result) ? result : undefined;
+        });
         state = newState;
+        return actionResult;
       };
     }
   }
@@ -1238,6 +1242,7 @@ export const diffPresentationState = (prev = {}, curr = {}) => {
   }
 
   diffObject("choice");
+  diffObject("form");
   diffObject("layout");
   diffObject("animation");
   diffObject("control");
@@ -1279,6 +1284,7 @@ export const normalizePersistentPresentationState = (state = {}) => {
 
   stripAnimationsFromObject("layout");
   stripAnimationsFromObject("choice");
+  stripAnimationsFromObject("form");
 
   if (normalizedState.dialogue?.ui) {
     delete normalizedState.dialogue.ui.animations;
@@ -1385,6 +1391,9 @@ const OPAQUE_ACTION_BRANCHES = {
   conditional: new Set(["branches"]),
   updateProjectData: new Set(["projectData"]),
   showConfirmDialog: new Set(["confirmActions", "cancelActions"]),
+  form: new Set(["submitActions", "cancelActions"]),
+  submitForm: new Set(["actions"]),
+  cancelForm: new Set(["actions"]),
 };
 
 const isOpaqueActionBranch = (path, key) => {

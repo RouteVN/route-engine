@@ -31,6 +31,8 @@ vt:
           files: "nextLineConfig"
         - title: "Choice"
           files: "choice"
+        - title: "Form"
+          files: "form"
         - title: "Complete"
           files: "complete"
         - title: "Layout"

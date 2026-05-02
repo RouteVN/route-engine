@@ -413,4 +413,45 @@ properties:
     required: [id, operations]
     additionalProperties: false
 
+  updateFormField:
+    type: object
+    description: Update a transient active form field draft
+    properties:
+      formId:
+        type: string
+      formKey:
+        type: string
+      field:
+        type: string
+      value:
+        type: string
+    required: [formKey, field]
+    additionalProperties: true
+
+  submitForm:
+    type: object
+    description: Submit the active form and run actions after a valid commit
+    properties:
+      formId:
+        type: string
+      formKey:
+        type: string
+      actions:
+        type: object
+    required: [formKey]
+    additionalProperties: true
+
+  cancelForm:
+    type: object
+    description: Cancel the active form and run follow-up actions
+    properties:
+      formId:
+        type: string
+      formKey:
+        type: string
+      actions:
+        type: object
+    required: [formKey]
+    additionalProperties: true
+
 additionalProperties: false

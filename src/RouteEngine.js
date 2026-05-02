@@ -24,6 +24,8 @@ const PERSISTENT_PLAYBACK_RESTORE_ACTIONS = new Set([
 
 const CONDITIONAL_ACTION_TYPE = "conditional";
 const CHOICE_INTERACTION_SOURCE = "choice";
+const FORM_INTERACTION_SOURCE = "form";
+const FORM_ACTION_TYPES = new Set(["submitForm", "cancelForm"]);
 
 const isRecord = (value) =>
   value !== null && typeof value === "object" && !Array.isArray(value);
@@ -246,9 +248,19 @@ export default function createRouteEngine(options) {
     return _systemStore.selectIsChoiceVisible();
   };
 
+  const selectIsFormVisible = () => {
+    return _systemStore.selectIsFormVisible();
+  };
+
+  const selectActiveInteraction = () => {
+    return _systemStore.selectActiveInteraction();
+  };
+
   const applyInteractionSource = (actionType, payload, options = {}) => {
     if (
-      options.interactionSource !== CHOICE_INTERACTION_SOURCE ||
+      ![CHOICE_INTERACTION_SOURCE, FORM_INTERACTION_SOURCE].includes(
+        options.interactionSource,
+      ) ||
       actionType !== "nextLine" ||
       !isRecord(payload)
     ) {
@@ -257,7 +269,7 @@ export default function createRouteEngine(options) {
 
     return {
       ...payload,
-      _interactionSource: CHOICE_INTERACTION_SOURCE,
+      _interactionSource: options.interactionSource,
     };
   };
 
@@ -276,8 +288,9 @@ export default function createRouteEngine(options) {
       _persistentAnimationSessions = new Map();
     }
 
-    _systemStore[actionType](payload);
+    const result = _systemStore[actionType](payload);
     processEffectsUntilEmpty();
+    return result;
   };
 
   const handleAction = (actionType, payload, eventContext, options = {}) => {
@@ -379,6 +392,36 @@ export default function createRouteEngine(options) {
     }
   };
 
+  const buildFormActionEventContext = (eventContext, formContext) => {
+    return {
+      ...(eventContext ?? {}),
+      _form: formContext,
+    };
+  };
+
+  const handleFormAction = (actionType, payload, eventContext, options) => {
+    const result = dispatchStoreAction(actionType, payload);
+    const isSubmitted = result?.submitted === true && result.valid === true;
+    const isCancelled = result?.cancelled === true;
+
+    if (!isSubmitted && !isCancelled) {
+      return;
+    }
+
+    if (!isRecord(payload.actions)) {
+      return;
+    }
+
+    processActionEntries(
+      payload.actions,
+      buildFormActionEventContext(eventContext, result.form),
+      {
+        ...options,
+        interactionSource: FORM_INTERACTION_SOURCE,
+      },
+    );
+  };
+
   const handleActionEntry = (actionType, payload, eventContext, options) => {
     const context = buildActionTemplateContext(eventContext);
     const processedActions = processActionTemplates(
@@ -392,10 +435,23 @@ export default function createRouteEngine(options) {
       return;
     }
 
-    dispatchStoreAction(
+    const processedPayloadWithInteraction = applyInteractionSource(
       actionType,
-      applyInteractionSource(actionType, processedPayload, options),
+      processedPayload,
+      options,
     );
+
+    if (FORM_ACTION_TYPES.has(actionType)) {
+      handleFormAction(
+        actionType,
+        processedPayloadWithInteraction,
+        eventContext,
+        options,
+      );
+      return;
+    }
+
+    dispatchStoreAction(actionType, processedPayloadWithInteraction);
   };
 
   const processActionEntries = (actions, eventContext, options) => {
@@ -445,6 +501,8 @@ export default function createRouteEngine(options) {
     selectSaveSlots: selectSaveSlotMap,
     selectRuntime,
     selectIsChoiceVisible,
+    selectIsFormVisible,
+    selectActiveInteraction,
     handleLineActions,
     getNamespace,
   };
