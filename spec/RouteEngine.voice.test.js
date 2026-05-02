@@ -85,7 +85,7 @@ describe("RouteEngine voice rendering", () => {
         src: "voices/scene1/sharedLine.ogg",
         volume: 35,
         loop: false,
-        delay: null,
+        startDelayMs: null,
       },
     ]);
 
@@ -98,7 +98,7 @@ describe("RouteEngine voice rendering", () => {
         src: "voices/scene2/sharedLine.ogg",
         volume: 70,
         loop: false,
-        delay: null,
+        startDelayMs: null,
       },
     ]);
   });

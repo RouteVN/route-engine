@@ -247,7 +247,7 @@ describe("projectData schema", () => {
           resourceId: "alice_001",
           volume: 75,
           loop: false,
-          delay: 120,
+          startDelayMs: 120,
         },
       }),
     ).toBe(true);
@@ -309,6 +309,70 @@ describe("projectData schema", () => {
           keyword: "additionalProperties",
           params: expect.objectContaining({
             additionalProperty: "fileId",
+          }),
+        }),
+      ]),
+    );
+  });
+
+  it("rejects legacy audio delay fields", () => {
+    expect(
+      validatePresentationActions({
+        bgm: {
+          resourceId: "theme",
+          delay: 100,
+        },
+      }),
+    ).toBe(false);
+    expect(validatePresentationActions.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          keyword: "additionalProperties",
+          params: expect.objectContaining({
+            additionalProperty: "delay",
+          }),
+        }),
+      ]),
+    );
+
+    expect(
+      validatePresentationActions({
+        sfx: {
+          items: [
+            {
+              id: "click",
+              resourceId: "click",
+              delay: 100,
+            },
+          ],
+        },
+      }),
+    ).toBe(false);
+    expect(validatePresentationActions.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          keyword: "additionalProperties",
+          params: expect.objectContaining({
+            additionalProperty: "delay",
+          }),
+        }),
+      ]),
+    );
+
+    expect(
+      validatePresentationActions({
+        voice: {
+          resourceId: "alice_001",
+          delay: 100,
+        },
+      }),
+    ).toBe(false);
+    expect(validatePresentationActions.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          keyword: "additionalProperties",
+          params: expect.objectContaining({
+            additionalProperty: "delay",
           }),
         }),
       ]),

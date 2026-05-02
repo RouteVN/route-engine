@@ -100,7 +100,7 @@ out:
       src: "audio/cde.mp3"
       loop: true
       volume: 50
-      delay: null
+      startDelayMs: null
   global: {}
 ---
 case: nvl dialogue character sprite does not replay stale animation on later non-dialogue line
@@ -245,5 +245,5 @@ out:
       src: "audio/cde.mp3"
       loop: true
       volume: 50
-      delay: null
+      startDelayMs: null
   global: {}

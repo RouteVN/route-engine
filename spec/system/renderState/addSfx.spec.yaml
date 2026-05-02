@@ -26,7 +26,7 @@ in:
           fileId: "effect.mp3"
           loop: false
           volume: 70
-          delay: 0
+          startDelayMs: 0
 out:
   elements:
     - id: "story"
@@ -41,7 +41,7 @@ out:
       src: "effect.mp3"
       loop: false
       volume: 70
-      delay: 0
+      startDelayMs: 0
 ---
 case: add sfx with default values
 in:
@@ -76,7 +76,7 @@ out:
       src: "simple.mp3"
       loop: false
       volume: 50
-      delay: null
+      startDelayMs: null
 ---
 case: add sfx with custom settings
 in:
@@ -95,7 +95,7 @@ in:
             resourceId: "customSound"
             loop: true
             volume: 30
-            delay: 500
+            startDelayMs: 500
     resources:
       sounds:
         customSound:
@@ -114,7 +114,7 @@ out:
       src: "custom.mp3"
       loop: true
       volume: 30
-      delay: 500
+      startDelayMs: 500
 ---
 case: multiple sfx items
 in:
@@ -154,13 +154,13 @@ out:
       src: "first.mp3"
       loop: false
       volume: 60
-      delay: null
+      startDelayMs: null
     - id: "sfx2"
       type: "sound"
       src: "second.mp3"
       loop: false
       volume: 50
-      delay: null
+      startDelayMs: null
 ---
 case: no presentationState.sfx - return unchanged state
 in:
@@ -220,7 +220,7 @@ out:
       src: "effect.mp3"
       loop: true
       volume: 70
-      delay: null
+      startDelayMs: null
 ---
 case: audio not found - skip item
 in:

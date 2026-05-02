@@ -19,7 +19,7 @@ in:
       bgm:
         resourceId: "backgroundMusic"
         loop: true
-        delay: 0
+        startDelayMs: 0
     resources:
       sounds:
         backgroundMusic:
@@ -40,7 +40,7 @@ out:
       src: "bgm.mp3"
       loop: true
       volume: 70
-      delay: 0
+      startDelayMs: 0
 ---
 case: add bgm with default values
 in:
@@ -73,7 +73,7 @@ out:
       src: "simple.mp3"
       loop: true
       volume: 50
-      delay: null
+      startDelayMs: null
 ---
 case: add bgm with custom settings
 in:
@@ -89,7 +89,7 @@ in:
       bgm:
         resourceId: "customMusic"
         loop: false
-        delay: 1000
+        startDelayMs: 1000
     resources:
       sounds:
         customMusic:
@@ -110,7 +110,7 @@ out:
       src: "custom.mp3"
       loop: false
       volume: 30
-      delay: 1000
+      startDelayMs: 1000
 ---
 case: no presentationState.bgm - return unchanged state
 in:

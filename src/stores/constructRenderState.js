@@ -2697,7 +2697,7 @@ export const addBgm = (
       src: audioResource.fileId,
       loop: presentationState.bgm.loop ?? true,
       volume: getEffectiveMusicVolume(resolvedRuntime),
-      delay: presentationState.bgm.delay ?? null,
+      startDelayMs: presentationState.bgm.startDelayMs ?? null,
     });
   }
   return state;
@@ -2719,7 +2719,7 @@ export const addSfx = (state, { presentationState, resources }) => {
         src: audioResource.fileId,
         loop: item.loop ?? audioResource.loop ?? false,
         volume: item.volume ?? audioResource.volume ?? 50,
-        delay: item.delay ?? audioResource.delay ?? null,
+        startDelayMs: item.startDelayMs ?? audioResource.startDelayMs ?? null,
       });
     }
   }
@@ -2754,7 +2754,7 @@ export const addVoice = (
   }
 
   const voice = presentationState.voice;
-  const { resourceId, loop, delay } = voice;
+  const { resourceId, loop, startDelayMs } = voice;
   const voiceResource = resolveVoiceResource(
     resources,
     currentSceneId,
@@ -2776,7 +2776,7 @@ export const addVoice = (
     src: voiceResource.fileId,
     volume: getEffectiveVoiceVolume(voice, resolvedRuntime),
     loop: loop ?? false,
-    delay: delay ?? null,
+    startDelayMs: startDelayMs ?? null,
   });
 
   return state;
