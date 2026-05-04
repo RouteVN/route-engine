@@ -1060,6 +1060,71 @@ export const validateVariableOperation = (type, op, variableId) => {
   }
 };
 
+const DEFAULT_DIVIDE_ROUND_TO = 2;
+const MAX_DIVIDE_ROUND_TO = 12;
+
+const resolveDivideRoundTo = (roundTo = DEFAULT_DIVIDE_ROUND_TO) => {
+  if (
+    !Number.isInteger(roundTo) ||
+    roundTo < 0 ||
+    roundTo > MAX_DIVIDE_ROUND_TO
+  ) {
+    throw new Error(
+      `Operation "divide" requires roundTo to be an integer between 0 and ${MAX_DIVIDE_ROUND_TO}.`,
+    );
+  }
+
+  return roundTo;
+};
+
+const roundToDecimalPlaces = (value, decimalPlaces) => {
+  const factor = 10 ** decimalPlaces;
+  return Math.round((value + Number.EPSILON) * factor) / factor;
+};
+
+const isFiniteNumber = (value) =>
+  typeof value === "number" && Number.isFinite(value);
+
+export const validateVariableOperationValue = (
+  type,
+  op,
+  value,
+  variableId,
+  options = {},
+) => {
+  if (type !== "number") {
+    return;
+  }
+
+  if (op === "set" && !isFiniteNumber(value)) {
+    throw new Error(
+      `Operation "set" requires value to be a number for variable "${variableId}".`,
+    );
+  }
+
+  if (op === "multiply" && !isFiniteNumber(value)) {
+    throw new Error(
+      `Operation "multiply" requires value to be a number for variable "${variableId}".`,
+    );
+  }
+
+  if (op === "divide" && !isFiniteNumber(value)) {
+    throw new Error(
+      `Operation "divide" requires value to be a number for variable "${variableId}".`,
+    );
+  }
+
+  if (op === "divide") {
+    if (value === 0) {
+      throw new Error(
+        `Operation "divide" requires value to be a non-zero number for variable "${variableId}".`,
+      );
+    }
+
+    resolveDivideRoundTo(options.roundTo);
+  }
+};
+
 /**
  * Applies a variable operation to calculate the new value
  * Pure function - returns new value without side effects
@@ -1067,6 +1132,8 @@ export const validateVariableOperation = (type, op, variableId) => {
  * @param {*} currentValue - Current value of the variable
  * @param {string} op - Operation to apply (set, increment, decrement, multiply, divide, toggle)
  * @param {*} value - Value parameter for the operation (optional for increment/decrement/toggle)
+ * @param {Object} options - Operation options
+ * @param {number} [options.roundTo=2] - Decimal places for divide results
  * @returns {*} New value after applying the operation
  * @throws {Error} If operation is unknown
  *
@@ -1076,18 +1143,56 @@ export const validateVariableOperation = (type, op, variableId) => {
  * applyVariableOperation(true, 'toggle') // false
  * applyVariableOperation(3, 'multiply', 4) // 12
  */
-export const applyVariableOperation = (currentValue, op, value) => {
+export const applyVariableOperation = (
+  currentValue,
+  op,
+  value,
+  options = {},
+) => {
+  const resolveNumberOperand = (operand, fallback, label) => {
+    const resolvedValue = operand ?? fallback;
+    if (!isFiniteNumber(resolvedValue)) {
+      throw new Error(`Operation "${op}" requires ${label} to be a number.`);
+    }
+
+    return resolvedValue;
+  };
+
+  const resolveDivisor = (operand) => {
+    const divisor = resolveNumberOperand(operand, undefined, "value");
+    if (divisor === 0) {
+      throw new Error(
+        `Operation "${op}" requires value to be a non-zero number.`,
+      );
+    }
+
+    return divisor;
+  };
+
   switch (op) {
     case "set":
       return value;
     case "multiply":
-      return (currentValue ?? 1) * value;
+      return (
+        resolveNumberOperand(currentValue, 1, "current value") *
+        resolveNumberOperand(value, undefined, "value")
+      );
     case "divide":
-      return (currentValue ?? 0) / value;
+      return roundToDecimalPlaces(
+        resolveNumberOperand(currentValue, 0, "current value") /
+          resolveDivisor(value),
+        resolveDivideRoundTo(options.roundTo),
+      );
     case "increment":
-      return (currentValue ?? 0) + (value ?? 1);
+      return (
+        resolveNumberOperand(currentValue, 0, "current value") +
+        resolveNumberOperand(value, 1, "value")
+      );
     case "decrement":
-      return (currentValue ?? 0) - (value ?? 1);
+      return (
+        resolveNumberOperand(currentValue, 0, "current value") -
+        resolveNumberOperand(value, 1, "value")
+      );
     case "toggle":
       return !currentValue;
     default:

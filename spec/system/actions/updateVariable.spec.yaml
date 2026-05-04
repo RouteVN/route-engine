@@ -130,6 +130,29 @@ out:
   contexts:
     - variables: {}
 ---
+case: error - set number value must be number
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            score:
+              type: number
+              scope: context
+              default: 0
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            score: 10
+  - id: "testSetNumberValue"
+    operations:
+      - variableId: score
+        op: set
+        value: "20"
+throws: "Operation \"set\" requires value to be a number for variable \"score\"."
+---
 case: increment context number (default value 1)
 in:
   - state:
@@ -390,6 +413,52 @@ out:
     - variables:
         gold: 75
 ---
+case: error - increment value must be number
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            gold:
+              type: number
+              scope: context
+              default: 0
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            gold: 50
+  - id: "test9a"
+    operations:
+      - variableId: gold
+        op: increment
+        value: "25"
+throws: "Operation \"increment\" requires value to be a number."
+---
+case: error - increment current value must be number
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            gold:
+              type: number
+              scope: context
+              default: 0
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            gold: "50"
+  - id: "test9b"
+    operations:
+      - variableId: gold
+        op: increment
+        value: 25
+throws: "Operation \"increment\" requires current value to be a number."
+---
 case: decrement context number with custom value
 in:
   - state:
@@ -426,6 +495,29 @@ out:
   contexts:
     - variables:
         health: 70
+---
+case: error - decrement value must be number
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            health:
+              type: number
+              scope: context
+              default: 100
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            health: 100
+  - id: "test10a"
+    operations:
+      - variableId: health
+        op: decrement
+        value: "30"
+throws: "Operation \"decrement\" requires value to be a number."
 ---
 case: multiply context number
 in:
@@ -464,6 +556,52 @@ out:
     - variables:
         multiplier: 6
 ---
+case: error - multiply value must be number
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            multiplier:
+              type: number
+              scope: context
+              default: 1
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            multiplier: 2
+  - id: "test11a"
+    operations:
+      - variableId: multiplier
+        op: multiply
+        value: "3"
+throws: "Operation \"multiply\" requires value to be a number for variable \"multiplier\"."
+---
+case: error - multiply current value must be number
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            multiplier:
+              type: number
+              scope: context
+              default: 1
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            multiplier: "2"
+  - id: "test11b"
+    operations:
+      - variableId: multiplier
+        op: multiply
+        value: 3
+throws: "Operation \"multiply\" requires current value to be a number."
+---
 case: divide context number
 in:
   - state:
@@ -500,6 +638,150 @@ out:
   contexts:
     - variables:
         value: 25
+---
+case: divide context number rounds to two decimal places by default
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            value:
+              type: number
+              scope: context
+              default: 0
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            value: 10
+  - id: "test12DefaultRound"
+    operations:
+      - variableId: value
+        op: divide
+        value: 3
+out:
+  projectData:
+    resources:
+      variables:
+        value:
+          type: number
+          scope: context
+          default: 0
+  global:
+    variables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - variables:
+        value: 3.33
+---
+case: divide context number uses custom decimal places
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            value:
+              type: number
+              scope: context
+              default: 0
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            value: 10
+  - id: "test12CustomRound"
+    operations:
+      - variableId: value
+        op: divide
+        value: 3
+        roundTo: 4
+out:
+  projectData:
+    resources:
+      variables:
+        value:
+          type: number
+          scope: context
+          default: 0
+  global:
+    variables: {}
+    pendingEffects:
+      - name: "render"
+  contexts:
+    - variables:
+        value: 3.3333
+---
+case: error - divide value is required
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            value:
+              type: number
+              scope: context
+              default: 0
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            value: 10
+  - id: "test12MissingValue"
+    operations:
+      - variableId: value
+        op: divide
+throws: "Operation \"divide\" requires value to be a number for variable \"value\"."
+---
+case: error - divide value must be non-zero
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            value:
+              type: number
+              scope: context
+              default: 0
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            value: 10
+  - id: "test12ZeroValue"
+    operations:
+      - variableId: value
+        op: divide
+        value: 0
+throws: "Operation \"divide\" requires value to be a non-zero number for variable \"value\"."
+---
+case: error - divide roundTo must be an integer
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            value:
+              type: number
+              scope: context
+              default: 0
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            value: 10
+  - id: "test12InvalidRound"
+    operations:
+      - variableId: value
+        op: divide
+        value: 3
+        roundTo: 1.5
+throws: "Operation \"divide\" requires roundTo to be an integer between 0 and 12."
 ---
 case: decrement context number (default value 1)
 in:
