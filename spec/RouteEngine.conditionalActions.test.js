@@ -113,7 +113,6 @@ describe("RouteEngine conditional actions", () => {
             actions: setScoreAction("trusted", 1),
           },
           {
-            when: true,
             actions: setScoreAction("fallback", 2),
           },
         ],
@@ -234,21 +233,23 @@ describe("RouteEngine conditional actions", () => {
     expect(engine.selectSystemState().contexts[0].variables.score).toBe(5);
   });
 
-  it("evaluates string expression conditions", () => {
+  it("rejects string expression conditions", () => {
     const engine = createEngine(createProjectData({ trust: 75 }));
 
-    engine.handleActions({
-      conditional: {
-        branches: [
-          {
-            when: "variables.trust >= 70",
-            actions: setScoreAction("trusted", 4),
-          },
-        ],
-      },
-    });
-
-    expect(engine.selectSystemState().contexts[0].variables.score).toBe(4);
+    expect(() =>
+      engine.handleActions({
+        conditional: {
+          branches: [
+            {
+              when: "variables.trust >= 70",
+              actions: setScoreAction("trusted", 4),
+            },
+          ],
+        },
+      }),
+    ).toThrow(
+      "String condition expressions are not supported; use semantic JSON conditions",
+    );
   });
 
   it("executes nested conditional actions inside the selected branch", () => {

@@ -195,11 +195,7 @@ when:
     - 70
 ```
 
-String conditions are also allowed where conditional actions allow them:
-
-```yaml
-when: variables.trust >= 70
-```
+String expression conditions are not supported.
 
 Conditions evaluate against:
 

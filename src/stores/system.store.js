@@ -1,7 +1,7 @@
 import { current, isDraft } from "immer";
-import { evaluateCondition } from "jempl";
 import {
   createStore,
+  evaluateRouteCondition,
   filterStoredVariables,
   getDefaultVariablesFromProjectData,
   isComputedVariableConfig,
@@ -3647,7 +3647,7 @@ const replayRollbackConditionalAction = (state, payload) => {
     const hasCondition = Object.prototype.hasOwnProperty.call(branch, "when");
     if (
       hasCondition &&
-      !evaluateCondition(branch.when, buildRollbackConditionContext(state))
+      !evaluateRouteCondition(branch.when, buildRollbackConditionContext(state))
     ) {
       continue;
     }

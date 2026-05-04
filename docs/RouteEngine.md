@@ -436,8 +436,9 @@ const sectionLineChanges = engine.selectSectionLineChanges({
 ### Conditional Actions
 
 Use `conditional` to evaluate ordered branches and execute the first matching
-branch. `when` uses Jempl condition syntax, including semantic JSON conditions.
-A branch without `when` is treated as `else` and should be last.
+branch. `when` uses Jempl semantic JSON condition syntax. String expression
+conditions are not supported. A branch without `when` is treated as `else` and
+should be last.
 
 ```yaml
 actions:

@@ -168,6 +168,37 @@ describe("computed variables", () => {
     expect(store.selectAllVariables().accessState).toBe("open");
   });
 
+  it("rejects string expression branch conditions", () => {
+    const store = createSystemStore({
+      projectData: createProjectData({
+        trust: {
+          type: "number",
+          scope: "context",
+          default: 80,
+        },
+        trustState: {
+          type: "string",
+          scope: "context",
+          computed: {
+            branches: [
+              {
+                when: "variables.trust >= 70",
+                expr: "trusted",
+              },
+            ],
+            default: {
+              expr: "guarded",
+            },
+          },
+        },
+      }),
+    });
+
+    expect(() => store.selectAllVariables()).toThrow(
+      "String condition expressions are not supported; use semantic JSON conditions",
+    );
+  });
+
   it("supports literal object results with value", () => {
     const store = createSystemStore({
       projectData: createProjectData({
