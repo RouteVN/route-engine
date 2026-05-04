@@ -1,6 +1,16 @@
 import { current, isDraft, produce } from "immer";
 import { evaluateCondition, parseAndRender } from "jempl";
 
+export const evaluateRouteCondition = (condition, context = {}) => {
+  if (typeof condition === "string") {
+    throw new Error(
+      "String condition expressions are not supported; use semantic JSON conditions",
+    );
+  }
+
+  return evaluateCondition(condition, context);
+};
+
 /**
  * Creates a store with selectors and actions from a single object definition.
  *
@@ -672,7 +682,7 @@ export const evaluateComputedExpression = (expr, context = {}) => {
 };
 
 const evaluateComputedCondition = (condition, context = {}) => {
-  return evaluateCondition(condition, {
+  return evaluateRouteCondition(condition, {
     variables: context.variables,
     runtime: context.runtime,
   });

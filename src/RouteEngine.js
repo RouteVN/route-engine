@@ -1,7 +1,6 @@
 import { createSystemStore } from "./stores/system.store.js";
 import { normalizeNamespace } from "./indexedDbPersistence.js";
-import { processActionTemplates } from "./util.js";
-import { evaluateCondition } from "jempl";
+import { evaluateRouteCondition, processActionTemplates } from "./util.js";
 import {
   collectPersistentAnimationContinuations,
   getAnimationInstanceDurationMs,
@@ -383,7 +382,10 @@ export default function createRouteEngine(options) {
 
       const conditionContext = buildActionTemplateContext(eventContext);
       const hasCondition = Object.prototype.hasOwnProperty.call(branch, "when");
-      if (hasCondition && !evaluateCondition(branch.when, conditionContext)) {
+      if (
+        hasCondition &&
+        !evaluateRouteCondition(branch.when, conditionContext)
+      ) {
         continue;
       }
 
