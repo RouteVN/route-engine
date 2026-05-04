@@ -422,6 +422,8 @@ definitions:
     properties:
       when:
         description: Condition using the same authored condition shape as conditional actions
+        allOf:
+          - $ref: "../systemActions.yaml#/definitions/jemplCondition"
       expr:
         description: Evaluated expression
       value:

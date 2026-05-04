@@ -785,6 +785,43 @@ describe("projectData schema", () => {
     );
   });
 
+  it("rejects string expression computed branch conditions", () => {
+    expect(
+      validateProjectData(
+        createMinimalProjectData({
+          resources: {
+            variables: {
+              trustState: {
+                type: "string",
+                scope: "context",
+                computed: {
+                  branches: [
+                    {
+                      when: "variables.trust >= 70",
+                      expr: "trusted",
+                    },
+                  ],
+                  default: {
+                    expr: "guarded",
+                  },
+                },
+              },
+            },
+          },
+        }),
+      ),
+    ).toBe(false);
+    expect(validateProjectData.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          instancePath:
+            "/resources/variables/trustState/computed/branches/0/when",
+          keyword: "not",
+        }),
+      ]),
+    );
+  });
+
   it("rejects computed branches without explicit defaults", () => {
     expect(
       validateProjectData(
