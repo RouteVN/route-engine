@@ -556,6 +556,52 @@ out:
     - variables:
         multiplier: 6
 ---
+case: error - multiply value must be number
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            multiplier:
+              type: number
+              scope: context
+              default: 1
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            multiplier: 2
+  - id: "test11a"
+    operations:
+      - variableId: multiplier
+        op: multiply
+        value: "3"
+throws: "Operation \"multiply\" requires value to be a number for variable \"multiplier\"."
+---
+case: error - multiply current value must be number
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            multiplier:
+              type: number
+              scope: context
+              default: 1
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            multiplier: "2"
+  - id: "test11b"
+    operations:
+      - variableId: multiplier
+        op: multiply
+        value: 3
+throws: "Operation \"multiply\" requires current value to be a number."
+---
 case: divide context number
 in:
   - state:
@@ -667,6 +713,51 @@ out:
   contexts:
     - variables:
         value: 3.3333
+---
+case: error - divide value is required
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            value:
+              type: number
+              scope: context
+              default: 0
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            value: 10
+  - id: "test12MissingValue"
+    operations:
+      - variableId: value
+        op: divide
+throws: "Operation \"divide\" requires value to be a number for variable \"value\"."
+---
+case: error - divide value must be non-zero
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            value:
+              type: number
+              scope: context
+              default: 0
+      global:
+        variables: {}
+        pendingEffects: []
+      contexts:
+        - variables:
+            value: 10
+  - id: "test12ZeroValue"
+    operations:
+      - variableId: value
+        op: divide
+        value: 0
+throws: "Operation \"divide\" requires value to be a non-zero number for variable \"value\"."
 ---
 case: error - divide roundTo must be an integer
 in:

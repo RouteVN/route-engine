@@ -1082,6 +1082,9 @@ const roundToDecimalPlaces = (value, decimalPlaces) => {
   return Math.round((value + Number.EPSILON) * factor) / factor;
 };
 
+const isFiniteNumber = (value) =>
+  typeof value === "number" && Number.isFinite(value);
+
 export const validateVariableOperationValue = (
   type,
   op,
@@ -1093,23 +1096,31 @@ export const validateVariableOperationValue = (
     return;
   }
 
-  if (op === "set" && (typeof value !== "number" || !Number.isFinite(value))) {
+  if (op === "set" && !isFiniteNumber(value)) {
     throw new Error(
       `Operation "set" requires value to be a number for variable "${variableId}".`,
     );
   }
 
-  if (
-    op === "divide" &&
-    value !== undefined &&
-    (typeof value !== "number" || !Number.isFinite(value))
-  ) {
+  if (op === "multiply" && !isFiniteNumber(value)) {
+    throw new Error(
+      `Operation "multiply" requires value to be a number for variable "${variableId}".`,
+    );
+  }
+
+  if (op === "divide" && !isFiniteNumber(value)) {
     throw new Error(
       `Operation "divide" requires value to be a number for variable "${variableId}".`,
     );
   }
 
   if (op === "divide") {
+    if (value === 0) {
+      throw new Error(
+        `Operation "divide" requires value to be a non-zero number for variable "${variableId}".`,
+      );
+    }
+
     resolveDivideRoundTo(options.roundTo);
   }
 };
@@ -1140,22 +1151,36 @@ export const applyVariableOperation = (
 ) => {
   const resolveNumberOperand = (operand, fallback, label) => {
     const resolvedValue = operand ?? fallback;
-    if (typeof resolvedValue !== "number" || !Number.isFinite(resolvedValue)) {
+    if (!isFiniteNumber(resolvedValue)) {
       throw new Error(`Operation "${op}" requires ${label} to be a number.`);
     }
 
     return resolvedValue;
   };
 
+  const resolveDivisor = (operand) => {
+    const divisor = resolveNumberOperand(operand, undefined, "value");
+    if (divisor === 0) {
+      throw new Error(
+        `Operation "${op}" requires value to be a non-zero number.`,
+      );
+    }
+
+    return divisor;
+  };
+
   switch (op) {
     case "set":
       return value;
     case "multiply":
-      return (currentValue ?? 1) * value;
+      return (
+        resolveNumberOperand(currentValue, 1, "current value") *
+        resolveNumberOperand(value, undefined, "value")
+      );
     case "divide":
       return roundToDecimalPlaces(
         resolveNumberOperand(currentValue, 0, "current value") /
-          resolveNumberOperand(value, 1, "value"),
+          resolveDivisor(value),
         resolveDivideRoundTo(options.roundTo),
       );
     case "increment":
