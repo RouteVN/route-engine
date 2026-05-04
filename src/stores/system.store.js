@@ -8,6 +8,7 @@ import {
   selectVariablesWithComputedValues,
   validateVariableScope,
   validateVariableOperation,
+  validateVariableOperationValue,
   applyVariableOperation,
   diffPresentationState,
   normalizePersistentPresentationState,
@@ -1304,7 +1305,7 @@ const applyRollbackCheckpointUpdateVariable = (state, payload) => {
   }
 
   const operations = payload?.operations ?? [];
-  for (const { variableId, op, value } of operations) {
+  for (const { variableId, op, value, roundTo } of operations) {
     const variableConfig = state.projectData.resources?.variables?.[variableId];
     const scope = variableConfig?.scope;
     const type = variableConfig?.type;
@@ -1318,12 +1319,14 @@ const applyRollbackCheckpointUpdateVariable = (state, payload) => {
 
     validateVariableScope(scope, variableId);
     validateVariableOperation(type, op, variableId);
+    validateVariableOperationValue(type, op, value, variableId, { roundTo });
 
     if (scope === "context") {
       lastContext.variables[variableId] = applyVariableOperation(
         lastContext.variables[variableId],
         op,
         value,
+        { roundTo },
       );
     }
   }
@@ -3536,7 +3539,7 @@ export const updateVariable = ({ state }, payload) => {
   const globalUpdates = [];
   const contextOperations = [];
 
-  operations.forEach(({ variableId, op, value }) => {
+  operations.forEach(({ variableId, op, value, roundTo }) => {
     const variableConfig = state.projectData.resources?.variables?.[variableId];
     const scope = variableConfig?.scope;
     const type = variableConfig?.type;
@@ -3551,17 +3554,24 @@ export const updateVariable = ({ state }, payload) => {
     // Use pure helpers for validation
     validateVariableScope(scope, variableId);
     validateVariableOperation(type, op, variableId);
+    validateVariableOperationValue(type, op, value, variableId, { roundTo });
 
     const target =
       scope === "context" ? lastContext.variables : state.global.variables;
 
     if (scope === "context") {
       contextVariableModified = true;
-      contextOperations.push({ variableId, op, value });
+      const contextOperation = { variableId, op, value };
+      if (roundTo !== undefined) {
+        contextOperation.roundTo = roundTo;
+      }
+      contextOperations.push(contextOperation);
     }
 
     // Use pure helper to apply operation
-    target[variableId] = applyVariableOperation(target[variableId], op, value);
+    target[variableId] = applyVariableOperation(target[variableId], op, value, {
+      roundTo,
+    });
 
     if (scope === "device" || scope === "account") {
       globalUpdates.push({
