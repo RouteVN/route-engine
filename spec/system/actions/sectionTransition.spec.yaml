@@ -243,6 +243,111 @@ out:
             lineId: "10"
             rollbackPolicy: "free"
 ---
+case: section transition records the source line as viewed before changing sections
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: false
+        skipMode: true
+        skipUnseenText: true
+        accountViewedRegistry:
+          sections:
+            - sectionId: "section1"
+              lastLineId: "1"
+          resources: []
+        pendingEffects: []
+      projectData:
+        story:
+          initialSceneId: "scene1"
+          scenes:
+            scene1:
+              initialSectionId: "section1"
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "transition"
+                      actions:
+                        sectionTransition:
+                          sectionId: "section2"
+                section2:
+                  lines:
+                    - id: "10"
+                      actions:
+                        background:
+                          resourceId: "bg2"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "transition"
+  - sectionId: "section2"
+out:
+  global:
+    isLineCompleted: false
+    autoMode: false
+    skipMode: true
+    skipUnseenText: true
+    accountViewedRegistry:
+      sections:
+        - sectionId: "section1"
+          lastLineId: "transition"
+      resources: []
+    pendingEffects:
+      - name: "applyScopedDataUpdates"
+        payload:
+          updates:
+            - scope: account
+              path: viewedRegistry
+              op: markViewed
+              value:
+                sections:
+                  - sectionId: "section1"
+                    lineId: "transition"
+                resources: []
+      - name: "handleLineActions"
+  projectData:
+    story:
+      initialSceneId: "scene1"
+      scenes:
+        scene1:
+          initialSectionId: "section1"
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions: {}
+                - id: "transition"
+                  actions:
+                    sectionTransition:
+                      sectionId: "section2"
+            section2:
+              lines:
+                - id: "10"
+                  actions:
+                    background:
+                      resourceId: "bg2"
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section2"
+          lineId: "10"
+      rollback:
+        currentIndex: 1
+        isRestoring: false
+        replayStartIndex: 1
+        timeline:
+          - sectionId: "section1"
+            lineId: "transition"
+            rollbackPolicy: "free"
+          - sectionId: "section2"
+            lineId: "10"
+            rollbackPolicy: "free"
+---
 case: transition to a choice line stops playback and clears the scene timer
 in:
   - state:

@@ -1,6 +1,6 @@
 ---
 title: Section Transition Preserves Skip
-description: Skip mode should continue across a normal sectionTransition and stop only after the destination section reaches a choice.
+description: Skip mode should continue across a normal sectionTransition, and a viewed transition-only line should not stop default skip on replay.
 skipInitialScreenshot: true
 viewport:
   id: capture
@@ -17,7 +17,7 @@ steps:
     x: 455
     y: 265
   - action: wait
-    ms: 140
+    ms: 420
   - action: screenshot
 ---
 screen:
@@ -53,20 +53,22 @@ resources:
           textStyleId: textMain
         - id: skip-button
           type: rect
-          x: 1500
+          x: 1450
           y: 70
-          width: 220
+          width: 320
           height: 70
           colorId: fg-45
           click:
             payload:
               actions:
-                toggleSkipMode: {}
+                setSkipUnseenText:
+                  value: true
+                startSkipMode: {}
         - id: skip-label
           type: text
-          x: 1562
+          x: 1510
           y: 92
-          content: SKIP
+          content: SKIP ALL
           textStyleId: textButton
     choiceLayout:
       elements:
@@ -80,7 +82,11 @@ resources:
           click:
             payload:
               actions:
-                nextLine: {}
+                setSkipUnseenText:
+                  value: false
+                resetStoryAtSection:
+                  sectionId: source
+                startSkipMode: {}
         - id: choice-text
           type: text
           x: 760
@@ -124,8 +130,6 @@ story:
           lines:
             - id: start
               actions:
-                setSkipUnseenText:
-                  value: true
                 dialogue:
                   mode: adv
                   ui:
@@ -161,7 +165,7 @@ story:
                   resourceId: choiceLayout
                   items:
                     - id: continue
-                      content: Continue
+                      content: Replay default skip
             - id: afterChoice
               actions:
                 choice: {}
