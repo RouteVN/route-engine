@@ -1,8 +1,8 @@
 ---
-title: Choice Blocks Non-Choice Actions
-description: Non-choice clicks must be dropped before they can dispatch actions while a choice is visible.
+title: Choice Allows Non-Progression Actions
+description: Non-progression clicks still dispatch while a choice is visible.
 specs:
-  - the marker stays idle when a non-choice control is clicked while a choice is visible
+  - the marker updates when a non-progression control is clicked while a choice is visible
 skipInitialScreenshot: true
 viewport:
   id: capture
@@ -73,7 +73,7 @@ resources:
           x: 40
           y: 158
           width: 480
-          content: This panel click should be ignored while the choice is visible, then work again after the choice advances.
+          content: This panel click should update while the choice is visible, while background nextLine stays blocked.
           textStyleId: helperText
   layouts:
     dialogueLayout:
@@ -165,7 +165,7 @@ story:
                   ui:
                     resourceId: dialogueLayout
                   content:
-                    - text: "Line 1: the choice is visible now, so the panel click must not dispatch its updateVariable action."
+                    - text: "Line 1: the choice is visible now, and the panel click should still dispatch updateVariable."
                 choice:
                   resourceId: choiceLayout
                   items:

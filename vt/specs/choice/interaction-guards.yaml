@@ -4,7 +4,7 @@ description: Choice visibility stops active playback, blocks nextLine and auto/s
 specs:
   - auto mode is visibly on before the choice line is entered
   - entering the choice line forces auto mode off and exposes the choice state
-  - auto, skip, and background clicks do not change the state while the choice is visible
+  - auto, skip, and background nextLine clicks do not change the state while the choice is visible
   - the choice button still advances to the next line
   - the line after the choice can advance normally even without an explicit choice clear action
 skipInitialScreenshot: true

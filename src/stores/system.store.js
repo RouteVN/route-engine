@@ -2555,7 +2555,7 @@ const transitionToSection = (
   if (state.global.autoMode) {
     stopAutoMode({ state });
   }
-  if (state.global.skipMode) {
+  if (resetStoryState && state.global.skipMode) {
     stopSkipMode({ state });
   }
 
@@ -3062,8 +3062,14 @@ export const nextLine = ({ state }, payload) => {
 
   const activeInteraction = selectActiveInteraction({ state });
   if (
-    activeInteraction &&
-    payload?._interactionSource !== activeInteraction.source
+    activeInteraction?.source === CHOICE_INTERACTION_SOURCE &&
+    payload?.bypassChoice !== true
+  ) {
+    return state;
+  }
+  if (
+    activeInteraction?.source === FORM_INTERACTION_SOURCE &&
+    payload?._interactionSource !== FORM_INTERACTION_SOURCE
   ) {
     return state;
   }
