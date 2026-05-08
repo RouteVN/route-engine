@@ -182,7 +182,7 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
     );
   });
 
-  it("does not forward non-choice actions while a choice is visible", async () => {
+  it("forwards non-progression actions while a choice is visible", async () => {
     const engine = {
       selectRenderState: vi.fn(() => ({ id: "render-1" })),
       handleAction: vi.fn(),
@@ -202,12 +202,12 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
     const payload = {
       actions: {
         updateVariable: {
-          id: "blocked",
+          id: "allowed",
           operations: [
             {
               variableId: "marker",
               op: "set",
-              value: "blocked",
+              value: "allowed",
             },
           ],
         },
@@ -225,12 +225,17 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
 
     await eventHandler("click", payload);
 
-    expect(preprocessPayload).not.toHaveBeenCalled();
-    expect(engine.handleActions).not.toHaveBeenCalled();
+    expect(preprocessPayload).toHaveBeenCalledWith("click", payload);
+    expect(engine.handleActions).toHaveBeenCalledWith(
+      payload.actions,
+      {
+        _event: payload._event,
+      },
+    );
     expect(onEvent).toHaveBeenCalledWith("click", payload);
   });
 
-  it("still forwards choice-tagged actions while a choice is visible", async () => {
+  it("forwards bypassChoice payloads with bypassChoice action options", async () => {
     const engine = {
       selectRenderState: vi.fn(() => ({ id: "render-1" })),
       handleAction: vi.fn(),
@@ -248,11 +253,9 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
     const eventHandler = effectsHandler.createRouteGraphicsEventHandler();
 
     await eventHandler("click", {
-      _interactionSource: "choice",
+      bypassChoice: true,
       actions: {
-        sectionTransition: {
-          sectionId: "next-section",
-        },
+        nextLine: {},
       },
       _event: {
         x: 10,
@@ -262,9 +265,7 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
 
     expect(engine.handleActions).toHaveBeenCalledWith(
       {
-        sectionTransition: {
-          sectionId: "next-section",
-        },
+        nextLine: {},
       },
       {
         _event: {
@@ -273,9 +274,44 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
         },
       },
       {
-        interactionSource: "choice",
+        bypassChoice: true,
       },
     );
+  });
+
+  it("does not let bypassChoice through non-choice active interactions", async () => {
+    const engine = {
+      selectRenderState: vi.fn(() => ({ id: "render-1" })),
+      handleAction: vi.fn(),
+      handleActions: vi.fn(),
+      selectActiveInteraction: vi.fn(() => ({
+        source: "form",
+        formKey: "section1:line1:profileForm",
+      })),
+    };
+    const onEvent = vi.fn();
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics: {
+        render: vi.fn(),
+      },
+      ticker: createTicker(),
+    });
+
+    const eventHandler = effectsHandler.createRouteGraphicsEventHandler({
+      onEvent,
+    });
+    const payload = {
+      bypassChoice: true,
+      actions: {
+        nextLine: {},
+      },
+    };
+
+    await eventHandler("click", payload);
+
+    expect(engine.handleActions).not.toHaveBeenCalled();
+    expect(onEvent).toHaveBeenCalledWith("click", payload);
   });
 
   it("blocks non-form actions while a form is visible and forwards matching form payloads", async () => {

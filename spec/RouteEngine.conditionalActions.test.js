@@ -551,7 +551,7 @@ describe("RouteEngine conditional actions", () => {
       },
       undefined,
       {
-        interactionSource: "choice",
+        bypassChoice: true,
       },
     );
 

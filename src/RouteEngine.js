@@ -22,7 +22,6 @@ const PERSISTENT_PLAYBACK_RESTORE_ACTIONS = new Set([
 ]);
 
 const CONDITIONAL_ACTION_TYPE = "conditional";
-const CHOICE_INTERACTION_SOURCE = "choice";
 const FORM_INTERACTION_SOURCE = "form";
 const FORM_ACTION_TYPES = new Set(["submitForm", "cancelForm"]);
 
@@ -255,21 +254,26 @@ export default function createRouteEngine(options) {
     return _systemStore.selectActiveInteraction();
   };
 
-  const applyInteractionSource = (actionType, payload, options = {}) => {
-    if (
-      ![CHOICE_INTERACTION_SOURCE, FORM_INTERACTION_SOURCE].includes(
-        options.interactionSource,
-      ) ||
-      actionType !== "nextLine" ||
-      !isRecord(payload)
-    ) {
+  const applyActionOptions = (actionType, payload, options = {}) => {
+    if (actionType !== "nextLine" || !isRecord(payload)) {
       return payload;
     }
 
-    return {
-      ...payload,
-      _interactionSource: options.interactionSource,
-    };
+    if (options.bypassChoice === true) {
+      return {
+        ...payload,
+        bypassChoice: true,
+      };
+    }
+
+    if (options.interactionSource === FORM_INTERACTION_SOURCE) {
+      return {
+        ...payload,
+        _interactionSource: FORM_INTERACTION_SOURCE,
+      };
+    }
+
+    return payload;
   };
 
   const dispatchStoreAction = (actionType, payload) => {
@@ -437,7 +441,7 @@ export default function createRouteEngine(options) {
       return;
     }
 
-    const processedPayloadWithInteraction = applyInteractionSource(
+    const processedPayloadWithActionOptions = applyActionOptions(
       actionType,
       processedPayload,
       options,
@@ -446,14 +450,14 @@ export default function createRouteEngine(options) {
     if (FORM_ACTION_TYPES.has(actionType)) {
       handleFormAction(
         actionType,
-        processedPayloadWithInteraction,
+        processedPayloadWithActionOptions,
         eventContext,
         options,
       );
       return;
     }
 
-    dispatchStoreAction(actionType, processedPayloadWithInteraction);
+    dispatchStoreAction(actionType, processedPayloadWithActionOptions);
   };
 
   const processActionEntries = (actions, eventContext, options) => {

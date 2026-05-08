@@ -711,7 +711,7 @@ describe("RouteEngine line completion flow", () => {
     });
   });
 
-  it("stops active playback on a choice line and only allows choice-tagged nextLine", () => {
+  it("stops active playback on a choice line and only allows bypassChoice nextLine", () => {
     const routeGraphics = {
       render: vi.fn(),
     };
@@ -764,7 +764,7 @@ describe("RouteEngine line completion flow", () => {
     engine.handleAction("markLineCompleted", {});
     engine.handleActions({
       nextLine: {
-        _interactionSource: "choice",
+        bypassChoice: true,
       },
     });
 

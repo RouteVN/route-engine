@@ -93,13 +93,13 @@ out:
           text: "Continue"
           click:
             payload:
-              _interactionSource: "choice"
+              bypassChoice: true
               actions:
                 nextLine:
-                  _interactionSource: "choice"
+                  bypassChoice: true
   animations: []
 ---
-case: tags non-nextLine choice clicks at the payload level
+case: tags non-nextLine choice bypasses at the payload level
 in:
   - elements:
       - id: "story"
@@ -141,7 +141,7 @@ out:
           text: "Go"
           click:
             payload:
-              _interactionSource: "choice"
+              bypassChoice: true
               actions:
                 sectionTransition:
                   sectionId: "next-section"

@@ -1296,9 +1296,9 @@ const createFullscreenClickBlocker = ({
   },
 });
 
-const tagChoiceInteractionSource = (node) => {
+const tagBypassChoice = (node) => {
   if (Array.isArray(node)) {
-    return node.map(tagChoiceInteractionSource);
+    return node.map(tagBypassChoice);
   }
 
   if (!node || typeof node !== "object") {
@@ -1307,7 +1307,7 @@ const tagChoiceInteractionSource = (node) => {
 
   const taggedNode = {};
   for (const [key, value] of Object.entries(node)) {
-    taggedNode[key] = tagChoiceInteractionSource(value);
+    taggedNode[key] = tagBypassChoice(value);
   }
 
   const clickPayload = taggedNode.click?.payload;
@@ -1327,7 +1327,7 @@ const tagChoiceInteractionSource = (node) => {
     Object.prototype.hasOwnProperty.call(actions, "nextLine")
       ? {
           ...actions.nextLine,
-          _interactionSource: "choice",
+          bypassChoice: true,
         }
       : undefined;
 
@@ -1337,7 +1337,7 @@ const tagChoiceInteractionSource = (node) => {
       ...taggedNode.click,
       payload: {
         ...clickPayload,
-        _interactionSource: "choice",
+        bypassChoice: true,
         ...(nextLineAction
           ? {
               actions: {
@@ -2690,7 +2690,7 @@ export const addChoices = (
           functions: jemplFunctions,
         },
       );
-      const choiceElements = tagChoiceInteractionSource(
+      const choiceElements = tagBypassChoice(
         resolveLayoutResourceIds(
           settleTextRevealIfCompleted(result?.elements, {
             isLineCompleted,

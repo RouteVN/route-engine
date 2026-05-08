@@ -452,6 +452,10 @@ const createEffectsHandler = ({
       return false;
     }
 
+    if (activeInteraction.source === "choice") {
+      return false;
+    }
+
     return !isInteractionPayload(payload, activeInteraction);
   };
 
@@ -480,9 +484,16 @@ const createEffectsHandler = ({
           : nextPayload?.event
             ? { _event: nextPayload.event }
             : undefined;
-        const actionOptions = nextPayload?._interactionSource
-          ? { interactionSource: nextPayload._interactionSource }
-          : undefined;
+        let actionOptions;
+        if (nextPayload?.bypassChoice === true) {
+          actionOptions = {
+            bypassChoice: true,
+          };
+        } else if (nextPayload?._interactionSource) {
+          actionOptions = {
+            interactionSource: nextPayload._interactionSource,
+          };
+        }
 
         if (actionOptions) {
           engine.handleActions(

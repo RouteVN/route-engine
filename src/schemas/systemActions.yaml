@@ -35,7 +35,10 @@ properties:
   nextLine:
     type: object
     description: Advance to the next line or complete the current line if it is still revealing
-    properties: {}
+    properties:
+      bypassChoice:
+        type: boolean
+        description: Allows this advance to pass the active choice guard
     additionalProperties: false
 
   setNextLineConfig:
