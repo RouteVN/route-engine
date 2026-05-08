@@ -2562,6 +2562,14 @@ const transitionToSection = (
   const lastContext = state.contexts?.[state.contexts.length - 1];
   if (lastContext) {
     const pointers = ensureReadPointerState(lastContext);
+    const previousReadPointer = pointers.read;
+    if (!resetStoryState) {
+      recordViewedLine(state, {
+        sectionId: previousReadPointer?.sectionId,
+        lineId: previousReadPointer?.lineId,
+      });
+    }
+
     if (!lastContext.rollback) {
       ensureRollbackState(lastContext, { compatibilityAnchor: true });
     }
