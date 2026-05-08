@@ -103,6 +103,233 @@ out:
       startDelayMs: null
   global: {}
 ---
+case: current line screen animation targets the full story container
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: false
+        skipMode: false
+        isDialogueUIVisible: true
+      projectData:
+        screen:
+          width: 1920
+          height: 1080
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "bg1"
+                    - id: "2"
+                      actions:
+                        screen:
+                          animations:
+                            resourceId: "screenCrossFade"
+                        background:
+                          resourceId: "bg2"
+        resources:
+          images:
+            bg1:
+              fileId: "previous.jpg"
+              width: 1920
+              height: 1080
+            bg2:
+              fileId: "next.jpg"
+              width: 1920
+              height: 1080
+          animations:
+            screenCrossFade:
+              type: transition
+              prev:
+                tween:
+                  alpha:
+                    initialValue: 1
+                    keyframes:
+                      - duration: 300
+                        value: 0
+              next:
+                tween:
+                  alpha:
+                    initialValue: 0
+                    keyframes:
+                      - duration: 300
+                        value: 1
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "bg-cg-background-sprite"
+          type: "sprite"
+          alpha: 1
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          x: 960
+          y: 540
+          src: "next.jpg"
+          width: 1920
+          height: 1080
+  animations:
+    - id: "screen-animation-transition"
+      type: "transition"
+      targetId: "story"
+      prev:
+        tween:
+          alpha:
+            initialValue: 1
+            keyframes:
+              - duration: 300
+                value: 0
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 300
+                value: 1
+  audio: []
+  global: {}
+---
+case: pending section screen transition overrides destination line screen animation
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        autoMode: false
+        skipMode: false
+        isDialogueUIVisible: true
+        pendingScreenTransition:
+          animations:
+            resourceId: "screenCrossFade"
+      projectData:
+        screen:
+          width: 1920
+          height: 1080
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "bg1"
+                section2:
+                  lines:
+                    - id: "10"
+                      actions:
+                        screen:
+                          animations:
+                            resourceId: "lineScreenFade"
+                        background:
+                          resourceId: "bg2"
+        resources:
+          images:
+            bg1:
+              fileId: "previous.jpg"
+              width: 1920
+              height: 1080
+            bg2:
+              fileId: "next.jpg"
+              width: 1920
+              height: 1080
+          animations:
+            screenCrossFade:
+              type: transition
+              prev:
+                tween:
+                  alpha:
+                    initialValue: 1
+                    keyframes:
+                      - duration: 300
+                        value: 0
+              next:
+                tween:
+                  alpha:
+                    initialValue: 0
+                    keyframes:
+                      - duration: 300
+                        value: 1
+            lineScreenFade:
+              type: transition
+              prev:
+                tween:
+                  alpha:
+                    initialValue: 1
+                    keyframes:
+                      - duration: 900
+                        value: 0.25
+              next:
+                tween:
+                  alpha:
+                    initialValue: 0.25
+                    keyframes:
+                      - duration: 900
+                        value: 1
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section2"
+              lineId: "10"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "bg-cg-background-sprite"
+          type: "sprite"
+          alpha: 1
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          x: 960
+          y: 540
+          src: "next.jpg"
+          width: 1920
+          height: 1080
+  animations:
+    - id: "screen-animation-transition"
+      type: "transition"
+      targetId: "story"
+      prev:
+        tween:
+          alpha:
+            initialValue: 1
+            keyframes:
+              - duration: 300
+                value: 0
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 300
+                value: 1
+  audio: []
+  global: {}
+---
 case: nvl dialogue character sprite does not replay stale animation on later non-dialogue line
 in:
   - state:

@@ -210,6 +210,124 @@ out:
             lineId: gameLine
             rollbackPolicy: free
 ---
+case: reset story at section stores a pending screen transition for the destination render
+in:
+  - state:
+      projectData:
+        resources:
+          variables:
+            score:
+              type: number
+              scope: context
+              default: 0
+        story:
+          initialSceneId: scene1
+          scenes:
+            scene1:
+              initialSectionId: title
+              sections:
+                title:
+                  lines:
+                    - id: titleLine
+                      actions:
+                        background:
+                          resourceId: titleBg
+                gameStart:
+                  lines:
+                    - id: gameLine
+                      actions:
+                        background:
+                          resourceId: gameBg
+      global:
+        autoMode: false
+        skipMode: false
+        dialogueUIHidden: true
+        confirmDialog: null
+        formDrafts: {}
+        pendingEffects: []
+        isLineCompleted: true
+      contexts:
+        - currentPointerMode: read
+          pointers:
+            read:
+              sectionId: title
+              lineId: titleLine
+          variables:
+            score: 9
+  - sectionId: gameStart
+    screen:
+      animations:
+        resourceId: screenCrossFade
+out:
+  projectData:
+    resources:
+      variables:
+        score:
+          type: number
+          scope: context
+          default: 0
+    story:
+      initialSceneId: scene1
+      scenes:
+        scene1:
+          initialSectionId: title
+          sections:
+            title:
+              lines:
+                - id: titleLine
+                  actions:
+                    background:
+                      resourceId: titleBg
+            gameStart:
+              lines:
+                - id: gameLine
+                  actions:
+                    background:
+                      resourceId: gameBg
+  global:
+    autoMode: false
+    skipMode: false
+    dialogueUIHidden: false
+    confirmDialog: null
+    formDrafts: {}
+    nextLineConfig:
+      manual:
+        enabled: true
+        requireLineCompleted: false
+      auto:
+        enabled: false
+      applyMode: persistent
+    overlayStack: []
+    pendingScreenTransition:
+      animations:
+        resourceId: screenCrossFade
+    pendingEffects:
+      - name: clearAutoNextTimer
+      - name: clearSkipNextTimer
+      - name: clearNextLineConfigTimer
+      - name: handleLineActions
+    isLineCompleted: false
+  contexts:
+    - currentPointerMode: read
+      pointers:
+        read:
+          sectionId: gameStart
+          lineId: gameLine
+      configuration: {}
+      views: []
+      bgm:
+        resourceId: __undefined__
+      variables:
+        score: 0
+      rollback:
+        currentIndex: 0
+        isRestoring: false
+        replayStartIndex: 0
+        timeline:
+          - sectionId: gameStart
+            lineId: gameLine
+            rollbackPolicy: free
+---
 case: section not found leaves state unchanged
 in:
   - state:

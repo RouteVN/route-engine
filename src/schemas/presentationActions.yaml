@@ -40,6 +40,14 @@ properties:
         description: Mode of cleaning/clearing all existing state
     additionalProperties: false
 
+  screen:
+    type: object
+    description: Transient whole-screen transition for the current rendered story frame
+    properties:
+      animations:
+        $ref: "#/definitions/animationSelection"
+    additionalProperties: false
+
   background:
     type: object
     description: Background management and display

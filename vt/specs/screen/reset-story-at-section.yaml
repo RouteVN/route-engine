@@ -1,0 +1,150 @@
+---
+title: Screen Reset Story At Section Transition
+description: A resetStoryAtSection payload can animate the whole previous screen into the first frame of the reset destination section.
+specs:
+  - resetStoryAtSection.screen should target the whole story container after story-local state resets
+  - resetStoryAtSection.screen should override a destination line screen animation for the first destination render
+  - the halfway screenshot should show the source and reset destination section frames in transition
+  - the final screenshot should show only the reset destination section frame
+steps:
+  - action: customEvent
+    name: vt:nextLine
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 500
+  - action: screenshot
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 500
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  controls:
+    base1:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: overlayColor
+  images:
+    bg-door:
+      fileId: lakjf3lka
+      width: 1920
+      height: 1080
+    bg-moon:
+      fileId: 23jkfa893
+      width: 1920
+      height: 1080
+    character-a:
+      fileId: char_sprite_1
+      width: 512
+      height: 1024
+    character-b:
+      fileId: char_sprite_3
+      width: 512
+      height: 1024
+  transforms:
+    character-left:
+      x: 620
+      y: 1080
+      anchorX: 0.5
+      anchorY: 1
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+    character-right:
+      x: 1300
+      y: 1080
+      anchorX: 0.5
+      anchorY: 1
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+  animations:
+    screen-mask-reveal:
+      name: Reset Screen Mask Reveal
+      type: transition
+      mask:
+        kind: single
+        texture: mask-diagonal
+        channel: red
+        softness: 0.06
+        progress:
+          initialValue: 0
+          keyframes:
+            - duration: 1000
+              value: 1
+              easing: linear
+    line-enter-fade:
+      name: Destination Line Enter Fade
+      type: transition
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 1000
+                value: 1
+                easing: linear
+  colors:
+    overlayColor:
+      hex: "#000000"
+story:
+  initialSceneId: scene1
+  scenes:
+    scene1:
+      name: Scene 1
+      initialSectionId: source
+      sections:
+        source:
+          name: Source
+          lines:
+            - id: previous-frame
+              actions:
+                control:
+                  resourceId: base1
+                background:
+                  resourceId: bg-door
+                character:
+                  items:
+                    - id: lead
+                      transformId: character-left
+                      sprites:
+                        - id: body
+                          resourceId: character-a
+            - id: reset-transition
+              actions:
+                resetStoryAtSection:
+                  sectionId: resetDestination
+                  screen:
+                    animations:
+                      resourceId: screen-mask-reveal
+        resetDestination:
+          name: Reset Destination
+          lines:
+            - id: next-frame
+              actions:
+                screen:
+                  animations:
+                    resourceId: line-enter-fade
+                background:
+                  resourceId: bg-moon
+                character:
+                  items:
+                    - id: lead
+                      transformId: character-right
+                      sprites:
+                        - id: body
+                          resourceId: character-b

@@ -20,6 +20,17 @@ resetStoryAtSection:
   sectionId: gameStart
 ```
 
+`screen` is optional and uses the same shape as line-level whole-screen
+transitions:
+
+```yaml
+resetStoryAtSection:
+  sectionId: gameStart
+  screen:
+    animations:
+      resourceId: screenCrossFade
+```
+
 ### Schema Shape
 
 ```yaml
@@ -29,6 +40,8 @@ resetStoryAtSection:
   properties:
     sectionId:
       type: string
+    screen:
+      $ref: presentationActions.yaml#/properties/screen
   required: [sectionId]
   additionalProperties: false
 ```
@@ -83,6 +96,9 @@ It enqueues:
 - `render`
 - `handleLineActions`
 
+When `screen` is present, the intermediate reset `render` is skipped so the
+first destination render can consume the screen transition.
+
 ## Relation To `sectionTransition`
 
 Use `sectionTransition` for non-destructive movement within the current story
@@ -121,6 +137,21 @@ Return to title from gameplay:
 resetStoryAtSection:
   sectionId: title
 ```
+
+Return to title with a whole-screen transition:
+
+```yaml
+resetStoryAtSection:
+  sectionId: title
+  screen:
+    animations:
+      resourceId: screenMaskReveal
+```
+
+If both `resetStoryAtSection.screen` and the destination line's
+`screen.animations` are defined, `resetStoryAtSection.screen` wins for the first
+destination render only. The destination line's own screen animation still
+applies when the line is entered without a reset screen payload.
 
 ## Rollback Behavior
 

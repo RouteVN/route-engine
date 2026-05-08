@@ -686,6 +686,28 @@ const clearFormDrafts = (state) => {
   }
 };
 
+const normalizeScreenTransitionPayload = (screenTransition) => {
+  if (!isRecord(screenTransition) || !screenTransition.animations) {
+    return undefined;
+  }
+
+  return {
+    animations: cloneStateValue(screenTransition.animations),
+  };
+};
+
+const setPendingScreenTransition = (state, screenTransition) => {
+  const pendingScreenTransition =
+    normalizeScreenTransitionPayload(screenTransition);
+
+  if (pendingScreenTransition) {
+    state.global.pendingScreenTransition = pendingScreenTransition;
+    return;
+  }
+
+  delete state.global.pendingScreenTransition;
+};
+
 const getFormId = (form) => {
   const id = form?.id ?? form?.resourceId;
   return typeof id === "string" && id.length > 0 ? id : undefined;
@@ -1083,7 +1105,7 @@ const ensureReadPointerState = (context) => {
   return context.pointers;
 };
 
-const resetCurrentStoryState = (state) => {
+const resetCurrentStoryState = (state, { queueRender = true } = {}) => {
   const lastContext = state.contexts?.[state.contexts.length - 1];
   const readPointer = lastContext?.pointers?.read;
 
@@ -1097,12 +1119,15 @@ const resetCurrentStoryState = (state) => {
   });
 
   state.contexts[state.contexts.length - 1] = resetContext;
-  resetStoryStateTransientGlobals(state);
+  resetStoryStateTransientGlobals(state, { queueRender });
 
   return resetContext;
 };
 
-const resetStoryStateTransientGlobals = (state) => {
+const resetStoryStateTransientGlobals = (
+  state,
+  { queueRender = true } = {},
+) => {
   state.global.autoMode = false;
   state.global.skipMode = false;
   state.global.dialogueUIHidden = false;
@@ -1117,8 +1142,11 @@ const resetStoryStateTransientGlobals = (state) => {
     { name: "clearAutoNextTimer" },
     { name: "clearSkipNextTimer" },
     { name: "clearNextLineConfigTimer" },
-    { name: "render" },
   );
+
+  if (queueRender) {
+    state.global.pendingEffects.push({ name: "render" });
+  }
 };
 
 const removeLegacyRollbackBaseline = (rollback) => {
@@ -2082,7 +2110,19 @@ const shouldSettleCurrentLinePresentation = (state) => {
 export const selectRenderState = ({ state }, options = {}) => {
   const presentationState = selectPresentationState({ state });
   const previousPresentationState = selectPreviousPresentationState({ state });
-  const currentLineActions = selectCurrentLine({ state })?.actions ?? {};
+  const authoredCurrentLineActions =
+    selectCurrentLine({ state })?.actions ?? {};
+  const pendingScreenTransition = state.global.pendingScreenTransition;
+  const currentLineActions = pendingScreenTransition?.animations
+    ? {
+        ...authoredCurrentLineActions,
+        screen: cloneStateValue(pendingScreenTransition),
+      }
+    : authoredCurrentLineActions;
+  const previousPresentationStateForRender =
+    pendingScreenTransition?.animations && previousPresentationState === null
+      ? {}
+      : previousPresentationState;
   const { sectionId } = selectCurrentPointer({ state }).pointer;
   const { sceneId: currentSceneId } = findSectionInProjectData(
     state.projectData,
@@ -2103,7 +2143,7 @@ export const selectRenderState = ({ state }, options = {}) => {
 
   const renderState = constructRenderState({
     presentationState,
-    previousPresentationState,
+    previousPresentationState: previousPresentationStateForRender,
     currentLineActions,
     resources: state.projectData.resources,
     currentSceneId,
@@ -2204,8 +2244,9 @@ const stopPlaybackForEnteredBlockingLine = (state) => {
   }
 };
 
-const queueEnteredLineEffects = (state, pointer) => {
+const queueEnteredLineEffects = (state, pointer, { screenTransition } = {}) => {
   state.global.isLineCompleted = false;
+  setPendingScreenTransition(state, screenTransition);
 
   clearFormDrafts(state);
 
@@ -2487,7 +2528,11 @@ export const appendPendingEffect = ({ state }, payload) => {
   return state;
 };
 
-const transitionToSection = (state, { sectionId, resetStoryState = false }) => {
+const transitionToSection = (
+  state,
+  { sectionId, resetStoryState = false, screen },
+) => {
+  const hasScreenTransition = !!normalizeScreenTransitionPayload(screen);
   const targetSection = selectSection({ state }, { sectionId });
   if (!targetSection) {
     console.warn(`Section not found: ${sectionId}`);
@@ -2500,7 +2545,10 @@ const transitionToSection = (state, { sectionId, resetStoryState = false }) => {
     return state;
   }
 
-  if (resetStoryState && !resetCurrentStoryState(state)) {
+  if (
+    resetStoryState &&
+    !resetCurrentStoryState(state, { queueRender: !hasScreenTransition })
+  ) {
     return state;
   }
 
@@ -2535,7 +2583,9 @@ const transitionToSection = (state, { sectionId, resetStoryState = false }) => {
     }
   }
 
-  queueEnteredLineEffects(state, lastContext?.pointers?.read);
+  queueEnteredLineEffects(state, lastContext?.pointers?.read, {
+    screenTransition: screen,
+  });
 
   return state;
 };
@@ -2544,6 +2594,7 @@ export const resetStoryAtSection = ({ state }, payload) => {
   return transitionToSection(state, {
     sectionId: payload?.sectionId,
     resetStoryState: true,
+    screen: payload?.screen,
   });
 };
 
@@ -3020,6 +3071,7 @@ export const nextLine = ({ state }, payload) => {
   // If line is not completed, complete it instantly instead of advancing
   if (!state.global.isLineCompleted) {
     state.global.isLineCompleted = true;
+    delete state.global.pendingScreenTransition;
     const pointer = selectCurrentPointer({ state })?.pointer;
     const sectionId = pointer?.sectionId;
     const lineId = pointer?.lineId;
@@ -3149,6 +3201,7 @@ export const markLineCompleted = ({ state }) => {
     return state;
   }
   state.global.isLineCompleted = true;
+  delete state.global.pendingScreenTransition;
   const activeInteraction = selectActiveInteraction({ state });
 
   // If auto mode is on, start the delay timer to advance after completion
@@ -3203,6 +3256,7 @@ export const markLineCompleted = ({ state }) => {
 export const sectionTransition = ({ state }, payload) => {
   return transitionToSection(state, {
     sectionId: payload?.sectionId,
+    screen: payload?.screen,
   });
 };
 

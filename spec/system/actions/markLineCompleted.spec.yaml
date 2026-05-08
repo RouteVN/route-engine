@@ -29,6 +29,33 @@ out:
     pendingEffects:
       - name: render
 ---
+case: mark line as completed clears pending screen transition
+in:
+  - state:
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+      global:
+        isLineCompleted: false
+        pendingScreenTransition:
+          animations:
+            resourceId: "screenCrossFade"
+        pendingEffects: []
+out:
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "1"
+  global:
+    isLineCompleted: true
+    pendingEffects:
+      - name: render
+---
 case: mark line as completed when already completed (no-op)
 in:
   - state:

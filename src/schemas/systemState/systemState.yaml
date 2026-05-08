@@ -284,6 +284,8 @@ properties:
               type: string
           required: [resourceId]
           additionalProperties: false
+      pendingScreenTransition:
+        $ref: "../presentationActions.yaml#/properties/screen"
       isLineCompleted:
         type: boolean
     required:

@@ -81,6 +81,92 @@ out:
             lineId: "10"
             rollbackPolicy: "free"
 ---
+case: section transition stores a pending screen transition for the destination render
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        autoMode: false
+        skipMode: false
+        isDialogueUIVisible: true
+        pendingEffects: []
+      projectData:
+        story:
+          initialSceneId: "scene1"
+          scenes:
+            scene1:
+              initialSectionId: "section1"
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "bg1"
+                section2:
+                  lines:
+                    - id: "10"
+                      actions:
+                        background:
+                          resourceId: "bg2"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+  - sectionId: "section2"
+    screen:
+      animations:
+        resourceId: "screenCrossFade"
+out:
+  global:
+    isLineCompleted: false
+    autoMode: false
+    skipMode: false
+    isDialogueUIVisible: true
+    pendingScreenTransition:
+      animations:
+        resourceId: "screenCrossFade"
+    pendingEffects:
+      - name: "handleLineActions"
+  projectData:
+    story:
+      initialSceneId: "scene1"
+      scenes:
+        scene1:
+          initialSectionId: "section1"
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions:
+                    background:
+                      resourceId: "bg1"
+            section2:
+              lines:
+                - id: "10"
+                  actions:
+                    background:
+                      resourceId: "bg2"
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section2"
+          lineId: "10"
+      rollback:
+        currentIndex: 1
+        isRestoring: false
+        replayStartIndex: 1
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
+          - sectionId: "section2"
+            lineId: "10"
+            rollbackPolicy: "free"
+---
 case: transition to a choice line stops playback and clears the scene timer
 in:
   - state:

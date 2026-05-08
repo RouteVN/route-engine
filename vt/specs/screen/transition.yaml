@@ -1,0 +1,133 @@
+---
+title: Screen Transition
+description: Whole-screen transition crossfades the previous composed story frame into the next composed story frame.
+specs:
+  - screen animations should target the story container instead of individual background, character, or visual layers
+  - the halfway screenshot should show both previous and next composed frames in transition
+  - the final screenshot should show only the settled next frame
+steps:
+  - action: customEvent
+    name: vt:nextLine
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 500
+  - action: screenshot
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 500
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  controls:
+    base1:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: overlayColor
+  images:
+    bg-door:
+      fileId: lakjf3lka
+      width: 1920
+      height: 1080
+    bg-forest:
+      fileId: dmni32
+      width: 1920
+      height: 1080
+    character-a:
+      fileId: char_sprite_1
+      width: 512
+      height: 1024
+    character-b:
+      fileId: char_sprite_3
+      width: 512
+      height: 1024
+  transforms:
+    character-left:
+      x: 620
+      y: 1080
+      anchorX: 0.5
+      anchorY: 1
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+    character-right:
+      x: 1300
+      y: 1080
+      anchorX: 0.5
+      anchorY: 1
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+  animations:
+    screen-crossfade:
+      name: Screen Crossfade
+      type: transition
+      prev:
+        tween:
+          alpha:
+            initialValue: 1
+            keyframes:
+              - duration: 1000
+                value: 0
+                easing: linear
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 1000
+                value: 1
+                easing: linear
+  colors:
+    overlayColor:
+      hex: "#000000"
+story:
+  initialSceneId: scene1
+  scenes:
+    scene1:
+      name: Scene 1
+      initialSectionId: main
+      sections:
+        main:
+          name: Main
+          lines:
+            - id: previous-frame
+              actions:
+                control:
+                  resourceId: base1
+                background:
+                  resourceId: bg-door
+                character:
+                  items:
+                    - id: lead
+                      transformId: character-left
+                      sprites:
+                        - id: body
+                          resourceId: character-a
+            - id: next-frame
+              actions:
+                screen:
+                  animations:
+                    resourceId: screen-crossfade
+                background:
+                  resourceId: bg-forest
+                character:
+                  items:
+                    - id: lead
+                      transformId: character-right
+                      sprites:
+                        - id: body
+                          resourceId: character-b
