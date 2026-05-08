@@ -230,6 +230,85 @@ describe("projectData schema", () => {
     expect(validateProjectData.errors).toBeNull();
   });
 
+  it("accepts whole-screen transition payloads on section navigation actions", () => {
+    expect(
+      validateSystemActions({
+        sectionTransition: {
+          sectionId: "chapter2",
+          screen: {
+            animations: {
+              resourceId: "screenCrossFade",
+            },
+          },
+        },
+        resetStoryAtSection: {
+          sectionId: "title",
+          screen: {
+            animations: {
+              resourceId: "screenMaskReveal",
+            },
+          },
+        },
+      }),
+    ).toBe(true);
+    expect(validateSystemActions.errors).toBeNull();
+
+    expect(
+      validateProjectData(
+        createMinimalProjectData({
+          story: {
+            initialSceneId: "scene1",
+            scenes: {
+              scene1: {
+                name: "Scene 1",
+                initialSectionId: "section1",
+                sections: {
+                  section1: {
+                    name: "Section 1",
+                    lines: [
+                      {
+                        id: "line1",
+                        actions: {
+                          sectionTransition: {
+                            sectionId: "section2",
+                            screen: {
+                              animations: {
+                                resourceId: "screenCrossFade",
+                              },
+                            },
+                          },
+                        },
+                      },
+                    ],
+                  },
+                  section2: {
+                    name: "Section 2",
+                    lines: [
+                      {
+                        id: "line1",
+                        actions: {
+                          resetStoryAtSection: {
+                            sectionId: "section1",
+                            screen: {
+                              animations: {
+                                resourceId: "screenMaskReveal",
+                              },
+                            },
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        }),
+      ),
+    ).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
+
   it("accepts dialogue character override and persistCharacter in presentation actions", () => {
     expect(
       validatePresentationActions({

@@ -425,13 +425,28 @@ const sectionLineChanges = engine.selectSectionLineChanges({
 
 ### Navigation Actions
 
-| Action              | Payload                  | Description                                                 |
-| ------------------- | ------------------------ | ----------------------------------------------------------- |
-| `nextLine`          | -                        | Advance to the next line (respects `nextLineConfig.manual`) |
-| `rollbackByOffset`  | `{ offset? }`            | Roll back relative to the active rollback checkpoint        |
-| `rollbackToLine`    | `{ sectionId, lineId }`  | Roll back to a specific line in the rollback timeline       |
-| `jumpToLine`        | `{ sectionId?, lineId }` | Jump to specific line                                       |
-| `sectionTransition` | `{ sectionId }`          | Transition to a different section                           |
+| Action              | Payload                           | Description                                                 |
+| ------------------- | --------------------------------- | ----------------------------------------------------------- |
+| `nextLine`          | -                                 | Advance to the next line (respects `nextLineConfig.manual`) |
+| `rollbackByOffset`  | `{ offset? }`                     | Roll back relative to the active rollback checkpoint        |
+| `rollbackToLine`    | `{ sectionId, lineId }`           | Roll back to a specific line in the rollback timeline       |
+| `jumpToLine`        | `{ sectionId?, lineId }`          | Jump to specific line                                       |
+| `sectionTransition` | `{ sectionId, screen? }`          | Transition to a different section                           |
+
+`sectionTransition.screen` uses the same shape as line-level `screen`:
+
+```yaml
+sectionTransition:
+  sectionId: chapter2
+  screen:
+    animations:
+      resourceId: screenCrossFade
+```
+
+This transition is scoped to the edge between sections. If both
+`sectionTransition.screen` and the destination line's `screen.animations` are
+defined, the `sectionTransition.screen` animation wins for the first destination
+render only.
 
 ### Conditional Actions
 
@@ -504,11 +519,11 @@ Playback timing semantics:
 
 ### State Management Actions
 
-| Action                | Payload              | Description                                 |
-| --------------------- | -------------------- | ------------------------------------------- |
-| `setNextLineConfig`   | `{ manual?, auto? }` | Configure line advancement                  |
-| `updateProjectData`   | `{ projectData }`    | Replace project data                        |
-| `resetStoryAtSection` | `{ sectionId }`      | Reset story-local state and enter a section |
+| Action                | Payload                  | Description                                 |
+| --------------------- | ------------------------ | ------------------------------------------- |
+| `setNextLineConfig`   | `{ manual?, auto? }`     | Configure line advancement                  |
+| `updateProjectData`   | `{ projectData }`        | Replace project data                        |
+| `resetStoryAtSection` | `{ sectionId, screen? }` | Reset story-local state and enter a section |
 
 ### Registry Actions
 

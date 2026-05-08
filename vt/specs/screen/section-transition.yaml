@@ -1,0 +1,155 @@
+---
+title: Screen Section Transition
+description: A sectionTransition payload can animate the whole previous screen into the first frame of the destination section.
+specs:
+  - sectionTransition.screen should target the whole story container
+  - sectionTransition.screen should override a destination line screen animation for the first destination render
+  - the halfway screenshot should show the source and destination section frames in transition
+  - the final screenshot should show only the destination section frame
+steps:
+  - action: customEvent
+    name: vt:nextLine
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 500
+  - action: screenshot
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 500
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  controls:
+    base1:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: overlayColor
+  images:
+    bg-door:
+      fileId: lakjf3lka
+      width: 1920
+      height: 1080
+    bg-forest:
+      fileId: dmni32
+      width: 1920
+      height: 1080
+    character-a:
+      fileId: char_sprite_1
+      width: 512
+      height: 1024
+    character-b:
+      fileId: char_sprite_3
+      width: 512
+      height: 1024
+  transforms:
+    character-left:
+      x: 620
+      y: 1080
+      anchorX: 0.5
+      anchorY: 1
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+    character-right:
+      x: 1300
+      y: 1080
+      anchorX: 0.5
+      anchorY: 1
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+  animations:
+    screen-crossfade:
+      name: Section Screen Crossfade
+      type: transition
+      prev:
+        tween:
+          alpha:
+            initialValue: 1
+            keyframes:
+              - duration: 1000
+                value: 0
+                easing: linear
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 1000
+                value: 1
+                easing: linear
+    line-enter-fade:
+      name: Destination Line Enter Fade
+      type: transition
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 1000
+                value: 1
+                easing: linear
+  colors:
+    overlayColor:
+      hex: "#000000"
+story:
+  initialSceneId: scene1
+  scenes:
+    scene1:
+      name: Scene 1
+      initialSectionId: source
+      sections:
+        source:
+          name: Source
+          lines:
+            - id: previous-frame
+              actions:
+                control:
+                  resourceId: base1
+                background:
+                  resourceId: bg-door
+                character:
+                  items:
+                    - id: lead
+                      transformId: character-left
+                      sprites:
+                        - id: body
+                          resourceId: character-a
+            - id: transition
+              actions:
+                sectionTransition:
+                  sectionId: destination
+                  screen:
+                    animations:
+                      resourceId: screen-crossfade
+        destination:
+          name: Destination
+          lines:
+            - id: next-frame
+              actions:
+                screen:
+                  animations:
+                    resourceId: line-enter-fade
+                background:
+                  resourceId: bg-forest
+                character:
+                  items:
+                    - id: lead
+                      transformId: character-right
+                      sprites:
+                        - id: body
+                          resourceId: character-b

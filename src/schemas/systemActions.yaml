@@ -299,6 +299,9 @@ properties:
       sectionId:
         type: string
         description: Target section ID
+      screen:
+        description: Optional whole-screen transition for entering the destination section. Takes precedence over destination line screen.animations for the first destination render only.
+        $ref: "presentationActions.yaml#/properties/screen"
     required: [sectionId]
     additionalProperties: false
 
@@ -309,6 +312,9 @@ properties:
       sectionId:
         type: string
         description: Target section ID
+      screen:
+        description: Optional whole-screen transition for entering the destination section. Takes precedence over destination line screen.animations for the first destination render only.
+        $ref: "presentationActions.yaml#/properties/screen"
     required: [sectionId]
     additionalProperties: false
 
