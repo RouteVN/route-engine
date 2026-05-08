@@ -3154,6 +3154,52 @@ export const addLayout = (
   return state;
 };
 
+export const addScreenTransition = (
+  state,
+  {
+    currentLineActions,
+    previousPresentationState,
+    resources = {},
+    isLineCompleted,
+    skipTransitionsAndAnimations,
+    activePersistentAnimations,
+  },
+) => {
+  const { animations } = state;
+  const screenAnimations = currentLineActions?.screen?.animations;
+
+  if (!screenAnimations) {
+    return state;
+  }
+
+  const hasPreviousStoryRender =
+    previousPresentationState !== null &&
+    previousPresentationState !== undefined;
+  const screenAnimationInstances = createAnimationInstances({
+    animationsDef: screenAnimations,
+    resources,
+    previousResourceId: hasPreviousStoryRender ? "story" : undefined,
+    currentResourceId: "story",
+    previousTargetId: hasPreviousStoryRender ? "story" : undefined,
+    currentTargetId: "story",
+    animationPath: "screen.animations",
+    idPrefix: "screen",
+  });
+
+  if (
+    shouldEmitAnimationSelection({
+      animationInstances: screenAnimationInstances,
+      isLineCompleted,
+      skipTransitionsAndAnimations,
+      activePersistentAnimations,
+    })
+  ) {
+    animations.push(...screenAnimationInstances);
+  }
+
+  return state;
+};
+
 export const addOverlayStack = (
   state,
   {
@@ -3388,6 +3434,7 @@ export const constructRenderState = (params) => {
     addChoices,
     addForm,
     addLayout,
+    addScreenTransition,
     addBgm,
     addSfx,
     addVoice,

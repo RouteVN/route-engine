@@ -183,6 +183,53 @@ describe("projectData schema", () => {
     expect(validatePresentationActions.errors).toBeNull();
   });
 
+  it("accepts whole-screen animation selections in presentation actions", () => {
+    expect(
+      validatePresentationActions({
+        screen: {
+          animations: {
+            resourceId: "screenCrossFade",
+          },
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+
+    expect(
+      validateProjectData(
+        createMinimalProjectData({
+          story: {
+            initialSceneId: "scene1",
+            scenes: {
+              scene1: {
+                name: "Scene 1",
+                initialSectionId: "section1",
+                sections: {
+                  section1: {
+                    name: "Section 1",
+                    lines: [
+                      {
+                        id: "line1",
+                        actions: {
+                          screen: {
+                            animations: {
+                              resourceId: "screenCrossFade",
+                            },
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        }),
+      ),
+    ).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
+
   it("accepts dialogue character override and persistCharacter in presentation actions", () => {
     expect(
       validatePresentationActions({

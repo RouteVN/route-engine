@@ -56,6 +56,8 @@ properties:
                           properties:
                             cleanAll:
                               $ref: "../presentationActions.yaml#/properties/cleanAll"
+                            screen:
+                              $ref: "../presentationActions.yaml#/properties/screen"
                             background:
                               $ref: "../presentationActions.yaml#/properties/background"
                             dialogue:

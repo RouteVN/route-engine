@@ -1,0 +1,196 @@
+file: "../../../src/stores/constructRenderState.js"
+group: constructRenderState.addScreenTransition
+suites: [addScreenTransition]
+---
+suite: addScreenTransition
+exportName: addScreenTransition
+---
+case: add whole-screen transition against story container
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children:
+          - id: "bg-cg-background-sprite"
+            type: "sprite"
+            src: "next.png"
+    animations: []
+  - currentLineActions:
+      screen:
+        animations:
+          resourceId: "screenCrossFade"
+    previousPresentationState:
+      background:
+        resourceId: "previous"
+    resources:
+      animations:
+        screenCrossFade:
+          type: transition
+          prev:
+            tween:
+              alpha:
+                initialValue: 1
+                keyframes:
+                  - duration: 300
+                    value: 0
+          next:
+            tween:
+              alpha:
+                initialValue: 0
+                keyframes:
+                  - duration: 300
+                    value: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "bg-cg-background-sprite"
+          type: "sprite"
+          src: "next.png"
+  animations:
+    - id: "screen-animation-transition"
+      type: "transition"
+      targetId: "story"
+      prev:
+        tween:
+          alpha:
+            initialValue: 1
+            keyframes:
+              - duration: 300
+                value: 0
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 300
+                value: 1
+---
+case: add whole-screen enter transition on first line
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children:
+          - id: "bg-cg-background-sprite"
+            type: "sprite"
+            src: "initial.png"
+    animations: []
+  - currentLineActions:
+      screen:
+        animations:
+          resourceId: "screenFadeIn"
+    previousPresentationState: null
+    resources:
+      animations:
+        screenFadeIn:
+          type: transition
+          next:
+            tween:
+              alpha:
+                initialValue: 0
+                keyframes:
+                  - duration: 300
+                    value: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "bg-cg-background-sprite"
+          type: "sprite"
+          src: "initial.png"
+  animations:
+    - id: "screen-animation-in"
+      type: "transition"
+      targetId: "story"
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 300
+                value: 1
+---
+case: skip whole-screen transition after line completion
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - currentLineActions:
+      screen:
+        animations:
+          resourceId: "screenFade"
+    previousPresentationState:
+      background:
+        resourceId: "previous"
+    isLineCompleted: true
+    resources:
+      animations:
+        screenFade:
+          type: transition
+          next:
+            tween:
+              alpha:
+                initialValue: 0
+                keyframes:
+                  - duration: 300
+                    value: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+---
+case: skip whole-screen transition when transitions are disabled
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - currentLineActions:
+      screen:
+        animations:
+          resourceId: "screenFade"
+    previousPresentationState:
+      background:
+        resourceId: "previous"
+    skipTransitionsAndAnimations: true
+    resources:
+      animations:
+        screenFade:
+          type: transition
+          next:
+            tween:
+              alpha:
+                initialValue: 0
+                keyframes:
+                  - duration: 300
+                    value: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
