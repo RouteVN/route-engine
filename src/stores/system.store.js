@@ -2555,7 +2555,7 @@ const transitionToSection = (
   if (state.global.autoMode) {
     stopAutoMode({ state });
   }
-  if (state.global.skipMode) {
+  if (resetStoryState && state.global.skipMode) {
     stopSkipMode({ state });
   }
 

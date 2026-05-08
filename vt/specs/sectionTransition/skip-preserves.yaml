@@ -1,0 +1,174 @@
+---
+title: Section Transition Preserves Skip
+description: Skip mode should continue across a normal sectionTransition and stop only after the destination section reaches a choice.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: click
+    x: 805
+    y: 55
+  - action: wait
+    ms: 340
+  - action: screenshot
+  - action: click
+    x: 455
+    y: 265
+  - action: wait
+    ms: 140
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  characters:
+    narrator:
+      name: Narrator
+  layouts:
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: stage
+          type: rect
+          width: 1920
+          height: 1080
+          colorId: bg
+        - id: dialogue-box
+          type: rect
+          x: 100
+          y: 760
+          width: 1720
+          height: 220
+          colorId: panel
+        - id: dialogue-text
+          type: text
+          x: 140
+          y: 835
+          width: 1320
+          content: ${dialogue.content[0].text}
+          textStyleId: textMain
+        - id: skip-button
+          type: rect
+          x: 1500
+          y: 70
+          width: 220
+          height: 70
+          colorId: fg-45
+          click:
+            payload:
+              actions:
+                toggleSkipMode: {}
+        - id: skip-label
+          type: text
+          x: 1562
+          y: 92
+          content: SKIP
+          textStyleId: textButton
+    choiceLayout:
+      elements:
+        - id: choice-button
+          type: rect
+          x: 640
+          y: 480
+          width: 640
+          height: 110
+          colorId: fg-45
+          click:
+            payload:
+              actions:
+                nextLine: {}
+        - id: choice-text
+          type: text
+          x: 760
+          y: 515
+          content: ${choice.items[0].content}
+          textStyleId: textButton
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    bg:
+      hex: "#000000"
+    panel:
+      hex: "#4D4D4D"
+    fg-100:
+      hex: "#FFFFFF"
+    fg-45:
+      hex: "#737373"
+  textStyles:
+    textMain:
+      fontId: fontDefault
+      colorId: fg-100
+      fontSize: 34
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textButton:
+      fontId: fontDefault
+      colorId: fg-100
+      fontSize: 30
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: source
+      sections:
+        source:
+          lines:
+            - id: start
+              actions:
+                setSkipUnseenText:
+                  value: true
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Start skip here."
+                  characterId: narrator
+            - id: transition
+              actions:
+                sectionTransition:
+                  sectionId: destination
+        destination:
+          lines:
+            - id: intro
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Section destination intro. Skip should pass this line."
+                  characterId: narrator
+            - id: choiceStop
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Choice stop after section transition."
+                  characterId: narrator
+                choice:
+                  resourceId: choiceLayout
+                  items:
+                    - id: continue
+                      content: Continue
+            - id: afterChoice
+              actions:
+                choice: {}
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Choice click continued after skip stopped."
+                  characterId: narrator
