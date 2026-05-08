@@ -24,6 +24,19 @@ screen:
   height: 1080
   backgroundColor: "#000000"
 resources:
+  controls:
+    base1:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: overlayColor
   images:
     bg-door:
       fileId: lakjf3lka
@@ -78,6 +91,9 @@ resources:
               - duration: 1000
                 value: 1
                 easing: linear
+  colors:
+    overlayColor:
+      hex: "#000000"
 story:
   initialSceneId: scene1
   scenes:
@@ -90,6 +106,8 @@ story:
           lines:
             - id: previous-frame
               actions:
+                control:
+                  resourceId: base1
                 background:
                   resourceId: bg-door
                 character:
