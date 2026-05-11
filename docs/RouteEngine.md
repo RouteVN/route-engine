@@ -622,8 +622,8 @@ Actions that can be attached to lines to control presentation:
 | `dialogue`   | `{ characterId?, character?, character.sprite?, persistCharacter?, content, append?, mode?, ui?, clear? }` | Display dialogue                                                                                  |
 | `character`  | `{ items }`                                                                                                | Display character sprites. Each item can have optional `x` and `y` to override transform position |
 | `visual`     | `{ items }`                                                                                                | Display visual elements                                                                           |
-| `bgm`        | `{ resourceId, loop?, startDelayMs? }`                                                                     | Play background music                                                                             |
-| `sfx`        | `{ items }`                                                                                                | Play sound effects                                                                                |
+| `bgm`        | `{ resourceId, volume?, loop?, startDelayMs? }`                                                            | Play background music                                                                             |
+| `sfx`        | `{ items }`                                                                                                | Play sound effects. Each item can include `volume`, `loop`, and `startDelayMs`                    |
 | `voice`      | `{ resourceId, volume?, loop?, startDelayMs? }`                                                            | Play voice audio from `resources.voices[currentSceneId][resourceId]`                              |
 | `animation`  | `{ ... }`                                                                                                  | Apply animations                                                                                  |
 | `layout`     | `{ resourceId }`                                                                                           | Display layout                                                                                    |
@@ -834,6 +834,36 @@ Template/runtime paths:
 - NVL line-item layouts can inspect sprite metadata at `${line.character.sprite}`.
 - Dialogue history layouts should prefer `${item.character.name}`. `${item.characterName}` remains available as a compatibility alias.
 - Dialogue history layouts can inspect sprite metadata at `${item.character.sprite}`.
+
+### Audio Volumes
+
+Audio uses two volume layers:
+
+- Authored BGM/SFX volume controls the specific line action or sound resource.
+- Runtime `musicVolume` and `soundVolume` are global user/device controls.
+
+The emitted render audio volume is:
+
+```js
+(authoredVolume * runtimeVolume) / 100;
+```
+
+If an authored BGM/SFX volume is omitted, it defaults to `100`, which is neutral
+and leaves the runtime volume unchanged. Runtime defaults come from
+`GLOBAL_RUNTIME_DEFAULTS`. `runtime.muteAll` forces emitted BGM, SFX, and voice
+volume to `0`.
+
+```yaml
+actions:
+  bgm:
+    resourceId: music_1
+    volume: 80
+  sfx:
+    items:
+      - id: door
+        resourceId: door_close
+        volume: 60
+```
 
 ### Voice Resources
 

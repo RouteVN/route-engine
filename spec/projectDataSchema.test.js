@@ -366,6 +366,20 @@ describe("projectData schema", () => {
     expect(validatePresentationActions.errors).toBeNull();
   });
 
+  it("accepts BGM actions with authored volume", () => {
+    expect(
+      validatePresentationActions({
+        bgm: {
+          resourceId: "music_1",
+          loop: true,
+          volume: 75,
+          startDelayMs: 120,
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+  });
+
   it("accepts scene-grouped voice resources and voice presentation actions", () => {
     expect(
       validatePresentationActions({

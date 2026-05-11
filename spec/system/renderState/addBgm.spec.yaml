@@ -112,6 +112,43 @@ out:
       volume: 30
       startDelayMs: 1000
 ---
+case: add bgm applies authored volume with runtime music volume
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      bgm:
+        resourceId: "customMusic"
+        loop: true
+        volume: 60
+    resources:
+      sounds:
+        customMusic:
+          fileId: "custom.mp3"
+    runtime:
+      musicVolume: 30
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio:
+    - id: "bgm"
+      type: "sound"
+      src: "custom.mp3"
+      loop: true
+      volume: 18
+      startDelayMs: null
+---
 case: no presentationState.bgm - return unchanged state
 in:
   - elements:

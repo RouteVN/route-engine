@@ -1,5 +1,6 @@
 import { parseAndRender } from "jempl";
 import { createSequentialActionsExecutor, formatDate } from "../util.js";
+import { GLOBAL_RUNTIME_DEFAULTS } from "../runtimeFields.js";
 
 const jemplFunctions = {
   objectValues: (obj) =>
@@ -1134,12 +1135,35 @@ const getStoryContainer = (elements = []) => {
   return elements.find((element) => element.id === "story");
 };
 
-const getEffectiveSoundVolume = (runtime = {}) => {
-  return runtime?.muteAll ? 0 : (runtime?.soundVolume ?? 50);
+const VOLUME_PERCENT_SCALE = 100;
+const DEFAULT_AUTHORED_AUDIO_VOLUME = VOLUME_PERCENT_SCALE;
+
+const getLayeredVolume = (volume, runtimeVolume) => {
+  return (volume * runtimeVolume) / VOLUME_PERCENT_SCALE;
 };
 
-const getEffectiveMusicVolume = (runtime = {}) => {
-  return runtime?.muteAll ? 0 : (runtime?.musicVolume ?? 50);
+const getEffectiveSoundVolume = (
+  runtime = {},
+  volume = DEFAULT_AUTHORED_AUDIO_VOLUME,
+) => {
+  return runtime?.muteAll
+    ? 0
+    : getLayeredVolume(
+        volume,
+        runtime?.soundVolume ?? GLOBAL_RUNTIME_DEFAULTS.soundVolume,
+      );
+};
+
+const getEffectiveMusicVolume = (
+  runtime = {},
+  volume = DEFAULT_AUTHORED_AUDIO_VOLUME,
+) => {
+  return runtime?.muteAll
+    ? 0
+    : getLayeredVolume(
+        volume,
+        runtime?.musicVolume ?? GLOBAL_RUNTIME_DEFAULTS.musicVolume,
+      );
 };
 
 const createLayoutTemplateData = ({
@@ -2952,14 +2976,19 @@ export const addBgm = (
       type: "sound",
       src: audioResource.fileId,
       loop: presentationState.bgm.loop ?? true,
-      volume: getEffectiveMusicVolume(resolvedRuntime),
+      volume: getEffectiveMusicVolume(
+        resolvedRuntime,
+        presentationState.bgm.volume ??
+          audioResource.volume ??
+          DEFAULT_AUTHORED_AUDIO_VOLUME,
+      ),
       startDelayMs: presentationState.bgm.startDelayMs ?? null,
     });
   }
   return state;
 };
 
-export const addSfx = (state, { presentationState, resources }) => {
+export const addSfx = (state, { presentationState, resources, runtime }) => {
   const { audio: audioElements } = state;
 
   if (presentationState.sfx && resources) {
@@ -2974,7 +3003,10 @@ export const addSfx = (state, { presentationState, resources }) => {
         type: "sound",
         src: audioResource.fileId,
         loop: item.loop ?? audioResource.loop ?? false,
-        volume: item.volume ?? audioResource.volume ?? 50,
+        volume: getEffectiveSoundVolume(
+          runtime,
+          item.volume ?? audioResource.volume ?? DEFAULT_AUTHORED_AUDIO_VOLUME,
+        ),
         startDelayMs: item.startDelayMs ?? audioResource.startDelayMs ?? null,
       });
     }

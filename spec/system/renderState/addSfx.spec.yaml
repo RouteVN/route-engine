@@ -40,7 +40,7 @@ out:
       type: "sound"
       src: "effect.mp3"
       loop: false
-      volume: 70
+      volume: 35
       startDelayMs: 0
 ---
 case: add sfx with default values
@@ -113,8 +113,46 @@ out:
       type: "sound"
       src: "custom.mp3"
       loop: true
-      volume: 30
+      volume: 15
       startDelayMs: 500
+---
+case: add sfx applies authored volume with runtime sound volume
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      sfx:
+        items:
+          - id: "sfx1"
+            resourceId: "customSound"
+            volume: 40
+    resources:
+      sounds:
+        customSound:
+          fileId: "custom.mp3"
+    runtime:
+      soundVolume: 25
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio:
+    - id: "sfx1"
+      type: "sound"
+      src: "custom.mp3"
+      loop: false
+      volume: 10
+      startDelayMs: null
 ---
 case: multiple sfx items
 in:
@@ -153,7 +191,7 @@ out:
       type: "sound"
       src: "first.mp3"
       loop: false
-      volume: 60
+      volume: 30
       startDelayMs: null
     - id: "sfx2"
       type: "sound"
@@ -219,7 +257,7 @@ out:
       type: "sound"
       src: "effect.mp3"
       loop: true
-      volume: 70
+      volume: 35
       startDelayMs: null
 ---
 case: audio not found - skip item
