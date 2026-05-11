@@ -401,47 +401,6 @@ const createAnimationInstanceIfPossible = ({
   });
 };
 
-const getAnimationLifecycle = ({
-  hasPrevious,
-  hasCurrent,
-  previousResourceId,
-  currentResourceId,
-  sharedTarget,
-}) => {
-  if (!hasPrevious && hasCurrent) {
-    return "enter";
-  }
-
-  if (hasPrevious && !hasCurrent) {
-    return "exit";
-  }
-
-  if (hasPrevious && hasCurrent) {
-    if (previousResourceId === currentResourceId && sharedTarget) {
-      return "update";
-    }
-
-    return "replace";
-  }
-
-  return "none";
-};
-
-const assertUpdateAnimationLifecycle = ({
-  animationType,
-  animationId,
-  animationPath,
-  lifecycle,
-}) => {
-  if (animationType !== "update" || lifecycle === "update") {
-    return;
-  }
-
-  throw new Error(
-    `[${animationPath}] Animation "${animationId}" has type "update", but update animations can only be used when the same target persists across the state change. Use type "transition" for enter, exit, and replace.`,
-  );
-};
-
 const cloneAnimation = (
   animation,
   { defaultTargetId, defaultId, animationPath = "animation" } = {},
@@ -1743,7 +1702,6 @@ const createAnimationInstances = ({
   currentTargetId,
   animationPath,
   idPrefix,
-  allowIncomingUpdateFallback = false,
 }) => {
   if (!animationsDef) {
     return [];
@@ -1775,13 +1733,6 @@ const createAnimationInstances = ({
     currentResourceId !== false;
   const sharedTarget =
     previousTargetId && currentTargetId && previousTargetId === currentTargetId;
-  const lifecycle = getAnimationLifecycle({
-    hasPrevious,
-    hasCurrent,
-    previousResourceId,
-    currentResourceId,
-    sharedTarget,
-  });
 
   assertNoLegacyAnimationLifecycleConfig(animationsDef, animationPath);
 
@@ -1792,37 +1743,16 @@ const createAnimationInstances = ({
     animationId,
     animationPath,
   });
-  const canFallbackIncomingUpdate =
-    allowIncomingUpdateFallback &&
-    animationType === "update" &&
-    lifecycle !== "update" &&
-    hasCurrent &&
-    currentTargetId;
-
-  if (!canFallbackIncomingUpdate) {
-    assertUpdateAnimationLifecycle({
-      animationType,
-      animationId,
-      animationPath,
-      lifecycle,
-    });
-  }
-
   if (animationType === "update") {
-    if (
-      hasPrevious &&
-      hasCurrent &&
-      previousResourceId === currentResourceId &&
-      sharedTarget
-    ) {
+    if (hasCurrent && currentTargetId) {
       appendAnimationInstance({
         instanceId: `${idPrefix}-animation-update`,
         targetId: currentTargetId,
       });
-    } else if (canFallbackIncomingUpdate) {
+    } else if (hasPrevious && previousTargetId) {
       appendAnimationInstance({
         instanceId: `${idPrefix}-animation-update`,
-        targetId: currentTargetId,
+        targetId: previousTargetId,
       });
     }
 
@@ -2052,7 +1982,6 @@ export const addBackgroundOrCg = (
       }),
       animationPath: "background.animations",
       idPrefix: "bg-cg",
-      allowIncomingUpdateFallback: true,
     });
 
     if (

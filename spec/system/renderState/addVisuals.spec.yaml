@@ -1495,3 +1495,196 @@ out:
             - duration: 200
               value: 1
   audio: []
+---
+case: allow update animation reference when visual enters
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceId: "image1"
+            transformId: "transform1"
+            animations:
+              resourceId: "pulse"
+    resources:
+      images:
+        image1:
+          fileId: "pulse-enter.png"
+      transforms:
+        transform1:
+          x: 50
+          y: 100
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      animations:
+        pulse:
+          type: update
+          tween:
+            alpha:
+              initialValue: 0.5
+              keyframes:
+                - duration: 200
+                  value: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-visual1"
+          type: "sprite"
+          src: "pulse-enter.png"
+          x: 50
+          y: 100
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+  animations:
+    - id: "visual1-animation-update"
+      type: "update"
+      targetId: "visual-visual1"
+      tween:
+        alpha:
+          initialValue: 0.5
+          keyframes:
+            - duration: 200
+              value: 1
+  audio: []
+---
+case: allow update animation reference when visual exits
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "visual1"
+            animations:
+              resourceId: "pulse"
+    previousPresentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceId: "image1"
+    resources:
+      animations:
+        pulse:
+          type: update
+          tween:
+            alpha:
+              initialValue: 1
+              keyframes:
+                - duration: 200
+                  value: 0
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations:
+    - id: "visual1-animation-update"
+      type: "update"
+      targetId: "visual-visual1"
+      tween:
+        alpha:
+          initialValue: 1
+          keyframes:
+            - duration: 200
+              value: 0
+  audio: []
+---
+case: allow update animation reference when visual replaces
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceId: "image2"
+            transformId: "transform1"
+            animations:
+              resourceId: "pulse"
+    previousPresentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceId: "image1"
+    resources:
+      images:
+        image2:
+          fileId: "pulse-replace.png"
+      transforms:
+        transform1:
+          x: 50
+          y: 100
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      animations:
+        pulse:
+          type: update
+          tween:
+            alpha:
+              initialValue: 0.5
+              keyframes:
+                - duration: 200
+                  value: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-visual1"
+          type: "sprite"
+          src: "pulse-replace.png"
+          x: 50
+          y: 100
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+  animations:
+    - id: "visual1-animation-update"
+      type: "update"
+      targetId: "visual-visual1"
+      tween:
+        alpha:
+          initialValue: 0.5
+          keyframes:
+            - duration: 200
+              value: 1
+  audio: []
