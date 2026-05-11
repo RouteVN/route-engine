@@ -1,0 +1,84 @@
+---
+title: Character Update Enter Fallback
+skipInitialScreenshot: true
+description: |
+  A character entering the scene should still render when the referenced
+  animation resource is typed as `update`.
+specs:
+  - the character should be visible after advancing to the update-animated enter line
+steps:
+  - action: customEvent
+    name: vt:nextLine
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 300
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  images:
+    parts-body:
+      fileId: character_parts_body
+      width: 620
+      height: 960
+    parts-face-neutral:
+      fileId: character_parts_face_neutral
+      width: 620
+      height: 960
+  transforms:
+    center-stage:
+      x: 960
+      y: 1080
+      anchorX: 0.5
+      anchorY: 1
+  animations:
+    enter-update:
+      name: Character Enter Update
+      type: update
+      tween:
+        alpha:
+          initialValue: 0.25
+          keyframes:
+            - duration: 600
+              value: 1
+              easing: linear
+        scaleX:
+          initialValue: 0.8
+          keyframes:
+            - duration: 600
+              value: 1.1
+              easing: linear
+        scaleY:
+          initialValue: 0.8
+          keyframes:
+            - duration: 600
+              value: 1.1
+              easing: linear
+story:
+  initialSceneId: characterUpdateEnterScene
+  scenes:
+    characterUpdateEnterScene:
+      name: Character Update Enter Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions: {}
+            - id: line2
+              actions:
+                character:
+                  items:
+                    - id: grayscale-hero
+                      transformId: center-stage
+                      sprites:
+                        - id: body
+                          resourceId: parts-body
+                        - id: face
+                          resourceId: parts-face-neutral
+                      animations:
+                        resourceId: enter-update
