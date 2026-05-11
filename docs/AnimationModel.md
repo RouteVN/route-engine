@@ -60,11 +60,15 @@ The system should separate three concerns:
 
 In practice:
 
-- `update` animates one live subject that remains present before and after the change
+- `update` animates a single resolved subject
 - `transition` animates `prev`, `next`, or both
 - add maps to `transition(next only)`
 - remove maps to `transition(prev only)`
 - replace maps to `transition(prev + next)`
+
+When an `update` animation is used for add, remove, or replace, the engine
+still emits a single-target update animation. It targets the current subject
+when one exists, otherwise the previous subject for removals.
 
 If a `transition` resolves to the same compatible visual subject on both sides, the runtime may optimize execution into a single-subject tween. That is an execution optimization, not a separate authoring concept.
 
@@ -127,18 +131,11 @@ state:
 For persisted backgrounds, the runtime treats the resolved subject as both the
 `prev` and `next` side of the `transition`.
 
-### Background update fallback
+### Update fallback
 
-Background currently has one narrow compatibility fallback:
-
-- if the referenced animation resource is `type: update`
-- and the resolved lifecycle is not true `update`
-- and there is an incoming background target
-
-the engine animates the incoming background target instead of throwing.
-
-This fallback exists for background enter/replace handling only. It should be
-treated as compatibility behavior, not the general rule for all element types.
+If the referenced animation resource is `type: update` and the resolved
+lifecycle is add, remove, or replace, the engine animates one available target
+instead of throwing. Current targets are preferred over previous targets.
 
 ## State Rule
 

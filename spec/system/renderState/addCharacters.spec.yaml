@@ -618,6 +618,94 @@ out:
               value: 2.2
               easing: easeOutQuad
 ---
+case: allow update animation reference when character enters
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      character:
+        items:
+          - id: "char1"
+            transformId: "transform1"
+            sprites:
+              - id: "body"
+                resourceId: "body"
+            animations:
+              resourceId: "scaleUp"
+    resources:
+      transforms:
+        transform1:
+          x: 0
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+      images:
+        body:
+          fileId: "body.png"
+          width: 200
+          height: 200
+      animations:
+        scaleUp:
+          type: update
+          tween:
+            scaleX:
+              keyframes:
+                - duration: 2000
+                  value: 2.2
+                  easing: easeOutQuad
+            scaleY:
+              keyframes:
+                - duration: 2000
+                  value: 2.2
+                  easing: easeOutQuad
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - type: "container"
+          id: "character-container-char1"
+          x: 0
+          y: 0
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - type: "sprite"
+              id: "character-container-char1-body"
+              src: "body.png"
+              width: 200
+              height: 200
+              x: 0
+              y: 0
+  animations:
+    - id: "character-animation-update"
+      type: "update"
+      targetId: "character-container-char1"
+      tween:
+        scaleX:
+          keyframes:
+            - duration: 2000
+              value: 2.2
+              easing: easeOutQuad
+        scaleY:
+          keyframes:
+            - duration: 2000
+              value: 2.2
+              easing: easeOutQuad
+---
 case: keep stable character target when swapping a sprite part on update
 in:
   - elements:

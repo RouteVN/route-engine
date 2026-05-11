@@ -12,7 +12,7 @@ viewport:
   height: 1080
 steps:
   - action: wait
-    ms: 2300
+    ms: 3300
   - action: screenshot
   - action: wait
     ms: 1300
