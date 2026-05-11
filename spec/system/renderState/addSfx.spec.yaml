@@ -36,7 +36,7 @@ out:
       children: []
   animations: []
   audio:
-    - id: "sfx1"
+    - id: "sfx:0:soundEffect"
       type: "sound"
       src: "effect.mp3"
       loop: false
@@ -71,7 +71,7 @@ out:
       children: []
   animations: []
   audio:
-    - id: "sfx1"
+    - id: "sfx:0:simpleSound"
       type: "sound"
       src: "simple.mp3"
       loop: false
@@ -109,7 +109,7 @@ out:
       children: []
   animations: []
   audio:
-    - id: "sfx1"
+    - id: "sfx:0:customSound"
       type: "sound"
       src: "custom.mp3"
       loop: true
@@ -147,7 +147,7 @@ out:
       children: []
   animations: []
   audio:
-    - id: "sfx1"
+    - id: "sfx:0:customSound"
       type: "sound"
       src: "custom.mp3"
       loop: false
@@ -187,13 +187,58 @@ out:
       children: []
   animations: []
   audio:
-    - id: "sfx1"
+    - id: "sfx:0:firstSound"
       type: "sound"
       src: "first.mp3"
       loop: false
       volume: 30
       startDelayMs: null
-    - id: "sfx2"
+    - id: "sfx:1:secondSound"
+      type: "sound"
+      src: "second.mp3"
+      loop: false
+      volume: 50
+      startDelayMs: null
+---
+case: scopes sfx render ids by item index and resource id
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      sfx:
+        items:
+          - id: "copiedSfx"
+            resourceId: "firstSound"
+          - id: "copiedSfx"
+            resourceId: "secondSound"
+    resources:
+      sounds:
+        firstSound:
+          fileId: "first.mp3"
+        secondSound:
+          fileId: "second.mp3"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio:
+    - id: "sfx:0:firstSound"
+      type: "sound"
+      src: "first.mp3"
+      loop: false
+      volume: 50
+      startDelayMs: null
+    - id: "sfx:1:secondSound"
       type: "sound"
       src: "second.mp3"
       loop: false
@@ -253,7 +298,7 @@ out:
       children: []
   animations: []
   audio:
-    - id: "sfx1"
+    - id: "sfx:0:soundEffect"
       type: "sound"
       src: "effect.mp3"
       loop: true
