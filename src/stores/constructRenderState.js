@@ -1166,6 +1166,10 @@ const getEffectiveMusicVolume = (
       );
 };
 
+const createScopedSfxRenderId = ({ item, index } = {}) => {
+  return `sfx:${index}:${item?.resourceId}`;
+};
+
 const createLayoutTemplateData = ({
   variables,
   runtime,
@@ -2994,12 +2998,12 @@ export const addSfx = (state, { presentationState, resources, runtime }) => {
   if (presentationState.sfx && resources) {
     // Find the story container
     const items = presentationState.sfx.items;
-    for (const item of items) {
+    for (const [index, item] of items.entries()) {
       const audioResource = resources.sounds?.[item.resourceId];
       if (!audioResource) continue;
 
       audioElements.push({
-        id: item.id,
+        id: createScopedSfxRenderId({ item, index }),
         type: "sound",
         src: audioResource.fileId,
         loop: item.loop ?? audioResource.loop ?? false,
