@@ -15,7 +15,8 @@ properties:
         description: Screen height in pixels
       backgroundColor:
         type: string
-        description: Background color for the screen
+        description: Default solid background color behind presentation background resources
+        pattern: "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$"
         default: "#000000"
     required: [width, height]
     additionalProperties: false

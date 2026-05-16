@@ -5,7 +5,6 @@ description: Test basic keyboard controls. Enter = nextLine, Space = toggleDialo
 screen:
   width: 1920
   height: 1080
-  backgroundColor: "#000000"
 resources:
   controls:
     gameplay:

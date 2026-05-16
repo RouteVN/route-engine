@@ -343,6 +343,35 @@ resources:
             opacity: 0.9
 ```
 
+#### Background Backing Color
+
+Background actions can set a persistent solid backing color with `colorId`.
+The color resolves through `resources.colors` and renders behind the background
+image, video, or layout. If no background `colorId` has been set, the backing
+color uses `screen.backgroundColor`, which defaults to black.
+
+```yaml
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  colors:
+    nightBackdrop:
+      hex: "#05070D"
+story:
+  scenes:
+    scene1:
+      sections:
+        intro:
+          lines:
+            - id: line1
+              actions:
+                background:
+                  colorId: nightBackdrop
+                  resourceId: forest
+```
+
 ### `handleLineActions()`
 
 Processes actions attached to the current line. Called automatically on line changes.

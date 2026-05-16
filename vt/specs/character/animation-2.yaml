@@ -5,7 +5,6 @@ description: Test both in and out animation at same time for character transitio
 screen:
   width: 1920
   height: 1080
-  backgroundColor: "#000000"
 resources:
   controls:
     base1:

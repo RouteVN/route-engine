@@ -55,6 +55,9 @@ properties:
       resourceId:
         type: string
         description: ID of the background resource to display
+      colorId:
+        type: string
+        description: Optional resources.colors ID for the solid color rendered behind the background resource. Persists until changed or cleared with cleanAll
       transformId:
         type: string
         description: Optional transform resource to position the background

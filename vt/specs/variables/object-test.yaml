@@ -4,7 +4,6 @@ title: Object Type Variables Test
 screen:
   width: 1920
   height: 1080
-  backgroundColor: "#4D4D4D"
 resources:
   variables:
     player:

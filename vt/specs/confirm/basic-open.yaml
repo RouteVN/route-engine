@@ -5,7 +5,6 @@ description: Confirm dialog opened manually from a plain scene.
 screen:
   width: 1920
   height: 1080
-  backgroundColor: "#000000"
 resources:
   variables:
     confirmState:

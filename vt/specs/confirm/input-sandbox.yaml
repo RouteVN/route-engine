@@ -5,7 +5,6 @@ description: Manual sandbox for click and keyboard-driven show and hide.
 screen:
   width: 1920
   height: 1080
-  backgroundColor: "#000000"
 resources:
   variables:
     confirmState:

@@ -4,7 +4,6 @@ title: Slider Variable Binding Test
 screen:
   width: 1920
   height: 1080
-  backgroundColor: "#222222"
 resources:
   variables:
     sliderValue:

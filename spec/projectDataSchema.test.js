@@ -154,6 +154,43 @@ describe("projectData schema", () => {
     expect(validateProjectData.errors).toBeNull();
   });
 
+  it("accepts optional screen backgroundColor", () => {
+    expect(
+      validateProjectData(
+        createMinimalProjectData({
+          screen: {
+            width: 1920,
+            height: 1080,
+            backgroundColor: "#000000",
+          },
+        }),
+      ),
+    ).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
+
+  it("rejects non-hex screen backgroundColor", () => {
+    expect(
+      validateProjectData(
+        createMinimalProjectData({
+          screen: {
+            width: 1920,
+            height: 1080,
+            backgroundColor: "black",
+          },
+        }),
+      ),
+    ).toBe(false);
+    expect(validateProjectData.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          instancePath: "/screen/backgroundColor",
+          keyword: "pattern",
+        }),
+      ]),
+    );
+  });
+
   it("accepts background transformId in presentation actions", () => {
     expect(
       validatePresentationActions({
@@ -164,6 +201,56 @@ describe("projectData schema", () => {
       }),
     ).toBe(true);
     expect(validatePresentationActions.errors).toBeNull();
+  });
+
+  it("accepts background colorId in presentation actions", () => {
+    expect(
+      validatePresentationActions({
+        background: {
+          colorId: "backdrop",
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+
+    expect(
+      validateProjectData(
+        createMinimalProjectData({
+          resources: {
+            colors: {
+              backdrop: {
+                hex: "#101820",
+              },
+            },
+          },
+          story: {
+            initialSceneId: "scene1",
+            scenes: {
+              scene1: {
+                name: "Scene 1",
+                initialSectionId: "section1",
+                sections: {
+                  section1: {
+                    name: "Section 1",
+                    lines: [
+                      {
+                        id: "line1",
+                        actions: {
+                          background: {
+                            colorId: "backdrop",
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        }),
+      ),
+    ).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
   });
 
   it("accepts animation playback continuity in presentation action payloads", () => {

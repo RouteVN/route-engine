@@ -172,6 +172,13 @@ out:
       x: 0
       y: 0
       children:
+        - id: "bg-cg-background-color"
+          type: "rect"
+          x: 0
+          y: 0
+          width: 1920
+          height: 1080
+          fill: "#000000"
         - id: "bg-cg-background-sprite"
           type: "sprite"
           alpha: 1
@@ -296,6 +303,13 @@ out:
       x: 0
       y: 0
       children:
+        - id: "bg-cg-background-color"
+          type: "rect"
+          x: 0
+          y: 0
+          width: 1920
+          height: 1080
+          fill: "#000000"
         - id: "bg-cg-background-sprite"
           type: "sprite"
           alpha: 1

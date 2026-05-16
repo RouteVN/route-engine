@@ -20,7 +20,6 @@ const createGenericLayoutProjectData = () => ({
   screen: {
     width: 1920,
     height: 1080,
-    backgroundColor: "#000000",
   },
   resources: {
     layouts: {
@@ -112,7 +111,6 @@ const createPersistedDialogueUiProjectData = () => ({
   screen: {
     width: 1920,
     height: 1080,
-    backgroundColor: "#000000",
   },
   resources: {
     layouts: {
@@ -195,7 +193,6 @@ const createAppendDialogueProjectData = () => ({
   screen: {
     width: 1920,
     height: 1080,
-    backgroundColor: "#000000",
   },
   resources: {
     layouts: {

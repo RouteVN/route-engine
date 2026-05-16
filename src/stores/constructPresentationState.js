@@ -52,6 +52,9 @@ const hasOwnProperty = (value, key) =>
 const hasPersistentAnimationSelection = (value) =>
   value?.animations?.playback?.continuity === "persistent";
 
+const hasDefinedProperty = (value, key) =>
+  hasOwnProperty(value ?? {}, key) && value[key] !== undefined;
+
 const resolveDialogueCharacterName = (dialogueAction) => {
   if (!dialogueAction) {
     return undefined;
@@ -137,13 +140,20 @@ export const createInitialState = () => {
  */
 export const background = (state, presentation) => {
   if (presentation.background) {
+    const hasResourceId = hasDefinedProperty(
+      presentation.background,
+      "resourceId",
+    );
+    const hasColorId = hasDefinedProperty(presentation.background, "colorId");
+
     const { animationsOnly, state: animState } = getAnimationsOnlyState(
       presentation.background,
-      (p) => !!p.resourceId,
+      (p) =>
+        hasDefinedProperty(p, "resourceId") || hasDefinedProperty(p, "colorId"),
     );
 
     if (animationsOnly) {
-      state.background = state.background?.resourceId
+      state.background = state.background
         ? {
             ...clonePresentationValue(state.background),
             ...animState,
@@ -152,13 +162,53 @@ export const background = (state, presentation) => {
       return;
     }
 
-    if (!presentation.background.resourceId) {
+    if (!hasResourceId && !hasColorId) {
       delete state.background;
       return;
     }
 
-    const nextBackground = clonePresentationValue(presentation.background);
     const previousBackground = state.background;
+    const nextBackground = clonePresentationValue(presentation.background);
+
+    if (!hasResourceId && previousBackground?.resourceId) {
+      nextBackground.resourceId = previousBackground.resourceId;
+      if (
+        !hasOwnProperty(nextBackground, "transformId") &&
+        previousBackground.transformId
+      ) {
+        nextBackground.transformId = previousBackground.transformId;
+      }
+    }
+
+    if (!hasColorId && previousBackground?.colorId) {
+      nextBackground.colorId = previousBackground.colorId;
+    }
+
+    if (
+      hasOwnProperty(nextBackground, "resourceId") &&
+      nextBackground.resourceId === undefined
+    ) {
+      delete nextBackground.resourceId;
+    }
+
+    if (
+      hasOwnProperty(nextBackground, "colorId") &&
+      nextBackground.colorId === undefined
+    ) {
+      delete nextBackground.colorId;
+    }
+
+    if (
+      hasOwnProperty(nextBackground, "animations") &&
+      nextBackground.animations === undefined
+    ) {
+      delete nextBackground.animations;
+    }
+
+    if (!nextBackground.resourceId && !nextBackground.colorId) {
+      delete state.background;
+      return;
+    }
 
     if (
       previousBackground?.resourceId === nextBackground.resourceId &&

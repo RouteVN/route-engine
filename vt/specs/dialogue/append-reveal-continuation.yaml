@@ -32,7 +32,6 @@ steps:
 screen:
   width: 1920
   height: 1080
-  backgroundColor: "#111111"
 resources:
   controls:
     base:
