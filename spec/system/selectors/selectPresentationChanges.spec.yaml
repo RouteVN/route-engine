@@ -30,9 +30,10 @@ in:
               lineId: "2"
 out:
   background:
-    changeType: "add"
-    data:
-      resourceId: "bg-school"
+    resource:
+      changeType: "add"
+      data:
+        resourceId: "bg-school"
 ---
 case: "Detect updated background"
 in:
@@ -60,9 +61,10 @@ in:
               lineId: "2"
 out:
   background:
-    changeType: "update"
-    data:
-      resourceId: "bg-home"
+    resource:
+      changeType: "update"
+      data:
+        resourceId: "bg-home"
 ---
 case: "Detect deleted background via cleanAll"
 in:
@@ -89,9 +91,203 @@ in:
               lineId: "2"
 out:
   background:
-    changeType: "delete"
-    data:
-      resourceId: "bg-school"
+    resource:
+      changeType: "delete"
+      data:
+        resourceId: "bg-school"
+---
+case: "Detect added background color without resource change"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "bg-school"
+                    - id: "2"
+                      actions:
+                        background:
+                          colorId: "night"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  background:
+    color:
+      changeType: "add"
+      data:
+        colorId: "night"
+---
+case: "Detect updated background resource without color change"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "bg-school"
+                          colorId: "night"
+                    - id: "2"
+                      actions:
+                        background:
+                          resourceId: "bg-home"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  background:
+    resource:
+      changeType: "update"
+      data:
+        resourceId: "bg-home"
+---
+case: "Detect updated background color without resource change"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "bg-school"
+                          colorId: "night"
+                    - id: "2"
+                      actions:
+                        background:
+                          colorId: "day"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  background:
+    color:
+      changeType: "update"
+      data:
+        colorId: "day"
+---
+case: "Detect updated background transform as resource change"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "bg-school"
+                          colorId: "night"
+                          transformId: "center"
+                    - id: "2"
+                      actions:
+                        background:
+                          resourceId: "bg-school"
+                          transformId: "wide"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  background:
+    resource:
+      changeType: "update"
+      data:
+        resourceId: "bg-school"
+        transformId: "wide"
+---
+case: "Detect deleted background resource and color via cleanAll"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "bg-school"
+                          colorId: "night"
+                    - id: "2"
+                      actions:
+                        cleanAll: true
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  background:
+    resource:
+      changeType: "delete"
+      data:
+        resourceId: "bg-school"
+    color:
+      changeType: "delete"
+      data:
+        colorId: "night"
+---
+case: "Ignore background animation-only changes"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "bg-school"
+                          colorId: "night"
+                    - id: "2"
+                      actions:
+                        background:
+                          animations:
+                            resourceId: "fadeIn"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out: {}
 ---
 case: "Detect updated BGM properties on the same line"
 in:
