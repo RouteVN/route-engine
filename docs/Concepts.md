@@ -124,7 +124,7 @@ const presentationState = constructPresentationState(presentations);
 Presentation state includes:
 
 - `background`: Current background or CG
-  - `colorId` references `resources.colors` for the persistent solid backing color behind the background resource; if omitted, the backing color is black
+  - `colorId` references `resources.colors` for the persistent solid backing color behind the background resource; if omitted, the backing color falls back to `screen.backgroundColor`, then black
 - `dialogue`: Speaker, layered speaker sprite, text content, mode (ADV/NVL)
 - `character`: Character sprites and positions
 - `visual`: Additional visual elements

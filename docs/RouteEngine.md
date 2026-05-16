@@ -348,9 +348,13 @@ resources:
 Background actions can set a persistent solid backing color with `colorId`.
 The color resolves through `resources.colors` and renders behind the background
 image, video, or layout. If no background `colorId` has been set, the backing
-color is black.
+color uses `screen.backgroundColor`, which defaults to black.
 
 ```yaml
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
 resources:
   colors:
     nightBackdrop:

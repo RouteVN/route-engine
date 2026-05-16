@@ -154,7 +154,7 @@ describe("projectData schema", () => {
     expect(validateProjectData.errors).toBeNull();
   });
 
-  it("rejects obsolete screen backgroundColor", () => {
+  it("accepts optional screen backgroundColor", () => {
     expect(
       validateProjectData(
         createMinimalProjectData({
@@ -165,13 +165,27 @@ describe("projectData schema", () => {
           },
         }),
       ),
+    ).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
+
+  it("rejects non-hex screen backgroundColor", () => {
+    expect(
+      validateProjectData(
+        createMinimalProjectData({
+          screen: {
+            width: 1920,
+            height: 1080,
+            backgroundColor: "black",
+          },
+        }),
+      ),
     ).toBe(false);
     expect(validateProjectData.errors).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          instancePath: "/screen",
-          keyword: "additionalProperties",
-          params: { additionalProperty: "backgroundColor" },
+          instancePath: "/screen/backgroundColor",
+          keyword: "pattern",
         }),
       ]),
     );

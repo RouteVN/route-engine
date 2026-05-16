@@ -1096,9 +1096,12 @@ const getStoryContainer = (elements = []) => {
 
 const DEFAULT_BACKGROUND_COLOR = "#000000";
 
-const resolveBackgroundFill = (resources = {}, background = {}) => {
+const resolveBackgroundFill = ({ resources = {}, background = {}, screen }) => {
   if (background?.colorId === undefined) {
-    return DEFAULT_BACKGROUND_COLOR;
+    return normalizeHexColor(
+      screen?.backgroundColor ?? DEFAULT_BACKGROUND_COLOR,
+      "screen.backgroundColor",
+    );
   }
 
   return resolveColorResource(resources, background.colorId);
@@ -1115,7 +1118,7 @@ const createBackgroundColorElement = ({
   y: 0,
   width: screen?.width ?? 1920,
   height: screen?.height ?? 1080,
-  fill: resolveBackgroundFill(resources, background),
+  fill: resolveBackgroundFill({ resources, background, screen }),
 });
 
 const hasRenderableBackgroundResource = (resources = {}, resourceId) => {

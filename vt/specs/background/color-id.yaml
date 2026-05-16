@@ -1,13 +1,18 @@
 ---
 title: Background Color ID
 description: |
-  Background colorId should resolve through resources.colors and persist behind
-  later background resource updates that omit colorId.
+  Background backing color should use screen.backgroundColor by default, then
+  resolve background.colorId through resources.colors and persist that color
+  behind later background resource updates that omit colorId.
 
-  - the first screenshot should show the authored backing color around the transformed background image
-  - the second screenshot should keep the same backing color after changing only the background image
+  - the first screenshot should show screen.backgroundColor around the transformed background image
+  - the second screenshot should show the authored background.colorId backing color
+  - the third screenshot should keep background.colorId after changing only the background image
 skipInitialScreenshot: true
 steps:
+  - action: screenshot
+  - action: customEvent
+    name: vt:nextLine
   - action: screenshot
   - action: customEvent
     name: vt:nextLine
@@ -16,6 +21,7 @@ steps:
 screen:
   width: 1920
   height: 1080
+  backgroundColor: "#3A123A"
 resources:
   images:
     bg-forest-card:
@@ -58,11 +64,16 @@ story:
             - id: line1
               actions:
                 background:
-                  colorId: backingBlue
                   resourceId: bg-forest-card
                   transformId: upper-left-card
             - id: line2
               actions:
                 background:
+                  colorId: backingBlue
                   resourceId: bg-door-card
                   transformId: lower-right-card
+            - id: line3
+              actions:
+                background:
+                  resourceId: bg-forest-card
+                  transformId: upper-left-card

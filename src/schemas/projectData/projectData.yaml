@@ -13,6 +13,11 @@ properties:
       height:
         type: integer
         description: Screen height in pixels
+      backgroundColor:
+        type: string
+        description: Default solid background color behind presentation background resources
+        pattern: "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$"
+        default: "#000000"
     required: [width, height]
     additionalProperties: false
 
