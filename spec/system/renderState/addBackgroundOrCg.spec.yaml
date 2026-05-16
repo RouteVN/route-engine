@@ -87,6 +87,118 @@ out:
           fill: "#101820"
   animations: []
 ---
+case: animate background color with single transition animation reference
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      background:
+        colorId: "backdrop"
+        animations:
+          resourceId: "fadeIn"
+    resources:
+      colors:
+        backdrop:
+          hex: "#101820"
+      animations:
+        fadeIn:
+          type: transition
+          next:
+            tween:
+              alpha:
+                initialValue: 0
+                keyframes:
+                  - duration: 500
+                    value: 1
+    screen:
+      width: 1280
+      height: 720
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "bg-cg-background-color"
+          type: "rect"
+          x: 0
+          y: 0
+          width: 1280
+          height: 720
+          fill: "#101820"
+  animations:
+    - id: "bg-cg-animation-in"
+      type: "transition"
+      targetId: "bg-cg-background-color"
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 500
+                value: 1
+---
+case: animate background color with single update animation reference
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      background:
+        colorId: "backdrop"
+        animations:
+          resourceId: "fadeIn"
+    resources:
+      colors:
+        backdrop:
+          hex: "#101820"
+      animations:
+        fadeIn:
+          type: update
+          tween:
+            alpha:
+              initialValue: 0
+              keyframes:
+                - duration: 500
+                  value: 1
+    screen:
+      width: 1280
+      height: 720
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "bg-cg-background-color"
+          type: "rect"
+          x: 0
+          y: 0
+          width: 1280
+          height: 720
+          fill: "#101820"
+  animations:
+    - id: "bg-cg-animation-update"
+      type: "update"
+      targetId: "bg-cg-background-color"
+      tween:
+        alpha:
+          initialValue: 0
+          keyframes:
+            - duration: 500
+              value: 1
+---
 case: use screen backgroundColor as default background color
 in:
   - elements:

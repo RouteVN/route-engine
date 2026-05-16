@@ -1095,6 +1095,7 @@ const getStoryContainer = (elements = []) => {
 };
 
 const DEFAULT_BACKGROUND_COLOR = "#000000";
+const BACKGROUND_COLOR_ELEMENT_ID = "bg-cg-background-color";
 
 const resolveBackgroundFill = ({ resources = {}, background = {}, screen }) => {
   if (background?.colorId === undefined) {
@@ -1112,7 +1113,7 @@ const createBackgroundColorElement = ({
   background,
   screen = { width: 1920, height: 1080 },
 }) => ({
-  id: "bg-cg-background-color",
+  id: BACKGROUND_COLOR_ELEMENT_ID,
   type: "rect",
   x: 0,
   y: 0,
@@ -1131,6 +1132,33 @@ const hasRenderableBackgroundResource = (resources = {}, resourceId) => {
     resources.videos?.[resourceId] ||
     resources.layouts?.[resourceId]
   );
+};
+
+const resolveBackgroundAnimationTarget = ({
+  resources = {},
+  resourceId,
+  colorId,
+}) => {
+  const kind = resolveBackgroundKind(resources, resourceId);
+
+  if (resourceId && (kind || colorId === undefined)) {
+    return {
+      resourceId,
+      targetId: resolveBackgroundTargetId({ resourceId, kind }),
+    };
+  }
+
+  if (colorId !== undefined) {
+    return {
+      resourceId: BACKGROUND_COLOR_ELEMENT_ID,
+      targetId: BACKGROUND_COLOR_ELEMENT_ID,
+    };
+  }
+
+  return {
+    resourceId: undefined,
+    targetId: undefined,
+  };
 };
 
 const VOLUME_PERCENT_SCALE = 100;
@@ -1891,28 +1919,33 @@ export const addBackgroundOrCg = (
 
     const previousBackgroundResourceId =
       previousPresentationState?.background?.resourceId;
+    const previousBackgroundColorId =
+      previousPresentationState?.background?.colorId;
     const currentBackgroundResourceId =
       presentationState.background.resourceId ??
       (presentationState.background.animations
         ? previousBackgroundResourceId
         : undefined);
-    const previousBackgroundKind = resolveBackgroundKind(
-      resources,
-      previousBackgroundResourceId,
-    );
-    const currentBackgroundKind = resolveBackgroundKind(
-      resources,
-      currentBackgroundResourceId,
-    );
+    const currentBackgroundColorId =
+      presentationState.background.colorId ??
+      (presentationState.background.animations
+        ? previousBackgroundColorId
+        : undefined);
+    const currentHasRenderableBackgroundResource =
+      hasRenderableBackgroundResource(resources, currentBackgroundResourceId);
+    const backgroundForColorElement = {
+      ...presentationState.background,
+      colorId: currentBackgroundColorId,
+    };
 
     if (
-      presentationState.background.colorId !== undefined ||
-      hasRenderableBackgroundResource(resources, currentBackgroundResourceId)
+      currentBackgroundColorId !== undefined ||
+      currentHasRenderableBackgroundResource
     ) {
       storyContainer.children.push(
         createBackgroundColorElement({
           resources,
-          background: presentationState.background,
+          background: backgroundForColorElement,
           screen,
         }),
       );
@@ -2019,19 +2052,23 @@ export const addBackgroundOrCg = (
       }
     }
 
+    const previousBackgroundAnimationTarget = resolveBackgroundAnimationTarget({
+      resources,
+      resourceId: previousBackgroundResourceId,
+      colorId: previousBackgroundColorId,
+    });
+    const currentBackgroundAnimationTarget = resolveBackgroundAnimationTarget({
+      resources,
+      resourceId: currentBackgroundResourceId,
+      colorId: currentBackgroundColorId,
+    });
     const backgroundAnimationInstances = createAnimationInstances({
       animationsDef: presentationState.background.animations,
       resources,
-      previousResourceId: previousBackgroundResourceId,
-      currentResourceId: currentBackgroundResourceId,
-      previousTargetId: resolveBackgroundTargetId({
-        resourceId: previousBackgroundResourceId,
-        kind: previousBackgroundKind,
-      }),
-      currentTargetId: resolveBackgroundTargetId({
-        resourceId: currentBackgroundResourceId,
-        kind: currentBackgroundKind,
-      }),
+      previousResourceId: previousBackgroundAnimationTarget.resourceId,
+      currentResourceId: currentBackgroundAnimationTarget.resourceId,
+      previousTargetId: previousBackgroundAnimationTarget.targetId,
+      currentTargetId: currentBackgroundAnimationTarget.targetId,
       animationPath: "background.animations",
       idPrefix: "bg-cg",
     });

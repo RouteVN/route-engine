@@ -1,0 +1,75 @@
+---
+title: Background Color Animation
+description: |
+  Color-only backgrounds should emit animations against the generated backing
+  color rect when no background resourceId is authored.
+specs:
+  - the color-only background should be partially visible halfway through the fade
+  - the color-only background should be fully visible after the fade completes
+steps:
+  - action: customEvent
+    name: vt:nextLine
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 500
+  - action: screenshot
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 500
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+resources:
+  controls:
+    base:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: black
+  animations:
+    color-fade-in:
+      name: Color Fade In
+      type: transition
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 1000
+                value: 1
+                easing: linear
+  colors:
+    black:
+      hex: "#000000"
+    animatedBackdrop:
+      hex: "#A040C0"
+story:
+  initialSceneId: backgroundScene
+  scenes:
+    backgroundScene:
+      name: Background Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                control:
+                  resourceId: base
+            - id: line2
+              actions:
+                background:
+                  colorId: animatedBackdrop
+                  animations:
+                    resourceId: color-fade-in
