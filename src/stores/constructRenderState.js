@@ -1094,6 +1094,42 @@ const getStoryContainer = (elements = []) => {
   return elements.find((element) => element.id === "story");
 };
 
+const DEFAULT_BACKGROUND_COLOR = "#000000";
+
+const resolveBackgroundFill = (resources = {}, background = {}) => {
+  if (background?.colorId === undefined) {
+    return DEFAULT_BACKGROUND_COLOR;
+  }
+
+  return resolveColorResource(resources, background.colorId);
+};
+
+const createBackgroundColorElement = ({
+  resources,
+  background,
+  screen = { width: 1920, height: 1080 },
+}) => ({
+  id: "bg-cg-background-color",
+  type: "rect",
+  x: 0,
+  y: 0,
+  width: screen?.width ?? 1920,
+  height: screen?.height ?? 1080,
+  fill: resolveBackgroundFill(resources, background),
+});
+
+const hasRenderableBackgroundResource = (resources = {}, resourceId) => {
+  if (!resourceId) {
+    return false;
+  }
+
+  return !!(
+    resources.images?.[resourceId] ||
+    resources.videos?.[resourceId] ||
+    resources.layouts?.[resourceId]
+  );
+};
+
 const VOLUME_PERCENT_SCALE = 100;
 const DEFAULT_AUTHORED_AUDIO_VOLUME = VOLUME_PERCENT_SCALE;
 
@@ -1865,6 +1901,19 @@ export const addBackgroundOrCg = (
       resources,
       currentBackgroundResourceId,
     );
+
+    if (
+      presentationState.background.colorId !== undefined ||
+      hasRenderableBackgroundResource(resources, currentBackgroundResourceId)
+    ) {
+      storyContainer.children.push(
+        createBackgroundColorElement({
+          resources,
+          background: presentationState.background,
+          screen,
+        }),
+      );
+    }
 
     if (currentBackgroundResourceId) {
       const { images = {}, videos = {} } = resources;

@@ -1380,7 +1380,10 @@ export const normalizePersistentPresentationState = (state = {}) => {
       delete normalizedState.background.animations;
     }
 
-    if (!normalizedState.background.resourceId) {
+    if (
+      !normalizedState.background.resourceId &&
+      !normalizedState.background.colorId
+    ) {
       delete normalizedState.background;
     }
   }

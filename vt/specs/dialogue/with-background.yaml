@@ -4,7 +4,6 @@ title: With background
 screen:
   width: 1920
   height: 1080
-  backgroundColor: "#D9D9D9"
 resources:
   controls:
     base1:

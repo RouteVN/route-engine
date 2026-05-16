@@ -1,0 +1,68 @@
+---
+title: Background Color ID
+description: |
+  Background colorId should resolve through resources.colors and persist behind
+  later background resource updates that omit colorId.
+
+  - the first screenshot should show the authored backing color around the transformed background image
+  - the second screenshot should keep the same backing color after changing only the background image
+skipInitialScreenshot: true
+steps:
+  - action: screenshot
+  - action: customEvent
+    name: vt:nextLine
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+resources:
+  images:
+    bg-forest-card:
+      fileId: dmni32
+      width: 640
+      height: 360
+    bg-door-card:
+      fileId: lakjf3lka
+      width: 640
+      height: 360
+  transforms:
+    upper-left-card:
+      x: 160
+      y: 120
+      anchorX: 0
+      anchorY: 0
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+    lower-right-card:
+      x: 1760
+      y: 960
+      anchorX: 1
+      anchorY: 1
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+  colors:
+    backingBlue:
+      hex: "#123A5A"
+story:
+  initialSceneId: backgroundScene
+  scenes:
+    backgroundScene:
+      name: Background Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                background:
+                  colorId: backingBlue
+                  resourceId: bg-forest-card
+                  transformId: upper-left-card
+            - id: line2
+              actions:
+                background:
+                  resourceId: bg-door-card
+                  transformId: lower-right-card

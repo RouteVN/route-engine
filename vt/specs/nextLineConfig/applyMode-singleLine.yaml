@@ -5,7 +5,6 @@ description: singleLine should auto-advance once, then reset to manual
 screen:
   width: 1920
   height: 1080
-  backgroundColor: "#000000"
 resources:
   sounds:
     bgmMain:

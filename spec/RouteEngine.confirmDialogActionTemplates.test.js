@@ -6,7 +6,6 @@ const createProjectData = (variables = {}) => {
     screen: {
       width: 1920,
       height: 1080,
-      backgroundColor: "#000000",
     },
     resources: {
       layouts: {},

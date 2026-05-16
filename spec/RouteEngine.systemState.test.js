@@ -5,7 +5,6 @@ const createMinimalProjectData = () => ({
   screen: {
     width: 1920,
     height: 1080,
-    backgroundColor: "#000000",
   },
   resources: {
     layouts: {},
@@ -41,7 +40,6 @@ const createRollbackChoiceProjectData = () => ({
   screen: {
     width: 1920,
     height: 1080,
-    backgroundColor: "#000000",
   },
   resources: {
     layouts: {},
@@ -95,7 +93,6 @@ const createResetStoryAtSectionProjectData = () => ({
   screen: {
     width: 1920,
     height: 1080,
-    backgroundColor: "#000000",
   },
   resources: {
     layouts: {},
@@ -172,7 +169,6 @@ const createSaveLoadRollbackOverlayProjectData = () => ({
   screen: {
     width: 1920,
     height: 1080,
-    backgroundColor: "#000000",
   },
   resources: {
     layouts: {
@@ -225,7 +221,6 @@ const createDialogueUIRollbackProjectData = () => ({
   screen: {
     width: 1920,
     height: 1080,
-    backgroundColor: "#000000",
   },
   resources: {
     layouts: {},

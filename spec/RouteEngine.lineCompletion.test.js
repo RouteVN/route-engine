@@ -19,7 +19,6 @@ const createProjectData = () => ({
   screen: {
     width: 1920,
     height: 1080,
-    backgroundColor: "#000000",
   },
   resources: {
     layouts: {
@@ -147,7 +146,6 @@ const createAppendRevealProjectData = () => ({
   screen: {
     width: 1920,
     height: 1080,
-    backgroundColor: "#000000",
   },
   resources: {
     layouts: {
@@ -258,7 +256,6 @@ const createChoiceBlockingProjectData = () => ({
   screen: {
     width: 1920,
     height: 1080,
-    backgroundColor: "#000000",
   },
   resources: {
     layouts: {

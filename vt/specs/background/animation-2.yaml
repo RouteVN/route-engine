@@ -5,7 +5,6 @@ description: test both in and out animation at same time
 screen:
   width: 1920
   height: 1080
-  backgroundColor: "#000000"
 resources:
   controls:
     base1:

@@ -37,7 +37,6 @@ steps:
 screen:
   width: 1280
   height: 720
-  backgroundColor: "#111111"
 resources:
   controls:
     formControls:

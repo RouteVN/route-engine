@@ -22,7 +22,6 @@ steps:
 screen:
   width: 1280
   height: 720
-  backgroundColor: "#151515"
 resources:
   variables:
     blockedMarker:

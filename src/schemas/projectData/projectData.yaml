@@ -13,10 +13,6 @@ properties:
       height:
         type: integer
         description: Screen height in pixels
-      backgroundColor:
-        type: string
-        description: Background color for the screen
-        default: "#000000"
     required: [width, height]
     additionalProperties: false
 

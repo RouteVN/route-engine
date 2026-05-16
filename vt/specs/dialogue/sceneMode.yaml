@@ -5,7 +5,6 @@ description: Test unskippable, auto-advancing scene mode using setNextLineConfig
 screen:
   width: 1920
   height: 1080
-  backgroundColor: "#000000"
 resources:
   characters:
     narrator:

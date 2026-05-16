@@ -13,6 +13,57 @@ out:
   background:
     resourceId: "mainBackground"
 ---
+case: background colorId can stand alone
+in:
+  - - background:
+        colorId: "backdrop"
+out:
+  background:
+    colorId: "backdrop"
+---
+case: background colorId persists across omitted background actions
+in:
+  - - background:
+        resourceId: "mainBackground"
+        colorId: "backdrop"
+    - dialogue:
+        mode: "adv"
+        content:
+          - text: "Next line"
+out:
+  background:
+    resourceId: "mainBackground"
+    colorId: "backdrop"
+  dialogue:
+    mode: "adv"
+    content:
+      - text: "Next line"
+---
+case: background colorId persists across resource updates
+in:
+  - - background:
+        resourceId: "mainBackground"
+        colorId: "backdrop"
+    - background:
+        resourceId: "altBackground"
+out:
+  background:
+    resourceId: "altBackground"
+    colorId: "backdrop"
+---
+case: background colorId update keeps the current background resource
+in:
+  - - background:
+        resourceId: "mainBackground"
+        transformId: "centered"
+    - background:
+        colorId: "backdrop"
+out:
+  background:
+    resourceId: "mainBackground"
+    transformId: "centered"
+    colorId: "backdrop"
+---
 case: persistent background animation survives later lines that omit background
 in:
   - - background:
