@@ -1317,6 +1317,78 @@ const diffDialogue = (prevDialogue, currDialogue) => {
   return null;
 };
 
+const toBackgroundResourceChangeData = (background) => {
+  if (background?.resourceId === undefined) {
+    return undefined;
+  }
+
+  const data = {
+    resourceId: background.resourceId,
+  };
+
+  if (background.transformId !== undefined) {
+    data.transformId = background.transformId;
+  }
+
+  if (background.loop !== undefined) {
+    data.loop = background.loop;
+  }
+
+  return data;
+};
+
+const toBackgroundColorChangeData = (background) => {
+  if (background?.colorId === undefined) {
+    return undefined;
+  }
+
+  return {
+    colorId: background.colorId,
+  };
+};
+
+const diffChangeData = (prevData, currData) => {
+  if (currData && !prevData) {
+    return { changeType: "add", data: currData };
+  }
+
+  if (prevData && !currData) {
+    return { changeType: "delete", data: prevData };
+  }
+
+  if (
+    prevData &&
+    currData &&
+    JSON.stringify(prevData) !== JSON.stringify(currData)
+  ) {
+    return { changeType: "update", data: currData };
+  }
+
+  return null;
+};
+
+const diffBackground = (prevBackground, currBackground) => {
+  const changes = {};
+  const resourceChange = diffChangeData(
+    toBackgroundResourceChangeData(prevBackground),
+    toBackgroundResourceChangeData(currBackground),
+  );
+  const colorChange = diffChangeData(
+    toBackgroundColorChangeData(prevBackground),
+    toBackgroundColorChangeData(currBackground),
+  );
+
+  if (resourceChange) {
+    changes.resource = resourceChange;
+  }
+
+  if (colorChange) {
+    changes.color = colorChange;
+  }
+
+  return Object.keys(changes).length > 0 ? changes : null;
+};
+
 /**
  * Compares two presentation states and returns the changes (add, update, delete)
  * for all renderable assets.
@@ -1346,7 +1418,11 @@ export const diffPresentationState = (prev = {}, curr = {}) => {
     }
   };
 
-  diffObject("background");
+  const backgroundChange = diffBackground(prev.background, curr.background);
+  if (backgroundChange) {
+    changes.background = backgroundChange;
+  }
+
   diffObject("bgm");
   diffObject("voice");
 

@@ -434,6 +434,11 @@ By default each line entry only includes `changes`. Pass
 `includePresentationState: true` to also include the full end-state
 `presentationState` after that line has been applied.
 
+Background changes are split into independent persistent layers. `resource`
+tracks `resourceId` and its related fields, while `color` tracks `colorId`.
+Background animation selections are playback instructions and are not included
+in this diff.
+
 ```js
 const sectionLineChanges = engine.selectSectionLineChanges({
   sectionId: "section1",
@@ -443,7 +448,12 @@ const sectionLineChanges = engine.selectSectionLineChanges({
 //   lines: [
 //     {
 //       id: "line-1",
-//       changes: { ... },
+//       changes: {
+//         background: {
+//           resource: { changeType: "add", data: { resourceId: "bg_school" } },
+//           color: { changeType: "add", data: { colorId: "night" } },
+//         },
+//       },
 //       presentationState: { ... }
 //     }
 //   ]
@@ -454,13 +464,13 @@ const sectionLineChanges = engine.selectSectionLineChanges({
 
 ### Navigation Actions
 
-| Action              | Payload                           | Description                                                 |
-| ------------------- | --------------------------------- | ----------------------------------------------------------- |
-| `nextLine`          | -                                 | Advance to the next line (respects `nextLineConfig.manual`) |
-| `rollbackByOffset`  | `{ offset? }`                     | Roll back relative to the active rollback checkpoint        |
-| `rollbackToLine`    | `{ sectionId, lineId }`           | Roll back to a specific line in the rollback timeline       |
-| `jumpToLine`        | `{ sectionId?, lineId }`          | Jump to specific line                                       |
-| `sectionTransition` | `{ sectionId, screen? }`          | Transition to a different section                           |
+| Action              | Payload                  | Description                                                 |
+| ------------------- | ------------------------ | ----------------------------------------------------------- |
+| `nextLine`          | -                        | Advance to the next line (respects `nextLineConfig.manual`) |
+| `rollbackByOffset`  | `{ offset? }`            | Roll back relative to the active rollback checkpoint        |
+| `rollbackToLine`    | `{ sectionId, lineId }`  | Roll back to a specific line in the rollback timeline       |
+| `jumpToLine`        | `{ sectionId?, lineId }` | Jump to specific line                                       |
+| `sectionTransition` | `{ sectionId, screen? }` | Transition to a different section                           |
 
 `sectionTransition.screen` uses the same shape as line-level `screen`:
 

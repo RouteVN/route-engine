@@ -38,9 +38,10 @@ out:
     - id: "line1"
       changes:
         background:
-          changeType: "add"
-          data:
-            resourceId: "bg-school"
+          resource:
+            changeType: "add"
+            data:
+              resourceId: "bg-school"
     - id: "line2"
       changes:
         bgm:
@@ -51,9 +52,10 @@ out:
     - id: "line3"
       changes:
         background:
-          changeType: "update"
-          data:
-            resourceId: "bg-home"
+          resource:
+            changeType: "update"
+            data:
+              resourceId: "bg-home"
         character:
           changeType: "add"
           data:
@@ -90,9 +92,10 @@ out:
     - id: "1"
       changes:
         background:
-          changeType: "add"
-          data:
-            resourceId: "bg1"
+          resource:
+            changeType: "add"
+            data:
+              resourceId: "bg1"
         bgm:
           changeType: "add"
           data:
@@ -101,9 +104,10 @@ out:
     - id: "2"
       changes:
         background:
-          changeType: "delete"
-          data:
-            resourceId: "bg1"
+          resource:
+            changeType: "delete"
+            data:
+              resourceId: "bg1"
         bgm:
           changeType: "delete"
           data:
@@ -112,9 +116,113 @@ out:
     - id: "3"
       changes:
         background:
-          changeType: "add"
-          data:
-            resourceId: "bg2"
+          resource:
+            changeType: "add"
+            data:
+              resourceId: "bg2"
+---
+case: "Split background resource and color changes across a section"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "bg1"
+                          colorId: "night"
+                    - id: "2"
+                      actions:
+                        background:
+                          resourceId: "bg2"
+                    - id: "3"
+                      actions:
+                        background:
+                          colorId: "day"
+                    - id: "4"
+                      actions:
+                        cleanAll: true
+  - sectionId: "section1"
+out:
+  lines:
+    - id: "1"
+      changes:
+        background:
+          resource:
+            changeType: "add"
+            data:
+              resourceId: "bg1"
+          color:
+            changeType: "add"
+            data:
+              colorId: "night"
+    - id: "2"
+      changes:
+        background:
+          resource:
+            changeType: "update"
+            data:
+              resourceId: "bg2"
+    - id: "3"
+      changes:
+        background:
+          color:
+            changeType: "update"
+            data:
+              colorId: "day"
+    - id: "4"
+      changes:
+        background:
+          resource:
+            changeType: "delete"
+            data:
+              resourceId: "bg2"
+          color:
+            changeType: "delete"
+            data:
+              colorId: "day"
+---
+case: "Ignore background animation-only changes across a section"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "bg1"
+                          colorId: "night"
+                    - id: "2"
+                      actions:
+                        background:
+                          animations:
+                            resourceId: "fadeIn"
+  - sectionId: "section1"
+out:
+  lines:
+    - id: "1"
+      changes:
+        background:
+          resource:
+            changeType: "add"
+            data:
+              resourceId: "bg1"
+          color:
+            changeType: "add"
+            data:
+              colorId: "night"
+    - id: "2"
+      changes: {}
 ---
 case: "Instantaneous actions (sfx) should not persist or show delete"
 in:
@@ -493,13 +601,10 @@ out:
     - id: "1"
       changes:
         background:
-          changeType: "add"
-          data:
-            resourceId: "bg-school"
-            animations:
-              resourceId: "fadeIn"
-              playback:
-                continuity: "persistent"
+          resource:
+            changeType: "add"
+            data:
+              resourceId: "bg-school"
       presentationState:
         background:
           resourceId: "bg-school"
@@ -544,11 +649,10 @@ out:
     - id: "1"
       changes:
         background:
-          changeType: "add"
-          data:
-            resourceId: "bg-school"
-            animations:
-              resourceId: "fadeIn"
+          resource:
+            changeType: "add"
+            data:
+              resourceId: "bg-school"
     - id: "2"
       changes: {}
 ---
