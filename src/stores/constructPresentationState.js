@@ -134,6 +134,63 @@ export const createInitialState = () => {
 
 /**
  *
+ * Applies whole-screen static appearance from presentation to state.
+ * Screen animations remain transient and are read directly from line actions.
+ * @param {Object} state - The current state of the system
+ * @param {Object} presentation - The presentation to apply
+ */
+export const screen = (state, presentation) => {
+  if (!presentation.screen) {
+    return;
+  }
+
+  const hasOpacity = hasDefinedProperty(presentation.screen, "opacity");
+  const hasBlur = hasDefinedProperty(presentation.screen, "blur");
+  const hasAnimations = hasOwnProperty(presentation.screen, "animations");
+
+  if (!hasOpacity && !hasBlur) {
+    if (!hasAnimations) {
+      delete state.screen;
+    }
+    return;
+  }
+
+  const previousScreen = state.screen;
+  const nextScreen = {};
+
+  if (hasOpacity) {
+    nextScreen.opacity = presentation.screen.opacity;
+  } else if (hasDefinedProperty(previousScreen, "opacity")) {
+    nextScreen.opacity = previousScreen.opacity;
+  }
+
+  if (hasBlur) {
+    nextScreen.blur = clonePresentationValue(presentation.screen.blur);
+  } else if (hasDefinedProperty(previousScreen, "blur")) {
+    nextScreen.blur = clonePresentationValue(previousScreen.blur);
+  }
+
+  if (
+    hasOwnProperty(nextScreen, "opacity") &&
+    nextScreen.opacity === undefined
+  ) {
+    delete nextScreen.opacity;
+  }
+
+  if (hasOwnProperty(nextScreen, "blur") && nextScreen.blur === undefined) {
+    delete nextScreen.blur;
+  }
+
+  if (Object.keys(nextScreen).length === 0) {
+    delete state.screen;
+    return;
+  }
+
+  state.screen = nextScreen;
+};
+
+/**
+ *
  * Applies background from presentation to state
  * @param {Object} state - The current state of the system
  * @param {Object} presentation - The presentation to apply
@@ -657,6 +714,7 @@ export const cleanAll = (state, presentation) => {
 export const constructPresentationState = (presentations) => {
   const actions = [
     cleanAll,
+    screen,
     background,
     sfx,
     bgm,

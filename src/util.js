@@ -1423,6 +1423,7 @@ export const diffPresentationState = (prev = {}, curr = {}) => {
     changes.background = backgroundChange;
   }
 
+  diffObject("screen");
   diffObject("bgm");
   diffObject("voice");
 
@@ -1479,6 +1480,7 @@ export const normalizePersistentPresentationState = (state = {}) => {
   stripAnimationsFromObject("layout");
   stripAnimationsFromObject("choice");
   stripAnimationsFromObject("form");
+  stripAnimationsFromObject("screen");
 
   if (normalizedState.dialogue?.ui) {
     delete normalizedState.dialogue.ui.animations;

@@ -35,6 +35,40 @@ out:
       data:
         resourceId: "bg-school"
 ---
+case: "Detect added screen appearance"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions:
+                        screen:
+                          opacity: 0.72
+                          blur:
+                            x: 6
+                            y: 9
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  screen:
+    changeType: "add"
+    data:
+      opacity: 0.72
+      blur:
+        x: 6
+        y: 9
+---
 case: "Detect updated background"
 in:
   - state:
