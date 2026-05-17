@@ -1,0 +1,318 @@
+---
+title: Visual Layers
+description: |
+  Visual item layers should render in semantic layer order, while same-layer
+  visuals keep their authored item order.
+
+  - layer 10 visuals render before the background layer
+  - layer 30 visuals render between background and character
+  - layer 50 visuals render between character and dialogue
+  - layer 70 visuals render above dialogue and normal story layouts
+  - same-layer visuals preserve authored item order
+skipInitialScreenshot: true
+steps:
+  - action: screenshot
+  - action: customEvent
+    name: vt:nextLine
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#FFFFFF"
+resources:
+  images:
+    heroBase:
+      fileId: char_sprite_1
+      width: 553
+      height: 865
+  transforms:
+    fullScreen:
+      x: 0
+      y: 0
+      anchorX: 0
+      anchorY: 0
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+    heroStage:
+      x: 960
+      y: 1040
+      anchorX: 0.5
+      anchorY: 1
+      rotation: 0
+      scaleX: 0.75
+      scaleY: 0.75
+  colors:
+    fg100:
+      hex: "#FFFFFF"
+    fg80:
+      hex: "#D9D9D9"
+    fg60:
+      hex: "#A6A6A6"
+    fg45:
+      hex: "#737373"
+    fg30:
+      hex: "#4D4D4D"
+    fg10:
+      hex: "#111111"
+  controls:
+    nextLineHitbox:
+      elements:
+        - id: next-line-hitbox
+          type: rect
+          x: 0
+          y: 0
+          width: 1920
+          height: 1080
+          colorId: fg100
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                nextLine: {}
+  layouts:
+    backgroundPanel:
+      elements:
+        - id: bg-panel
+          type: rect
+          x: 240
+          y: 90
+          width: 1440
+          height: 900
+          colorId: fg45
+    overlapBackground:
+      elements:
+        - id: overlap-bg-panel
+          type: rect
+          x: 360
+          y: 90
+          width: 1200
+          height: 900
+          colorId: fg45
+    behindBackgroundLayer:
+      elements:
+        - id: behind-background-left
+          type: rect
+          x: 0
+          y: 0
+          width: 420
+          height: 1080
+          colorId: fg80
+        - id: behind-background-right
+          type: rect
+          x: 1500
+          y: 0
+          width: 420
+          height: 1080
+          colorId: fg80
+    behindCharacterLayer:
+      elements:
+        - id: behind-character-band
+          type: rect
+          x: 640
+          y: 360
+          width: 640
+          height: 520
+          colorId: fg80
+    behindDialogueLayerOne:
+      elements:
+        - id: behind-dialogue-upper
+          type: rect
+          x: 0
+          y: 720
+          width: 1920
+          height: 90
+          colorId: fg60
+    behindDialogueLayerTwo:
+      elements:
+        - id: behind-dialogue-lower
+          type: rect
+          x: 0
+          y: 810
+          width: 1920
+          height: 90
+          colorId: fg80
+    dialogueUi:
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 120
+          y: 795
+          width: 1680
+          height: 240
+          colorId: fg10
+    storyLayout:
+      elements:
+        - id: layout-panel
+          type: rect
+          x: 460
+          y: 245
+          width: 1000
+          height: 150
+          colorId: fg30
+    foregroundLayer:
+      elements:
+        - id: foreground-dialogue-line
+          type: rect
+          x: 0
+          y: 890
+          width: 1920
+          height: 32
+          colorId: fg100
+        - id: foreground-layout-line
+          type: rect
+          x: 930
+          y: 220
+          width: 60
+          height: 210
+          colorId: fg100
+    overlapBehindBackground:
+      elements:
+        - id: hidden-before-background
+          type: rect
+          x: 760
+          y: 300
+          width: 400
+          height: 300
+          colorId: fg100
+    overlapBehindCharacter:
+      elements:
+        - id: behind-character-vertical
+          type: rect
+          x: 870
+          y: 260
+          width: 180
+          height: 650
+          colorId: fg80
+        - id: behind-character-horizontal
+          type: rect
+          x: 660
+          y: 520
+          width: 600
+          height: 110
+          colorId: fg80
+    overlapBehindDialogueFirst:
+      elements:
+        - id: same-layer-under
+          type: rect
+          x: 700
+          y: 465
+          width: 520
+          height: 130
+          colorId: fg60
+    overlapBehindDialogueSecond:
+      elements:
+        - id: same-layer-over
+          type: rect
+          x: 760
+          y: 495
+          width: 400
+          height: 70
+          colorId: fg100
+    overlapForeground:
+      elements:
+        - id: foreground-character-line
+          type: rect
+          x: 930
+          y: 250
+          width: 60
+          height: 470
+          colorId: fg100
+        - id: foreground-dialogue-line
+          type: rect
+          x: 0
+          y: 890
+          width: 1920
+          height: 32
+          colorId: fg100
+story:
+  initialSceneId: visualLayerScene
+  scenes:
+    visualLayerScene:
+      name: Visual Layer Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: layeredVisuals
+              actions:
+                control:
+                  resourceId: nextLineHitbox
+                background:
+                  resourceId: backgroundPanel
+                character:
+                  items:
+                    - id: hero
+                      transformId: heroStage
+                      sprites:
+                        - id: base
+                          resourceId: heroBase
+                visual:
+                  items:
+                    - id: foreground
+                      resourceId: foregroundLayer
+                      transformId: fullScreen
+                      layer: 70
+                    - id: behindDialogueOne
+                      resourceId: behindDialogueLayerOne
+                      transformId: fullScreen
+                    - id: behindBackground
+                      resourceId: behindBackgroundLayer
+                      transformId: fullScreen
+                      layer: 10
+                    - id: behindCharacter
+                      resourceId: behindCharacterLayer
+                      transformId: fullScreen
+                      layer: 30
+                    - id: behindDialogueTwo
+                      resourceId: behindDialogueLayerTwo
+                      transformId: fullScreen
+                      layer: 50
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueUi
+                  content:
+                    - text: Layered visuals
+                layout:
+                  resourceId: storyLayout
+            - id: characterOverlapVisuals
+              actions:
+                background:
+                  resourceId: overlapBackground
+                character:
+                  items:
+                    - id: hero
+                      transformId: heroStage
+                      sprites:
+                        - id: base
+                          resourceId: heroBase
+                visual:
+                  items:
+                    - id: overlapForeground
+                      resourceId: overlapForeground
+                      transformId: fullScreen
+                      layer: 70
+                    - id: overlapBehindDialogueFirst
+                      resourceId: overlapBehindDialogueFirst
+                      transformId: fullScreen
+                      layer: 50
+                    - id: overlapBehindBackground
+                      resourceId: overlapBehindBackground
+                      transformId: fullScreen
+                      layer: 10
+                    - id: overlapBehindCharacter
+                      resourceId: overlapBehindCharacter
+                      transformId: fullScreen
+                      layer: 30
+                    - id: overlapBehindDialogueSecond
+                      resourceId: overlapBehindDialogueSecond
+                      transformId: fullScreen
+                      layer: 50
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueUi
+                  content:
+                    - text: Character overlap

@@ -1,6 +1,11 @@
 import { parseAndRender } from "jempl";
 import { createSequentialActionsExecutor, formatDate } from "../util.js";
 import { GLOBAL_RUNTIME_DEFAULTS } from "../runtimeFields.js";
+import {
+  DEFAULT_VISUAL_LAYER,
+  VISUAL_LAYER,
+  VISUAL_LAYER_VALUES,
+} from "../renderLayers.js";
 
 const jemplFunctions = {
   objectValues: (obj) =>
@@ -2295,6 +2300,25 @@ export const addCharacters = (
   return state;
 };
 
+const assertVisualLayer = (layer, path) => {
+  if (!VISUAL_LAYER_VALUES.includes(layer)) {
+    throw new Error(
+      `${path} must be one of: ${VISUAL_LAYER_VALUES.join(", ")}.`,
+    );
+  }
+};
+
+const resolveVisualItemLayer = (item, previousItem) => {
+  const layer =
+    item.layer ??
+    (!item.resourceId ? previousItem?.layer : undefined) ??
+    DEFAULT_VISUAL_LAYER;
+
+  assertVisualLayer(layer, `Visual item "${item.id}" layer`);
+
+  return layer;
+};
+
 /**
  *
  * @param {Object} params
@@ -2317,6 +2341,7 @@ export const addVisuals = (
     canRollback,
     form,
     saveSlots = [],
+    visualLayer,
   },
 ) => {
   const { elements, animations } = state;
@@ -2326,7 +2351,20 @@ export const addVisuals = (
     if (!storyContainer) return state;
 
     const items = presentationState.visual.items;
+    const previousItems = previousPresentationState?.visual?.items || [];
+
+    if (visualLayer !== undefined) {
+      assertVisualLayer(visualLayer, "visualLayer");
+    }
+
     for (const item of items) {
+      const previousItem = previousItems.find((p) => p.id === item.id);
+      const itemLayer = resolveVisualItemLayer(item, previousItem);
+
+      if (visualLayer !== undefined && itemLayer !== visualLayer) {
+        continue;
+      }
+
       if (item.resourceId) {
         const { images = {}, videos = {}, spritesheets = {} } = resources;
 
@@ -2449,8 +2487,6 @@ export const addVisuals = (
         }
       }
 
-      const previousItems = previousPresentationState?.visual?.items || [];
-      const previousItem = previousItems.find((p) => p.id === item.id);
       const visualAnimationInstances = createAnimationInstances({
         animationsDef: item.animations,
         resources,
@@ -3535,16 +3571,33 @@ export const addConfirmDialog = (
   return state;
 };
 
+const addVisualsForLayer = (layer) => (state, params) =>
+  addVisuals(state, { ...params, visualLayer: layer });
+
+const addVisualsBehindBackground = addVisualsForLayer(
+  VISUAL_LAYER.BEHIND_BACKGROUND,
+);
+const addVisualsBehindCharacter = addVisualsForLayer(
+  VISUAL_LAYER.BEHIND_CHARACTER,
+);
+const addVisualsBehindDialogue = addVisualsForLayer(
+  VISUAL_LAYER.BEHIND_DIALOGUE,
+);
+const addVisualsForeground = addVisualsForLayer(VISUAL_LAYER.FOREGROUND);
+
 export const constructRenderState = (params) => {
   const actions = [
     addControl,
+    addVisualsBehindBackground,
     addBackgroundOrCg,
+    addVisualsBehindCharacter,
     addCharacters,
-    addVisuals,
+    addVisualsBehindDialogue,
     addDialogue,
     addChoices,
     addForm,
     addLayout,
+    addVisualsForeground,
     addScreenTransition,
     addBgm,
     addSfx,

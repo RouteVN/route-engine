@@ -117,6 +117,220 @@ out:
   audio: []
   global: {}
 ---
+case: construct render state orders visual layers by semantic render layer
+in:
+  - - presentationState:
+        background:
+          resourceId: "bgImage"
+        character:
+          items:
+            - id: "hero"
+              transformId: "characterTransform"
+              sprites:
+                - id: "body"
+                  resourceId: "characterImage"
+        visual:
+          items:
+            - id: "foreground"
+              resourceId: "foregroundImage"
+              transformId: "visualTransform"
+              layer: 70
+            - id: "defaultBehindDialogue"
+              resourceId: "defaultImage"
+              transformId: "visualTransform"
+            - id: "behindBackground"
+              resourceId: "behindBackgroundImage"
+              transformId: "visualTransform"
+              layer: 10
+            - id: "behindCharacter"
+              resourceId: "behindCharacterImage"
+              transformId: "visualTransform"
+              layer: 30
+            - id: "explicitBehindDialogue"
+              resourceId: "behindDialogueImage"
+              transformId: "visualTransform"
+              layer: 50
+        dialogue:
+          mode: "adv"
+          ui:
+            resourceId: "dialogueUi"
+          content:
+            - text: "Layered"
+        layout:
+          resourceId: "storyLayout"
+      resources:
+        images:
+          bgImage:
+            fileId: "background.jpg"
+            width: 1920
+            height: 1080
+          characterImage:
+            fileId: "character.png"
+            width: 553
+            height: 865
+          foregroundImage:
+            fileId: "foreground.png"
+            width: 1920
+            height: 1080
+          defaultImage:
+            fileId: "default.png"
+            width: 1920
+            height: 1080
+          behindBackgroundImage:
+            fileId: "behind-background.png"
+            width: 1920
+            height: 1080
+          behindCharacterImage:
+            fileId: "behind-character.png"
+            width: 1920
+            height: 1080
+          behindDialogueImage:
+            fileId: "behind-dialogue.png"
+            width: 1920
+            height: 1080
+        transforms:
+          characterTransform:
+            x: 300
+            y: 500
+            anchorX: 0.5
+            anchorY: 1
+            rotation: 0
+            scaleX: 1
+            scaleY: 1
+          visualTransform:
+            x: 100
+            y: 200
+            anchorX: 0
+            anchorY: 0
+            rotation: 0
+            scaleX: 1
+            scaleY: 1
+        layouts:
+          dialogueUi:
+            elements:
+              - id: "dialogue-box"
+                type: "container"
+          storyLayout:
+            elements:
+              - id: "story-layout"
+                type: "container"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-behindBackground"
+          type: "sprite"
+          src: "behind-background.png"
+          width: 1920
+          height: 1080
+          x: 100
+          y: 200
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+        - id: "bg-cg-background-color"
+          type: "rect"
+          x: 0
+          y: 0
+          width: 1920
+          height: 1080
+          fill: "#000000"
+        - id: "bg-cg-background-sprite"
+          type: "sprite"
+          alpha: 1
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          x: 960
+          y: 540
+          src: "background.jpg"
+          width: 1920
+          height: 1080
+        - id: "visual-behindCharacter"
+          type: "sprite"
+          src: "behind-character.png"
+          width: 1920
+          height: 1080
+          x: 100
+          y: 200
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+        - type: "container"
+          id: "character-container-hero"
+          x: 300
+          y: 500
+          anchorX: 0.5
+          anchorY: 1
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - type: "sprite"
+              id: "character-container-hero-body"
+              src: "character.png"
+              width: 553
+              height: 865
+              x: 0
+              y: 0
+        - id: "visual-defaultBehindDialogue"
+          type: "sprite"
+          src: "default.png"
+          width: 1920
+          height: 1080
+          x: 100
+          y: 200
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+        - id: "visual-explicitBehindDialogue"
+          type: "sprite"
+          src: "behind-dialogue.png"
+          width: 1920
+          height: 1080
+          x: 100
+          y: 200
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+        - id: "dialogue-box"
+          type: "container"
+        - id: "layout-storyLayout"
+          type: "container"
+          x: 0
+          y: 0
+          children:
+            - id: "story-layout"
+              type: "container"
+        - id: "visual-foreground"
+          type: "sprite"
+          src: "foreground.png"
+          width: 1920
+          height: 1080
+          x: 100
+          y: 200
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+  animations: []
+  audio: []
+  global: {}
+---
 case: construct render state with clean all and multiple presentations
 in:
   - - presentationState:

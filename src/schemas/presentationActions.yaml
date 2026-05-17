@@ -245,6 +245,14 @@ properties:
             transformId:
               type: string
               description: ID of the transform where visual appears
+            layer:
+              type: number
+              enum:
+                - 10
+                - 30
+                - 50
+                - 70
+              description: Numeric render layer for the visual item. Defaults to 50. Same-layer items preserve array order.
             animations:
               $ref: "#/definitions/animationSelection"
           required: [id]
