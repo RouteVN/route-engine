@@ -64,6 +64,67 @@ out:
     transformId: "centered"
     colorId: "backdrop"
 ---
+case: background opacity and blur update keeps the current background resource
+in:
+  - - background:
+        resourceId: "mainBackground"
+    - background:
+        opacity: 0.72
+        blur:
+          x: 6
+          y: 9
+          quality: 3
+          kernelSize: 9
+          repeatEdgePixels: true
+out:
+  background:
+    resourceId: "mainBackground"
+    opacity: 0.72
+    blur:
+      x: 6
+      y: 9
+      quality: 3
+      kernelSize: 9
+      repeatEdgePixels: true
+---
+case: background opacity and blur persist across omitted background actions
+in:
+  - - background:
+        resourceId: "mainBackground"
+        opacity: 0.72
+        blur:
+          x: 6
+          y: 9
+    - dialogue:
+        mode: "adv"
+        content:
+          - text: "Next line"
+out:
+  background:
+    resourceId: "mainBackground"
+    opacity: 0.72
+    blur:
+      x: 6
+      y: 9
+  dialogue:
+    mode: "adv"
+    content:
+      - text: "Next line"
+---
+case: background blur null clears persisted blur
+in:
+  - - background:
+        resourceId: "mainBackground"
+        blur:
+          x: 6
+          y: 9
+    - background:
+        blur: null
+out:
+  background:
+    resourceId: "mainBackground"
+    blur: null
+---
 case: persistent background animation survives later lines that omit background
 in:
   - - background:

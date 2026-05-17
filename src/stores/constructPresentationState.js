@@ -145,11 +145,16 @@ export const background = (state, presentation) => {
       "resourceId",
     );
     const hasColorId = hasDefinedProperty(presentation.background, "colorId");
+    const hasOpacity = hasDefinedProperty(presentation.background, "opacity");
+    const hasBlur = hasDefinedProperty(presentation.background, "blur");
 
     const { animationsOnly, state: animState } = getAnimationsOnlyState(
       presentation.background,
       (p) =>
-        hasDefinedProperty(p, "resourceId") || hasDefinedProperty(p, "colorId"),
+        hasDefinedProperty(p, "resourceId") ||
+        hasDefinedProperty(p, "colorId") ||
+        hasDefinedProperty(p, "opacity") ||
+        hasDefinedProperty(p, "blur"),
     );
 
     if (animationsOnly) {
@@ -162,7 +167,7 @@ export const background = (state, presentation) => {
       return;
     }
 
-    if (!hasResourceId && !hasColorId) {
+    if (!hasResourceId && !hasColorId && !hasOpacity && !hasBlur) {
       delete state.background;
       return;
     }
@@ -184,6 +189,14 @@ export const background = (state, presentation) => {
       nextBackground.colorId = previousBackground.colorId;
     }
 
+    if (!hasOpacity && hasDefinedProperty(previousBackground, "opacity")) {
+      nextBackground.opacity = previousBackground.opacity;
+    }
+
+    if (!hasBlur && hasDefinedProperty(previousBackground, "blur")) {
+      nextBackground.blur = clonePresentationValue(previousBackground.blur);
+    }
+
     if (
       hasOwnProperty(nextBackground, "resourceId") &&
       nextBackground.resourceId === undefined
@@ -203,6 +216,20 @@ export const background = (state, presentation) => {
       nextBackground.animations === undefined
     ) {
       delete nextBackground.animations;
+    }
+
+    if (
+      hasOwnProperty(nextBackground, "opacity") &&
+      nextBackground.opacity === undefined
+    ) {
+      delete nextBackground.opacity;
+    }
+
+    if (
+      hasOwnProperty(nextBackground, "blur") &&
+      nextBackground.blur === undefined
+    ) {
+      delete nextBackground.blur;
     }
 
     if (!nextBackground.resourceId && !nextBackground.colorId) {
