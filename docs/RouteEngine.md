@@ -657,7 +657,8 @@ Actions that can be attached to lines to control presentation:
 
 | Action       | Properties                                                                                                 | Description                                                                                       |
 | ------------ | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `background` | `{ resourceId?, colorId?, transformId?, opacity?, blur?, animations? }`                                    | Set background/CG. `opacity` maps to renderer alpha; `blur: null` clears background blur           |
+| `screen`     | `{ opacity?, blur?, animations? }`                                                                         | Set whole-screen appearance or transition. `opacity`/`blur` apply to the composed story frame     |
+| `background` | `{ resourceId?, colorId?, transformId?, opacity?, blur?, animations? }`                                    | Set background/CG. `opacity` maps to renderer alpha; `blur: null` clears background blur          |
 | `dialogue`   | `{ characterId?, character?, character.sprite?, persistCharacter?, content, append?, mode?, ui?, clear? }` | Display dialogue                                                                                  |
 | `character`  | `{ items }`                                                                                                | Display character sprites. Each item can have optional `x` and `y` to override transform position |
 | `visual`     | `{ items }`                                                                                                | Display visual elements. Each item can set `layer` to control story render order                  |

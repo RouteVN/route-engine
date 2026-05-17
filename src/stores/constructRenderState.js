@@ -1154,6 +1154,44 @@ const getBackgroundAppearance = (
   return appearance;
 };
 
+const getScreenOpacity = (screenState = {}) => {
+  if (!hasOwnProperty(screenState, "opacity")) {
+    return undefined;
+  }
+
+  return typeof screenState.opacity === "number"
+    ? screenState.opacity
+    : undefined;
+};
+
+const getScreenBlur = (screenState = {}) => {
+  if (
+    !screenState.blur ||
+    typeof screenState.blur !== "object" ||
+    Array.isArray(screenState.blur)
+  ) {
+    return undefined;
+  }
+
+  return screenState.blur;
+};
+
+const getScreenAppearance = (screenState = {}) => {
+  const opacity = getScreenOpacity(screenState);
+  const blur = getScreenBlur(screenState);
+  const appearance = {};
+
+  if (opacity !== undefined) {
+    appearance.alpha = opacity;
+  }
+
+  if (blur) {
+    appearance.blur = blur;
+  }
+
+  return appearance;
+};
+
 const createBackgroundColorElement = ({
   resources,
   background,
@@ -3347,6 +3385,18 @@ export const addScreenTransition = (
   return state;
 };
 
+export const addScreenAppearance = (state, { presentationState }) => {
+  const storyContainer = getStoryContainer(state.elements);
+
+  if (!storyContainer || !presentationState?.screen) {
+    return state;
+  }
+
+  Object.assign(storyContainer, getScreenAppearance(presentationState.screen));
+
+  return state;
+};
+
 export const addOverlayStack = (
   state,
   {
@@ -3598,6 +3648,7 @@ export const constructRenderState = (params) => {
     addForm,
     addLayout,
     addVisualsForeground,
+    addScreenAppearance,
     addScreenTransition,
     addBgm,
     addSfx,

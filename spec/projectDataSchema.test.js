@@ -280,6 +280,33 @@ describe("projectData schema", () => {
     expect(validatePresentationActions.errors).toBeNull();
   });
 
+  it("accepts screen opacity and blur in presentation actions", () => {
+    expect(
+      validatePresentationActions({
+        screen: {
+          opacity: 0.72,
+          blur: {
+            x: 6,
+            y: 9,
+            quality: 3,
+            kernelSize: 9,
+            repeatEdgePixels: true,
+          },
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+
+    expect(
+      validatePresentationActions({
+        screen: {
+          blur: null,
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+  });
+
   it("accepts predefined visual layers in presentation actions", () => {
     expect(
       validatePresentationActions({

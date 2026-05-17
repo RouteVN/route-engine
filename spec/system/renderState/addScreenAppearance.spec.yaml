@@ -1,0 +1,94 @@
+file: "../../../src/stores/constructRenderState.js"
+group: constructRenderState.addScreenAppearance
+suites: [addScreenAppearance]
+---
+suite: addScreenAppearance
+exportName: addScreenAppearance
+---
+case: add whole-screen opacity and blur to story container
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children:
+          - id: "bg-cg-background-sprite"
+            type: "sprite"
+            src: "background.png"
+          - id: "character-lead"
+            type: "container"
+            children: []
+    animations: []
+  - presentationState:
+      screen:
+        opacity: 0.72
+        blur:
+          x: 6
+          y: 9
+          quality: 3
+          kernelSize: 9
+          repeatEdgePixels: true
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      alpha: 0.72
+      blur:
+        x: 6
+        y: 9
+        quality: 3
+        kernelSize: 9
+        repeatEdgePixels: true
+      children:
+        - id: "bg-cg-background-sprite"
+          type: "sprite"
+          src: "background.png"
+        - id: "character-lead"
+          type: "container"
+          children: []
+  animations: []
+---
+case: ignore null screen blur
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      screen:
+        opacity: 1
+        blur: null
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      alpha: 1
+      children: []
+  animations: []
+---
+case: no presentationState.screen leaves story container unchanged
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState: {}
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []

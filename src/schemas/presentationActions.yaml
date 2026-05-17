@@ -33,9 +33,9 @@ definitions:
   backgroundBlur:
     anyOf:
       - type: "null"
-        description: Clear the current background blur
+        description: Clear the current blur
       - type: object
-        description: Static blur applied to the current background resource
+        description: Static blur applied to the current render target
         properties:
           x:
             type: number
@@ -71,8 +71,15 @@ properties:
 
   screen:
     type: object
-    description: Transient whole-screen transition for the current rendered story frame
+    description: Whole-screen appearance and transient transition for the current rendered story frame
     properties:
+      opacity:
+        type: number
+        minimum: 0
+        maximum: 1
+        description: Static whole-screen opacity, mapped to renderer alpha
+      blur:
+        $ref: "#/definitions/backgroundBlur"
       animations:
         $ref: "#/definitions/animationSelection"
     additionalProperties: false

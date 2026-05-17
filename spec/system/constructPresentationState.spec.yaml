@@ -13,6 +13,61 @@ out:
   background:
     resourceId: "mainBackground"
 ---
+case: screen opacity and blur persist across omitted screen actions
+in:
+  - - screen:
+        opacity: 0.72
+        blur:
+          x: 6
+          y: 9
+          quality: 3
+          kernelSize: 9
+          repeatEdgePixels: true
+    - dialogue:
+        mode: "adv"
+        content:
+          - text: "Next line"
+out:
+  screen:
+    opacity: 0.72
+    blur:
+      x: 6
+      y: 9
+      quality: 3
+      kernelSize: 9
+      repeatEdgePixels: true
+  dialogue:
+    mode: "adv"
+    content:
+      - text: "Next line"
+---
+case: screen animations only stay transient
+in:
+  - - screen:
+        opacity: 0.72
+        blur:
+          x: 6
+          y: 9
+    - screen:
+        animations:
+          resourceId: "screenCrossFade"
+out:
+  screen:
+    opacity: 0.72
+    blur:
+      x: 6
+      y: 9
+---
+case: empty screen action clears static screen appearance
+in:
+  - - screen:
+        opacity: 0.72
+        blur:
+          x: 6
+          y: 9
+    - screen: {}
+out: {}
+---
 case: background colorId can stand alone
 in:
   - - background:

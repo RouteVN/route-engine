@@ -1,0 +1,147 @@
+---
+title: Screen Opacity Blur
+description: |
+  Screen opacity and blur should affect the composed story frame, including
+  background, character, and foreground layout content.
+
+  - the first screenshot should show the whole screen faded and blurred
+  - the second screenshot should keep the screen opacity and blur after a line that omits screen
+  - the third screenshot should show the composed screen clear and fully opaque
+skipInitialScreenshot: true
+steps:
+  - action: screenshot
+  - action: customEvent
+    name: vt:nextLine
+  - action: screenshot
+  - action: customEvent
+    name: vt:nextLine
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#FFFFFF"
+resources:
+  images:
+    bg-door:
+      fileId: lakjf3lka
+      width: 1920
+      height: 1080
+    bg-forest:
+      fileId: dmni32
+      width: 1920
+      height: 1080
+    character-a:
+      fileId: char_sprite_1
+      width: 553
+      height: 865
+  transforms:
+    character-center:
+      x: 960
+      y: 1080
+      anchorX: 0.5
+      anchorY: 1
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+  layouts:
+    screen-overlay:
+      name: Screen Opacity Blur Overlay
+      elements:
+        - id: top-band
+          type: rect
+          x: 280
+          y: 160
+          width: 1360
+          height: 180
+          colorId: fg100
+        - id: bottom-band
+          type: rect
+          x: 280
+          y: 740
+          width: 1360
+          height: 180
+          colorId: fg30
+        - id: label
+          type: text
+          x: 420
+          y: 205
+          content: Screen Layer
+          textStyleId: labelText
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    fg100:
+      hex: "#FFFFFF"
+    fg30:
+      hex: "#4D4D4D"
+    label:
+      hex: "#000000"
+  textStyles:
+    labelText:
+      fontId: fontDefault
+      colorId: label
+      fontSize: 92
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: screenScene
+  scenes:
+    screenScene:
+      name: Screen Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: screenOpacityBlur
+              actions:
+                screen:
+                  opacity: 0.55
+                  blur:
+                    x: 6
+                    y: 9
+                    quality: 3
+                    kernelSize: 9
+                    repeatEdgePixels: true
+                background:
+                  resourceId: bg-door
+                character:
+                  items:
+                    - id: lead
+                      transformId: character-center
+                      sprites:
+                        - id: body
+                          resourceId: character-a
+                layout:
+                  resourceId: screen-overlay
+            - id: screenOpacityBlurPersists
+              actions:
+                background:
+                  resourceId: bg-forest
+                character:
+                  items:
+                    - id: lead
+                      transformId: character-center
+                      sprites:
+                        - id: body
+                          resourceId: character-a
+                layout:
+                  resourceId: screen-overlay
+            - id: screenOpacityBlurCleared
+              actions:
+                screen:
+                  opacity: 1
+                  blur: null
+                background:
+                  resourceId: bg-forest
+                character:
+                  items:
+                    - id: lead
+                      transformId: character-center
+                      sprites:
+                        - id: body
+                          resourceId: character-a
+                layout:
+                  resourceId: screen-overlay
