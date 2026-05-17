@@ -1688,3 +1688,173 @@ out:
             - duration: 200
               value: 1
   audio: []
+---
+case: filter visuals to requested layer and preserve same-layer item order
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "foreground"
+            resourceId: "foregroundImage"
+            transformId: "transform1"
+            layer: 70
+          - id: "defaultLayer"
+            resourceId: "defaultImage"
+            transformId: "transform1"
+          - id: "behindBackground"
+            resourceId: "behindBackgroundImage"
+            transformId: "transform1"
+            layer: 10
+          - id: "explicitBehindDialogue"
+            resourceId: "behindDialogueImage"
+            transformId: "transform1"
+            layer: 50
+    previousPresentationState:
+      visual:
+        items:
+          - id: "defaultLayer"
+            resourceId: "oldDefaultImage"
+            layer: 10
+    resources:
+      images:
+        foregroundImage:
+          fileId: "foreground.png"
+        defaultImage:
+          fileId: "default.png"
+        behindBackgroundImage:
+          fileId: "behind-background.png"
+        behindDialogueImage:
+          fileId: "behind-dialogue.png"
+      transforms:
+        transform1:
+          x: 100
+          y: 200
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+    visualLayer: 50
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-defaultLayer"
+          type: "sprite"
+          src: "default.png"
+          x: 100
+          y: 200
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+        - id: "visual-explicitBehindDialogue"
+          type: "sprite"
+          src: "behind-dialogue.png"
+          x: 100
+          y: 200
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+  animations: []
+  audio: []
+---
+case: route animation-only visual removal through previous item layer
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "fog"
+            animations:
+              resourceId: "fadeOut"
+    previousPresentationState:
+      visual:
+        items:
+          - id: "fog"
+            resourceId: "fogImage"
+            layer: 30
+    resources:
+      animations:
+        fadeOut:
+          type: transition
+          prev:
+            tween:
+              alpha:
+                initialValue: 1
+                keyframes:
+                  - duration: 300
+                    value: 0
+    visualLayer: 30
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations:
+    - id: "fog-animation-out"
+      type: "transition"
+      targetId: "visual-fog"
+      prev:
+        tween:
+          alpha:
+            initialValue: 1
+            keyframes:
+              - duration: 300
+                value: 0
+  audio: []
+---
+case: invalid visual layer should throw clear error
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "fog"
+            resourceId: "fogImage"
+            transformId: "transform1"
+            layer: 20
+    resources:
+      images:
+        fogImage:
+          fileId: "fog.png"
+      transforms:
+        transform1:
+          x: 0
+          y: 0
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+throws: 'Visual item "fog" layer must be one of: 10, 30, 50, 70.'

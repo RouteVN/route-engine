@@ -661,7 +661,7 @@ Actions that can be attached to lines to control presentation:
 | `background` | `{ resourceId?, colorId?, transformId?, opacity?, blur?, animations? }`                                    | Set background/CG. `opacity` maps to renderer alpha; `blur: null` clears background blur          |
 | `dialogue`   | `{ characterId?, character?, character.sprite?, persistCharacter?, content, append?, mode?, ui?, clear? }` | Display dialogue                                                                                  |
 | `character`  | `{ items }`                                                                                                | Display character sprites. Each item can have optional `x` and `y` to override transform position |
-| `visual`     | `{ items }`                                                                                                | Display visual elements                                                                           |
+| `visual`     | `{ items }`                                                                                                | Display visual elements. Each item can set `layer` to control story render order                  |
 | `bgm`        | `{ resourceId, volume?, loop?, startDelayMs? }`                                                            | Play background music                                                                             |
 | `sfx`        | `{ items }`                                                                                                | Play sound effects. Each item can include `volume`, `loop`, and `startDelayMs`                    |
 | `voice`      | `{ resourceId, volume?, loop?, startDelayMs? }`                                                            | Play voice audio from `resources.voices[currentSceneId][resourceId]`                              |
@@ -671,6 +671,39 @@ Actions that can be attached to lines to control presentation:
 | `choice`     | `{ resourceId, items }`                                                                                    | Display choice menu                                                                               |
 | `form`       | `{ resourceId, fields, submitActions?, cancelActions? }`                                                   | Display a blocking multi-input form                                                               |
 | `cleanAll`   | `true`                                                                                                     | Clear all presentation state                                                                      |
+
+### Visual Layers
+
+Visual items use a flat `items` array. Each item can set numeric `layer` to
+choose one of the predefined story render layers. Items in the same layer
+preserve their array order.
+
+```yaml
+visual:
+  items:
+    - id: fog
+      resourceId: fog
+      transformId: fullscreen
+      layer: 30
+```
+
+If `layer` is omitted, the item defaults to `50`, matching the previous visual
+behavior.
+
+| Layer value | Constant name              | Position                 |
+| ----------- | -------------------------- | ------------------------ |
+| `10`        | `VISUAL_BEHIND_BACKGROUND` | Before background        |
+| `20`        | `BACKGROUND`               | Engine background layer  |
+| `30`        | `VISUAL_BEHIND_CHARACTER`  | Before characters        |
+| `40`        | `CHARACTER`                | Engine character layer   |
+| `50`        | `VISUAL_BEHIND_DIALOGUE`   | Before dialogue          |
+| `60`        | `DIALOGUE`                 | Engine dialogue/UI layer |
+| `70`        | `VISUAL_FOREGROUND`        | Above story UI/layouts   |
+
+Visual items can use `10`, `30`, `50`, or `70`. Layer `70` is still below
+screen transitions, overlay stack entries, and confirm dialogs. JavaScript
+callers can use the exported `RENDER_LAYER`, `VISUAL_LAYER`, and
+`DEFAULT_VISUAL_LAYER` constants when generating project data.
 
 ### Forms
 

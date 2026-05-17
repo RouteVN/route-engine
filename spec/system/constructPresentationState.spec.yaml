@@ -672,6 +672,26 @@ out:
     content:
       - text: "So beautiful!"
 ---
+case: preserve visual item layer in presentation state
+in:
+  - - visual:
+        items:
+          - id: "fog"
+            resourceId: "effect-fog"
+            layer: 30
+          - id: "vignette"
+            resourceId: "effect-vignette"
+            layer: 70
+out:
+  visual:
+    items:
+      - id: "fog"
+        resourceId: "effect-fog"
+        layer: 30
+      - id: "vignette"
+        resourceId: "effect-vignette"
+        layer: 70
+---
 case: preserve background without animations (no empty animations added)
 in:
   - - background:
