@@ -280,6 +280,46 @@ describe("projectData schema", () => {
     expect(validatePresentationActions.errors).toBeNull();
   });
 
+  it("accepts predefined visual layers in presentation actions", () => {
+    expect(
+      validatePresentationActions({
+        visual: {
+          items: [
+            {
+              id: "fog",
+              resourceId: "fog",
+              transformId: "fullscreen",
+              layer: 30,
+            },
+            {
+              id: "vignette",
+              resourceId: "vignette",
+              transformId: "fullscreen",
+              layer: 70,
+            },
+          ],
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+  });
+
+  it("rejects arbitrary visual layer values", () => {
+    expect(
+      validatePresentationActions({
+        visual: {
+          items: [
+            {
+              id: "fog",
+              resourceId: "fog",
+              layer: 20,
+            },
+          ],
+        },
+      }),
+    ).toBe(false);
+  });
+
   it("accepts animation playback continuity in presentation action payloads", () => {
     expect(
       validatePresentationActions({
