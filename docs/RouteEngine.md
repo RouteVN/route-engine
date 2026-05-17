@@ -657,7 +657,7 @@ Actions that can be attached to lines to control presentation:
 
 | Action       | Properties                                                                                                 | Description                                                                                       |
 | ------------ | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `background` | `{ resourceId, animations? }`                                                                              | Set background/CG                                                                                 |
+| `background` | `{ resourceId?, colorId?, transformId?, opacity?, blur?, animations? }`                                    | Set background/CG. `opacity` maps to renderer alpha; `blur: null` clears background blur           |
 | `dialogue`   | `{ characterId?, character?, character.sprite?, persistCharacter?, content, append?, mode?, ui?, clear? }` | Display dialogue                                                                                  |
 | `character`  | `{ items }`                                                                                                | Display character sprites. Each item can have optional `x` and `y` to override transform position |
 | `visual`     | `{ items }`                                                                                                | Display visual elements                                                                           |

@@ -30,6 +30,35 @@ definitions:
     description: Animation selection. Provide a single resourceId whose animation type decides update vs transition.
     $ref: "#/definitions/animationRef"
 
+  backgroundBlur:
+    anyOf:
+      - type: "null"
+        description: Clear the current background blur
+      - type: object
+        description: Static blur applied to the current background resource
+        properties:
+          x:
+            type: number
+            minimum: 0
+            description: Horizontal blur strength
+          y:
+            type: number
+            minimum: 0
+            description: Vertical blur strength
+          quality:
+            type: number
+            minimum: 1
+            description: Blur quality pass count
+          kernelSize:
+            type: integer
+            enum: [5, 7, 9, 11, 13, 15]
+            description: Blur kernel size
+          repeatEdgePixels:
+            type: boolean
+            description: Clamp edge pixels while blurring
+        required: [x, y]
+        additionalProperties: false
+
 properties:
   cleanAll:
     type: object
@@ -61,6 +90,13 @@ properties:
       transformId:
         type: string
         description: Optional transform resource to position the background
+      opacity:
+        type: number
+        minimum: 0
+        maximum: 1
+        description: Static background opacity, mapped to renderer alpha
+      blur:
+        $ref: "#/definitions/backgroundBlur"
       animations:
         $ref: "#/definitions/animationSelection"
     additionalProperties: false

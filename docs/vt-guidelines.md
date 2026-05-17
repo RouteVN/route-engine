@@ -1,6 +1,6 @@
 # VT Guidelines
 
-Last updated: 2026-04-09
+Last updated: 2026-05-17
 
 ## Purpose
 
@@ -73,6 +73,12 @@ Define one stable standard for VT authoring in this repo:
 
 ## Behavior Testing Rules
 
+- Presentation, render-state, layout, animation, transition, reveal, opacity,
+  blur, layering, input, click, and timing changes must include VT coverage for
+  the visible behavior before the work is considered complete.
+- VT coverage should exercise every affected visual render path. If part of the
+  behavior is intentionally covered only by unit/system tests, state why in the
+  PR summary.
 - Do not use on-screen debug log text as a behavior oracle.
 - Use deterministic visual outcomes for VT assertions:
   - position (`x`, `y`)
@@ -84,6 +90,10 @@ Define one stable standard for VT authoring in this repo:
 
 ## Authoring Checklist
 
+- New or changed visual behavior has a focused VT spec and committed reference
+  screenshots.
+- The relevant VT item, group, or suite has been run locally and the report
+  passes.
 - Uses approved grayscale palette unless color is explicitly the subject.
 - Uses realistic/public assets where applicable.
 - Character tests use sprite assets and bottom-center anchors.

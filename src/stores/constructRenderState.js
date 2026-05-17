@@ -1108,19 +1108,72 @@ const resolveBackgroundFill = ({ resources = {}, background = {}, screen }) => {
   return resolveColorResource(resources, background.colorId);
 };
 
+const getBackgroundOpacity = (background = {}) => {
+  if (!hasOwnProperty(background, "opacity")) {
+    return undefined;
+  }
+
+  return typeof background.opacity === "number"
+    ? background.opacity
+    : undefined;
+};
+
+const getBackgroundBlur = (background = {}) => {
+  if (
+    !background.blur ||
+    typeof background.blur !== "object" ||
+    Array.isArray(background.blur)
+  ) {
+    return undefined;
+  }
+
+  return background.blur;
+};
+
+const getBackgroundAppearance = (
+  background = {},
+  { includeDefaultAlpha = false } = {},
+) => {
+  const opacity = getBackgroundOpacity(background);
+  const blur = getBackgroundBlur(background);
+  const appearance = {};
+
+  if (includeDefaultAlpha || opacity !== undefined) {
+    appearance.alpha = opacity ?? 1;
+  }
+
+  if (blur) {
+    appearance.blur = blur;
+  }
+
+  return appearance;
+};
+
 const createBackgroundColorElement = ({
   resources,
   background,
   screen = { width: 1920, height: 1080 },
-}) => ({
-  id: BACKGROUND_COLOR_ELEMENT_ID,
-  type: "rect",
-  x: 0,
-  y: 0,
-  width: screen?.width ?? 1920,
-  height: screen?.height ?? 1080,
-  fill: resolveBackgroundFill({ resources, background, screen }),
-});
+  includeOpacity = false,
+}) => {
+  const element = {
+    id: BACKGROUND_COLOR_ELEMENT_ID,
+    type: "rect",
+    x: 0,
+    y: 0,
+    width: screen?.width ?? 1920,
+    height: screen?.height ?? 1080,
+    fill: resolveBackgroundFill({ resources, background, screen }),
+  };
+
+  if (includeOpacity) {
+    const opacity = getBackgroundOpacity(background);
+    if (opacity !== undefined) {
+      element.alpha = opacity;
+    }
+  }
+
+  return element;
+};
 
 const hasRenderableBackgroundResource = (resources = {}, resourceId) => {
   if (!resourceId) {
@@ -1947,6 +2000,7 @@ export const addBackgroundOrCg = (
           resources,
           background: backgroundForColorElement,
           screen,
+          includeOpacity: !currentHasRenderableBackgroundResource,
         }),
       );
     }
@@ -1979,7 +2033,9 @@ export const addBackgroundOrCg = (
           src: background.fileId,
           width: background.width,
           height: background.height,
-          alpha: 1,
+          ...getBackgroundAppearance(presentationState.background, {
+            includeDefaultAlpha: true,
+          }),
           anchorX: backgroundTransform.anchorX,
           anchorY: backgroundTransform.anchorY,
           rotation: backgroundTransform.rotation,
@@ -2007,6 +2063,7 @@ export const addBackgroundOrCg = (
           }),
           type: "container",
           children: layout.elements,
+          ...getBackgroundAppearance(presentationState.background),
         };
         if (authoredBackgroundTransform) {
           Object.assign(bgContainer, {

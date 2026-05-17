@@ -52,6 +52,66 @@ out:
           height: 1080
   animations: []
 ---
+case: add background image with opacity and blur to story container
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      background:
+        resourceId: "bg1"
+        opacity: 0.72
+        blur:
+          x: 6
+          y: 9
+          quality: 3
+          kernelSize: 9
+          repeatEdgePixels: true
+    resources:
+      images:
+        bg1:
+          fileId: "image1.png"
+          width: 1920
+          height: 1080
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "bg-cg-background-color"
+          type: "rect"
+          x: 0
+          y: 0
+          width: 1920
+          height: 1080
+          fill: "#000000"
+        - id: "bg-cg-background-sprite"
+          type: "sprite"
+          alpha: 0.72
+          blur:
+            x: 6
+            y: 9
+            quality: 3
+            kernelSize: 9
+            repeatEdgePixels: true
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          x: 960
+          y: 540
+          src: "image1.png"
+          width: 1920
+          height: 1080
+  animations: []
+---
 case: add background color to story container
 in:
   - elements:
@@ -85,6 +145,43 @@ out:
           width: 1280
           height: 720
           fill: "#101820"
+  animations: []
+---
+case: add background color with opacity to story container
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      background:
+        colorId: "backdrop"
+        opacity: 0.5
+    resources:
+      colors:
+        backdrop:
+          hex: "#101820"
+    screen:
+      width: 1280
+      height: 720
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "bg-cg-background-color"
+          type: "rect"
+          x: 0
+          y: 0
+          width: 1280
+          height: 720
+          fill: "#101820"
+          alpha: 0.5
   animations: []
 ---
 case: animate background color with single transition animation reference

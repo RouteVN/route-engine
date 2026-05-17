@@ -253,6 +253,33 @@ describe("projectData schema", () => {
     expect(validateProjectData.errors).toBeNull();
   });
 
+  it("accepts background opacity and blur in presentation actions", () => {
+    expect(
+      validatePresentationActions({
+        background: {
+          opacity: 0.72,
+          blur: {
+            x: 6,
+            y: 9,
+            quality: 3,
+            kernelSize: 9,
+            repeatEdgePixels: true,
+          },
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+
+    expect(
+      validatePresentationActions({
+        background: {
+          blur: null,
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+  });
+
   it("accepts animation playback continuity in presentation action payloads", () => {
     expect(
       validatePresentationActions({
