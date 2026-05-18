@@ -208,6 +208,13 @@ properties:
             y:
               type: number
               description: Custom y position to override transform y
+            opacity:
+              type: number
+              minimum: 0
+              maximum: 1
+              description: Static character item opacity, mapped to renderer alpha
+            blur:
+              $ref: "#/definitions/backgroundBlur"
             sprites:
               type: array
               description: Array of sprite parts that make up the character
@@ -260,6 +267,13 @@ properties:
                 - 50
                 - 70
               description: Numeric render layer for the visual item. Defaults to 50. Same-layer items preserve array order.
+            opacity:
+              type: number
+              minimum: 0
+              maximum: 1
+              description: Static visual item opacity, mapped to renderer alpha
+            blur:
+              $ref: "#/definitions/backgroundBlur"
             animations:
               $ref: "#/definitions/animationSelection"
           required: [id]

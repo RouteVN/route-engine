@@ -692,6 +692,102 @@ out:
         resourceId: "effect-vignette"
         layer: 70
 ---
+case: character item opacity and blur persist across omitted character action
+in:
+  - - character:
+        items:
+          - id: "lead"
+            transformId: "center"
+            opacity: 0.72
+            blur:
+              x: 6
+              y: 9
+              quality: 3
+              kernelSize: 9
+              repeatEdgePixels: true
+            sprites:
+              - id: "body"
+                resourceId: "lead-body"
+    - dialogue:
+        mode: "adv"
+        content:
+          - text: "Next line"
+out:
+  character:
+    items:
+      - id: "lead"
+        transformId: "center"
+        opacity: 0.72
+        blur:
+          x: 6
+          y: 9
+          quality: 3
+          kernelSize: 9
+          repeatEdgePixels: true
+        sprites:
+          - id: "body"
+            resourceId: "lead-body"
+  dialogue:
+    mode: "adv"
+    content:
+      - text: "Next line"
+---
+case: character item appearance-only update keeps previous sprites
+in:
+  - - character:
+        items:
+          - id: "lead"
+            transformId: "center"
+            opacity: 0.72
+            blur:
+              x: 6
+              y: 9
+            sprites:
+              - id: "body"
+                resourceId: "lead-body"
+    - character:
+        items:
+          - id: "lead"
+            opacity: 1
+            blur: null
+out:
+  character:
+    items:
+      - id: "lead"
+        transformId: "center"
+        opacity: 1
+        blur: null
+        sprites:
+          - id: "body"
+            resourceId: "lead-body"
+---
+case: visual item appearance-only update keeps previous resource and layer
+in:
+  - - visual:
+        items:
+          - id: "fog"
+            resourceId: "effect-fog"
+            transformId: "fullscreen"
+            layer: 30
+            opacity: 0.45
+            blur:
+              x: 6
+              y: 9
+    - visual:
+        items:
+          - id: "fog"
+            opacity: 1
+            blur: null
+out:
+  visual:
+    items:
+      - id: "fog"
+        resourceId: "effect-fog"
+        transformId: "fullscreen"
+        layer: 30
+        opacity: 1
+        blur: null
+---
 case: preserve background without animations (no empty animations added)
 in:
   - - background:

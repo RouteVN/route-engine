@@ -4,6 +4,15 @@ import { createSequentialActionsExecutor } from "../util.js";
 const clonePresentationValue = (value) =>
   structuredClone(isDraft(value) ? current(value) : value);
 
+const hasOwnProperty = (value, key) =>
+  Object.prototype.hasOwnProperty.call(value, key);
+
+const hasPersistentAnimationSelection = (value) =>
+  value?.animations?.playback?.continuity === "persistent";
+
+const hasDefinedProperty = (value, key) =>
+  hasOwnProperty(value ?? {}, key) && value[key] !== undefined;
+
 /**
  * Helper to handle animations-only state when no resource is provided
  * @param {Object} presentation - The presentation object
@@ -31,13 +40,78 @@ const getAnimationsOnlyState = (presentation, hasResourceFn) => {
  * @param {Function} hasResourceFn - Function to check if item has a resource
  * @returns {{ hasValidItems: boolean, processedItems: Array }}
  */
-const processItemsWithAnimations = (items, hasResourceFn) => {
+const hasItemAppearance = (item) =>
+  hasDefinedProperty(item, "opacity") || hasDefinedProperty(item, "blur");
+
+const findPreviousItem = (previousItems, item, index) => {
+  const previousAtIndex = previousItems[index];
+  if (previousAtIndex?.id === item?.id) {
+    return previousAtIndex;
+  }
+
+  return previousItems.find((previousItem) => previousItem.id === item?.id);
+};
+
+const applyPersistentItemAppearance = (item, previousItem) => {
+  if (!previousItem) {
+    return item;
+  }
+
+  if (
+    !hasDefinedProperty(item, "opacity") &&
+    hasDefinedProperty(previousItem, "opacity")
+  ) {
+    item.opacity = previousItem.opacity;
+  }
+
+  if (
+    !hasDefinedProperty(item, "blur") &&
+    hasDefinedProperty(previousItem, "blur")
+  ) {
+    item.blur = clonePresentationValue(previousItem.blur);
+  }
+
+  if (hasOwnProperty(item, "opacity") && item.opacity === undefined) {
+    delete item.opacity;
+  }
+
+  if (hasOwnProperty(item, "blur") && item.blur === undefined) {
+    delete item.blur;
+  }
+
+  return item;
+};
+
+const processItemsWithAnimations = (
+  items,
+  hasResourceFn,
+  previousItems = [],
+) => {
   if (!items || items.length === 0) {
     return { hasValidItems: false, processedItems: [] };
   }
 
   const processedItems = items
-    .map((item) => clonePresentationValue(item))
+    .map((item, index) => {
+      const previousItem = findPreviousItem(previousItems, item, index);
+      const hasResource = hasResourceFn(item);
+      const hasAppearance = hasItemAppearance(item);
+      const hasAnimations = hasOwnProperty(item, "animations");
+      let processedItem = clonePresentationValue(item);
+
+      if (!hasResource && hasAppearance && previousItem) {
+        processedItem = {
+          ...clonePresentationValue(previousItem),
+          ...processedItem,
+        };
+
+        if (!hasAnimations) {
+          delete processedItem.animations;
+        }
+      }
+
+      return applyPersistentItemAppearance(processedItem, previousItem);
+    })
     .filter((item) => hasResourceFn(item) || item.animations);
 
   return {
@@ -45,15 +119,6 @@ const processItemsWithAnimations = (items, hasResourceFn) => {
     processedItems,
   };
 };
-
-const hasOwnProperty = (value, key) =>
-  Object.prototype.hasOwnProperty.call(value, key);
-
-const hasPersistentAnimationSelection = (value) =>
-  value?.animations?.playback?.continuity === "persistent";
-
-const hasDefinedProperty = (value, key) =>
-  hasOwnProperty(value ?? {}, key) && value[key] !== undefined;
 
 const resolveDialogueCharacterName = (dialogueAction) => {
   if (!dialogueAction) {
@@ -516,6 +581,7 @@ export const visual = (state, presentation) => {
     const { hasValidItems, processedItems } = processItemsWithAnimations(
       presentation.visual.items,
       (item) => !!item.resourceId,
+      state.visual?.items || [],
     );
 
     if (hasValidItems) {
@@ -561,6 +627,7 @@ export const character = (state, presentation) => {
       (item.sprites && item.sprites.length > 0) ||
       item.transformId ||
       item.resourceId,
+    state.character?.items || [],
   );
 
   if (hasValidItems) {

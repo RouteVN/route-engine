@@ -1,0 +1,85 @@
+---
+title: Character Opacity Blur
+description: |
+  Character item opacity and blur should affect the whole character container,
+  persist when a later line omits character, and clear from an appearance-only
+  item update.
+
+  - the first screenshot should show the character faded and blurred
+  - the second screenshot should keep the same character opacity and blur
+  - the third screenshot should show the character clear and fully opaque
+skipInitialScreenshot: true
+steps:
+  - action: screenshot
+  - action: customEvent
+    name: vt:nextLine
+  - action: screenshot
+  - action: customEvent
+    name: vt:nextLine
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#FFFFFF"
+resources:
+  images:
+    bg-door:
+      fileId: lakjf3lka
+      width: 1920
+      height: 1080
+    bg-forest:
+      fileId: dmni32
+      width: 1920
+      height: 1080
+    character-a:
+      fileId: char_sprite_1
+      width: 553
+      height: 865
+  transforms:
+    character-center:
+      x: 960
+      y: 1080
+      anchorX: 0.5
+      anchorY: 1
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+story:
+  initialSceneId: characterScene
+  scenes:
+    characterScene:
+      name: Character Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: characterOpacityBlur
+              actions:
+                background:
+                  resourceId: bg-door
+                character:
+                  items:
+                    - id: lead
+                      transformId: character-center
+                      opacity: 0.55
+                      blur:
+                        x: 6
+                        y: 9
+                        quality: 3
+                        kernelSize: 9
+                        repeatEdgePixels: true
+                      sprites:
+                        - id: body
+                          resourceId: character-a
+            - id: characterOpacityBlurPersists
+              actions:
+                background:
+                  resourceId: bg-forest
+            - id: characterOpacityBlurCleared
+              actions:
+                character:
+                  items:
+                    - id: lead
+                      opacity: 1
+                      blur: null

@@ -1192,6 +1192,8 @@ const getScreenAppearance = (screenState = {}) => {
   return appearance;
 };
 
+const getItemAppearance = (item = {}) => getScreenAppearance(item);
+
 const createBackgroundColorElement = ({
   resources,
   background,
@@ -2299,6 +2301,7 @@ export const addCharacters = (
         rotation: transform.rotation,
         scaleX: transform.scaleX,
         scaleY: transform.scaleY,
+        ...getItemAppearance(item),
         children: [],
       };
 
@@ -2420,6 +2423,7 @@ export const addVisuals = (
               );
             }
 
+            const itemAppearance = getItemAppearance(item);
             const element = {
               id: `visual-${item.id}`,
               type: "animated-sprite",
@@ -2427,7 +2431,7 @@ export const addVisuals = (
               y: item.y ?? transform.y,
               width: item.width ?? spritesheet.width,
               height: item.height ?? spritesheet.height,
-              alpha: item.alpha ?? 1,
+              alpha: itemAppearance.alpha ?? item.alpha ?? 1,
               anchorX: transform.anchorX,
               anchorY: transform.anchorY,
               rotation: transform.rotation,
@@ -2442,6 +2446,9 @@ export const addVisuals = (
                 loop: item.loop ?? animationDef.loop ?? true,
               },
             };
+            if (itemAppearance.blur) {
+              element.blur = itemAppearance.blur;
+            }
             storyContainer.children.push(structuredClone(element));
           }
         } else {
@@ -2464,6 +2471,7 @@ export const addVisuals = (
               scaleX: transform.scaleX,
               scaleY: transform.scaleY,
             };
+            Object.assign(element, getItemAppearance(item));
 
             if (isVideo) {
               element.loop = resource.loop ?? false;
@@ -2493,6 +2501,7 @@ export const addVisuals = (
             scaleX: transform.scaleX,
             scaleY: transform.scaleY,
           };
+          Object.assign(visualContainer, getItemAppearance(item));
           const processedContainer = parseAndRender(
             visualContainer,
             createLayoutTemplateData({
