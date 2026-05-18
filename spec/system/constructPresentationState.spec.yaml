@@ -788,6 +788,121 @@ out:
         opacity: 1
         blur: null
 ---
+case: character item transform-only update keeps previous sprites
+in:
+  - - character:
+        items:
+          - id: "lead"
+            transformId: "center"
+            sprites:
+              - id: "body"
+                resourceId: "lead-body"
+    - character:
+        items:
+          - id: "lead"
+            x: 920
+            y: 980
+            anchorX: 0.5
+            anchorY: 1
+            scaleX: 0.8
+            scaleY: 0.9
+            rotation: 12
+            originX: 64
+            originY: 128
+out:
+  character:
+    items:
+      - id: "lead"
+        transformId: "center"
+        sprites:
+          - id: "body"
+            resourceId: "lead-body"
+        x: 920
+        y: 980
+        anchorX: 0.5
+        anchorY: 1
+        scaleX: 0.8
+        scaleY: 0.9
+        rotation: 12
+        originX: 64
+        originY: 128
+---
+case: visual item transform-only update keeps previous resource and layer
+in:
+  - - visual:
+        items:
+          - id: "fog"
+            resourceId: "effect-fog"
+            transformId: "fullscreen"
+            layer: 30
+    - visual:
+        items:
+          - id: "fog"
+            x: 100
+            y: 120
+            anchorX: 0
+            anchorY: 0
+            scaleX: 1.2
+            scaleY: 1.3
+            rotation: -8
+            originX: 20
+            originY: 40
+out:
+  visual:
+    items:
+      - id: "fog"
+        resourceId: "effect-fog"
+        transformId: "fullscreen"
+        layer: 30
+        x: 100
+        y: 120
+        anchorX: 0
+        anchorY: 0
+        scaleX: 1.2
+        scaleY: 1.3
+        rotation: -8
+        originX: 20
+        originY: 40
+---
+case: item transform overrides persist across later item updates
+in:
+  - - visual:
+        items:
+          - id: "fog"
+            resourceId: "effect-fog"
+            transformId: "fullscreen"
+            x: 100
+            y: 120
+            anchorX: 0
+            anchorY: 0
+            scaleX: 1.2
+            scaleY: 1.3
+            rotation: -8
+            originX: 20
+            originY: 40
+    - visual:
+        items:
+          - id: "fog"
+            resourceId: "effect-fog"
+            transformId: "fullscreen"
+            opacity: 0.45
+out:
+  visual:
+    items:
+      - id: "fog"
+        resourceId: "effect-fog"
+        transformId: "fullscreen"
+        opacity: 0.45
+        x: 100
+        y: 120
+        anchorX: 0
+        anchorY: 0
+        scaleX: 1.2
+        scaleY: 1.3
+        rotation: -8
+        originX: 20
+        originY: 40
+---
 case: preserve background without animations (no empty animations added)
 in:
   - - background:

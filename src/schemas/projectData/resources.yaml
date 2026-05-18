@@ -136,6 +136,12 @@ properties:
           rotation:
             description: Rotation angle in degrees
             type: number
+          originX:
+            description: X transform origin
+            type: number
+          originY:
+            description: Y transform origin
+            type: number
         additionalProperties: false
     additionalProperties: false
 

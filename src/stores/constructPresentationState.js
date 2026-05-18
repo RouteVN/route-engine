@@ -43,6 +43,21 @@ const getAnimationsOnlyState = (presentation, hasResourceFn) => {
 const hasItemAppearance = (item) =>
   hasDefinedProperty(item, "opacity") || hasDefinedProperty(item, "blur");
 
+const ITEM_TRANSFORM_FIELDS = [
+  "x",
+  "y",
+  "anchorX",
+  "anchorY",
+  "scaleX",
+  "scaleY",
+  "rotation",
+  "originX",
+  "originY",
+];
+
+const hasItemTransform = (item) =>
+  ITEM_TRANSFORM_FIELDS.some((field) => hasDefinedProperty(item, field));
+
 const findPreviousItem = (previousItems, item, index) => {
   const previousAtIndex = previousItems[index];
   if (previousAtIndex?.id === item?.id) {
@@ -50,6 +65,27 @@ const findPreviousItem = (previousItems, item, index) => {
   }
 
   return previousItems.find((previousItem) => previousItem.id === item?.id);
+};
+
+const applyPersistentItemTransform = (item, previousItem) => {
+  if (!previousItem) {
+    return item;
+  }
+
+  for (const field of ITEM_TRANSFORM_FIELDS) {
+    if (
+      !hasDefinedProperty(item, field) &&
+      hasDefinedProperty(previousItem, field)
+    ) {
+      item[field] = previousItem[field];
+    }
+
+    if (hasOwnProperty(item, field) && item[field] === undefined) {
+      delete item[field];
+    }
+  }
+
+  return item;
 };
 
 const applyPersistentItemAppearance = (item, previousItem) => {
@@ -96,10 +132,11 @@ const processItemsWithAnimations = (
       const previousItem = findPreviousItem(previousItems, item, index);
       const hasResource = hasResourceFn(item);
       const hasAppearance = hasItemAppearance(item);
+      const hasTransform = hasItemTransform(item);
       const hasAnimations = hasOwnProperty(item, "animations");
       let processedItem = clonePresentationValue(item);
 
-      if (!hasResource && hasAppearance && previousItem) {
+      if (!hasResource && (hasAppearance || hasTransform) && previousItem) {
         processedItem = {
           ...clonePresentationValue(previousItem),
           ...processedItem,
@@ -110,7 +147,10 @@ const processItemsWithAnimations = (
         }
       }
 
-      return applyPersistentItemAppearance(processedItem, previousItem);
+      return applyPersistentItemAppearance(
+        applyPersistentItemTransform(processedItem, previousItem),
+        previousItem,
+      );
     })
     .filter((item) => hasResourceFn(item) || item.animations);
 

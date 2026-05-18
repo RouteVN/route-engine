@@ -201,6 +201,69 @@ describe("projectData schema", () => {
       }),
     ).toBe(true);
     expect(validatePresentationActions.errors).toBeNull();
+
+    expect(
+      validatePresentationActions({
+        character: {
+          items: [
+            {
+              id: "lead",
+              x: 920,
+              y: 980,
+              anchorX: 0.5,
+              anchorY: 1,
+              scaleX: 0.8,
+              scaleY: 0.9,
+              rotation: 12,
+              originX: 64,
+              originY: 128,
+            },
+          ],
+        },
+        visual: {
+          items: [
+            {
+              id: "fog",
+              x: 100,
+              y: 120,
+              anchorX: 0,
+              anchorY: 0,
+              scaleX: 1.2,
+              scaleY: 1.3,
+              rotation: -8,
+              originX: 20,
+              originY: 40,
+            },
+          ],
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+  });
+
+  it("accepts transform origins in resource transforms", () => {
+    expect(
+      validateProjectData(
+        createMinimalProjectData({
+          resources: {
+            transforms: {
+              centerStage: {
+                x: 960,
+                y: 540,
+                anchorX: 0.5,
+                anchorY: 0.5,
+                scaleX: 1,
+                scaleY: 1,
+                rotation: 0,
+                originX: 64,
+                originY: 128,
+              },
+            },
+          },
+        }),
+      ),
+    ).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
   });
 
   it("accepts background colorId in presentation actions", () => {
@@ -307,7 +370,7 @@ describe("projectData schema", () => {
     expect(validatePresentationActions.errors).toBeNull();
   });
 
-  it("accepts character and visual item opacity and blur in presentation actions", () => {
+  it("accepts character and visual item transform overrides and appearance in presentation actions", () => {
     expect(
       validatePresentationActions({
         character: {
@@ -315,6 +378,15 @@ describe("projectData schema", () => {
             {
               id: "lead",
               transformId: "center",
+              x: 920,
+              y: 980,
+              anchorX: 0.5,
+              anchorY: 1,
+              scaleX: 0.8,
+              scaleY: 0.9,
+              rotation: 12,
+              originX: 64,
+              originY: 128,
               opacity: 0.72,
               blur: {
                 x: 6,
@@ -338,6 +410,15 @@ describe("projectData schema", () => {
               id: "fog",
               resourceId: "fog",
               transformId: "fullscreen",
+              x: 100,
+              y: 120,
+              anchorX: 0,
+              anchorY: 0,
+              scaleX: 1.2,
+              scaleY: 1.3,
+              rotation: -8,
+              originX: 20,
+              originY: 40,
               opacity: 0.45,
               blur: null,
             },
@@ -346,6 +427,37 @@ describe("projectData schema", () => {
       }),
     ).toBe(true);
     expect(validatePresentationActions.errors).toBeNull();
+  });
+
+  it("requires transformId when character sprites are supplied", () => {
+    expect(
+      validatePresentationActions({
+        character: {
+          items: [
+            {
+              id: "lead",
+              sprites: [
+                {
+                  id: "body",
+                  resourceId: "leadBody",
+                },
+              ],
+            },
+          ],
+        },
+      }),
+    ).toBe(false);
+    expect(validatePresentationActions.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          instancePath: "/character/items/0",
+          keyword: "required",
+          params: expect.objectContaining({
+            missingProperty: "transformId",
+          }),
+        }),
+      ]),
+    );
   });
 
   it("accepts predefined visual layers in presentation actions", () => {

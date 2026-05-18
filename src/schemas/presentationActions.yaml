@@ -208,6 +208,27 @@ properties:
             y:
               type: number
               description: Custom y position to override transform y
+            anchorX:
+              type: number
+              description: Custom x anchor point to override transform anchorX
+            anchorY:
+              type: number
+              description: Custom y anchor point to override transform anchorY
+            scaleX:
+              type: number
+              description: Custom x scale factor to override transform scaleX
+            scaleY:
+              type: number
+              description: Custom y scale factor to override transform scaleY
+            rotation:
+              type: number
+              description: Custom rotation to override transform rotation
+            originX:
+              type: number
+              description: Custom x transform origin to override transform originX
+            originY:
+              type: number
+              description: Custom y transform origin to override transform originY
             opacity:
               type: number
               minimum: 0
@@ -230,7 +251,12 @@ properties:
                 additionalProperties: false
             animations:
               $ref: "#/definitions/animationSelection"
-          required: [id, transformId]
+          required: [id]
+          allOf:
+            - if:
+                required: [sprites]
+              then:
+                required: [transformId]
           additionalProperties: false
     additionalProperties: false
 
@@ -259,6 +285,33 @@ properties:
             transformId:
               type: string
               description: ID of the transform where visual appears
+            x:
+              type: number
+              description: Custom x position to override transform x
+            y:
+              type: number
+              description: Custom y position to override transform y
+            anchorX:
+              type: number
+              description: Custom x anchor point to override transform anchorX
+            anchorY:
+              type: number
+              description: Custom y anchor point to override transform anchorY
+            scaleX:
+              type: number
+              description: Custom x scale factor to override transform scaleX
+            scaleY:
+              type: number
+              description: Custom y scale factor to override transform scaleY
+            rotation:
+              type: number
+              description: Custom rotation to override transform rotation
+            originX:
+              type: number
+              description: Custom x transform origin to override transform originX
+            originY:
+              type: number
+              description: Custom y transform origin to override transform originY
             layer:
               type: number
               enum:

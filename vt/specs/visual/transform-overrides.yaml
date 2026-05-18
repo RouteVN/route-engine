@@ -1,0 +1,73 @@
+---
+title: Visual Transform Overrides
+description: |
+  Visual item transform overrides should apply to visual resources and work from
+  a transform-only item update.
+
+  - the first screenshot should show the visual sprite at the authored transform
+  - the second screenshot should apply transform overrides to the same visual
+    without restating the resource
+skipInitialScreenshot: true
+steps:
+  - action: screenshot
+  - action: customEvent
+    name: vt:nextLine
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  colors:
+    stageBlack:
+      hex: "#000000"
+  images:
+    logo:
+      fileId: 94lkj289
+      width: 1111
+      height: 200
+  transforms:
+    visual-left:
+      x: 360
+      y: 320
+      anchorX: 0
+      anchorY: 0
+      rotation: 0
+      scaleX: 0.45
+      scaleY: 0.45
+      originX: 0
+      originY: 0
+story:
+  initialSceneId: visualTransformScene
+  scenes:
+    visualTransformScene:
+      name: Visual Transform Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: visualTransformDefault
+              actions:
+                background:
+                  colorId: stageBlack
+                visual:
+                  items:
+                    - id: logo
+                      resourceId: logo
+                      transformId: visual-left
+                      layer: 70
+            - id: visualTransformPatched
+              actions:
+                visual:
+                  items:
+                    - id: logo
+                      x: 1080
+                      y: 640
+                      anchorX: 0.5
+                      anchorY: 0.5
+                      scaleX: 0.35
+                      scaleY: 0.35
+                      rotation: 25
+                      originX: 555
+                      originY: 100
