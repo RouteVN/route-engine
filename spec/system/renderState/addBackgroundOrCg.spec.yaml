@@ -389,6 +389,8 @@ in:
           anchorX: 0
           anchorY: 1
           scaleX: 1.25
+          originX: 64
+          originY: 128
 out:
   elements:
     - id: "story"
@@ -411,6 +413,8 @@ out:
           rotation: 0
           scaleX: 1.25
           scaleY: 1
+          originX: 64
+          originY: 128
           x: 200
           y: 300
           src: "image1.png"
@@ -1557,6 +1561,8 @@ in:
           rotation: 12
           scaleX: 0.75
           scaleY: 1.1
+          originX: 64
+          originY: 128
 out:
   elements:
     - id: "story"
@@ -1580,6 +1586,8 @@ out:
           rotation: 12
           scaleX: 0.75
           scaleY: 1.1
+          originX: 64
+          originY: 128
           children:
             - id: "bg-panel"
               type: "rect"

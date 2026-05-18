@@ -1194,6 +1194,31 @@ const getScreenAppearance = (screenState = {}) => {
 
 const getItemAppearance = (item = {}) => getScreenAppearance(item);
 
+const getElementTransform = (transform = {}, item = {}) => {
+  const elementTransform = {
+    x: item.x ?? transform.x,
+    y: item.y ?? transform.y,
+    anchorX: item.anchorX ?? transform.anchorX,
+    anchorY: item.anchorY ?? transform.anchorY,
+    rotation: item.rotation ?? transform.rotation,
+    scaleX: item.scaleX ?? transform.scaleX,
+    scaleY: item.scaleY ?? transform.scaleY,
+  };
+
+  const originX = item.originX ?? transform.originX;
+  const originY = item.originY ?? transform.originY;
+
+  if (originX !== undefined) {
+    elementTransform.originX = originX;
+  }
+
+  if (originY !== undefined) {
+    elementTransform.originY = originY;
+  }
+
+  return elementTransform;
+};
+
 const createBackgroundColorElement = ({
   resources,
   background,
@@ -2073,19 +2098,13 @@ export const addBackgroundOrCg = (
             kind: isVideo ? "video" : "sprite",
           }),
           type: isVideo ? "video" : "sprite",
-          x: backgroundTransform.x,
-          y: backgroundTransform.y,
           src: background.fileId,
           width: background.width,
           height: background.height,
           ...getBackgroundAppearance(presentationState.background, {
             includeDefaultAlpha: true,
           }),
-          anchorX: backgroundTransform.anchorX,
-          anchorY: backgroundTransform.anchorY,
-          rotation: backgroundTransform.rotation,
-          scaleX: backgroundTransform.scaleX,
-          scaleY: backgroundTransform.scaleY,
+          ...getElementTransform(backgroundTransform),
         };
 
         if (isVideo) {
@@ -2111,16 +2130,19 @@ export const addBackgroundOrCg = (
           ...getBackgroundAppearance(presentationState.background),
         };
         if (authoredBackgroundTransform) {
-          Object.assign(bgContainer, {
-            x: 0,
-            y: 0,
-            anchorX: 0,
-            anchorY: 0,
-            rotation: 0,
-            scaleX: 1,
-            scaleY: 1,
-            ...authoredBackgroundTransform,
-          });
+          Object.assign(
+            bgContainer,
+            getElementTransform({
+              x: 0,
+              y: 0,
+              anchorX: 0,
+              anchorY: 0,
+              rotation: 0,
+              scaleX: 1,
+              scaleY: 1,
+              ...authoredBackgroundTransform,
+            }),
+          );
         }
         const processedContainer = parseAndRender(
           bgContainer,
@@ -2294,13 +2316,7 @@ export const addCharacters = (
       const characterContainer = {
         type: "container",
         id: containerId,
-        x: item.x ?? transform.x,
-        y: item.y ?? transform.y,
-        anchorX: transform.anchorX,
-        anchorY: transform.anchorY,
-        rotation: transform.rotation,
-        scaleX: transform.scaleX,
-        scaleY: transform.scaleY,
+        ...getElementTransform(transform, item),
         ...getItemAppearance(item),
         children: [],
       };
@@ -2427,16 +2443,10 @@ export const addVisuals = (
             const element = {
               id: `visual-${item.id}`,
               type: "animated-sprite",
-              x: item.x ?? transform.x,
-              y: item.y ?? transform.y,
+              ...getElementTransform(transform, item),
               width: item.width ?? spritesheet.width,
               height: item.height ?? spritesheet.height,
               alpha: itemAppearance.alpha ?? item.alpha ?? 1,
-              anchorX: transform.anchorX,
-              anchorY: transform.anchorY,
-              rotation: transform.rotation,
-              scaleX: transform.scaleX,
-              scaleY: transform.scaleY,
               spritesheetSrc: spritesheet.fileId,
               spritesheetData: spritesheet.jsonData,
               animation: {
@@ -2463,13 +2473,7 @@ export const addVisuals = (
               src: resource.fileId,
               width: resource.width,
               height: resource.height,
-              x: transform.x,
-              y: transform.y,
-              anchorX: transform.anchorX,
-              anchorY: transform.anchorY,
-              rotation: transform.rotation,
-              scaleX: transform.scaleX,
-              scaleY: transform.scaleY,
+              ...getElementTransform(transform, item),
             };
             Object.assign(element, getItemAppearance(item));
 
@@ -2493,13 +2497,7 @@ export const addVisuals = (
             id: `visual-${item.id}`,
             type: "container",
             children: structuredClone(layout.elements),
-            x: transform.x,
-            y: transform.y,
-            anchorX: transform.anchorX,
-            anchorY: transform.anchorY,
-            rotation: transform.rotation,
-            scaleX: transform.scaleX,
-            scaleY: transform.scaleY,
+            ...getElementTransform(transform, item),
           };
           Object.assign(visualContainer, getItemAppearance(item));
           const processedContainer = parseAndRender(
@@ -2635,13 +2633,7 @@ const addDialogueCharacterSprite = (
   const spriteContainer = {
     type: "container",
     id: DIALOGUE_CHARACTER_SPRITE_CONTAINER_ID,
-    x: transform.x,
-    y: transform.y,
-    anchorX: transform.anchorX,
-    anchorY: transform.anchorY,
-    rotation: transform.rotation,
-    scaleX: transform.scaleX,
-    scaleY: transform.scaleY,
+    ...getElementTransform(transform),
     children: [],
   };
 

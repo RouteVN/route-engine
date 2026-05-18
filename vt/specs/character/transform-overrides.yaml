@@ -1,0 +1,74 @@
+---
+title: Character Transform Overrides
+description: |
+  Character item transform overrides should apply to the whole character
+  container and work from a transform-only item update.
+
+  - the first screenshot should show the character at the authored transform
+  - the second screenshot should apply transform overrides to the same character
+    without restating sprites
+skipInitialScreenshot: true
+steps:
+  - action: screenshot
+  - action: customEvent
+    name: vt:nextLine
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#FFFFFF"
+resources:
+  colors:
+    stageWhite:
+      hex: "#FFFFFF"
+  images:
+    character-a:
+      fileId: char_sprite_1
+      width: 553
+      height: 865
+  transforms:
+    character-left:
+      x: 620
+      y: 1040
+      anchorX: 0.5
+      anchorY: 1
+      rotation: 0
+      scaleX: 0.75
+      scaleY: 0.75
+      originX: 0
+      originY: 0
+story:
+  initialSceneId: characterTransformScene
+  scenes:
+    characterTransformScene:
+      name: Character Transform Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: characterTransformDefault
+              actions:
+                background:
+                  colorId: stageWhite
+                character:
+                  items:
+                    - id: lead
+                      transformId: character-left
+                      sprites:
+                        - id: body
+                          resourceId: character-a
+            - id: characterTransformPatched
+              actions:
+                character:
+                  items:
+                    - id: lead
+                      x: 1120
+                      y: 920
+                      anchorX: 0.5
+                      anchorY: 0.5
+                      scaleX: 0.7
+                      scaleY: 0.7
+                      rotation: 45
+                      originX: 120
+                      originY: 520
