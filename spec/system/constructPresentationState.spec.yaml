@@ -681,7 +681,7 @@ in:
             layer: 30
           - id: "vignette"
             resourceId: "effect-vignette"
-            layer: 70
+            layer: 80
 out:
   visual:
     items:
@@ -690,7 +690,7 @@ out:
         layer: 30
       - id: "vignette"
         resourceId: "effect-vignette"
-        layer: 70
+        layer: 80
 ---
 case: character item opacity and blur persist across omitted character action
 in:

@@ -56,7 +56,7 @@ story:
                     - id: logo
                       resourceId: logo
                       transformId: visual-left
-                      layer: 70
+                      layer: 80
             - id: visualTransformPatched
               actions:
                 visual:

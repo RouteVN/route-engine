@@ -5,7 +5,8 @@ export const RENDER_LAYER = Object.freeze({
   CHARACTER: 40,
   VISUAL_BEHIND_DIALOGUE: 50,
   DIALOGUE: 60,
-  VISUAL_FOREGROUND: 70,
+  CHOICE: 70,
+  VISUAL_FOREGROUND: 80,
 });
 
 export const VISUAL_LAYER = Object.freeze({

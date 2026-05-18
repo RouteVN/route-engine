@@ -1933,7 +1933,7 @@ in:
           - id: "foreground"
             resourceId: "foregroundImage"
             transformId: "transform1"
-            layer: 70
+            layer: 80
           - id: "defaultLayer"
             resourceId: "defaultImage"
             transformId: "transform1"
@@ -2055,7 +2055,7 @@ out:
                 value: 0
   audio: []
 ---
-case: invalid visual layer should throw clear error
+case: reserved choice layer should throw clear error for visuals
 in:
   - elements:
       - id: "story"
@@ -2071,7 +2071,7 @@ in:
           - id: "fog"
             resourceId: "fogImage"
             transformId: "transform1"
-            layer: 20
+            layer: 70
     resources:
       images:
         fogImage:
@@ -2085,4 +2085,4 @@ in:
           rotation: 0
           scaleX: 1
           scaleY: 1
-throws: 'Visual item "fog" layer must be one of: 10, 30, 50, 70.'
+throws: 'Visual item "fog" layer must be one of: 10, 30, 50, 80.'

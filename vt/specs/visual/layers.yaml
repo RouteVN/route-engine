@@ -7,7 +7,7 @@ description: |
   - layer 10 visuals render before the background layer
   - layer 30 visuals render between background and character
   - layer 50 visuals render between character and dialogue
-  - layer 70 visuals render above dialogue and normal story layouts
+  - layer 80 visuals render above choice, dialogue, and normal story layouts
   - same-layer visuals preserve authored item order
 skipInitialScreenshot: true
 steps:
@@ -142,6 +142,15 @@ resources:
           width: 1680
           height: 240
           colorId: fg10
+    choiceUi:
+      elements:
+        - id: choice-panel
+          type: rect
+          x: 320
+          y: 860
+          width: 1280
+          height: 90
+          colorId: fg30
     storyLayout:
       elements:
         - id: layout-panel
@@ -253,7 +262,7 @@ story:
                     - id: foreground
                       resourceId: foregroundLayer
                       transformId: fullScreen
-                      layer: 70
+                      layer: 80
                     - id: behindDialogueOne
                       resourceId: behindDialogueLayerOne
                       transformId: fullScreen
@@ -275,6 +284,11 @@ story:
                     resourceId: dialogueUi
                   content:
                     - text: Layered visuals
+                choice:
+                  resourceId: choiceUi
+                  items:
+                    - id: confirm
+                      content: Confirm
                 layout:
                   resourceId: storyLayout
             - id: characterOverlapVisuals
@@ -293,7 +307,7 @@ story:
                     - id: overlapForeground
                       resourceId: overlapForeground
                       transformId: fullScreen
-                      layer: 70
+                      layer: 80
                     - id: overlapBehindDialogueFirst
                       resourceId: overlapBehindDialogueFirst
                       transformId: fullScreen

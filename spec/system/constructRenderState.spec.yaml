@@ -134,7 +134,7 @@ in:
             - id: "foreground"
               resourceId: "foregroundImage"
               transformId: "visualTransform"
-              layer: 70
+              layer: 80
             - id: "defaultBehindDialogue"
               resourceId: "defaultImage"
               transformId: "visualTransform"
@@ -156,6 +156,11 @@ in:
             resourceId: "dialogueUi"
           content:
             - text: "Layered"
+        choice:
+          resourceId: "choiceUi"
+          items:
+            - id: "go"
+              content: "Go"
         layout:
           resourceId: "storyLayout"
       resources:
@@ -209,6 +214,10 @@ in:
           dialogueUi:
             elements:
               - id: "dialogue-box"
+                type: "container"
+          choiceUi:
+            elements:
+              - id: "choice-box"
                 type: "container"
           storyLayout:
             elements:
@@ -307,6 +316,8 @@ out:
           scaleX: 1
           scaleY: 1
         - id: "dialogue-box"
+          type: "container"
+        - id: "choice-box"
           type: "container"
         - id: "layout-storyLayout"
           type: "container"

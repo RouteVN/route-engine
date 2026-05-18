@@ -475,7 +475,7 @@ describe("projectData schema", () => {
               id: "vignette",
               resourceId: "vignette",
               transformId: "fullscreen",
-              layer: 70,
+              layer: 80,
             },
           ],
         },
@@ -484,7 +484,7 @@ describe("projectData schema", () => {
     expect(validatePresentationActions.errors).toBeNull();
   });
 
-  it("rejects arbitrary visual layer values", () => {
+  it("rejects non-visual layer values", () => {
     expect(
       validatePresentationActions({
         visual: {
@@ -493,6 +493,20 @@ describe("projectData schema", () => {
               id: "fog",
               resourceId: "fog",
               layer: 20,
+            },
+          ],
+        },
+      }),
+    ).toBe(false);
+
+    expect(
+      validatePresentationActions({
+        visual: {
+          items: [
+            {
+              id: "vignette",
+              resourceId: "vignette",
+              layer: 70,
             },
           ],
         },
