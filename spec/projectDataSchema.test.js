@@ -472,10 +472,16 @@ describe("projectData schema", () => {
               layer: 30,
             },
             {
+              id: "sparkle",
+              resourceId: "sparkle",
+              transformId: "fullscreen",
+              layer: 70,
+            },
+            {
               id: "vignette",
               resourceId: "vignette",
               transformId: "fullscreen",
-              layer: 80,
+              layer: 90,
             },
           ],
         },
@@ -506,7 +512,7 @@ describe("projectData schema", () => {
             {
               id: "vignette",
               resourceId: "vignette",
-              layer: 70,
+              layer: 80,
             },
           ],
         },

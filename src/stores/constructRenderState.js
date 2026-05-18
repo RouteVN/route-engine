@@ -3634,6 +3634,7 @@ const addVisualsBehindCharacter = addVisualsForLayer(
 const addVisualsBehindDialogue = addVisualsForLayer(
   VISUAL_LAYER.BEHIND_DIALOGUE,
 );
+const addVisualsBehindChoice = addVisualsForLayer(VISUAL_LAYER.BEHIND_CHOICE);
 const addVisualsForeground = addVisualsForLayer(VISUAL_LAYER.FOREGROUND);
 
 export const constructRenderState = (params) => {
@@ -3645,6 +3646,7 @@ export const constructRenderState = (params) => {
     addCharacters,
     addVisualsBehindDialogue,
     addDialogue,
+    addVisualsBehindChoice,
     addChoices,
     addForm,
     addLayout,

@@ -134,7 +134,7 @@ in:
             - id: "foreground"
               resourceId: "foregroundImage"
               transformId: "visualTransform"
-              layer: 80
+              layer: 90
             - id: "defaultBehindDialogue"
               resourceId: "defaultImage"
               transformId: "visualTransform"
@@ -150,6 +150,10 @@ in:
               resourceId: "behindDialogueImage"
               transformId: "visualTransform"
               layer: 50
+            - id: "behindChoice"
+              resourceId: "behindChoiceImage"
+              transformId: "visualTransform"
+              layer: 70
         dialogue:
           mode: "adv"
           ui:
@@ -191,6 +195,10 @@ in:
             height: 1080
           behindDialogueImage:
             fileId: "behind-dialogue.png"
+            width: 1920
+            height: 1080
+          behindChoiceImage:
+            fileId: "behind-choice.png"
             width: 1920
             height: 1080
         transforms:
@@ -317,6 +325,18 @@ out:
           scaleY: 1
         - id: "dialogue-box"
           type: "container"
+        - id: "visual-behindChoice"
+          type: "sprite"
+          src: "behind-choice.png"
+          width: 1920
+          height: 1080
+          x: 100
+          y: 200
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
         - id: "choice-box"
           type: "container"
         - id: "layout-storyLayout"

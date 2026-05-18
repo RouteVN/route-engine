@@ -8,7 +8,7 @@ import {
 } from "../src/renderLayers.js";
 
 describe("render layer constants", () => {
-  it("reserves choice above dialogue and keeps foreground visuals above choice", () => {
+  it("keeps choice between behind-choice and foreground visuals", () => {
     expect(RENDER_LAYER).toMatchObject({
       VISUAL_BEHIND_BACKGROUND: 10,
       BACKGROUND: 20,
@@ -16,11 +16,13 @@ describe("render layer constants", () => {
       CHARACTER: 40,
       VISUAL_BEHIND_DIALOGUE: 50,
       DIALOGUE: 60,
-      CHOICE: 70,
-      VISUAL_FOREGROUND: 80,
+      VISUAL_BEHIND_CHOICE: 70,
+      CHOICE: 80,
+      VISUAL_FOREGROUND: 90,
     });
-    expect(VISUAL_LAYER.FOREGROUND).toBe(80);
-    expect(VISUAL_LAYER_VALUES).toEqual([10, 30, 50, 80]);
+    expect(VISUAL_LAYER.BEHIND_CHOICE).toBe(70);
+    expect(VISUAL_LAYER.FOREGROUND).toBe(90);
+    expect(VISUAL_LAYER_VALUES).toEqual([10, 30, 50, 70, 90]);
     expect(DEFAULT_VISUAL_LAYER).toBe(50);
   });
 });
