@@ -7,7 +7,8 @@ description: |
   - layer 10 visuals render before the background layer
   - layer 30 visuals render between background and character
   - layer 50 visuals render between character and dialogue
-  - layer 80 visuals render above choice, dialogue, and normal story layouts
+  - layer 70 visuals render between dialogue and choice
+  - layer 90 visuals render above choice, dialogue, and normal story layouts
   - same-layer visuals preserve authored item order
 skipInitialScreenshot: true
 steps:
@@ -151,6 +152,15 @@ resources:
           width: 1280
           height: 90
           colorId: fg30
+    behindChoiceLayer:
+      elements:
+        - id: behind-choice-line
+          type: rect
+          x: 0
+          y: 920
+          width: 1920
+          height: 32
+          colorId: fg80
     storyLayout:
       elements:
         - id: layout-panel
@@ -262,7 +272,7 @@ story:
                     - id: foreground
                       resourceId: foregroundLayer
                       transformId: fullScreen
-                      layer: 80
+                      layer: 90
                     - id: behindDialogueOne
                       resourceId: behindDialogueLayerOne
                       transformId: fullScreen
@@ -278,6 +288,10 @@ story:
                       resourceId: behindDialogueLayerTwo
                       transformId: fullScreen
                       layer: 50
+                    - id: behindChoice
+                      resourceId: behindChoiceLayer
+                      transformId: fullScreen
+                      layer: 70
                 dialogue:
                   mode: adv
                   ui:
@@ -307,7 +321,7 @@ story:
                     - id: overlapForeground
                       resourceId: overlapForeground
                       transformId: fullScreen
-                      layer: 80
+                      layer: 90
                     - id: overlapBehindDialogueFirst
                       resourceId: overlapBehindDialogueFirst
                       transformId: fullScreen

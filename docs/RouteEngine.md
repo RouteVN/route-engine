@@ -698,10 +698,11 @@ behavior.
 | `40`        | `CHARACTER`                | Engine character layer   |
 | `50`        | `VISUAL_BEHIND_DIALOGUE`   | Before dialogue          |
 | `60`        | `DIALOGUE`                 | Engine dialogue/UI layer |
-| `70`        | `CHOICE`                   | Engine choice UI layer   |
-| `80`        | `VISUAL_FOREGROUND`        | Above choice/UI/layouts  |
+| `70`        | `VISUAL_BEHIND_CHOICE`     | Before choice            |
+| `80`        | `CHOICE`                   | Engine choice UI layer   |
+| `90`        | `VISUAL_FOREGROUND`        | Above choice/UI/layouts  |
 
-Visual items can use `10`, `30`, `50`, or `80`. Layer `80` is still below
+Visual items can use `10`, `30`, `50`, `70`, or `90`. Layer `90` is still below
 screen transitions, overlay stack entries, and confirm dialogs. JavaScript
 callers can use the exported `RENDER_LAYER`, `VISUAL_LAYER`, and
 `DEFAULT_VISUAL_LAYER` constants when generating project data.
@@ -794,7 +795,7 @@ visual:
     - id: vignette
       resourceId: vignette
       transformId: fullscreen
-      layer: 80
+      layer: 90
       opacity: 0.8
 ```
 

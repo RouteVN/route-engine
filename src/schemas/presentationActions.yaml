@@ -318,7 +318,8 @@ properties:
                 - 10
                 - 30
                 - 50
-                - 80
+                - 70
+                - 90
               description: Numeric render layer for the visual item. Defaults to 50. Same-layer items preserve array order.
             opacity:
               type: number
