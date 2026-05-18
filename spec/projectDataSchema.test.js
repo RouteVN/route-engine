@@ -307,6 +307,47 @@ describe("projectData schema", () => {
     expect(validatePresentationActions.errors).toBeNull();
   });
 
+  it("accepts character and visual item opacity and blur in presentation actions", () => {
+    expect(
+      validatePresentationActions({
+        character: {
+          items: [
+            {
+              id: "lead",
+              transformId: "center",
+              opacity: 0.72,
+              blur: {
+                x: 6,
+                y: 9,
+                quality: 3,
+                kernelSize: 9,
+                repeatEdgePixels: true,
+              },
+              sprites: [
+                {
+                  id: "body",
+                  resourceId: "leadBody",
+                },
+              ],
+            },
+          ],
+        },
+        visual: {
+          items: [
+            {
+              id: "fog",
+              resourceId: "fog",
+              transformId: "fullscreen",
+              opacity: 0.45,
+              blur: null,
+            },
+          ],
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+  });
+
   it("accepts predefined visual layers in presentation actions", () => {
     expect(
       validatePresentationActions({

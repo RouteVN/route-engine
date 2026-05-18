@@ -1,0 +1,83 @@
+---
+title: Visual Opacity Blur
+description: |
+  Visual item opacity and blur should affect the authored visual item, persist
+  when a later line omits visual, and clear from an appearance-only item update.
+
+  - the first screenshot should show the visual item faded and blurred
+  - the second screenshot should keep the same visual opacity and blur
+  - the third screenshot should show the visual clear and fully opaque
+skipInitialScreenshot: true
+steps:
+  - action: screenshot
+  - action: customEvent
+    name: vt:nextLine
+  - action: screenshot
+  - action: customEvent
+    name: vt:nextLine
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#FFFFFF"
+resources:
+  images:
+    bg-door:
+      fileId: lakjf3lka
+      width: 1920
+      height: 1080
+    bg-forest:
+      fileId: dmni32
+      width: 1920
+      height: 1080
+    visual-sprite:
+      fileId: char_sprite_2
+      width: 553
+      height: 865
+  transforms:
+    visual-center:
+      x: 960
+      y: 1080
+      anchorX: 0.5
+      anchorY: 1
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+story:
+  initialSceneId: visualScene
+  scenes:
+    visualScene:
+      name: Visual Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: visualOpacityBlur
+              actions:
+                background:
+                  resourceId: bg-door
+                visual:
+                  items:
+                    - id: glow
+                      resourceId: visual-sprite
+                      transformId: visual-center
+                      layer: 70
+                      opacity: 0.45
+                      blur:
+                        x: 6
+                        y: 9
+                        quality: 3
+                        kernelSize: 9
+                        repeatEdgePixels: true
+            - id: visualOpacityBlurPersists
+              actions:
+                background:
+                  resourceId: bg-forest
+            - id: visualOpacityBlurCleared
+              actions:
+                visual:
+                  items:
+                    - id: glow
+                      opacity: 1
+                      blur: null

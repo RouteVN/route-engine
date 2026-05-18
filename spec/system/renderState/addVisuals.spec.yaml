@@ -54,6 +54,146 @@ out:
   animations: []
   audio: []
 ---
+case: add visual sprite with opacity and blur to story container
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceId: "image1"
+            transformId: "transform1"
+            opacity: 0.45
+            blur:
+              x: 6
+              y: 9
+              quality: 3
+              kernelSize: 9
+              repeatEdgePixels: true
+    resources:
+      images:
+        image1:
+          fileId: "visual.png"
+      transforms:
+        transform1:
+          x: 100
+          y: 200
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 45
+          scaleX: 1.5
+          scaleY: 1.5
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-visual1"
+          type: "sprite"
+          src: "visual.png"
+          x: 100
+          y: 200
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 45
+          scaleX: 1.5
+          scaleY: 1.5
+          alpha: 0.45
+          blur:
+            x: 6
+            y: 9
+            quality: 3
+            kernelSize: 9
+            repeatEdgePixels: true
+  animations: []
+  audio: []
+---
+case: add animated visual sprite with opacity and blur to story container
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "visual1"
+            resourceId: "sheet1"
+            transformId: "transform1"
+            animationName: "idle"
+            opacity: 0.45
+            blur:
+              x: 6
+              y: 9
+    resources:
+      spritesheets:
+        sheet1:
+          fileId: "sheet.png"
+          width: 64
+          height: 64
+          jsonData:
+            frames: {}
+          animations:
+            idle:
+              frames:
+                - 0
+              animationSpeed: 0.5
+              loop: true
+      transforms:
+        transform1:
+          x: 100
+          y: 200
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 45
+          scaleX: 1.5
+          scaleY: 1.5
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-visual1"
+          type: "animated-sprite"
+          x: 100
+          y: 200
+          width: 64
+          height: 64
+          alpha: 0.45
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 45
+          scaleX: 1.5
+          scaleY: 1.5
+          spritesheetSrc: "sheet.png"
+          spritesheetData:
+            frames: {}
+          animation:
+            frames:
+              - 0
+            animationSpeed: 0.5
+            loop: true
+          blur:
+            x: 6
+            y: 9
+  animations: []
+  audio: []
+---
 case: missing transformId should throw clear error
 in:
   - elements:

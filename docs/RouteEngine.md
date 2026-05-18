@@ -660,8 +660,8 @@ Actions that can be attached to lines to control presentation:
 | `screen`     | `{ opacity?, blur?, animations? }`                                                                         | Set whole-screen appearance or transition. `opacity`/`blur` apply to the composed story frame     |
 | `background` | `{ resourceId?, colorId?, transformId?, opacity?, blur?, animations? }`                                    | Set background/CG. `opacity` maps to renderer alpha; `blur: null` clears background blur          |
 | `dialogue`   | `{ characterId?, character?, character.sprite?, persistCharacter?, content, append?, mode?, ui?, clear? }` | Display dialogue                                                                                  |
-| `character`  | `{ items }`                                                                                                | Display character sprites. Each item can have optional `x` and `y` to override transform position |
-| `visual`     | `{ items }`                                                                                                | Display visual elements. Each item can set `layer` to control story render order                  |
+| `character`  | `{ items }`                                                                                                | Display character sprites. Each item can set `x`, `y`, `opacity`, and `blur`                      |
+| `visual`     | `{ items }`                                                                                                | Display visual elements. Each item can set `layer`, `opacity`, and `blur`                         |
 | `bgm`        | `{ resourceId, volume?, loop?, startDelayMs? }`                                                            | Play background music                                                                             |
 | `sfx`        | `{ items }`                                                                                                | Play sound effects. Each item can include `volume`, `loop`, and `startDelayMs`                    |
 | `voice`      | `{ resourceId, volume?, loop?, startDelayMs? }`                                                            | Play voice audio from `resources.voices[currentSceneId][resourceId]`                              |
@@ -704,6 +704,55 @@ Visual items can use `10`, `30`, `50`, or `70`. Layer `70` is still below
 screen transitions, overlay stack entries, and confirm dialogs. JavaScript
 callers can use the exported `RENDER_LAYER`, `VISUAL_LAYER`, and
 `DEFAULT_VISUAL_LAYER` constants when generating project data.
+
+### Item Appearance
+
+Character and visual items can set static `opacity` and `blur`. `opacity` maps
+to renderer alpha and accepts values from `0` to `1`. `blur` uses the same
+shape as `background.blur` and `screen.blur`; `blur: null` clears the item blur.
+
+Character item appearance applies to the whole character container, so every
+sprite part is faded or blurred together. Visual item appearance applies to the
+single visual item container, sprite, video, animated sprite, or layout.
+
+```yaml
+character:
+  items:
+    - id: lead
+      transformId: characterCenter
+      opacity: 0.72
+      blur:
+        x: 6
+        y: 9
+        quality: 3
+        kernelSize: 9
+        repeatEdgePixels: true
+      sprites:
+        - id: body
+          resourceId: leadBody
+        - id: face
+          resourceId: leadSmile
+
+visual:
+  items:
+    - id: fog
+      resourceId: fog
+      transformId: fullscreen
+      layer: 30
+      opacity: 0.45
+      blur:
+        x: 6
+        y: 9
+        quality: 3
+        kernelSize: 9
+        repeatEdgePixels: true
+
+    - id: vignette
+      resourceId: vignette
+      transformId: fullscreen
+      layer: 70
+      opacity: 0.8
+```
 
 ### Forms
 
