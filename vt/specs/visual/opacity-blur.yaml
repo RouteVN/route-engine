@@ -62,7 +62,7 @@ story:
                     - id: glow
                       resourceId: visual-sprite
                       transformId: visual-center
-                      layer: 70
+                      layer: 80
                       opacity: 0.45
                       blur:
                         x: 6
