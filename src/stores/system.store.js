@@ -3420,6 +3420,22 @@ const createSubmittedFormContext = (activeForm, values) => ({
   fieldList: cloneStateValue(activeForm.fieldList),
 });
 
+const completeCurrentLineForSubmittedForm = (state) => {
+  if (state.global.isLineCompleted) {
+    return;
+  }
+
+  state.global.isLineCompleted = true;
+  delete state.global.pendingScreenTransition;
+
+  const pointer = selectCurrentPointer({ state })?.pointer;
+  const sectionId = pointer?.sectionId;
+  const lineId = pointer?.lineId;
+  if (sectionId && lineId) {
+    recordViewedLine(state, { sectionId, lineId });
+  }
+};
+
 export const updateFormField = ({ state }, payload = {}) => {
   const activeForm = getActiveFormForPayload(state, payload);
   const fieldId = payload.field;
@@ -3546,6 +3562,7 @@ export const submitForm = ({ state }, payload = {}) => {
   queueScopedDataPersistence(state, globalUpdates);
 
   const formContext = createSubmittedFormContext(activeForm, storedValues);
+  completeCurrentLineForSubmittedForm(state);
   delete state.global.formDrafts[activeForm.key];
   state.global.pendingEffects.push({
     name: "render",
