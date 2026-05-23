@@ -434,8 +434,6 @@ properties:
     type: object
     description: Update a transient active form field draft
     properties:
-      formId:
-        type: string
       formKey:
         type: string
       field:
@@ -449,8 +447,6 @@ properties:
     type: object
     description: Submit the active form and run actions after a valid commit
     properties:
-      formId:
-        type: string
       formKey:
         type: string
       actions:
@@ -462,8 +458,6 @@ properties:
     type: object
     description: Cancel the active form and run follow-up actions
     properties:
-      formId:
-        type: string
       formKey:
         type: string
       actions:

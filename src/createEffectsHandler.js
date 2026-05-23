@@ -382,6 +382,12 @@ const createEffectsHandler = ({
     return true;
   };
 
+  const formInteractionActionTypes = new Set([
+    "updateFormField",
+    "submitForm",
+    "cancelForm",
+  ]);
+
   const getActiveInteraction = (engine) => {
     if (typeof engine?.selectActiveInteraction === "function") {
       return engine.selectActiveInteraction();
@@ -399,6 +405,12 @@ const createEffectsHandler = ({
     return null;
   };
 
+  const getFormInteractionKey = (value) => value?._formKey ?? value?.formKey;
+
+  const hasMatchingFormKey = (value, activeInteraction) => {
+    return getFormInteractionKey(value) === activeInteraction?.formKey;
+  };
+
   const matchesInteraction = (value, activeInteraction) => {
     if (!value || typeof value !== "object" || Array.isArray(value)) {
       return false;
@@ -408,31 +420,48 @@ const createEffectsHandler = ({
       return false;
     }
 
-    if (
-      activeInteraction.source === "form" &&
-      value._formKey &&
-      value._formKey !== activeInteraction.formKey
-    ) {
-      return false;
-    }
-
-    if (
-      activeInteraction.source === "form" &&
-      value.formKey &&
-      value.formKey !== activeInteraction.formKey
-    ) {
-      return false;
+    if (activeInteraction.source === "form") {
+      return hasMatchingFormKey(value, activeInteraction);
     }
 
     return true;
   };
 
+  const matchesFormAction = (value, activeInteraction) => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      return false;
+    }
+
+    if (activeInteraction?.source !== "form") {
+      return false;
+    }
+
+    return hasMatchingFormKey(value, activeInteraction);
+  };
+
   const isInteractionPayload = (payload = {}, activeInteraction) => {
+    const actions = payload?.actions;
+
+    if (activeInteraction?.source === "form") {
+      if (matchesInteraction(payload, activeInteraction)) {
+        return true;
+      }
+
+      if (!actions || typeof actions !== "object" || Array.isArray(actions)) {
+        return false;
+      }
+
+      return Object.entries(actions).some(
+        ([actionType, actionPayload]) =>
+          formInteractionActionTypes.has(actionType) &&
+          matchesFormAction(actionPayload, activeInteraction),
+      );
+    }
+
     if (matchesInteraction(payload, activeInteraction)) {
       return true;
     }
 
-    const actions = payload?.actions;
     if (!actions || typeof actions !== "object" || Array.isArray(actions)) {
       return false;
     }

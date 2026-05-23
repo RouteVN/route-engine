@@ -885,14 +885,12 @@ const buildFormTemplateData = ({ state, form, pointer }) => {
     values,
     submitActions: {
       submitForm: {
-        formId,
         formKey,
         actions: cloneStateValue(form.submitActions ?? {}),
       },
     },
     cancelActions: {
       cancelForm: {
-        formId,
         formKey,
         actions: cloneStateValue(form.cancelActions ?? {}),
       },
