@@ -1542,7 +1542,7 @@ const FORM_EVENT_KEYS = new Set([
 
 const FORM_ROLE_SUBMIT = "submit";
 
-const mergeEventActions = (eventConfig, actions) => {
+const mergeEventActions = (eventConfig, actions, options = {}) => {
   const payload =
     eventConfig?.payload &&
     typeof eventConfig.payload === "object" &&
@@ -1553,31 +1553,44 @@ const mergeEventActions = (eventConfig, actions) => {
     payload.actions && typeof payload.actions === "object"
       ? payload.actions
       : {};
+  const nextActions =
+    options.replaceActions === true
+      ? actions
+      : {
+          ...existingActions,
+          ...actions,
+        };
 
   return {
     ...(eventConfig || {}),
     payload: {
       ...payload,
-      actions: {
-        ...existingActions,
-        ...actions,
-      },
+      actions: nextActions,
     },
   };
 };
 
-const enrichFormElements = (node, form) => {
+const enrichFormElements = (node, form, options = {}) => {
   if (Array.isArray(node)) {
-    return node.map((item) => enrichFormElements(item, form));
+    return node.map((item) => enrichFormElements(item, form, options));
   }
 
   if (!node || typeof node !== "object") {
     return node;
   }
 
+  const isElementNode = typeof node.type === "string";
+  const isSubmitRole = isElementNode && node.formRole === FORM_ROLE_SUBMIT;
+  const inheritsSubmitRole = isElementNode && options.submitRoleAncestor;
+  const childOptions =
+    isSubmitRole || inheritsSubmitRole ? { submitRoleAncestor: true } : {};
   const enrichedNode = {};
   for (const [key, value] of Object.entries(node)) {
-    enrichedNode[key] = enrichFormElements(value, form);
+    enrichedNode[key] = enrichFormElements(
+      value,
+      form,
+      key === "children" ? childOptions : {},
+    );
   }
 
   let formNode = enrichedNode;
@@ -1614,10 +1627,12 @@ const enrichFormElements = (node, form) => {
     }
   }
 
-  if (formNode.formRole === FORM_ROLE_SUBMIT) {
+  if (formNode.formRole === FORM_ROLE_SUBMIT || inheritsSubmitRole) {
     return {
       ...formNode,
-      click: mergeEventActions(formNode.click, form.submitActions),
+      click: mergeEventActions(formNode.click, form.submitActions, {
+        replaceActions: true,
+      }),
     };
   }
 

@@ -30,12 +30,29 @@ const createProjectData = () => ({
           },
           {
             id: "submit-button",
-            type: "rect",
+            type: "container",
             formRole: "submit",
             x: 100,
             y: 230,
             width: 120,
             height: 48,
+            children: [
+              {
+                id: "submit-label",
+                type: "rect",
+                x: 0,
+                y: 0,
+                width: 120,
+                height: 48,
+                click: {
+                  payload: {
+                    actions: {
+                      nextLine: {},
+                    },
+                  },
+                },
+              },
+            ],
           },
         ],
       },
@@ -116,7 +133,7 @@ const createProjectData = () => ({
   },
 });
 
-const createEngine = () => {
+const createEngine = ({ markLineCompleted = true } = {}) => {
   const engine = createRouteEngine({
     handlePendingEffects: () => {},
   });
@@ -126,7 +143,10 @@ const createEngine = () => {
       projectData: createProjectData(),
     },
   });
-  engine.handleAction("markLineCompleted", {});
+
+  if (markLineCompleted) {
+    engine.handleAction("markLineCompleted", {});
+  }
 
   return engine;
 };
@@ -206,6 +226,81 @@ describe("RouteEngine forms", () => {
     });
     expect(submitButton.click.payload.actions.submitForm).not.toHaveProperty(
       "formId",
+    );
+    expect(Object.keys(submitButton.click.payload.actions)).toEqual([
+      "submitForm",
+    ]);
+  });
+
+  it("submits when clicking a child inside a submit-role container", () => {
+    const engine = createEngine({ markLineCompleted: false });
+    let renderState = engine.selectRenderState();
+    const nameInput = findElement(renderState.elements, "name-input");
+    const emailInput = findElement(renderState.elements, "email-input");
+    let submitLabel = findElement(renderState.elements, "submit-label");
+
+    expect(submitLabel.click.payload).toMatchObject({
+      _interactionSource: "form",
+      actions: {
+        submitForm: {
+          formKey: "section1:line1:profile-contact-form",
+          actions: {
+            nextLine: {},
+          },
+        },
+      },
+    });
+
+    expect(Object.keys(submitLabel.click.payload.actions)).toEqual([
+      "submitForm",
+    ]);
+
+    engine.handleActions(nameInput.change.payload.actions, {
+      _event: {
+        value: "Ada",
+      },
+    });
+    engine.handleActions(emailInput.change.payload.actions, {
+      _event: {
+        value: "ada@example.com",
+      },
+    });
+
+    renderState = engine.selectRenderState();
+    submitLabel = findElement(renderState.elements, "submit-label");
+    engine.handleActions(submitLabel.click.payload.actions);
+
+    expect(engine.selectSystemState().contexts[0].pointers.read.lineId).toBe(
+      "line2",
+    );
+  });
+
+  it("valid form submit advances even before the form line is marked completed", () => {
+    const engine = createEngine({ markLineCompleted: false });
+    let renderState = engine.selectRenderState();
+    const nameInput = findElement(renderState.elements, "name-input");
+    const emailInput = findElement(renderState.elements, "email-input");
+    let submitButton = findElement(renderState.elements, "submit-button");
+
+    expect(engine.selectSystemState().global.isLineCompleted).toBe(false);
+
+    engine.handleActions(nameInput.change.payload.actions, {
+      _event: {
+        value: "Ada",
+      },
+    });
+    engine.handleActions(emailInput.change.payload.actions, {
+      _event: {
+        value: "ada@example.com",
+      },
+    });
+
+    renderState = engine.selectRenderState();
+    submitButton = findElement(renderState.elements, "submit-button");
+    engine.handleActions(submitButton.click.payload.actions);
+
+    expect(engine.selectSystemState().contexts[0].pointers.read.lineId).toBe(
+      "line2",
     );
   });
 
