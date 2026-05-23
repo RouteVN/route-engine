@@ -1540,6 +1540,8 @@ const FORM_EVENT_KEYS = new Set([
   "compositionEnd",
 ]);
 
+const FORM_ROLE_SUBMIT = "submit";
+
 const mergeEventActions = (eventConfig, actions) => {
   const payload =
     eventConfig?.payload &&
@@ -1564,9 +1566,9 @@ const mergeEventActions = (eventConfig, actions) => {
   };
 };
 
-const enrichFormInputs = (node, form) => {
+const enrichFormElements = (node, form) => {
   if (Array.isArray(node)) {
-    return node.map((item) => enrichFormInputs(item, form));
+    return node.map((item) => enrichFormElements(item, form));
   }
 
   if (!node || typeof node !== "object") {
@@ -1575,45 +1577,51 @@ const enrichFormInputs = (node, form) => {
 
   const enrichedNode = {};
   for (const [key, value] of Object.entries(node)) {
-    enrichedNode[key] = enrichFormInputs(value, form);
+    enrichedNode[key] = enrichFormElements(value, form);
   }
 
-  if (enrichedNode.type !== "input" || typeof enrichedNode.field !== "string") {
-    return enrichedNode;
+  let formNode = enrichedNode;
+
+  if (formNode.type === "input" && typeof formNode.field === "string") {
+    const field = form?.fields?.[formNode.field];
+
+    if (field) {
+      const updateFormField = {
+        updateFormField: {
+          formKey: form.key,
+          field: field.id,
+          value: "_event.value",
+        },
+      };
+
+      formNode = {
+        ...formNode,
+        value: field.value,
+        placeholder:
+          formNode.placeholder === undefined
+            ? field.placeholder
+            : formNode.placeholder,
+        multiline:
+          formNode.multiline === undefined
+            ? field.multiline
+            : formNode.multiline,
+        ...(formNode.maxLength === undefined && field.maxLength !== undefined
+          ? { maxLength: field.maxLength }
+          : {}),
+        change: mergeEventActions(formNode.change, updateFormField),
+        submit: mergeEventActions(formNode.submit, form.submitActions),
+      };
+    }
   }
 
-  const field = form?.fields?.[enrichedNode.field];
-  if (!field) {
-    return enrichedNode;
+  if (formNode.formRole === FORM_ROLE_SUBMIT) {
+    return {
+      ...formNode,
+      click: mergeEventActions(formNode.click, form.submitActions),
+    };
   }
 
-  const updateFormField = {
-    updateFormField: {
-      formId: form.id,
-      formKey: form.key,
-      field: field.id,
-      value: "_event.value",
-      _interactionSource: "form",
-    },
-  };
-
-  return {
-    ...enrichedNode,
-    value: field.value,
-    placeholder:
-      enrichedNode.placeholder === undefined
-        ? field.placeholder
-        : enrichedNode.placeholder,
-    multiline:
-      enrichedNode.multiline === undefined
-        ? field.multiline
-        : enrichedNode.multiline,
-    ...(enrichedNode.maxLength === undefined && field.maxLength !== undefined
-      ? { maxLength: field.maxLength }
-      : {}),
-    change: mergeEventActions(enrichedNode.change, updateFormField),
-    submit: mergeEventActions(enrichedNode.submit, form.submitActions),
-  };
+  return formNode;
 };
 
 const tagFormInteractionSource = (node, form) => {
@@ -1641,8 +1649,6 @@ const tagFormInteractionSource = (node, form) => {
       payload: {
         ...payload,
         _interactionSource: "form",
-        _formId: form.id,
-        _formKey: form.key,
       },
     };
   }
@@ -2987,7 +2993,7 @@ export const addForm = (
   });
   const formElements = tagFormInteractionSource(
     resolveLayoutResourceIds(
-      settleTextRevealIfCompleted(enrichFormInputs(processedForm, form), {
+      settleTextRevealIfCompleted(enrichFormElements(processedForm, form), {
         isLineCompleted,
         skipMode,
         skipTransitionsAndAnimations,

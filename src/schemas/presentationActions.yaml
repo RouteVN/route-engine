@@ -372,10 +372,10 @@ properties:
     properties:
       id:
         type: string
-        description: Optional stable form ID. Defaults to resourceId.
+        description: Stable generated form ID. Defaults to resourceId for compatibility.
       resourceId:
         type: string
-        description: ID of the form layout UI element
+        description: ID of the form layout resource to render
       fields:
         type: object
         description: Form fields keyed by layout field ID

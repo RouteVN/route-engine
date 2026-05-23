@@ -344,7 +344,6 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
 
     await eventHandler("change", {
       _interactionSource: "form",
-      _formKey: "section1:line1:profileForm",
       actions: {
         updateFormField: {
           formKey: "section1:line1:profileForm",
@@ -374,6 +373,22 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
         interactionSource: "form",
       },
     );
+
+    engine.handleActions.mockClear();
+
+    await eventHandler("click", {
+      _interactionSource: "form",
+      actions: {
+        submitForm: {
+          formKey: "section1:line9:profileForm",
+          actions: {
+            nextLine: {},
+          },
+        },
+      },
+    });
+
+    expect(engine.handleActions).not.toHaveBeenCalled();
   });
 
   it("coalesces replaceable effects by name and keeps the last payload", () => {

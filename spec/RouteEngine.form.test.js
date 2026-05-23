@@ -31,28 +31,11 @@ const createProjectData = () => ({
           {
             id: "submit-button",
             type: "rect",
+            formRole: "submit",
             x: 100,
             y: 230,
             width: 120,
             height: 48,
-            click: {
-              payload: {
-                actions: "${form.submitActions}",
-              },
-            },
-          },
-          {
-            id: "cancel-button",
-            type: "rect",
-            x: 240,
-            y: 230,
-            width: 120,
-            height: 48,
-            click: {
-              payload: {
-                actions: "${form.cancelActions}",
-              },
-            },
           },
         ],
       },
@@ -95,6 +78,7 @@ const createProjectData = () => ({
                 id: "line1",
                 actions: {
                   form: {
+                    id: "profile-contact-form",
                     resourceId: "profileForm",
                     fields: {
                       name: {
@@ -112,9 +96,6 @@ const createProjectData = () => ({
                     },
                     submitActions: {
                       nextLine: {},
-                    },
-                    cancelActions: {
-                      rollbackByOffset: {},
                     },
                   },
                 },
@@ -171,13 +152,11 @@ const findElement = (node, id) => {
 };
 
 describe("RouteEngine forms", () => {
-  it("renders form inputs with field drafts and prepared submit/cancel actions", () => {
+  it("renders form inputs with field drafts and formRole submit actions", () => {
     const engine = createEngine();
     const renderState = engine.selectRenderState();
     const nameInput = findElement(renderState.elements, "name-input");
     const submitButton = findElement(renderState.elements, "submit-button");
-    const cancelButton = findElement(renderState.elements, "cancel-button");
-
     expect(nameInput).toMatchObject({
       type: "input",
       value: "",
@@ -189,7 +168,6 @@ describe("RouteEngine forms", () => {
             updateFormField: {
               field: "name",
               value: "_event.value",
-              _interactionSource: "form",
             },
           },
         },
@@ -199,37 +177,36 @@ describe("RouteEngine forms", () => {
           _interactionSource: "form",
           actions: {
             submitForm: {
-              formId: "profileForm",
+              formKey: "section1:line1:profile-contact-form",
             },
           },
         },
       },
     });
-    expect(nameInput.change.payload._formKey).toBe(
-      "section1:line1:profileForm",
+    expect(nameInput.change.payload).not.toHaveProperty("_formId");
+    expect(nameInput.change.payload).not.toHaveProperty("_formKey");
+    expect(nameInput.change.payload.actions.updateFormField.formKey).toBe(
+      "section1:line1:profile-contact-form",
     );
+    expect(nameInput.change.payload.actions.updateFormField).not.toHaveProperty(
+      "formId",
+    );
+    expect(submitButton.click.payload).not.toHaveProperty("_formId");
+    expect(submitButton.click.payload).not.toHaveProperty("_formKey");
     expect(submitButton.click.payload).toMatchObject({
       _interactionSource: "form",
-      _formKey: "section1:line1:profileForm",
       actions: {
         submitForm: {
-          formId: "profileForm",
-          formKey: "section1:line1:profileForm",
+          formKey: "section1:line1:profile-contact-form",
           actions: {
             nextLine: {},
           },
         },
       },
     });
-    expect(cancelButton.click.payload.actions).toEqual({
-      cancelForm: {
-        formId: "profileForm",
-        formKey: "section1:line1:profileForm",
-        actions: {
-          rollbackByOffset: {},
-        },
-      },
-    });
+    expect(submitButton.click.payload.actions.submitForm).not.toHaveProperty(
+      "formId",
+    );
   });
 
   it("keeps edits transient until a valid multi-field submit commits variables and runs actions", () => {
@@ -260,8 +237,9 @@ describe("RouteEngine forms", () => {
     expect(nameInput.value).toBe(" Ada ");
     expect(emailInput.value).toBe("");
     expect(
-      engine.selectSystemState().global.formDrafts["section1:line1:profileForm"]
-        .errors.email,
+      engine.selectSystemState().global.formDrafts[
+        "section1:line1:profile-contact-form"
+      ].errors.email,
     ).toBe("required");
 
     engine.handleActions(emailInput.change.payload.actions, {
