@@ -119,6 +119,22 @@ In practice:
 - the selection stops when the background changes or a later background action
   replaces the animation selection
 
+### Playback speed
+
+Any action-level animation selection may set:
+
+```yaml
+animations:
+  resourceId: bg-dissolve
+  playback:
+    speed: 2
+```
+
+`speed` is a unitless multiplier. `1` is authored speed, `2` is twice as fast,
+and `0.5` is half speed. Keyframe `duration` values stay authored in
+milliseconds; playback speed scales elapsed time at runtime and scales
+persistent animation expiry by the same multiplier.
+
 ### Same-subject transitions
 
 Because the comparison is done against resolved previous and next presentation

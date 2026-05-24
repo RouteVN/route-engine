@@ -141,8 +141,14 @@ const createAnimationInstance = ({
   delete normalized.playback;
   normalized.id = id;
   normalized.targetId = targetId;
-  if (playback) {
-    normalized.playback = structuredClone(playback);
+  if (playback !== undefined) {
+    const normalizedPlayback = normalizeAnimationPlayback(
+      playback,
+      `${animationPath}.playback`,
+    );
+    if (normalizedPlayback !== undefined) {
+      normalized.playback = normalizedPlayback;
+    }
   }
   return normalized;
 };
@@ -196,6 +202,59 @@ const resolveAnimationPlayback = (animationDef) => {
   return animationDef.playback;
 };
 
+const normalizeAnimationPlayback = (
+  playback,
+  animationPath = "animation.playback",
+) => {
+  if (playback === undefined) {
+    return undefined;
+  }
+
+  if (!playback || typeof playback !== "object" || Array.isArray(playback)) {
+    throw new Error(`[${animationPath}] playback must be an object.`);
+  }
+
+  if (
+    playback.continuity !== undefined &&
+    playback.continuity !== "render" &&
+    playback.continuity !== "persistent"
+  ) {
+    throw new Error(
+      `[${animationPath}] playback.continuity must be "render" or "persistent".`,
+    );
+  }
+
+  if (
+    playback.speed !== undefined &&
+    (typeof playback.speed !== "number" ||
+      !Number.isFinite(playback.speed) ||
+      playback.speed <= 0)
+  ) {
+    throw new Error(
+      `[${animationPath}] playback.speed must be a finite number greater than 0.`,
+    );
+  }
+
+  const normalized = {};
+
+  if (playback.continuity !== undefined) {
+    normalized.continuity = playback.continuity;
+  }
+
+  if (playback.speed !== undefined && playback.speed !== 1) {
+    normalized.speed = playback.speed;
+  }
+
+  return Object.keys(normalized).length > 0 ? normalized : undefined;
+};
+
+const getAnimationPlaybackSpeed = (animationInstance) => {
+  const speed = animationInstance?.playback?.speed;
+  return typeof speed === "number" && Number.isFinite(speed) && speed > 0
+    ? speed
+    : 1;
+};
+
 const hasOwnProperty = (value, key) =>
   Object.prototype.hasOwnProperty.call(value, key);
 
@@ -229,7 +288,15 @@ export const getPersistentAnimationContinuationKey = (animationInstance) => {
   }
 
   const normalized = structuredClone(animationInstance);
-  delete normalized.playback;
+  if (normalized.playback) {
+    delete normalized.playback.continuity;
+    if (normalized.playback.speed === 1) {
+      delete normalized.playback.speed;
+    }
+    if (Object.keys(normalized.playback).length === 0) {
+      delete normalized.playback;
+    }
+  }
   return JSON.stringify(sortObjectKeysDeep(normalized));
 };
 
@@ -274,12 +341,13 @@ export const getAnimationInstanceDurationMs = (animationInstance) => {
     return 0;
   }
 
-  return Math.max(
+  const authoredDurationMs = Math.max(
     getTweenDurationMs(animationInstance.tween),
     getTweenDurationMs(animationInstance.prev?.tween),
     getTweenDurationMs(animationInstance.next?.tween),
     getTweenPropertyDurationMs(animationInstance.mask?.progress),
   );
+  return authoredDurationMs / getAnimationPlaybackSpeed(animationInstance);
 };
 
 const hasPersistentAnimationContinuation = ({

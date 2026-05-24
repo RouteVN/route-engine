@@ -529,12 +529,62 @@ describe("projectData schema", () => {
             resourceId: "fadeIn",
             playback: {
               continuity: "persistent",
+              speed: 2,
             },
           },
         },
       }),
     ).toBe(true);
     expect(validatePresentationActions.errors).toBeNull();
+  });
+
+  it("accepts animation playback speed without explicit continuity", () => {
+    expect(
+      validatePresentationActions({
+        character: {
+          items: [
+            {
+              id: "hero",
+              animations: {
+                resourceId: "slide",
+                playback: {
+                  speed: 0.5,
+                },
+              },
+            },
+          ],
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+  });
+
+  it("rejects invalid animation playback speed in presentation actions", () => {
+    expect(
+      validatePresentationActions({
+        visual: {
+          items: [
+            {
+              id: "burst",
+              animations: {
+                resourceId: "pulse",
+                playback: {
+                  speed: 0,
+                },
+              },
+            },
+          ],
+        },
+      }),
+    ).toBe(false);
+    expect(validatePresentationActions.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          instancePath: "/visual/items/0/animations/playback/speed",
+          keyword: "exclusiveMinimum",
+        }),
+      ]),
+    );
   });
 
   it("accepts whole-screen animation selections in presentation actions", () => {

@@ -10,8 +10,12 @@ definitions:
       continuity:
         type: string
         enum: [render, persistent]
+        default: render
         description: Whether animation continuity is render-scoped or persists across later renders while the action remains active
-    required: [continuity]
+      speed:
+        type: number
+        exclusiveMinimum: 0
+        description: Playback speed multiplier. 1 is authored speed, 2 is twice as fast, 0.5 is half speed.
     additionalProperties: false
 
   animationRef:
