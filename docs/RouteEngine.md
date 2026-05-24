@@ -733,6 +733,38 @@ placement, computed as `x = screen.width / 2` and `y = screen.height / 2`, with
 Layout backgrounds use top-left defaults when a background transform is
 authored.
 
+Background transforms support three authoring modes:
+
+| Mode                              | Behavior                                                               |
+| --------------------------------- | ---------------------------------------------------------------------- |
+| `transformId` only                | Use the complete transform resource                                    |
+| `transformId` plus inline fields  | Start from the transform resource, then override the provided fields   |
+| inline fields without transformId | Apply the provided fields over the background type's default transform |
+
+```yaml
+background:
+  resourceId: bg_school
+  transformId: fullscreen
+
+background:
+  resourceId: bg_school
+  transformId: fullscreen
+  scaleX: 1.1
+  scaleY: 1.1
+
+background:
+  resourceId: bg_school
+  x: 960
+  y: 540
+  anchorX: 0.5
+  anchorY: 0.5
+  rotation: 0
+  scaleX: 1
+  scaleY: 1
+  originX: 960
+  originY: 540
+```
+
 ```yaml
 character:
   items:
