@@ -5,7 +5,7 @@ specs:
   - background nextLine clicks are blocked while the form is visible
   - empty submit keeps the form visible and shows required errors
   - filled inputs stay visible before submit
-  - filling both inputs and clicking submit commits variables and advances
+  - filling both inputs and clicking submit child commits variables and advances
 skipInitialScreenshot: true
 viewport:
   id: capture
@@ -138,21 +138,30 @@ resources:
           content: "Code is required"
           textStyleId: errorText
         - id: submit-button
-          type: rect
+          type: container
+          formRole: submit
           x: 650
           y: 420
           width: 190
           height: 58
-          colorId: submitColor
-          click:
-            payload:
-              actions: ${form.submitActions}
-        - id: submit-label
-          type: text
-          x: 706
-          y: 436
-          content: "Submit"
-          textStyleId: buttonText
+          children:
+            - id: submit-hit
+              type: rect
+              x: 0
+              y: 0
+              width: 190
+              height: 58
+              colorId: submitColor
+              click:
+                payload:
+                  actions:
+                    nextLine: {}
+            - id: submit-label
+              type: text
+              x: 56
+              y: 16
+              content: "Submit"
+              textStyleId: buttonText
     resultLayout:
       elements:
         - id: result-title
