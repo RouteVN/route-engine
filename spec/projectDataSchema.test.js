@@ -191,12 +191,30 @@ describe("projectData schema", () => {
     );
   });
 
-  it("accepts background transformId in presentation actions", () => {
+  it("accepts background transformId and inline transform fields in presentation actions", () => {
     expect(
       validatePresentationActions({
         background: {
           resourceId: "bg1",
           transformId: "centerStage",
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+
+    expect(
+      validatePresentationActions({
+        background: {
+          resourceId: "bg1",
+          x: 100,
+          y: 120,
+          anchorX: 0,
+          anchorY: 1,
+          scaleX: 1.2,
+          scaleY: 0.8,
+          rotation: -8,
+          originX: 64,
+          originY: 128,
         },
       }),
     ).toBe(true);

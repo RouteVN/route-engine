@@ -1330,6 +1330,22 @@ const toBackgroundResourceChangeData = (background) => {
     data.transformId = background.transformId;
   }
 
+  for (const field of [
+    "x",
+    "y",
+    "anchorX",
+    "anchorY",
+    "scaleX",
+    "scaleY",
+    "rotation",
+    "originX",
+    "originY",
+  ]) {
+    if (background[field] !== undefined) {
+      data[field] = background[field];
+    }
+  }
+
   if (background.loop !== undefined) {
     data.loop = background.loop;
   }

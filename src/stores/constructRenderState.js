@@ -618,6 +618,23 @@ const getBackgroundTransform = (resources, background = {}) => {
   return transform;
 };
 
+const BACKGROUND_TRANSFORM_FIELDS = [
+  "x",
+  "y",
+  "anchorX",
+  "anchorY",
+  "scaleX",
+  "scaleY",
+  "rotation",
+  "originX",
+  "originY",
+];
+
+const hasBackgroundTransformOverrides = (background = {}) =>
+  BACKGROUND_TRANSFORM_FIELDS.some((field) =>
+    hasOwnProperty(background, field),
+  );
+
 const resolveBackgroundKind = (resources = {}, resourceId) => {
   if (!resourceId) {
     return undefined;
@@ -2128,6 +2145,9 @@ export const addBackgroundOrCg = (
       resources,
       presentationState.background,
     );
+    const hasAuthoredBackgroundTransform =
+      authoredBackgroundTransform ||
+      hasBackgroundTransformOverrides(presentationState.background);
 
     const previousBackgroundResourceId =
       previousPresentationState?.background?.resourceId;
@@ -2193,7 +2213,10 @@ export const addBackgroundOrCg = (
           ...getBackgroundAppearance(presentationState.background, {
             includeDefaultAlpha: true,
           }),
-          ...getElementTransform(backgroundTransform),
+          ...getElementTransform(
+            backgroundTransform,
+            presentationState.background,
+          ),
         };
 
         if (isVideo) {
@@ -2218,19 +2241,22 @@ export const addBackgroundOrCg = (
           children: layout.elements,
           ...getBackgroundAppearance(presentationState.background),
         };
-        if (authoredBackgroundTransform) {
+        if (hasAuthoredBackgroundTransform) {
           Object.assign(
             bgContainer,
-            getElementTransform({
-              x: 0,
-              y: 0,
-              anchorX: 0,
-              anchorY: 0,
-              rotation: 0,
-              scaleX: 1,
-              scaleY: 1,
-              ...authoredBackgroundTransform,
-            }),
+            getElementTransform(
+              {
+                x: 0,
+                y: 0,
+                anchorX: 0,
+                anchorY: 0,
+                rotation: 0,
+                scaleX: 1,
+                scaleY: 1,
+                ...authoredBackgroundTransform,
+              },
+              presentationState.background,
+            ),
           );
         }
         const processedContainer = parseAndRender(

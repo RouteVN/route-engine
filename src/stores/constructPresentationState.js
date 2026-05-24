@@ -55,8 +55,46 @@ const ITEM_TRANSFORM_FIELDS = [
   "originY",
 ];
 
+const BACKGROUND_TRANSFORM_FIELDS = [
+  "x",
+  "y",
+  "anchorX",
+  "anchorY",
+  "scaleX",
+  "scaleY",
+  "rotation",
+  "originX",
+  "originY",
+];
+
 const hasItemTransform = (item) =>
   ITEM_TRANSFORM_FIELDS.some((field) => hasDefinedProperty(item, field));
+
+const hasBackgroundTransform = (background) =>
+  BACKGROUND_TRANSFORM_FIELDS.some((field) =>
+    hasDefinedProperty(background, field),
+  );
+
+const applyPersistentBackgroundTransform = (background, previousBackground) => {
+  if (!previousBackground) {
+    return background;
+  }
+
+  for (const field of BACKGROUND_TRANSFORM_FIELDS) {
+    if (
+      !hasDefinedProperty(background, field) &&
+      hasDefinedProperty(previousBackground, field)
+    ) {
+      background[field] = previousBackground[field];
+    }
+
+    if (hasOwnProperty(background, field) && background[field] === undefined) {
+      delete background[field];
+    }
+  }
+
+  return background;
+};
 
 const findPreviousItem = (previousItems, item, index) => {
   const previousAtIndex = previousItems[index];
@@ -309,6 +347,11 @@ export const background = (state, presentation) => {
     const hasColorId = hasDefinedProperty(presentation.background, "colorId");
     const hasOpacity = hasDefinedProperty(presentation.background, "opacity");
     const hasBlur = hasDefinedProperty(presentation.background, "blur");
+    const hasTransformId = hasDefinedProperty(
+      presentation.background,
+      "transformId",
+    );
+    const hasTransform = hasBackgroundTransform(presentation.background);
 
     const { animationsOnly, state: animState } = getAnimationsOnlyState(
       presentation.background,
@@ -316,7 +359,9 @@ export const background = (state, presentation) => {
         hasDefinedProperty(p, "resourceId") ||
         hasDefinedProperty(p, "colorId") ||
         hasDefinedProperty(p, "opacity") ||
-        hasDefinedProperty(p, "blur"),
+        hasDefinedProperty(p, "blur") ||
+        hasDefinedProperty(p, "transformId") ||
+        hasBackgroundTransform(p),
     );
 
     if (animationsOnly) {
@@ -329,7 +374,14 @@ export const background = (state, presentation) => {
       return;
     }
 
-    if (!hasResourceId && !hasColorId && !hasOpacity && !hasBlur) {
+    if (
+      !hasResourceId &&
+      !hasColorId &&
+      !hasOpacity &&
+      !hasBlur &&
+      !hasTransformId &&
+      !hasTransform
+    ) {
       delete state.background;
       return;
     }
@@ -346,6 +398,8 @@ export const background = (state, presentation) => {
         nextBackground.transformId = previousBackground.transformId;
       }
     }
+
+    applyPersistentBackgroundTransform(nextBackground, previousBackground);
 
     if (!hasColorId && previousBackground?.colorId) {
       nextBackground.colorId = previousBackground.colorId;
@@ -378,6 +432,13 @@ export const background = (state, presentation) => {
       nextBackground.animations === undefined
     ) {
       delete nextBackground.animations;
+    }
+
+    if (
+      hasOwnProperty(nextBackground, "transformId") &&
+      nextBackground.transformId === undefined
+    ) {
+      delete nextBackground.transformId;
     }
 
     if (

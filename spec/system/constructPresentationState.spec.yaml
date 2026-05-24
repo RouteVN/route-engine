@@ -119,6 +119,44 @@ out:
     transformId: "centered"
     colorId: "backdrop"
 ---
+case: background inline transform update keeps the current background resource
+in:
+  - - background:
+        resourceId: "mainBackground"
+        transformId: "centered"
+        x: 960
+        y: 540
+        anchorX: 0.5
+        anchorY: 0.5
+        scaleX: 1
+        scaleY: 1
+        rotation: 0
+        originX: 960
+        originY: 540
+    - background:
+        x: 100
+        y: 120
+        anchorX: 0
+        anchorY: 1
+        scaleX: 1.2
+        scaleY: 0.8
+        rotation: -8
+        originX: 64
+        originY: 128
+out:
+  background:
+    resourceId: "mainBackground"
+    transformId: "centered"
+    x: 100
+    y: 120
+    anchorX: 0
+    anchorY: 1
+    scaleX: 1.2
+    scaleY: 0.8
+    rotation: -8
+    originX: 64
+    originY: 128
+---
 case: background opacity and blur update keeps the current background resource
 in:
   - - background:
