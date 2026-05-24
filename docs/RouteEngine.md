@@ -672,6 +672,11 @@ Actions that can be attached to lines to control presentation:
 | `form`       | `{ resourceId, fields, submitActions?, cancelActions? }`                                                   | Display a blocking multi-input form                                                               |
 | `cleanAll`   | `true`                                                                                                     | Clear all presentation state                                                                      |
 
+Animation selections use `animations.resourceId` plus optional
+`animations.playback`. `playback.speed` is a unitless multiplier: `1` is normal,
+`2` is twice as fast, and `0.5` is half speed. `playback.continuity` defaults to
+render-scoped behavior when omitted.
+
 ### Visual Layers
 
 Visual items use a flat `items` array. Each item can set numeric `layer` to

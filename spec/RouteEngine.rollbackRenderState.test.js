@@ -159,6 +159,7 @@ const createProjectData = () => ({
 
 const createPersistentBackgroundProjectData = ({
   continuationLineCount = 1,
+  playbackSpeed,
 } = {}) => ({
   screen: {
     width: 1920,
@@ -244,6 +245,9 @@ const createPersistentBackgroundProjectData = ({
                       resourceId: "fadeInLong",
                       playback: {
                         continuity: "persistent",
+                        ...(playbackSpeed === undefined
+                          ? {}
+                          : { speed: playbackSpeed }),
                       },
                     },
                   },
@@ -635,6 +639,60 @@ describe("RouteEngine rollback render state", () => {
         engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
       ).toBe("line2");
       expect(advancedRender.animations).toEqual([]);
+    } finally {
+      nowSpy.mockRestore();
+    }
+  });
+
+  it("expires persistent background playback using playback speed", () => {
+    const routeGraphics = {
+      render: vi.fn(),
+    };
+
+    let engine;
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics,
+      ticker: createTicker(),
+      persistence: createNoopPersistence(),
+    });
+
+    engine = createRouteEngine({
+      handlePendingEffects: effectsHandler,
+    });
+
+    const nowSpy = vi.spyOn(Date, "now");
+
+    try {
+      nowSpy.mockReturnValue(0);
+      engine.init({
+        initialState: {
+          projectData: createPersistentBackgroundProjectData({
+            playbackSpeed: 2,
+          }),
+        },
+      });
+
+      const initialRender = routeGraphics.render.mock.calls.at(-1)?.[0];
+      expect(initialRender.animations).toEqual([
+        expect.objectContaining({
+          playback: {
+            continuity: "persistent",
+            speed: 2,
+          },
+        }),
+      ]);
+
+      nowSpy.mockReturnValue(5001);
+      expect(
+        effectsHandler.handleRouteGraphicsEvent("renderComplete", {
+          id: initialRender.id,
+          aborted: false,
+        }),
+      ).toBe(true);
+
+      const completedRender = routeGraphics.render.mock.calls.at(-1)?.[0];
+      expect(completedRender.animations).toEqual([]);
     } finally {
       nowSpy.mockRestore();
     }
