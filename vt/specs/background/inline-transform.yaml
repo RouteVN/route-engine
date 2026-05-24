@@ -1,0 +1,40 @@
+---
+title: Background Inline Transform
+description: |
+  Image backgrounds should support inline transform fields without requiring a
+  transformId resource.
+
+  - the image background should render from the authored inline x/y position
+  - the authored inline anchor, scale, rotation, and origin should override centered defaults
+---
+screen:
+  width: 1920
+  height: 1080
+resources:
+  images:
+    bg-card:
+      fileId: dmni32
+      width: 640
+      height: 360
+story:
+  initialSceneId: backgroundScene
+  scenes:
+    backgroundScene:
+      name: Background Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                background:
+                  resourceId: bg-card
+                  x: 640
+                  y: 340
+                  anchorX: 0
+                  anchorY: 0
+                  rotation: -12
+                  scaleX: 1.25
+                  scaleY: 1.25
+                  originX: 320
+                  originY: 180

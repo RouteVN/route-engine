@@ -101,6 +101,33 @@ properties:
       transformId:
         type: string
         description: Optional transform resource to position the background
+      x:
+        type: number
+        description: Custom x position in renderer pixels to override the background transform x
+      y:
+        type: number
+        description: Custom y position in renderer pixels to override the background transform y
+      anchorX:
+        type: number
+        description: Custom normalized x anchor point to override the background transform anchorX
+      anchorY:
+        type: number
+        description: Custom normalized y anchor point to override the background transform anchorY
+      scaleX:
+        type: number
+        description: Custom unitless x scale multiplier to override the background transform scaleX
+      scaleY:
+        type: number
+        description: Custom unitless y scale multiplier to override the background transform scaleY
+      rotation:
+        type: number
+        description: Custom rotation in degrees to override the background transform rotation
+      originX:
+        type: number
+        description: Custom x transform origin in renderer pixels to override the background transform originX
+      originY:
+        type: number
+        description: Custom y transform origin in renderer pixels to override the background transform originY
       opacity:
         type: number
         minimum: 0

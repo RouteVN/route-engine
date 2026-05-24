@@ -422,6 +422,129 @@ out:
           height: 1080
   animations: []
 ---
+case: add background image with inline transform to story container
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      background:
+        resourceId: "bg1"
+        x: 100
+        y: 120
+        anchorX: 0
+        anchorY: 1
+        scaleX: 1.2
+        scaleY: 0.8
+        rotation: -8
+        originX: 64
+        originY: 128
+    resources:
+      images:
+        bg1:
+          fileId: "image1.png"
+          width: 1920
+          height: 1080
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "bg-cg-background-color"
+          type: "rect"
+          x: 0
+          y: 0
+          width: 1920
+          height: 1080
+          fill: "#000000"
+        - id: "bg-cg-background-sprite"
+          type: "sprite"
+          alpha: 1
+          anchorX: 0
+          anchorY: 1
+          rotation: -8
+          scaleX: 1.2
+          scaleY: 0.8
+          originX: 64
+          originY: 128
+          x: 100
+          y: 120
+          src: "image1.png"
+          width: 1920
+          height: 1080
+  animations: []
+---
+case: background inline transform overrides transform resource fields
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      background:
+        resourceId: "bg1"
+        transformId: "bgTransform"
+        x: 500
+        scaleY: 0.75
+        rotation: 22
+        originX: 32
+        originY: 96
+    resources:
+      images:
+        bg1:
+          fileId: "image1.png"
+          width: 1920
+          height: 1080
+      transforms:
+        bgTransform:
+          x: 200
+          y: 300
+          anchorX: 0
+          anchorY: 1
+          scaleX: 1.25
+          scaleY: 1
+          originX: 64
+          originY: 128
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "bg-cg-background-color"
+          type: "rect"
+          x: 0
+          y: 0
+          width: 1920
+          height: 1080
+          fill: "#000000"
+        - id: "bg-cg-background-sprite"
+          type: "sprite"
+          alpha: 1
+          anchorX: 0
+          anchorY: 1
+          rotation: 22
+          scaleX: 1.25
+          scaleY: 0.75
+          originX: 32
+          originY: 96
+          x: 500
+          y: 300
+          src: "image1.png"
+          width: 1920
+          height: 1080
+  animations: []
+---
 case: unknown background transformId should throw clear error
 in:
   - elements:
@@ -1563,6 +1686,72 @@ in:
           scaleY: 1.1
           originX: 64
           originY: 128
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "bg-cg-background-color"
+          type: "rect"
+          x: 0
+          y: 0
+          width: 1920
+          height: 1080
+          fill: "#000000"
+        - id: "bg-cg-background-container"
+          type: "container"
+          x: 400
+          y: 250
+          anchorX: 0
+          anchorY: 0
+          rotation: 12
+          scaleX: 0.75
+          scaleY: 1.1
+          originX: 64
+          originY: 128
+          children:
+            - id: "bg-panel"
+              type: "rect"
+              width: 100
+              height: 50
+              fill: "#000000"
+  animations: []
+---
+case: add background layout with inline transform
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      background:
+        resourceId: "bgLayout"
+        x: 400
+        y: 250
+        anchorX: 0
+        anchorY: 0
+        rotation: 12
+        scaleX: 0.75
+        scaleY: 1.1
+        originX: 64
+        originY: 128
+    resources:
+      layouts:
+        bgLayout:
+          elements:
+            - id: "bg-panel"
+              type: "rect"
+              width: 100
+              height: 50
+              colorId: "panel"
+      colors:
+        panel:
+          hex: "#000000"
 out:
   elements:
     - id: "story"

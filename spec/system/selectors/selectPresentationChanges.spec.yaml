@@ -260,6 +260,49 @@ out:
         resourceId: "bg-school"
         transformId: "wide"
 ---
+case: "Detect updated background inline transform as resource change"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "bg-school"
+                          colorId: "night"
+                    - id: "2"
+                      actions:
+                        background:
+                          x: 200
+                          y: 120
+                          scaleX: 1.25
+                          rotation: -8
+                          originX: 64
+                          originY: 128
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  background:
+    resource:
+      changeType: "update"
+      data:
+        resourceId: "bg-school"
+        x: 200
+        y: 120
+        scaleX: 1.25
+        rotation: -8
+        originX: 64
+        originY: 128
+---
 case: "Detect deleted background resource and color via cleanAll"
 in:
   - state:
