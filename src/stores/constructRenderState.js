@@ -2544,9 +2544,10 @@ const assertVisualLayer = (layer, path) => {
 };
 
 const resolveVisualItemLayer = (item, previousItem) => {
+  const hasCurrentSubject = !!item.resourceId || hasCompleteVisualText(item);
   const layer =
     item.layer ??
-    (!item.resourceId ? previousItem?.layer : undefined) ??
+    (!hasCurrentSubject ? previousItem?.layer : undefined) ??
     DEFAULT_VISUAL_LAYER;
 
   assertVisualLayer(layer, `Visual item "${item.id}" layer`);

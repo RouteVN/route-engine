@@ -123,15 +123,18 @@ const hasBackgroundTransform = (background) =>
     hasDefinedProperty(background, field),
   );
 
-const applyPersistentBackgroundTransform = (background, previousBackground) => {
+const applyPersistentBackgroundTransform = (
+  background,
+  previousBackground,
+  { hasAuthoredTransformId = false } = {},
+) => {
   if (!previousBackground) {
     return background;
   }
 
-  const shouldInheritTransform = !hasOwnProperty(background, "transformId");
   for (const field of BACKGROUND_TRANSFORM_FIELDS) {
     if (
-      shouldInheritTransform &&
+      !hasAuthoredTransformId &&
       !hasDefinedProperty(background, field) &&
       hasDefinedProperty(previousBackground, field)
     ) {
@@ -457,7 +460,9 @@ export const background = (state, presentation) => {
       }
     }
 
-    applyPersistentBackgroundTransform(nextBackground, previousBackground);
+    applyPersistentBackgroundTransform(nextBackground, previousBackground, {
+      hasAuthoredTransformId: hasTransformId,
+    });
 
     if (!hasColorId && previousBackground?.colorId) {
       nextBackground.colorId = previousBackground.colorId;

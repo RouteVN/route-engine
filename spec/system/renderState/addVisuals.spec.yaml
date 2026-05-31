@@ -2357,6 +2357,85 @@ out:
   animations: []
   audio: []
 ---
+case: complete text visual defaults to visual layer instead of inheriting previous patch layer
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "title"
+            text:
+              content: "New Title"
+              textStyleId: "title"
+            transformId: "transform1"
+    previousPresentationState:
+      visual:
+        items:
+          - id: "title"
+            resourceId: "oldTitle"
+            transformId: "transform1"
+            layer: 90
+    resources:
+      textStyles:
+        title:
+          fontId: "fontMain"
+          colorId: "fg"
+          fontSize: 42
+          fontWeight: "700"
+          fontStyle: "normal"
+          lineHeight: 1.1
+          align: "center"
+      fonts:
+        fontMain:
+          fileId: "Arial"
+      colors:
+        fg:
+          hex: "#FFFFFF"
+      transforms:
+        transform1:
+          x: 100
+          y: 200
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+    visualLayer: 50
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-title"
+          type: "text"
+          content: "New Title"
+          x: 100
+          y: 200
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          textStyle:
+            fontFamily: "Arial"
+            fontSize: 42
+            fontWeight: "700"
+            fontStyle: "normal"
+            lineHeight: 1.1
+            fill: "#FFFFFF"
+            align: "center"
+  animations: []
+  audio: []
+---
 case: route animation-only visual removal through previous item layer
 in:
   - elements:

@@ -131,4 +131,51 @@ describe("constructPresentationState background transforms", () => {
       y: 200,
     });
   });
+
+  it("keeps previous inline transform overrides on non-transform partial updates", () => {
+    const presentationState = constructPresentationState([
+      {
+        background: {
+          resourceId: "bg",
+          transformId: "preset",
+          x: 300,
+          y: 400,
+          scaleX: 1.3,
+          scaleY: 1.3,
+        },
+      },
+      {
+        background: {
+          opacity: 0.5,
+        },
+      },
+    ]);
+
+    expect(presentationState.background).toEqual({
+      resourceId: "bg",
+      transformId: "preset",
+      x: 300,
+      y: 400,
+      scaleX: 1.3,
+      scaleY: 1.3,
+      opacity: 0.5,
+    });
+
+    const renderState = constructRenderState({
+      presentationState,
+      resources: createResources(),
+      screen: {
+        width: 1920,
+        height: 1080,
+      },
+    });
+
+    expect(findBackgroundSprite(renderState.elements)).toMatchObject({
+      x: 300,
+      y: 400,
+      scaleX: 1.3,
+      scaleY: 1.3,
+      alpha: 0.5,
+    });
+  });
 });
