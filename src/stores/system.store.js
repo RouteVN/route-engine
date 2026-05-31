@@ -2972,18 +2972,20 @@ export const updateProjectData = ({ state }, payload) => {
 
   state.projectData = projectData;
   const variableConfigs = projectData?.resources?.variables ?? {};
+  const { contextVariableDefaultValues, globalVariablesDefaultValues } =
+    getDefaultVariablesFromProjectData(projectData ?? {});
   if (Object.prototype.hasOwnProperty.call(state.global ?? {}, "variables")) {
-    state.global.variables = filterStoredVariables(
-      state.global.variables,
-      variableConfigs,
-    );
+    state.global.variables = {
+      ...globalVariablesDefaultValues,
+      ...filterStoredVariables(state.global.variables, variableConfigs),
+    };
   }
   state.contexts?.forEach((context) => {
     if (Object.prototype.hasOwnProperty.call(context ?? {}, "variables")) {
-      context.variables = filterStoredVariables(
-        context.variables,
-        variableConfigs,
-      );
+      context.variables = {
+        ...contextVariableDefaultValues,
+        ...filterStoredVariables(context.variables, variableConfigs),
+      };
     }
   });
   clearConfirmDialog(state);
