@@ -902,6 +902,104 @@ out:
         originX: 20
         originY: 40
 ---
+case: visual text content-only update keeps previous text style, transform, appearance, and layer
+in:
+  - - visual:
+        items:
+          - id: "title"
+            text:
+              content: "Chapter 1"
+              textStyleId: "title"
+            transformId: "titleTop"
+            layer: 70
+            opacity: 0.8
+    - visual:
+        items:
+          - id: "title"
+            text:
+              content: "Chapter 2"
+out:
+  visual:
+    items:
+      - id: "title"
+        text:
+          content: "Chapter 2"
+          textStyleId: "title"
+        transformId: "titleTop"
+        layer: 70
+        opacity: 0.8
+---
+case: visual text style-only update keeps previous content
+in:
+  - - visual:
+        items:
+          - id: "title"
+            text:
+              content: "Chapter 1"
+              textStyleId: "title"
+            transformId: "titleTop"
+    - visual:
+        items:
+          - id: "title"
+            text:
+              textStyleId: "accentTitle"
+out:
+  visual:
+    items:
+      - id: "title"
+        text:
+          content: "Chapter 1"
+          textStyleId: "accentTitle"
+        transformId: "titleTop"
+---
+case: visual text full update keeps previous transform, appearance, and layer
+in:
+  - - visual:
+        items:
+          - id: "title"
+            text:
+              content: "Chapter 1"
+              textStyleId: "title"
+            transformId: "titleTop"
+            layer: 70
+            opacity: 0.8
+    - visual:
+        items:
+          - id: "title"
+            text:
+              content: "Chapter 2"
+              textStyleId: "accentTitle"
+out:
+  visual:
+    items:
+      - id: "title"
+        text:
+          content: "Chapter 2"
+          textStyleId: "accentTitle"
+        transformId: "titleTop"
+        layer: 70
+        opacity: 0.8
+---
+case: new visual text item requires content and textStyleId
+in:
+  - - visual:
+        items:
+          - id: "title"
+            text:
+              content: "Chapter 1"
+throws: 'Visual item "title" text requires content and textStyleId'
+---
+case: visual item rejects resource and text together
+in:
+  - - visual:
+        items:
+          - id: "title"
+            resourceId: "title-image"
+            text:
+              content: "Chapter 1"
+              textStyleId: "title"
+throws: 'Visual item "title" cannot define both resourceId and text'
+---
 case: item transform overrides persist across later item updates
 in:
   - - visual:

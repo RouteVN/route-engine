@@ -1304,6 +1304,69 @@ const getElementTransform = (transform = {}, item = {}) => {
   return elementTransform;
 };
 
+const VISUAL_TEXT_RESERVED_FIELDS = [
+  "id",
+  "type",
+  "resourceId",
+  "transformId",
+  "x",
+  "y",
+  "anchorX",
+  "anchorY",
+  "scaleX",
+  "scaleY",
+  "rotation",
+  "originX",
+  "originY",
+  "layer",
+  "opacity",
+  "blur",
+  "animations",
+];
+
+const hasCompleteVisualText = (item = {}) =>
+  item.text &&
+  hasOwnProperty(item.text, "content") &&
+  hasOwnProperty(item.text, "textStyleId");
+
+const getVisualSubjectKey = (item = {}) => {
+  if (item.resourceId) {
+    return item.resourceId;
+  }
+
+  if (hasCompleteVisualText(item)) {
+    return "text";
+  }
+
+  return undefined;
+};
+
+const assertVisualTextConfig = (item) => {
+  if (!item.text) {
+    return;
+  }
+
+  if (item.resourceId) {
+    throw new Error(
+      `Visual item "${item.id}" cannot define both resourceId and text`,
+    );
+  }
+
+  if (!hasCompleteVisualText(item)) {
+    throw new Error(
+      `Visual item "${item.id}" text requires content and textStyleId`,
+    );
+  }
+
+  for (const fieldName of VISUAL_TEXT_RESERVED_FIELDS) {
+    if (hasOwnProperty(item.text, fieldName)) {
+      throw new Error(
+        `Visual item "${item.id}" text.${fieldName} is reserved for the visual item`,
+      );
+    }
+  }
+};
+
 const createBackgroundColorElement = ({
   resources,
   background,
@@ -2481,9 +2544,10 @@ const assertVisualLayer = (layer, path) => {
 };
 
 const resolveVisualItemLayer = (item, previousItem) => {
+  const hasCurrentSubject = !!item.resourceId || hasCompleteVisualText(item);
   const layer =
     item.layer ??
-    (!item.resourceId ? previousItem?.layer : undefined) ??
+    (!hasCurrentSubject ? previousItem?.layer : undefined) ??
     DEFAULT_VISUAL_LAYER;
 
   assertVisualLayer(layer, `Visual item "${item.id}" layer`);
@@ -2524,6 +2588,21 @@ export const addVisuals = (
 
     const items = presentationState.visual.items;
     const previousItems = previousPresentationState?.visual?.items || [];
+    const visualTemplateData = createLayoutTemplateData({
+      variables,
+      runtime,
+      saveSlots,
+      dialogueState: presentationState.dialogue,
+      isLineCompleted,
+      autoMode,
+      skipMode,
+      isChoiceVisible,
+      isFormVisible,
+      canRollback,
+      form,
+      characters: resources.characters || {},
+      skipTransitionsAndAnimations,
+    });
 
     if (visualLayer !== undefined) {
       assertVisualLayer(visualLayer, "visualLayer");
@@ -2535,6 +2614,28 @@ export const addVisuals = (
 
       if (visualLayer !== undefined && itemLayer !== visualLayer) {
         continue;
+      }
+
+      assertVisualTextConfig(item);
+
+      if (item.text) {
+        const transform = getRequiredVisualTransform(resources, item);
+        const textElement = {
+          ...structuredClone(item.text),
+          id: `visual-${item.id}`,
+          type: "text",
+          ...getElementTransform(transform, item),
+        };
+        Object.assign(textElement, getItemAppearance(item));
+
+        storyContainer.children.push(
+          resolveLayoutResourceIds(
+            parseAndRender(textElement, visualTemplateData, {
+              functions: jemplFunctions,
+            }),
+            resources,
+          ),
+        );
       }
 
       if (item.resourceId) {
@@ -2617,21 +2718,7 @@ export const addVisuals = (
           Object.assign(visualContainer, getItemAppearance(item));
           const processedContainer = parseAndRender(
             visualContainer,
-            createLayoutTemplateData({
-              variables,
-              runtime,
-              saveSlots,
-              dialogueState: presentationState.dialogue,
-              isLineCompleted,
-              autoMode,
-              skipMode,
-              isChoiceVisible,
-              isFormVisible,
-              canRollback,
-              form,
-              characters: resources.characters || {},
-              skipTransitionsAndAnimations,
-            }),
+            visualTemplateData,
             { functions: jemplFunctions },
           );
           storyContainer.children.push(
@@ -2647,15 +2734,19 @@ export const addVisuals = (
         }
       }
 
+      const previousVisualSubjectKey = getVisualSubjectKey(previousItem);
+      const currentVisualSubjectKey = getVisualSubjectKey(item);
       const visualAnimationInstances = createAnimationInstances({
         animationsDef: item.animations,
         resources,
-        previousResourceId: previousItem?.resourceId,
-        currentResourceId: item.resourceId,
-        previousTargetId: previousItem?.resourceId
+        previousResourceId: previousVisualSubjectKey,
+        currentResourceId: currentVisualSubjectKey,
+        previousTargetId: previousVisualSubjectKey
           ? `visual-${item.id}`
           : undefined,
-        currentTargetId: item.resourceId ? `visual-${item.id}` : undefined,
+        currentTargetId: currentVisualSubjectKey
+          ? `visual-${item.id}`
+          : undefined,
         animationPath: `visual.items[${item.id}].animations`,
         idPrefix: item.id,
       });

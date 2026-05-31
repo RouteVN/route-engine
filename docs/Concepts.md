@@ -71,6 +71,7 @@ Static, read-only data that defines the visual novel content:
   - Computed variables are derived read-only values declared under `resources.variables[*].computed`; their authored interface is documented in `docs/ComputedVariables.md`
   - Voice audio is stored under `resources.voices[sceneId][voiceId]` and line actions reference the scene-local `voiceId`
   - Layout text elements should reference shared styles with `textStyleId`
+  - Text-backed visual items should put text-specific data under `text` and reference shared styles with `text.textStyleId`
   - `resources.colors[*].hex` should be opaque hex only; text fill and stroke transparency should be authored on `resources.textStyles` with `colorAlpha` / `strokeAlpha`, not inside `resources.colors`
   - Layout sprite elements should reference images with `imageId` and optional `hoverImageId` / `clickImageId`
   - Layout rect elements should reference shared colors with `colorId` and optional `hover.colorId` / `click.colorId` / `rightClick.colorId`
@@ -127,7 +128,7 @@ Presentation state includes:
   - `colorId` references `resources.colors` for the persistent solid backing color behind the background resource; if omitted, the backing color falls back to `screen.backgroundColor`, then black
 - `dialogue`: Speaker, layered speaker sprite, text content, mode (ADV/NVL)
 - `character`: Character sprites and positions
-- `visual`: Additional visual elements
+- `visual`: Additional visual elements, including resource-backed visuals and text-backed visuals
 - `bgm` / `sfx` / `voice`: Audio configuration
 - `animation`: Active animations
 - `layout`: UI layouts

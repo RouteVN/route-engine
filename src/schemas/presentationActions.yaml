@@ -63,6 +63,67 @@ definitions:
         required: [x, y]
         additionalProperties: false
 
+  visualTextContent:
+    description: RouteGraphics text content. A string renders plain text; an array can contain rich text runs such as per-run styles and furigana.
+    anyOf:
+      - type: string
+      - type: array
+        items:
+          type: object
+          properties:
+            text:
+              type: string
+            textStyleId:
+              type: string
+            furigana:
+              type: object
+              properties:
+                text:
+                  type: string
+                textStyleId:
+                  type: string
+              additionalProperties: true
+          additionalProperties: true
+
+  visualText:
+    type: object
+    description: Text-backed visual configuration. Placement, layer, opacity, blur, and animations stay on the visual item.
+    properties:
+      content:
+        $ref: "#/definitions/visualTextContent"
+      textStyleId:
+        type: string
+        description: Shared text style resource for the visual text
+      width:
+        type: number
+        description: Optional text layout width passed to the renderer
+      height:
+        type: number
+        description: Optional text layout height passed to the renderer
+    anyOf:
+      - required: [content]
+      - required: [textStyleId]
+    not:
+      anyOf:
+        - required: [id]
+        - required: [type]
+        - required: [resourceId]
+        - required: [transformId]
+        - required: [x]
+        - required: [y]
+        - required: [anchorX]
+        - required: [anchorY]
+        - required: [scaleX]
+        - required: [scaleY]
+        - required: [rotation]
+        - required: [originX]
+        - required: [originY]
+        - required: [layer]
+        - required: [opacity]
+        - required: [blur]
+        - required: [animations]
+    additionalProperties: true
+
 properties:
   cleanAll:
     type: object
@@ -313,6 +374,8 @@ properties:
             resourceId:
               type: string
               description: ID of the resource
+            text:
+              $ref: "#/definitions/visualText"
             transformId:
               type: string
               description: ID of the transform where visual appears
@@ -362,6 +425,9 @@ properties:
             animations:
               $ref: "#/definitions/animationSelection"
           required: [id]
+          allOf:
+            - not:
+                required: [resourceId, text]
           additionalProperties: false
     additionalProperties: false
 
