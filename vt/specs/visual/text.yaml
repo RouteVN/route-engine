@@ -1,0 +1,200 @@
+---
+title: Visual Text
+description: |
+  Text-backed visual items should render as normal visuals:
+  - plain string content renders with the shared text style
+  - rich content with furigana renders through RouteGraphics text
+  - content/style-only patches keep prior visual state by id
+  - transform overrides and animated removal use the same visual item path
+skipInitialScreenshot: true
+steps:
+  - action: wait
+    ms: 1000
+  - action: screenshot
+  - action: customEvent
+    name: vt:nextLine
+  - action: wait
+    ms: 150
+  - action: screenshot
+  - action: customEvent
+    name: vt:nextLine
+  - action: wait
+    ms: 520
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#111111"
+resources:
+  controls:
+    nextLineHitbox:
+      elements:
+        - id: next-line-hitbox
+          type: rect
+          x: 0
+          y: 0
+          width: 1920
+          height: 1080
+          colorId: transparentBlack
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                nextLine: {}
+  colors:
+    transparentBlack:
+      hex: "#000000"
+    bg:
+      hex: "#111111"
+    title:
+      hex: "#FFFFFF"
+    accent:
+      hex: "#FFD166"
+    muted:
+      hex: "#7DD3FC"
+    ruby:
+      hex: "#C8CDD4"
+  fonts:
+    default:
+      fileId: Arial
+  textStyles:
+    titleText:
+      fontId: default
+      colorId: title
+      fontSize: 72
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1.1
+      align: center
+    richText:
+      fontId: default
+      colorId: title
+      fontSize: 58
+      fontWeight: "500"
+      fontStyle: normal
+      lineHeight: 1.25
+      align: center
+    richAccent:
+      fontId: default
+      colorId: accent
+      fontSize: 58
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1.25
+      align: center
+    mutedRich:
+      fontId: default
+      colorId: muted
+      fontSize: 58
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1.25
+      align: center
+    rubyText:
+      fontId: default
+      colorId: ruby
+      fontSize: 22
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1
+      align: center
+  transforms:
+    titleTop:
+      x: 960
+      y: 190
+      anchorX: 0.5
+      anchorY: 0.5
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+      originX: 360
+      originY: 50
+    richCenter:
+      x: 960
+      y: 390
+      anchorX: 0.5
+      anchorY: 0.5
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+      originX: 360
+      originY: 60
+  animations:
+    fadeOut:
+      type: transition
+      prev:
+        tween:
+          alpha:
+            initialValue: 1
+            keyframes:
+              - duration: 400
+                value: 0
+                easing: linear
+story:
+  initialSceneId: visualTextScene
+  scenes:
+    visualTextScene:
+      name: Visual Text Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                control:
+                  resourceId: nextLineHitbox
+                background:
+                  colorId: bg
+                visual:
+                  items:
+                    - id: title
+                      text:
+                        content: "Visual Text"
+                        textStyleId: titleText
+                        width: 720
+                      transformId: titleTop
+                      layer: 70
+                    - id: rich
+                      text:
+                        content:
+                          - text: "SKY"
+                            furigana:
+                              text: "above"
+                              textStyleId: rubyText
+                          - text: " LABEL"
+                            textStyleId: richAccent
+                        textStyleId: richText
+                        width: 720
+                      transformId: richCenter
+                      layer: 70
+            - id: line2
+              actions:
+                visual:
+                  items:
+                    - id: title
+                      text:
+                        content: "Patched Text"
+                      x: 960
+                      y: 610
+                      anchorX: 0.5
+                      anchorY: 0.5
+                      scaleX: 0.9
+                      scaleY: 0.9
+                      rotation: -4
+                      originX: 360
+                      originY: 50
+                    - id: rich
+                      text:
+                        textStyleId: mutedRich
+                      y: 325
+            - id: line3
+              actions:
+                visual:
+                  items:
+                    - id: title
+                      animations:
+                        resourceId: fadeOut
+                    - id: rich
+                      animations:
+                        resourceId: fadeOut

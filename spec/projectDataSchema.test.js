@@ -447,6 +447,104 @@ describe("projectData schema", () => {
     expect(validatePresentationActions.errors).toBeNull();
   });
 
+  it("accepts text-backed visual items with rich text content", () => {
+    expect(
+      validatePresentationActions({
+        visual: {
+          items: [
+            {
+              id: "title",
+              text: {
+                content: [
+                  {
+                    text: "Kanji",
+                    furigana: {
+                      text: "furigana",
+                      textStyleId: "ruby",
+                    },
+                  },
+                  {
+                    text: " title",
+                    textStyleId: "accent",
+                  },
+                ],
+                textStyleId: "title",
+                width: 640,
+              },
+              transformId: "titleTop",
+              layer: 70,
+              opacity: 0.9,
+              animations: {
+                resourceId: "fadeIn",
+              },
+            },
+          ],
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+  });
+
+  it("accepts partial text-backed visual item patches", () => {
+    expect(
+      validatePresentationActions({
+        visual: {
+          items: [
+            {
+              id: "title",
+              text: {
+                content: "Chapter 2",
+              },
+            },
+            {
+              id: "subtitle",
+              text: {
+                textStyleId: "subtitleMuted",
+              },
+            },
+          ],
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+  });
+
+  it("rejects ambiguous text-backed visual items", () => {
+    expect(
+      validatePresentationActions({
+        visual: {
+          items: [
+            {
+              id: "title",
+              resourceId: "titleImage",
+              text: {
+                content: "Chapter 1",
+                textStyleId: "title",
+              },
+            },
+          ],
+        },
+      }),
+    ).toBe(false);
+
+    expect(
+      validatePresentationActions({
+        visual: {
+          items: [
+            {
+              id: "title",
+              text: {
+                type: "text",
+                content: "Chapter 1",
+                textStyleId: "title",
+              },
+            },
+          ],
+        },
+      }),
+    ).toBe(false);
+  });
+
   it("requires transformId when character sprites are supplied", () => {
     expect(
       validatePresentationActions({

@@ -116,6 +116,213 @@ out:
   animations: []
   audio: []
 ---
+case: add visual text with transform overrides, templated content, opacity, and blur
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "title"
+            text:
+              content: "${variables.chapterTitle}"
+              textStyleId: "title"
+              width: 640
+            transformId: "titleTransform"
+            x: 960
+            y: 140
+            anchorX: 0.5
+            anchorY: 0.5
+            scaleX: 1.1
+            scaleY: 1.1
+            rotation: -3
+            originX: 320
+            originY: 40
+            opacity: 0.9
+            blur:
+              x: 2
+              y: 3
+    resources:
+      textStyles:
+        title:
+          fontId: "fontMain"
+          colorId: "fg"
+          fontSize: 42
+          fontWeight: "700"
+          fontStyle: "normal"
+          lineHeight: 1.1
+          align: "center"
+      fonts:
+        fontMain:
+          fileId: "Arial"
+      colors:
+        fg:
+          hex: "#FFFFFF"
+      transforms:
+        titleTransform:
+          x: 100
+          y: 200
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+    variables:
+      chapterTitle: "Chapter 1"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-title"
+          type: "text"
+          content: "Chapter 1"
+          width: 640
+          x: 960
+          y: 140
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: -3
+          scaleX: 1.1
+          scaleY: 1.1
+          originX: 320
+          originY: 40
+          alpha: 0.9
+          blur:
+            x: 2
+            y: 3
+          textStyle:
+            fontFamily: "Arial"
+            fontSize: 42
+            fontWeight: "700"
+            fontStyle: "normal"
+            lineHeight: 1.1
+            fill: "#FFFFFF"
+            align: "center"
+  animations: []
+  audio: []
+---
+case: add rich visual text content and resolve nested text style ids
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "richTitle"
+            text:
+              content:
+                - text: "Kanji"
+                  furigana:
+                    text: "reading"
+                    textStyleId: "ruby"
+                - text: " label"
+                  textStyleId: "accent"
+              textStyleId: "body"
+              width: 500
+            transformId: "titleTransform"
+    resources:
+      textStyles:
+        body:
+          fontId: "fontMain"
+          colorId: "fg"
+          fontSize: 36
+          fontWeight: "400"
+          fontStyle: "normal"
+          lineHeight: 1.2
+        accent:
+          fontId: "fontMain"
+          colorId: "accent"
+          fontSize: 36
+          fontWeight: "700"
+          fontStyle: "normal"
+          lineHeight: 1.2
+        ruby:
+          fontId: "fontMain"
+          colorId: "muted"
+          fontSize: 14
+          fontWeight: "400"
+          fontStyle: "normal"
+          lineHeight: 1
+      fonts:
+        fontMain:
+          fileId: "Arial"
+      colors:
+        fg:
+          hex: "#FFFFFF"
+        accent:
+          hex: "#FFD166"
+        muted:
+          hex: "#BBBBBB"
+      transforms:
+        titleTransform:
+          x: 320
+          y: 180
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-richTitle"
+          type: "text"
+          content:
+            - text: "Kanji"
+              furigana:
+                text: "reading"
+                textStyle:
+                  fontFamily: "Arial"
+                  fontSize: 14
+                  fontWeight: "400"
+                  fontStyle: "normal"
+                  lineHeight: 1
+                  fill: "#BBBBBB"
+            - text: " label"
+              textStyle:
+                fontFamily: "Arial"
+                fontSize: 36
+                fontWeight: "700"
+                fontStyle: "normal"
+                lineHeight: 1.2
+                fill: "#FFD166"
+          width: 500
+          x: 320
+          y: 180
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          textStyle:
+            fontFamily: "Arial"
+            fontSize: 36
+            fontWeight: "400"
+            fontStyle: "normal"
+            lineHeight: 1.2
+            fill: "#FFFFFF"
+  animations: []
+  audio: []
+---
 case: add visual sprite with opacity and blur to story container
 in:
   - elements:
@@ -290,6 +497,100 @@ in:
           fileId: "visual.png"
 throws: 'Visual item "visual1" requires transformId'
 ---
+case: incomplete visual text should throw clear error
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "title"
+            text:
+              content: "Chapter 1"
+            transformId: "titleTransform"
+    resources:
+      transforms:
+        titleTransform:
+          x: 100
+          y: 200
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+throws: 'Visual item "title" text requires content and textStyleId'
+---
+case: visual text cannot be combined with resourceId
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "title"
+            resourceId: "image1"
+            text:
+              content: "Chapter 1"
+              textStyleId: "title"
+            transformId: "titleTransform"
+    resources:
+      images:
+        image1:
+          fileId: "visual.png"
+      transforms:
+        titleTransform:
+          x: 100
+          y: 200
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+throws: 'Visual item "title" cannot define both resourceId and text'
+---
+case: visual text rejects visual item fields inside text config
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "title"
+            text:
+              content: "Chapter 1"
+              textStyleId: "title"
+              type: "text"
+            transformId: "titleTransform"
+    resources:
+      transforms:
+        titleTransform:
+          x: 100
+          y: 200
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+throws: 'Visual item "title" text.type is reserved for the visual item'
+---
 case: unknown transformId should throw clear error
 in:
   - elements:
@@ -427,6 +728,61 @@ out:
     - id: "visual1-animation-out"
       type: "transition"
       targetId: "visual-visual1"
+      prev:
+        tween:
+          alpha:
+            initialValue: 1
+            keyframes:
+              - duration: 300
+                value: 0
+  audio: []
+---
+case: add visual text with transition animation on removal
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "title"
+            animations:
+              resourceId: "fadeOut"
+    previousPresentationState:
+      visual:
+        items:
+          - id: "title"
+            text:
+              content: "Chapter 1"
+              textStyleId: "title"
+            transformId: "titleTransform"
+    resources:
+      animations:
+        fadeOut:
+          type: transition
+          prev:
+            tween:
+              alpha:
+                initialValue: 1
+                keyframes:
+                  - duration: 300
+                    value: 0
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations:
+    - id: "title-animation-out"
+      type: "transition"
+      targetId: "visual-title"
       prev:
         tween:
           alpha:

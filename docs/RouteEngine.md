@@ -661,7 +661,7 @@ Actions that can be attached to lines to control presentation:
 | `background` | `{ resourceId?, colorId?, transformId?, x?, y?, anchorX?, anchorY?, scaleX?, scaleY?, rotation?, originX?, originY?, opacity?, blur?, animations? }` | Set background/CG. Transform fields are renderer pixels/unitless multipliers/degrees; `blur: null` clears background blur |
 | `dialogue`   | `{ characterId?, character?, character.sprite?, persistCharacter?, content, append?, mode?, ui?, clear? }`                                           | Display dialogue                                                                                                          |
 | `character`  | `{ items }`                                                                                                                                          | Display character sprites. Each item can set transform overrides, `opacity`, and `blur`                                   |
-| `visual`     | `{ items }`                                                                                                                                          | Display visual elements. Each item can set `layer`, transform overrides, `opacity`, and `blur`                            |
+| `visual`     | `{ items }`                                                                                                                                          | Display visual elements. Each item can set `layer`, transform overrides, `opacity`, `blur`, and animations                |
 | `bgm`        | `{ resourceId, volume?, loop?, startDelayMs? }`                                                                                                      | Play background music                                                                                                     |
 | `sfx`        | `{ items }`                                                                                                                                          | Play sound effects. Each item can include `volume`, `loop`, and `startDelayMs`                                            |
 | `voice`      | `{ resourceId, volume?, loop?, startDelayMs? }`                                                                                                      | Play voice audio from `resources.voices[currentSceneId][resourceId]`                                                      |
@@ -711,6 +711,74 @@ Visual items can use `10`, `30`, `50`, `70`, or `90`. Layer `90` is still below
 screen transitions, overlay stack entries, and confirm dialogs. JavaScript
 callers can use the exported `RENDER_LAYER`, `VISUAL_LAYER`, and
 `DEFAULT_VISUAL_LAYER` constants when generating project data.
+
+### Text Visuals
+
+Visual items can be backed by text instead of an image, video, spritesheet, or
+layout resource. A text-backed visual uses the same visual item placement,
+layer, opacity, blur, and animation fields as every other visual item.
+
+New visual items choose one render subject:
+
+- `resourceId` for image, video, spritesheet, or layout resources
+- `text` for direct RouteGraphics text
+
+`resourceId` and `text` are mutually exclusive. The `text` object owns only
+text-specific fields such as `content`, `textStyleId`, and optional text layout
+fields like `width`. It must not contain visual item fields such as `x`,
+`layer`, or `animations`.
+
+```yaml
+visual:
+  items:
+    - id: chapterTitle
+      text:
+        content: "Chapter 1"
+        textStyleId: title
+        width: 720
+      transformId: titleTop
+      layer: 70
+      opacity: 0.9
+      animations:
+        resourceId: titleFadeIn
+```
+
+`text.content` can be a plain string or the same rich content run shape used by
+RouteGraphics text. Rich runs can override styles with `textStyleId`, and
+furigana can use its own nested `textStyleId`.
+
+```yaml
+visual:
+  items:
+    - id: locationLabel
+      text:
+        content:
+          - text: "Kanji"
+            furigana:
+              text: "reading"
+              textStyleId: ruby
+          - text: " label"
+            textStyleId: emphasis
+        textStyleId: title
+        width: 640
+      transformId: titleTop
+      anchorX: 0.5
+      anchorY: 0.5
+```
+
+After a text visual exists, later lines can patch it by `id` without restating
+the whole text config:
+
+```yaml
+visual:
+  items:
+    - id: chapterTitle
+      text:
+        content: "Chapter 2"
+```
+
+For a new text visual, `text.content` and `text.textStyleId` are both required.
+For a patch to an existing text visual, either field can be supplied alone.
 
 ### Item Transform Overrides
 
@@ -806,7 +874,8 @@ shape as `background.blur` and `screen.blur`; `blur: null` clears the item blur.
 
 Character item appearance applies to the whole character container, so every
 sprite part is faded or blurred together. Visual item appearance applies to the
-single visual item container, sprite, video, animated sprite, or layout.
+single visual item container, sprite, video, animated sprite, layout, or text
+element.
 
 ```yaml
 character:

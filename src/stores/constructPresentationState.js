@@ -70,6 +70,54 @@ const BACKGROUND_TRANSFORM_FIELDS = [
 const hasItemTransform = (item) =>
   ITEM_TRANSFORM_FIELDS.some((field) => hasDefinedProperty(item, field));
 
+const hasCompleteVisualText = (item) =>
+  item?.text &&
+  hasDefinedProperty(item.text, "content") &&
+  hasDefinedProperty(item.text, "textStyleId");
+
+const hasVisualTextPatch = (item) => hasDefinedProperty(item, "text");
+
+const hasVisualSubject = (item) =>
+  !!item.resourceId || hasCompleteVisualText(item);
+
+const mergeVisualItemPatch = (previousItem, item) => {
+  const mergedItem = {
+    ...clonePresentationValue(previousItem),
+    ...item,
+  };
+
+  if (item.text && previousItem.text) {
+    mergedItem.text = {
+      ...clonePresentationValue(previousItem.text),
+      ...clonePresentationValue(item.text),
+    };
+  }
+
+  return mergedItem;
+};
+
+const assertVisualTextPatch = (item, previousItem) => {
+  if (!hasVisualTextPatch(item)) {
+    return;
+  }
+
+  if (item.resourceId) {
+    throw new Error(
+      `Visual item "${item.id}" cannot define both resourceId and text`,
+    );
+  }
+
+  if (hasCompleteVisualText(item)) {
+    return;
+  }
+
+  if (!previousItem?.text) {
+    throw new Error(
+      `Visual item "${item.id}" text requires content and textStyleId`,
+    );
+  }
+};
+
 const hasBackgroundTransform = (background) =>
   BACKGROUND_TRANSFORM_FIELDS.some((field) =>
     hasDefinedProperty(background, field),
@@ -80,8 +128,10 @@ const applyPersistentBackgroundTransform = (background, previousBackground) => {
     return background;
   }
 
+  const shouldInheritTransform = !hasOwnProperty(background, "transformId");
   for (const field of BACKGROUND_TRANSFORM_FIELDS) {
     if (
+      shouldInheritTransform &&
       !hasDefinedProperty(background, field) &&
       hasDefinedProperty(previousBackground, field)
     ) {
@@ -160,6 +210,7 @@ const processItemsWithAnimations = (
   items,
   hasResourceFn,
   previousItems = [],
+  { hasPatchFn = () => false, mergeItemFn } = {},
 ) => {
   if (!items || items.length === 0) {
     return { hasValidItems: false, processedItems: [] };
@@ -171,14 +222,21 @@ const processItemsWithAnimations = (
       const hasResource = hasResourceFn(item);
       const hasAppearance = hasItemAppearance(item);
       const hasTransform = hasItemTransform(item);
+      const hasPatch = hasPatchFn(item);
       const hasAnimations = hasOwnProperty(item, "animations");
       let processedItem = clonePresentationValue(item);
 
-      if (!hasResource && (hasAppearance || hasTransform) && previousItem) {
-        processedItem = {
-          ...clonePresentationValue(previousItem),
-          ...processedItem,
-        };
+      if (
+        !hasResource &&
+        (hasAppearance || hasTransform || hasPatch) &&
+        previousItem
+      ) {
+        processedItem = mergeItemFn
+          ? mergeItemFn(previousItem, processedItem)
+          : {
+              ...clonePresentationValue(previousItem),
+              ...processedItem,
+            };
 
         if (!hasAnimations) {
           delete processedItem.animations;
@@ -679,10 +737,20 @@ export const bgm = (state, presentation) => {
  */
 export const visual = (state, presentation) => {
   if (presentation.visual) {
+    const previousItems = state.visual?.items || [];
+
+    presentation.visual.items?.forEach((item, index) => {
+      assertVisualTextPatch(item, findPreviousItem(previousItems, item, index));
+    });
+
     const { hasValidItems, processedItems } = processItemsWithAnimations(
       presentation.visual.items,
-      (item) => !!item.resourceId,
-      state.visual?.items || [],
+      hasVisualSubject,
+      previousItems,
+      {
+        hasPatchFn: hasVisualTextPatch,
+        mergeItemFn: mergeVisualItemPatch,
+      },
     );
 
     if (hasValidItems) {
