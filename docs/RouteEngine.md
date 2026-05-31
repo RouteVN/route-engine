@@ -964,6 +964,25 @@ form:
 
 Use `dialogue.character.name` for new authored content. `dialogue.characterName` is still accepted, but only as a compatibility alias for older content and tools, so it is intentionally omitted from the public action summary above.
 
+Character resources can bind their default display name to a string variable:
+
+```yaml
+resources:
+  variables:
+    playerName:
+      type: string
+      scope: context
+      default: Guest
+  characters:
+    protagonist:
+      name: Protagonist
+      nameVariableId: playerName
+```
+
+When a dialogue line uses `characterId: protagonist`, `${dialogue.character.name}`
+resolves to the current `variables.playerName` value. The resource `name`
+remains the fallback/editor label.
+
 Preferred authored shape:
 
 ```yaml
@@ -988,6 +1007,7 @@ dialogue:
 Field semantics:
 
 - `characterId` is the speaker identity. It selects the character resource and its default display name.
+- `resources.characters[*].nameVariableId` binds the resource display name to a string variable.
 - `character.name` is only a display-name override.
 - `character.sprite` is an optional layered speaker sprite group rendered with the dialogue action.
 - `persistCharacter: true` means later dialogue lines that omit speaker fields reuse the previous `characterId` and `character` override.

@@ -12,6 +12,7 @@ import {
   applyVariableOperation,
   diffPresentationState,
   normalizePersistentPresentationState,
+  resolveCharacterDisplayName,
 } from "../util.js";
 import { constructPresentationState } from "./constructPresentationState.js";
 import { constructRenderState } from "./constructRenderState.js";
@@ -1557,6 +1558,15 @@ export const selectDialogueHistory = ({ state }) => {
 
   const historyContent = [];
   let presentationState = {};
+  const variables = selectVariablesWithComputedValues({
+    variables: {
+      ...(state.global?.variables ?? {}),
+      ...(getCurrentContext(state)?.variables ?? {}),
+    },
+    runtime: selectRuntimeFromState(state),
+    variableConfigs: state.projectData.resources?.variables ?? {},
+    eager: false,
+  });
 
   for (const line of linesUpToCurrent) {
     const lineActions = line.actions || {};
@@ -1570,15 +1580,12 @@ export const selectDialogueHistory = ({ state }) => {
     }
 
     const dialogueState = presentationState.dialogue || {};
-    let characterName = "";
-
-    if (dialogueState.character?.name !== undefined) {
-      characterName = dialogueState.character.name;
-    } else if (dialogueState.characterId) {
-      const character =
-        state.projectData.resources?.characters?.[dialogueState.characterId];
-      characterName = character?.name || "";
-    }
+    const characterName = resolveCharacterDisplayName({
+      characterId: dialogueState.characterId,
+      character: dialogueState.character,
+      characters: state.projectData.resources?.characters ?? {},
+      variables,
+    });
 
     const historyEntry = createDialogueHistoryEntry({
       sectionId,
@@ -2965,18 +2972,20 @@ export const updateProjectData = ({ state }, payload) => {
 
   state.projectData = projectData;
   const variableConfigs = projectData?.resources?.variables ?? {};
+  const { contextVariableDefaultValues, globalVariablesDefaultValues } =
+    getDefaultVariablesFromProjectData(projectData ?? {});
   if (Object.prototype.hasOwnProperty.call(state.global ?? {}, "variables")) {
-    state.global.variables = filterStoredVariables(
-      state.global.variables,
-      variableConfigs,
-    );
+    state.global.variables = {
+      ...globalVariablesDefaultValues,
+      ...filterStoredVariables(state.global.variables, variableConfigs),
+    };
   }
   state.contexts?.forEach((context) => {
     if (Object.prototype.hasOwnProperty.call(context ?? {}, "variables")) {
-      context.variables = filterStoredVariables(
-        context.variables,
-        variableConfigs,
-      );
+      context.variables = {
+        ...contextVariableDefaultValues,
+        ...filterStoredVariables(context.variables, variableConfigs),
+      };
     }
   });
   clearConfirmDialog(state);

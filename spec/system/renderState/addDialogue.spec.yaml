@@ -116,6 +116,136 @@ out:
           content: "Hello world"
   animations: []
 ---
+case: resource character nameVariableId resolves speaker name from variables
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      dialogue:
+        ui:
+          resourceId: "dialogueLayout"
+        characterId: "protagonist"
+        content:
+          - text: "Hello world"
+    resources:
+      layouts:
+        dialogueLayout:
+          elements:
+            - id: "dialogue-name"
+              type: "text"
+              content: "${dialogue.character.name}"
+            - id: "dialogue-text"
+              type: "text"
+              content: "${dialogue.content[0].text}"
+      characters:
+        protagonist:
+          name: "Protagonist"
+          nameVariableId: "playerName"
+    dialogueUIHidden: false
+    autoMode: false
+    skipMode: false
+    variables:
+      playerName: "Ada"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "dialogue-name"
+          type: "text"
+          content: "Ada"
+        - id: "dialogue-text"
+          type: "text"
+          content: "Hello world"
+  animations: []
+---
+case: dialogue character override takes precedence over resource nameVariableId
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      dialogue:
+        ui:
+          resourceId: "dialogueLayout"
+        characterId: "protagonist"
+        character:
+          name: "Mysterious Stranger"
+        content:
+          - text: "Hello world"
+    resources:
+      layouts:
+        dialogueLayout:
+          elements:
+            - id: "dialogue-name"
+              type: "text"
+              content: "${dialogue.character.name}"
+      characters:
+        protagonist:
+          name: "Protagonist"
+          nameVariableId: "playerName"
+    dialogueUIHidden: false
+    autoMode: false
+    skipMode: false
+    variables:
+      playerName: "Ada"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "dialogue-name"
+          type: "text"
+          content: "Mysterious Stranger"
+  animations: []
+---
+case: resource character nameVariableId requires a string value
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      dialogue:
+        ui:
+          resourceId: "dialogueLayout"
+        characterId: "protagonist"
+        content:
+          - text: "Hello world"
+    resources:
+      layouts:
+        dialogueLayout:
+          elements:
+            - id: "dialogue-name"
+              type: "text"
+              content: "${dialogue.character.name}"
+      characters:
+        protagonist:
+          name: "Protagonist"
+          nameVariableId: "playerName"
+    dialogueUIHidden: false
+    autoMode: false
+    skipMode: false
+    variables:
+      playerName: 12
+throws: 'Character "protagonist" nameVariableId "playerName" must resolve to a string variable'
+---
 case: dialogue character sprite renders layered image group above dialogue ui
 in:
   - elements:

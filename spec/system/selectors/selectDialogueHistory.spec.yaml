@@ -103,6 +103,52 @@ out:
     content:
       - text: "Hello world"
 ---
+case: history resolves resource character nameVariableId from variables
+in:
+  - state:
+      global:
+        isLineCompleted: false
+      projectData:
+        resources:
+          variables:
+            playerName:
+              type: "string"
+              scope: "context"
+          characters:
+            protagonist:
+              name: "Protagonist"
+              nameVariableId: "playerName"
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          characterId: "protagonist"
+                          content:
+                            - text: "Hello world"
+      contexts:
+        - currentPointerMode: "read"
+          variables:
+            playerName: "Ada"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+out:
+  - sectionId: "section1"
+    lineId: "1"
+    characterId: "protagonist"
+    character:
+      name: "Ada"
+    characterName: "Ada"
+    text: "Hello world"
+    content:
+      - text: "Hello world"
+---
 case: history keeps dialogue character sprite metadata
 in:
   - state:

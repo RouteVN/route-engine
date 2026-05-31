@@ -169,6 +169,31 @@ describe("projectData schema", () => {
     expect(validateProjectData.errors).toBeNull();
   });
 
+  it("accepts resource character nameVariableId", () => {
+    expect(
+      validateProjectData(
+        createMinimalProjectData({
+          resources: {
+            variables: {
+              playerName: {
+                type: "string",
+                scope: "context",
+                default: "Guest",
+              },
+            },
+            characters: {
+              protagonist: {
+                name: "Protagonist",
+                nameVariableId: "playerName",
+              },
+            },
+          },
+        }),
+      ),
+    ).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
+
   it("rejects non-hex screen backgroundColor", () => {
     expect(
       validateProjectData(

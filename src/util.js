@@ -358,6 +358,57 @@ const cloneDataValue = (value) => {
   return structuredClone(source);
 };
 
+const resolveCharacterNameVariable = ({
+  characterId,
+  resourceCharacter,
+  variables = {},
+} = {}) => {
+  if (!hasOwn(resourceCharacter, "nameVariableId")) {
+    return undefined;
+  }
+
+  const variableId = resourceCharacter.nameVariableId;
+  const value = variables?.[variableId];
+
+  if (typeof value !== "string") {
+    throw new Error(
+      `Character "${characterId}" nameVariableId "${variableId}" must resolve to a string variable`,
+    );
+  }
+
+  return value;
+};
+
+export const resolveCharacterDisplayName = ({
+  characterId,
+  character,
+  characterName,
+  characters = {},
+  variables = {},
+} = {}) => {
+  const resourceCharacter = characterId ? characters?.[characterId] : undefined;
+
+  if (character?.name !== undefined) {
+    return character.name;
+  }
+
+  if (characterName !== undefined) {
+    return characterName;
+  }
+
+  const variableName = resolveCharacterNameVariable({
+    characterId,
+    resourceCharacter,
+    variables,
+  });
+
+  if (variableName !== undefined) {
+    return variableName;
+  }
+
+  return resourceCharacter?.name || "";
+};
+
 export const isComputedVariableConfig = (config) => hasOwn(config, "computed");
 
 export const filterStoredVariables = (variables = {}, variableConfigs = {}) =>
