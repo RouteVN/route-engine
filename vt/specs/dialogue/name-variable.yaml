@@ -1,0 +1,124 @@
+---
+title: Dialogue Name Variable
+description: Resource character nameVariableId binds the displayed speaker name to a string variable.
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 80
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+resources:
+  variables:
+    playerName:
+      type: string
+      scope: context
+      default: Guest
+  controls:
+    base:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          colorId: bg
+          click:
+            payload:
+              actions:
+                nextLine: {}
+  layouts:
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: dialogue-panel
+          type: rect
+          x: 120
+          y: 720
+          width: 1680
+          height: 260
+          colorId: panel
+        - id: speaker-name
+          type: text
+          x: 170
+          y: 770
+          content: ${dialogue.character.name}
+          textStyleId: nameText
+        - id: dialogue-text
+          type: text
+          x: 170
+          y: 845
+          width: 1460
+          content: ${dialogue.content[0].text}
+          textStyleId: bodyText
+  characters:
+    protagonist:
+      name: Protagonist
+      nameVariableId: playerName
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    bg:
+      hex: "#000000"
+    panel:
+      hex: "#4D4D4D"
+    fg:
+      hex: "#FFFFFF"
+    fgMuted:
+      hex: "#D9D9D9"
+  textStyles:
+    nameText:
+      fontId: fontDefault
+      colorId: fgMuted
+      fontSize: 42
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    bodyText:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 34
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      name: Main
+      initialSectionId: start
+      sections:
+        start:
+          name: Start
+          lines:
+            - id: line1
+              actions:
+                control:
+                  resourceId: base
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  characterId: protagonist
+                  content:
+                    - text: This speaker name comes from the default variable value.
+            - id: line2
+              actions:
+                updateVariable:
+                  id: rename
+                  operations:
+                    - variableId: playerName
+                      op: set
+                      value: Ada
+                dialogue:
+                  characterId: protagonist
+                  content:
+                    - text: The same character resource now displays the updated name.

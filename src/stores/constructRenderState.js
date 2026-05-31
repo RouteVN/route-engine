@@ -1,5 +1,9 @@
 import { parseAndRender } from "jempl";
-import { createSequentialActionsExecutor, formatDate } from "../util.js";
+import {
+  createSequentialActionsExecutor,
+  formatDate,
+  resolveCharacterDisplayName,
+} from "../util.js";
 import { GLOBAL_RUNTIME_DEFAULTS } from "../runtimeFields.js";
 import {
   DEFAULT_VISUAL_LAYER,
@@ -1824,14 +1828,16 @@ const createDialogueCharacterTemplateData = ({
   character,
   characterName,
   characters = {},
+  variables = {},
 } = {}) => {
   const resourceCharacter = characterId ? characters?.[characterId] : undefined;
-  const resolvedName =
-    character?.name !== undefined
-      ? character.name
-      : characterName !== undefined
-        ? characterName
-        : resourceCharacter?.name || "";
+  const resolvedName = resolveCharacterDisplayName({
+    characterId,
+    character,
+    characterName,
+    characters,
+    variables,
+  });
 
   return {
     ...(resourceCharacter || {}),
@@ -1843,6 +1849,7 @@ const createDialogueCharacterTemplateData = ({
 const createHistoryDialogueTemplateData = (
   dialogueHistory = [],
   characters = {},
+  variables = {},
 ) => {
   return dialogueHistory.map((item) => {
     const character = createDialogueCharacterTemplateData({
@@ -1850,6 +1857,7 @@ const createHistoryDialogueTemplateData = (
       character: item.character,
       characterName: item.characterName,
       characters,
+      variables,
     });
     const text =
       typeof item.text === "string"
@@ -1916,6 +1924,7 @@ const createDialogueTemplateData = ({
       character: line.character,
       characterName: line.characterName,
       characters,
+      variables,
     });
 
     return {
@@ -1932,6 +1941,7 @@ const createDialogueTemplateData = ({
     characterId: dialogueState.characterId,
     character: dialogueState.character,
     characters,
+    variables,
   });
 
   return {
@@ -3666,6 +3676,7 @@ export const addOverlayStack = (
       const historyDialogueWithNames = createHistoryDialogueTemplateData(
         dialogueHistory,
         resources.characters,
+        variables,
       );
 
       const templateData = createLayoutTemplateData({
@@ -3776,6 +3787,7 @@ export const addConfirmDialog = (
   const historyDialogueWithNames = createHistoryDialogueTemplateData(
     dialogueHistory,
     resources.characters,
+    variables,
   );
 
   const processedConfirmDialog = parseAndRender(
