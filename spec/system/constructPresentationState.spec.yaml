@@ -952,6 +952,34 @@ out:
           textStyleId: "accentTitle"
         transformId: "titleTop"
 ---
+case: visual text full update keeps previous transform, appearance, and layer
+in:
+  - - visual:
+        items:
+          - id: "title"
+            text:
+              content: "Chapter 1"
+              textStyleId: "title"
+            transformId: "titleTop"
+            layer: 70
+            opacity: 0.8
+    - visual:
+        items:
+          - id: "title"
+            text:
+              content: "Chapter 2"
+              textStyleId: "accentTitle"
+out:
+  visual:
+    items:
+      - id: "title"
+        text:
+          content: "Chapter 2"
+          textStyleId: "accentTitle"
+        transformId: "titleTop"
+        layer: 70
+        opacity: 0.8
+---
 case: new visual text item requires content and textStyleId
 in:
   - - visual:

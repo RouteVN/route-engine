@@ -77,8 +77,17 @@ const hasCompleteVisualText = (item) =>
 
 const hasVisualTextPatch = (item) => hasDefinedProperty(item, "text");
 
-const hasVisualSubject = (item) =>
-  !!item.resourceId || hasCompleteVisualText(item);
+const hasVisualSubject = (item, previousItem) => {
+  if (item.resourceId) {
+    return true;
+  }
+
+  if (!hasCompleteVisualText(item)) {
+    return false;
+  }
+
+  return !previousItem?.text;
+};
 
 const mergeVisualItemPatch = (previousItem, item) => {
   const mergedItem = {
@@ -222,7 +231,7 @@ const processItemsWithAnimations = (
   const processedItems = items
     .map((item, index) => {
       const previousItem = findPreviousItem(previousItems, item, index);
-      const hasResource = hasResourceFn(item);
+      const hasResource = hasResourceFn(item, previousItem);
       const hasAppearance = hasItemAppearance(item);
       const hasTransform = hasItemTransform(item);
       const hasPatch = hasPatchFn(item);
