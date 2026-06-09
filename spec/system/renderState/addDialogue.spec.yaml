@@ -458,16 +458,16 @@ out:
           originX: 64
           originY: 128
           children:
-            - type: "animated-sprite"
+            - type: "spritesheet-animation"
               id: "dialogue-character-sprite-base"
               x: 0
               y: 0
               width: 320
               height: 640
-              spritesheetSrc: "alice-body-sheet.png"
-              spritesheetData:
+              src: "alice-body-sheet.png"
+              atlas:
                 frames: {}
-              animation:
+              playback:
                 frames:
                   - 0
                   - 1

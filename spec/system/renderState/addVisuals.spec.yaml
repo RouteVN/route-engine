@@ -449,7 +449,7 @@ out:
       y: 0
       children:
         - id: "visual-visual1"
-          type: "animated-sprite"
+          type: "spritesheet-animation"
           x: 150
           y: 260
           width: 64
@@ -462,10 +462,10 @@ out:
           scaleY: 0.9
           originX: 64
           originY: 128
-          spritesheetSrc: "sheet.png"
-          spritesheetData:
+          src: "sheet.png"
+          atlas:
             frames: {}
-          animation:
+          playback:
             frames:
               - 0
             animationSpeed: 0.5

@@ -719,13 +719,13 @@ const createAnimatedSpriteElement = ({
 
   return {
     id,
-    type: "animated-sprite",
+    type: "spritesheet-animation",
     ...transform,
     width: spritesheet.width,
     height: spritesheet.height,
-    spritesheetSrc: spritesheet.fileId,
-    spritesheetData: spritesheet.jsonData,
-    animation: {
+    src: spritesheet.fileId,
+    atlas: spritesheet.jsonData,
+    playback: {
       frames: animationDef.frames,
       animationSpeed:
         animationSpeed ??
@@ -2763,14 +2763,14 @@ export const addVisuals = (
             const itemAppearance = getItemAppearance(item);
             const element = {
               id: `visual-${item.id}`,
-              type: "animated-sprite",
+              type: "spritesheet-animation",
               ...getElementTransform(transform, item),
               width: item.width ?? spritesheet.width,
               height: item.height ?? spritesheet.height,
               alpha: itemAppearance.alpha ?? item.alpha ?? 1,
-              spritesheetSrc: spritesheet.fileId,
-              spritesheetData: spritesheet.jsonData,
-              animation: {
+              src: spritesheet.fileId,
+              atlas: spritesheet.jsonData,
+              playback: {
                 frames: animationDef.frames,
                 animationSpeed:
                   item.animationSpeed ?? animationDef.animationSpeed ?? 0.5,

@@ -134,16 +134,16 @@ out:
           scaleX: 1
           scaleY: 1
           children:
-            - type: "animated-sprite"
+            - type: "spritesheet-animation"
               id: "character-container-char1-body"
               x: 0
               y: 0
               width: 200
               height: 200
-              spritesheetSrc: "body-sheet.png"
-              spritesheetData:
+              src: "body-sheet.png"
+              atlas:
                 frames: {}
-              animation:
+              playback:
                 frames:
                   - 0
                   - 1
