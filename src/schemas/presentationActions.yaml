@@ -263,7 +263,16 @@ properties:
                       description: Stable identifier for the sprite layer
                     resourceId:
                       type: string
-                      description: ID of the image resource for this sprite layer
+                      description: ID of the image or spritesheet resource for this sprite layer
+                    animationName:
+                      type: string
+                      description: Optional spritesheet animation name. If omitted for a spritesheet resource, the first defined animation is used.
+                    animationSpeed:
+                      type: number
+                      description: Optional spritesheet animation speed override
+                    loop:
+                      type: boolean
+                      description: Optional spritesheet animation loop override
                   required: [id, resourceId]
                   additionalProperties: false
               animations:
@@ -339,7 +348,16 @@ properties:
                     description: Identifier for the sprite part
                   resourceId:
                     type: string
-                    description: ID of the sprite part resource
+                    description: ID of the image or spritesheet sprite part resource
+                  animationName:
+                    type: string
+                    description: Optional spritesheet animation name. If omitted for a spritesheet resource, the first defined animation is used.
+                  animationSpeed:
+                    type: number
+                    description: Optional spritesheet animation speed override
+                  loop:
+                    type: boolean
+                    description: Optional spritesheet animation loop override
                 additionalProperties: false
             animations:
               $ref: "#/definitions/animationSelection"
