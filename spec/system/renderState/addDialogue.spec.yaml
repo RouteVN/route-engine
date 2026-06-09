@@ -376,6 +376,105 @@ out:
               - duration: 500
                 value: 1
 ---
+case: dialogue character sprite renders spritesheet resource layer
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      dialogue:
+        ui:
+          resourceId: "dialogueLayout"
+        character:
+          sprite:
+            transformId: "dialoguePortraitLeft"
+            items:
+              - id: "base"
+                resourceId: "aliceBodySheet"
+                animationName: "idle"
+        content:
+          - text: "Hello world"
+    previousPresentationState: {}
+    resources:
+      transforms:
+        dialoguePortraitLeft:
+          x: 240
+          y: 900
+          anchorX: 0.5
+          anchorY: 1
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          originX: 64
+          originY: 128
+      spritesheets:
+        aliceBodySheet:
+          fileId: "alice-body-sheet.png"
+          width: 320
+          height: 640
+          jsonData:
+            frames: {}
+          animations:
+            idle:
+              frames:
+                - 0
+                - 1
+              animationSpeed: 0.25
+              loop: true
+      layouts:
+        dialogueLayout:
+          elements:
+            - id: "dialogue-text"
+              type: "text"
+              content: "${dialogue.content[0].text}"
+    dialogueUIHidden: false
+    autoMode: false
+    skipMode: false
+    isLineCompleted: false
+    skipTransitionsAndAnimations: false
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "dialogue-text"
+          type: "text"
+          content: "Hello world"
+        - type: "container"
+          id: "dialogue-character-sprite"
+          x: 240
+          y: 900
+          anchorX: 0.5
+          anchorY: 1
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          originX: 64
+          originY: 128
+          children:
+            - type: "spritesheet-animation"
+              id: "dialogue-character-sprite-base"
+              x: 0
+              y: 0
+              width: 320
+              height: 640
+              src: "alice-body-sheet.png"
+              atlas:
+                frames: {}
+              playback:
+                frames:
+                  - 0
+                  - 1
+                animationSpeed: 0.25
+                loop: true
+  animations: []
+---
 case: dialogue character sprite supports animation-only removal
 in:
   - elements:

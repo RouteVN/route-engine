@@ -442,6 +442,9 @@ describe("projectData schema", () => {
                 {
                   id: "body",
                   resourceId: "leadBody",
+                  animationName: "idle",
+                  animationSpeed: 0.25,
+                  loop: true,
                 },
               ],
             },
@@ -880,7 +883,13 @@ describe("projectData schema", () => {
             sprite: {
               transformId: "dialoguePortraitLeft",
               items: [
-                { id: "base", resourceId: "aliceBody" },
+                {
+                  id: "base",
+                  resourceId: "aliceBody",
+                  animationName: "idle",
+                  animationSpeed: 0.25,
+                  loop: true,
+                },
                 { id: "face", resourceId: "aliceSmile" },
               ],
               animations: {

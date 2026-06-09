@@ -673,6 +673,106 @@ const resolveBackgroundTargetId = ({ resourceId, kind }) => {
 
 const getTextStyleResources = (resources = {}) => resources.textStyles || {};
 const getImageResources = (resources = {}) => resources.images || {};
+
+const DEFAULT_SPRITESHEET_ANIMATION_SPEED = 0.5;
+
+const resolveSpritesheetAnimationName = (
+  spritesheet = {},
+  animationName,
+  resourceId,
+) => {
+  if (animationName) {
+    if (!spritesheet.animations?.[animationName]) {
+      throw new Error(
+        `Animation '${animationName}' not found in spritesheet resource '${resourceId}'`,
+      );
+    }
+
+    return animationName;
+  }
+
+  return Object.keys(spritesheet.animations ?? {})[0];
+};
+
+const createAnimatedSpriteElement = ({
+  id,
+  resourceId,
+  spritesheet,
+  animationName,
+  animationSpeed,
+  loop,
+  transform = {},
+} = {}) => {
+  const resolvedAnimationName = resolveSpritesheetAnimationName(
+    spritesheet,
+    animationName,
+    resourceId,
+  );
+  const animationDef = resolvedAnimationName
+    ? spritesheet.animations?.[resolvedAnimationName]
+    : undefined;
+
+  if (!animationDef) {
+    console.warn(`Spritesheet animation not found: ${resourceId}`);
+    return undefined;
+  }
+
+  return {
+    id,
+    type: "spritesheet-animation",
+    ...transform,
+    width: spritesheet.width,
+    height: spritesheet.height,
+    src: spritesheet.fileId,
+    atlas: spritesheet.jsonData,
+    playback: {
+      frames: animationDef.frames,
+      animationSpeed:
+        animationSpeed ??
+        animationDef.animationSpeed ??
+        DEFAULT_SPRITESHEET_ANIMATION_SPEED,
+      loop: loop ?? animationDef.loop ?? true,
+    },
+  };
+};
+
+const createCharacterSpriteLayerElement = ({
+  id,
+  item,
+  resources = {},
+} = {}) => {
+  const imageResource = resources.images?.[item.resourceId];
+  if (imageResource) {
+    return {
+      type: "sprite",
+      id,
+      src: imageResource.fileId,
+      width: imageResource.width,
+      height: imageResource.height,
+      x: 0,
+      y: 0,
+    };
+  }
+
+  const spritesheet = resources.spritesheets?.[item.resourceId];
+  if (spritesheet) {
+    return createAnimatedSpriteElement({
+      id,
+      resourceId: item.resourceId,
+      spritesheet,
+      animationName: item.animationName,
+      animationSpeed: item.animationSpeed,
+      loop: item.loop,
+      transform: {
+        x: 0,
+        y: 0,
+      },
+    });
+  }
+
+  console.warn(`Character sprite resource not found: ${item.resourceId}`);
+  return undefined;
+};
 const getColorResources = (resources = {}) => resources.colors || {};
 const HEX_COLOR_PATTERN = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 
@@ -2510,21 +2610,16 @@ export const addCharacters = (
       };
 
       for (const sprite of sprites) {
-        const imageResource = resources.images[sprite.resourceId];
-        if (!imageResource) {
-          console.warn(`Image resource not found: ${sprite.resourceId}`);
+        const spriteLayer = createCharacterSpriteLayerElement({
+          id: `${containerId}-${sprite.id}`,
+          item: sprite,
+          resources,
+        });
+        if (!spriteLayer) {
           continue;
         }
 
-        characterContainer.children.push({
-          type: "sprite",
-          id: `${containerId}-${sprite.id}`,
-          src: imageResource.fileId,
-          width: imageResource.width,
-          height: imageResource.height,
-          x: 0,
-          y: 0,
-        });
+        characterContainer.children.push(spriteLayer);
       }
 
       storyContainer.children.push(characterContainer);
@@ -2668,14 +2763,14 @@ export const addVisuals = (
             const itemAppearance = getItemAppearance(item);
             const element = {
               id: `visual-${item.id}`,
-              type: "animated-sprite",
+              type: "spritesheet-animation",
               ...getElementTransform(transform, item),
               width: item.width ?? spritesheet.width,
               height: item.height ?? spritesheet.height,
               alpha: itemAppearance.alpha ?? item.alpha ?? 1,
-              spritesheetSrc: spritesheet.fileId,
-              spritesheetData: spritesheet.jsonData,
-              animation: {
+              src: spritesheet.fileId,
+              atlas: spritesheet.jsonData,
+              playback: {
                 frames: animationDef.frames,
                 animationSpeed:
                   item.animationSpeed ?? animationDef.animationSpeed ?? 0.5,
@@ -2854,21 +2949,16 @@ const addDialogueCharacterSprite = (
   };
 
   for (const item of sprite.items) {
-    const imageResource = resources.images?.[item.resourceId];
-    if (!imageResource) {
-      console.warn(`Image resource not found: ${item.resourceId}`);
+    const spriteLayer = createCharacterSpriteLayerElement({
+      id: `${DIALOGUE_CHARACTER_SPRITE_CONTAINER_ID}-${item.id}`,
+      item,
+      resources,
+    });
+    if (!spriteLayer) {
       continue;
     }
 
-    spriteContainer.children.push({
-      type: "sprite",
-      id: `${DIALOGUE_CHARACTER_SPRITE_CONTAINER_ID}-${item.id}`,
-      src: imageResource.fileId,
-      width: imageResource.width,
-      height: imageResource.height,
-      x: 0,
-      y: 0,
-    });
+    spriteContainer.children.push(spriteLayer);
   }
 
   storyContainer.children.push(spriteContainer);

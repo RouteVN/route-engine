@@ -1,0 +1,86 @@
+---
+title: Character Spritesheet Resource
+description: |
+  Character sprite layers can resolve resourceId from both image resources and
+  spritesheet resources.
+specs:
+  - the screenshot should show one character composed from a spritesheet-backed body
+    and an image-backed face layer
+---
+screen:
+  width: 1920
+  height: 1080
+resources:
+  images:
+    face-smile:
+      fileId: character_parts_face_smile
+      width: 620
+      height: 960
+  spritesheets:
+    bodySheet:
+      fileId: character_parts_body
+      width: 620
+      height: 960
+      jsonData:
+        frames:
+          bodyBase.png:
+            frame:
+              x: 0
+              y: 0
+              w: 620
+              h: 960
+            rotated: false
+            trimmed: false
+            spriteSourceSize:
+              x: 0
+              y: 0
+              w: 620
+              h: 960
+            sourceSize:
+              w: 620
+              h: 960
+        meta:
+          format: RGBA8888
+          size:
+            w: 620
+            h: 960
+          scale: "1"
+      animations:
+        idle:
+          frames:
+            - 0
+          animationSpeed: 0.5
+          loop: false
+  transforms:
+    centerStage:
+      x: 960
+      y: 1080
+      anchorX: 0.5
+      anchorY: 1
+      scaleX: 0.9
+      scaleY: 0.9
+  colors:
+    stage:
+      hex: "#000000"
+story:
+  initialSceneId: characterSpritesheetScene
+  scenes:
+    characterSpritesheetScene:
+      name: Character Spritesheet Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                background:
+                  colorId: stage
+                character:
+                  items:
+                    - id: layeredHero
+                      transformId: centerStage
+                      sprites:
+                        - id: body
+                          resourceId: bodySheet
+                        - id: face
+                          resourceId: face-smile
