@@ -568,6 +568,7 @@ export const dialogue = (state, presentation) => {
       if (state.dialogue.mode === "adv") {
         state.dialogue.content = undefined;
         delete state.dialogue.initialRevealedContent;
+        delete state.dialogue.textSpeed;
         if (state.dialogue.persistCharacter !== true) {
           delete state.dialogue.characterId;
           delete state.dialogue.character;
@@ -630,6 +631,12 @@ export const dialogue = (state, presentation) => {
       content: presentation.dialogue.content,
       append: isAppendingAdvDialogueContent,
     });
+  }
+
+  if (hasOwnProperty(presentation.dialogue, "textSpeed")) {
+    state.dialogue.textSpeed = presentation.dialogue.textSpeed;
+  } else {
+    delete state.dialogue.textSpeed;
   }
 
   const persistCharacter = hasOwnProperty(
@@ -699,6 +706,10 @@ export const dialogue = (state, presentation) => {
       content: presentation.dialogue.content,
       characterId: state.dialogue.characterId ?? null,
     };
+
+    if (state.dialogue.textSpeed !== undefined) {
+      dialogueLine.textSpeed = state.dialogue.textSpeed;
+    }
 
     if (state.dialogue.character) {
       dialogueLine.character = clonePresentationValue(state.dialogue.character);

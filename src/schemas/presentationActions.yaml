@@ -226,6 +226,9 @@ properties:
             text:
               type: string
         description: The dialogue text content
+      textSpeed:
+        type: number
+        description: One-line dialogue text reveal speed override. When omitted, dialogue templates should use the runtime dialogueTextSpeed preference.
       append:
         type: boolean
         description: In ADV mode, append content to the current dialogue content and reveal only the appended suffix when the dialogue layout binds dialogue.initialRevealedCharacters to text-revealing.initialRevealedCharacters.

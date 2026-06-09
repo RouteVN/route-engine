@@ -583,6 +583,103 @@ out:
           revealEffect: "typewriter"
   animations: []
 ---
+case: dialogue textSpeed override shadows runtime text speed in templates
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "dialogueLayout"
+        textSpeed: 12
+        content:
+          - text: "Slow line"
+    resources:
+      layouts:
+        dialogueLayout:
+          elements:
+            - id: "dialogue-text"
+              type: "text-revealing"
+              content: "${dialogue.content}"
+              speed: "${dialogue.textSpeed}"
+              revealEffect: "typewriter"
+      colors: {}
+      fonts: {}
+      textStyles: {}
+    runtime:
+      dialogueTextSpeed: 84
+    dialogueUIHidden: false
+    autoMode: false
+    skipMode: false
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "dialogue-text"
+          type: "text-revealing"
+          content:
+            - text: "Slow line"
+          speed: 12
+          revealEffect: "typewriter"
+  animations: []
+---
+case: dialogue textSpeed falls back to runtime text speed in templates
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "dialogueLayout"
+        content:
+          - text: "User speed line"
+    resources:
+      layouts:
+        dialogueLayout:
+          elements:
+            - id: "dialogue-text"
+              type: "text-revealing"
+              content: "${dialogue.content}"
+              speed: "${dialogue.textSpeed}"
+              revealEffect: "typewriter"
+      colors: {}
+      fonts: {}
+      textStyles: {}
+    runtime:
+      dialogueTextSpeed: 84
+    dialogueUIHidden: false
+    autoMode: false
+    skipMode: false
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "dialogue-text"
+          type: "text-revealing"
+          content:
+            - text: "User speed line"
+          speed: 84
+          revealEffect: "typewriter"
+  animations: []
+---
 case: nvl-template-receives-lines
 in:
   - elements:

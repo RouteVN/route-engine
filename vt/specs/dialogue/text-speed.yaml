@@ -1,0 +1,119 @@
+---
+title: Dialogue Text Speed
+description: |
+  Verifies dialogue.textSpeed shadows runtime.dialogueTextSpeed for one line
+  while layouts bind Route Graphics text-revealing.speed.
+steps:
+  - action: wait
+    ms: 250
+  - action: screenshot
+  - action: click
+    x: 960
+    y: 540
+  - action: wait
+    ms: 80
+  - action: click
+    x: 960
+    y: 540
+  - action: wait
+    ms: 250
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+resources:
+  controls:
+    base1:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: overlayColor
+  layouts:
+    revealDialogue:
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 100
+          y: 760
+          width: 1720
+          height: 240
+          colorId: panelColor
+        - id: speed-label
+          type: text
+          x: 140
+          y: 790
+          content: "effective:${dialogue.textSpeed} runtime:${runtime.dialogueTextSpeed}"
+          textStyleId: labelStyle
+        - id: dialogue-text
+          type: text-revealing
+          x: 140
+          y: 840
+          width: 1640
+          speed: ${dialogue.textSpeed}
+          revealEffect: typewriter
+          content: ${dialogue.content}
+          textStyleId: textStyle1
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    overlayColor:
+      hex: "#000000"
+    panelColor:
+      hex: "#3F4652"
+    labelColor:
+      hex: "#96F2D7"
+    textColor:
+      hex: "#FFFFFF"
+  textStyles:
+    labelStyle:
+      fontId: fontDefault
+      colorId: labelColor
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle1:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 30
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.25
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: start
+      sections:
+        start:
+          name: Start
+          lines:
+            - id: line1
+              actions:
+                control:
+                  resourceId: base1
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: revealDialogue
+                  textSpeed: 4
+                  content:
+                    - text: "Line 1 uses a deliberately slow authored dialogue speed override so the snapshot catches only the beginning of this sentence."
+            - id: line2
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: revealDialogue
+                  content:
+                    - text: "Line 2 omits the override and returns to the runtime dialogue speed preference for this revealing sentence."

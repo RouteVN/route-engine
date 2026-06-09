@@ -873,6 +873,37 @@ describe("projectData schema", () => {
     expect(validatePresentationActions.errors).toBeNull();
   });
 
+  it("accepts dialogue textSpeed as a one-line reveal speed override", () => {
+    expect(
+      validatePresentationActions({
+        dialogue: {
+          textSpeed: 12,
+          content: [{ text: "Hello" }],
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+  });
+
+  it("rejects non-numeric dialogue textSpeed overrides", () => {
+    expect(
+      validatePresentationActions({
+        dialogue: {
+          textSpeed: "slow",
+          content: [{ text: "Hello" }],
+        },
+      }),
+    ).toBe(false);
+    expect(validatePresentationActions.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          instancePath: "/dialogue/textSpeed",
+          keyword: "type",
+        }),
+      ]),
+    );
+  });
+
   it("accepts layered dialogue character sprite groups in presentation actions", () => {
     expect(
       validatePresentationActions({

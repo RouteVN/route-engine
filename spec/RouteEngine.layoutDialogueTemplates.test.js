@@ -293,6 +293,90 @@ const createAppendDialogueProjectData = () => ({
   },
 });
 
+const createDialogueTextSpeedProjectData = () => ({
+  screen: {
+    width: 1920,
+    height: 1080,
+  },
+  resources: {
+    layouts: {
+      advDialogue: {
+        mode: "adv",
+        elements: [
+          {
+            id: "body",
+            type: "text-revealing",
+            content: "${dialogue.content}",
+            speed: "${dialogue.textSpeed}",
+            revealEffect: "typewriter",
+          },
+        ],
+      },
+    },
+    sounds: {},
+    images: {},
+    videos: {},
+    sprites: {},
+    characters: {},
+    variables: {},
+    transforms: {},
+    sectionTransitions: {},
+    animations: {},
+    fonts: {},
+    colors: {},
+    textStyles: {},
+    controls: {},
+  },
+  story: {
+    initialSceneId: "scene1",
+    scenes: {
+      scene1: {
+        initialSectionId: "section1",
+        sections: {
+          section1: {
+            initialLineId: "line1",
+            lines: [
+              {
+                id: "line1",
+                actions: {
+                  dialogue: {
+                    mode: "adv",
+                    ui: {
+                      resourceId: "advDialogue",
+                    },
+                    textSpeed: 12,
+                    content: [
+                      {
+                        text: "Line 1 uses authored speed.",
+                      },
+                    ],
+                  },
+                },
+              },
+              {
+                id: "line2",
+                actions: {
+                  dialogue: {
+                    mode: "adv",
+                    ui: {
+                      resourceId: "advDialogue",
+                    },
+                    content: [
+                      {
+                        text: "Line 2 returns to runtime speed.",
+                      },
+                    ],
+                  },
+                },
+              },
+            ],
+          },
+        },
+      },
+    },
+  },
+});
+
 describe("RouteEngine layout dialogue templates", () => {
   it("does not expose persisted ADV dialogue shells on the next non-dialogue line", () => {
     const engine = createRouteEngine({
@@ -422,6 +506,43 @@ describe("RouteEngine layout dialogue templates", () => {
           },
         ],
         initialRevealedCharacters: 0,
+      }),
+    );
+  });
+
+  it("exposes dialogue textSpeed as a one-line override without mutating runtime speed", () => {
+    const engine = createRouteEngine({
+      handlePendingEffects: () => {},
+    });
+
+    engine.init({
+      initialState: {
+        projectData: createDialogueTextSpeedProjectData(),
+        global: {
+          runtime: {
+            dialogueTextSpeed: 84,
+          },
+        },
+      },
+    });
+
+    expect(engine.selectRuntime().dialogueTextSpeed).toBe(84);
+    expect(findElementById(engine.selectRenderState().elements, "body")).toEqual(
+      expect.objectContaining({
+        speed: 12,
+      }),
+    );
+
+    engine.handleAction("markLineCompleted", {});
+    engine.handleActions({
+      nextLine: {},
+    });
+
+    expect(engine.selectPresentationState().dialogue.textSpeed).toBeUndefined();
+    expect(engine.selectRuntime().dialogueTextSpeed).toBe(84);
+    expect(findElementById(engine.selectRenderState().elements, "body")).toEqual(
+      expect.objectContaining({
+        speed: 84,
       }),
     );
   });
