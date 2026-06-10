@@ -1613,6 +1613,7 @@ const createLayoutTemplateData = ({
     includeInactiveAdvDialogue,
     characters,
     variables,
+    runtime: resolvedRuntime,
   });
   const templateData = {
     variables,
@@ -1994,6 +1995,7 @@ const createDialogueTemplateData = ({
   includeInactiveAdvDialogue = false,
   characters = {},
   variables,
+  runtime,
 } = {}) => {
   if (
     !includeInactiveAdvDialogue &&
@@ -2014,6 +2016,9 @@ const createDialogueTemplateData = ({
           path: "dialogue.initialRevealedContent",
           variables,
         });
+  const runtimeDialogueTextSpeed =
+    runtime?.dialogueTextSpeed ?? GLOBAL_RUNTIME_DEFAULTS.dialogueTextSpeed;
+  const textSpeed = dialogueState.textSpeed ?? runtimeDialogueTextSpeed;
   const dialogueLines = (dialogueState.lines || []).map((line, index) => {
     const lineContent = ensureDialogueContentItems(
       line.content,
@@ -2029,6 +2034,7 @@ const createDialogueTemplateData = ({
 
     return {
       ...line,
+      textSpeed: line.textSpeed ?? runtimeDialogueTextSpeed,
       content: lineContent.map((item) => ({
         ...item,
         text: interpolateDialogueText(item.text, { variables }),
@@ -2048,6 +2054,7 @@ const createDialogueTemplateData = ({
     characterId: dialogueState.characterId,
     persistCharacter: dialogueState.persistCharacter,
     character,
+    textSpeed,
     content: dialogueContent.map((item) => ({
       ...item,
       text: interpolateDialogueText(item.text, { variables }),

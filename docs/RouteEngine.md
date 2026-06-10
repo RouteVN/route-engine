@@ -1016,6 +1016,33 @@ Field semantics:
   `character.sprite` while `persistCharacter` is active, the provided fields
   update the persisted speaker and omitted fields keep their previous values.
 
+### Dialogue Text Speed
+
+`runtime.dialogueTextSpeed` is the persisted user preference. A dialogue action
+can provide `textSpeed` to override that preference for the authored line only:
+
+```yaml
+dialogue:
+  textSpeed: 12
+  content:
+    - text: "This line reveals slowly."
+```
+
+Dialogue layouts should bind the effective dialogue value to the Route Graphics
+`text-revealing.speed` field:
+
+```yaml
+- id: dialogue-text
+  type: text-revealing
+  content: ${dialogue.content}
+  speed: ${dialogue.textSpeed}
+  revealEffect: typewriter
+```
+
+If the action omits `textSpeed`, `${dialogue.textSpeed}` resolves to
+`${runtime.dialogueTextSpeed}`. The override does not mutate the runtime
+preference and is cleared by the next dialogue action that omits it.
+
 ### Dialogue Append Reveal
 
 In ADV mode, `dialogue.append: true` appends the line content to the current
@@ -1045,6 +1072,7 @@ The dialogue layout should pass the template value through to Route Graphics:
   type: text-revealing
   content: ${dialogue.content}
   initialRevealedCharacters: ${dialogue.initialRevealedCharacters}
+  speed: ${dialogue.textSpeed}
   revealEffect: typewriter
 ```
 
@@ -1256,6 +1284,7 @@ dialogue:
           resourceId: aliceSmile
   content:
     - text: Hello
+  textSpeed: 12
   lines:
     - characterId: alice
       character:
@@ -1266,6 +1295,7 @@ dialogue:
             - id: base
               resourceId: aliceBody
       characterName: Alice
+      textSpeed: 12
       content:
         - text: Hello
 ```

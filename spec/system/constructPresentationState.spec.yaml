@@ -414,6 +414,54 @@ out:
     content:
       - text: "Hello"
 ---
+case: dialogue textSpeed override clears on the next dialogue line
+in:
+  - - dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "simple-dialogue"
+        textSpeed: 12
+        content:
+          - text: "Slow line"
+    - dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "simple-dialogue"
+        content:
+          - text: "User speed line"
+out:
+  dialogue:
+    mode: "adv"
+    ui:
+      resourceId: "simple-dialogue"
+    content:
+      - text: "User speed line"
+---
+case: nvl dialogue textSpeed override belongs only to the authored line
+in:
+  - - dialogue:
+        mode: "nvl"
+        textSpeed: 12
+        content:
+          - text: "Slow line"
+    - dialogue:
+        mode: "nvl"
+        content:
+          - text: "User speed line"
+out:
+  dialogue:
+    mode: "nvl"
+    content:
+      - text: "User speed line"
+    lines:
+      - content:
+          - text: "Slow line"
+        characterId: null
+        textSpeed: 12
+      - content:
+          - text: "User speed line"
+        characterId: null
+---
 case: dialogue speaker persists when persistCharacter is true
 in:
   - - dialogue:
