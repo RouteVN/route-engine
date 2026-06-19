@@ -391,7 +391,7 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
     expect(engine.handleActions).not.toHaveBeenCalled();
   });
 
-  it("forwards tagged custom form-surface actions while a form is visible", async () => {
+  it("forwards updateVariable actions while a form is visible", async () => {
     const engine = {
       selectRenderState: vi.fn(() => ({ id: "render-1" })),
       handleAction: vi.fn(),
@@ -430,7 +430,13 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
       },
     });
 
-    expect(engine.handleActions).not.toHaveBeenCalled();
+    expect(engine.handleActions).toHaveBeenCalledWith(actions, {
+      _event: {
+        id: "untagged-button",
+      },
+    });
+
+    engine.handleActions.mockClear();
 
     await eventHandler("click", {
       _interactionSource: "form",

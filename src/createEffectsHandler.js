@@ -387,6 +387,7 @@ const createEffectsHandler = ({
     "submitForm",
     "cancelForm",
   ]);
+  const formConcurrentActionTypes = new Set(["updateVariable"]);
 
   const getActiveInteraction = (engine) => {
     if (typeof engine?.selectActiveInteraction === "function") {
@@ -457,6 +458,15 @@ const createEffectsHandler = ({
     );
   };
 
+  const isFormConcurrentActionPayload = (actions = {}) => {
+    return (
+      Object.keys(actions).length > 0 &&
+      Object.keys(actions).every((actionType) =>
+        formConcurrentActionTypes.has(actionType),
+      )
+    );
+  };
+
   const matchesFormSurfacePayload = (payload, activeInteraction) => {
     if (!matchesInteractionSource(payload, activeInteraction)) {
       return false;
@@ -484,6 +494,10 @@ const createEffectsHandler = ({
 
       if (hasFormInteractionAction(actions)) {
         return false;
+      }
+
+      if (isFormConcurrentActionPayload(actions)) {
+        return true;
       }
 
       return matchesFormSurfacePayload(payload, activeInteraction);
