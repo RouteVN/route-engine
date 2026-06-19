@@ -391,6 +391,68 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
     expect(engine.handleActions).not.toHaveBeenCalled();
   });
 
+  it("forwards tagged custom form-surface actions while a form is visible", async () => {
+    const engine = {
+      selectRenderState: vi.fn(() => ({ id: "render-1" })),
+      handleAction: vi.fn(),
+      handleActions: vi.fn(),
+      selectActiveInteraction: vi.fn(() => ({
+        source: "form",
+        formKey: "section1:line1:profileForm",
+      })),
+    };
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics: {
+        render: vi.fn(),
+      },
+      ticker: createTicker(),
+    });
+
+    const actions = {
+      updateVariable: {
+        id: "setFlag",
+        operations: [
+          {
+            variableId: "flag",
+            op: "set",
+            value: true,
+          },
+        ],
+      },
+    };
+    const eventHandler = effectsHandler.createRouteGraphicsEventHandler();
+
+    await eventHandler("click", {
+      actions,
+      _event: {
+        id: "untagged-button",
+      },
+    });
+
+    expect(engine.handleActions).not.toHaveBeenCalled();
+
+    await eventHandler("click", {
+      _interactionSource: "form",
+      actions,
+      _event: {
+        id: "tagged-button",
+      },
+    });
+
+    expect(engine.handleActions).toHaveBeenCalledWith(
+      actions,
+      {
+        _event: {
+          id: "tagged-button",
+        },
+      },
+      {
+        interactionSource: "form",
+      },
+    );
+  });
+
   it("coalesces replaceable effects by name and keeps the last payload", () => {
     const ticker = createTicker();
     const engine = {
