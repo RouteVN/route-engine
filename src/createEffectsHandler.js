@@ -387,6 +387,7 @@ const createEffectsHandler = ({
     "submitForm",
     "cancelForm",
   ]);
+  const formConcurrentActionTypes = new Set(["updateVariable"]);
 
   const getActiveInteraction = (engine) => {
     if (typeof engine?.selectActiveInteraction === "function") {
@@ -411,12 +412,16 @@ const createEffectsHandler = ({
     return getFormInteractionKey(value) === activeInteraction?.formKey;
   };
 
-  const matchesInteraction = (value, activeInteraction) => {
+  const matchesInteractionSource = (value, activeInteraction) => {
     if (!value || typeof value !== "object" || Array.isArray(value)) {
       return false;
     }
 
-    if (value._interactionSource !== activeInteraction?.source) {
+    return value._interactionSource === activeInteraction?.source;
+  };
+
+  const matchesInteraction = (value, activeInteraction) => {
+    if (!matchesInteractionSource(value, activeInteraction)) {
       return false;
     }
 
@@ -439,23 +444,46 @@ const createEffectsHandler = ({
     return hasMatchingFormKey(value, activeInteraction);
   };
 
+  const hasFormInteractionAction = (actions = {}) => {
+    return Object.keys(actions).some((actionType) =>
+      formInteractionActionTypes.has(actionType),
+    );
+  };
+
+  const hasMatchingFormAction = (actions = {}, activeInteraction) => {
+    return Object.entries(actions).some(
+      ([actionType, actionPayload]) =>
+        formInteractionActionTypes.has(actionType) &&
+        matchesFormAction(actionPayload, activeInteraction),
+    );
+  };
+
+  const isFormConcurrentActionPayload = (actions = {}) => {
+    return (
+      Object.keys(actions).length > 0 &&
+      Object.keys(actions).every((actionType) =>
+        formConcurrentActionTypes.has(actionType),
+      )
+    );
+  };
+
   const isInteractionPayload = (payload = {}, activeInteraction) => {
     const actions = payload?.actions;
 
     if (activeInteraction?.source === "form") {
-      if (matchesInteraction(payload, activeInteraction)) {
-        return true;
-      }
-
       if (!actions || typeof actions !== "object" || Array.isArray(actions)) {
         return false;
       }
 
-      return Object.entries(actions).some(
-        ([actionType, actionPayload]) =>
-          formInteractionActionTypes.has(actionType) &&
-          matchesFormAction(actionPayload, activeInteraction),
-      );
+      if (hasMatchingFormAction(actions, activeInteraction)) {
+        return true;
+      }
+
+      if (hasFormInteractionAction(actions)) {
+        return false;
+      }
+
+      return isFormConcurrentActionPayload(actions);
     }
 
     if (matchesInteraction(payload, activeInteraction)) {
