@@ -391,6 +391,54 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
     expect(engine.handleActions).not.toHaveBeenCalled();
   });
 
+  it("blocks tagged form-surface progression actions while a form is visible", async () => {
+    const engine = {
+      selectRenderState: vi.fn(() => ({ id: "render-1" })),
+      handleAction: vi.fn(),
+      handleActions: vi.fn(),
+      selectActiveInteraction: vi.fn(() => ({
+        source: "form",
+        formKey: "section1:line1:profileForm",
+      })),
+    };
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics: {
+        render: vi.fn(),
+      },
+      ticker: createTicker(),
+    });
+
+    const eventHandler = effectsHandler.createRouteGraphicsEventHandler();
+
+    await eventHandler("click", {
+      _interactionSource: "form",
+      actions: {
+        nextLine: {},
+      },
+    });
+
+    expect(engine.handleActions).not.toHaveBeenCalled();
+
+    await eventHandler("click", {
+      _interactionSource: "form",
+      actions: {
+        conditional: {
+          branches: [
+            {
+              when: true,
+              actions: {
+                nextLine: {},
+              },
+            },
+          ],
+        },
+      },
+    });
+
+    expect(engine.handleActions).not.toHaveBeenCalled();
+  });
+
   it("forwards updateVariable actions while a form is visible", async () => {
     const engine = {
       selectRenderState: vi.fn(() => ({ id: "render-1" })),

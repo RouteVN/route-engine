@@ -467,23 +467,10 @@ const createEffectsHandler = ({
     );
   };
 
-  const matchesFormSurfacePayload = (payload, activeInteraction) => {
-    if (!matchesInteractionSource(payload, activeInteraction)) {
-      return false;
-    }
-
-    const formKey = getFormInteractionKey(payload);
-    return formKey === undefined || formKey === activeInteraction?.formKey;
-  };
-
   const isInteractionPayload = (payload = {}, activeInteraction) => {
     const actions = payload?.actions;
 
     if (activeInteraction?.source === "form") {
-      if (matchesInteraction(payload, activeInteraction)) {
-        return true;
-      }
-
       if (!actions || typeof actions !== "object" || Array.isArray(actions)) {
         return false;
       }
@@ -496,11 +483,7 @@ const createEffectsHandler = ({
         return false;
       }
 
-      if (isFormConcurrentActionPayload(actions)) {
-        return true;
-      }
-
-      return matchesFormSurfacePayload(payload, activeInteraction);
+      return isFormConcurrentActionPayload(actions);
     }
 
     if (matchesInteraction(payload, activeInteraction)) {
