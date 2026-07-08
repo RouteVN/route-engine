@@ -226,12 +226,9 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
     await eventHandler("click", payload);
 
     expect(preprocessPayload).toHaveBeenCalledWith("click", payload);
-    expect(engine.handleActions).toHaveBeenCalledWith(
-      payload.actions,
-      {
-        _event: payload._event,
-      },
-    );
+    expect(engine.handleActions).toHaveBeenCalledWith(payload.actions, {
+      _event: payload._event,
+    });
     expect(onEvent).toHaveBeenCalledWith("click", payload);
   });
 
@@ -275,6 +272,7 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
       },
       {
         bypassChoice: true,
+        interactionSource: "choice",
       },
     );
   });

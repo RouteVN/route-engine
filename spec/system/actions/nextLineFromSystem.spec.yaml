@@ -178,7 +178,7 @@ out:
             lineId: "2"
             rollbackPolicy: "free"
 ---
-case: advance to a choice line stops active playback and clears timers
+case: advance to a choice line preserves playback mode flags and clears timers
 in:
   - state:
       global:
@@ -214,8 +214,8 @@ in:
 out:
   global:
     isLineCompleted: false
-    autoMode: false
-    skipMode: false
+    autoMode: true
+    skipMode: true
     skipUnseenText: true
     nextLineConfig:
       auto:

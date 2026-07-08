@@ -545,6 +545,7 @@ const createEffectsHandler = ({
         if (nextPayload?.bypassChoice === true) {
           actionOptions = {
             bypassChoice: true,
+            interactionSource: "choice",
           };
         } else if (nextPayload?._interactionSource) {
           actionOptions = {

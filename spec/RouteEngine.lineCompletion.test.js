@@ -708,7 +708,7 @@ describe("RouteEngine line completion flow", () => {
     });
   });
 
-  it("stops active playback on a choice line and only allows bypassChoice nextLine", () => {
+  it("pauses active playback on a choice line and only allows bypassChoice nextLine", () => {
     const routeGraphics = {
       render: vi.fn(),
     };
@@ -743,7 +743,7 @@ describe("RouteEngine line completion flow", () => {
 
     let state = engine.selectSystemState();
     expect(state.contexts.at(-1).pointers.read.lineId).toBe("line2");
-    expect(state.global.autoMode).toBe(false);
+    expect(state.global.autoMode).toBe(true);
     expect(state.global.skipMode).toBe(false);
     expect(state.global.nextLineConfig.auto).toEqual({
       enabled: true,
@@ -767,6 +767,7 @@ describe("RouteEngine line completion flow", () => {
 
     state = engine.selectSystemState();
     expect(state.contexts.at(-1).pointers.read.lineId).toBe("line3");
+    expect(state.global.autoMode).toBe(true);
     expect(engine.selectPresentationState().choice).toBeUndefined();
 
     engine.handleAction("markLineCompleted", {});
