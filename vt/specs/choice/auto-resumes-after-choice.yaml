@@ -1,12 +1,11 @@
 ---
-title: Choice Pauses Active Skip
-description: Skip mode should stay enabled while a choice is visible, pause story advancement until a choice is clicked, and resume after the choice.
+title: Choice Pauses Active Auto
+description: Auto mode should stay enabled while a choice is visible, pause advancement until a choice is clicked, and resume after the choice.
 specs:
-  - skip mode is visibly on before the choice line is entered
-  - entering the choice line keeps skip mode on but blocks story advancement
-  - waiting on the choice line does not advance the story
-  - the choice button advances with skip still enabled
-  - skip resumes after the choice and advances to the following line
+  - auto mode advances from the first line to the choice line
+  - waiting longer than the auto delay does not advance past the visible choice
+  - clicking the choice keeps auto mode enabled
+  - auto mode advances from the post-choice line to the following line
 skipInitialScreenshot: true
 viewport:
   id: capture
@@ -14,27 +13,19 @@ viewport:
   height: 720
 steps:
   - action: wait
-    ms: 200
-  - action: click
-    x: 150
-    y: 74
-  - action: wait
-    ms: 40
+    ms: 1300
   - action: screenshot
   - action: wait
-    ms: 220
-  - action: screenshot
-  - action: wait
-    ms: 220
+    ms: 500
   - action: screenshot
   - action: click
     x: 790
     y: 220
   - action: wait
-    ms: 30
+    ms: 60
   - action: screenshot
   - action: wait
-    ms: 180
+    ms: 450
   - action: screenshot
 ---
 screen:
@@ -50,41 +41,20 @@ resources:
           y: 0
           width: 1280
           height: 720
-          click:
-            payload:
-              actions:
-                nextLine: {}
           colorId: backgroundColor
-        - id: skip-button
-          type: rect
-          x: 40
-          y: 40
-          width: 220
-          height: 68
-          click:
-            payload:
-              actions:
-                toggleSkipMode: {}
-          colorId: choiceColor
-        - id: skip-label
-          type: text
-          x: 100
-          y: 62
-          content: SKIP
-          textStyleId: statusText
-        - id: skip-status-on
-          $when: runtime.skipMode
+        - id: auto-status-on
+          $when: runtime.autoMode
           type: text
           x: 300
           y: 56
-          content: "SKIP: ON"
+          content: "AUTO: ON"
           textStyleId: statusText
-        - id: skip-status-off
-          $when: "!runtime.skipMode"
+        - id: auto-status-off
+          $when: "!runtime.autoMode"
           type: text
           x: 300
           y: 56
-          content: "SKIP: OFF"
+          content: "AUTO: OFF"
           textStyleId: statusText
         - id: choice-status-on
           $when: isChoiceVisible
@@ -148,7 +118,7 @@ resources:
     dialogueColor:
       hex: "#2A2A2A"
     choiceColor:
-      hex: "#9C6644"
+      hex: "#5F7A8A"
   textStyles:
     statusText:
       fontId: fontDefault
@@ -174,8 +144,9 @@ story:
           lines:
             - id: line1
               actions:
-                setSkipUnseenText:
-                  value: true
+                setAutoForwardDelay:
+                  value: 350
+                startAutoMode: {}
                 control:
                   resourceId: guardControls
                 dialogue:
@@ -183,12 +154,12 @@ story:
                   ui:
                     resourceId: dialogueLayout
                   content:
-                    - text: "Line 1: turn on skip here, then the next choice line should pause it."
+                    - text: "Line 1: auto mode is on and should advance to the choice."
             - id: line2
               actions:
                 dialogue:
                   content:
-                    - text: "Line 2: the choice is visible and skip must remain on without advancing."
+                    - text: "Line 2: the choice is visible and auto must remain on without advancing."
                 choice:
                   resourceId: choiceLayout
                   items:
@@ -199,9 +170,9 @@ story:
                 choice: {}
                 dialogue:
                   content:
-                    - text: "Line 3: reached from the choice with skip still enabled."
+                    - text: "Line 3: reached from the choice with auto still enabled."
             - id: line4
               actions:
                 dialogue:
                   content:
-                    - text: "Line 4: skip resumed after the choice click."
+                    - text: "Line 4: auto resumed after the choice click."

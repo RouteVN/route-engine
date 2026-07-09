@@ -260,7 +260,7 @@ out:
             lineId: "2"
             rollbackPolicy: "free"
 ---
-case: move to a choice line stops auto playback and clears the scene timer
+case: move to a choice line preserves auto mode and clears timers
 in:
   - state:
       global:
@@ -297,7 +297,7 @@ in:
 out:
   global:
     isLineCompleted: false
-    autoMode: false
+    autoMode: true
     nextLineConfig:
       manual:
         enabled: true
@@ -710,6 +710,81 @@ out:
         enabled: true
     pendingEffects:
       - name: "handleLineActions"
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions:
+                    choice:
+                      resourceId: "choice-ui"
+                      items: []
+                - id: "2"
+                  actions: {}
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "2"
+      rollback:
+        currentIndex: 1
+        isRestoring: false
+        replayStartIndex: 1
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "2"
+            rollbackPolicy: "free"
+---
+case: choice next line preserves skip mode and restarts skip timer
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        skipMode: true
+        skipUnseenText: true
+        nextLineConfig:
+          manual:
+            enabled: true
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        choice:
+                          resourceId: "choice-ui"
+                          items: []
+                    - id: "2"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+  - bypassChoice: true
+out:
+  global:
+    isLineCompleted: false
+    skipMode: true
+    skipUnseenText: true
+    nextLineConfig:
+      manual:
+        enabled: true
+    pendingEffects:
+      - name: "handleLineActions"
+      - name: "startSkipNextTimer"
   projectData:
     story:
       scenes:

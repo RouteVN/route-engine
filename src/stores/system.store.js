@@ -2227,16 +2227,14 @@ export const clearOverlays = ({ state }) => {
   return state;
 };
 
-const stopPlaybackForEnteredBlockingLine = (state) => {
+const pausePlaybackTimersForEnteredBlockingLine = (state) => {
   if (state.global.autoMode) {
-    state.global.autoMode = false;
     state.global.pendingEffects.push({
       name: "clearAutoNextTimer",
     });
   }
 
   if (state.global.skipMode) {
-    state.global.skipMode = false;
     state.global.pendingEffects.push({
       name: "clearSkipNextTimer",
     });
@@ -2260,7 +2258,7 @@ const queueEnteredLineEffects = (state, pointer, { screenTransition } = {}) => {
     activeInteraction?.source === CHOICE_INTERACTION_SOURCE;
   const isFormVisible = activeInteraction?.source === FORM_INTERACTION_SOURCE;
   if (activeInteraction) {
-    stopPlaybackForEnteredBlockingLine(state);
+    pausePlaybackTimersForEnteredBlockingLine(state);
   }
 
   state.global.pendingEffects.push({
@@ -2272,6 +2270,24 @@ const queueEnteredLineEffects = (state, pointer, { screenTransition } = {}) => {
     isFormVisible,
     activeInteraction,
   };
+};
+
+const resumeSkipTimerAfterChoiceInteraction = (
+  state,
+  previousInteraction,
+  nextInteraction,
+) => {
+  if (
+    previousInteraction?.source !== CHOICE_INTERACTION_SOURCE ||
+    nextInteraction ||
+    !state.global.skipMode
+  ) {
+    return;
+  }
+
+  state.global.pendingEffects.push({
+    name: "startSkipNextTimer",
+  });
 };
 
 export const startAutoMode = ({ state }) => {
@@ -2557,9 +2573,8 @@ const transitionToSection = (
     return state;
   }
 
-  if (state.global.autoMode) {
-    stopAutoMode({ state });
-  }
+  const previousInteraction = selectActiveInteraction({ state });
+
   if (resetStoryState && state.global.skipMode) {
     stopSkipMode({ state });
   }
@@ -2596,9 +2611,28 @@ const transitionToSection = (
     }
   }
 
-  queueEnteredLineEffects(state, lastContext?.pointers?.read, {
-    screenTransition: screen,
-  });
+  const { activeInteraction } = queueEnteredLineEffects(
+    state,
+    lastContext?.pointers?.read,
+    {
+      screenTransition: screen,
+    },
+  );
+  resumeSkipTimerAfterChoiceInteraction(
+    state,
+    previousInteraction,
+    activeInteraction,
+  );
+  if (
+    !resetStoryState &&
+    state.global.autoMode &&
+    !previousInteraction &&
+    !activeInteraction
+  ) {
+    state.global.pendingEffects.push({
+      name: "clearAutoNextTimer",
+    });
+  }
 
   return state;
 };
@@ -3051,6 +3085,8 @@ export const jumpToLine = ({ state }, payload) => {
     return state;
   }
 
+  const previousInteraction = selectActiveInteraction({ state });
+
   // Update current pointer to new line
   const pointers = ensureReadPointerState(lastContext);
   pointers.read = {
@@ -3058,7 +3094,12 @@ export const jumpToLine = ({ state }, payload) => {
     lineId: lineId,
   };
 
-  queueEnteredLineEffects(state, pointers.read);
+  const { activeInteraction } = queueEnteredLineEffects(state, pointers.read);
+  resumeSkipTimerAfterChoiceInteraction(
+    state,
+    previousInteraction,
+    activeInteraction,
+  );
 
   return state;
 };
@@ -3103,7 +3144,7 @@ export const nextLine = ({ state }, payload) => {
     state.global.pendingEffects.push({ name: "clearNextLineConfigTimer" });
 
     // If auto mode is on, continue auto-advancing after the skip
-    if (state.global.autoMode) {
+    if (state.global.autoMode && !activeInteraction) {
       state.global.pendingEffects.push({
         name: "startAutoNextTimer",
         payload: {
@@ -3114,7 +3155,7 @@ export const nextLine = ({ state }, payload) => {
 
     // If scene mode (nextLineConfig.auto) is enabled with fromComplete trigger, restart the timer
     const nextLineConfig = state.global.nextLineConfig;
-    if (nextLineConfig?.auto?.enabled) {
+    if (nextLineConfig?.auto?.enabled && !activeInteraction) {
       const trigger = nextLineConfig.auto.trigger;
       // Default trigger is "fromComplete", so start timer if not explicitly "fromStart"
       if (trigger !== "fromStart") {
@@ -3187,14 +3228,22 @@ export const nextLine = ({ state }, payload) => {
       lineId: nextLine.id,
     });
     resetNextLineConfigIfSingleLine(state);
-    const { activeInteraction } = queueEnteredLineEffects(state, {
-      sectionId,
-      lineId: nextLine.id,
-    });
+    const { activeInteraction: nextInteraction } = queueEnteredLineEffects(
+      state,
+      {
+        sectionId,
+        lineId: nextLine.id,
+      },
+    );
+    resumeSkipTimerAfterChoiceInteraction(
+      state,
+      activeInteraction,
+      nextInteraction,
+    );
 
     // Keep scene auto mode running after manual advances (e.g. choice click -> nextLine).
     const nextLineConfig = state.global.nextLineConfig;
-    if (nextLineConfig?.auto?.enabled && !activeInteraction) {
+    if (nextLineConfig?.auto?.enabled && !nextInteraction) {
       const trigger = nextLineConfig.auto.trigger;
       if (trigger === "fromStart") {
         state.global.pendingEffects.push({

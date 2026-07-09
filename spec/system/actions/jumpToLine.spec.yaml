@@ -30,8 +30,7 @@ in:
       global:
         isLineCompleted: true
         pendingEffects: []
-  -
-    lineId: line3
+  - lineId: line3
 out:
   projectData:
     story:
@@ -84,8 +83,7 @@ in:
       global:
         isLineCompleted: true
         pendingEffects: []
-  -
-    sectionId: section2
+  - sectionId: section2
     lineId: lineB
 out:
   projectData:
@@ -114,7 +112,7 @@ out:
     pendingEffects:
       - name: handleLineActions
 ---
-case: jump to a choice line stops active playback and clears timers
+case: jump to a choice line preserves playback mode flags and clears timers
 in:
   - state:
       projectData:
@@ -149,8 +147,7 @@ in:
             trigger: "fromStart"
             delay: 1500
         pendingEffects: []
-  -
-    lineId: line2
+  - lineId: line2
 out:
   projectData:
     story:
@@ -174,8 +171,8 @@ out:
           lineId: line2
   global:
     isLineCompleted: false
-    autoMode: false
-    skipMode: false
+    autoMode: true
+    skipMode: true
     nextLineConfig:
       manual:
         enabled: true
@@ -210,8 +207,7 @@ in:
       global:
         isLineCompleted: true
         pendingEffects: []
-  -
-    sectionId: section1
+  - sectionId: section1
 out:
   projectData:
     story:
@@ -253,8 +249,7 @@ in:
       global:
         isLineCompleted: false
         pendingEffects: []
-  -
-    sectionId: nonexistentSection
+  - sectionId: nonexistentSection
     lineId: line1
 out:
   projectData:
@@ -299,8 +294,7 @@ in:
       global:
         isLineCompleted: false
         pendingEffects: []
-  -
-    lineId: nonexistentLine
+  - lineId: nonexistentLine
 out:
   projectData:
     story:
@@ -339,8 +333,7 @@ in:
       global:
         isLineCompleted: false
         pendingEffects: []
-  -
-    lineId: line1
+  - lineId: line1
 out:
   projectData:
     story:
@@ -381,8 +374,7 @@ in:
         pendingEffects:
           - name: "existingEffect"
             data: "test"
-  -
-    lineId: line2
+  - lineId: line2
 out:
   projectData:
     story:

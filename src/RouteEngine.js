@@ -255,7 +255,11 @@ export default function createRouteEngine(options) {
   };
 
   const applyActionOptions = (actionType, payload, options = {}) => {
-    if (actionType !== "nextLine" || !isRecord(payload)) {
+    if (!isRecord(payload)) {
+      return payload;
+    }
+
+    if (actionType !== "nextLine") {
       return payload;
     }
 
