@@ -1,0 +1,138 @@
+---
+title: Section Transition Preserves Auto
+description: Auto mode should remain enabled across a normal sectionTransition and continue from the destination line.
+specs:
+  - auto mode advances from the first line to a transition-only line
+  - the section transition lands on the destination line with auto mode still enabled
+  - auto mode advances from the destination line to the next line
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 1280
+  height: 720
+steps:
+  - action: wait
+    ms: 1500
+  - action: screenshot
+  - action: wait
+    ms: 1100
+  - action: screenshot
+---
+screen:
+  width: 1280
+  height: 720
+resources:
+  controls:
+    statusControls:
+      elements:
+        - id: bg
+          type: rect
+          x: 0
+          y: 0
+          width: 1280
+          height: 720
+          colorId: backgroundColor
+        - id: auto-status-on
+          $when: runtime.autoMode
+          type: text
+          x: 300
+          y: 56
+          content: "AUTO: ON"
+          textStyleId: statusText
+        - id: auto-status-off
+          $when: "!runtime.autoMode"
+          type: text
+          x: 300
+          y: 56
+          content: "AUTO: OFF"
+          textStyleId: statusText
+  layouts:
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 40
+          y: 520
+          width: 1200
+          height: 150
+          colorId: dialogueColor
+        - id: dialogue-text
+          type: text
+          x: 72
+          y: 566
+          width: 1140
+          content: ${dialogue.content[0].text}
+          textStyleId: dialogueText
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    textColor:
+      hex: "#F4F1E8"
+    backgroundColor:
+      hex: "#171717"
+    dialogueColor:
+      hex: "#2A2A2A"
+  textStyles:
+    statusText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 28
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    dialogueText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 30
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.25
+story:
+  initialSceneId: transitionScene
+  scenes:
+    transitionScene:
+      initialSectionId: source
+      sections:
+        source:
+          lines:
+            - id: line1
+              actions:
+                setAutoForwardDelay:
+                  value: 900
+                startAutoMode: {}
+                control:
+                  resourceId: statusControls
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 1: auto mode will enter a section transition."
+            - id: line2
+              actions:
+                sectionTransition:
+                  sectionId: destination
+        destination:
+          lines:
+            - id: line3
+              actions:
+                control:
+                  resourceId: statusControls
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 3: reached by section transition with auto still enabled."
+            - id: line4
+              actions:
+                control:
+                  resourceId: statusControls
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Line 4: auto continued after the section transition."

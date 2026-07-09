@@ -22,7 +22,6 @@ const PERSISTENT_PLAYBACK_RESTORE_ACTIONS = new Set([
 ]);
 
 const CONDITIONAL_ACTION_TYPE = "conditional";
-const CHOICE_INTERACTION_SOURCE = "choice";
 const FORM_INTERACTION_SOURCE = "form";
 const FORM_ACTION_TYPES = new Set(["submitForm", "cancelForm"]);
 
@@ -258,16 +257,6 @@ export default function createRouteEngine(options) {
   const applyActionOptions = (actionType, payload, options = {}) => {
     if (!isRecord(payload)) {
       return payload;
-    }
-
-    if (
-      actionType === "sectionTransition" &&
-      options.interactionSource === CHOICE_INTERACTION_SOURCE
-    ) {
-      return {
-        ...payload,
-        _interactionSource: CHOICE_INTERACTION_SOURCE,
-      };
     }
 
     if (actionType !== "nextLine") {

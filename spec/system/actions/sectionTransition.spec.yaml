@@ -243,6 +243,83 @@ out:
             lineId: "10"
             rollbackPolicy: "free"
 ---
+case: section transition preserves auto mode for non-blocking destination
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        autoMode: true
+        skipMode: false
+        isDialogueUIVisible: true
+        pendingEffects: []
+      projectData:
+        story:
+          initialSceneId: "scene1"
+          scenes:
+            scene1:
+              initialSectionId: "section1"
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                section2:
+                  lines:
+                    - id: "10"
+                      actions:
+                        background:
+                          resourceId: "bg2"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+  - sectionId: "section2"
+out:
+  global:
+    isLineCompleted: false
+    autoMode: true
+    skipMode: false
+    isDialogueUIVisible: true
+    pendingEffects:
+      - name: "handleLineActions"
+      - name: "clearAutoNextTimer"
+  projectData:
+    story:
+      initialSceneId: "scene1"
+      scenes:
+        scene1:
+          initialSectionId: "section1"
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions: {}
+            section2:
+              lines:
+                - id: "10"
+                  actions:
+                    background:
+                      resourceId: "bg2"
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section2"
+          lineId: "10"
+      rollback:
+        currentIndex: 1
+        isRestoring: false
+        replayStartIndex: 1
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
+          - sectionId: "section2"
+            lineId: "10"
+            rollbackPolicy: "free"
+---
 case: section transition records the source line as viewed before changing sections
 in:
   - state:
@@ -348,7 +425,7 @@ out:
             lineId: "10"
             rollbackPolicy: "free"
 ---
-case: transition to a choice line stops auto, preserves skip, and clears timers
+case: transition to a choice line preserves playback mode flags and clears timers
 in:
   - state:
       global:
@@ -392,7 +469,7 @@ in:
 out:
   global:
     isLineCompleted: false
-    autoMode: false
+    autoMode: true
     skipMode: true
     nextLineConfig:
       manual:
@@ -404,7 +481,6 @@ out:
     isDialogueUIVisible: true
     pendingEffects:
       - name: "clearAutoNextTimer"
-      - name: "render"
       - name: "clearSkipNextTimer"
       - name: "clearNextLineConfigTimer"
       - name: "handleLineActions"
@@ -485,7 +561,6 @@ in:
               sectionId: "section1"
               lineId: "1"
   - sectionId: "section2"
-    _interactionSource: "choice"
 out:
   global:
     isLineCompleted: false

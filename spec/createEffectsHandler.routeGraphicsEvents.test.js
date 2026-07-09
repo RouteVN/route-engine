@@ -272,7 +272,6 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
       },
       {
         bypassChoice: true,
-        interactionSource: "choice",
       },
     );
   });

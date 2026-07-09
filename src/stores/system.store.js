@@ -2551,7 +2551,7 @@ export const appendPendingEffect = ({ state }, payload) => {
 
 const transitionToSection = (
   state,
-  { sectionId, resetStoryState = false, screen, interactionSource },
+  { sectionId, resetStoryState = false, screen },
 ) => {
   const hasScreenTransition = !!normalizeScreenTransitionPayload(screen);
   const targetSection = selectSection({ state }, { sectionId });
@@ -2574,13 +2574,7 @@ const transitionToSection = (
   }
 
   const previousInteraction = selectActiveInteraction({ state });
-  const isChoiceInteractionTransition =
-    interactionSource === CHOICE_INTERACTION_SOURCE &&
-    previousInteraction?.source === CHOICE_INTERACTION_SOURCE;
 
-  if (state.global.autoMode && !isChoiceInteractionTransition) {
-    stopAutoMode({ state });
-  }
   if (resetStoryState && state.global.skipMode) {
     stopSkipMode({ state });
   }
@@ -2629,6 +2623,16 @@ const transitionToSection = (
     previousInteraction,
     activeInteraction,
   );
+  if (
+    !resetStoryState &&
+    state.global.autoMode &&
+    !previousInteraction &&
+    !activeInteraction
+  ) {
+    state.global.pendingEffects.push({
+      name: "clearAutoNextTimer",
+    });
+  }
 
   return state;
 };
@@ -3323,7 +3327,6 @@ export const sectionTransition = ({ state }, payload) => {
   return transitionToSection(state, {
     sectionId: payload?.sectionId,
     screen: payload?.screen,
-    interactionSource: payload?._interactionSource,
   });
 };
 
