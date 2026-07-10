@@ -58,7 +58,7 @@
     "ajv": "^8.18.0",
     "husky": "^9.1.7",
     "prettier": "^3.7.4",
-    "route-graphics": "1.22.0",
+    "route-graphics": "1.24.2",
     "vitest": "4.0.16"
   }
 }
