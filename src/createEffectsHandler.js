@@ -21,11 +21,23 @@ const createTimerState = () => {
 
 const DEFAULT_SKIP_NEXT_DELAY_MS = 80;
 
+const isPromiseLike = (value) =>
+  value !== null &&
+  (typeof value === "object" || typeof value === "function") &&
+  typeof value.then === "function";
+
 const render = ({ engine, routeGraphics, trackRenderDispatch }, payload) => {
   const renderState =
     engine.prepareRenderState?.(payload) ?? engine.selectRenderState(payload);
   trackRenderDispatch?.(renderState);
-  routeGraphics.render(renderState);
+  const renderResult = routeGraphics.render(renderState);
+
+  if (isPromiseLike(renderResult)) {
+    return Promise.resolve(renderResult).then(() => {
+      engine.commitRenderState?.(renderState);
+    });
+  }
+
   engine.commitRenderState?.(renderState);
 };
 
@@ -38,12 +50,20 @@ const handleLineActions = (
   const handledLineActions = engine.handleLineActions();
 
   const renderDispatchCountAfter = getRenderDispatchCount?.() ?? 0;
-  if (renderDispatchCountAfter === renderDispatchCountBefore) {
-    render({ engine, routeGraphics, trackRenderDispatch }, payload);
+  if (
+    renderDispatchCountAfter === renderDispatchCountBefore &&
+    !engine.hasQueuedRenderEffect?.()
+  ) {
+    return render({ engine, routeGraphics, trackRenderDispatch }, payload);
   }
+
+  return handledLineActions;
 };
 
-const startAutoNextTimer = ({ engine, ticker, autoTimer }, payload) => {
+const startAutoNextTimer = (
+  { engine, ticker, autoTimer, isEffectProcessingBlocked },
+  payload,
+) => {
   // Remove old callback if exists
   const existingCallback = autoTimer.getCallback();
   if (existingCallback) {
@@ -55,6 +75,10 @@ const startAutoNextTimer = ({ engine, ticker, autoTimer }, payload) => {
 
   // Create new ticker callback for auto mode (one-shot)
   const newCallback = (time) => {
+    if (isEffectProcessingBlocked()) {
+      return;
+    }
+
     autoTimer.addElapsed(time.deltaMS);
 
     const delay = payload.delay ?? 1000;
@@ -84,7 +108,10 @@ const clearAutoNextTimer = ({ ticker, autoTimer }, payload) => {
   autoTimer.setElapsed(0);
 };
 
-const startSkipNextTimer = ({ engine, ticker, skipTimer }, payload) => {
+const startSkipNextTimer = (
+  { engine, ticker, skipTimer, isEffectProcessingBlocked },
+  payload,
+) => {
   // Remove old callback if exists
   const existingCallback = skipTimer.getCallback();
   if (existingCallback) {
@@ -96,6 +123,10 @@ const startSkipNextTimer = ({ engine, ticker, skipTimer }, payload) => {
 
   // Create new ticker callback for skip mode
   const newCallback = (time) => {
+    if (isEffectProcessingBlocked()) {
+      return;
+    }
+
     skipTimer.addElapsed(time.deltaMS);
 
     const delay = payload?.delay ?? DEFAULT_SKIP_NEXT_DELAY_MS;
@@ -122,7 +153,7 @@ const clearSkipNextTimer = ({ ticker, skipTimer }, payload) => {
 };
 
 const nextLineConfigTimer = (
-  { engine, ticker, nextLineConfigTimerState },
+  { engine, ticker, nextLineConfigTimerState, isEffectProcessingBlocked },
   payload,
 ) => {
   // Remove old callback if exists
@@ -136,6 +167,10 @@ const nextLineConfigTimer = (
 
   // Create new ticker callback for scene mode
   const newCallback = (time) => {
+    if (isEffectProcessingBlocked()) {
+      return;
+    }
+
     nextLineConfigTimerState.addElapsed(time.deltaMS);
 
     const delay = payload.delay ?? 1000;
@@ -587,17 +622,33 @@ const createEffectsHandler = ({
       trackRenderDispatch,
       getRenderDispatchCount,
       enqueuePersistenceWrite,
+      isEffectProcessingBlocked: () =>
+        engine.isEffectProcessingBlocked?.() === true,
     };
 
-    for (const effect of normalizedEffects) {
-      const handler = effects[effect.name];
-      if (handler) {
-        handler(deps, effect.payload);
-        continue;
+    const processEffectsFrom = (startIndex) => {
+      for (
+        let index = startIndex;
+        index < normalizedEffects.length;
+        index += 1
+      ) {
+        const effect = normalizedEffects[index];
+        const handler = effects[effect.name];
+        const result = handler
+          ? handler(deps, effect.payload)
+          : handleUnhandledEffect(effect, deps);
+
+        if (isPromiseLike(result)) {
+          return Promise.resolve(result).then(() =>
+            processEffectsFrom(index + 1),
+          );
+        }
       }
 
-      handleUnhandledEffect(effect, deps);
-    }
+      return undefined;
+    };
+
+    return processEffectsFrom(0);
   };
 
   handlePendingEffects.handleRouteGraphicsEvent = handleRouteGraphicsEvent;

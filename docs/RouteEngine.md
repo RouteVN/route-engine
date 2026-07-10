@@ -22,8 +22,20 @@ const engine = createRouteEngine({
       }
     });
   },
+  handleEffectError: (error) => {
+    showRuntimeError(error);
+  },
 });
 ```
+
+`handlePendingEffects` may complete synchronously or return a Promise. When it
+returns a Promise, RouteEngine queues effect batches produced in the meantime
+and resumes them in FIFO order after the Promise resolves. The synchronous path
+does not introduce a microtask boundary.
+
+`handleEffectError` receives asynchronous effect failures. A failed effect
+stops queued progression for that engine instance and clears pending effect
+batches. Call `init()` to create a fresh runtime after handling the failure.
 
 ## Initialization
 
@@ -32,7 +44,7 @@ const engine = createRouteEngine({
 Initializes the engine with project data and global settings.
 
 ```js
-engine.init({
+await engine.init({
   namespace: "my-visual-novel",
   initialState: {
     projectData: {
@@ -59,6 +71,10 @@ engine.init({
   },
 });
 ```
+
+`init()` returns `undefined` when initial effects finish synchronously and a
+Promise when initial effect processing encounters an asynchronous barrier. It
+is safe to always await the result.
 
 For browser-backed save/load hydration, the runtime also exports
 `createIndexedDbPersistence({ namespace })`. Use the same `namespace` both when
@@ -108,6 +124,17 @@ const systemState = engine.selectSystemState();
 console.log(systemState.global.nextLineConfig);
 console.log(systemState.contexts.at(-1)?.pointers);
 ```
+
+### `isEffectProcessingBlocked()`
+
+Returns `true` while an asynchronous effect is pending or after asynchronous
+effect processing has failed. Built-in auto, skip, and scene timers pause while
+this value is true.
+
+### `selectEffectProcessingError()`
+
+Returns the asynchronous effect error that stopped progression, or `undefined`
+while effect processing is healthy.
 
 ## Utilities
 
@@ -650,6 +677,9 @@ Built-in effect handling notes:
 - `applyScopedDataUpdates` is incremental and ordered, so it must not be last-write coalesced by effect name.
 - Unknown effect names are not silently dropped; `createEffectsHandler(...)` throws unless you provide `handleUnhandledEffect`.
 - The coalescing rule is specific to the built-in effect handler, not the store queue itself.
+- `routeGraphics.render(renderState)` may return synchronously or return a Promise. RouteEngine commits the prepared render state only after an asynchronous render resolves.
+- Effects after an asynchronous render, including destination `handleLineActions`, wait for that render. Effect batches produced while blocked resume in original FIFO order.
+- A rejected asynchronous render is reported through `handleEffectError`; later effects, queued progression, and playback timers do not run.
 
 ## Line Actions (Presentation)
 

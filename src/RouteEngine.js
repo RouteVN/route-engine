@@ -28,6 +28,11 @@ const FORM_ACTION_TYPES = new Set(["submitForm", "cancelForm"]);
 const isRecord = (value) =>
   value !== null && typeof value === "object" && !Array.isArray(value);
 
+const isPromiseLike = (value) =>
+  value !== null &&
+  (typeof value === "object" || typeof value === "function") &&
+  typeof value.then === "function";
+
 /**
  * Creates a RouteEngine instance.
  */
@@ -38,8 +43,13 @@ export default function createRouteEngine(options) {
   let _persistentAnimationSessions = new Map();
   let _restoredPersistentAnimationSessions = new Map();
   let _renderPersistentAnimationMetadata = new Map();
+  let _queuedEffectBatches = [];
+  let _activeEffectsPromise;
+  let _activeEffectsToken;
+  let _effectProcessingError;
+  let _effectProcessingGeneration = 0;
 
-  const { handlePendingEffects } = options;
+  const { handlePendingEffects, handleEffectError } = options;
 
   const snapshotPersistentAnimationSessions = (
     sessions = new Map(),
@@ -73,23 +83,136 @@ export default function createRouteEngine(options) {
     );
   };
 
-  const processEffectsUntilEmpty = () => {
-    while (_systemStore.selectPendingEffects().length > 0) {
-      const snapshot = [..._systemStore.selectPendingEffects()];
-      _systemStore.clearPendingEffects();
+  const reportEffectError = (error) => {
+    if (handleEffectError) {
       try {
-        handlePendingEffects(snapshot);
-      } catch (error) {
-        _systemStore.clearPendingEffects();
-        snapshot.forEach((effect) => {
-          _systemStore.appendPendingEffect(effect);
-        });
-        throw error;
+        handleEffectError(error);
+      } catch (reportingError) {
+        console.error(
+          "RouteEngine effect error handler failed.",
+          reportingError,
+        );
       }
+      return;
+    }
+
+    console.error("RouteEngine asynchronous effect failed.", error);
+  };
+
+  const stopEffectProcessing = (error) => {
+    _effectProcessingError = error;
+    _queuedEffectBatches = [];
+    _systemStore.clearPendingEffects();
+    reportEffectError(error);
+  };
+
+  const runEffectBatch = (snapshot) => {
+    try {
+      return handlePendingEffects(snapshot);
+    } catch (error) {
+      _systemStore.clearPendingEffects();
+      snapshot.forEach((effect) => {
+        _systemStore.appendPendingEffect(effect);
+      });
+      throw error;
     }
   };
 
+  const trackAsyncEffectBatch = (effectPromise) => {
+    const generation = _effectProcessingGeneration;
+    const token = {};
+    const trackedPromise = Promise.resolve(effectPromise).then(
+      () => {
+        if (
+          generation !== _effectProcessingGeneration ||
+          _activeEffectsToken !== token
+        ) {
+          return undefined;
+        }
+
+        _activeEffectsPromise = undefined;
+        _activeEffectsToken = undefined;
+
+        try {
+          return drainQueuedEffectBatches();
+        } catch (error) {
+          stopEffectProcessing(error);
+          return undefined;
+        }
+      },
+      (error) => {
+        if (
+          generation !== _effectProcessingGeneration ||
+          _activeEffectsToken !== token
+        ) {
+          return undefined;
+        }
+
+        _activeEffectsPromise = undefined;
+        _activeEffectsToken = undefined;
+        stopEffectProcessing(error);
+        return undefined;
+      },
+    );
+
+    _activeEffectsToken = token;
+    _activeEffectsPromise = trackedPromise;
+    return trackedPromise;
+  };
+
+  const drainQueuedEffectBatches = () => {
+    while (
+      !_effectProcessingError &&
+      !_activeEffectsPromise &&
+      _queuedEffectBatches.length > 0
+    ) {
+      const snapshot = _queuedEffectBatches.shift();
+      const result = runEffectBatch(snapshot);
+      if (isPromiseLike(result)) {
+        return trackAsyncEffectBatch(result);
+      }
+    }
+
+    return processEffectsUntilEmpty();
+  };
+
+  const processEffectsUntilEmpty = () => {
+    if (_effectProcessingError) {
+      return undefined;
+    }
+
+    if (_activeEffectsPromise) {
+      const pendingEffects = _systemStore.selectPendingEffects();
+      if (pendingEffects.length > 0) {
+        _queuedEffectBatches.push([...pendingEffects]);
+        _systemStore.clearPendingEffects();
+      }
+      return _activeEffectsPromise;
+    }
+
+    while (_systemStore.selectPendingEffects().length > 0) {
+      const snapshot = [..._systemStore.selectPendingEffects()];
+      _systemStore.clearPendingEffects();
+
+      const result = runEffectBatch(snapshot);
+      if (isPromiseLike(result)) {
+        return trackAsyncEffectBatch(result);
+      }
+
+      if (_activeEffectsPromise) {
+        return _activeEffectsPromise;
+      }
+    }
+
+    return undefined;
+  };
+
   const init = ({ initialState, namespace }) => {
+    _effectProcessingGeneration += 1;
+    _queuedEffectBatches = [];
+    _activeEffectsPromise = undefined;
+    _activeEffectsToken = undefined;
+    _effectProcessingError = undefined;
     _systemStore = createSystemStore(initialState);
     _renderSequence = 0;
     _namespace = normalizeNamespace(namespace);
@@ -97,7 +220,7 @@ export default function createRouteEngine(options) {
     _restoredPersistentAnimationSessions = new Map();
     _renderPersistentAnimationMetadata = new Map();
     _systemStore.appendPendingEffect({ name: "handleLineActions" });
-    processEffectsUntilEmpty();
+    return processEffectsUntilEmpty();
   };
 
   const getNamespace = () => {
@@ -254,6 +377,25 @@ export default function createRouteEngine(options) {
     return _systemStore.selectActiveInteraction();
   };
 
+  const hasQueuedRenderEffect = () => {
+    if (
+      _systemStore
+        .selectPendingEffects()
+        .some((effect) => effect?.name === "render")
+    ) {
+      return true;
+    }
+
+    return _queuedEffectBatches.some((batch) =>
+      batch.some((effect) => effect?.name === "render"),
+    );
+  };
+
+  const isEffectProcessingBlocked = () =>
+    !!_activeEffectsPromise || !!_effectProcessingError;
+
+  const selectEffectProcessingError = () => _effectProcessingError;
+
   const applyActionOptions = (actionType, payload, options = {}) => {
     if (!isRecord(payload)) {
       return payload;
@@ -281,6 +423,10 @@ export default function createRouteEngine(options) {
   };
 
   const dispatchStoreAction = (actionType, payload) => {
+    if (_effectProcessingError) {
+      return undefined;
+    }
+
     if (!_systemStore[actionType]) {
       return;
     }
@@ -301,6 +447,10 @@ export default function createRouteEngine(options) {
   };
 
   const handleAction = (actionType, payload, eventContext, options = {}) => {
+    if (_effectProcessingError) {
+      return undefined;
+    }
+
     if (actionType === CONDITIONAL_ACTION_TYPE) {
       const context = buildActionTemplateContext(eventContext);
       const processedActions = processActionTemplates(
@@ -471,6 +621,10 @@ export default function createRouteEngine(options) {
   };
 
   const handleActions = (actions, eventContext, options = {}) => {
+    if (_effectProcessingError) {
+      return undefined;
+    }
+
     _systemStore.beginRollbackActionBatch({
       source: options.rollbackSource,
     });
@@ -482,6 +636,10 @@ export default function createRouteEngine(options) {
   };
 
   const handleLineActions = () => {
+    if (_effectProcessingError) {
+      return false;
+    }
+
     const line = _systemStore.selectCurrentLine();
     if (line?.actions) {
       handleActions(line.actions, undefined, {
@@ -513,6 +671,9 @@ export default function createRouteEngine(options) {
     selectIsChoiceVisible,
     selectIsFormVisible,
     selectActiveInteraction,
+    hasQueuedRenderEffect,
+    isEffectProcessingBlocked,
+    selectEffectProcessingError,
     handleLineActions,
     getNamespace,
   };
