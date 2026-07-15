@@ -196,6 +196,23 @@ describe("RouteEngine auto-forward timing", () => {
     expect(store.selectAutoForwardTimerDelay()).toBe(1720);
   });
 
+  it("applies the persisted auto-forward speed multiplier", () => {
+    const store = createStore();
+
+    store.setAutoForwardSpeed({ value: 2 });
+
+    expect(store.selectRuntime().autoForwardSpeed).toBe(2);
+    expect(store.selectAutoForwardTimerDelay()).toBe(1120);
+  });
+
+  it("rejects non-positive auto-forward speed multipliers", () => {
+    const store = createStore();
+
+    expect(() => store.setAutoForwardSpeed({ value: 0 })).toThrowError(
+      "autoForwardSpeed requires a value greater than 0",
+    );
+  });
+
   it("uses the estimator after natural line completion", () => {
     const store = createStore();
 

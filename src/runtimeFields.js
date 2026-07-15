@@ -5,6 +5,9 @@ export const RUNTIME_FIELDS = Object.freeze({
   autoForwardDelay: {
     source: "global.autoForwardDelay",
   },
+  autoForwardSpeed: {
+    source: "global.autoForwardSpeed",
+  },
   skipUnseenText: {
     source: "global.skipUnseenText",
   },
@@ -46,6 +49,7 @@ export const RUNTIME_FIELDS = Object.freeze({
 export const GLOBAL_RUNTIME_DEFAULTS = Object.freeze({
   dialogueTextSpeed: 50,
   autoForwardDelay: 1000,
+  autoForwardSpeed: 1,
   skipUnseenText: false,
   skipTransitionsAndAnimations: false,
   soundVolume: 50,
@@ -66,6 +70,7 @@ export const CONTEXT_RUNTIME_DEFAULTS = Object.freeze({
 export const RUNTIME_FIELD_TYPES = Object.freeze({
   dialogueTextSpeed: "number",
   autoForwardDelay: "number",
+  autoForwardSpeed: "number",
   skipUnseenText: "boolean",
   skipTransitionsAndAnimations: "boolean",
   soundVolume: "number",
@@ -83,6 +88,7 @@ export const RUNTIME_FIELD_TYPES = Object.freeze({
 export const PERSISTED_GLOBAL_RUNTIME_FIELDS = Object.freeze([
   "dialogueTextSpeed",
   "autoForwardDelay",
+  "autoForwardSpeed",
   "skipUnseenText",
   "skipTransitionsAndAnimations",
   "soundVolume",

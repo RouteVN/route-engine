@@ -1,6 +1,7 @@
 import { splitGraphemes } from "unicode-segmenter/grapheme";
 
 const DEFAULT_BASE_DELAY_MS = 1000;
+const DEFAULT_AUTO_FORWARD_SPEED = 1;
 
 export const AUTO_FORWARD_MS_PER_READING_UNIT = 60;
 export const AUTO_FORWARD_CJK_READING_WEIGHT = 3;
@@ -47,12 +48,15 @@ export const getAutoForwardReadingUnits = (text) =>
 export const estimateAutoForwardDelay = ({
   text = "",
   baseDelay = DEFAULT_BASE_DELAY_MS,
+  speed = DEFAULT_AUTO_FORWARD_SPEED,
 } = {}) => {
   const normalizedBaseDelay = Number.isFinite(baseDelay)
     ? Math.max(0, baseDelay)
     : DEFAULT_BASE_DELAY_MS;
+  const normalizedSpeed = Number.isFinite(speed) && speed > 0 ? speed : 1;
   const readingDelay =
-    getAutoForwardReadingUnits(text) * AUTO_FORWARD_MS_PER_READING_UNIT;
+    (getAutoForwardReadingUnits(text) * AUTO_FORWARD_MS_PER_READING_UNIT) /
+    normalizedSpeed;
   const delayCeiling = Math.max(normalizedBaseDelay, AUTO_FORWARD_MAX_DELAY_MS);
 
   return Math.min(normalizedBaseDelay + readingDelay, delayCeiling);

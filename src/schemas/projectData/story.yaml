@@ -108,6 +108,8 @@ properties:
                               $ref: "../systemActions.yaml#/properties/setDialogueTextSpeed"
                             setAutoForwardDelay:
                               $ref: "../systemActions.yaml#/properties/setAutoForwardDelay"
+                            setAutoForwardSpeed:
+                              $ref: "../systemActions.yaml#/properties/setAutoForwardSpeed"
                             setSkipUnseenText:
                               $ref: "../systemActions.yaml#/properties/setSkipUnseenText"
                             setSkipTransitionsAndAnimations:

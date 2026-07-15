@@ -57,6 +57,23 @@ describe("auto-forward timing", () => {
     ).toBe(1250);
   });
 
+  it("scales only length-derived reading time with the speed multiplier", () => {
+    expect(
+      estimateAutoForwardDelay({
+        text: "abcd",
+        baseDelay: 1000,
+        speed: 2,
+      }),
+    ).toBe(1120);
+    expect(
+      estimateAutoForwardDelay({
+        text: "abcd",
+        baseDelay: 1000,
+        speed: 0.5,
+      }),
+    ).toBe(1480);
+  });
+
   it("caps reading time without reducing an explicit base above the cap", () => {
     expect(
       estimateAutoForwardDelay({
@@ -86,5 +103,22 @@ describe("auto-forward timing", () => {
         baseDelay: -100,
       }),
     ).toBe(60);
+  });
+
+  it("uses normal speed when the multiplier is invalid", () => {
+    expect(
+      estimateAutoForwardDelay({
+        text: "abcd",
+        baseDelay: 1000,
+        speed: 0,
+      }),
+    ).toBe(1240);
+    expect(
+      estimateAutoForwardDelay({
+        text: "abcd",
+        baseDelay: 1000,
+        speed: Number.NaN,
+      }),
+    ).toBe(1240);
   });
 });

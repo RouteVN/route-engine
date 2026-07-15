@@ -1,0 +1,71 @@
+---
+title: Auto Speed Multiplier
+description: Isolated global auto-mode path proving the speed multiplier shortens length-derived reading time.
+specs:
+  - a 48-grapheme Latin line advances at twice the normal reading speed
+  - the configured minimum delay is preserved while reading time is divided by the multiplier
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 2800
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+resources:
+  layouts:
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: dialogue-text
+          type: text
+          x: 72
+          y: 390
+          width: 816
+          content: ${dialogue.content[0].text}
+          textStyleId: dialogueText
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    textColor:
+      hex: "#F4F1E8"
+  textStyles:
+    dialogueText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 32
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: timing
+  scenes:
+    timing:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: fast-latin
+              actions:
+                setAutoForwardDelay:
+                  value: 100
+                setAutoForwardSpeed:
+                  value: 2
+                startAutoMode: {}
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv"
+            - id: final-marker
+              actions:
+                dialogue:
+                  content:
+                    - text: "DONE"

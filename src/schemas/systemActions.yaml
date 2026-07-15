@@ -155,6 +155,16 @@ properties:
     required: [value]
     additionalProperties: false
 
+  setAutoForwardSpeed:
+    type: object
+    description: Set the global auto mode reading-speed multiplier
+    properties:
+      value:
+        type: number
+        exclusiveMinimum: 0
+    required: [value]
+    additionalProperties: false
+
   setSkipUnseenText:
     type: object
     description: Set whether skip mode should include unseen text

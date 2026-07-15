@@ -1058,6 +1058,23 @@ If the action omits `textSpeed`, `${dialogue.textSpeed}` resolves to
 `${runtime.dialogueTextSpeed}`. The override does not mutate the runtime
 preference and is cleared by the next dialogue action that omits it.
 
+### Auto-Forward Speed
+
+`runtime.autoForwardSpeed` is the persisted user preference for global auto
+mode reading speed. It defaults to `1`; `2` is twice as fast and `0.5` is half
+speed. Update it with the same runtime-action pattern used by dialogue speed and
+audio volume controls:
+
+```yaml
+setAutoForwardSpeed:
+  value: 2
+```
+
+The multiplier applies only to the length-derived reading time. The persisted
+`runtime.autoForwardDelay` minimum is still added unchanged, so the effective
+delay is `autoForwardDelay + readingTime / autoForwardSpeed`, subject to the
+auto-mode delay cap. Values must be greater than zero.
+
 ### Dialogue Append Reveal
 
 In ADV mode, `dialogue.append: true` appends the line content to the current

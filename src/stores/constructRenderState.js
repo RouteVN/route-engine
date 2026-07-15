@@ -1584,6 +1584,7 @@ const createLayoutTemplateData = ({
   const resolvedRuntime = {
     dialogueTextSpeed: runtime?.dialogueTextSpeed ?? 50,
     autoForwardDelay: runtime?.autoForwardDelay ?? 1000,
+    autoForwardSpeed: runtime?.autoForwardSpeed ?? 1,
     skipUnseenText: runtime?.skipUnseenText ?? false,
     skipTransitionsAndAnimations:
       runtime?.skipTransitionsAndAnimations ?? false,
