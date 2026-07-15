@@ -12,7 +12,12 @@ const createProjectData = () => ({
     },
     voices: {
       scene1: {
-        alice: { fileId: "voices/alice.ogg" },
+        alice: {
+          fileId: "voices/alice.ogg",
+          loop: true,
+          volume: 60,
+          startDelayMs: 125,
+        },
         narrator: { fileId: "voices/narrator.ogg" },
       },
     },
@@ -181,9 +186,9 @@ describe("RouteEngine audio channels", () => {
             id: "voice:scene1:alice",
             type: "sound",
             src: "voices/alice.ogg",
-            loop: false,
-            volume: 100,
-            startDelayMs: 0,
+            loop: true,
+            volume: 60,
+            startDelayMs: 125,
           },
           {
             id: "voice:scene1:narrator",
@@ -209,5 +214,37 @@ describe("RouteEngine audio channels", () => {
         ]),
       }),
     ]);
+  });
+
+  it("escapes authored ID components when composing SFX render IDs", () => {
+    const projectData = createProjectData();
+    const actions =
+      projectData.story.scenes.scene1.sections.section1.lines[0].actions;
+    delete actions.bgm;
+    delete actions.voice;
+    actions.sfx = {
+      channels: [
+        {
+          id: "a:b",
+          sounds: [{ id: "c", resourceId: "click" }],
+        },
+        {
+          id: "a",
+          sounds: [{ id: "b:c", resourceId: "rain" }],
+        },
+      ],
+    };
+
+    const engine = createEngine();
+    engine.init({ initialState: { projectData } });
+
+    const audio = engine.selectRenderState().audio;
+    expect(audio.map(({ id }) => id)).toEqual([
+      "channel:sfx:a%3Ab",
+      "channel:sfx:a",
+    ]);
+    expect(
+      audio.flatMap(({ children }) => children.map(({ id }) => id)),
+    ).toEqual(["sfx:a%3Ab:c", "sfx:a:b%3Ac"]);
   });
 });

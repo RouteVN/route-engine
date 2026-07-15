@@ -1106,6 +1106,9 @@ describe("projectData schema", () => {
               scene1: {
                 alice_001: {
                   fileId: "voices/scene1/alice_001.ogg",
+                  loop: true,
+                  volume: 80,
+                  startDelayMs: 120,
                 },
               },
             },

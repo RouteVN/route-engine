@@ -74,15 +74,15 @@ story:
                       startDelayMs: 250
                 sfx:
                   channels:
-                    - id: ui
+                    - id: "a:b"
                       volume: 75
                       sounds:
-                        - id: click
+                        - id: c
                           resourceId: click
-                    - id: environment
+                    - id: a
                       pan: 0.5
                       sounds:
-                        - id: rain
+                        - id: "b:c"
                           resourceId: rain
             - id: stopped
               actions:

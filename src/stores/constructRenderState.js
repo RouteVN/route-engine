@@ -1532,6 +1532,12 @@ const BGM_CHANNEL_ID = "channel:bgm";
 const VOICE_CHANNEL_ID = "channel:voice";
 const DEFAULT_SFX_CHANNEL_ID = "default";
 
+const escapeAudioIdComponent = (component) =>
+  String(component).replaceAll("%", "%25").replaceAll(":", "%3A");
+
+const createAudioRenderId = (...components) =>
+  components.map(escapeAudioIdComponent).join(":");
+
 const getLayeredVolume = (volume, runtimeVolume) => {
   return (volume * runtimeVolume) / VOLUME_PERCENT_SCALE;
 };
@@ -3479,7 +3485,10 @@ export const addBgm = (
 
       children.push(
         createSoundNode({
-          id: usesLegacySound ? "bgm:default" : `bgm:${sound.id}`,
+          id: createAudioRenderId(
+            "bgm",
+            usesLegacySound ? "default" : sound.id,
+          ),
           sound,
           resource: audioResource,
           defaultLoop: true,
@@ -3538,8 +3547,8 @@ export const addSfx = (state, { presentationState, resources, runtime }) => {
         children.push(
           createSoundNode({
             id: usesLegacyChannel
-              ? `sfx:default:${soundIndex}:${sound.id}`
-              : `sfx:${channel.id}:${sound.id}`,
+              ? createAudioRenderId("sfx", "default", soundIndex, sound.id)
+              : createAudioRenderId("sfx", channel.id, sound.id),
             sound,
             resource: audioResource,
           }),
@@ -3550,7 +3559,7 @@ export const addSfx = (state, { presentationState, resources, runtime }) => {
 
       audioElements.push(
         createChannelNode({
-          id: `channel:sfx:${channel.id}`,
+          id: createAudioRenderId("channel", "sfx", channel.id),
           volume: getEffectiveChannelVolume(
             runtime,
             "soundVolume",
@@ -3613,9 +3622,11 @@ export const addVoice = (
 
     children.push(
       createSoundNode({
-        id: usesLegacySound
-          ? `voice:${currentSceneId}:default`
-          : `voice:${currentSceneId}:${sound.id}`,
+        id: createAudioRenderId(
+          "voice",
+          currentSceneId,
+          usesLegacySound ? "default" : sound.id,
+        ),
         sound,
         resource: voiceResource,
       }),
