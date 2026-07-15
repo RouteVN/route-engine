@@ -12,10 +12,10 @@ viewport:
   height: 720
 steps:
   - action: wait
-    ms: 1500
+    ms: 1700
   - action: screenshot
   - action: wait
-    ms: 1100
+    ms: 2000
   - action: screenshot
 ---
 screen:
@@ -109,7 +109,7 @@ story:
                   ui:
                     resourceId: dialogueLayout
                   content:
-                    - text: "Line 1: auto mode will enter a section transition."
+                    - text: "L1"
             - id: line2
               actions:
                 sectionTransition:
@@ -125,7 +125,7 @@ story:
                   ui:
                     resourceId: dialogueLayout
                   content:
-                    - text: "Line 3: reached by section transition with auto still enabled."
+                    - text: "L3"
             - id: line4
               actions:
                 control:

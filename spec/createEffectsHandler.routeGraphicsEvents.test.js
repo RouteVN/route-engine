@@ -540,6 +540,41 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
     );
   });
 
+  it("advances global auto mode only after its calculated delay", () => {
+    const ticker = createTicker();
+    const engine = {
+      selectRenderState: vi.fn(() => ({ id: "render-1" })),
+      handleAction: vi.fn(),
+      handleInternalAction: vi.fn(),
+      handleActions: vi.fn(),
+    };
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics: {
+        render: vi.fn(),
+      },
+      ticker,
+    });
+
+    effectsHandler([
+      {
+        name: "startAutoNextTimer",
+        payload: { delay: 1510 },
+      },
+    ]);
+
+    const timerCallback = ticker.add.mock.calls[0][0];
+    timerCallback({ deltaMS: 1509 });
+    expect(engine.handleInternalAction).not.toHaveBeenCalled();
+
+    timerCallback({ deltaMS: 1 });
+    expect(engine.handleInternalAction).toHaveBeenCalledWith(
+      "nextLineFromSystem",
+      {},
+    );
+    expect(ticker.remove).toHaveBeenCalledWith(timerCallback);
+  });
+
   it("waits for the slower skip cadence before advancing again", () => {
     const ticker = createTicker();
     const engine = {

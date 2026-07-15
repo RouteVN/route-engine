@@ -147,11 +147,21 @@ properties:
 
   setAutoForwardDelay:
     type: object
-    description: Set auto mode delay in milliseconds
+    description: Set the minimum auto mode delay in milliseconds before length-based reading time is added
     properties:
       value:
         type: number
         minimum: 0
+    required: [value]
+    additionalProperties: false
+
+  setAutoForwardSpeed:
+    type: object
+    description: Set the global auto mode reading-speed multiplier
+    properties:
+      value:
+        type: number
+        exclusiveMinimum: 0
     required: [value]
     additionalProperties: false
 

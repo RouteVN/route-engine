@@ -51,10 +51,12 @@ describe("RouteEngine runtime", () => {
 
     expect(runtime.dialogueTextSpeed).toBe(50);
     expect(runtime.autoForwardDelay).toBe(1000);
+    expect(runtime.autoForwardSpeed).toBe(1);
     expect(runtime.muteAll).toBe(false);
     expect(runtime.saveLoadPagination).toBe(1);
     expect(state.global.dialogueTextSpeed).toBe(50);
     expect(state.global.autoForwardDelay).toBe(1000);
+    expect(state.global.autoForwardSpeed).toBe(1);
     expect(state.global.muteAll).toBe(false);
     expect(state.global.variables).toEqual({});
     expect(state.contexts[0].runtime).toBeUndefined();
@@ -75,6 +77,7 @@ describe("RouteEngine runtime", () => {
           globalRuntime: {
             dialogueTextSpeed: 84,
             autoForwardDelay: 1000,
+            autoForwardSpeed: 1,
             skipUnseenText: false,
             skipTransitionsAndAnimations: false,
             soundVolume: 50,
@@ -87,6 +90,19 @@ describe("RouteEngine runtime", () => {
         name: "render",
       },
     ]);
+  });
+
+  it("updates and persists the auto-forward speed multiplier", () => {
+    const store = createSystemStore({
+      projectData: createProjectData(),
+    });
+
+    store.setAutoForwardSpeed({ value: 1.5 });
+
+    expect(store.selectRuntime().autoForwardSpeed).toBe(1.5);
+    expect(
+      store.selectPendingEffects()[0].payload.globalRuntime.autoForwardSpeed,
+    ).toBe(1.5);
   });
 
   it("does not route updateVariable operations into runtime values", () => {
@@ -301,7 +317,9 @@ describe("RouteEngine runtime", () => {
     engine.handleAction("setSkipUnseenText", { value: true });
 
     renderState = engine.selectRenderState();
-    storyContainer = renderState.elements.find((element) => element.id === "story");
+    storyContainer = renderState.elements.find(
+      (element) => element.id === "story",
+    );
     layoutContainer = storyContainer.children.find(
       (element) => element.id === "layout-skipHud",
     );
@@ -403,5 +421,18 @@ describe("RouteEngine runtime", () => {
         projectData: createProjectData(),
       }),
     ).toThrowError("dialogueTextSpeed requires a finite numeric value");
+  });
+
+  it("rejects non-positive persisted auto-forward speed multipliers", () => {
+    expect(() =>
+      createSystemStore({
+        global: {
+          runtime: {
+            autoForwardSpeed: 0,
+          },
+        },
+        projectData: createProjectData(),
+      }),
+    ).toThrowError("autoForwardSpeed requires a value greater than 0");
   });
 });

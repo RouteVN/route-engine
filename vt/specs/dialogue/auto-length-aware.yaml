@@ -1,0 +1,86 @@
+---
+title: Auto Length-Aware Timing
+description: Isolated global auto-mode timing path comparing one short Latin line, equal-weight Latin and CJK lines, and a final marker.
+specs:
+  - a short Latin line advances before the first checkpoint
+  - a 48-grapheme Latin line advances using its weighted delay
+  - a 16-grapheme CJK line with the same reading weight advances on the same path
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 1000
+  - action: screenshot
+  - action: wait
+    ms: 4500
+  - action: screenshot
+  - action: wait
+    ms: 4500
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+resources:
+  layouts:
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: dialogue-text
+          type: text
+          x: 72
+          y: 390
+          width: 816
+          content: ${dialogue.content[0].text}
+          textStyleId: dialogueText
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    textColor:
+      hex: "#F4F1E8"
+  textStyles:
+    dialogueText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 32
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: timing
+  scenes:
+    timing:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: short-latin
+              actions:
+                setAutoForwardDelay:
+                  value: 100
+                startAutoMode: {}
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "A"
+            - id: weighted-latin
+              actions:
+                dialogue:
+                  content:
+                    - text: "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv"
+            - id: weighted-cjk
+              actions:
+                dialogue:
+                  content:
+                    - text: "你好世界日本語文漢字中文測試閱讀"
+            - id: final-marker
+              actions:
+                dialogue:
+                  content:
+                    - text: "DONE"

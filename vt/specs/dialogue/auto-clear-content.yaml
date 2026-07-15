@@ -1,0 +1,73 @@
+---
+title: Auto Ignores Cleared Dialogue Content
+description: Isolated global auto-mode path proving authored content discarded by dialogue.clear does not add reading time.
+specs:
+  - a clear action with long authored content advances using only the configured minimum delay
+  - the following visible line is reached promptly
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 1000
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+resources:
+  layouts:
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: dialogue-text
+          type: text
+          x: 72
+          y: 390
+          width: 816
+          content: ${dialogue.content[0].text}
+          textStyleId: dialogueText
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    textColor:
+      hex: "#F4F1E8"
+  textStyles:
+    dialogueText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 32
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: clearTiming
+  scenes:
+    clearTiming:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: cleared-content
+              actions:
+                setAutoForwardDelay:
+                  value: 100
+                startAutoMode: {}
+                dialogue:
+                  mode: adv
+                  clear: true
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "This deliberately long authored dialogue is discarded and must never contribute any reading time to auto mode."
+            - id: final-marker
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "DONE"

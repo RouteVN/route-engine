@@ -28,6 +28,7 @@ out:
     dialogueUIHidden: false
     dialogueTextSpeed: 50
     autoForwardDelay: 1000
+    autoForwardSpeed: 1
     skipUnseenText: false
     skipTransitionsAndAnimations: false
     soundVolume: 50
@@ -119,6 +120,7 @@ out:
     dialogueUIHidden: false
     dialogueTextSpeed: 50
     autoForwardDelay: 1000
+    autoForwardSpeed: 1
     skipUnseenText: false
     skipTransitionsAndAnimations: false
     soundVolume: 50
@@ -223,6 +225,7 @@ out:
     dialogueUIHidden: false
     dialogueTextSpeed: 50
     autoForwardDelay: 1000
+    autoForwardSpeed: 1
     skipUnseenText: false
     skipTransitionsAndAnimations: false
     soundVolume: 50
@@ -321,6 +324,7 @@ out:
     dialogueUIHidden: false
     dialogueTextSpeed: 50
     autoForwardDelay: 1000
+    autoForwardSpeed: 1
     skipUnseenText: false
     skipTransitionsAndAnimations: false
     soundVolume: 50
@@ -416,6 +420,7 @@ out:
     dialogueUIHidden: false
     dialogueTextSpeed: 50
     autoForwardDelay: 1000
+    autoForwardSpeed: 1
     skipUnseenText: false
     skipTransitionsAndAnimations: false
     soundVolume: 50

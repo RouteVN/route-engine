@@ -16,6 +16,8 @@ import {
 } from "../util.js";
 import { constructPresentationState } from "./constructPresentationState.js";
 import { constructRenderState } from "./constructRenderState.js";
+import { estimateAutoForwardDelay } from "../autoForwardTiming.js";
+import { interpolateDialogueText } from "../dialogueText.js";
 import {
   CONTEXT_RUNTIME_DEFAULTS,
   CONTEXT_RUNTIME_FIELDS,
@@ -1047,6 +1049,10 @@ const assertRuntimeValueType = (runtimeId, value) => {
 const normalizeRuntimeValue = (runtimeId, value) => {
   assertRuntimeValueType(runtimeId, value);
 
+  if (runtimeId === "autoForwardSpeed" && value <= 0) {
+    throw new Error("autoForwardSpeed requires a value greater than 0");
+  }
+
   if (runtimeId === "saveLoadPagination") {
     return Math.max(1, Math.trunc(value));
   }
@@ -1907,6 +1913,28 @@ export const selectPresentationState = ({ state }) => {
   return presentationState;
 };
 
+const selectCurrentLineAutoForwardText = (state) => {
+  const dialogue = selectCurrentLine({ state })?.actions?.dialogue;
+  if (dialogue?.clear === true || !Array.isArray(dialogue?.content)) {
+    return "";
+  }
+
+  const variables = selectAllVariables({ state });
+  return dialogue.content
+    .map((item) => {
+      const text = interpolateDialogueText(item?.text, { variables });
+      return `${text ?? ""}`;
+    })
+    .join("");
+};
+
+export const selectAutoForwardTimerDelay = ({ state }) =>
+  estimateAutoForwardDelay({
+    text: selectCurrentLineAutoForwardText(state),
+    baseDelay: selectRuntimeValueFromState(state, "autoForwardDelay"),
+    speed: selectRuntimeValueFromState(state, "autoForwardSpeed"),
+  });
+
 export const selectPresentationChanges = ({ state }) => {
   const previousPresentationState = selectPreviousPresentationState({ state });
   const currentLine = selectCurrentLine({ state });
@@ -2312,7 +2340,7 @@ export const startAutoMode = ({ state }) => {
     state.global.pendingEffects.push({
       name: "startAutoNextTimer",
       payload: {
-        delay: selectRuntimeValueFromState(state, "autoForwardDelay"),
+        delay: selectAutoForwardTimerDelay({ state }),
       },
     });
   }
@@ -2462,6 +2490,10 @@ export const setDialogueTextSpeed = ({ state }, payload) => {
 
 export const setAutoForwardDelay = ({ state }, payload) => {
   return setGlobalRuntimeField(state, "autoForwardDelay", payload?.value);
+};
+
+export const setAutoForwardSpeed = ({ state }, payload) => {
+  return setGlobalRuntimeField(state, "autoForwardSpeed", payload?.value);
 };
 
 export const setSkipUnseenText = ({ state }, payload) => {
@@ -3148,7 +3180,7 @@ export const nextLine = ({ state }, payload) => {
       state.global.pendingEffects.push({
         name: "startAutoNextTimer",
         payload: {
-          delay: selectRuntimeValueFromState(state, "autoForwardDelay"),
+          delay: selectAutoForwardTimerDelay({ state }),
         },
       });
     }
@@ -3279,7 +3311,7 @@ export const markLineCompleted = ({ state }) => {
     state.global.pendingEffects.push({
       name: "startAutoNextTimer",
       payload: {
-        delay: selectRuntimeValueFromState(state, "autoForwardDelay"),
+        delay: selectAutoForwardTimerDelay({ state }),
       },
     });
   }
@@ -4014,6 +4046,7 @@ export const createSystemStore = (initialState) => {
     selectSection,
     selectCurrentLine,
     selectPresentationState,
+    selectAutoForwardTimerDelay,
     selectPresentationChanges,
     selectSectionLineChanges,
     selectSaveSlotPage,
@@ -4035,6 +4068,7 @@ export const createSystemStore = (initialState) => {
     toggleDialogueUI,
     setDialogueTextSpeed,
     setAutoForwardDelay,
+    setAutoForwardSpeed,
     setSkipUnseenText,
     setSkipTransitionsAndAnimations,
     setSoundVolume,
