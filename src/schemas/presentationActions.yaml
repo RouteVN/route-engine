@@ -54,10 +54,30 @@ definitions:
         minimum: 0
         maximum: 100
         description: Local sound volume from 0 to 100
+      muted:
+        type: boolean
+        description: Whether this sound is muted
+      pan:
+        type: number
+        minimum: -1
+        maximum: 1
+        description: Stereo pan from -1 (left) to 1 (right)
       startDelayMs:
         type: number
         minimum: 0
         description: Delay before the sound begins, in milliseconds
+      playbackRate:
+        type: number
+        minimum: 0
+        description: Playback speed multiplier
+      startAt:
+        type: number
+        minimum: 0
+        description: Start offset within the source, in seconds
+      endAt:
+        type: [number, "null"]
+        minimum: 0
+        description: Optional end offset within the source, in seconds
     required: [id, resourceId]
     additionalProperties: false
 

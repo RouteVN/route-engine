@@ -1560,14 +1560,42 @@ const createChannelNode = ({ id, volume, muted, pan, children, runtime }) => ({
   children,
 });
 
-const createSoundNode = ({ id, sound, resource, defaultLoop = false }) => ({
-  id,
-  type: "sound",
-  src: resource.fileId,
-  loop: sound.loop ?? resource.loop ?? defaultLoop,
-  volume: sound.volume ?? resource.volume ?? DEFAULT_AUTHORED_AUDIO_VOLUME,
-  startDelayMs: sound.startDelayMs ?? resource.startDelayMs ?? 0,
-});
+const resolveSoundProperty = (sound, resource, property, fallback) => {
+  if (sound[property] !== undefined) return sound[property];
+  if (resource[property] !== undefined) return resource[property];
+  return fallback;
+};
+
+const OPTIONAL_SOUND_PROPERTIES = [
+  "muted",
+  "pan",
+  "playbackRate",
+  "startAt",
+  "endAt",
+];
+
+const createSoundNode = ({ id, sound, resource, defaultLoop = false }) => {
+  const node = {
+    id,
+    type: "sound",
+    src: resource.fileId,
+    loop: resolveSoundProperty(sound, resource, "loop", defaultLoop),
+    volume: resolveSoundProperty(
+      sound,
+      resource,
+      "volume",
+      DEFAULT_AUTHORED_AUDIO_VOLUME,
+    ),
+    startDelayMs: resolveSoundProperty(sound, resource, "startDelayMs", 0),
+  };
+
+  OPTIONAL_SOUND_PROPERTIES.forEach((property) => {
+    const value = resolveSoundProperty(sound, resource, property, undefined);
+    if (value !== undefined) node[property] = value;
+  });
+
+  return node;
+};
 
 const createLayoutTemplateData = ({
   variables,

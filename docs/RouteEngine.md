@@ -1221,6 +1221,11 @@ actions:
         resourceId: music_1
         loop: true
         volume: 90
+        muted: false
+        pan: 0.1
+        playbackRate: 1.1
+        startAt: 5
+        endAt: 30
       - id: ambience
         resourceId: forest_ambience
         loop: true
@@ -1248,6 +1253,12 @@ actions:
             resourceId: rain
             loop: true
 ```
+
+Each canonical sound supports `loop`, `volume`, `muted`, `pan`,
+`startDelayMs`, `playbackRate`, `startAt`, and `endAt`. `startDelayMs` is in
+milliseconds; `startAt` and `endAt` are offsets in seconds for partial source
+playback. An action sound overrides defaults from its sound or Voice resource,
+and `endAt: null` explicitly clears a resource end offset.
 
 Omitting `bgm` preserves its current desired channel state. `bgm.sounds: []`
 stops the BGM channel. Voice and SFX sounds are cleared when the next line omits
@@ -1301,6 +1312,11 @@ resources:
     scene_intro:
       alice_001:
         fileId: voices/scene_intro/alice_001.ogg
+        volume: 90
+        pan: -0.1
+        playbackRate: 1
+        startAt: 0
+        endAt: null
 
 story:
   scenes:

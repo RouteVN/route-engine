@@ -24,6 +24,11 @@ resources:
     scene1:
       alice:
         fileId: xj323
+        muted: false
+        pan: 0.25
+        playbackRate: 0.9
+        startAt: 1
+        endAt: 4
       narrator:
         fileId: 39csl
   colors:
@@ -61,6 +66,11 @@ story:
                     - id: theme
                       resourceId: theme
                       volume: 50
+                      muted: false
+                      pan: -0.4
+                      playbackRate: 1.25
+                      startAt: 2
+                      endAt: 12
                     - id: ambience
                       resourceId: ambience
                       volume: 25
@@ -69,6 +79,7 @@ story:
                   sounds:
                     - id: alice
                       resourceId: alice
+                      endAt: null
                     - id: narrator
                       resourceId: narrator
                       startDelayMs: 250
