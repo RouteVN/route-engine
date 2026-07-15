@@ -1538,6 +1538,18 @@ const escapeAudioIdComponent = (component) =>
 const createAudioRenderId = (...components) =>
   components.map(escapeAudioIdComponent).join(":");
 
+const assertUniqueAudioIds = (items, kind, parent) => {
+  const seenIds = new Set();
+
+  items.forEach(({ id }) => {
+    if (seenIds.has(id)) {
+      const location = parent ? ` in ${parent}` : "";
+      throw new Error(`Duplicate ${kind} id "${id}"${location}.`);
+    }
+    seenIds.add(id);
+  });
+};
+
 const getLayeredVolume = (volume, runtimeVolume) => {
   return (volume * runtimeVolume) / VOLUME_PERCENT_SCALE;
 };
@@ -1593,6 +1605,15 @@ const createSoundNode = ({ id, sound, resource, defaultLoop = false }) => {
     const value = resolveSoundProperty(sound, resource, property, undefined);
     if (value !== undefined) node[property] = value;
   });
+
+  const resolvedStartAt = node.startAt ?? 0;
+  if (node.endAt !== undefined && node.endAt !== null) {
+    if (node.endAt < resolvedStartAt) {
+      throw new Error(
+        `Sound "${id}" endAt (${node.endAt}) must be greater than or equal to startAt (${resolvedStartAt}).`,
+      );
+    }
+  }
 
   return node;
 };
@@ -3507,6 +3528,10 @@ export const addBgm = (
       : bgm.sounds;
     const children = [];
 
+    if (!usesLegacySound) {
+      assertUniqueAudioIds(sounds, "BGM sound");
+    }
+
     sounds.forEach((sound) => {
       const audioResource = resources.sounds?.[sound.resourceId];
       if (!audioResource) return;
@@ -3566,8 +3591,21 @@ export const addSfx = (state, { presentationState, resources, runtime }) => {
           },
         ];
 
+    if (!usesLegacyChannel) {
+      assertUniqueAudioIds(channels, "SFX channel");
+    }
+
     channels.forEach((channel) => {
       const children = [];
+
+      if (!usesLegacyChannel) {
+        assertUniqueAudioIds(
+          channel.sounds,
+          "SFX sound",
+          `SFX channel "${channel.id}"`,
+        );
+      }
+
       channel.sounds.forEach((sound, soundIndex) => {
         const audioResource = resources.sounds?.[sound.resourceId];
         if (!audioResource) return;
@@ -3639,6 +3677,10 @@ export const addVoice = (
       : []
     : voice.sounds;
   const children = [];
+
+  if (!usesLegacySound) {
+    assertUniqueAudioIds(sounds, "Voice sound");
+  }
 
   sounds.forEach((sound) => {
     const voiceResource = resolveVoiceResource(

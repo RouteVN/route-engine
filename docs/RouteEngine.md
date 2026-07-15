@@ -1209,6 +1209,8 @@ Engine audio is authored with `sounds` and rendered as Route Graphics
 - SFX may contain any number of line-scoped channels, each with many sounds.
 - Channel and sound IDs are namespaced in render state so authored IDs remain
   stable and globally unique.
+- Canonical sound IDs must be unique within their channel, and canonical SFX
+  channel IDs must be unique within the SFX action.
 - Audio transitions are not part of the Engine authoring interface yet.
 
 ```yaml
@@ -1258,7 +1260,9 @@ Each canonical sound supports `loop`, `volume`, `muted`, `pan`,
 `startDelayMs`, `playbackRate`, `startAt`, and `endAt`. `startDelayMs` is in
 milliseconds; `startAt` and `endAt` are offsets in seconds for partial source
 playback. An action sound overrides defaults from its sound or Voice resource,
-and `endAt: null` explicitly clears a resource end offset.
+and `endAt: null` explicitly clears a resource end offset. After those defaults
+and overrides are resolved, a non-null `endAt` must be greater than or equal to
+`startAt`.
 
 Omitting `bgm` preserves its current desired channel state. `bgm.sounds: []`
 stops the BGM channel. Voice and SFX sounds are cleared when the next line omits

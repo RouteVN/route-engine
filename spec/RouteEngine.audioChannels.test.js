@@ -267,4 +267,90 @@ describe("RouteEngine audio channels", () => {
       audio.flatMap(({ children }) => children.map(({ id }) => id)),
     ).toEqual(["sfx:a%3Ab:c", "sfx:a:b%3Ac"]);
   });
+
+  it.each([
+    {
+      name: "BGM sound IDs",
+      configure(actions) {
+        actions.bgm.sounds = [
+          { id: "duplicate", resourceId: "theme" },
+          { id: "duplicate", resourceId: "ambience" },
+        ];
+      },
+      error: 'Duplicate BGM sound id "duplicate".',
+    },
+    {
+      name: "Voice sound IDs",
+      configure(actions) {
+        delete actions.bgm;
+        actions.voice.sounds = [
+          { id: "duplicate", resourceId: "alice" },
+          { id: "duplicate", resourceId: "narrator" },
+        ];
+      },
+      error: 'Duplicate Voice sound id "duplicate".',
+    },
+    {
+      name: "SFX channel IDs",
+      configure(actions) {
+        delete actions.bgm;
+        delete actions.voice;
+        actions.sfx.channels = [
+          {
+            id: "duplicate",
+            sounds: [{ id: "click", resourceId: "click" }],
+          },
+          {
+            id: "duplicate",
+            sounds: [{ id: "rain", resourceId: "rain" }],
+          },
+        ];
+      },
+      error: 'Duplicate SFX channel id "duplicate".',
+    },
+    {
+      name: "SFX sound IDs within a channel",
+      configure(actions) {
+        delete actions.bgm;
+        delete actions.voice;
+        actions.sfx.channels = [
+          {
+            id: "effects",
+            sounds: [
+              { id: "duplicate", resourceId: "click" },
+              { id: "duplicate", resourceId: "rain" },
+            ],
+          },
+        ];
+      },
+      error: 'Duplicate SFX sound id "duplicate" in SFX channel "effects".',
+    },
+  ])("rejects duplicate canonical $name", ({ configure, error }) => {
+    const projectData = createProjectData();
+    const actions =
+      projectData.story.scenes.scene1.sections.section1.lines[0].actions;
+    configure(actions);
+
+    const engine = createEngine();
+    engine.init({ initialState: { projectData } });
+
+    expect(() => engine.selectRenderState()).toThrow(error);
+  });
+
+  it("rejects an invalid playback range after resolving resource defaults and action overrides", () => {
+    const projectData = createProjectData();
+    const actions =
+      projectData.story.scenes.scene1.sections.section1.lines[0].actions;
+    delete actions.voice;
+    delete actions.sfx;
+    projectData.resources.sounds.theme.startAt = 10;
+    actions.bgm.sounds = [{ id: "theme", resourceId: "theme", endAt: 5 }];
+
+    const engine = createEngine();
+    engine.init({ initialState: { projectData } });
+
+    expect(() => engine.selectRenderState()).toThrow(
+      'Sound "bgm:theme" endAt (5) must be greater than or equal to startAt (10).',
+    );
+  });
 });
