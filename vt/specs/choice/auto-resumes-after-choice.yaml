@@ -16,7 +16,7 @@ steps:
     ms: 1300
   - action: screenshot
   - action: wait
-    ms: 500
+    ms: 1500
   - action: screenshot
   - action: click
     x: 790
@@ -25,7 +25,7 @@ steps:
     ms: 60
   - action: screenshot
   - action: wait
-    ms: 450
+    ms: 650
   - action: screenshot
 ---
 screen:
@@ -154,7 +154,7 @@ story:
                   ui:
                     resourceId: dialogueLayout
                   content:
-                    - text: "Line 1: auto mode is on and should advance to the choice."
+                    - text: "L1"
             - id: line2
               actions:
                 dialogue:
@@ -170,7 +170,7 @@ story:
                 choice: {}
                 dialogue:
                   content:
-                    - text: "Line 3: reached from the choice with auto still enabled."
+                    - text: "L3"
             - id: line4
               actions:
                 dialogue:

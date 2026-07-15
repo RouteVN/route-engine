@@ -1,4 +1,5 @@
 import { parseAndRender } from "jempl";
+import { interpolateDialogueText } from "../dialogueText.js";
 import {
   createSequentialActionsExecutor,
   formatDate,
@@ -513,22 +514,6 @@ const pushNormalizedLayoutTransitions = ({
       }),
     );
   });
-};
-
-/**
- * Interpolates dialogue text using jempl parseAndRender.
- * @param {string} text - The text containing ${...} patterns
- * @param {Object} data - Data object to resolve variables from
- * @returns {string} - Interpolated text
- */
-const interpolateDialogueText = (text, data) => {
-  if (!text || typeof text !== "string") return text;
-  if (!text.includes("${")) return text;
-
-  const rendered = parseAndRender(text, data);
-  // Avoid rendering object values as "[object Object]" in text nodes.
-  if (rendered && typeof rendered === "object") return text;
-  return rendered;
 };
 
 const ensureDialogueContentItems = (content, path) => {

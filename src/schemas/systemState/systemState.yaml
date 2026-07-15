@@ -221,6 +221,7 @@ properties:
         type: number
       autoForwardDelay:
         type: number
+        description: Minimum global auto mode delay in milliseconds before length-based reading time is added
       skipUnseenText:
         type: boolean
       skipTransitionsAndAnimations:

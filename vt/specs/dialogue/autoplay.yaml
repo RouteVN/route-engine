@@ -77,8 +77,8 @@ resources:
           click:
             payload:
               actions:
-                setAutoplayDelay:
-                  delay: 2000
+                setAutoForwardDelay:
+                  value: 2000
           textStyleId: textStyle1
         - id: speed-fast-button
           type: text
@@ -90,8 +90,8 @@ resources:
           click:
             payload:
               actions:
-                setAutoplayDelay:
-                  delay: 250
+                setAutoForwardDelay:
+                  value: 250
           textStyleId: textStyle1
   fonts:
     fontDefault:
@@ -152,7 +152,7 @@ story:
               actions:
                 dialogue:
                   content:
-                    - text: "Line 2: This should auto-advance after 1 second"
+                    - text: "Line 2: This advances using a length-aware reading delay"
                   characterId: narrator
             - id: line3
               actions:
