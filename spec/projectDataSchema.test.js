@@ -194,6 +194,41 @@ describe("projectData schema", () => {
     expect(validateProjectData.errors).toBeNull();
   });
 
+  it("requires width and height on spritesheet resources", () => {
+    const projectData = createMinimalProjectData({
+      resources: {
+        spritesheets: {
+          animatedSky: {
+            fileId: "animated-sky.png",
+            jsonData: {
+              frames: {},
+            },
+          },
+        },
+      },
+    });
+
+    expect(validateProjectData(projectData)).toBe(false);
+    expect(validateProjectData.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          instancePath: "/resources/spritesheets/animatedSky",
+          keyword: "required",
+          params: {
+            missingProperty: "width",
+          },
+        }),
+        expect.objectContaining({
+          instancePath: "/resources/spritesheets/animatedSky",
+          keyword: "required",
+          params: {
+            missingProperty: "height",
+          },
+        }),
+      ]),
+    );
+  });
+
   it("rejects non-hex screen backgroundColor", () => {
     expect(
       validateProjectData(

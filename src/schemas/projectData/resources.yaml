@@ -108,7 +108,7 @@ properties:
                     description: Whether the animation loops
                 required: [frames]
                 additionalProperties: false
-        required: [fileId, jsonData]
+        required: [fileId, jsonData, width, height]
         additionalProperties: false
 
   transforms:
