@@ -156,6 +156,15 @@ properties:
       resourceId:
         type: string
         description: ID of the background resource to display
+      animationName:
+        type: string
+        description: Optional spritesheet animation name. If omitted for a spritesheet resource, the first defined animation is used.
+      animationSpeed:
+        type: number
+        description: Optional spritesheet animation speed override
+      loop:
+        type: boolean
+        description: Optional video or spritesheet playback loop override
       colorId:
         type: string
         description: Optional resources.colors ID for the solid color rendered behind the background resource. Persists until changed or cleared with cleanAll

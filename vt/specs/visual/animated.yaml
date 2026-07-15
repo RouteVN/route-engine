@@ -22,6 +22,8 @@ resources:
   spritesheets:
     fighterSheet:
       fileId: fighter-spritesheet
+      width: 175
+      height: 240
       jsonData:
         frames:
           rollSequence0000.png:
