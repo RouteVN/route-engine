@@ -760,11 +760,18 @@ export const dialogue = (state, presentation) => {
  */
 export const sfx = (state, presentation) => {
   if (presentation.sfx) {
-    if (!presentation.sfx.items || presentation.sfx.items.length === 0) {
+    const hasLegacyItems =
+      Array.isArray(presentation.sfx.items) &&
+      presentation.sfx.items.length > 0;
+    const hasChannels =
+      Array.isArray(presentation.sfx.channels) &&
+      presentation.sfx.channels.length > 0;
+
+    if (!hasLegacyItems && !hasChannels) {
       delete state.sfx;
       return;
     }
-    state.sfx = presentation.sfx;
+    state.sfx = clonePresentationValue(presentation.sfx);
   } else if (state.sfx) {
     delete state.sfx;
   }
@@ -777,15 +784,19 @@ export const sfx = (state, presentation) => {
  */
 export const bgm = (state, presentation) => {
   if (presentation.bgm) {
-    if (!presentation.bgm.resourceId) {
+    const hasSounds = Array.isArray(presentation.bgm.sounds);
+    if (
+      (!presentation.bgm.resourceId && !hasSounds) ||
+      (hasSounds && presentation.bgm.sounds.length === 0)
+    ) {
       state.bgm = undefined;
       return;
     }
 
-    state.bgm = {
-      ...presentation.bgm,
-      loop: presentation.bgm.loop || presentation.bgm.loop === undefined,
-    };
+    state.bgm = clonePresentationValue(presentation.bgm);
+    if (presentation.bgm.resourceId) {
+      state.bgm.loop = presentation.bgm.loop ?? true;
+    }
   }
 };
 
@@ -981,7 +992,15 @@ export const control = (state, presentation) => {
 
 export const voice = (state, presentation) => {
   if (presentation.voice) {
-    state.voice = presentation.voice;
+    const hasSounds = Array.isArray(presentation.voice.sounds);
+    if (
+      (!presentation.voice.resourceId && !hasSounds) ||
+      (hasSounds && presentation.voice.sounds.length === 0)
+    ) {
+      delete state.voice;
+      return;
+    }
+    state.voice = clonePresentationValue(presentation.voice);
   } else if (state.voice) {
     delete state.voice;
   }

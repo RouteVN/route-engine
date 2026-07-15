@@ -43,6 +43,8 @@ vt:
           files: "bgm"
         - title: "SFX"
           files: "sfx"
+        - title: "Audio Channels"
+          files: "audioChannels"
         - title: "Save"
           files: "save"
         - title: "Confirm"

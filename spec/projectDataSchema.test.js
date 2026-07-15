@@ -1014,6 +1014,77 @@ describe("projectData schema", () => {
     expect(validatePresentationActions.errors).toBeNull();
   });
 
+  it("accepts multi-sound BGM and Voice channels and arbitrary SFX channels", () => {
+    expect(
+      validatePresentationActions({
+        bgm: {
+          volume: 80,
+          muted: false,
+          pan: -0.25,
+          sounds: [
+            { id: "theme", resourceId: "music_1", loop: true },
+            { id: "ambience", resourceId: "forest", volume: 40 },
+          ],
+        },
+        voice: {
+          volume: 90,
+          sounds: [
+            { id: "alice", resourceId: "alice_001" },
+            {
+              id: "narrator",
+              resourceId: "narrator_001",
+              startDelayMs: 200,
+            },
+          ],
+        },
+        sfx: {
+          channels: [
+            {
+              id: "ui",
+              volume: 80,
+              sounds: [{ id: "click", resourceId: "click" }],
+            },
+            {
+              id: "environment",
+              pan: 0.5,
+              sounds: [{ id: "rain", resourceId: "rain", loop: true }],
+            },
+          ],
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+  });
+
+  it("rejects mixing legacy audio shorthands with channel sound collections", () => {
+    expect(
+      validatePresentationActions({
+        bgm: {
+          resourceId: "legacy",
+          sounds: [{ id: "theme", resourceId: "theme" }],
+        },
+      }),
+    ).toBe(false);
+
+    expect(
+      validatePresentationActions({
+        voice: {
+          resourceId: "legacy",
+          sounds: [{ id: "alice", resourceId: "alice" }],
+        },
+      }),
+    ).toBe(false);
+
+    expect(
+      validatePresentationActions({
+        sfx: {
+          items: [{ id: "legacy", resourceId: "legacy" }],
+          channels: [{ id: "ui", sounds: [] }],
+        },
+      }),
+    ).toBe(false);
+  });
+
   it("accepts scene-grouped voice resources and voice presentation actions", () => {
     expect(
       validatePresentationActions({

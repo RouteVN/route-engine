@@ -95,12 +95,18 @@ out:
       children: []
   animations: []
   audio:
-    - id: "bgm"
-      type: "sound"
-      src: "audio/cde.mp3"
-      loop: true
+    - id: "channel:bgm"
+      type: "audio-channel"
       volume: 50
-      startDelayMs: null
+      muted: false
+      pan: 0
+      children:
+        - id: "bgm:default"
+          type: "sound"
+          src: "audio/cde.mp3"
+          loop: true
+          volume: 100
+          startDelayMs: 0
   global: {}
 ---
 case: current line screen animation targets the full story container
@@ -481,10 +487,16 @@ out:
       children: []
   animations: []
   audio:
-    - id: "bgm"
-      type: "sound"
-      src: "audio/cde.mp3"
-      loop: true
+    - id: "channel:bgm"
+      type: "audio-channel"
       volume: 50
-      startDelayMs: null
+      muted: false
+      pan: 0
+      children:
+        - id: "bgm:default"
+          type: "sound"
+          src: "audio/cde.mp3"
+          loop: true
+          volume: 100
+          startDelayMs: 0
   global: {}
