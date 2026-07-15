@@ -249,6 +249,9 @@ const init = async () => {
     persistence,
     routeGraphics: {
       render: (renderState) => {
+        if (isVtCaptureMode()) {
+          window.__vtLastRenderState = structuredClone(renderState);
+        }
         routeGraphics.render(renderState);
       },
     },

@@ -34,6 +34,53 @@ definitions:
     description: Animation selection. Provide a single resourceId whose animation type decides update vs transition.
     $ref: "#/definitions/animationRef"
 
+  audioSound:
+    type: object
+    description: Sound owned by an audio channel
+    properties:
+      id:
+        type: string
+        minLength: 1
+        description: Stable identifier for the sound within its authored channel
+      resourceId:
+        type: string
+        minLength: 1
+        description: ID of the sound resource
+      loop:
+        type: boolean
+        description: Whether the sound loops
+      volume:
+        type: number
+        minimum: 0
+        maximum: 100
+        description: Local sound volume from 0 to 100
+      muted:
+        type: boolean
+        description: Whether this sound is muted
+      pan:
+        type: number
+        minimum: -1
+        maximum: 1
+        description: Stereo pan from -1 (left) to 1 (right)
+      startDelayMs:
+        type: number
+        minimum: 0
+        description: Delay before the sound begins, in milliseconds
+      playbackRate:
+        type: number
+        minimum: 0
+        description: Playback speed multiplier
+      startAt:
+        type: number
+        minimum: 0
+        description: Start offset within the source, in seconds
+      endAt:
+        type: [number, "null"]
+        minimum: 0
+        description: Optional end offset within the source, in seconds
+    required: [id, resourceId]
+    additionalProperties: false
+
   backgroundBlur:
     anyOf:
       - type: "null"
@@ -544,69 +591,126 @@ properties:
     properties:
       items:
         type: array
+        description: Legacy shorthand for sounds in the default SFX channel
+        items:
+          $ref: "#/definitions/audioSound"
+      channels:
+        type: array
+        description: Independently controlled SFX channels
         items:
           type: object
           properties:
             id:
               type: string
-              description: Unique identifier for the sound effect
-            resourceId:
-              type: string
-              description: ID of the sound effect resource
-            loop:
-              type: boolean
-              description: Whether the sound effect loops
+              minLength: 1
+              description: Stable SFX channel identifier
             volume:
               type: number
-              description: Sound effect volume from 0 to 100
-            startDelayMs:
+              minimum: 0
+              maximum: 100
+              description: Local channel volume from 0 to 100
+            muted:
+              type: boolean
+              description: Whether the channel is muted
+            pan:
               type: number
-              description: Start offset before the sound effect begins, in milliseconds
-          required: [id, resourceId]
+              minimum: -1
+              maximum: 1
+              description: Stereo pan from -1 (left) to 1 (right)
+            sounds:
+              type: array
+              items:
+                $ref: "#/definitions/audioSound"
+          required: [id, sounds]
           additionalProperties: false
+    allOf:
+      - not:
+          required: [items, channels]
     additionalProperties: false
 
   bgm:
     type: object
-    description: Background music configuration
+    description: Persistent BGM channel configuration
     properties:
+      sounds:
+        type: array
+        description: Desired sounds owned by the BGM channel
+        items:
+          $ref: "#/definitions/audioSound"
       resourceId:
         type: string
-        description: ID of the background music resource
+        description: Legacy shorthand for a single BGM sound resource
       loop:
         type: boolean
-        description: Whether the background music loops
+        description: Legacy single-sound loop setting
       volume:
         type: number
         minimum: 0
         maximum: 100
-        description: Background music volume from 0 to 100
+        description: BGM channel volume from 0 to 100; on legacy single-sound actions this remains the sound volume
+      muted:
+        type: boolean
+        description: Whether the BGM channel is muted
+      pan:
+        type: number
+        minimum: -1
+        maximum: 1
+        description: BGM channel stereo pan from -1 (left) to 1 (right)
       startDelayMs:
         type: number
         minimum: 0
-        description: Start offset before the background music begins, in milliseconds
+        description: Legacy delay before the single BGM sound begins, in milliseconds
+    allOf:
+      - not:
+          required: [resourceId, sounds]
+      - not:
+          required: [loop, sounds]
+      - not:
+          required: [startDelayMs, sounds]
     additionalProperties: false
 
   voice:
     type: object
-    description: Voice audio for the current line. The resourceId is resolved from resources.voices[currentSceneId]
+    description: Line-scoped Voice channel. Resource IDs are resolved from resources.voices[currentSceneId]
     properties:
+      sounds:
+        type: array
+        description: Sounds owned by the Voice channel
+        items:
+          $ref: "#/definitions/audioSound"
       resourceId:
         type: string
-        description: ID of the voice resource within the current scene's voice group
+        description: Legacy shorthand for one voice resource in the current scene
       volume:
         type: number
         minimum: 0
         maximum: 100
-        description: Voice volume from 0 to 100. Defaults to runtime.soundVolume
+        description: Voice channel volume from 0 to 100; on legacy single-sound actions this preserves the previous effective-volume behavior
+      muted:
+        type: boolean
+        description: Whether the Voice channel is muted
+      pan:
+        type: number
+        minimum: -1
+        maximum: 1
+        description: Voice channel stereo pan from -1 (left) to 1 (right)
       loop:
         type: boolean
-        description: Whether the voice audio loops
+        description: Legacy single-sound loop setting
       startDelayMs:
         type: number
         minimum: 0
-        description: Start offset before the voice audio begins, in milliseconds
-    required: [resourceId]
+        description: Legacy delay before the single voice sound begins, in milliseconds
+    anyOf:
+      - required: [resourceId]
+      - required: [sounds]
+    allOf:
+      - not:
+          required: [resourceId, sounds]
+      - not:
+          required: [loop, sounds]
+      - not:
+          required: [startDelayMs, sounds]
     additionalProperties: false
 
   control:

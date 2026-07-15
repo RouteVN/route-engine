@@ -1528,37 +1528,94 @@ const resolveBackgroundAnimationTarget = ({
 
 const VOLUME_PERCENT_SCALE = 100;
 const DEFAULT_AUTHORED_AUDIO_VOLUME = VOLUME_PERCENT_SCALE;
+const BGM_CHANNEL_ID = "channel:bgm";
+const VOICE_CHANNEL_ID = "channel:voice";
+const DEFAULT_SFX_CHANNEL_ID = "default";
+
+const escapeAudioIdComponent = (component) =>
+  String(component).replaceAll("%", "%25").replaceAll(":", "%3A");
+
+const createAudioRenderId = (...components) =>
+  components.map(escapeAudioIdComponent).join(":");
+
+const assertUniqueAudioIds = (items, kind, parent) => {
+  const seenIds = new Set();
+
+  items.forEach(({ id }) => {
+    if (seenIds.has(id)) {
+      const location = parent ? ` in ${parent}` : "";
+      throw new Error(`Duplicate ${kind} id "${id}"${location}.`);
+    }
+    seenIds.add(id);
+  });
+};
 
 const getLayeredVolume = (volume, runtimeVolume) => {
   return (volume * runtimeVolume) / VOLUME_PERCENT_SCALE;
 };
 
-const getEffectiveSoundVolume = (
+const getRuntimeAudioVolume = (runtime = {}, field) =>
+  runtime?.[field] ?? GLOBAL_RUNTIME_DEFAULTS[field];
+
+const getEffectiveChannelVolume = (
   runtime = {},
+  field,
   volume = DEFAULT_AUTHORED_AUDIO_VOLUME,
-) => {
-  return runtime?.muteAll
-    ? 0
-    : getLayeredVolume(
-        volume,
-        runtime?.soundVolume ?? GLOBAL_RUNTIME_DEFAULTS.soundVolume,
-      );
+) => getLayeredVolume(volume, getRuntimeAudioVolume(runtime, field));
+
+const createChannelNode = ({ id, volume, muted, pan, children, runtime }) => ({
+  id,
+  type: "audio-channel",
+  volume,
+  muted: !!runtime?.muteAll || (muted ?? false),
+  pan: pan ?? 0,
+  children,
+});
+
+const resolveSoundProperty = (sound, resource, property, fallback) => {
+  if (sound[property] !== undefined) return sound[property];
+  if (resource[property] !== undefined) return resource[property];
+  return fallback;
 };
 
-const getEffectiveMusicVolume = (
-  runtime = {},
-  volume = DEFAULT_AUTHORED_AUDIO_VOLUME,
-) => {
-  return runtime?.muteAll
-    ? 0
-    : getLayeredVolume(
-        volume,
-        runtime?.musicVolume ?? GLOBAL_RUNTIME_DEFAULTS.musicVolume,
-      );
-};
+const OPTIONAL_SOUND_PROPERTIES = [
+  "muted",
+  "pan",
+  "playbackRate",
+  "startAt",
+  "endAt",
+];
 
-const createScopedSfxRenderId = ({ item, index } = {}) => {
-  return `sfx:${index}:${item?.resourceId}`;
+const createSoundNode = ({ id, sound, resource, defaultLoop = false }) => {
+  const node = {
+    id,
+    type: "sound",
+    src: resource.fileId,
+    loop: resolveSoundProperty(sound, resource, "loop", defaultLoop),
+    volume: resolveSoundProperty(
+      sound,
+      resource,
+      "volume",
+      DEFAULT_AUTHORED_AUDIO_VOLUME,
+    ),
+    startDelayMs: resolveSoundProperty(sound, resource, "startDelayMs", 0),
+  };
+
+  OPTIONAL_SOUND_PROPERTIES.forEach((property) => {
+    const value = resolveSoundProperty(sound, resource, property, undefined);
+    if (value !== undefined) node[property] = value;
+  });
+
+  const resolvedStartAt = node.startAt ?? 0;
+  if (node.endAt !== undefined && node.endAt !== null) {
+    if (node.endAt < resolvedStartAt) {
+      throw new Error(
+        `Sound "${id}" endAt (${node.endAt}) must be greater than or equal to startAt (${resolvedStartAt}).`,
+      );
+    }
+  }
+
+  return node;
 };
 
 const createLayoutTemplateData = ({
@@ -3454,26 +3511,67 @@ export const addBgm = (
     const storyContainer = getStoryContainer(elements);
     if (!storyContainer) return state;
 
-    const audioResource = resources.sounds[presentationState.bgm.resourceId];
-    if (!audioResource) return state;
+    const bgm = presentationState.bgm;
+    const usesLegacySound = !Array.isArray(bgm.sounds);
+    const sounds = usesLegacySound
+      ? bgm.resourceId
+        ? [
+            {
+              id: "default",
+              resourceId: bgm.resourceId,
+              loop: bgm.loop ?? true,
+              volume: bgm.volume,
+              startDelayMs: bgm.startDelayMs ?? 0,
+            },
+          ]
+        : []
+      : bgm.sounds;
+    const children = [];
+
+    if (!usesLegacySound) {
+      assertUniqueAudioIds(sounds, "BGM sound");
+    }
+
+    sounds.forEach((sound) => {
+      const audioResource = resources.sounds?.[sound.resourceId];
+      if (!audioResource) return;
+
+      children.push(
+        createSoundNode({
+          id: createAudioRenderId(
+            "bgm",
+            usesLegacySound ? "default" : sound.id,
+          ),
+          sound,
+          resource: audioResource,
+          defaultLoop: true,
+        }),
+      );
+    });
+
+    if (children.length === 0) return state;
+
     const resolvedRuntime = createLayoutTemplateData({
       variables,
       runtime,
     }).runtime;
 
-    audio.push({
-      id: "bgm",
-      type: "sound",
-      src: audioResource.fileId,
-      loop: presentationState.bgm.loop ?? true,
-      volume: getEffectiveMusicVolume(
-        resolvedRuntime,
-        presentationState.bgm.volume ??
-          audioResource.volume ??
-          DEFAULT_AUTHORED_AUDIO_VOLUME,
-      ),
-      startDelayMs: presentationState.bgm.startDelayMs ?? null,
-    });
+    audio.push(
+      createChannelNode({
+        id: BGM_CHANNEL_ID,
+        volume: getEffectiveChannelVolume(
+          resolvedRuntime,
+          "musicVolume",
+          usesLegacySound
+            ? DEFAULT_AUTHORED_AUDIO_VOLUME
+            : (bgm.volume ?? DEFAULT_AUTHORED_AUDIO_VOLUME),
+        ),
+        muted: bgm.muted,
+        pan: bgm.pan,
+        children,
+        runtime: resolvedRuntime,
+      }),
+    );
   }
   return state;
 };
@@ -3482,24 +3580,64 @@ export const addSfx = (state, { presentationState, resources, runtime }) => {
   const { audio: audioElements } = state;
 
   if (presentationState.sfx && resources) {
-    // Find the story container
-    const items = presentationState.sfx.items;
-    for (const [index, item] of items.entries()) {
-      const audioResource = resources.sounds?.[item.resourceId];
-      if (!audioResource) continue;
+    const sfx = presentationState.sfx;
+    const usesLegacyChannel = !Array.isArray(sfx.channels);
+    const channels = !usesLegacyChannel
+      ? sfx.channels
+      : [
+          {
+            id: DEFAULT_SFX_CHANNEL_ID,
+            sounds: sfx.items ?? [],
+          },
+        ];
 
-      audioElements.push({
-        id: createScopedSfxRenderId({ item, index }),
-        type: "sound",
-        src: audioResource.fileId,
-        loop: item.loop ?? audioResource.loop ?? false,
-        volume: getEffectiveSoundVolume(
-          runtime,
-          item.volume ?? audioResource.volume ?? DEFAULT_AUTHORED_AUDIO_VOLUME,
-        ),
-        startDelayMs: item.startDelayMs ?? audioResource.startDelayMs ?? null,
-      });
+    if (!usesLegacyChannel) {
+      assertUniqueAudioIds(channels, "SFX channel");
     }
+
+    channels.forEach((channel) => {
+      const children = [];
+
+      if (!usesLegacyChannel) {
+        assertUniqueAudioIds(
+          channel.sounds,
+          "SFX sound",
+          `SFX channel "${channel.id}"`,
+        );
+      }
+
+      channel.sounds.forEach((sound, soundIndex) => {
+        const audioResource = resources.sounds?.[sound.resourceId];
+        if (!audioResource) return;
+
+        children.push(
+          createSoundNode({
+            id: usesLegacyChannel
+              ? createAudioRenderId("sfx", "default", soundIndex, sound.id)
+              : createAudioRenderId("sfx", channel.id, sound.id),
+            sound,
+            resource: audioResource,
+          }),
+        );
+      });
+
+      if (children.length === 0) return;
+
+      audioElements.push(
+        createChannelNode({
+          id: createAudioRenderId("channel", "sfx", channel.id),
+          volume: getEffectiveChannelVolume(
+            runtime,
+            "soundVolume",
+            channel.volume ?? DEFAULT_AUTHORED_AUDIO_VOLUME,
+          ),
+          muted: channel.muted,
+          pan: channel.pan,
+          children,
+          runtime,
+        }),
+      );
+    });
   }
 
   return state;
@@ -3513,14 +3651,6 @@ const resolveVoiceResource = (resources, currentSceneId, resourceId) => {
   return resources?.voices?.[currentSceneId]?.[resourceId];
 };
 
-const getEffectiveVoiceVolume = (voice = {}, resolvedRuntime = {}) => {
-  if (resolvedRuntime.muteAll) {
-    return 0;
-  }
-
-  return voice.volume ?? resolvedRuntime.soundVolume ?? 50;
-};
-
 export const addVoice = (
   state,
   { presentationState, resources, currentSceneId, runtime, variables },
@@ -3532,30 +3662,71 @@ export const addVoice = (
   }
 
   const voice = presentationState.voice;
-  const { resourceId, loop, startDelayMs } = voice;
-  const voiceResource = resolveVoiceResource(
-    resources,
-    currentSceneId,
-    resourceId,
-  );
+  const usesLegacySound = !Array.isArray(voice.sounds);
+  const sounds = usesLegacySound
+    ? voice.resourceId
+      ? [
+          {
+            id: "default",
+            resourceId: voice.resourceId,
+            loop: voice.loop ?? false,
+            volume: DEFAULT_AUTHORED_AUDIO_VOLUME,
+            startDelayMs: voice.startDelayMs ?? 0,
+          },
+        ]
+      : []
+    : voice.sounds;
+  const children = [];
 
-  if (!voiceResource) {
-    return state;
+  if (!usesLegacySound) {
+    assertUniqueAudioIds(sounds, "Voice sound");
   }
+
+  sounds.forEach((sound) => {
+    const voiceResource = resolveVoiceResource(
+      resources,
+      currentSceneId,
+      sound.resourceId,
+    );
+    if (!voiceResource) return;
+
+    children.push(
+      createSoundNode({
+        id: createAudioRenderId(
+          "voice",
+          currentSceneId,
+          usesLegacySound ? "default" : sound.id,
+        ),
+        sound,
+        resource: voiceResource,
+      }),
+    );
+  });
+
+  if (children.length === 0) return state;
 
   const resolvedRuntime = createLayoutTemplateData({
     variables,
     runtime,
   }).runtime;
 
-  audio.push({
-    id: `voice-${currentSceneId}-${resourceId}`,
-    type: "sound",
-    src: voiceResource.fileId,
-    volume: getEffectiveVoiceVolume(voice, resolvedRuntime),
-    loop: loop ?? false,
-    startDelayMs: startDelayMs ?? null,
-  });
+  audio.push(
+    createChannelNode({
+      id: VOICE_CHANNEL_ID,
+      volume: usesLegacySound
+        ? (voice.volume ??
+          getRuntimeAudioVolume(resolvedRuntime, "soundVolume"))
+        : getEffectiveChannelVolume(
+            resolvedRuntime,
+            "soundVolume",
+            voice.volume ?? DEFAULT_AUTHORED_AUDIO_VOLUME,
+          ),
+      muted: voice.muted,
+      pan: voice.pan,
+      children,
+      runtime: resolvedRuntime,
+    }),
+  );
 
   return state;
 };

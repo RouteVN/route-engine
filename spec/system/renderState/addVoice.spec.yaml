@@ -35,12 +35,18 @@ out:
       children: []
   animations: []
   audio:
-    - id: "voice-scene_intro-alice_001"
-      type: "sound"
-      src: "voices/scene_intro/alice_001.ogg"
+    - id: "channel:voice"
+      type: "audio-channel"
       volume: 80
-      loop: false
-      startDelayMs: null
+      muted: false
+      pan: 0
+      children:
+        - id: "voice:scene_intro:default"
+          type: "sound"
+          src: "voices/scene_intro/alice_001.ogg"
+          volume: 100
+          loop: false
+          startDelayMs: 0
 ---
 case: voice defaults to runtime sound volume
 in:
@@ -72,12 +78,18 @@ out:
       children: []
   animations: []
   audio:
-    - id: "voice-scene_intro-alice_001"
-      type: "sound"
-      src: "voices/scene_intro/alice_001.ogg"
+    - id: "channel:voice"
+      type: "audio-channel"
       volume: 65
-      loop: false
-      startDelayMs: null
+      muted: false
+      pan: 0
+      children:
+        - id: "voice:scene_intro:default"
+          type: "sound"
+          src: "voices/scene_intro/alice_001.ogg"
+          volume: 100
+          loop: false
+          startDelayMs: 0
 ---
 case: voice falls back to default sound volume when runtime is missing
 in:
@@ -107,12 +119,18 @@ out:
       children: []
   animations: []
   audio:
-    - id: "voice-scene_intro-alice_001"
-      type: "sound"
-      src: "voices/scene_intro/alice_001.ogg"
+    - id: "channel:voice"
+      type: "audio-channel"
       volume: 50
-      loop: false
-      startDelayMs: null
+      muted: false
+      pan: 0
+      children:
+        - id: "voice:scene_intro:default"
+          type: "sound"
+          src: "voices/scene_intro/alice_001.ogg"
+          volume: 100
+          loop: false
+          startDelayMs: 0
 ---
 case: voice with loop and startDelayMs
 in:
@@ -145,12 +163,18 @@ out:
       children: []
   animations: []
   audio:
-    - id: "voice-scene_intro-loopingVoice"
-      type: "sound"
-      src: "voices/scene_intro/looping.ogg"
+    - id: "channel:voice"
+      type: "audio-channel"
       volume: 60
-      loop: true
-      startDelayMs: 250
+      muted: false
+      pan: 0
+      children:
+        - id: "voice:scene_intro:default"
+          type: "sound"
+          src: "voices/scene_intro/looping.ogg"
+          volume: 100
+          loop: true
+          startDelayMs: 250
 ---
 case: mute all forces voice volume to zero
 in:
@@ -184,12 +208,18 @@ out:
       children: []
   animations: []
   audio:
-    - id: "voice-scene_intro-alice_001"
-      type: "sound"
-      src: "voices/scene_intro/alice_001.ogg"
-      volume: 0
-      loop: false
-      startDelayMs: null
+    - id: "channel:voice"
+      type: "audio-channel"
+      volume: 80
+      muted: true
+      pan: 0
+      children:
+        - id: "voice:scene_intro:default"
+          type: "sound"
+          src: "voices/scene_intro/alice_001.ogg"
+          volume: 100
+          loop: false
+          startDelayMs: 0
 ---
 case: no presentationState.voice - return unchanged state
 in:
@@ -306,9 +336,15 @@ out:
       children: []
   animations: []
   audio:
-    - id: "voice-scene_two-shared_001"
-      type: "sound"
-      src: "voices/scene_two/shared.ogg"
+    - id: "channel:voice"
+      type: "audio-channel"
       volume: 50
-      loop: false
-      startDelayMs: null
+      muted: false
+      pan: 0
+      children:
+        - id: "voice:scene_two:default"
+          type: "sound"
+          src: "voices/scene_two/shared.ogg"
+          volume: 100
+          loop: false
+          startDelayMs: 0

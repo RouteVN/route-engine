@@ -419,7 +419,7 @@ const renderState = engine.selectRenderState();
 // {
 //   elements: [{ id: 'story', type: 'container', children: [...] }],
 //   animations: [...],
-//   audio: [...]
+//   audio: [{ id: 'channel:bgm', type: 'audio-channel', children: [...] }]
 // }
 ```
 
@@ -677,9 +677,9 @@ Actions that can be attached to lines to control presentation:
 | `dialogue`   | `{ characterId?, character?, character.sprite?, persistCharacter?, content, append?, mode?, ui?, clear? }`                                           | Display dialogue                                                                                                          |
 | `character`  | `{ items }`                                                                                                                                          | Display character sprites. Each item can set transform overrides, `opacity`, and `blur`                                   |
 | `visual`     | `{ items }`                                                                                                                                          | Display visual elements. Each item can set `layer`, transform overrides, `opacity`, `blur`, and animations                |
-| `bgm`        | `{ resourceId, volume?, loop?, startDelayMs? }`                                                                                                      | Play background music                                                                                                     |
-| `sfx`        | `{ items }`                                                                                                                                          | Play sound effects. Each item can include `volume`, `loop`, and `startDelayMs`                                            |
-| `voice`      | `{ resourceId, volume?, loop?, startDelayMs? }`                                                                                                      | Play voice audio from `resources.voices[currentSceneId][resourceId]`                                                      |
+| `bgm`        | `{ sounds, volume?, muted?, pan? }`                                                                                                                  | Control the persistent, multi-sound BGM channel                                                                           |
+| `sfx`        | `{ channels }`                                                                                                                                       | Play any number of line-scoped SFX channels, each with its own sounds                                                     |
+| `voice`      | `{ sounds, volume?, muted?, pan? }`                                                                                                                  | Control the line-scoped, multi-sound Voice channel; resources resolve from the current scene                              |
 | `animation`  | `{ ... }`                                                                                                                                            | Apply animations                                                                                                          |
 | `layout`     | `{ resourceId }`                                                                                                                                     | Display layout                                                                                                            |
 | `control`    | `{ resourceId }`                                                                                                                                     | Activate control bindings and control UI                                                                                  |
@@ -1199,42 +1199,118 @@ Template/runtime paths:
 - Dialogue history layouts should prefer `${item.character.name}`. `${item.characterName}` remains available as a compatibility alias.
 - Dialogue history layouts can inspect sprite metadata at `${item.character.sprite}`.
 
-### Audio Volumes
+### Audio Channels
 
-Audio uses two volume layers:
+Engine audio is authored with `sounds` and rendered as Route Graphics
+`audio-channel.children`.
 
-- Authored BGM/SFX volume controls the specific line action or sound resource.
-- Runtime `musicVolume` and `soundVolume` are global user/device controls.
-
-The emitted render audio volume is:
-
-```js
-(authoredVolume * runtimeVolume) / 100;
-```
-
-If an authored BGM/SFX volume is omitted, it defaults to `100`, which is neutral
-and leaves the runtime volume unchanged. Runtime defaults come from
-`GLOBAL_RUNTIME_DEFAULTS`. `runtime.muteAll` forces emitted BGM, SFX, and voice
-volume to `0`.
+- BGM owns one persistent channel and may contain many sounds.
+- Voice owns one line-scoped channel and may contain many sounds.
+- SFX may contain any number of line-scoped channels, each with many sounds.
+- Channel and sound IDs are namespaced in render state so authored IDs remain
+  stable and globally unique.
+- Canonical sound IDs must be unique within their channel, and canonical SFX
+  channel IDs must be unique within the SFX action.
+- Audio transitions are not part of the Engine authoring interface yet.
 
 ```yaml
 actions:
   bgm:
-    resourceId: music_1
     volume: 80
+    pan: -0.2
+    sounds:
+      - id: theme
+        resourceId: music_1
+        loop: true
+        volume: 90
+        muted: false
+        pan: 0.1
+        playbackRate: 1.1
+        startAt: 5
+        endAt: 30
+      - id: ambience
+        resourceId: forest_ambience
+        loop: true
+        volume: 40
+
+  voice:
+    sounds:
+      - id: alice
+        resourceId: alice_001
+      - id: narrator
+        resourceId: narrator_001
+        startDelayMs: 250
+
   sfx:
-    items:
-      - id: door
-        resourceId: door_close
-        volume: 60
+    channels:
+      - id: ui
+        volume: 80
+        sounds:
+          - id: confirm
+            resourceId: ui_confirm
+      - id: environment
+        pan: 0.5
+        sounds:
+          - id: rain
+            resourceId: rain
+            loop: true
 ```
+
+Each canonical sound supports `loop`, `volume`, `muted`, `pan`,
+`startDelayMs`, `playbackRate`, `startAt`, and `endAt`. `startDelayMs` is in
+milliseconds; `startAt` and `endAt` are offsets in seconds for partial source
+playback. An action sound overrides defaults from its sound or Voice resource,
+and `endAt: null` explicitly clears a resource end offset. After those defaults
+and overrides are resolved, a non-null `endAt` must be greater than or equal to
+`startAt`. When `bgm.sounds` or `voice.sounds` is used, `loop` and
+`startDelayMs` belong on each sound; their top-level forms are accepted only by
+the legacy single-sound shorthand.
+
+Omitting `bgm` preserves its current desired channel state. `bgm.sounds: []`
+stops the BGM channel. Voice and SFX sounds are cleared when the next line omits
+their action.
+
+The previous single-sound forms remain compatibility shorthands:
+
+```yaml
+bgm: { resourceId: music_1, volume: 80 }
+voice: { resourceId: alice_001, volume: 80 }
+sfx:
+  items:
+    - { id: door, resourceId: door_close, volume: 60 }
+```
+
+They compile respectively to the BGM channel, Voice channel, and a default SFX
+channel.
+
+### Audio Volumes
+
+Canonical channel audio uses three multiplicative layers:
+
+- authored channel volume;
+- runtime `musicVolume` for BGM or `soundVolume` for Voice/SFX;
+- authored or resource-level sound volume.
+
+The effective output is:
+
+```js
+(channelVolume * runtimeVolume * soundVolume) / 10000;
+```
+
+Each omitted volume defaults to `100`. Runtime defaults come from
+`GLOBAL_RUNTIME_DEFAULTS`. `runtime.muteAll` emits `muted: true` on every
+channel without destroying its configured volume. A channel's authored
+`muted: true` is combined with the runtime mute.
+
+Legacy single-sound BGM and Voice payloads preserve their previous effective
+volume behavior when compiled into channels.
 
 ### Voice Resources
 
-Voice assets are grouped by scene under `resources.voices`. The line action only
-stores the scene-local `resourceId`; the engine resolves the scene from the
-current section. If `voice.volume` is omitted, the emitted audio uses
-`runtime.soundVolume`; `runtime.muteAll` forces voice volume to `0`.
+Voice assets are grouped by scene under `resources.voices`. Every item in
+`voice.sounds` stores a scene-local `resourceId`; the engine resolves the scene
+from the current section. The Voice channel uses `runtime.soundVolume` as its
+runtime volume layer.
 
 ```yaml
 resources:
@@ -1242,6 +1318,11 @@ resources:
     scene_intro:
       alice_001:
         fileId: voices/scene_intro/alice_001.ogg
+        volume: 90
+        pan: -0.1
+        playbackRate: 1
+        startAt: 0
+        endAt: null
 
 story:
   scenes:
@@ -1255,8 +1336,10 @@ story:
                   content:
                     - text: "You're late."
                 voice:
-                  resourceId: alice_001
                   volume: 80
+                  sounds:
+                    - id: alice
+                      resourceId: alice_001
 ```
 
 ### Shared Layout Template Data

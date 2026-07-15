@@ -68,7 +68,7 @@ const createRouteEngineWithInlineEffects = () => {
 };
 
 describe("RouteEngine SFX rendering", () => {
-  it("uses index and resource scoped SFX render ids without line pointer data", () => {
+  it("renders legacy SFX items in the default SFX channel", () => {
     const engine = createRouteEngineWithInlineEffects();
 
     engine.init({
@@ -88,16 +88,34 @@ describe("RouteEngine SFX rendering", () => {
     const secondLineAudio = engine.selectRenderState().audio;
 
     expect(firstLineAudio).toEqual([
-      expect.objectContaining({
-        id: "sfx:0:click",
-        src: "click.wav",
-      }),
+      {
+        id: "channel:sfx:default",
+        type: "audio-channel",
+        volume: 100,
+        muted: false,
+        pan: 0,
+        children: [
+          expect.objectContaining({
+            id: "sfx:default:0:copied-sfx-id",
+            src: "click.wav",
+          }),
+        ],
+      },
     ]);
     expect(secondLineAudio).toEqual([
-      expect.objectContaining({
-        id: "sfx:0:click",
-        src: "click.wav",
-      }),
+      {
+        id: "channel:sfx:default",
+        type: "audio-channel",
+        volume: 100,
+        muted: false,
+        pan: 0,
+        children: [
+          expect.objectContaining({
+            id: "sfx:default:0:copied-sfx-id",
+            src: "click.wav",
+          }),
+        ],
+      },
     ]);
   });
 });

@@ -11,6 +11,9 @@ const createProjectData = () => ({
       scene1: {
         sharedLine: {
           fileId: "voices/scene1/sharedLine.ogg",
+          loop: true,
+          volume: 20,
+          startDelayMs: 300,
         },
       },
       scene2: {
@@ -79,12 +82,21 @@ describe("RouteEngine voice rendering", () => {
 
     expect(store.selectRenderState().audio).toEqual([
       {
-        id: "voice-scene1-sharedLine",
-        type: "sound",
-        src: "voices/scene1/sharedLine.ogg",
+        id: "channel:voice",
+        type: "audio-channel",
         volume: 35,
-        loop: false,
-        startDelayMs: null,
+        muted: false,
+        pan: 0,
+        children: [
+          {
+            id: "voice:scene1:default",
+            type: "sound",
+            src: "voices/scene1/sharedLine.ogg",
+            volume: 100,
+            loop: false,
+            startDelayMs: 0,
+          },
+        ],
       },
     ]);
 
@@ -92,12 +104,21 @@ describe("RouteEngine voice rendering", () => {
 
     expect(store.selectRenderState().audio).toEqual([
       {
-        id: "voice-scene2-sharedLine",
-        type: "sound",
-        src: "voices/scene2/sharedLine.ogg",
+        id: "channel:voice",
+        type: "audio-channel",
         volume: 70,
-        loop: false,
-        startDelayMs: null,
+        muted: false,
+        pan: 0,
+        children: [
+          {
+            id: "voice:scene2:default",
+            type: "sound",
+            src: "voices/scene2/sharedLine.ogg",
+            volume: 100,
+            loop: false,
+            startDelayMs: 0,
+          },
+        ],
       },
     ]);
   });

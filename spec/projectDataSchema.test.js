@@ -1014,7 +1014,116 @@ describe("projectData schema", () => {
     expect(validatePresentationActions.errors).toBeNull();
   });
 
-  it("accepts scene-grouped voice resources and voice presentation actions", () => {
+  it("accepts multi-sound BGM and Voice channels and arbitrary SFX channels", () => {
+    expect(
+      validatePresentationActions({
+        bgm: {
+          volume: 80,
+          muted: false,
+          pan: -0.25,
+          sounds: [
+            {
+              id: "theme",
+              resourceId: "music_1",
+              loop: true,
+              muted: false,
+              pan: -0.4,
+              playbackRate: 1.25,
+              startAt: 2,
+              endAt: 12,
+            },
+            { id: "ambience", resourceId: "forest", volume: 40 },
+          ],
+        },
+        voice: {
+          volume: 90,
+          sounds: [
+            { id: "alice", resourceId: "alice_001" },
+            {
+              id: "narrator",
+              resourceId: "narrator_001",
+              startDelayMs: 200,
+              endAt: null,
+            },
+          ],
+        },
+        sfx: {
+          channels: [
+            {
+              id: "ui",
+              volume: 80,
+              sounds: [{ id: "click", resourceId: "click" }],
+            },
+            {
+              id: "environment",
+              pan: 0.5,
+              sounds: [{ id: "rain", resourceId: "rain", loop: true }],
+            },
+          ],
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+  });
+
+  it("rejects invalid sound output and playback controls", () => {
+    const invalidSoundOverrides = [
+      { muted: "yes" },
+      { pan: 1.1 },
+      { playbackRate: -0.1 },
+      { startAt: -1 },
+      { endAt: -1 },
+    ];
+
+    invalidSoundOverrides.forEach((override) => {
+      expect(
+        validatePresentationActions({
+          sfx: {
+            channels: [
+              {
+                id: "ui",
+                sounds: [{ id: "invalid", resourceId: "invalid", ...override }],
+              },
+            ],
+          },
+        }),
+      ).toBe(false);
+    });
+  });
+
+  it("rejects legacy single-sound fields on canonical BGM and Voice actions", () => {
+    const legacyFields = [
+      ["resourceId", "legacy"],
+      ["loop", false],
+      ["startDelayMs", 500],
+    ];
+
+    ["bgm", "voice"].forEach((actionType) => {
+      legacyFields.forEach(([field, value]) => {
+        expect(
+          validatePresentationActions({
+            [actionType]: {
+              sounds: [{ id: "canonical", resourceId: "canonical" }],
+              [field]: value,
+            },
+          }),
+        ).toBe(false);
+      });
+    });
+  });
+
+  it("rejects mixing legacy SFX items with channels", () => {
+    expect(
+      validatePresentationActions({
+        sfx: {
+          items: [{ id: "legacy", resourceId: "legacy" }],
+          channels: [{ id: "ui", sounds: [] }],
+        },
+      }),
+    ).toBe(false);
+  });
+
+  it("accepts sound defaults in global and scene-grouped voice resources", () => {
     expect(
       validatePresentationActions({
         voice: {
@@ -1031,10 +1140,28 @@ describe("projectData schema", () => {
       validateProjectData(
         createMinimalProjectData({
           resources: {
+            sounds: {
+              music_1: {
+                fileId: "audio/music_1.ogg",
+                muted: false,
+                pan: -0.25,
+                playbackRate: 1.1,
+                startAt: 2,
+                endAt: null,
+              },
+            },
             voices: {
               scene1: {
                 alice_001: {
                   fileId: "voices/scene1/alice_001.ogg",
+                  loop: true,
+                  volume: 80,
+                  muted: false,
+                  pan: 0.25,
+                  startDelayMs: 120,
+                  playbackRate: 0.9,
+                  startAt: 1,
+                  endAt: 4,
                 },
               },
             },

@@ -35,12 +35,18 @@ out:
       children: []
   animations: []
   audio:
-    - id: "bgm"
-      type: "sound"
-      src: "bgm.mp3"
-      loop: true
+    - id: "channel:bgm"
+      type: "audio-channel"
       volume: 70
-      startDelayMs: 0
+      muted: false
+      pan: 0
+      children:
+        - id: "bgm:default"
+          type: "sound"
+          src: "bgm.mp3"
+          loop: true
+          volume: 100
+          startDelayMs: 0
 ---
 case: add bgm with default values
 in:
@@ -59,6 +65,8 @@ in:
       sounds:
         simpleMusic:
           fileId: "simple.mp3"
+          loop: false
+          startDelayMs: 300
 out:
   elements:
     - id: "story"
@@ -68,12 +76,18 @@ out:
       children: []
   animations: []
   audio:
-    - id: "bgm"
-      type: "sound"
-      src: "simple.mp3"
-      loop: true
+    - id: "channel:bgm"
+      type: "audio-channel"
       volume: 50
-      startDelayMs: null
+      muted: false
+      pan: 0
+      children:
+        - id: "bgm:default"
+          type: "sound"
+          src: "simple.mp3"
+          loop: true
+          volume: 100
+          startDelayMs: 0
 ---
 case: add bgm with custom settings
 in:
@@ -105,12 +119,18 @@ out:
       children: []
   animations: []
   audio:
-    - id: "bgm"
-      type: "sound"
-      src: "custom.mp3"
-      loop: false
+    - id: "channel:bgm"
+      type: "audio-channel"
       volume: 30
-      startDelayMs: 1000
+      muted: false
+      pan: 0
+      children:
+        - id: "bgm:default"
+          type: "sound"
+          src: "custom.mp3"
+          loop: false
+          volume: 100
+          startDelayMs: 1000
 ---
 case: add bgm applies authored volume with runtime music volume
 in:
@@ -142,12 +162,18 @@ out:
       children: []
   animations: []
   audio:
-    - id: "bgm"
-      type: "sound"
-      src: "custom.mp3"
-      loop: true
-      volume: 18
-      startDelayMs: null
+    - id: "channel:bgm"
+      type: "audio-channel"
+      volume: 30
+      muted: false
+      pan: 0
+      children:
+        - id: "bgm:default"
+          type: "sound"
+          src: "custom.mp3"
+          loop: true
+          volume: 60
+          startDelayMs: 0
 ---
 case: no presentationState.bgm - return unchanged state
 in:

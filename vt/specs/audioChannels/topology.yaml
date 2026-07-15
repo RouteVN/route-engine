@@ -1,0 +1,101 @@
+---
+title: Audio Channel Topology
+description: Isolated browser fixture for multi-sound BGM and Voice channels plus multiple SFX channels.
+skipScreenshot: true
+specs:
+  - line 1 is silent so clicking the canvas supplies the audio user gesture
+  - line 2 emits one BGM channel with two sounds, one Voice channel with two sounds, and two SFX channels
+  - line 3 removes all audio
+---
+screen:
+  width: 640
+  height: 360
+resources:
+  sounds:
+    theme:
+      fileId: 3ka3s
+    ambience:
+      fileId: xk393
+    click:
+      fileId: xj323
+    rain:
+      fileId: 39csl
+  voices:
+    scene1:
+      alice:
+        fileId: xj323
+        muted: false
+        pan: 0.25
+        playbackRate: 0.9
+        startAt: 1
+        endAt: 4
+      narrator:
+        fileId: 39csl
+  colors:
+    canvas:
+      hex: "#10131A"
+  controls:
+    advance:
+      elements:
+        - id: advance-surface
+          type: rect
+          width: 640
+          height: 360
+          colorId: canvas
+          click:
+            payload:
+              actions:
+                nextLine: {}
+story:
+  initialSceneId: scene1
+  scenes:
+    scene1:
+      initialSectionId: section1
+      sections:
+        section1:
+          lines:
+            - id: silent
+              actions:
+                control:
+                  resourceId: advance
+            - id: channels
+              actions:
+                bgm:
+                  volume: 80
+                  sounds:
+                    - id: theme
+                      resourceId: theme
+                      volume: 50
+                      muted: false
+                      pan: -0.4
+                      playbackRate: 1.25
+                      startAt: 2
+                      endAt: 12
+                    - id: ambience
+                      resourceId: ambience
+                      volume: 25
+                voice:
+                  volume: 70
+                  sounds:
+                    - id: alice
+                      resourceId: alice
+                      endAt: null
+                    - id: narrator
+                      resourceId: narrator
+                      startDelayMs: 250
+                sfx:
+                  channels:
+                    - id: "a:b"
+                      volume: 75
+                      sounds:
+                        - id: c
+                          resourceId: click
+                    - id: a
+                      pan: 0.5
+                      sounds:
+                        - id: "b:c"
+                          resourceId: rain
+            - id: stopped
+              actions:
+                bgm:
+                  sounds: []

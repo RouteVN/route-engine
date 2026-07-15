@@ -36,12 +36,18 @@ out:
       children: []
   animations: []
   audio:
-    - id: "sfx:0:soundEffect"
-      type: "sound"
-      src: "effect.mp3"
-      loop: false
-      volume: 35
-      startDelayMs: 0
+    - id: "channel:sfx:default"
+      type: "audio-channel"
+      volume: 50
+      muted: false
+      pan: 0
+      children:
+        - id: "sfx:default:0:sfx1"
+          type: "sound"
+          src: "effect.mp3"
+          loop: false
+          volume: 70
+          startDelayMs: 0
 ---
 case: add sfx with default values
 in:
@@ -71,12 +77,18 @@ out:
       children: []
   animations: []
   audio:
-    - id: "sfx:0:simpleSound"
-      type: "sound"
-      src: "simple.mp3"
-      loop: false
+    - id: "channel:sfx:default"
+      type: "audio-channel"
       volume: 50
-      startDelayMs: null
+      muted: false
+      pan: 0
+      children:
+        - id: "sfx:default:0:sfx1"
+          type: "sound"
+          src: "simple.mp3"
+          loop: false
+          volume: 100
+          startDelayMs: 0
 ---
 case: add sfx with custom settings
 in:
@@ -109,12 +121,18 @@ out:
       children: []
   animations: []
   audio:
-    - id: "sfx:0:customSound"
-      type: "sound"
-      src: "custom.mp3"
-      loop: true
-      volume: 15
-      startDelayMs: 500
+    - id: "channel:sfx:default"
+      type: "audio-channel"
+      volume: 50
+      muted: false
+      pan: 0
+      children:
+        - id: "sfx:default:0:sfx1"
+          type: "sound"
+          src: "custom.mp3"
+          loop: true
+          volume: 30
+          startDelayMs: 500
 ---
 case: add sfx applies authored volume with runtime sound volume
 in:
@@ -147,12 +165,18 @@ out:
       children: []
   animations: []
   audio:
-    - id: "sfx:0:customSound"
-      type: "sound"
-      src: "custom.mp3"
-      loop: false
-      volume: 10
-      startDelayMs: null
+    - id: "channel:sfx:default"
+      type: "audio-channel"
+      volume: 25
+      muted: false
+      pan: 0
+      children:
+        - id: "sfx:default:0:sfx1"
+          type: "sound"
+          src: "custom.mp3"
+          loop: false
+          volume: 40
+          startDelayMs: 0
 ---
 case: multiple sfx items
 in:
@@ -187,18 +211,24 @@ out:
       children: []
   animations: []
   audio:
-    - id: "sfx:0:firstSound"
-      type: "sound"
-      src: "first.mp3"
-      loop: false
-      volume: 30
-      startDelayMs: null
-    - id: "sfx:1:secondSound"
-      type: "sound"
-      src: "second.mp3"
-      loop: false
+    - id: "channel:sfx:default"
+      type: "audio-channel"
       volume: 50
-      startDelayMs: null
+      muted: false
+      pan: 0
+      children:
+        - id: "sfx:default:0:sfx1"
+          type: "sound"
+          src: "first.mp3"
+          loop: false
+          volume: 60
+          startDelayMs: 0
+        - id: "sfx:default:1:sfx2"
+          type: "sound"
+          src: "second.mp3"
+          loop: false
+          volume: 100
+          startDelayMs: 0
 ---
 case: scopes sfx render ids by item index and resource id
 in:
@@ -232,18 +262,24 @@ out:
       children: []
   animations: []
   audio:
-    - id: "sfx:0:firstSound"
-      type: "sound"
-      src: "first.mp3"
-      loop: false
+    - id: "channel:sfx:default"
+      type: "audio-channel"
       volume: 50
-      startDelayMs: null
-    - id: "sfx:1:secondSound"
-      type: "sound"
-      src: "second.mp3"
-      loop: false
-      volume: 50
-      startDelayMs: null
+      muted: false
+      pan: 0
+      children:
+        - id: "sfx:default:0:copiedSfx"
+          type: "sound"
+          src: "first.mp3"
+          loop: false
+          volume: 100
+          startDelayMs: 0
+        - id: "sfx:default:1:copiedSfx"
+          type: "sound"
+          src: "second.mp3"
+          loop: false
+          volume: 100
+          startDelayMs: 0
 ---
 case: no presentationState.sfx - return unchanged state
 in:
@@ -298,12 +334,18 @@ out:
       children: []
   animations: []
   audio:
-    - id: "sfx:0:soundEffect"
-      type: "sound"
-      src: "effect.mp3"
-      loop: true
-      volume: 35
-      startDelayMs: null
+    - id: "channel:sfx:default"
+      type: "audio-channel"
+      volume: 50
+      muted: false
+      pan: 0
+      children:
+        - id: "sfx:default:0:sfx1"
+          type: "sound"
+          src: "effect.mp3"
+          loop: true
+          volume: 70
+          startDelayMs: 0
 ---
 case: audio not found - skip item
 in:
