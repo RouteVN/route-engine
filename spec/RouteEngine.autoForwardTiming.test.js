@@ -151,6 +151,34 @@ describe("RouteEngine auto-forward timing", () => {
     expect(store.selectAutoForwardTimerDelay()).toBe(1000);
   });
 
+  it("ignores authored content discarded by dialogue.clear", () => {
+    const store = createStore({
+      lines: [
+        {
+          id: "line1",
+          actions: {
+            dialogue: {
+              clear: true,
+              content: [
+                {
+                  text: "This authored content is cleared instead of displayed.",
+                },
+              ],
+            },
+          },
+        },
+      ],
+    });
+
+    expect(store.selectAutoForwardTimerDelay()).toBe(1000);
+
+    store.startAutoMode({});
+    store.clearPendingEffects({});
+    store.markLineCompleted({});
+
+    expectAutoTimerDelay(store, 1000);
+  });
+
   it("uses weighted CJK timing", () => {
     const store = createStore({
       lines: [

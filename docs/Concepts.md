@@ -240,7 +240,7 @@ Global playback modes use a different timing model:
 - Global `autoMode` starts its delay after the current line is completed.
 - In practice, completion is driven by Route Graphics `renderComplete`, so text reveal and other tracked render work finish first.
 - Its delay is the persisted `autoForwardDelay` minimum plus 60ms per weighted grapheme in the current line's resolved dialogue text. Han, Hiragana, Katakana, and Hangul graphemes have a weight of 3, whitespace has a weight of 0.5, and other graphemes have a weight of 1. The result is capped at 20 seconds unless the configured minimum is already higher.
-- ADV append and NVL timing only measure dialogue introduced by the current line; prior accumulated dialogue and character names are not counted.
+- ADV append and NVL timing only measure visible dialogue introduced by the current line; prior accumulated dialogue, character names, and content discarded by `dialogue.clear` are not counted.
 - Global `skipMode` does not wait for completion; it advances aggressively on its own short timer.
 - `nextLineConfig.auto` is the only built-in auto-like behavior that can intentionally start from line start via `trigger: "fromStart"`.
 - `nextLineConfig.auto.delay` remains a fixed authored delay and is not length-adjusted.

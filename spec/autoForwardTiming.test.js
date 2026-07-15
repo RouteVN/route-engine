@@ -30,6 +30,24 @@ describe("auto-forward timing", () => {
     expect(getAutoForwardReadingUnits("👨‍👩‍👧‍👦")).toBe(1);
   });
 
+  it("keeps emoji sequences intact without Intl.Segmenter", () => {
+    const segmenterDescriptor = Object.getOwnPropertyDescriptor(
+      Intl,
+      "Segmenter",
+    );
+    Object.defineProperty(Intl, "Segmenter", {
+      configurable: true,
+      value: undefined,
+    });
+
+    try {
+      expect(getAutoForwardReadingUnits("👨‍👩‍👧‍👦")).toBe(1);
+      expect(getAutoForwardReadingUnits("🇨🇳")).toBe(1);
+    } finally {
+      Object.defineProperty(Intl, "Segmenter", segmenterDescriptor);
+    }
+  });
+
   it("uses the base delay for empty content", () => {
     expect(
       estimateAutoForwardDelay({

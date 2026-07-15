@@ -1,3 +1,5 @@
+import { splitGraphemes } from "unicode-segmenter/grapheme";
+
 const DEFAULT_BASE_DELAY_MS = 1000;
 
 export const AUTO_FORWARD_MS_PER_READING_UNIT = 60;
@@ -16,7 +18,7 @@ const segmentGraphemes = (text) => {
   const Segmenter = globalThis.Intl?.Segmenter;
 
   if (typeof Segmenter !== "function") {
-    return Array.from(normalizedText);
+    return Array.from(splitGraphemes(normalizedText));
   }
 
   graphemeSegmenter ??= new Segmenter(undefined, {

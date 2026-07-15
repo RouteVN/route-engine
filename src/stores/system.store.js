@@ -1910,13 +1910,13 @@ export const selectPresentationState = ({ state }) => {
 };
 
 const selectCurrentLineAutoForwardText = (state) => {
-  const content = selectCurrentLine({ state })?.actions?.dialogue?.content;
-  if (!Array.isArray(content)) {
+  const dialogue = selectCurrentLine({ state })?.actions?.dialogue;
+  if (dialogue?.clear === true || !Array.isArray(dialogue?.content)) {
     return "";
   }
 
   const variables = selectAllVariables({ state });
-  return content
+  return dialogue.content
     .map((item) => {
       const text = interpolateDialogueText(item?.text, { variables });
       return `${text ?? ""}`;
