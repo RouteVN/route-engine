@@ -1262,7 +1262,9 @@ milliseconds; `startAt` and `endAt` are offsets in seconds for partial source
 playback. An action sound overrides defaults from its sound or Voice resource,
 and `endAt: null` explicitly clears a resource end offset. After those defaults
 and overrides are resolved, a non-null `endAt` must be greater than or equal to
-`startAt`.
+`startAt`. When `bgm.sounds` or `voice.sounds` is used, `loop` and
+`startDelayMs` belong on each sound; their top-level forms are accepted only by
+the legacy single-sound shorthand.
 
 Omitting `bgm` preserves its current desired channel state. `bgm.sounds: []`
 stops the BGM channel. Voice and SFX sounds are cleared when the next line omits

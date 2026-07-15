@@ -663,6 +663,10 @@ properties:
     allOf:
       - not:
           required: [resourceId, sounds]
+      - not:
+          required: [loop, sounds]
+      - not:
+          required: [startDelayMs, sounds]
     additionalProperties: false
 
   voice:
@@ -703,6 +707,10 @@ properties:
     allOf:
       - not:
           required: [resourceId, sounds]
+      - not:
+          required: [loop, sounds]
+      - not:
+          required: [startDelayMs, sounds]
     additionalProperties: false
 
   control:

@@ -1091,25 +1091,28 @@ describe("projectData schema", () => {
     });
   });
 
-  it("rejects mixing legacy audio shorthands with channel sound collections", () => {
-    expect(
-      validatePresentationActions({
-        bgm: {
-          resourceId: "legacy",
-          sounds: [{ id: "theme", resourceId: "theme" }],
-        },
-      }),
-    ).toBe(false);
+  it("rejects legacy single-sound fields on canonical BGM and Voice actions", () => {
+    const legacyFields = [
+      ["resourceId", "legacy"],
+      ["loop", false],
+      ["startDelayMs", 500],
+    ];
 
-    expect(
-      validatePresentationActions({
-        voice: {
-          resourceId: "legacy",
-          sounds: [{ id: "alice", resourceId: "alice" }],
-        },
-      }),
-    ).toBe(false);
+    ["bgm", "voice"].forEach((actionType) => {
+      legacyFields.forEach(([field, value]) => {
+        expect(
+          validatePresentationActions({
+            [actionType]: {
+              sounds: [{ id: "canonical", resourceId: "canonical" }],
+              [field]: value,
+            },
+          }),
+        ).toBe(false);
+      });
+    });
+  });
 
+  it("rejects mixing legacy SFX items with channels", () => {
     expect(
       validatePresentationActions({
         sfx: {
