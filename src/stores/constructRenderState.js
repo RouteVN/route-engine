@@ -652,6 +652,10 @@ const resolveBackgroundKind = (resources = {}, resourceId) => {
     return "video";
   }
 
+  if (resources.spritesheets?.[resourceId]) {
+    return "spritesheet-animation";
+  }
+
   if (resources.layouts?.[resourceId]) {
     return "container";
   }
@@ -1505,6 +1509,7 @@ const hasRenderableBackgroundResource = (resources = {}, resourceId) => {
   return !!(
     resources.images?.[resourceId] ||
     resources.videos?.[resourceId] ||
+    resources.spritesheets?.[resourceId] ||
     resources.layouts?.[resourceId]
   );
 };
@@ -2365,12 +2370,22 @@ export const addBackgroundOrCg = (
     }
 
     if (currentBackgroundResourceId) {
-      const { images = {}, videos = {} } = resources;
-      const background =
-        images[currentBackgroundResourceId] ||
-        videos[currentBackgroundResourceId];
+      const { images = {}, videos = {}, spritesheets = {} } = resources;
+      const backgroundKind = resolveBackgroundKind(
+        resources,
+        currentBackgroundResourceId,
+      );
+      let background;
+      if (backgroundKind === "sprite") {
+        background = images[currentBackgroundResourceId];
+      } else if (backgroundKind === "video") {
+        background = videos[currentBackgroundResourceId];
+      } else if (backgroundKind === "spritesheet-animation") {
+        background = spritesheets[currentBackgroundResourceId];
+      }
       if (background) {
-        const isVideo = videos[currentBackgroundResourceId] !== undefined;
+        const isVideo = backgroundKind === "video";
+        const isSpritesheet = backgroundKind === "spritesheet-animation";
         const backgroundTransform = {
           x: (screen?.width ?? 1920) / 2,
           y: (screen?.height ?? 1080) / 2,
@@ -2381,15 +2396,7 @@ export const addBackgroundOrCg = (
           scaleY: 1,
           ...authoredBackgroundTransform,
         };
-        const element = {
-          id: resolveBackgroundTargetId({
-            resourceId: currentBackgroundResourceId,
-            kind: isVideo ? "video" : "sprite",
-          }),
-          type: isVideo ? "video" : "sprite",
-          src: background.fileId,
-          width: background.width,
-          height: background.height,
+        const elementTransform = {
           ...getBackgroundAppearance(presentationState.background, {
             includeDefaultAlpha: true,
           }),
@@ -2398,13 +2405,43 @@ export const addBackgroundOrCg = (
             presentationState.background,
           ),
         };
+        let element;
+
+        if (isSpritesheet) {
+          element = createAnimatedSpriteElement({
+            id: resolveBackgroundTargetId({
+              resourceId: currentBackgroundResourceId,
+              kind: backgroundKind,
+            }),
+            resourceId: currentBackgroundResourceId,
+            spritesheet: background,
+            animationName: presentationState.background.animationName,
+            animationSpeed: presentationState.background.animationSpeed,
+            loop: presentationState.background.loop,
+            transform: elementTransform,
+          });
+        } else {
+          element = {
+            id: resolveBackgroundTargetId({
+              resourceId: currentBackgroundResourceId,
+              kind: backgroundKind,
+            }),
+            type: isVideo ? "video" : "sprite",
+            src: background.fileId,
+            width: background.width,
+            height: background.height,
+            ...elementTransform,
+          };
+        }
 
         if (isVideo) {
           element.loop = presentationState.background.loop ?? false;
           element.volume = background.volume ?? 50;
         }
 
-        storyContainer.children.push(element);
+        if (element) {
+          storyContainer.children.push(element);
+        }
       }
     }
 

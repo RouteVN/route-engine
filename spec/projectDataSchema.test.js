@@ -284,6 +284,20 @@ describe("projectData schema", () => {
     expect(validatePresentationActions.errors).toBeNull();
   });
 
+  it("accepts spritesheet playback fields in background actions", () => {
+    expect(
+      validatePresentationActions({
+        background: {
+          resourceId: "animatedSky",
+          animationName: "storm",
+          animationSpeed: 0.4,
+          loop: true,
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+  });
+
   it("accepts transform origins in resource transforms", () => {
     expect(
       validateProjectData(

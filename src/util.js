@@ -1397,8 +1397,10 @@ const toBackgroundResourceChangeData = (background) => {
     }
   }
 
-  if (background.loop !== undefined) {
-    data.loop = background.loop;
+  for (const field of ["animationName", "animationSpeed", "loop"]) {
+    if (background[field] !== undefined) {
+      data[field] = background[field];
+    }
   }
 
   return data;

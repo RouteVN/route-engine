@@ -51,17 +51,36 @@ const createResources = () => ({
   sectionTransitions: {},
   sounds: {},
   sprites: {},
-  spritesheets: {},
+  spritesheets: {
+    sheet1: {
+      fileId: "sheet-old.png",
+      width: 1920,
+      height: 1080,
+      jsonData: { frames: {}, meta: {} },
+      animations: {
+        idle: { frames: [0] },
+      },
+    },
+    sheet2: {
+      fileId: "sheet-new.png",
+      width: 1920,
+      height: 1080,
+      jsonData: { frames: {}, meta: {} },
+      animations: {
+        idle: { frames: [0] },
+      },
+    },
+  },
   textStyles: {},
   variables: {},
 });
 
-const createPresentationPair = (nextBackground) => {
+const createPresentationPair = (nextBackground, previousResourceId = "bg1") => {
   const previousPresentationState = normalizePersistentPresentationState(
     constructPresentationState([
       {
         background: {
-          resourceId: "bg1",
+          resourceId: previousResourceId,
         },
       },
     ]),
@@ -97,7 +116,9 @@ describe("constructRenderState background transition targets", () => {
       resources,
     });
 
-    const story = renderState.elements.find((element) => element.id === "story");
+    const story = renderState.elements.find(
+      (element) => element.id === "story",
+    );
     expect(story.children).toContainEqual(
       expect.objectContaining({
         id: "bg-cg-background-sprite",
@@ -140,6 +161,45 @@ describe("constructRenderState background transition targets", () => {
         id: "bg-cg-animation-in",
         type: "transition",
         targetId: "bg-cg-background-container",
+      }),
+    ]);
+  });
+
+  it("keeps a stable animated-sprite target for spritesheet swaps", () => {
+    const resources = createResources();
+    const { previousPresentationState, presentationState } =
+      createPresentationPair(
+        {
+          resourceId: "sheet2",
+          animationName: "idle",
+          animations: {
+            resourceId: "maskTransition",
+          },
+        },
+        "sheet1",
+      );
+
+    const renderState = constructRenderState({
+      presentationState,
+      previousPresentationState,
+      resources,
+    });
+
+    const story = renderState.elements.find(
+      (element) => element.id === "story",
+    );
+    expect(story.children).toContainEqual(
+      expect.objectContaining({
+        id: "bg-cg-background-spritesheet-animation",
+        type: "spritesheet-animation",
+        src: "sheet-new.png",
+      }),
+    );
+    expect(renderState.animations).toEqual([
+      expect.objectContaining({
+        id: "bg-cg-animation-transition",
+        type: "transition",
+        targetId: "bg-cg-background-spritesheet-animation",
       }),
     ]);
   });

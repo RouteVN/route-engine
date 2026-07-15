@@ -347,8 +347,8 @@ resources:
 
 Background actions can set a persistent solid backing color with `colorId`.
 The color resolves through `resources.colors` and renders behind the background
-image, video, or layout. If no background `colorId` has been set, the backing
-color uses `screen.backgroundColor`, which defaults to black.
+image, video, spritesheet, or layout. If no background `colorId` has been set,
+the backing color uses `screen.backgroundColor`, which defaults to black.
 
 ```yaml
 screen:
@@ -370,6 +370,21 @@ story:
                 background:
                   colorId: nightBackdrop
                   resourceId: forest
+```
+
+#### Spritesheet Backgrounds
+
+A background `resourceId` can reference `resources.spritesheets`. Use
+`animationName` to select a named animation; when it is omitted, the first
+defined animation is used. `animationSpeed` and `loop` override the defaults on
+that animation.
+
+```yaml
+background:
+  resourceId: animatedSky
+  animationName: storm
+  animationSpeed: 0.4
+  loop: true
 ```
 
 ### `handleLineActions()`
@@ -795,11 +810,11 @@ resource.
 Background actions can also set `x`, `y`, `anchorX`, `anchorY`, `scaleX`,
 `scaleY`, `rotation`, `originX`, and `originY` at the top level. These fields
 can override selected values from `transformId`, or position the background
-without any `transformId`. Image and video backgrounds default to centered
-placement, computed as `x = screen.width / 2` and `y = screen.height / 2`, with
-`anchorX: 0.5`, `anchorY: 0.5`, `rotation: 0`, `scaleX: 1`, and `scaleY: 1`.
-Layout backgrounds use top-left defaults when a background transform is
-authored.
+without any `transformId`. Image, video, and spritesheet backgrounds default to
+centered placement, computed as `x = screen.width / 2` and
+`y = screen.height / 2`, with `anchorX: 0.5`, `anchorY: 0.5`, `rotation: 0`,
+`scaleX: 1`, and `scaleY: 1`. Layout backgrounds use top-left defaults when a
+background transform is authored.
 
 Background transforms support three authoring modes:
 

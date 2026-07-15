@@ -1,0 +1,62 @@
+---
+title: Spritesheet Background Resource
+description: |
+  Background resourceId resolves spritesheet resources through the animated
+  sprite renderer while preserving the normal centered background placement.
+specs:
+  - the screenshot should show the forest spritesheet frame filling the screen
+---
+screen:
+  width: 1920
+  height: 1080
+resources:
+  spritesheets:
+    forestSheet:
+      fileId: dmni32
+      width: 1920
+      height: 1080
+      jsonData:
+        frames:
+          forest.png:
+            frame:
+              x: 0
+              y: 0
+              w: 1920
+              h: 1080
+            rotated: false
+            trimmed: false
+            spriteSourceSize:
+              x: 0
+              y: 0
+              w: 1920
+              h: 1080
+            sourceSize:
+              w: 1920
+              h: 1080
+        meta:
+          format: RGBA8888
+          size:
+            w: 1920
+            h: 1080
+          scale: "1"
+      animations:
+        still:
+          frames:
+            - 0
+          animationSpeed: 0.5
+          loop: false
+story:
+  initialSceneId: spritesheetBackgroundScene
+  scenes:
+    spritesheetBackgroundScene:
+      name: Spritesheet Background Scene
+      initialSectionId: main
+      sections:
+        main:
+          name: Main
+          lines:
+            - id: line1
+              actions:
+                background:
+                  resourceId: forestSheet
+                  animationName: still

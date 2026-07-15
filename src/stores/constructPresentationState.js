@@ -67,6 +67,12 @@ const BACKGROUND_TRANSFORM_FIELDS = [
   "originY",
 ];
 
+const BACKGROUND_RESOURCE_PLAYBACK_FIELDS = [
+  "animationName",
+  "animationSpeed",
+  "loop",
+];
+
 const hasItemTransform = (item) =>
   ITEM_TRANSFORM_FIELDS.some((field) => hasDefinedProperty(item, field));
 
@@ -129,6 +135,11 @@ const assertVisualTextPatch = (item, previousItem) => {
 
 const hasBackgroundTransform = (background) =>
   BACKGROUND_TRANSFORM_FIELDS.some((field) =>
+    hasDefinedProperty(background, field),
+  );
+
+const hasBackgroundResourcePlayback = (background) =>
+  BACKGROUND_RESOURCE_PLAYBACK_FIELDS.some((field) =>
     hasDefinedProperty(background, field),
   );
 
@@ -422,6 +433,9 @@ export const background = (state, presentation) => {
       "transformId",
     );
     const hasTransform = hasBackgroundTransform(presentation.background);
+    const hasResourcePlayback = hasBackgroundResourcePlayback(
+      presentation.background,
+    );
 
     const { animationsOnly, state: animState } = getAnimationsOnlyState(
       presentation.background,
@@ -431,7 +445,8 @@ export const background = (state, presentation) => {
         hasDefinedProperty(p, "opacity") ||
         hasDefinedProperty(p, "blur") ||
         hasDefinedProperty(p, "transformId") ||
-        hasBackgroundTransform(p),
+        hasBackgroundTransform(p) ||
+        hasBackgroundResourcePlayback(p),
     );
 
     if (animationsOnly) {
@@ -450,7 +465,8 @@ export const background = (state, presentation) => {
       !hasOpacity &&
       !hasBlur &&
       !hasTransformId &&
-      !hasTransform
+      !hasTransform &&
+      !hasResourcePlayback
     ) {
       delete state.background;
       return;
@@ -466,6 +482,15 @@ export const background = (state, presentation) => {
         previousBackground.transformId
       ) {
         nextBackground.transformId = previousBackground.transformId;
+      }
+
+      for (const field of BACKGROUND_RESOURCE_PLAYBACK_FIELDS) {
+        if (
+          !hasDefinedProperty(nextBackground, field) &&
+          hasDefinedProperty(previousBackground, field)
+        ) {
+          nextBackground[field] = previousBackground[field];
+        }
       }
     }
 
@@ -525,6 +550,15 @@ export const background = (state, presentation) => {
       nextBackground.blur === undefined
     ) {
       delete nextBackground.blur;
+    }
+
+    for (const field of BACKGROUND_RESOURCE_PLAYBACK_FIELDS) {
+      if (
+        hasOwnProperty(nextBackground, field) &&
+        nextBackground[field] === undefined
+      ) {
+        delete nextBackground[field];
+      }
     }
 
     if (!nextBackground.resourceId && !nextBackground.colorId) {
