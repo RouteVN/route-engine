@@ -16,10 +16,16 @@ in:
         colorId: "fg"
         fontSize: 24
         fontWeight: "400"
-        fontStyle: "normal"
+        fontStyle: "italic"
         lineHeight: 1.2
         strokeColorId: "outline"
         strokeWidth: 2
+        shadow:
+          colorId: "shadow"
+          alpha: 0.75
+          blur: 6
+          offsetX: -2
+          offsetY: 3
     fonts:
       fontMain:
         fileId: "Arial"
@@ -28,6 +34,8 @@ in:
         hex: "#FFFFFF"
       outline:
         hex: "#000000"
+      shadow:
+        hex: "#123456"
 out:
   type: "text"
   content: "Hello"
@@ -35,11 +43,17 @@ out:
     fontFamily: "Arial"
     fontSize: 24
     fontWeight: "400"
-    fontStyle: "normal"
+    fontStyle: "italic"
     lineHeight: 1.2
     fill: "#FFFFFF"
     strokeColor: "#000000"
     strokeWidth: 2
+    shadow:
+      color: "#123456"
+      alpha: 0.75
+      blur: 6
+      offsetX: -2
+      offsetY: 3
 ---
 case: resolves nested interaction textStyleIds and extended text style fields
 in:
@@ -446,6 +460,29 @@ in:
       fg:
         hex: "#FFFFFF"
 throws: 'Stroke color "missingStroke" not found for text style "body"'
+---
+case: missing shadow color resource throws clear error
+in:
+  - type: "text"
+    content: "Hello"
+    textStyleId: "body"
+  - textStyles:
+      body:
+        fontId: "fontMain"
+        colorId: "fg"
+        fontSize: 24
+        fontWeight: "400"
+        fontStyle: "normal"
+        lineHeight: 1
+        shadow:
+          colorId: "missingShadow"
+    fonts:
+      fontMain:
+        fileId: "Arial"
+    colors:
+      fg:
+        hex: "#FFFFFF"
+throws: 'Shadow color "missingShadow" not found for text style "body"'
 ---
 case: colorAlpha must be a number between 0 and 1
 in:
