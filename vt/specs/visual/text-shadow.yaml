@@ -1,0 +1,58 @@
+---
+title: Visual Text Shadow
+description: |
+  A text style shadow should resolve its shared color and render with the
+  authored alpha, blur, and offsets.
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#15101F"
+resources:
+  layouts:
+    textShadowLayout:
+      name: Text Shadow
+      elements:
+        - id: shadow-text
+          type: text
+          content: TEXT SHADOW
+          x: 960
+          y: 540
+          anchorX: 0.5
+          anchorY: 0.5
+          textStyleId: shadowText
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    text:
+      hex: "#FFFFFF"
+    shadow:
+      hex: "#FF2FD1"
+  textStyles:
+    shadowText:
+      fontId: default
+      colorId: text
+      fontSize: 128
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1
+      shadow:
+        colorId: shadow
+        alpha: 0.85
+        blur: 8
+        offsetX: 18
+        offsetY: 18
+story:
+  initialSceneId: textShadowScene
+  scenes:
+    textShadowScene:
+      name: Text Shadow Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: textShadow
+              actions:
+                layout:
+                  resourceId: textShadowLayout
