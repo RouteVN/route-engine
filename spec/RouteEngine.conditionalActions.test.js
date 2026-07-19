@@ -183,7 +183,7 @@ describe("RouteEngine conditional actions", () => {
   it("dispatches conditional actions through the single-action API", () => {
     const engine = createEngine(createProjectData({ trust: 80 }));
 
-    engine.handleAction("conditional", {
+    const result = engine.handleAction("conditional", {
       branches: [
         {
           when: {
@@ -197,6 +197,7 @@ describe("RouteEngine conditional actions", () => {
       ],
     });
 
+    expect(result).toBeUndefined();
     expect(engine.selectSystemState().contexts[0].variables.score).toBe(5);
   });
 
@@ -275,7 +276,7 @@ describe("RouteEngine conditional actions", () => {
       }),
     );
 
-    engine.handleAction("conditional", {
+    const result = engine.handleAction("conditional", {
       branches: [
         {
           when: {
@@ -286,6 +287,7 @@ describe("RouteEngine conditional actions", () => {
       ],
     });
 
+    expect(result).toBeUndefined();
     expect(engine.selectSystemState().contexts[0].variables.score).toBe(5);
     expect(
       engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
@@ -546,6 +548,41 @@ describe("RouteEngine conditional actions", () => {
     ).toBe("line3");
   });
 
+  it.each([
+    ["jumpToLine", { jumpToLine: { lineId: "line1" } }],
+    ["resetStoryAtSection", { resetStoryAtSection: { sectionId: "section1" } }],
+  ])(
+    "cancels deferred continuation when later %s resolves to the same pointer",
+    (_actionType, controlFlowAction) => {
+      const engine = createEngine(
+        createProjectData({
+          extraLines: [
+            {
+              id: "line2",
+              actions: {},
+            },
+          ],
+        }),
+      );
+
+      engine.handleActions({
+        conditional: {
+          branches: [
+            {
+              when: false,
+              actions: setScoreAction("unreachable", 1),
+            },
+          ],
+        },
+        ...controlFlowAction,
+      });
+
+      expect(
+        engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
+      ).toBe("line1");
+    },
+  );
+
   it("replays selected authored line conditional branches during rollback restoration", () => {
     let engine;
     const handlePendingEffects = (effects) => {
@@ -763,27 +800,50 @@ describe("RouteEngine conditional actions", () => {
   });
 
   it("automatically continues an unmatched conditional from an authorized choice interaction", () => {
-    const engine = createEngine(
-      createProjectData({
-        lineActions: {
-          choice: {
-            resourceId: "choiceLayout",
-            items: [
-              {
-                id: "continue",
-                content: "Continue",
-              },
-            ],
+    const handledEffectNames = [];
+    const engine = createRouteEngine({
+      handlePendingEffects: (effects) => {
+        handledEffectNames.push(...effects.map((effect) => effect.name));
+      },
+    });
+    engine.init({
+      initialState: {
+        global: {
+          runtime: {
+            skipUnseenText: true,
           },
         },
-        extraLines: [
-          {
-            id: "line2",
-            actions: {},
-          },
-        ],
-      }),
-    );
+        projectData: createProjectData({
+          lineActions: {},
+          extraLines: [
+            {
+              id: "choiceLine",
+              actions: {
+                choice: {
+                  resourceId: "choiceLayout",
+                  items: [
+                    {
+                      id: "continue",
+                      content: "Continue",
+                    },
+                  ],
+                },
+              },
+            },
+            {
+              id: "line2",
+              actions: {},
+            },
+          ],
+        }),
+      },
+    });
+    engine.handleAction("startSkipMode", {});
+    engine.handleAction("nextLineFromSystem", {});
+    expect(
+      engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
+    ).toBe("choiceLine");
+    handledEffectNames.length = 0;
 
     engine.handleActions(
       {
@@ -805,5 +865,7 @@ describe("RouteEngine conditional actions", () => {
     expect(
       engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
     ).toBe("line2");
+    expect(engine.selectSystemState().global.skipMode).toBe(true);
+    expect(handledEffectNames).toContain("startSkipNextTimer");
   });
 });

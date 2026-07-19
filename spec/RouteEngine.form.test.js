@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import createRouteEngine from "../src/RouteEngine.js";
 
-const createProjectData = ({ submitActions = { nextLine: {} } } = {}) => ({
+const createProjectData = ({
+  includeIntro = false,
+  submitActions = { nextLine: {} },
+} = {}) => ({
   screen: {
     width: 1920,
     height: 1080,
@@ -89,8 +92,16 @@ const createProjectData = ({ submitActions = { nextLine: {} } } = {}) => ({
         initialSectionId: "section1",
         sections: {
           section1: {
-            initialLineId: "line1",
+            initialLineId: includeIntro ? "intro" : "line1",
             lines: [
+              ...(includeIntro
+                ? [
+                    {
+                      id: "intro",
+                      actions: {},
+                    },
+                  ]
+                : []),
               {
                 id: "line1",
                 actions: {
@@ -132,15 +143,18 @@ const createProjectData = ({ submitActions = { nextLine: {} } } = {}) => ({
 });
 
 const createEngine = ({
+  global,
+  handlePendingEffects = () => {},
   markLineCompleted = true,
   projectData = createProjectData(),
 } = {}) => {
   const engine = createRouteEngine({
-    handlePendingEffects: () => {},
+    handlePendingEffects,
   });
 
   engine.init({
     initialState: {
+      global,
       projectData,
     },
   });
@@ -306,9 +320,18 @@ describe("RouteEngine forms", () => {
   });
 
   it("automatically continues an unmatched conditional submitted from the active form", () => {
+    const handledEffectNames = [];
     const engine = createEngine({
-      markLineCompleted: false,
+      global: {
+        runtime: {
+          skipUnseenText: true,
+        },
+      },
+      handlePendingEffects: (effects) => {
+        handledEffectNames.push(...effects.map((effect) => effect.name));
+      },
       projectData: createProjectData({
+        includeIntro: true,
         submitActions: {
           conditional: {
             branches: [
@@ -323,6 +346,14 @@ describe("RouteEngine forms", () => {
         },
       }),
     });
+    engine.handleAction("startSkipMode", {});
+    engine.handleAction("nextLineFromSystem", {});
+
+    expect(engine.selectSystemState().contexts[0].pointers.read.lineId).toBe(
+      "line1",
+    );
+    expect(engine.selectSystemState().global.skipMode).toBe(true);
+
     let renderState = engine.selectRenderState();
     const nameInput = findElement(renderState.elements, "name-input");
     const emailInput = findElement(renderState.elements, "email-input");
@@ -340,11 +371,14 @@ describe("RouteEngine forms", () => {
 
     renderState = engine.selectRenderState();
     const submitButton = findElement(renderState.elements, "submit-button");
+    handledEffectNames.length = 0;
     engine.handleActions(submitButton.click.payload.actions);
 
     expect(engine.selectSystemState().contexts[0].pointers.read.lineId).toBe(
       "line2",
     );
+    expect(engine.selectSystemState().global.skipMode).toBe(true);
+    expect(handledEffectNames).toContain("startSkipNextTimer");
   });
 
   it("keeps edits transient until a valid multi-field submit commits variables and runs actions", () => {

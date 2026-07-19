@@ -265,7 +265,7 @@ Functions that mutate system state. Examples:
 - `rollbackByOffset`: Go back through rollback checkpoints
 - `sectionTransition`: Jump to a different section
 - `jumpToLine`: Jump to specific line
-- `conditional`: Execute the first matching action branch
+- `conditional`: Execute the first matching branch, or continue to the next line when none match and no default exists
 - `toggleAutoMode` / `toggleSkipMode`: Control playback
 - `toggleDialogueUI`: Show/hide dialogue box
 

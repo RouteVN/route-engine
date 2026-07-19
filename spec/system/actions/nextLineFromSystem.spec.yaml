@@ -550,6 +550,115 @@ out:
           sectionId: "section1"
           lineId: "2"
 ---
+case: at last line of section stops active global playback modes
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        autoMode: true
+        skipMode: true
+        nextLineConfig:
+          auto: { enabled: false }
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                    - id: "2"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  global:
+    isLineCompleted: true
+    autoMode: false
+    skipMode: false
+    nextLineConfig:
+      auto: { enabled: false }
+    pendingEffects:
+      - name: "clearAutoNextTimer"
+      - name: "render"
+      - name: "clearSkipNextTimer"
+      - name: "render"
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                - id: "2"
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "2"
+---
+case: authorized choice fallthrough at section end stops active skip mode
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        skipMode: true
+        nextLineConfig:
+          auto: { enabled: false }
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        choice:
+                          resourceId: "choice-ui"
+                          items: []
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+  - bypassChoice: true
+out:
+  global:
+    isLineCompleted: false
+    skipMode: false
+    nextLineConfig:
+      auto: { enabled: false }
+    pendingEffects:
+      - name: "clearSkipNextTimer"
+      - name: "render"
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions:
+                    choice:
+                      resourceId: "choice-ui"
+                      items: []
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "1"
+---
 case: no section found (no change)
 in:
   - state:
@@ -584,3 +693,159 @@ out:
         read:
           sectionId: "section1"
           lineId: "1"
+---
+case: authorized choice continuation preserves skip mode and restarts its timer
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        skipMode: true
+        skipUnseenText: true
+        nextLineConfig:
+          auto:
+            enabled: false
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        choice:
+                          resourceId: "choice-ui"
+                          items: []
+                    - id: "2"
+                      actions: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+  - bypassChoice: true
+out:
+  global:
+    isLineCompleted: false
+    skipMode: true
+    skipUnseenText: true
+    nextLineConfig:
+      auto:
+        enabled: false
+    pendingEffects:
+      - name: "handleLineActions"
+      - name: "startSkipNextTimer"
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions:
+                    choice:
+                      resourceId: "choice-ui"
+                      items: []
+                - id: "2"
+                  actions: {}
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "2"
+      rollback:
+        currentIndex: 1
+        isRestoring: false
+        replayStartIndex: 1
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "2"
+            rollbackPolicy: "free"
+---
+case: authorized choice continuation stays paused when the destination is another choice
+in:
+  - state:
+      global:
+        isLineCompleted: false
+        skipMode: true
+        skipUnseenText: true
+        nextLineConfig:
+          auto:
+            enabled: false
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        choice:
+                          resourceId: "choice-ui"
+                          items: []
+                    - id: "2"
+                      actions:
+                        choice:
+                          resourceId: "choice-ui"
+                          items: []
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+  - bypassChoice: true
+out:
+  global:
+    isLineCompleted: false
+    skipMode: true
+    skipUnseenText: true
+    nextLineConfig:
+      auto:
+        enabled: false
+    pendingEffects:
+      - name: "clearSkipNextTimer"
+      - name: "handleLineActions"
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                  actions:
+                    choice:
+                      resourceId: "choice-ui"
+                      items: []
+                - id: "2"
+                  actions:
+                    choice:
+                      resourceId: "choice-ui"
+                      items: []
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "2"
+      rollback:
+        currentIndex: 1
+        isRestoring: false
+        replayStartIndex: 1
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "2"
+            rollbackPolicy: "free"

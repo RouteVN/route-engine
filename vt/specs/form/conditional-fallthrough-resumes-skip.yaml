@@ -1,0 +1,266 @@
+---
+title: Form Conditional Fallthrough Resumes Active Skip
+description: A valid form submit whose unmatched conditional has no default should implicitly continue and restart active skip playback.
+specs:
+  - skip mode is visibly enabled on the intro line
+  - entering the form keeps skip enabled but pauses automatic advancement
+  - a valid submit evaluates a false conditional with no default branch
+  - conditional fallthrough immediately enters the result line
+  - skip resumes after the form and advances to the final line
+  - skip stops cleanly when the final line reaches the section end
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 200
+  - action: click
+    x: 110
+    y: 58
+  - action: wait
+    ms: 10
+  - action: screenshot
+  - action: wait
+    ms: 120
+  - action: screenshot
+  - action: click
+    x: 480
+    y: 225
+  - action: keypress
+    key: A
+  - action: click
+    x: 520
+    y: 320
+  - action: wait
+    ms: 10
+  - action: screenshot
+  - action: wait
+    ms: 120
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+resources:
+  controls:
+    statusControls:
+      elements:
+        - id: background-hit
+          type: rect
+          width: 960
+          height: 540
+          colorId: backgroundColor
+          click:
+            payload:
+              actions:
+                nextLine: {}
+        - id: skip-button
+          type: rect
+          x: 30
+          y: 30
+          width: 160
+          height: 55
+          colorId: buttonColor
+          click:
+            payload:
+              actions:
+                toggleSkipMode: {}
+        - id: skip-button-label
+          type: text
+          x: 78
+          y: 46
+          content: SKIP
+          textStyleId: labelText
+        - id: skip-on
+          $when: runtime.skipMode
+          type: text
+          x: 220
+          y: 39
+          content: "SKIP: ON"
+          textStyleId: labelText
+        - id: skip-off
+          $when: "!runtime.skipMode"
+          type: text
+          x: 220
+          y: 39
+          content: "SKIP: OFF"
+          textStyleId: labelText
+        - id: form-on
+          $when: isFormVisible
+          type: text
+          x: 220
+          y: 75
+          content: "FORM: ON"
+          textStyleId: labelText
+        - id: form-off
+          $when: "!isFormVisible"
+          type: text
+          x: 220
+          y: 75
+          content: "FORM: OFF"
+          textStyleId: labelText
+        - id: intro-title
+          $when: variables.stage == "intro"
+          type: text
+          x: 260
+          y: 245
+          content: "Intro: enable skip"
+          textStyleId: titleText
+        - id: form-backdrop-title
+          $when: variables.stage == "form"
+          type: text
+          x: 300
+          y: 125
+          content: "Blocking form"
+          textStyleId: titleText
+        - id: result-title
+          $when: variables.stage == "result"
+          type: text
+          x: 220
+          y: 245
+          content: "Result: ${variables.playerName}"
+          textStyleId: titleText
+        - id: final-title
+          $when: variables.stage == "final"
+          type: text
+          x: 290
+          y: 245
+          content: "Final line"
+          textStyleId: titleText
+  layouts:
+    profileForm:
+      elements:
+        - id: form-panel
+          type: rect
+          x: 250
+          y: 175
+          width: 460
+          height: 210
+          colorId: panelColor
+        - id: name-input
+          type: input
+          field: name
+          x: 330
+          y: 200
+          width: 300
+          height: 50
+          textStyleId: inputText
+        - id: submit-button
+          type: container
+          formRole: submit
+          x: 430
+          y: 290
+          width: 180
+          height: 58
+          children:
+            - id: submit-hit
+              type: rect
+              width: 180
+              height: 58
+              colorId: submitColor
+              click:
+                payload:
+                  actions:
+                    nextLine: {}
+            - id: submit-label
+              type: text
+              x: 38
+              y: 16
+              content: Submit
+              textStyleId: labelText
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    backgroundColor:
+      hex: "#151515"
+    buttonColor:
+      hex: "#9C6644"
+    panelColor:
+      hex: "#243B53"
+    submitColor:
+      hex: "#2A9D8F"
+    textColor:
+      hex: "#F7F7F2"
+    inputTextColor:
+      hex: "#111111"
+  textStyles:
+    titleText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 36
+      lineHeight: 1.2
+    labelText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 24
+      lineHeight: 1.2
+    inputText:
+      fontId: fontDefault
+      colorId: inputTextColor
+      fontSize: 24
+      lineHeight: 1.2
+  variables:
+    stage:
+      type: string
+      scope: context
+      default: intro
+    playerName:
+      type: string
+      scope: context
+      default: ""
+story:
+  initialSceneId: formScene
+  scenes:
+    formScene:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: intro
+              actions:
+                setSkipUnseenText:
+                  value: true
+                control:
+                  resourceId: statusControls
+            - id: formLine
+              actions:
+                updateVariable:
+                  id: enterForm
+                  operations:
+                    - variableId: stage
+                      op: set
+                      value: form
+                form:
+                  resourceId: profileForm
+                  fields:
+                    name:
+                      variableId: playerName
+                      required: true
+                      trim: true
+                      placeholder: Name
+                  submitActions:
+                    conditional:
+                      branches:
+                        - when: false
+                          actions:
+                            nextLine: {}
+            - id: resultLine
+              actions:
+                form: {}
+                updateVariable:
+                  id: enterResult
+                  operations:
+                    - variableId: stage
+                      op: set
+                      value: result
+            - id: finalLine
+              actions:
+                updateVariable:
+                  id: enterFinal
+                  operations:
+                    - variableId: stage
+                      op: set
+                      value: final

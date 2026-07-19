@@ -1,12 +1,13 @@
 ---
-title: Choice Pauses Active Skip
-description: Skip mode should stay enabled while a choice is visible, pause story advancement until a choice is clicked, and resume after the choice.
+title: Choice Conditional Fallthrough Resumes Active Skip
+description: An unmatched conditional choice action should implicitly continue, keep skip mode enabled, and restart skip advancement after the choice.
 specs:
-  - skip mode is visibly on before the choice line is entered
+  - the control enables skip before entering the choice line
   - entering the choice line keeps skip mode on but blocks story advancement
-  - waiting on the choice line does not advance the story
-  - the choice button advances with skip still enabled
-  - skip resumes after the choice and advances to the following line
+  - repeated waits on the choice line do not advance the story
+  - the choice evaluates a false conditional with no default branch
+  - conditional fallthrough restarts skip advancement after the choice
+  - resumed skip reaches the final line and stops at the section end
 skipInitialScreenshot: true
 viewport:
   id: capture
@@ -19,10 +20,10 @@ steps:
     x: 150
     y: 74
   - action: wait
-    ms: 40
+    ms: 10
   - action: screenshot
   - action: wait
-    ms: 220
+    ms: 120
   - action: screenshot
   - action: wait
     ms: 220
@@ -31,10 +32,10 @@ steps:
     x: 790
     y: 220
   - action: wait
-    ms: 30
+    ms: 220
   - action: screenshot
   - action: wait
-    ms: 180
+    ms: 220
   - action: screenshot
 ---
 screen:
@@ -65,6 +66,8 @@ resources:
             payload:
               actions:
                 toggleSkipMode: {}
+                jumpToLine:
+                  lineId: line2
           colorId: choiceColor
         - id: skip-label
           type: text
@@ -129,7 +132,11 @@ resources:
           click:
             payload:
               actions:
-                nextLine: {}
+                conditional:
+                  branches:
+                    - when: false
+                      actions:
+                        nextLine: {}
           colorId: choiceColor
         - id: choice-button-text
           type: text

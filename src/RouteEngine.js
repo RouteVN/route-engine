@@ -39,6 +39,8 @@ export default function createRouteEngine(options) {
   let _systemStore;
   let _renderSequence = 0;
   let _namespace = null;
+  let _actionDispatchDepth = 0;
+  let _isProcessingPendingEffects = false;
   let _persistentAnimationSessions = new Map();
   let _restoredPersistentAnimationSessions = new Map();
   let _renderPersistentAnimationMetadata = new Map();
@@ -78,18 +80,37 @@ export default function createRouteEngine(options) {
   };
 
   const processEffectsUntilEmpty = () => {
-    while (_systemStore.selectPendingEffects().length > 0) {
-      const snapshot = [..._systemStore.selectPendingEffects()];
-      _systemStore.clearPendingEffects();
-      try {
-        handlePendingEffects(snapshot);
-      } catch (error) {
+    if (_actionDispatchDepth > 0 || _isProcessingPendingEffects) {
+      return;
+    }
+
+    _isProcessingPendingEffects = true;
+    try {
+      while (_systemStore.selectPendingEffects().length > 0) {
+        const snapshot = [..._systemStore.selectPendingEffects()];
         _systemStore.clearPendingEffects();
-        snapshot.forEach((effect) => {
-          _systemStore.appendPendingEffect(effect);
-        });
-        throw error;
+        try {
+          handlePendingEffects(snapshot);
+        } catch (error) {
+          _systemStore.clearPendingEffects();
+          snapshot.forEach((effect) => {
+            _systemStore.appendPendingEffect(effect);
+          });
+          throw error;
+        }
       }
+    } finally {
+      _isProcessingPendingEffects = false;
+    }
+  };
+
+  const runWithDeferredEffects = (callback) => {
+    _actionDispatchDepth += 1;
+    try {
+      return callback();
+    } finally {
+      _actionDispatchDepth -= 1;
+      processEffectsUntilEmpty();
     }
   };
 
@@ -97,6 +118,8 @@ export default function createRouteEngine(options) {
     _systemStore = createSystemStore(initialState);
     _renderSequence = 0;
     _namespace = normalizeNamespace(namespace);
+    _actionDispatchDepth = 0;
+    _isProcessingPendingEffects = false;
     _persistentAnimationSessions = new Map();
     _restoredPersistentAnimationSessions = new Map();
     _renderPersistentAnimationMetadata = new Map();
@@ -258,6 +281,15 @@ export default function createRouteEngine(options) {
     return _systemStore.selectActiveInteraction();
   };
 
+  const selectHasPendingRenderWork = () => {
+    return _systemStore
+      .selectPendingEffects()
+      .some(
+        (effect) =>
+          effect?.name === "handleLineActions" || effect?.name === "render",
+      );
+  };
+
   const applyActionOptions = (actionType, payload, options = {}) => {
     if (!isRecord(payload)) {
       return payload;
@@ -287,9 +319,7 @@ export default function createRouteEngine(options) {
   const createConditionalAutoContinue = (options = {}) => ({
     type: CONDITIONAL_AUTO_CONTINUE,
     payload: applyActionOptions("nextLine", {}, options),
-    sourcePointer: structuredClone(
-      _systemStore.selectCurrentPointer()?.pointer ?? null,
-    ),
+    sourcePointer: _systemStore.selectCurrentPointer()?.pointer ?? null,
   });
 
   const mergeConditionalAutoContinue = (currentResult, nextResult) => {
@@ -329,32 +359,45 @@ export default function createRouteEngine(options) {
 
   const dispatchConditionalAutoContinue = (result) => {
     const currentPointer = _systemStore.selectCurrentPointer()?.pointer;
-    if (
-      result.sourcePointer?.sectionId !== currentPointer?.sectionId ||
-      result.sourcePointer?.lineId !== currentPointer?.lineId
-    ) {
+    if (result.sourcePointer !== currentPointer) {
       return;
     }
 
     dispatchStoreAction("nextLineFromSystem", result.payload);
   };
 
-  const handleAction = (actionType, payload, eventContext, options = {}) => {
-    if (actionType === CONDITIONAL_ACTION_TYPE) {
-      const context = buildActionTemplateContext(eventContext);
-      const processedActions = processActionTemplates(
-        { [actionType]: payload },
-        context,
-      );
-      const result = handleConditionalAction(
-        processedActions[actionType],
-        eventContext,
-        options,
-      );
+  const runActionBatch = (callback, options = {}) => {
+    return runWithDeferredEffects(() => {
+      let result;
+      _systemStore.beginRollbackActionBatch({
+        source: options.rollbackSource,
+      });
+      try {
+        result = callback();
+      } finally {
+        _systemStore.endRollbackActionBatch({});
+      }
+
       if (isConditionalAutoContinue(result)) {
         dispatchConditionalAutoContinue(result);
       }
-      return;
+    });
+  };
+
+  const handleAction = (actionType, payload, eventContext, options = {}) => {
+    if (actionType === CONDITIONAL_ACTION_TYPE) {
+      return runActionBatch(() => {
+        const context = buildActionTemplateContext(eventContext);
+        const processedActions = processActionTemplates(
+          { [actionType]: payload },
+          context,
+        );
+        return handleConditionalAction(
+          processedActions[actionType],
+          eventContext,
+          options,
+        );
+      }, options);
     }
 
     dispatchStoreAction(actionType, payload);
@@ -524,19 +567,10 @@ export default function createRouteEngine(options) {
   };
 
   const handleActions = (actions, eventContext, options = {}) => {
-    let result;
-    _systemStore.beginRollbackActionBatch({
-      source: options.rollbackSource,
-    });
-    try {
-      result = processActionEntries(actions, eventContext, options);
-    } finally {
-      _systemStore.endRollbackActionBatch({});
-    }
-
-    if (isConditionalAutoContinue(result)) {
-      dispatchConditionalAutoContinue(result);
-    }
+    return runActionBatch(
+      () => processActionEntries(actions, eventContext, options),
+      options,
+    );
   };
 
   const handleLineActions = () => {
@@ -571,6 +605,7 @@ export default function createRouteEngine(options) {
     selectIsChoiceVisible,
     selectIsFormVisible,
     selectActiveInteraction,
+    selectHasPendingRenderWork,
     handleLineActions,
     getNamespace,
   };

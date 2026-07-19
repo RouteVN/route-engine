@@ -2300,16 +2300,15 @@ const queueEnteredLineEffects = (state, pointer, { screenTransition } = {}) => {
   };
 };
 
-const resumeSkipTimerAfterChoiceInteraction = (
+const resumeSkipTimerAfterBlockingInteraction = (
   state,
   previousInteraction,
   nextInteraction,
 ) => {
-  if (
-    previousInteraction?.source !== CHOICE_INTERACTION_SOURCE ||
-    nextInteraction ||
-    !state.global.skipMode
-  ) {
+  const leftBlockingInteraction =
+    previousInteraction?.source === CHOICE_INTERACTION_SOURCE ||
+    previousInteraction?.source === FORM_INTERACTION_SOURCE;
+  if (!leftBlockingInteraction || nextInteraction || !state.global.skipMode) {
     return;
   }
 
@@ -2650,7 +2649,7 @@ const transitionToSection = (
       screenTransition: screen,
     },
   );
-  resumeSkipTimerAfterChoiceInteraction(
+  resumeSkipTimerAfterBlockingInteraction(
     state,
     previousInteraction,
     activeInteraction,
@@ -3127,7 +3126,7 @@ export const jumpToLine = ({ state }, payload) => {
   };
 
   const { activeInteraction } = queueEnteredLineEffects(state, pointers.read);
-  resumeSkipTimerAfterChoiceInteraction(
+  resumeSkipTimerAfterBlockingInteraction(
     state,
     previousInteraction,
     activeInteraction,
@@ -3267,7 +3266,7 @@ export const nextLine = ({ state }, payload) => {
         lineId: nextLine.id,
       },
     );
-    resumeSkipTimerAfterChoiceInteraction(
+    resumeSkipTimerAfterBlockingInteraction(
       state,
       activeInteraction,
       nextInteraction,
@@ -3448,14 +3447,22 @@ export const nextLineFromSystem = ({ state }, payload) => {
       lineId: nextLine.id,
     });
     resetNextLineConfigIfSingleLine(state);
-    const { activeInteraction } = queueEnteredLineEffects(state, {
-      sectionId,
-      lineId: nextLine.id,
-    });
+    const { activeInteraction: nextInteraction } = queueEnteredLineEffects(
+      state,
+      {
+        sectionId,
+        lineId: nextLine.id,
+      },
+    );
+    resumeSkipTimerAfterBlockingInteraction(
+      state,
+      activeInteraction,
+      nextInteraction,
+    );
 
     // Only start timer immediately if trigger is "fromStart"
     // For "fromComplete" trigger, markLineCompleted will start it when renderComplete fires
-    if (state.global.nextLineConfig.auto?.enabled && !activeInteraction) {
+    if (state.global.nextLineConfig.auto?.enabled && !nextInteraction) {
       const trigger = state.global.nextLineConfig.auto.trigger;
       if (trigger === "fromStart") {
         state.global.pendingEffects.push({
@@ -3465,6 +3472,12 @@ export const nextLineFromSystem = ({ state }, payload) => {
       }
     }
   } else {
+    if (state.global.autoMode) {
+      stopAutoMode({ state });
+    }
+    if (state.global.skipMode) {
+      stopSkipMode({ state });
+    }
     if (state.global.nextLineConfig.auto?.enabled) {
       state.global.nextLineConfig.auto.enabled = false;
       state.global.pendingEffects.push({

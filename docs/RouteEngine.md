@@ -547,8 +547,6 @@ events:
               actions:
                 jumpToLine:
                   lineId: adminRoute
-            - actions:
-                nextLine: {}
 ```
 
 If no conditional branch matches and no default branch is present, the
