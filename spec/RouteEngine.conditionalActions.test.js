@@ -1,34 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import createRouteEngine from "../src/RouteEngine.js";
-import createEffectsHandler from "../src/createEffectsHandler.js";
-
-const createTicker = () => ({
-  add: vi.fn(),
-  remove: vi.fn(),
-});
-
-const createNoopPersistence = () => ({
-  saveSlots: vi.fn().mockResolvedValue(undefined),
-  saveGlobalDeviceVariables: vi.fn().mockResolvedValue(undefined),
-  saveGlobalAccountVariables: vi.fn().mockResolvedValue(undefined),
-  saveGlobalRuntime: vi.fn().mockResolvedValue(undefined),
-  applyScopedDataUpdates: vi.fn().mockResolvedValue(undefined),
-});
-
-const findElementById = (elements, id) => {
-  for (const element of elements || []) {
-    if (element?.id === id) {
-      return element;
-    }
-
-    const nested = findElementById(element?.children, id);
-    if (nested) {
-      return nested;
-    }
-  }
-
-  return null;
-};
 
 const createProjectData = ({
   trust = 0,
@@ -123,33 +94,6 @@ const createEngineWithLineActions = (projectData) => {
   return engine;
 };
 
-const createEngineWithRenderingEffects = (projectData, onRender) => {
-  let engine;
-  const routeGraphics = {
-    render: vi.fn((renderState) => onRender?.(renderState, engine)),
-  };
-  const effectsHandler = createEffectsHandler({
-    getEngine: () => engine,
-    routeGraphics,
-    ticker: createTicker(),
-    persistence: createNoopPersistence(),
-  });
-
-  engine = createRouteEngine({
-    handlePendingEffects: effectsHandler,
-  });
-  engine.init({
-    initialState: {
-      projectData,
-    },
-  });
-
-  return {
-    engine,
-    routeGraphics,
-  };
-};
-
 const setScoreAction = (id, value) => ({
   updateVariable: {
     id,
@@ -176,102 +120,19 @@ const setTrustAction = (id, value) => ({
   },
 });
 
-const createDestinationScoreCondition = () => ({
-  conditional: {
-    branches: [
-      {
-        when: {
-          eq: [{ var: "variables.score" }, 7],
-        },
-        actions: setTrustAction("observedUpdatedScore", 80),
-      },
-      {
-        actions: setTrustAction("observedStaleScore", 20),
-      },
-    ],
-  },
-});
-
-const createConditionalDestinationRenderProjectData = ({
-  sourceMutationPosition = "after",
-  destinationUpdatesScore = true,
-} = {}) => {
-  const sourceMutation = setTrustAction("setSourceTrust", 9);
-  const sourceActions =
-    sourceMutationPosition === "before"
-      ? {
-          ...sourceMutation,
-          nextLine: {},
-        }
-      : {
-          nextLine: {},
-          ...sourceMutation,
-        };
-  const projectData = createProjectData({
-    lineActions: {
-      conditional: {
-        branches: [
-          {
-            actions: sourceActions,
-          },
-        ],
-      },
-    },
-    extraLines: [
-      {
-        id: "line2",
-        actions: {
-          ...(destinationUpdatesScore
-            ? setScoreAction("setDestinationScore", 7)
-            : {}),
-          dialogue: {
-            mode: "adv",
-            ui: {
-              resourceId: "destinationDialogue",
-            },
-            content: [
-              {
-                text: "Score ${variables.score}",
-              },
-            ],
-          },
-        },
-      },
-    ],
-  });
-
-  projectData.resources.layouts.destinationDialogue = {
-    mode: "adv",
-    elements: [
-      {
-        id: "destination-dialogue-text",
-        type: "text",
-        content: "${dialogue.content[0].text}",
-        textStyleId: "body",
-      },
-    ],
-  };
-  projectData.resources.fonts.bodyFont = {
-    fileId: "Arial",
-  };
-  projectData.resources.colors.bodyColor = {
-    hex: "#FFFFFF",
-  };
-  projectData.resources.textStyles.body = {
-    fontId: "bodyFont",
-    colorId: "bodyColor",
-    fontSize: 24,
-    fontWeight: "400",
-    fontStyle: "normal",
-    lineHeight: 1.2,
-  };
-
-  return projectData;
-};
-
 describe("RouteEngine conditional actions", () => {
   it("executes only the first matching branch", () => {
-    const engine = createEngine(createProjectData({ trust: 80 }));
+    const engine = createEngine(
+      createProjectData({
+        trust: 80,
+        extraLines: [
+          {
+            id: "line2",
+            actions: {},
+          },
+        ],
+      }),
+    );
 
     engine.handleActions({
       conditional: {
@@ -290,6 +151,9 @@ describe("RouteEngine conditional actions", () => {
     });
 
     expect(engine.selectSystemState().contexts[0].variables.score).toBe(1);
+    expect(
+      engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
+    ).toBe("line1");
   });
 
   it("evaluates each conditional against state mutated by earlier actions in the same batch", () => {
@@ -363,7 +227,17 @@ describe("RouteEngine conditional actions", () => {
   });
 
   it("executes the else branch when no condition matches", () => {
-    const engine = createEngine(createProjectData({ trust: 30 }));
+    const engine = createEngine(
+      createProjectData({
+        trust: 30,
+        extraLines: [
+          {
+            id: "line2",
+            actions: {},
+          },
+        ],
+      }),
+    );
 
     engine.handleActions({
       conditional: {
@@ -382,25 +256,40 @@ describe("RouteEngine conditional actions", () => {
     });
 
     expect(engine.selectSystemState().contexts[0].variables.score).toBe(3);
+    expect(
+      engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
+    ).toBe("line1");
   });
 
-  it("does nothing when no branch matches and no else branch exists", () => {
-    const engine = createEngine(createProjectData({ trust: 30, score: 5 }));
-
-    engine.handleActions({
-      conditional: {
-        branches: [
+  it("continues to the next line when no branch matches and no default exists", () => {
+    const engine = createEngine(
+      createProjectData({
+        trust: 30,
+        score: 5,
+        extraLines: [
           {
-            when: {
-              gte: [{ var: "variables.trust" }, 70],
-            },
-            actions: setScoreAction("trusted", 1),
+            id: "line2",
+            actions: {},
           },
         ],
-      },
+      }),
+    );
+
+    engine.handleAction("conditional", {
+      branches: [
+        {
+          when: {
+            gte: [{ var: "variables.trust" }, 70],
+          },
+          actions: setScoreAction("trusted", 1),
+        },
+      ],
     });
 
     expect(engine.selectSystemState().contexts[0].variables.score).toBe(5);
+    expect(
+      engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
+    ).toBe("line2");
   });
 
   it("rejects string expression conditions", () => {
@@ -514,7 +403,7 @@ describe("RouteEngine conditional actions", () => {
     ).toBe("trustedRoute");
   });
 
-  it("immediately advances an authored line conditional that selects nextLine", () => {
+  it("automatically enters and processes the next line for an unmatched authored conditional", () => {
     let engine;
     const handlePendingEffects = (effects) => {
       effects.forEach((effect) => {
@@ -530,7 +419,7 @@ describe("RouteEngine conditional actions", () => {
     engine.init({
       initialState: {
         projectData: createProjectData({
-          trust: 90,
+          trust: 30,
           lineActions: {
             conditional: {
               branches: [
@@ -538,9 +427,7 @@ describe("RouteEngine conditional actions", () => {
                   when: {
                     gte: [{ var: "variables.trust" }, 70],
                   },
-                  actions: {
-                    nextLine: {},
-                  },
+                  actions: setScoreAction("trusted", 1),
                 },
               ],
             },
@@ -548,177 +435,51 @@ describe("RouteEngine conditional actions", () => {
           extraLines: [
             {
               id: "line2",
-              actions: {},
+              actions: setScoreAction("destinationReached", 9),
             },
           ],
         }),
       },
     });
 
-    expect(
-      engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
-    ).toBe("line2");
+    const state = engine.selectSystemState();
+    expect(state.contexts.at(-1).pointers.read.lineId).toBe("line2");
+    expect(state.contexts.at(-1).variables.score).toBe(9);
+    expect(state.global.isLineCompleted).toBe(false);
   });
 
-  it.each(["before", "after"])(
-    "renders an immediately entered line only after actions %s nextLine finish",
-    (sourceMutationPosition) => {
-      const renderedStates = [];
-      createEngineWithRenderingEffects(
-        createConditionalDestinationRenderProjectData({
-          sourceMutationPosition,
-        }),
-        (renderState, engine) => {
-          const state = engine.selectSystemState();
-          renderedStates.push({
-            lineId: state.contexts.at(-1).pointers.read.lineId,
-            score: state.contexts.at(-1).variables.score,
-            trust: state.contexts.at(-1).variables.trust,
-            text: findElementById(
-              renderState.elements,
-              "destination-dialogue-text",
-            )?.content,
-          });
-        },
-      );
-
-      expect(renderedStates).toEqual([
-        {
-          lineId: "line2",
-          score: 7,
-          trust: 9,
-          text: "Score 7",
-        },
-      ]);
-    },
-  );
-
-  it("renders an immediately entered empty line exactly once", () => {
-    const renderedLineIds = [];
-    createEngineWithRenderingEffects(
+  it("finishes the source action batch before processing and replaying the automatically entered line", () => {
+    const engine = createEngineWithLineActions(
       createProjectData({
         lineActions: {
           conditional: {
             branches: [
               {
-                actions: {
-                  nextLine: {},
-                },
+                when: false,
+                actions: setScoreAction("unreachable", 1),
               },
             ],
           },
+          ...setScoreAction("sourceAfterConditional", 7),
         },
         extraLines: [
           {
             id: "line2",
-            actions: {},
-          },
-        ],
-      }),
-      (_renderState, engine) => {
-        const state = engine.selectSystemState();
-        renderedLineIds.push(state.contexts.at(-1).pointers.read.lineId);
-      },
-    );
-
-    expect(renderedLineIds).toEqual(["line2"]);
-  });
-
-  it("fallback-renders an entered presentation-only line exactly once", () => {
-    const renderedStates = [];
-    createEngineWithRenderingEffects(
-      createConditionalDestinationRenderProjectData({
-        destinationUpdatesScore: false,
-      }),
-      (renderState, engine) => {
-        const state = engine.selectSystemState();
-        renderedStates.push({
-          lineId: state.contexts.at(-1).pointers.read.lineId,
-          text: findElementById(
-            renderState.elements,
-            "destination-dialogue-text",
-          )?.content,
-        });
-      },
-    );
-
-    expect(renderedStates).toEqual([
-      {
-        lineId: "line2",
-        text: "Score 0",
-      },
-    ]);
-  });
-
-  it("finishes the selected branch before processing the entered line", () => {
-    const engine = createEngineWithLineActions(
-      createProjectData({
-        extraLines: [
-          {
-            id: "line2",
-            actions: createDestinationScoreCondition(),
-          },
-        ],
-      }),
-    );
-
-    engine.handleActions({
-      conditional: {
-        branches: [
-          {
             actions: {
-              nextLine: {},
-              ...setScoreAction("updateAfterNextLine", 7),
+              conditional: {
+                branches: [
+                  {
+                    when: {
+                      eq: [{ var: "variables.score" }, 7],
+                    },
+                    actions: setTrustAction("observedUpdatedScore", 80),
+                  },
+                  {
+                    actions: setTrustAction("observedStaleScore", 20),
+                  },
+                ],
+              },
             },
-          },
-        ],
-      },
-    });
-
-    const state = engine.selectSystemState();
-    expect(state.contexts.at(-1).pointers.read.lineId).toBe("line2");
-    expect(state.contexts.at(-1).variables.score).toBe(7);
-    expect(state.contexts.at(-1).variables.trust).toBe(80);
-  });
-
-  it("finishes the enclosing batch before processing the entered line", () => {
-    const engine = createEngineWithLineActions(
-      createProjectData({
-        extraLines: [
-          {
-            id: "line2",
-            actions: createDestinationScoreCondition(),
-          },
-        ],
-      }),
-    );
-
-    engine.handleActions({
-      conditional: {
-        branches: [
-          {
-            actions: {
-              nextLine: {},
-            },
-          },
-        ],
-      },
-      ...setScoreAction("updateAfterConditional", 7),
-    });
-
-    const state = engine.selectSystemState();
-    expect(state.contexts.at(-1).pointers.read.lineId).toBe("line2");
-    expect(state.contexts.at(-1).variables.score).toBe(7);
-    expect(state.contexts.at(-1).variables.trust).toBe(80);
-  });
-
-  it("restores the same destination branch selected during original execution", () => {
-    const engine = createEngineWithLineActions(
-      createProjectData({
-        extraLines: [
-          {
-            id: "line2",
-            actions: createDestinationScoreCondition(),
           },
           {
             id: "line3",
@@ -728,19 +489,10 @@ describe("RouteEngine conditional actions", () => {
       }),
     );
 
-    engine.handleAction("conditional", {
-      branches: [
-        {
-          actions: {
-            nextLine: {},
-            ...setScoreAction("updateBeforeDestination", 7),
-          },
-        },
-      ],
-    });
-
-    const originalTrust = engine.selectSystemState().contexts.at(-1)
-      .variables.trust;
+    let state = engine.selectSystemState();
+    expect(state.contexts.at(-1).pointers.read.lineId).toBe("line2");
+    expect(state.contexts.at(-1).variables.score).toBe(7);
+    expect(state.contexts.at(-1).variables.trust).toBe(80);
 
     engine.handleAction("markLineCompleted", {});
     engine.handleAction("nextLine", {});
@@ -749,37 +501,26 @@ describe("RouteEngine conditional actions", () => {
       lineId: "line2",
     });
 
-    const state = engine.selectSystemState();
+    state = engine.selectSystemState();
     expect(state.contexts.at(-1).pointers.read.lineId).toBe("line2");
-    expect(state.contexts.at(-1).variables.trust).toBe(originalTrust);
+    expect(state.contexts.at(-1).variables.score).toBe(7);
+    expect(state.contexts.at(-1).variables.trust).toBe(80);
   });
 
-  it("completes in place when conditional nextLine is already at section end", () => {
-    const engine = createEngine(createProjectData());
-
-    engine.handleActions({
-      conditional: {
-        branches: [
-          {
-            actions: {
-              nextLine: {},
-            },
-          },
-        ],
-      },
-    });
-
-    const state = engine.selectSystemState();
-    expect(state.contexts.at(-1).pointers.read.lineId).toBe("line1");
-    expect(state.global.isLineCompleted).toBe(true);
-  });
-
-  it("keeps a sibling nextLine outside the conditional reveal-first", () => {
+  it("lets later explicit control flow override the deferred automatic continuation", () => {
     const engine = createEngine(
       createProjectData({
         extraLines: [
           {
             id: "line2",
+            actions: {},
+          },
+          {
+            id: "line3",
+            actions: {},
+          },
+          {
+            id: "line4",
             actions: {},
           },
         ],
@@ -790,17 +531,19 @@ describe("RouteEngine conditional actions", () => {
       conditional: {
         branches: [
           {
-            actions: setScoreAction("matched", 4),
+            when: false,
+            actions: setScoreAction("unreachable", 1),
           },
         ],
       },
-      nextLine: {},
+      jumpToLine: {
+        lineId: "line3",
+      },
     });
 
-    const state = engine.selectSystemState();
-    expect(state.contexts.at(-1).pointers.read.lineId).toBe("line1");
-    expect(state.contexts.at(-1).variables.score).toBe(4);
-    expect(state.global.isLineCompleted).toBe(true);
+    expect(
+      engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
+    ).toBe("line3");
   });
 
   it("replays selected authored line conditional branches during rollback restoration", () => {
@@ -972,7 +715,54 @@ describe("RouteEngine conditional actions", () => {
     ).toThrow("Condition JSON at '$when' must contain exactly one operator");
   });
 
-  it("immediately advances a nested conditional nextLine from a choice", () => {
+  it("preserves choice interaction source for nested nextLine actions", () => {
+    const engine = createEngine(
+      createProjectData({
+        lineActions: {
+          choice: {
+            resourceId: "choiceLayout",
+            items: [
+              {
+                id: "continue",
+                content: "Continue",
+              },
+            ],
+          },
+        },
+        extraLines: [
+          {
+            id: "line2",
+            actions: {},
+          },
+        ],
+      }),
+    );
+
+    engine.handleAction("markLineCompleted", {});
+    engine.handleActions(
+      {
+        conditional: {
+          branches: [
+            {
+              actions: {
+                nextLine: {},
+              },
+            },
+          ],
+        },
+      },
+      undefined,
+      {
+        bypassChoice: true,
+      },
+    );
+
+    expect(
+      engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
+    ).toBe("line2");
+  });
+
+  it("automatically continues an unmatched conditional from an authorized choice interaction", () => {
     const engine = createEngine(
       createProjectData({
         lineActions: {
@@ -1000,9 +790,8 @@ describe("RouteEngine conditional actions", () => {
         conditional: {
           branches: [
             {
-              actions: {
-                nextLine: {},
-              },
+              when: false,
+              actions: setScoreAction("unreachableChoiceBranch", 1),
             },
           ],
         },

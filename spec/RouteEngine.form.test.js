@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import createRouteEngine from "../src/RouteEngine.js";
 
-const createProjectData = () => ({
+const createProjectData = ({ submitActions = { nextLine: {} } } = {}) => ({
   screen: {
     width: 1920,
     height: 1080,
@@ -111,9 +111,7 @@ const createProjectData = () => ({
                         placeholder: "Email",
                       },
                     },
-                    submitActions: {
-                      nextLine: {},
-                    },
+                    submitActions,
                   },
                 },
               },
@@ -133,14 +131,17 @@ const createProjectData = () => ({
   },
 });
 
-const createEngine = ({ markLineCompleted = true } = {}) => {
+const createEngine = ({
+  markLineCompleted = true,
+  projectData = createProjectData(),
+} = {}) => {
   const engine = createRouteEngine({
     handlePendingEffects: () => {},
   });
 
   engine.init({
     initialState: {
-      projectData: createProjectData(),
+      projectData,
     },
   });
 
@@ -297,6 +298,48 @@ describe("RouteEngine forms", () => {
 
     renderState = engine.selectRenderState();
     submitButton = findElement(renderState.elements, "submit-button");
+    engine.handleActions(submitButton.click.payload.actions);
+
+    expect(engine.selectSystemState().contexts[0].pointers.read.lineId).toBe(
+      "line2",
+    );
+  });
+
+  it("automatically continues an unmatched conditional submitted from the active form", () => {
+    const engine = createEngine({
+      markLineCompleted: false,
+      projectData: createProjectData({
+        submitActions: {
+          conditional: {
+            branches: [
+              {
+                when: false,
+                actions: {
+                  nextLine: {},
+                },
+              },
+            ],
+          },
+        },
+      }),
+    });
+    let renderState = engine.selectRenderState();
+    const nameInput = findElement(renderState.elements, "name-input");
+    const emailInput = findElement(renderState.elements, "email-input");
+
+    engine.handleActions(nameInput.change.payload.actions, {
+      _event: {
+        value: "Ada",
+      },
+    });
+    engine.handleActions(emailInput.change.payload.actions, {
+      _event: {
+        value: "ada@example.com",
+      },
+    });
+
+    renderState = engine.selectRenderState();
+    const submitButton = findElement(renderState.elements, "submit-button");
     engine.handleActions(submitButton.click.payload.actions);
 
     expect(engine.selectSystemState().contexts[0].pointers.read.lineId).toBe(

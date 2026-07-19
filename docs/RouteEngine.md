@@ -551,11 +551,10 @@ events:
                 nextLine: {}
 ```
 
-When `nextLine` is selected inside a conditional branch and a following line
-exists, it acts as immediate story control flow: the engine enters that line
-without first stopping to complete the current line. A standalone `nextLine`
-keeps the normal reveal-first behavior. The selected branch and its enclosing
-action batch finish before the entered line's actions are evaluated.
+If no conditional branch matches and no default branch is present, the
+conditional automatically continues to the next line after the current action
+batch finishes. A default branch still handles the unmatched case when one is
+authored.
 
 ### Playback Mode Actions
 

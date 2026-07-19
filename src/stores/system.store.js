@@ -3162,22 +3162,12 @@ export const nextLine = ({ state }, payload) => {
     return state;
   }
 
-  const pointer = selectCurrentPointer({ state })?.pointer;
-  const sectionId = pointer?.sectionId;
-  const section = selectSection({ state }, { sectionId });
-  const lines = section?.lines || [];
-  const currentLineIndex = lines.findIndex(
-    (line) => line.id === pointer?.lineId,
-  );
-  const nextLineIndex = currentLineIndex + 1;
-  const canAdvanceImmediately =
-    payload?._advanceImmediately === true && nextLineIndex < lines.length;
-
-  // Ordinary progression completes an unfinished line first. A conditional
-  // Continue is authored as control flow, so it advances in the same pass.
-  if (!state.global.isLineCompleted && !canAdvanceImmediately) {
+  // If line is not completed, complete it instantly instead of advancing
+  if (!state.global.isLineCompleted) {
     state.global.isLineCompleted = true;
     delete state.global.pendingScreenTransition;
+    const pointer = selectCurrentPointer({ state })?.pointer;
+    const sectionId = pointer?.sectionId;
     const lineId = pointer?.lineId;
     if (sectionId && lineId) {
       recordViewedLine(state, { sectionId, lineId });
@@ -3212,7 +3202,16 @@ export const nextLine = ({ state }, payload) => {
     return state;
   }
 
+  const pointer = selectCurrentPointer({ state })?.pointer;
+  const sectionId = pointer?.sectionId;
+  const section = selectSection({ state }, { sectionId });
   const lastContext = state.contexts[state.contexts.length - 1];
+
+  const lines = section?.lines || [];
+  const currentLineIndex = lines.findIndex(
+    (line) => line.id === pointer?.lineId,
+  );
+  const nextLineIndex = currentLineIndex + 1;
 
   if (nextLineIndex < lines.length) {
     const nextLine = lines[nextLineIndex];
@@ -3363,14 +3362,32 @@ export const sectionTransition = ({ state }, payload) => {
   });
 };
 
-export const nextLineFromSystem = ({ state }) => {
+export const nextLineFromSystem = ({ state }, payload) => {
   if (state.global.dialogueUIHidden) {
     showDialogueUI({ state });
     return state;
   }
 
-  // Auto/skip/scene timers should pause when a blocking interaction is visible.
-  if (selectActiveInteraction({ state })) {
+  // Automatic progression pauses for blocking interactions. An authored
+  // interaction action may carry the same authorization used by nextLine.
+  const activeInteraction = selectActiveInteraction({ state });
+  if (
+    activeInteraction?.source === CHOICE_INTERACTION_SOURCE &&
+    payload?.bypassChoice !== true
+  ) {
+    return state;
+  }
+  if (
+    activeInteraction?.source === FORM_INTERACTION_SOURCE &&
+    payload?._interactionSource !== FORM_INTERACTION_SOURCE
+  ) {
+    return state;
+  }
+  if (
+    activeInteraction &&
+    activeInteraction.source !== CHOICE_INTERACTION_SOURCE &&
+    activeInteraction.source !== FORM_INTERACTION_SOURCE
+  ) {
     return state;
   }
 

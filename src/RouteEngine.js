@@ -22,11 +22,15 @@ const PERSISTENT_PLAYBACK_RESTORE_ACTIONS = new Set([
 ]);
 
 const CONDITIONAL_ACTION_TYPE = "conditional";
+const CONDITIONAL_AUTO_CONTINUE = Symbol("conditionalAutoContinue");
 const FORM_INTERACTION_SOURCE = "form";
 const FORM_ACTION_TYPES = new Set(["submitForm", "cancelForm"]);
 
 const isRecord = (value) =>
   value !== null && typeof value === "object" && !Array.isArray(value);
+
+const isConditionalAutoContinue = (value) =>
+  value?.type === CONDITIONAL_AUTO_CONTINUE;
 
 /**
  * Creates a RouteEngine instance.
@@ -35,8 +39,6 @@ export default function createRouteEngine(options) {
   let _systemStore;
   let _renderSequence = 0;
   let _namespace = null;
-  let _actionDispatchDepth = 0;
-  let _isProcessingPendingEffects = false;
   let _persistentAnimationSessions = new Map();
   let _restoredPersistentAnimationSessions = new Map();
   let _renderPersistentAnimationMetadata = new Map();
@@ -76,37 +78,18 @@ export default function createRouteEngine(options) {
   };
 
   const processEffectsUntilEmpty = () => {
-    if (_actionDispatchDepth > 0 || _isProcessingPendingEffects) {
-      return;
-    }
-
-    _isProcessingPendingEffects = true;
-    try {
-      while (_systemStore.selectPendingEffects().length > 0) {
-        const snapshot = [..._systemStore.selectPendingEffects()];
+    while (_systemStore.selectPendingEffects().length > 0) {
+      const snapshot = [..._systemStore.selectPendingEffects()];
+      _systemStore.clearPendingEffects();
+      try {
+        handlePendingEffects(snapshot);
+      } catch (error) {
         _systemStore.clearPendingEffects();
-        try {
-          handlePendingEffects(snapshot);
-        } catch (error) {
-          _systemStore.clearPendingEffects();
-          snapshot.forEach((effect) => {
-            _systemStore.appendPendingEffect(effect);
-          });
-          throw error;
-        }
+        snapshot.forEach((effect) => {
+          _systemStore.appendPendingEffect(effect);
+        });
+        throw error;
       }
-    } finally {
-      _isProcessingPendingEffects = false;
-    }
-  };
-
-  const runWithDeferredEffects = (callback) => {
-    _actionDispatchDepth += 1;
-    try {
-      return callback();
-    } finally {
-      _actionDispatchDepth -= 1;
-      processEffectsUntilEmpty();
     }
   };
 
@@ -114,8 +97,6 @@ export default function createRouteEngine(options) {
     _systemStore = createSystemStore(initialState);
     _renderSequence = 0;
     _namespace = normalizeNamespace(namespace);
-    _actionDispatchDepth = 0;
-    _isProcessingPendingEffects = false;
     _persistentAnimationSessions = new Map();
     _restoredPersistentAnimationSessions = new Map();
     _renderPersistentAnimationMetadata = new Map();
@@ -277,15 +258,6 @@ export default function createRouteEngine(options) {
     return _systemStore.selectActiveInteraction();
   };
 
-  const selectHasPendingRenderWork = () => {
-    return _systemStore
-      .selectPendingEffects()
-      .some(
-        (effect) =>
-          effect?.name === "handleLineActions" || effect?.name === "render",
-      );
-  };
-
   const applyActionOptions = (actionType, payload, options = {}) => {
     if (!isRecord(payload)) {
       return payload;
@@ -295,30 +267,44 @@ export default function createRouteEngine(options) {
       return payload;
     }
 
-    let nextLinePayload = payload;
-
     if (options.bypassChoice === true) {
-      nextLinePayload = {
-        ...nextLinePayload,
+      return {
+        ...payload,
         bypassChoice: true,
       };
     }
 
     if (options.interactionSource === FORM_INTERACTION_SOURCE) {
-      nextLinePayload = {
-        ...nextLinePayload,
+      return {
+        ...payload,
         _interactionSource: FORM_INTERACTION_SOURCE,
       };
     }
 
-    if (options.advanceConditionalNextLine === true) {
-      nextLinePayload = {
-        ...nextLinePayload,
-        _advanceImmediately: true,
-      };
+    return payload;
+  };
+
+  const createConditionalAutoContinue = (options = {}) => ({
+    type: CONDITIONAL_AUTO_CONTINUE,
+    payload: applyActionOptions("nextLine", {}, options),
+    sourcePointer: structuredClone(
+      _systemStore.selectCurrentPointer()?.pointer ?? null,
+    ),
+  });
+
+  const mergeConditionalAutoContinue = (currentResult, nextResult) => {
+    if (!isConditionalAutoContinue(currentResult)) {
+      return nextResult;
     }
 
-    return nextLinePayload;
+    return {
+      type: CONDITIONAL_AUTO_CONTINUE,
+      payload: {
+        ...currentResult.payload,
+        ...nextResult.payload,
+      },
+      sourcePointer: nextResult.sourcePointer,
+    };
   };
 
   const dispatchStoreAction = (actionType, payload) => {
@@ -341,33 +327,34 @@ export default function createRouteEngine(options) {
     return result;
   };
 
-  const runActionBatch = (callback, options = {}) => {
-    return runWithDeferredEffects(() => {
-      _systemStore.beginRollbackActionBatch({
-        source: options.rollbackSource,
-      });
-      try {
-        return callback();
-      } finally {
-        _systemStore.endRollbackActionBatch({});
-      }
-    });
+  const dispatchConditionalAutoContinue = (result) => {
+    const currentPointer = _systemStore.selectCurrentPointer()?.pointer;
+    if (
+      result.sourcePointer?.sectionId !== currentPointer?.sectionId ||
+      result.sourcePointer?.lineId !== currentPointer?.lineId
+    ) {
+      return;
+    }
+
+    dispatchStoreAction("nextLineFromSystem", result.payload);
   };
 
   const handleAction = (actionType, payload, eventContext, options = {}) => {
     if (actionType === CONDITIONAL_ACTION_TYPE) {
-      return runActionBatch(() => {
-        const context = buildActionTemplateContext(eventContext);
-        const processedActions = processActionTemplates(
-          { [actionType]: payload },
-          context,
-        );
-        handleConditionalAction(
-          processedActions[actionType],
-          eventContext,
-          options,
-        );
-      }, options);
+      const context = buildActionTemplateContext(eventContext);
+      const processedActions = processActionTemplates(
+        { [actionType]: payload },
+        context,
+      );
+      const result = handleConditionalAction(
+        processedActions[actionType],
+        eventContext,
+        options,
+      );
+      if (isConditionalAutoContinue(result)) {
+        dispatchConditionalAutoContinue(result);
+      }
+      return;
     }
 
     dispatchStoreAction(actionType, payload);
@@ -452,12 +439,10 @@ export default function createRouteEngine(options) {
         continue;
       }
 
-      processActionEntries(branch.actions, eventContext, {
-        ...options,
-        advanceConditionalNextLine: true,
-      });
-      return;
+      return processActionEntries(branch.actions, eventContext, options);
     }
+
+    return createConditionalAutoContinue(options);
   };
 
   const buildFormActionEventContext = (eventContext, formContext) => {
@@ -480,7 +465,7 @@ export default function createRouteEngine(options) {
       return;
     }
 
-    processActionEntries(
+    return processActionEntries(
       payload.actions,
       buildFormActionEventContext(eventContext, result.form),
       {
@@ -499,8 +484,7 @@ export default function createRouteEngine(options) {
     const processedPayload = processedActions[actionType];
 
     if (actionType === CONDITIONAL_ACTION_TYPE) {
-      handleConditionalAction(processedPayload, eventContext, options);
-      return;
+      return handleConditionalAction(processedPayload, eventContext, options);
     }
 
     const processedPayloadWithActionOptions = applyActionOptions(
@@ -510,29 +494,49 @@ export default function createRouteEngine(options) {
     );
 
     if (FORM_ACTION_TYPES.has(actionType)) {
-      handleFormAction(
+      return handleFormAction(
         actionType,
         processedPayloadWithActionOptions,
         eventContext,
         options,
       );
-      return;
     }
 
     dispatchStoreAction(actionType, processedPayloadWithActionOptions);
   };
 
   const processActionEntries = (actions, eventContext, options) => {
+    let result;
+
     Object.entries(actions).forEach(([actionType, payload]) => {
-      handleActionEntry(actionType, payload, eventContext, options);
+      const entryResult = handleActionEntry(
+        actionType,
+        payload,
+        eventContext,
+        options,
+      );
+      if (isConditionalAutoContinue(entryResult)) {
+        result = mergeConditionalAutoContinue(result, entryResult);
+      }
     });
+
+    return result;
   };
 
   const handleActions = (actions, eventContext, options = {}) => {
-    return runActionBatch(
-      () => processActionEntries(actions, eventContext, options),
-      options,
-    );
+    let result;
+    _systemStore.beginRollbackActionBatch({
+      source: options.rollbackSource,
+    });
+    try {
+      result = processActionEntries(actions, eventContext, options);
+    } finally {
+      _systemStore.endRollbackActionBatch({});
+    }
+
+    if (isConditionalAutoContinue(result)) {
+      dispatchConditionalAutoContinue(result);
+    }
   };
 
   const handleLineActions = () => {
@@ -567,7 +571,6 @@ export default function createRouteEngine(options) {
     selectIsChoiceVisible,
     selectIsFormVisible,
     selectActiveInteraction,
-    selectHasPendingRenderWork,
     handleLineActions,
     getNamespace,
   };

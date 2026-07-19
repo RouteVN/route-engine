@@ -22,10 +22,6 @@ const createTimerState = () => {
 const DEFAULT_SKIP_NEXT_DELAY_MS = 80;
 
 const render = ({ engine, routeGraphics, trackRenderDispatch }, payload) => {
-  if (engine.selectHasPendingRenderWork?.()) {
-    return;
-  }
-
   const renderState =
     engine.prepareRenderState?.(payload) ?? engine.selectRenderState(payload);
   trackRenderDispatch?.(renderState);
@@ -574,9 +570,6 @@ const createEffectsHandler = ({
   const handlePendingEffects = (pendingEffects) => {
     const engine = getEngine();
     const normalizedEffects = coalescePendingEffects(pendingEffects);
-    const hasEnteredLineWork = normalizedEffects.some(
-      (effect) => effect.name === "handleLineActions",
-    );
 
     normalizedEffects.forEach((effect) => {
       if (!effects[effect.name] && !handleUnhandledEffect) {
@@ -597,12 +590,6 @@ const createEffectsHandler = ({
     };
 
     for (const effect of normalizedEffects) {
-      // Entered-line actions can queue newer render work. Let that work settle
-      // before rendering so this snapshot cannot flash or duplicate old state.
-      if (hasEnteredLineWork && effect.name === "render") {
-        continue;
-      }
-
       const handler = effects[effect.name];
       if (handler) {
         handler(deps, effect.payload);
