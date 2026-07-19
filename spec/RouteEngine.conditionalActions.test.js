@@ -1,5 +1,34 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import createRouteEngine from "../src/RouteEngine.js";
+import createEffectsHandler from "../src/createEffectsHandler.js";
+
+const createTicker = () => ({
+  add: vi.fn(),
+  remove: vi.fn(),
+});
+
+const createNoopPersistence = () => ({
+  saveSlots: vi.fn().mockResolvedValue(undefined),
+  saveGlobalDeviceVariables: vi.fn().mockResolvedValue(undefined),
+  saveGlobalAccountVariables: vi.fn().mockResolvedValue(undefined),
+  saveGlobalRuntime: vi.fn().mockResolvedValue(undefined),
+  applyScopedDataUpdates: vi.fn().mockResolvedValue(undefined),
+});
+
+const findElementById = (elements, id) => {
+  for (const element of elements || []) {
+    if (element?.id === id) {
+      return element;
+    }
+
+    const nested = findElementById(element?.children, id);
+    if (nested) {
+      return nested;
+    }
+  }
+
+  return null;
+};
 
 const createProjectData = ({
   trust = 0,
@@ -94,6 +123,33 @@ const createEngineWithLineActions = (projectData) => {
   return engine;
 };
 
+const createEngineWithRenderingEffects = (projectData, onRender) => {
+  let engine;
+  const routeGraphics = {
+    render: vi.fn((renderState) => onRender?.(renderState, engine)),
+  };
+  const effectsHandler = createEffectsHandler({
+    getEngine: () => engine,
+    routeGraphics,
+    ticker: createTicker(),
+    persistence: createNoopPersistence(),
+  });
+
+  engine = createRouteEngine({
+    handlePendingEffects: effectsHandler,
+  });
+  engine.init({
+    initialState: {
+      projectData,
+    },
+  });
+
+  return {
+    engine,
+    routeGraphics,
+  };
+};
+
 const setScoreAction = (id, value) => ({
   updateVariable: {
     id,
@@ -135,6 +191,83 @@ const createDestinationScoreCondition = () => ({
     ],
   },
 });
+
+const createConditionalDestinationRenderProjectData = ({
+  sourceMutationPosition = "after",
+  destinationUpdatesScore = true,
+} = {}) => {
+  const sourceMutation = setTrustAction("setSourceTrust", 9);
+  const sourceActions =
+    sourceMutationPosition === "before"
+      ? {
+          ...sourceMutation,
+          nextLine: {},
+        }
+      : {
+          nextLine: {},
+          ...sourceMutation,
+        };
+  const projectData = createProjectData({
+    lineActions: {
+      conditional: {
+        branches: [
+          {
+            actions: sourceActions,
+          },
+        ],
+      },
+    },
+    extraLines: [
+      {
+        id: "line2",
+        actions: {
+          ...(destinationUpdatesScore
+            ? setScoreAction("setDestinationScore", 7)
+            : {}),
+          dialogue: {
+            mode: "adv",
+            ui: {
+              resourceId: "destinationDialogue",
+            },
+            content: [
+              {
+                text: "Score ${variables.score}",
+              },
+            ],
+          },
+        },
+      },
+    ],
+  });
+
+  projectData.resources.layouts.destinationDialogue = {
+    mode: "adv",
+    elements: [
+      {
+        id: "destination-dialogue-text",
+        type: "text",
+        content: "${dialogue.content[0].text}",
+        textStyleId: "body",
+      },
+    ],
+  };
+  projectData.resources.fonts.bodyFont = {
+    fileId: "Arial",
+  };
+  projectData.resources.colors.bodyColor = {
+    hex: "#FFFFFF",
+  };
+  projectData.resources.textStyles.body = {
+    fontId: "bodyFont",
+    colorId: "bodyColor",
+    fontSize: 24,
+    fontWeight: "400",
+    fontStyle: "normal",
+    lineHeight: 1.2,
+  };
+
+  return projectData;
+};
 
 describe("RouteEngine conditional actions", () => {
   it("executes only the first matching branch", () => {
@@ -425,6 +558,96 @@ describe("RouteEngine conditional actions", () => {
     expect(
       engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
     ).toBe("line2");
+  });
+
+  it.each(["before", "after"])(
+    "renders an immediately entered line only after actions %s nextLine finish",
+    (sourceMutationPosition) => {
+      const renderedStates = [];
+      createEngineWithRenderingEffects(
+        createConditionalDestinationRenderProjectData({
+          sourceMutationPosition,
+        }),
+        (renderState, engine) => {
+          const state = engine.selectSystemState();
+          renderedStates.push({
+            lineId: state.contexts.at(-1).pointers.read.lineId,
+            score: state.contexts.at(-1).variables.score,
+            trust: state.contexts.at(-1).variables.trust,
+            text: findElementById(
+              renderState.elements,
+              "destination-dialogue-text",
+            )?.content,
+          });
+        },
+      );
+
+      expect(renderedStates).toEqual([
+        {
+          lineId: "line2",
+          score: 7,
+          trust: 9,
+          text: "Score 7",
+        },
+      ]);
+    },
+  );
+
+  it("renders an immediately entered empty line exactly once", () => {
+    const renderedLineIds = [];
+    createEngineWithRenderingEffects(
+      createProjectData({
+        lineActions: {
+          conditional: {
+            branches: [
+              {
+                actions: {
+                  nextLine: {},
+                },
+              },
+            ],
+          },
+        },
+        extraLines: [
+          {
+            id: "line2",
+            actions: {},
+          },
+        ],
+      }),
+      (_renderState, engine) => {
+        const state = engine.selectSystemState();
+        renderedLineIds.push(state.contexts.at(-1).pointers.read.lineId);
+      },
+    );
+
+    expect(renderedLineIds).toEqual(["line2"]);
+  });
+
+  it("fallback-renders an entered presentation-only line exactly once", () => {
+    const renderedStates = [];
+    createEngineWithRenderingEffects(
+      createConditionalDestinationRenderProjectData({
+        destinationUpdatesScore: false,
+      }),
+      (renderState, engine) => {
+        const state = engine.selectSystemState();
+        renderedStates.push({
+          lineId: state.contexts.at(-1).pointers.read.lineId,
+          text: findElementById(
+            renderState.elements,
+            "destination-dialogue-text",
+          )?.content,
+        });
+      },
+    );
+
+    expect(renderedStates).toEqual([
+      {
+        lineId: "line2",
+        text: "Score 0",
+      },
+    ]);
   });
 
   it("finishes the selected branch before processing the entered line", () => {

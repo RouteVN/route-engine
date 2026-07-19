@@ -277,6 +277,15 @@ export default function createRouteEngine(options) {
     return _systemStore.selectActiveInteraction();
   };
 
+  const selectHasPendingRenderWork = () => {
+    return _systemStore
+      .selectPendingEffects()
+      .some(
+        (effect) =>
+          effect?.name === "handleLineActions" || effect?.name === "render",
+      );
+  };
+
   const applyActionOptions = (actionType, payload, options = {}) => {
     if (!isRecord(payload)) {
       return payload;
@@ -558,6 +567,7 @@ export default function createRouteEngine(options) {
     selectIsChoiceVisible,
     selectIsFormVisible,
     selectActiveInteraction,
+    selectHasPendingRenderWork,
     handleLineActions,
     getNamespace,
   };
