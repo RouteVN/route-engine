@@ -1,16 +1,21 @@
 ---
 title: Conditional Continue Auto Advance
-description: A line-level conditional Continue action immediately enters and renders the next line.
+description: A visible Continue control whose conditional branch continues immediately enters and renders the next line.
 specs:
-  - the initial source line evaluates a true conditional branch containing nextLine
-  - the source line does not wait for a manual click
-  - only the following line is visible in the settled state
+  - the source dialogue is still revealing when its Continue control is clicked
+  - the control click evaluates a true conditional branch containing nextLine
+  - the same click immediately advances to and renders the following line
 skipInitialScreenshot: true
 viewport:
   id: capture
   width: 960
   height: 540
 steps:
+  - action: wait
+    ms: 150
+  - action: click
+    x: 480
+    y: 180
   - action: wait
     ms: 200
   - action: screenshot
@@ -27,22 +32,63 @@ resources:
           width: 1920
           height: 1080
           colorId: bg
-    dialogueLayout:
+    sourceDialogueLayout:
       mode: adv
       elements:
-        - id: dialogue-box
+        - id: source-dialogue-box
           type: rect
           x: 120
           y: 760
           width: 1680
           height: 220
           colorId: panel
-        - id: dialogue-text
+        - id: source-dialogue-text
+          type: text-revealing
+          x: 160
+          y: 830
+          width: 1600
+          displaySpeed: 100
+          content: ${dialogue.content}
+          textStyleId: dialogueText
+    destinationDialogueLayout:
+      mode: adv
+      elements:
+        - id: destination-dialogue-box
+          type: rect
+          x: 120
+          y: 760
+          width: 1680
+          height: 220
+          colorId: panel
+        - id: destination-dialogue-text
           type: text
           x: 160
           y: 830
           width: 1600
           content: ${dialogue.content[0].text}
+          textStyleId: dialogueText
+    continueLayout:
+      elements:
+        - id: continue-button
+          type: rect
+          x: 600
+          y: 300
+          width: 720
+          height: 120
+          colorId: button
+          click:
+            payload:
+              actions:
+                conditional:
+                  branches:
+                    - when: true
+                      actions:
+                        nextLine: {}
+        - id: continue-label
+          type: text
+          x: 770
+          y: 338
+          content: Continue now
           textStyleId: dialogueText
   fonts:
     fontDefault:
@@ -52,6 +98,8 @@ resources:
       hex: "#000000"
     panel:
       hex: "#4D4D4D"
+    button:
+      hex: "#737373"
     fg:
       hex: "#FFFFFF"
   textStyles:
@@ -72,18 +120,22 @@ story:
           lines:
             - id: conditional-continue
               actions:
-                conditional:
-                  branches:
-                    - when: true
-                      actions:
-                        nextLine: {}
-            - id: next-line
-              actions:
                 background:
                   resourceId: backgroundLayout
                 dialogue:
                   mode: adv
                   ui:
-                    resourceId: dialogueLayout
+                    resourceId: sourceDialogueLayout
+                  content:
+                    - text: "This source line is intentionally still revealing when Continue is clicked."
+                layout:
+                  resourceId: continueLayout
+            - id: next-line
+              actions:
+                layout: {}
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: destinationDialogueLayout
                   content:
                     - text: "Next line reached automatically."
