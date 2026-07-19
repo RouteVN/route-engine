@@ -1,0 +1,165 @@
+---
+title: Conditional Continue Auto Advance
+description: A visible Continue control finishes its conditional action batch before immediately entering and rendering the next line.
+specs:
+  - the source dialogue is still revealing when its Continue control is clicked
+  - the control click evaluates a true conditional branch containing nextLine
+  - a mutation authored after nextLine finishes before destination actions run
+  - the same click immediately advances to and renders the matching destination
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 150
+  - action: click
+    x: 480
+    y: 180
+  - action: wait
+    ms: 200
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+resources:
+  variables:
+    score:
+      type: number
+      scope: context
+      default: 0
+    destinationMessage:
+      type: string
+      scope: context
+      computed:
+        branches:
+          - when:
+              eq:
+                - var: variables.score
+                - 7
+            expr: Next line reached automatically.
+        default:
+          expr: Destination observed stale action state.
+  layouts:
+    backgroundLayout:
+      elements:
+        - id: background
+          type: rect
+          width: 1920
+          height: 1080
+          colorId: bg
+    sourceDialogueLayout:
+      mode: adv
+      elements:
+        - id: source-dialogue-box
+          type: rect
+          x: 120
+          y: 760
+          width: 1680
+          height: 220
+          colorId: panel
+        - id: source-dialogue-text
+          type: text-revealing
+          x: 160
+          y: 830
+          width: 1600
+          displaySpeed: 100
+          content: ${dialogue.content}
+          textStyleId: dialogueText
+    destinationDialogueLayout:
+      mode: adv
+      elements:
+        - id: destination-dialogue-box
+          type: rect
+          x: 120
+          y: 760
+          width: 1680
+          height: 220
+          colorId: panel
+        - id: destination-dialogue-text
+          type: text
+          x: 160
+          y: 830
+          width: 1600
+          content: ${dialogue.content[0].text}
+          textStyleId: dialogueText
+    continueLayout:
+      elements:
+        - id: continue-button
+          type: rect
+          x: 600
+          y: 300
+          width: 720
+          height: 120
+          colorId: button
+          click:
+            payload:
+              actions:
+                conditional:
+                  branches:
+                    - when: true
+                      actions:
+                        nextLine: {}
+                        updateVariable:
+                          id: updateAfterContinue
+                          operations:
+                            - variableId: score
+                              op: set
+                              value: 7
+        - id: continue-label
+          type: text
+          x: 770
+          y: 338
+          content: Continue now
+          textStyleId: dialogueText
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    bg:
+      hex: "#000000"
+    panel:
+      hex: "#4D4D4D"
+    button:
+      hex: "#737373"
+    fg:
+      hex: "#FFFFFF"
+  textStyles:
+    dialogueText:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 40
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: test
+      sections:
+        test:
+          lines:
+            - id: conditional-continue
+              actions:
+                background:
+                  resourceId: backgroundLayout
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: sourceDialogueLayout
+                  content:
+                    - text: "This source line is intentionally still revealing when Continue is clicked."
+                layout:
+                  resourceId: continueLayout
+            - id: next-line
+              actions:
+                layout: {}
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: destinationDialogueLayout
+                  content:
+                    - text: ${variables.destinationMessage}
