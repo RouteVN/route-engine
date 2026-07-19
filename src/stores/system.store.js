@@ -3162,12 +3162,22 @@ export const nextLine = ({ state }, payload) => {
     return state;
   }
 
-  // If line is not completed, complete it instantly instead of advancing
-  if (!state.global.isLineCompleted) {
+  const pointer = selectCurrentPointer({ state })?.pointer;
+  const sectionId = pointer?.sectionId;
+  const section = selectSection({ state }, { sectionId });
+  const lines = section?.lines || [];
+  const currentLineIndex = lines.findIndex(
+    (line) => line.id === pointer?.lineId,
+  );
+  const nextLineIndex = currentLineIndex + 1;
+  const canAdvanceImmediately =
+    payload?._advanceImmediately === true && nextLineIndex < lines.length;
+
+  // Ordinary progression completes an unfinished line first. A conditional
+  // Continue is authored as control flow, so it advances in the same pass.
+  if (!state.global.isLineCompleted && !canAdvanceImmediately) {
     state.global.isLineCompleted = true;
     delete state.global.pendingScreenTransition;
-    const pointer = selectCurrentPointer({ state })?.pointer;
-    const sectionId = pointer?.sectionId;
     const lineId = pointer?.lineId;
     if (sectionId && lineId) {
       recordViewedLine(state, { sectionId, lineId });
@@ -3202,16 +3212,7 @@ export const nextLine = ({ state }, payload) => {
     return state;
   }
 
-  const pointer = selectCurrentPointer({ state })?.pointer;
-  const sectionId = pointer?.sectionId;
-  const section = selectSection({ state }, { sectionId });
   const lastContext = state.contexts[state.contexts.length - 1];
-
-  const lines = section?.lines || [];
-  const currentLineIndex = lines.findIndex(
-    (line) => line.id === pointer?.lineId,
-  );
-  const nextLineIndex = currentLineIndex + 1;
 
   if (nextLineIndex < lines.length) {
     const nextLine = lines[nextLineIndex];

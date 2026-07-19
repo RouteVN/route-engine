@@ -545,6 +545,11 @@ events:
                 nextLine: {}
 ```
 
+When `nextLine` is selected inside a conditional branch and a following line
+exists, it acts as immediate story control flow: the engine enters that line
+without first stopping to complete the current line. A standalone `nextLine`
+keeps the normal reveal-first behavior.
+
 ### Playback Mode Actions
 
 | Action           | Payload | Description               |

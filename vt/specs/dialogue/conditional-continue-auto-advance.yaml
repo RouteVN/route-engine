@@ -1,0 +1,89 @@
+---
+title: Conditional Continue Auto Advance
+description: A line-level conditional Continue action immediately enters and renders the next line.
+specs:
+  - the initial source line evaluates a true conditional branch containing nextLine
+  - the source line does not wait for a manual click
+  - only the following line is visible in the settled state
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 200
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+resources:
+  layouts:
+    backgroundLayout:
+      elements:
+        - id: background
+          type: rect
+          width: 1920
+          height: 1080
+          colorId: bg
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 120
+          y: 760
+          width: 1680
+          height: 220
+          colorId: panel
+        - id: dialogue-text
+          type: text
+          x: 160
+          y: 830
+          width: 1600
+          content: ${dialogue.content[0].text}
+          textStyleId: dialogueText
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    bg:
+      hex: "#000000"
+    panel:
+      hex: "#4D4D4D"
+    fg:
+      hex: "#FFFFFF"
+  textStyles:
+    dialogueText:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 40
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: test
+      sections:
+        test:
+          lines:
+            - id: conditional-continue
+              actions:
+                conditional:
+                  branches:
+                    - when: true
+                      actions:
+                        nextLine: {}
+            - id: next-line
+              actions:
+                background:
+                  resourceId: backgroundLayout
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Next line reached automatically."

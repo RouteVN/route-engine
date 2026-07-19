@@ -263,21 +263,30 @@ export default function createRouteEngine(options) {
       return payload;
     }
 
+    let nextLinePayload = payload;
+
     if (options.bypassChoice === true) {
-      return {
-        ...payload,
+      nextLinePayload = {
+        ...nextLinePayload,
         bypassChoice: true,
       };
     }
 
     if (options.interactionSource === FORM_INTERACTION_SOURCE) {
-      return {
-        ...payload,
+      nextLinePayload = {
+        ...nextLinePayload,
         _interactionSource: FORM_INTERACTION_SOURCE,
       };
     }
 
-    return payload;
+    if (options.advanceConditionalNextLine === true) {
+      nextLinePayload = {
+        ...nextLinePayload,
+        _advanceImmediately: true,
+      };
+    }
+
+    return nextLinePayload;
   };
 
   const dispatchStoreAction = (actionType, payload) => {
@@ -397,7 +406,10 @@ export default function createRouteEngine(options) {
         continue;
       }
 
-      processActionEntries(branch.actions, eventContext, options);
+      processActionEntries(branch.actions, eventContext, {
+        ...options,
+        advanceConditionalNextLine: true,
+      });
       return;
     }
   };

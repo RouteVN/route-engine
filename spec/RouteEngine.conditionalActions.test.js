@@ -343,6 +343,101 @@ describe("RouteEngine conditional actions", () => {
     ).toBe("trustedRoute");
   });
 
+  it("immediately advances an authored line conditional that selects nextLine", () => {
+    let engine;
+    const handlePendingEffects = (effects) => {
+      effects.forEach((effect) => {
+        if (effect.name === "handleLineActions") {
+          engine.handleLineActions();
+        }
+      });
+    };
+
+    engine = createRouteEngine({
+      handlePendingEffects,
+    });
+    engine.init({
+      initialState: {
+        projectData: createProjectData({
+          trust: 90,
+          lineActions: {
+            conditional: {
+              branches: [
+                {
+                  when: {
+                    gte: [{ var: "variables.trust" }, 70],
+                  },
+                  actions: {
+                    nextLine: {},
+                  },
+                },
+              ],
+            },
+          },
+          extraLines: [
+            {
+              id: "line2",
+              actions: {},
+            },
+          ],
+        }),
+      },
+    });
+
+    expect(
+      engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
+    ).toBe("line2");
+  });
+
+  it("completes in place when conditional nextLine is already at section end", () => {
+    const engine = createEngine(createProjectData());
+
+    engine.handleActions({
+      conditional: {
+        branches: [
+          {
+            actions: {
+              nextLine: {},
+            },
+          },
+        ],
+      },
+    });
+
+    const state = engine.selectSystemState();
+    expect(state.contexts.at(-1).pointers.read.lineId).toBe("line1");
+    expect(state.global.isLineCompleted).toBe(true);
+  });
+
+  it("keeps a sibling nextLine outside the conditional reveal-first", () => {
+    const engine = createEngine(
+      createProjectData({
+        extraLines: [
+          {
+            id: "line2",
+            actions: {},
+          },
+        ],
+      }),
+    );
+
+    engine.handleActions({
+      conditional: {
+        branches: [
+          {
+            actions: setScoreAction("matched", 4),
+          },
+        ],
+      },
+      nextLine: {},
+    });
+
+    const state = engine.selectSystemState();
+    expect(state.contexts.at(-1).pointers.read.lineId).toBe("line1");
+    expect(state.contexts.at(-1).variables.score).toBe(4);
+    expect(state.global.isLineCompleted).toBe(true);
+  });
+
   it("replays selected authored line conditional branches during rollback restoration", () => {
     let engine;
     const handlePendingEffects = (effects) => {
@@ -512,7 +607,7 @@ describe("RouteEngine conditional actions", () => {
     ).toThrow("Condition JSON at '$when' must contain exactly one operator");
   });
 
-  it("preserves choice interaction source for nested nextLine actions", () => {
+  it("immediately advances a nested conditional nextLine from a choice", () => {
     const engine = createEngine(
       createProjectData({
         lineActions: {
@@ -535,7 +630,6 @@ describe("RouteEngine conditional actions", () => {
       }),
     );
 
-    engine.handleAction("markLineCompleted", {});
     engine.handleActions(
       {
         conditional: {
