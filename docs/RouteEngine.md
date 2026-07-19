@@ -245,8 +245,8 @@ parses the layout tree.
 
 Layout text should be authored with `textStyleId` and resolved through `resources.textStyles`.
 Authored inline `textStyle` objects in layout elements are rejected at render-state construction.
-Text transparency should be authored on the text style resource with `colorAlpha`
-and `strokeAlpha`, not baked into the shared color resource itself. Whole-node
+Text transparency should be authored on the text style resource with `colorAlpha`,
+`strokeAlpha`, and `shadow.alpha`, not baked into the shared color resource itself. Whole-node
 transparency still uses the element `alpha`. `resources.colors[*].hex` must be
 opaque hex only.
 
@@ -270,6 +270,12 @@ resources:
       strokeColorId: colorPrimary
       strokeAlpha: 0.35
       strokeWidth: 2
+      shadow:
+        colorId: colorPrimary
+        alpha: 0.75
+        blur: 6
+        offsetX: 2
+        offsetY: 3
   layouts:
     dialogueLayout:
       elements:

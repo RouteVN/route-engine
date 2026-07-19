@@ -347,6 +347,31 @@ properties:
           strokeWidth:
             type: number
             description: Stroke width
+          shadow:
+            type: object
+            description: Optional text shadow resolved into the renderer-facing shadow object
+            properties:
+              colorId:
+                type: string
+                minLength: 1
+                description: Reference to the shadow color resource
+              alpha:
+                type: number
+                minimum: 0
+                maximum: 1
+                description: Shadow opacity. 0 = transparent, 1 = opaque
+              blur:
+                type: number
+                minimum: 0
+                description: Shadow blur radius in pixels
+              offsetX:
+                type: number
+                description: Horizontal shadow offset in pixels
+              offsetY:
+                type: number
+                description: Vertical shadow offset in pixels
+            required: [colorId]
+            additionalProperties: false
         required: [fontId, fontSize, fontWeight, fontStyle, lineHeight, colorId]
         additionalProperties: false
     additionalProperties: false

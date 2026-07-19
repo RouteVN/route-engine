@@ -796,6 +796,34 @@ const ensureNormalizedAlpha = (value, fieldName, textStyleId) => {
   return value;
 };
 
+const ensureFiniteShadowNumber = (
+  value,
+  fieldName,
+  textStyleId,
+  defaultValue,
+  { minimum } = {},
+) => {
+  if (value === undefined) {
+    return defaultValue;
+  }
+
+  if (
+    typeof value !== "number" ||
+    !Number.isFinite(value) ||
+    (minimum !== undefined && value < minimum)
+  ) {
+    const minimumMessage =
+      minimum === undefined
+        ? "a finite number"
+        : `a finite number >= ${minimum}`;
+    throw new Error(
+      `shadow.${fieldName} for text style "${textStyleId}" must be ${minimumMessage}`,
+    );
+  }
+
+  return value;
+};
+
 const normalizeHexColor = (value, errorContext) => {
   if (typeof value !== "string" || !HEX_COLOR_PATTERN.test(value)) {
     throw new Error(`${errorContext} must resolve to a hex color`);
@@ -911,6 +939,48 @@ const resolveTextStyleResource = (resources = {}, textStyleId) => {
 
   if (textStyleResource.strokeWidth !== undefined) {
     resolvedTextStyle.strokeWidth = textStyleResource.strokeWidth;
+  }
+
+  if (textStyleResource.shadow !== undefined) {
+    const shadowColorResource =
+      resources.colors?.[textStyleResource.shadow.colorId];
+
+    if (!shadowColorResource) {
+      throw new Error(
+        `Shadow color "${textStyleResource.shadow.colorId}" not found for text style "${textStyleId}"`,
+      );
+    }
+
+    resolvedTextStyle.shadow = {
+      color: normalizeHexColor(
+        shadowColorResource.hex,
+        `Shadow color "${textStyleResource.shadow.colorId}" for text style "${textStyleId}"`,
+      ),
+      alpha: ensureNormalizedAlpha(
+        textStyleResource.shadow.alpha,
+        "shadow.alpha",
+        textStyleId,
+      ),
+      blur: ensureFiniteShadowNumber(
+        textStyleResource.shadow.blur,
+        "blur",
+        textStyleId,
+        0,
+        { minimum: 0 },
+      ),
+      offsetX: ensureFiniteShadowNumber(
+        textStyleResource.shadow.offsetX,
+        "offsetX",
+        textStyleId,
+        2,
+      ),
+      offsetY: ensureFiniteShadowNumber(
+        textStyleResource.shadow.offsetY,
+        "offsetY",
+        textStyleId,
+        2,
+      ),
+    };
   }
 
   return resolvedTextStyle;
