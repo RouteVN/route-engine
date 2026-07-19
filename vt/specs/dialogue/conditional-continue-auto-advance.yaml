@@ -1,10 +1,11 @@
 ---
 title: Conditional Continue Auto Advance
-description: A visible Continue control whose conditional branch continues immediately enters and renders the next line.
+description: A visible Continue control finishes its conditional action batch before immediately entering and rendering the next line.
 specs:
   - the source dialogue is still revealing when its Continue control is clicked
   - the control click evaluates a true conditional branch containing nextLine
-  - the same click immediately advances to and renders the following line
+  - a mutation authored after nextLine finishes before destination actions run
+  - the same click immediately advances to and renders the matching destination
 skipInitialScreenshot: true
 viewport:
   id: capture
@@ -24,6 +25,23 @@ screen:
   width: 1920
   height: 1080
 resources:
+  variables:
+    score:
+      type: number
+      scope: context
+      default: 0
+    destinationMessage:
+      type: string
+      scope: context
+      computed:
+        branches:
+          - when:
+              eq:
+                - var: variables.score
+                - 7
+            expr: Next line reached automatically.
+        default:
+          expr: Destination observed stale action state.
   layouts:
     backgroundLayout:
       elements:
@@ -84,6 +102,12 @@ resources:
                     - when: true
                       actions:
                         nextLine: {}
+                        updateVariable:
+                          id: updateAfterContinue
+                          operations:
+                            - variableId: score
+                              op: set
+                              value: 7
         - id: continue-label
           type: text
           x: 770
@@ -138,4 +162,4 @@ story:
                   ui:
                     resourceId: destinationDialogueLayout
                   content:
-                    - text: "Next line reached automatically."
+                    - text: ${variables.destinationMessage}

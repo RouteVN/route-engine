@@ -72,6 +72,28 @@ const createEngine = (projectData) => {
   return engine;
 };
 
+const createEngineWithLineActions = (projectData) => {
+  let engine;
+  const handlePendingEffects = (effects) => {
+    effects.forEach((effect) => {
+      if (effect.name === "handleLineActions") {
+        engine.handleLineActions();
+      }
+    });
+  };
+
+  engine = createRouteEngine({
+    handlePendingEffects,
+  });
+  engine.init({
+    initialState: {
+      projectData,
+    },
+  });
+
+  return engine;
+};
+
 const setScoreAction = (id, value) => ({
   updateVariable: {
     id,
@@ -93,6 +115,22 @@ const setTrustAction = (id, value) => ({
         variableId: "trust",
         op: "set",
         value,
+      },
+    ],
+  },
+});
+
+const createDestinationScoreCondition = () => ({
+  conditional: {
+    branches: [
+      {
+        when: {
+          eq: [{ var: "variables.score" }, 7],
+        },
+        actions: setTrustAction("observedUpdatedScore", 80),
+      },
+      {
+        actions: setTrustAction("observedStaleScore", 20),
       },
     ],
   },
@@ -387,6 +425,110 @@ describe("RouteEngine conditional actions", () => {
     expect(
       engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
     ).toBe("line2");
+  });
+
+  it("finishes the selected branch before processing the entered line", () => {
+    const engine = createEngineWithLineActions(
+      createProjectData({
+        extraLines: [
+          {
+            id: "line2",
+            actions: createDestinationScoreCondition(),
+          },
+        ],
+      }),
+    );
+
+    engine.handleActions({
+      conditional: {
+        branches: [
+          {
+            actions: {
+              nextLine: {},
+              ...setScoreAction("updateAfterNextLine", 7),
+            },
+          },
+        ],
+      },
+    });
+
+    const state = engine.selectSystemState();
+    expect(state.contexts.at(-1).pointers.read.lineId).toBe("line2");
+    expect(state.contexts.at(-1).variables.score).toBe(7);
+    expect(state.contexts.at(-1).variables.trust).toBe(80);
+  });
+
+  it("finishes the enclosing batch before processing the entered line", () => {
+    const engine = createEngineWithLineActions(
+      createProjectData({
+        extraLines: [
+          {
+            id: "line2",
+            actions: createDestinationScoreCondition(),
+          },
+        ],
+      }),
+    );
+
+    engine.handleActions({
+      conditional: {
+        branches: [
+          {
+            actions: {
+              nextLine: {},
+            },
+          },
+        ],
+      },
+      ...setScoreAction("updateAfterConditional", 7),
+    });
+
+    const state = engine.selectSystemState();
+    expect(state.contexts.at(-1).pointers.read.lineId).toBe("line2");
+    expect(state.contexts.at(-1).variables.score).toBe(7);
+    expect(state.contexts.at(-1).variables.trust).toBe(80);
+  });
+
+  it("restores the same destination branch selected during original execution", () => {
+    const engine = createEngineWithLineActions(
+      createProjectData({
+        extraLines: [
+          {
+            id: "line2",
+            actions: createDestinationScoreCondition(),
+          },
+          {
+            id: "line3",
+            actions: {},
+          },
+        ],
+      }),
+    );
+
+    engine.handleAction("conditional", {
+      branches: [
+        {
+          actions: {
+            nextLine: {},
+            ...setScoreAction("updateBeforeDestination", 7),
+          },
+        },
+      ],
+    });
+
+    const originalTrust = engine.selectSystemState().contexts.at(-1)
+      .variables.trust;
+
+    engine.handleAction("markLineCompleted", {});
+    engine.handleAction("nextLine", {});
+    engine.handleAction("rollbackToLine", {
+      sectionId: "section1",
+      lineId: "line2",
+    });
+
+    const state = engine.selectSystemState();
+    expect(state.contexts.at(-1).pointers.read.lineId).toBe("line2");
+    expect(state.contexts.at(-1).variables.trust).toBe(originalTrust);
   });
 
   it("completes in place when conditional nextLine is already at section end", () => {
