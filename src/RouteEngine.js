@@ -269,6 +269,14 @@ export default function createRouteEngine(options) {
     return _systemStore.selectSystemState();
   };
 
+  const selectAchievements = () => {
+    return _systemStore.selectAchievements();
+  };
+
+  const selectAchievement = (payload) => {
+    return _systemStore.selectAchievement(payload);
+  };
+
   const selectSaveSlotMap = () => {
     return _systemStore.selectSaveSlotMap();
   };
@@ -848,6 +856,8 @@ export default function createRouteEngine(options) {
     selectPresentationChanges,
     selectSectionLineChanges,
     selectSystemState,
+    selectAchievements,
+    selectAchievement,
     selectSaveSlotMap,
     selectSaveSlot,
     selectSaveSlotPage,

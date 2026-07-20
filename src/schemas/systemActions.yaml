@@ -475,4 +475,36 @@ properties:
     required: [formKey]
     additionalProperties: true
 
+  completeAchievement:
+    type: object
+    description: Declare an achievement complete
+    properties:
+      resourceId:
+        type: string
+        minLength: 1
+        description: Achievement resource ID
+    required: [resourceId]
+    additionalProperties: false
+
+  setAchievementProgress:
+    type: object
+    description: Report absolute progress for a number achievement
+    properties:
+      resourceId:
+        type: string
+        minLength: 1
+        description: Achievement resource ID
+      current:
+        type: [integer, string]
+        minimum: 0
+        description: Non-negative absolute progress or an authored template that resolves to it
+    required: [resourceId, current]
+    additionalProperties: false
+
+  showAchievements:
+    type: object
+    description: Request that the host show its achievement UI
+    properties: {}
+    additionalProperties: false
+
 additionalProperties: false

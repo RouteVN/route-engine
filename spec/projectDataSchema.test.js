@@ -1756,4 +1756,74 @@ describe("projectData schema", () => {
       ]),
     );
   });
+
+  it("accepts boolean and number achievement resources", () => {
+    expect(
+      validateProjectData(
+        createMinimalProjectData({
+          resources: {
+            achievements: {
+              completeChapter: {
+                type: "boolean",
+                name: "Chapter Complete",
+                description: "Complete the chapter.",
+              },
+              findEndings: {
+                type: "number",
+                target: 5,
+                name: "Every Ending",
+                description: "Find every ending.",
+              },
+            },
+          },
+        }),
+      ),
+    ).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
+
+  it("enforces achievement target rules", () => {
+    const numberWithoutTarget = createMinimalProjectData({
+      resources: {
+        achievements: {
+          findEndings: {
+            type: "number",
+            name: "Every Ending",
+            description: "Find every ending.",
+          },
+        },
+      },
+    });
+    const booleanWithTarget = createMinimalProjectData({
+      resources: {
+        achievements: {
+          completeChapter: {
+            type: "boolean",
+            target: 1,
+            name: "Chapter Complete",
+            description: "Complete the chapter.",
+          },
+        },
+      },
+    });
+
+    expect(validateProjectData(numberWithoutTarget)).toBe(false);
+    expect(validateProjectData(booleanWithTarget)).toBe(false);
+  });
+
+  it("accepts achievement authored actions", () => {
+    expect(
+      validateSystemActions({
+        completeAchievement: {
+          resourceId: "completeChapter",
+        },
+        setAchievementProgress: {
+          resourceId: "findEndings",
+          current: "${variables.endingsFound}",
+        },
+        showAchievements: {},
+      }),
+    ).toBe(true);
+    expect(validateSystemActions.errors).toBeNull();
+  });
 });

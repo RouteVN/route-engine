@@ -273,4 +273,50 @@ describe("systemState schema", () => {
     expect(validateSystemState(systemState)).toBe(false);
     expect(validateSystemState.errors).not.toBeNull();
   });
+
+  it("accepts achievement effects and rejects malformed achievement effects", () => {
+    const engine = createRouteEngine({
+      handlePendingEffects: () => {},
+    });
+
+    engine.init({
+      initialState: {
+        projectData: createMinimalProjectData(),
+      },
+    });
+
+    const systemState = toJsonSnapshot(engine.selectSystemState());
+    systemState.global.pendingEffects = [
+      {
+        name: "completeAchievement",
+        payload: { resourceId: "completeChapter" },
+      },
+      {
+        name: "setAchievementProgress",
+        payload: {
+          resourceId: "findEndings",
+          current: 3,
+          target: 5,
+          completed: false,
+        },
+      },
+      { name: "showAchievements" },
+    ];
+
+    expect(validateSystemState(systemState)).toBe(true);
+    expect(validateSystemState.errors).toBeNull();
+
+    systemState.global.pendingEffects = [
+      {
+        name: "setAchievementProgress",
+        payload: {
+          resourceId: "findEndings",
+          current: 3,
+          target: 5,
+        },
+      },
+    ];
+    expect(validateSystemState(systemState)).toBe(false);
+    expect(validateSystemState.errors).not.toBeNull();
+  });
 });
