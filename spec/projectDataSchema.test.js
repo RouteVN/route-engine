@@ -1826,4 +1826,37 @@ describe("projectData schema", () => {
     ).toBe(true);
     expect(validateSystemActions.errors).toBeNull();
   });
+
+  it("accepts achievement actions on story lines", () => {
+    const projectData = createMinimalProjectData({
+      resources: {
+        achievements: {
+          completeChapter: {
+            type: "boolean",
+            name: "Chapter Complete",
+            description: "Complete the chapter.",
+          },
+          findEndings: {
+            type: "number",
+            target: 5,
+            name: "Every Ending",
+            description: "Find every ending.",
+          },
+        },
+      },
+    });
+    projectData.story.scenes.scene1.sections.section1.lines[0].actions = {
+      completeAchievement: {
+        resourceId: "completeChapter",
+      },
+      setAchievementProgress: {
+        resourceId: "findEndings",
+        current: 2,
+      },
+      showAchievements: {},
+    };
+
+    expect(validateProjectData(projectData)).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
 });

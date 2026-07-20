@@ -128,9 +128,8 @@ resource represents one permanent completion milestone.
 
 ## JSON Schema
 
-The following draft-07 schema describes the value of
-`resources.achievements`. It can be moved into the project-data schemas when
-the resource is implemented.
+The following draft-07 schema describes the implemented value of
+`resources.achievements` in the project-data schema.
 
 ```json
 {
@@ -382,9 +381,9 @@ Completed progress effect:
 Show effect:
 
 ```js
-{
-  name: "showAchievements";
-}
+const effect = {
+  name: "showAchievements",
+};
 ```
 
 Effect rules:
