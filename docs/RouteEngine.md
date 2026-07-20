@@ -488,7 +488,7 @@ const sectionLineChanges = engine.selectSectionLineChanges({
 | Action              | Payload                  | Description                                                 |
 | ------------------- | ------------------------ | ----------------------------------------------------------- |
 | `nextLine`          | -                        | Advance to the next line (respects `nextLineConfig.manual`) |
-| `rollbackByOffset`  | `{ offset? }`            | Roll back relative to the active rollback checkpoint        |
+| `rollbackByOffset`  | `{ offset? }`            | Roll back by eligible landing points (`-1` means Back)      |
 | `rollbackToLine`    | `{ sectionId, lineId }`  | Roll back to a specific line in the rollback timeline       |
 | `jumpToLine`        | `{ sectionId?, lineId }` | Jump to specific line                                       |
 | `sectionTransition` | `{ sectionId, screen? }` | Transition to a different section                           |
@@ -507,6 +507,13 @@ This transition is scoped to the edge between sections. If both
 `sectionTransition.screen` and the destination line's `screen.animations` are
 defined, the `sectionTransition.screen` animation wins for the first destination
 render only.
+
+Rollback design treats a source line that invokes `sectionTransition` during
+line-entry processing as transient. Player-facing Back must skip that source
+and restore the preceding settled line in one action. A transition triggered
+later from an already-presented interaction does not disqualify that source
+line. This target-selection behavior is specified in [Rollback.md](./Rollback.md)
+and is applied by `rollbackByOffset` and its availability selectors.
 
 ### Conditional Actions
 
@@ -560,6 +567,13 @@ coalesce into the same single batch continuation. This is an immediate
 control-flow advance: hidden dialogue does not consume it and remains hidden.
 When skip mode cannot pass unseen content, the engine enters that destination
 and stops skip there. Active choice and form authorization still applies.
+
+A line-authored conditional that automatically continues during line entry is
+a transient rollback source. Player-facing Back must skip it rather than
+rendering or pausing on an empty conditional line. Conditionals triggered later
+from an already-presented interaction leave that source eligible for Back. See
+[Rollback.md](./Rollback.md); player-facing rollback skips the transient source
+in the same action.
 
 ### Playback Mode Actions
 
@@ -647,21 +661,23 @@ Use these only if you are extending engine internals or writing engine-level tes
 
 The system store exposes these selectors (called internally):
 
-| Selector                        | Parameters              | Returns                                   |
-| ------------------------------- | ----------------------- | ----------------------------------------- |
-| `selectPendingEffects`          | -                       | Array of pending effects                  |
-| `selectCurrentPointer`          | -                       | `{ currentPointerMode: "read", pointer }` |
-| `selectCurrentLine`             | -                       | Current line object                       |
-| `selectSection`                 | `{ sectionId }`         | Section object                            |
-| `selectAutoMode`                | -                       | Boolean                                   |
-| `selectSkipMode`                | -                       | Boolean                                   |
-| `selectDialogueUIHidden`        | -                       | Boolean                                   |
-| `selectIsLineAccountViewed`     | `{ sectionId, lineId }` | Account-level viewed boolean              |
-| `selectIsResourceAccountViewed` | `{ resourceId }`        | Account-level viewed boolean              |
-| `selectNextLineConfig`          | -                       | Config object                             |
-| `selectSaveSlotMap`             | -                       | Save slots object map                     |
-| `selectSaveSlot`                | `{ slotId }`            | Save slot data                            |
-| `selectSaveSlotPage`            | `{ slotsPerPage? }`     | Paged save slot list for UI               |
+| Selector                        | Parameters              | Returns                                                |
+| ------------------------------- | ----------------------- | ------------------------------------------------------ |
+| `selectPendingEffects`          | -                       | Array of pending effects                               |
+| `selectCurrentPointer`          | -                       | `{ currentPointerMode: "read", pointer }`              |
+| `selectCurrentLine`             | -                       | Current line object                                    |
+| `selectSection`                 | `{ sectionId }`         | Section object                                         |
+| `selectAutoMode`                | -                       | Boolean                                                |
+| `selectSkipMode`                | -                       | Boolean                                                |
+| `selectDialogueUIHidden`        | -                       | Boolean                                                |
+| `selectIsLineAccountViewed`     | `{ sectionId, lineId }` | Account-level viewed boolean                           |
+| `selectIsResourceAccountViewed` | `{ resourceId }`        | Account-level viewed boolean                           |
+| `selectNextLineConfig`          | -                       | Config object                                          |
+| `selectLineIdByOffset`          | `{ offset? }`           | Relative line; negative offsets skip transient entries |
+| `selectCanRollback`             | -                       | Whether an earlier landing point exists                |
+| `selectSaveSlotMap`             | -                       | Save slots object map                                  |
+| `selectSaveSlot`                | `{ slotId }`            | Save slot data                                         |
+| `selectSaveSlotPage`            | `{ slotsPerPage? }`     | Paged save slot list for UI                            |
 
 ## Pending Effects
 

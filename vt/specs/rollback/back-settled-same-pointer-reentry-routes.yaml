@@ -1,0 +1,267 @@
+---
+title: Rollback Preserves Settled Same-Pointer Occurrence
+description: Re-entering a settled first line through an interaction must not let queued routing rewrite the prior occurrence's Back eligibility.
+specs:
+  - the initial first-line router cannot route and settles as visible A
+  - its real interaction changes branch state and transitions to its own section
+  - queued line-entry actions make only the second router occurrence transient
+  - one real Back click from visible C restores the original settled occurrence
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: click
+    x: 480
+    y: 430
+  - action: wait
+    ms: 180
+  - action: screenshot
+  - action: click
+    x: 480
+    y: 430
+  - action: wait
+    ms: 180
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+resources:
+  variables:
+    phase:
+      type: number
+      scope: context
+      default: 0
+  layouts:
+    storyLayout:
+      elements:
+        - id: background
+          type: rect
+          x: 0
+          y: 0
+          width: 960
+          height: 540
+          colorId: backgroundColor
+        - id: source-card
+          $when: variables.phase == 0
+          type: rect
+          x: 80
+          y: 70
+          width: 800
+          height: 230
+          colorId: panelColor
+        - id: source-heading
+          $when: variables.phase == 0
+          type: text
+          x: 480
+          y: 110
+          anchorX: 0.5
+          content: "VISIBLE A — ORIGINAL SETTLED OCCURRENCE"
+          textStyleId: headingText
+        - id: source-detail
+          $when: variables.phase == 0
+          type: text
+          x: 480
+          y: 180
+          anchorX: 0.5
+          content: "PASS after Back: the re-entry did not rewrite this checkpoint"
+          textStyleId: emphasisText
+        - id: source-phase
+          $when: variables.phase == 0
+          type: text
+          x: 480
+          y: 235
+          anchorX: 0.5
+          content: "Rollback phase: ${variables.phase} (expected 0)"
+          textStyleId: bodyText
+        - id: restored-card
+          $when: variables.phase == 1
+          type: rect
+          x: 80
+          y: 70
+          width: 800
+          height: 230
+          colorId: panelColor
+        - id: restored-heading
+          $when: variables.phase == 1
+          type: text
+          x: 480
+          y: 110
+          anchorX: 0.5
+          content: "VISIBLE A — ORIGINAL SETTLED OCCURRENCE"
+          textStyleId: headingText
+        - id: restored-detail
+          $when: variables.phase == 1
+          type: text
+          x: 480
+          y: 180
+          anchorX: 0.5
+          content: "PASS: Back restored the occurrence from before re-entry"
+          textStyleId: emphasisText
+        - id: restored-phase
+          $when: variables.phase == 1
+          type: text
+          x: 480
+          y: 235
+          anchorX: 0.5
+          content: "Restored interaction phase: ${variables.phase} (expected 1)"
+          textStyleId: bodyText
+        - id: destination-card
+          $when: variables.phase == 2
+          type: rect
+          x: 80
+          y: 70
+          width: 800
+          height: 230
+          colorId: panelColor
+        - id: destination-heading
+          $when: variables.phase == 2
+          type: text
+          x: 480
+          y: 110
+          anchorX: 0.5
+          content: "VISIBLE C — RE-ENTRY ROUTED"
+          textStyleId: headingText
+        - id: destination-detail
+          $when: variables.phase == 2
+          type: text
+          x: 480
+          y: 180
+          anchorX: 0.5
+          content: "One Back must restore the original settled router"
+          textStyleId: bodyText
+        - id: destination-phase
+          $when: variables.phase == 2
+          type: text
+          x: 480
+          y: 235
+          anchorX: 0.5
+          content: "Forward phase: ${variables.phase} (expected 2)"
+          textStyleId: bodyText
+        - id: reenter-button
+          $when: variables.phase == 0
+          type: rect
+          x: 290
+          y: 385
+          width: 380
+          height: 90
+          colorId: buttonColor
+          click:
+            payload:
+              actions:
+                updateVariable:
+                  id: enableRouter
+                  operations:
+                    - variableId: phase
+                      op: set
+                      value: 1
+                sectionTransition:
+                  sectionId: source
+        - id: reenter-label
+          $when: variables.phase == 0
+          type: text
+          x: 480
+          y: 415
+          anchorX: 0.5
+          content: "RE-ENTER THIS SECTION"
+          textStyleId: buttonText
+        - id: back-button
+          $when: variables.phase == 2
+          type: rect
+          x: 290
+          y: 385
+          width: 380
+          height: 90
+          colorId: buttonColor
+          click:
+            payload:
+              actions:
+                rollbackByOffset:
+                  offset: -1
+        - id: back-label
+          $when: variables.phase == 2
+          type: text
+          x: 480
+          y: 415
+          anchorX: 0.5
+          content: "BACK ONCE"
+          textStyleId: buttonText
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    backgroundColor:
+      hex: "#000000"
+    panelColor:
+      hex: "#4D4D4D"
+    buttonColor:
+      hex: "#737373"
+    textColor:
+      hex: "#FFFFFF"
+    mutedTextColor:
+      hex: "#D9D9D9"
+  textStyles:
+    headingText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 29
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    bodyText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 23
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    emphasisText:
+      fontId: fontDefault
+      colorId: mutedTextColor
+      fontSize: 23
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    buttonText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 22
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      name: Settled same-pointer occurrence ownership
+      initialSectionId: source
+      sections:
+        source:
+          lines:
+            - id: router
+              actions:
+                background:
+                  resourceId: storyLayout
+                conditional:
+                  branches:
+                    - when:
+                        eq:
+                          - var: variables.phase
+                          - 1
+                      actions:
+                        sectionTransition:
+                          sectionId: destination
+        destination:
+          lines:
+            - id: visibleC
+              actions:
+                updateVariable:
+                  id: enterVisibleC
+                  operations:
+                    - variableId: phase
+                      op: set
+                      value: 2
+                background:
+                  resourceId: storyLayout

@@ -180,8 +180,51 @@ describe("systemState schema", () => {
     const systemState = toJsonSnapshot(engine.selectSystemState());
 
     expect(systemState.global.saveSlots["1"].formatVersion).toBe(1);
+    expect(
+      systemState.global.saveSlots["1"].state.contexts[0].rollback
+        .returnabilityVersion,
+    ).toBe(1);
     expect(validateSystemState(systemState)).toBe(true);
     expect(validateSystemState.errors).toBeNull();
+  });
+
+  it.each([true, false])(
+    "accepts optional rollback checkpoint returnable metadata set to %s",
+    (returnable) => {
+      const engine = createRouteEngine({
+        handlePendingEffects: () => {},
+      });
+
+      engine.init({
+        initialState: {
+          projectData: createMinimalProjectData(),
+        },
+      });
+
+      const systemState = toJsonSnapshot(engine.selectSystemState());
+      systemState.contexts[0].rollback.timeline[0].returnable = returnable;
+
+      expect(validateSystemState(systemState)).toBe(true);
+      expect(validateSystemState.errors).toBeNull();
+    },
+  );
+
+  it("rejects non-boolean rollback checkpoint eligibility metadata", () => {
+    const engine = createRouteEngine({
+      handlePendingEffects: () => {},
+    });
+
+    engine.init({
+      initialState: {
+        projectData: createMinimalProjectData(),
+      },
+    });
+
+    const systemState = toJsonSnapshot(engine.selectSystemState());
+    systemState.contexts[0].rollback.timeline[0].returnable = "false";
+
+    expect(validateSystemState(systemState)).toBe(false);
+    expect(validateSystemState.errors).not.toBeNull();
   });
 
   it("accepts numeric viewed resource IDs in account viewed state", () => {

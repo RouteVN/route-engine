@@ -1,0 +1,265 @@
+---
+title: Rollback Skips Same-Pointer Reset Root
+description: A reset that replaces the current pointer's checkpoint must let a sibling route classify the new root as transient.
+specs:
+  - visible A enters a router that resets to its own section and first line
+  - a sibling section transition immediately leaves that replacement root
+  - the destructive reset removes A and the transient root is not a Back target
+  - one real Back click at visible C is a no-op instead of landing on the router
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: click
+    x: 480
+    y: 430
+  - action: wait
+    ms: 180
+  - action: screenshot
+  - action: click
+    x: 480
+    y: 430
+  - action: wait
+    ms: 180
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+resources:
+  variables:
+    stage:
+      type: number
+      scope: context
+      default: 0
+  layouts:
+    storyLayout:
+      elements:
+        - id: background
+          type: rect
+          x: 0
+          y: 0
+          width: 960
+          height: 540
+          colorId: backgroundColor
+        - id: source-card
+          $when: variables.stage == 0
+          type: rect
+          x: 80
+          y: 70
+          width: 800
+          height: 230
+          colorId: sourcePanelColor
+        - id: source-heading
+          $when: variables.stage == 0
+          type: text
+          x: 480
+          y: 110
+          anchorX: 0.5
+          content: "VISIBLE A — PRE-RESET RUN"
+          textStyleId: headingText
+        - id: source-detail
+          $when: variables.stage == 0
+          type: text
+          x: 480
+          y: 180
+          anchorX: 0.5
+          content: "Enter a same-pointer reset root followed by a sibling route"
+          textStyleId: bodyText
+        - id: fail-card
+          $when: variables.stage == 1
+          type: rect
+          x: 80
+          y: 70
+          width: 800
+          height: 230
+          colorId: failPanelColor
+        - id: fail-heading
+          $when: variables.stage == 1
+          type: text
+          x: 480
+          y: 110
+          anchorX: 0.5
+          content: "FAIL — RESET ROUTER SELECTED"
+          textStyleId: headingText
+        - id: fail-detail
+          $when: variables.stage == 1
+          type: text
+          x: 480
+          y: 180
+          anchorX: 0.5
+          content: "Back used the deleted cursor instead of the replacement root"
+          textStyleId: failText
+        - id: destination-card
+          $when: variables.stage == 2
+          type: rect
+          x: 80
+          y: 70
+          width: 800
+          height: 230
+          colorId: passPanelColor
+        - id: destination-heading
+          $when: variables.stage == 2
+          type: text
+          x: 480
+          y: 110
+          anchorX: 0.5
+          content: "VISIBLE C — NO EARLIER LANDING POINT"
+          textStyleId: headingText
+        - id: destination-detail
+          $when: variables.stage == 2
+          type: text
+          x: 480
+          y: 180
+          anchorX: 0.5
+          content: "PASS when one Back click leaves this screen unchanged"
+          textStyleId: passText
+        - id: destination-stage
+          $when: variables.stage == 2
+          type: text
+          x: 480
+          y: 235
+          anchorX: 0.5
+          content: "Current stage: ${variables.stage} (expected 2)"
+          textStyleId: bodyText
+        - id: start-button
+          $when: variables.stage == 0
+          type: rect
+          x: 290
+          y: 385
+          width: 380
+          height: 90
+          colorId: actionColor
+          click:
+            payload:
+              actions:
+                sectionTransition:
+                  sectionId: routerSection
+        - id: start-label
+          $when: variables.stage == 0
+          type: text
+          x: 480
+          y: 415
+          anchorX: 0.5
+          content: "ENTER RESET ROUTER"
+          textStyleId: buttonText
+        - id: destination-back-button
+          $when: variables.stage == 2
+          type: rect
+          x: 290
+          y: 385
+          width: 380
+          height: 90
+          colorId: actionColor
+          click:
+            payload:
+              actions:
+                rollbackByOffset:
+                  offset: -1
+        - id: destination-back-label
+          $when: variables.stage == 2
+          type: text
+          x: 480
+          y: 415
+          anchorX: 0.5
+          content: "BACK ONCE — MUST STAY HERE"
+          textStyleId: buttonText
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    backgroundColor:
+      hex: "#10151F"
+    sourcePanelColor:
+      hex: "#35435A"
+    passPanelColor:
+      hex: "#174D3A"
+    failPanelColor:
+      hex: "#6B1F2A"
+    actionColor:
+      hex: "#386FA4"
+    textColor:
+      hex: "#F4F7FB"
+    passTextColor:
+      hex: "#8FF0C3"
+    failTextColor:
+      hex: "#FFADB8"
+  textStyles:
+    headingText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 30
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    bodyText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 23
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    passText:
+      fontId: fontDefault
+      colorId: passTextColor
+      fontSize: 24
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    failText:
+      fontId: fontDefault
+      colorId: failTextColor
+      fontSize: 23
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    buttonText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 22
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      name: Same-pointer reset root
+      initialSectionId: source
+      sections:
+        source:
+          lines:
+            - id: visibleA
+              actions:
+                background:
+                  resourceId: storyLayout
+        routerSection:
+          lines:
+            - id: resetRouter
+              actions:
+                resetStoryAtSection:
+                  sectionId: routerSection
+                updateVariable:
+                  id: enterResetRouter
+                  operations:
+                    - variableId: stage
+                      op: set
+                      value: 1
+                background:
+                  resourceId: storyLayout
+                sectionTransition:
+                  sectionId: destination
+        destination:
+          lines:
+            - id: visibleC
+              actions:
+                updateVariable:
+                  id: enterVisibleC
+                  operations:
+                    - variableId: stage
+                      op: set
+                      value: 2
+                background:
+                  resourceId: storyLayout
