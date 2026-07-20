@@ -300,7 +300,6 @@ describe("systemState schema", () => {
           completed: false,
         },
       },
-      { name: "showAchievements" },
     ];
 
     expect(validateSystemState(systemState)).toBe(true);

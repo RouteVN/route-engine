@@ -164,6 +164,10 @@ properties:
                               $ref: "../systemActions.yaml#/properties/submitForm"
                             cancelForm:
                               $ref: "../systemActions.yaml#/properties/cancelForm"
+                            completeAchievement:
+                              $ref: "../systemActions.yaml#/properties/completeAchievement"
+                            setAchievementProgress:
+                              $ref: "../systemActions.yaml#/properties/setAchievementProgress"
                           additionalProperties: false
 
                       required: [id, actions]
