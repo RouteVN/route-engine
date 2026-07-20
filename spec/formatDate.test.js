@@ -6,6 +6,9 @@ const TIMESTAMP = new Date(2026, 11, 31, 12, 34, 56).getTime();
 describe("formatDate", () => {
   it("formats abbreviated English month names", () => {
     expect(formatDate(TIMESTAMP, "DD MMM YYYY")).toBe("31 Dec 2026");
+    expect(
+      formatDate(new Date(2027, 6, 20, 12).getTime(), "DD MMM YYYY"),
+    ).toBe("20 Jul 2027");
   });
 
   it("preserves literal CJK date markers", () => {
