@@ -6,15 +6,14 @@ Route Engine owns canonical achievement resources, validation, selectors,
 authored actions, and emitted effects. It does not own any store or platform
 integration.
 
-The resource schema, selectors, actions, effects, and cross-resource image
-validation described here are implemented in the runtime.
+The resource schema, selectors, actions, and effects described here are
+implemented in the runtime.
 
 ## Boundary
 
 Route Engine owns:
 
 - achievement definitions under `resources.achievements`
-- references from achievements to `resources.images`
 - project-data validation
 - public selectors for reading achievement definitions
 - authored actions for completion, absolute progress, and showing achievements
@@ -44,42 +43,20 @@ it as an `id` field inside the resource.
 ```json
 {
   "resources": {
-    "images": {
-      "chapterOneAchievement": {
-        "fileId": "achievements/chapter-one.png",
-        "width": 1024,
-        "height": 1024
-      },
-      "chapterOneAchievementLocked": {
-        "fileId": "achievements/chapter-one-locked.png",
-        "width": 1024,
-        "height": 1024
-      },
-      "allEndingsAchievement": {
-        "fileId": "achievements/all-endings.png",
-        "width": 1024,
-        "height": 1024
-      }
-    },
     "achievements": {
       "chapterOneComplete": {
         "type": "boolean",
         "name": "A New Beginning",
         "description": "Complete Chapter One.",
         "lockedDescription": "Continue the story to discover this achievement.",
-        "iconImageId": "chapterOneAchievement",
-        "lockedIconImageId": "chapterOneAchievementLocked",
-        "hidden": false,
-        "sortOrder": 10
+        "hidden": false
       },
       "discoverAllEndings": {
         "type": "number",
         "target": 5,
         "name": "Every Road Travelled",
         "description": "Discover every ending.",
-        "iconImageId": "allEndingsAchievement",
-        "hidden": false,
-        "sortOrder": 20
+        "hidden": true
       }
     }
   }
@@ -92,17 +69,27 @@ it as an `id` field inside the resource.
 | ------------------- | ----------------- | ----------------------------------------------------------------------------------------- |
 | `type`              | yes               | `boolean` for direct completion or `number` for numeric progress.                         |
 | `target`            | for `number` only | Positive integer at which a `number` achievement completes.                               |
-| `name`              | yes               | Source-language public/unlocked display name.                                             |
-| `description`       | yes               | Source-language public/unlocked description.                                              |
-| `lockedName`        | no                | Presentation override while locked. Falls back to `name`.                                 |
-| `lockedDescription` | no                | Presentation override while locked. Falls back to `description`.                          |
-| `iconImageId`       | yes               | Unlocked icon reference into `resources.images`.                                          |
-| `lockedIconImageId` | no                | Locked icon reference into `resources.images`. Consumers decide the fallback when absent. |
-| `hidden`            | no                | Whether consumers should conceal the achievement before completion. Defaults to `false`.  |
-| `sortOrder`         | no                | Non-negative authoring/display order.                                                     |
+| `name`              | yes               | Source-language public/completed display name.                                            |
+| `description`       | yes               | Source-language public/completed description.                                             |
+| `lockedName`        | no                | Presentation override while incomplete. Falls back to `name`.                             |
+| `lockedDescription` | no                | Presentation override while incomplete. Falls back to `description`.                      |
+| `hidden`            | no                | Marks a secret achievement that should be concealed before completion. Defaults to false. |
 
 The resource contains only portable authored data. External IDs, rewards,
 scores, trophy tiers, and integration options do not belong in this object.
+
+`hidden: true` means the achievement is secret. Before completion, consumers
+should conceal its existence, name, description, and any incomplete
+presentation. Completion makes the normal `name` and `description` eligible to
+display. Route Engine emits the completion event but does not store the
+revealed state.
+
+Images are deliberately not referenced by achievement resources. Store
+publishing integrations own platform achievement images, while custom in-game
+achievement UI can own its images through normal UI resources.
+
+Ordering is also deliberately omitted. Route Engine does not render an
+achievement list, and external platforms or host UIs own their display order.
 
 ## Achievement Types
 
@@ -183,24 +170,12 @@ the resource is implemented.
           "type": "string",
           "minLength": 1
         },
-        "iconImageId": {
-          "type": "string",
-          "minLength": 1
-        },
-        "lockedIconImageId": {
-          "type": "string",
-          "minLength": 1
-        },
         "hidden": {
           "type": "boolean",
           "default": false
-        },
-        "sortOrder": {
-          "type": "integer",
-          "minimum": 0
         }
       },
-      "required": ["type", "name", "description", "iconImageId"],
+      "required": ["type", "name", "description"],
       "allOf": [
         {
           "if": {
@@ -235,12 +210,6 @@ the resource is implemented.
 }
 ```
 
-Schema validation cannot verify that icon IDs exist in `resources.images`.
-Project validation must perform that cross-resource check separately.
-
-Route Engine does not impose platform image dimensions or file formats. Those
-checks belong to whatever consumes or exports the resources.
-
 ## Localization
 
 Achievement source-language text lives directly on the resource. Do not add a
@@ -254,9 +223,7 @@ resource ID and override only the translated fields:
 - `lockedName`
 - `lockedDescription`
 
-Image localization is not part of this contract. Prefer achievement icons
-without text. See [L10n.md](./L10n.md) for the project-wide localization
-direction.
+See [L10n.md](./L10n.md) for the project-wide localization direction.
 
 ## Public Selectors
 
@@ -493,9 +460,7 @@ remain separate from external achievement completion state.
 ## Validation Checklist
 
 - Achievement resource IDs are unique and stable.
-- `name`, `description`, and `iconImageId` are present.
-- `iconImageId` resolves through `resources.images`.
-- `lockedIconImageId`, when present, resolves through `resources.images`.
+- `name` and `description` are present.
 - Every achievement has an explicit `boolean` or `number` type.
 - Boolean achievements do not have a `target`.
 - Number achievement targets are positive integers.
@@ -511,7 +476,6 @@ remain separate from external achievement completion state.
 The runtime includes:
 
 - achievement resource and authored-action schemas
-- cross-resource image validation during initialization and `updateProjectData`
 - cloned public resource selectors
 - validated store actions that enqueue ordered external effects
 - pending-effect schemas without name-only coalescing

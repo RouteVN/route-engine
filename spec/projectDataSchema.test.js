@@ -1762,26 +1762,17 @@ describe("projectData schema", () => {
       validateProjectData(
         createMinimalProjectData({
           resources: {
-            images: {
-              completedIcon: {
-                fileId: "completed.png",
-                width: 512,
-                height: 512,
-              },
-            },
             achievements: {
               completeChapter: {
                 type: "boolean",
                 name: "Chapter Complete",
                 description: "Complete the chapter.",
-                iconImageId: "completedIcon",
               },
               findEndings: {
                 type: "number",
                 target: 5,
                 name: "Every Ending",
                 description: "Find every ending.",
-                iconImageId: "completedIcon",
               },
             },
           },
@@ -1799,7 +1790,6 @@ describe("projectData schema", () => {
             type: "number",
             name: "Every Ending",
             description: "Find every ending.",
-            iconImageId: "completedIcon",
           },
         },
       },
@@ -1812,7 +1802,6 @@ describe("projectData schema", () => {
             target: 1,
             name: "Chapter Complete",
             description: "Complete the chapter.",
-            iconImageId: "completedIcon",
           },
         },
       },

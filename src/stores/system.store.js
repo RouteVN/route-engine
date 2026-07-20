@@ -78,31 +78,6 @@ const cloneStateValue = (value) => {
 const isRecord = (value) =>
   value !== null && typeof value === "object" && !Array.isArray(value);
 
-const assertAchievementImageReferences = (projectData) => {
-  const resources = projectData?.resources ?? {};
-  const images = resources.images ?? {};
-  const achievements = resources.achievements ?? {};
-
-  Object.entries(achievements).forEach(([resourceId, achievement]) => {
-    ["iconImageId", "lockedIconImageId"].forEach((field) => {
-      const imageId = achievement?.[field];
-      if (field === "lockedIconImageId" && imageId === undefined) {
-        return;
-      }
-
-      if (
-        typeof imageId !== "string" ||
-        imageId.length === 0 ||
-        !Object.prototype.hasOwnProperty.call(images, imageId)
-      ) {
-        throw new Error(
-          `Achievement "${resourceId}" has invalid ${field} reference "${imageId}"`,
-        );
-      }
-    });
-  });
-};
-
 const getAchievementForAction = (state, resourceId) => {
   if (typeof resourceId !== "string" || resourceId.length === 0) {
     throw new Error("Achievement action requires a non-empty resourceId");
@@ -1513,7 +1488,6 @@ export const createInitialState = (payload) => {
   } = global;
 
   assertUniqueSectionIds(projectData);
-  assertAchievementImageReferences(projectData);
 
   const initialSceneId = projectData.story.initialSceneId;
   const initialScene = projectData.story.scenes[initialSceneId];
@@ -3130,7 +3104,6 @@ export const updateProjectData = ({ state }, payload) => {
   const { projectData } = payload;
 
   assertUniqueSectionIds(projectData);
-  assertAchievementImageReferences(projectData);
 
   state.projectData = projectData;
   const variableConfigs = projectData?.resources?.variables ?? {};

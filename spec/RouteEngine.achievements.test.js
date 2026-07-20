@@ -7,31 +7,17 @@ const createProjectData = () => ({
     height: 1080,
   },
   resources: {
-    images: {
-      chapterIcon: {
-        fileId: "achievements/chapter.png",
-        width: 512,
-        height: 512,
-      },
-      endingsIcon: {
-        fileId: "achievements/endings.png",
-        width: 512,
-        height: 512,
-      },
-    },
     achievements: {
       chapterComplete: {
         type: "boolean",
         name: "A New Beginning",
         description: "Complete the first chapter.",
-        iconImageId: "chapterIcon",
       },
       discoverAllEndings: {
         type: "number",
         target: 5,
         name: "Every Road Travelled",
         description: "Discover every ending.",
-        iconImageId: "endingsIcon",
       },
     },
     variables: {
@@ -92,7 +78,6 @@ describe("RouteEngine achievements", () => {
         type: "boolean",
         name: "A New Beginning",
         description: "Complete the first chapter.",
-        iconImageId: "chapterIcon",
       },
     );
     expect(engine.selectAchievement({ resourceId: "missing" })).toBeUndefined();
@@ -200,21 +185,5 @@ describe("RouteEngine achievements", () => {
       'Achievement progress for "discoverAllEndings" must be a non-negative integer',
     );
     expect(effects).toEqual([]);
-  });
-
-  it("validates achievement image references during initialization", () => {
-    const projectData = createProjectData();
-    projectData.resources.achievements.chapterComplete.iconImageId = "missing";
-    const engine = createRouteEngine({
-      handlePendingEffects: () => {},
-    });
-
-    expect(() =>
-      engine.init({
-        initialState: { projectData },
-      }),
-    ).toThrow(
-      'Achievement "chapterComplete" has invalid iconImageId reference "missing"',
-    );
   });
 });

@@ -469,23 +469,11 @@ properties:
             type: string
             minLength: 1
             description: Optional description while incomplete
-          iconImageId:
-            type: string
-            minLength: 1
-            description: Completed icon reference into resources.images
-          lockedIconImageId:
-            type: string
-            minLength: 1
-            description: Optional incomplete icon reference into resources.images
           hidden:
             type: boolean
             default: false
-            description: Whether consumers should conceal the achievement before completion
-          sortOrder:
-            type: integer
-            minimum: 0
-            description: Optional authoring and display order
-        required: [type, name, description, iconImageId]
+            description: Whether consumers should conceal this secret achievement before completion
+        required: [type, name, description]
         allOf:
           - if:
               properties:
