@@ -180,7 +180,7 @@ out:
             lineId: "2"
             rollbackPolicy: "free"
 ---
-case: move to next line keeps fromStart scene auto running
+case: move to next line defers fromStart scene auto until entered-line actions settle
 in:
   - state:
       global:
@@ -225,10 +225,8 @@ out:
         delay: 900
       applyMode: "persistent"
     pendingEffects:
+      - name: "clearNextLineConfigTimer"
       - name: "handleLineActions"
-      - name: "nextLineConfigTimer"
-        payload:
-          delay: 900
   projectData:
     story:
       scenes:

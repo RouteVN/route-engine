@@ -1,13 +1,12 @@
 ---
-title: Choice Conditional Fallthrough Resumes Active Skip
-description: An unmatched conditional choice action should implicitly continue, keep skip mode enabled, and restart skip advancement after the choice.
+title: Conditional Choice Enters Unseen Destination Before Stopping Skip
+description: An authorized unmatched choice conditional enters the unseen destination once and stops skip there.
 specs:
-  - the control enables skip before entering the choice line
-  - entering the choice line keeps skip mode on but blocks story advancement
-  - repeated waits on the choice line do not advance the story
-  - the choice evaluates a false conditional with no default branch
-  - conditional fallthrough restarts skip advancement after the choice
-  - resumed skip reaches the final line and stops at the section end
+  - skip is enabled before the blocking choice is entered
+  - the choice switches skip-unseen behavior off before its conditional runs
+  - the unmatched conditional has no default branch
+  - one click enters the unseen destination and turns skip off there
+  - waiting does not advance to the sentinel or repeat the click mutation
 skipInitialScreenshot: true
 viewport:
   id: capture
@@ -20,22 +19,16 @@ steps:
     x: 150
     y: 74
   - action: wait
-    ms: 10
-  - action: screenshot
-  - action: wait
-    ms: 120
-  - action: screenshot
-  - action: wait
-    ms: 220
+    ms: 150
   - action: screenshot
   - action: click
     x: 790
     y: 220
   - action: wait
-    ms: 220
+    ms: 100
   - action: screenshot
   - action: wait
-    ms: 220
+    ms: 300
   - action: screenshot
 ---
 screen:
@@ -67,7 +60,7 @@ resources:
               actions:
                 toggleSkipMode: {}
                 jumpToLine:
-                  lineId: line2
+                  lineId: choiceLine
           colorId: choiceColor
         - id: skip-label
           type: text
@@ -132,17 +125,24 @@ resources:
           click:
             payload:
               actions:
+                updateVariable:
+                  id: countChoiceClick
+                  operations:
+                    - variableId: clickCount
+                      op: increment
+                      value: 1
+                setSkipUnseenText:
+                  value: false
                 conditional:
                   branches:
                     - when: false
-                      actions:
-                        nextLine: {}
+                      actions: {}
           colorId: choiceColor
         - id: choice-button-text
           type: text
           x: 720
           y: 208
-          content: ${choice.items[0].content}
+          content: Enter unseen destination
           textStyleId: statusText
   fonts:
     fontDefault:
@@ -171,15 +171,20 @@ resources:
       fontWeight: "400"
       fontStyle: normal
       lineHeight: 1.25
+  variables:
+    clickCount:
+      type: number
+      scope: context
+      default: 0
 story:
-  initialSceneId: choiceGuards
+  initialSceneId: unseenSkipChoice
   scenes:
-    choiceGuards:
+    unseenSkipChoice:
       initialSectionId: main
       sections:
         main:
           lines:
-            - id: line1
+            - id: source
               actions:
                 setSkipUnseenText:
                   value: true
@@ -190,25 +195,25 @@ story:
                   ui:
                     resourceId: dialogueLayout
                   content:
-                    - text: "Line 1: turn on skip here, then the next choice line should pause it."
-            - id: line2
+                    - text: "Enable skip to enter the blocking choice."
+            - id: choiceLine
               actions:
                 dialogue:
                   content:
-                    - text: "Line 2: the choice is visible and skip must remain on without advancing."
+                    - text: "Skip is on and paused at this choice."
                 choice:
                   resourceId: choiceLayout
                   items:
                     - id: continue
-                      content: Continue from choice
-            - id: line3
+                      content: Continue
+            - id: destination
               actions:
                 choice: {}
                 dialogue:
                   content:
-                    - text: "Line 3: reached from the choice with skip still enabled."
-            - id: line4
+                    - text: "Destination reached in ${variables.clickCount} click."
+            - id: sentinel
               actions:
                 dialogue:
                   content:
-                    - text: "Line 4: skip resumed after the choice click."
+                    - text: "SENTINEL: skip advanced too far."

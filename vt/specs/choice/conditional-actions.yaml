@@ -5,6 +5,7 @@ specs:
   - the initial line shows a choice button
   - clicking the choice evaluates conditional branches from the choice action payload
   - the first matching branch updates state and jumps to the trusted route
+  - implicit conditional continuation does not advance beyond the explicit jump
   - false and fallback branches are not executed
 skipInitialScreenshot: true
 viewport:

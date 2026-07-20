@@ -1,0 +1,195 @@
+---
+title: Conditional Explicit Route Replaces Source Timer
+description: A conditional starts a short source scene timer and explicitly jumps; the destination replaces it with a longer timer after its line actions settle.
+specs:
+  - the matched branch starts a 200 ms persistent scene timer and jumps explicitly
+  - the explicit jump suppresses implicit conditional continuation
+  - the source timer is cleared when the destination is entered
+  - destination line actions replace the enabled timer with a 2000 ms delay
+  - the first capture occurs before the source delay expires
+  - waiting beyond the source delay does not advance to the sentinel
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 1280
+  height: 720
+steps:
+  - action: wait
+    ms: 250
+  - action: click
+    x: 250
+    y: 190
+  - action: wait
+    ms: 100
+  - action: screenshot
+  - action: wait
+    ms: 250
+  - action: screenshot
+---
+screen:
+  width: 1280
+  height: 720
+resources:
+  controls:
+    sourceControl:
+      elements:
+        - id: source-background
+          type: rect
+          x: 0
+          y: 0
+          width: 1280
+          height: 720
+          colorId: backgroundColor
+        - id: route-button
+          type: rect
+          x: 120
+          y: 140
+          width: 360
+          height: 100
+          colorId: actionColor
+          click:
+            payload:
+              actions:
+                conditional:
+                  branches:
+                    - when: true
+                      actions:
+                        setNextLineConfig:
+                          manual:
+                            enabled: true
+                            requireLineCompleted: true
+                          auto:
+                            enabled: true
+                            trigger: fromStart
+                            delay: 200
+                          applyMode: persistent
+                        jumpToLine:
+                          lineId: destination
+        - id: route-label
+          type: text
+          x: 165
+          y: 172
+          content: Route with timer
+          textStyleId: statusText
+    destinationControl:
+      elements:
+        - id: destination-background
+          type: rect
+          x: 0
+          y: 0
+          width: 1280
+          height: 720
+          colorId: backgroundColor
+        - id: destination-label
+          type: text
+          x: 80
+          y: 90
+          content: "DESTINATION: source timer cleared"
+          textStyleId: statusText
+    sentinelControl:
+      elements:
+        - id: sentinel-background
+          type: rect
+          x: 0
+          y: 0
+          width: 1280
+          height: 720
+          colorId: backgroundColor
+        - id: sentinel-label
+          type: text
+          x: 80
+          y: 90
+          content: "SENTINEL: stale timer advanced"
+          textStyleId: errorText
+  layouts:
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 40
+          y: 520
+          width: 1200
+          height: 150
+          colorId: dialogueColor
+        - id: dialogue-text
+          type: text
+          x: 72
+          y: 566
+          width: 1140
+          content: ${dialogue.content[0].text}
+          textStyleId: dialogueText
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    textColor:
+      hex: "#F4F1E8"
+    errorColor:
+      hex: "#FF6B6B"
+    actionColor:
+      hex: "#386FA4"
+    backgroundColor:
+      hex: "#171717"
+    dialogueColor:
+      hex: "#2A2A2A"
+  textStyles:
+    statusText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 32
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    errorText:
+      fontId: fontDefault
+      colorId: errorColor
+      fontSize: 32
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    dialogueText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 30
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.25
+story:
+  initialSceneId: timerOwnership
+  scenes:
+    timerOwnership:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: source
+              actions:
+                control:
+                  resourceId: sourceControl
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Click after this line completes."
+            - id: destination
+              actions:
+                setNextLineConfig:
+                  manual:
+                    enabled: true
+                    requireLineCompleted: true
+                  auto:
+                    enabled: true
+                    trigger: fromStart
+                    delay: 2000
+                  applyMode: persistent
+                control:
+                  resourceId: destinationControl
+                dialogue:
+                  content:
+                    - text: "The destination must remain after the timer delay."
+            - id: sentinel
+              actions:
+                control:
+                  resourceId: sentinelControl

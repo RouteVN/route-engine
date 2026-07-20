@@ -547,15 +547,19 @@ events:
               actions:
                 jumpToLine:
                   lineId: adminRoute
-            - actions:
-                nextLine: {}
 ```
 
-When `nextLine` is selected inside a conditional branch and a following line
-exists, it acts as immediate story control flow: the engine enters that line
-without first stopping to complete the current line. A standalone `nextLine`
-keeps the normal reveal-first behavior. The selected branch and its enclosing
-action batch finish before the entered line's actions are evaluated.
+The conditional runs the first matching branch, or its default branch when one
+is authored. If nothing matches and there is no default, it runs no branch
+actions. In every case, the engine automatically continues once after the
+entire action batch finishes. Invoking `sectionTransition` or
+`resetStoryAtSection` suppresses that continuation. Any other action that
+changes the current pointer, such as `jumpToLine` or an advancing `nextLine`,
+also suppresses it so the batch cannot skip a second line. Nested conditionals
+coalesce into the same single batch continuation. This is an immediate
+control-flow advance: hidden dialogue does not consume it and remains hidden.
+When skip mode cannot pass unseen content, the engine enters that destination
+and stops skip there. Active choice and form authorization still applies.
 
 ### Playback Mode Actions
 
@@ -633,7 +637,7 @@ These actions exist inside the store/runtime but are not part of the stable auth
 | Action                | Payload                | Description                         |
 | --------------------- | ---------------------- | ----------------------------------- |
 | `markLineCompleted`   | -                      | Internal render-complete transition |
-| `nextLineFromSystem`  | -                      | Internal timer-driven advance       |
+| `nextLineFromSystem`  | internal options       | Internal engine-driven advance      |
 | `appendPendingEffect` | `{ name, ...options }` | Queue a side effect                 |
 | `clearPendingEffects` | -                      | Clear the effect queue              |
 

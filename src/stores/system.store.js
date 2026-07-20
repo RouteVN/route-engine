@@ -2255,14 +2255,17 @@ export const clearOverlays = ({ state }) => {
   return state;
 };
 
-const pausePlaybackTimersForEnteredBlockingLine = (state) => {
+const queuePlaybackTimerCleanupForEnteredLine = (
+  state,
+  { activeInteraction },
+) => {
   if (state.global.autoMode) {
     state.global.pendingEffects.push({
       name: "clearAutoNextTimer",
     });
   }
 
-  if (state.global.skipMode) {
+  if (activeInteraction && state.global.skipMode) {
     state.global.pendingEffects.push({
       name: "clearSkipNextTimer",
     });
@@ -2285,9 +2288,7 @@ const queueEnteredLineEffects = (state, pointer, { screenTransition } = {}) => {
   const isChoiceVisible =
     activeInteraction?.source === CHOICE_INTERACTION_SOURCE;
   const isFormVisible = activeInteraction?.source === FORM_INTERACTION_SOURCE;
-  if (activeInteraction) {
-    pausePlaybackTimersForEnteredBlockingLine(state);
-  }
+  queuePlaybackTimerCleanupForEnteredLine(state, { activeInteraction });
 
   state.global.pendingEffects.push({
     name: "handleLineActions",
@@ -2300,16 +2301,15 @@ const queueEnteredLineEffects = (state, pointer, { screenTransition } = {}) => {
   };
 };
 
-const resumeSkipTimerAfterChoiceInteraction = (
+const resumeSkipTimerAfterBlockingInteraction = (
   state,
   previousInteraction,
   nextInteraction,
 ) => {
-  if (
-    previousInteraction?.source !== CHOICE_INTERACTION_SOURCE ||
-    nextInteraction ||
-    !state.global.skipMode
-  ) {
+  const leftBlockingInteraction =
+    previousInteraction?.source === CHOICE_INTERACTION_SOURCE ||
+    previousInteraction?.source === FORM_INTERACTION_SOURCE;
+  if (!leftBlockingInteraction || nextInteraction || !state.global.skipMode) {
     return;
   }
 
@@ -2650,22 +2650,11 @@ const transitionToSection = (
       screenTransition: screen,
     },
   );
-  resumeSkipTimerAfterChoiceInteraction(
+  resumeSkipTimerAfterBlockingInteraction(
     state,
     previousInteraction,
     activeInteraction,
   );
-  if (
-    !resetStoryState &&
-    state.global.autoMode &&
-    !previousInteraction &&
-    !activeInteraction
-  ) {
-    state.global.pendingEffects.push({
-      name: "clearAutoNextTimer",
-    });
-  }
-
   return state;
 };
 
@@ -3127,7 +3116,7 @@ export const jumpToLine = ({ state }, payload) => {
   };
 
   const { activeInteraction } = queueEnteredLineEffects(state, pointers.read);
-  resumeSkipTimerAfterChoiceInteraction(
+  resumeSkipTimerAfterBlockingInteraction(
     state,
     previousInteraction,
     activeInteraction,
@@ -3162,22 +3151,12 @@ export const nextLine = ({ state }, payload) => {
     return state;
   }
 
-  const pointer = selectCurrentPointer({ state })?.pointer;
-  const sectionId = pointer?.sectionId;
-  const section = selectSection({ state }, { sectionId });
-  const lines = section?.lines || [];
-  const currentLineIndex = lines.findIndex(
-    (line) => line.id === pointer?.lineId,
-  );
-  const nextLineIndex = currentLineIndex + 1;
-  const canAdvanceImmediately =
-    payload?._advanceImmediately === true && nextLineIndex < lines.length;
-
-  // Ordinary progression completes an unfinished line first. A conditional
-  // Continue is authored as control flow, so it advances in the same pass.
-  if (!state.global.isLineCompleted && !canAdvanceImmediately) {
+  // If line is not completed, complete it instantly instead of advancing
+  if (!state.global.isLineCompleted) {
     state.global.isLineCompleted = true;
     delete state.global.pendingScreenTransition;
+    const pointer = selectCurrentPointer({ state })?.pointer;
+    const sectionId = pointer?.sectionId;
     const lineId = pointer?.lineId;
     if (sectionId && lineId) {
       recordViewedLine(state, { sectionId, lineId });
@@ -3212,7 +3191,16 @@ export const nextLine = ({ state }, payload) => {
     return state;
   }
 
+  const pointer = selectCurrentPointer({ state })?.pointer;
+  const sectionId = pointer?.sectionId;
+  const section = selectSection({ state }, { sectionId });
   const lastContext = state.contexts[state.contexts.length - 1];
+
+  const lines = section?.lines || [];
+  const currentLineIndex = lines.findIndex(
+    (line) => line.id === pointer?.lineId,
+  );
+  const nextLineIndex = currentLineIndex + 1;
 
   if (nextLineIndex < lines.length) {
     const nextLine = lines[nextLineIndex];
@@ -3268,23 +3256,11 @@ export const nextLine = ({ state }, payload) => {
         lineId: nextLine.id,
       },
     );
-    resumeSkipTimerAfterChoiceInteraction(
+    resumeSkipTimerAfterBlockingInteraction(
       state,
       activeInteraction,
       nextInteraction,
     );
-
-    // Keep scene auto mode running after manual advances (e.g. choice click -> nextLine).
-    const nextLineConfig = state.global.nextLineConfig;
-    if (nextLineConfig?.auto?.enabled && !nextInteraction) {
-      const trigger = nextLineConfig.auto.trigger;
-      if (trigger === "fromStart") {
-        state.global.pendingEffects.push({
-          name: "nextLineConfigTimer",
-          payload: { delay: nextLineConfig.auto.delay },
-        });
-      }
-    }
   } else {
     // Reached the end of section, stop auto/skip modes
     if (state.global.autoMode) {
@@ -3363,14 +3339,34 @@ export const sectionTransition = ({ state }, payload) => {
   });
 };
 
-export const nextLineFromSystem = ({ state }) => {
-  if (state.global.dialogueUIHidden) {
+export const nextLineFromSystem = ({ state }, payload) => {
+  const isConditionalContinuation = payload?._conditionalContinuation === true;
+
+  if (state.global.dialogueUIHidden && !isConditionalContinuation) {
     showDialogueUI({ state });
     return state;
   }
 
-  // Auto/skip/scene timers should pause when a blocking interaction is visible.
-  if (selectActiveInteraction({ state })) {
+  // Automatic progression pauses for blocking interactions. An authored
+  // interaction action may carry the same authorization used by nextLine.
+  const activeInteraction = selectActiveInteraction({ state });
+  if (
+    activeInteraction?.source === CHOICE_INTERACTION_SOURCE &&
+    payload?.bypassChoice !== true
+  ) {
+    return state;
+  }
+  if (
+    activeInteraction?.source === FORM_INTERACTION_SOURCE &&
+    payload?._interactionSource !== FORM_INTERACTION_SOURCE
+  ) {
+    return state;
+  }
+  if (
+    activeInteraction &&
+    activeInteraction.source !== CHOICE_INTERACTION_SOURCE &&
+    activeInteraction.source !== FORM_INTERACTION_SOURCE
+  ) {
     return state;
   }
 
@@ -3405,7 +3401,9 @@ export const nextLineFromSystem = ({ state }) => {
       if (!isNextLineViewed) {
         // Stop skip mode when encountering an unviewed line
         stopSkipMode({ state });
-        return state;
+        if (!isConditionalContinuation) {
+          return state;
+        }
       }
     }
 
@@ -3431,23 +3429,25 @@ export const nextLineFromSystem = ({ state }) => {
       lineId: nextLine.id,
     });
     resetNextLineConfigIfSingleLine(state);
-    const { activeInteraction } = queueEnteredLineEffects(state, {
-      sectionId,
-      lineId: nextLine.id,
-    });
-
-    // Only start timer immediately if trigger is "fromStart"
-    // For "fromComplete" trigger, markLineCompleted will start it when renderComplete fires
-    if (state.global.nextLineConfig.auto?.enabled && !activeInteraction) {
-      const trigger = state.global.nextLineConfig.auto.trigger;
-      if (trigger === "fromStart") {
-        state.global.pendingEffects.push({
-          name: "nextLineConfigTimer",
-          payload: { delay: state.global.nextLineConfig.auto.delay },
-        });
-      }
-    }
+    const { activeInteraction: nextInteraction } = queueEnteredLineEffects(
+      state,
+      {
+        sectionId,
+        lineId: nextLine.id,
+      },
+    );
+    resumeSkipTimerAfterBlockingInteraction(
+      state,
+      activeInteraction,
+      nextInteraction,
+    );
   } else {
+    if (state.global.autoMode) {
+      stopAutoMode({ state });
+    }
+    if (state.global.skipMode) {
+      stopSkipMode({ state });
+    }
     if (state.global.nextLineConfig.auto?.enabled) {
       state.global.nextLineConfig.auto.enabled = false;
       state.global.pendingEffects.push({
