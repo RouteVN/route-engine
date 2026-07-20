@@ -11,6 +11,21 @@ export const evaluateRouteCondition = (condition, context = {}) => {
   return evaluateCondition(condition, context);
 };
 
+const MONTH_ABBREVIATIONS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
 /**
  * Creates a store with selectors and actions from a single object definition.
  *
@@ -1292,6 +1307,7 @@ export const filterVariablesByScope = (
  * Supported tokens:
  * - DD: Day (01-31)
  * - MM: Month (01-12)
+ * - MMM: Abbreviated English month name (Jan-Dec)
  * - YYYY: Full year (2026)
  * - YY: Short year (26)
  * - HH: Hours (00-23)
@@ -1299,22 +1315,31 @@ export const filterVariablesByScope = (
  * - ss: Seconds (00-59)
  *
  * @example
- * formatDate(1736275000000) // "07/01/2026 - 19:56"
- * formatDate(1736275000000, "YYYY-MM-DD") // "2026-01-07"
- * formatDate(1736275000000, "MM/DD/YY HH:mm:ss") // "01/07/26 19:56:40"
+ * const timestamp = new Date(2026, 0, 7, 19, 56, 40).getTime();
+ * formatDate(timestamp) // "07/01/2026 - 19:56"
+ * formatDate(timestamp, "DD MMM YYYY") // "07 Jan 2026"
+ * formatDate(timestamp, "MM/DD/YY HH:mm:ss") // "01/07/26 19:56:40"
  */
 export const formatDate = (timestamp, format = "DD/MM/YYYY - HH:mm") => {
   if (!timestamp) return "";
   const date = new Date(timestamp);
   const pad = (n) => String(n).padStart(2, "0");
-  return format
-    .replace("DD", pad(date.getDate()))
-    .replace("MM", pad(date.getMonth() + 1))
-    .replace("YYYY", date.getFullYear())
-    .replace("YY", String(date.getFullYear()).slice(-2))
-    .replace("HH", pad(date.getHours()))
-    .replace("mm", pad(date.getMinutes()))
-    .replace("ss", pad(date.getSeconds()));
+  const year = String(date.getFullYear());
+  const tokenValues = {
+    DD: pad(date.getDate()),
+    MM: pad(date.getMonth() + 1),
+    MMM: MONTH_ABBREVIATIONS[date.getMonth()],
+    YYYY: year,
+    YY: year.slice(-2),
+    HH: pad(date.getHours()),
+    mm: pad(date.getMinutes()),
+    ss: pad(date.getSeconds()),
+  };
+
+  return format.replace(
+    /YYYY|MMM|YY|MM|DD|HH|mm|ss/g,
+    (token) => tokenValues[token],
+  );
 };
 
 /**
