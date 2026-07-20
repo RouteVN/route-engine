@@ -1,0 +1,157 @@
+---
+title: Conditional Continuation With Hidden Dialogue
+description: A matched conditional hides the dialogue UI and still enters exactly the next line.
+specs:
+  - the matched branch hides the dialogue UI
+  - hidden dialogue does not consume the implicit conditional continuation
+  - the destination control is visible while its dialogue remains hidden
+  - the engine stops on the destination rather than advancing to the sentinel
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 1280
+  height: 720
+steps:
+  - action: wait
+    ms: 250
+  - action: screenshot
+---
+screen:
+  width: 1280
+  height: 720
+resources:
+  controls:
+    sourceStatus:
+      elements:
+        - id: source-background
+          type: rect
+          x: 0
+          y: 0
+          width: 1280
+          height: 720
+          colorId: backgroundColor
+        - id: source-label
+          type: text
+          x: 80
+          y: 90
+          content: "SOURCE: continuation was consumed"
+          textStyleId: statusText
+    destinationStatus:
+      elements:
+        - id: destination-background
+          type: rect
+          x: 0
+          y: 0
+          width: 1280
+          height: 720
+          colorId: backgroundColor
+        - id: destination-label
+          type: text
+          x: 80
+          y: 90
+          content: "DESTINATION: dialogue remains hidden"
+          textStyleId: statusText
+    sentinelStatus:
+      elements:
+        - id: sentinel-background
+          type: rect
+          x: 0
+          y: 0
+          width: 1280
+          height: 720
+          colorId: backgroundColor
+        - id: sentinel-label
+          type: text
+          x: 80
+          y: 90
+          content: "SENTINEL: advanced too far"
+          textStyleId: errorText
+  layouts:
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: dialogue-box
+          type: rect
+          x: 40
+          y: 520
+          width: 1200
+          height: 150
+          colorId: dialogueColor
+        - id: dialogue-text
+          type: text
+          x: 72
+          y: 566
+          width: 1140
+          content: ${dialogue.content[0].text}
+          textStyleId: dialogueText
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    textColor:
+      hex: "#F4F1E8"
+    errorColor:
+      hex: "#FF6B6B"
+    backgroundColor:
+      hex: "#171717"
+    dialogueColor:
+      hex: "#2A2A2A"
+  textStyles:
+    statusText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 34
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    errorText:
+      fontId: fontDefault
+      colorId: errorColor
+      fontSize: 34
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    dialogueText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 30
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.25
+story:
+  initialSceneId: conditionalHiddenDialogue
+  scenes:
+    conditionalHiddenDialogue:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: source
+              actions:
+                control:
+                  resourceId: sourceStatus
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "This source dialogue must never be rendered."
+                conditional:
+                  branches:
+                    - when: true
+                      actions:
+                        hideDialogueUI: {}
+            - id: destination
+              actions:
+                control:
+                  resourceId: destinationStatus
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "This text stays hidden while the destination control renders."
+            - id: sentinel
+              actions:
+                control:
+                  resourceId: sentinelStatus

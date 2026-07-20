@@ -110,7 +110,7 @@ out:
             lineId: "2"
             rollbackPolicy: "free"
 ---
-case: advance to next line when auto is enabled with fromStart trigger (re-queues timer)
+case: advance defers fromStart auto until entered-line actions settle
 in:
   - state:
       global:
@@ -146,10 +146,8 @@ out:
         trigger: "fromStart"
         delay: 1500
     pendingEffects:
+      - name: "clearNextLineConfigTimer"
       - name: "handleLineActions"
-      - name: "nextLineConfigTimer"
-        payload:
-          delay: 1500
   projectData:
     story:
       scenes:
@@ -240,6 +238,130 @@ out:
                     choice:
                       resourceId: "choice-ui"
                       items: []
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "2"
+      rollback:
+        currentIndex: 1
+        isRestoring: false
+        replayStartIndex: 1
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "2"
+            rollbackPolicy: "free"
+---
+case: conditional continuation advances while preserving hidden dialogue UI
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        dialogueUIHidden: true
+        nextLineConfig:
+          auto: { enabled: false }
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                    - id: "2"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+  - _conditionalContinuation: true
+out:
+  global:
+    isLineCompleted: false
+    dialogueUIHidden: true
+    nextLineConfig:
+      auto: { enabled: false }
+    pendingEffects:
+      - name: "handleLineActions"
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                - id: "2"
+  contexts:
+    - currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "2"
+      rollback:
+        currentIndex: 1
+        isRestoring: false
+        replayStartIndex: 1
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "2"
+            rollbackPolicy: "free"
+---
+case: conditional continuation enters an unseen line and stops skip there
+in:
+  - state:
+      global:
+        isLineCompleted: true
+        skipMode: true
+        skipUnseenText: false
+        nextLineConfig:
+          auto: { enabled: false }
+        pendingEffects: []
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                    - id: "2"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+  - _conditionalContinuation: true
+out:
+  global:
+    isLineCompleted: false
+    skipMode: false
+    skipUnseenText: false
+    nextLineConfig:
+      auto: { enabled: false }
+    pendingEffects:
+      - name: "clearSkipNextTimer"
+      - name: "render"
+      - name: "handleLineActions"
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                - id: "2"
   contexts:
     - currentPointerMode: "read"
       pointers:
@@ -363,6 +485,7 @@ out:
         trigger: "fromComplete"
         delay: 2000
     pendingEffects:
+      - name: "clearNextLineConfigTimer"
       - name: "handleLineActions"
   projectData:
     story:

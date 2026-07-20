@@ -149,7 +149,9 @@ const nextLineConfigTimer = (
       dispatchInternalAction(engine, "nextLineFromSystem", {});
       // Stop this timer instance; the action will re-queue it if needed
       ticker.remove(newCallback);
-      nextLineConfigTimerState.setCallback(null);
+      if (nextLineConfigTimerState.getCallback() === newCallback) {
+        nextLineConfigTimerState.setCallback(null);
+      }
     }
   };
 

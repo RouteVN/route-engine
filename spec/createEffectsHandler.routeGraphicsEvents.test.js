@@ -540,6 +540,38 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
     );
   });
 
+  it("keeps a replacement next-line-config timer tracked after timer-driven dispatch", () => {
+    const ticker = createTicker();
+    let effectsHandler;
+    const engine = {
+      selectRenderState: vi.fn(() => ({ id: "render-1" })),
+      handleAction: vi.fn(),
+      handleActions: vi.fn(),
+      handleInternalAction: vi.fn(() => {
+        effectsHandler([
+          { name: "nextLineConfigTimer", payload: { delay: 100 } },
+        ]);
+      }),
+    };
+    effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics: {
+        render: vi.fn(),
+      },
+      ticker,
+    });
+
+    effectsHandler([{ name: "nextLineConfigTimer", payload: { delay: 50 } }]);
+    const originalCallback = ticker.add.mock.calls[0][0];
+    originalCallback({ deltaMS: 50 });
+
+    expect(ticker.add).toHaveBeenCalledTimes(2);
+    const replacementCallback = ticker.add.mock.calls[1][0];
+    effectsHandler([{ name: "clearNextLineConfigTimer" }]);
+
+    expect(ticker.remove).toHaveBeenCalledWith(replacementCallback);
+  });
+
   it("advances global auto mode only after its calculated delay", () => {
     const ticker = createTicker();
     const engine = {

@@ -22,7 +22,7 @@ definitions:
 properties:
   conditional:
     type: object
-    description: Evaluate ordered branches and execute the first match; if none match and no default branch exists, continue to the next line after the action batch
+    description: Evaluate ordered branches, execute the first match or default, then immediately continue once unless the batch invokes section/reset routing or otherwise navigates
     properties:
       branches:
         type: array

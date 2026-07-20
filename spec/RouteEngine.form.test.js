@@ -4,6 +4,7 @@ import createRouteEngine from "../src/RouteEngine.js";
 const createProjectData = ({
   includeIntro = false,
   submitActions = { nextLine: {} },
+  extraLines = [],
 } = {}) => ({
   screen: {
     width: 1920,
@@ -134,6 +135,7 @@ const createProjectData = ({
                   },
                 },
               },
+              ...extraLines,
             ],
           },
         },
@@ -185,6 +187,19 @@ const findElement = (node, id) => {
 
   return findElement(node.children, id);
 };
+
+const setPlayerNameAction = (id, value) => ({
+  updateVariable: {
+    id,
+    operations: [
+      {
+        variableId: "playerName",
+        op: "set",
+        value,
+      },
+    ],
+  },
+});
 
 describe("RouteEngine forms", () => {
   it("renders form inputs with field drafts and formRole submit actions", () => {
@@ -319,7 +334,95 @@ describe("RouteEngine forms", () => {
     );
   });
 
-  it("automatically continues an unmatched conditional submitted from the active form", () => {
+  it.each([
+    [
+      "matched",
+      [{ when: true, actions: setPlayerNameAction("matchedForm", "Matched") }],
+      "Matched",
+    ],
+    [
+      "default",
+      [
+        {
+          when: false,
+          actions: setPlayerNameAction("unreachableForm", "Unreachable"),
+        },
+        { actions: setPlayerNameAction("defaultForm", "Default") },
+      ],
+      "Default",
+    ],
+    [
+      "unmatched",
+      [
+        {
+          when: false,
+          actions: setPlayerNameAction("unreachableForm", "Unreachable"),
+        },
+      ],
+      "Ada",
+    ],
+  ])(
+    "automatically continues a %s conditional submitted from the active form",
+    (_outcome, branches, expectedPlayerName) => {
+      const handledEffectNames = [];
+      const engine = createEngine({
+        global: {
+          runtime: {
+            skipUnseenText: true,
+          },
+        },
+        handlePendingEffects: (effects) => {
+          handledEffectNames.push(...effects.map((effect) => effect.name));
+        },
+        projectData: createProjectData({
+          includeIntro: true,
+          submitActions: {
+            conditional: {
+              branches,
+            },
+          },
+        }),
+      });
+      engine.handleAction("startSkipMode", {});
+      engine.handleAction("nextLineFromSystem", {});
+
+      expect(engine.selectSystemState().contexts[0].pointers.read.lineId).toBe(
+        "line1",
+      );
+      expect(engine.selectSystemState().global.skipMode).toBe(true);
+
+      let renderState = engine.selectRenderState();
+      const nameInput = findElement(renderState.elements, "name-input");
+      const emailInput = findElement(renderState.elements, "email-input");
+
+      engine.handleActions(nameInput.change.payload.actions, {
+        _event: {
+          value: "Ada",
+        },
+      });
+      engine.handleActions(emailInput.change.payload.actions, {
+        _event: {
+          value: "ada@example.com",
+        },
+      });
+
+      renderState = engine.selectRenderState();
+      const submitButton = findElement(renderState.elements, "submit-button");
+      handledEffectNames.length = 0;
+      engine.handleActions(submitButton.click.payload.actions);
+
+      expect(engine.selectSystemState().contexts[0].pointers.read.lineId).toBe(
+        "line2",
+      );
+      expect(engine.selectSystemState().global.skipMode).toBe(true);
+      expect(engine.selectSystemState().contexts[0].variables.playerName).toBe(
+        expectedPlayerName,
+      );
+      expect(handledEffectNames).toContain("startSkipNextTimer");
+    },
+  );
+
+  it("submits once into an unseen destination and stops active skip there", () => {
     const handledEffectNames = [];
     const engine = createEngine({
       global: {
@@ -337,48 +440,48 @@ describe("RouteEngine forms", () => {
             branches: [
               {
                 when: false,
-                actions: {
-                  nextLine: {},
-                },
+                actions: setPlayerNameAction(
+                  "unreachableUnseenForm",
+                  "Unreachable",
+                ),
+              },
+              {
+                actions: setPlayerNameAction("defaultUnseenForm", "Default"),
               },
             ],
           },
         },
+        extraLines: [{ id: "line3", actions: {} }],
       }),
     });
     engine.handleAction("startSkipMode", {});
     engine.handleAction("nextLineFromSystem", {});
-
-    expect(engine.selectSystemState().contexts[0].pointers.read.lineId).toBe(
-      "line1",
-    );
-    expect(engine.selectSystemState().global.skipMode).toBe(true);
+    expect(
+      engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
+    ).toBe("line1");
+    engine.handleAction("setSkipUnseenText", { value: false });
 
     let renderState = engine.selectRenderState();
     const nameInput = findElement(renderState.elements, "name-input");
     const emailInput = findElement(renderState.elements, "email-input");
-
     engine.handleActions(nameInput.change.payload.actions, {
-      _event: {
-        value: "Ada",
-      },
+      _event: { value: "Ada" },
     });
     engine.handleActions(emailInput.change.payload.actions, {
-      _event: {
-        value: "ada@example.com",
-      },
+      _event: { value: "ada@example.com" },
     });
 
     renderState = engine.selectRenderState();
-    const submitButton = findElement(renderState.elements, "submit-button");
     handledEffectNames.length = 0;
+    const submitButton = findElement(renderState.elements, "submit-button");
     engine.handleActions(submitButton.click.payload.actions);
 
-    expect(engine.selectSystemState().contexts[0].pointers.read.lineId).toBe(
-      "line2",
-    );
-    expect(engine.selectSystemState().global.skipMode).toBe(true);
-    expect(handledEffectNames).toContain("startSkipNextTimer");
+    const state = engine.selectSystemState();
+    expect(state.contexts.at(-1).pointers.read.lineId).toBe("line2");
+    expect(state.contexts.at(-1).variables.playerName).toBe("Default");
+    expect(state.global.skipMode).toBe(false);
+    expect(handledEffectNames).toContain("clearSkipNextTimer");
+    expect(handledEffectNames).not.toContain("startSkipNextTimer");
   });
 
   it("keeps edits transient until a valid multi-field submit commits variables and runs actions", () => {

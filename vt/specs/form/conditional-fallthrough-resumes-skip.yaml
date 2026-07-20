@@ -1,11 +1,11 @@
 ---
-title: Form Conditional Fallthrough Resumes Active Skip
-description: A valid form submit whose unmatched conditional has no default should implicitly continue and restart active skip playback.
+title: Form Conditional Default Resumes Active Skip
+description: A valid form submit selects a default conditional branch, implicitly continues, and restarts active skip playback.
 specs:
   - skip mode is visibly enabled on the intro line
   - entering the form keeps skip enabled but pauses automatic advancement
-  - a valid submit evaluates a false conditional with no default branch
-  - conditional fallthrough immediately enters the result line
+  - a valid submit evaluates a false conditioned branch and selects the default
+  - the default mutation is visible immediately on the result line
   - skip resumes after the form and advances to the final line
   - skip stops cleanly when the final line reaches the section end
 skipInitialScreenshot: true
@@ -246,7 +246,19 @@ story:
                       branches:
                         - when: false
                           actions:
-                            nextLine: {}
+                            updateVariable:
+                              id: unreachableFormBranch
+                              operations:
+                                - variableId: playerName
+                                  op: set
+                                  value: Unreachable
+                        - actions:
+                            updateVariable:
+                              id: defaultFormBranch
+                              operations:
+                                - variableId: playerName
+                                  op: set
+                                  value: Default
             - id: resultLine
               actions:
                 form: {}

@@ -23,6 +23,10 @@ const PERSISTENT_PLAYBACK_RESTORE_ACTIONS = new Set([
 
 const CONDITIONAL_ACTION_TYPE = "conditional";
 const CONDITIONAL_AUTO_CONTINUE = Symbol("conditionalAutoContinue");
+const CONDITIONAL_ROUTING_ACTION_TYPES = new Set([
+  "sectionTransition",
+  "resetStoryAtSection",
+]);
 const FORM_INTERACTION_SOURCE = "form";
 const FORM_ACTION_TYPES = new Set(["submitForm", "cancelForm"]);
 
@@ -41,6 +45,7 @@ export default function createRouteEngine(options) {
   let _namespace = null;
   let _actionDispatchDepth = 0;
   let _isProcessingPendingEffects = false;
+  let _conditionalRoutingSequence = 0;
   let _persistentAnimationSessions = new Map();
   let _restoredPersistentAnimationSessions = new Map();
   let _renderPersistentAnimationMetadata = new Map();
@@ -120,6 +125,7 @@ export default function createRouteEngine(options) {
     _namespace = normalizeNamespace(namespace);
     _actionDispatchDepth = 0;
     _isProcessingPendingEffects = false;
+    _conditionalRoutingSequence = 0;
     _persistentAnimationSessions = new Map();
     _restoredPersistentAnimationSessions = new Map();
     _renderPersistentAnimationMetadata = new Map();
@@ -318,8 +324,11 @@ export default function createRouteEngine(options) {
 
   const createConditionalAutoContinue = (options = {}) => ({
     type: CONDITIONAL_AUTO_CONTINUE,
-    payload: applyActionOptions("nextLine", {}, options),
-    sourcePointer: _systemStore.selectCurrentPointer()?.pointer ?? null,
+    payload: applyActionOptions(
+      "nextLine",
+      { _conditionalContinuation: true },
+      options,
+    ),
   });
 
   const mergeConditionalAutoContinue = (currentResult, nextResult) => {
@@ -333,13 +342,16 @@ export default function createRouteEngine(options) {
         ...currentResult.payload,
         ...nextResult.payload,
       },
-      sourcePointer: nextResult.sourcePointer,
     };
   };
 
   const dispatchStoreAction = (actionType, payload) => {
     if (!_systemStore[actionType]) {
       return;
+    }
+
+    if (CONDITIONAL_ROUTING_ACTION_TYPES.has(actionType)) {
+      _conditionalRoutingSequence += 1;
     }
 
     if (PERSISTENT_PLAYBACK_RESET_ACTIONS.has(actionType)) {
@@ -357,18 +369,33 @@ export default function createRouteEngine(options) {
     return result;
   };
 
-  const dispatchConditionalAutoContinue = (result) => {
+  const dispatchConditionalAutoContinue = (
+    result,
+    sourcePointer,
+    routingSequence,
+  ) => {
     const currentPointer = _systemStore.selectCurrentPointer()?.pointer;
-    if (result.sourcePointer !== currentPointer) {
+    if (
+      sourcePointer !== currentPointer ||
+      routingSequence !== _conditionalRoutingSequence
+    ) {
       return;
     }
 
+    // An authored nextLine may have completed the source and queued its
+    // completion timers. Cancel those source timers before the implicit
+    // advance; the destination will schedule its own timers when appropriate.
+    _systemStore.appendPendingEffect({ name: "clearAutoNextTimer" });
+    _systemStore.appendPendingEffect({ name: "clearNextLineConfigTimer" });
     dispatchStoreAction("nextLineFromSystem", result.payload);
   };
 
   const runActionBatch = (callback, options = {}) => {
     return runWithDeferredEffects(() => {
       let result;
+      const sourcePointer =
+        _systemStore.selectCurrentPointer()?.pointer ?? null;
+      const routingSequence = _conditionalRoutingSequence;
       _systemStore.beginRollbackActionBatch({
         source: options.rollbackSource,
       });
@@ -379,7 +406,7 @@ export default function createRouteEngine(options) {
       }
 
       if (isConditionalAutoContinue(result)) {
-        dispatchConditionalAutoContinue(result);
+        dispatchConditionalAutoContinue(result, sourcePointer, routingSequence);
       }
     });
   };
@@ -468,6 +495,7 @@ export default function createRouteEngine(options) {
 
   const handleConditionalAction = (payload, eventContext, options) => {
     assertConditionalActionPayload(payload);
+    const autoContinue = createConditionalAutoContinue(options);
 
     for (let index = 0; index < payload.branches.length; index += 1) {
       const branch = payload.branches[index];
@@ -482,10 +510,17 @@ export default function createRouteEngine(options) {
         continue;
       }
 
-      return processActionEntries(branch.actions, eventContext, options);
+      const branchResult = processActionEntries(
+        branch.actions,
+        eventContext,
+        options,
+      );
+      return isConditionalAutoContinue(branchResult)
+        ? mergeConditionalAutoContinue(autoContinue, branchResult)
+        : autoContinue;
     }
 
-    return createConditionalAutoContinue(options);
+    return autoContinue;
   };
 
   const buildFormActionEventContext = (eventContext, formContext) => {
@@ -573,17 +608,45 @@ export default function createRouteEngine(options) {
     );
   };
 
-  const handleLineActions = () => {
-    const line = _systemStore.selectCurrentLine();
-    if (line?.actions) {
-      handleActions(line.actions, undefined, {
-        rollbackSource: "line",
-      });
-      return true;
+  const queueSettledEnteredLineAutoTimer = (enteredPointer) => {
+    const currentPointer = _systemStore.selectCurrentPointer()?.pointer;
+    if (
+      enteredPointer !== currentPointer ||
+      _systemStore.selectActiveInteraction()
+    ) {
+      return;
     }
 
-    return false;
+    const nextLineConfig = _systemStore.selectNextLineConfig();
+    if (
+      nextLineConfig?.auto?.enabled &&
+      nextLineConfig.auto.trigger === "fromStart"
+    ) {
+      _systemStore.appendPendingEffect({
+        name: "nextLineConfigTimer",
+        payload: { delay: nextLineConfig.auto.delay },
+      });
+    }
   };
+
+  const handleLineActions = () =>
+    runWithDeferredEffects(() => {
+      const enteredPointer = _systemStore.selectCurrentPointer()?.pointer;
+      const line = _systemStore.selectCurrentLine();
+      let handledLineActions = false;
+      if (line?.actions) {
+        handleActions(line.actions, undefined, {
+          rollbackSource: "line",
+        });
+        handledLineActions = true;
+      }
+
+      // The entered line may replace an already-enabled persistent auto config.
+      // Read the settled config only after its actions finish, and leave timer
+      // ownership to a newly entered pointer when those actions navigate again.
+      queueSettledEnteredLineAutoTimer(enteredPointer);
+      return handledLineActions;
+    });
 
   return {
     init,

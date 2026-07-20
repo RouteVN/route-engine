@@ -1,11 +1,11 @@
 ---
-title: Conditional Unmatched Auto Continue
-description: A conditional with no matching or default branch immediately enters and renders the next line.
+title: Conditional Matched Branch Auto Continue
+description: A matching conditional branch mutates state, then immediately enters and renders the next line.
 specs:
-  - the only conditioned branch evaluates to false
-  - no default branch is authored
+  - the conditioned branch evaluates to true
+  - the selected branch updates a variable
   - the engine enters the next line without another click
-  - only the destination presentation is rendered
+  - the destination renders the selected branch value without an intermediate frame
 skipInitialScreenshot: true
 viewport:
   id: capture
@@ -85,14 +85,14 @@ story:
                     - when:
                         eq:
                           - var: variables.score
-                          - 1
+                          - 0
                       actions:
                         updateVariable:
-                          id: unreachableBranch
+                          id: selectedBranch
                           operations:
                             - variableId: score
                               op: set
-                              value: 99
+                              value: 1
             - id: next-line
               actions:
                 dialogue:
@@ -100,4 +100,4 @@ story:
                   ui:
                     resourceId: destinationDialogueLayout
                   content:
-                    - text: Next line reached automatically.
+                    - text: Matched score ${variables.score}; next line reached automatically.

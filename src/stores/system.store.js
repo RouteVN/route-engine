@@ -2255,14 +2255,17 @@ export const clearOverlays = ({ state }) => {
   return state;
 };
 
-const pausePlaybackTimersForEnteredBlockingLine = (state) => {
+const queuePlaybackTimerCleanupForEnteredLine = (
+  state,
+  { activeInteraction },
+) => {
   if (state.global.autoMode) {
     state.global.pendingEffects.push({
       name: "clearAutoNextTimer",
     });
   }
 
-  if (state.global.skipMode) {
+  if (activeInteraction && state.global.skipMode) {
     state.global.pendingEffects.push({
       name: "clearSkipNextTimer",
     });
@@ -2285,9 +2288,7 @@ const queueEnteredLineEffects = (state, pointer, { screenTransition } = {}) => {
   const isChoiceVisible =
     activeInteraction?.source === CHOICE_INTERACTION_SOURCE;
   const isFormVisible = activeInteraction?.source === FORM_INTERACTION_SOURCE;
-  if (activeInteraction) {
-    pausePlaybackTimersForEnteredBlockingLine(state);
-  }
+  queuePlaybackTimerCleanupForEnteredLine(state, { activeInteraction });
 
   state.global.pendingEffects.push({
     name: "handleLineActions",
@@ -2654,17 +2655,6 @@ const transitionToSection = (
     previousInteraction,
     activeInteraction,
   );
-  if (
-    !resetStoryState &&
-    state.global.autoMode &&
-    !previousInteraction &&
-    !activeInteraction
-  ) {
-    state.global.pendingEffects.push({
-      name: "clearAutoNextTimer",
-    });
-  }
-
   return state;
 };
 
@@ -3271,18 +3261,6 @@ export const nextLine = ({ state }, payload) => {
       activeInteraction,
       nextInteraction,
     );
-
-    // Keep scene auto mode running after manual advances (e.g. choice click -> nextLine).
-    const nextLineConfig = state.global.nextLineConfig;
-    if (nextLineConfig?.auto?.enabled && !nextInteraction) {
-      const trigger = nextLineConfig.auto.trigger;
-      if (trigger === "fromStart") {
-        state.global.pendingEffects.push({
-          name: "nextLineConfigTimer",
-          payload: { delay: nextLineConfig.auto.delay },
-        });
-      }
-    }
   } else {
     // Reached the end of section, stop auto/skip modes
     if (state.global.autoMode) {
@@ -3362,7 +3340,9 @@ export const sectionTransition = ({ state }, payload) => {
 };
 
 export const nextLineFromSystem = ({ state }, payload) => {
-  if (state.global.dialogueUIHidden) {
+  const isConditionalContinuation = payload?._conditionalContinuation === true;
+
+  if (state.global.dialogueUIHidden && !isConditionalContinuation) {
     showDialogueUI({ state });
     return state;
   }
@@ -3421,7 +3401,9 @@ export const nextLineFromSystem = ({ state }, payload) => {
       if (!isNextLineViewed) {
         // Stop skip mode when encountering an unviewed line
         stopSkipMode({ state });
-        return state;
+        if (!isConditionalContinuation) {
+          return state;
+        }
       }
     }
 
@@ -3459,18 +3441,6 @@ export const nextLineFromSystem = ({ state }, payload) => {
       activeInteraction,
       nextInteraction,
     );
-
-    // Only start timer immediately if trigger is "fromStart"
-    // For "fromComplete" trigger, markLineCompleted will start it when renderComplete fires
-    if (state.global.nextLineConfig.auto?.enabled && !nextInteraction) {
-      const trigger = state.global.nextLineConfig.auto.trigger;
-      if (trigger === "fromStart") {
-        state.global.pendingEffects.push({
-          name: "nextLineConfigTimer",
-          payload: { delay: state.global.nextLineConfig.auto.delay },
-        });
-      }
-    }
   } else {
     if (state.global.autoMode) {
       stopAutoMode({ state });

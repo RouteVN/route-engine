@@ -283,8 +283,8 @@ out:
     skipMode: false
     isDialogueUIVisible: true
     pendingEffects:
-      - name: "handleLineActions"
       - name: "clearAutoNextTimer"
+      - name: "handleLineActions"
   projectData:
     story:
       initialSceneId: "scene1"
@@ -572,6 +572,7 @@ out:
         enabled: true
     isDialogueUIVisible: true
     pendingEffects:
+      - name: "clearAutoNextTimer"
       - name: "handleLineActions"
       - name: "startSkipNextTimer"
   projectData:
