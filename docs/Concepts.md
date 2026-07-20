@@ -69,6 +69,7 @@ Static, read-only data that defines the visual novel content:
 - **resources**: Images, audio, animations, transforms, layouts, characters, fonts, colors, and `textStyles`
   - Localization is not implemented in the current runtime. The planned patch-based model is documented in `docs/L10n.md`
   - Computed variables are derived read-only values declared under `resources.variables[*].computed`; their authored interface is documented in `docs/ComputedVariables.md`
+  - Achievements are stable, platform-agnostic definitions under `resources.achievements`; the engine exposes cloned resource selectors and emits ordered effects for external consumers. The primitives are documented in `docs/Achievements.md`
   - Voice audio is stored under `resources.voices[sceneId][voiceId]` and line actions reference the scene-local `voiceId`
   - Layout text elements should reference shared styles with `textStyleId`
   - Text-backed visual items should put text-specific data under `text` and reference shared styles with `text.textStyleId`

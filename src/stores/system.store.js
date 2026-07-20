@@ -78,6 +78,50 @@ const cloneStateValue = (value) => {
 const isRecord = (value) =>
   value !== null && typeof value === "object" && !Array.isArray(value);
 
+const assertAchievementImageReferences = (projectData) => {
+  const resources = projectData?.resources ?? {};
+  const images = resources.images ?? {};
+  const achievements = resources.achievements ?? {};
+
+  Object.entries(achievements).forEach(([resourceId, achievement]) => {
+    ["iconImageId", "lockedIconImageId"].forEach((field) => {
+      const imageId = achievement?.[field];
+      if (field === "lockedIconImageId" && imageId === undefined) {
+        return;
+      }
+
+      if (
+        typeof imageId !== "string" ||
+        imageId.length === 0 ||
+        !Object.prototype.hasOwnProperty.call(images, imageId)
+      ) {
+        throw new Error(
+          `Achievement "${resourceId}" has invalid ${field} reference "${imageId}"`,
+        );
+      }
+    });
+  });
+};
+
+const getAchievementForAction = (state, resourceId) => {
+  if (typeof resourceId !== "string" || resourceId.length === 0) {
+    throw new Error("Achievement action requires a non-empty resourceId");
+  }
+
+  const achievement = state.projectData.resources?.achievements?.[resourceId];
+  if (!achievement) {
+    throw new Error(`Achievement resource "${resourceId}" not found`);
+  }
+
+  if (achievement.type !== "boolean" && achievement.type !== "number") {
+    throw new Error(
+      `Achievement resource "${resourceId}" has invalid type "${achievement.type}"`,
+    );
+  }
+
+  return achievement;
+};
+
 const toSlotStorageKey = (slotId) => String(slotId);
 
 const createDefaultViewedRegistry = () => ({
@@ -1469,6 +1513,7 @@ export const createInitialState = (payload) => {
   } = global;
 
   assertUniqueSectionIds(projectData);
+  assertAchievementImageReferences(projectData);
 
   const initialSceneId = projectData.story.initialSceneId;
   const initialScene = projectData.story.scenes[initialSceneId];
@@ -1797,6 +1842,16 @@ export const selectIsChoiceVisible = ({ state }) => {
 
 export const selectSystemState = ({ state }) => {
   return structuredClone(state);
+};
+
+export const selectAchievements = ({ state }) => {
+  return cloneStateValue(state.projectData.resources?.achievements ?? {});
+};
+
+export const selectAchievement = ({ state }, payload) => {
+  const achievement =
+    state.projectData.resources?.achievements?.[payload?.resourceId];
+  return achievement === undefined ? undefined : cloneStateValue(achievement);
 };
 
 export const selectSaveSlotMap = ({ state }) => {
@@ -2581,6 +2636,57 @@ export const appendPendingEffect = ({ state }, payload) => {
   return state;
 };
 
+export const completeAchievement = ({ state }, payload) => {
+  const resourceId = payload?.resourceId;
+  getAchievementForAction(state, resourceId);
+
+  state.global.pendingEffects.push({
+    name: "completeAchievement",
+    payload: { resourceId },
+  });
+  return state;
+};
+
+export const setAchievementProgress = ({ state }, payload) => {
+  const resourceId = payload?.resourceId;
+  const achievement = getAchievementForAction(state, resourceId);
+  if (achievement.type !== "number") {
+    throw new Error(
+      `Achievement resource "${resourceId}" does not support numeric progress`,
+    );
+  }
+
+  const currentProgress = payload?.current;
+  if (!Number.isInteger(currentProgress) || currentProgress < 0) {
+    throw new Error(
+      `Achievement progress for "${resourceId}" must be a non-negative integer`,
+    );
+  }
+
+  if (!Number.isInteger(achievement.target) || achievement.target < 1) {
+    throw new Error(
+      `Achievement resource "${resourceId}" must have a positive integer target`,
+    );
+  }
+
+  const current = Math.min(currentProgress, achievement.target);
+  state.global.pendingEffects.push({
+    name: "setAchievementProgress",
+    payload: {
+      resourceId,
+      current,
+      target: achievement.target,
+      completed: current >= achievement.target,
+    },
+  });
+  return state;
+};
+
+export const showAchievements = ({ state }) => {
+  state.global.pendingEffects.push({ name: "showAchievements" });
+  return state;
+};
+
 const transitionToSection = (
   state,
   { sectionId, resetStoryState = false, screen },
@@ -3024,6 +3130,7 @@ export const updateProjectData = ({ state }, payload) => {
   const { projectData } = payload;
 
   assertUniqueSectionIds(projectData);
+  assertAchievementImageReferences(projectData);
 
   state.projectData = projectData;
   const variableConfigs = projectData?.resources?.variables ?? {};
@@ -4037,6 +4144,8 @@ export const createSystemStore = (initialState) => {
     selectIsResourceAccountViewed,
     selectNextLineConfig,
     selectSystemState,
+    selectAchievements,
+    selectAchievement,
     selectSaveSlotMap,
     selectSaveSlots,
     selectSaveSlot,
@@ -4085,6 +4194,9 @@ export const createSystemStore = (initialState) => {
     resetStoryAtSection,
     clearPendingEffects,
     appendPendingEffect,
+    completeAchievement,
+    setAchievementProgress,
+    showAchievements,
     beginRollbackActionBatch,
     endRollbackActionBatch,
     addViewedLine,

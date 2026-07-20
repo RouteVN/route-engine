@@ -438,6 +438,71 @@ properties:
         additionalProperties: true
     additionalProperties: false
 
+  achievements:
+    type: object
+    description: Platform-agnostic achievement definitions
+    patternProperties:
+      "^.+$":
+        type: object
+        properties:
+          type:
+            type: string
+            enum: [boolean, number]
+            description: Boolean achievements complete directly; number achievements track progress to a target
+          target:
+            type: integer
+            minimum: 1
+            description: Completion threshold for number achievements
+          name:
+            type: string
+            minLength: 1
+            description: Public display name after completion
+          description:
+            type: string
+            minLength: 1
+            description: Public description after completion
+          lockedName:
+            type: string
+            minLength: 1
+            description: Optional display name while incomplete
+          lockedDescription:
+            type: string
+            minLength: 1
+            description: Optional description while incomplete
+          iconImageId:
+            type: string
+            minLength: 1
+            description: Completed icon reference into resources.images
+          lockedIconImageId:
+            type: string
+            minLength: 1
+            description: Optional incomplete icon reference into resources.images
+          hidden:
+            type: boolean
+            default: false
+            description: Whether consumers should conceal the achievement before completion
+          sortOrder:
+            type: integer
+            minimum: 0
+            description: Optional authoring and display order
+        required: [type, name, description, iconImageId]
+        allOf:
+          - if:
+              properties:
+                type:
+                  const: number
+            then:
+              required: [target]
+          - if:
+              properties:
+                type:
+                  const: boolean
+            then:
+              not:
+                required: [target]
+        additionalProperties: false
+    additionalProperties: false
+
   variables:
     type: object
     description: Variables and their initial values

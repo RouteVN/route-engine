@@ -90,6 +90,17 @@ updated directly.
 The locked authored interface is documented in
 [ComputedVariables.md](./ComputedVariables.md).
 
+### Achievements
+
+Achievements are stable, platform-agnostic definitions under
+`resources.achievements`. Story and UI actions reference only the Route Engine
+resource ID. Public selectors expose the authored definitions, and ordered
+effects let external consumers integrate them without putting platform details
+in Route Engine.
+
+The resource, selector, action, and effect primitives are documented in
+[Achievements.md](./Achievements.md).
+
 ## Methods
 
 ### `selectSystemState()`
@@ -611,6 +622,18 @@ Seen-line semantics:
 - Account-level viewed state is persisted outside save slots as `global.accountViewedRegistry`.
 - Skip-unseen checks use account-level viewed state; `runtime.skipUnseenText` only controls whether skip may pass unseen account content.
 
+### Achievement Actions
+
+| Action                   | Payload                   | Description                                       |
+| ------------------------ | ------------------------- | ------------------------------------------------- |
+| `completeAchievement`    | `{ resourceId }`          | Declare a boolean or number achievement complete  |
+| `setAchievementProgress` | `{ resourceId, current }` | Report absolute progress for a number achievement |
+| `showAchievements`       | `{}`                      | Request that the host show its achievement UI     |
+
+Achievement actions enqueue external effects and do not store player
+achievement state. See [Achievements.md](./Achievements.md) for resource,
+validation, progress, and host-integration semantics.
+
 ### Save System Actions
 
 | Action     | Payload                       | Description           |
@@ -647,31 +670,36 @@ Use these only if you are extending engine internals or writing engine-level tes
 
 The system store exposes these selectors (called internally):
 
-| Selector                        | Parameters              | Returns                                   |
-| ------------------------------- | ----------------------- | ----------------------------------------- |
-| `selectPendingEffects`          | -                       | Array of pending effects                  |
-| `selectCurrentPointer`          | -                       | `{ currentPointerMode: "read", pointer }` |
-| `selectCurrentLine`             | -                       | Current line object                       |
-| `selectSection`                 | `{ sectionId }`         | Section object                            |
-| `selectAutoMode`                | -                       | Boolean                                   |
-| `selectSkipMode`                | -                       | Boolean                                   |
-| `selectDialogueUIHidden`        | -                       | Boolean                                   |
-| `selectIsLineAccountViewed`     | `{ sectionId, lineId }` | Account-level viewed boolean              |
-| `selectIsResourceAccountViewed` | `{ resourceId }`        | Account-level viewed boolean              |
-| `selectNextLineConfig`          | -                       | Config object                             |
-| `selectSaveSlotMap`             | -                       | Save slots object map                     |
-| `selectSaveSlot`                | `{ slotId }`            | Save slot data                            |
-| `selectSaveSlotPage`            | `{ slotsPerPage? }`     | Paged save slot list for UI               |
+| Selector                        | Parameters              | Returns                                    |
+| ------------------------------- | ----------------------- | ------------------------------------------ |
+| `selectPendingEffects`          | -                       | Array of pending effects                   |
+| `selectCurrentPointer`          | -                       | `{ currentPointerMode: "read", pointer }`  |
+| `selectCurrentLine`             | -                       | Current line object                        |
+| `selectSection`                 | `{ sectionId }`         | Section object                             |
+| `selectAutoMode`                | -                       | Boolean                                    |
+| `selectSkipMode`                | -                       | Boolean                                    |
+| `selectDialogueUIHidden`        | -                       | Boolean                                    |
+| `selectIsLineAccountViewed`     | `{ sectionId, lineId }` | Account-level viewed boolean               |
+| `selectIsResourceAccountViewed` | `{ resourceId }`        | Account-level viewed boolean               |
+| `selectNextLineConfig`          | -                       | Config object                              |
+| `selectAchievements`            | -                       | Cloned achievement resource map            |
+| `selectAchievement`             | `{ resourceId }`        | Cloned achievement resource or `undefined` |
+| `selectSaveSlotMap`             | -                       | Save slots object map                      |
+| `selectSaveSlot`                | `{ slotId }`            | Save slot data                             |
+| `selectSaveSlotPage`            | `{ slotsPerPage? }`     | Paged save slot list for UI                |
 
 ## Pending Effects
 
 Effects queued by actions for external handling:
 
-| Effect                   | Description                            |
-| ------------------------ | -------------------------------------- |
-| `render`                 | Re-render the current state            |
-| `handleLineActions`      | Process current line's actions         |
-| `applyScopedDataUpdates` | Persist ordered scoped data operations |
+| Effect                   | Description                                      |
+| ------------------------ | ------------------------------------------------ |
+| `render`                 | Re-render the current state                      |
+| `handleLineActions`      | Process current line's actions                   |
+| `applyScopedDataUpdates` | Persist ordered scoped data operations           |
+| `completeAchievement`    | Notify the host of achievement completion        |
+| `setAchievementProgress` | Notify the host of absolute achievement progress |
+| `showAchievements`       | Ask the host to display achievement UI           |
 
 `applyScopedDataUpdates` is a public runtime-facing persistence contract. Its full interface and semantics are documented in [ScopedDataUpdates.md](./ScopedDataUpdates.md).
 
@@ -679,6 +707,7 @@ Built-in effect handling notes:
 
 - `createEffectsHandler(...)` coalesces only the latest occurrence of replaceable built-in effects such as `render`, timer start/clear effects, `handleLineActions`, and full-snapshot persistence effects.
 - `applyScopedDataUpdates` is incremental and ordered, so it must not be last-write coalesced by effect name.
+- Achievement effects are external, ordered, and never coalesced by effect name.
 - Unknown effect names are not silently dropped; `createEffectsHandler(...)` throws unless you provide `handleUnhandledEffect`.
 - The coalescing rule is specific to the built-in effect handler, not the store queue itself.
 

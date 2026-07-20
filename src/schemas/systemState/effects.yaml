@@ -221,6 +221,54 @@ anyOf:
     required: [name]
     additionalProperties: false
 
+  - title: Complete achievement effect
+    type: object
+    properties:
+      name:
+        const: completeAchievement
+      payload:
+        type: object
+        properties:
+          resourceId:
+            type: string
+            minLength: 1
+        required: [resourceId]
+        additionalProperties: false
+    required: [name, payload]
+    additionalProperties: false
+
+  - title: Set achievement progress effect
+    type: object
+    properties:
+      name:
+        const: setAchievementProgress
+      payload:
+        type: object
+        properties:
+          resourceId:
+            type: string
+            minLength: 1
+          current:
+            type: integer
+            minimum: 0
+          target:
+            type: integer
+            minimum: 1
+          completed:
+            type: boolean
+        required: [resourceId, current, target, completed]
+        additionalProperties: false
+    required: [name, payload]
+    additionalProperties: false
+
+  - title: Show achievements effect
+    type: object
+    properties:
+      name:
+        const: showAchievements
+    required: [name]
+    additionalProperties: false
+
   - title: Custom effect
     type: object
     properties:
@@ -248,4 +296,7 @@ anyOf:
             - clearSkipNextTimer
             - nextLineConfigTimer
             - clearNextLineConfigTimer
+            - completeAchievement
+            - setAchievementProgress
+            - showAchievements
       required: [name]
