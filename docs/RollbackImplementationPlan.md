@@ -4,11 +4,15 @@ This document translates [Rollback.md](/home/han4wluc/repositories/RouteVN/route
 
 It is intentionally technical.
 
+The landing-point eligibility slice described below is implemented. The
+remaining future-policy and cleanup items continue to serve as a roadmap.
+
 ## Goal
 
 Replace the current mixed "history mode + section replay" rollback behavior with a true rollback system that:
 
 - uses line-level checkpoints
+- distinguishes rollback landing points from transient control-flow entries
 - supports cross-section rollback
 - recomputes rollbackable story state from full rollback history
 - reconstructs presentation after restoration
@@ -41,6 +45,7 @@ been removed from gameplay back behavior.
 The current rollback entry points are:
 
 1. `rollbackToLine` / `rollbackByOffset`
+
 - resets context variables to a section `initialState`
 - replays recorded `updateVariable` actions
 - is limited by the current section-oriented history structure
@@ -52,6 +57,10 @@ The implementation currently depends on:
 - `pointers.history`
 - `currentPointerMode`
 - event-sourced replay of context variable mutations inside a section
+
+Player-facing target selection resolves offsets over eligible landing points.
+Internal timeline entries for lines that immediately route elsewhere remain
+available for replay but are skipped as Back destinations.
 
 This is not the right long-term model for:
 
@@ -79,6 +88,8 @@ contexts: [
           sectionId: "intro",
           lineId: "line1",
           rollbackPolicy: "free",
+          // Omitted means eligible; transient entries use false.
+          returnable: false,
         },
       ],
     },
@@ -93,11 +104,17 @@ Each checkpoint should eventually be able to hold:
 - `sectionId`
 - `lineId`
 - `rollbackPolicy`
+- whether the entry is a rollback landing point
 
 For initial implementation:
 
 - the array index is the sequence identity
 - `rollbackPolicy` can default to `"free"`
+- newly created entries are eligible by default; line-entry processing writes
+  `returnable: false` as soon as an action actually routes away, before
+  destination effects or later sibling actions can save state
+- saved entries without eligibility metadata require an explicit migration or
+  deterministic derivation; they must not all be treated as landing points
 
 No separate `sequenceId` is required as long as:
 
@@ -193,6 +210,7 @@ Checkpoint shape:
   sectionId,
   lineId,
   rollbackPolicy: "free",
+  returnable: false, // optional; omitted means eligible
 }
 ```
 
@@ -200,6 +218,7 @@ Implementation notes:
 
 - checkpoint creation should happen through one internal helper, not inline in many actions
 - `rollbackPolicy` should be present or defaultable from one helper
+- landing-point eligibility should be recorded or resolved through one helper
 - `currentIndex` should be the array-index cursor into `timeline`
 
 Current pointer rule:
@@ -243,25 +262,50 @@ That decision should be made separately from rollback.
 
 ## Checkpoint Creation Rules
 
-Checkpoints are line-level.
+Checkpoints and internal timeline entries are line-level.
 
-A checkpoint should exist for each line the player reaches in read flow.
+An entry should exist for each line the player reaches in read flow when that
+entry is needed for replay. Not every entry is a rollback landing point.
+
+### Landing-point eligibility
+
+A line is returnable when its entry settles as a playable reading position. A
+line is transient when line-entry processing routes away before the player can
+read or interact with it.
+
+Required transient cases are:
+
+- a line-authored `conditional` that performs its automatic continuation
+- a line-authored `sectionTransition` that successfully enters another section
+
+Eligibility must be based on settled line-entry behavior. A conditional or
+section transition triggered later by a click, choice, form, or other
+interaction does not make the already-presented source line transient.
+
+Transient entries may remain in `rollback.timeline` so state replay and
+bookkeeping stay deterministic. They must be marked or otherwise resolved as
+ineligible before player-facing rollback target selection.
 
 ### Required checkpoint creation points
 
 1. Engine init
+
 - create initial checkpoint for the initial line
 
 2. `nextLine`
+
 - after advancing to the new line
 
 3. `nextLineFromSystem`
+
 - after advancing to the new line
 
 4. `sectionTransition`
+
 - after landing on the destination section's first line
 
 5. `jumpToLine`
+
 - excluded from rollback timeline for now
 
 Rationale:
@@ -276,7 +320,9 @@ Checkpoint should represent the line the player is now on, not the line they lef
 That keeps rollback semantics intuitive:
 
 - back from line 10 goes to line 9
-- current line is always represented in the timeline
+- current line is represented in the timeline
+- a transient source can be represented without becoming a place where Back
+  stops
 
 ### Deduplication rule
 
@@ -342,12 +388,32 @@ Presentation should still appear correctly because it is derived from the restor
 
 - UI-facing back action should call `rollbackByOffset({ offset: -1 })`
 
+### Rollback target resolution
+
+Player-facing rollback must resolve offsets over landing points rather than raw
+array positions.
+
+For `offset: -1`, scan backward from `rollback.currentIndex - 1` and select the
+first returnable entry. Skip any number of transient entries without rendering
+or restoring them as the current pointer. Larger negative offsets count only
+returnable entries.
+
+The same negative-offset resolver must drive `selectLineIdByOffset`,
+`rollbackByOffset`, and `selectCanRollback`; the Back control must not be
+enabled merely because an earlier raw timeline entry exists. Positive
+`selectLineIdByOffset` traversal retains its existing raw-timeline contract.
+If there is no earlier landing point, rollback is a no-op.
+
+`resetStoryAtSection` remains a destructive boundary. It creates a new timeline
+root, so target resolution cannot scan into pre-reset history.
+
 ### `rollbackByOffset`
 
 Target behavior:
 
 1. validate offset is negative
-2. find target checkpoint from `rollback.currentIndex + offset`
+2. scan backward and count only returnable checkpoints until the requested
+   offset is resolved
 3. if out of bounds, no-op
 4. delegate to one internal restore helper
 
@@ -356,7 +422,7 @@ Target behavior:
 Introduce an internal restore helper:
 
 ```js
-restoreRollbackCheckpoint(state, checkpointIndex)
+restoreRollbackCheckpoint(state, checkpointIndex);
 ```
 
 Responsibilities:
@@ -379,7 +445,7 @@ The target line must be rendered from reconstructed state, not by replaying norm
 
 Policy from product spec:
 
-- rollback should go immediately to previous checkpoint
+- rollback should go immediately to the previous landing point
 - no "complete current line first" behavior
 
 Recommended engine state after rollback:
@@ -493,6 +559,15 @@ Update to:
 
 - move pointer to target section first line
 - append checkpoint for destination line
+- when invoked during unsettled line-entry processing, mark the source entry as
+  transient so Back skips it
+
+### `conditional`
+
+When a line-authored conditional automatically continues during line-entry
+processing, retain any replay data needed for the source entry but mark the
+source as transient. Do not mark a previously presented line transient when a
+conditional is invoked by a later player interaction.
 
 ### `jumpToLine`
 
@@ -518,6 +593,8 @@ Recommendation:
 
 - keep public API if needed
 - internally resolve to checkpoint index in the rollback timeline
+- keep explicit-target semantics separate from player-facing Back; reading UI
+  must use the landing-point-aware offset resolver
 
 ## Save/Load
 
@@ -535,6 +612,9 @@ Implementation requirement:
 - loading a save must restore both:
   - `rollback.timeline`
   - `rollback.currentIndex`
+- landing-point eligibility must survive save/load
+- older entries without eligibility metadata must be migrated or derived before
+  Back target selection
 - rollback save data should not store a duplicate `baselineVariables` snapshot
 - restore start state should be recomputed from project data after load
 
@@ -584,13 +664,49 @@ Add or migrate tests for:
 9. rollback does not restore seen registry
 10. rollback stops auto mode
 11. rollback stops skip mode
-12. rollback on incomplete line goes immediately to previous checkpoint
+12. rollback on incomplete line goes immediately to the previous landing point
 13. re-advance after rollback truncates old future branch
 14. duplicate adjacent checkpoints are not appended
 15. `rollback.isRestoring` prevents duplicate checkpoint append
 16. `rollback.isRestoring` prevents duplicate `updateVariable` execution
 17. old-save compatibility initializes a minimal rollback timeline correctly
 18. rollback restore start state is derived from project defaults, not serialized baseline snapshots
+19. Back skips matched, default, and unmatched conditional auto-continue
+    sources and restores the preceding landing point in one action
+20. Back skips a line-entry section-transition source and restores the
+    preceding landing point across the section boundary
+21. Back skips consecutive transient control-flow entries
+22. an interaction-triggered conditional or section transition leaves its
+    already-presented source eligible for rollback
+23. failed routing or a conditional that cannot advance is not classified as
+    transient merely from its authored action keys
+24. `selectLineIdByOffset`, `rollbackByOffset`, and `selectCanRollback` count
+    landing points rather than raw entries
+25. save/load preserves target eligibility and repeated line IDs or loops are
+    resolved by occurrence order
+26. restoring an earlier landing point excludes mutations from skipped future
+    transient entries, while restoring a later point still replays them
+27. Back cannot cross a `resetStoryAtSection` timeline boundary
+28. a destination or sibling `saveSlot`, whether it runs before or after
+    routing, persists the transient marker; load followed by Back still skips
+    the source
+29. multiple navigations in one line-entry batch mark every intermediate,
+    never-settled checkpoint transient
+
+### Browser/VT regression coverage
+
+Add isolated visual test pages for the actual Back input path. Each page should:
+
+1. present settled line A
+2. pass through exactly one transient conditional or section-transition source
+3. present settled line C
+4. click the real Back control once
+5. assert and capture line A, with no render of the transient source
+
+Keep conditional and section-transition cases separate so each page exercises
+one control-flow problem. Pair these browser-level cases with the targeted
+unit/system state-transition coverage above. Keep the existing reset visual
+test as the destructive-boundary regression.
 
 ### Regression tests for divergence
 

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { produce } from "immer";
 import {
   loadSlot,
+  markSavedRollbackCheckpointTransient,
   rollbackByOffset,
   saveSlot,
   sectionTransition,
@@ -242,6 +243,7 @@ describe("system.store rollback/save draft safety", () => {
       currentIndex: 1,
       isRestoring: false,
       replayStartIndex: 0,
+      returnabilityVersion: 1,
       timeline: [
         {
           sectionId: "section1",
@@ -256,6 +258,82 @@ describe("system.store rollback/save draft safety", () => {
       ],
     });
     vi.restoreAllMocks();
+  });
+
+  it("patches an exact saved rollback occurrence from a live draft", () => {
+    const savedSlot = {
+      formatVersion: 1,
+      slotId: 1,
+      savedAt: 1700000000000,
+      state: {
+        contexts: [
+          {
+            pointers: {
+              read: { sectionId: "section1", lineId: "2" },
+            },
+            rollback: {
+              currentIndex: 1,
+              isRestoring: false,
+              replayStartIndex: 0,
+              returnabilityVersion: 1,
+              timeline: [
+                { sectionId: "section1", lineId: "1" },
+                { sectionId: "section1", lineId: "2" },
+              ],
+            },
+          },
+        ],
+      },
+    };
+    const baseState = {
+      global: {
+        saveSlots: { 1: savedSlot },
+        pendingEffects: [],
+      },
+    };
+
+    const nextState = produce(baseState, (draft) => {
+      markSavedRollbackCheckpointTransient(
+        { state: draft },
+        {
+          slotId: 1,
+          saveSlotIdentity: savedSlot,
+          checkpointIndex: 1,
+          sectionId: "section1",
+          lineId: "2",
+        },
+      );
+    });
+
+    expect(
+      nextState.global.saveSlots["1"].state.contexts[0].rollback.timeline[1]
+        .returnable,
+    ).toBe(false);
+    expect(nextState.global.pendingEffects.at(-1)).toMatchObject({
+      name: "saveSlots",
+      payload: {
+        saveSlots: {
+          1: {
+            state: {
+              contexts: [
+                {
+                  rollback: {
+                    timeline: [
+                      { sectionId: "section1", lineId: "1" },
+                      {
+                        sectionId: "section1",
+                        lineId: "2",
+                        returnable: false,
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+    });
   });
 
   it("loadSlot does not throw when restoring slot state from a live draft", () => {

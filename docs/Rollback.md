@@ -2,13 +2,16 @@
 
 This document defines the intended product behavior and engine model for rollback in `route-engine`.
 
-It is a design document, not a guarantee that the current implementation already matches every rule below.
+It is the behavior contract for the current rollback implementation. Sections
+that describe future rollback policies are explicitly labeled as future work.
 
 ## Purpose
 
 Rollback is a core reading control in a visual novel.
 
-Its job is to let the player move backward through prior line checkpoints and restore the corresponding story state so the game can be re-read or re-branch from that point.
+Its job is to let the player move backward through prior rollback landing points
+and restore the corresponding story state so the game can be re-read or
+re-branch from that point.
 
 Rollback is not the same as dialogue history.
 
@@ -22,6 +25,8 @@ The rollback model for `route-engine` is:
 
 - `Back` performs true rollback.
 - Rollback is line-level.
+- `Back` resolves to the previous rollback landing point and skips transient
+  control-flow lines.
 - Rollback crosses section boundaries.
 - Rollback policy is `free` for now.
 - The model should be extensible to support additional policies later.
@@ -36,7 +41,8 @@ The rollback model for `route-engine` is:
 
 ### Rollback
 
-Rollback means restoring a prior story checkpoint and making that checkpoint the current playable position.
+Rollback means restoring a prior rollback landing point from the checkpoint
+timeline and making that line the current playable position.
 
 Rollback changes story state.
 
@@ -52,9 +58,9 @@ In the current engine, dialogue history is a render-time projection for the curr
 
 ### Checkpoint
 
-A checkpoint is the unit the player can roll back to.
-
-In this design, checkpoints are line-level.
+A checkpoint is a line-level entry in the internal rollback timeline. It is
+used to reconstruct story state and may or may not be a player-facing rollback
+landing point.
 
 Checkpoint state is defined as:
 
@@ -69,15 +75,61 @@ For v1, the authoritative replay source for a checkpoint is:
 
 The checkpoint entry itself does not need to duplicate the mutation payload as long as replay remains deterministic for the supported rollbackable action set.
 
+### Rollback landing point
+
+A line can be present in the internal rollback timeline without being a valid
+place for the player to stop.
+
+A **rollback landing point** is a line whose entry processing settled as a
+playable reading position before the story moved on. A **transient control-flow
+line** is entered only to route the story elsewhere before the player can read
+or interact with that line.
+
+At minimum, line-entry control flow is transient when it:
+
+- executes a line-authored `conditional` and automatically continues
+- successfully invokes a line-authored `sectionTransition`
+
+The distinction is based on how the line was entered and settled, not merely
+on whether an action type appears somewhere in its authored data. A line
+remains a valid landing point when the player first reaches it and later
+triggers a conditional or section transition through a click, choice, form, or
+other interaction.
+
 ## Back Button Semantics
 
 The main `Back` action in reading UI should perform rollback, not history preview.
 
 Expected behavior:
 
-- If the player presses `Back`, the engine rolls back to the previous line checkpoint.
+- If the player presses `Back`, the engine rolls back to the nearest earlier
+  rollback landing point.
+- The engine skips any transient control-flow entries between the current line
+  and that target in the same `Back` action.
+- The engine must not render, pause on, or require another press to pass a
+  transient control-flow line.
 - This should work even if the current line is incomplete.
 - `Back` should not first "complete the current line" and require a second press.
+
+For example, if the reached path is:
+
+```text
+A (settled) -> B (conditional auto-continue) -> C (settled)
+```
+
+one press of `Back` from `C` restores `A`, not `B`. Likewise, if `B` is a
+line-entry `sectionTransition`, `Back` from the destination section restores
+`A` in one press. Consecutive transient lines are all skipped.
+
+If no earlier landing point exists, `Back` is a no-op and the Back control
+should be disabled.
+
+`resetStoryAtSection` is different: it intentionally creates a new rollback
+timeline. `Back` cannot cross that destructive reset boundary because the
+pre-reset timeline is no longer part of the active story run.
+
+This target-selection rule is implemented by resolving player-facing offsets
+over eligible landing points rather than adjacent raw timeline entries.
 
 Rationale:
 
@@ -93,7 +145,7 @@ Current product policy is:
 
 Meaning:
 
-- The player may roll back to an earlier checkpoint.
+- The player may roll back to an earlier landing point.
 - The player may then advance again and make different decisions.
 - The old future branch is discarded once the player diverges.
 
@@ -109,18 +161,38 @@ These policies are not part of the current behavior, but the internal checkpoint
 
 ## Checkpoint Granularity
 
-Checkpoints are line-level.
+Checkpoints and internal timeline entries are line-level.
 
 That means:
 
-- every line that the player reaches becomes a rollback checkpoint
-- rollback moves between lines, not between arbitrary internal action steps
+- every reached line may be retained in the timeline for deterministic replay
+  and bookkeeping
+- only rollback landing points are eligible `Back` destinations
+- rollback moves between eligible lines, not between arbitrary internal action
+  steps
 
 This is intentionally simple and predictable.
 
 For now, we do not introduce finer-grained checkpoint kinds.
 
-The checkpoint structure should remain extensible so future metadata can be attached if needed.
+The checkpoint structure should remain extensible so target-eligibility and
+future policy metadata can be attached if needed. Skipping a transient entry
+does not require deleting it from the replay timeline.
+
+Eligibility is stored sparsely: checkpoints are returnable by default, while a
+transient checkpoint carries `returnable: false`. The source occurrence is
+marked as soon as line-entry processing changes the story pointer, before
+destination effects or a later action can save the timeline. This also covers
+multiple routing actions in one line-entry batch: every intermediate entry that
+the player never receives as a settled reading position is transient.
+If a sibling `saveSlot` runs earlier in that same batch, the engine repairs that
+exact saved occurrence once routing succeeds and emits an updated persistence
+effect; action ordering cannot make the transient line returnable after load.
+
+When `Back` skips a transient entry and restores an earlier landing point,
+replay ends at that earlier target, so rollbackable mutations from the skipped
+future entry are undone. Retaining the entry is still necessary when
+reconstructing a later landing point whose state includes those mutations.
 
 ## Cross-Section Rollback
 
@@ -156,6 +228,11 @@ When the player rolls back and then advances again, the abandoned future after t
 This does not lose the shared past. It intentionally discards only the branch the player is no longer on.
 
 `rollback.timeline` is therefore suitable for save-local "active path from the beginning of this run" semantics. It is not suitable for account-level "everything this player has ever seen" semantics.
+
+Save data preserves landing-point eligibility. Loads created before the
+eligibility marker existed derive the known conditional and section-transition
+cases from the saved path and current project data; new saves carry a
+returnability format marker so that derivation is not repeated.
 
 The timeline can be reset by destructive story navigation, such as `resetStoryAtSection`, which creates a new context-local rollback timeline anchored at the destination section.
 
@@ -400,8 +477,12 @@ Those should be treated as implementation details that can be replaced if they d
 The design is correct if all of the following are true:
 
 - `Back` always means rollback
+- `Back` resolves to the previous rollback landing point in one action
+- rollback never renders or pauses on a transient conditional or
+  section-transition source line
 - rollback works on incomplete lines
 - rollback crosses section boundaries
+- rollback does not cross a `resetStoryAtSection` timeline boundary
 - rollback reconstructs presentation from story state
 - rollback does not affect seen-state
 - rollback does not affect persistent/global device/account variables

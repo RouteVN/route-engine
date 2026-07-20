@@ -1,0 +1,283 @@
+---
+title: Rollback Back Skips Line Conditional
+description: One real Back click from visible C should skip an empty line-authored conditional and restore visible A.
+specs:
+  - visible A advances through a line whose only routing action is a conditional
+  - the matched conditional mutates stage and implicitly continues to visible C
+  - visible C is captured before using its real layout Back control
+  - one rollbackByOffset -1 click restores visible A at stage 0
+  - landing on the transient conditional instead renders an explicit red failure state at stage 1
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: click
+    x: 480
+    y: 410
+  - action: wait
+    ms: 180
+  - action: screenshot
+  - action: click
+    x: 480
+    y: 410
+  - action: wait
+    ms: 180
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+resources:
+  variables:
+    stage:
+      type: number
+      scope: context
+      default: 0
+  layouts:
+    sourceLayout:
+      elements:
+        - id: source-background
+          type: rect
+          x: 0
+          y: 0
+          width: 960
+          height: 540
+          colorId: backgroundColor
+        - id: source-pass-card
+          $when: variables.stage == 0
+          type: rect
+          x: 80
+          y: 70
+          width: 800
+          height: 230
+          colorId: passPanelColor
+        - id: source-pass-heading
+          $when: variables.stage == 0
+          type: text
+          x: 480
+          y: 110
+          anchorX: 0.5
+          content: "VISIBLE A — VALID BACK TARGET"
+          textStyleId: headingText
+        - id: source-pass-detail
+          $when: variables.stage == 0
+          type: text
+          x: 480
+          y: 175
+          anchorX: 0.5
+          content: "PASS: one Back skipped the empty conditional line"
+          textStyleId: passText
+        - id: source-pass-stage
+          $when: variables.stage == 0
+          type: text
+          x: 480
+          y: 230
+          anchorX: 0.5
+          content: "Rollback stage: ${variables.stage} (expected 0)"
+          textStyleId: bodyText
+        - id: source-fail-card
+          $when: variables.stage == 1
+          type: rect
+          x: 80
+          y: 70
+          width: 800
+          height: 230
+          colorId: failPanelColor
+        - id: source-fail-heading
+          $when: variables.stage == 1
+          type: text
+          x: 480
+          y: 110
+          anchorX: 0.5
+          content: "FAIL — EMPTY CONDITIONAL SELECTED"
+          textStyleId: headingText
+        - id: source-fail-detail
+          $when: variables.stage == 1
+          type: text
+          x: 480
+          y: 175
+          anchorX: 0.5
+          content: "Back stopped on the transient line instead of A"
+          textStyleId: failText
+        - id: source-fail-stage
+          $when: variables.stage == 1
+          type: text
+          x: 480
+          y: 230
+          anchorX: 0.5
+          content: "Rollback stage: ${variables.stage} (must be 0)"
+          textStyleId: bodyText
+        - id: source-next-button
+          type: rect
+          x: 290
+          y: 360
+          width: 380
+          height: 100
+          colorId: actionColor
+          click:
+            payload:
+              actions:
+                nextLine: {}
+        - id: source-next-label
+          type: text
+          x: 480
+          y: 394
+          anchorX: 0.5
+          content: "NEXT: A → conditional → C"
+          textStyleId: buttonText
+    destinationLayout:
+      elements:
+        - id: destination-background
+          type: rect
+          x: 0
+          y: 0
+          width: 960
+          height: 540
+          colorId: backgroundColor
+        - id: destination-card
+          type: rect
+          x: 80
+          y: 70
+          width: 800
+          height: 230
+          colorId: destinationPanelColor
+        - id: destination-heading
+          type: text
+          x: 480
+          y: 110
+          anchorX: 0.5
+          content: "VISIBLE C — CONDITIONAL CROSSED"
+          textStyleId: headingText
+        - id: destination-detail
+          type: text
+          x: 480
+          y: 175
+          anchorX: 0.5
+          content: "Click Back once; A must be the next visible checkpoint"
+          textStyleId: bodyText
+        - id: destination-stage
+          type: text
+          x: 480
+          y: 230
+          anchorX: 0.5
+          content: "Forward stage: ${variables.stage} (expected 2)"
+          textStyleId: bodyText
+        - id: destination-back-button
+          type: rect
+          x: 290
+          y: 360
+          width: 380
+          height: 100
+          colorId: actionColor
+          click:
+            payload:
+              actions:
+                rollbackByOffset:
+                  offset: -1
+        - id: destination-back-label
+          type: text
+          x: 480
+          y: 394
+          anchorX: 0.5
+          content: "BACK ONCE"
+          textStyleId: buttonText
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    backgroundColor:
+      hex: "#10151F"
+    passPanelColor:
+      hex: "#174D3A"
+    failPanelColor:
+      hex: "#6B1F2A"
+    destinationPanelColor:
+      hex: "#243B66"
+    actionColor:
+      hex: "#386FA4"
+    textColor:
+      hex: "#F4F7FB"
+    passTextColor:
+      hex: "#8FF0C3"
+    failTextColor:
+      hex: "#FFADB8"
+  textStyles:
+    headingText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 32
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    bodyText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 24
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    passText:
+      fontId: fontDefault
+      colorId: passTextColor
+      fontSize: 26
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    failText:
+      fontId: fontDefault
+      colorId: failTextColor
+      fontSize: 26
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    buttonText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 24
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      name: Conditional rollback landing
+      initialSectionId: story
+      sections:
+        story:
+          name: Visible checkpoints around a conditional
+          lines:
+            - id: visibleA
+              actions:
+                updateVariable:
+                  id: enterVisibleA
+                  operations:
+                    - variableId: stage
+                      op: set
+                      value: 0
+                background:
+                  resourceId: sourceLayout
+            - id: emptyConditional
+              actions:
+                conditional:
+                  branches:
+                    - when: true
+                      actions:
+                        updateVariable:
+                          id: enterEmptyConditional
+                          operations:
+                            - variableId: stage
+                              op: set
+                              value: 1
+            - id: visibleC
+              actions:
+                updateVariable:
+                  id: enterVisibleC
+                  operations:
+                    - variableId: stage
+                      op: set
+                      value: 2
+                background:
+                  resourceId: destinationLayout

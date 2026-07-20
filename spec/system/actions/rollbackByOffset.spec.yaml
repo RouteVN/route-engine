@@ -124,6 +124,232 @@ out:
             lineId: "2"
             rollbackPolicy: "free"
 ---
+case: skips consecutive non-returnable checkpoints by default
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                    - id: "2"
+                    - id: "3"
+                section2:
+                  lines:
+                    - id: "4"
+        resources:
+          variables: {}
+      global:
+        isLineCompleted: false
+        pendingEffects: []
+      contexts:
+        - variables: {}
+          currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section2"
+              lineId: "4"
+          rollback:
+            currentIndex: 3
+            isRestoring: false
+            replayStartIndex: 0
+            timeline:
+              - sectionId: "section1"
+                lineId: "1"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "2"
+                rollbackPolicy: "free"
+                returnable: false
+              - sectionId: "section1"
+                lineId: "3"
+                rollbackPolicy: "free"
+                returnable: false
+              - sectionId: "section2"
+                lineId: "4"
+                rollbackPolicy: "free"
+  - {}
+out:
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                - id: "2"
+                - id: "3"
+            section2:
+              lines:
+                - id: "4"
+    resources:
+      variables: {}
+  global:
+    isLineCompleted: true
+    dialogueUIHidden: false
+    overlayStack: []
+    nextLineConfig:
+      manual:
+        enabled: true
+        requireLineCompleted: false
+      auto:
+        enabled: false
+      applyMode: "persistent"
+    pendingEffects:
+      - name: "clearNextLineConfigTimer"
+      - name: "render"
+  contexts:
+    - variables: {}
+      currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "1"
+      rollback:
+        currentIndex: 0
+        isRestoring: false
+        replayStartIndex: 0
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "2"
+            rollbackPolicy: "free"
+            returnable: false
+          - sectionId: "section1"
+            lineId: "3"
+            rollbackPolicy: "free"
+            returnable: false
+          - sectionId: "section2"
+            lineId: "4"
+            rollbackPolicy: "free"
+---
+case: counts only returnable checkpoints for offsets less than -1
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                    - id: "2"
+                    - id: "3"
+                section2:
+                  lines:
+                    - id: "4"
+                    - id: "5"
+                    - id: "6"
+        resources:
+          variables: {}
+      global:
+        isLineCompleted: false
+        pendingEffects: []
+      contexts:
+        - variables: {}
+          currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section2"
+              lineId: "6"
+          rollback:
+            currentIndex: 5
+            isRestoring: false
+            replayStartIndex: 0
+            timeline:
+              - sectionId: "section1"
+                lineId: "1"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "2"
+                rollbackPolicy: "free"
+                returnable: false
+              - sectionId: "section1"
+                lineId: "3"
+                rollbackPolicy: "free"
+              - sectionId: "section2"
+                lineId: "4"
+                rollbackPolicy: "free"
+                returnable: false
+              - sectionId: "section2"
+                lineId: "5"
+                rollbackPolicy: "free"
+              - sectionId: "section2"
+                lineId: "6"
+                rollbackPolicy: "free"
+  - offset: -2
+out:
+  projectData:
+    story:
+      scenes:
+        scene1:
+          sections:
+            section1:
+              lines:
+                - id: "1"
+                - id: "2"
+                - id: "3"
+            section2:
+              lines:
+                - id: "4"
+                - id: "5"
+                - id: "6"
+    resources:
+      variables: {}
+  global:
+    isLineCompleted: true
+    dialogueUIHidden: false
+    overlayStack: []
+    nextLineConfig:
+      manual:
+        enabled: true
+        requireLineCompleted: false
+      auto:
+        enabled: false
+      applyMode: "persistent"
+    pendingEffects:
+      - name: "clearNextLineConfigTimer"
+      - name: "render"
+  contexts:
+    - variables: {}
+      currentPointerMode: "read"
+      pointers:
+        read:
+          sectionId: "section1"
+          lineId: "3"
+      rollback:
+        currentIndex: 2
+        isRestoring: false
+        replayStartIndex: 0
+        timeline:
+          - sectionId: "section1"
+            lineId: "1"
+            rollbackPolicy: "free"
+          - sectionId: "section1"
+            lineId: "2"
+            rollbackPolicy: "free"
+            returnable: false
+          - sectionId: "section1"
+            lineId: "3"
+            rollbackPolicy: "free"
+          - sectionId: "section2"
+            lineId: "4"
+            rollbackPolicy: "free"
+            returnable: false
+          - sectionId: "section2"
+            lineId: "5"
+            rollbackPolicy: "free"
+          - sectionId: "section2"
+            lineId: "6"
+            rollbackPolicy: "free"
+---
 case: rollback uses the checkpoint timeline even when history state is absent
 in:
   - state:

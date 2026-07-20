@@ -56,6 +56,9 @@ defs:
         type: string
       rollbackPolicy:
         type: string
+      returnable:
+        type: boolean
+        description: False when this checkpoint is an internal transient control-flow entry
       executedActions:
         type: array
         items:
@@ -83,6 +86,10 @@ defs:
         type: boolean
       replayStartIndex:
         type: integer
+      returnabilityVersion:
+        type: integer
+        minimum: 1
+        description: Persisted migration marker for sparse rollback landing-point eligibility
     required: [timeline, currentIndex, isRestoring, replayStartIndex]
     additionalProperties: false
 
