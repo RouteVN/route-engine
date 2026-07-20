@@ -1,4 +1,4 @@
-import { current, isDraft } from "immer";
+import { current, isDraft, original } from "immer";
 import {
   createStore,
   evaluateRouteCondition,
@@ -41,6 +41,7 @@ const DEFAULT_NEXT_LINE_CONFIG = {
 };
 
 const CURRENT_SAVE_FORMAT_VERSION = 1;
+const ROLLBACK_RETURNABILITY_VERSION = 1;
 const CHOICE_INTERACTION_SOURCE = "choice";
 const FORM_INTERACTION_SOURCE = "form";
 
@@ -285,9 +286,15 @@ const sanitizePersistedRollback = (rollback) => {
     return;
   }
 
+  rollback.returnabilityVersion = ROLLBACK_RETURNABILITY_VERSION;
+
   rollback.timeline.forEach((checkpoint) => {
     if (!isRecord(checkpoint)) {
       return;
+    }
+
+    if (typeof checkpoint.returnable !== "boolean") {
+      delete checkpoint.returnable;
     }
 
     const sanitizedExecutedActions = sanitizePersistedRollbackExecutedActions(
@@ -447,6 +454,215 @@ const normalizeLoadedReadPointer = (pointer, projectData, path) => {
   };
 };
 
+const isSameRollbackPointer = (left, right) =>
+  left?.sectionId === right?.sectionId && left?.lineId === right?.lineId;
+
+const getRollbackLine = (projectData, checkpoint) => {
+  const { section } = findSectionInProjectData(
+    projectData,
+    checkpoint?.sectionId,
+  );
+  return section?.lines?.find((line) => line.id === checkpoint?.lineId);
+};
+
+const getNextAuthoredRollbackPointer = (projectData, checkpoint) => {
+  const { section } = findSectionInProjectData(
+    projectData,
+    checkpoint?.sectionId,
+  );
+  const currentLineIndex = section?.lines?.findIndex(
+    (line) => line.id === checkpoint?.lineId,
+  );
+  if (typeof currentLineIndex !== "number" || currentLineIndex < 0) {
+    return null;
+  }
+
+  const nextLine = section.lines[currentLineIndex + 1];
+  return nextLine
+    ? { sectionId: checkpoint.sectionId, lineId: nextLine.id }
+    : null;
+};
+
+const sectionTransitionTargetsRollbackPointer = (
+  projectData,
+  payload,
+  checkpoint,
+) => {
+  if (typeof payload?.sectionId !== "string") {
+    return false;
+  }
+
+  const { section } = findSectionInProjectData(projectData, payload.sectionId);
+  return isSameRollbackPointer(
+    {
+      sectionId: payload.sectionId,
+      lineId: section?.lines?.[0]?.id,
+    },
+    checkpoint,
+  );
+};
+
+const CONDITIONAL_ROLLBACK_ROUTING_ACTIONS = new Set([
+  "jumpToLine",
+  "rollbackByOffset",
+  "rollbackToLine",
+  "sectionTransition",
+  "resetStoryAtSection",
+]);
+
+const LEGACY_CONDITIONAL_BRANCH_REACHABILITY = {
+  always: "always",
+  maybe: "maybe",
+  never: "never",
+};
+
+const getLegacyConditionalBranchReachability = (branch) => {
+  if (!Object.prototype.hasOwnProperty.call(branch ?? {}, "when")) {
+    return LEGACY_CONDITIONAL_BRANCH_REACHABILITY.always;
+  }
+
+  const condition = branch.when;
+  let staticValue;
+  if (
+    condition === null ||
+    typeof condition === "boolean" ||
+    typeof condition === "number"
+  ) {
+    staticValue = condition;
+  } else if (
+    isRecord(condition) &&
+    Object.keys(condition).length === 1 &&
+    Object.prototype.hasOwnProperty.call(condition, "literal")
+  ) {
+    staticValue = condition.literal;
+  } else {
+    // Legacy checkpoints do not retain the variables/runtime from every
+    // occurrence. Treat dynamic conditions as possibly taken instead of
+    // evaluating them against the final save state.
+    return LEGACY_CONDITIONAL_BRANCH_REACHABILITY.maybe;
+  }
+
+  return staticValue
+    ? LEGACY_CONDITIONAL_BRANCH_REACHABILITY.always
+    : LEGACY_CONDITIONAL_BRANCH_REACHABILITY.never;
+};
+
+const someReachableLegacyConditionalBranch = (payload, predicate) => {
+  if (!Array.isArray(payload?.branches)) {
+    return false;
+  }
+
+  for (const branch of payload.branches) {
+    const reachability = getLegacyConditionalBranchReachability(branch);
+    if (reachability === LEGACY_CONDITIONAL_BRANCH_REACHABILITY.never) {
+      continue;
+    }
+
+    if (predicate(branch)) {
+      return true;
+    }
+
+    if (reachability === LEGACY_CONDITIONAL_BRANCH_REACHABILITY.always) {
+      return false;
+    }
+  }
+
+  return false;
+};
+
+const conditionalContainsRollbackRoutingAction = (payload) => {
+  return someReachableLegacyConditionalBranch(payload, (branch) =>
+    Object.entries(branch?.actions ?? {}).some(([actionType, actionPayload]) =>
+      actionType === "conditional"
+        ? conditionalContainsRollbackRoutingAction(actionPayload)
+        : CONDITIONAL_ROLLBACK_ROUTING_ACTIONS.has(actionType),
+    ),
+  );
+};
+
+const conditionalCanRouteToRollbackPointer = (
+  projectData,
+  payload,
+  checkpoint,
+) => {
+  return someReachableLegacyConditionalBranch(payload, (branch) =>
+    Object.entries(branch?.actions ?? {}).some(
+      ([actionType, actionPayload]) => {
+        if (actionType === "sectionTransition") {
+          return sectionTransitionTargetsRollbackPointer(
+            projectData,
+            actionPayload,
+            checkpoint,
+          );
+        }
+        if (actionType === "conditional") {
+          return conditionalCanRouteToRollbackPointer(
+            projectData,
+            actionPayload,
+            checkpoint,
+          );
+        }
+        return false;
+      },
+    ),
+  );
+};
+
+const deriveLegacyRollbackCheckpointReturnable = (
+  checkpoint,
+  nextCheckpoint,
+  projectData,
+) => {
+  if (!nextCheckpoint) {
+    return true;
+  }
+
+  const actions = getRollbackLine(projectData, checkpoint)?.actions;
+  if (!isRecord(actions)) {
+    return true;
+  }
+
+  if (
+    sectionTransitionTargetsRollbackPointer(
+      projectData,
+      actions.sectionTransition,
+      nextCheckpoint,
+    )
+  ) {
+    return false;
+  }
+
+  const conditional = actions.conditional;
+  if (!conditional) {
+    return true;
+  }
+
+  if (
+    conditionalCanRouteToRollbackPointer(
+      projectData,
+      conditional,
+      nextCheckpoint,
+    )
+  ) {
+    return false;
+  }
+
+  const hasBlockingInteraction =
+    actions.choice?.resourceId || actions.form?.resourceId;
+  if (
+    !hasBlockingInteraction &&
+    !conditionalContainsRollbackRoutingAction(conditional) &&
+    isSameRollbackPointer(
+      getNextAuthoredRollbackPointer(projectData, checkpoint),
+      nextCheckpoint,
+    )
+  ) {
+    return false;
+  }
+
+  return true;
+};
+
 const normalizeLoadedRollback = (rollback, readPointer, projectData) => {
   if (!isRecord(rollback) || !Array.isArray(rollback.timeline)) {
     return createRollbackState({
@@ -455,6 +671,7 @@ const normalizeLoadedRollback = (rollback, readPointer, projectData) => {
     });
   }
 
+  const checkpointsWithExplicitReturnability = new WeakSet();
   const timeline = rollback.timeline.flatMap((checkpoint, index) => {
     if (!isRecord(checkpoint)) {
       return [];
@@ -470,7 +687,11 @@ const normalizeLoadedRollback = (rollback, readPointer, projectData) => {
         sectionId: normalizedPointer.sectionId,
         lineId: normalizedPointer.lineId,
         rollbackPolicy: checkpoint.rollbackPolicy,
+        returnable: checkpoint.returnable,
       });
+      if (typeof checkpoint.returnable === "boolean") {
+        checkpointsWithExplicitReturnability.add(normalizedCheckpoint);
+      }
 
       const sanitizedExecutedActions = sanitizePersistedRollbackExecutedActions(
         cloneStateValue(checkpoint.executedActions),
@@ -489,6 +710,23 @@ const normalizeLoadedRollback = (rollback, readPointer, projectData) => {
     return createRollbackState({
       pointer: readPointer,
       replayStartIndex: 1,
+    });
+  }
+
+  const shouldDeriveLegacyReturnability =
+    rollback.returnabilityVersion !== ROLLBACK_RETURNABILITY_VERSION;
+  if (shouldDeriveLegacyReturnability) {
+    timeline.forEach((checkpoint, index) => {
+      if (
+        !checkpointsWithExplicitReturnability.has(checkpoint) &&
+        !deriveLegacyRollbackCheckpointReturnable(
+          checkpoint,
+          timeline[index + 1],
+          projectData,
+        )
+      ) {
+        checkpoint.returnable = false;
+      }
     });
   }
 
@@ -924,10 +1162,16 @@ const rollbackActionBatchStack = [];
 const ROLLBACK_ACTION_SOURCE_LINE = "line";
 const ROLLBACK_ACTION_SOURCE_INTERACTION = "interaction";
 
-const createRollbackCheckpoint = ({ sectionId, lineId, rollbackPolicy }) => ({
+const createRollbackCheckpoint = ({
+  sectionId,
+  lineId,
+  rollbackPolicy,
+  returnable,
+}) => ({
   sectionId,
   lineId,
   rollbackPolicy: rollbackPolicy ?? "free",
+  ...(typeof returnable === "boolean" ? { returnable } : {}),
 });
 
 const getRollbackContextVariableDefaults = (projectData) => {
@@ -1243,19 +1487,93 @@ const appendRollbackCheckpoint = (state, payload) => {
     rollback.timeline = rollback.timeline.slice(0, rollback.currentIndex + 1);
   }
 
-  const lastCheckpoint = rollback.timeline[rollback.timeline.length - 1];
-  if (
-    lastCheckpoint?.sectionId === payload.sectionId &&
-    lastCheckpoint?.lineId === payload.lineId &&
-    (lastCheckpoint?.rollbackPolicy ?? "free") ===
-      (payload.rollbackPolicy ?? "free")
-  ) {
-    rollback.currentIndex = rollback.timeline.length - 1;
-    return;
-  }
-
+  // Each successful checkpoint-creating line entry is a distinct occurrence,
+  // even when it revisits the same authored line and policy back-to-back.
   rollback.timeline.push(createRollbackCheckpoint(payload));
   rollback.currentIndex = rollback.timeline.length - 1;
+};
+
+export const selectRollbackCursor = ({ state }) => {
+  const lastContext = state.contexts?.[state.contexts.length - 1];
+  const rollback = lastContext?.rollback;
+  if (
+    !Array.isArray(rollback?.timeline) ||
+    typeof rollback.currentIndex !== "number"
+  ) {
+    return null;
+  }
+
+  return {
+    checkpointIndex: rollback.currentIndex,
+    checkpoint: rollback.timeline[rollback.currentIndex] ?? null,
+  };
+};
+
+export const markRollbackCheckpointTransient = ({ state }, payload = {}) => {
+  const { checkpointIndex, checkpointIdentity, sectionId, lineId } = payload;
+  const lastContext = state.contexts?.[state.contexts.length - 1];
+  const rollback = lastContext?.rollback;
+  if (
+    !Number.isInteger(checkpointIndex) ||
+    !Array.isArray(rollback?.timeline) ||
+    typeof rollback.currentIndex !== "number"
+  ) {
+    return state;
+  }
+
+  const checkpoint = rollback.timeline[checkpointIndex];
+  const checkpointOriginal = isDraft(checkpoint)
+    ? original(checkpoint)
+    : checkpoint;
+  if (
+    checkpointOriginal !== checkpointIdentity ||
+    checkpoint?.sectionId !== sectionId ||
+    checkpoint?.lineId !== lineId
+  ) {
+    return state;
+  }
+
+  checkpoint.returnable = false;
+  return state;
+};
+
+export const markSavedRollbackCheckpointTransient = (
+  { state },
+  payload = {},
+) => {
+  const { slotId, saveSlotIdentity, checkpointIndex, sectionId, lineId } =
+    payload;
+  const storageKey = toSlotStorageKey(slotId);
+  const saveSlot = state.global.saveSlots?.[storageKey];
+  const saveSlotOriginal = isDraft(saveSlot) ? original(saveSlot) : saveSlot;
+  if (!saveSlot || saveSlotOriginal !== saveSlotIdentity) {
+    return state;
+  }
+
+  const contexts = saveSlot.state?.contexts;
+  const savedContext = Array.isArray(contexts) ? contexts.at(-1) : null;
+  const rollback = savedContext?.rollback;
+  const checkpoint = rollback?.timeline?.[checkpointIndex];
+  if (
+    !Number.isInteger(checkpointIndex) ||
+    rollback?.currentIndex !== checkpointIndex ||
+    savedContext?.pointers?.read?.sectionId !== sectionId ||
+    savedContext?.pointers?.read?.lineId !== lineId ||
+    checkpoint?.sectionId !== sectionId ||
+    checkpoint?.lineId !== lineId
+  ) {
+    return state;
+  }
+
+  checkpoint.returnable = false;
+  rollback.returnabilityVersion = ROLLBACK_RETURNABILITY_VERSION;
+  state.global.pendingEffects.push({
+    name: "saveSlots",
+    payload: {
+      saveSlots: { ...state.global.saveSlots },
+    },
+  });
+  return state;
 };
 
 const getCurrentRollbackCheckpoint = (state) => {
@@ -3957,6 +4275,30 @@ const replayRollbackLineAction = (state, actionType, payload) => {
   getRollbackActionDefinition(actionType)?.replayLine?.(state, payload);
 };
 
+const isRollbackCheckpointReturnable = (checkpoint) =>
+  checkpoint?.returnable !== false;
+
+const resolveRollbackCheckpointIndexByOffset = (rollback, offset) => {
+  if (offset >= 0) {
+    return rollback.currentIndex + offset;
+  }
+
+  let remaining = Math.abs(offset);
+
+  for (let index = rollback.currentIndex - 1; index >= 0; index -= 1) {
+    if (!isRollbackCheckpointReturnable(rollback.timeline[index])) {
+      continue;
+    }
+
+    remaining -= 1;
+    if (remaining === 0) {
+      return index;
+    }
+  }
+
+  return -1;
+};
+
 /**
  * Selects a line ID by relative offset from the active rollback timeline.
  *
@@ -3991,7 +4333,7 @@ export const selectLineIdByOffset = ({ state }, payload) => {
     return null;
   }
 
-  const targetIndex = rollback.currentIndex + offset;
+  const targetIndex = resolveRollbackCheckpointIndexByOffset(rollback, offset);
   if (targetIndex < 0 || targetIndex >= rollback.timeline.length) {
     return null;
   }
@@ -4045,7 +4387,7 @@ export const rollbackByOffset = ({ state }, payload) => {
   const rollback = ensureRollbackState(lastContext, {
     compatibilityAnchor: !lastContext.rollback,
   });
-  const targetIndex = rollback.currentIndex + offset;
+  const targetIndex = resolveRollbackCheckpointIndexByOffset(rollback, offset);
   if (targetIndex < 0 || targetIndex >= rollback.timeline.length) {
     return state;
   }
@@ -4138,6 +4480,7 @@ export const createSystemStore = (initialState) => {
     selectOverlayStack,
     selectLineIdByOffset,
     selectCanRollback,
+    selectRollbackCursor,
 
     // Actions
     startAutoMode,
@@ -4172,6 +4515,8 @@ export const createSystemStore = (initialState) => {
     showAchievements,
     beginRollbackActionBatch,
     endRollbackActionBatch,
+    markRollbackCheckpointTransient,
+    markSavedRollbackCheckpointTransient,
     addViewedLine,
     addViewedResource,
     setNextLineConfig,

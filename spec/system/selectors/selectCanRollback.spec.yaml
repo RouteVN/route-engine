@@ -1,0 +1,67 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore selectors
+suites: [selectCanRollback]
+---
+suite: selectCanRollback
+exportName: selectCanRollback
+---
+case: returns true when an earlier returnable checkpoint exists
+in:
+  - state:
+      global: {}
+      contexts:
+        - rollback:
+            currentIndex: 3
+            timeline:
+              - sectionId: "section1"
+                lineId: "1"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "2"
+                rollbackPolicy: "free"
+                returnable: false
+              - sectionId: "section1"
+                lineId: "3"
+                rollbackPolicy: "free"
+                returnable: false
+              - sectionId: "section1"
+                lineId: "4"
+                rollbackPolicy: "free"
+out: true
+---
+case: returns false when every earlier checkpoint is non-returnable
+in:
+  - state:
+      global: {}
+      contexts:
+        - rollback:
+            currentIndex: 2
+            timeline:
+              - sectionId: "section1"
+                lineId: "1"
+                rollbackPolicy: "free"
+                returnable: false
+              - sectionId: "section1"
+                lineId: "2"
+                rollbackPolicy: "free"
+                returnable: false
+              - sectionId: "section1"
+                lineId: "3"
+                rollbackPolicy: "free"
+out: false
+---
+case: treats legacy checkpoints without eligibility metadata as returnable
+in:
+  - state:
+      global: {}
+      contexts:
+        - rollback:
+            currentIndex: 1
+            timeline:
+              - sectionId: "section1"
+                lineId: "1"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "2"
+                rollbackPolicy: "free"
+out: true

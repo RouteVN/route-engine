@@ -178,6 +178,12 @@ That means:
 - `Back` after a restart stays inside the new story run
 - the player cannot roll back into the pre-reset title/gameplay state
 
+The destination root is a fresh checkpoint occurrence even when the reset
+targets the section and first line already under the current read pointer. Its
+queued line-entry actions classify that replacement root normally: if they
+immediately route elsewhere, the root becomes transient and `Back` does not
+stop on it.
+
 ## RouteEngine Interface
 
 ```js

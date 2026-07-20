@@ -86,3 +86,173 @@ in:
 out:
   sectionId: "section1"
   lineId: "3"
+---
+case: skips consecutive non-returnable checkpoints for offset -1
+in:
+  - state:
+      global: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section2"
+              lineId: "5"
+          rollback:
+            currentIndex: 4
+            isRestoring: false
+            replayStartIndex: 0
+            timeline:
+              - sectionId: "section1"
+                lineId: "1"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "2"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "3"
+                rollbackPolicy: "free"
+                returnable: false
+              - sectionId: "section2"
+                lineId: "4"
+                rollbackPolicy: "free"
+                returnable: false
+              - sectionId: "section2"
+                lineId: "5"
+                rollbackPolicy: "free"
+  - offset: -1
+out:
+  sectionId: "section1"
+  lineId: "2"
+---
+case: counts only returnable checkpoints for offsets less than -1
+in:
+  - state:
+      global: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section2"
+              lineId: "6"
+          rollback:
+            currentIndex: 5
+            isRestoring: false
+            replayStartIndex: 0
+            timeline:
+              - sectionId: "section1"
+                lineId: "1"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "2"
+                rollbackPolicy: "free"
+                returnable: false
+              - sectionId: "section1"
+                lineId: "3"
+                rollbackPolicy: "free"
+              - sectionId: "section2"
+                lineId: "4"
+                rollbackPolicy: "free"
+                returnable: false
+              - sectionId: "section2"
+                lineId: "5"
+                rollbackPolicy: "free"
+              - sectionId: "section2"
+                lineId: "6"
+                rollbackPolicy: "free"
+  - offset: -2
+out:
+  sectionId: "section1"
+  lineId: "3"
+---
+case: returns null when only earlier checkpoints are non-returnable
+in:
+  - state:
+      global: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "3"
+          rollback:
+            currentIndex: 2
+            isRestoring: false
+            replayStartIndex: 0
+            timeline:
+              - sectionId: "section1"
+                lineId: "1"
+                rollbackPolicy: "free"
+                returnable: false
+              - sectionId: "section1"
+                lineId: "2"
+                rollbackPolicy: "free"
+                returnable: false
+              - sectionId: "section1"
+                lineId: "3"
+                rollbackPolicy: "free"
+  - offset: -1
+out: null
+---
+case: treats explicit true and missing eligibility as returnable
+in:
+  - state:
+      global: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "4"
+          rollback:
+            currentIndex: 3
+            isRestoring: false
+            replayStartIndex: 0
+            timeline:
+              - sectionId: "section1"
+                lineId: "1"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "2"
+                rollbackPolicy: "free"
+                returnable: false
+              - sectionId: "section1"
+                lineId: "3"
+                rollbackPolicy: "free"
+                returnable: true
+              - sectionId: "section1"
+                lineId: "4"
+                rollbackPolicy: "free"
+  - offset: -2
+out:
+  sectionId: "section1"
+  lineId: "1"
+---
+case: positive offsets retain raw traversal through non-returnable checkpoints
+in:
+  - state:
+      global: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "1"
+          rollback:
+            currentIndex: 0
+            isRestoring: false
+            replayStartIndex: 0
+            timeline:
+              - sectionId: "section1"
+                lineId: "1"
+                rollbackPolicy: "free"
+              - sectionId: "section1"
+                lineId: "2"
+                rollbackPolicy: "free"
+                returnable: false
+              - sectionId: "section1"
+                lineId: "3"
+                rollbackPolicy: "free"
+  - offset: 1
+out:
+  sectionId: "section1"
+  lineId: "2"
