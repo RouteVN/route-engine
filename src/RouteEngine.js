@@ -33,6 +33,11 @@ const ROLLBACK_CHECKPOINT_CREATING_ACTION_TYPES = new Set([
   "resetStoryAtSection",
   "sectionTransition",
 ]);
+const ROLLBACK_CURSOR_REPLACING_ACTION_TYPES = new Set([
+  "loadSlot",
+  "rollbackByOffset",
+  "rollbackToLine",
+]);
 const FORM_INTERACTION_SOURCE = "form";
 const FORM_ACTION_TYPES = new Set(["submitForm", "cancelForm"]);
 
@@ -56,6 +61,7 @@ export default function createRouteEngine(options) {
   let _isProcessingPendingEffects = false;
   let _conditionalRoutingSequence = 0;
   let _rollbackNavigationContexts = [];
+  let _pendingRollbackLineEntrySaveHandoff = null;
   let _persistentAnimationSessions = new Map();
   let _restoredPersistentAnimationSessions = new Map();
   let _renderPersistentAnimationMetadata = new Map();
@@ -137,6 +143,7 @@ export default function createRouteEngine(options) {
     _isProcessingPendingEffects = false;
     _conditionalRoutingSequence = 0;
     _rollbackNavigationContexts = [];
+    _pendingRollbackLineEntrySaveHandoff = null;
     _persistentAnimationSessions = new Map();
     _restoredPersistentAnimationSessions = new Map();
     _renderPersistentAnimationMetadata = new Map();
@@ -363,6 +370,35 @@ export default function createRouteEngine(options) {
     navigationContext.savedCheckpointOccurrences = [];
   };
 
+  const takeRollbackLineEntrySaveHandoff = (pointer, rollbackCursor) => {
+    const handoff = _pendingRollbackLineEntrySaveHandoff;
+    _pendingRollbackLineEntrySaveHandoff = null;
+    if (
+      !handoff ||
+      !isSameStoryPointer(handoff.pointer, pointer) ||
+      handoff.checkpointIndex !== rollbackCursor?.checkpointIndex ||
+      handoff.checkpointIdentity !== rollbackCursor?.checkpoint
+    ) {
+      return [];
+    }
+
+    return handoff.savedCheckpointOccurrences;
+  };
+
+  const finalizeRollbackNavigationCandidate = (navigationContext) => {
+    if (!navigationContext.markCurrentCheckpointTransient) {
+      return;
+    }
+
+    _systemStore.markRollbackCheckpointTransient({
+      checkpointIndex: navigationContext.rollbackCursor?.checkpointIndex,
+      checkpointIdentity: navigationContext.rollbackCursor?.checkpoint,
+      sectionId: navigationContext.pointer?.sectionId,
+      lineId: navigationContext.pointer?.lineId,
+    });
+    patchSavedTransientRollbackSources(navigationContext);
+  };
+
   const didCreateRollbackCheckpoint = (
     actionType,
     cursorBeforeAction,
@@ -413,29 +449,36 @@ export default function createRouteEngine(options) {
     }
 
     const settledPointer = _systemStore.selectCurrentPointer()?.pointer;
+    const createdCheckpoint = didCreateRollbackCheckpoint(
+      actionType,
+      cursorBeforeAction,
+      cursorAfterAction,
+    );
     if (isSameStoryPointer(navigationContext.pointer, settledPointer)) {
+      const replacedCheckpoint =
+        cursorAfterAction?.checkpoint !== cursorBeforeAction?.checkpoint ||
+        cursorAfterAction?.checkpointIndex !==
+          cursorBeforeAction?.checkpointIndex;
+      if (
+        createdCheckpoint ||
+        (replacedCheckpoint &&
+          ROLLBACK_CURSOR_REPLACING_ACTION_TYPES.has(actionType))
+      ) {
+        finalizeRollbackNavigationCandidate(navigationContext);
+        navigationContext.pointer = settledPointer;
+        navigationContext.rollbackCursor = cursorAfterAction;
+        navigationContext.markCurrentCheckpointTransient = createdCheckpoint;
+        navigationContext.savedCheckpointOccurrences = [];
+      }
       return;
     }
 
-    if (navigationContext.markCurrentCheckpointTransient) {
-      _systemStore.markRollbackCheckpointTransient({
-        checkpointIndex: navigationContext.rollbackCursor?.checkpointIndex,
-        checkpointIdentity: navigationContext.rollbackCursor?.checkpoint,
-        sectionId: navigationContext.pointer?.sectionId,
-        lineId: navigationContext.pointer?.lineId,
-      });
-      patchSavedTransientRollbackSources(navigationContext);
-    }
+    finalizeRollbackNavigationCandidate(navigationContext);
 
     navigationContext.pointer = settledPointer;
     navigationContext.rollbackCursor =
       _systemStore.selectRollbackCursor?.() ?? null;
-    navigationContext.markCurrentCheckpointTransient =
-      didCreateRollbackCheckpoint(
-        actionType,
-        cursorBeforeAction,
-        cursorAfterAction,
-      );
+    navigationContext.markCurrentCheckpointTransient = createdCheckpoint;
     navigationContext.savedCheckpointOccurrences = [];
   };
 
@@ -499,12 +542,15 @@ export default function createRouteEngine(options) {
       let result;
       const sourcePointer =
         _systemStore.selectCurrentPointer()?.pointer ?? null;
+      const sourceRollbackCursor =
+        _systemStore.selectRollbackCursor?.() ?? null;
       const routingSequence = _conditionalRoutingSequence;
       const navigationContext = {
         pointer: sourcePointer,
-        rollbackCursor: _systemStore.selectRollbackCursor?.() ?? null,
+        rollbackCursor: sourceRollbackCursor,
         markCurrentCheckpointTransient: options.rollbackSource === "line",
-        savedCheckpointOccurrences: [],
+        savedCheckpointOccurrences:
+          options.savedCheckpointOccurrences?.slice() ?? [],
       };
       _rollbackNavigationContexts.push(navigationContext);
       try {
@@ -526,6 +572,23 @@ export default function createRouteEngine(options) {
         }
       } finally {
         _rollbackNavigationContexts.pop();
+        const enteredAnotherCheckpoint =
+          !isSameStoryPointer(sourcePointer, navigationContext.pointer) ||
+          sourceRollbackCursor?.checkpoint !==
+            navigationContext.rollbackCursor?.checkpoint;
+        if (
+          enteredAnotherCheckpoint &&
+          navigationContext.markCurrentCheckpointTransient &&
+          navigationContext.savedCheckpointOccurrences.length > 0
+        ) {
+          _pendingRollbackLineEntrySaveHandoff = {
+            pointer: navigationContext.pointer,
+            checkpointIndex: navigationContext.rollbackCursor?.checkpointIndex,
+            checkpointIdentity: navigationContext.rollbackCursor?.checkpoint,
+            savedCheckpointOccurrences:
+              navigationContext.savedCheckpointOccurrences,
+          };
+        }
       }
     });
   };
@@ -751,11 +814,17 @@ export default function createRouteEngine(options) {
   const handleLineActions = () =>
     runWithDeferredEffects(() => {
       const enteredPointer = _systemStore.selectCurrentPointer()?.pointer;
+      const rollbackCursor = _systemStore.selectRollbackCursor?.() ?? null;
+      const savedCheckpointOccurrences = takeRollbackLineEntrySaveHandoff(
+        enteredPointer,
+        rollbackCursor,
+      );
       const line = _systemStore.selectCurrentLine();
       let handledLineActions = false;
       if (line?.actions) {
         handleActions(line.actions, undefined, {
           rollbackSource: "line",
+          savedCheckpointOccurrences,
         });
         handledLineActions = true;
       }

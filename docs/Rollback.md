@@ -188,6 +188,19 @@ the player never receives as a settled reading position is transient.
 If a sibling `saveSlot` runs earlier in that same batch, the engine repairs that
 exact saved occurrence once routing succeeds and emits an updated persistence
 effect; action ordering cannot make the transient line returnable after load.
+The same exact-occurrence handoff continues across entry batches: when a route
+and save happen before the destination's queued line actions run, that saved
+destination is repaired if its own entry actions immediately route again. A
+destination that settles keeps its default returnability.
+If a reset, load, or rollback replaces the active checkpoint without changing
+its section and line IDs, the outgoing candidate and any exact saved
+occurrences are finalized before the replacement cursor takes ownership.
+
+Adjacent entries with the same section, line, and policy are normally
+deduplicated. A transient occurrence is the exception: re-entering that line
+appends a fresh checkpoint so the new occurrence can independently settle as a
+landing point or be marked transient again. The earlier transient occurrence
+remains in the replay timeline with `returnable: false`.
 
 When `Back` skips a transient entry and restores an earlier landing point,
 replay ends at that earlier target, so rollbackable mutations from the skipped
@@ -234,7 +247,12 @@ eligibility marker existed derive the known conditional and section-transition
 cases from the saved path and current project data; new saves carry a
 returnability format marker so that derivation is not repeated.
 
-The timeline can be reset by destructive story navigation, such as `resetStoryAtSection`, which creates a new context-local rollback timeline anchored at the destination section.
+The timeline can be reset by destructive story navigation, such as
+`resetStoryAtSection`, which creates a new context-local rollback timeline
+anchored at the destination section. The replacement checkpoint is a new
+occurrence even when the reset targets the section and first line already under
+the read pointer. Any later line-entry route classifies that replacement root,
+not the deleted pre-reset checkpoint.
 
 ## Rollback Scope
 

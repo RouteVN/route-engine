@@ -1421,7 +1421,8 @@ const appendRollbackCheckpoint = (state, payload) => {
     lastCheckpoint?.sectionId === payload.sectionId &&
     lastCheckpoint?.lineId === payload.lineId &&
     (lastCheckpoint?.rollbackPolicy ?? "free") ===
-      (payload.rollbackPolicy ?? "free")
+      (payload.rollbackPolicy ?? "free") &&
+    lastCheckpoint?.returnable !== false
   ) {
     rollback.currentIndex = rollback.timeline.length - 1;
     return;

@@ -1,0 +1,341 @@
+---
+title: Rollback Transient Re-entry Can Settle
+description: Re-entering the same line after a transient occurrence must create an independently returnable landing point.
+specs:
+  - the first router occurrence conditionally jumps back to the anchor and becomes transient
+  - the anchor changes branch state before re-entering that same router line
+  - the second router occurrence settles visibly and then transitions to visible C
+  - one real Back click returns to the settled second occurrence, not the earlier anchor
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: click
+    x: 480
+    y: 430
+  - action: wait
+    ms: 150
+  - action: click
+    x: 480
+    y: 430
+  - action: wait
+    ms: 150
+  - action: click
+    x: 480
+    y: 430
+  - action: wait
+    ms: 180
+  - action: screenshot
+  - action: click
+    x: 480
+    y: 430
+  - action: wait
+    ms: 180
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+resources:
+  variables:
+    phase:
+      type: number
+      scope: context
+      default: 0
+  layouts:
+    storyLayout:
+      elements:
+        - id: background
+          type: rect
+          x: 0
+          y: 0
+          width: 960
+          height: 540
+          colorId: backgroundColor
+        - id: initial-card
+          $when: variables.phase == 0
+          type: rect
+          x: 80
+          y: 70
+          width: 800
+          height: 230
+          colorId: failPanelColor
+        - id: initial-heading
+          $when: variables.phase == 0
+          type: text
+          x: 480
+          y: 110
+          anchorX: 0.5
+          content: "ANCHOR A — WRONG FINAL BACK TARGET"
+          textStyleId: headingText
+        - id: initial-detail
+          $when: variables.phase == 0
+          type: text
+          x: 480
+          y: 180
+          anchorX: 0.5
+          content: "This is expected initially, but is a failure after Back"
+          textStyleId: bodyText
+        - id: loop-card
+          $when: variables.phase == 1
+          type: rect
+          x: 80
+          y: 70
+          width: 800
+          height: 230
+          colorId: loopPanelColor
+        - id: loop-heading
+          $when: variables.phase == 1
+          type: text
+          x: 480
+          y: 110
+          anchorX: 0.5
+          content: "ANCHOR REACHED THROUGH TRANSIENT ROUTER"
+          textStyleId: headingText
+        - id: loop-detail
+          $when: variables.phase == 1
+          type: text
+          x: 480
+          y: 180
+          anchorX: 0.5
+          content: "Change branch state and enter the same router again"
+          textStyleId: bodyText
+        - id: router-card
+          $when: variables.phase == 2
+          type: rect
+          x: 80
+          y: 70
+          width: 800
+          height: 230
+          colorId: passPanelColor
+        - id: router-heading
+          $when: variables.phase == 2
+          type: text
+          x: 480
+          y: 110
+          anchorX: 0.5
+          content: "VISIBLE ROUTER — FRESH SETTLED OCCURRENCE"
+          textStyleId: headingText
+        - id: router-detail
+          $when: variables.phase == 2
+          type: text
+          x: 480
+          y: 180
+          anchorX: 0.5
+          content: "PASS: Back selected this occurrence independently"
+          textStyleId: passText
+        - id: router-phase
+          $when: variables.phase == 2
+          type: text
+          x: 480
+          y: 235
+          anchorX: 0.5
+          content: "Restored phase: ${variables.phase} (expected 2)"
+          textStyleId: bodyText
+        - id: destination-card
+          $when: variables.phase == 3
+          type: rect
+          x: 80
+          y: 70
+          width: 800
+          height: 230
+          colorId: destinationPanelColor
+        - id: destination-heading
+          $when: variables.phase == 3
+          type: text
+          x: 480
+          y: 110
+          anchorX: 0.5
+          content: "VISIBLE C — READY FOR BACK"
+          textStyleId: headingText
+        - id: destination-detail
+          $when: variables.phase == 3
+          type: text
+          x: 480
+          y: 180
+          anchorX: 0.5
+          content: "One Back must restore the second router occurrence"
+          textStyleId: bodyText
+        - id: initial-next-button
+          $when: variables.phase == 0
+          type: rect
+          x: 290
+          y: 385
+          width: 380
+          height: 90
+          colorId: actionColor
+          click:
+            payload:
+              actions:
+                nextLine: {}
+        - id: initial-next-label
+          $when: variables.phase == 0
+          type: text
+          x: 480
+          y: 415
+          anchorX: 0.5
+          content: "ENTER ROUTER FIRST TIME"
+          textStyleId: buttonText
+        - id: loop-next-button
+          $when: variables.phase == 1
+          type: rect
+          x: 290
+          y: 385
+          width: 380
+          height: 90
+          colorId: actionColor
+          click:
+            payload:
+              actions:
+                updateVariable:
+                  id: chooseSettledBranch
+                  operations:
+                    - variableId: phase
+                      op: set
+                      value: 2
+                nextLine: {}
+        - id: loop-next-label
+          $when: variables.phase == 1
+          type: text
+          x: 480
+          y: 415
+          anchorX: 0.5
+          content: "RE-ENTER ROUTER AND SETTLE"
+          textStyleId: buttonText
+        - id: router-next-button
+          $when: variables.phase == 2
+          type: rect
+          x: 290
+          y: 385
+          width: 380
+          height: 90
+          colorId: actionColor
+          click:
+            payload:
+              actions:
+                sectionTransition:
+                  sectionId: destination
+        - id: router-next-label
+          $when: variables.phase == 2
+          type: text
+          x: 480
+          y: 415
+          anchorX: 0.5
+          content: "GO TO C"
+          textStyleId: buttonText
+        - id: destination-back-button
+          $when: variables.phase == 3
+          type: rect
+          x: 290
+          y: 385
+          width: 380
+          height: 90
+          colorId: actionColor
+          click:
+            payload:
+              actions:
+                rollbackByOffset:
+                  offset: -1
+        - id: destination-back-label
+          $when: variables.phase == 3
+          type: text
+          x: 480
+          y: 415
+          anchorX: 0.5
+          content: "BACK ONCE"
+          textStyleId: buttonText
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    backgroundColor:
+      hex: "#10151F"
+    failPanelColor:
+      hex: "#6B1F2A"
+    loopPanelColor:
+      hex: "#5A4A24"
+    passPanelColor:
+      hex: "#174D3A"
+    destinationPanelColor:
+      hex: "#243B66"
+    actionColor:
+      hex: "#386FA4"
+    textColor:
+      hex: "#F4F7FB"
+    passTextColor:
+      hex: "#8FF0C3"
+  textStyles:
+    headingText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 29
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    bodyText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 23
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    passText:
+      fontId: fontDefault
+      colorId: passTextColor
+      fontSize: 24
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    buttonText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 22
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      name: Transient re-entry settles
+      initialSectionId: loop
+      sections:
+        loop:
+          lines:
+            - id: anchor
+              actions:
+                background:
+                  resourceId: storyLayout
+            - id: router
+              actions:
+                background:
+                  resourceId: storyLayout
+                conditional:
+                  branches:
+                    - when:
+                        eq:
+                          - var: variables.phase
+                          - 0
+                      actions:
+                        updateVariable:
+                          id: recordFirstRouter
+                          operations:
+                            - variableId: phase
+                              op: set
+                              value: 1
+                        jumpToLine:
+                          lineId: anchor
+        destination:
+          lines:
+            - id: visibleC
+              actions:
+                updateVariable:
+                  id: enterVisibleC
+                  operations:
+                    - variableId: phase
+                      op: set
+                      value: 3
+                background:
+                  resourceId: storyLayout

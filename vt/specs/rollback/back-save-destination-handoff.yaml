@@ -1,0 +1,317 @@
+---
+title: Rollback Save Follows Destination Entry
+description: A save taken after routing must inherit the destination router's transient classification before load and Back.
+specs:
+  - visible A advances through a source router that transitions and then saves
+  - the saved destination entry immediately conditionally continues to visible C
+  - loading that slot and advancing back to C preserves the corrected destination eligibility
+  - one real Back click restores A instead of the saved destination router
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: click
+    x: 480
+    y: 430
+  - action: wait
+    ms: 180
+  - action: screenshot
+  - action: click
+    x: 480
+    y: 330
+  - action: wait
+    ms: 180
+  - action: click
+    x: 480
+    y: 440
+  - action: wait
+    ms: 180
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+resources:
+  variables:
+    stage:
+      type: number
+      scope: context
+      default: 0
+  layouts:
+    storyLayout:
+      elements:
+        - id: background
+          type: rect
+          x: 0
+          y: 0
+          width: 960
+          height: 540
+          colorId: backgroundColor
+        - id: source-card
+          $when: variables.stage == 0
+          type: rect
+          x: 80
+          y: 65
+          width: 800
+          height: 235
+          colorId: passPanelColor
+        - id: source-heading
+          $when: variables.stage == 0
+          type: text
+          x: 480
+          y: 105
+          anchorX: 0.5
+          content: "VISIBLE A — VALID BACK TARGET"
+          textStyleId: headingText
+        - id: source-detail
+          $when: variables.stage == 0
+          type: text
+          x: 480
+          y: 175
+          anchorX: 0.5
+          content: "PASS: saved destination router was skipped"
+          textStyleId: passText
+        - id: source-stage
+          $when: variables.stage == 0
+          type: text
+          x: 480
+          y: 235
+          anchorX: 0.5
+          content: "Rollback stage: ${variables.stage} (expected 0)"
+          textStyleId: bodyText
+        - id: fail-card
+          $when: variables.stage == 1
+          type: rect
+          x: 80
+          y: 65
+          width: 800
+          height: 235
+          colorId: failPanelColor
+        - id: fail-heading
+          $when: variables.stage == 1
+          type: text
+          x: 480
+          y: 105
+          anchorX: 0.5
+          content: "FAIL — SAVED ROUTER SELECTED"
+          textStyleId: headingText
+        - id: fail-detail
+          $when: variables.stage == 1
+          type: text
+          x: 480
+          y: 175
+          anchorX: 0.5
+          content: "Back stopped on the destination entry saved before it routed"
+          textStyleId: failText
+        - id: fail-stage
+          $when: variables.stage == 1
+          type: text
+          x: 480
+          y: 235
+          anchorX: 0.5
+          content: "Rollback stage: ${variables.stage} (must be 0)"
+          textStyleId: bodyText
+        - id: destination-card
+          $when: variables.stage == 2
+          type: rect
+          x: 80
+          y: 45
+          width: 800
+          height: 205
+          colorId: destinationPanelColor
+        - id: destination-heading
+          $when: variables.stage == 2
+          type: text
+          x: 480
+          y: 82
+          anchorX: 0.5
+          content: "VISIBLE C — SLOT READY"
+          textStyleId: headingText
+        - id: destination-detail
+          $when: variables.stage == 2
+          type: text
+          x: 480
+          y: 148
+          anchorX: 0.5
+          content: "Reload the routed save, return to C, then click Back once"
+          textStyleId: bodyText
+        - id: destination-stage
+          $when: variables.stage == 2
+          type: text
+          x: 480
+          y: 202
+          anchorX: 0.5
+          content: "Forward stage: ${variables.stage} (expected 2)"
+          textStyleId: bodyText
+        - id: source-next-button
+          $when: variables.stage == 0
+          type: rect
+          x: 290
+          y: 385
+          width: 380
+          height: 90
+          colorId: actionColor
+          click:
+            payload:
+              actions:
+                nextLine: {}
+        - id: source-next-label
+          $when: variables.stage == 0
+          type: text
+          x: 480
+          y: 415
+          anchorX: 0.5
+          content: "NEXT: A → route + save → C"
+          textStyleId: buttonText
+        - id: load-next-button
+          $when: variables.stage == 2
+          type: rect
+          x: 290
+          y: 280
+          width: 380
+          height: 90
+          colorId: actionColor
+          click:
+            payload:
+              actions:
+                loadSlot:
+                  slotId: 1
+                nextLine: {}
+        - id: load-next-label
+          $when: variables.stage == 2
+          type: text
+          x: 480
+          y: 310
+          anchorX: 0.5
+          content: "LOAD SLOT + RETURN TO C"
+          textStyleId: buttonText
+        - id: destination-back-button
+          $when: variables.stage == 2
+          type: rect
+          x: 290
+          y: 395
+          width: 380
+          height: 90
+          colorId: actionColor
+          click:
+            payload:
+              actions:
+                rollbackByOffset:
+                  offset: -1
+        - id: destination-back-label
+          $when: variables.stage == 2
+          type: text
+          x: 480
+          y: 425
+          anchorX: 0.5
+          content: "BACK ONCE"
+          textStyleId: buttonText
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    backgroundColor:
+      hex: "#10151F"
+    passPanelColor:
+      hex: "#174D3A"
+    failPanelColor:
+      hex: "#6B1F2A"
+    destinationPanelColor:
+      hex: "#243B66"
+    actionColor:
+      hex: "#386FA4"
+    textColor:
+      hex: "#F4F7FB"
+    passTextColor:
+      hex: "#8FF0C3"
+    failTextColor:
+      hex: "#FFADB8"
+  textStyles:
+    headingText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 31
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    bodyText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 22
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    passText:
+      fontId: fontDefault
+      colorId: passTextColor
+      fontSize: 25
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    failText:
+      fontId: fontDefault
+      colorId: failTextColor
+      fontSize: 23
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    buttonText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 22
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      name: Routed save destination handoff
+      initialSectionId: source
+      sections:
+        source:
+          lines:
+            - id: visibleA
+              actions:
+                updateVariable:
+                  id: enterVisibleA
+                  operations:
+                    - variableId: stage
+                      op: set
+                      value: 0
+                background:
+                  resourceId: storyLayout
+            - id: sourceRouter
+              actions:
+                sectionTransition:
+                  sectionId: destination
+                saveSlot:
+                  slotId: 1
+        destination:
+          lines:
+            - id: destinationRouter
+              actions:
+                updateVariable:
+                  id: enterDestinationRouter
+                  operations:
+                    - variableId: stage
+                      op: set
+                      value: 1
+                background:
+                  resourceId: storyLayout
+                conditional:
+                  branches:
+                    - when: true
+                      actions: {}
+            - id: visibleC
+              actions:
+                updateVariable:
+                  id: enterVisibleC
+                  operations:
+                    - variableId: stage
+                      op: set
+                      value: 2
+                background:
+                  resourceId: storyLayout

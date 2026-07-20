@@ -285,6 +285,9 @@ interaction does not make the already-presented source line transient.
 Transient entries may remain in `rollback.timeline` so state replay and
 bookkeeping stay deterministic. They must be marked or otherwise resolved as
 ineligible before player-facing rollback target selection.
+Classification and exact saved-occurrence ownership continue across deferred
+`handleLineActions` batches until the entered destination either settles or
+routes again.
 
 ### Required checkpoint creation points
 
@@ -304,7 +307,13 @@ ineligible before player-facing rollback target selection.
 
 - after landing on the destination section's first line
 
-5. `jumpToLine`
+5. `resetStoryAtSection`
+
+- replace the existing timeline with a fresh checkpoint for the destination
+  section's first line, including when its pointer IDs match the current line
+- classify that replacement occurrence through its queued line-entry actions
+
+6. `jumpToLine`
 
 - excluded from rollback timeline for now
 
@@ -331,7 +340,11 @@ Do not create duplicate adjacent checkpoints for the same:
 - `sectionId`
 - `lineId`
 
-unless future policy metadata requires it.
+unless occurrence-specific eligibility or future policy metadata requires it.
+In particular, do not reuse an adjacent checkpoint whose `returnable` value is
+`false`. A new entry to that same line needs a fresh, initially eligible
+checkpoint so its settled behavior can be classified independently without
+rewriting the earlier transient occurrence.
 
 Use one helper like:
 
@@ -692,21 +705,33 @@ Add or migrate tests for:
     the source
 29. multiple navigations in one line-entry batch mark every intermediate,
     never-settled checkpoint transient
+30. a save taken after routing but before destination line actions is corrected
+    if that destination immediately routes, including the emitted persistence
+    payload and a later load-plus-Back flow
+31. a same-pointer `resetStoryAtSection` refreshes the replacement checkpoint
+    before a later sibling route classifies it
+32. re-entering an adjacent transient checkpoint creates a fresh occurrence;
+    that occurrence may settle as returnable or be independently marked
+    transient again
+33. same-pointer reset and load replacements finalize exact saves from the
+    outgoing occurrence before installing the replacement cursor
 
 ### Browser/VT regression coverage
 
-Add isolated visual test pages for the actual Back input path. Each page should:
+The actual Back input path has isolated visual pages for:
 
-1. present settled line A
-2. pass through exactly one transient conditional or section-transition source
-3. present settled line C
-4. click the real Back control once
-5. assert and capture line A, with no render of the transient source
+- one transient line-authored conditional between settled A and C
+- one transient line-authored section transition between settled A and C
+- a route-then-save whose queued destination entry immediately routes again,
+  followed by load and one Back click
+- a same-pointer reset root followed by a sibling route, where one Back action
+  must be a no-op at the destination
+- a transient occurrence that is re-entered and settles, where Back must choose
+  the fresh occurrence
 
-Keep conditional and section-transition cases separate so each page exercises
-one control-flow problem. Pair these browser-level cases with the targeted
-unit/system state-transition coverage above. Keep the existing reset visual
-test as the destructive-boundary regression.
+Each page uses its real layout control and a distinct failure render. Keep these
+cases separate so a page exercises one control-flow problem, and pair them with
+the targeted unit/system state-transition coverage above.
 
 ### Regression tests for divergence
 

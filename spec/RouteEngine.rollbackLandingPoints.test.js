@@ -45,9 +45,10 @@ const createProjectData = ({ initialSectionId = "main", sections }) => ({
   },
 });
 
-const createEngineFromInitialState = (initialState) => {
+const createEngineFromInitialState = (initialState, observeEffects) => {
   let engine;
   const handlePendingEffects = (effects) => {
+    observeEffects?.(effects);
     effects.forEach((effect) => {
       if (effect.name === "handleLineActions") {
         engine.handleLineActions();
@@ -71,13 +72,14 @@ const createEngine = (projectData) =>
   });
 
 const createSavedTimelineSlot = ({
+  slotId = 1,
   readPointer,
   timeline,
   currentIndex = timeline.length - 1,
   returnabilityVersion,
 }) => ({
   formatVersion: 1,
-  slotId: 1,
+  slotId,
   savedAt: 1700000000000,
   image: null,
   state: {
@@ -550,6 +552,73 @@ describe("RouteEngine rollback landing points", () => {
     });
   });
 
+  it("creates fresh eligibility when a transient checkpoint is re-entered", () => {
+    const engine = createEngine(
+      createProjectData({
+        initialSectionId: "loop",
+        sections: {
+          loop: {
+            lines: [
+              settledLine("loopAnchor"),
+              settledLine("router", {
+                conditional: {
+                  branches: [
+                    {
+                      when: {
+                        eq: [{ var: "variables.score" }, 0],
+                      },
+                      actions: {
+                        jumpToLine: {
+                          lineId: "loopAnchor",
+                        },
+                      },
+                    },
+                  ],
+                },
+              }),
+            ],
+          },
+          destination: {
+            lines: [settledLine("after")],
+          },
+        },
+      }),
+    );
+
+    advance(engine);
+
+    expect(getPointer(engine).lineId).toBe("loopAnchor");
+    expect(getCheckpoint(engine, "loop", "router", 0)?.returnable).toBe(false);
+
+    engine.handleActions(updateScore("settleRouter", "set", 1));
+    advance(engine);
+
+    expect(getPointer(engine).lineId).toBe("router");
+    expect(getCheckpoint(engine, "loop", "router", 0)?.returnable).toBe(false);
+    expect(getCheckpoint(engine, "loop", "router", 1)?.returnable).not.toBe(
+      false,
+    );
+
+    engine.handleAction("sectionTransition", {
+      sectionId: "destination",
+    });
+    engine.handleAction("rollbackByOffset", {});
+
+    expect(getPointer(engine)).toMatchObject({
+      sectionId: "loop",
+      lineId: "router",
+    });
+    expect(getContext(engine).variables.score).toBe(1);
+
+    engine.handleAction("rollbackByOffset", {});
+
+    expect(getPointer(engine)).toMatchObject({
+      sectionId: "loop",
+      lineId: "loopAnchor",
+    });
+    expect(getContext(engine).variables.score).toBe(0);
+  });
+
   it("skips a conditional source that jumps without appending its destination", () => {
     const engine = createEngine(
       createProjectData({
@@ -893,6 +962,117 @@ describe("RouteEngine rollback landing points", () => {
     });
   });
 
+  it("refreshes a same-pointer reset root before a sibling route", () => {
+    const engine = createEngine(
+      createProjectData({
+        initialSectionId: "source",
+        sections: {
+          source: {
+            lines: [settledLine("before")],
+          },
+          main: {
+            lines: [
+              settledLine("router", {
+                resetStoryAtSection: {
+                  sectionId: "main",
+                },
+                sectionTransition: {
+                  sectionId: "destination",
+                },
+              }),
+            ],
+          },
+          destination: {
+            lines: [settledLine("after")],
+          },
+        },
+      }),
+    );
+
+    engine.handleAction("sectionTransition", {
+      sectionId: "main",
+    });
+
+    expect(getPointer(engine)).toMatchObject({
+      sectionId: "destination",
+      lineId: "after",
+    });
+    expect(getTimeline(engine)).toEqual([
+      expect.objectContaining({
+        sectionId: "main",
+        lineId: "router",
+        returnable: false,
+      }),
+      expect.objectContaining({
+        sectionId: "destination",
+        lineId: "after",
+      }),
+    ]);
+    expect(selectCanRollback({ state: engine.selectSystemState() })).toBe(
+      false,
+    );
+
+    engine.handleAction("rollbackByOffset", {});
+
+    expect(getPointer(engine)).toMatchObject({
+      sectionId: "destination",
+      lineId: "after",
+    });
+  });
+
+  it("finalizes a saved occurrence before a same-pointer reset replaces it", () => {
+    const engine = createEngine(
+      createProjectData({
+        initialSectionId: "source",
+        sections: {
+          source: {
+            lines: [settledLine("before")],
+          },
+          destination: {
+            lines: [settledLine("router")],
+          },
+          final: {
+            lines: [settledLine("after")],
+          },
+        },
+      }),
+    );
+
+    engine.handleActions({
+      sectionTransition: {
+        sectionId: "destination",
+      },
+      saveSlot: {
+        slotId: 1,
+        savedAt: 1700000000000,
+      },
+      resetStoryAtSection: {
+        sectionId: "destination",
+      },
+    });
+
+    expect(getTimeline(engine)).toHaveLength(1);
+    expect(getCheckpoint(engine, "destination", "router")?.returnable).not.toBe(
+      false,
+    );
+    const savedRollback =
+      engine.selectSystemState().global.saveSlots["1"].state.contexts[0]
+        .rollback;
+    expect(
+      savedRollback.timeline.find(({ lineId }) => lineId === "router")
+        ?.returnable,
+    ).toBe(false);
+
+    engine.handleAction("loadSlot", { slotId: 1 });
+    engine.handleAction("sectionTransition", { sectionId: "final" });
+    engine.handleAction("rollbackByOffset", {});
+
+    expect(getPointer(engine)).toMatchObject({
+      sectionId: "source",
+      lineId: "before",
+    });
+  });
+
   it("tracks eligibility per repeated line occurrence", () => {
     const engine = createEngine(
       createProjectData({
@@ -1172,6 +1352,75 @@ describe("RouteEngine rollback landing points", () => {
     });
   });
 
+  it("finalizes a saved occurrence before a same-pointer load replaces it", () => {
+    const projectData = createProjectData({
+      initialSectionId: "source",
+      sections: {
+        source: {
+          lines: [settledLine("before")],
+        },
+        destination: {
+          lines: [settledLine("router")],
+        },
+        final: {
+          lines: [settledLine("after")],
+        },
+      },
+    });
+    const engine = createEngineFromInitialState({
+      projectData,
+      global: {
+        saveSlots: {
+          2: createSavedTimelineSlot({
+            slotId: 2,
+            readPointer: {
+              sectionId: "destination",
+              lineId: "router",
+            },
+            returnabilityVersion: 1,
+            timeline: [
+              { sectionId: "source", lineId: "before" },
+              { sectionId: "destination", lineId: "router" },
+            ],
+          }),
+        },
+      },
+    });
+
+    engine.handleActions({
+      sectionTransition: {
+        sectionId: "destination",
+      },
+      saveSlot: {
+        slotId: 1,
+        savedAt: 1700000000000,
+      },
+      loadSlot: {
+        slotId: 2,
+      },
+    });
+
+    expect(getCheckpoint(engine, "destination", "router")?.returnable).not.toBe(
+      false,
+    );
+    const savedRollback =
+      engine.selectSystemState().global.saveSlots["1"].state.contexts[0]
+        .rollback;
+    expect(
+      savedRollback.timeline.find(({ lineId }) => lineId === "router")
+        ?.returnable,
+    ).toBe(false);
+
+    engine.handleAction("loadSlot", { slotId: 1 });
+    engine.handleAction("sectionTransition", { sectionId: "final" });
+    engine.handleAction("rollbackByOffset", {});
+
+    expect(getPointer(engine)).toMatchObject({
+      sectionId: "source",
+      lineId: "before",
+    });
+  });
+
   it("uses the save returnability version to preserve a settled conditional", () => {
     const engine = createEngine(
       createProjectData({
@@ -1346,6 +1595,74 @@ describe("RouteEngine rollback landing points", () => {
     ).toBe(false);
 
     engine.handleAction("loadSlot", { slotId: 1 });
+    engine.handleAction("rollbackByOffset", {});
+
+    expect(getPointer(engine)).toMatchObject({
+      sectionId: "source",
+      lineId: "before",
+    });
+  });
+
+  it("carries a routed save into destination line-entry classification", () => {
+    const persistedSaveSlots = [];
+    const projectData = createProjectData({
+      initialSectionId: "source",
+      sections: {
+        source: {
+          lines: [
+            settledLine("before"),
+            settledLine("sourceRouter", {
+              sectionTransition: {
+                sectionId: "destination",
+              },
+              saveSlot: {
+                slotId: 1,
+                savedAt: 1700000000000,
+              },
+            }),
+          ],
+        },
+        destination: {
+          lines: [
+            conditionalLine("destinationRouter", "matched"),
+            settledLine("after"),
+          ],
+        },
+      },
+    });
+    const engine = createEngineFromInitialState({ projectData }, (effects) => {
+      effects.forEach((effect) => {
+        if (effect.name === "saveSlots") {
+          persistedSaveSlots.push(structuredClone(effect.payload.saveSlots));
+        }
+      });
+    });
+
+    advance(engine);
+
+    expect(getPointer(engine)).toMatchObject({
+      sectionId: "destination",
+      lineId: "after",
+    });
+    const savedRollback =
+      engine.selectSystemState().global.saveSlots["1"].state.contexts[0]
+        .rollback;
+    expect(savedRollback.returnabilityVersion).toBe(1);
+    expect(
+      savedRollback.timeline.find(
+        ({ lineId }) => lineId === "destinationRouter",
+      )?.returnable,
+    ).toBe(false);
+    const persistedRollback =
+      persistedSaveSlots.at(-1)["1"].state.contexts[0].rollback;
+    expect(
+      persistedRollback.timeline.find(
+        ({ lineId }) => lineId === "destinationRouter",
+      )?.returnable,
+    ).toBe(false);
+
+    engine.handleAction("loadSlot", { slotId: 1 });
+    engine.handleAction("nextLine", {});
     engine.handleAction("rollbackByOffset", {});
 
     expect(getPointer(engine)).toMatchObject({
