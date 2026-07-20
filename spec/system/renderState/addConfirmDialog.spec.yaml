@@ -146,7 +146,7 @@ out:
                 hideConfirmDialog: {}
   animations: []
 ---
-case: confirm dialog layouts receive standard layout template data
+case: confirm dialog layouts receive standard layout template data and functions
 in:
   - elements:
       - id: "story"
@@ -162,6 +162,9 @@ in:
             - id: confirm-slot-${saveSlots[0].slotId}-${runtime.isLineCompleted}
               type: text
               content: Slot ${saveSlots[0].slotId}
+            - id: confirm-date
+              type: text
+              content: ${formatDate(saveSlots[0].savedAt, 'MMM YYYY')}
       colors: {}
     variables: {}
     runtime:
@@ -170,7 +173,7 @@ in:
       isLineCompleted: true
     saveSlots:
       - slotId: 3
-        savedAt: 1700000000000
+        savedAt: 1797336000000
         image: data:image/webp;base64,preview
     confirmDialog:
       resourceId: saveOverwriteConfirmLayout
@@ -205,4 +208,7 @@ out:
         - id: confirm-slot-3-true
           type: text
           content: Slot 3
+        - id: confirm-date
+          type: text
+          content: Dec 2026
   animations: []
