@@ -94,7 +94,6 @@ describe("RouteEngine achievements", () => {
         resourceId: "discoverAllEndings",
         current: 2,
       },
-      showAchievements: {},
     });
 
     expect(effects).toEqual([
@@ -111,7 +110,6 @@ describe("RouteEngine achievements", () => {
           completed: false,
         },
       },
-      { name: "showAchievements" },
     ]);
     expect(engine.selectSystemState().global.achievements).toBeUndefined();
   });

@@ -2974,11 +2974,6 @@ export const setAchievementProgress = ({ state }, payload) => {
   return state;
 };
 
-export const showAchievements = ({ state }) => {
-  state.global.pendingEffects.push({ name: "showAchievements" });
-  return state;
-};
-
 const transitionToSection = (
   state,
   { sectionId, resetStoryState = false, screen },
@@ -4512,7 +4507,6 @@ export const createSystemStore = (initialState) => {
     appendPendingEffect,
     completeAchievement,
     setAchievementProgress,
-    showAchievements,
     beginRollbackActionBatch,
     endRollbackActionBatch,
     markRollbackCheckpointTransient,

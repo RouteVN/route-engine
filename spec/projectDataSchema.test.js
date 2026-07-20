@@ -1821,7 +1821,6 @@ describe("projectData schema", () => {
           resourceId: "findEndings",
           current: "${variables.endingsFound}",
         },
-        showAchievements: {},
       }),
     ).toBe(true);
     expect(validateSystemActions.errors).toBeNull();
@@ -1853,7 +1852,6 @@ describe("projectData schema", () => {
         resourceId: "findEndings",
         current: 2,
       },
-      showAchievements: {},
     };
 
     expect(validateProjectData(projectData)).toBe(true);

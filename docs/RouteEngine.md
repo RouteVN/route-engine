@@ -642,7 +642,6 @@ Seen-line semantics:
 | ------------------------ | ------------------------- | ------------------------------------------------- |
 | `completeAchievement`    | `{ resourceId }`          | Declare a boolean or number achievement complete  |
 | `setAchievementProgress` | `{ resourceId, current }` | Report absolute progress for a number achievement |
-| `showAchievements`       | `{}`                      | Request that the host show its achievement UI     |
 
 Achievement actions enqueue external effects and do not store player
 achievement state. See [Achievements.md](./Achievements.md) for resource,
@@ -715,7 +714,6 @@ Effects queued by actions for external handling:
 | `applyScopedDataUpdates` | Persist ordered scoped data operations           |
 | `completeAchievement`    | Notify the host of achievement completion        |
 | `setAchievementProgress` | Notify the host of absolute achievement progress |
-| `showAchievements`       | Ask the host to display achievement UI           |
 
 `applyScopedDataUpdates` is a public runtime-facing persistence contract. Its full interface and semantics are documented in [ScopedDataUpdates.md](./ScopedDataUpdates.md).
 

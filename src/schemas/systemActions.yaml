@@ -501,10 +501,4 @@ properties:
     required: [resourceId, current]
     additionalProperties: false
 
-  showAchievements:
-    type: object
-    description: Request that the host show its achievement UI
-    properties: {}
-    additionalProperties: false
-
 additionalProperties: false

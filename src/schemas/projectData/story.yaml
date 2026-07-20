@@ -168,8 +168,6 @@ properties:
                               $ref: "../systemActions.yaml#/properties/completeAchievement"
                             setAchievementProgress:
                               $ref: "../systemActions.yaml#/properties/setAchievementProgress"
-                            showAchievements:
-                              $ref: "../systemActions.yaml#/properties/showAchievements"
                           additionalProperties: false
 
                       required: [id, actions]

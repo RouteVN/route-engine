@@ -261,14 +261,6 @@ anyOf:
     required: [name, payload]
     additionalProperties: false
 
-  - title: Show achievements effect
-    type: object
-    properties:
-      name:
-        const: showAchievements
-    required: [name]
-    additionalProperties: false
-
   - title: Custom effect
     type: object
     properties:
@@ -298,5 +290,4 @@ anyOf:
             - clearNextLineConfigTimer
             - completeAchievement
             - setAchievementProgress
-            - showAchievements
       required: [name]

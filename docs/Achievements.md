@@ -16,7 +16,7 @@ Route Engine owns:
 - achievement definitions under `resources.achievements`
 - project-data validation
 - public selectors for reading achievement definitions
-- authored actions for completion, absolute progress, and showing achievements
+- authored actions for completion and absolute progress
 - ordered effects that a host can consume
 
 Route Engine does not own:
@@ -315,24 +315,6 @@ Route Engine does not retain previously reported progress. Consumers decide
 how to reconcile repeated or lower absolute values with their authoritative
 state.
 
-### Show Achievements
-
-```json
-{
-  "showAchievements": {}
-}
-```
-
-Direct JavaScript dispatch:
-
-```js
-engine.handleAction("showAchievements", {});
-```
-
-This action expresses a generic request to show achievements. Route Engine does
-not decide whether the consumer opens native UI, renders custom UI, or ignores
-the request in an environment without achievement UI.
-
 ## Emitted Effects
 
 Achievement actions validate their input and enqueue external effects. They do
@@ -378,14 +360,6 @@ Completed progress effect:
 }
 ```
 
-Show effect:
-
-```js
-const effect = {
-  name: "showAchievements",
-};
-```
-
 Effect rules:
 
 - Achievement effects are ordered.
@@ -407,7 +381,6 @@ achievement effect.
 const achievementEffectNames = new Set([
   "completeAchievement",
   "setAchievementProgress",
-  "showAchievements",
 ]);
 
 const handleUnhandledEffect = (effect, { engine }) => {
