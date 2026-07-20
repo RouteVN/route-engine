@@ -504,6 +504,9 @@ Required behavior:
 - saving must preserve rollback timeline/cursor
 - loading must preserve rollback ability from the loaded point
 - old saves without rollback state may be upgraded to a minimal rollback state
+- old rollback timelines without an eligibility marker derive transient entries
+  using statically knowable first-match conditional semantics; unreachable
+  branches do not override a settled choice or form checkpoint
 - rollback restore start state is recomputed from project defaults, not from saved baseline snapshots
 
 Rollback history is save-local. Loading slot A replaces the in-memory contexts with slot A's contexts, including its rollback timeline and cursor. Loading slot B then replaces those with slot B's timeline and cursor.
@@ -558,6 +561,9 @@ The save/load test surface should cover:
 - load from missing slot leaves state unchanged
 - load restores rollback timeline/cursor from slot data
 - load initializes a minimal rollback timeline for older saves without rollback data
+- load keeps a marker-less legacy choice/form checkpoint returnable when a
+  false or unreachable line conditional merely names the interaction's actual
+  destination
 - load reinitializes transient runtime globals to defaults
 - load clears prior auto/skip/next-line timers
 - load does not replace persistent global variables from slot data

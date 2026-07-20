@@ -333,18 +333,21 @@ That keeps rollback semantics intuitive:
 - a transient source can be represented without becoming a place where Back
   stops
 
-### Deduplication rule
+### Occurrence identity rule
 
-Do not create duplicate adjacent checkpoints for the same:
+Do not deduplicate successful line entries solely because their `sectionId`,
+`lineId`, and rollback policy match the adjacent checkpoint. A successful
+checkpoint-creating navigation owns a fresh occurrence, including an
+interaction-triggered `sectionTransition` back to the current section's first
+line. Its eligibility must be classified independently so a later route cannot
+rewrite an earlier settled occurrence.
 
-- `sectionId`
-- `lineId`
-
-unless occurrence-specific eligibility or future policy metadata requires it.
-In particular, do not reuse an adjacent checkpoint whose `returnable` value is
-`false`. A new entry to that same line needs a fresh, initially eligible
-checkpoint so its settled behavior can be classified independently without
-rewriting the earlier transient occurrence.
+This is distinct from accidentally appending twice for one navigation action.
+Checkpoint creation remains centralized so each successful
+checkpoint-creating action records exactly one occurrence, whether it appends
+to or replaces the timeline.
+`rollback.isRestoring` continues to suppress live checkpoint creation during
+restoration.
 
 Use one helper like:
 
@@ -359,7 +362,9 @@ appendRollbackCheckpoint(state, {
 The helper should also:
 
 - truncate future timeline if `currentIndex` is not already at the end
-- append the new checkpoint
+- append exactly one new occurrence for each successful append-style
+  checkpoint-creating navigation, even when its pointer matches the adjacent
+  checkpoint
 - move `currentIndex` to the new last index
 
 ## Replay Rules
@@ -628,6 +633,12 @@ Implementation requirement:
 - landing-point eligibility must survive save/load
 - older entries without eligibility metadata must be migrated or derived before
   Back target selection
+- legacy derivation must follow statically knowable first-match conditional
+  semantics; false branches and branches after a definite match must not be
+  treated as evidence that line entry routed to the next checkpoint, while
+  dynamic guards remain conservatively possible
+- a blocking choice or form remains a landing point when only an unreachable
+  line conditional names the destination that the interaction actually entered
 - rollback save data should not store a duplicate `baselineVariables` snapshot
 - restore start state should be recomputed from project data after load
 
@@ -679,7 +690,9 @@ Add or migrate tests for:
 11. rollback stops skip mode
 12. rollback on incomplete line goes immediately to the previous landing point
 13. re-advance after rollback truncates old future branch
-14. duplicate adjacent checkpoints are not appended
+14. each successful checkpoint-creating navigation records exactly one
+    occurrence, including append-style adjacent re-entry to the same story
+    pointer
 15. `rollback.isRestoring` prevents duplicate checkpoint append
 16. `rollback.isRestoring` prevents duplicate `updateVariable` execution
 17. old-save compatibility initializes a minimal rollback timeline correctly
@@ -710,11 +723,16 @@ Add or migrate tests for:
     payload and a later load-plus-Back flow
 31. a same-pointer `resetStoryAtSection` refreshes the replacement checkpoint
     before a later sibling route classifies it
-32. re-entering an adjacent transient checkpoint creates a fresh occurrence;
-    that occurrence may settle as returnable or be independently marked
-    transient again
+32. re-entering an adjacent checkpoint creates a fresh occurrence regardless of
+    the previous occurrence's eligibility; each occurrence is classified
+    independently
 33. same-pointer reset and load replacements finalize exact saves from the
     outgoing occurrence before installing the replacement cursor
+34. an interaction-triggered transition to the current section's first line
+    preserves the settled prior occurrence when the queued re-entry routes away
+35. marker-less legacy migration follows statically knowable first-match
+    conditional semantics and keeps a choice/form checkpoint returnable when
+    its only matching route is in a false or otherwise unreachable branch
 
 ### Browser/VT regression coverage
 
@@ -728,10 +746,19 @@ The actual Back input path has isolated visual pages for:
   must be a no-op at the destination
 - a transient occurrence that is re-entered and settles, where Back must choose
   the fresh occurrence
+- a settled first-line occurrence re-entered through an interaction, where the
+  queued re-entry routes and Back must restore the prior settled occurrence
 
 Each page uses its real layout control and a distinct failure render. Keep these
 cases separate so a page exercises one control-flow problem, and pair them with
 the targeted unit/system state-transition coverage above.
+
+Marker-less legacy eligibility derivation remains unit/system-only. The VT
+harness starts from authored project data and newly written, version-marked
+slots; it cannot faithfully author the legacy slot shape without adding a
+test-only initial-state injection path. The migration changes no renderer or
+input behavior, while the existing Back pages cover the resulting visible
+navigation.
 
 ### Regression tests for divergence
 
@@ -777,7 +804,8 @@ If both navigation action and line handling append checkpoints, timeline will dr
 Mitigation:
 
 - centralize checkpoint appending in one helper
-- write adjacency dedupe tests
+- test that one navigation appends once and a second same-pointer navigation
+  appends a distinct occurrence
 
 ### 2. Hidden dependence on `historySequence`
 

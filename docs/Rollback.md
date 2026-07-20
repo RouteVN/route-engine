@@ -196,11 +196,14 @@ If a reset, load, or rollback replaces the active checkpoint without changing
 its section and line IDs, the outgoing candidate and any exact saved
 occurrences are finalized before the replacement cursor takes ownership.
 
-Adjacent entries with the same section, line, and policy are normally
-deduplicated. A transient occurrence is the exception: re-entering that line
-appends a fresh checkpoint so the new occurrence can independently settle as a
-landing point or be marked transient again. The earlier transient occurrence
-remains in the replay timeline with `returnable: false`.
+Landing-point eligibility belongs to a line-entry occurrence, not merely to its
+section and line IDs. Every successful checkpoint-creating navigation records a
+fresh occurrence. Append-style navigation does so even when it re-enters the
+same section's first line and the new checkpoint is adjacent to an identical
+pointer. The new occurrence can settle as a landing point or be marked transient
+without rewriting the prior occurrence. In particular, a settled line remains
+returnable when an interaction re-enters it and the new entry immediately routes
+elsewhere.
 
 When `Back` skips a transient entry and restores an earlier landing point,
 replay ends at that earlier target, so rollbackable mutations from the skipped
@@ -246,6 +249,14 @@ Save data preserves landing-point eligibility. Loads created before the
 eligibility marker existed derive the known conditional and section-transition
 cases from the saved path and current project data; new saves carry a
 returnability format marker so that derivation is not repeated.
+
+Legacy derivation follows statically knowable conditional branch selection, not
+every route that appears syntactically in any branch. A literal-false branch or
+a branch after a definite match cannot make a checkpoint transient. Historical
+values for dynamic guards are unavailable in marker-less saves, so those
+branches remain possible. When a blocking choice or form could have produced
+the recorded destination through player interaction, an unreachable
+line-entry branch alone does not make the source transient.
 
 The timeline can be reset by destructive story navigation, such as
 `resetStoryAtSection`, which creates a new context-local rollback timeline
@@ -506,4 +517,8 @@ The design is correct if all of the following are true:
 - rollback does not affect persistent/global device/account variables
 - rollback stops auto/skip
 - re-advancing after rollback discards the old future branch
+- repeated entries at the same story pointer keep independent landing-point
+  eligibility
+- legacy eligibility derivation does not treat unreachable conditional routes
+  as line-entry control flow
 - the internal checkpoint model can later support `fixed` and `blocked` policies

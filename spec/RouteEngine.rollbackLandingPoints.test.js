@@ -491,7 +491,79 @@ describe("RouteEngine rollback landing points", () => {
     });
   });
 
-  it("does not mark a deduped settled interaction checkpoint transient", () => {
+  it("preserves a settled first-line occurrence when same-pointer re-entry routes away", () => {
+    const engine = createEngine(
+      createProjectData({
+        initialSectionId: "source",
+        sections: {
+          source: {
+            lines: [
+              settledLine("router", {
+                choice: {
+                  resourceId: "choiceLayout",
+                },
+                conditional: {
+                  branches: [
+                    {
+                      when: {
+                        eq: [{ var: "variables.score" }, 1],
+                      },
+                      actions: {
+                        sectionTransition: {
+                          sectionId: "destination",
+                        },
+                      },
+                    },
+                  ],
+                },
+              }),
+            ],
+          },
+          destination: {
+            lines: [settledLine("after")],
+          },
+        },
+      }),
+    );
+
+    expect(getPointer(engine)).toMatchObject({
+      sectionId: "source",
+      lineId: "router",
+    });
+    expect(getTimeline(engine)).toHaveLength(1);
+
+    engine.handleActions(
+      {
+        ...updateScore("chooseRoute", "set", 1),
+        sectionTransition: {
+          sectionId: "source",
+        },
+      },
+      undefined,
+      { bypassChoice: true },
+    );
+
+    expect(getPointer(engine)).toMatchObject({
+      sectionId: "destination",
+      lineId: "after",
+    });
+    expect(getTimeline(engine)).toHaveLength(3);
+    expect(getCheckpoint(engine, "source", "router", 0)?.returnable).not.toBe(
+      false,
+    );
+    expect(getCheckpoint(engine, "source", "router", 1)?.returnable).toBe(
+      false,
+    );
+
+    engine.handleAction("rollbackByOffset", {});
+
+    expect(getPointer(engine)).toMatchObject({
+      sectionId: "source",
+      lineId: "router",
+    });
+  });
+
+  it("preserves a settled occurrence across checkpoint-less interaction re-entry", () => {
     const engine = createEngine(
       createProjectData({
         initialSectionId: "beforeSection",
@@ -539,10 +611,13 @@ describe("RouteEngine rollback landing points", () => {
       sectionId: "destination",
       lineId: "after",
     });
-    expect(getTimeline(engine)).toHaveLength(3);
+    expect(getTimeline(engine)).toHaveLength(4);
     expect(
-      getCheckpoint(engine, "source", "settledSource")?.returnable,
+      getCheckpoint(engine, "source", "settledSource", 0)?.returnable,
     ).not.toBe(false);
+    expect(
+      getCheckpoint(engine, "source", "settledSource", 1)?.returnable,
+    ).toBe(false);
 
     engine.handleAction("rollbackByOffset", {});
 
@@ -1229,6 +1304,188 @@ describe("RouteEngine rollback landing points", () => {
 
     expect(getPointer(engine)).toEqual({
       sectionId: "source",
+      lineId: "before",
+    });
+  });
+
+  it.each([
+    { name: "boolean false", when: false },
+    { name: "literal false", when: { literal: false } },
+  ])(
+    "keeps a legacy interaction checkpoint eligible past a $name route",
+    ({ when }) => {
+      const projectData = createProjectData({
+        initialSectionId: "bootstrap",
+        sections: {
+          bootstrap: {
+            lines: [settledLine("boot")],
+          },
+          source: {
+            lines: [
+              settledLine("before"),
+              settledLine("interaction", {
+                choice: {
+                  resourceId: "choiceLayout",
+                },
+                conditional: {
+                  branches: [
+                    {
+                      when,
+                      actions: {
+                        sectionTransition: {
+                          sectionId: "destination",
+                        },
+                      },
+                    },
+                  ],
+                },
+              }),
+            ],
+          },
+          destination: {
+            lines: [settledLine("after")],
+          },
+        },
+      });
+      const engine = createEngineWithSavedTimeline({
+        projectData,
+        readPointer: {
+          sectionId: "destination",
+          lineId: "after",
+        },
+        timeline: [
+          { sectionId: "source", lineId: "before" },
+          { sectionId: "source", lineId: "interaction" },
+          { sectionId: "destination", lineId: "after" },
+        ],
+      });
+
+      expect(
+        getCheckpoint(engine, "source", "interaction")?.returnable,
+      ).not.toBe(false);
+
+      engine.handleAction("rollbackByOffset", {});
+
+      expect(getPointer(engine)).toMatchObject({
+        sectionId: "source",
+        lineId: "interaction",
+      });
+    },
+  );
+
+  it("ignores legacy conditional branches after a definite match", () => {
+    const projectData = createProjectData({
+      initialSectionId: "bootstrap",
+      sections: {
+        bootstrap: {
+          lines: [settledLine("boot")],
+        },
+        source: {
+          lines: [
+            settledLine("before"),
+            settledLine("interaction", {
+              choice: {
+                resourceId: "choiceLayout",
+              },
+              conditional: {
+                branches: [
+                  {
+                    when: true,
+                    actions: {},
+                  },
+                  {
+                    actions: {
+                      sectionTransition: {
+                        sectionId: "destination",
+                      },
+                    },
+                  },
+                ],
+              },
+            }),
+          ],
+        },
+        destination: {
+          lines: [settledLine("after")],
+        },
+      },
+    });
+    const engine = createEngineWithSavedTimeline({
+      projectData,
+      readPointer: {
+        sectionId: "destination",
+        lineId: "after",
+      },
+      timeline: [
+        { sectionId: "source", lineId: "before" },
+        { sectionId: "source", lineId: "interaction" },
+        { sectionId: "destination", lineId: "after" },
+      ],
+    });
+
+    expect(getCheckpoint(engine, "source", "interaction")?.returnable).not.toBe(
+      false,
+    );
+
+    engine.handleAction("rollbackByOffset", {});
+
+    expect(getPointer(engine)).toMatchObject({
+      sectionId: "source",
+      lineId: "interaction",
+    });
+  });
+
+  it("derives implicit continuation past a statically untaken legacy route", () => {
+    const projectData = createProjectData({
+      initialSectionId: "bootstrap",
+      sections: {
+        bootstrap: {
+          lines: [settledLine("boot")],
+        },
+        main: {
+          lines: [
+            settledLine("before"),
+            settledLine("router", {
+              conditional: {
+                branches: [
+                  {
+                    when: false,
+                    actions: {
+                      sectionTransition: {
+                        sectionId: "unused",
+                      },
+                    },
+                  },
+                ],
+              },
+            }),
+            settledLine("after"),
+          ],
+        },
+        unused: {
+          lines: [settledLine("unusedLine")],
+        },
+      },
+    });
+    const engine = createEngineWithSavedTimeline({
+      projectData,
+      readPointer: {
+        sectionId: "main",
+        lineId: "after",
+      },
+      timeline: [
+        { sectionId: "main", lineId: "before" },
+        { sectionId: "main", lineId: "router" },
+        { sectionId: "main", lineId: "after" },
+      ],
+    });
+
+    expect(getCheckpoint(engine, "main", "router")?.returnable).toBe(false);
+
+    engine.handleAction("rollbackByOffset", {});
+
+    expect(getPointer(engine)).toMatchObject({
+      sectionId: "main",
       lineId: "before",
     });
   });

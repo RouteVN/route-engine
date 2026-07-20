@@ -491,12 +491,68 @@ const CONDITIONAL_ROLLBACK_ROUTING_ACTIONS = new Set([
   "resetStoryAtSection",
 ]);
 
-const conditionalContainsRollbackRoutingAction = (payload) => {
+const LEGACY_CONDITIONAL_BRANCH_REACHABILITY = {
+  always: "always",
+  maybe: "maybe",
+  never: "never",
+};
+
+const getLegacyConditionalBranchReachability = (branch) => {
+  if (!Object.prototype.hasOwnProperty.call(branch ?? {}, "when")) {
+    return LEGACY_CONDITIONAL_BRANCH_REACHABILITY.always;
+  }
+
+  const condition = branch.when;
+  let staticValue;
+  if (
+    condition === null ||
+    typeof condition === "boolean" ||
+    typeof condition === "number"
+  ) {
+    staticValue = condition;
+  } else if (
+    isRecord(condition) &&
+    Object.keys(condition).length === 1 &&
+    Object.prototype.hasOwnProperty.call(condition, "literal")
+  ) {
+    staticValue = condition.literal;
+  } else {
+    // Legacy checkpoints do not retain the variables/runtime from every
+    // occurrence. Treat dynamic conditions as possibly taken instead of
+    // evaluating them against the final save state.
+    return LEGACY_CONDITIONAL_BRANCH_REACHABILITY.maybe;
+  }
+
+  return staticValue
+    ? LEGACY_CONDITIONAL_BRANCH_REACHABILITY.always
+    : LEGACY_CONDITIONAL_BRANCH_REACHABILITY.never;
+};
+
+const someReachableLegacyConditionalBranch = (payload, predicate) => {
   if (!Array.isArray(payload?.branches)) {
     return false;
   }
 
-  return payload.branches.some((branch) =>
+  for (const branch of payload.branches) {
+    const reachability = getLegacyConditionalBranchReachability(branch);
+    if (reachability === LEGACY_CONDITIONAL_BRANCH_REACHABILITY.never) {
+      continue;
+    }
+
+    if (predicate(branch)) {
+      return true;
+    }
+
+    if (reachability === LEGACY_CONDITIONAL_BRANCH_REACHABILITY.always) {
+      return false;
+    }
+  }
+
+  return false;
+};
+
+const conditionalContainsRollbackRoutingAction = (payload) => {
+  return someReachableLegacyConditionalBranch(payload, (branch) =>
     Object.entries(branch?.actions ?? {}).some(([actionType, actionPayload]) =>
       actionType === "conditional"
         ? conditionalContainsRollbackRoutingAction(actionPayload)
@@ -510,11 +566,7 @@ const conditionalCanRouteToRollbackPointer = (
   payload,
   checkpoint,
 ) => {
-  if (!Array.isArray(payload?.branches)) {
-    return false;
-  }
-
-  return payload.branches.some((branch) =>
+  return someReachableLegacyConditionalBranch(payload, (branch) =>
     Object.entries(branch?.actions ?? {}).some(
       ([actionType, actionPayload]) => {
         if (actionType === "sectionTransition") {
@@ -1416,18 +1468,8 @@ const appendRollbackCheckpoint = (state, payload) => {
     rollback.timeline = rollback.timeline.slice(0, rollback.currentIndex + 1);
   }
 
-  const lastCheckpoint = rollback.timeline[rollback.timeline.length - 1];
-  if (
-    lastCheckpoint?.sectionId === payload.sectionId &&
-    lastCheckpoint?.lineId === payload.lineId &&
-    (lastCheckpoint?.rollbackPolicy ?? "free") ===
-      (payload.rollbackPolicy ?? "free") &&
-    lastCheckpoint?.returnable !== false
-  ) {
-    rollback.currentIndex = rollback.timeline.length - 1;
-    return;
-  }
-
+  // Each successful checkpoint-creating line entry is a distinct occurrence,
+  // even when it revisits the same authored line and policy back-to-back.
   rollback.timeline.push(createRollbackCheckpoint(payload));
   rollback.currentIndex = rollback.timeline.length - 1;
 };
