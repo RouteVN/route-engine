@@ -578,7 +578,7 @@ in:
               lineId: "2"
 out: {}
 ---
-case: "Detect added dialogue character sprite without dialogue ui"
+case: "Ignore added dialogue character sprite without dialogue ui"
 in:
   - state:
       projectData:
@@ -605,18 +605,9 @@ in:
             read:
               sectionId: "section1"
               lineId: "2"
-out:
-  dialogue:
-    changeType: "add"
-    data:
-      character:
-        sprite:
-          transformId: "dialogue-left"
-          items:
-            - id: "base"
-              resourceId: "alice-base"
+out: {}
 ---
-case: "Detect updated dialogue character sprite without dialogue ui"
+case: "Ignore updated dialogue character sprite without dialogue ui"
 in:
   - state:
       projectData:
@@ -650,16 +641,7 @@ in:
             read:
               sectionId: "section1"
               lineId: "2"
-out:
-  dialogue:
-    changeType: "update"
-    data:
-      character:
-        sprite:
-          transformId: "dialogue-left"
-          items:
-            - id: "base"
-              resourceId: "alice-alt-base"
+out: {}
 ---
 case: "Ignore previous-line dialogue character sprite animation metadata when state persists"
 in:
