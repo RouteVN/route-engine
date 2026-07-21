@@ -1,0 +1,147 @@
+---
+title: Dialogue Character Sprite Clear
+description: Verifies persistSprite false removes a persisted dialogue portrait during an ADV append.
+specs:
+  - the initial screenshot should show Alice's dialogue portrait
+  - after advancing, the appended clear message should be visible without the portrait
+steps:
+  - action: click
+    x: 960
+    y: 540
+  - action: wait
+    ms: 80
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+resources:
+  controls:
+    base:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                nextLine: {}
+          colorId: overlayColor
+  images:
+    portrait:
+      fileId: character_parts_body
+      width: 620
+      height: 960
+  transforms:
+    dialogue-left:
+      x: 520
+      y: 1080
+      anchorX: 0.5
+      anchorY: 1
+  layouts:
+    dialogue-layout:
+      mode: adv
+      elements:
+        - id: dialogue-panel
+          type: rect
+          x: 180
+          y: 790
+          width: 1560
+          height: 250
+          opacity: 0.9
+          colorId: panelColor
+        - id: dialogue-name
+          type: text
+          x: 900
+          y: 830
+          content: ${dialogue.character.name}
+          textStyleId: nameStyle
+        - id: dialogue-text
+          type: text
+          x: 900
+          y: 890
+          width: 760
+          content: ${dialogue.content[0].text}
+          textStyleId: textStyle
+        - id: appended-dialogue-text
+          type: text
+          x: 900
+          y: 940
+          width: 760
+          content: ${dialogue.content[1].text}
+          textStyleId: clearStyle
+  characters:
+    alice:
+      name: Alice
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    overlayColor:
+      hex: "#000000"
+    panelColor:
+      hex: "#4D4D4D"
+    nameColor:
+      hex: "#D9D9D9"
+    textColor:
+      hex: "#FFFFFF"
+    clearColor:
+      hex: "#8BD3FF"
+  textStyles:
+    nameStyle:
+      fontId: fontDefault
+      colorId: nameColor
+      fontSize: 30
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+    textStyle:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 26
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    clearStyle:
+      fontId: fontDefault
+      colorId: clearColor
+      fontSize: 26
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: dialogueSpriteScene
+  scenes:
+    dialogueSpriteScene:
+      name: Dialogue Sprite Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                control:
+                  resourceId: base
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogue-layout
+                  characterId: alice
+                  character:
+                    sprite:
+                      transformId: dialogue-left
+                      items:
+                        - id: body
+                          resourceId: portrait
+                  persistSprite: true
+                  content:
+                    - text: This line starts with a persisted dialogue portrait.
+            - id: line2
+              actions:
+                dialogue:
+                  append: true
+                  persistSprite: false
+                  content:
+                    - text: The appended line explicitly clears the portrait.
