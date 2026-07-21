@@ -648,6 +648,43 @@ out:
     content:
       - text: "The portrait is gone"
 ---
+case: persistSprite false removes a persistent sprite during ADV append
+in:
+  - - dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "simple-dialogue"
+        characterId: "alice"
+        character:
+          name: "Alias"
+          sprite:
+            transformId: "dialogue-left"
+            items:
+              - id: "base"
+                resourceId: "alice-base"
+        persistSprite: true
+        content:
+          - text: "Hello"
+    - dialogue:
+        append: true
+        persistSprite: false
+        content:
+          - text: " continued"
+out:
+  dialogue:
+    mode: "adv"
+    ui:
+      resourceId: "simple-dialogue"
+    characterId: "alice"
+    character:
+      name: "Alias"
+    persistSprite: false
+    content:
+      - text: "Hello"
+      - text: " continued"
+    initialRevealedContent:
+      - text: "Hello"
+---
 case: dialogue character sprite accepts animation-only removal payload
 in:
   - - dialogue:

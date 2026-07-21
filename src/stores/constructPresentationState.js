@@ -350,6 +350,7 @@ const buildNextDialogueCharacter = ({
   hasCharacterId,
   persistCharacter,
   persistSprite,
+  hasExplicitPersistSprite,
   isAppendingAdvDialogueContent,
 }) => {
   const nextCharacter = {};
@@ -357,6 +358,8 @@ const buildNextDialogueCharacter = ({
   const fields = characterFields ?? {};
   const retainAppendedCharacter =
     isAppendingAdvDialogueContent && !hasCharacterId;
+  const retainAppendedSprite =
+    retainAppendedCharacter && !hasExplicitPersistSprite;
 
   if (hasOwnProperty(fields, "name")) {
     nextCharacter.name = fields.name;
@@ -370,7 +373,7 @@ const buildNextDialogueCharacter = ({
   if (hasOwnProperty(fields, "sprite")) {
     nextCharacter.sprite = clonePresentationValue(fields.sprite);
   } else if (
-    (persistSprite || retainAppendedCharacter) &&
+    (persistSprite || retainAppendedSprite) &&
     hasOwnProperty(previous, "sprite")
   ) {
     nextCharacter.sprite = clonePresentationValue(previous.sprite);
@@ -671,6 +674,7 @@ export const dialogue = (state, presentation) => {
           hasCharacterId: false,
           persistCharacter,
           persistSprite,
+          hasExplicitPersistSprite: false,
           isAppendingAdvDialogueContent: false,
         });
         if (!state.dialogue.character) {
@@ -784,6 +788,10 @@ export const dialogue = (state, presentation) => {
     hasCharacterId,
     persistCharacter,
     persistSprite,
+    hasExplicitPersistSprite: hasOwnProperty(
+      presentation.dialogue,
+      "persistSprite",
+    ),
     isAppendingAdvDialogueContent,
   });
   if (nextCharacter) {
