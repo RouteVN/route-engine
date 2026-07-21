@@ -1375,6 +1375,35 @@ const diffDialogue = (prevDialogue, currDialogue) => {
   return null;
 };
 
+/**
+ * Compares the speaker sprites attached to two dialogue states.
+ * @param {Object} prevDialogue - Previous dialogue state
+ * @param {Object} currDialogue - Current dialogue state
+ * @returns {Object|null} Change object or null if the sprite did not change
+ */
+const diffDialogueSprite = (prevDialogue, currDialogue) => {
+  const prevSprite = prevDialogue?.character?.sprite;
+  const currSprite = currDialogue?.character?.sprite;
+
+  if (JSON.stringify(prevSprite) === JSON.stringify(currSprite)) {
+    return null;
+  }
+
+  if (prevSprite && !currSprite) {
+    return { changeType: "delete", data: prevSprite };
+  }
+
+  if (currSprite && !prevSprite) {
+    return { changeType: "add", data: currSprite };
+  }
+
+  if (currSprite && prevSprite) {
+    return { changeType: "update", data: currSprite };
+  }
+
+  return null;
+};
+
 const toBackgroundResourceChangeData = (background) => {
   if (background?.resourceId === undefined) {
     return undefined;
@@ -1507,6 +1536,11 @@ export const diffPresentationState = (prev = {}, curr = {}) => {
   const dialogueChange = diffDialogue(prev.dialogue, curr.dialogue);
   if (dialogueChange) {
     changes.dialogue = dialogueChange;
+  }
+
+  const dialogueSpriteChange = diffDialogueSprite(prev.dialogue, curr.dialogue);
+  if (dialogueSpriteChange) {
+    changes.dialogueSprite = dialogueSpriteChange;
   }
 
   diffObject("choice");

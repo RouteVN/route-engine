@@ -398,7 +398,7 @@ out:
     - id: "2"
       changes: {}
 ---
-case: "Ignore dialogue character sprite addition and update without dialogue ui"
+case: "Report dialogue character sprite changes separately from dialogue ui"
 in:
   - state:
       projectData:
@@ -434,9 +434,23 @@ out:
     - id: "1"
       changes: {}
     - id: "2"
-      changes: {}
+      changes:
+        dialogueSprite:
+          changeType: "add"
+          data:
+            transformId: "dialogue-left"
+            items:
+              - id: "base"
+                resourceId: "alice-base"
     - id: "3"
-      changes: {}
+      changes:
+        dialogueSprite:
+          changeType: "update"
+          data:
+            transformId: "dialogue-left"
+            items:
+              - id: "base"
+                resourceId: "alice-alt-base"
 ---
 case: "Ignore previous-line dialogue character sprite animation metadata when sprite persists"
 in:
@@ -465,7 +479,16 @@ in:
 out:
   lines:
     - id: "1"
-      changes: {}
+      changes:
+        dialogueSprite:
+          changeType: "add"
+          data:
+            transformId: "dialogue-left"
+            items:
+              - id: "base"
+                resourceId: "alice-base"
+            animations:
+              resourceId: "portrait-in"
     - id: "2"
       changes: {}
 ---
