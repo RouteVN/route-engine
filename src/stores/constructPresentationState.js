@@ -326,6 +326,58 @@ const clearDialogueCharacterSpriteAnimations = (dialogueState) => {
   }
 };
 
+const resolveDialogueSpritePersistence = ({
+  dialogueState,
+  dialogueAction,
+  persistCharacter,
+}) => {
+  if (hasOwnProperty(dialogueAction, "persistSprite")) {
+    return dialogueAction.persistSprite === true;
+  }
+
+  if (hasOwnProperty(dialogueState, "persistSprite")) {
+    return dialogueState.persistSprite === true;
+  }
+
+  // Preserve the legacy behavior where persistCharacter also kept the sprite.
+  return persistCharacter;
+};
+
+const buildNextDialogueCharacter = ({
+  previousCharacter,
+  characterFields,
+  hasCharacterId,
+  persistCharacter,
+  persistSprite,
+  isAppendingAdvDialogueContent,
+}) => {
+  const nextCharacter = {};
+  const previous = previousCharacter ?? {};
+  const fields = characterFields ?? {};
+  const retainAppendedCharacter =
+    isAppendingAdvDialogueContent && !hasCharacterId;
+
+  if (hasOwnProperty(fields, "name")) {
+    nextCharacter.name = fields.name;
+  } else if (
+    ((persistCharacter && !hasCharacterId) || retainAppendedCharacter) &&
+    hasOwnProperty(previous, "name")
+  ) {
+    nextCharacter.name = clonePresentationValue(previous.name);
+  }
+
+  if (hasOwnProperty(fields, "sprite")) {
+    nextCharacter.sprite = clonePresentationValue(fields.sprite);
+  } else if (
+    (persistSprite || retainAppendedCharacter) &&
+    hasOwnProperty(previous, "sprite")
+  ) {
+    nextCharacter.sprite = clonePresentationValue(previous.sprite);
+  }
+
+  return Object.keys(nextCharacter).length > 0 ? nextCharacter : undefined;
+};
+
 const applyDialogueContent = ({ dialogueState, content, append = false }) => {
   if (!append || !Array.isArray(content)) {
     dialogueState.content = content;
@@ -603,8 +655,24 @@ export const dialogue = (state, presentation) => {
         state.dialogue.content = undefined;
         delete state.dialogue.initialRevealedContent;
         delete state.dialogue.textSpeed;
-        if (state.dialogue.persistCharacter !== true) {
+        const persistCharacter = state.dialogue.persistCharacter === true;
+        const persistSprite = resolveDialogueSpritePersistence({
+          dialogueState: state.dialogue,
+          dialogueAction: {},
+          persistCharacter,
+        });
+        if (!persistCharacter) {
           delete state.dialogue.characterId;
+        }
+        state.dialogue.character = buildNextDialogueCharacter({
+          previousCharacter: state.dialogue.character,
+          characterFields: {},
+          hasCharacterId: false,
+          persistCharacter,
+          persistSprite,
+          isAppendingAdvDialogueContent: false,
+        });
+        if (!state.dialogue.character) {
           delete state.dialogue.character;
         }
       }
@@ -686,9 +754,17 @@ export const dialogue = (state, presentation) => {
     delete state.dialogue.persistCharacter;
   }
 
+  const persistSprite = resolveDialogueSpritePersistence({
+    dialogueState: state.dialogue,
+    dialogueAction: presentation.dialogue,
+    persistCharacter,
+  });
+  if (hasOwnProperty(presentation.dialogue, "persistSprite")) {
+    state.dialogue.persistSprite = persistSprite;
+  }
+
   const hasCharacterId = hasOwnProperty(presentation.dialogue, "characterId");
   const characterFields = resolveDialogueCharacterFields(presentation.dialogue);
-  const hasCharacterFields = characterFields !== undefined;
   const hasCharacterSprite = hasDialogueCharacterSprite(presentation.dialogue);
 
   if (hasCharacterId) {
@@ -701,18 +777,17 @@ export const dialogue = (state, presentation) => {
     delete state.dialogue.characterId;
   }
 
-  if (hasCharacterFields) {
-    state.dialogue.character =
-      !hasCharacterId && persistCharacter && state.dialogue.character
-        ? {
-            ...clonePresentationValue(state.dialogue.character),
-            ...characterFields,
-          }
-        : characterFields;
-  } else if (
-    hasCharacterId ||
-    (!persistCharacter && !isAppendingAdvDialogueContent)
-  ) {
+  const nextCharacter = buildNextDialogueCharacter({
+    previousCharacter: state.dialogue.character,
+    characterFields,
+    hasCharacterId,
+    persistCharacter,
+    persistSprite,
+    isAppendingAdvDialogueContent,
+  });
+  if (nextCharacter) {
+    state.dialogue.character = nextCharacter;
+  } else {
     delete state.dialogue.character;
   }
 

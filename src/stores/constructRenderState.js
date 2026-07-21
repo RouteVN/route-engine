@@ -2171,6 +2171,7 @@ const createDialogueTemplateData = ({
   return {
     characterId: dialogueState.characterId,
     persistCharacter: dialogueState.persistCharacter,
+    persistSprite: dialogueState.persistSprite,
     character,
     textSpeed,
     content: dialogueContent.map((item) => ({

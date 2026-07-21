@@ -1,8 +1,16 @@
 ---
 title: Dialogue Character Sprite
-description: Dialogue actions can render a layered speaker sprite with shared transform and dialogue UI.
+description: Dialogue actions can render a layered speaker sprite and keep it visible independently when the speaker changes.
 specs:
   - the initial screenshot should show a layered speaker portrait above the dialogue UI
+  - after advancing, Bob should speak while the same layered portrait remains visible
+steps:
+  - action: click
+    x: 960
+    y: 540
+  - action: wait
+    ms: 80
+  - action: screenshot
 ---
 screen:
   width: 1920
@@ -49,19 +57,22 @@ resources:
           colorId: panelColor
         - id: dialogue-name
           type: text
-          x: 420
+          x: 900
           y: 830
           content: ${dialogue.character.name}
           textStyleId: nameStyle
         - id: dialogue-text
           type: text
-          x: 420
+          x: 900
           y: 890
+          width: 760
           content: ${dialogue.content[0].text}
           textStyleId: textStyle
   characters:
     alice:
       name: Alice
+    bob:
+      name: Bob
   fonts:
     fontDefault:
       fileId: Arial
@@ -115,5 +126,15 @@ story:
                           resourceId: parts-body
                         - id: face
                           resourceId: parts-face-smile
+                  persistSprite: true
                   content:
                     - text: This line renders a layered dialogue portrait.
+            - id: line2
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogue-layout
+                  characterId: bob
+                  content:
+                    - text: The layered portrait persists when Bob starts speaking.

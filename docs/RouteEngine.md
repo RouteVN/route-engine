@@ -733,7 +733,7 @@ Actions that can be attached to lines to control presentation:
 | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | `screen`     | `{ opacity?, blur?, animations? }`                                                                                                                   | Set whole-screen appearance or transition. `opacity`/`blur` apply to the composed story frame                             |
 | `background` | `{ resourceId?, colorId?, transformId?, x?, y?, anchorX?, anchorY?, scaleX?, scaleY?, rotation?, originX?, originY?, opacity?, blur?, animations? }` | Set background/CG. Transform fields are renderer pixels/unitless multipliers/degrees; `blur: null` clears background blur |
-| `dialogue`   | `{ characterId?, character?, character.sprite?, persistCharacter?, content, append?, mode?, ui?, clear? }`                                           | Display dialogue                                                                                                          |
+| `dialogue`   | `{ characterId?, character?, character.sprite?, persistCharacter?, persistSprite?, content, append?, mode?, ui?, clear? }`                           | Display dialogue                                                                                                          |
 | `character`  | `{ items }`                                                                                                                                          | Display character sprites. Each item can set transform overrides, `opacity`, and `blur`                                   |
 | `visual`     | `{ items }`                                                                                                                                          | Display visual elements. Each item can set `layer`, transform overrides, `opacity`, `blur`, and animations                |
 | `bgm`        | `{ sounds, volume?, muted?, pan? }`                                                                                                                  | Control the persistent, multi-sound BGM channel                                                                           |
@@ -1084,7 +1084,13 @@ Field semantics:
 - `resources.characters[*].nameVariableId` binds the resource display name to a string variable.
 - `character.name` is only a display-name override.
 - `character.sprite` is an optional layered speaker sprite group rendered with the dialogue action.
-- `persistCharacter: true` means later dialogue lines that omit speaker fields reuse the previous `characterId` and `character` override.
+- `persistCharacter: true` means later dialogue lines that omit speaker fields
+  reuse the previous `characterId` and `character.name` override.
+- `persistSprite: true` keeps `character.sprite` when later dialogue lines omit
+  a sprite, independently from speaker persistence and speaker changes.
+- `persistSprite: false` clears the previous sprite on the next dialogue line
+  that omits a sprite. For backward compatibility, `persistCharacter: true`
+  continues to persist sprites when `persistSprite` has never been specified.
 - If a later dialogue line explicitly provides `characterId` without `character.name` or `character.sprite`, the previous override is cleared and the displayed name falls back to the character resource name.
 - If a later dialogue line omits `characterId` but provides `character.name` or
   `character.sprite` while `persistCharacter` is active, the provided fields
@@ -1187,6 +1193,7 @@ dialogue:
         resourceId: portraitIn
         playback:
           continuity: render
+  persistSprite: true
   content:
     - text: Hello
 ```
@@ -1200,6 +1207,8 @@ Runtime behavior:
 - Sprite layer ids are `dialogue-character-sprite-${item.id}`.
 - The sprite group is added after the dialogue UI layout elements, so the
   portrait can render above the UI when they overlap.
+- `persistSprite` is independent from `persistCharacter`, so a persisted
+  portrait can remain visible when a later line changes the speaker.
 - An animation-only `character.sprite` payload can animate out the previous
   dialogue sprite group:
 
@@ -1248,6 +1257,28 @@ The second line still displays `Alias`.
 ```
 
 The second line displays `Alice`, not `Alias`.
+
+```yaml
+# The portrait remains when a later line changes the speaker.
+- dialogue:
+    characterId: alice
+    character:
+      sprite:
+        transformId: dialoguePortraitLeft
+        items:
+          - id: base
+            resourceId: aliceBody
+    persistSprite: true
+    content:
+      - text: Hello
+- dialogue:
+    characterId: bob
+    content:
+      - text: I am speaking while the previous portrait remains visible.
+```
+
+Set `persistSprite: false` to clear a previously persisted sprite when the
+current dialogue line does not provide a replacement.
 
 Template/runtime paths:
 
