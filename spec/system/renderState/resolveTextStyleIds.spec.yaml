@@ -55,6 +55,38 @@ out:
       offsetX: -2
       offsetY: 3
 ---
+case: resolves ordered font resource ids into a Pixi font fallback string
+in:
+  - type: "text"
+    content: "Hello"
+    textStyleId: "body"
+  - textStyles:
+      body:
+        fontId: ["fontLatin", "fontCjk"]
+        colorId: "fg"
+        fontSize: 24
+        fontWeight: "400"
+        fontStyle: "normal"
+        lineHeight: 1.2
+    fonts:
+      fontLatin:
+        fileId: "Inter-Regular"
+      fontCjk:
+        fileId: "Noto-Sans-SC-Regular"
+    colors:
+      fg:
+        hex: "#FFFFFF"
+out:
+  type: "text"
+  content: "Hello"
+  textStyle:
+    fontFamily: "Inter-Regular, Noto-Sans-SC-Regular"
+    fontSize: 24
+    fontWeight: "400"
+    fontStyle: "normal"
+    lineHeight: 1.2
+    fill: "#FFFFFF"
+---
 case: resolves nested interaction textStyleIds and extended text style fields
 in:
   - id: "container"

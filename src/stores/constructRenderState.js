@@ -862,12 +862,19 @@ const resolveTextStyleResource = (resources = {}, textStyleId) => {
     throw new Error(`Text style "${textStyleId}" not found`);
   }
 
-  const fontResource = resources.fonts?.[textStyleResource.fontId];
-  if (!fontResource) {
-    throw new Error(
-      `Font "${textStyleResource.fontId}" not found for text style "${textStyleId}"`,
-    );
-  }
+  const fontIds = Array.isArray(textStyleResource.fontId)
+    ? textStyleResource.fontId
+    : [textStyleResource.fontId];
+  const fontFamilies = fontIds.map((fontId) => {
+    const fontResource = resources.fonts?.[fontId];
+    if (!fontResource) {
+      throw new Error(
+        `Font "${fontId}" not found for text style "${textStyleId}"`,
+      );
+    }
+
+    return fontResource.fileId;
+  });
 
   const colorResource = resources.colors?.[textStyleResource.colorId];
   if (!colorResource) {
@@ -883,7 +890,11 @@ const resolveTextStyleResource = (resources = {}, textStyleId) => {
   );
 
   const resolvedTextStyle = {
-    fontFamily: fontResource.fileId,
+    // Pixi mutates array-valued fontFamily while parsing it, but Immer freezes
+    // the render state. A string makes Pixi parse into its own mutable array.
+    fontFamily: Array.isArray(textStyleResource.fontId)
+      ? fontFamilies.join(", ")
+      : fontFamilies[0],
     fontSize: textStyleResource.fontSize ?? 16,
     fontWeight: textStyleResource.fontWeight ?? "400",
     fontStyle: textStyleResource.fontStyle ?? "normal",

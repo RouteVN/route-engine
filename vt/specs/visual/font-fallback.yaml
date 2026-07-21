@@ -1,0 +1,57 @@
+---
+title: Font Fallback
+description: Text renders through RouteGraphics when its text style uses ordered fallback font IDs.
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  colors:
+    bg:
+      hex: "#000000"
+    fg:
+      hex: "#FFFFFF"
+  fonts:
+    primary:
+      fileId: Arial
+    fallback:
+      fileId: sans-serif
+  textStyles:
+    fallbackText:
+      fontId: [primary, fallback]
+      colorId: fg
+      fontSize: 72
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+      align: center
+  transforms:
+    centered:
+      x: 960
+      y: 540
+      anchorX: 0.5
+      anchorY: 0.5
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+story:
+  initialSceneId: fontFallbackScene
+  scenes:
+    fontFallbackScene:
+      name: Font Fallback Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                background:
+                  colorId: bg
+                visual:
+                  items:
+                    - id: fallback-text
+                      text:
+                        content: "Font fallback renders"
+                        textStyleId: fallbackText
+                      transformId: centered
