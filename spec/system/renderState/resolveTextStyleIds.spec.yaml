@@ -55,7 +55,7 @@ out:
       offsetX: -2
       offsetY: 3
 ---
-case: resolves ordered font resource ids into a Pixi font fallback array
+case: resolves ordered font resource ids into a Pixi font fallback string
 in:
   - type: "text"
     content: "Hello"
@@ -80,7 +80,7 @@ out:
   type: "text"
   content: "Hello"
   textStyle:
-    fontFamily: ["Inter-Regular", "Noto-Sans-SC-Regular"]
+    fontFamily: "Inter-Regular, Noto-Sans-SC-Regular"
     fontSize: 24
     fontWeight: "400"
     fontStyle: "normal"

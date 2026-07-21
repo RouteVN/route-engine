@@ -890,8 +890,10 @@ const resolveTextStyleResource = (resources = {}, textStyleId) => {
   );
 
   const resolvedTextStyle = {
+    // Pixi mutates array-valued fontFamily while parsing it, but Immer freezes
+    // the render state. A string makes Pixi parse into its own mutable array.
     fontFamily: Array.isArray(textStyleResource.fontId)
-      ? fontFamilies
+      ? fontFamilies.join(", ")
       : fontFamilies[0],
     fontSize: textStyleResource.fontSize ?? 16,
     fontWeight: textStyleResource.fontWeight ?? "400",
