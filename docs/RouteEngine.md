@@ -1090,7 +1090,10 @@ Field semantics:
   a sprite, independently from speaker persistence and speaker changes.
 - `persistSprite: false` clears the previous sprite on the next dialogue line
   that omits a sprite. For backward compatibility, `persistCharacter: true`
-  continues to persist sprites when `persistSprite` has never been specified.
+  continues to persist sprites when `persistSprite` has never been specified
+  and later lines inherit the speaker. An explicit `characterId` keeps the
+  legacy behavior of clearing that sprite unless `persistSprite: true` was
+  established.
 - If a later dialogue line explicitly provides `characterId` without `character.name` or `character.sprite`, the previous override is cleared and the displayed name falls back to the character resource name.
 - If a later dialogue line omits `characterId` but provides `character.name` or
   `character.sprite` while `persistCharacter` is active, the provided fields

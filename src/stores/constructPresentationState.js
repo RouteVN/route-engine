@@ -339,8 +339,9 @@ const resolveDialogueSpritePersistence = ({
     return dialogueState.persistSprite === true;
   }
 
-  // Preserve the legacy behavior where persistCharacter also kept the sprite.
-  return persistCharacter;
+  // Preserve the legacy behavior where persistCharacter kept the sprite only
+  // while the speaker was inherited. An explicit speaker reset cleared it.
+  return persistCharacter && !hasOwnProperty(dialogueAction, "characterId");
 };
 
 const buildNextDialogueCharacter = ({

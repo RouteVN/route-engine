@@ -539,6 +539,38 @@ out:
     content:
       - text: "Hi again"
 ---
+case: legacy persistCharacter clears the sprite when the speaker explicitly changes
+in:
+  - - dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "simple-dialogue"
+        characterId: "alice"
+        character:
+          name: "Alias"
+          sprite:
+            transformId: "dialogue-left"
+            items:
+              - id: "base"
+                resourceId: "alice-base"
+        persistCharacter: true
+        content:
+          - text: "Hello"
+    - dialogue:
+        mode: "adv"
+        characterId: "bob"
+        content:
+          - text: "Bob is speaking"
+out:
+  dialogue:
+    mode: "adv"
+    ui:
+      resourceId: "simple-dialogue"
+    characterId: "bob"
+    persistCharacter: true
+    content:
+      - text: "Bob is speaking"
+---
 case: dialogue sprite persists independently when the speaker changes
 in:
   - - dialogue:
