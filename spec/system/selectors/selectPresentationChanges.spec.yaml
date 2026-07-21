@@ -578,7 +578,7 @@ in:
               lineId: "2"
 out: {}
 ---
-case: "Detect added dialogue character sprite without dialogue ui"
+case: "Report added dialogue character sprite separately from dialogue ui"
 in:
   - state:
       projectData:
@@ -606,17 +606,15 @@ in:
               sectionId: "section1"
               lineId: "2"
 out:
-  dialogue:
+  dialogueSprite:
     changeType: "add"
     data:
-      character:
-        sprite:
-          transformId: "dialogue-left"
-          items:
-            - id: "base"
-              resourceId: "alice-base"
+      transformId: "dialogue-left"
+      items:
+        - id: "base"
+          resourceId: "alice-base"
 ---
-case: "Detect updated dialogue character sprite without dialogue ui"
+case: "Report updated dialogue character sprite separately from dialogue ui"
 in:
   - state:
       projectData:
@@ -651,15 +649,52 @@ in:
               sectionId: "section1"
               lineId: "2"
 out:
-  dialogue:
+  dialogueSprite:
     changeType: "update"
     data:
-      character:
-        sprite:
-          transformId: "dialogue-left"
-          items:
-            - id: "base"
-              resourceId: "alice-alt-base"
+      transformId: "dialogue-left"
+      items:
+        - id: "base"
+          resourceId: "alice-alt-base"
+---
+case: "Report removed dialogue character sprite separately from dialogue ui"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          character:
+                            sprite:
+                              transformId: "dialogue-left"
+                              items:
+                                - id: "base"
+                                  resourceId: "alice-base"
+                    - id: "2"
+                      actions:
+                        dialogue:
+                          content:
+                            - text: "No sprite"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  dialogueSprite:
+    changeType: "delete"
+    data:
+      transformId: "dialogue-left"
+      items:
+        - id: "base"
+          resourceId: "alice-base"
 ---
 case: "Ignore previous-line dialogue character sprite animation metadata when state persists"
 in:

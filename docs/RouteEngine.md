@@ -471,6 +471,10 @@ tracks `resourceId` and its related fields, while `color` tracks `colorId`.
 Background animation selections are playback instructions and are not included
 in this diff.
 
+Dialogue UI changes are reported as `dialogue`. Speaker sprite changes are
+reported separately as `dialogueSprite`, with `add`, `update`, or `delete` as
+the change type.
+
 ```js
 const sectionLineChanges = engine.selectSectionLineChanges({
   sectionId: "section1",

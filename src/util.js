@@ -1343,51 +1343,62 @@ export const formatDate = (timestamp, format = "DD/MM/YYYY - HH:mm") => {
 };
 
 /**
- * Compares two dialogue states, flagging changes only for renderable dialogue
- * asset updates. Ignores content, characterId, and speaker name changes to
- * reduce noise.
+ * Compares two dialogue states, flagging changes only for dialogue UI updates.
+ * Ignores content, speaker metadata, and speaker sprite changes to reduce
+ * editor preview noise.
  * @param {Object} prevDialogue - Previous dialogue state
  * @param {Object} currDialogue - Current dialogue state
  * @returns {Object|null} Change object or null if no significant change
  */
 const diffDialogue = (prevDialogue, currDialogue) => {
-  const toRenderableDialogueState = (dialogue) => {
-    if (!dialogue) {
-      return undefined;
-    }
+  const toDialogueUiState = (dialogue) => dialogue?.ui;
 
-    const renderableState = {};
-    if (dialogue.ui) {
-      renderableState.ui = dialogue.ui;
-    }
+  const prevUi = toDialogueUiState(prevDialogue);
+  const currUi = toDialogueUiState(currDialogue);
 
-    const sprite = dialogue.character?.sprite;
-    if (sprite && Object.keys(sprite).length > 0) {
-      renderableState.sprite = sprite;
-    }
-
-    return Object.keys(renderableState).length > 0
-      ? renderableState
-      : undefined;
-  };
-
-  const prevRenderable = toRenderableDialogueState(prevDialogue);
-  const currRenderable = toRenderableDialogueState(currDialogue);
-
-  if (JSON.stringify(prevRenderable) === JSON.stringify(currRenderable)) {
+  if (JSON.stringify(prevUi) === JSON.stringify(currUi)) {
     return null;
   }
 
-  if (prevRenderable && !currRenderable) {
+  if (prevUi && !currUi) {
     return { changeType: "delete", data: prevDialogue };
   }
 
-  if (currRenderable && !prevRenderable) {
+  if (currUi && !prevUi) {
     return { changeType: "add", data: currDialogue };
   }
 
-  if (currRenderable && prevRenderable) {
+  if (currUi && prevUi) {
     return { changeType: "update", data: currDialogue };
+  }
+
+  return null;
+};
+
+/**
+ * Compares the speaker sprites attached to two dialogue states.
+ * @param {Object} prevDialogue - Previous dialogue state
+ * @param {Object} currDialogue - Current dialogue state
+ * @returns {Object|null} Change object or null if the sprite did not change
+ */
+const diffDialogueSprite = (prevDialogue, currDialogue) => {
+  const prevSprite = prevDialogue?.character?.sprite;
+  const currSprite = currDialogue?.character?.sprite;
+
+  if (JSON.stringify(prevSprite) === JSON.stringify(currSprite)) {
+    return null;
+  }
+
+  if (prevSprite && !currSprite) {
+    return { changeType: "delete", data: prevSprite };
+  }
+
+  if (currSprite && !prevSprite) {
+    return { changeType: "add", data: currSprite };
+  }
+
+  if (currSprite && prevSprite) {
+    return { changeType: "update", data: currSprite };
   }
 
   return null;
@@ -1525,6 +1536,11 @@ export const diffPresentationState = (prev = {}, curr = {}) => {
   const dialogueChange = diffDialogue(prev.dialogue, curr.dialogue);
   if (dialogueChange) {
     changes.dialogue = dialogueChange;
+  }
+
+  const dialogueSpriteChange = diffDialogueSprite(prev.dialogue, curr.dialogue);
+  if (dialogueSpriteChange) {
+    changes.dialogueSprite = dialogueSpriteChange;
   }
 
   diffObject("choice");
