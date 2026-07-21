@@ -299,7 +299,7 @@ properties:
         description: Keep the current characterId and character.name override for following dialogue lines when later dialogue actions omit speaker fields. For backward compatibility, this also keeps character.sprite when persistSprite has never been specified. An explicit characterId still resets the speaker name override unless character.name is also provided.
       persistSprite:
         type: boolean
-        description: Keep the current character.sprite for following dialogue lines when later dialogue actions omit a sprite. This is independent from persistCharacter, including when the speaker changes.
+        description: Keep the current character.sprite for following dialogue lines when later dialogue actions omit a sprite. Set this to false on a later dialogue action without a sprite to remove a previously persisted sprite. This is independent from persistCharacter, including when the speaker changes.
       character:
         type: object
         description: Canonical character override properties for authored dialogue actions

@@ -1277,8 +1277,8 @@ The second line displays `Alice`, not `Alias`.
       - text: I am speaking while the previous portrait remains visible.
 ```
 
-Set `persistSprite: false` to clear a previously persisted sprite when the
-current dialogue line does not provide a replacement.
+Set `persistSprite: false` on a later dialogue line without a sprite to remove
+the previously persisted sprite on that line.
 
 Template/runtime paths:
 
