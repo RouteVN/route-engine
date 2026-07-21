@@ -539,6 +539,152 @@ out:
     content:
       - text: "Hi again"
 ---
+case: legacy persistCharacter clears the sprite when the speaker explicitly changes
+in:
+  - - dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "simple-dialogue"
+        characterId: "alice"
+        character:
+          name: "Alias"
+          sprite:
+            transformId: "dialogue-left"
+            items:
+              - id: "base"
+                resourceId: "alice-base"
+        persistCharacter: true
+        content:
+          - text: "Hello"
+    - dialogue:
+        mode: "adv"
+        characterId: "bob"
+        content:
+          - text: "Bob is speaking"
+out:
+  dialogue:
+    mode: "adv"
+    ui:
+      resourceId: "simple-dialogue"
+    characterId: "bob"
+    persistCharacter: true
+    content:
+      - text: "Bob is speaking"
+---
+case: dialogue sprite persists independently when the speaker changes
+in:
+  - - dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "simple-dialogue"
+        characterId: "alice"
+        character:
+          name: "Alias"
+          sprite:
+            transformId: "dialogue-left"
+            items:
+              - id: "base"
+                resourceId: "alice-base"
+            animations:
+              resourceId: "portrait-in"
+        persistSprite: true
+        content:
+          - text: "Hello"
+    - dialogue:
+        mode: "adv"
+        characterId: "bob"
+        content:
+          - text: "Bob is speaking"
+out:
+  dialogue:
+    mode: "adv"
+    ui:
+      resourceId: "simple-dialogue"
+    characterId: "bob"
+    character:
+      sprite:
+        transformId: "dialogue-left"
+        items:
+          - id: "base"
+            resourceId: "alice-base"
+        animations: {}
+    persistSprite: true
+    content:
+      - text: "Bob is speaking"
+---
+case: persistSprite false removes a previously persistent sprite while the speaker remains persistent
+in:
+  - - dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "simple-dialogue"
+        characterId: "alice"
+        character:
+          name: "Alias"
+          sprite:
+            transformId: "dialogue-left"
+            items:
+              - id: "base"
+                resourceId: "alice-base"
+        persistCharacter: true
+        persistSprite: true
+        content:
+          - text: "Hello"
+    - dialogue:
+        mode: "adv"
+        persistSprite: false
+        content:
+          - text: "The portrait is gone"
+out:
+  dialogue:
+    mode: "adv"
+    ui:
+      resourceId: "simple-dialogue"
+    characterId: "alice"
+    character:
+      name: "Alias"
+    persistCharacter: true
+    persistSprite: false
+    content:
+      - text: "The portrait is gone"
+---
+case: persistSprite false removes a persistent sprite during ADV append
+in:
+  - - dialogue:
+        mode: "adv"
+        ui:
+          resourceId: "simple-dialogue"
+        characterId: "alice"
+        character:
+          name: "Alias"
+          sprite:
+            transformId: "dialogue-left"
+            items:
+              - id: "base"
+                resourceId: "alice-base"
+        persistSprite: true
+        content:
+          - text: "Hello"
+    - dialogue:
+        append: true
+        persistSprite: false
+        content:
+          - text: " continued"
+out:
+  dialogue:
+    mode: "adv"
+    ui:
+      resourceId: "simple-dialogue"
+    characterId: "alice"
+    character:
+      name: "Alias"
+    persistSprite: false
+    content:
+      - text: "Hello"
+      - text: " continued"
+    initialRevealedContent:
+      - text: "Hello"
+---
 case: dialogue character sprite accepts animation-only removal payload
 in:
   - - dialogue:

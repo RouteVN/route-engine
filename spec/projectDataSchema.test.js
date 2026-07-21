@@ -906,7 +906,7 @@ describe("projectData schema", () => {
     expect(validateProjectData.errors).toBeNull();
   });
 
-  it("accepts dialogue character override and persistCharacter in presentation actions", () => {
+  it("accepts independent dialogue speaker and sprite persistence", () => {
     expect(
       validatePresentationActions({
         dialogue: {
@@ -915,6 +915,7 @@ describe("projectData schema", () => {
             name: "Alias",
           },
           persistCharacter: true,
+          persistSprite: false,
           content: [{ text: "Hello" }],
         },
       }),

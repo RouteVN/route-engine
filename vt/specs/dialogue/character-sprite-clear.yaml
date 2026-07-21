@@ -1,9 +1,9 @@
 ---
-title: Dialogue Character Sprite
-description: Dialogue actions can render a layered speaker sprite and keep it visible independently when the speaker changes.
+title: Dialogue Character Sprite Clear
+description: Verifies persistSprite false removes a persisted dialogue portrait during an ADV append.
 specs:
-  - the initial screenshot should show a layered speaker portrait above the dialogue UI
-  - after advancing, Bob should speak while the same layered portrait remains visible
+  - the initial screenshot should show Alice's dialogue portrait
+  - after advancing, the appended clear message should be visible without the portrait
 steps:
   - action: click
     x: 960
@@ -17,7 +17,7 @@ screen:
   height: 1080
 resources:
   controls:
-    base1:
+    base:
       elements:
         - id: click-area
           type: rect
@@ -30,12 +30,8 @@ resources:
                 nextLine: {}
           colorId: overlayColor
   images:
-    parts-body:
+    portrait:
       fileId: character_parts_body
-      width: 620
-      height: 960
-    parts-face-smile:
-      fileId: character_parts_face_smile
       width: 620
       height: 960
   transforms:
@@ -46,6 +42,7 @@ resources:
       anchorY: 1
   layouts:
     dialogue-layout:
+      mode: adv
       elements:
         - id: dialogue-panel
           type: rect
@@ -68,11 +65,16 @@ resources:
           width: 760
           content: ${dialogue.content[0].text}
           textStyleId: textStyle
+        - id: appended-dialogue-text
+          type: text
+          x: 900
+          y: 940
+          width: 760
+          content: ${dialogue.content[1].text}
+          textStyleId: clearStyle
   characters:
     alice:
       name: Alice
-    bob:
-      name: Bob
   fonts:
     fontDefault:
       fileId: Arial
@@ -85,6 +87,8 @@ resources:
       hex: "#D9D9D9"
     textColor:
       hex: "#FFFFFF"
+    clearColor:
+      hex: "#8BD3FF"
   textStyles:
     nameStyle:
       fontId: fontDefault
@@ -100,6 +104,13 @@ resources:
       fontWeight: "400"
       fontStyle: normal
       lineHeight: 1.2
+    clearStyle:
+      fontId: fontDefault
+      colorId: clearColor
+      fontSize: 26
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
 story:
   initialSceneId: dialogueSpriteScene
   scenes:
@@ -112,7 +123,7 @@ story:
             - id: line1
               actions:
                 control:
-                  resourceId: base1
+                  resourceId: base
                 dialogue:
                   mode: adv
                   ui:
@@ -123,18 +134,14 @@ story:
                       transformId: dialogue-left
                       items:
                         - id: body
-                          resourceId: parts-body
-                        - id: face
-                          resourceId: parts-face-smile
+                          resourceId: portrait
                   persistSprite: true
                   content:
-                    - text: This line renders a layered dialogue portrait.
+                    - text: This line starts with a persisted dialogue portrait.
             - id: line2
               actions:
                 dialogue:
-                  mode: adv
-                  ui:
-                    resourceId: dialogue-layout
-                  characterId: bob
+                  append: true
+                  persistSprite: false
                   content:
-                    - text: The layered portrait persists when Bob starts speaking.
+                    - text: The appended line explicitly clears the portrait.
