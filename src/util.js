@@ -1376,14 +1376,30 @@ const diffDialogue = (prevDialogue, currDialogue) => {
 };
 
 /**
+ * Returns whether a dialogue character sprite has enough data to render.
+ * @param {Object} sprite - Dialogue character sprite state
+ * @returns {boolean} Whether the sprite can be rendered
+ */
+export const hasRenderableDialogueCharacterSprite = (sprite) =>
+  !!sprite?.transformId &&
+  Array.isArray(sprite.items) &&
+  sprite.items.length > 0;
+
+/**
  * Compares the speaker sprites attached to two dialogue states.
  * @param {Object} prevDialogue - Previous dialogue state
  * @param {Object} currDialogue - Current dialogue state
  * @returns {Object|null} Change object or null if the sprite did not change
  */
 const diffDialogueSprite = (prevDialogue, currDialogue) => {
-  const prevSprite = prevDialogue?.character?.sprite;
-  const currSprite = currDialogue?.character?.sprite;
+  const previousSprite = prevDialogue?.character?.sprite;
+  const currentSprite = currDialogue?.character?.sprite;
+  const prevSprite = hasRenderableDialogueCharacterSprite(previousSprite)
+    ? previousSprite
+    : undefined;
+  const currSprite = hasRenderableDialogueCharacterSprite(currentSprite)
+    ? currentSprite
+    : undefined;
 
   if (JSON.stringify(prevSprite) === JSON.stringify(currSprite)) {
     return null;
