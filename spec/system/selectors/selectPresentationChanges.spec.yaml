@@ -614,6 +614,31 @@ out:
         - id: "base"
           resourceId: "alice-base"
 ---
+case: "Ignore an empty dialogue character sprite when no renderable sprite exists"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions: {}
+                    - id: "2"
+                      actions:
+                        dialogue:
+                          character:
+                            sprite: {}
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out: {}
+---
 case: "Report updated dialogue character sprite separately from dialogue ui"
 in:
   - state:
@@ -681,6 +706,45 @@ in:
                         dialogue:
                           content:
                             - text: "No sprite"
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  dialogueSprite:
+    changeType: "delete"
+    data:
+      transformId: "dialogue-left"
+      items:
+        - id: "base"
+          resourceId: "alice-base"
+---
+case: "Treat an empty dialogue character sprite as removing a renderable sprite"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        dialogue:
+                          character:
+                            sprite:
+                              transformId: "dialogue-left"
+                              items:
+                                - id: "base"
+                                  resourceId: "alice-base"
+                    - id: "2"
+                      actions:
+                        dialogue:
+                          character:
+                            sprite: {}
       contexts:
         - currentPointerMode: "read"
           pointers:

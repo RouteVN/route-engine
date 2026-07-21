@@ -3,6 +3,7 @@ import { interpolateDialogueText } from "../dialogueText.js";
 import {
   createSequentialActionsExecutor,
   formatDate,
+  hasRenderableDialogueCharacterSprite,
   resolveCharacterDisplayName,
 } from "../util.js";
 import { GLOBAL_RUNTIME_DEFAULTS } from "../runtimeFields.js";
@@ -3030,11 +3031,6 @@ export const addVisuals = (
 };
 
 const DIALOGUE_CHARACTER_SPRITE_CONTAINER_ID = "dialogue-character-sprite";
-
-const hasRenderableDialogueCharacterSprite = (sprite) =>
-  !!sprite?.transformId &&
-  Array.isArray(sprite.items) &&
-  sprite.items.length > 0;
 
 const addDialogueCharacterSprite = (
   state,
