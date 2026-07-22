@@ -185,6 +185,45 @@ const createNameVariableProjectData = () => ({
   },
 });
 
+const createStaticProjectData = (text) => {
+  const projectData = createProjectData({
+    initialLineId: "line1",
+    firstLineDialogue: {
+      content: [{ text }],
+    },
+    secondLineDialogue: {
+      content: [{ text: `${text} second` }],
+    },
+  });
+  projectData.resources.layouts = {};
+  Object.values(projectData.story.scenes.scene1.sections).forEach((section) => {
+    section.lines.forEach((line) => {
+      line.actions = {};
+    });
+  });
+  return projectData;
+};
+
+const addComputedCycle = (projectData) => {
+  projectData.resources.variables = {
+    a: {
+      type: "number",
+      scope: "context",
+      computed: {
+        expr: { var: "variables.b" },
+      },
+    },
+    b: {
+      type: "number",
+      scope: "context",
+      computed: {
+        expr: { var: "variables.a" },
+      },
+    },
+  };
+  return projectData;
+};
+
 describe("RouteEngine updateProjectData", () => {
   it("treats projectData as opaque when processing action templates", () => {
     const engine = createRouteEngine({
@@ -259,6 +298,60 @@ describe("RouteEngine updateProjectData", () => {
     ]);
   });
 
+  it("resolves an event-bound updateProjectData payload at action time", () => {
+    const engine = createRouteEngine({
+      handlePendingEffects: () => {},
+    });
+    const initialProjectData = createProjectData({
+      initialLineId: "line1",
+      firstLineDialogue: {
+        mode: "adv",
+        ui: {
+          resourceId: "adv",
+        },
+        content: [{ text: "Initial" }],
+      },
+      secondLineDialogue: {
+        content: [{ text: "Unused" }],
+      },
+    });
+    const nextProjectData = createProjectData({
+      initialLineId: "line1",
+      firstLineDialogue: {
+        mode: "adv",
+        ui: {
+          resourceId: "adv",
+        },
+        content: [{ text: "Replacement" }],
+      },
+      secondLineDialogue: {
+        content: [{ text: "Unused replacement" }],
+      },
+    });
+
+    engine.init({
+      initialState: {
+        projectData: initialProjectData,
+      },
+    });
+
+    expect(() =>
+      engine.handleActions(
+        {
+          updateProjectData: "_event.update",
+        },
+        {
+          _event: {
+            update: {
+              projectData: nextProjectData,
+            },
+          },
+        },
+      ),
+    ).not.toThrow();
+    expect(engine.selectSystemState().projectData).toEqual(nextProjectData);
+  });
+
   it("hydrates newly introduced defaults used by character nameVariableId", () => {
     const engine = createRouteEngine({
       handlePendingEffects: () => {},
@@ -299,5 +392,332 @@ describe("RouteEngine updateProjectData", () => {
     ).toMatchObject({
       content: "Guest",
     });
+  });
+
+  it("restores action-batch state after invalid computed definitions", () => {
+    const engine = createRouteEngine({
+      handlePendingEffects: () => {},
+    });
+    const initialProjectData = createProjectData({
+      initialLineId: "line1",
+      firstLineDialogue: {
+        mode: "adv",
+        ui: {
+          resourceId: "adv",
+        },
+        content: [{ text: "First" }],
+      },
+      secondLineDialogue: {
+        mode: "adv",
+        ui: {
+          resourceId: "adv",
+        },
+        content: [{ text: "Second" }],
+      },
+    });
+    const invalidProjectData = createProjectData({
+      initialLineId: "line1",
+      firstLineDialogue: {
+        mode: "adv",
+        ui: {
+          resourceId: "adv",
+        },
+        content: [{ text: "Replacement" }],
+      },
+      secondLineDialogue: {
+        mode: "adv",
+        ui: {
+          resourceId: "adv",
+        },
+        content: [{ text: "Replacement second" }],
+      },
+    });
+    invalidProjectData.resources.variables = {
+      a: {
+        type: "number",
+        scope: "context",
+        computed: {
+          expr: { var: "variables.b" },
+        },
+      },
+      b: {
+        type: "number",
+        scope: "context",
+        computed: {
+          expr: { var: "variables.a" },
+        },
+      },
+    };
+
+    engine.init({
+      initialState: {
+        projectData: initialProjectData,
+      },
+    });
+    engine.handleAction("nextLine", {});
+    engine.handleAction("rollbackByOffset", {});
+    const previousState = structuredClone(engine.selectSystemState());
+
+    expect(() =>
+      engine.handleActions({
+        updateProjectData: {
+          projectData: invalidProjectData,
+        },
+      }),
+    ).toThrow("Computed variable cycle detected: a -> b -> a");
+    expect(engine.selectSystemState()).toEqual(previousState);
+  });
+
+  it("rolls back earlier actions when an event-bound conditional update is invalid", () => {
+    const engine = createRouteEngine({
+      handlePendingEffects: () => {},
+    });
+    const initialProjectData = createProjectData({
+      initialLineId: "line1",
+      firstLineDialogue: {
+        mode: "adv",
+        ui: {
+          resourceId: "adv",
+        },
+        content: [{ text: "Initial" }],
+      },
+      secondLineDialogue: {
+        content: [{ text: "Unused" }],
+      },
+    });
+    initialProjectData.resources.variables.score = {
+      type: "number",
+      scope: "context",
+      default: 0,
+    };
+    const invalidProjectData = structuredClone(initialProjectData);
+    invalidProjectData.resources.variables = {
+      a: {
+        type: "number",
+        scope: "context",
+        computed: {
+          expr: { var: "variables.b" },
+        },
+      },
+      b: {
+        type: "number",
+        scope: "context",
+        computed: {
+          expr: { var: "variables.a" },
+        },
+      },
+    };
+
+    engine.init({
+      initialState: {
+        projectData: initialProjectData,
+      },
+    });
+    const previousState = structuredClone(engine.selectSystemState());
+
+    expect(() =>
+      engine.handleActions(
+        {
+          updateVariable: {
+            id: "incrementBeforeInvalidUpdate",
+            operations: [
+              {
+                variableId: "score",
+                op: "increment",
+                value: 1,
+              },
+            ],
+          },
+          conditional: "_event.conditional",
+        },
+        {
+          _event: {
+            conditional: {
+              branches: [
+                {
+                  when: true,
+                  actions: {
+                    updateProjectData: {
+                      projectData: invalidProjectData,
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      ),
+    ).toThrow("Computed variable cycle detected: a -> b -> a");
+    expect(engine.selectSystemState()).toEqual(previousState);
+  });
+
+  it("resolves dynamic project payloads from action-time variable state", () => {
+    const handledEffects = [];
+    const engine = createRouteEngine({
+      handlePendingEffects: (effects) => handledEffects.push(...effects),
+    });
+    const validProjectData = createStaticProjectData("Valid replacement");
+    const invalidProjectData = addComputedCycle(
+      createStaticProjectData("Invalid replacement"),
+    );
+    const initialProjectData = createProjectData({
+      initialLineId: "line1",
+      firstLineDialogue: {
+        mode: "adv",
+        ui: {
+          resourceId: "adv",
+        },
+        content: [{ text: "Initial" }],
+      },
+      secondLineDialogue: {
+        content: [{ text: "Unused" }],
+      },
+    });
+    initialProjectData.resources.variables.nextProject = {
+      type: "object",
+      scope: "context",
+      default: {
+        projectData: validProjectData,
+      },
+    };
+
+    engine.init({
+      initialState: {
+        projectData: initialProjectData,
+      },
+    });
+    handledEffects.length = 0;
+    const previousState = engine.selectSystemState();
+
+    expect(() =>
+      engine.handleActions({
+        updateVariable: {
+          id: "selectInvalidProject",
+          operations: [
+            {
+              variableId: "nextProject",
+              op: "set",
+              value: {
+                projectData: invalidProjectData,
+              },
+            },
+          ],
+        },
+        updateProjectData: "${variables.nextProject}",
+      }),
+    ).toThrow("Computed variable cycle detected: a -> b -> a");
+    expect(engine.selectSystemState()).toEqual(previousState);
+    expect(handledEffects).toEqual([]);
+  });
+
+  it("does not reject a dynamic project payload from stale pre-batch state", () => {
+    const engine = createRouteEngine({
+      handlePendingEffects: () => {},
+    });
+    const validProjectData = createStaticProjectData("Valid replacement");
+    const invalidProjectData = addComputedCycle(
+      createStaticProjectData("Invalid replacement"),
+    );
+    const initialProjectData = createProjectData({
+      initialLineId: "line1",
+      firstLineDialogue: {
+        mode: "adv",
+        ui: {
+          resourceId: "adv",
+        },
+        content: [{ text: "Initial" }],
+      },
+      secondLineDialogue: {
+        content: [{ text: "Unused" }],
+      },
+    });
+    initialProjectData.resources.variables.nextProject = {
+      type: "object",
+      scope: "context",
+      default: {
+        projectData: invalidProjectData,
+      },
+    };
+
+    engine.init({
+      initialState: {
+        projectData: initialProjectData,
+      },
+    });
+
+    expect(() =>
+      engine.handleActions({
+        updateVariable: {
+          id: "selectValidProject",
+          operations: [
+            {
+              variableId: "nextProject",
+              op: "set",
+              value: {
+                projectData: validProjectData,
+              },
+            },
+          ],
+        },
+        updateProjectData: "${variables.nextProject}",
+      }),
+    ).not.toThrow();
+    expect(engine.selectSystemState().projectData).toEqual(validProjectData);
+  });
+
+  it("does not resolve update bindings in unselected conditional branches", () => {
+    const engine = createRouteEngine({
+      handlePendingEffects: () => {},
+    });
+    const initialProjectData = createProjectData({
+      initialLineId: "line1",
+      firstLineDialogue: {
+        mode: "adv",
+        ui: {
+          resourceId: "adv",
+        },
+        content: [{ text: "Initial" }],
+      },
+      secondLineDialogue: {
+        content: [{ text: "Unused" }],
+      },
+    });
+    const selectedProjectData = createStaticProjectData("Selected project");
+
+    engine.init({
+      initialState: {
+        projectData: initialProjectData,
+      },
+    });
+
+    expect(() =>
+      engine.handleActions(
+        {
+          conditional: {
+            branches: [
+              {
+                when: true,
+                actions: {
+                  updateProjectData: "_event.projectA",
+                },
+              },
+              {
+                actions: {
+                  updateProjectData: "_event.projectB",
+                },
+              },
+            ],
+          },
+        },
+        {
+          _event: {
+            projectA: {
+              projectData: selectedProjectData,
+            },
+          },
+        },
+      ),
+    ).not.toThrow();
+    expect(engine.selectSystemState().projectData).toEqual(selectedProjectData);
   });
 });

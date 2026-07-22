@@ -1,6 +1,11 @@
 import { createSystemStore } from "./stores/system.store.js";
 import { normalizeNamespace } from "./indexedDbPersistence.js";
-import { evaluateRouteCondition, processActionTemplates } from "./util.js";
+import {
+  evaluateRouteCondition,
+  processActionTemplates,
+  RUN_STORE_TRANSACTION,
+  validateComputedVariableConfigs,
+} from "./util.js";
 import {
   collectPersistentAnimationContinuations,
   getAnimationInstanceDurationMs,
@@ -127,11 +132,16 @@ export default function createRouteEngine(options) {
 
   const runWithDeferredEffects = (callback) => {
     _actionDispatchDepth += 1;
+    let completed = false;
     try {
-      return callback();
+      const result = callback();
+      completed = true;
+      return result;
     } finally {
       _actionDispatchDepth -= 1;
-      processEffectsUntilEmpty();
+      if (completed) {
+        processEffectsUntilEmpty();
+      }
     }
   };
 
@@ -495,6 +505,10 @@ export default function createRouteEngine(options) {
       return;
     }
 
+    if (actionType === "updateProjectData") {
+      validateProjectDataUpdatePayload(payload);
+    }
+
     if (CONDITIONAL_ROUTING_ACTION_TYPES.has(actionType)) {
       _conditionalRoutingSequence += 1;
     }
@@ -524,6 +538,15 @@ export default function createRouteEngine(options) {
     return result;
   };
 
+  const validateProjectDataUpdatePayload = (payload) => {
+    if (!Object.prototype.hasOwnProperty.call(payload ?? {}, "projectData")) {
+      throw new Error("updateProjectData requires projectData");
+    }
+    validateComputedVariableConfigs(
+      payload?.projectData?.resources?.variables ?? {},
+    );
+  };
+
   const dispatchConditionalAutoContinue = (
     result,
     sourcePointer,
@@ -545,58 +568,99 @@ export default function createRouteEngine(options) {
     dispatchStoreAction("nextLineFromSystem", result.payload);
   };
 
+  const createActionBatchEngineSnapshot = () => ({
+    renderSequence: _renderSequence,
+    conditionalRoutingSequence: _conditionalRoutingSequence,
+    rollbackNavigationContexts: _rollbackNavigationContexts.slice(),
+    pendingRollbackLineEntrySaveHandoff: _pendingRollbackLineEntrySaveHandoff,
+    persistentAnimationSessions: new Map(_persistentAnimationSessions),
+    restoredPersistentAnimationSessions: new Map(
+      _restoredPersistentAnimationSessions,
+    ),
+    renderPersistentAnimationMetadata: new Map(
+      _renderPersistentAnimationMetadata,
+    ),
+  });
+
+  const restoreActionBatchEngineSnapshot = (snapshot) => {
+    _renderSequence = snapshot.renderSequence;
+    _conditionalRoutingSequence = snapshot.conditionalRoutingSequence;
+    _rollbackNavigationContexts = snapshot.rollbackNavigationContexts.slice();
+    _pendingRollbackLineEntrySaveHandoff =
+      snapshot.pendingRollbackLineEntrySaveHandoff;
+    _persistentAnimationSessions = new Map(
+      snapshot.persistentAnimationSessions,
+    );
+    _restoredPersistentAnimationSessions = new Map(
+      snapshot.restoredPersistentAnimationSessions,
+    );
+    _renderPersistentAnimationMetadata = new Map(
+      snapshot.renderPersistentAnimationMetadata,
+    );
+  };
+
   const runActionBatch = (callback, options = {}) => {
     return runWithDeferredEffects(() => {
-      let result;
-      const sourcePointer =
-        _systemStore.selectCurrentPointer()?.pointer ?? null;
-      const sourceRollbackCursor =
-        _systemStore.selectRollbackCursor?.() ?? null;
-      const routingSequence = _conditionalRoutingSequence;
-      const navigationContext = {
-        pointer: sourcePointer,
-        rollbackCursor: sourceRollbackCursor,
-        markCurrentCheckpointTransient: options.rollbackSource === "line",
-        savedCheckpointOccurrences:
-          options.savedCheckpointOccurrences?.slice() ?? [],
-      };
-      _rollbackNavigationContexts.push(navigationContext);
+      const engineSnapshot = createActionBatchEngineSnapshot();
       try {
-        _systemStore.beginRollbackActionBatch({
-          source: options.rollbackSource,
-        });
-        try {
-          result = callback();
-        } finally {
-          _systemStore.endRollbackActionBatch({});
-        }
-
-        if (isConditionalAutoContinue(result)) {
-          dispatchConditionalAutoContinue(
-            result,
-            sourcePointer,
-            routingSequence,
-          );
-        }
-      } finally {
-        _rollbackNavigationContexts.pop();
-        const enteredAnotherCheckpoint =
-          !isSameStoryPointer(sourcePointer, navigationContext.pointer) ||
-          sourceRollbackCursor?.checkpoint !==
-            navigationContext.rollbackCursor?.checkpoint;
-        if (
-          enteredAnotherCheckpoint &&
-          navigationContext.markCurrentCheckpointTransient &&
-          navigationContext.savedCheckpointOccurrences.length > 0
-        ) {
-          _pendingRollbackLineEntrySaveHandoff = {
-            pointer: navigationContext.pointer,
-            checkpointIndex: navigationContext.rollbackCursor?.checkpointIndex,
-            checkpointIdentity: navigationContext.rollbackCursor?.checkpoint,
+        return _systemStore[RUN_STORE_TRANSACTION](() => {
+          let result;
+          const sourcePointer =
+            _systemStore.selectCurrentPointer()?.pointer ?? null;
+          const sourceRollbackCursor =
+            _systemStore.selectRollbackCursor?.() ?? null;
+          const routingSequence = _conditionalRoutingSequence;
+          const navigationContext = {
+            pointer: sourcePointer,
+            rollbackCursor: sourceRollbackCursor,
+            markCurrentCheckpointTransient: options.rollbackSource === "line",
             savedCheckpointOccurrences:
-              navigationContext.savedCheckpointOccurrences,
+              options.savedCheckpointOccurrences?.slice() ?? [],
           };
-        }
+          _rollbackNavigationContexts.push(navigationContext);
+          try {
+            _systemStore.beginRollbackActionBatch({
+              source: options.rollbackSource,
+            });
+            try {
+              result = callback();
+            } finally {
+              _systemStore.endRollbackActionBatch({});
+            }
+
+            if (isConditionalAutoContinue(result)) {
+              dispatchConditionalAutoContinue(
+                result,
+                sourcePointer,
+                routingSequence,
+              );
+            }
+          } finally {
+            _rollbackNavigationContexts.pop();
+            const enteredAnotherCheckpoint =
+              !isSameStoryPointer(sourcePointer, navigationContext.pointer) ||
+              sourceRollbackCursor?.checkpoint !==
+                navigationContext.rollbackCursor?.checkpoint;
+            if (
+              enteredAnotherCheckpoint &&
+              navigationContext.markCurrentCheckpointTransient &&
+              navigationContext.savedCheckpointOccurrences.length > 0
+            ) {
+              _pendingRollbackLineEntrySaveHandoff = {
+                pointer: navigationContext.pointer,
+                checkpointIndex:
+                  navigationContext.rollbackCursor?.checkpointIndex,
+                checkpointIdentity:
+                  navigationContext.rollbackCursor?.checkpoint,
+                savedCheckpointOccurrences:
+                  navigationContext.savedCheckpointOccurrences,
+              };
+            }
+          }
+        });
+      } catch (error) {
+        restoreActionBatchEngineSnapshot(engineSnapshot);
+        throw error;
       }
     });
   };
@@ -823,6 +887,8 @@ export default function createRouteEngine(options) {
     runWithDeferredEffects(() => {
       const enteredPointer = _systemStore.selectCurrentPointer()?.pointer;
       const rollbackCursor = _systemStore.selectRollbackCursor?.() ?? null;
+      const pendingRollbackLineEntrySaveHandoff =
+        _pendingRollbackLineEntrySaveHandoff;
       const savedCheckpointOccurrences = takeRollbackLineEntrySaveHandoff(
         enteredPointer,
         rollbackCursor,
@@ -830,10 +896,16 @@ export default function createRouteEngine(options) {
       const line = _systemStore.selectCurrentLine();
       let handledLineActions = false;
       if (line?.actions) {
-        handleActions(line.actions, undefined, {
-          rollbackSource: "line",
-          savedCheckpointOccurrences,
-        });
+        try {
+          handleActions(line.actions, undefined, {
+            rollbackSource: "line",
+            savedCheckpointOccurrences,
+          });
+        } catch (error) {
+          _pendingRollbackLineEntrySaveHandoff =
+            pendingRollbackLineEntrySaveHandoff;
+          throw error;
+        }
         handledLineActions = true;
       }
 

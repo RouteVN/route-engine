@@ -6,6 +6,7 @@ import {
   getDefaultVariablesFromProjectData,
   isComputedVariableConfig,
   selectVariablesWithComputedValues,
+  validateComputedVariableConfigs,
   validateVariableScope,
   validateVariableOperation,
   validateVariableOperationValue,
@@ -1806,6 +1807,7 @@ export const createInitialState = (payload) => {
   } = global;
 
   assertUniqueSectionIds(projectData);
+  validateComputedVariableConfigs(projectData?.resources?.variables ?? {});
 
   const initialSceneId = projectData.story.initialSceneId;
   const initialScene = projectData.story.scenes[initialSceneId];
@@ -3417,6 +3419,7 @@ export const updateProjectData = ({ state }, payload) => {
   const { projectData } = payload;
 
   assertUniqueSectionIds(projectData);
+  validateComputedVariableConfigs(projectData?.resources?.variables ?? {});
 
   state.projectData = projectData;
   const variableConfigs = projectData?.resources?.variables ?? {};

@@ -45,6 +45,48 @@ resources:
                 - 100
 ```
 
+The same declaration in JSON can compose stored and computed values:
+
+```json
+{
+  "resources": {
+    "variables": {
+      "a": { "type": "boolean", "scope": "context", "default": true },
+      "b": { "type": "boolean", "scope": "context", "default": true },
+      "x": { "type": "number", "scope": "context", "default": 2 },
+      "y": { "type": "number", "scope": "context", "default": 3 },
+      "both": {
+        "type": "boolean",
+        "scope": "context",
+        "computed": {
+          "expr": {
+            "and": [{ "var": "variables.a" }, { "var": "variables.b" }]
+          }
+        }
+      },
+      "sum": {
+        "type": "number",
+        "scope": "context",
+        "computed": {
+          "expr": {
+            "add": [{ "var": "variables.x" }, { "var": "variables.y" }]
+          }
+        }
+      },
+      "doubleSum": {
+        "type": "number",
+        "scope": "context",
+        "computed": {
+          "expr": {
+            "mul": [{ "var": "variables.sum" }, 2]
+          }
+        }
+      }
+    }
+  }
+}
+```
+
 Presence of `computed` implies read-only behavior. `readonly` is not required
 for computed variables.
 
@@ -56,6 +98,9 @@ Computed variables must still declare `type` and `scope`:
 
 Computed variables must not declare a top-level `default`. Use
 `computed.default` only as the fallback for computed branches.
+
+Variable resource IDs must be non-empty. The ID `__proto__` is reserved and is
+rejected for both stored and computed variables.
 
 ## Simple Computed Values
 
@@ -209,6 +254,9 @@ separate computed variable from `when`.
 Computed variable conditions do not receive event context. `_event.*` bindings
 are not available.
 
+Function calls are not supported in computed-variable conditions. Conditions
+must remain deterministic and expose all variable dependencies through `var`.
+
 ## Expressions
 
 `expr` is an evaluated expression. It may be:
@@ -237,6 +285,23 @@ Expressions may read:
 
 - `variables.*`
 - `runtime.*`
+
+Every `variables.*` reference must name a declared variable resource. Bare
+namespace references such as `{ var: variables }`, unknown variables, malformed
+paths, and other namespaces are rejected. Use quoted bracket syntax for IDs that
+contain dots:
+
+```yaml
+expr:
+  var: variables["player.stats"]
+```
+
+Computed expressions and computed branch conditions use the same strict path
+resolver. Quoted keys support normal JSON escaping, so IDs containing dots,
+quotes, backslashes, or brackets remain addressable. Numeric brackets must be
+canonical (`[0]`, `[12]`); quote string keys with leading zeroes (`["01"]`).
+Malformed or ambiguous paths are rejected. Nested traversal reads own data
+properties only and never follows inherited prototype properties.
 
 Objects and arrays should be authored with `value`, not `expr`, unless the
 object is an expression operator.
@@ -277,6 +342,7 @@ gt: [a, b]
 gte: [a, b]
 lt: [a, b]
 lte: [a, b]
+in: [value, collection]
 ```
 
 Logical operators:
@@ -284,8 +350,13 @@ Logical operators:
 ```yaml
 and: [a, b]
 or: [a, b]
+all: [a, b]
+any: [a, b]
 not: [value]
 ```
+
+`and`, `or`, `all`, and `any` accept one or more operands. `all` and `any` are
+aliases for `and` and `or`.
 
 Collection helpers:
 
@@ -293,6 +364,15 @@ Collection helpers:
 length: [value]
 includes: [collection, value]
 ```
+
+Use `literal` when literal data is needed as an expression operand:
+
+```yaml
+literal:
+  var: this-is-data-not-a-reference
+```
+
+For a whole literal computed result, prefer `computed.value`.
 
 Each operator object must contain exactly one operator key.
 
@@ -360,7 +440,9 @@ their declarations.
 
 ## Type Validation
 
-After evaluation, the computed result must match the variable `type`.
+Every authored result path is validated against the variable `type` whenever
+its type can be determined statically. After evaluation, the computed result is
+also checked against that type.
 
 Expected output types:
 
@@ -376,8 +458,20 @@ Type mismatches fail fast.
 Computed variables may reference stored variables and other computed variables
 through `variables.*`.
 
-Authoring order should not affect correctness. Implementations should evaluate
-computed variables as a dependency graph and fail fast for cycles.
+Authoring order does not affect correctness. Before initial state creation,
+project replacement, or public-helper evaluation, the engine collects a complete
+dependency graph and fails fast for cycles. Dependency collection inspects every
+expression operand, branch condition, branch result, and default regardless of
+which path current state would select.
+
+Full computed projections are evaluated in dependency order, so long acyclic
+chains do not depend on declaration order or recursive JavaScript calls. Lazy
+projections remain demand-driven and do not evaluate unrelated or inactive
+values. Invalid project replacements are rejected before the engine starts the
+action batch or mutates the current project state.
+
+Literal `value` payloads and `literal` expression payloads remain opaque data and
+do not create dependency edges.
 
 Invalid cycle example:
 
@@ -405,6 +499,7 @@ b:
 
 - `computed` implies read-only behavior.
 - Computed variables must declare `type` and `scope`.
+- Variable IDs must be non-empty and must not be `__proto__`.
 - Computed variables must not declare top-level `default`.
 - `computed` must contain either:
   - exactly one of `expr` or `value`
@@ -416,6 +511,11 @@ b:
 - `computed.default` is required when `branches` exists.
 - `computed.default` must have exactly one of `expr` or `value`.
 - `expr` object values must contain exactly one supported operator.
+- Operator names and operand counts are validated recursively.
+- Variable references must target declared variables through a concrete
+  `variables.*` path.
+- Computed-variable conditions cannot call functions.
 - Arbitrary function calls are not supported.
 - Evaluation output must match `type`.
-- Cycles between computed variables are invalid.
+- Cycles are invalid even when hidden in inactive branches, defaults, conditions,
+  or short-circuited operands.

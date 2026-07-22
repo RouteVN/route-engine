@@ -1658,6 +1658,76 @@ describe("projectData schema", () => {
     expect(validateProjectData.errors).toBeNull();
   });
 
+  it("rejects the reserved __proto__ variable id", () => {
+    const variables = Object.fromEntries([
+      [
+        "__proto__",
+        {
+          type: "number",
+          scope: "context",
+          default: 1,
+        },
+      ],
+    ]);
+
+    expect(
+      validateProjectData(
+        createMinimalProjectData({
+          resources: {
+            variables,
+          },
+        }),
+      ),
+    ).toBe(false);
+    expect(validateProjectData.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          instancePath: "/resources/variables",
+          keyword: "propertyNames",
+          params: {
+            propertyName: "__proto__",
+          },
+        }),
+      ]),
+    );
+  });
+
+  it("rejects malformed computed expression operators and operands", () => {
+    const invalidExpressions = [
+      {
+        unknown: [1],
+      },
+      {
+        add: [1],
+      },
+      {
+        add: [1, 2],
+        mul: [3, 4],
+      },
+      [],
+    ];
+
+    invalidExpressions.forEach((expr) => {
+      expect(
+        validateProjectData(
+          createMinimalProjectData({
+            resources: {
+              variables: {
+                result: {
+                  type: "number",
+                  scope: "context",
+                  computed: {
+                    expr,
+                  },
+                },
+              },
+            },
+          }),
+        ),
+      ).toBe(false);
+    });
+  });
+
   it("rejects computed variables with top-level defaults", () => {
     expect(
       validateProjectData(
@@ -1718,10 +1788,53 @@ describe("projectData schema", () => {
         expect.objectContaining({
           instancePath:
             "/resources/variables/trustState/computed/branches/0/when",
-          keyword: "not",
+          keyword: "oneOf",
         }),
       ]),
     );
+  });
+
+  it("rejects function calls and malformed computed branch conditions", () => {
+    const invalidConditions = [
+      {
+        call: "now",
+      },
+      {
+        type: 1,
+        path: "variables.trust",
+      },
+      {
+        eq: [{ var: "variables.trust" }],
+      },
+    ];
+
+    invalidConditions.forEach((when) => {
+      expect(
+        validateProjectData(
+          createMinimalProjectData({
+            resources: {
+              variables: {
+                trustState: {
+                  type: "string",
+                  scope: "context",
+                  computed: {
+                    branches: [
+                      {
+                        when,
+                        expr: "trusted",
+                      },
+                    ],
+                    default: {
+                      expr: "guarded",
+                    },
+                  },
+                },
+              },
+            },
+          }),
+        ),
+      ).toBe(false);
+    });
   });
 
   it("rejects computed branches without explicit defaults", () => {

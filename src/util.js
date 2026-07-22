@@ -1,5 +1,7 @@
 import { current, isDraft, produce } from "immer";
-import { evaluateCondition, parseAndRender } from "jempl";
+import { evaluateCondition, parseAndRender, parseConditionJson } from "jempl";
+
+export const RUN_STORE_TRANSACTION = Symbol("runStoreTransaction");
 
 export const evaluateRouteCondition = (condition, context = {}) => {
   if (typeof condition === "string") {
@@ -109,9 +111,24 @@ export const createStore = (
     }
   }
 
+  const runTransaction = (callback) => {
+    if (typeof callback !== "function") {
+      throw new Error("Store transaction requires a callback");
+    }
+
+    const previousState = state;
+    try {
+      return callback();
+    } catch (error) {
+      state = previousState;
+      throw error;
+    }
+  };
+
   return {
     ...selectors,
     ...actions,
+    [RUN_STORE_TRANSACTION]: runTransaction,
   };
 };
 
@@ -365,6 +382,15 @@ export const getVariableDefaultValue = (config, variableId) => {
 const hasOwn = (object, key) =>
   Object.prototype.hasOwnProperty.call(object ?? {}, key);
 
+const setOwnDataProperty = (object, key, value) => {
+  Object.defineProperty(object, key, {
+    value,
+    enumerable: true,
+    configurable: true,
+    writable: true,
+  });
+};
+
 const isRecord = (value) =>
   value !== null && typeof value === "object" && !Array.isArray(value);
 
@@ -433,17 +459,184 @@ export const filterStoredVariables = (variables = {}, variableConfigs = {}) =>
     ),
   );
 
-const parseVariablePath = (path) =>
-  String(path)
-    .replace(/\[(\d+)\]/g, ".$1")
-    .split(".")
-    .filter(Boolean);
+const createInvalidComputedReferencePathError = (path, pathLabel) =>
+  new Error(`${pathLabel} has invalid path: ${JSON.stringify(path)}`);
+
+const decodeQuotedPathPart = (rawValue, path, pathLabel) => {
+  const quote = rawValue[0];
+
+  if (quote === '"') {
+    try {
+      return JSON.parse(rawValue);
+    } catch {
+      throw createInvalidComputedReferencePathError(path, pathLabel);
+    }
+  }
+
+  let value = "";
+
+  for (let index = 1; index < rawValue.length - 1; index += 1) {
+    const character = rawValue[index];
+    if (character !== "\\") {
+      if (character.charCodeAt(0) < 0x20) {
+        throw createInvalidComputedReferencePathError(path, pathLabel);
+      }
+      value += character;
+      continue;
+    }
+
+    index += 1;
+    if (index >= rawValue.length - 1) {
+      throw createInvalidComputedReferencePathError(path, pathLabel);
+    }
+
+    const escapedCharacter = rawValue[index];
+    if (escapedCharacter === "u") {
+      const hexValue = rawValue.slice(index + 1, index + 5);
+      if (hexValue.length !== 4 || !/^[0-9a-fA-F]{4}$/.test(hexValue)) {
+        throw createInvalidComputedReferencePathError(path, pathLabel);
+      }
+      value += String.fromCharCode(Number.parseInt(hexValue, 16));
+      index += 4;
+      continue;
+    }
+
+    const escapedValues = {
+      "\\": "\\",
+      '"': '"',
+      "'": "'",
+      "/": "/",
+      n: "\n",
+      r: "\r",
+      t: "\t",
+      b: "\b",
+      f: "\f",
+    };
+
+    if (!hasOwn(escapedValues, escapedCharacter)) {
+      throw createInvalidComputedReferencePathError(path, pathLabel);
+    }
+    value += escapedValues[escapedCharacter];
+  }
+
+  return value;
+};
+
+const parseVariablePath = (path, pathLabel = "Computed expression var") => {
+  if (typeof path !== "string" || path.length === 0 || path.trim() !== path) {
+    throw createInvalidComputedReferencePathError(path, pathLabel);
+  }
+
+  const pathParts = [];
+  let index = 0;
+
+  const readBarePart = () => {
+    const startIndex = index;
+    while (
+      index < path.length &&
+      path[index] !== "." &&
+      path[index] !== "[" &&
+      path[index] !== "]"
+    ) {
+      index += 1;
+    }
+
+    const part = path.slice(startIndex, index);
+    if (part.length === 0 || part.trim() !== part || /\s/.test(part)) {
+      throw createInvalidComputedReferencePathError(path, pathLabel);
+    }
+    pathParts.push(part);
+  };
+
+  const readBracketPart = () => {
+    index += 1;
+    while (index < path.length && /\s/.test(path[index])) {
+      index += 1;
+    }
+
+    const firstCharacter = path[index];
+    if (/\d/.test(firstCharacter ?? "")) {
+      const startIndex = index;
+      while (index < path.length && /\d/.test(path[index])) {
+        index += 1;
+      }
+      const rawPart = path.slice(startIndex, index);
+      while (index < path.length && /\s/.test(path[index])) {
+        index += 1;
+      }
+      if (
+        path[index] !== "]" ||
+        (rawPart.length > 1 && rawPart.startsWith("0"))
+      ) {
+        throw createInvalidComputedReferencePathError(path, pathLabel);
+      }
+      index += 1;
+      pathParts.push(rawPart);
+      return;
+    }
+
+    if (firstCharacter !== '"' && firstCharacter !== "'") {
+      throw createInvalidComputedReferencePathError(path, pathLabel);
+    }
+
+    const quote = firstCharacter;
+    const startIndex = index;
+    index += 1;
+    let escaped = false;
+    while (index < path.length) {
+      const character = path[index];
+      if (escaped) {
+        escaped = false;
+      } else if (character === "\\") {
+        escaped = true;
+      } else if (character === quote) {
+        const rawPart = path.slice(startIndex, index + 1);
+        index += 1;
+        while (index < path.length && /\s/.test(path[index])) {
+          index += 1;
+        }
+        if (path[index] !== "]") {
+          throw createInvalidComputedReferencePathError(path, pathLabel);
+        }
+        index += 1;
+        pathParts.push(decodeQuotedPathPart(rawPart, path, pathLabel));
+        return;
+      }
+      index += 1;
+    }
+
+    if (escaped || index >= path.length) {
+      throw createInvalidComputedReferencePathError(path, pathLabel);
+    }
+  };
+
+  readBarePart();
+  while (index < path.length) {
+    if (path[index] === ".") {
+      index += 1;
+      readBarePart();
+      continue;
+    }
+
+    if (path[index] === "[") {
+      readBracketPart();
+      continue;
+    }
+
+    throw createInvalidComputedReferencePathError(path, pathLabel);
+  }
+
+  return pathParts;
+};
 
 const resolvePathFrom = (value, pathParts) => {
   let currentValue = value;
 
   for (const part of pathParts) {
     if (currentValue === undefined || currentValue === null) {
+      return undefined;
+    }
+    if (!hasOwn(currentValue, part)) {
       return undefined;
     }
     currentValue = currentValue[part];
@@ -747,11 +940,48 @@ export const evaluateComputedExpression = (expr, context = {}) => {
   return evaluateComputedOperator(operator, operands, context);
 };
 
+const materializeComputedConditionReferences = (condition, context) => {
+  if (condition === null || typeof condition !== "object") {
+    return condition;
+  }
+
+  if (hasOwn(condition, "literal")) {
+    return condition;
+  }
+  if (hasOwn(condition, "var")) {
+    return {
+      literal: resolveComputedPath(condition.var, context),
+    };
+  }
+  if (hasOwn(condition, "call")) {
+    throw new Error(
+      "Function calls are not supported in computed-variable conditions",
+    );
+  }
+
+  return Object.fromEntries(
+    Object.entries(condition).map(([operator, operands]) => [
+      operator,
+      Array.isArray(operands)
+        ? operands.map((operand) =>
+            materializeComputedConditionReferences(operand, context),
+          )
+        : materializeComputedConditionReferences(operands, context),
+    ]),
+  );
+};
+
 const evaluateComputedCondition = (condition, context = {}) => {
-  return evaluateRouteCondition(condition, {
-    variables: context.variables,
-    runtime: context.runtime,
-  });
+  if (typeof condition === "string") {
+    throw new Error(
+      "String condition expressions are not supported; use semantic JSON conditions",
+    );
+  }
+
+  parseConditionJson(condition);
+  return evaluateRouteCondition(
+    materializeComputedConditionReferences(condition, context),
+  );
 };
 
 const assertComputedResultConfig = (resultConfig, path) => {
@@ -891,27 +1121,611 @@ export const assertComputedVariableValueType = (variableId, type, value) => {
   }
 };
 
+const COMPUTED_EXPRESSION_FIXED_OPERAND_COUNTS = Object.freeze({
+  add: 2,
+  sub: 2,
+  mul: 2,
+  div: 2,
+  mod: 2,
+  neg: 1,
+  round: 1,
+  floor: 1,
+  ceil: 1,
+  min: 2,
+  max: 2,
+  clamp: 3,
+  eq: 2,
+  neq: 2,
+  gt: 2,
+  gte: 2,
+  lt: 2,
+  lte: 2,
+  in: 2,
+  not: 1,
+  length: 1,
+  includes: 2,
+});
+
+const COMPUTED_EXPRESSION_VARIADIC_OPERATORS = new Set([
+  "and",
+  "or",
+  "all",
+  "any",
+]);
+
+const COMPUTED_EXPRESSION_NUMERIC_RESULT_OPERATORS = new Set([
+  "add",
+  "sub",
+  "mul",
+  "div",
+  "mod",
+  "neg",
+  "round",
+  "floor",
+  "ceil",
+  "min",
+  "max",
+  "clamp",
+  "length",
+]);
+
+const COMPUTED_EXPRESSION_NUMERIC_OPERAND_OPERATORS = new Set([
+  "add",
+  "sub",
+  "mul",
+  "div",
+  "mod",
+  "neg",
+  "round",
+  "floor",
+  "ceil",
+  "min",
+  "max",
+  "clamp",
+]);
+
+const COMPUTED_EXPRESSION_BOOLEAN_RESULT_OPERATORS = new Set([
+  "eq",
+  "neq",
+  "gt",
+  "gte",
+  "lt",
+  "lte",
+  "in",
+  "and",
+  "or",
+  "all",
+  "any",
+  "not",
+  "includes",
+]);
+
+const COMPUTED_CONDITION_RECURSIVE_OPERATORS = new Set([
+  "all",
+  "any",
+  "eq",
+  "neq",
+  "gt",
+  "gte",
+  "lt",
+  "lte",
+  "in",
+  "add",
+  "sub",
+]);
+
+const computedVariableValidationCache = new WeakMap();
+
+const getComputedStaticValueType = (value) => {
+  if (value === null) {
+    return "null";
+  }
+  if (Array.isArray(value)) {
+    return "object";
+  }
+  return typeof value;
+};
+
+const assertComputedConfigKeys = (value, allowedKeys, path) => {
+  for (const key of Object.keys(value)) {
+    if (!allowedKeys.has(key)) {
+      throw new Error(`${path} contains unsupported property "${key}"`);
+    }
+  }
+};
+
+const assertComputedStaticResultType = (
+  variableId,
+  expectedType,
+  actualType,
+  path,
+) => {
+  if (actualType !== undefined && actualType !== expectedType) {
+    throw new Error(
+      `Computed variable "${variableId}" ${path} expected type ${expectedType}, got ${actualType}`,
+    );
+  }
+};
+
+const validateComputedReference = (
+  referencePath,
+  { variableId, variableConfigs, dependencies, path },
+) => {
+  const pathLabel = `Computed variable "${variableId}" ${path} var`;
+  const [root, referencedId, ...nestedPath] = parseVariablePath(
+    referencePath,
+    pathLabel,
+  );
+
+  if (root !== "variables" && root !== "runtime") {
+    throw new Error(
+      `${pathLabel} must reference variables.* or runtime.*, got ${JSON.stringify(referencePath)}`,
+    );
+  }
+
+  if (!referencedId) {
+    throw new Error(
+      `${pathLabel} must reference a concrete ${root} member, got ${JSON.stringify(referencePath)}`,
+    );
+  }
+
+  if (root === "runtime") {
+    return undefined;
+  }
+
+  if (!hasOwn(variableConfigs, referencedId)) {
+    throw new Error(
+      `Computed variable "${variableId}" ${path} references unknown variable "${referencedId}"`,
+    );
+  }
+
+  const referencedConfig = variableConfigs[referencedId];
+  if (isComputedVariableConfig(referencedConfig)) {
+    dependencies.add(referencedId);
+  }
+
+  return nestedPath.length === 0 ? referencedConfig?.type : undefined;
+};
+
+const validateComputedExpression = (
+  expr,
+  { variableId, variableConfigs, dependencies, path },
+) => {
+  if (expr === null || typeof expr !== "object") {
+    if (typeof expr === "number" && !Number.isFinite(expr)) {
+      throw new Error(
+        `Computed variable "${variableId}" ${path} must use finite numeric literals`,
+      );
+    }
+    return getComputedStaticValueType(expr);
+  }
+
+  if (Array.isArray(expr)) {
+    throw new Error(
+      "Computed expression arrays are not valid; use value for literal arrays",
+    );
+  }
+
+  const entries = Object.entries(expr);
+  if (entries.length !== 1) {
+    throw new Error(
+      "Computed expression objects must contain exactly one operator",
+    );
+  }
+
+  const [[operator, operands]] = entries;
+  if (operator === "var") {
+    if (typeof operands !== "string" || operands.trim() === "") {
+      throw new Error(
+        "Computed expression var requires a non-empty string path",
+      );
+    }
+    return validateComputedReference(operands, {
+      variableId,
+      variableConfigs,
+      dependencies,
+      path,
+    });
+  }
+
+  if (operator === "literal") {
+    if (typeof operands === "number" && !Number.isFinite(operands)) {
+      throw new Error(
+        `Computed variable "${variableId}" ${path} must use finite numeric literals`,
+      );
+    }
+    return getComputedStaticValueType(operands);
+  }
+
+  const fixedOperandCount = COMPUTED_EXPRESSION_FIXED_OPERAND_COUNTS[operator];
+  if (
+    fixedOperandCount === undefined &&
+    !COMPUTED_EXPRESSION_VARIADIC_OPERATORS.has(operator)
+  ) {
+    throw new Error(`Unknown computed expression operator: ${operator}`);
+  }
+
+  if (fixedOperandCount === undefined) {
+    assertAtLeastOneOperand(operator, operands);
+  } else {
+    assertOperandList(operator, operands, fixedOperandCount);
+  }
+
+  const operandTypes = operands.map((operand, index) =>
+    validateComputedExpression(operand, {
+      variableId,
+      variableConfigs,
+      dependencies,
+      path: `${path}.${operator}[${index}]`,
+    }),
+  );
+
+  if (COMPUTED_EXPRESSION_NUMERIC_OPERAND_OPERATORS.has(operator)) {
+    operandTypes.forEach((operandType) => {
+      if (operandType !== undefined && operandType !== "number") {
+        throw new Error(
+          `Computed expression operator "${operator}" requires numeric operands`,
+        );
+      }
+    });
+  }
+
+  if (COMPUTED_EXPRESSION_NUMERIC_RESULT_OPERATORS.has(operator)) {
+    return "number";
+  }
+  if (COMPUTED_EXPRESSION_BOOLEAN_RESULT_OPERATORS.has(operator)) {
+    return "boolean";
+  }
+
+  return undefined;
+};
+
+const validateComputedCondition = (
+  condition,
+  { variableId, variableConfigs, dependencies, path },
+) => {
+  if (typeof condition === "string") {
+    throw new Error(
+      "String condition expressions are not supported; use semantic JSON conditions",
+    );
+  }
+
+  try {
+    parseConditionJson(condition);
+  } catch (error) {
+    throw new Error(
+      `Computed variable "${variableId}" ${path} is invalid: ${error.message}`,
+      { cause: error },
+    );
+  }
+
+  const visit = (node, nodePath) => {
+    if (node === null || typeof node !== "object") {
+      return;
+    }
+
+    if (hasOwn(node, "literal")) {
+      return;
+    }
+
+    if (hasOwn(node, "var")) {
+      validateComputedReference(node.var, {
+        variableId,
+        variableConfigs,
+        dependencies,
+        path: nodePath,
+      });
+      return;
+    }
+
+    if (hasOwn(node, "call")) {
+      throw new Error(
+        `Computed variable "${variableId}" ${nodePath} function calls are not supported`,
+      );
+    }
+
+    if (hasOwn(node, "not")) {
+      visit(node.not, `${nodePath}.not`);
+      return;
+    }
+
+    const operator = Object.keys(node).find((key) =>
+      COMPUTED_CONDITION_RECURSIVE_OPERATORS.has(key),
+    );
+    node[operator].forEach((operand, index) => {
+      visit(operand, `${nodePath}.${operator}[${index}]`);
+    });
+  };
+
+  visit(condition, path);
+};
+
+const validateComputedResultConfig = (
+  resultConfig,
+  {
+    variableId,
+    variableConfig,
+    variableConfigs,
+    dependencies,
+    path,
+    allowedKeys = new Set(["expr", "value"]),
+  },
+) => {
+  assertComputedResultConfig(
+    resultConfig,
+    `Computed variable "${variableId}" ${path}`,
+  );
+  assertComputedConfigKeys(resultConfig, allowedKeys, path);
+
+  if (hasOwn(resultConfig, "value")) {
+    assertComputedVariableValueType(
+      variableId,
+      variableConfig.type,
+      resultConfig.value,
+    );
+    return;
+  }
+
+  const staticResultType = validateComputedExpression(resultConfig.expr, {
+    variableId,
+    variableConfigs,
+    dependencies,
+    path: `${path}.expr`,
+  });
+  assertComputedStaticResultType(
+    variableId,
+    variableConfig.type,
+    staticResultType,
+    `${path}.expr`,
+  );
+};
+
+const collectComputedVariableDependencies = (
+  variableId,
+  variableConfig,
+  variableConfigs,
+) => {
+  const computedConfig = variableConfig.computed;
+  if (!isRecord(computedConfig)) {
+    throw new Error(
+      `Computed variable "${variableId}" computed must be an object`,
+    );
+  }
+
+  const dependencies = new Set();
+  const hasExpr = hasOwn(computedConfig, "expr");
+  const hasValue = hasOwn(computedConfig, "value");
+  const hasBranches = hasOwn(computedConfig, "branches");
+
+  if (hasBranches) {
+    assertComputedConfigKeys(
+      computedConfig,
+      new Set(["branches", "default"]),
+      `Computed variable "${variableId}" computed`,
+    );
+    if (hasExpr || hasValue) {
+      throw new Error(
+        `Computed variable "${variableId}" cannot combine branches with expr or value`,
+      );
+    }
+    if (!Array.isArray(computedConfig.branches)) {
+      throw new Error(
+        `Computed variable "${variableId}" branches must be an array`,
+      );
+    }
+    if (computedConfig.branches.length === 0) {
+      throw new Error(
+        `Computed variable "${variableId}" branches must not be empty`,
+      );
+    }
+    if (!isRecord(computedConfig.default)) {
+      throw new Error(`Computed variable "${variableId}" requires default`);
+    }
+
+    computedConfig.branches.forEach((branch, index) => {
+      if (!isRecord(branch)) {
+        throw new Error(
+          `Computed variable "${variableId}" branch ${index} must be an object`,
+        );
+      }
+      assertComputedConfigKeys(
+        branch,
+        new Set(["when", "expr", "value"]),
+        `Computed variable "${variableId}" branch ${index}`,
+      );
+      if (!hasOwn(branch, "when")) {
+        throw new Error(
+          `Computed variable "${variableId}" branch ${index} requires when`,
+        );
+      }
+
+      validateComputedCondition(branch.when, {
+        variableId,
+        variableConfigs,
+        dependencies,
+        path: `computed.branches[${index}].when`,
+      });
+      validateComputedResultConfig(branch, {
+        variableId,
+        variableConfig,
+        variableConfigs,
+        dependencies,
+        path: `computed.branches[${index}]`,
+        allowedKeys: new Set(["when", "expr", "value"]),
+      });
+    });
+
+    validateComputedResultConfig(computedConfig.default, {
+      variableId,
+      variableConfig,
+      variableConfigs,
+      dependencies,
+      path: "computed.default",
+    });
+    return dependencies;
+  }
+
+  assertComputedConfigKeys(
+    computedConfig,
+    new Set(["expr", "value"]),
+    `Computed variable "${variableId}" computed`,
+  );
+  if (hasExpr === hasValue) {
+    throw new Error(
+      `Computed variable "${variableId}" must contain exactly one of expr, value, or branches`,
+    );
+  }
+
+  validateComputedResultConfig(computedConfig, {
+    variableId,
+    variableConfig,
+    variableConfigs,
+    dependencies,
+    path: "computed",
+  });
+  return dependencies;
+};
+
+export const validateComputedVariableConfigs = (variableConfigs = {}) => {
+  if (!isRecord(variableConfigs)) {
+    throw new Error("Variable configs must be an object");
+  }
+
+  if (hasOwn(variableConfigs, "__proto__")) {
+    throw new Error('Variable id "__proto__" is reserved');
+  }
+  if (hasOwn(variableConfigs, "")) {
+    throw new Error("Variable ids must not be empty");
+  }
+
+  const dependencyGraph = new Map();
+  Object.entries(variableConfigs).forEach(([variableId, variableConfig]) => {
+    if (!isComputedVariableConfig(variableConfig)) {
+      return;
+    }
+
+    if (!isRecord(variableConfig)) {
+      throw new Error(`Computed variable "${variableId}" must be an object`);
+    }
+    if (!hasOwn(variableConfig, "type")) {
+      throw new Error(`Computed variable "${variableId}" requires type`);
+    }
+    if (!hasOwn(variableConfig, "scope")) {
+      throw new Error(`Computed variable "${variableId}" requires scope`);
+    }
+    if (hasOwn(variableConfig, "default")) {
+      throw new Error(
+        `Computed variable "${variableId}" must not declare a top-level default`,
+      );
+    }
+
+    validateVariableScope(variableConfig.scope, variableId);
+    if (
+      !["number", "boolean", "string", "object"].includes(variableConfig.type)
+    ) {
+      throw new Error(
+        `Invalid variable type: ${variableConfig.type} for computed variable ${variableId}`,
+      );
+    }
+
+    dependencyGraph.set(
+      variableId,
+      collectComputedVariableDependencies(
+        variableId,
+        variableConfig,
+        variableConfigs,
+      ),
+    );
+  });
+
+  const visited = new Set();
+  const evaluationOrder = [];
+  dependencyGraph.forEach((_dependencies, startVariableId) => {
+    if (visited.has(startVariableId)) {
+      return;
+    }
+
+    const frames = [
+      {
+        variableId: startVariableId,
+        dependencies: [...(dependencyGraph.get(startVariableId) ?? [])],
+        nextDependencyIndex: 0,
+      },
+    ];
+    const activeIndexes = new Map([[startVariableId, 0]]);
+
+    while (frames.length > 0) {
+      const frame = frames.at(-1);
+      if (frame.nextDependencyIndex >= frame.dependencies.length) {
+        frames.pop();
+        activeIndexes.delete(frame.variableId);
+        visited.add(frame.variableId);
+        evaluationOrder.push(frame.variableId);
+        continue;
+      }
+
+      const dependencyId = frame.dependencies[frame.nextDependencyIndex];
+      frame.nextDependencyIndex += 1;
+      if (visited.has(dependencyId)) {
+        continue;
+      }
+
+      const cycleStartIndex = activeIndexes.get(dependencyId);
+      if (cycleStartIndex !== undefined) {
+        const cycle = [
+          ...frames.slice(cycleStartIndex).map(({ variableId }) => variableId),
+          dependencyId,
+        ].join(" -> ");
+        throw new Error(`Computed variable cycle detected: ${cycle}`);
+      }
+
+      activeIndexes.set(dependencyId, frames.length);
+      frames.push({
+        variableId: dependencyId,
+        dependencies: [...(dependencyGraph.get(dependencyId) ?? [])],
+        nextDependencyIndex: 0,
+      });
+    }
+  });
+
+  const validationResult = Object.freeze({
+    evaluationOrder: Object.freeze(evaluationOrder),
+  });
+  computedVariableValidationCache.set(variableConfigs, validationResult);
+  return validationResult;
+};
+
 export const selectVariablesWithComputedValues = ({
   variables = {},
   runtime = {},
   variableConfigs = {},
   eager = true,
 } = {}) => {
+  const { evaluationOrder } =
+    computedVariableValidationCache.get(variableConfigs) ??
+    validateComputedVariableConfigs(variableConfigs);
   const storedVariables = filterStoredVariables(variables, variableConfigs);
   const computedVariableIds = Object.entries(variableConfigs)
     .filter(([, config]) => isComputedVariableConfig(config))
     .map(([variableId]) => variableId);
-  const resolvedComputedVariables = {};
+  const resolvedComputedVariables = Object.create(null);
   const resolvingVariableIds = [];
+  const evaluationOrderIndexes = new Map(
+    evaluationOrder.map((variableId, index) => [variableId, index]),
+  );
+  let topologicallyResolvedThrough = -1;
+  let isResolvingTopologically = false;
 
-  const resolveVariable = (variableId) => {
+  const evaluateVariable = (variableId) => {
     if (hasOwn(resolvedComputedVariables, variableId)) {
       return resolvedComputedVariables[variableId];
     }
 
     const variableConfig = variableConfigs[variableId];
     if (!isComputedVariableConfig(variableConfig)) {
-      return storedVariables[variableId];
+      return hasOwn(storedVariables, variableId)
+        ? storedVariables[variableId]
+        : undefined;
     }
 
     const existingStackIndex = resolvingVariableIds.indexOf(variableId);
@@ -931,11 +1745,49 @@ export const selectVariablesWithComputedValues = ({
         variableId,
       );
       assertComputedVariableValueType(variableId, variableConfig.type, value);
-      resolvedComputedVariables[variableId] = value;
+      setOwnDataProperty(resolvedComputedVariables, variableId, value);
       return value;
     } finally {
       resolvingVariableIds.pop();
     }
+  };
+
+  const resolveVariable = (variableId) => {
+    if (hasOwn(resolvedComputedVariables, variableId)) {
+      return resolvedComputedVariables[variableId];
+    }
+
+    const variableConfig = variableConfigs[variableId];
+    if (!isComputedVariableConfig(variableConfig)) {
+      return hasOwn(storedVariables, variableId)
+        ? storedVariables[variableId]
+        : undefined;
+    }
+
+    const targetIndex = evaluationOrderIndexes.get(variableId);
+    if (
+      eager &&
+      !isResolvingTopologically &&
+      targetIndex !== undefined &&
+      targetIndex > topologicallyResolvedThrough
+    ) {
+      isResolvingTopologically = true;
+      try {
+        for (
+          let index = topologicallyResolvedThrough + 1;
+          index <= targetIndex;
+          index += 1
+        ) {
+          evaluateVariable(evaluationOrder[index]);
+          topologicallyResolvedThrough = index;
+        }
+      } finally {
+        isResolvingTopologically = false;
+      }
+      return resolvedComputedVariables[variableId];
+    }
+
+    return evaluateVariable(variableId);
   };
 
   const variablesProxy = new Proxy(
@@ -997,10 +1849,14 @@ export const resolveComputedVariables = ({
   variableConfigs,
   projectData,
 } = {}) => {
+  const resolvedVariableConfigs =
+    variableConfigs ?? projectData?.resources?.variables ?? {};
+  validateComputedVariableConfigs(resolvedVariableConfigs);
+
   return selectVariablesWithComputedValues({
     variables,
     runtime,
-    variableConfigs: variableConfigs ?? projectData?.resources?.variables ?? {},
+    variableConfigs: resolvedVariableConfigs,
     eager: true,
   });
 };
@@ -1044,10 +1900,10 @@ export const getDefaultVariablesFromProjectData = (projectData) => {
       const value = getVariableDefaultValue(config, variableId);
 
       if (config.scope === "context") {
-        contextVariableDefaultValues[variableId] = value;
+        setOwnDataProperty(contextVariableDefaultValues, variableId, value);
       } else {
         // device and account scopes both go to globalVariablesDefaultValues
-        globalVariablesDefaultValues[variableId] = value;
+        setOwnDataProperty(globalVariablesDefaultValues, variableId, value);
       }
     },
   );
