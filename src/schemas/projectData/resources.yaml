@@ -608,7 +608,7 @@ definitions:
     additionalProperties: false
 
   computedExpression:
-    description: Recursive computed-variable expression
+    description: Recursive computed-variable expression. Comparisons are strict and non-coercive; ordered comparisons accept two finite numbers or two strings.
     oneOf:
       - type: [string, number, boolean, "null"]
       - $ref: "#/definitions/computedExpressionOperator"
@@ -704,7 +704,7 @@ definitions:
       $ref: "#/definitions/computedExpression"
 
   computedCondition:
-    description: Deterministic semantic JSON condition for a computed branch
+    description: Deterministic semantic JSON condition for a computed branch. Comparisons are strict and non-coercive; ordered comparisons accept two finite numbers or two strings.
     oneOf:
       - type: [number, boolean, "null"]
       - $ref: "#/definitions/computedConditionOperator"

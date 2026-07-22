@@ -3,6 +3,102 @@ import { evaluateCondition, parseAndRender, parseConditionJson } from "jempl";
 
 export const RUN_STORE_TRANSACTION = Symbol("runStoreTransaction");
 
+const STRICT_COMPARISON_FUNCTION_PREFIX = "__routeEngineConditionComparison";
+
+const isStrictlyOrderComparable = (left, right) =>
+  (typeof left === "number" &&
+    typeof right === "number" &&
+    Number.isFinite(left) &&
+    Number.isFinite(right)) ||
+  (typeof left === "string" && typeof right === "string");
+
+const STRICT_COMPARISON_OPERATORS = Object.freeze({
+  eq: (left, right) => left === right,
+  neq: (left, right) => left !== right,
+  gt: (left, right) => isStrictlyOrderComparable(left, right) && left > right,
+  gte: (left, right) => isStrictlyOrderComparable(left, right) && left >= right,
+  lt: (left, right) => isStrictlyOrderComparable(left, right) && left < right,
+  lte: (left, right) => isStrictlyOrderComparable(left, right) && left <= right,
+});
+
+const STRICT_COMPARISON_FUNCTION_NAMES = Object.freeze(
+  Object.fromEntries(
+    Object.keys(STRICT_COMPARISON_OPERATORS).map((operator) => [
+      operator,
+      `${STRICT_COMPARISON_FUNCTION_PREFIX}${operator}`,
+    ]),
+  ),
+);
+
+const STRICT_COMPARISON_FUNCTIONS = Object.freeze(
+  Object.fromEntries(
+    Object.entries(STRICT_COMPARISON_FUNCTION_NAMES).map(
+      ([operator, functionName]) => [
+        functionName,
+        STRICT_COMPARISON_OPERATORS[operator],
+      ],
+    ),
+  ),
+);
+
+const hasOwnConditionProperty = (value, key) =>
+  Object.prototype.hasOwnProperty.call(value ?? {}, key);
+
+const getConditionCallName = (condition) => {
+  if (typeof condition?.call === "string") {
+    return condition.call;
+  }
+  if (
+    condition?.call !== null &&
+    typeof condition?.call === "object" &&
+    !Array.isArray(condition.call)
+  ) {
+    return condition.call.name;
+  }
+  return undefined;
+};
+
+const rewriteStrictConditionComparisons = (condition) => {
+  if (Array.isArray(condition)) {
+    return condition.map(rewriteStrictConditionComparisons);
+  }
+  if (condition === null || typeof condition !== "object") {
+    return condition;
+  }
+  if (
+    hasOwnConditionProperty(condition, "literal") ||
+    hasOwnConditionProperty(condition, "var")
+  ) {
+    return condition;
+  }
+
+  const callName = getConditionCallName(condition);
+  if (callName?.startsWith(STRICT_COMPARISON_FUNCTION_PREFIX)) {
+    throw new Error(
+      `Condition function names beginning with "${STRICT_COMPARISON_FUNCTION_PREFIX}" are reserved`,
+    );
+  }
+
+  const entries = Object.entries(condition);
+  if (entries.length === 1) {
+    const [[operator, operands]] = entries;
+    const functionName = STRICT_COMPARISON_FUNCTION_NAMES[operator];
+    if (functionName) {
+      return {
+        call: functionName,
+        args: operands.map(rewriteStrictConditionComparisons),
+      };
+    }
+  }
+
+  return Object.fromEntries(
+    entries.map(([key, value]) => [
+      key,
+      rewriteStrictConditionComparisons(value),
+    ]),
+  );
+};
+
 export const evaluateRouteCondition = (condition, context = {}) => {
   if (typeof condition === "string") {
     throw new Error(
@@ -10,7 +106,12 @@ export const evaluateRouteCondition = (condition, context = {}) => {
     );
   }
 
-  return evaluateCondition(condition, context);
+  parseConditionJson(condition);
+  return evaluateCondition(
+    rewriteStrictConditionComparisons(condition),
+    context,
+    { functions: STRICT_COMPARISON_FUNCTIONS },
+  );
 };
 
 const MONTH_ABBREVIATIONS = [
@@ -845,27 +946,27 @@ const evaluateComputedOperator = (operator, operands, context) => {
     }
     case "eq": {
       const [left, right] = evaluateOperandList(operator, operands, context, 2);
-      return left == right;
+      return STRICT_COMPARISON_OPERATORS.eq(left, right);
     }
     case "neq": {
       const [left, right] = evaluateOperandList(operator, operands, context, 2);
-      return left != right;
+      return STRICT_COMPARISON_OPERATORS.neq(left, right);
     }
     case "gt": {
       const [left, right] = evaluateOperandList(operator, operands, context, 2);
-      return left > right;
+      return STRICT_COMPARISON_OPERATORS.gt(left, right);
     }
     case "gte": {
       const [left, right] = evaluateOperandList(operator, operands, context, 2);
-      return left >= right;
+      return STRICT_COMPARISON_OPERATORS.gte(left, right);
     }
     case "lt": {
       const [left, right] = evaluateOperandList(operator, operands, context, 2);
-      return left < right;
+      return STRICT_COMPARISON_OPERATORS.lt(left, right);
     }
     case "lte": {
       const [left, right] = evaluateOperandList(operator, operands, context, 2);
-      return left <= right;
+      return STRICT_COMPARISON_OPERATORS.lte(left, right);
     }
     case "in": {
       const [left, right] = evaluateOperandList(operator, operands, context, 2);
@@ -907,7 +1008,7 @@ const evaluateComputedOperator = (operator, operands, context) => {
         2,
       );
       if (typeof collection === "string") {
-        return collection.includes(value);
+        return typeof value === "string" && collection.includes(value);
       }
       return Array.isArray(collection) ? collection.includes(value) : false;
     }

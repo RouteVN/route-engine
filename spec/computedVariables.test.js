@@ -340,6 +340,142 @@ describe("computed variables", () => {
     });
   });
 
+  it("uses strict, non-coercive computed expression comparisons", () => {
+    const sharedObject = { value: 1 };
+
+    expect(
+      resolveComputedVariables({
+        variables: {
+          sharedObject,
+        },
+        variableConfigs: {
+          sharedObject: {
+            type: "object",
+            scope: "context",
+            default: {},
+          },
+          sameTypeEquality: {
+            type: "boolean",
+            scope: "context",
+            computed: {
+              expr: { eq: [1, 1] },
+            },
+          },
+          crossTypeEquality: {
+            type: "boolean",
+            scope: "context",
+            computed: {
+              expr: { eq: [1, "1"] },
+            },
+          },
+          crossTypeInequality: {
+            type: "boolean",
+            scope: "context",
+            computed: {
+              expr: { neq: [1, "1"] },
+            },
+          },
+          missingIsNotNull: {
+            type: "boolean",
+            scope: "context",
+            computed: {
+              expr: { eq: [{ var: "runtime.missing" }, null] },
+            },
+          },
+          sameObjectIdentity: {
+            type: "boolean",
+            scope: "context",
+            computed: {
+              expr: {
+                eq: [
+                  { var: "variables.sharedObject" },
+                  { var: "variables.sharedObject" },
+                ],
+              },
+            },
+          },
+          equivalentObjectsAreNotEqual: {
+            type: "boolean",
+            scope: "context",
+            computed: {
+              expr: {
+                eq: [{ literal: { value: 1 } }, { literal: { value: 1 } }],
+              },
+            },
+          },
+          mixedOrderingDoesNotMatch: {
+            type: "boolean",
+            scope: "context",
+            computed: {
+              expr: { gt: ["2", 1] },
+            },
+          },
+          stringOrdering: {
+            type: "boolean",
+            scope: "context",
+            computed: {
+              expr: { lt: ["alpha", "beta"] },
+            },
+          },
+          stringIncludesDoesNotCoerce: {
+            type: "boolean",
+            scope: "context",
+            computed: {
+              expr: { includes: ["10", 1] },
+            },
+          },
+        },
+      }),
+    ).toMatchObject({
+      sameTypeEquality: true,
+      crossTypeEquality: false,
+      crossTypeInequality: true,
+      missingIsNotNull: false,
+      sameObjectIdentity: true,
+      equivalentObjectsAreNotEqual: false,
+      mixedOrderingDoesNotMatch: false,
+      stringOrdering: true,
+      stringIncludesDoesNotCoerce: false,
+    });
+  });
+
+  it("uses strict comparisons when selecting computed branches", () => {
+    const store = createSystemStore({
+      projectData: createProjectData({
+        value: {
+          type: "number",
+          scope: "context",
+          default: 1,
+        },
+        result: {
+          type: "string",
+          scope: "context",
+          computed: {
+            branches: [
+              {
+                when: { gt: [{ var: "variables.value" }, "0"] },
+                expr: "coerced ordering",
+              },
+              {
+                when: { eq: [{ var: "variables.value" }, "1"] },
+                expr: "coerced equality",
+              },
+              {
+                when: { eq: [{ var: "variables.value" }, 1] },
+                expr: "strict match",
+              },
+            ],
+            default: {
+              expr: "no match",
+            },
+          },
+        },
+      }),
+    });
+
+    expect(store.selectAllVariables().result).toBe("strict match");
+  });
+
   it("resolves very deep computed dependency chains without recursion", () => {
     const chainLength = 5000;
     const variableConfigs = Object.fromEntries(

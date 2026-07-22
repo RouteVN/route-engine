@@ -194,6 +194,48 @@ const createComputedConditionalRollbackProjectData = () => ({
   },
 });
 
+const createStrictConditionalRollbackProjectData = () => {
+  const projectData = createComputedConditionalRollbackProjectData();
+  delete projectData.resources.variables.unrelatedBadge;
+
+  projectData.story.scenes.scene1.sections.section1.lines[1].actions.conditional.branches =
+    [
+      {
+        when: {
+          eq: [{ var: "variables.score" }, "0"],
+        },
+        actions: {
+          updateVariable: {
+            id: "coercedScore",
+            operations: [
+              {
+                variableId: "score",
+                op: "set",
+                value: 99,
+              },
+            ],
+          },
+        },
+      },
+      {
+        actions: {
+          updateVariable: {
+            id: "strictFallbackScore",
+            operations: [
+              {
+                variableId: "score",
+                op: "set",
+                value: 7,
+              },
+            ],
+          },
+        },
+      },
+    ];
+
+  return projectData;
+};
+
 describe("system.store rollback/save draft safety", () => {
   it("saveSlot does not throw when cloning live draft state", () => {
     vi.spyOn(Date, "now").mockReturnValue(1700000000000);
@@ -746,6 +788,70 @@ describe("system.store rollback/save draft safety", () => {
 
     expect(nextState.contexts[0].variables.score).toBe(7);
     expect(nextState.contexts[0].pointers.read).toEqual({
+      sectionId: "section1",
+      lineId: "2",
+    });
+  });
+
+  it("uses strict comparisons while replaying rollback conditionals", () => {
+    const state = {
+      projectData: createStrictConditionalRollbackProjectData(),
+      global: {
+        isLineCompleted: false,
+        dialogueUIHidden: false,
+        nextLineConfig: {
+          manual: {
+            enabled: true,
+            requireLineCompleted: false,
+          },
+          auto: {
+            enabled: false,
+          },
+          applyMode: "persistent",
+        },
+        overlayStack: [],
+        pendingEffects: [],
+        variables: {},
+      },
+      contexts: [
+        {
+          variables: {
+            score: 0,
+          },
+          currentPointerMode: "read",
+          pointers: {
+            read: { sectionId: "section1", lineId: "3" },
+          },
+          rollback: {
+            currentIndex: 2,
+            isRestoring: false,
+            replayStartIndex: 0,
+            timeline: [
+              {
+                sectionId: "section1",
+                lineId: "1",
+                rollbackPolicy: "free",
+              },
+              {
+                sectionId: "section1",
+                lineId: "2",
+                rollbackPolicy: "free",
+              },
+              {
+                sectionId: "section1",
+                lineId: "3",
+                rollbackPolicy: "free",
+              },
+            ],
+          },
+        },
+      ],
+    };
+
+    rollbackByOffset({ state }, { offset: -1 });
+
+    expect(state.contexts[0].variables.score).toBe(7);
+    expect(state.contexts[0].pointers.read).toEqual({
       sectionId: "section1",
       lineId: "2",
     });
