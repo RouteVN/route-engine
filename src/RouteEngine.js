@@ -541,26 +541,52 @@ export default function createRouteEngine(options) {
     );
   };
 
-  const preflightProjectDataUpdates = (actions) => {
+  const resolveActionPayloadForPreflight = (
+    actionType,
+    payload,
+    templateContext,
+  ) => {
+    return processActionTemplates({ [actionType]: payload }, templateContext)[
+      actionType
+    ];
+  };
+
+  const preflightProjectDataUpdates = (actions, templateContext) => {
     if (!isRecord(actions)) {
       return;
     }
 
     Object.entries(actions).forEach(([actionType, payload]) => {
       if (actionType === "updateProjectData") {
-        validateProjectDataUpdatePayload(payload);
+        validateProjectDataUpdatePayload(
+          resolveActionPayloadForPreflight(
+            actionType,
+            payload,
+            templateContext,
+          ),
+        );
         return;
       }
 
       if (actionType === CONDITIONAL_ACTION_TYPE) {
-        payload?.branches?.forEach((branch) => {
-          preflightProjectDataUpdates(branch?.actions);
+        const resolvedPayload = resolveActionPayloadForPreflight(
+          actionType,
+          payload,
+          templateContext,
+        );
+        resolvedPayload?.branches?.forEach((branch) => {
+          preflightProjectDataUpdates(branch?.actions, templateContext);
         });
         return;
       }
 
       if (FORM_ACTION_TYPES.has(actionType)) {
-        preflightProjectDataUpdates(payload?.actions);
+        const resolvedPayload = resolveActionPayloadForPreflight(
+          actionType,
+          payload,
+          templateContext,
+        );
+        preflightProjectDataUpdates(resolvedPayload?.actions, templateContext);
       }
     });
   };
@@ -644,7 +670,10 @@ export default function createRouteEngine(options) {
 
   const handleAction = (actionType, payload, eventContext, options = {}) => {
     if (actionType === CONDITIONAL_ACTION_TYPE) {
-      preflightProjectDataUpdates({ [actionType]: payload });
+      preflightProjectDataUpdates(
+        { [actionType]: payload },
+        buildActionTemplateContext(eventContext),
+      );
       return runActionBatch(() => {
         const context = buildActionTemplateContext(eventContext);
         const processedActions = processActionTemplates(
@@ -834,7 +863,10 @@ export default function createRouteEngine(options) {
   };
 
   const handleActions = (actions, eventContext, options = {}) => {
-    preflightProjectDataUpdates(actions);
+    preflightProjectDataUpdates(
+      actions,
+      buildActionTemplateContext(eventContext),
+    );
     return runActionBatch(
       () => processActionEntries(actions, eventContext, options),
       options,

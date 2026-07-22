@@ -495,6 +495,74 @@ describe("computed variables", () => {
     expect(store.selectAllVariables().allSpecialFlags).toBe(true);
   });
 
+  it("decodes complete JSON escapes in quoted variable paths", () => {
+    const escapedSlashPath = String.raw`variables["path\/segment"]`;
+    const escapedUnicodePath = String.raw`variables["caf\u00e9"]`;
+    const escapedSurrogatePairPath = String.raw`variables["rocket\uD83D\uDE80"]`;
+    const store = createSystemStore({
+      projectData: createProjectData({
+        "path/segment": {
+          type: "number",
+          scope: "context",
+          default: 1,
+        },
+        café: {
+          type: "number",
+          scope: "context",
+          default: 2,
+        },
+        "rocket🚀": {
+          type: "number",
+          scope: "context",
+          default: 3,
+        },
+        escapedSum: {
+          type: "number",
+          scope: "context",
+          computed: {
+            expr: {
+              add: [
+                { var: escapedSlashPath },
+                {
+                  add: [
+                    { var: escapedUnicodePath },
+                    { var: escapedSurrogatePairPath },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+        escapedCondition: {
+          type: "boolean",
+          scope: "context",
+          computed: {
+            branches: [
+              {
+                when: {
+                  all: [
+                    { eq: [{ var: escapedSlashPath }, 1] },
+                    { eq: [{ var: escapedUnicodePath }, 2] },
+                    { eq: [{ var: escapedSurrogatePairPath }, 3] },
+                  ],
+                },
+                expr: true,
+              },
+            ],
+            default: {
+              expr: false,
+            },
+          },
+        },
+      }),
+    });
+
+    expect(store.selectAllVariables()).toMatchObject({
+      escapedSum: 6,
+      escapedCondition: true,
+    });
+  });
+
   it("does not reinterpret escaped condition paths at runtime", () => {
     const storedVariableId = 'a"b';
     const computedVariableId = 'a\\"b';
@@ -946,6 +1014,10 @@ describe("computed variables", () => {
       ['variables["a""b"]', "has invalid path"],
       ["variables[01]", "has invalid path"],
       ['variables["unterminated]', "has invalid path"],
+      ['variables["bad\\x"]', "has invalid path"],
+      ['variables["bad\\u123"]', "has invalid path"],
+      ['variables["bad\\u12G4"]', "has invalid path"],
+      ['variables["bad\nkey"]', "has invalid path"],
     ];
 
     invalidReferences.forEach(([referencePath, expectedError]) => {
@@ -1013,6 +1085,49 @@ describe("computed variables", () => {
         }),
       }),
     ).toThrow("expected type number, got string");
+  });
+
+  it("rejects non-finite literal expressions in inactive branches", () => {
+    const store = createSystemStore({
+      projectData: createProjectData({
+        original: {
+          type: "number",
+          scope: "context",
+          default: 1,
+        },
+      }),
+    });
+    const previousState = store.selectSystemState();
+
+    [Infinity, -Infinity, Number.NaN].forEach((nonFiniteValue) => {
+      expect(() =>
+        store.updateProjectData({
+          projectData: createProjectData({
+            flag: {
+              type: "boolean",
+              scope: "context",
+              default: false,
+            },
+            result: {
+              type: "number",
+              scope: "context",
+              computed: {
+                branches: [
+                  {
+                    when: { var: "variables.flag" },
+                    expr: { literal: nonFiniteValue },
+                  },
+                ],
+                default: {
+                  expr: 0,
+                },
+              },
+            },
+          }),
+        }),
+      ).toThrow("must use finite numeric literals");
+      expect(store.selectSystemState()).toEqual(previousState);
+    });
   });
 
   it("rejects function calls and pre-parsed AST shapes in computed conditions", () => {

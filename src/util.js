@@ -447,11 +447,23 @@ const createInvalidComputedReferencePathError = (path, pathLabel) =>
 
 const decodeQuotedPathPart = (rawValue, path, pathLabel) => {
   const quote = rawValue[0];
+
+  if (quote === '"') {
+    try {
+      return JSON.parse(rawValue);
+    } catch {
+      throw createInvalidComputedReferencePathError(path, pathLabel);
+    }
+  }
+
   let value = "";
 
   for (let index = 1; index < rawValue.length - 1; index += 1) {
     const character = rawValue[index];
     if (character !== "\\") {
+      if (character.charCodeAt(0) < 0x20) {
+        throw createInvalidComputedReferencePathError(path, pathLabel);
+      }
       value += character;
       continue;
     }
@@ -462,10 +474,21 @@ const decodeQuotedPathPart = (rawValue, path, pathLabel) => {
     }
 
     const escapedCharacter = rawValue[index];
+    if (escapedCharacter === "u") {
+      const hexValue = rawValue.slice(index + 1, index + 5);
+      if (hexValue.length !== 4 || !/^[0-9a-fA-F]{4}$/.test(hexValue)) {
+        throw createInvalidComputedReferencePathError(path, pathLabel);
+      }
+      value += String.fromCharCode(Number.parseInt(hexValue, 16));
+      index += 4;
+      continue;
+    }
+
     const escapedValues = {
       "\\": "\\",
       '"': '"',
       "'": "'",
+      "/": "/",
       n: "\n",
       r: "\r",
       t: "\t",
@@ -475,10 +498,6 @@ const decodeQuotedPathPart = (rawValue, path, pathLabel) => {
 
     if (!hasOwn(escapedValues, escapedCharacter)) {
       throw createInvalidComputedReferencePathError(path, pathLabel);
-    }
-    if (escapedCharacter === quote || escapedCharacter === "\\") {
-      value += escapedValues[escapedCharacter];
-      continue;
     }
     value += escapedValues[escapedCharacter];
   }
@@ -1293,6 +1312,11 @@ const validateComputedExpression = (
   }
 
   if (operator === "literal") {
+    if (typeof operands === "number" && !Number.isFinite(operands)) {
+      throw new Error(
+        `Computed variable "${variableId}" ${path} must use finite numeric literals`,
+      );
+    }
     return getComputedStaticValueType(operands);
   }
 

@@ -259,6 +259,60 @@ describe("RouteEngine updateProjectData", () => {
     ]);
   });
 
+  it("preflights an event-bound updateProjectData payload after resolution", () => {
+    const engine = createRouteEngine({
+      handlePendingEffects: () => {},
+    });
+    const initialProjectData = createProjectData({
+      initialLineId: "line1",
+      firstLineDialogue: {
+        mode: "adv",
+        ui: {
+          resourceId: "adv",
+        },
+        content: [{ text: "Initial" }],
+      },
+      secondLineDialogue: {
+        content: [{ text: "Unused" }],
+      },
+    });
+    const nextProjectData = createProjectData({
+      initialLineId: "line1",
+      firstLineDialogue: {
+        mode: "adv",
+        ui: {
+          resourceId: "adv",
+        },
+        content: [{ text: "Replacement" }],
+      },
+      secondLineDialogue: {
+        content: [{ text: "Unused replacement" }],
+      },
+    });
+
+    engine.init({
+      initialState: {
+        projectData: initialProjectData,
+      },
+    });
+
+    expect(() =>
+      engine.handleActions(
+        {
+          updateProjectData: "_event.update",
+        },
+        {
+          _event: {
+            update: {
+              projectData: nextProjectData,
+            },
+          },
+        },
+      ),
+    ).not.toThrow();
+    expect(engine.selectSystemState().projectData).toEqual(nextProjectData);
+  });
+
   it("hydrates newly introduced defaults used by character nameVariableId", () => {
     const engine = createRouteEngine({
       handlePendingEffects: () => {},
@@ -371,6 +425,89 @@ describe("RouteEngine updateProjectData", () => {
           projectData: invalidProjectData,
         },
       }),
+    ).toThrow("Computed variable cycle detected: a -> b -> a");
+    expect(engine.selectSystemState()).toEqual(previousState);
+  });
+
+  it("preflights nested updates inside event-bound conditionals", () => {
+    const engine = createRouteEngine({
+      handlePendingEffects: () => {},
+    });
+    const initialProjectData = createProjectData({
+      initialLineId: "line1",
+      firstLineDialogue: {
+        mode: "adv",
+        ui: {
+          resourceId: "adv",
+        },
+        content: [{ text: "Initial" }],
+      },
+      secondLineDialogue: {
+        content: [{ text: "Unused" }],
+      },
+    });
+    initialProjectData.resources.variables.score = {
+      type: "number",
+      scope: "context",
+      default: 0,
+    };
+    const invalidProjectData = structuredClone(initialProjectData);
+    invalidProjectData.resources.variables = {
+      a: {
+        type: "number",
+        scope: "context",
+        computed: {
+          expr: { var: "variables.b" },
+        },
+      },
+      b: {
+        type: "number",
+        scope: "context",
+        computed: {
+          expr: { var: "variables.a" },
+        },
+      },
+    };
+
+    engine.init({
+      initialState: {
+        projectData: initialProjectData,
+      },
+    });
+    const previousState = structuredClone(engine.selectSystemState());
+
+    expect(() =>
+      engine.handleActions(
+        {
+          updateVariable: {
+            id: "incrementBeforeInvalidUpdate",
+            operations: [
+              {
+                variableId: "score",
+                op: "increment",
+                value: 1,
+              },
+            ],
+          },
+          conditional: "_event.conditional",
+        },
+        {
+          _event: {
+            conditional: {
+              branches: [
+                {
+                  when: true,
+                  actions: {
+                    updateProjectData: {
+                      projectData: invalidProjectData,
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      ),
     ).toThrow("Computed variable cycle detected: a -> b -> a");
     expect(engine.selectSystemState()).toEqual(previousState);
   });
