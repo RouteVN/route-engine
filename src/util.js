@@ -1,6 +1,8 @@
 import { current, isDraft, produce } from "immer";
 import { evaluateCondition, parseAndRender, parseConditionJson } from "jempl";
 
+export const RUN_STORE_TRANSACTION = Symbol("runStoreTransaction");
+
 export const evaluateRouteCondition = (condition, context = {}) => {
   if (typeof condition === "string") {
     throw new Error(
@@ -109,9 +111,24 @@ export const createStore = (
     }
   }
 
+  const runTransaction = (callback) => {
+    if (typeof callback !== "function") {
+      throw new Error("Store transaction requires a callback");
+    }
+
+    const previousState = state;
+    try {
+      return callback();
+    } catch (error) {
+      state = previousState;
+      throw error;
+    }
+  };
+
   return {
     ...selectors,
     ...actions,
+    [RUN_STORE_TRANSACTION]: runTransaction,
   };
 };
 

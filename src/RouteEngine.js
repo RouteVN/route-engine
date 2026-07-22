@@ -3,6 +3,7 @@ import { normalizeNamespace } from "./indexedDbPersistence.js";
 import {
   evaluateRouteCondition,
   processActionTemplates,
+  RUN_STORE_TRANSACTION,
   validateComputedVariableConfigs,
 } from "./util.js";
 import {
@@ -131,11 +132,16 @@ export default function createRouteEngine(options) {
 
   const runWithDeferredEffects = (callback) => {
     _actionDispatchDepth += 1;
+    let completed = false;
     try {
-      return callback();
+      const result = callback();
+      completed = true;
+      return result;
     } finally {
       _actionDispatchDepth -= 1;
-      processEffectsUntilEmpty();
+      if (completed) {
+        processEffectsUntilEmpty();
+      }
     }
   };
 
@@ -541,56 +547,6 @@ export default function createRouteEngine(options) {
     );
   };
 
-  const resolveActionPayloadForPreflight = (
-    actionType,
-    payload,
-    templateContext,
-  ) => {
-    return processActionTemplates({ [actionType]: payload }, templateContext)[
-      actionType
-    ];
-  };
-
-  const preflightProjectDataUpdates = (actions, templateContext) => {
-    if (!isRecord(actions)) {
-      return;
-    }
-
-    Object.entries(actions).forEach(([actionType, payload]) => {
-      if (actionType === "updateProjectData") {
-        validateProjectDataUpdatePayload(
-          resolveActionPayloadForPreflight(
-            actionType,
-            payload,
-            templateContext,
-          ),
-        );
-        return;
-      }
-
-      if (actionType === CONDITIONAL_ACTION_TYPE) {
-        const resolvedPayload = resolveActionPayloadForPreflight(
-          actionType,
-          payload,
-          templateContext,
-        );
-        resolvedPayload?.branches?.forEach((branch) => {
-          preflightProjectDataUpdates(branch?.actions, templateContext);
-        });
-        return;
-      }
-
-      if (FORM_ACTION_TYPES.has(actionType)) {
-        const resolvedPayload = resolveActionPayloadForPreflight(
-          actionType,
-          payload,
-          templateContext,
-        );
-        preflightProjectDataUpdates(resolvedPayload?.actions, templateContext);
-      }
-    });
-  };
-
   const dispatchConditionalAutoContinue = (
     result,
     sourcePointer,
@@ -612,68 +568,105 @@ export default function createRouteEngine(options) {
     dispatchStoreAction("nextLineFromSystem", result.payload);
   };
 
+  const createActionBatchEngineSnapshot = () => ({
+    renderSequence: _renderSequence,
+    conditionalRoutingSequence: _conditionalRoutingSequence,
+    rollbackNavigationContexts: _rollbackNavigationContexts.slice(),
+    pendingRollbackLineEntrySaveHandoff: _pendingRollbackLineEntrySaveHandoff,
+    persistentAnimationSessions: new Map(_persistentAnimationSessions),
+    restoredPersistentAnimationSessions: new Map(
+      _restoredPersistentAnimationSessions,
+    ),
+    renderPersistentAnimationMetadata: new Map(
+      _renderPersistentAnimationMetadata,
+    ),
+  });
+
+  const restoreActionBatchEngineSnapshot = (snapshot) => {
+    _renderSequence = snapshot.renderSequence;
+    _conditionalRoutingSequence = snapshot.conditionalRoutingSequence;
+    _rollbackNavigationContexts = snapshot.rollbackNavigationContexts.slice();
+    _pendingRollbackLineEntrySaveHandoff =
+      snapshot.pendingRollbackLineEntrySaveHandoff;
+    _persistentAnimationSessions = new Map(
+      snapshot.persistentAnimationSessions,
+    );
+    _restoredPersistentAnimationSessions = new Map(
+      snapshot.restoredPersistentAnimationSessions,
+    );
+    _renderPersistentAnimationMetadata = new Map(
+      snapshot.renderPersistentAnimationMetadata,
+    );
+  };
+
   const runActionBatch = (callback, options = {}) => {
     return runWithDeferredEffects(() => {
-      let result;
-      const sourcePointer =
-        _systemStore.selectCurrentPointer()?.pointer ?? null;
-      const sourceRollbackCursor =
-        _systemStore.selectRollbackCursor?.() ?? null;
-      const routingSequence = _conditionalRoutingSequence;
-      const navigationContext = {
-        pointer: sourcePointer,
-        rollbackCursor: sourceRollbackCursor,
-        markCurrentCheckpointTransient: options.rollbackSource === "line",
-        savedCheckpointOccurrences:
-          options.savedCheckpointOccurrences?.slice() ?? [],
-      };
-      _rollbackNavigationContexts.push(navigationContext);
+      const engineSnapshot = createActionBatchEngineSnapshot();
       try {
-        _systemStore.beginRollbackActionBatch({
-          source: options.rollbackSource,
-        });
-        try {
-          result = callback();
-        } finally {
-          _systemStore.endRollbackActionBatch({});
-        }
-
-        if (isConditionalAutoContinue(result)) {
-          dispatchConditionalAutoContinue(
-            result,
-            sourcePointer,
-            routingSequence,
-          );
-        }
-      } finally {
-        _rollbackNavigationContexts.pop();
-        const enteredAnotherCheckpoint =
-          !isSameStoryPointer(sourcePointer, navigationContext.pointer) ||
-          sourceRollbackCursor?.checkpoint !==
-            navigationContext.rollbackCursor?.checkpoint;
-        if (
-          enteredAnotherCheckpoint &&
-          navigationContext.markCurrentCheckpointTransient &&
-          navigationContext.savedCheckpointOccurrences.length > 0
-        ) {
-          _pendingRollbackLineEntrySaveHandoff = {
-            pointer: navigationContext.pointer,
-            checkpointIndex: navigationContext.rollbackCursor?.checkpointIndex,
-            checkpointIdentity: navigationContext.rollbackCursor?.checkpoint,
+        return _systemStore[RUN_STORE_TRANSACTION](() => {
+          let result;
+          const sourcePointer =
+            _systemStore.selectCurrentPointer()?.pointer ?? null;
+          const sourceRollbackCursor =
+            _systemStore.selectRollbackCursor?.() ?? null;
+          const routingSequence = _conditionalRoutingSequence;
+          const navigationContext = {
+            pointer: sourcePointer,
+            rollbackCursor: sourceRollbackCursor,
+            markCurrentCheckpointTransient: options.rollbackSource === "line",
             savedCheckpointOccurrences:
-              navigationContext.savedCheckpointOccurrences,
+              options.savedCheckpointOccurrences?.slice() ?? [],
           };
-        }
+          _rollbackNavigationContexts.push(navigationContext);
+          try {
+            _systemStore.beginRollbackActionBatch({
+              source: options.rollbackSource,
+            });
+            try {
+              result = callback();
+            } finally {
+              _systemStore.endRollbackActionBatch({});
+            }
+
+            if (isConditionalAutoContinue(result)) {
+              dispatchConditionalAutoContinue(
+                result,
+                sourcePointer,
+                routingSequence,
+              );
+            }
+          } finally {
+            _rollbackNavigationContexts.pop();
+            const enteredAnotherCheckpoint =
+              !isSameStoryPointer(sourcePointer, navigationContext.pointer) ||
+              sourceRollbackCursor?.checkpoint !==
+                navigationContext.rollbackCursor?.checkpoint;
+            if (
+              enteredAnotherCheckpoint &&
+              navigationContext.markCurrentCheckpointTransient &&
+              navigationContext.savedCheckpointOccurrences.length > 0
+            ) {
+              _pendingRollbackLineEntrySaveHandoff = {
+                pointer: navigationContext.pointer,
+                checkpointIndex:
+                  navigationContext.rollbackCursor?.checkpointIndex,
+                checkpointIdentity:
+                  navigationContext.rollbackCursor?.checkpoint,
+                savedCheckpointOccurrences:
+                  navigationContext.savedCheckpointOccurrences,
+              };
+            }
+          }
+        });
+      } catch (error) {
+        restoreActionBatchEngineSnapshot(engineSnapshot);
+        throw error;
       }
     });
   };
 
   const handleAction = (actionType, payload, eventContext, options = {}) => {
     if (actionType === CONDITIONAL_ACTION_TYPE) {
-      preflightProjectDataUpdates(
-        { [actionType]: payload },
-        buildActionTemplateContext(eventContext),
-      );
       return runActionBatch(() => {
         const context = buildActionTemplateContext(eventContext);
         const processedActions = processActionTemplates(
@@ -863,10 +856,6 @@ export default function createRouteEngine(options) {
   };
 
   const handleActions = (actions, eventContext, options = {}) => {
-    preflightProjectDataUpdates(
-      actions,
-      buildActionTemplateContext(eventContext),
-    );
     return runActionBatch(
       () => processActionEntries(actions, eventContext, options),
       options,
@@ -898,6 +887,8 @@ export default function createRouteEngine(options) {
     runWithDeferredEffects(() => {
       const enteredPointer = _systemStore.selectCurrentPointer()?.pointer;
       const rollbackCursor = _systemStore.selectRollbackCursor?.() ?? null;
+      const pendingRollbackLineEntrySaveHandoff =
+        _pendingRollbackLineEntrySaveHandoff;
       const savedCheckpointOccurrences = takeRollbackLineEntrySaveHandoff(
         enteredPointer,
         rollbackCursor,
@@ -905,10 +896,16 @@ export default function createRouteEngine(options) {
       const line = _systemStore.selectCurrentLine();
       let handledLineActions = false;
       if (line?.actions) {
-        handleActions(line.actions, undefined, {
-          rollbackSource: "line",
-          savedCheckpointOccurrences,
-        });
+        try {
+          handleActions(line.actions, undefined, {
+            rollbackSource: "line",
+            savedCheckpointOccurrences,
+          });
+        } catch (error) {
+          _pendingRollbackLineEntrySaveHandoff =
+            pendingRollbackLineEntrySaveHandoff;
+          throw error;
+        }
         handledLineActions = true;
       }
 

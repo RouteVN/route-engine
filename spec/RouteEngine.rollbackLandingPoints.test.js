@@ -1928,6 +1928,124 @@ describe("RouteEngine rollback landing points", () => {
     });
   });
 
+  it("restores a routed-save handoff when destination line actions fail", () => {
+    const replacementSections = {
+      source: {
+        lines: [settledLine("sourceRouter")],
+      },
+      destination: {
+        lines: [settledLine("destinationRouter")],
+      },
+      final: {
+        lines: [settledLine("after")],
+      },
+    };
+    const validReplacement = createProjectData({
+      initialSectionId: "source",
+      sections: replacementSections,
+    });
+    const invalidReplacement = structuredClone(validReplacement);
+    invalidReplacement.resources.variables = {
+      a: {
+        type: "number",
+        scope: "context",
+        computed: {
+          expr: { var: "variables.b" },
+        },
+      },
+      b: {
+        type: "number",
+        scope: "context",
+        computed: {
+          expr: { var: "variables.a" },
+        },
+      },
+    };
+    const projectData = createProjectData({
+      initialSectionId: "source",
+      sections: {
+        source: {
+          lines: [
+            settledLine("sourceRouter", {
+              sectionTransition: {
+                sectionId: "destination",
+              },
+              saveSlot: {
+                slotId: 1,
+                savedAt: 1700000000000,
+              },
+            }),
+          ],
+        },
+        destination: {
+          lines: [
+            settledLine("destinationRouter", {
+              updateProjectData: "${variables.nextProject}",
+              sectionTransition: {
+                sectionId: "final",
+              },
+            }),
+          ],
+        },
+        final: {
+          lines: [settledLine("after")],
+        },
+      },
+    });
+    projectData.resources.variables.nextProject = {
+      type: "object",
+      scope: "device",
+      default: {
+        projectData: invalidReplacement,
+      },
+    };
+
+    const engine = createRouteEngine({
+      handlePendingEffects: () => {},
+    });
+    engine.init({
+      initialState: { projectData },
+    });
+    engine.handleLineActions();
+
+    expect(getPointer(engine)).toMatchObject({
+      sectionId: "destination",
+      lineId: "destinationRouter",
+    });
+    expect(() => engine.handleLineActions()).toThrow(
+      "Computed variable cycle detected: a -> b -> a",
+    );
+
+    engine.handleAction("updateVariable", {
+      id: "repairReplacement",
+      operations: [
+        {
+          variableId: "nextProject",
+          op: "set",
+          value: {
+            projectData: validReplacement,
+          },
+        },
+      ],
+    });
+    expect(() => engine.handleLineActions()).not.toThrow();
+
+    expect(getPointer(engine)).toMatchObject({
+      sectionId: "final",
+      lineId: "after",
+    });
+    expect(
+      getCheckpoint(engine, "destination", "destinationRouter")?.returnable,
+    ).toBe(false);
+    const savedTimeline =
+      engine.selectSystemState().global.saveSlots["1"].state.contexts[0]
+        .rollback.timeline;
+    expect(
+      savedTimeline.find(({ lineId }) => lineId === "destinationRouter")
+        ?.returnable,
+    ).toBe(false);
+  });
+
   it.each([
     {
       name: "section transition",
