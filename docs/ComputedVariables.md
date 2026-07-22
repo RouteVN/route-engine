@@ -257,6 +257,17 @@ are not available.
 Function calls are not supported in computed-variable conditions. Conditions
 must remain deterministic and expose all variable dependencies through `var`.
 
+Comparisons are strict and never coerce operands. `eq` and `neq` compare both
+type and value, so `1` is not equal to `"1"` and `false` is not equal to `0`.
+Objects and arrays compare by identity, not by deep contents. Ordered operators
+(`gt`, `gte`, `lt`, and `lte`) compare only two finite numbers or two strings;
+mixed types and every other operand combination evaluate to `false`. A missing
+path is also distinct from an explicit `null` value. There is currently no
+dedicated `exists` operator.
+
+These rules apply to semantic JSON computed conditions and computed expressions.
+Jempl string expressions inside layout templates are a separate interface.
+
 ## Expressions
 
 `expr` is an evaluated expression. It may be:
@@ -344,6 +355,10 @@ lt: [a, b]
 lte: [a, b]
 in: [value, collection]
 ```
+
+Expression comparisons use the same strict rules as branch conditions. `in`
+uses strict element matching, and `includes` does not coerce its searched value;
+in particular, string containment requires a string search value.
 
 Logical operators:
 

@@ -4,7 +4,7 @@ description: Schema for authored/public system actions in the Route Engine runti
 type: object
 definitions:
   jemplCondition:
-    description: Jempl semantic JSON condition. String expression conditions are not supported.
+    description: Semantic JSON condition. Comparisons are strict and non-coercive; ordered comparisons accept two finite numbers or two strings. String expression conditions are not supported.
     not:
       type: string
 

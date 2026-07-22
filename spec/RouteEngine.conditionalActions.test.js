@@ -955,6 +955,50 @@ describe("RouteEngine conditional actions", () => {
     expect(engine.selectSystemState().contexts[0].variables.score).toBe(9);
   });
 
+  it("does not coerce conditional action comparison operands", () => {
+    const engine = createEngine(createProjectData());
+
+    engine.handleActions(
+      {
+        conditional: {
+          branches: [
+            {
+              when: {
+                gt: [{ var: "_event.value" }, "0"],
+              },
+              actions: setScoreAction("coercedOrdering", 1),
+            },
+            {
+              when: {
+                eq: [{ var: "_event.value" }, "1"],
+              },
+              actions: setScoreAction("coercedEquality", 2),
+            },
+            {
+              when: {
+                all: [
+                  { neq: [{ var: "_event.value" }, "1"] },
+                  { eq: [{ var: "_event.value" }, 1] },
+                ],
+              },
+              actions: setScoreAction("strictMatch", 9),
+            },
+            {
+              actions: setScoreAction("fallback", 3),
+            },
+          ],
+        },
+      },
+      {
+        _event: {
+          value: 1,
+        },
+      },
+    );
+
+    expect(engine.selectSystemState().contexts[0].variables.score).toBe(9);
+  });
+
   it("rejects an else branch before the final branch", () => {
     const engine = createEngine(createProjectData());
 

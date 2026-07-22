@@ -583,6 +583,15 @@ control-flow advance: hidden dialogue does not consume it and remains hidden.
 When skip mode cannot pass unseen content, the engine enters that destination
 and stops skip there. Active choice and form authorization still applies.
 
+Condition comparisons are strict and never coerce operands. `eq` and `neq`
+compare both type and value, so `1` and `"1"` are different. Objects and arrays
+compare by identity rather than deep contents. `gt`, `gte`, `lt`, and `lte`
+compare only two finite numbers or two strings; mixed types and all other
+operand combinations evaluate to `false`. A missing path is distinct from an
+explicit `null` value; there is currently no dedicated `exists` operator. These
+rules apply to conditional-action semantic JSON, not Jempl string expressions
+inside layout templates.
+
 A line-authored conditional that automatically continues during line entry is
 a transient rollback source. Player-facing Back must skip it rather than
 rendering or pausing on an empty conditional line. Conditionals triggered later
