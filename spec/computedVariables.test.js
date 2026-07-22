@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import createRouteEngine from "../src/RouteEngine.js";
 import { resolveComputedVariables } from "../src/index.js";
 import { createSystemStore } from "../src/stores/system.store.js";
+import { selectVariablesWithComputedValues } from "../src/util.js";
 
 const createProjectData = (variables = {}, lineActions = {}) => ({
   screen: {
@@ -42,6 +43,9 @@ const createProjectData = (variables = {}, lineActions = {}) => ({
     },
   },
 });
+
+const createVariablePath = (variableId) =>
+  `variables[${JSON.stringify(variableId)}]`;
 
 describe("computed variables", () => {
   it("projects computed values without storing them in system state", () => {
@@ -168,32 +172,32 @@ describe("computed variables", () => {
   });
 
   it("rejects string expression branch conditions", () => {
-    const store = createSystemStore({
-      projectData: createProjectData({
-        trust: {
-          type: "number",
-          scope: "context",
-          default: 80,
-        },
-        trustState: {
-          type: "string",
-          scope: "context",
-          computed: {
-            branches: [
-              {
-                when: "variables.trust >= 70",
-                expr: "trusted",
+    expect(() =>
+      createSystemStore({
+        projectData: createProjectData({
+          trust: {
+            type: "number",
+            scope: "context",
+            default: 80,
+          },
+          trustState: {
+            type: "string",
+            scope: "context",
+            computed: {
+              branches: [
+                {
+                  when: "variables.trust >= 70",
+                  expr: "trusted",
+                },
+              ],
+              default: {
+                expr: "guarded",
               },
-            ],
-            default: {
-              expr: "guarded",
             },
           },
-        },
+        }),
       }),
-    });
-
-    expect(() => store.selectAllVariables()).toThrow(
+    ).toThrow(
       "String condition expressions are not supported; use semantic JSON conditions",
     );
   });
@@ -271,6 +275,349 @@ describe("computed variables", () => {
       doubledHp: 100,
       doubledHpMirror: 100,
     });
+  });
+
+  it("resolves logical, arithmetic, and reverse-authored dependency chains", () => {
+    const store = createSystemStore({
+      projectData: createProjectData({
+        doubleSum: {
+          type: "number",
+          scope: "context",
+          computed: {
+            expr: {
+              mul: [{ var: "variables.sum" }, 2],
+            },
+          },
+        },
+        sum: {
+          type: "number",
+          scope: "context",
+          computed: {
+            expr: {
+              add: [{ var: "variables.x" }, { var: "variables.y" }],
+            },
+          },
+        },
+        bothTrue: {
+          type: "boolean",
+          scope: "context",
+          computed: {
+            expr: {
+              and: [
+                { eq: [{ var: "variables.a" }, true] },
+                { eq: [{ var: "variables.b" }, true] },
+              ],
+            },
+          },
+        },
+        a: {
+          type: "boolean",
+          scope: "context",
+          default: true,
+        },
+        b: {
+          type: "boolean",
+          scope: "context",
+          default: true,
+        },
+        x: {
+          type: "number",
+          scope: "context",
+          default: 2,
+        },
+        y: {
+          type: "number",
+          scope: "context",
+          default: 3,
+        },
+      }),
+    });
+
+    expect(store.selectAllVariables()).toMatchObject({
+      bothTrue: true,
+      sum: 5,
+      doubleSum: 10,
+    });
+  });
+
+  it("resolves very deep computed dependency chains without recursion", () => {
+    const chainLength = 5000;
+    const variableConfigs = Object.fromEntries(
+      Array.from({ length: chainLength }, (_unused, index) => [
+        `value${index}`,
+        {
+          type: "number",
+          scope: "context",
+          computed: {
+            expr:
+              index === chainLength - 1
+                ? 1
+                : {
+                    add: [{ var: `variables.value${index + 1}` }, 1],
+                  },
+          },
+        },
+      ]),
+    );
+
+    const resolved = resolveComputedVariables({ variableConfigs });
+
+    expect(resolved.value0).toBe(chainLength);
+    expect(resolved[`value${chainLength - 1}`]).toBe(1);
+  });
+
+  it("keeps lazy selection isolated from unrelated and inactive values", () => {
+    const variables = selectVariablesWithComputedValues({
+      eager: false,
+      variableConfigs: {
+        bad: {
+          type: "number",
+          scope: "context",
+          computed: {
+            expr: {
+              var: "runtime.missing",
+            },
+          },
+        },
+        good: {
+          type: "number",
+          scope: "context",
+          computed: {
+            branches: [
+              {
+                when: true,
+                expr: 1,
+              },
+            ],
+            default: {
+              expr: {
+                var: "variables.bad",
+              },
+            },
+          },
+        },
+      },
+    });
+
+    expect(variables.good).toBe(1);
+  });
+
+  it("resolves nested values and quoted variable ids", () => {
+    const store = createSystemStore({
+      projectData: createProjectData({
+        profile: {
+          type: "object",
+          scope: "context",
+          default: {
+            stats: {
+              scores: [2, 3],
+            },
+          },
+        },
+        "dotted.value": {
+          type: "number",
+          scope: "context",
+          default: 4,
+        },
+        nestedSum: {
+          type: "number",
+          scope: "context",
+          computed: {
+            expr: {
+              add: [
+                { var: "variables.profile.stats.scores[0]" },
+                { var: "variables.profile.stats.scores[1]" },
+              ],
+            },
+          },
+        },
+        dottedMirror: {
+          type: "number",
+          scope: "context",
+          computed: {
+            expr: {
+              var: 'variables["dotted.value"]',
+            },
+          },
+        },
+      }),
+    });
+
+    expect(store.selectAllVariables()).toMatchObject({
+      nestedSum: 5,
+      dottedMirror: 4,
+    });
+  });
+
+  it("uses one strict path grammar for expressions and branch conditions", () => {
+    const specialVariableIds = [
+      "dotted.flag",
+      'quoted"flag',
+      "slashed\\flag",
+      "bracketed[flag]",
+    ];
+    const variables = Object.fromEntries([
+      ...specialVariableIds.map((variableId) => [
+        variableId,
+        {
+          type: "boolean",
+          scope: "context",
+          default: true,
+        },
+      ]),
+      [
+        "allSpecialFlags",
+        {
+          type: "boolean",
+          scope: "context",
+          computed: {
+            branches: [
+              {
+                when: {
+                  all: specialVariableIds.map((variableId) => ({
+                    var: createVariablePath(variableId),
+                  })),
+                },
+                expr: true,
+              },
+            ],
+            default: {
+              expr: false,
+            },
+          },
+        },
+      ],
+    ]);
+    const store = createSystemStore({
+      projectData: createProjectData(variables),
+    });
+
+    expect(store.selectAllVariables().allSpecialFlags).toBe(true);
+  });
+
+  it("does not reinterpret escaped condition paths at runtime", () => {
+    const storedVariableId = 'a"b';
+    const computedVariableId = 'a\\"b';
+    const variables = Object.fromEntries([
+      [
+        storedVariableId,
+        {
+          type: "boolean",
+          scope: "context",
+          default: true,
+        },
+      ],
+      [
+        "result",
+        {
+          type: "boolean",
+          scope: "context",
+          computed: {
+            branches: [
+              {
+                when: {
+                  var: createVariablePath(storedVariableId),
+                },
+                expr: true,
+              },
+            ],
+            default: {
+              expr: false,
+            },
+          },
+        },
+      ],
+      [
+        computedVariableId,
+        {
+          type: "boolean",
+          scope: "context",
+          computed: {
+            expr: {
+              var: "variables.result",
+            },
+          },
+        },
+      ],
+    ]);
+    const store = createSystemStore({
+      projectData: createProjectData(variables),
+    });
+
+    expect(store.selectAllVariables()).toMatchObject({
+      result: true,
+      [computedVariableId]: true,
+    });
+  });
+
+  it("rejects the reserved __proto__ variable id", () => {
+    const variables = Object.fromEntries([
+      [
+        "__proto__",
+        {
+          type: "number",
+          scope: "context",
+          computed: {
+            expr: 7,
+          },
+        },
+      ],
+    ]);
+
+    expect(() =>
+      createSystemStore({
+        projectData: createProjectData(variables),
+      }),
+    ).toThrow('Variable id "__proto__" is reserved');
+  });
+
+  it("rejects empty variable ids during semantic validation", () => {
+    const variables = Object.fromEntries([
+      [
+        "",
+        {
+          type: "number",
+          scope: "context",
+          computed: {
+            expr: 7,
+          },
+        },
+      ],
+    ]);
+
+    expect(() =>
+      createSystemStore({
+        projectData: createProjectData(variables),
+      }),
+    ).toThrow("Variable ids must not be empty");
+  });
+
+  it("does not traverse inherited properties in variable paths", () => {
+    expect(() =>
+      resolveComputedVariables({
+        variables: {
+          payload: {},
+        },
+        variableConfigs: {
+          payload: {
+            type: "object",
+            scope: "context",
+            default: {},
+          },
+          leakedName: {
+            type: "string",
+            scope: "context",
+            computed: {
+              expr: {
+                var: "variables.payload.constructor.name",
+              },
+            },
+          },
+        },
+      }),
+    ).toThrow(
+      'Computed variable "leakedName" expected type string, got undefined',
+    );
   });
 
   it("rejects writes to computed variables", () => {
@@ -376,32 +723,403 @@ describe("computed variables", () => {
   });
 
   it("rejects computed variable cycles", () => {
-    const store = createSystemStore({
-      projectData: createProjectData({
-        a: {
-          type: "number",
+    expect(() =>
+      createSystemStore({
+        projectData: createProjectData({
+          a: {
+            type: "number",
+            scope: "context",
+            computed: {
+              expr: {
+                add: [{ var: "variables.b" }, 1],
+              },
+            },
+          },
+          b: {
+            type: "number",
+            scope: "context",
+            computed: {
+              expr: {
+                add: [{ var: "variables.a" }, 1],
+              },
+            },
+          },
+        }),
+      }),
+    ).toThrow("Computed variable cycle detected: a -> b -> a");
+  });
+
+  it("rejects cycles hidden in inactive branch results", () => {
+    expect(() =>
+      createSystemStore({
+        projectData: createProjectData({
+          a: {
+            type: "number",
+            scope: "context",
+            computed: {
+              branches: [
+                {
+                  when: false,
+                  expr: { var: "variables.b" },
+                },
+              ],
+              default: {
+                expr: 0,
+              },
+            },
+          },
+          b: {
+            type: "number",
+            scope: "context",
+            computed: {
+              expr: {
+                add: [{ var: "variables.a" }, 1],
+              },
+            },
+          },
+        }),
+      }),
+    ).toThrow("Computed variable cycle detected: a -> b -> a");
+  });
+
+  it("rejects cycles hidden in later conditions", () => {
+    expect(() =>
+      createSystemStore({
+        projectData: createProjectData({
+          a: {
+            type: "number",
+            scope: "context",
+            computed: {
+              branches: [
+                {
+                  when: true,
+                  expr: 0,
+                },
+                {
+                  when: {
+                    eq: [{ var: "variables.b" }, 0],
+                  },
+                  expr: 1,
+                },
+              ],
+              default: {
+                expr: 2,
+              },
+            },
+          },
+          b: {
+            type: "number",
+            scope: "context",
+            computed: {
+              expr: { var: "variables.a" },
+            },
+          },
+        }),
+      }),
+    ).toThrow("Computed variable cycle detected: a -> b -> a");
+  });
+
+  it("rejects cycles referenced through quoted variable ids", () => {
+    const specialVariableId = 'a"b';
+    const variables = Object.fromEntries([
+      [
+        "result",
+        {
+          type: "boolean",
           scope: "context",
           computed: {
-            expr: {
-              add: [{ var: "variables.b" }, 1],
+            branches: [
+              {
+                when: {
+                  var: createVariablePath(specialVariableId),
+                },
+                expr: true,
+              },
+            ],
+            default: {
+              expr: false,
             },
           },
         },
-        b: {
-          type: "number",
+      ],
+      [
+        specialVariableId,
+        {
+          type: "boolean",
           scope: "context",
           computed: {
             expr: {
-              add: [{ var: "variables.a" }, 1],
+              var: "variables.result",
+            },
+          },
+        },
+      ],
+    ]);
+
+    expect(() =>
+      createSystemStore({
+        projectData: createProjectData(variables),
+      }),
+    ).toThrow("Computed variable cycle detected");
+  });
+
+  it("rejects cycles hidden in inactive defaults", () => {
+    expect(() =>
+      createSystemStore({
+        projectData: createProjectData({
+          a: {
+            type: "number",
+            scope: "context",
+            computed: {
+              branches: [
+                {
+                  when: true,
+                  expr: 0,
+                },
+              ],
+              default: {
+                expr: { var: "variables.b" },
+              },
+            },
+          },
+          b: {
+            type: "number",
+            scope: "context",
+            computed: {
+              expr: { var: "variables.a" },
+            },
+          },
+        }),
+      }),
+    ).toThrow("Computed variable cycle detected: a -> b -> a");
+  });
+
+  it("rejects cycles hidden by logical short circuiting", () => {
+    expect(() =>
+      createSystemStore({
+        projectData: createProjectData({
+          a: {
+            type: "boolean",
+            scope: "context",
+            computed: {
+              expr: {
+                and: [false, { var: "variables.b" }],
+              },
+            },
+          },
+          b: {
+            type: "boolean",
+            scope: "context",
+            computed: {
+              expr: {
+                not: [{ var: "variables.a" }],
+              },
+            },
+          },
+        }),
+      }),
+    ).toThrow("Computed variable cycle detected: a -> b -> a");
+  });
+
+  it("rejects self cycles", () => {
+    expect(() =>
+      createSystemStore({
+        projectData: createProjectData({
+          a: {
+            type: "number",
+            scope: "context",
+            computed: {
+              expr: { var: "variables.a" },
+            },
+          },
+        }),
+      }),
+    ).toThrow("Computed variable cycle detected: a -> a");
+  });
+
+  it("rejects missing, namespace-root, unsupported, and malformed references", () => {
+    const invalidReferences = [
+      ["variables.missing", 'references unknown variable "missing"'],
+      ["variables", "must reference a concrete variables member"],
+      ["settings.value", "must reference variables.* or runtime.*"],
+      ["variables..missing", "has invalid path"],
+      ['variables["a""b"]', "has invalid path"],
+      ["variables[01]", "has invalid path"],
+      ['variables["unterminated]', "has invalid path"],
+    ];
+
+    invalidReferences.forEach(([referencePath, expectedError]) => {
+      expect(() =>
+        createSystemStore({
+          projectData: createProjectData({
+            result: {
+              type: "boolean",
+              scope: "context",
+              computed: {
+                expr: {
+                  not: [{ var: referencePath }],
+                },
+              },
+            },
+          }),
+        }),
+      ).toThrow(expectedError);
+    });
+  });
+
+  it("validates expressions and result types in inactive branches", () => {
+    expect(() =>
+      createSystemStore({
+        projectData: createProjectData({
+          result: {
+            type: "number",
+            scope: "context",
+            computed: {
+              branches: [
+                {
+                  when: false,
+                  expr: {
+                    unknown: [1],
+                  },
+                },
+              ],
+              default: {
+                expr: 0,
+              },
+            },
+          },
+        }),
+      }),
+    ).toThrow("Unknown computed expression operator: unknown");
+
+    expect(() =>
+      createSystemStore({
+        projectData: createProjectData({
+          result: {
+            type: "number",
+            scope: "context",
+            computed: {
+              branches: [
+                {
+                  when: false,
+                  expr: "wrong type",
+                },
+              ],
+              default: {
+                expr: 0,
+              },
+            },
+          },
+        }),
+      }),
+    ).toThrow("expected type number, got string");
+  });
+
+  it("rejects function calls and pre-parsed AST shapes in computed conditions", () => {
+    const invalidConditions = [
+      [{ call: "now" }, "function calls are not supported"],
+      [{ type: 1, path: "variables.flag" }, "Unknown condition JSON operator"],
+    ];
+
+    invalidConditions.forEach(([when, expectedError]) => {
+      expect(() =>
+        createSystemStore({
+          projectData: createProjectData({
+            flag: {
+              type: "boolean",
+              scope: "context",
+              default: true,
+            },
+            result: {
+              type: "boolean",
+              scope: "context",
+              computed: {
+                branches: [
+                  {
+                    when,
+                    expr: true,
+                  },
+                ],
+                default: {
+                  expr: false,
+                },
+              },
+            },
+          }),
+        }),
+      ).toThrow(expectedError);
+    });
+  });
+
+  it("keeps literal payloads opaque to dependency validation", () => {
+    expect(
+      resolveComputedVariables({
+        variableConfigs: {
+          valueLiteral: {
+            type: "object",
+            scope: "context",
+            computed: {
+              value: {
+                var: "variables.missing",
+              },
+            },
+          },
+          expressionLiteral: {
+            type: "object",
+            scope: "context",
+            computed: {
+              expr: {
+                literal: {
+                  var: "variables.missing",
+                },
+              },
             },
           },
         },
       }),
+    ).toMatchObject({
+      valueLiteral: {
+        var: "variables.missing",
+      },
+      expressionLiteral: {
+        var: "variables.missing",
+      },
     });
+  });
 
-    expect(() => store.selectAllVariables()).toThrow(
-      "Computed variable cycle detected: a -> b -> a",
-    );
+  it("rejects invalid project replacements without changing current state", () => {
+    const store = createSystemStore({
+      projectData: createProjectData({
+        score: {
+          type: "number",
+          scope: "context",
+          default: 3,
+        },
+      }),
+    });
+    const previousState = store.selectSystemState();
+
+    expect(() =>
+      store.updateProjectData({
+        projectData: createProjectData({
+          a: {
+            type: "number",
+            scope: "context",
+            computed: {
+              expr: { var: "variables.b" },
+            },
+          },
+          b: {
+            type: "number",
+            scope: "context",
+            computed: {
+              expr: { var: "variables.a" },
+            },
+          },
+        }),
+      }),
+    ).toThrow("Computed variable cycle detected: a -> b -> a");
+    expect(store.selectSystemState()).toEqual(previousState);
   });
 
   it("filters hydrated global values for computed variables", () => {
@@ -492,5 +1210,36 @@ describe("computed variables", () => {
       hpPercent: 40,
       audioState: "muted",
     });
+  });
+
+  it("preflights dormant dependency cycles in the public helper", () => {
+    expect(() =>
+      resolveComputedVariables({
+        variableConfigs: {
+          a: {
+            type: "number",
+            scope: "context",
+            computed: {
+              branches: [
+                {
+                  when: false,
+                  expr: { var: "variables.b" },
+                },
+              ],
+              default: {
+                expr: 0,
+              },
+            },
+          },
+          b: {
+            type: "number",
+            scope: "context",
+            computed: {
+              expr: { var: "variables.a" },
+            },
+          },
+        },
+      }),
+    ).toThrow("Computed variable cycle detected: a -> b -> a");
   });
 });

@@ -1,6 +1,10 @@
 import { createSystemStore } from "./stores/system.store.js";
 import { normalizeNamespace } from "./indexedDbPersistence.js";
-import { evaluateRouteCondition, processActionTemplates } from "./util.js";
+import {
+  evaluateRouteCondition,
+  processActionTemplates,
+  validateComputedVariableConfigs,
+} from "./util.js";
 import {
   collectPersistentAnimationContinuations,
   getAnimationInstanceDurationMs,
@@ -495,6 +499,10 @@ export default function createRouteEngine(options) {
       return;
     }
 
+    if (actionType === "updateProjectData") {
+      validateProjectDataUpdatePayload(payload);
+    }
+
     if (CONDITIONAL_ROUTING_ACTION_TYPES.has(actionType)) {
       _conditionalRoutingSequence += 1;
     }
@@ -522,6 +530,39 @@ export default function createRouteEngine(options) {
     );
     processEffectsUntilEmpty();
     return result;
+  };
+
+  const validateProjectDataUpdatePayload = (payload) => {
+    if (!Object.prototype.hasOwnProperty.call(payload ?? {}, "projectData")) {
+      throw new Error("updateProjectData requires projectData");
+    }
+    validateComputedVariableConfigs(
+      payload?.projectData?.resources?.variables ?? {},
+    );
+  };
+
+  const preflightProjectDataUpdates = (actions) => {
+    if (!isRecord(actions)) {
+      return;
+    }
+
+    Object.entries(actions).forEach(([actionType, payload]) => {
+      if (actionType === "updateProjectData") {
+        validateProjectDataUpdatePayload(payload);
+        return;
+      }
+
+      if (actionType === CONDITIONAL_ACTION_TYPE) {
+        payload?.branches?.forEach((branch) => {
+          preflightProjectDataUpdates(branch?.actions);
+        });
+        return;
+      }
+
+      if (FORM_ACTION_TYPES.has(actionType)) {
+        preflightProjectDataUpdates(payload?.actions);
+      }
+    });
   };
 
   const dispatchConditionalAutoContinue = (
@@ -603,6 +644,7 @@ export default function createRouteEngine(options) {
 
   const handleAction = (actionType, payload, eventContext, options = {}) => {
     if (actionType === CONDITIONAL_ACTION_TYPE) {
+      preflightProjectDataUpdates({ [actionType]: payload });
       return runActionBatch(() => {
         const context = buildActionTemplateContext(eventContext);
         const processedActions = processActionTemplates(
@@ -792,6 +834,7 @@ export default function createRouteEngine(options) {
   };
 
   const handleActions = (actions, eventContext, options = {}) => {
+    preflightProjectDataUpdates(actions);
     return runActionBatch(
       () => processActionEntries(actions, eventContext, options),
       options,

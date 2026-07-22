@@ -300,4 +300,78 @@ describe("RouteEngine updateProjectData", () => {
       content: "Guest",
     });
   });
+
+  it("rejects invalid computed definitions before an action batch mutates state", () => {
+    const engine = createRouteEngine({
+      handlePendingEffects: () => {},
+    });
+    const initialProjectData = createProjectData({
+      initialLineId: "line1",
+      firstLineDialogue: {
+        mode: "adv",
+        ui: {
+          resourceId: "adv",
+        },
+        content: [{ text: "First" }],
+      },
+      secondLineDialogue: {
+        mode: "adv",
+        ui: {
+          resourceId: "adv",
+        },
+        content: [{ text: "Second" }],
+      },
+    });
+    const invalidProjectData = createProjectData({
+      initialLineId: "line1",
+      firstLineDialogue: {
+        mode: "adv",
+        ui: {
+          resourceId: "adv",
+        },
+        content: [{ text: "Replacement" }],
+      },
+      secondLineDialogue: {
+        mode: "adv",
+        ui: {
+          resourceId: "adv",
+        },
+        content: [{ text: "Replacement second" }],
+      },
+    });
+    invalidProjectData.resources.variables = {
+      a: {
+        type: "number",
+        scope: "context",
+        computed: {
+          expr: { var: "variables.b" },
+        },
+      },
+      b: {
+        type: "number",
+        scope: "context",
+        computed: {
+          expr: { var: "variables.a" },
+        },
+      },
+    };
+
+    engine.init({
+      initialState: {
+        projectData: initialProjectData,
+      },
+    });
+    engine.handleAction("nextLine", {});
+    engine.handleAction("rollbackByOffset", {});
+    const previousState = structuredClone(engine.selectSystemState());
+
+    expect(() =>
+      engine.handleActions({
+        updateProjectData: {
+          projectData: invalidProjectData,
+        },
+      }),
+    ).toThrow("Computed variable cycle detected: a -> b -> a");
+    expect(engine.selectSystemState()).toEqual(previousState);
+  });
 });

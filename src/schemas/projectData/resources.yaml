@@ -502,6 +502,9 @@ properties:
   variables:
     type: object
     description: Variables and their initial values
+    propertyNames:
+      not:
+        const: __proto__
     patternProperties:
       "^.+$":
         type: object
@@ -535,6 +538,7 @@ definitions:
     description: Derived variable declaration. Presence implies read-only behavior.
     properties:
       expr:
+        $ref: "#/definitions/computedExpression"
         description: Evaluated expression
       value:
         description: Literal computed value
@@ -578,9 +582,9 @@ definitions:
     properties:
       when:
         description: Condition using the same authored condition shape as conditional actions
-        allOf:
-          - $ref: "../systemActions.yaml#/definitions/jemplCondition"
+        $ref: "#/definitions/computedCondition"
       expr:
+        $ref: "#/definitions/computedExpression"
         description: Evaluated expression
       value:
         description: Literal value
@@ -590,6 +594,7 @@ definitions:
     type: object
     properties:
       expr:
+        $ref: "#/definitions/computedExpression"
         description: Evaluated expression
       value:
         description: Literal value
@@ -601,3 +606,158 @@ definitions:
         not:
           required: [expr]
     additionalProperties: false
+
+  computedExpression:
+    description: Recursive computed-variable expression
+    oneOf:
+      - type: [string, number, boolean, "null"]
+      - $ref: "#/definitions/computedExpressionOperator"
+
+  computedExpressionOperator:
+    type: object
+    minProperties: 1
+    maxProperties: 1
+    properties:
+      var:
+        type: string
+        minLength: 1
+      literal: {}
+      add:
+        $ref: "#/definitions/computedBinaryOperands"
+      sub:
+        $ref: "#/definitions/computedBinaryOperands"
+      mul:
+        $ref: "#/definitions/computedBinaryOperands"
+      div:
+        $ref: "#/definitions/computedBinaryOperands"
+      mod:
+        $ref: "#/definitions/computedBinaryOperands"
+      neg:
+        $ref: "#/definitions/computedUnaryOperands"
+      round:
+        $ref: "#/definitions/computedUnaryOperands"
+      floor:
+        $ref: "#/definitions/computedUnaryOperands"
+      ceil:
+        $ref: "#/definitions/computedUnaryOperands"
+      min:
+        $ref: "#/definitions/computedBinaryOperands"
+      max:
+        $ref: "#/definitions/computedBinaryOperands"
+      clamp:
+        $ref: "#/definitions/computedTernaryOperands"
+      eq:
+        $ref: "#/definitions/computedBinaryOperands"
+      neq:
+        $ref: "#/definitions/computedBinaryOperands"
+      gt:
+        $ref: "#/definitions/computedBinaryOperands"
+      gte:
+        $ref: "#/definitions/computedBinaryOperands"
+      lt:
+        $ref: "#/definitions/computedBinaryOperands"
+      lte:
+        $ref: "#/definitions/computedBinaryOperands"
+      in:
+        $ref: "#/definitions/computedBinaryOperands"
+      and:
+        $ref: "#/definitions/computedExpressionOperands"
+      or:
+        $ref: "#/definitions/computedExpressionOperands"
+      all:
+        $ref: "#/definitions/computedExpressionOperands"
+      any:
+        $ref: "#/definitions/computedExpressionOperands"
+      not:
+        $ref: "#/definitions/computedUnaryOperands"
+      length:
+        $ref: "#/definitions/computedUnaryOperands"
+      includes:
+        $ref: "#/definitions/computedBinaryOperands"
+    additionalProperties: false
+
+  computedExpressionOperands:
+    type: array
+    minItems: 1
+    items:
+      $ref: "#/definitions/computedExpression"
+
+  computedUnaryOperands:
+    type: array
+    minItems: 1
+    maxItems: 1
+    items:
+      $ref: "#/definitions/computedExpression"
+
+  computedBinaryOperands:
+    type: array
+    minItems: 2
+    maxItems: 2
+    items:
+      $ref: "#/definitions/computedExpression"
+
+  computedTernaryOperands:
+    type: array
+    minItems: 3
+    maxItems: 3
+    items:
+      $ref: "#/definitions/computedExpression"
+
+  computedCondition:
+    description: Deterministic semantic JSON condition for a computed branch
+    oneOf:
+      - type: [number, boolean, "null"]
+      - $ref: "#/definitions/computedConditionOperator"
+
+  computedConditionOperand:
+    oneOf:
+      - type: [string, number, boolean, "null"]
+      - $ref: "#/definitions/computedConditionOperator"
+
+  computedConditionOperator:
+    type: object
+    minProperties: 1
+    maxProperties: 1
+    properties:
+      var:
+        type: string
+        minLength: 1
+      literal: {}
+      not:
+        $ref: "#/definitions/computedConditionOperand"
+      all:
+        $ref: "#/definitions/computedConditionOperands"
+      any:
+        $ref: "#/definitions/computedConditionOperands"
+      eq:
+        $ref: "#/definitions/computedConditionBinaryOperands"
+      neq:
+        $ref: "#/definitions/computedConditionBinaryOperands"
+      gt:
+        $ref: "#/definitions/computedConditionBinaryOperands"
+      gte:
+        $ref: "#/definitions/computedConditionBinaryOperands"
+      lt:
+        $ref: "#/definitions/computedConditionBinaryOperands"
+      lte:
+        $ref: "#/definitions/computedConditionBinaryOperands"
+      in:
+        $ref: "#/definitions/computedConditionBinaryOperands"
+      add:
+        $ref: "#/definitions/computedConditionBinaryOperands"
+      sub:
+        $ref: "#/definitions/computedConditionBinaryOperands"
+    additionalProperties: false
+
+  computedConditionOperands:
+    type: array
+    minItems: 1
+    items:
+      $ref: "#/definitions/computedConditionOperand"
+
+  computedConditionBinaryOperands:
+    type: array
+    minItems: 2
+    maxItems: 2
+    items:
+      $ref: "#/definitions/computedConditionOperand"
