@@ -664,7 +664,9 @@ Seen-line semantics:
 Gallery actions use the optional singleton `resources.imageGallery`. Locked
 state comes from the existing viewed-resource registry. Well-formed actions are
 no-ops when the gallery or requested target is unavailable; malformed payloads
-throw.
+throw. If an action target exactly matches a declared group or variant ID, the
+ID is treated literally even when it resembles a template; targets without an
+exact declared match continue through normal action-template resolution.
 
 ### Achievement Actions
 
