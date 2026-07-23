@@ -280,6 +280,125 @@ describe("RouteEngine image-gallery render API", () => {
     });
   });
 
+  it("does not reinterpret template-like gallery IDs produced by loop interpolation", () => {
+    const templateToken = "${variables.redirect}";
+    const projectData = createProjectData();
+    projectData.resources.variables = {
+      redirect: {
+        type: "string",
+        scope: "context",
+        default: "wrong-target",
+      },
+    };
+    projectData.resources.images = {
+      [templateToken]: {
+        fileId: "literal-token.jpg",
+        width: 1920,
+        height: 1080,
+      },
+      "wrong-target": {
+        fileId: "wrong-target.jpg",
+        width: 1920,
+        height: 1080,
+      },
+    };
+    projectData.resources.imageGallery = {
+      pageSize: 1,
+      groups: [
+        {
+          id: templateToken,
+          variants: [
+            {
+              id: templateToken,
+              imageId: templateToken,
+            },
+          ],
+        },
+      ],
+    };
+    projectData.resources.layouts.galleryHud.elements = [
+      {
+        id: "gallery-grid",
+        type: "container",
+        children: [
+          {
+            "$for group in imageGallery.pageGroups:": [
+              {
+                id: "gallery-group-${group.groupId}",
+                type: "container",
+                children: [
+                  {
+                    "$for variant in group.variants:": [
+                      {
+                        id: "gallery-variant-${group.groupId}-${variant.variantId}",
+                        type: "sprite",
+                        imageId: "${variant.imageId}",
+                        click: {
+                          payload: {
+                            actions: {
+                              showImageGalleryVariant: {
+                                groupId: "${group.groupId}",
+                                variantId: "${variant.variantId}",
+                              },
+                            },
+                          },
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ];
+    const engine = createEngine(projectData, {
+      viewedImageIds: [templateToken],
+    });
+
+    const renderState = engine.selectRenderState();
+    const renderedGroupId = `gallery-group-${templateToken}`;
+    const renderedVariantId = `gallery-variant-${templateToken}-${templateToken}`;
+    const variant = findElementById(renderState.elements, renderedVariantId);
+
+    expect(
+      findElementById(renderState.elements, renderedGroupId),
+    ).not.toBeNull();
+    expect(variant).toMatchObject({
+      src: "literal-token.jpg",
+      click: {
+        payload: {
+          actions: {
+            showImageGalleryVariant: {
+              groupId: templateToken,
+              variantId: templateToken,
+            },
+          },
+        },
+      },
+    });
+    expect(
+      findElementById(
+        renderState.elements,
+        "gallery-variant-wrong-target-wrong-target",
+      ),
+    ).toBeNull();
+
+    engine.handleAction(
+      "showImageGalleryVariant",
+      variant.click.payload.actions.showImageGalleryVariant,
+    );
+
+    expect(engine.selectImageGallery().selection).toEqual({
+      groupId: templateToken,
+      variantId: templateToken,
+      imageId: templateToken,
+      canMoveToPreviousVariant: false,
+      canMoveToNextVariant: false,
+    });
+  });
+
   it("renders an absent gallery as an empty loop without throwing", () => {
     const projectData = createProjectData({
       includeImageGallery: false,

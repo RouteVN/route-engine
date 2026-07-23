@@ -14,6 +14,7 @@ import {
 } from "../renderLayers.js";
 
 const jemplFunctions = {
+  __arrayOrEmpty: (value) => (Array.isArray(value) ? value : []),
   objectValues: (obj) =>
     Object.entries(obj).map(([id, value]) => ({ id, ...value })),
   formatDate,
@@ -22,100 +23,51 @@ const jemplFunctions = {
 const LOOP_DIRECTIVE_RE =
   /^\$for\s+([A-Za-z_][A-Za-z0-9_]*)(?:\s*,\s*([A-Za-z_][A-Za-z0-9_]*))?\s+in\s+(.+):$/;
 
-const resolveTemplatePath = (data, expression) => {
-  const normalized = String(expression || "").trim();
-  if (!normalized) {
-    return undefined;
-  }
-
-  const parts = normalized.match(/[A-Za-z_][A-Za-z0-9_]*|\[\d+\]/g) || [];
-  let current = data;
-  for (const part of parts) {
-    if (part.startsWith("[")) {
-      const index = Number(part.slice(1, -1));
-      current = Array.isArray(current) ? current[index] : undefined;
-      continue;
-    }
-    current = current?.[part];
-  }
-  return current;
-};
-
-const expandLoopTemplates = (node, templateData, options) => {
+const normalizeLoopDirectives = (node) => {
   if (Array.isArray(node)) {
-    const expanded = [];
-
-    for (const item of node) {
+    return node.map((item) => {
       if (
-        item &&
-        typeof item === "object" &&
-        !Array.isArray(item) &&
-        Object.keys(item).length === 1
+        !item ||
+        typeof item !== "object" ||
+        Array.isArray(item) ||
+        Object.keys(item).length !== 1
       ) {
-        const [maybeLoopKey] = Object.keys(item);
-        const loopMatch = LOOP_DIRECTIVE_RE.exec(maybeLoopKey);
-        if (loopMatch) {
-          const [, itemName, indexName, sourceExpression] = loopMatch;
-          const iterable = resolveTemplatePath(templateData, sourceExpression);
-          if (!Array.isArray(iterable)) {
-            continue;
-          }
-
-          const loopTemplate = Array.isArray(item[maybeLoopKey])
-            ? item[maybeLoopKey]
-            : [];
-          iterable.forEach((loopItem, loopIndex) => {
-            const loopData = {
-              ...templateData,
-              [itemName]: loopItem,
-            };
-            if (indexName) {
-              loopData[indexName] = loopIndex;
-            }
-
-            loopTemplate.forEach((loopNode) => {
-              const expandedLoopNode = expandLoopTemplates(
-                loopNode,
-                loopData,
-                options,
-              );
-              const rendered = parseAndRender(
-                expandedLoopNode,
-                loopData,
-                options,
-              );
-              if (Array.isArray(rendered)) {
-                expanded.push(...rendered);
-              } else {
-                expanded.push(rendered);
-              }
-            });
-          });
-          continue;
-        }
+        return normalizeLoopDirectives(item);
       }
 
-      expanded.push(expandLoopTemplates(item, templateData, options));
-    }
+      const [key] = Object.keys(item);
+      const loopMatch = LOOP_DIRECTIVE_RE.exec(key);
+      if (!loopMatch) {
+        return normalizeLoopDirectives(item);
+      }
 
-    return expanded;
+      const [, itemName, indexName, sourceExpression] = loopMatch;
+      const normalizedKey = `$for ${itemName}${
+        indexName ? `, ${indexName}` : ""
+      } in __arrayOrEmpty(${sourceExpression.trim()})`;
+      const loopTemplate = Array.isArray(item[key]) ? item[key] : [];
+      return {
+        [normalizedKey]: normalizeLoopDirectives(loopTemplate),
+      };
+    });
   }
 
   if (!node || typeof node !== "object") {
     return node;
   }
 
-  const expanded = {};
-  Object.entries(node).forEach(([key, value]) => {
-    expanded[key] = expandLoopTemplates(value, templateData, options);
-  });
-  return expanded;
+  return Object.fromEntries(
+    Object.entries(node).map(([key, value]) => [
+      key,
+      normalizeLoopDirectives(value),
+    ]),
+  );
 };
 
 const renderLayoutTemplate = (template, templateData) => {
   const options = { functions: jemplFunctions };
   return parseAndRender(
-    expandLoopTemplates(template, templateData, options),
+    normalizeLoopDirectives(template),
     templateData,
     options,
   );
