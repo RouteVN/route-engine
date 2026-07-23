@@ -168,6 +168,20 @@ properties:
                               $ref: "../systemActions.yaml#/properties/completeAchievement"
                             setAchievementProgress:
                               $ref: "../systemActions.yaml#/properties/setAchievementProgress"
+                            showImageGalleryVariant:
+                              $ref: "../systemActions.yaml#/properties/showImageGalleryVariant"
+                            moveToPreviousImageGalleryVariant:
+                              $ref: "../systemActions.yaml#/properties/moveToPreviousImageGalleryVariant"
+                            moveToNextImageGalleryVariant:
+                              $ref: "../systemActions.yaml#/properties/moveToNextImageGalleryVariant"
+                            clearImageGallerySelection:
+                              $ref: "../systemActions.yaml#/properties/clearImageGallerySelection"
+                            moveToImageGalleryPage:
+                              $ref: "../systemActions.yaml#/properties/moveToImageGalleryPage"
+                            moveToNextImageGalleryPage:
+                              $ref: "../systemActions.yaml#/properties/moveToNextImageGalleryPage"
+                            moveToPreviousImageGalleryPage:
+                              $ref: "../systemActions.yaml#/properties/moveToPreviousImageGalleryPage"
                           additionalProperties: false
 
                       required: [id, actions]

@@ -287,6 +287,32 @@ properties:
         $ref: "#/defs/nextLineConfig"
       accountViewedRegistry:
         $ref: "#/defs/accountViewedRegistry"
+      imageGalleryNavigation:
+        type: object
+        description: Transient navigation state for the singleton image gallery
+        properties:
+          groupId:
+            type: [string, "null"]
+          variantId:
+            type: [string, "null"]
+          pageIndex:
+            type: integer
+            minimum: 0
+        required: [groupId, variantId, pageIndex]
+        additionalProperties: false
+        oneOf:
+          - properties:
+              groupId:
+                type: "null"
+              variantId:
+                type: "null"
+          - properties:
+              groupId:
+                type: string
+                minLength: 1
+              variantId:
+                type: string
+                minLength: 1
       overlayStack:
         type: array
         items:
@@ -320,6 +346,7 @@ properties:
         skipMode,
         nextLineConfig,
         accountViewedRegistry,
+        imageGalleryNavigation,
         overlayStack,
         isLineCompleted,
       ]

@@ -1980,4 +1980,227 @@ describe("projectData schema", () => {
     expect(validateProjectData(projectData)).toBe(true);
     expect(validateProjectData.errors).toBeNull();
   });
+
+  it("accepts the singleton image gallery and all authored gallery actions", () => {
+    const projectData = createMinimalProjectData({
+      resources: {
+        images: {
+          festivalDay: {
+            fileId: "festival-day.webp",
+            width: 1920,
+            height: 1080,
+          },
+          festivalNight: {
+            fileId: "festival-night.webp",
+            width: 1920,
+            height: 1080,
+          },
+        },
+        imageGallery: {
+          pageSize: 1,
+          groups: [
+            {
+              id: "festival",
+              variants: [
+                {
+                  id: "day",
+                  imageId: "festivalDay",
+                },
+                {
+                  id: "night",
+                  imageId: "festivalNight",
+                },
+              ],
+            },
+          ],
+        },
+      },
+    });
+    projectData.story.scenes.scene1.sections.section1.lines[0].actions = {
+      showImageGalleryVariant: {
+        groupId: "festival",
+        variantId: "day",
+      },
+      moveToPreviousImageGalleryVariant: {},
+      moveToNextImageGalleryVariant: {},
+      clearImageGallerySelection: {},
+      moveToImageGalleryPage: {
+        pageIndex: 0,
+      },
+      moveToNextImageGalleryPage: {},
+      moveToPreviousImageGalleryPage: {},
+    };
+
+    expect(validateProjectData(projectData)).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
+
+  it("accepts an empty singleton image gallery", () => {
+    const projectData = createMinimalProjectData({
+      resources: {
+        imageGallery: {
+          pageSize: 8,
+          groups: [],
+        },
+      },
+    });
+
+    expect(validateProjectData(projectData)).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
+
+  it.each([
+    ["zero page size", { pageSize: 0, groups: [] }],
+    ["fractional page size", { pageSize: 1.5, groups: [] }],
+    ["missing groups", { pageSize: 1 }],
+    [
+      "empty group ID",
+      {
+        pageSize: 1,
+        groups: [
+          {
+            id: "",
+            variants: [{ id: "default", imageId: "galleryImage" }],
+          },
+        ],
+      },
+    ],
+    [
+      "empty variants",
+      {
+        pageSize: 1,
+        groups: [{ id: "galleryGroup", variants: [] }],
+      },
+    ],
+    [
+      "empty variant ID",
+      {
+        pageSize: 1,
+        groups: [
+          {
+            id: "galleryGroup",
+            variants: [{ id: "", imageId: "galleryImage" }],
+          },
+        ],
+      },
+    ],
+    [
+      "empty image ID",
+      {
+        pageSize: 1,
+        groups: [
+          {
+            id: "galleryGroup",
+            variants: [{ id: "default", imageId: "" }],
+          },
+        ],
+      },
+    ],
+    ["unknown gallery property", { pageSize: 1, groups: [], unknown: true }],
+    [
+      "unknown group property",
+      {
+        pageSize: 1,
+        groups: [
+          {
+            id: "galleryGroup",
+            variants: [{ id: "default", imageId: "galleryImage" }],
+            unknown: true,
+          },
+        ],
+      },
+    ],
+    [
+      "unknown variant property",
+      {
+        pageSize: 1,
+        groups: [
+          {
+            id: "galleryGroup",
+            variants: [
+              {
+                id: "default",
+                imageId: "galleryImage",
+                unknown: true,
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  ])("rejects an image gallery with %s", (_label, imageGallery) => {
+    const projectData = createMinimalProjectData({
+      resources: {
+        imageGallery,
+      },
+    });
+
+    expect(validateProjectData(projectData)).toBe(false);
+    expect(validateProjectData.errors).not.toBeNull();
+  });
+
+  it("accepts every image gallery system action payload", () => {
+    expect(
+      validateSystemActions({
+        showImageGalleryVariant: {
+          groupId: "festival",
+          variantId: "night",
+        },
+        moveToPreviousImageGalleryVariant: {},
+        moveToNextImageGalleryVariant: {},
+        clearImageGallerySelection: {},
+        moveToImageGalleryPage: {
+          pageIndex: "_event.pageIndex",
+        },
+        moveToNextImageGalleryPage: {},
+        moveToPreviousImageGalleryPage: {},
+      }),
+    ).toBe(true);
+    expect(validateSystemActions.errors).toBeNull();
+
+    expect(
+      validateSystemActions({
+        showImageGalleryVariant: {
+          groupId: "festival",
+        },
+        moveToImageGalleryPage: {
+          pageIndex: 0,
+        },
+      }),
+    ).toBe(true);
+    expect(validateSystemActions.errors).toBeNull();
+  });
+
+  it.each([
+    ["a missing group ID", { showImageGalleryVariant: {} }],
+    ["an empty group ID", { showImageGalleryVariant: { groupId: "" } }],
+    [
+      "an empty variant ID",
+      {
+        showImageGalleryVariant: {
+          groupId: "festival",
+          variantId: "",
+        },
+      },
+    ],
+    [
+      "an unknown selection property",
+      {
+        showImageGalleryVariant: {
+          groupId: "festival",
+          unknown: true,
+        },
+      },
+    ],
+    ["a missing page index", { moveToImageGalleryPage: {} }],
+    ["a negative page index", { moveToImageGalleryPage: { pageIndex: -1 } }],
+    ["a fractional page index", { moveToImageGalleryPage: { pageIndex: 1.5 } }],
+    [
+      "an unknown empty-action property",
+      { moveToNextImageGalleryPage: { unknown: true } },
+    ],
+  ])("rejects an image gallery system action with %s", (_label, actions) => {
+    expect(validateSystemActions(actions)).toBe(false);
+    expect(validateSystemActions.errors).not.toBeNull();
+  });
 });
