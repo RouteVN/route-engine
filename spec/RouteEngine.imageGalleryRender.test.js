@@ -1,0 +1,314 @@
+import { describe, expect, it } from "vitest";
+import createRouteEngine from "../src/RouteEngine.js";
+
+const findElementById = (elements, id) => {
+  for (const element of elements || []) {
+    if (element?.id === id) {
+      return element;
+    }
+
+    const nested = findElementById(element?.children, id);
+    if (nested) {
+      return nested;
+    }
+  }
+
+  return null;
+};
+
+const createProjectData = ({ includeImageGallery = true } = {}) => ({
+  screen: {
+    width: 1920,
+    height: 1080,
+  },
+  resources: {
+    images: {
+      festivalDay: {
+        fileId: "festival-day.jpg",
+        width: 1920,
+        height: 1080,
+      },
+    },
+    ...(includeImageGallery
+      ? {
+          imageGallery: {
+            pageSize: 8,
+            groups: [
+              {
+                id: "festival",
+                variants: [
+                  {
+                    id: "day",
+                    imageId: "festivalDay",
+                  },
+                ],
+              },
+            ],
+          },
+        }
+      : {}),
+    layouts: {
+      galleryHud: {
+        elements: [
+          {
+            id: "gallery-group",
+            type: "text",
+            content: "${imageGallery.pageGroups[0].groupId}",
+          },
+        ],
+      },
+    },
+  },
+  story: {
+    initialSceneId: "scene1",
+    scenes: {
+      scene1: {
+        initialSectionId: "section1",
+        sections: {
+          section1: {
+            initialLineId: "line1",
+            lines: [
+              {
+                id: "line1",
+                actions: {
+                  layout: {
+                    resourceId: "galleryHud",
+                  },
+                },
+              },
+            ],
+          },
+        },
+      },
+    },
+  },
+});
+
+const createEngine = (projectData, { viewedImageIds = [] } = {}) => {
+  const engine = createRouteEngine({
+    handlePendingEffects: () => {},
+  });
+
+  engine.init({
+    initialState: {
+      projectData,
+      global: {
+        accountViewedRegistry: {
+          sections: [],
+          resources: viewedImageIds.map((resourceId) => ({ resourceId })),
+        },
+      },
+    },
+  });
+
+  return engine;
+};
+
+describe("RouteEngine image-gallery render API", () => {
+  it("exposes the public selector projection to layout templates", () => {
+    const engine = createEngine(createProjectData());
+
+    expect(engine.selectImageGallery()).toEqual({
+      pageGroups: [
+        {
+          groupId: "festival",
+          locked: true,
+          variants: [
+            {
+              variantId: "day",
+              imageId: "festivalDay",
+              locked: true,
+            },
+          ],
+        },
+      ],
+      selection: null,
+      pagination: {
+        pageIndex: 0,
+        pageCount: 1,
+        canMoveToPreviousPage: false,
+        canMoveToNextPage: false,
+      },
+    });
+
+    const renderState = engine.selectRenderState();
+    expect(
+      findElementById(renderState.elements, "gallery-group"),
+    ).toMatchObject({
+      content: "festival",
+    });
+  });
+
+  it("returns null when the project has no image gallery", () => {
+    const engine = createEngine(
+      createProjectData({
+        includeImageGallery: false,
+      }),
+    );
+
+    expect(engine.selectImageGallery()).toBeNull();
+  });
+
+  it("renders nested group and variant loops as selectable image elements", () => {
+    const projectData = createProjectData();
+    projectData.resources.images.festivalNight = {
+      fileId: "festival-night.jpg",
+      width: 1920,
+      height: 1080,
+    };
+    projectData.resources.images.sunset = {
+      fileId: "sunset.jpg",
+      width: 1920,
+      height: 1080,
+    };
+    projectData.resources.imageGallery = {
+      pageSize: 2,
+      groups: [
+        {
+          id: "festival",
+          variants: [
+            {
+              id: "day",
+              imageId: "festivalDay",
+            },
+            {
+              id: "night",
+              imageId: "festivalNight",
+            },
+          ],
+        },
+        {
+          id: "sunset",
+          variants: [
+            {
+              id: "default",
+              imageId: "sunset",
+            },
+          ],
+        },
+      ],
+    };
+    projectData.resources.layouts.galleryHud.elements = [
+      {
+        id: "gallery-grid",
+        type: "container",
+        children: [
+          {
+            "$for group in imageGallery.pageGroups:": [
+              {
+                id: "gallery-group-${group.groupId}",
+                type: "container",
+                children: [
+                  {
+                    "$for variant in group.variants:": [
+                      {
+                        id: "gallery-variant-${group.groupId}-${variant.variantId}",
+                        type: "sprite",
+                        imageId: "${variant.imageId}",
+                        click: {
+                          payload: {
+                            actions: {
+                              showImageGalleryVariant: {
+                                groupId: "${group.groupId}",
+                                variantId: "${variant.variantId}",
+                              },
+                            },
+                          },
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: "gallery-selected-image",
+            type: "sprite",
+            imageId: "${imageGallery.selection.imageId}",
+          },
+        ],
+      },
+    ];
+    const engine = createEngine(projectData, {
+      viewedImageIds: ["festivalDay", "festivalNight", "sunset"],
+    });
+
+    const renderState = engine.selectRenderState();
+    const nightVariant = findElementById(
+      renderState.elements,
+      "gallery-variant-festival-night",
+    );
+
+    expect(
+      findElementById(renderState.elements, "gallery-group-festival"),
+    ).not.toBeNull();
+    expect(
+      findElementById(renderState.elements, "gallery-variant-festival-day"),
+    ).toMatchObject({ src: "festival-day.jpg" });
+    expect(nightVariant).toMatchObject({
+      src: "festival-night.jpg",
+      click: {
+        payload: {
+          actions: {
+            showImageGalleryVariant: {
+              groupId: "festival",
+              variantId: "night",
+            },
+          },
+        },
+      },
+    });
+    expect(
+      findElementById(renderState.elements, "gallery-variant-sunset-default"),
+    ).toMatchObject({ src: "sunset.jpg" });
+
+    engine.handleActions(nightVariant.click.payload.actions);
+
+    expect(engine.selectImageGallery().selection).toMatchObject({
+      groupId: "festival",
+      variantId: "night",
+      imageId: "festivalNight",
+    });
+    expect(
+      findElementById(
+        engine.selectRenderState().elements,
+        "gallery-selected-image",
+      ),
+    ).toMatchObject({
+      src: "festival-night.jpg",
+    });
+  });
+
+  it("renders an absent gallery as an empty loop without throwing", () => {
+    const projectData = createProjectData({
+      includeImageGallery: false,
+    });
+    projectData.resources.layouts.galleryHud.elements = [
+      {
+        id: "gallery-grid",
+        type: "container",
+        children: [
+          {
+            "$for group in imageGallery.pageGroups:": [
+              {
+                id: "unexpected-${group.groupId}",
+                type: "text",
+                content: "${group.groupId}",
+              },
+            ],
+          },
+        ],
+      },
+    ];
+    const engine = createEngine(projectData);
+
+    expect(engine.selectImageGallery()).toBeNull();
+    expect(() => engine.selectRenderState()).not.toThrow();
+    expect(
+      findElementById(engine.selectRenderState().elements, "gallery-grid"),
+    ).toMatchObject({
+      children: [],
+    });
+  });
+});

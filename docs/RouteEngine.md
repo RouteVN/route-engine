@@ -649,6 +649,23 @@ Seen-line semantics:
 - Account-level viewed state is persisted outside save slots as `global.accountViewedRegistry`.
 - Skip-unseen checks use account-level viewed state; `runtime.skipUnseenText` only controls whether skip may pass unseen account content.
 
+### Image Gallery Actions
+
+| Action                              | Payload                   | Description                                        |
+| ----------------------------------- | ------------------------- | -------------------------------------------------- |
+| `showImageGalleryVariant`           | `{ groupId, variantId? }` | Select an unlocked variant and its containing page |
+| `moveToPreviousImageGalleryVariant` | `{}`                      | Select the previous unlocked variant               |
+| `moveToNextImageGalleryVariant`     | `{}`                      | Select the next unlocked variant                   |
+| `clearImageGallerySelection`        | `{}`                      | Clear selection while retaining the current page   |
+| `moveToImageGalleryPage`            | `{ pageIndex }`           | Move to a zero-based page and clear selection      |
+| `moveToNextImageGalleryPage`        | `{}`                      | Move to the next page without wrapping             |
+| `moveToPreviousImageGalleryPage`    | `{}`                      | Move to the previous page without wrapping         |
+
+Gallery actions use the optional singleton `resources.imageGallery`. Locked
+state comes from the existing viewed-resource registry. Well-formed actions are
+no-ops when the gallery or requested target is unavailable; malformed payloads
+throw.
+
 ### Achievement Actions
 
 | Action                   | Payload                   | Description                                       |
@@ -712,6 +729,7 @@ The system store exposes these selectors (called internally):
 | `selectCanRollback`             | -                       | Whether an earlier landing point exists                |
 | `selectAchievements`            | -                       | Cloned achievement resource map                        |
 | `selectAchievement`             | `{ resourceId }`        | Cloned achievement resource or `undefined`             |
+| `selectImageGallery`            | -                       | Computed singleton image-gallery projection or `null`  |
 | `selectSaveSlotMap`             | -                       | Save slots object map                                  |
 | `selectSaveSlot`                | `{ slotId }`            | Save slot data                                         |
 | `selectSaveSlotPage`            | `{ slotsPerPage? }`     | Paged save slot list for UI                            |
@@ -1465,6 +1483,7 @@ contract:
 Shared template roots:
 
 - `variables`
+- `imageGallery` (the computed singleton projection, or `null` when absent)
 - `runtime`
 - `saveSlots`
 - `characters`

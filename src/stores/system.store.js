@@ -7,6 +7,7 @@ import {
   isComputedVariableConfig,
   selectVariablesWithComputedValues,
   validateComputedVariableConfigs,
+  validateImageGalleryConfig,
   validateVariableScope,
   validateVariableOperation,
   validateVariableOperationValue,
@@ -51,6 +52,16 @@ const createDefaultNextLineConfig = () => ({
   auto: { ...DEFAULT_NEXT_LINE_CONFIG.auto },
   applyMode: DEFAULT_NEXT_LINE_CONFIG.applyMode,
 });
+
+const createDefaultImageGalleryNavigation = () => ({
+  groupId: null,
+  variantId: null,
+  pageIndex: 0,
+});
+
+const EMPTY_IMAGE_GALLERY_ACTION_KEYS = new Set();
+const SHOW_IMAGE_GALLERY_VARIANT_KEYS = new Set(["groupId", "variantId"]);
+const MOVE_TO_IMAGE_GALLERY_PAGE_KEYS = new Set(["pageIndex"]);
 
 const resetNextLineConfigIfSingleLine = (state) => {
   const applyMode = state.global.nextLineConfig?.applyMode ?? "persistent";
@@ -1807,6 +1818,7 @@ export const createInitialState = (payload) => {
   } = global;
 
   assertUniqueSectionIds(projectData);
+  validateImageGalleryConfig(projectData);
   validateComputedVariableConfigs(projectData?.resources?.variables ?? {});
 
   const initialSceneId = projectData.story.initialSceneId;
@@ -1844,6 +1856,7 @@ export const createInitialState = (payload) => {
         "accountViewedRegistry",
       ),
       nextLineConfig: createDefaultNextLineConfig(),
+      imageGalleryNavigation: createDefaultImageGalleryNavigation(),
       saveSlots: normalizeStoredSaveSlots(saveSlots),
       overlayStack: [],
       variables: globalVariables,
@@ -2077,6 +2090,129 @@ export const selectIsResourceAccountViewed = ({ state }, payload) => {
     { registry: state.global.accountViewedRegistry },
     payload,
   );
+};
+
+const isImageGalleryVariantLocked = (state, variant) =>
+  !selectIsResourceSeenInRegistry(
+    { registry: state.global.accountViewedRegistry },
+    { resourceId: variant.imageId },
+  );
+
+const getImageGalleryPageCount = (gallery) =>
+  gallery.groups.length === 0
+    ? 0
+    : Math.ceil(gallery.groups.length / gallery.pageSize);
+
+const getEffectiveImageGalleryPageIndex = (gallery, navigation) => {
+  const pageCount = getImageGalleryPageCount(gallery);
+  if (pageCount === 0) {
+    return 0;
+  }
+
+  const requestedPageIndex = Number.isInteger(navigation?.pageIndex)
+    ? navigation.pageIndex
+    : 0;
+  return Math.min(Math.max(requestedPageIndex, 0), pageCount - 1);
+};
+
+const findUnlockedImageGalleryVariant = (
+  state,
+  variants,
+  startIndex,
+  offset,
+) => {
+  for (
+    let index = startIndex + offset;
+    index >= 0 && index < variants.length;
+    index += offset
+  ) {
+    if (!isImageGalleryVariantLocked(state, variants[index])) {
+      return variants[index];
+    }
+  }
+  return undefined;
+};
+
+export const selectImageGallery = ({ state }) => {
+  const gallery = state.projectData?.resources?.imageGallery;
+  if (gallery === undefined) {
+    return null;
+  }
+
+  const navigation =
+    state.global.imageGalleryNavigation ??
+    createDefaultImageGalleryNavigation();
+  const pageCount = getImageGalleryPageCount(gallery);
+  const pageIndex = getEffectiveImageGalleryPageIndex(gallery, navigation);
+  const pageStart = pageIndex * gallery.pageSize;
+  const pageGroups = gallery.groups
+    .slice(pageStart, pageStart + gallery.pageSize)
+    .map((group) => ({
+      groupId: group.id,
+      locked: isImageGalleryVariantLocked(state, group.variants[0]),
+      variants: group.variants.map((variant) => ({
+        variantId: variant.id,
+        imageId: variant.imageId,
+        locked: isImageGalleryVariantLocked(state, variant),
+      })),
+    }));
+
+  let selection = null;
+  if (
+    typeof navigation.groupId === "string" &&
+    typeof navigation.variantId === "string"
+  ) {
+    const groupIndex = gallery.groups.findIndex(
+      (group) => group.id === navigation.groupId,
+    );
+    const group = gallery.groups[groupIndex];
+    const variantIndex = group?.variants.findIndex(
+      (variant) => variant.id === navigation.variantId,
+    );
+    const variant =
+      variantIndex === undefined || variantIndex < 0
+        ? undefined
+        : group.variants[variantIndex];
+    const selectedPageIndex =
+      groupIndex < 0 ? -1 : Math.floor(groupIndex / gallery.pageSize);
+
+    if (
+      variant &&
+      selectedPageIndex === pageIndex &&
+      !isImageGalleryVariantLocked(state, variant)
+    ) {
+      selection = {
+        groupId: group.id,
+        variantId: variant.id,
+        imageId: variant.imageId,
+        canMoveToPreviousVariant:
+          findUnlockedImageGalleryVariant(
+            state,
+            group.variants,
+            variantIndex,
+            -1,
+          ) !== undefined,
+        canMoveToNextVariant:
+          findUnlockedImageGalleryVariant(
+            state,
+            group.variants,
+            variantIndex,
+            1,
+          ) !== undefined,
+      };
+    }
+  }
+
+  return {
+    pageGroups,
+    selection,
+    pagination: {
+      pageIndex,
+      pageCount,
+      canMoveToPreviousPage: pageIndex > 0,
+      canMoveToNextPage: pageIndex + 1 < pageCount,
+    },
+  };
 };
 
 export const selectNextLineConfig = ({ state }) => {
@@ -2516,6 +2652,7 @@ export const selectRenderState = ({ state }, options = {}) => {
     options?.restoredPersistentAnimations ?? [];
   const activeForm = selectActiveForm({ state });
   const isChoiceVisible = selectIsChoiceVisible({ state });
+  const imageGallery = selectImageGallery({ state });
 
   const allVariables = selectAllVariables({ state });
 
@@ -2549,6 +2686,7 @@ export const selectRenderState = ({ state }, options = {}) => {
     runtime,
     activePersistentAnimations,
     restoredPersistentAnimations,
+    imageGallery,
   });
   return renderState;
 };
@@ -3222,6 +3360,229 @@ export const addViewedResource = ({ state }, payload) => {
   return state;
 };
 
+const assertImageGalleryActionPayload = (actionName, payload, allowedKeys) => {
+  if (!isRecord(payload)) {
+    throw new Error(`${actionName} payload must be an object`);
+  }
+  Object.keys(payload).forEach((key) => {
+    if (!allowedKeys.has(key)) {
+      throw new Error(
+        `${actionName} payload contains unsupported property "${key}"`,
+      );
+    }
+  });
+};
+
+const assertNonEmptyImageGalleryActionId = (actionName, fieldName, value) => {
+  if (typeof value !== "string" || value.length === 0) {
+    throw new Error(`${actionName} requires a non-empty ${fieldName}`);
+  }
+};
+
+const setImageGalleryNavigation = (state, nextNavigation) => {
+  const currentNavigation = state.global.imageGalleryNavigation;
+  if (
+    currentNavigation.groupId === nextNavigation.groupId &&
+    currentNavigation.variantId === nextNavigation.variantId &&
+    currentNavigation.pageIndex === nextNavigation.pageIndex
+  ) {
+    return;
+  }
+
+  state.global.imageGalleryNavigation = nextNavigation;
+  state.global.pendingEffects.push({ name: "render" });
+};
+
+export const showImageGalleryVariant = ({ state }, payload) => {
+  const actionName = "showImageGalleryVariant";
+  assertImageGalleryActionPayload(
+    actionName,
+    payload,
+    SHOW_IMAGE_GALLERY_VARIANT_KEYS,
+  );
+  assertNonEmptyImageGalleryActionId(actionName, "groupId", payload.groupId);
+  if (Object.prototype.hasOwnProperty.call(payload, "variantId")) {
+    assertNonEmptyImageGalleryActionId(
+      actionName,
+      "variantId",
+      payload.variantId,
+    );
+  }
+
+  const gallery = state.projectData?.resources?.imageGallery;
+  if (gallery === undefined) {
+    return state;
+  }
+  const groupIndex = gallery.groups.findIndex(
+    (group) => group.id === payload.groupId,
+  );
+  const group = gallery.groups[groupIndex];
+  if (!group) {
+    return state;
+  }
+
+  const variant =
+    payload.variantId === undefined
+      ? group.variants[0]
+      : group.variants.find((item) => item.id === payload.variantId);
+  if (!variant || isImageGalleryVariantLocked(state, variant)) {
+    return state;
+  }
+
+  setImageGalleryNavigation(state, {
+    groupId: group.id,
+    variantId: variant.id,
+    pageIndex: Math.floor(groupIndex / gallery.pageSize),
+  });
+  return state;
+};
+
+const moveImageGalleryVariant = (state, payload, offset, actionName) => {
+  assertImageGalleryActionPayload(
+    actionName,
+    payload,
+    EMPTY_IMAGE_GALLERY_ACTION_KEYS,
+  );
+  const gallery = state.projectData?.resources?.imageGallery;
+  if (gallery === undefined) {
+    return state;
+  }
+
+  const navigation = state.global.imageGalleryNavigation;
+  if (
+    typeof navigation.groupId !== "string" ||
+    typeof navigation.variantId !== "string"
+  ) {
+    return state;
+  }
+
+  const group = gallery.groups.find((item) => item.id === navigation.groupId);
+  const variantIndex = group?.variants.findIndex(
+    (variant) => variant.id === navigation.variantId,
+  );
+  if (!group || variantIndex === undefined || variantIndex < 0) {
+    return state;
+  }
+
+  const variant = findUnlockedImageGalleryVariant(
+    state,
+    group.variants,
+    variantIndex,
+    offset,
+  );
+  if (!variant) {
+    return state;
+  }
+
+  setImageGalleryNavigation(state, {
+    ...navigation,
+    variantId: variant.id,
+  });
+  return state;
+};
+
+export const moveToPreviousImageGalleryVariant = ({ state }, payload) =>
+  moveImageGalleryVariant(
+    state,
+    payload,
+    -1,
+    "moveToPreviousImageGalleryVariant",
+  );
+
+export const moveToNextImageGalleryVariant = ({ state }, payload) =>
+  moveImageGalleryVariant(state, payload, 1, "moveToNextImageGalleryVariant");
+
+export const clearImageGallerySelection = ({ state }, payload) => {
+  const actionName = "clearImageGallerySelection";
+  assertImageGalleryActionPayload(
+    actionName,
+    payload,
+    EMPTY_IMAGE_GALLERY_ACTION_KEYS,
+  );
+  if (state.projectData?.resources?.imageGallery === undefined) {
+    return state;
+  }
+
+  const navigation = state.global.imageGalleryNavigation;
+  setImageGalleryNavigation(state, {
+    groupId: null,
+    variantId: null,
+    pageIndex: navigation.pageIndex,
+  });
+  return state;
+};
+
+const moveToImageGalleryPageIndex = (state, pageIndex) => {
+  const gallery = state.projectData?.resources?.imageGallery;
+  if (gallery === undefined) {
+    return state;
+  }
+
+  const pageCount = getImageGalleryPageCount(gallery);
+  if (pageIndex >= pageCount) {
+    return state;
+  }
+
+  const navigation = state.global.imageGalleryNavigation;
+  const currentPageIndex = getEffectiveImageGalleryPageIndex(
+    gallery,
+    navigation,
+  );
+  if (pageIndex === currentPageIndex) {
+    return state;
+  }
+
+  setImageGalleryNavigation(state, {
+    groupId: null,
+    variantId: null,
+    pageIndex,
+  });
+  return state;
+};
+
+export const moveToImageGalleryPage = ({ state }, payload) => {
+  const actionName = "moveToImageGalleryPage";
+  assertImageGalleryActionPayload(
+    actionName,
+    payload,
+    MOVE_TO_IMAGE_GALLERY_PAGE_KEYS,
+  );
+  if (!Number.isInteger(payload.pageIndex) || payload.pageIndex < 0) {
+    throw new Error(
+      "moveToImageGalleryPage requires a non-negative integer pageIndex",
+    );
+  }
+
+  return moveToImageGalleryPageIndex(state, payload.pageIndex);
+};
+
+const moveImageGalleryPage = (state, payload, offset, actionName) => {
+  assertImageGalleryActionPayload(
+    actionName,
+    payload,
+    EMPTY_IMAGE_GALLERY_ACTION_KEYS,
+  );
+  const gallery = state.projectData?.resources?.imageGallery;
+  if (gallery === undefined) {
+    return state;
+  }
+  const currentPageIndex = getEffectiveImageGalleryPageIndex(
+    gallery,
+    state.global.imageGalleryNavigation,
+  );
+  const targetPageIndex = currentPageIndex + offset;
+  if (targetPageIndex < 0) {
+    return state;
+  }
+  return moveToImageGalleryPageIndex(state, targetPageIndex);
+};
+
+export const moveToNextImageGalleryPage = ({ state }, payload) =>
+  moveImageGalleryPage(state, payload, 1, "moveToNextImageGalleryPage");
+
+export const moveToPreviousImageGalleryPage = ({ state }, payload) =>
+  moveImageGalleryPage(state, payload, -1, "moveToPreviousImageGalleryPage");
+
 /**
  * Sets the next line configuration for advancing to the next line
  * @param {Object} state - Current state object
@@ -3419,9 +3780,11 @@ export const updateProjectData = ({ state }, payload) => {
   const { projectData } = payload;
 
   assertUniqueSectionIds(projectData);
+  validateImageGalleryConfig(projectData);
   validateComputedVariableConfigs(projectData?.resources?.variables ?? {});
 
   state.projectData = projectData;
+  state.global.imageGalleryNavigation = createDefaultImageGalleryNavigation();
   const variableConfigs = projectData?.resources?.variables ?? {};
   const { contextVariableDefaultValues, globalVariablesDefaultValues } =
     getDefaultVariablesFromProjectData(projectData ?? {});
@@ -4455,6 +4818,7 @@ export const createSystemStore = (initialState) => {
     selectConfirmDialog,
     selectIsLineAccountViewed,
     selectIsResourceAccountViewed,
+    selectImageGallery,
     selectNextLineConfig,
     selectSystemState,
     selectAchievements,
@@ -4516,6 +4880,13 @@ export const createSystemStore = (initialState) => {
     markSavedRollbackCheckpointTransient,
     addViewedLine,
     addViewedResource,
+    showImageGalleryVariant,
+    moveToPreviousImageGalleryVariant,
+    moveToNextImageGalleryVariant,
+    clearImageGallerySelection,
+    moveToImageGalleryPage,
+    moveToNextImageGalleryPage,
+    moveToPreviousImageGalleryPage,
     setNextLineConfig,
     saveSlot,
     loadSlot,

@@ -251,6 +251,115 @@ describe("systemState schema", () => {
     expect(validateSystemState.errors).toBeNull();
   });
 
+  it("accepts empty and selected image gallery navigation state", () => {
+    const engine = createRouteEngine({
+      handlePendingEffects: () => {},
+    });
+
+    engine.init({
+      initialState: {
+        projectData: createMinimalProjectData(),
+      },
+    });
+
+    const systemState = toJsonSnapshot(engine.selectSystemState());
+    systemState.global.imageGalleryNavigation = {
+      groupId: null,
+      variantId: null,
+      pageIndex: 0,
+    };
+
+    expect(validateSystemState(systemState)).toBe(true);
+    expect(validateSystemState.errors).toBeNull();
+
+    systemState.global.imageGalleryNavigation = {
+      groupId: "festival",
+      variantId: "night",
+      pageIndex: 2,
+    };
+
+    expect(validateSystemState(systemState)).toBe(true);
+    expect(validateSystemState.errors).toBeNull();
+  });
+
+  it.each([
+    [
+      "a missing field",
+      {
+        groupId: null,
+        variantId: null,
+      },
+    ],
+    [
+      "a negative page index",
+      {
+        groupId: null,
+        variantId: null,
+        pageIndex: -1,
+      },
+    ],
+    [
+      "a fractional page index",
+      {
+        groupId: null,
+        variantId: null,
+        pageIndex: 1.5,
+      },
+    ],
+    [
+      "an unknown field",
+      {
+        groupId: null,
+        variantId: null,
+        pageIndex: 0,
+        unknown: true,
+      },
+    ],
+    [
+      "only a group ID",
+      {
+        groupId: "festival",
+        variantId: null,
+        pageIndex: 0,
+      },
+    ],
+    [
+      "only a variant ID",
+      {
+        groupId: null,
+        variantId: "night",
+        pageIndex: 0,
+      },
+    ],
+    [
+      "an empty selected ID",
+      {
+        groupId: "festival",
+        variantId: "",
+        pageIndex: 0,
+      },
+    ],
+  ])(
+    "rejects image gallery navigation state with %s",
+    (_label, imageGalleryNavigation) => {
+      const engine = createRouteEngine({
+        handlePendingEffects: () => {},
+      });
+
+      engine.init({
+        initialState: {
+          projectData: createMinimalProjectData(),
+        },
+      });
+
+      const systemState = toJsonSnapshot(engine.selectSystemState());
+      systemState.global.imageGalleryNavigation = imageGalleryNavigation;
+
+      expect(validateSystemState(systemState)).toBe(false);
+      expect(validateSystemState.errors).not.toBeNull();
+    },
+  );
+
   it("rejects malformed built-in pending effects", () => {
     const engine = createRouteEngine({
       handlePendingEffects: () => {},

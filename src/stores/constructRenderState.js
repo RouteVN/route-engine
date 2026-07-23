@@ -112,6 +112,15 @@ const expandLoopTemplates = (node, templateData, options) => {
   return expanded;
 };
 
+const renderLayoutTemplate = (template, templateData) => {
+  const options = { functions: jemplFunctions };
+  return parseAndRender(
+    expandLoopTemplates(template, templateData, options),
+    templateData,
+    options,
+  );
+};
+
 const assertSupportedAnimationType = ({
   animationType,
   animationId,
@@ -1702,6 +1711,7 @@ const createSoundNode = ({ id, sound, resource, defaultLoop = false }) => {
 
 const createLayoutTemplateData = ({
   variables,
+  imageGallery,
   runtime,
   saveSlots = [],
   dialogueState,
@@ -1747,6 +1757,7 @@ const createLayoutTemplateData = ({
   });
   const templateData = {
     variables,
+    imageGallery,
     runtime: resolvedRuntime,
     saveSlots,
     isChoiceVisible,
@@ -2203,9 +2214,7 @@ const renderTemplatedLayoutContainer = ({
   skipMode = false,
   skipTransitionsAndAnimations = false,
 }) => {
-  const processedContainer = parseAndRender(container, templateData, {
-    functions: jemplFunctions,
-  });
+  const processedContainer = renderLayoutTemplate(container, templateData);
 
   return resolveLayoutResourceIds(
     settleTextRevealIfCompleted(processedContainer, {
@@ -2428,6 +2437,7 @@ export const addBackgroundOrCg = (
     isLineCompleted,
     skipTransitionsAndAnimations,
     variables,
+    imageGallery,
     runtime,
     activePersistentAnimations,
     restoredPersistentAnimations,
@@ -2602,10 +2612,11 @@ export const addBackgroundOrCg = (
             ),
           );
         }
-        const processedContainer = parseAndRender(
+        const processedContainer = renderLayoutTemplate(
           bgContainer,
           createLayoutTemplateData({
             variables,
+            imageGallery,
             runtime,
             saveSlots,
             dialogueState: presentationState.dialogue,
@@ -2619,7 +2630,6 @@ export const addBackgroundOrCg = (
             characters: resources.characters || {},
             skipTransitionsAndAnimations,
           }),
-          { functions: jemplFunctions },
         );
         storyContainer.children.push(
           resolveLayoutResourceIds(
@@ -2843,6 +2853,7 @@ export const addVisuals = (
     isLineCompleted,
     skipTransitionsAndAnimations,
     variables,
+    imageGallery,
     runtime,
     activePersistentAnimations,
     autoMode,
@@ -2865,6 +2876,7 @@ export const addVisuals = (
     const previousItems = previousPresentationState?.visual?.items || [];
     const visualTemplateData = createLayoutTemplateData({
       variables,
+      imageGallery,
       runtime,
       saveSlots,
       dialogueState: presentationState.dialogue,
@@ -2905,9 +2917,7 @@ export const addVisuals = (
 
         storyContainer.children.push(
           resolveLayoutResourceIds(
-            parseAndRender(textElement, visualTemplateData, {
-              functions: jemplFunctions,
-            }),
+            renderLayoutTemplate(textElement, visualTemplateData),
             resources,
           ),
         );
@@ -2991,10 +3001,9 @@ export const addVisuals = (
             ...getElementTransform(transform, item),
           };
           Object.assign(visualContainer, getItemAppearance(item));
-          const processedContainer = parseAndRender(
+          const processedContainer = renderLayoutTemplate(
             visualContainer,
             visualTemplateData,
-            { functions: jemplFunctions },
           );
           storyContainer.children.push(
             resolveLayoutResourceIds(
@@ -3163,6 +3172,7 @@ export const addDialogue = (
     isLineCompleted,
     skipTransitionsAndAnimations,
     variables,
+    imageGallery,
     runtime,
     activePersistentAnimations,
     saveSlots = [],
@@ -3193,6 +3203,7 @@ export const addDialogue = (
       const wrappedTemplate = { elements: uiLayout.elements };
       const templateData = createLayoutTemplateData({
         variables,
+        imageGallery,
         runtime,
         saveSlots,
         dialogueState: presentationState.dialogue,
@@ -3210,17 +3221,7 @@ export const addDialogue = (
         skipTransitionsAndAnimations,
       });
 
-      const renderOptions = { functions: jemplFunctions };
-      const expandedTemplate = expandLoopTemplates(
-        wrappedTemplate,
-        templateData,
-        renderOptions,
-      );
-      const result = parseAndRender(
-        expandedTemplate,
-        templateData,
-        renderOptions,
-      );
+      const result = renderLayoutTemplate(wrappedTemplate, templateData);
       const uiElements = resolveLayoutResourceIds(
         settleTextRevealIfCompleted(result?.elements, {
           isLineCompleted,
@@ -3293,6 +3294,7 @@ export const addChoices = (
     isLineCompleted,
     skipTransitionsAndAnimations,
     variables,
+    imageGallery,
     runtime,
     autoMode,
     skipMode,
@@ -3313,32 +3315,27 @@ export const addChoices = (
     const layout = resources?.layouts[presentationState.choice.resourceId];
     if (layout && layout.elements) {
       const wrappedTemplate = { elements: layout.elements };
-      const result = parseAndRender(
-        wrappedTemplate,
-        {
-          ...createLayoutTemplateData({
-            variables,
-            runtime,
-            saveSlots,
-            dialogueState: presentationState.dialogue,
-            isLineCompleted,
-            autoMode,
-            skipMode,
-            isChoiceVisible: isChoiceVisible ?? !!presentationState.choice,
-            isFormVisible,
-            canRollback,
-            form,
-            characters: resources.characters || {},
-            skipTransitionsAndAnimations,
-          }),
-          choice: {
-            items: presentationState.choice?.items ?? [],
-          },
+      const result = renderLayoutTemplate(wrappedTemplate, {
+        ...createLayoutTemplateData({
+          variables,
+          imageGallery,
+          runtime,
+          saveSlots,
+          dialogueState: presentationState.dialogue,
+          isLineCompleted,
+          autoMode,
+          skipMode,
+          isChoiceVisible: isChoiceVisible ?? !!presentationState.choice,
+          isFormVisible,
+          canRollback,
+          form,
+          characters: resources.characters || {},
+          skipTransitionsAndAnimations,
+        }),
+        choice: {
+          items: presentationState.choice?.items ?? [],
         },
-        {
-          functions: jemplFunctions,
-        },
-      );
+      });
       const choiceElements = tagBypassChoice(
         resolveLayoutResourceIds(
           settleTextRevealIfCompleted(result?.elements, {
@@ -3399,6 +3396,7 @@ export const addForm = (
     isLineCompleted,
     skipTransitionsAndAnimations,
     variables,
+    imageGallery,
     runtime,
     autoMode,
     skipMode,
@@ -3437,6 +3435,7 @@ export const addForm = (
   const templateData = {
     ...createLayoutTemplateData({
       variables,
+      imageGallery,
       runtime,
       saveSlots,
       dialogueState: presentationState.dialogue,
@@ -3453,9 +3452,7 @@ export const addForm = (
     form,
   };
 
-  const processedForm = parseAndRender(formContainer, templateData, {
-    functions: jemplFunctions,
-  });
+  const processedForm = renderLayoutTemplate(formContainer, templateData);
   const formElements = tagFormInteractionSource(
     resolveLayoutResourceIds(
       settleTextRevealIfCompleted(enrichFormElements(processedForm, form), {
@@ -3505,6 +3502,7 @@ export const addControl = (
     presentationState,
     resources = {},
     variables,
+    imageGallery,
     runtime,
     isLineCompleted,
     autoMode,
@@ -3557,6 +3555,7 @@ export const addControl = (
       resources,
       templateData: createLayoutTemplateData({
         variables,
+        imageGallery,
         runtime,
         saveSlots,
         dialogueState: presentationState.dialogue,
@@ -3820,6 +3819,7 @@ export const addLayout = (
     previousPresentationState,
     resources = {},
     variables,
+    imageGallery,
     runtime,
     autoMode,
     skipMode,
@@ -3873,6 +3873,7 @@ export const addLayout = (
         resources,
         templateData: createLayoutTemplateData({
           variables,
+          imageGallery,
           runtime,
           saveSlots,
           dialogueState: presentationState.dialogue,
@@ -3989,6 +3990,7 @@ export const addOverlayStack = (
     presentationState,
     resources = {},
     variables,
+    imageGallery,
     runtime,
     autoMode,
     skipMode,
@@ -4050,6 +4052,7 @@ export const addOverlayStack = (
 
       const templateData = createLayoutTemplateData({
         variables,
+        imageGallery,
         runtime,
         saveSlots,
         dialogueState: presentationState?.dialogue,
@@ -4065,9 +4068,10 @@ export const addOverlayStack = (
         skipTransitionsAndAnimations,
       });
 
-      const processedOverlay = parseAndRender(overlayContainer, templateData, {
-        functions: jemplFunctions,
-      });
+      const processedOverlay = renderLayoutTemplate(
+        overlayContainer,
+        templateData,
+      );
 
       const [blocker, ...layoutChildren] = processedOverlay.children || [];
       const resolvedOverlay = resolveLayoutResourceIds(
@@ -4102,6 +4106,7 @@ export const addConfirmDialog = (
     presentationState,
     resources = {},
     variables,
+    imageGallery,
     runtime,
     saveSlots = [],
     autoMode,
@@ -4159,10 +4164,11 @@ export const addConfirmDialog = (
     variables,
   );
 
-  const processedConfirmDialog = parseAndRender(
+  const processedConfirmDialog = renderLayoutTemplate(
     confirmDialogContainer,
     createLayoutTemplateData({
       variables,
+      imageGallery,
       runtime,
       saveSlots,
       dialogueState: presentationState?.dialogue,
@@ -4178,9 +4184,6 @@ export const addConfirmDialog = (
       characters: resources.characters || {},
       skipTransitionsAndAnimations,
     }),
-    {
-      functions: jemplFunctions,
-    },
   );
 
   const [blocker, ...layoutChildren] = processedConfirmDialog.children || [];

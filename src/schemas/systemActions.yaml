@@ -501,4 +501,58 @@ properties:
     required: [resourceId, current]
     additionalProperties: false
 
+  showImageGalleryVariant:
+    type: object
+    description: Select an unlocked variant from the singleton image gallery
+    properties:
+      groupId:
+        type: string
+        minLength: 1
+      variantId:
+        type: string
+        minLength: 1
+    required: [groupId]
+    additionalProperties: false
+
+  moveToPreviousImageGalleryVariant:
+    type: object
+    description: Select the previous unlocked variant in the current gallery group
+    properties: {}
+    additionalProperties: false
+
+  moveToNextImageGalleryVariant:
+    type: object
+    description: Select the next unlocked variant in the current gallery group
+    properties: {}
+    additionalProperties: false
+
+  clearImageGallerySelection:
+    type: object
+    description: Clear the current gallery selection without changing pages
+    properties: {}
+    additionalProperties: false
+
+  moveToImageGalleryPage:
+    type: object
+    description: Move to a zero-based image gallery page
+    properties:
+      pageIndex:
+        type: [integer, string]
+        minimum: 0
+        description: Zero-based page index or an authored template/event binding that resolves to one
+    required: [pageIndex]
+    additionalProperties: false
+
+  moveToNextImageGalleryPage:
+    type: object
+    description: Move to the next image gallery page
+    properties: {}
+    additionalProperties: false
+
+  moveToPreviousImageGalleryPage:
+    type: object
+    description: Move to the previous image gallery page
+    properties: {}
+    additionalProperties: false
+
 additionalProperties: false

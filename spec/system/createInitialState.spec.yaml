@@ -36,6 +36,10 @@ out:
     muteAll: false
     confirmDialog: null
     formDrafts: {}
+    imageGalleryNavigation:
+      groupId: null
+      variantId: null
+      pageIndex: 0
     accountViewedRegistry:
       sections: []
       resources: []
@@ -128,6 +132,10 @@ out:
     muteAll: false
     confirmDialog: null
     formDrafts: {}
+    imageGalleryNavigation:
+      groupId: null
+      variantId: null
+      pageIndex: 0
     accountViewedRegistry:
       sections: []
       resources: []
@@ -233,6 +241,10 @@ out:
     muteAll: false
     confirmDialog: null
     formDrafts: {}
+    imageGalleryNavigation:
+      groupId: null
+      variantId: null
+      pageIndex: 0
     accountViewedRegistry:
       sections: []
       resources: []
@@ -332,6 +344,10 @@ out:
     muteAll: false
     confirmDialog: null
     formDrafts: {}
+    imageGalleryNavigation:
+      groupId: null
+      variantId: null
+      pageIndex: 0
     accountViewedRegistry:
       sections: []
       resources: []
@@ -428,6 +444,10 @@ out:
     muteAll: false
     confirmDialog: null
     formDrafts: {}
+    imageGalleryNavigation:
+      groupId: null
+      variantId: null
+      pageIndex: 0
     accountViewedRegistry:
       sections: []
       resources: []

@@ -5,6 +5,7 @@ import {
   processActionTemplates,
   RUN_STORE_TRANSACTION,
   validateComputedVariableConfigs,
+  validateImageGalleryConfig,
 } from "./util.js";
 import {
   collectPersistentAnimationContinuations,
@@ -299,6 +300,10 @@ export default function createRouteEngine(options) {
     return _systemStore.selectSaveSlotPage(payload);
   };
 
+  const selectImageGallery = () => {
+    return _systemStore.selectImageGallery();
+  };
+
   const selectSkipMode = () => {
     return _systemStore.selectSkipMode();
   };
@@ -545,6 +550,7 @@ export default function createRouteEngine(options) {
     validateComputedVariableConfigs(
       payload?.projectData?.resources?.variables ?? {},
     );
+    validateImageGalleryConfig(payload.projectData);
   };
 
   const dispatchConditionalAutoContinue = (
@@ -934,6 +940,7 @@ export default function createRouteEngine(options) {
     selectSaveSlot,
     selectSaveSlotPage,
     selectSaveSlots: selectSaveSlotMap,
+    selectImageGallery,
     selectRuntime,
     selectIsChoiceVisible,
     selectIsFormVisible,

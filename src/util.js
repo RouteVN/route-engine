@@ -495,6 +495,93 @@ const setOwnDataProperty = (object, key, value) => {
 const isRecord = (value) =>
   value !== null && typeof value === "object" && !Array.isArray(value);
 
+const IMAGE_GALLERY_KEYS = new Set(["pageSize", "groups"]);
+const IMAGE_GALLERY_GROUP_KEYS = new Set(["id", "variants"]);
+const IMAGE_GALLERY_VARIANT_KEYS = new Set(["id", "imageId"]);
+
+const assertImageGalleryObjectKeys = (value, allowedKeys, path) => {
+  Object.keys(value).forEach((key) => {
+    if (!allowedKeys.has(key)) {
+      throw new Error(`${path} contains unsupported property "${key}"`);
+    }
+  });
+};
+
+const assertNonEmptyImageGalleryId = (value, path) => {
+  if (typeof value !== "string" || value.length === 0) {
+    throw new Error(`${path} must be a non-empty string`);
+  }
+};
+
+export const validateImageGalleryConfig = (projectData = {}) => {
+  const gallery = projectData?.resources?.imageGallery;
+  if (gallery === undefined) {
+    return;
+  }
+  if (!isRecord(gallery)) {
+    throw new Error("resources.imageGallery must be an object");
+  }
+
+  assertImageGalleryObjectKeys(
+    gallery,
+    IMAGE_GALLERY_KEYS,
+    "resources.imageGallery",
+  );
+  if (!Number.isInteger(gallery.pageSize) || gallery.pageSize < 1) {
+    throw new Error(
+      "resources.imageGallery.pageSize must be an integer greater than or equal to 1",
+    );
+  }
+  if (!Array.isArray(gallery.groups)) {
+    throw new Error("resources.imageGallery.groups must be an array");
+  }
+
+  const groupIds = new Set();
+  for (const [groupIndex, group] of gallery.groups.entries()) {
+    const groupPath = `resources.imageGallery.groups[${groupIndex}]`;
+    if (!isRecord(group)) {
+      throw new Error(`${groupPath} must be an object`);
+    }
+    assertImageGalleryObjectKeys(group, IMAGE_GALLERY_GROUP_KEYS, groupPath);
+    assertNonEmptyImageGalleryId(group.id, `${groupPath}.id`);
+    if (groupIds.has(group.id)) {
+      throw new Error(`Duplicate image gallery group id "${group.id}"`);
+    }
+    groupIds.add(group.id);
+
+    if (!Array.isArray(group.variants) || group.variants.length === 0) {
+      throw new Error(`${groupPath}.variants must be a non-empty array`);
+    }
+
+    const variantIds = new Set();
+    for (const [variantIndex, variant] of group.variants.entries()) {
+      const variantPath = `${groupPath}.variants[${variantIndex}]`;
+      if (!isRecord(variant)) {
+        throw new Error(`${variantPath} must be an object`);
+      }
+      assertImageGalleryObjectKeys(
+        variant,
+        IMAGE_GALLERY_VARIANT_KEYS,
+        variantPath,
+      );
+      assertNonEmptyImageGalleryId(variant.id, `${variantPath}.id`);
+      assertNonEmptyImageGalleryId(variant.imageId, `${variantPath}.imageId`);
+      if (variantIds.has(variant.id)) {
+        throw new Error(
+          `Duplicate image gallery variant id "${variant.id}" in group "${group.id}"`,
+        );
+      }
+      variantIds.add(variant.id);
+
+      if (!hasOwn(projectData?.resources?.images, variant.imageId)) {
+        throw new Error(
+          `Image gallery variant "${group.id}.${variant.id}" references unknown image "${variant.imageId}"`,
+        );
+      }
+    }
+  }
+};
+
 const cloneDataValue = (value) => {
   const source = isDraft(value) ? current(value) : value;
   return structuredClone(source);
