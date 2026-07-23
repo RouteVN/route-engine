@@ -749,9 +749,9 @@ Actions that can be attached to lines to control presentation:
 | `dialogue`   | `{ characterId?, character?, character.sprite?, persistCharacter?, persistSprite?, content, append?, mode?, ui?, clear? }`                           | Display dialogue                                                                                                          |
 | `character`  | `{ items }`                                                                                                                                          | Display character sprites. Each item can set transform overrides, `opacity`, and `blur`                                   |
 | `visual`     | `{ items }`                                                                                                                                          | Display visual elements. Each item can set `layer`, transform overrides, `opacity`, `blur`, and animations                |
-| `bgm`        | `{ sounds, volume?, muted?, pan? }`                                                                                                                  | Control the persistent, multi-sound BGM channel                                                                           |
-| `sfx`        | `{ channels }`                                                                                                                                       | Play any number of line-scoped SFX channels, each with its own sounds                                                     |
-| `voice`      | `{ sounds, volume?, muted?, pan? }`                                                                                                                  | Control the line-scoped, multi-sound Voice channel; resources resolve from the current scene                              |
+| `bgm`        | `{ sounds, loop?, volume?, muted?, pan? }`                                                                                                           | Control the persistent, multi-sound BGM channel                                                                           |
+| `sfx`        | `{ channels: [{ id, sounds, loop?, volume?, muted?, pan? }] }`                                                                                       | Play any number of line-scoped SFX channels, each with its own sounds                                                     |
+| `voice`      | `{ sounds, loop?, volume?, muted?, pan? }`                                                                                                           | Control the line-scoped, multi-sound Voice channel; resources resolve from the current scene                              |
 | `animation`  | `{ ... }`                                                                                                                                            | Apply animations                                                                                                          |
 | `layout`     | `{ resourceId }`                                                                                                                                     | Display layout                                                                                                            |
 | `control`    | `{ resourceId }`                                                                                                                                     | Activate control bindings and control UI                                                                                  |
@@ -1324,10 +1324,10 @@ actions:
   bgm:
     volume: 80
     pan: -0.2
+    loop: true
     sounds:
       - id: theme
         resourceId: music_1
-        loop: true
         volume: 90
         muted: false
         pan: 0.1
@@ -1336,7 +1336,6 @@ actions:
         endAt: 30
       - id: ambience
         resourceId: forest_ambience
-        loop: true
         volume: 40
 
   voice:
@@ -1356,10 +1355,10 @@ actions:
             resourceId: ui_confirm
       - id: environment
         pan: 0.5
+        loop: true
         sounds:
           - id: rain
             resourceId: rain
-            loop: true
 ```
 
 Each canonical sound supports `loop`, `volume`, `muted`, `pan`,
@@ -1368,9 +1367,13 @@ milliseconds; `startAt` and `endAt` are offsets in seconds for partial source
 playback. An action sound overrides defaults from its sound or Voice resource,
 and `endAt: null` explicitly clears a resource end offset. After those defaults
 and overrides are resolved, a non-null `endAt` must be greater than or equal to
-`startAt`. When `bgm.sounds` or `voice.sounds` is used, `loop` and
-`startDelayMs` belong on each sound; their top-level forms are accepted only by
-the legacy single-sound shorthand.
+`startAt`. With canonical `bgm.sounds`, top-level `bgm.loop` repeats the complete
+scheduled sound sequence after every sound finishes. Canonical Voice channels
+use top-level `voice.loop` the same way, and each canonical SFX channel supports
+`loop`. A looping channel cannot contain a sound whose own `loop` is `true`.
+`startDelayMs` remains a sound-level setting. For legacy single-sound BGM and
+Voice actions, top-level `loop` and `startDelayMs` continue to configure that
+sound.
 
 Omitting `bgm` preserves its current desired channel state. `bgm.sounds: []`
 stops the BGM channel. Voice and SFX sounds are cleared when the next line omits

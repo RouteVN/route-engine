@@ -1,0 +1,64 @@
+---
+title: Looping Audio Channel
+description: Isolated browser fixture for repeating a complete multi-sound BGM schedule.
+specs:
+  - the first line is silent so the canvas click supplies the audio user gesture
+  - the second line starts one looping BGM channel with two non-looping sounds
+  - the browser remains on the looping line long enough to cross the channel boundary twice
+skipInitialScreenshot: true
+steps:
+  - action: click
+    x: 320
+    y: 180
+  - action: wait
+    ms: 2500
+  - action: screenshot
+---
+screen:
+  width: 640
+  height: 360
+resources:
+  sounds:
+    first:
+      fileId: 39csl
+    second:
+      fileId: 39csl
+  colors:
+    canvas:
+      hex: "#000000"
+  controls:
+    advance:
+      elements:
+        - id: advance-surface
+          type: rect
+          width: 640
+          height: 360
+          colorId: canvas
+          click:
+            payload:
+              actions:
+                nextLine: {}
+story:
+  initialSceneId: scene1
+  scenes:
+    scene1:
+      initialSectionId: section1
+      sections:
+        section1:
+          lines:
+            - id: silent
+              actions:
+                control:
+                  resourceId: advance
+            - id: looping-channel
+              actions:
+                control:
+                  resourceId: advance
+                bgm:
+                  loop: true
+                  sounds:
+                    - id: first
+                      resourceId: first
+                    - id: second
+                      resourceId: second
+                      startDelayMs: 100

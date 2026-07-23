@@ -432,3 +432,63 @@ out:
       children: []
   animations: []
   audio: []
+---
+case: canonical SFX channel loops its complete sound schedule
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      sfx:
+        channels:
+          - id: "environment"
+            loop: true
+            volume: 80
+            sounds:
+              - id: "click"
+                resourceId: "click"
+              - id: "rain"
+                resourceId: "rain"
+                startDelayMs: 250
+    resources:
+      sounds:
+        click:
+          fileId: "click.wav"
+        rain:
+          fileId: "rain.ogg"
+          loop: true
+    runtime:
+      soundVolume: 40
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio:
+    - id: "channel:sfx:environment"
+      type: "audio-channel"
+      volume: 32
+      muted: false
+      pan: 0
+      loop: true
+      children:
+        - id: "sfx:environment:click"
+          type: "sound"
+          src: "click.wav"
+          loop: false
+          volume: 100
+          startDelayMs: 0
+        - id: "sfx:environment:rain"
+          type: "sound"
+          src: "rain.ogg"
+          loop: false
+          volume: 100
+          startDelayMs: 250

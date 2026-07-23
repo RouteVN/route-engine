@@ -279,3 +279,61 @@ out:
       children: []
   animations: []
   audio: []
+---
+case: canonical BGM loops the complete channel schedule
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      bgm:
+        loop: true
+        volume: 80
+        sounds:
+          - id: "theme"
+            resourceId: "theme"
+          - id: "ambience"
+            resourceId: "ambience"
+            startDelayMs: 12000
+    resources:
+      sounds:
+        theme:
+          fileId: "theme.mp3"
+          loop: true
+        ambience:
+          fileId: "ambience.mp3"
+    runtime:
+      musicVolume: 40
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio:
+    - id: "channel:bgm"
+      type: "audio-channel"
+      volume: 32
+      muted: false
+      pan: 0
+      loop: true
+      children:
+        - id: "bgm:theme"
+          type: "sound"
+          src: "theme.mp3"
+          loop: false
+          volume: 100
+          startDelayMs: 0
+        - id: "bgm:ambience"
+          type: "sound"
+          src: "ambience.mp3"
+          loop: false
+          volume: 100
+          startDelayMs: 12000

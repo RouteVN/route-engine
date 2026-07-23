@@ -236,6 +236,206 @@ describe("RouteEngine audio channels", () => {
     ]);
   });
 
+  it("renders a looping BGM channel as one scheduled sequence", () => {
+    const projectData = createProjectData();
+    const actions =
+      projectData.story.scenes.scene1.sections.section1.lines[0].actions;
+    actions.bgm = {
+      loop: true,
+      volume: 80,
+      sounds: [
+        { id: "theme", resourceId: "theme" },
+        {
+          id: "ambience",
+          resourceId: "ambience",
+          startDelayMs: 12_000,
+        },
+      ],
+    };
+    delete actions.voice;
+    delete actions.sfx;
+
+    const engine = createEngine();
+    engine.init({ initialState: { projectData } });
+
+    expect(engine.selectRenderState().audio).toEqual([
+      {
+        id: "channel:bgm",
+        type: "audio-channel",
+        volume: 40,
+        muted: false,
+        pan: 0,
+        loop: true,
+        children: [
+          {
+            id: "bgm:theme",
+            type: "sound",
+            src: "theme.mp3",
+            loop: false,
+            volume: 100,
+            startDelayMs: 0,
+          },
+          {
+            id: "bgm:ambience",
+            type: "sound",
+            src: "ambience.mp3",
+            loop: false,
+            volume: 100,
+            startDelayMs: 12_000,
+          },
+        ],
+      },
+    ]);
+  });
+
+  it("rejects a looping sound inside a looping BGM channel", () => {
+    const projectData = createProjectData();
+    const actions =
+      projectData.story.scenes.scene1.sections.section1.lines[0].actions;
+    actions.bgm = {
+      loop: true,
+      sounds: [{ id: "theme", resourceId: "theme", loop: true }],
+    };
+    delete actions.voice;
+    delete actions.sfx;
+
+    const engine = createEngine();
+    engine.init({ initialState: { projectData } });
+
+    expect(() => engine.selectRenderState()).toThrow(
+      'BGM sound "theme" cannot loop inside a looping BGM channel.',
+    );
+  });
+
+  it("loops a complete canonical Voice schedule", () => {
+    const projectData = createProjectData();
+    const actions =
+      projectData.story.scenes.scene1.sections.section1.lines[0].actions;
+    delete actions.bgm;
+    delete actions.sfx;
+    actions.voice = {
+      loop: true,
+      sounds: [
+        { id: "alice", resourceId: "alice" },
+        {
+          id: "narrator",
+          resourceId: "narrator",
+          startDelayMs: 250,
+        },
+      ],
+    };
+
+    const engine = createEngine();
+    engine.init({ initialState: { projectData } });
+
+    const [voiceChannel] = engine.selectRenderState().audio;
+    expect(voiceChannel).toMatchObject({
+      id: "channel:voice",
+      type: "audio-channel",
+      loop: true,
+    });
+    expect(voiceChannel.children.map((sound) => sound.loop)).toEqual([
+      false,
+      false,
+    ]);
+  });
+
+  it("rejects a looping sound inside a looping Voice channel", () => {
+    const projectData = createProjectData();
+    const actions =
+      projectData.story.scenes.scene1.sections.section1.lines[0].actions;
+    delete actions.bgm;
+    delete actions.sfx;
+    actions.voice = {
+      loop: true,
+      sounds: [{ id: "alice", resourceId: "alice", loop: true }],
+    };
+
+    const engine = createEngine();
+    engine.init({ initialState: { projectData } });
+
+    expect(() => engine.selectRenderState()).toThrow(
+      'Voice sound "alice" cannot loop inside a looping Voice channel.',
+    );
+  });
+
+  it("loops a complete canonical SFX channel schedule", () => {
+    const projectData = createProjectData();
+    const actions =
+      projectData.story.scenes.scene1.sections.section1.lines[0].actions;
+    delete actions.bgm;
+    delete actions.voice;
+    projectData.resources.sounds.rain.loop = true;
+    actions.sfx = {
+      channels: [
+        {
+          id: "environment",
+          loop: true,
+          sounds: [
+            { id: "click", resourceId: "click" },
+            { id: "rain", resourceId: "rain", startDelayMs: 250 },
+          ],
+        },
+      ],
+    };
+
+    const engine = createEngine();
+    engine.init({ initialState: { projectData } });
+
+    expect(engine.selectRenderState().audio).toEqual([
+      {
+        id: "channel:sfx:environment",
+        type: "audio-channel",
+        volume: 50,
+        muted: false,
+        pan: 0,
+        loop: true,
+        children: [
+          {
+            id: "sfx:environment:click",
+            type: "sound",
+            src: "click.wav",
+            loop: false,
+            volume: 100,
+            startDelayMs: 0,
+          },
+          {
+            id: "sfx:environment:rain",
+            type: "sound",
+            src: "rain.ogg",
+            loop: false,
+            volume: 100,
+            startDelayMs: 250,
+          },
+        ],
+      },
+    ]);
+  });
+
+  it("rejects a looping sound inside a looping SFX channel", () => {
+    const projectData = createProjectData();
+    const actions =
+      projectData.story.scenes.scene1.sections.section1.lines[0].actions;
+    delete actions.bgm;
+    delete actions.voice;
+    actions.sfx = {
+      channels: [
+        {
+          id: "environment",
+          loop: true,
+          sounds: [{ id: "rain", resourceId: "rain", loop: true }],
+        },
+      ],
+    };
+
+    const engine = createEngine();
+    engine.init({ initialState: { projectData } });
+
+    expect(() => engine.selectRenderState()).toThrow(
+      'SFX sound "rain" cannot loop inside looping SFX channel "environment".',
+    );
+  });
+
   it("escapes authored ID components when composing SFX render IDs", () => {
     const projectData = createProjectData();
     const actions =
