@@ -242,6 +242,7 @@ describe("RouteEngine audio channels", () => {
       projectData.story.scenes.scene1.sections.section1.lines[0].actions;
     actions.bgm = {
       loop: true,
+      interruption: "loopEnd",
       volume: 80,
       sounds: [
         { id: "theme", resourceId: "theme" },
@@ -266,6 +267,7 @@ describe("RouteEngine audio channels", () => {
         muted: false,
         pan: 0,
         loop: true,
+        interruption: "loopEnd",
         children: [
           {
             id: "bgm:theme",

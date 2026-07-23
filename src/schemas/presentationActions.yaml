@@ -623,6 +623,10 @@ properties:
             loop:
               type: boolean
               description: Repeat the complete SFX channel sound schedule
+            interruption:
+              type: string
+              enum: [immediate, loopEnd]
+              description: How active channel playback stops when the channel is interrupted
             sounds:
               type: array
               items:
@@ -649,6 +653,10 @@ properties:
       loop:
         type: boolean
         description: Repeat the complete canonical BGM sound schedule; on legacy single-sound actions this loops that sound
+      interruption:
+        type: string
+        enum: [immediate, loopEnd]
+        description: How active canonical BGM playback stops when the channel is interrupted
       volume:
         type: number
         minimum: 0
@@ -701,6 +709,10 @@ properties:
       loop:
         type: boolean
         description: Repeat the complete canonical Voice sound schedule; on legacy single-sound actions this loops that sound
+      interruption:
+        type: string
+        enum: [immediate, loopEnd]
+        description: How active canonical Voice playback stops when the channel is interrupted
       startDelayMs:
         type: number
         minimum: 0
