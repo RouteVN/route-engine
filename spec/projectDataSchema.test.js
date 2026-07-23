@@ -1022,11 +1022,11 @@ describe("projectData schema", () => {
           volume: 80,
           muted: false,
           pan: -0.25,
+          loop: true,
           sounds: [
             {
               id: "theme",
               resourceId: "music_1",
-              loop: true,
               muted: false,
               pan: -0.4,
               playbackRate: 1.25,
@@ -1037,6 +1037,7 @@ describe("projectData schema", () => {
           ],
         },
         voice: {
+          loop: true,
           volume: 90,
           sounds: [
             { id: "alice", resourceId: "alice_001" },
@@ -1053,6 +1054,7 @@ describe("projectData schema", () => {
             {
               id: "ui",
               volume: 80,
+              loop: true,
               sounds: [{ id: "click", resourceId: "click" }],
             },
             {
@@ -1093,24 +1095,31 @@ describe("projectData schema", () => {
   });
 
   it("rejects legacy single-sound fields on canonical BGM and Voice actions", () => {
-    const legacyFields = [
-      ["resourceId", "legacy"],
-      ["loop", false],
-      ["startDelayMs", 500],
-    ];
+    const invalidFieldsByAction = {
+      bgm: [
+        ["resourceId", "legacy"],
+        ["startDelayMs", 500],
+      ],
+      voice: [
+        ["resourceId", "legacy"],
+        ["startDelayMs", 500],
+      ],
+    };
 
-    ["bgm", "voice"].forEach((actionType) => {
-      legacyFields.forEach(([field, value]) => {
-        expect(
-          validatePresentationActions({
-            [actionType]: {
-              sounds: [{ id: "canonical", resourceId: "canonical" }],
-              [field]: value,
-            },
-          }),
-        ).toBe(false);
-      });
-    });
+    Object.entries(invalidFieldsByAction).forEach(
+      ([actionType, invalidFields]) => {
+        invalidFields.forEach(([field, value]) => {
+          expect(
+            validatePresentationActions({
+              [actionType]: {
+                sounds: [{ id: "canonical", resourceId: "canonical" }],
+                [field]: value,
+              },
+            }),
+          ).toBe(false);
+        });
+      },
+    );
   });
 
   it("rejects mixing legacy SFX items with channels", () => {

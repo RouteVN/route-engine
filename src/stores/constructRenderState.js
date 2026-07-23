@@ -1606,14 +1606,28 @@ const getEffectiveChannelVolume = (
   volume = DEFAULT_AUTHORED_AUDIO_VOLUME,
 ) => getLayeredVolume(volume, getRuntimeAudioVolume(runtime, field));
 
-const createChannelNode = ({ id, volume, muted, pan, children, runtime }) => ({
+const createChannelNode = ({
   id,
-  type: "audio-channel",
   volume,
-  muted: !!runtime?.muteAll || (muted ?? false),
-  pan: pan ?? 0,
+  muted,
+  pan,
+  loop,
   children,
-});
+  runtime,
+}) => {
+  const channel = {
+    id,
+    type: "audio-channel",
+    volume,
+    muted: !!runtime?.muteAll || (muted ?? false),
+    pan: pan ?? 0,
+    children,
+  };
+  if (loop !== undefined) {
+    channel.loop = loop;
+  }
+  return channel;
+};
 
 const resolveSoundProperty = (sound, resource, property, fallback) => {
   if (sound[property] !== undefined) return sound[property];
@@ -3555,15 +3569,29 @@ export const addBgm = (
           ]
         : []
       : bgm.sounds;
+    const loopsChannel = !usesLegacySound && bgm.loop === true;
     const children = [];
 
     if (!usesLegacySound) {
       assertUniqueAudioIds(sounds, "BGM sound");
     }
 
+    if (loopsChannel) {
+      const loopingSound = sounds.find((sound) => sound.loop === true);
+      if (loopingSound) {
+        throw new Error(
+          `BGM sound "${loopingSound.id}" cannot loop inside a looping BGM channel.`,
+        );
+      }
+    }
+
     sounds.forEach((sound) => {
       const audioResource = resources.sounds?.[sound.resourceId];
       if (!audioResource) return;
+
+      const renderSound = loopsChannel
+        ? { ...sound, loop: sound.loop ?? false }
+        : sound;
 
       children.push(
         createSoundNode({
@@ -3571,9 +3599,9 @@ export const addBgm = (
             "bgm",
             usesLegacySound ? "default" : sound.id,
           ),
-          sound,
+          sound: renderSound,
           resource: audioResource,
-          defaultLoop: true,
+          defaultLoop: loopsChannel ? false : true,
         }),
       );
     });
@@ -3597,6 +3625,7 @@ export const addBgm = (
         ),
         muted: bgm.muted,
         pan: bgm.pan,
+        loop: usesLegacySound ? undefined : bgm.loop,
         children,
         runtime: resolvedRuntime,
       }),
@@ -3625,6 +3654,7 @@ export const addSfx = (state, { presentationState, resources, runtime }) => {
     }
 
     channels.forEach((channel) => {
+      const loopsChannel = !usesLegacyChannel && channel.loop === true;
       const children = [];
 
       if (!usesLegacyChannel) {
@@ -3635,17 +3665,33 @@ export const addSfx = (state, { presentationState, resources, runtime }) => {
         );
       }
 
+      if (loopsChannel) {
+        const loopingSound = channel.sounds.find(
+          (sound) => sound.loop === true,
+        );
+        if (loopingSound) {
+          throw new Error(
+            `SFX sound "${loopingSound.id}" cannot loop inside looping SFX channel "${channel.id}".`,
+          );
+        }
+      }
+
       channel.sounds.forEach((sound, soundIndex) => {
         const audioResource = resources.sounds?.[sound.resourceId];
         if (!audioResource) return;
+
+        const renderSound = loopsChannel
+          ? { ...sound, loop: sound.loop ?? false }
+          : sound;
 
         children.push(
           createSoundNode({
             id: usesLegacyChannel
               ? createAudioRenderId("sfx", "default", soundIndex, sound.id)
               : createAudioRenderId("sfx", channel.id, sound.id),
-            sound,
+            sound: renderSound,
             resource: audioResource,
+            defaultLoop: loopsChannel ? false : undefined,
           }),
         );
       });
@@ -3662,6 +3708,7 @@ export const addSfx = (state, { presentationState, resources, runtime }) => {
           ),
           muted: channel.muted,
           pan: channel.pan,
+          loop: usesLegacyChannel ? undefined : channel.loop,
           children,
           runtime,
         }),
@@ -3705,10 +3752,20 @@ export const addVoice = (
         ]
       : []
     : voice.sounds;
+  const loopsChannel = !usesLegacySound && voice.loop === true;
   const children = [];
 
   if (!usesLegacySound) {
     assertUniqueAudioIds(sounds, "Voice sound");
+  }
+
+  if (loopsChannel) {
+    const loopingSound = sounds.find((sound) => sound.loop === true);
+    if (loopingSound) {
+      throw new Error(
+        `Voice sound "${loopingSound.id}" cannot loop inside a looping Voice channel.`,
+      );
+    }
   }
 
   sounds.forEach((sound) => {
@@ -3719,6 +3776,10 @@ export const addVoice = (
     );
     if (!voiceResource) return;
 
+    const renderSound = loopsChannel
+      ? { ...sound, loop: sound.loop ?? false }
+      : sound;
+
     children.push(
       createSoundNode({
         id: createAudioRenderId(
@@ -3726,8 +3787,9 @@ export const addVoice = (
           currentSceneId,
           usesLegacySound ? "default" : sound.id,
         ),
-        sound,
+        sound: renderSound,
         resource: voiceResource,
+        defaultLoop: loopsChannel ? false : undefined,
       }),
     );
   });
@@ -3752,6 +3814,7 @@ export const addVoice = (
           ),
       muted: voice.muted,
       pan: voice.pan,
+      loop: usesLegacySound ? undefined : voice.loop,
       children,
       runtime: resolvedRuntime,
     }),

@@ -585,6 +585,39 @@ describe("computed variables", () => {
     });
   });
 
+  it("resolves quoted variable ids that begin with a digit", () => {
+    const variableId = "1score";
+    const variablePath = createVariablePath(variableId);
+
+    expect(
+      resolveComputedVariables({
+        variables: {
+          [variableId]: 4,
+        },
+        variableConfigs: {
+          [variableId]: {
+            type: "number",
+            scope: "context",
+            default: 0,
+          },
+          doubledScore: {
+            type: "number",
+            scope: "context",
+            computed: {
+              expr: {
+                add: [{ var: variablePath }, { var: variablePath }],
+              },
+            },
+          },
+        },
+        runtime: {},
+      }),
+    ).toEqual({
+      [variableId]: 4,
+      doubledScore: 8,
+    });
+  });
+
   it("uses one strict path grammar for expressions and branch conditions", () => {
     const specialVariableIds = [
       "dotted.flag",

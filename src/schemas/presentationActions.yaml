@@ -620,6 +620,9 @@ properties:
               minimum: -1
               maximum: 1
               description: Stereo pan from -1 (left) to 1 (right)
+            loop:
+              type: boolean
+              description: Repeat the complete SFX channel sound schedule
             sounds:
               type: array
               items:
@@ -645,7 +648,7 @@ properties:
         description: Legacy shorthand for a single BGM sound resource
       loop:
         type: boolean
-        description: Legacy single-sound loop setting
+        description: Repeat the complete canonical BGM sound schedule; on legacy single-sound actions this loops that sound
       volume:
         type: number
         minimum: 0
@@ -666,8 +669,6 @@ properties:
     allOf:
       - not:
           required: [resourceId, sounds]
-      - not:
-          required: [loop, sounds]
       - not:
           required: [startDelayMs, sounds]
     additionalProperties: false
@@ -699,7 +700,7 @@ properties:
         description: Voice channel stereo pan from -1 (left) to 1 (right)
       loop:
         type: boolean
-        description: Legacy single-sound loop setting
+        description: Repeat the complete canonical Voice sound schedule; on legacy single-sound actions this loops that sound
       startDelayMs:
         type: number
         minimum: 0
@@ -710,8 +711,6 @@ properties:
     allOf:
       - not:
           required: [resourceId, sounds]
-      - not:
-          required: [loop, sounds]
       - not:
           required: [startDelayMs, sounds]
     additionalProperties: false
