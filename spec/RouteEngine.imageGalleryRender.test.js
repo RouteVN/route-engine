@@ -479,6 +479,45 @@ describe("RouteEngine image-gallery render API", () => {
     },
   );
 
+  it("still resolves dynamic gallery targets without an exact literal match", async () => {
+    const projectData = createProjectData();
+    projectData.resources.variables = {
+      targetGroup: {
+        type: "string",
+        scope: "context",
+        default: "festival",
+      },
+      targetVariant: {
+        type: "string",
+        scope: "context",
+        default: "day",
+      },
+    };
+    const engine = createEngine(projectData, {
+      viewedImageIds: ["festivalDay"],
+    });
+
+    await dispatchRouteGraphicsClick(engine, {
+      id: "dynamic-gallery-item",
+      click: {
+        payload: {
+          actions: {
+            showImageGalleryVariant: {
+              groupId: "${variables.targetGroup}",
+              variantId: "${variables.targetVariant}",
+            },
+          },
+        },
+      },
+    });
+
+    expect(engine.selectImageGallery().selection).toMatchObject({
+      groupId: "festival",
+      variantId: "day",
+      imageId: "festivalDay",
+    });
+  });
+
   it("renders an absent gallery as an empty loop without throwing", () => {
     const projectData = createProjectData({
       includeImageGallery: false,
