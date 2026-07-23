@@ -290,6 +290,28 @@ describe("RouteEngine audio channels", () => {
     ]);
   });
 
+  it("forwards interruption for the legacy BGM shorthand", () => {
+    const projectData = createProjectData();
+    const actions =
+      projectData.story.scenes.scene1.sections.section1.lines[0].actions;
+    actions.bgm = {
+      resourceId: "theme",
+      interruption: "loopEnd",
+    };
+    delete actions.voice;
+    delete actions.sfx;
+
+    const engine = createEngine();
+    engine.init({ initialState: { projectData } });
+
+    expect(engine.selectRenderState().audio).toEqual([
+      expect.objectContaining({
+        id: "channel:bgm",
+        interruption: "loopEnd",
+      }),
+    ]);
+  });
+
   it("rejects a looping sound inside a looping BGM channel", () => {
     const projectData = createProjectData();
     const actions =
@@ -339,6 +361,28 @@ describe("RouteEngine audio channels", () => {
     expect(voiceChannel.children.map((sound) => sound.loop)).toEqual([
       false,
       false,
+    ]);
+  });
+
+  it("forwards interruption for the legacy Voice shorthand", () => {
+    const projectData = createProjectData();
+    const actions =
+      projectData.story.scenes.scene1.sections.section1.lines[0].actions;
+    delete actions.bgm;
+    delete actions.sfx;
+    actions.voice = {
+      resourceId: "narrator",
+      interruption: "loopEnd",
+    };
+
+    const engine = createEngine();
+    engine.init({ initialState: { projectData } });
+
+    expect(engine.selectRenderState().audio).toEqual([
+      expect.objectContaining({
+        id: "channel:voice",
+        interruption: "loopEnd",
+      }),
     ]);
   });
 

@@ -656,7 +656,7 @@ properties:
       interruption:
         type: string
         enum: [immediate, loopEnd]
-        description: How active canonical BGM playback stops when the channel is interrupted
+        description: How active BGM playback stops when the channel is interrupted
       volume:
         type: number
         minimum: 0
@@ -712,7 +712,7 @@ properties:
       interruption:
         type: string
         enum: [immediate, loopEnd]
-        description: How active canonical Voice playback stops when the channel is interrupted
+        description: How active Voice playback stops when the channel is interrupted
       startDelayMs:
         type: number
         minimum: 0
