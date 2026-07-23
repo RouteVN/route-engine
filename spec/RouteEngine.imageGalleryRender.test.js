@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { load } from "js-yaml";
 import createRouteEngine from "../src/RouteEngine.js";
+import createEffectsHandler from "../src/createEffectsHandler.js";
 
 const findElementById = (elements, id) => {
   for (const element of elements || []) {
@@ -102,6 +104,27 @@ const createEngine = (projectData, { viewedImageIds = [] } = {}) => {
   });
 
   return engine;
+};
+
+const dispatchRouteGraphicsClick = async (engine, element) => {
+  const effectsHandler = createEffectsHandler({
+    getEngine: () => engine,
+    routeGraphics: {
+      render: () => {},
+    },
+    ticker: {
+      add: () => {},
+      remove: () => {},
+    },
+  });
+  const eventHandler = effectsHandler.createRouteGraphicsEventHandler();
+
+  await eventHandler("click", {
+    _event: {
+      id: element.id,
+    },
+    ...structuredClone(element.click.payload),
+  });
 };
 
 describe("RouteEngine image-gallery render API", () => {
@@ -280,7 +303,7 @@ describe("RouteEngine image-gallery render API", () => {
     });
   });
 
-  it("does not reinterpret template-like gallery IDs produced by loop interpolation", () => {
+  it("preserves loop-produced gallery IDs on Route Graphics clicks", async () => {
     const templateToken = "${variables.redirect}";
     const projectData = createProjectData();
     projectData.resources.variables = {
@@ -311,6 +334,15 @@ describe("RouteEngine image-gallery render API", () => {
             {
               id: templateToken,
               imageId: templateToken,
+            },
+          ],
+        },
+        {
+          id: "wrong-target",
+          variants: [
+            {
+              id: "wrong-target",
+              imageId: "wrong-target",
             },
           ],
         },
@@ -354,7 +386,7 @@ describe("RouteEngine image-gallery render API", () => {
       },
     ];
     const engine = createEngine(projectData, {
-      viewedImageIds: [templateToken],
+      viewedImageIds: [templateToken, "wrong-target"],
     });
 
     const renderState = engine.selectRenderState();
@@ -385,10 +417,7 @@ describe("RouteEngine image-gallery render API", () => {
       ),
     ).toBeNull();
 
-    engine.handleAction(
-      "showImageGalleryVariant",
-      variant.click.payload.actions.showImageGalleryVariant,
-    );
+    await dispatchRouteGraphicsClick(engine, variant);
 
     expect(engine.selectImageGallery().selection).toEqual({
       groupId: templateToken,
@@ -399,6 +428,57 @@ describe("RouteEngine image-gallery render API", () => {
     });
   });
 
+  it.each(["${missing()}", "_event.missing"])(
+    "does not evaluate the declared gallery ID %s during click dispatch",
+    async (templateToken) => {
+      const projectData = createProjectData();
+      projectData.resources.images = {
+        [templateToken]: {
+          fileId: "literal-token.jpg",
+          width: 1920,
+          height: 1080,
+        },
+      };
+      projectData.resources.imageGallery = {
+        pageSize: 1,
+        groups: [
+          {
+            id: templateToken,
+            variants: [
+              {
+                id: templateToken,
+                imageId: templateToken,
+              },
+            ],
+          },
+        ],
+      };
+      const engine = createEngine(projectData, {
+        viewedImageIds: [templateToken],
+      });
+
+      await dispatchRouteGraphicsClick(engine, {
+        id: "literal-template-gallery-item",
+        click: {
+          payload: {
+            actions: {
+              showImageGalleryVariant: {
+                groupId: templateToken,
+                variantId: templateToken,
+              },
+            },
+          },
+        },
+      });
+
+      expect(engine.selectImageGallery().selection).toMatchObject({
+        groupId: templateToken,
+        variantId: templateToken,
+        imageId: templateToken,
+      });
+    },
+  );
+
   it("renders an absent gallery as an empty loop without throwing", () => {
     const projectData = createProjectData({
       includeImageGallery: false,
@@ -407,19 +487,19 @@ describe("RouteEngine image-gallery render API", () => {
       {
         id: "gallery-grid",
         type: "container",
-        children: [
-          {
-            "$for group in imageGallery.pageGroups:": [
-              {
-                id: "unexpected-${group.groupId}",
-                type: "text",
-                content: "${group.groupId}",
-              },
-            ],
-          },
-        ],
+        children: load(`
+- $for group in imageGallery.pageGroups:
+    - id: unexpected-\${group.groupId}
+      type: text
+      content: \${group.groupId}
+`),
       },
     ];
+    expect(
+      Object.keys(
+        projectData.resources.layouts.galleryHud.elements[0].children[0],
+      ),
+    ).toEqual(["$for group in imageGallery.pageGroups"]);
     const engine = createEngine(projectData);
 
     expect(engine.selectImageGallery()).toBeNull();

@@ -46,6 +46,7 @@ const ROLLBACK_CURSOR_REPLACING_ACTION_TYPES = new Set([
 ]);
 const FORM_INTERACTION_SOURCE = "form";
 const FORM_ACTION_TYPES = new Set(["submitForm", "cancelForm"]);
+const SHOW_IMAGE_GALLERY_VARIANT_ACTION_TYPE = "showImageGalleryVariant";
 
 const isRecord = (value) =>
   value !== null && typeof value === "object" && !Array.isArray(value);
@@ -720,6 +721,54 @@ export default function createRouteEngine(options) {
     };
   };
 
+  const maskDeclaredImageGalleryTargetIds = (payload) => {
+    if (!isRecord(payload)) {
+      return {
+        templatePayload: payload,
+        literalTargetIds: null,
+      };
+    }
+
+    const gallery = _systemStore.selectImageGalleryConfig();
+    if (!Array.isArray(gallery?.groups)) {
+      return {
+        templatePayload: payload,
+        literalTargetIds: null,
+      };
+    }
+
+    const declaredGroup =
+      typeof payload.groupId === "string"
+        ? gallery.groups.find((group) => group.id === payload.groupId)
+        : undefined;
+    if (!declaredGroup) {
+      return {
+        templatePayload: payload,
+        literalTargetIds: null,
+      };
+    }
+
+    const hasDeclaredVariant =
+      typeof payload.variantId === "string" &&
+      declaredGroup.variants.some(
+        (variant) => variant.id === payload.variantId,
+      );
+
+    // Loop interpolation can produce IDs that look like action templates.
+    // Mask exact declared targets so action-time rendering cannot reinterpret them.
+    return {
+      templatePayload: {
+        ...payload,
+        groupId: null,
+        ...(hasDeclaredVariant ? { variantId: null } : {}),
+      },
+      literalTargetIds: {
+        groupId: payload.groupId,
+        ...(hasDeclaredVariant ? { variantId: payload.variantId } : {}),
+      },
+    };
+  };
+
   const assertConditionalActionPayload = (payload) => {
     if (!isRecord(payload)) {
       throw new Error("conditional action payload must be an object");
@@ -815,11 +864,24 @@ export default function createRouteEngine(options) {
 
   const handleActionEntry = (actionType, payload, eventContext, options) => {
     const context = buildActionTemplateContext(eventContext);
+    const { templatePayload, literalTargetIds } =
+      actionType === SHOW_IMAGE_GALLERY_VARIANT_ACTION_TYPE
+        ? maskDeclaredImageGalleryTargetIds(payload)
+        : {
+            templatePayload: payload,
+            literalTargetIds: null,
+          };
     const processedActions = processActionTemplates(
-      { [actionType]: payload },
+      { [actionType]: templatePayload },
       context,
     );
-    const processedPayload = processedActions[actionType];
+    const renderedPayload = processedActions[actionType];
+    const processedPayload = literalTargetIds
+      ? {
+          ...renderedPayload,
+          ...literalTargetIds,
+        }
+      : renderedPayload;
 
     if (actionType === CONDITIONAL_ACTION_TYPE) {
       return handleConditionalAction(processedPayload, eventContext, options);

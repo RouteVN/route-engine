@@ -21,7 +21,7 @@ const jemplFunctions = {
 };
 
 const LOOP_DIRECTIVE_RE =
-  /^\$for\s+([A-Za-z_][A-Za-z0-9_]*)(?:\s*,\s*([A-Za-z_][A-Za-z0-9_]*))?\s+in\s+(.+):$/;
+  /^\$for\s+([A-Za-z_][A-Za-z0-9_]*)(?:\s*,\s*([A-Za-z_][A-Za-z0-9_]*))?\s+in\s+(.+?)(?::)?$/;
 
 const normalizeLoopDirectives = (node) => {
   if (Array.isArray(node)) {

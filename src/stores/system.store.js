@@ -2133,6 +2133,11 @@ const findUnlockedImageGalleryVariant = (
   return undefined;
 };
 
+export const selectImageGalleryConfig = ({ state }) => {
+  const gallery = state.projectData?.resources?.imageGallery;
+  return gallery === undefined ? undefined : cloneStateValue(gallery);
+};
+
 export const selectImageGallery = ({ state }) => {
   const gallery = state.projectData?.resources?.imageGallery;
   if (gallery === undefined) {
@@ -4818,6 +4823,7 @@ export const createSystemStore = (initialState) => {
     selectConfirmDialog,
     selectIsLineAccountViewed,
     selectIsResourceAccountViewed,
+    selectImageGalleryConfig,
     selectImageGallery,
     selectNextLineConfig,
     selectSystemState,
