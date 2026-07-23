@@ -348,3 +348,61 @@ out:
           volume: 100
           loop: false
           startDelayMs: 0
+---
+case: canonical Voice loops the complete channel schedule
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      voice:
+        loop: true
+        volume: 70
+        sounds:
+          - id: "alice"
+            resourceId: "alice"
+          - id: "narrator"
+            resourceId: "narrator"
+            startDelayMs: 250
+    resources:
+      voices:
+        scene_intro:
+          alice:
+            fileId: "voices/scene_intro/alice.ogg"
+            loop: true
+          narrator:
+            fileId: "voices/scene_intro/narrator.ogg"
+    currentSceneId: "scene_intro"
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations: []
+  audio:
+    - id: "channel:voice"
+      type: "audio-channel"
+      volume: 35
+      muted: false
+      pan: 0
+      loop: true
+      children:
+        - id: "voice:scene_intro:alice"
+          type: "sound"
+          src: "voices/scene_intro/alice.ogg"
+          volume: 100
+          loop: false
+          startDelayMs: 0
+        - id: "voice:scene_intro:narrator"
+          type: "sound"
+          src: "voices/scene_intro/narrator.ogg"
+          volume: 100
+          loop: false
+          startDelayMs: 250
