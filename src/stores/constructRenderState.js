@@ -14,102 +14,63 @@ import {
 } from "../renderLayers.js";
 
 const jemplFunctions = {
+  __arrayOrEmpty: (value) => (Array.isArray(value) ? value : []),
   objectValues: (obj) =>
     Object.entries(obj).map(([id, value]) => ({ id, ...value })),
   formatDate,
 };
 
 const LOOP_DIRECTIVE_RE =
-  /^\$for\s+([A-Za-z_][A-Za-z0-9_]*)(?:\s*,\s*([A-Za-z_][A-Za-z0-9_]*))?\s+in\s+(.+):$/;
+  /^\$for\s+([A-Za-z_][A-Za-z0-9_]*)(?:\s*,\s*([A-Za-z_][A-Za-z0-9_]*))?\s+in\s+(.+?)(?::)?$/;
 
-const resolveTemplatePath = (data, expression) => {
-  const normalized = String(expression || "").trim();
-  if (!normalized) {
-    return undefined;
-  }
-
-  const parts = normalized.match(/[A-Za-z_][A-Za-z0-9_]*|\[\d+\]/g) || [];
-  let current = data;
-  for (const part of parts) {
-    if (part.startsWith("[")) {
-      const index = Number(part.slice(1, -1));
-      current = Array.isArray(current) ? current[index] : undefined;
-      continue;
-    }
-    current = current?.[part];
-  }
-  return current;
-};
-
-const expandLoopTemplates = (node, templateData, options) => {
+const normalizeLoopDirectives = (node) => {
   if (Array.isArray(node)) {
-    const expanded = [];
-
-    for (const item of node) {
+    return node.map((item) => {
       if (
-        item &&
-        typeof item === "object" &&
-        !Array.isArray(item) &&
-        Object.keys(item).length === 1
+        !item ||
+        typeof item !== "object" ||
+        Array.isArray(item) ||
+        Object.keys(item).length !== 1
       ) {
-        const [maybeLoopKey] = Object.keys(item);
-        const loopMatch = LOOP_DIRECTIVE_RE.exec(maybeLoopKey);
-        if (loopMatch) {
-          const [, itemName, indexName, sourceExpression] = loopMatch;
-          const iterable = resolveTemplatePath(templateData, sourceExpression);
-          if (!Array.isArray(iterable)) {
-            continue;
-          }
-
-          const loopTemplate = Array.isArray(item[maybeLoopKey])
-            ? item[maybeLoopKey]
-            : [];
-          iterable.forEach((loopItem, loopIndex) => {
-            const loopData = {
-              ...templateData,
-              [itemName]: loopItem,
-            };
-            if (indexName) {
-              loopData[indexName] = loopIndex;
-            }
-
-            loopTemplate.forEach((loopNode) => {
-              const expandedLoopNode = expandLoopTemplates(
-                loopNode,
-                loopData,
-                options,
-              );
-              const rendered = parseAndRender(
-                expandedLoopNode,
-                loopData,
-                options,
-              );
-              if (Array.isArray(rendered)) {
-                expanded.push(...rendered);
-              } else {
-                expanded.push(rendered);
-              }
-            });
-          });
-          continue;
-        }
+        return normalizeLoopDirectives(item);
       }
 
-      expanded.push(expandLoopTemplates(item, templateData, options));
-    }
+      const [key] = Object.keys(item);
+      const loopMatch = LOOP_DIRECTIVE_RE.exec(key);
+      if (!loopMatch) {
+        return normalizeLoopDirectives(item);
+      }
 
-    return expanded;
+      const [, itemName, indexName, sourceExpression] = loopMatch;
+      const normalizedKey = `$for ${itemName}${
+        indexName ? `, ${indexName}` : ""
+      } in __arrayOrEmpty(${sourceExpression.trim()})`;
+      const loopTemplate = Array.isArray(item[key]) ? item[key] : [];
+      return {
+        [normalizedKey]: normalizeLoopDirectives(loopTemplate),
+      };
+    });
   }
 
   if (!node || typeof node !== "object") {
     return node;
   }
 
-  const expanded = {};
-  Object.entries(node).forEach(([key, value]) => {
-    expanded[key] = expandLoopTemplates(value, templateData, options);
-  });
-  return expanded;
+  return Object.fromEntries(
+    Object.entries(node).map(([key, value]) => [
+      key,
+      normalizeLoopDirectives(value),
+    ]),
+  );
+};
+
+const renderLayoutTemplate = (template, templateData) => {
+  const options = { functions: jemplFunctions };
+  return parseAndRender(
+    normalizeLoopDirectives(template),
+    templateData,
+    options,
+  );
 };
 
 const assertSupportedAnimationType = ({
@@ -1720,6 +1681,7 @@ const createSoundNode = ({ id, sound, resource, defaultLoop = false }) => {
 
 const createLayoutTemplateData = ({
   variables,
+  imageGallery,
   runtime,
   saveSlots = [],
   dialogueState,
@@ -1765,6 +1727,7 @@ const createLayoutTemplateData = ({
   });
   const templateData = {
     variables,
+    imageGallery,
     runtime: resolvedRuntime,
     saveSlots,
     isChoiceVisible,
@@ -2221,9 +2184,7 @@ const renderTemplatedLayoutContainer = ({
   skipMode = false,
   skipTransitionsAndAnimations = false,
 }) => {
-  const processedContainer = parseAndRender(container, templateData, {
-    functions: jemplFunctions,
-  });
+  const processedContainer = renderLayoutTemplate(container, templateData);
 
   return resolveLayoutResourceIds(
     settleTextRevealIfCompleted(processedContainer, {
@@ -2446,6 +2407,7 @@ export const addBackgroundOrCg = (
     isLineCompleted,
     skipTransitionsAndAnimations,
     variables,
+    imageGallery,
     runtime,
     activePersistentAnimations,
     restoredPersistentAnimations,
@@ -2620,10 +2582,11 @@ export const addBackgroundOrCg = (
             ),
           );
         }
-        const processedContainer = parseAndRender(
+        const processedContainer = renderLayoutTemplate(
           bgContainer,
           createLayoutTemplateData({
             variables,
+            imageGallery,
             runtime,
             saveSlots,
             dialogueState: presentationState.dialogue,
@@ -2637,7 +2600,6 @@ export const addBackgroundOrCg = (
             characters: resources.characters || {},
             skipTransitionsAndAnimations,
           }),
-          { functions: jemplFunctions },
         );
         storyContainer.children.push(
           resolveLayoutResourceIds(
@@ -2861,6 +2823,7 @@ export const addVisuals = (
     isLineCompleted,
     skipTransitionsAndAnimations,
     variables,
+    imageGallery,
     runtime,
     activePersistentAnimations,
     autoMode,
@@ -2883,6 +2846,7 @@ export const addVisuals = (
     const previousItems = previousPresentationState?.visual?.items || [];
     const visualTemplateData = createLayoutTemplateData({
       variables,
+      imageGallery,
       runtime,
       saveSlots,
       dialogueState: presentationState.dialogue,
@@ -2923,9 +2887,7 @@ export const addVisuals = (
 
         storyContainer.children.push(
           resolveLayoutResourceIds(
-            parseAndRender(textElement, visualTemplateData, {
-              functions: jemplFunctions,
-            }),
+            renderLayoutTemplate(textElement, visualTemplateData),
             resources,
           ),
         );
@@ -3009,10 +2971,9 @@ export const addVisuals = (
             ...getElementTransform(transform, item),
           };
           Object.assign(visualContainer, getItemAppearance(item));
-          const processedContainer = parseAndRender(
+          const processedContainer = renderLayoutTemplate(
             visualContainer,
             visualTemplateData,
-            { functions: jemplFunctions },
           );
           storyContainer.children.push(
             resolveLayoutResourceIds(
@@ -3181,6 +3142,7 @@ export const addDialogue = (
     isLineCompleted,
     skipTransitionsAndAnimations,
     variables,
+    imageGallery,
     runtime,
     activePersistentAnimations,
     saveSlots = [],
@@ -3211,6 +3173,7 @@ export const addDialogue = (
       const wrappedTemplate = { elements: uiLayout.elements };
       const templateData = createLayoutTemplateData({
         variables,
+        imageGallery,
         runtime,
         saveSlots,
         dialogueState: presentationState.dialogue,
@@ -3228,17 +3191,7 @@ export const addDialogue = (
         skipTransitionsAndAnimations,
       });
 
-      const renderOptions = { functions: jemplFunctions };
-      const expandedTemplate = expandLoopTemplates(
-        wrappedTemplate,
-        templateData,
-        renderOptions,
-      );
-      const result = parseAndRender(
-        expandedTemplate,
-        templateData,
-        renderOptions,
-      );
+      const result = renderLayoutTemplate(wrappedTemplate, templateData);
       const uiElements = resolveLayoutResourceIds(
         settleTextRevealIfCompleted(result?.elements, {
           isLineCompleted,
@@ -3311,6 +3264,7 @@ export const addChoices = (
     isLineCompleted,
     skipTransitionsAndAnimations,
     variables,
+    imageGallery,
     runtime,
     autoMode,
     skipMode,
@@ -3331,32 +3285,27 @@ export const addChoices = (
     const layout = resources?.layouts[presentationState.choice.resourceId];
     if (layout && layout.elements) {
       const wrappedTemplate = { elements: layout.elements };
-      const result = parseAndRender(
-        wrappedTemplate,
-        {
-          ...createLayoutTemplateData({
-            variables,
-            runtime,
-            saveSlots,
-            dialogueState: presentationState.dialogue,
-            isLineCompleted,
-            autoMode,
-            skipMode,
-            isChoiceVisible: isChoiceVisible ?? !!presentationState.choice,
-            isFormVisible,
-            canRollback,
-            form,
-            characters: resources.characters || {},
-            skipTransitionsAndAnimations,
-          }),
-          choice: {
-            items: presentationState.choice?.items ?? [],
-          },
+      const result = renderLayoutTemplate(wrappedTemplate, {
+        ...createLayoutTemplateData({
+          variables,
+          imageGallery,
+          runtime,
+          saveSlots,
+          dialogueState: presentationState.dialogue,
+          isLineCompleted,
+          autoMode,
+          skipMode,
+          isChoiceVisible: isChoiceVisible ?? !!presentationState.choice,
+          isFormVisible,
+          canRollback,
+          form,
+          characters: resources.characters || {},
+          skipTransitionsAndAnimations,
+        }),
+        choice: {
+          items: presentationState.choice?.items ?? [],
         },
-        {
-          functions: jemplFunctions,
-        },
-      );
+      });
       const choiceElements = tagBypassChoice(
         resolveLayoutResourceIds(
           settleTextRevealIfCompleted(result?.elements, {
@@ -3417,6 +3366,7 @@ export const addForm = (
     isLineCompleted,
     skipTransitionsAndAnimations,
     variables,
+    imageGallery,
     runtime,
     autoMode,
     skipMode,
@@ -3455,6 +3405,7 @@ export const addForm = (
   const templateData = {
     ...createLayoutTemplateData({
       variables,
+      imageGallery,
       runtime,
       saveSlots,
       dialogueState: presentationState.dialogue,
@@ -3471,9 +3422,7 @@ export const addForm = (
     form,
   };
 
-  const processedForm = parseAndRender(formContainer, templateData, {
-    functions: jemplFunctions,
-  });
+  const processedForm = renderLayoutTemplate(formContainer, templateData);
   const formElements = tagFormInteractionSource(
     resolveLayoutResourceIds(
       settleTextRevealIfCompleted(enrichFormElements(processedForm, form), {
@@ -3523,6 +3472,7 @@ export const addControl = (
     presentationState,
     resources = {},
     variables,
+    imageGallery,
     runtime,
     isLineCompleted,
     autoMode,
@@ -3575,6 +3525,7 @@ export const addControl = (
       resources,
       templateData: createLayoutTemplateData({
         variables,
+        imageGallery,
         runtime,
         saveSlots,
         dialogueState: presentationState.dialogue,
@@ -3890,6 +3841,7 @@ export const addLayout = (
     previousPresentationState,
     resources = {},
     variables,
+    imageGallery,
     runtime,
     autoMode,
     skipMode,
@@ -3943,6 +3895,7 @@ export const addLayout = (
         resources,
         templateData: createLayoutTemplateData({
           variables,
+          imageGallery,
           runtime,
           saveSlots,
           dialogueState: presentationState.dialogue,
@@ -4059,6 +4012,7 @@ export const addOverlayStack = (
     presentationState,
     resources = {},
     variables,
+    imageGallery,
     runtime,
     autoMode,
     skipMode,
@@ -4120,6 +4074,7 @@ export const addOverlayStack = (
 
       const templateData = createLayoutTemplateData({
         variables,
+        imageGallery,
         runtime,
         saveSlots,
         dialogueState: presentationState?.dialogue,
@@ -4135,9 +4090,10 @@ export const addOverlayStack = (
         skipTransitionsAndAnimations,
       });
 
-      const processedOverlay = parseAndRender(overlayContainer, templateData, {
-        functions: jemplFunctions,
-      });
+      const processedOverlay = renderLayoutTemplate(
+        overlayContainer,
+        templateData,
+      );
 
       const [blocker, ...layoutChildren] = processedOverlay.children || [];
       const resolvedOverlay = resolveLayoutResourceIds(
@@ -4172,6 +4128,7 @@ export const addConfirmDialog = (
     presentationState,
     resources = {},
     variables,
+    imageGallery,
     runtime,
     saveSlots = [],
     autoMode,
@@ -4229,10 +4186,11 @@ export const addConfirmDialog = (
     variables,
   );
 
-  const processedConfirmDialog = parseAndRender(
+  const processedConfirmDialog = renderLayoutTemplate(
     confirmDialogContainer,
     createLayoutTemplateData({
       variables,
+      imageGallery,
       runtime,
       saveSlots,
       dialogueState: presentationState?.dialogue,
@@ -4248,9 +4206,6 @@ export const addConfirmDialog = (
       characters: resources.characters || {},
       skipTransitionsAndAnimations,
     }),
-    {
-      functions: jemplFunctions,
-    },
   );
 
   const [blocker, ...layoutChildren] = processedConfirmDialog.children || [];

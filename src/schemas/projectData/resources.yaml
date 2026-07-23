@@ -27,6 +27,46 @@ properties:
         additionalProperties: false
     additionalProperties: false
 
+  imageGallery:
+    type: object
+    description: Singleton authored image gallery catalog
+    properties:
+      pageSize:
+        type: integer
+        minimum: 1
+        description: Number of gallery groups shown on one page
+      groups:
+        type: array
+        description: Gallery groups in authored display order
+        items:
+          type: object
+          properties:
+            id:
+              type: string
+              minLength: 1
+              description: Gallery-wide unique group ID
+            variants:
+              type: array
+              minItems: 1
+              description: Image variants in authored navigation order
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    minLength: 1
+                    description: Group-local unique variant ID
+                  imageId:
+                    type: string
+                    minLength: 1
+                    description: Reference to a resources.images entry
+                required: [id, imageId]
+                additionalProperties: false
+          required: [id, variants]
+          additionalProperties: false
+    required: [pageSize, groups]
+    additionalProperties: false
+
   characters:
     type: object
     description: Character sprite assets
