@@ -3618,14 +3618,14 @@ export const addBgm = (
           ]
         : []
       : bgm.sounds;
-    const usesChannelLoop = !usesLegacySound && bgm.loop !== undefined;
+    const loopsChannel = !usesLegacySound && bgm.loop === true;
     const children = [];
 
     if (!usesLegacySound) {
       assertUniqueAudioIds(sounds, "BGM sound");
     }
 
-    if (usesChannelLoop && bgm.loop === true) {
+    if (loopsChannel) {
       const loopingSound = sounds.find((sound) => sound.loop === true);
       if (loopingSound) {
         throw new Error(
@@ -3638,7 +3638,7 @@ export const addBgm = (
       const audioResource = resources.sounds?.[sound.resourceId];
       if (!audioResource) return;
 
-      const renderSound = usesChannelLoop
+      const renderSound = loopsChannel
         ? { ...sound, loop: sound.loop ?? false }
         : sound;
 
@@ -3650,7 +3650,7 @@ export const addBgm = (
           ),
           sound: renderSound,
           resource: audioResource,
-          defaultLoop: usesChannelLoop ? false : true,
+          defaultLoop: loopsChannel ? false : true,
         }),
       );
     });
@@ -3703,7 +3703,7 @@ export const addSfx = (state, { presentationState, resources, runtime }) => {
     }
 
     channels.forEach((channel) => {
-      const usesChannelLoop = !usesLegacyChannel && channel.loop !== undefined;
+      const loopsChannel = !usesLegacyChannel && channel.loop === true;
       const children = [];
 
       if (!usesLegacyChannel) {
@@ -3714,7 +3714,7 @@ export const addSfx = (state, { presentationState, resources, runtime }) => {
         );
       }
 
-      if (usesChannelLoop && channel.loop === true) {
+      if (loopsChannel) {
         const loopingSound = channel.sounds.find(
           (sound) => sound.loop === true,
         );
@@ -3729,7 +3729,7 @@ export const addSfx = (state, { presentationState, resources, runtime }) => {
         const audioResource = resources.sounds?.[sound.resourceId];
         if (!audioResource) return;
 
-        const renderSound = usesChannelLoop
+        const renderSound = loopsChannel
           ? { ...sound, loop: sound.loop ?? false }
           : sound;
 
@@ -3740,7 +3740,7 @@ export const addSfx = (state, { presentationState, resources, runtime }) => {
               : createAudioRenderId("sfx", channel.id, sound.id),
             sound: renderSound,
             resource: audioResource,
-            defaultLoop: usesChannelLoop ? false : undefined,
+            defaultLoop: loopsChannel ? false : undefined,
           }),
         );
       });
@@ -3801,14 +3801,14 @@ export const addVoice = (
         ]
       : []
     : voice.sounds;
-  const usesChannelLoop = !usesLegacySound && voice.loop !== undefined;
+  const loopsChannel = !usesLegacySound && voice.loop === true;
   const children = [];
 
   if (!usesLegacySound) {
     assertUniqueAudioIds(sounds, "Voice sound");
   }
 
-  if (usesChannelLoop && voice.loop === true) {
+  if (loopsChannel) {
     const loopingSound = sounds.find((sound) => sound.loop === true);
     if (loopingSound) {
       throw new Error(
@@ -3825,7 +3825,7 @@ export const addVoice = (
     );
     if (!voiceResource) return;
 
-    const renderSound = usesChannelLoop
+    const renderSound = loopsChannel
       ? { ...sound, loop: sound.loop ?? false }
       : sound;
 
@@ -3838,7 +3838,7 @@ export const addVoice = (
         ),
         sound: renderSound,
         resource: voiceResource,
-        defaultLoop: usesChannelLoop ? false : undefined,
+        defaultLoop: loopsChannel ? false : undefined,
       }),
     );
   });

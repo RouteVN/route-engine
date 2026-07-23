@@ -436,6 +436,52 @@ describe("RouteEngine audio channels", () => {
     );
   });
 
+  it("preserves resource sound loops when channel looping is false", () => {
+    const projectData = createProjectData();
+    const actions =
+      projectData.story.scenes.scene1.sections.section1.lines[0].actions;
+    projectData.resources.sounds.theme.loop = true;
+    projectData.resources.sounds.rain.loop = true;
+    actions.bgm = {
+      loop: false,
+      sounds: [{ id: "theme", resourceId: "theme" }],
+    };
+    actions.voice = {
+      loop: false,
+      sounds: [{ id: "alice", resourceId: "alice" }],
+    };
+    actions.sfx = {
+      channels: [
+        {
+          id: "environment",
+          loop: false,
+          sounds: [{ id: "rain", resourceId: "rain" }],
+        },
+      ],
+    };
+
+    const engine = createEngine();
+    engine.init({ initialState: { projectData } });
+
+    expect(engine.selectRenderState().audio).toEqual([
+      expect.objectContaining({
+        id: "channel:bgm",
+        loop: false,
+        children: [expect.objectContaining({ loop: true })],
+      }),
+      expect.objectContaining({
+        id: "channel:sfx:environment",
+        loop: false,
+        children: [expect.objectContaining({ loop: true })],
+      }),
+      expect.objectContaining({
+        id: "channel:voice",
+        loop: false,
+        children: [expect.objectContaining({ loop: true })],
+      }),
+    ]);
+  });
+
   it("escapes authored ID components when composing SFX render IDs", () => {
     const projectData = createProjectData();
     const actions =
