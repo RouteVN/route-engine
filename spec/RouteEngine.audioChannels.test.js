@@ -242,6 +242,7 @@ describe("RouteEngine audio channels", () => {
       projectData.story.scenes.scene1.sections.section1.lines[0].actions;
     actions.bgm = {
       loop: true,
+      interruption: "loopEnd",
       volume: 80,
       sounds: [
         { id: "theme", resourceId: "theme" },
@@ -266,6 +267,7 @@ describe("RouteEngine audio channels", () => {
         muted: false,
         pan: 0,
         loop: true,
+        interruption: "loopEnd",
         children: [
           {
             id: "bgm:theme",
@@ -285,6 +287,28 @@ describe("RouteEngine audio channels", () => {
           },
         ],
       },
+    ]);
+  });
+
+  it("forwards interruption for the legacy BGM shorthand", () => {
+    const projectData = createProjectData();
+    const actions =
+      projectData.story.scenes.scene1.sections.section1.lines[0].actions;
+    actions.bgm = {
+      resourceId: "theme",
+      interruption: "loopEnd",
+    };
+    delete actions.voice;
+    delete actions.sfx;
+
+    const engine = createEngine();
+    engine.init({ initialState: { projectData } });
+
+    expect(engine.selectRenderState().audio).toEqual([
+      expect.objectContaining({
+        id: "channel:bgm",
+        interruption: "loopEnd",
+      }),
     ]);
   });
 
@@ -337,6 +361,28 @@ describe("RouteEngine audio channels", () => {
     expect(voiceChannel.children.map((sound) => sound.loop)).toEqual([
       false,
       false,
+    ]);
+  });
+
+  it("forwards interruption for the legacy Voice shorthand", () => {
+    const projectData = createProjectData();
+    const actions =
+      projectData.story.scenes.scene1.sections.section1.lines[0].actions;
+    delete actions.bgm;
+    delete actions.sfx;
+    actions.voice = {
+      resourceId: "narrator",
+      interruption: "loopEnd",
+    };
+
+    const engine = createEngine();
+    engine.init({ initialState: { projectData } });
+
+    expect(engine.selectRenderState().audio).toEqual([
+      expect.objectContaining({
+        id: "channel:voice",
+        interruption: "loopEnd",
+      }),
     ]);
   });
 

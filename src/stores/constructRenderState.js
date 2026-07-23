@@ -1612,6 +1612,7 @@ const createChannelNode = ({
   muted,
   pan,
   loop,
+  interruption,
   children,
   runtime,
 }) => {
@@ -1625,6 +1626,9 @@ const createChannelNode = ({
   };
   if (loop !== undefined) {
     channel.loop = loop;
+  }
+  if (interruption !== undefined) {
+    channel.interruption = interruption;
   }
   return channel;
 };
@@ -3626,6 +3630,7 @@ export const addBgm = (
         muted: bgm.muted,
         pan: bgm.pan,
         loop: usesLegacySound ? undefined : bgm.loop,
+        interruption: bgm.interruption,
         children,
         runtime: resolvedRuntime,
       }),
@@ -3709,6 +3714,7 @@ export const addSfx = (state, { presentationState, resources, runtime }) => {
           muted: channel.muted,
           pan: channel.pan,
           loop: usesLegacyChannel ? undefined : channel.loop,
+          interruption: usesLegacyChannel ? undefined : channel.interruption,
           children,
           runtime,
         }),
@@ -3815,6 +3821,7 @@ export const addVoice = (
       muted: voice.muted,
       pan: voice.pan,
       loop: usesLegacySound ? undefined : voice.loop,
+      interruption: voice.interruption,
       children,
       runtime: resolvedRuntime,
     }),
