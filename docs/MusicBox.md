@@ -65,7 +65,7 @@ The generated `channel:music-room` uses the same runtime layers as BGM:
 - `runtime.soundVolume` does not apply.
 
 Runtime volume/mute changes update output without changing playback state,
-cursor, generation, or revision. Muting and volume zero do not pause playback.
+cursor, or `commandId`. Muting and volume zero do not pause playback.
 
 Existing `startAt` and `endAt` values remain seconds. Music-room state, actions,
 and renderer events use milliseconds with an `Ms` suffix.
@@ -214,101 +214,106 @@ error changes readiness to `error` and status to `stopped`.
   `startAt * 1000`, and must be finite and positive.
 - Seeking before readiness or beyond duration is a no-op.
 - Seeking exactly to duration sets `ended`.
-- Seeking preserves playing/paused status. Seeking a stopped track changes its
-  next start; seeking an ended track earlier changes it to stopped.
-- Repeating the same seek still issues a new renderer command.
+- While playing or paused, Route Graphics applies `seek` and preserves that
+  transport state.
+- While stopped or ended, Route Graphics accepts `seek` as a transport no-op.
+  Route Engine still stores the requested cursor; seeking an ended track
+  earlier changes the public status to stopped. The next `play` command uses
+  that stored position.
+- Repeating the same seek issues a higher `commandId`.
 
-## Internal and Renderer Contract
+## Route Graphics Integration
 
 Unsaved internal state holds track/page, status/readiness, position/duration,
-`playbackGeneration`, and `commandRevision`. Internal readiness may be `idle`
-only when no track is selected; public playback is then `null`.
+and the last renderer `commandId`. Internal readiness may be `idle` only when
+no track is selected; public playback is then `null`.
 
-`playbackGeneration` is a non-negative safe integer identifying the retained
-sound node and decode. A new selection or retry after an error creates a new
-generation. Clear, load, new game, and project replacement retire it.
-Generations are never reused during an engine lifetime.
+Route Engine owns one monotonically increasing audio-command counter shared by
+all command-controlled sounds. It advances for every transport command, is not
+advanced by renderer events or ordinary rerenders, and is never reused during
+one engine lifetime.
 
-`commandRevision` is a non-negative safe integer starting at zero in each
-generation. It advances for every subsequent successful transport operation,
-including a repeated seek. Renderer events do not advance it.
-
-While selected, Route Engine renders one stable `music-room:player` sound node.
-Alongside the normal sound fields, it carries:
+While selected, Route Engine renders a stable `music-room:player` sound node
+using the strict interface released in Route Graphics `1.31.0`:
 
 ```yaml
 playback:
-  trackId: mainTheme
-  playbackGeneration: 12
-  commandRevision: 4
+  commandId: 42
   operation: pause
-  status: paused
-  positionMs: 83000
 ```
 
-`trackId` is non-empty; `operation` is `start`, `restart`, `resume`, `pause`,
-`stop`, or `seek`; `status` uses the public status enum; and `positionMs` is
-finite and non-negative. Route Engine and Route Graphics preserve this strict
-object:
+The command has exactly these fields:
 
-- A different track or generation replaces the prior sound/decode and applies
-  the new command.
-- A higher revision applies its operation exactly once. Start, restart, stop,
-  and seek use `positionMs`; pause and resume preserve Route Graphics' exact
-  cursor and ignore the potentially stale projected position.
-- Changes with the same generation and revision are state acknowledgements,
-  not commands. In particular, progress-updated positions never cause seeks.
-- Volume, mute, pan, and other non-transport changes never alter the cursor or
-  playback identity.
-- Removing the node cancels it without reporting completion.
+- `commandId`: non-negative safe integer.
+- `operation`: `play`, `pause`, `resume`, `stop`, or `seek`.
+- `positionMs`: finite and non-negative; required for `play` and `seek`,
+  forbidden otherwise.
 
-Every renderer event echoes the command's track ID, generation, and revision.
-Events that do not match all three are ignored.
+`play` covers both start and restart. A higher `commandId` executes once;
+repeated or lower IDs do not. Source changes require a higher `play` command.
+Pause/resume preserve Route Graphics' exact cursor. Mixer-only and
+progress-driven renders retain the current command unchanged.
 
-After a retained-node revision change, future ready, error, and position events
-use the latest revision. An already-settled decode result is re-emitted when
-needed under that identity; superseded callbacks are suppressed. Completion
-remains tied to the active playing command and is never rebound.
+Route Graphics emits:
 
-Stopping while loading therefore keeps the generation, advances the revision,
-sets stopped position zero, and still receives the current or eventual
-ready/error result.
+- `soundReady`, `soundProgress`, and `soundComplete` with `_event.id`,
+  `_event.commandId`, `positionMs`, and `durationMs`.
+- `soundError` with `_event.id`, `_event.commandId`, and a stable
+  non-sensitive `errorCode`.
 
-Route Graphics must provide generic sound support for pause, seek, decoded
-duration, progress, completion, and errors. `soundReady`, `soundProgress`, and
-`soundComplete` carry `positionMs` and `durationMs`; `soundError` carries a
-stable, non-sensitive `errorCode`.
+Route Engine accepts an event only when `id` is `music-room:player`,
+`commandId` is current, and all values are finite, in range, and compatible
+with current player state. Renderer events travel through a private action path
+that bypasses form and choice input gating.
 
-Renderer values are strictly checked for identity, generation, revision, type,
-finiteness, range, and current-state compatibility. Ready precedes progress or
-completion; error is terminal for its generation. `soundProgress` is emitted
-at least every `250ms` while playing and after pause, seek, or stop. Ready,
-completion, and error use their dedicated events.
+Route Graphics owns decode/source generations privately. It rebinds retained
+ready, error, progress, and valid completion events to the latest accepted
+command and suppresses stale callbacks. Stop during decode retains the decode,
+resets the cursor to zero, and reports the result under the stop command.
 
-Renderer events use a private action path that bypasses form and choice input
-gating. They must not report completion for pause, seek, replacement, removal,
-failure, or context destruction.
+Progress arrives at least every `250ms` while playing and immediately after a
+successful pause, seek, or stop. Completion occurs only after natural
+non-looping playback, never after another command, replacement, removal,
+failure, or renderer destruction.
 
-Route Graphics `1.30.1` neither supports these capabilities nor preserves the
-new `playback` command. Its sound schema, normalizer, diffing, and event emitter
-must be extended. Route Engine must not imitate pause with mute/removal or
+Route Graphics `1.31.0` provides this sound contract. Route Engine must bump
+its dependency to at least `1.31.0` before implementation. It must not
 calculate progress with its ticker.
 
 ## Audio Focus and Lifecycle
 
-The room player uses a separate music channel. While a track is selected,
-story BGM remains logically unchanged but is rendered paused; voice and SFX
-are unaffected. Pause, stop, and natural completion keep BGM paused.
+The room player uses a separate, non-looping music channel and is
+command-controlled from its first render. While a track is selected, story BGM
+remains logically unchanged but is rendered paused; voice and SFX are
+unaffected. Pause, stop, and natural completion keep BGM paused.
 
 Clearing selection releases focus and resumes the latest logical story BGM,
 including one changed while the room held focus. A generated screen should
 clear selection when closing if it wants BGM restored.
 
+Route Graphics forbids adding or removing `playback` while retaining the same
+sound ID. All compatible story BGM must therefore be command-controlled from
+its first render, not only while a Music Room resource or selection exists.
+This requires migrating BGM rendering to the released command contract while
+preserving existing behavior.
+
+Route Graphics `1.31.0` supports multiple controlled sounds, so this works for
+top-level BGM sounds and controlled sounds inside non-looping channels.
+However, it rejects command-controlled children inside an
+`audio-channel` with `loop: true`. Existing looped multi-sound BGM therefore
+cannot yet be paused and resumed exactly.
+
+Before Music Room implementation is complete, that case requires either
+generic channel pause/resume in Route Graphics or a verified compatible BGM
+representation in Route Engine. Muting, removing, or restarting the looping
+channel is not an acceptable substitute because it loses cursor continuity.
+
 The player is transient:
 
 - It is not saved and creates no rollback checkpoint.
 - Load, new game, story reset, and successful project replacement invalidate
-  playback, clear the player without reusing its generation, and release focus.
+  playback, retire its current command without resetting the command counter,
+  and release focus.
 - Rollback never restores an earlier audio cursor.
 - Project replacement validates first; rejection preserves the project,
   player, and pending effects.
@@ -321,4 +326,5 @@ crossfade, and streaming.
 
 Implementation requires strict schema/action tests and browser audio tests for
 pause continuity, seeking, command reconciliation, stop during decode, runtime
-volume/mute changes, progress, completion, stale events, and BGM restoration.
+volume/mute changes, progress, completion, stale events, ordinary BGM
+restoration, and looped-channel BGM behavior.
