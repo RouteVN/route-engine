@@ -1615,6 +1615,7 @@ const createChannelNode = ({
   pan,
   loop,
   playback,
+  interruption,
   children,
   runtime,
 }) => {
@@ -1631,6 +1632,9 @@ const createChannelNode = ({
   }
   if (playback !== undefined) {
     channel.playback = structuredClone(playback);
+  }
+  if (interruption !== undefined) {
+    channel.interruption = interruption;
   }
   return channel;
 };
@@ -3650,6 +3654,7 @@ export const addBgm = (
         pan: bgm.pan,
         loop: usesLegacySound ? undefined : bgm.loop,
         playback: musicRoomPlayer?.bgmPlayback,
+        interruption: bgm.interruption,
         children,
         runtime: resolvedRuntime,
       }),
@@ -3779,6 +3784,7 @@ export const addSfx = (state, { presentationState, resources, runtime }) => {
           muted: channel.muted,
           pan: channel.pan,
           loop: usesLegacyChannel ? undefined : channel.loop,
+          interruption: usesLegacyChannel ? undefined : channel.interruption,
           children,
           runtime,
         }),
@@ -3885,6 +3891,7 @@ export const addVoice = (
       muted: voice.muted,
       pan: voice.pan,
       loop: usesLegacySound ? undefined : voice.loop,
+      interruption: voice.interruption,
       children,
       runtime: resolvedRuntime,
     }),

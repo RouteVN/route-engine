@@ -1,0 +1,75 @@
+---
+title: Legacy BGM Interruption
+description: Isolated browser fixture for forwarding loop-end interruption from the legacy single-sound BGM shorthand.
+skipInitialScreenshot: true
+specs:
+  - the first line is silent so the canvas click supplies the audio user gesture
+  - the second line starts a legacy looping BGM sound with loop-end channel interruption
+  - the third line removes the BGM channel through the canonical empty schedule
+steps:
+  - action: click
+    x: 320
+    y: 180
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audio.0.id
+    value: channel:bgm
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audio.0.interruption
+    value: loopEnd
+  - action: click
+    x: 320
+    y: 180
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audio
+    value: []
+---
+screen:
+  width: 640
+  height: 360
+resources:
+  sounds:
+    theme:
+      fileId: 3ka3s
+  colors:
+    canvas:
+      hex: "#000000"
+  controls:
+    advance:
+      elements:
+        - id: advance-surface
+          type: rect
+          width: 640
+          height: 360
+          colorId: canvas
+          click:
+            payload:
+              actions:
+                nextLine: {}
+story:
+  initialSceneId: scene1
+  scenes:
+    scene1:
+      initialSectionId: section1
+      sections:
+        section1:
+          lines:
+            - id: silent
+              actions:
+                control:
+                  resourceId: advance
+            - id: legacy-bgm
+              actions:
+                control:
+                  resourceId: advance
+                bgm:
+                  resourceId: theme
+                  interruption: loopEnd
+            - id: stopped
+              actions:
+                control:
+                  resourceId: advance
+                bgm:
+                  sounds: []
