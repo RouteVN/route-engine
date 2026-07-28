@@ -40,6 +40,18 @@ out:
       groupId: null
       variantId: null
       pageIndex: 0
+    audioCommandId: 0
+    musicRoomPlayer:
+      trackId: null
+      pageIndex: 0
+      status: stopped
+      readiness: idle
+      positionMs: 0
+      durationMs: null
+      playback: null
+      bgmPlayback:
+        commandId: 0
+        operation: resume
     accountViewedRegistry:
       sections: []
       resources: []
@@ -136,6 +148,18 @@ out:
       groupId: null
       variantId: null
       pageIndex: 0
+    audioCommandId: 0
+    musicRoomPlayer:
+      trackId: null
+      pageIndex: 0
+      status: stopped
+      readiness: idle
+      positionMs: 0
+      durationMs: null
+      playback: null
+      bgmPlayback:
+        commandId: 0
+        operation: resume
     accountViewedRegistry:
       sections: []
       resources: []
@@ -245,6 +269,18 @@ out:
       groupId: null
       variantId: null
       pageIndex: 0
+    audioCommandId: 0
+    musicRoomPlayer:
+      trackId: null
+      pageIndex: 0
+      status: stopped
+      readiness: idle
+      positionMs: 0
+      durationMs: null
+      playback: null
+      bgmPlayback:
+        commandId: 0
+        operation: resume
     accountViewedRegistry:
       sections: []
       resources: []
@@ -348,6 +384,18 @@ out:
       groupId: null
       variantId: null
       pageIndex: 0
+    audioCommandId: 0
+    musicRoomPlayer:
+      trackId: null
+      pageIndex: 0
+      status: stopped
+      readiness: idle
+      positionMs: 0
+      durationMs: null
+      playback: null
+      bgmPlayback:
+        commandId: 0
+        operation: resume
     accountViewedRegistry:
       sections: []
       resources: []
@@ -448,6 +496,18 @@ out:
       groupId: null
       variantId: null
       pageIndex: 0
+    audioCommandId: 0
+    musicRoomPlayer:
+      trackId: null
+      pageIndex: 0
+      status: stopped
+      readiness: idle
+      positionMs: 0
+      durationMs: null
+      playback: null
+      bgmPlayback:
+        commandId: 0
+        operation: resume
     accountViewedRegistry:
       sections: []
       resources: []

@@ -6,6 +6,7 @@ import {
   RUN_STORE_TRANSACTION,
   validateComputedVariableConfigs,
   validateImageGalleryConfig,
+  validateMusicRoomConfig,
 } from "./util.js";
 import {
   collectPersistentAnimationContinuations,
@@ -47,6 +48,7 @@ const ROLLBACK_CURSOR_REPLACING_ACTION_TYPES = new Set([
 const FORM_INTERACTION_SOURCE = "form";
 const FORM_ACTION_TYPES = new Set(["submitForm", "cancelForm"]);
 const SHOW_IMAGE_GALLERY_VARIANT_ACTION_TYPE = "showImageGalleryVariant";
+const PLAY_MUSIC_ROOM_TRACK_ACTION_TYPE = "playMusicRoomTrack";
 
 const isRecord = (value) =>
   value !== null && typeof value === "object" && !Array.isArray(value);
@@ -305,6 +307,10 @@ export default function createRouteEngine(options) {
     return _systemStore.selectImageGallery();
   };
 
+  const selectMusicRoom = () => {
+    return _systemStore.selectMusicRoom();
+  };
+
   const selectSkipMode = () => {
     return _systemStore.selectSkipMode();
   };
@@ -552,6 +558,7 @@ export default function createRouteEngine(options) {
       payload?.projectData?.resources?.variables ?? {},
     );
     validateImageGalleryConfig(payload.projectData);
+    validateMusicRoomConfig(payload.projectData);
   };
 
   const dispatchConditionalAutoContinue = (
@@ -769,6 +776,34 @@ export default function createRouteEngine(options) {
     };
   };
 
+  const maskDeclaredMusicRoomTrackId = (payload) => {
+    if (!isRecord(payload) || typeof payload.trackId !== "string") {
+      return {
+        templatePayload: payload,
+        literalTargetIds: null,
+      };
+    }
+    const musicRoom = _systemStore.selectMusicRoomConfig();
+    const hasDeclaredTrack = musicRoom?.tracks?.some(
+      (track) => track.id === payload.trackId,
+    );
+    if (!hasDeclaredTrack) {
+      return {
+        templatePayload: payload,
+        literalTargetIds: null,
+      };
+    }
+    return {
+      templatePayload: {
+        ...payload,
+        trackId: null,
+      },
+      literalTargetIds: {
+        trackId: payload.trackId,
+      },
+    };
+  };
+
   const assertConditionalActionPayload = (payload) => {
     if (!isRecord(payload)) {
       throw new Error("conditional action payload must be an object");
@@ -864,13 +899,16 @@ export default function createRouteEngine(options) {
 
   const handleActionEntry = (actionType, payload, eventContext, options) => {
     const context = buildActionTemplateContext(eventContext);
-    const { templatePayload, literalTargetIds } =
-      actionType === SHOW_IMAGE_GALLERY_VARIANT_ACTION_TYPE
-        ? maskDeclaredImageGalleryTargetIds(payload)
-        : {
-            templatePayload: payload,
-            literalTargetIds: null,
-          };
+    let maskedPayload = {
+      templatePayload: payload,
+      literalTargetIds: null,
+    };
+    if (actionType === SHOW_IMAGE_GALLERY_VARIANT_ACTION_TYPE) {
+      maskedPayload = maskDeclaredImageGalleryTargetIds(payload);
+    } else if (actionType === PLAY_MUSIC_ROOM_TRACK_ACTION_TYPE) {
+      maskedPayload = maskDeclaredMusicRoomTrackId(payload);
+    }
+    const { templatePayload, literalTargetIds } = maskedPayload;
     const processedActions = processActionTemplates(
       { [actionType]: templatePayload },
       context,
@@ -1003,6 +1041,7 @@ export default function createRouteEngine(options) {
     selectSaveSlotPage,
     selectSaveSlots: selectSaveSlotMap,
     selectImageGallery,
+    selectMusicRoom,
     selectRuntime,
     selectIsChoiceVisible,
     selectIsFormVisible,

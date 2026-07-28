@@ -1,6 +1,6 @@
 # Music Room
 
-Status: proposed. The catalog and player are not implemented yet.
+Status: implemented.
 
 ## Contract
 
@@ -276,9 +276,8 @@ successful pause, seek, or stop. Completion occurs only after natural
 non-looping playback, never after another command, replacement, removal,
 failure, or renderer destruction.
 
-Route Graphics `1.31.0` provides this sound contract. Route Engine must bump
-its dependency to at least `1.31.0` before implementation. It must not
-calculate progress with its ticker.
+Route Graphics `1.31.1` provides the sound and channel command contracts.
+Route Engine does not calculate progress with its ticker.
 
 ## Audio Focus and Lifecycle
 
@@ -297,16 +296,11 @@ its first render, not only while a Music Room resource or selection exists.
 This requires migrating BGM rendering to the released command contract while
 preserving existing behavior.
 
-Route Graphics `1.31.0` supports multiple controlled sounds, so this works for
-top-level BGM sounds and controlled sounds inside non-looping channels.
-However, it rejects command-controlled children inside an
-`audio-channel` with `loop: true`. Existing looped multi-sound BGM therefore
-cannot yet be paused and resumed exactly.
-
-Before Music Room implementation is complete, that case requires either
-generic channel pause/resume in Route Graphics or a verified compatible BGM
-representation in Route Engine. Muting, removing, or restarting the looping
-channel is not an acceptable substitute because it loses cursor continuity.
+Route Graphics `1.31.1` provides cursor-preserving `pause` and `resume`
+commands on an `audio-channel`. Route Engine renders every story BGM channel
+in that mode from its first appearance, including looping multi-sound
+channels. The room player remains a command-controlled child of its own
+non-looping channel.
 
 The player is transient:
 
@@ -324,7 +318,8 @@ V1 excludes multiple rooms, variants, public sessions, layout associations,
 shuffle, repeat, playlists, favorites, automatic next, waveform, DSP,
 crossfade, and streaming.
 
-Implementation requires strict schema/action tests and browser audio tests for
-pause continuity, seeking, command reconciliation, stop during decode, runtime
-volume/mute changes, progress, completion, stale events, ordinary BGM
-restoration, and looped-channel BGM behavior.
+Coverage includes strict schema/action tests for command reconciliation, stop
+during decode, completion, stale events, lifecycle resets, and atomicity. The
+browser fixture exercises real canvas dispatch, decode readiness/progress,
+pause continuity, seeking, resume, runtime volume/mute rerenders, and looping
+BGM focus restoration.

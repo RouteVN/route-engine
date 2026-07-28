@@ -182,6 +182,28 @@ properties:
                               $ref: "../systemActions.yaml#/properties/moveToNextImageGalleryPage"
                             moveToPreviousImageGalleryPage:
                               $ref: "../systemActions.yaml#/properties/moveToPreviousImageGalleryPage"
+                            playMusicRoomTrack:
+                              $ref: "../systemActions.yaml#/properties/playMusicRoomTrack"
+                            playMusicRoom:
+                              $ref: "../systemActions.yaml#/properties/playMusicRoom"
+                            pauseMusicRoom:
+                              $ref: "../systemActions.yaml#/properties/pauseMusicRoom"
+                            stopMusicRoom:
+                              $ref: "../systemActions.yaml#/properties/stopMusicRoom"
+                            seekMusicRoom:
+                              $ref: "../systemActions.yaml#/properties/seekMusicRoom"
+                            playPreviousMusicRoomTrack:
+                              $ref: "../systemActions.yaml#/properties/playPreviousMusicRoomTrack"
+                            playNextMusicRoomTrack:
+                              $ref: "../systemActions.yaml#/properties/playNextMusicRoomTrack"
+                            clearMusicRoomSelection:
+                              $ref: "../systemActions.yaml#/properties/clearMusicRoomSelection"
+                            moveToMusicRoomPage:
+                              $ref: "../systemActions.yaml#/properties/moveToMusicRoomPage"
+                            moveToNextMusicRoomPage:
+                              $ref: "../systemActions.yaml#/properties/moveToNextMusicRoomPage"
+                            moveToPreviousMusicRoomPage:
+                              $ref: "../systemActions.yaml#/properties/moveToPreviousMusicRoomPage"
                           additionalProperties: false
 
                       required: [id, actions]

@@ -132,6 +132,10 @@ describe("RouteEngine audio channels", () => {
         volume: 40,
         muted: false,
         pan: -0.25,
+        playback: {
+          commandId: 0,
+          operation: "resume",
+        },
         children: [
           {
             id: "bgm:theme",
@@ -266,6 +270,10 @@ describe("RouteEngine audio channels", () => {
         muted: false,
         pan: 0,
         loop: true,
+        playback: {
+          commandId: 0,
+          operation: "resume",
+        },
         children: [
           {
             id: "bgm:theme",
