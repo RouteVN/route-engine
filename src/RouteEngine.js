@@ -1037,8 +1037,15 @@ export default function createRouteEngine(options) {
     }
   };
 
-  const handleLineActions = () =>
-    runWithDeferredEffects(() => {
+  const handleLineActions = (payload) => {
+    if (
+      typeof payload?.sceneReplayId === "string" &&
+      _systemStore.selectSceneReplay()?.activeReplayId !== payload.sceneReplayId
+    ) {
+      return false;
+    }
+
+    return runWithDeferredEffects(() => {
       const enteredPointer = _systemStore.selectCurrentPointer()?.pointer;
       const rollbackCursor = _systemStore.selectRollbackCursor?.() ?? null;
       const pendingRollbackLineEntrySaveHandoff =
@@ -1069,6 +1076,7 @@ export default function createRouteEngine(options) {
       queueSettledEnteredLineAutoTimer(enteredPointer);
       return handledLineActions;
     });
+  };
 
   return {
     init,

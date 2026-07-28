@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import createRouteEngine from "../src/RouteEngine.js";
+import createEffectsHandler from "../src/createEffectsHandler.js";
 
 const ABSENT_SCENE_REPLAY = Symbol("absent-scene-replay");
 
@@ -303,6 +304,46 @@ describe("RouteEngine scene replay catalog", () => {
     expect(selectCurrentContext(engine).pointers.read.lineId).toBe("caller1");
   });
 
+  it("defers an already-due automatic replay exit until the terminal line completes", () => {
+    const { engine } = createEngine({
+      projectData: createProjectData({
+        replayLines: [
+          { id: "replay1", actions: {} },
+          {
+            id: "replay2",
+            actions: {
+              finishSceneReplay: {},
+              setNextLineConfig: {
+                auto: {
+                  enabled: true,
+                  trigger: "fromStart",
+                  delay: 1,
+                },
+              },
+            },
+          },
+        ],
+      }),
+    });
+    engine.handleActions({
+      startSceneReplay: { replayId: "firstMeeting" },
+    });
+    engine.handleAction("markLineCompleted", {});
+    engine.handleActions({ nextLine: {} });
+
+    expect(engine.selectSystemState().global.isLineCompleted).toBe(false);
+    engine.handleAction("nextLineFromSystem", {});
+    expect(engine.selectIsSceneReplayActive()).toBe(true);
+    expect(selectCurrentContext(engine).sceneReplay).toMatchObject({
+      finishOnNextAdvance: true,
+      exitOnLineCompleted: true,
+    });
+
+    engine.handleAction("markLineCompleted", {});
+    expect(engine.selectIsSceneReplayActive()).toBe(false);
+    expect(selectCurrentContext(engine).pointers.read.lineId).toBe("caller1");
+  });
+
   it("supports immediate exit and treats finish/exit outside replay as no-ops", () => {
     const { engine } = createEngine();
     const before = engine.selectSystemState();
@@ -318,6 +359,28 @@ describe("RouteEngine scene replay catalog", () => {
       exitSceneReplay: {},
     });
     expect(engine.selectIsSceneReplayActive()).toBe(false);
+  });
+
+  it("does not restore a dialog that started replay from its confirm actions", () => {
+    const { engine } = createEngine();
+    engine.handleActions({
+      showConfirmDialog: {
+        resourceId: "confirmReplay",
+        confirmActions: {
+          startSceneReplay: { replayId: "firstMeeting" },
+        },
+      },
+    });
+    const confirmActions =
+      engine.selectSystemState().global.confirmDialog.confirmActions;
+    expect(Object.keys(confirmActions)[0]).toBe("hideConfirmDialog");
+
+    engine.handleActions(confirmActions);
+    expect(engine.selectIsSceneReplayActive()).toBe(true);
+    expect(engine.selectSystemState().global.confirmDialog).toBeNull();
+
+    engine.handleActions({ exitSceneReplay: {} });
+    expect(engine.selectSystemState().global.confirmDialog).toBeNull();
   });
 
   it("drops deferred replay entry work without re-running caller line actions", () => {
@@ -362,6 +425,49 @@ describe("RouteEngine scene replay catalog", () => {
       pointers: { read: { lineId: "caller2" } },
       variables: { affection: 7 },
     });
+  });
+
+  it("ignores replay-owned line work already captured by an effect snapshot", () => {
+    const projectData = createProjectData();
+    projectData.story.scenes.main.sections.caller.lines[0].actions = {
+      updateVariable: {
+        id: "countCallerEntry",
+        operations: [{ variableId: "affection", op: "increment", value: 1 }],
+      },
+    };
+    let engine;
+    const ticker = {
+      add: vi.fn(),
+      remove: vi.fn(),
+    };
+    const handlePendingEffects = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics: { render: vi.fn() },
+      ticker,
+      handleUnhandledEffect: (effect) => {
+        if (effect.name === "exitReplayBeforeOwnedLineWork") {
+          engine.handleActions({ exitSceneReplay: {} });
+        }
+      },
+    });
+    engine = createRouteEngine({ handlePendingEffects });
+    engine.init({
+      initialState: {
+        projectData,
+        global: {
+          accountViewedRegistry: { sections: [], resources: [] },
+        },
+      },
+    });
+    expect(selectCurrentContext(engine).variables.affection).toBe(2);
+
+    engine.handleActions({
+      appendPendingEffect: { name: "exitReplayBeforeOwnedLineWork" },
+      startSceneReplay: { replayId: "firstMeeting" },
+    });
+
+    expect(engine.selectIsSceneReplayActive()).toBe(false);
+    expect(selectCurrentContext(engine).variables.affection).toBe(2);
   });
 
   it("derives replay defaults without cloning the full project graph", () => {

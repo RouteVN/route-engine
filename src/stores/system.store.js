@@ -979,16 +979,12 @@ const normalizeConfirmDialogActionBatch = (
   }
 
   const normalizedActions = cloneStateValue(actions);
-  if (
-    !Object.prototype.hasOwnProperty.call(
-      normalizedActions,
-      "hideConfirmDialog",
-    )
-  ) {
-    normalizedActions.hideConfirmDialog = {};
-  }
-
-  return normalizedActions;
+  const hideConfirmDialog = normalizedActions.hideConfirmDialog ?? {};
+  delete normalizedActions.hideConfirmDialog;
+  return {
+    hideConfirmDialog,
+    ...normalizedActions,
+  };
 };
 
 const normalizeConfirmDialogPayload = (payload = {}) => {
@@ -1976,6 +1972,7 @@ const restoreRollbackCheckpoint = (state, checkpointIndex) => {
     if (lastContext.kind === "sceneReplay") {
       applySceneReplayInitialVariables(state, lastContext);
       lastContext.sceneReplay.finishOnNextAdvance = false;
+      lastContext.sceneReplay.exitOnLineCompleted = false;
     }
     delete lastContext.runtime;
     state.global.dialogueUIHidden = false;
@@ -4394,6 +4391,7 @@ export const startSceneReplay = ({ state }, payload) => {
     sceneReplay: {
       replayId: replay.id,
       finishOnNextAdvance: false,
+      exitOnLineCompleted: false,
       returnState,
     },
   });
@@ -4974,6 +4972,11 @@ export const nextLine = ({ state }, payload) => {
   if (!state.global.isLineCompleted) {
     state.global.isLineCompleted = true;
     delete state.global.pendingScreenTransition;
+    const activeSceneReplayContext = getActiveSceneReplayContext(state);
+    if (activeSceneReplayContext?.sceneReplay.exitOnLineCompleted) {
+      exitActiveSceneReplay(state);
+      return state;
+    }
     const pointer = selectCurrentPointer({ state })?.pointer;
     const sectionId = pointer?.sectionId;
     const lineId = pointer?.lineId;
@@ -5113,6 +5116,11 @@ export const markLineCompleted = ({ state }) => {
   }
   state.global.isLineCompleted = true;
   delete state.global.pendingScreenTransition;
+  const activeSceneReplayContext = getActiveSceneReplayContext(state);
+  if (activeSceneReplayContext?.sceneReplay.exitOnLineCompleted) {
+    exitActiveSceneReplay(state);
+    return state;
+  }
   const activeInteraction = selectActiveInteraction({ state });
 
   // If auto mode is on, start the delay timer to advance after completion
@@ -5204,6 +5212,10 @@ export const nextLineFromSystem = ({ state }, payload) => {
 
   const activeSceneReplayContext = getActiveSceneReplayContext(state);
   if (activeSceneReplayContext?.sceneReplay.finishOnNextAdvance) {
+    if (!state.global.isLineCompleted) {
+      activeSceneReplayContext.sceneReplay.exitOnLineCompleted = true;
+      return state;
+    }
     exitActiveSceneReplay(state);
     return state;
   }

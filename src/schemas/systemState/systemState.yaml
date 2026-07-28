@@ -349,9 +349,11 @@ defs:
         minLength: 1
       finishOnNextAdvance:
         type: boolean
+      exitOnLineCompleted:
+        type: boolean
       returnState:
         $ref: "#/defs/sceneReplayReturnState"
-    required: [replayId, finishOnNextAdvance, returnState]
+    required: [replayId, finishOnNextAdvance, exitOnLineCompleted, returnState]
     additionalProperties: false
 
   contextState:

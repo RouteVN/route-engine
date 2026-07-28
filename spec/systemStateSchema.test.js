@@ -199,6 +199,7 @@ describe("systemState schema", () => {
       sceneReplay: {
         replayId: "memory",
         finishOnNextAdvance: false,
+        exitOnLineCompleted: false,
       },
     });
     expect(validateSystemState(systemState)).toBe(true);
