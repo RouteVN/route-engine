@@ -458,6 +458,149 @@ describe("RouteEngine music room playback", () => {
     expect(effects).toEqual([]);
   });
 
+  it.each(["playMusicRoom", "playMusicRoomTrack"])(
+    "keeps decoded readiness when retrying playback failures with %s",
+    (retryAction) => {
+      const { engine } = createEngine({
+        viewedSoundIds: ["openingSound"],
+      });
+      engine.handleAction("playMusicRoomTrack", { trackId: "opening" });
+      engine.handleInternalAction("musicRoomSoundReady", {
+        id: "music-room:player",
+        commandId: 2,
+        positionMs: 0,
+        durationMs: 10_000,
+      });
+      engine.handleInternalAction("musicRoomSoundProgress", {
+        id: "music-room:player",
+        commandId: 2,
+        positionMs: 2_500,
+        durationMs: 10_000,
+      });
+      engine.handleInternalAction("musicRoomSoundError", {
+        id: "music-room:player",
+        commandId: 2,
+        errorCode: "playback-failed",
+      });
+
+      expect(engine.selectMusicRoom().playback).toMatchObject({
+        status: "stopped",
+        readiness: "error",
+        positionMs: 0,
+        durationMs: 10_000,
+      });
+
+      engine.handleAction(
+        retryAction,
+        retryAction === "playMusicRoomTrack" ? { trackId: "opening" } : {},
+      );
+      expect(engine.selectMusicRoom().playback).toMatchObject({
+        status: "playing",
+        readiness: "ready",
+        positionMs: 0,
+        durationMs: 10_000,
+      });
+      const retryCommand = getAudioNode(engine, "channel:music-room")
+        .children[0].playback;
+      expect(retryCommand).toEqual({
+        commandId: 3,
+        operation: "play",
+        positionMs: 0,
+      });
+
+      // Route Graphics retains the decoded generation and does not emit
+      // another soundReady event before progress or completion.
+      engine.handleInternalAction("musicRoomSoundProgress", {
+        id: "music-room:player",
+        commandId: retryCommand.commandId,
+        positionMs: 750,
+        durationMs: 10_000,
+      });
+      expect(engine.selectMusicRoom().playback).toMatchObject({
+        status: "playing",
+        readiness: "ready",
+        positionMs: 750,
+      });
+      engine.handleInternalAction("musicRoomSoundComplete", {
+        id: "music-room:player",
+        commandId: retryCommand.commandId,
+        positionMs: 10_000,
+        durationMs: 10_000,
+      });
+      expect(engine.selectMusicRoom().playback.status).toBe("ended");
+    },
+  );
+
+  it.each(["playing", "paused"])(
+    "restores %s transport after a renderer-rejected seek",
+    (transportStatus) => {
+      const { effects, engine } = createEngine({
+        viewedSoundIds: ["openingSound"],
+      });
+      engine.handleAction("playMusicRoomTrack", { trackId: "opening" });
+      engine.handleInternalAction("musicRoomSoundReady", {
+        id: "music-room:player",
+        commandId: 2,
+        positionMs: 0,
+        durationMs: 10_000,
+      });
+      engine.handleInternalAction("musicRoomSoundProgress", {
+        id: "music-room:player",
+        commandId: 2,
+        positionMs: 2_500,
+        durationMs: 10_000,
+      });
+
+      if (transportStatus === "paused") {
+        engine.handleAction("pauseMusicRoom", {});
+        engine.handleInternalAction("musicRoomSoundProgress", {
+          id: "music-room:player",
+          commandId: 3,
+          positionMs: 2_500,
+          durationMs: 10_000,
+        });
+      }
+
+      effects.length = 0;
+      engine.handleAction("seekMusicRoom", { positionMs: 10_000 });
+      const seekCommand = getAudioNode(engine, "channel:music-room").children[0]
+        .playback;
+      expect(engine.selectMusicRoom().playback).toMatchObject({
+        status: "ended",
+        readiness: "ready",
+        positionMs: 10_000,
+      });
+
+      effects.length = 0;
+      engine.handleInternalAction("musicRoomSoundError", {
+        id: "music-room:player",
+        commandId: seekCommand.commandId,
+        errorCode: "invalid-position",
+      });
+      expect(engine.selectMusicRoom().playback).toMatchObject({
+        status: transportStatus,
+        readiness: "ready",
+        positionMs: 2_500,
+        durationMs: 10_000,
+        canSeek: true,
+      });
+      expect(
+        engine.selectSystemState().global.musicRoomPlayer.seekFallback,
+      ).toBeNull();
+      expect(effects).toEqual([{ name: "render" }]);
+
+      effects.length = 0;
+      engine.handleInternalAction("musicRoomSoundProgress", {
+        id: "music-room:player",
+        commandId: seekCommand.commandId,
+        positionMs: 2_750,
+        durationMs: 10_000,
+      });
+      expect(engine.selectMusicRoom().playback.positionMs).toBe(2_750);
+      expect(effects).toEqual([{ name: "render" }]);
+    },
+  );
+
   it("ignores stale, malformed, out-of-range, and state-incompatible renderer events", () => {
     const { effects, engine } = createEngine({
       viewedSoundIds: ["openingSound"],

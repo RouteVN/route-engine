@@ -49,6 +49,7 @@ out:
       positionMs: 0
       durationMs: null
       playback: null
+      seekFallback: null
       bgmPlayback:
         commandId: 0
         operation: resume
@@ -157,6 +158,7 @@ out:
       positionMs: 0
       durationMs: null
       playback: null
+      seekFallback: null
       bgmPlayback:
         commandId: 0
         operation: resume
@@ -278,6 +280,7 @@ out:
       positionMs: 0
       durationMs: null
       playback: null
+      seekFallback: null
       bgmPlayback:
         commandId: 0
         operation: resume
@@ -393,6 +396,7 @@ out:
       positionMs: 0
       durationMs: null
       playback: null
+      seekFallback: null
       bgmPlayback:
         commandId: 0
         operation: resume
@@ -505,6 +509,7 @@ out:
       positionMs: 0
       durationMs: null
       playback: null
+      seekFallback: null
       bgmPlayback:
         commandId: 0
         operation: resume

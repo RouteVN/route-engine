@@ -189,6 +189,8 @@ Exact authored track IDs take precedence over template-looking syntax such as
 - `playMusicRoom` resumes paused playback, starts a stopped track at its stored
   position, restarts an ended track, and retries an error. It is a no-op
   without a selection or while already playing.
+- Retrying a decoded playback failure keeps the known duration and accepts
+  progress immediately; it does not wait for another ready event.
 - `pauseMusicRoom` preserves the renderer-owned cursor and also works while
   decoding.
 - `stopMusicRoom` sets desired state to stopped at zero while retaining the
@@ -221,6 +223,8 @@ error changes readiness to `error` and status to `stopped`.
   earlier changes the public status to stopped. The next `play` command uses
   that stored position.
 - Repeating the same seek issues a higher `commandId`.
+- A renderer-rejected seek restores the pre-command cursor and transport state
+  without changing readiness.
 
 ## Route Graphics Integration
 

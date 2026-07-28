@@ -192,8 +192,14 @@ describe("systemState schema", () => {
       positionMs: 0,
       durationMs: 10_000,
     });
+    engine.handleAction("seekMusicRoom", { positionMs: 5_000 });
 
     const systemState = toJsonSnapshot(engine.selectSystemState());
+    expect(systemState.global.musicRoomPlayer.seekFallback).toEqual({
+      commandId: 3,
+      status: "playing",
+      positionMs: 0,
+    });
     expect(validateSystemState(systemState)).toBe(true);
     expect(validateSystemState.errors).toBeNull();
   });

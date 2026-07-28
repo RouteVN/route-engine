@@ -78,6 +78,7 @@ const createDefaultMusicRoomPlayer = ({
   positionMs: 0,
   durationMs: null,
   playback: null,
+  seekFallback: null,
   bgmPlayback,
 });
 
@@ -3837,11 +3838,11 @@ const playMusicRoomTrackState = (state, track) => {
     trackId: track.id,
     pageIndex: Math.floor(trackIndex / musicRoom.pageSize),
     status: "playing",
-    readiness:
-      isSameTrack && player.readiness === "ready" ? "ready" : "loading",
+    readiness: retainedDuration === null ? "loading" : "ready",
     positionMs: 0,
     durationMs: retainedDuration,
     playback,
+    seekFallback: null,
     bgmPlayback,
   };
   queueMusicRoomRender(state);
@@ -3884,10 +3885,11 @@ export const playMusicRoom = ({ state }, payload) => {
     operation,
     operation === "play" ? positionMs : undefined,
   );
+  player.seekFallback = null;
   player.status = "playing";
   player.positionMs = positionMs;
   if (wasError) {
-    player.readiness = "loading";
+    player.readiness = player.durationMs === null ? "loading" : "ready";
   }
   queueMusicRoomRender(state);
   return state;
@@ -3907,6 +3909,7 @@ export const pauseMusicRoom = ({ state }, payload) => {
   }
 
   player.playback = createMusicRoomPlaybackCommand(state, "pause");
+  player.seekFallback = null;
   player.status = "paused";
   queueMusicRoomRender(state);
   return state;
@@ -3929,6 +3932,7 @@ export const stopMusicRoom = ({ state }, payload) => {
   }
 
   player.playback = createMusicRoomPlaybackCommand(state, "stop");
+  player.seekFallback = null;
   player.status = "stopped";
   player.positionMs = 0;
   queueMusicRoomRender(state);
@@ -3956,11 +3960,17 @@ export const seekMusicRoom = ({ state }, payload) => {
     return state;
   }
 
-  player.playback = createMusicRoomPlaybackCommand(
+  const playback = createMusicRoomPlaybackCommand(
     state,
     "seek",
     payload.positionMs,
   );
+  player.seekFallback = {
+    commandId: playback.commandId,
+    status: player.status,
+    positionMs: player.positionMs,
+  };
+  player.playback = playback;
   player.positionMs = payload.positionMs;
   if (payload.positionMs === player.durationMs) {
     player.status = "ended";
@@ -4123,13 +4133,15 @@ const applyMusicRoomTimingEvent = (
   const changed =
     player.readiness !== readiness ||
     player.positionMs !== payload.positionMs ||
-    player.durationMs !== payload.durationMs;
+    player.durationMs !== payload.durationMs ||
+    player.seekFallback !== null;
   if (!changed) {
     return state;
   }
   player.readiness = readiness;
   player.positionMs = payload.positionMs;
   player.durationMs = payload.durationMs;
+  player.seekFallback = null;
   queueMusicRoomRender(state);
   return state;
 };
@@ -4181,6 +4193,7 @@ export const musicRoomSoundComplete = ({ state }, payload) => {
   player.status = "ended";
   player.positionMs = payload.positionMs;
   player.durationMs = payload.durationMs;
+  player.seekFallback = null;
   queueMusicRoomRender(state);
   return state;
 };
@@ -4198,8 +4211,30 @@ export const musicRoomSoundError = ({ state }, payload) => {
     return state;
   }
 
+  if (payload.errorCode === "invalid-position") {
+    const fallback = player.seekFallback;
+    if (
+      player.playback.operation !== "seek" ||
+      fallback?.commandId !== payload.commandId
+    ) {
+      return state;
+    }
+    const changed =
+      player.status !== fallback.status ||
+      player.positionMs !== fallback.positionMs;
+    player.status = fallback.status;
+    player.positionMs = fallback.positionMs;
+    player.seekFallback = null;
+    if (changed) {
+      queueMusicRoomRender(state);
+    }
+    return state;
+  }
+
   player.readiness = "error";
   player.status = "stopped";
+  player.positionMs = 0;
+  player.seekFallback = null;
   queueMusicRoomRender(state);
   return state;
 };

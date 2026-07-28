@@ -188,6 +188,23 @@ defs:
         oneOf:
           - type: "null"
           - $ref: "#/defs/soundPlaybackCommand"
+      seekFallback:
+        oneOf:
+          - type: "null"
+          - type: object
+            properties:
+              commandId:
+                type: integer
+                minimum: 0
+                maximum: 9007199254740991
+              status:
+                type: string
+                enum: [stopped, playing, paused, ended]
+              positionMs:
+                type: number
+                minimum: 0
+            required: [commandId, status, positionMs]
+            additionalProperties: false
       bgmPlayback:
         $ref: "#/defs/channelPlaybackCommand"
     required:
@@ -199,6 +216,7 @@ defs:
         positionMs,
         durationMs,
         playback,
+        seekFallback,
         bgmPlayback,
       ]
     additionalProperties: false
@@ -215,6 +233,8 @@ defs:
           durationMs:
             type: "null"
           playback:
+            type: "null"
+          seekFallback:
             type: "null"
       - properties:
           trackId:
