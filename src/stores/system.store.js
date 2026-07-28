@@ -9,6 +9,7 @@ import {
   validateComputedVariableConfigs,
   validateImageGalleryConfig,
   validateMusicRoomConfig,
+  validateSceneReplayConfig,
   validateVariableScope,
   validateVariableOperation,
   validateVariableOperationValue,
@@ -89,6 +90,13 @@ const EMPTY_MUSIC_ROOM_ACTION_KEYS = new Set();
 const PLAY_MUSIC_ROOM_TRACK_KEYS = new Set(["trackId"]);
 const SEEK_MUSIC_ROOM_KEYS = new Set(["positionMs"]);
 const MOVE_TO_MUSIC_ROOM_PAGE_KEYS = new Set(["pageIndex"]);
+const EMPTY_SCENE_REPLAY_ACTION_KEYS = new Set();
+const START_SCENE_REPLAY_KEYS = new Set(["replayId"]);
+const MOVE_TO_SCENE_REPLAY_PAGE_KEYS = new Set(["pageIndex"]);
+
+const createDefaultSceneReplayNavigation = () => ({
+  pageIndex: 0,
+});
 
 const resetNextLineConfigIfSingleLine = (state) => {
   const applyMode = state.global.nextLineConfig?.applyMode ?? "persistent";
@@ -1251,8 +1259,11 @@ const createRollbackCheckpoint = ({
 });
 
 const getRollbackContextVariableDefaults = (projectData) => {
+  const projectDataSource = isDraft(projectData)
+    ? current(projectData)
+    : projectData;
   const { contextVariableDefaultValues } = getDefaultVariablesFromProjectData(
-    projectData ?? {},
+    projectDataSource ?? {},
   );
   return cloneStateValue(contextVariableDefaultValues);
 };
@@ -1322,6 +1333,125 @@ const createInitialContextRuntimeState = ({ loadedContextRuntime = {} }) => {
 const getCurrentContext = (state) => {
   const contexts = Array.isArray(state?.contexts) ? state.contexts : [];
   return contexts[contexts.length - 1];
+};
+
+const getActiveSceneReplayContext = (state) => {
+  const context = getCurrentContext(state);
+  return context?.kind === "sceneReplay" && isRecord(context.sceneReplay)
+    ? context
+    : null;
+};
+
+const applySceneReplayInitialVariables = (state, context) => {
+  const replayId = context?.sceneReplay?.replayId;
+  const replay = state.projectData?.resources?.sceneReplay?.replays?.find(
+    (candidate) => candidate.id === replayId,
+  );
+  Object.entries(replay?.initialVariables ?? {}).forEach(
+    ([variableId, value]) => {
+      context.variables[variableId] = cloneStateValue(value);
+    },
+  );
+};
+
+const captureSceneReplayReturnState = (state) => ({
+  autoMode: state.global.autoMode,
+  skipMode: state.global.skipMode,
+  dialogueUIHidden: state.global.dialogueUIHidden,
+  nextLineConfig: cloneStateValue(state.global.nextLineConfig),
+  overlayStack: cloneStateValue(state.global.overlayStack),
+  confirmDialog: cloneStateValue(state.global.confirmDialog),
+  formDrafts: cloneStateValue(state.global.formDrafts),
+  isLineCompleted: state.global.isLineCompleted,
+  ...(state.global.isDialogueHistoryShowing === undefined
+    ? {}
+    : {
+        isDialogueHistoryShowing: state.global.isDialogueHistoryShowing,
+      }),
+  ...(state.global.pendingScreenTransition === undefined
+    ? {}
+    : {
+        pendingScreenTransition: cloneStateValue(
+          state.global.pendingScreenTransition,
+        ),
+      }),
+});
+
+const prepareSceneReplayTransientState = (state) => {
+  state.global.autoMode = false;
+  state.global.skipMode = false;
+  state.global.dialogueUIHidden = false;
+  delete state.global.isDialogueHistoryShowing;
+  delete state.global.pendingScreenTransition;
+  state.global.nextLineConfig = createDefaultNextLineConfig();
+  state.global.overlayStack = [];
+  state.global.confirmDialog = null;
+  state.global.formDrafts = {};
+  state.global.isLineCompleted = true;
+  state.global.pendingEffects.push(
+    { name: "clearAutoNextTimer" },
+    { name: "clearSkipNextTimer" },
+    { name: "clearNextLineConfigTimer" },
+  );
+};
+
+const restoreSceneReplayReturnState = (state, returnState) => {
+  state.global.autoMode = returnState.autoMode;
+  state.global.skipMode = returnState.skipMode;
+  state.global.dialogueUIHidden = returnState.dialogueUIHidden;
+  state.global.nextLineConfig = cloneStateValue(returnState.nextLineConfig);
+  state.global.overlayStack = cloneStateValue(returnState.overlayStack);
+  state.global.confirmDialog = cloneStateValue(returnState.confirmDialog);
+  state.global.formDrafts = cloneStateValue(returnState.formDrafts);
+  state.global.isLineCompleted = returnState.isLineCompleted;
+
+  if (returnState.isDialogueHistoryShowing === undefined) {
+    delete state.global.isDialogueHistoryShowing;
+  } else {
+    state.global.isDialogueHistoryShowing =
+      returnState.isDialogueHistoryShowing;
+  }
+  if (returnState.pendingScreenTransition === undefined) {
+    delete state.global.pendingScreenTransition;
+  } else {
+    state.global.pendingScreenTransition = cloneStateValue(
+      returnState.pendingScreenTransition,
+    );
+  }
+
+  state.global.pendingEffects.push(
+    { name: "clearAutoNextTimer" },
+    { name: "clearSkipNextTimer" },
+    { name: "clearNextLineConfigTimer" },
+  );
+
+  const activeInteraction = selectActiveInteraction({ state });
+  if (
+    state.global.autoMode &&
+    state.global.isLineCompleted &&
+    !activeInteraction
+  ) {
+    state.global.pendingEffects.push({
+      name: "startAutoNextTimer",
+      payload: {
+        delay: selectAutoForwardTimerDelay({ state }),
+      },
+    });
+  }
+  if (state.global.skipMode && !activeInteraction) {
+    state.global.pendingEffects.push({ name: "startSkipNextTimer" });
+  }
+  if (
+    state.global.nextLineConfig.auto?.enabled &&
+    !activeInteraction &&
+    (state.global.nextLineConfig.auto.trigger === "fromStart" ||
+      state.global.isLineCompleted)
+  ) {
+    state.global.pendingEffects.push({
+      name: "nextLineConfigTimer",
+      payload: { delay: state.global.nextLineConfig.auto.delay },
+    });
+  }
 };
 
 const ensureContextRuntimeState = (context) => {
@@ -1417,7 +1547,16 @@ const applyRuntimeValue = (state, runtimeId, value) => {
   return normalizedValue;
 };
 
-const createDefaultContextState = ({ pointer, projectData }) => ({
+const createDefaultContextState = ({
+  pointer,
+  projectData,
+  kind,
+  sceneReplay,
+}) => ({
+  ...(kind === undefined ? {} : { kind }),
+  ...(sceneReplay === undefined
+    ? {}
+    : { sceneReplay: cloneStateValue(sceneReplay) }),
   currentPointerMode: "read",
   pointers: {
     read: cloneStateValue(pointer),
@@ -1834,6 +1973,10 @@ const restoreRollbackCheckpoint = (state, checkpointIndex) => {
     lastContext.variables = getRollbackContextVariableDefaults(
       state.projectData,
     );
+    if (lastContext.kind === "sceneReplay") {
+      applySceneReplayInitialVariables(state, lastContext);
+      lastContext.sceneReplay.finishOnNextAdvance = false;
+    }
     delete lastContext.runtime;
     state.global.dialogueUIHidden = false;
     delete state.global.isDialogueHistoryShowing;
@@ -1885,6 +2028,7 @@ export const createInitialState = (payload) => {
   assertUniqueSectionIds(projectData);
   validateImageGalleryConfig(projectData);
   validateMusicRoomConfig(projectData);
+  validateSceneReplayConfig(projectData);
   validateComputedVariableConfigs(projectData?.resources?.variables ?? {});
 
   const initialSceneId = projectData.story.initialSceneId;
@@ -1923,6 +2067,7 @@ export const createInitialState = (payload) => {
       ),
       nextLineConfig: createDefaultNextLineConfig(),
       imageGalleryNavigation: createDefaultImageGalleryNavigation(),
+      sceneReplayNavigation: createDefaultSceneReplayNavigation(),
       audioCommandId: 0,
       musicRoomPlayer: createDefaultMusicRoomPlayer(),
       saveSlots: normalizeStoredSaveSlots(saveSlots),
@@ -2423,6 +2568,63 @@ export const selectMusicRoom = ({ state }) => {
   };
 };
 
+const getSceneReplayPageCount = (sceneReplay) =>
+  sceneReplay.replays.length === 0
+    ? 0
+    : Math.ceil(sceneReplay.replays.length / sceneReplay.pageSize);
+
+const getEffectiveSceneReplayPageIndex = (sceneReplay, navigation) => {
+  const pageCount = getSceneReplayPageCount(sceneReplay);
+  if (pageCount === 0) {
+    return 0;
+  }
+  const requestedPageIndex = Number.isInteger(navigation?.pageIndex)
+    ? navigation.pageIndex
+    : 0;
+  return Math.min(Math.max(requestedPageIndex, 0), pageCount - 1);
+};
+
+export const selectSceneReplayConfig = ({ state }) => {
+  const sceneReplay = state.projectData?.resources?.sceneReplay;
+  return sceneReplay === undefined ? undefined : cloneStateValue(sceneReplay);
+};
+
+export const selectIsSceneReplayActive = ({ state }) =>
+  getActiveSceneReplayContext(state) !== null;
+
+export const selectSceneReplay = ({ state }) => {
+  const sceneReplay = state.projectData?.resources?.sceneReplay;
+  if (sceneReplay === undefined) {
+    return null;
+  }
+
+  const navigation =
+    state.global.sceneReplayNavigation ?? createDefaultSceneReplayNavigation();
+  const pageCount = getSceneReplayPageCount(sceneReplay);
+  const pageIndex = getEffectiveSceneReplayPageIndex(sceneReplay, navigation);
+  const pageStart = pageIndex * sceneReplay.pageSize;
+  const pageReplays = sceneReplay.replays
+    .slice(pageStart, pageStart + sceneReplay.pageSize)
+    .map((replay) => ({
+      replayId: replay.id,
+      title: replay.title,
+      thumbnailImageId: replay.thumbnailImageId,
+    }));
+  const activeContext = getActiveSceneReplayContext(state);
+
+  return {
+    isActive: activeContext !== null,
+    activeReplayId: activeContext?.sceneReplay.replayId ?? null,
+    pageReplays,
+    pagination: {
+      pageIndex,
+      pageCount,
+      canMoveToPreviousPage: pageIndex > 0,
+      canMoveToNextPage: pageIndex + 1 < pageCount,
+    },
+  };
+};
+
 export const selectNextLineConfig = ({ state }) => {
   return state.global.nextLineConfig;
 };
@@ -2862,6 +3064,7 @@ export const selectRenderState = ({ state }, options = {}) => {
   const isChoiceVisible = selectIsChoiceVisible({ state });
   const imageGallery = selectImageGallery({ state });
   const musicRoom = selectMusicRoom({ state });
+  const sceneReplay = selectSceneReplay({ state });
 
   const allVariables = selectAllVariables({ state });
 
@@ -2897,6 +3100,7 @@ export const selectRenderState = ({ state }, options = {}) => {
     restoredPersistentAnimations,
     imageGallery,
     musicRoom,
+    sceneReplay,
     musicRoomPlayer: cloneStateValue(state.global.musicRoomPlayer),
   });
   return renderState;
@@ -3280,6 +3484,9 @@ export const appendPendingEffect = ({ state }, payload) => {
 };
 
 export const completeAchievement = ({ state }, payload) => {
+  if (getActiveSceneReplayContext(state)) {
+    return state;
+  }
   const resourceId = payload?.resourceId;
   getAchievementForAction(state, resourceId);
 
@@ -3291,6 +3498,9 @@ export const completeAchievement = ({ state }, payload) => {
 };
 
 export const setAchievementProgress = ({ state }, payload) => {
+  if (getActiveSceneReplayContext(state)) {
+    return state;
+  }
   const resourceId = payload?.resourceId;
   const achievement = getAchievementForAction(state, resourceId);
   if (achievement.type !== "number") {
@@ -3403,6 +3613,9 @@ const transitionToSection = (
 };
 
 export const resetStoryAtSection = ({ state }, payload) => {
+  if (getActiveSceneReplayContext(state)) {
+    throw new Error("Cannot reset the story while a scene replay is active");
+  }
   return transitionToSection(state, {
     sectionId: payload?.sectionId,
     resetStoryState: true,
@@ -3519,7 +3732,10 @@ const recordViewedLineInRegistry = (state, registry, { sectionId, lineId }) => {
 };
 
 const recordViewedLine = (state, payload) => {
-  if (state.global.accountViewedRegistry === undefined) {
+  if (
+    getActiveSceneReplayContext(state) ||
+    state.global.accountViewedRegistry === undefined
+  ) {
     return;
   }
 
@@ -3547,6 +3763,9 @@ export const addViewedLine = ({ state }, payload) => {
 };
 
 export const addViewedResource = ({ state }, payload) => {
+  if (getActiveSceneReplayContext(state)) {
+    return state;
+  }
   const { resourceId } = payload;
   if (state.global.accountViewedRegistry !== undefined) {
     const accountRegistry = ensureAccountViewedRegistry(state);
@@ -4101,6 +4320,163 @@ export const moveToNextMusicRoomPage = ({ state }, payload) =>
 export const moveToPreviousMusicRoomPage = ({ state }, payload) =>
   moveMusicRoomPage(state, payload, -1, "moveToPreviousMusicRoomPage");
 
+const exitActiveSceneReplay = (state) => {
+  const activeContext = getActiveSceneReplayContext(state);
+  if (!activeContext) {
+    return false;
+  }
+  if (state.contexts.length < 2) {
+    throw new Error("Scene replay context has no caller context to restore");
+  }
+
+  const returnState = cloneStateValue(activeContext.sceneReplay.returnState);
+  state.contexts.pop();
+  restoreSceneReplayReturnState(state, returnState);
+  state.global.pendingEffects.push({ name: "render" });
+  return true;
+};
+
+export const startSceneReplay = ({ state }, payload) => {
+  const actionName = "startSceneReplay";
+  assertImageGalleryActionPayload(actionName, payload, START_SCENE_REPLAY_KEYS);
+  assertNonEmptyImageGalleryActionId(actionName, "replayId", payload.replayId);
+
+  if (getActiveSceneReplayContext(state)) {
+    throw new Error(
+      "Cannot start a scene replay while another replay is active",
+    );
+  }
+
+  const sceneReplay = state.projectData?.resources?.sceneReplay;
+  const replay = sceneReplay?.replays.find(
+    (candidate) => candidate.id === payload.replayId,
+  );
+  if (!replay) {
+    return state;
+  }
+
+  const { sceneId, section } = findSectionInProjectData(
+    state.projectData,
+    replay.startSectionId,
+  );
+  const initialLineId = section?.initialLineId ?? section?.lines?.[0]?.id;
+  if (
+    !section ||
+    !initialLineId ||
+    !section.lines.some((line) => line.id === initialLineId)
+  ) {
+    throw new Error(`Scene replay "${replay.id}" has an invalid start section`);
+  }
+
+  const returnState = captureSceneReplayReturnState(state);
+  prepareSceneReplayTransientState(state);
+  const projectData = cloneStateValue(state.projectData);
+  const context = createDefaultContextState({
+    pointer: {
+      sceneId,
+      sectionId: replay.startSectionId,
+      lineId: initialLineId,
+    },
+    projectData,
+    kind: "sceneReplay",
+    sceneReplay: {
+      replayId: replay.id,
+      finishOnNextAdvance: false,
+      returnState,
+    },
+  });
+  applySceneReplayInitialVariables(state, context);
+  state.contexts.push(context);
+  queueEnteredLineEffects(state, context.pointers.read);
+  return state;
+};
+
+export const finishSceneReplay = ({ state }, payload) => {
+  const actionName = "finishSceneReplay";
+  assertImageGalleryActionPayload(
+    actionName,
+    payload,
+    EMPTY_SCENE_REPLAY_ACTION_KEYS,
+  );
+  const activeContext = getActiveSceneReplayContext(state);
+  if (!activeContext) {
+    return state;
+  }
+  activeContext.sceneReplay.finishOnNextAdvance = true;
+  return state;
+};
+
+export const exitSceneReplay = ({ state }, payload) => {
+  const actionName = "exitSceneReplay";
+  assertImageGalleryActionPayload(
+    actionName,
+    payload,
+    EMPTY_SCENE_REPLAY_ACTION_KEYS,
+  );
+  exitActiveSceneReplay(state);
+  return state;
+};
+
+const moveToSceneReplayPageIndex = (state, pageIndex) => {
+  const sceneReplay = state.projectData?.resources?.sceneReplay;
+  if (!sceneReplay || pageIndex >= getSceneReplayPageCount(sceneReplay)) {
+    return state;
+  }
+  const currentPageIndex = getEffectiveSceneReplayPageIndex(
+    sceneReplay,
+    state.global.sceneReplayNavigation,
+  );
+  if (pageIndex === currentPageIndex) {
+    return state;
+  }
+
+  state.global.sceneReplayNavigation.pageIndex = pageIndex;
+  state.global.pendingEffects.push({ name: "render" });
+  return state;
+};
+
+export const moveToSceneReplayPage = ({ state }, payload) => {
+  const actionName = "moveToSceneReplayPage";
+  assertImageGalleryActionPayload(
+    actionName,
+    payload,
+    MOVE_TO_SCENE_REPLAY_PAGE_KEYS,
+  );
+  if (!Number.isInteger(payload.pageIndex) || payload.pageIndex < 0) {
+    throw new Error(
+      "moveToSceneReplayPage requires a non-negative integer pageIndex",
+    );
+  }
+  return moveToSceneReplayPageIndex(state, payload.pageIndex);
+};
+
+const moveSceneReplayPage = (state, payload, offset, actionName) => {
+  assertImageGalleryActionPayload(
+    actionName,
+    payload,
+    EMPTY_SCENE_REPLAY_ACTION_KEYS,
+  );
+  const sceneReplay = state.projectData?.resources?.sceneReplay;
+  if (!sceneReplay) {
+    return state;
+  }
+  const targetPageIndex =
+    getEffectiveSceneReplayPageIndex(
+      sceneReplay,
+      state.global.sceneReplayNavigation,
+    ) + offset;
+  if (targetPageIndex < 0) {
+    return state;
+  }
+  return moveToSceneReplayPageIndex(state, targetPageIndex);
+};
+
+export const moveToNextSceneReplayPage = ({ state }, payload) =>
+  moveSceneReplayPage(state, payload, 1, "moveToNextSceneReplayPage");
+
+export const moveToPreviousSceneReplayPage = ({ state }, payload) =>
+  moveSceneReplayPage(state, payload, -1, "moveToPreviousSceneReplayPage");
+
 const getCurrentMusicRoomSoundEvent = (state, payload) => {
   const player = state.global.musicRoomPlayer;
   if (
@@ -4346,6 +4722,9 @@ export const setNextLineConfig = ({ state }, payload) => {
  * @returns {Object} Updated state object
  */
 export const saveSlot = ({ state }, payload) => {
+  if (getActiveSceneReplayContext(state)) {
+    throw new Error("Cannot save while a scene replay is active");
+  }
   const slotId = payload?.slotId;
   if (slotId === undefined || slotId === null || slotId === "") {
     throw new Error("saveSlot requires slotId");
@@ -4394,6 +4773,9 @@ export const saveSlot = ({ state }, payload) => {
  * @returns {Object} Updated state object
  */
 export const loadSlot = ({ state }, payload) => {
+  if (getActiveSceneReplayContext(state)) {
+    throw new Error("Cannot load while a scene replay is active");
+  }
   const slotId = payload?.slotId;
   if (slotId === undefined || slotId === null || slotId === "") {
     throw new Error("loadSlot requires slotId");
@@ -4434,15 +4816,22 @@ export const loadSlot = ({ state }, payload) => {
  * @returns {Object} Updated state object
  */
 export const updateProjectData = ({ state }, payload) => {
+  if (getActiveSceneReplayContext(state)) {
+    throw new Error(
+      "Cannot update project data while a scene replay is active",
+    );
+  }
   const { projectData } = payload;
 
   assertUniqueSectionIds(projectData);
   validateImageGalleryConfig(projectData);
   validateMusicRoomConfig(projectData);
+  validateSceneReplayConfig(projectData);
   validateComputedVariableConfigs(projectData?.resources?.variables ?? {});
 
   state.projectData = projectData;
   state.global.imageGalleryNavigation = createDefaultImageGalleryNavigation();
+  state.global.sceneReplayNavigation = createDefaultSceneReplayNavigation();
   resetMusicRoomPlayer(state);
   const variableConfigs = projectData?.resources?.variables ?? {};
   const { contextVariableDefaultValues, globalVariablesDefaultValues } =
@@ -4609,6 +4998,12 @@ export const nextLine = ({ state }, payload) => {
     return state;
   }
 
+  const activeSceneReplayContext = getActiveSceneReplayContext(state);
+  if (activeSceneReplayContext?.sceneReplay.finishOnNextAdvance) {
+    exitActiveSceneReplay(state);
+    return state;
+  }
+
   const pointer = selectCurrentPointer({ state })?.pointer;
   const sectionId = pointer?.sectionId;
   const section = selectSection({ state }, { sectionId });
@@ -4680,6 +5075,13 @@ export const nextLine = ({ state }, payload) => {
       nextInteraction,
     );
   } else {
+    if (getActiveSceneReplayContext(state)) {
+      console.warn(
+        "Scene replay reached the end of a section without finishSceneReplay; exiting replay.",
+      );
+      exitActiveSceneReplay(state);
+      return state;
+    }
     // Reached the end of section, stop auto/skip modes
     if (state.global.autoMode) {
       stopAutoMode({ state });
@@ -4788,6 +5190,12 @@ export const nextLineFromSystem = ({ state }, payload) => {
     return state;
   }
 
+  const activeSceneReplayContext = getActiveSceneReplayContext(state);
+  if (activeSceneReplayContext?.sceneReplay.finishOnNextAdvance) {
+    exitActiveSceneReplay(state);
+    return state;
+  }
+
   const pointer = selectCurrentPointer({ state })?.pointer;
   const sectionId = pointer?.sectionId;
   const section = selectSection({ state }, { sectionId });
@@ -4860,6 +5268,13 @@ export const nextLineFromSystem = ({ state }, payload) => {
       nextInteraction,
     );
   } else {
+    if (getActiveSceneReplayContext(state)) {
+      console.warn(
+        "Scene replay reached the end of a section without finishSceneReplay; exiting replay.",
+      );
+      exitActiveSceneReplay(state);
+      return state;
+    }
     if (state.global.autoMode) {
       stopAutoMode({ state });
     }
@@ -4913,6 +5328,11 @@ const validateFormCommitTarget = (state, field) => {
 
   validateVariableScope(scope, field.variableId);
   validateVariableOperation(type, "set", field.variableId);
+  if (getActiveSceneReplayContext(state) && scope !== "context") {
+    throw new Error(
+      `Cannot update ${scope}-scoped variable "${field.variableId}" while a scene replay is active`,
+    );
+  }
 
   return {
     variableConfig,
@@ -5147,6 +5567,11 @@ export const updateVariable = ({ state }, payload) => {
     validateVariableScope(scope, variableId);
     validateVariableOperation(type, op, variableId);
     validateVariableOperationValue(type, op, value, variableId, { roundTo });
+    if (getActiveSceneReplayContext(state) && scope !== "context") {
+      throw new Error(
+        `Cannot update ${scope}-scoped variable "${variableId}" while a scene replay is active`,
+      );
+    }
 
     const target =
       scope === "context" ? lastContext.variables : state.global.variables;
@@ -5273,6 +5698,9 @@ const ROLLBACK_ACTION_DEFINITIONS = {
   },
   setNextLineConfig: {
     replayLine: replayStoreActionForRollback(setNextLineConfig),
+  },
+  finishSceneReplay: {
+    replayLine: replayStoreActionForRollback(finishSceneReplay),
   },
 };
 
@@ -5481,6 +5909,9 @@ export const createSystemStore = (initialState) => {
     selectImageGallery,
     selectMusicRoomConfig,
     selectMusicRoom,
+    selectSceneReplayConfig,
+    selectSceneReplay,
+    selectIsSceneReplayActive,
     selectNextLineConfig,
     selectSystemState,
     selectAchievements,
@@ -5564,6 +5995,12 @@ export const createSystemStore = (initialState) => {
     musicRoomSoundProgress,
     musicRoomSoundComplete,
     musicRoomSoundError,
+    startSceneReplay,
+    finishSceneReplay,
+    exitSceneReplay,
+    moveToSceneReplayPage,
+    moveToNextSceneReplayPage,
+    moveToPreviousSceneReplayPage,
     setNextLineConfig,
     saveSlot,
     loadSlot,

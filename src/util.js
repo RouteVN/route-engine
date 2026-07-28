@@ -508,6 +508,14 @@ const MUSIC_ROOM_TRACK_KEYS = new Set([
   "description",
   "coverImageId",
 ]);
+const SCENE_REPLAY_KEYS = new Set(["pageSize", "replays"]);
+const SCENE_REPLAY_ENTRY_KEYS = new Set([
+  "id",
+  "title",
+  "thumbnailImageId",
+  "startSectionId",
+  "initialVariables",
+]);
 
 const assertImageGalleryObjectKeys = (value, allowedKeys, path) => {
   Object.keys(value).forEach((key) => {
@@ -699,6 +707,159 @@ export const validateMusicRoomConfig = (projectData = {}) => {
       throw new Error(
         `Music room track "${track.id}" references unknown cover image "${track.coverImageId}"`,
       );
+    }
+  }
+};
+
+const assertSceneReplayInitialVariableValue = (
+  variableId,
+  variableConfig,
+  value,
+) => {
+  const actualType = Array.isArray(value) ? "array" : typeof value;
+  switch (variableConfig.type) {
+    case "number":
+      if (typeof value !== "number" || !Number.isFinite(value)) {
+        throw new Error(
+          `Scene replay initial variable "${variableId}" expected type number, got ${actualType}`,
+        );
+      }
+      return;
+    case "boolean":
+      if (typeof value !== "boolean") {
+        throw new Error(
+          `Scene replay initial variable "${variableId}" expected type boolean, got ${actualType}`,
+        );
+      }
+      return;
+    case "string":
+      if (typeof value !== "string") {
+        throw new Error(
+          `Scene replay initial variable "${variableId}" expected type string, got ${actualType}`,
+        );
+      }
+      return;
+    case "object":
+      if (value === null || typeof value !== "object") {
+        throw new Error(
+          `Scene replay initial variable "${variableId}" expected type object, got ${actualType}`,
+        );
+      }
+      return;
+    default:
+      throw new Error(
+        `Scene replay initial variable "${variableId}" has invalid variable type "${variableConfig.type}"`,
+      );
+  }
+};
+
+export const validateSceneReplayConfig = (projectData = {}) => {
+  const sceneReplay = projectData?.resources?.sceneReplay;
+  if (sceneReplay === undefined) {
+    return;
+  }
+  if (!isRecord(sceneReplay)) {
+    throw new Error("resources.sceneReplay must be an object");
+  }
+
+  assertImageGalleryObjectKeys(
+    sceneReplay,
+    SCENE_REPLAY_KEYS,
+    "resources.sceneReplay",
+  );
+  if (!Number.isInteger(sceneReplay.pageSize) || sceneReplay.pageSize < 1) {
+    throw new Error(
+      "resources.sceneReplay.pageSize must be an integer greater than or equal to 1",
+    );
+  }
+  if (!Array.isArray(sceneReplay.replays)) {
+    throw new Error("resources.sceneReplay.replays must be an array");
+  }
+
+  const sections = new Map();
+  Object.values(projectData?.story?.scenes ?? {}).forEach((scene) => {
+    Object.entries(scene?.sections ?? {}).forEach(([sectionId, section]) => {
+      sections.set(sectionId, section);
+    });
+  });
+
+  const replayIds = new Set();
+  for (const [replayIndex, replay] of sceneReplay.replays.entries()) {
+    const replayPath = `resources.sceneReplay.replays[${replayIndex}]`;
+    if (!isRecord(replay)) {
+      throw new Error(`${replayPath} must be an object`);
+    }
+    assertImageGalleryObjectKeys(replay, SCENE_REPLAY_ENTRY_KEYS, replayPath);
+
+    for (const fieldName of [
+      "id",
+      "title",
+      "thumbnailImageId",
+      "startSectionId",
+    ]) {
+      assertNonEmptyImageGalleryId(
+        replay[fieldName],
+        `${replayPath}.${fieldName}`,
+      );
+    }
+
+    if (replayIds.has(replay.id)) {
+      throw new Error(`Duplicate scene replay id "${replay.id}"`);
+    }
+    replayIds.add(replay.id);
+
+    if (!hasOwn(projectData?.resources?.images, replay.thumbnailImageId)) {
+      throw new Error(
+        `Scene replay "${replay.id}" references unknown thumbnail image "${replay.thumbnailImageId}"`,
+      );
+    }
+    if (!sections.has(replay.startSectionId)) {
+      throw new Error(
+        `Scene replay "${replay.id}" references unknown start section "${replay.startSectionId}"`,
+      );
+    }
+    const startSection = sections.get(replay.startSectionId);
+    if (
+      startSection.initialLineId !== undefined &&
+      !startSection.lines?.some(
+        (line) => line.id === startSection.initialLineId,
+      )
+    ) {
+      throw new Error(
+        `Scene replay "${replay.id}" start section "${replay.startSectionId}" references unknown initial line "${startSection.initialLineId}"`,
+      );
+    }
+
+    if (replay.initialVariables === undefined) {
+      continue;
+    }
+    if (!isRecord(replay.initialVariables)) {
+      throw new Error(`${replayPath}.initialVariables must be an object`);
+    }
+
+    for (const [variableId, value] of Object.entries(replay.initialVariables)) {
+      const variableConfig = projectData?.resources?.variables?.[variableId];
+      if (!variableConfig) {
+        throw new Error(
+          `Scene replay "${replay.id}" initialVariables references unknown variable "${variableId}"`,
+        );
+      }
+      if (isComputedVariableConfig(variableConfig)) {
+        throw new Error(
+          `Scene replay "${replay.id}" cannot initialize computed variable "${variableId}"`,
+        );
+      }
+      if (variableConfig.readonly === true) {
+        throw new Error(
+          `Scene replay "${replay.id}" cannot initialize readonly variable "${variableId}"`,
+        );
+      }
+      if (variableConfig.scope !== "context") {
+        throw new Error(
+          `Scene replay "${replay.id}" can only initialize context variable "${variableId}"`,
+        );
+      }
+      assertSceneReplayInitialVariableValue(variableId, variableConfig, value);
     }
   }
 };

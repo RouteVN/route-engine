@@ -40,6 +40,8 @@ out:
       groupId: null
       variantId: null
       pageIndex: 0
+    sceneReplayNavigation:
+      pageIndex: 0
     audioCommandId: 0
     musicRoomPlayer:
       trackId: null
@@ -148,6 +150,8 @@ out:
     imageGalleryNavigation:
       groupId: null
       variantId: null
+      pageIndex: 0
+    sceneReplayNavigation:
       pageIndex: 0
     audioCommandId: 0
     musicRoomPlayer:
@@ -271,6 +275,8 @@ out:
       groupId: null
       variantId: null
       pageIndex: 0
+    sceneReplayNavigation:
+      pageIndex: 0
     audioCommandId: 0
     musicRoomPlayer:
       trackId: null
@@ -387,6 +393,8 @@ out:
       groupId: null
       variantId: null
       pageIndex: 0
+    sceneReplayNavigation:
+      pageIndex: 0
     audioCommandId: 0
     musicRoomPlayer:
       trackId: null
@@ -499,6 +507,8 @@ out:
     imageGalleryNavigation:
       groupId: null
       variantId: null
+      pageIndex: 0
+    sceneReplayNavigation:
       pageIndex: 0
     audioCommandId: 0
     musicRoomPlayer:

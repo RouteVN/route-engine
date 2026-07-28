@@ -635,4 +635,49 @@ properties:
     properties: {}
     additionalProperties: false
 
+  startSceneReplay:
+    type: object
+    description: Start a replay in a fresh isolated context
+    properties:
+      replayId:
+        type: string
+        minLength: 1
+    required: [replayId]
+    additionalProperties: false
+
+  finishSceneReplay:
+    type: object
+    description: Mark an active replay to exit on its next eligible advance
+    properties: {}
+    additionalProperties: false
+
+  exitSceneReplay:
+    type: object
+    description: Immediately exit an active replay and restore its caller
+    properties: {}
+    additionalProperties: false
+
+  moveToSceneReplayPage:
+    type: object
+    description: Move to a zero-based scene-replay catalog page
+    properties:
+      pageIndex:
+        type: [integer, string]
+        minimum: 0
+        description: Zero-based page index or an authored template/event binding that resolves to one
+    required: [pageIndex]
+    additionalProperties: false
+
+  moveToNextSceneReplayPage:
+    type: object
+    description: Move to the next scene-replay catalog page
+    properties: {}
+    additionalProperties: false
+
+  moveToPreviousSceneReplayPage:
+    type: object
+    description: Move to the previous scene-replay catalog page
+    properties: {}
+    additionalProperties: false
+
 additionalProperties: false
