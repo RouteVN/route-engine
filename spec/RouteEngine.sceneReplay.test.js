@@ -320,6 +320,71 @@ describe("RouteEngine scene replay catalog", () => {
     expect(engine.selectIsSceneReplayActive()).toBe(false);
   });
 
+  it("drops deferred replay entry work without re-running caller line actions", () => {
+    const projectData = createProjectData();
+    projectData.story.scenes.main.sections.caller.lines[0].actions = {
+      updateVariable: {
+        id: "countCallerEntry",
+        operations: [{ variableId: "affection", op: "increment", value: 1 }],
+      },
+    };
+    const { effects, engine } = createEngine({ projectData });
+    expect(selectCurrentContext(engine).variables.affection).toBe(2);
+
+    engine.handleActions({
+      startSceneReplay: { replayId: "firstMeeting" },
+      exitSceneReplay: {},
+    });
+
+    expect(selectCurrentContext(engine).variables.affection).toBe(2);
+    expect(effects.some((effect) => effect.name === "handleLineActions")).toBe(
+      false,
+    );
+  });
+
+  it("preserves caller line work queued before a same-batch replay exit", () => {
+    const projectData = createProjectData();
+    projectData.story.scenes.main.sections.caller.lines[1].actions = {
+      updateVariable: {
+        id: "applyCallerDestination",
+        operations: [{ variableId: "affection", op: "set", value: 7 }],
+      },
+    };
+    const { engine } = createEngine({ projectData });
+
+    engine.handleActions({
+      jumpToLine: { lineId: "caller2" },
+      startSceneReplay: { replayId: "firstMeeting" },
+      exitSceneReplay: {},
+    });
+
+    expect(selectCurrentContext(engine)).toMatchObject({
+      pointers: { read: { lineId: "caller2" } },
+      variables: { affection: 7 },
+    });
+  });
+
+  it("derives replay defaults without cloning the full project graph", () => {
+    const { engine } = createEngine();
+    const structuredCloneSpy = vi.spyOn(globalThis, "structuredClone");
+
+    engine.handleAction("startSceneReplay", { replayId: "firstMeeting" });
+
+    const clonedFullProject = structuredCloneSpy.mock.calls.some(
+      ([value]) =>
+        value?.screen !== undefined &&
+        value?.resources !== undefined &&
+        value?.story !== undefined,
+    );
+    structuredCloneSpy.mockRestore();
+
+    expect(clonedFullProject).toBe(false);
+    expect(selectCurrentContext(engine).variables).toMatchObject({
+      affection: 10,
+      replayObject: { route: "replay" },
+    });
+  });
+
   it("restores caller transient UI state after replay exit", () => {
     const { engine } = createEngine();
     engine.handleActions({

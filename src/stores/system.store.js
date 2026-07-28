@@ -3192,9 +3192,16 @@ const queueEnteredLineEffects = (state, pointer, { screenTransition } = {}) => {
   const isFormVisible = activeInteraction?.source === FORM_INTERACTION_SOURCE;
   queuePlaybackTimerCleanupForEnteredLine(state, { activeInteraction });
 
-  state.global.pendingEffects.push({
+  const activeSceneReplayContext = getActiveSceneReplayContext(state);
+  const handleLineActionsEffect = {
     name: "handleLineActions",
-  });
+  };
+  if (typeof activeSceneReplayContext?.sceneReplay?.replayId === "string") {
+    handleLineActionsEffect.payload = {
+      sceneReplayId: activeSceneReplayContext.sceneReplay.replayId,
+    };
+  }
+  state.global.pendingEffects.push(handleLineActionsEffect);
 
   return {
     isChoiceVisible,
@@ -4330,6 +4337,12 @@ const exitActiveSceneReplay = (state) => {
   }
 
   const returnState = cloneStateValue(activeContext.sceneReplay.returnState);
+  const replayId = activeContext.sceneReplay.replayId;
+  state.global.pendingEffects = state.global.pendingEffects.filter(
+    (effect) =>
+      effect?.name !== "handleLineActions" ||
+      effect?.payload?.sceneReplayId !== replayId,
+  );
   state.contexts.pop();
   restoreSceneReplayReturnState(state, returnState);
   state.global.pendingEffects.push({ name: "render" });
@@ -4370,14 +4383,13 @@ export const startSceneReplay = ({ state }, payload) => {
 
   const returnState = captureSceneReplayReturnState(state);
   prepareSceneReplayTransientState(state);
-  const projectData = cloneStateValue(state.projectData);
   const context = createDefaultContextState({
     pointer: {
       sceneId,
       sectionId: replay.startSectionId,
       lineId: initialLineId,
     },
-    projectData,
+    projectData: state.projectData,
     kind: "sceneReplay",
     sceneReplay: {
       replayId: replay.id,

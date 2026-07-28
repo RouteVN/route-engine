@@ -520,4 +520,31 @@ describe("systemState schema", () => {
     expect(validateSystemState(systemState)).toBe(false);
     expect(validateSystemState.errors).not.toBeNull();
   });
+
+  it("accepts replay-owned entered-line effects", () => {
+    const engine = createRouteEngine({
+      handlePendingEffects: () => {},
+    });
+
+    engine.init({
+      initialState: {
+        projectData: createMinimalProjectData(),
+      },
+    });
+
+    const systemState = toJsonSnapshot(engine.selectSystemState());
+    systemState.global.pendingEffects = [
+      {
+        name: "handleLineActions",
+        payload: { sceneReplayId: "firstMeeting" },
+      },
+    ];
+
+    expect(validateSystemState(systemState)).toBe(true);
+    expect(validateSystemState.errors).toBeNull();
+
+    systemState.global.pendingEffects[0].payload.sceneReplayId = "";
+    expect(validateSystemState(systemState)).toBe(false);
+    expect(validateSystemState.errors).not.toBeNull();
+  });
 });
