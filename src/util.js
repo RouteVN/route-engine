@@ -498,6 +498,16 @@ const isRecord = (value) =>
 const IMAGE_GALLERY_KEYS = new Set(["pageSize", "groups"]);
 const IMAGE_GALLERY_GROUP_KEYS = new Set(["id", "variants"]);
 const IMAGE_GALLERY_VARIANT_KEYS = new Set(["id", "imageId"]);
+const MUSIC_ROOM_KEYS = new Set(["pageSize", "tracks"]);
+const MUSIC_ROOM_TRACK_KEYS = new Set([
+  "id",
+  "soundId",
+  "title",
+  "artist",
+  "album",
+  "description",
+  "coverImageId",
+]);
 
 const assertImageGalleryObjectKeys = (value, allowedKeys, path) => {
   Object.keys(value).forEach((key) => {
@@ -578,6 +588,117 @@ export const validateImageGalleryConfig = (projectData = {}) => {
           `Image gallery variant "${group.id}.${variant.id}" references unknown image "${variant.imageId}"`,
         );
       }
+    }
+  }
+};
+
+export const validateMusicRoomConfig = (projectData = {}) => {
+  const musicRoom = projectData?.resources?.musicRoom;
+  if (musicRoom === undefined) {
+    return;
+  }
+  if (!isRecord(musicRoom)) {
+    throw new Error("resources.musicRoom must be an object");
+  }
+
+  assertImageGalleryObjectKeys(
+    musicRoom,
+    MUSIC_ROOM_KEYS,
+    "resources.musicRoom",
+  );
+  if (!Number.isInteger(musicRoom.pageSize) || musicRoom.pageSize < 1) {
+    throw new Error(
+      "resources.musicRoom.pageSize must be an integer greater than or equal to 1",
+    );
+  }
+  if (!Array.isArray(musicRoom.tracks)) {
+    throw new Error("resources.musicRoom.tracks must be an array");
+  }
+
+  const trackIds = new Set();
+  for (const [trackIndex, track] of musicRoom.tracks.entries()) {
+    const trackPath = `resources.musicRoom.tracks[${trackIndex}]`;
+    if (!isRecord(track)) {
+      throw new Error(`${trackPath} must be an object`);
+    }
+    assertImageGalleryObjectKeys(track, MUSIC_ROOM_TRACK_KEYS, trackPath);
+
+    for (const fieldName of ["id", "soundId", "title"]) {
+      assertNonEmptyImageGalleryId(
+        track[fieldName],
+        `${trackPath}.${fieldName}`,
+      );
+    }
+    for (const fieldName of [
+      "artist",
+      "album",
+      "description",
+      "coverImageId",
+    ]) {
+      if (track[fieldName] !== undefined) {
+        assertNonEmptyImageGalleryId(
+          track[fieldName],
+          `${trackPath}.${fieldName}`,
+        );
+      }
+    }
+
+    if (trackIds.has(track.id)) {
+      throw new Error(`Duplicate music room track id "${track.id}"`);
+    }
+    trackIds.add(track.id);
+
+    const sound = projectData?.resources?.sounds?.[track.soundId];
+    if (!hasOwn(projectData?.resources?.sounds, track.soundId)) {
+      throw new Error(
+        `Music room track "${track.id}" references unknown sound "${track.soundId}"`,
+      );
+    }
+    if (!isRecord(sound)) {
+      throw new Error(
+        `Music room track "${track.id}" references invalid sound "${track.soundId}"`,
+      );
+    }
+    if (
+      sound.playbackRate !== undefined &&
+      (typeof sound.playbackRate !== "number" ||
+        !Number.isFinite(sound.playbackRate) ||
+        sound.playbackRate <= 0)
+    ) {
+      throw new Error(
+        `Music room sound "${track.soundId}" playbackRate must be a finite number greater than 0`,
+      );
+    }
+
+    const startAt = sound.startAt ?? 0;
+    if (
+      typeof startAt !== "number" ||
+      !Number.isFinite(startAt) ||
+      startAt < 0
+    ) {
+      throw new Error(
+        `Music room sound "${track.soundId}" startAt must be a finite non-negative number`,
+      );
+    }
+    if (
+      sound.endAt !== undefined &&
+      sound.endAt !== null &&
+      (typeof sound.endAt !== "number" ||
+        !Number.isFinite(sound.endAt) ||
+        sound.endAt <= startAt)
+    ) {
+      throw new Error(
+        `Music room sound "${track.soundId}" endAt must be a finite number greater than startAt`,
+      );
+    }
+
+    if (
+      track.coverImageId !== undefined &&
+      !hasOwn(projectData?.resources?.images, track.coverImageId)
+    ) {
+      throw new Error(
+        `Music room track "${track.id}" references unknown cover image "${track.coverImageId}"`,
+      );
     }
   }
 };
@@ -2771,26 +2892,9 @@ const isOpaqueActionBranch = (path, key) => {
   return OPAQUE_ACTION_BRANCHES[parentKey]?.has(key) === true;
 };
 
-const resolveEventBindings = (value, eventData, path = []) => {
+const processActionTemplateValue = (value, context, path = []) => {
   if (Array.isArray(value)) {
-    return value.map((item) => resolveEventBindings(item, eventData, path));
-  }
-  if (value && typeof value === "object") {
-    return Object.fromEntries(
-      Object.entries(value).map(([key, nestedValue]) => [
-        key,
-        isOpaqueActionBranch(path, key)
-          ? nestedValue
-          : resolveEventBindings(nestedValue, eventData, [...path, key]),
-      ]),
-    );
-  }
-  return resolveEventBindingString(value, eventData);
-};
-
-const renderActionTemplates = (value, context, path = []) => {
-  if (Array.isArray(value)) {
-    return value.map((item) => renderActionTemplates(item, context, path));
+    return value.map((item) => processActionTemplateValue(item, context, path));
   }
 
   if (value && typeof value === "object") {
@@ -2799,12 +2903,17 @@ const renderActionTemplates = (value, context, path = []) => {
         key,
         isOpaqueActionBranch(path, key)
           ? nestedValue
-          : renderActionTemplates(nestedValue, context, [...path, key]),
+          : processActionTemplateValue(nestedValue, context, [...path, key]),
       ]),
     );
   }
 
   if (typeof value === "string") {
+    if (value === "_event" || value.startsWith("_event.")) {
+      // Event values are runtime data. Do not reinterpret template-looking
+      // strings or nested objects supplied by the renderer.
+      return resolveEventBindingString(value, context._event);
+    }
     return parseAndRender(value, context);
   }
 
@@ -2829,6 +2938,5 @@ export const processActionTemplates = (actions, context) => {
     );
   }
 
-  const eventResolvedActions = resolveEventBindings(actions, context._event);
-  return renderActionTemplates(eventResolvedActions, context);
+  return processActionTemplateValue(actions, context);
 };

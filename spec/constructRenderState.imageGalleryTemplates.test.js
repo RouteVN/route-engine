@@ -22,8 +22,17 @@ const galleryText = (id) => ({
   content: "${imageGallery.selection.imageId}",
 });
 
-describe("constructRenderState image-gallery template data", () => {
-  it("exposes one imageGallery projection to every templated render surface", () => {
+const projectionTexts = (surface) => [
+  galleryText(`gallery-${surface}`),
+  {
+    id: `music-${surface}`,
+    type: "text",
+    content: "${musicRoom.selection.trackId}",
+  },
+];
+
+describe("constructRenderState feature projection template data", () => {
+  it("exposes gallery and music-room projections to every templated render surface", () => {
     const imageGallery = {
       pageGroups: [
         {
@@ -53,36 +62,50 @@ describe("constructRenderState image-gallery template data", () => {
       },
     };
     const originalProjection = structuredClone(imageGallery);
+    const musicRoom = {
+      pageTracks: [],
+      selection: {
+        trackId: "opening",
+      },
+      playback: null,
+      pagination: {
+        pageIndex: 0,
+        pageCount: 1,
+        canMoveToPreviousPage: false,
+        canMoveToNextPage: false,
+      },
+    };
+    const originalMusicRoom = structuredClone(musicRoom);
     const resources = {
       layouts: {
         backgroundTemplate: {
-          elements: [galleryText("gallery-background")],
+          elements: projectionTexts("background"),
         },
         visualTemplate: {
-          elements: [galleryText("gallery-visual")],
+          elements: projectionTexts("visual"),
         },
         dialogueTemplate: {
-          elements: [galleryText("gallery-dialogue")],
+          elements: projectionTexts("dialogue"),
         },
         choiceTemplate: {
-          elements: [galleryText("gallery-choice")],
+          elements: projectionTexts("choice"),
         },
         formTemplate: {
-          elements: [galleryText("gallery-form")],
+          elements: projectionTexts("form"),
         },
         layoutTemplate: {
-          elements: [galleryText("gallery-layout")],
+          elements: projectionTexts("layout"),
         },
         overlayTemplate: {
-          elements: [galleryText("gallery-overlay")],
+          elements: projectionTexts("overlay"),
         },
         confirmTemplate: {
-          elements: [galleryText("gallery-confirm")],
+          elements: projectionTexts("confirm"),
         },
       },
       controls: {
         controlTemplate: {
-          elements: [galleryText("gallery-control")],
+          elements: projectionTexts("control"),
         },
       },
       transforms: {
@@ -136,6 +159,7 @@ describe("constructRenderState image-gallery template data", () => {
       variables: {},
       runtime: {},
       imageGallery,
+      musicRoom,
       form: {
         resourceId: "formTemplate",
         key: "gallery-form",
@@ -173,7 +197,15 @@ describe("constructRenderState image-gallery template data", () => {
       expect(findElementById(renderState.elements, id), id).toMatchObject({
         content: "festivalDay",
       });
+      const musicId = id.replace("gallery-", "music-");
+      expect(
+        findElementById(renderState.elements, musicId),
+        musicId,
+      ).toMatchObject({
+        content: "opening",
+      });
     }
     expect(imageGallery).toEqual(originalProjection);
+    expect(musicRoom).toEqual(originalMusicRoom);
   });
 });

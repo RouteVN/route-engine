@@ -121,6 +121,130 @@ defs:
         enum: [singleLine, persistent]
     additionalProperties: false
 
+  soundPlaybackCommand:
+    type: object
+    properties:
+      commandId:
+        type: integer
+        minimum: 0
+        maximum: 9007199254740991
+      operation:
+        type: string
+        enum: [play, pause, resume, stop, seek]
+      positionMs:
+        type: number
+        minimum: 0
+    required: [commandId, operation]
+    additionalProperties: false
+    allOf:
+      - if:
+          properties:
+            operation:
+              enum: [play, seek]
+        then:
+          required: [positionMs]
+      - if:
+          properties:
+            operation:
+              enum: [pause, resume, stop]
+        then:
+          not:
+            required: [positionMs]
+
+  channelPlaybackCommand:
+    type: object
+    properties:
+      commandId:
+        type: integer
+        minimum: 0
+        maximum: 9007199254740991
+      operation:
+        type: string
+        enum: [pause, resume]
+    required: [commandId, operation]
+    additionalProperties: false
+
+  musicRoomPlayer:
+    type: object
+    properties:
+      trackId:
+        type: [string, "null"]
+      pageIndex:
+        type: integer
+        minimum: 0
+      status:
+        type: string
+        enum: [stopped, playing, paused, ended]
+      readiness:
+        type: string
+        enum: [idle, loading, ready, error]
+      positionMs:
+        type: number
+        minimum: 0
+      durationMs:
+        type: [number, "null"]
+        exclusiveMinimum: 0
+      playback:
+        oneOf:
+          - type: "null"
+          - $ref: "#/defs/soundPlaybackCommand"
+      seekFallback:
+        oneOf:
+          - type: "null"
+          - type: object
+            properties:
+              commandId:
+                type: integer
+                minimum: 0
+                maximum: 9007199254740991
+              status:
+                type: string
+                enum: [stopped, playing, paused, ended]
+              positionMs:
+                type: number
+                minimum: 0
+            required: [commandId, status, positionMs]
+            additionalProperties: false
+      bgmPlayback:
+        $ref: "#/defs/channelPlaybackCommand"
+    required:
+      [
+        trackId,
+        pageIndex,
+        status,
+        readiness,
+        positionMs,
+        durationMs,
+        playback,
+        seekFallback,
+        bgmPlayback,
+      ]
+    additionalProperties: false
+    oneOf:
+      - properties:
+          trackId:
+            type: "null"
+          status:
+            const: stopped
+          readiness:
+            const: idle
+          positionMs:
+            const: 0
+          durationMs:
+            type: "null"
+          playback:
+            type: "null"
+          seekFallback:
+            type: "null"
+      - properties:
+          trackId:
+            type: string
+            minLength: 1
+          readiness:
+            enum: [loading, ready, error]
+          playback:
+            $ref: "#/defs/soundPlaybackCommand"
+
   saveSlotState:
     type: object
     properties:
@@ -313,6 +437,13 @@ properties:
               variantId:
                 type: string
                 minLength: 1
+      audioCommandId:
+        type: integer
+        minimum: 0
+        maximum: 9007199254740991
+        description: Monotonic transient identity for renderer audio commands
+      musicRoomPlayer:
+        $ref: "#/defs/musicRoomPlayer"
       overlayStack:
         type: array
         items:
@@ -347,6 +478,8 @@ properties:
         nextLineConfig,
         accountViewedRegistry,
         imageGalleryNavigation,
+        audioCommandId,
+        musicRoomPlayer,
         overlayStack,
         isLineCompleted,
       ]

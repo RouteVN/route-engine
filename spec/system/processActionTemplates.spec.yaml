@@ -79,6 +79,26 @@ out:
         op: set
         value: 33
 ---
+case: preserves template-looking event values as runtime data
+in:
+  - updateVariable: "_event.action"
+  - _event:
+      action:
+        id: test
+        operations:
+          - variableId: literal
+            op: set
+            value: '${variables.replacement}'
+    variables:
+      replacement: rewritten
+out:
+  updateVariable:
+    id: test
+    operations:
+      - variableId: literal
+        op: set
+        value: '${variables.replacement}'
+---
 case: throws when _event is missing for binding
 in:
   - updateVariable:

@@ -2203,4 +2203,100 @@ describe("projectData schema", () => {
     expect(validateSystemActions(actions)).toBe(false);
     expect(validateSystemActions.errors).not.toBeNull();
   });
+
+  it("accepts the singleton music room and every authored music-room action", () => {
+    const projectData = createMinimalProjectData({
+      resources: {
+        images: {
+          cover: { fileId: "cover.png", width: 512, height: 512 },
+        },
+        sounds: {
+          theme: { fileId: "theme.ogg" },
+        },
+        musicRoom: {
+          pageSize: 8,
+          tracks: [
+            {
+              id: "theme",
+              soundId: "theme",
+              title: "Theme",
+              artist: "Composer",
+              album: "OST",
+              description: "Main theme",
+              coverImageId: "cover",
+            },
+          ],
+        },
+      },
+    });
+    projectData.story.scenes.scene1.sections.section1.lines[0].actions = {
+      playMusicRoomTrack: { trackId: "theme" },
+      playMusicRoom: {},
+      pauseMusicRoom: {},
+      stopMusicRoom: {},
+      seekMusicRoom: { positionMs: 1000 },
+      playPreviousMusicRoomTrack: {},
+      playNextMusicRoomTrack: {},
+      clearMusicRoomSelection: {},
+      moveToMusicRoomPage: { pageIndex: 0 },
+      moveToNextMusicRoomPage: {},
+      moveToPreviousMusicRoomPage: {},
+    };
+
+    expect(validateProjectData(projectData)).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
+
+  it.each([
+    ["zero page size", { pageSize: 0, tracks: [] }],
+    ["missing tracks", { pageSize: 1 }],
+    [
+      "empty required metadata",
+      {
+        pageSize: 1,
+        tracks: [{ id: "theme", soundId: "theme", title: "" }],
+      },
+    ],
+    [
+      "an unknown track property",
+      {
+        pageSize: 1,
+        tracks: [
+          {
+            id: "theme",
+            soundId: "theme",
+            title: "Theme",
+            unknown: true,
+          },
+        ],
+      },
+    ],
+  ])("rejects a music room with %s", (_label, musicRoom) => {
+    const projectData = createMinimalProjectData({
+      resources: { musicRoom },
+    });
+    expect(validateProjectData(projectData)).toBe(false);
+    expect(validateProjectData.errors).not.toBeNull();
+  });
+
+  it("accepts templated music-room action values and rejects malformed payloads", () => {
+    expect(
+      validateSystemActions({
+        playMusicRoomTrack: { trackId: "${variables.trackId}" },
+        seekMusicRoom: { positionMs: "_event.positionMs" },
+        moveToMusicRoomPage: { pageIndex: "_event.pageIndex" },
+      }),
+    ).toBe(true);
+    expect(validateSystemActions.errors).toBeNull();
+
+    for (const actions of [
+      { playMusicRoomTrack: {} },
+      { seekMusicRoom: { positionMs: -1 } },
+      { moveToMusicRoomPage: { pageIndex: 1.5 } },
+      { pauseMusicRoom: { unknown: true } },
+    ]) {
+      expect(validateSystemActions(actions)).toBe(false);
+      expect(validateSystemActions.errors).not.toBeNull();
+    }
+  });
 });

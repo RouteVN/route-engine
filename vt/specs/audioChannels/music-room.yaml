@@ -1,0 +1,134 @@
+---
+title: Music Room Playback
+description: Browser fixture for music-room transport, renderer events, and looping BGM audio focus.
+skipScreenshot: true
+specs:
+  - the first canvas click supplies the audio gesture and enters the music room
+  - music-room buttons dispatch play, pause, resume, seek, and clear through Route Graphics
+  - selecting a track pauses looping BGM and clearing it resumes the same channel
+---
+screen:
+  width: 1000
+  height: 300
+resources:
+  sounds:
+    bgmFirst:
+      fileId: 39csl
+    bgmSecond:
+      fileId: 39csl
+    roomTrack:
+      fileId: 3ka3s
+  musicRoom:
+    pageSize: 4
+    tracks:
+      - id: browserTrack
+        soundId: roomTrack
+        title: Browser Track
+  colors:
+    background:
+      hex: "#10131A"
+    button:
+      hex: "#3467D6"
+  controls:
+    enter:
+      elements:
+        - id: enter-surface
+          type: rect
+          width: 1000
+          height: 300
+          colorId: background
+          click:
+            payload:
+              actions:
+                nextLine: {}
+  layouts:
+    musicRoomControls:
+      elements:
+        - id: background
+          type: rect
+          width: 1000
+          height: 300
+          colorId: background
+        - id: play-track
+          type: rect
+          x: 20
+          y: 100
+          width: 160
+          height: 100
+          colorId: button
+          click:
+            payload:
+              actions:
+                playMusicRoomTrack:
+                  trackId: browserTrack
+        - id: pause-track
+          type: rect
+          x: 220
+          y: 100
+          width: 160
+          height: 100
+          colorId: button
+          click:
+            payload:
+              actions:
+                pauseMusicRoom: {}
+        - id: resume-track
+          type: rect
+          x: 420
+          y: 100
+          width: 160
+          height: 100
+          colorId: button
+          click:
+            payload:
+              actions:
+                playMusicRoom: {}
+        - id: seek-track
+          type: rect
+          x: 620
+          y: 100
+          width: 160
+          height: 100
+          colorId: button
+          click:
+            payload:
+              actions:
+                seekMusicRoom:
+                  positionMs: 1000
+        - id: clear-track
+          type: rect
+          x: 820
+          y: 100
+          width: 160
+          height: 100
+          colorId: button
+          click:
+            payload:
+              actions:
+                clearMusicRoomSelection: {}
+story:
+  initialSceneId: scene1
+  scenes:
+    scene1:
+      initialSectionId: section1
+      sections:
+        section1:
+          lines:
+            - id: enter
+              actions:
+                control:
+                  resourceId: enter
+            - id: music-room
+              actions:
+                addViewedResource:
+                  resourceId: roomTrack
+                bgm:
+                  loop: true
+                  sounds:
+                    - id: first
+                      resourceId: bgmFirst
+                    - id: second
+                      resourceId: bgmSecond
+                      startDelayMs: 100
+                layout:
+                  resourceId: musicRoomControls

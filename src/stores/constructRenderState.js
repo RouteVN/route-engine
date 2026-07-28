@@ -1572,6 +1572,8 @@ const resolveBackgroundAnimationTarget = ({
 const VOLUME_PERCENT_SCALE = 100;
 const DEFAULT_AUTHORED_AUDIO_VOLUME = VOLUME_PERCENT_SCALE;
 const BGM_CHANNEL_ID = "channel:bgm";
+const MUSIC_ROOM_CHANNEL_ID = "channel:music-room";
+const MUSIC_ROOM_SOUND_ID = "music-room:player";
 const VOICE_CHANNEL_ID = "channel:voice";
 const DEFAULT_SFX_CHANNEL_ID = "default";
 
@@ -1612,6 +1614,7 @@ const createChannelNode = ({
   muted,
   pan,
   loop,
+  playback,
   interruption,
   children,
   runtime,
@@ -1626,6 +1629,9 @@ const createChannelNode = ({
   };
   if (loop !== undefined) {
     channel.loop = loop;
+  }
+  if (playback !== undefined) {
+    channel.playback = structuredClone(playback);
   }
   if (interruption !== undefined) {
     channel.interruption = interruption;
@@ -1666,6 +1672,9 @@ const createSoundNode = ({ id, sound, resource, defaultLoop = false }) => {
     const value = resolveSoundProperty(sound, resource, property, undefined);
     if (value !== undefined) node[property] = value;
   });
+  if (sound.playback !== undefined) {
+    node.playback = structuredClone(sound.playback);
+  }
 
   const resolvedStartAt = node.startAt ?? 0;
   if (node.endAt !== undefined && node.endAt !== null) {
@@ -1682,6 +1691,7 @@ const createSoundNode = ({ id, sound, resource, defaultLoop = false }) => {
 const createLayoutTemplateData = ({
   variables,
   imageGallery,
+  musicRoom,
   runtime,
   saveSlots = [],
   dialogueState,
@@ -1728,6 +1738,7 @@ const createLayoutTemplateData = ({
   const templateData = {
     variables,
     imageGallery,
+    musicRoom,
     runtime: resolvedRuntime,
     saveSlots,
     isChoiceVisible,
@@ -2408,6 +2419,7 @@ export const addBackgroundOrCg = (
     skipTransitionsAndAnimations,
     variables,
     imageGallery,
+    musicRoom,
     runtime,
     activePersistentAnimations,
     restoredPersistentAnimations,
@@ -2587,6 +2599,7 @@ export const addBackgroundOrCg = (
           createLayoutTemplateData({
             variables,
             imageGallery,
+            musicRoom,
             runtime,
             saveSlots,
             dialogueState: presentationState.dialogue,
@@ -2824,6 +2837,7 @@ export const addVisuals = (
     skipTransitionsAndAnimations,
     variables,
     imageGallery,
+    musicRoom,
     runtime,
     activePersistentAnimations,
     autoMode,
@@ -2847,6 +2861,7 @@ export const addVisuals = (
     const visualTemplateData = createLayoutTemplateData({
       variables,
       imageGallery,
+      musicRoom,
       runtime,
       saveSlots,
       dialogueState: presentationState.dialogue,
@@ -3143,6 +3158,7 @@ export const addDialogue = (
     skipTransitionsAndAnimations,
     variables,
     imageGallery,
+    musicRoom,
     runtime,
     activePersistentAnimations,
     saveSlots = [],
@@ -3174,6 +3190,7 @@ export const addDialogue = (
       const templateData = createLayoutTemplateData({
         variables,
         imageGallery,
+        musicRoom,
         runtime,
         saveSlots,
         dialogueState: presentationState.dialogue,
@@ -3265,6 +3282,7 @@ export const addChoices = (
     skipTransitionsAndAnimations,
     variables,
     imageGallery,
+    musicRoom,
     runtime,
     autoMode,
     skipMode,
@@ -3289,6 +3307,7 @@ export const addChoices = (
         ...createLayoutTemplateData({
           variables,
           imageGallery,
+          musicRoom,
           runtime,
           saveSlots,
           dialogueState: presentationState.dialogue,
@@ -3367,6 +3386,7 @@ export const addForm = (
     skipTransitionsAndAnimations,
     variables,
     imageGallery,
+    musicRoom,
     runtime,
     autoMode,
     skipMode,
@@ -3406,6 +3426,7 @@ export const addForm = (
     ...createLayoutTemplateData({
       variables,
       imageGallery,
+      musicRoom,
       runtime,
       saveSlots,
       dialogueState: presentationState.dialogue,
@@ -3473,6 +3494,7 @@ export const addControl = (
     resources = {},
     variables,
     imageGallery,
+    musicRoom,
     runtime,
     isLineCompleted,
     autoMode,
@@ -3526,6 +3548,7 @@ export const addControl = (
       templateData: createLayoutTemplateData({
         variables,
         imageGallery,
+        musicRoom,
         runtime,
         saveSlots,
         dialogueState: presentationState.dialogue,
@@ -3550,7 +3573,7 @@ export const addControl = (
 
 export const addBgm = (
   state,
-  { presentationState, resources, runtime, variables },
+  { presentationState, resources, runtime, variables, musicRoomPlayer },
 ) => {
   const { elements, audio } = state;
   if (presentationState.bgm && resources) {
@@ -3630,12 +3653,59 @@ export const addBgm = (
         muted: bgm.muted,
         pan: bgm.pan,
         loop: usesLegacySound ? undefined : bgm.loop,
+        playback: musicRoomPlayer?.bgmPlayback,
         interruption: bgm.interruption,
         children,
         runtime: resolvedRuntime,
       }),
     );
   }
+  return state;
+};
+
+export const addMusicRoom = (
+  state,
+  { resources = {}, runtime, variables, musicRoomPlayer },
+) => {
+  const musicRoom = resources.musicRoom;
+  if (!musicRoom || !musicRoomPlayer?.trackId || !musicRoomPlayer.playback) {
+    return state;
+  }
+
+  const track = musicRoom.tracks.find(
+    (item) => item.id === musicRoomPlayer.trackId,
+  );
+  const soundResource = track ? resources.sounds?.[track.soundId] : undefined;
+  if (!track || !soundResource) {
+    return state;
+  }
+
+  const resolvedRuntime = createLayoutTemplateData({
+    variables,
+    runtime,
+  }).runtime;
+  const sound = createSoundNode({
+    id: MUSIC_ROOM_SOUND_ID,
+    sound: {
+      loop: false,
+      startDelayMs: 0,
+      playback: musicRoomPlayer.playback,
+    },
+    resource: soundResource,
+  });
+
+  state.audio.push(
+    createChannelNode({
+      id: MUSIC_ROOM_CHANNEL_ID,
+      volume: getEffectiveChannelVolume(
+        resolvedRuntime,
+        "musicVolume",
+        DEFAULT_AUTHORED_AUDIO_VOLUME,
+      ),
+      children: [sound],
+      runtime: resolvedRuntime,
+    }),
+  );
   return state;
 };
 
@@ -3842,6 +3912,7 @@ export const addLayout = (
     resources = {},
     variables,
     imageGallery,
+    musicRoom,
     runtime,
     autoMode,
     skipMode,
@@ -3896,6 +3967,7 @@ export const addLayout = (
         templateData: createLayoutTemplateData({
           variables,
           imageGallery,
+          musicRoom,
           runtime,
           saveSlots,
           dialogueState: presentationState.dialogue,
@@ -4013,6 +4085,7 @@ export const addOverlayStack = (
     resources = {},
     variables,
     imageGallery,
+    musicRoom,
     runtime,
     autoMode,
     skipMode,
@@ -4075,6 +4148,7 @@ export const addOverlayStack = (
       const templateData = createLayoutTemplateData({
         variables,
         imageGallery,
+        musicRoom,
         runtime,
         saveSlots,
         dialogueState: presentationState?.dialogue,
@@ -4129,6 +4203,7 @@ export const addConfirmDialog = (
     resources = {},
     variables,
     imageGallery,
+    musicRoom,
     runtime,
     saveSlots = [],
     autoMode,
@@ -4191,6 +4266,7 @@ export const addConfirmDialog = (
     createLayoutTemplateData({
       variables,
       imageGallery,
+      musicRoom,
       runtime,
       saveSlots,
       dialogueState: presentationState?.dialogue,
@@ -4266,6 +4342,7 @@ export const constructRenderState = (params) => {
     addScreenAppearance,
     addScreenTransition,
     addBgm,
+    addMusicRoom,
     addSfx,
     addVoice,
     addOverlayStack,

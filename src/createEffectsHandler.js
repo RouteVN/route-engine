@@ -20,6 +20,16 @@ const createTimerState = () => {
 };
 
 const DEFAULT_SKIP_NEXT_DELAY_MS = 80;
+const MUSIC_ROOM_SOUND_ID = "music-room:player";
+const MUSIC_ROOM_SOUND_EVENT_ACTIONS = new Map([
+  ["soundReady", "musicRoomSoundReady"],
+  ["soundProgress", "musicRoomSoundProgress"],
+  ["soundComplete", "musicRoomSoundComplete"],
+  ["soundError", "musicRoomSoundError"],
+]);
+const isMusicRoomSoundEvent = (eventName, payload) =>
+  MUSIC_ROOM_SOUND_EVENT_ACTIONS.has(eventName) &&
+  payload?._event?.id === MUSIC_ROOM_SOUND_ID;
 
 const render = ({ engine, routeGraphics, trackRenderDispatch }, payload) => {
   if (engine.selectHasPendingRenderWork?.()) {
@@ -375,6 +385,13 @@ const createEffectsHandler = ({
   };
 
   const handleRouteGraphicsEvent = (eventName, payload = {}) => {
+    if (isMusicRoomSoundEvent(eventName, payload)) {
+      const musicRoomAction = MUSIC_ROOM_SOUND_EVENT_ACTIONS.get(eventName);
+      const engine = getEngine();
+      dispatchInternalAction(engine, musicRoomAction, payload?._event);
+      return true;
+    }
+
     if (eventName !== "renderComplete") {
       return false;
     }
@@ -527,6 +544,11 @@ const createEffectsHandler = ({
     onEvent,
   } = {}) => {
     return async (eventName, payload = {}) => {
+      if (isMusicRoomSoundEvent(eventName, payload)) {
+        handleRouteGraphicsEvent(eventName, payload);
+        return onEvent?.(eventName, payload);
+      }
+
       const engine = getEngine();
       if (shouldBlockInteractionActions(engine, payload)) {
         return onEvent?.(eventName, payload);

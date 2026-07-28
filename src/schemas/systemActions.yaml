@@ -555,4 +555,84 @@ properties:
     properties: {}
     additionalProperties: false
 
+  playMusicRoomTrack:
+    type: object
+    description: Select and play or restart an unlocked music-room track
+    properties:
+      trackId:
+        type: string
+        minLength: 1
+    required: [trackId]
+    additionalProperties: false
+
+  playMusicRoom:
+    type: object
+    description: Resume or start the selected music-room track
+    properties: {}
+    additionalProperties: false
+
+  pauseMusicRoom:
+    type: object
+    description: Pause the selected music-room track
+    properties: {}
+    additionalProperties: false
+
+  stopMusicRoom:
+    type: object
+    description: Stop the selected music-room track and reset its cursor
+    properties: {}
+    additionalProperties: false
+
+  seekMusicRoom:
+    type: object
+    description: Seek within the selected music-room track
+    properties:
+      positionMs:
+        type: [number, string]
+        minimum: 0
+        description: Segment-relative milliseconds or a template/event binding that resolves to them
+    required: [positionMs]
+    additionalProperties: false
+
+  playPreviousMusicRoomTrack:
+    type: object
+    description: Select and play the previous unlocked music-room track
+    properties: {}
+    additionalProperties: false
+
+  playNextMusicRoomTrack:
+    type: object
+    description: Select and play the next unlocked music-room track
+    properties: {}
+    additionalProperties: false
+
+  clearMusicRoomSelection:
+    type: object
+    description: Stop and clear the selected music-room track
+    properties: {}
+    additionalProperties: false
+
+  moveToMusicRoomPage:
+    type: object
+    description: Move to a zero-based music-room page
+    properties:
+      pageIndex:
+        type: [integer, string]
+        minimum: 0
+        description: Zero-based page index or a template/event binding that resolves to one
+    required: [pageIndex]
+    additionalProperties: false
+
+  moveToNextMusicRoomPage:
+    type: object
+    description: Move to the next music-room page
+    properties: {}
+    additionalProperties: false
+
+  moveToPreviousMusicRoomPage:
+    type: object
+    description: Move to the previous music-room page
+    properties: {}
+    additionalProperties: false
+
 additionalProperties: false

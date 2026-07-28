@@ -67,6 +67,49 @@ properties:
     required: [pageSize, groups]
     additionalProperties: false
 
+  musicRoom:
+    type: object
+    description: Singleton authored music-room catalog
+    properties:
+      pageSize:
+        type: integer
+        minimum: 1
+        description: Number of tracks shown on one page
+      tracks:
+        type: array
+        description: Music tracks in authored display and navigation order
+        items:
+          type: object
+          properties:
+            id:
+              type: string
+              minLength: 1
+              description: Music-room-wide unique track ID
+            soundId:
+              type: string
+              minLength: 1
+              description: Reference to a resources.sounds entry
+            title:
+              type: string
+              minLength: 1
+            artist:
+              type: string
+              minLength: 1
+            album:
+              type: string
+              minLength: 1
+            description:
+              type: string
+              minLength: 1
+            coverImageId:
+              type: string
+              minLength: 1
+              description: Optional reference to a resources.images entry
+          required: [id, soundId, title]
+          additionalProperties: false
+    required: [pageSize, tracks]
+    additionalProperties: false
+
   characters:
     type: object
     description: Character sprite assets

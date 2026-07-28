@@ -160,6 +160,50 @@ describe("systemState schema", () => {
     expect(validateSystemState.errors).toBeNull();
   });
 
+  it("accepts active music-room player and audio-command state", () => {
+    const projectData = createMinimalProjectData();
+    projectData.resources = {
+      sounds: {
+        theme: { fileId: "theme.ogg" },
+      },
+      musicRoom: {
+        pageSize: 4,
+        tracks: [{ id: "theme", soundId: "theme", title: "Theme" }],
+      },
+    };
+    const engine = createRouteEngine({
+      handlePendingEffects: () => {},
+    });
+    engine.init({
+      initialState: {
+        projectData,
+        global: {
+          accountViewedRegistry: {
+            sections: [],
+            resources: [{ resourceId: "theme" }],
+          },
+        },
+      },
+    });
+    engine.handleAction("playMusicRoomTrack", { trackId: "theme" });
+    engine.handleInternalAction("musicRoomSoundReady", {
+      id: "music-room:player",
+      commandId: 2,
+      positionMs: 0,
+      durationMs: 10_000,
+    });
+    engine.handleAction("seekMusicRoom", { positionMs: 5_000 });
+
+    const systemState = toJsonSnapshot(engine.selectSystemState());
+    expect(systemState.global.musicRoomPlayer.seekFallback).toEqual({
+      commandId: 3,
+      status: "playing",
+      positionMs: 0,
+    });
+    expect(validateSystemState(systemState)).toBe(true);
+    expect(validateSystemState.errors).toBeNull();
+  });
+
   it("accepts saved slot entries with an explicit formatVersion", () => {
     const engine = createRouteEngine({
       handlePendingEffects: () => {},

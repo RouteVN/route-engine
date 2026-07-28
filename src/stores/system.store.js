@@ -8,6 +8,7 @@ import {
   selectVariablesWithComputedValues,
   validateComputedVariableConfigs,
   validateImageGalleryConfig,
+  validateMusicRoomConfig,
   validateVariableScope,
   validateVariableOperation,
   validateVariableOperationValue,
@@ -59,9 +60,35 @@ const createDefaultImageGalleryNavigation = () => ({
   pageIndex: 0,
 });
 
+const MUSIC_ROOM_SOUND_ID = "music-room:player";
+const MUSIC_ROOM_ERROR_CODES = new Set([
+  "asset-unavailable",
+  "decode-failed",
+  "invalid-segment",
+  "invalid-position",
+  "playback-failed",
+]);
+const createDefaultMusicRoomPlayer = ({
+  bgmPlayback = { commandId: 0, operation: "resume" },
+} = {}) => ({
+  trackId: null,
+  pageIndex: 0,
+  status: "stopped",
+  readiness: "idle",
+  positionMs: 0,
+  durationMs: null,
+  playback: null,
+  seekFallback: null,
+  bgmPlayback,
+});
+
 const EMPTY_IMAGE_GALLERY_ACTION_KEYS = new Set();
 const SHOW_IMAGE_GALLERY_VARIANT_KEYS = new Set(["groupId", "variantId"]);
 const MOVE_TO_IMAGE_GALLERY_PAGE_KEYS = new Set(["pageIndex"]);
+const EMPTY_MUSIC_ROOM_ACTION_KEYS = new Set();
+const PLAY_MUSIC_ROOM_TRACK_KEYS = new Set(["trackId"]);
+const SEEK_MUSIC_ROOM_KEYS = new Set(["positionMs"]);
+const MOVE_TO_MUSIC_ROOM_PAGE_KEYS = new Set(["pageIndex"]);
 
 const resetNextLineConfigIfSingleLine = (state) => {
   const applyMode = state.global.nextLineConfig?.applyMode ?? "persistent";
@@ -90,6 +117,43 @@ const cloneStateValue = (value) => {
 
 const isRecord = (value) =>
   value !== null && typeof value === "object" && !Array.isArray(value);
+
+const nextAudioCommandId = (state) => {
+  const currentCommandId = state.global.audioCommandId;
+  if (!Number.isSafeInteger(currentCommandId) || currentCommandId < 0) {
+    throw new Error("Internal audio command counter is invalid");
+  }
+  if (currentCommandId === Number.MAX_SAFE_INTEGER) {
+    throw new Error("Audio command counter is exhausted");
+  }
+  state.global.audioCommandId = currentCommandId + 1;
+  return state.global.audioCommandId;
+};
+
+const createMusicRoomPlaybackCommand = (state, operation, positionMs) => ({
+  commandId: nextAudioCommandId(state),
+  operation,
+  ...(positionMs === undefined ? {} : { positionMs }),
+});
+
+const resetMusicRoomPlayer = (state) => {
+  if (
+    !Object.prototype.hasOwnProperty.call(state.global ?? {}, "musicRoomPlayer")
+  ) {
+    return;
+  }
+  const player = state.global.musicRoomPlayer;
+  let bgmPlayback = player.bgmPlayback;
+  if (player.trackId !== null) {
+    bgmPlayback = {
+      commandId: nextAudioCommandId(state),
+      operation: "resume",
+    };
+  }
+  state.global.musicRoomPlayer = createDefaultMusicRoomPlayer({
+    bgmPlayback,
+  });
+};
 
 const getAchievementForAction = (state, resourceId) => {
   if (typeof resourceId !== "string" || resourceId.length === 0) {
@@ -1417,6 +1481,7 @@ const resetStoryStateTransientGlobals = (
   state.global.nextLineConfig = createDefaultNextLineConfig();
   state.global.overlayStack = [];
   state.global.isLineCompleted = true;
+  resetMusicRoomPlayer(state);
 
   state.global.pendingEffects.push(
     { name: "clearAutoNextTimer" },
@@ -1819,6 +1884,7 @@ export const createInitialState = (payload) => {
 
   assertUniqueSectionIds(projectData);
   validateImageGalleryConfig(projectData);
+  validateMusicRoomConfig(projectData);
   validateComputedVariableConfigs(projectData?.resources?.variables ?? {});
 
   const initialSceneId = projectData.story.initialSceneId;
@@ -1857,6 +1923,8 @@ export const createInitialState = (payload) => {
       ),
       nextLineConfig: createDefaultNextLineConfig(),
       imageGalleryNavigation: createDefaultImageGalleryNavigation(),
+      audioCommandId: 0,
+      musicRoomPlayer: createDefaultMusicRoomPlayer(),
       saveSlots: normalizeStoredSaveSlots(saveSlots),
       overlayStack: [],
       variables: globalVariables,
@@ -2211,6 +2279,141 @@ export const selectImageGallery = ({ state }) => {
   return {
     pageGroups,
     selection,
+    pagination: {
+      pageIndex,
+      pageCount,
+      canMoveToPreviousPage: pageIndex > 0,
+      canMoveToNextPage: pageIndex + 1 < pageCount,
+    },
+  };
+};
+
+const isMusicRoomTrackLocked = (state, track) =>
+  !selectIsResourceSeenInRegistry(
+    { registry: state.global.accountViewedRegistry },
+    { resourceId: track.soundId },
+  );
+
+const getMusicRoomPageCount = (musicRoom) =>
+  musicRoom.tracks.length === 0
+    ? 0
+    : Math.ceil(musicRoom.tracks.length / musicRoom.pageSize);
+
+const getEffectiveMusicRoomPageIndex = (musicRoom, player) => {
+  const pageCount = getMusicRoomPageCount(musicRoom);
+  if (pageCount === 0) {
+    return 0;
+  }
+  const requestedPageIndex = Number.isInteger(player?.pageIndex)
+    ? player.pageIndex
+    : 0;
+  return Math.min(Math.max(requestedPageIndex, 0), pageCount - 1);
+};
+
+const findUnlockedMusicRoomTrack = (state, tracks, startIndex, offset) => {
+  for (
+    let index = startIndex + offset;
+    index >= 0 && index < tracks.length;
+    index += offset
+  ) {
+    if (!isMusicRoomTrackLocked(state, tracks[index])) {
+      return tracks[index];
+    }
+  }
+  return undefined;
+};
+
+const projectMusicRoomTrackMetadata = (track) => ({
+  trackId: track.id,
+  soundId: track.soundId,
+  title: track.title,
+  artist: track.artist ?? null,
+  album: track.album ?? null,
+  description: track.description ?? null,
+  coverImageId: track.coverImageId ?? null,
+});
+
+const projectMusicRoomTrack = (state, track) => ({
+  ...projectMusicRoomTrackMetadata(track),
+  locked: isMusicRoomTrackLocked(state, track),
+});
+
+const formatMusicRoomTime = (milliseconds) => {
+  const totalSeconds = Math.floor(milliseconds / 1000);
+  const seconds = totalSeconds % 60;
+  const totalMinutes = Math.floor(totalSeconds / 60);
+  if (totalMinutes < 60) {
+    return `${totalMinutes}:${String(seconds).padStart(2, "0")}`;
+  }
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${hours}:${String(minutes).padStart(2, "0")}:${String(
+    seconds,
+  ).padStart(2, "0")}`;
+};
+
+export const selectMusicRoomConfig = ({ state }) => {
+  const musicRoom = state.projectData?.resources?.musicRoom;
+  return musicRoom === undefined ? undefined : cloneStateValue(musicRoom);
+};
+
+export const selectMusicRoom = ({ state }) => {
+  const musicRoom = state.projectData?.resources?.musicRoom;
+  if (musicRoom === undefined) {
+    return null;
+  }
+
+  const player = state.global.musicRoomPlayer ?? createDefaultMusicRoomPlayer();
+  const pageCount = getMusicRoomPageCount(musicRoom);
+  const pageIndex = getEffectiveMusicRoomPageIndex(musicRoom, player);
+  const pageStart = pageIndex * musicRoom.pageSize;
+  const pageTracks = musicRoom.tracks
+    .slice(pageStart, pageStart + musicRoom.pageSize)
+    .map((track) => projectMusicRoomTrack(state, track));
+
+  const selectedTrackIndex = musicRoom.tracks.findIndex(
+    (track) => track.id === player.trackId,
+  );
+  const selectedTrack = musicRoom.tracks[selectedTrackIndex];
+  const selection = selectedTrack
+    ? {
+        ...projectMusicRoomTrackMetadata(selectedTrack),
+        canPlayPreviousTrack:
+          findUnlockedMusicRoomTrack(
+            state,
+            musicRoom.tracks,
+            selectedTrackIndex,
+            -1,
+          ) !== undefined,
+        canPlayNextTrack:
+          findUnlockedMusicRoomTrack(
+            state,
+            musicRoom.tracks,
+            selectedTrackIndex,
+            1,
+          ) !== undefined,
+      }
+    : null;
+
+  return {
+    pageTracks,
+    selection,
+    playback: selection
+      ? {
+          status: player.status,
+          readiness: player.readiness,
+          positionMs: player.positionMs,
+          durationMs: player.durationMs,
+          positionText: formatMusicRoomTime(player.positionMs),
+          durationText:
+            player.durationMs === null
+              ? null
+              : formatMusicRoomTime(player.durationMs),
+          canPlay: player.status !== "playing",
+          canPause: player.status === "playing",
+          canSeek: player.readiness === "ready" && player.durationMs !== null,
+        }
+      : null,
     pagination: {
       pageIndex,
       pageCount,
@@ -2658,6 +2861,7 @@ export const selectRenderState = ({ state }, options = {}) => {
   const activeForm = selectActiveForm({ state });
   const isChoiceVisible = selectIsChoiceVisible({ state });
   const imageGallery = selectImageGallery({ state });
+  const musicRoom = selectMusicRoom({ state });
 
   const allVariables = selectAllVariables({ state });
 
@@ -2692,6 +2896,8 @@ export const selectRenderState = ({ state }, options = {}) => {
     activePersistentAnimations,
     restoredPersistentAnimations,
     imageGallery,
+    musicRoom,
+    musicRoomPlayer: cloneStateValue(state.global.musicRoomPlayer),
   });
   return renderState;
 };
@@ -3588,6 +3794,451 @@ export const moveToNextImageGalleryPage = ({ state }, payload) =>
 export const moveToPreviousImageGalleryPage = ({ state }, payload) =>
   moveImageGalleryPage(state, payload, -1, "moveToPreviousImageGalleryPage");
 
+const assertMusicRoomActionPayload = (actionName, payload, allowedKeys) => {
+  if (!isRecord(payload)) {
+    throw new Error(`${actionName} payload must be an object`);
+  }
+  Object.keys(payload).forEach((key) => {
+    if (!allowedKeys.has(key)) {
+      throw new Error(
+        `${actionName} payload contains unsupported property "${key}"`,
+      );
+    }
+  });
+};
+
+const assertNonEmptyMusicRoomTrackId = (actionName, trackId) => {
+  if (typeof trackId !== "string" || trackId.length === 0) {
+    throw new Error(`${actionName} requires a non-empty trackId`);
+  }
+};
+
+const queueMusicRoomRender = (state) => {
+  state.global.pendingEffects.push({ name: "render" });
+};
+
+const playMusicRoomTrackState = (state, track) => {
+  const musicRoom = state.projectData.resources.musicRoom;
+  const player = state.global.musicRoomPlayer;
+  const wasSelected = player.trackId !== null;
+  const isSameTrack = player.trackId === track.id;
+  let bgmPlayback = player.bgmPlayback;
+
+  if (!wasSelected) {
+    bgmPlayback = {
+      commandId: nextAudioCommandId(state),
+      operation: "pause",
+    };
+  }
+
+  const playback = createMusicRoomPlaybackCommand(state, "play", 0);
+  const trackIndex = musicRoom.tracks.indexOf(track);
+  const retainedDuration = isSameTrack ? player.durationMs : null;
+  state.global.musicRoomPlayer = {
+    trackId: track.id,
+    pageIndex: Math.floor(trackIndex / musicRoom.pageSize),
+    status: "playing",
+    readiness: retainedDuration === null ? "loading" : "ready",
+    positionMs: 0,
+    durationMs: retainedDuration,
+    playback,
+    seekFallback: null,
+    bgmPlayback,
+  };
+  queueMusicRoomRender(state);
+};
+
+export const playMusicRoomTrack = ({ state }, payload) => {
+  const actionName = "playMusicRoomTrack";
+  assertMusicRoomActionPayload(actionName, payload, PLAY_MUSIC_ROOM_TRACK_KEYS);
+  assertNonEmptyMusicRoomTrackId(actionName, payload.trackId);
+
+  const musicRoom = state.projectData?.resources?.musicRoom;
+  const track = musicRoom?.tracks.find((item) => item.id === payload.trackId);
+  if (!track || isMusicRoomTrackLocked(state, track)) {
+    return state;
+  }
+
+  playMusicRoomTrackState(state, track);
+  return state;
+};
+
+export const playMusicRoom = ({ state }, payload) => {
+  const actionName = "playMusicRoom";
+  assertMusicRoomActionPayload(
+    actionName,
+    payload,
+    EMPTY_MUSIC_ROOM_ACTION_KEYS,
+  );
+
+  const player = state.global.musicRoomPlayer;
+  if (player.trackId === null || player.status === "playing") {
+    return state;
+  }
+
+  const wasEnded = player.status === "ended";
+  const wasError = player.readiness === "error";
+  const operation = player.status === "paused" && !wasError ? "resume" : "play";
+  const positionMs = wasEnded ? 0 : player.positionMs;
+  player.playback = createMusicRoomPlaybackCommand(
+    state,
+    operation,
+    operation === "play" ? positionMs : undefined,
+  );
+  player.seekFallback = null;
+  player.status = "playing";
+  player.positionMs = positionMs;
+  if (wasError) {
+    player.readiness = player.durationMs === null ? "loading" : "ready";
+  }
+  queueMusicRoomRender(state);
+  return state;
+};
+
+export const pauseMusicRoom = ({ state }, payload) => {
+  const actionName = "pauseMusicRoom";
+  assertMusicRoomActionPayload(
+    actionName,
+    payload,
+    EMPTY_MUSIC_ROOM_ACTION_KEYS,
+  );
+
+  const player = state.global.musicRoomPlayer;
+  if (player.trackId === null || player.status !== "playing") {
+    return state;
+  }
+
+  player.playback = createMusicRoomPlaybackCommand(state, "pause");
+  player.seekFallback = null;
+  player.status = "paused";
+  queueMusicRoomRender(state);
+  return state;
+};
+
+export const stopMusicRoom = ({ state }, payload) => {
+  const actionName = "stopMusicRoom";
+  assertMusicRoomActionPayload(
+    actionName,
+    payload,
+    EMPTY_MUSIC_ROOM_ACTION_KEYS,
+  );
+
+  const player = state.global.musicRoomPlayer;
+  if (
+    player.trackId === null ||
+    (player.status === "stopped" && player.positionMs === 0)
+  ) {
+    return state;
+  }
+
+  player.playback = createMusicRoomPlaybackCommand(state, "stop");
+  player.seekFallback = null;
+  player.status = "stopped";
+  player.positionMs = 0;
+  queueMusicRoomRender(state);
+  return state;
+};
+
+export const seekMusicRoom = ({ state }, payload) => {
+  const actionName = "seekMusicRoom";
+  assertMusicRoomActionPayload(actionName, payload, SEEK_MUSIC_ROOM_KEYS);
+  if (
+    typeof payload.positionMs !== "number" ||
+    !Number.isFinite(payload.positionMs) ||
+    payload.positionMs < 0
+  ) {
+    throw new Error("seekMusicRoom requires a finite non-negative positionMs");
+  }
+
+  const player = state.global.musicRoomPlayer;
+  if (
+    player.trackId === null ||
+    player.readiness !== "ready" ||
+    player.durationMs === null ||
+    payload.positionMs > player.durationMs
+  ) {
+    return state;
+  }
+
+  const playback = createMusicRoomPlaybackCommand(
+    state,
+    "seek",
+    payload.positionMs,
+  );
+  player.seekFallback = {
+    commandId: playback.commandId,
+    status: player.status,
+    positionMs: player.positionMs,
+  };
+  player.playback = playback;
+  player.positionMs = payload.positionMs;
+  if (payload.positionMs === player.durationMs) {
+    player.status = "ended";
+  } else if (player.status === "ended") {
+    player.status = "stopped";
+  }
+  queueMusicRoomRender(state);
+  return state;
+};
+
+const playAdjacentMusicRoomTrack = (state, payload, offset, actionName) => {
+  assertMusicRoomActionPayload(
+    actionName,
+    payload,
+    EMPTY_MUSIC_ROOM_ACTION_KEYS,
+  );
+  const musicRoom = state.projectData?.resources?.musicRoom;
+  const player = state.global.musicRoomPlayer;
+  if (!musicRoom || player.trackId === null) {
+    return state;
+  }
+
+  const trackIndex = musicRoom.tracks.findIndex(
+    (track) => track.id === player.trackId,
+  );
+  if (trackIndex < 0) {
+    return state;
+  }
+  const track = findUnlockedMusicRoomTrack(
+    state,
+    musicRoom.tracks,
+    trackIndex,
+    offset,
+  );
+  if (!track) {
+    return state;
+  }
+
+  playMusicRoomTrackState(state, track);
+  return state;
+};
+
+export const playPreviousMusicRoomTrack = ({ state }, payload) =>
+  playAdjacentMusicRoomTrack(state, payload, -1, "playPreviousMusicRoomTrack");
+
+export const playNextMusicRoomTrack = ({ state }, payload) =>
+  playAdjacentMusicRoomTrack(state, payload, 1, "playNextMusicRoomTrack");
+
+export const clearMusicRoomSelection = ({ state }, payload) => {
+  const actionName = "clearMusicRoomSelection";
+  assertMusicRoomActionPayload(
+    actionName,
+    payload,
+    EMPTY_MUSIC_ROOM_ACTION_KEYS,
+  );
+  const player = state.global.musicRoomPlayer;
+  if (player.trackId === null) {
+    return state;
+  }
+
+  const pageIndex = player.pageIndex;
+  const bgmPlayback = {
+    commandId: nextAudioCommandId(state),
+    operation: "resume",
+  };
+  state.global.musicRoomPlayer = {
+    ...createDefaultMusicRoomPlayer({ bgmPlayback }),
+    pageIndex,
+  };
+  queueMusicRoomRender(state);
+  return state;
+};
+
+const moveToMusicRoomPageIndex = (state, pageIndex) => {
+  const musicRoom = state.projectData?.resources?.musicRoom;
+  if (!musicRoom || pageIndex >= getMusicRoomPageCount(musicRoom)) {
+    return state;
+  }
+
+  const player = state.global.musicRoomPlayer;
+  const currentPageIndex = getEffectiveMusicRoomPageIndex(musicRoom, player);
+  if (pageIndex === currentPageIndex) {
+    return state;
+  }
+
+  player.pageIndex = pageIndex;
+  queueMusicRoomRender(state);
+  return state;
+};
+
+export const moveToMusicRoomPage = ({ state }, payload) => {
+  const actionName = "moveToMusicRoomPage";
+  assertMusicRoomActionPayload(
+    actionName,
+    payload,
+    MOVE_TO_MUSIC_ROOM_PAGE_KEYS,
+  );
+  if (!Number.isInteger(payload.pageIndex) || payload.pageIndex < 0) {
+    throw new Error(
+      "moveToMusicRoomPage requires a non-negative integer pageIndex",
+    );
+  }
+  return moveToMusicRoomPageIndex(state, payload.pageIndex);
+};
+
+const moveMusicRoomPage = (state, payload, offset, actionName) => {
+  assertMusicRoomActionPayload(
+    actionName,
+    payload,
+    EMPTY_MUSIC_ROOM_ACTION_KEYS,
+  );
+  const musicRoom = state.projectData?.resources?.musicRoom;
+  if (!musicRoom) {
+    return state;
+  }
+  const targetPageIndex =
+    getEffectiveMusicRoomPageIndex(musicRoom, state.global.musicRoomPlayer) +
+    offset;
+  if (targetPageIndex < 0) {
+    return state;
+  }
+  return moveToMusicRoomPageIndex(state, targetPageIndex);
+};
+
+export const moveToNextMusicRoomPage = ({ state }, payload) =>
+  moveMusicRoomPage(state, payload, 1, "moveToNextMusicRoomPage");
+
+export const moveToPreviousMusicRoomPage = ({ state }, payload) =>
+  moveMusicRoomPage(state, payload, -1, "moveToPreviousMusicRoomPage");
+
+const getCurrentMusicRoomSoundEvent = (state, payload) => {
+  const player = state.global.musicRoomPlayer;
+  if (
+    !isRecord(payload) ||
+    payload.id !== MUSIC_ROOM_SOUND_ID ||
+    player.trackId === null ||
+    !player.playback ||
+    payload.commandId !== player.playback.commandId
+  ) {
+    return null;
+  }
+  return player;
+};
+
+const isValidMusicRoomTimingEvent = (payload) =>
+  typeof payload.positionMs === "number" &&
+  Number.isFinite(payload.positionMs) &&
+  payload.positionMs >= 0 &&
+  typeof payload.durationMs === "number" &&
+  Number.isFinite(payload.durationMs) &&
+  payload.durationMs > 0 &&
+  payload.positionMs <= payload.durationMs;
+
+const applyMusicRoomTimingEvent = (
+  state,
+  player,
+  payload,
+  { readiness = player.readiness } = {},
+) => {
+  const changed =
+    player.readiness !== readiness ||
+    player.positionMs !== payload.positionMs ||
+    player.durationMs !== payload.durationMs ||
+    player.seekFallback !== null;
+  if (!changed) {
+    return state;
+  }
+  player.readiness = readiness;
+  player.positionMs = payload.positionMs;
+  player.durationMs = payload.durationMs;
+  player.seekFallback = null;
+  queueMusicRoomRender(state);
+  return state;
+};
+
+export const musicRoomSoundReady = ({ state }, payload) => {
+  const player = getCurrentMusicRoomSoundEvent(state, payload);
+  if (
+    !player ||
+    player.readiness !== "loading" ||
+    !isValidMusicRoomTimingEvent(payload)
+  ) {
+    return state;
+  }
+  return applyMusicRoomTimingEvent(state, player, payload, {
+    readiness: "ready",
+  });
+};
+
+export const musicRoomSoundProgress = ({ state }, payload) => {
+  const player = getCurrentMusicRoomSoundEvent(state, payload);
+  if (
+    !player ||
+    player.readiness !== "ready" ||
+    !isValidMusicRoomTimingEvent(payload)
+  ) {
+    return state;
+  }
+  if (
+    (player.status === "stopped" && payload.positionMs !== 0) ||
+    (player.status === "ended" && payload.positionMs !== payload.durationMs)
+  ) {
+    return state;
+  }
+  return applyMusicRoomTimingEvent(state, player, payload);
+};
+
+export const musicRoomSoundComplete = ({ state }, payload) => {
+  const player = getCurrentMusicRoomSoundEvent(state, payload);
+  if (
+    !player ||
+    player.readiness !== "ready" ||
+    player.status !== "playing" ||
+    !isValidMusicRoomTimingEvent(payload) ||
+    payload.positionMs !== payload.durationMs
+  ) {
+    return state;
+  }
+
+  player.status = "ended";
+  player.positionMs = payload.positionMs;
+  player.durationMs = payload.durationMs;
+  player.seekFallback = null;
+  queueMusicRoomRender(state);
+  return state;
+};
+
+export const musicRoomSoundError = ({ state }, payload) => {
+  const player = getCurrentMusicRoomSoundEvent(state, payload);
+  if (
+    !player ||
+    typeof payload.errorCode !== "string" ||
+    !MUSIC_ROOM_ERROR_CODES.has(payload.errorCode)
+  ) {
+    return state;
+  }
+  if (player.readiness === "error" && player.status === "stopped") {
+    return state;
+  }
+
+  if (payload.errorCode === "invalid-position") {
+    const fallback = player.seekFallback;
+    if (
+      player.playback.operation !== "seek" ||
+      fallback?.commandId !== payload.commandId
+    ) {
+      return state;
+    }
+    const changed =
+      player.status !== fallback.status ||
+      player.positionMs !== fallback.positionMs;
+    player.status = fallback.status;
+    player.positionMs = fallback.positionMs;
+    player.seekFallback = null;
+    if (changed) {
+      queueMusicRoomRender(state);
+    }
+    return state;
+  }
+
+  player.readiness = "error";
+  player.status = "stopped";
+  player.positionMs = 0;
+  player.seekFallback = null;
+  queueMusicRoomRender(state);
+  return state;
+};
+
 /**
  * Sets the next line configuration for advancing to the next line
  * @param {Object} state - Current state object
@@ -3762,6 +4413,7 @@ export const loadSlot = ({ state }, payload) => {
     state.global.isLineCompleted = true;
     clearConfirmDialog(state);
     clearFormDrafts(state);
+    resetMusicRoomPlayer(state);
     state.global.pendingEffects.push(
       { name: "clearAutoNextTimer" },
       { name: "clearSkipNextTimer" },
@@ -3786,10 +4438,12 @@ export const updateProjectData = ({ state }, payload) => {
 
   assertUniqueSectionIds(projectData);
   validateImageGalleryConfig(projectData);
+  validateMusicRoomConfig(projectData);
   validateComputedVariableConfigs(projectData?.resources?.variables ?? {});
 
   state.projectData = projectData;
   state.global.imageGalleryNavigation = createDefaultImageGalleryNavigation();
+  resetMusicRoomPlayer(state);
   const variableConfigs = projectData?.resources?.variables ?? {};
   const { contextVariableDefaultValues, globalVariablesDefaultValues } =
     getDefaultVariablesFromProjectData(projectData ?? {});
@@ -4825,6 +5479,8 @@ export const createSystemStore = (initialState) => {
     selectIsResourceAccountViewed,
     selectImageGalleryConfig,
     selectImageGallery,
+    selectMusicRoomConfig,
+    selectMusicRoom,
     selectNextLineConfig,
     selectSystemState,
     selectAchievements,
@@ -4893,6 +5549,21 @@ export const createSystemStore = (initialState) => {
     moveToImageGalleryPage,
     moveToNextImageGalleryPage,
     moveToPreviousImageGalleryPage,
+    playMusicRoomTrack,
+    playMusicRoom,
+    pauseMusicRoom,
+    stopMusicRoom,
+    seekMusicRoom,
+    playPreviousMusicRoomTrack,
+    playNextMusicRoomTrack,
+    clearMusicRoomSelection,
+    moveToMusicRoomPage,
+    moveToNextMusicRoomPage,
+    moveToPreviousMusicRoomPage,
+    musicRoomSoundReady,
+    musicRoomSoundProgress,
+    musicRoomSoundComplete,
+    musicRoomSoundError,
     setNextLineConfig,
     saveSlot,
     loadSlot,

@@ -7,6 +7,96 @@ const createTicker = () => ({
 });
 
 describe("createEffectsHandler RouteGraphics event bridge", () => {
+  it.each([
+    ["soundReady", "musicRoomSoundReady"],
+    ["soundProgress", "musicRoomSoundProgress"],
+    ["soundComplete", "musicRoomSoundComplete"],
+    ["soundError", "musicRoomSoundError"],
+  ])(
+    "routes %s through the private music-room path before interaction gating",
+    async (eventName, actionName) => {
+      const engine = {
+        handleInternalAction: vi.fn(),
+        handleAction: vi.fn(),
+        handleActions: vi.fn(),
+        selectActiveInteraction: vi.fn(() => ({
+          source: "form",
+          formKey: "active-form",
+        })),
+      };
+      const preprocessPayload = vi.fn();
+      const onEvent = vi.fn();
+      const effectsHandler = createEffectsHandler({
+        getEngine: () => engine,
+        routeGraphics: {
+          render: vi.fn(),
+        },
+        ticker: createTicker(),
+      });
+      const eventHandler = effectsHandler.createRouteGraphicsEventHandler({
+        preprocessPayload,
+        onEvent,
+      });
+      const payload = {
+        _event: {
+          id: "music-room:player",
+          commandId: 4,
+          positionMs: 1000,
+          durationMs: 2000,
+        },
+        actions: {
+          nextLine: {},
+        },
+      };
+
+      await eventHandler(eventName, payload);
+
+      expect(engine.handleInternalAction).toHaveBeenCalledWith(
+        actionName,
+        payload._event,
+      );
+      expect(engine.handleActions).not.toHaveBeenCalled();
+      expect(preprocessPayload).not.toHaveBeenCalled();
+      expect(onEvent).toHaveBeenCalledWith(eventName, payload);
+    },
+  );
+
+  it("leaves lifecycle events for other controlled sounds on the normal event path", async () => {
+    const engine = {
+      handleInternalAction: vi.fn(),
+      handleAction: vi.fn(),
+      handleActions: vi.fn(),
+      selectActiveInteraction: vi.fn(() => null),
+    };
+    const preprocessPayload = vi.fn((_eventName, payload) => payload);
+    const onEvent = vi.fn();
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics: {
+        render: vi.fn(),
+      },
+      ticker: createTicker(),
+    });
+    const eventHandler = effectsHandler.createRouteGraphicsEventHandler({
+      preprocessPayload,
+      onEvent,
+    });
+    const payload = {
+      _event: {
+        id: "another-player",
+        commandId: 1,
+        positionMs: 0,
+        durationMs: 1000,
+      },
+    };
+
+    await eventHandler("soundReady", payload);
+
+    expect(engine.handleInternalAction).not.toHaveBeenCalled();
+    expect(preprocessPayload).toHaveBeenCalledWith("soundReady", payload);
+    expect(onEvent).toHaveBeenCalledWith("soundReady", payload);
+  });
+
   it("tracks the latest render id internally during render effects", async () => {
     const engine = {
       selectRenderState: vi.fn(() => ({ id: "render-1" })),

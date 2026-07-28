@@ -668,6 +668,28 @@ throw. If an action target exactly matches a declared group or variant ID, the
 ID is treated literally even when it resembles a template; targets without an
 exact declared match continue through normal action-template resolution.
 
+### Music Room Actions
+
+| Action                        | Payload          | Description                                      |
+| ----------------------------- | ---------------- | ------------------------------------------------ |
+| `playMusicRoomTrack`          | `{ trackId }`    | Select and play/restart an unlocked track        |
+| `playMusicRoom`               | `{}`             | Resume or start the selected track               |
+| `pauseMusicRoom`              | `{}`             | Pause and preserve the renderer-owned cursor     |
+| `stopMusicRoom`               | `{}`             | Stop at zero while retaining selection           |
+| `seekMusicRoom`               | `{ positionMs }` | Seek to segment-relative milliseconds            |
+| `playPreviousMusicRoomTrack`  | `{}`             | Play the previous unlocked track without wrapping |
+| `playNextMusicRoomTrack`      | `{}`             | Play the next unlocked track without wrapping    |
+| `clearMusicRoomSelection`     | `{}`             | Clear selection and restore story BGM            |
+| `moveToMusicRoomPage`         | `{ pageIndex }`  | Browse a zero-based page                          |
+| `moveToNextMusicRoomPage`     | `{}`             | Browse the next page without wrapping             |
+| `moveToPreviousMusicRoomPage` | `{}`             | Browse the previous page without wrapping         |
+
+The optional singleton `resources.musicRoom` has one transient player and no
+layout association. Layouts consume the computed `musicRoom` template root and
+dispatch these actions. Locks reuse `addViewedResource` with each track's
+`soundId`. Full catalog, projection, playback, validation, and audio-focus
+semantics are documented in [MusicBox.md](./MusicBox.md).
+
 ### Achievement Actions
 
 | Action                   | Payload                   | Description                                       |
@@ -732,6 +754,7 @@ The system store exposes these selectors (called internally):
 | `selectAchievements`            | -                       | Cloned achievement resource map                        |
 | `selectAchievement`             | `{ resourceId }`        | Cloned achievement resource or `undefined`             |
 | `selectImageGallery`            | -                       | Computed singleton image-gallery projection or `null`  |
+| `selectMusicRoom`               | -                       | Computed singleton music-room projection or `null`     |
 | `selectSaveSlotMap`             | -                       | Save slots object map                                  |
 | `selectSaveSlot`                | `{ slotId }`            | Save slot data                                         |
 | `selectSaveSlotPage`            | `{ slotsPerPage? }`     | Paged save slot list for UI                            |
@@ -1489,6 +1512,7 @@ Shared template roots:
 
 - `variables`
 - `imageGallery` (the computed singleton projection, or `null` when absent)
+- `musicRoom` (the computed singleton projection, or `null` when absent)
 - `runtime`
 - `saveSlots`
 - `characters`
