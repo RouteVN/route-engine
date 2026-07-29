@@ -49,7 +49,7 @@ const handleLineActions = (
 ) => {
   const renderDispatchCountBefore = getRenderDispatchCount?.() ?? 0;
 
-  const handledLineActions = engine.handleLineActions();
+  const handledLineActions = engine.handleLineActions(payload);
 
   const renderDispatchCountAfter = getRenderDispatchCount?.() ?? 0;
   if (renderDispatchCountAfter === renderDispatchCountBefore) {

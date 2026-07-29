@@ -59,3 +59,5 @@ vt:
           files: "initialization"
         - title: "Slider"
           files: "slider"
+        - title: "Scene Replay"
+          files: "sceneReplay"

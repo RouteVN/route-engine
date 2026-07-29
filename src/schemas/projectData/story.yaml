@@ -204,6 +204,18 @@ properties:
                               $ref: "../systemActions.yaml#/properties/moveToNextMusicRoomPage"
                             moveToPreviousMusicRoomPage:
                               $ref: "../systemActions.yaml#/properties/moveToPreviousMusicRoomPage"
+                            startSceneReplay:
+                              $ref: "../systemActions.yaml#/properties/startSceneReplay"
+                            finishSceneReplay:
+                              $ref: "../systemActions.yaml#/properties/finishSceneReplay"
+                            exitSceneReplay:
+                              $ref: "../systemActions.yaml#/properties/exitSceneReplay"
+                            moveToSceneReplayPage:
+                              $ref: "../systemActions.yaml#/properties/moveToSceneReplayPage"
+                            moveToNextSceneReplayPage:
+                              $ref: "../systemActions.yaml#/properties/moveToNextSceneReplayPage"
+                            moveToPreviousSceneReplayPage:
+                              $ref: "../systemActions.yaml#/properties/moveToPreviousSceneReplayPage"
                           additionalProperties: false
 
                       required: [id, actions]

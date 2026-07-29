@@ -670,16 +670,16 @@ exact declared match continue through normal action-template resolution.
 
 ### Music Room Actions
 
-| Action                        | Payload          | Description                                      |
-| ----------------------------- | ---------------- | ------------------------------------------------ |
-| `playMusicRoomTrack`          | `{ trackId }`    | Select and play/restart an unlocked track        |
-| `playMusicRoom`               | `{}`             | Resume or start the selected track               |
-| `pauseMusicRoom`              | `{}`             | Pause and preserve the renderer-owned cursor     |
-| `stopMusicRoom`               | `{}`             | Stop at zero while retaining selection           |
-| `seekMusicRoom`               | `{ positionMs }` | Seek to segment-relative milliseconds            |
+| Action                        | Payload          | Description                                       |
+| ----------------------------- | ---------------- | ------------------------------------------------- |
+| `playMusicRoomTrack`          | `{ trackId }`    | Select and play/restart an unlocked track         |
+| `playMusicRoom`               | `{}`             | Resume or start the selected track                |
+| `pauseMusicRoom`              | `{}`             | Pause and preserve the renderer-owned cursor      |
+| `stopMusicRoom`               | `{}`             | Stop at zero while retaining selection            |
+| `seekMusicRoom`               | `{ positionMs }` | Seek to segment-relative milliseconds             |
 | `playPreviousMusicRoomTrack`  | `{}`             | Play the previous unlocked track without wrapping |
-| `playNextMusicRoomTrack`      | `{}`             | Play the next unlocked track without wrapping    |
-| `clearMusicRoomSelection`     | `{}`             | Clear selection and restore story BGM            |
+| `playNextMusicRoomTrack`      | `{}`             | Play the next unlocked track without wrapping     |
+| `clearMusicRoomSelection`     | `{}`             | Clear selection and restore story BGM             |
 | `moveToMusicRoomPage`         | `{ pageIndex }`  | Browse a zero-based page                          |
 | `moveToNextMusicRoomPage`     | `{}`             | Browse the next page without wrapping             |
 | `moveToPreviousMusicRoomPage` | `{}`             | Browse the previous page without wrapping         |
@@ -689,6 +689,22 @@ layout association. Layouts consume the computed `musicRoom` template root and
 dispatch these actions. Locks reuse `addViewedResource` with each track's
 `soundId`. Full catalog, projection, playback, validation, and audio-focus
 semantics are documented in [MusicBox.md](./MusicBox.md).
+
+### Scene Replay Actions
+
+| Action                          | Payload         | Description                                |
+| ------------------------------- | --------------- | ------------------------------------------ |
+| `startSceneReplay`              | `{ replayId }`  | Start a replay in a fresh isolated context |
+| `finishSceneReplay`             | `{}`            | Exit on the next eligible advance          |
+| `exitSceneReplay`               | `{}`            | Exit immediately and restore the caller    |
+| `moveToSceneReplayPage`         | `{ pageIndex }` | Browse a zero-based replay page            |
+| `moveToNextSceneReplayPage`     | `{}`            | Browse the next page without wrapping      |
+| `moveToPreviousSceneReplayPage` | `{}`            | Browse the previous page without wrapping  |
+
+The optional singleton `resources.sceneReplay` has no layout association.
+Layouts consume the computed `sceneReplay` template root. Replays use a fresh
+context, suppress persistent progress, and restore the caller when they end.
+See [ReplayScene.md](./ReplayScene.md) for the full contract.
 
 ### Achievement Actions
 
@@ -755,6 +771,8 @@ The system store exposes these selectors (called internally):
 | `selectAchievement`             | `{ resourceId }`        | Cloned achievement resource or `undefined`             |
 | `selectImageGallery`            | -                       | Computed singleton image-gallery projection or `null`  |
 | `selectMusicRoom`               | -                       | Computed singleton music-room projection or `null`     |
+| `selectSceneReplay`             | -                       | Computed singleton scene-replay projection or `null`   |
+| `selectIsSceneReplayActive`     | -                       | Whether the current context is a replay                |
 | `selectSaveSlotMap`             | -                       | Save slots object map                                  |
 | `selectSaveSlot`                | `{ slotId }`            | Save slot data                                         |
 | `selectSaveSlotPage`            | `{ slotsPerPage? }`     | Paged save slot list for UI                            |
@@ -1513,6 +1531,7 @@ Shared template roots:
 - `variables`
 - `imageGallery` (the computed singleton projection, or `null` when absent)
 - `musicRoom` (the computed singleton projection, or `null` when absent)
+- `sceneReplay` (the computed singleton projection, or `null` when absent)
 - `runtime`
 - `saveSlots`
 - `characters`

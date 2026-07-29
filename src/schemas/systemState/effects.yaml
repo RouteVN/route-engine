@@ -15,6 +15,18 @@ anyOf:
     properties:
       name:
         const: handleLineActions
+      payload:
+        type: object
+        properties:
+          sceneReplayId:
+            type: string
+            minLength: 1
+          entryId:
+            type: integer
+            minimum: 1
+            maximum: 9007199254740991
+        required: [sceneReplayId, entryId]
+        additionalProperties: false
     required: [name]
     additionalProperties: false
 

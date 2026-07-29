@@ -56,6 +56,8 @@ out:
       groupId: null
       variantId: null
       pageIndex: 0
+    sceneReplayNavigation:
+      pageIndex: 0
     pendingEffects:
       - name: render
 ---
@@ -82,6 +84,8 @@ out:
       groupId: null
       variantId: null
       pageIndex: 0
+    sceneReplayNavigation:
+      pageIndex: 0
     pendingEffects:
       - name: render
 ---
@@ -107,6 +111,8 @@ out:
     imageGalleryNavigation:
       groupId: null
       variantId: null
+      pageIndex: 0
+    sceneReplayNavigation:
       pageIndex: 0
     pendingEffects:
       - name: render
@@ -158,6 +164,8 @@ out:
     imageGalleryNavigation:
       groupId: null
       variantId: null
+      pageIndex: 0
+    sceneReplayNavigation:
       pageIndex: 0
     pendingEffects:
       - name: render
@@ -220,6 +228,8 @@ out:
     imageGalleryNavigation:
       groupId: null
       variantId: null
+      pageIndex: 0
+    sceneReplayNavigation:
       pageIndex: 0
     nextLineConfig:
       manual:

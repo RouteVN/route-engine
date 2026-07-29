@@ -160,6 +160,57 @@ describe("systemState schema", () => {
     expect(validateSystemState.errors).toBeNull();
   });
 
+  it("accepts an active scene-replay context and rejects mismatched context kinds", () => {
+    const projectData = createMinimalProjectData();
+    projectData.resources = {
+      images: {
+        memory: {
+          fileId: "memory.png",
+          width: 320,
+          height: 180,
+        },
+      },
+      sceneReplay: {
+        pageSize: 1,
+        replays: [
+          {
+            id: "memory",
+            title: "Memory",
+            thumbnailImageId: "memory",
+            startSectionId: "section1",
+          },
+        ],
+      },
+    };
+    const engine = createRouteEngine({
+      handlePendingEffects: () => {},
+    });
+    engine.init({
+      initialState: {
+        projectData,
+      },
+    });
+    engine.handleAction("startSceneReplay", { replayId: "memory" });
+
+    const systemState = toJsonSnapshot(engine.selectSystemState());
+    expect(systemState.contexts).toHaveLength(2);
+    expect(systemState.contexts[1]).toMatchObject({
+      kind: "sceneReplay",
+      sceneReplay: {
+        replayId: "memory",
+        entryId: 1,
+        finishOnNextAdvance: false,
+        exitOnLineCompleted: false,
+      },
+    });
+    expect(validateSystemState(systemState)).toBe(true);
+    expect(validateSystemState.errors).toBeNull();
+
+    systemState.contexts[1].kind = "story";
+    expect(validateSystemState(systemState)).toBe(false);
+    expect(validateSystemState.errors).not.toBeNull();
+  });
+
   it("accepts active music-room player and audio-command state", () => {
     const projectData = createMinimalProjectData();
     projectData.resources = {
@@ -468,6 +519,33 @@ describe("systemState schema", () => {
         },
       },
     ];
+    expect(validateSystemState(systemState)).toBe(false);
+    expect(validateSystemState.errors).not.toBeNull();
+  });
+
+  it("accepts replay-owned entered-line effects", () => {
+    const engine = createRouteEngine({
+      handlePendingEffects: () => {},
+    });
+
+    engine.init({
+      initialState: {
+        projectData: createMinimalProjectData(),
+      },
+    });
+
+    const systemState = toJsonSnapshot(engine.selectSystemState());
+    systemState.global.pendingEffects = [
+      {
+        name: "handleLineActions",
+        payload: { sceneReplayId: "firstMeeting", entryId: 1 },
+      },
+    ];
+
+    expect(validateSystemState(systemState)).toBe(true);
+    expect(validateSystemState.errors).toBeNull();
+
+    systemState.global.pendingEffects[0].payload.sceneReplayId = "";
     expect(validateSystemState(systemState)).toBe(false);
     expect(validateSystemState.errors).not.toBeNull();
   });

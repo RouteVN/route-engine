@@ -7,6 +7,7 @@ import {
   validateComputedVariableConfigs,
   validateImageGalleryConfig,
   validateMusicRoomConfig,
+  validateSceneReplayConfig,
 } from "./util.js";
 import {
   collectPersistentAnimationContinuations,
@@ -49,6 +50,7 @@ const FORM_INTERACTION_SOURCE = "form";
 const FORM_ACTION_TYPES = new Set(["submitForm", "cancelForm"]);
 const SHOW_IMAGE_GALLERY_VARIANT_ACTION_TYPE = "showImageGalleryVariant";
 const PLAY_MUSIC_ROOM_TRACK_ACTION_TYPE = "playMusicRoomTrack";
+const START_SCENE_REPLAY_ACTION_TYPE = "startSceneReplay";
 
 const isRecord = (value) =>
   value !== null && typeof value === "object" && !Array.isArray(value);
@@ -311,6 +313,14 @@ export default function createRouteEngine(options) {
     return _systemStore.selectMusicRoom();
   };
 
+  const selectSceneReplay = () => {
+    return _systemStore.selectSceneReplay();
+  };
+
+  const selectIsSceneReplayActive = () => {
+    return _systemStore.selectIsSceneReplayActive();
+  };
+
   const selectSkipMode = () => {
     return _systemStore.selectSkipMode();
   };
@@ -525,18 +535,25 @@ export default function createRouteEngine(options) {
       _conditionalRoutingSequence += 1;
     }
 
-    if (PERSISTENT_PLAYBACK_RESET_ACTIONS.has(actionType)) {
-      if (PERSISTENT_PLAYBACK_RESTORE_ACTIONS.has(actionType)) {
-        _restoredPersistentAnimationSessions =
-          snapshotPersistentAnimationSessions(_persistentAnimationSessions);
-      } else {
-        _restoredPersistentAnimationSessions = new Map();
-      }
-      _persistentAnimationSessions = new Map();
-    }
-
+    const wasSceneReplayActive =
+      _systemStore.selectIsSceneReplayActive?.() === true;
+    const persistentAnimationSessionsBeforeAction =
+      PERSISTENT_PLAYBACK_RESTORE_ACTIONS.has(actionType)
+        ? snapshotPersistentAnimationSessions(_persistentAnimationSessions)
+        : null;
     const cursorBeforeAction = _systemStore.selectRollbackCursor?.() ?? null;
     const result = _systemStore[actionType](payload);
+    if (PERSISTENT_PLAYBACK_RESET_ACTIONS.has(actionType)) {
+      _restoredPersistentAnimationSessions =
+        persistentAnimationSessionsBeforeAction ?? new Map();
+      _persistentAnimationSessions = new Map();
+    }
+    const isSceneReplayActive =
+      _systemStore.selectIsSceneReplayActive?.() === true;
+    if (wasSceneReplayActive !== isSceneReplayActive) {
+      _persistentAnimationSessions = new Map();
+      _restoredPersistentAnimationSessions = new Map();
+    }
     const cursorAfterAction = _systemStore.selectRollbackCursor?.() ?? null;
     if (actionType === "saveSlot") {
       recordActiveRollbackSave(payload);
@@ -559,6 +576,7 @@ export default function createRouteEngine(options) {
     );
     validateImageGalleryConfig(payload.projectData);
     validateMusicRoomConfig(payload.projectData);
+    validateSceneReplayConfig(payload.projectData);
   };
 
   const dispatchConditionalAutoContinue = (
@@ -804,6 +822,34 @@ export default function createRouteEngine(options) {
     };
   };
 
+  const maskDeclaredSceneReplayId = (payload) => {
+    if (!isRecord(payload) || typeof payload.replayId !== "string") {
+      return {
+        templatePayload: payload,
+        literalTargetIds: null,
+      };
+    }
+    const sceneReplay = _systemStore.selectSceneReplayConfig();
+    const hasDeclaredReplay = sceneReplay?.replays?.some(
+      (replay) => replay.id === payload.replayId,
+    );
+    if (!hasDeclaredReplay) {
+      return {
+        templatePayload: payload,
+        literalTargetIds: null,
+      };
+    }
+    return {
+      templatePayload: {
+        ...payload,
+        replayId: null,
+      },
+      literalTargetIds: {
+        replayId: payload.replayId,
+      },
+    };
+  };
+
   const assertConditionalActionPayload = (payload) => {
     if (!isRecord(payload)) {
       throw new Error("conditional action payload must be an object");
@@ -907,6 +953,8 @@ export default function createRouteEngine(options) {
       maskedPayload = maskDeclaredImageGalleryTargetIds(payload);
     } else if (actionType === PLAY_MUSIC_ROOM_TRACK_ACTION_TYPE) {
       maskedPayload = maskDeclaredMusicRoomTrackId(payload);
+    } else if (actionType === START_SCENE_REPLAY_ACTION_TYPE) {
+      maskedPayload = maskDeclaredSceneReplayId(payload);
     }
     const { templatePayload, literalTargetIds } = maskedPayload;
     const processedActions = processActionTemplates(
@@ -989,8 +1037,18 @@ export default function createRouteEngine(options) {
     }
   };
 
-  const handleLineActions = () =>
-    runWithDeferredEffects(() => {
+  const handleLineActions = (payload) => {
+    if (typeof payload?.sceneReplayId === "string") {
+      const activeEntry = _systemStore.selectActiveSceneReplayEntry?.();
+      if (
+        activeEntry?.replayId !== payload.sceneReplayId ||
+        activeEntry?.entryId !== payload.entryId
+      ) {
+        return false;
+      }
+    }
+
+    return runWithDeferredEffects(() => {
       const enteredPointer = _systemStore.selectCurrentPointer()?.pointer;
       const rollbackCursor = _systemStore.selectRollbackCursor?.() ?? null;
       const pendingRollbackLineEntrySaveHandoff =
@@ -1021,6 +1079,7 @@ export default function createRouteEngine(options) {
       queueSettledEnteredLineAutoTimer(enteredPointer);
       return handledLineActions;
     });
+  };
 
   return {
     init,
@@ -1042,6 +1101,8 @@ export default function createRouteEngine(options) {
     selectSaveSlots: selectSaveSlotMap,
     selectImageGallery,
     selectMusicRoom,
+    selectSceneReplay,
+    selectIsSceneReplayActive,
     selectRuntime,
     selectIsChoiceVisible,
     selectIsFormVisible,

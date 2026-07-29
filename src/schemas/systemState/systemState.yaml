@@ -271,9 +271,104 @@ defs:
     required: [formatVersion, slotId, savedAt, state]
     additionalProperties: true
 
+  sceneReplayReturnState:
+    type: object
+    properties:
+      autoMode:
+        type: boolean
+      skipMode:
+        type: boolean
+      dialogueUIHidden:
+        type: boolean
+      nextLineConfig:
+        $ref: "#/defs/nextLineConfig"
+      overlayStack:
+        type: array
+        items:
+          type: object
+          properties:
+            resourceId:
+              type: string
+          required: [resourceId]
+          additionalProperties: false
+      confirmDialog:
+        type: [object, "null"]
+        properties:
+          resourceId:
+            type: string
+          confirmActions:
+            type: object
+          cancelActions:
+            type: object
+        required: [resourceId, confirmActions, cancelActions]
+        additionalProperties: false
+      formDrafts:
+        type: object
+        additionalProperties:
+          type: object
+          properties:
+            values:
+              type: object
+              additionalProperties: true
+            touched:
+              type: object
+              additionalProperties:
+                type: boolean
+            errors:
+              type: object
+              additionalProperties:
+                type: string
+            submitted:
+              type: boolean
+          required: [values, touched, errors, submitted]
+          additionalProperties: false
+      isLineCompleted:
+        type: boolean
+      isDialogueHistoryShowing:
+        type: boolean
+      pendingScreenTransition:
+        $ref: "../presentationActions.yaml#/properties/screen"
+    required:
+      [
+        autoMode,
+        skipMode,
+        dialogueUIHidden,
+        nextLineConfig,
+        overlayStack,
+        confirmDialog,
+        formDrafts,
+        isLineCompleted,
+      ]
+    additionalProperties: false
+
+  sceneReplayContext:
+    type: object
+    properties:
+      replayId:
+        type: string
+        minLength: 1
+      entryId:
+        type: integer
+        minimum: 1
+        maximum: 9007199254740991
+      finishOnNextAdvance:
+        type: boolean
+      exitOnLineCompleted:
+        type: boolean
+      returnState:
+        $ref: "#/defs/sceneReplayReturnState"
+    required:
+      [replayId, entryId, finishOnNextAdvance, exitOnLineCompleted, returnState]
+    additionalProperties: false
+
   contextState:
     type: object
     properties:
+      kind:
+        type: string
+        enum: [story, sceneReplay]
+      sceneReplay:
+        $ref: "#/defs/sceneReplayContext"
       currentPointerMode:
         type: string
         enum: [read]
@@ -325,6 +420,16 @@ defs:
         rollback,
       ]
     additionalProperties: false
+    oneOf:
+      - properties:
+          kind:
+            const: story
+        not:
+          required: [sceneReplay]
+      - properties:
+          kind:
+            const: sceneReplay
+        required: [kind, sceneReplay]
 
 properties:
   projectData:
@@ -437,6 +542,20 @@ properties:
               variantId:
                 type: string
                 minLength: 1
+      sceneReplayNavigation:
+        type: object
+        description: Transient pagination state for the singleton scene-replay catalog
+        properties:
+          pageIndex:
+            type: integer
+            minimum: 0
+        required: [pageIndex]
+        additionalProperties: false
+      sceneReplayEntryId:
+        type: integer
+        minimum: 0
+        maximum: 9007199254740991
+        description: Monotonic transient identity for scene-replay line entries
       audioCommandId:
         type: integer
         minimum: 0
@@ -478,6 +597,8 @@ properties:
         nextLineConfig,
         accountViewedRegistry,
         imageGalleryNavigation,
+        sceneReplayNavigation,
+        sceneReplayEntryId,
         audioCommandId,
         musicRoomPlayer,
         overlayStack,

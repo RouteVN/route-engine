@@ -2299,4 +2299,108 @@ describe("projectData schema", () => {
       expect(validateSystemActions.errors).not.toBeNull();
     }
   });
+
+  it("accepts the singleton scene replay and every authored replay action", () => {
+    const projectData = createMinimalProjectData({
+      resources: {
+        images: {
+          memory: {
+            fileId: "memory.png",
+            width: 320,
+            height: 180,
+          },
+        },
+        sceneReplay: {
+          pageSize: 4,
+          replays: [
+            {
+              id: "memory",
+              title: "Memory",
+              thumbnailImageId: "memory",
+              startSectionId: "section1",
+              initialVariables: {
+                routeName: "replay",
+              },
+            },
+          ],
+        },
+      },
+    });
+    projectData.story.scenes.scene1.sections.section1.lines[0].actions = {
+      startSceneReplay: { replayId: "memory" },
+      finishSceneReplay: {},
+      exitSceneReplay: {},
+      moveToSceneReplayPage: { pageIndex: 0 },
+      moveToNextSceneReplayPage: {},
+      moveToPreviousSceneReplayPage: {},
+    };
+
+    expect(validateProjectData(projectData)).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
+
+  it.each([
+    ["zero page size", { pageSize: 0, replays: [] }],
+    ["missing replays", { pageSize: 1 }],
+    [
+      "empty required metadata",
+      {
+        pageSize: 1,
+        replays: [
+          {
+            id: "",
+            title: "Memory",
+            thumbnailImageId: "memory",
+            startSectionId: "section1",
+          },
+        ],
+      },
+    ],
+    [
+      "an unknown replay property",
+      {
+        pageSize: 1,
+        replays: [
+          {
+            id: "memory",
+            title: "Memory",
+            thumbnailImageId: "memory",
+            startSectionId: "section1",
+            layoutId: "forbidden",
+          },
+        ],
+      },
+    ],
+  ])("rejects a scene replay with %s", (_label, sceneReplay) => {
+    const projectData = createMinimalProjectData({
+      resources: { sceneReplay },
+    });
+    expect(validateProjectData(projectData)).toBe(false);
+    expect(validateProjectData.errors).not.toBeNull();
+  });
+
+  it("accepts templated replay action values and rejects malformed payloads", () => {
+    expect(
+      validateSystemActions({
+        startSceneReplay: { replayId: "${variables.replayId}" },
+        finishSceneReplay: {},
+        exitSceneReplay: {},
+        moveToSceneReplayPage: { pageIndex: "_event.pageIndex" },
+        moveToNextSceneReplayPage: {},
+        moveToPreviousSceneReplayPage: {},
+      }),
+    ).toBe(true);
+    expect(validateSystemActions.errors).toBeNull();
+
+    for (const actions of [
+      { startSceneReplay: {} },
+      { startSceneReplay: { replayId: "" } },
+      { moveToSceneReplayPage: { pageIndex: -1 } },
+      { moveToNextSceneReplayPage: { unknown: true } },
+      { finishSceneReplay: { unknown: true } },
+    ]) {
+      expect(validateSystemActions(actions)).toBe(false);
+      expect(validateSystemActions.errors).not.toBeNull();
+    }
+  });
 });
