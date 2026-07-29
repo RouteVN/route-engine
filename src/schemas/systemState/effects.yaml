@@ -21,7 +21,11 @@ anyOf:
           sceneReplayId:
             type: string
             minLength: 1
-        required: [sceneReplayId]
+          entryId:
+            type: integer
+            minimum: 1
+            maximum: 9007199254740991
+        required: [sceneReplayId, entryId]
         additionalProperties: false
     required: [name]
     additionalProperties: false

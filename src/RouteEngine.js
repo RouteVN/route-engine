@@ -1038,11 +1038,14 @@ export default function createRouteEngine(options) {
   };
 
   const handleLineActions = (payload) => {
-    if (
-      typeof payload?.sceneReplayId === "string" &&
-      _systemStore.selectSceneReplay()?.activeReplayId !== payload.sceneReplayId
-    ) {
-      return false;
+    if (typeof payload?.sceneReplayId === "string") {
+      const activeEntry = _systemStore.selectActiveSceneReplayEntry?.();
+      if (
+        activeEntry?.replayId !== payload.sceneReplayId ||
+        activeEntry?.entryId !== payload.entryId
+      ) {
+        return false;
+      }
     }
 
     return runWithDeferredEffects(() => {

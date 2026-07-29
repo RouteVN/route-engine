@@ -198,6 +198,7 @@ describe("systemState schema", () => {
       kind: "sceneReplay",
       sceneReplay: {
         replayId: "memory",
+        entryId: 1,
         finishOnNextAdvance: false,
         exitOnLineCompleted: false,
       },
@@ -537,7 +538,7 @@ describe("systemState schema", () => {
     systemState.global.pendingEffects = [
       {
         name: "handleLineActions",
-        payload: { sceneReplayId: "firstMeeting" },
+        payload: { sceneReplayId: "firstMeeting", entryId: 1 },
       },
     ];
 

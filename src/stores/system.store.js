@@ -138,6 +138,18 @@ const nextAudioCommandId = (state) => {
   return state.global.audioCommandId;
 };
 
+const nextSceneReplayEntryId = (state) => {
+  const currentEntryId = state.global.sceneReplayEntryId;
+  if (!Number.isSafeInteger(currentEntryId) || currentEntryId < 0) {
+    throw new Error("Internal scene replay entry counter is invalid");
+  }
+  if (currentEntryId === Number.MAX_SAFE_INTEGER) {
+    throw new Error("Scene replay entry counter is exhausted");
+  }
+  state.global.sceneReplayEntryId = currentEntryId + 1;
+  return state.global.sceneReplayEntryId;
+};
+
 const createMusicRoomPlaybackCommand = (state, operation, positionMs) => ({
   commandId: nextAudioCommandId(state),
   operation,
@@ -1997,6 +2009,9 @@ const restoreRollbackCheckpoint = (state, checkpointIndex) => {
       sectionId: checkpoint.sectionId,
       lineId: checkpoint.lineId,
     };
+    if (lastContext.kind === "sceneReplay") {
+      lastContext.sceneReplay.entryId = nextSceneReplayEntryId(state);
+    }
 
     state.global.pendingEffects = state.global.pendingEffects.filter(
       (effect) => effect?.name !== "render",
@@ -2065,6 +2080,7 @@ export const createInitialState = (payload) => {
       nextLineConfig: createDefaultNextLineConfig(),
       imageGalleryNavigation: createDefaultImageGalleryNavigation(),
       sceneReplayNavigation: createDefaultSceneReplayNavigation(),
+      sceneReplayEntryId: 0,
       audioCommandId: 0,
       musicRoomPlayer: createDefaultMusicRoomPlayer(),
       saveSlots: normalizeStoredSaveSlots(saveSlots),
@@ -2588,6 +2604,17 @@ export const selectSceneReplayConfig = ({ state }) => {
 
 export const selectIsSceneReplayActive = ({ state }) =>
   getActiveSceneReplayContext(state) !== null;
+
+export const selectActiveSceneReplayEntry = ({ state }) => {
+  const activeContext = getActiveSceneReplayContext(state);
+  if (!activeContext) {
+    return null;
+  }
+  return {
+    replayId: activeContext.sceneReplay.replayId,
+    entryId: activeContext.sceneReplay.entryId,
+  };
+};
 
 export const selectSceneReplay = ({ state }) => {
   const sceneReplay = state.projectData?.resources?.sceneReplay;
@@ -3194,8 +3221,11 @@ const queueEnteredLineEffects = (state, pointer, { screenTransition } = {}) => {
     name: "handleLineActions",
   };
   if (typeof activeSceneReplayContext?.sceneReplay?.replayId === "string") {
+    const entryId = nextSceneReplayEntryId(state);
+    activeSceneReplayContext.sceneReplay.entryId = entryId;
     handleLineActionsEffect.payload = {
       sceneReplayId: activeSceneReplayContext.sceneReplay.replayId,
+      entryId,
     };
   }
   state.global.pendingEffects.push(handleLineActionsEffect);
@@ -4390,6 +4420,7 @@ export const startSceneReplay = ({ state }, payload) => {
     kind: "sceneReplay",
     sceneReplay: {
       replayId: replay.id,
+      entryId: 0,
       finishOnNextAdvance: false,
       exitOnLineCompleted: false,
       returnState,
@@ -5936,6 +5967,7 @@ export const createSystemStore = (initialState) => {
     selectSceneReplayConfig,
     selectSceneReplay,
     selectIsSceneReplayActive,
+    selectActiveSceneReplayEntry,
     selectNextLineConfig,
     selectSystemState,
     selectAchievements,

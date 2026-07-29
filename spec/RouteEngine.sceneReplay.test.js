@@ -470,6 +470,102 @@ describe("RouteEngine scene replay catalog", () => {
     expect(selectCurrentContext(engine).variables.affection).toBe(2);
   });
 
+  it("does not reuse captured line work after effect-driven replay navigation", () => {
+    const projectData = createProjectData();
+    projectData.story.scenes.main.sections.replayBranch.lines[0].actions = {
+      updateVariable: {
+        id: "countBranchEntry",
+        operations: [{ variableId: "affection", op: "increment", value: 1 }],
+      },
+      finishSceneReplay: {},
+    };
+    let engine;
+    const handlePendingEffects = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics: { render: vi.fn() },
+      ticker: { add: vi.fn(), remove: vi.fn() },
+      handleUnhandledEffect: (effect) => {
+        if (effect.name === "routeReplayBeforeOwnedLineWork") {
+          engine.handleActions({
+            sectionTransition: { sectionId: "replayBranch" },
+          });
+        }
+      },
+    });
+    engine = createRouteEngine({ handlePendingEffects });
+    engine.init({
+      initialState: {
+        projectData,
+        global: {
+          accountViewedRegistry: { sections: [], resources: [] },
+        },
+      },
+    });
+
+    engine.handleActions({
+      appendPendingEffect: { name: "routeReplayBeforeOwnedLineWork" },
+      startSceneReplay: { replayId: "firstMeeting" },
+    });
+
+    expect(selectCurrentContext(engine)).toMatchObject({
+      pointers: { read: { sectionId: "replayBranch", lineId: "branch1" } },
+      variables: { affection: 11 },
+      sceneReplay: { entryId: 2 },
+    });
+  });
+
+  it("does not reuse captured line work after restarting the same replay ID", () => {
+    const projectData = createProjectData({
+      replayLines: [
+        {
+          id: "replay1",
+          actions: {
+            updateVariable: {
+              id: "countReplayStart",
+              operations: [
+                { variableId: "affection", op: "increment", value: 1 },
+              ],
+            },
+          },
+        },
+      ],
+    });
+    let engine;
+    const handlePendingEffects = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics: { render: vi.fn() },
+      ticker: { add: vi.fn(), remove: vi.fn() },
+      handleUnhandledEffect: (effect) => {
+        if (effect.name === "restartReplayBeforeOwnedLineWork") {
+          engine.handleActions({
+            exitSceneReplay: {},
+            startSceneReplay: { replayId: "firstMeeting" },
+          });
+        }
+      },
+    });
+    engine = createRouteEngine({ handlePendingEffects });
+    engine.init({
+      initialState: {
+        projectData,
+        global: {
+          accountViewedRegistry: { sections: [], resources: [] },
+        },
+      },
+    });
+
+    engine.handleActions({
+      appendPendingEffect: { name: "restartReplayBeforeOwnedLineWork" },
+      startSceneReplay: { replayId: "firstMeeting" },
+    });
+
+    expect(selectCurrentContext(engine)).toMatchObject({
+      pointers: { read: { sectionId: "replayStart", lineId: "replay1" } },
+      variables: { affection: 11 },
+      sceneReplay: { replayId: "firstMeeting", entryId: 2 },
+    });
+  });
+
   it("derives replay defaults without cloning the full project graph", () => {
     const { engine } = createEngine();
     const structuredCloneSpy = vi.spyOn(globalThis, "structuredClone");
