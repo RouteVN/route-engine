@@ -834,6 +834,52 @@ describe("projectData schema", () => {
     expect(validatePresentationActions.errors).toBeNull();
   });
 
+  it("accepts animation playback loop without putting it on the resource", () => {
+    expect(
+      validatePresentationActions({
+        visual: {
+          items: [
+            {
+              id: "ambient-cloud",
+              animations: {
+                resourceId: "drift",
+                playback: {
+                  loop: true,
+                  speed: 0.5,
+                },
+              },
+            },
+          ],
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+  });
+
+  it("rejects non-boolean animation playback loop values", () => {
+    expect(
+      validatePresentationActions({
+        background: {
+          resourceId: "bg1",
+          animations: {
+            resourceId: "drift",
+            playback: {
+              loop: "forever",
+            },
+          },
+        },
+      }),
+    ).toBe(false);
+    expect(validatePresentationActions.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          instancePath: "/background/animations/playback/loop",
+          keyword: "type",
+        }),
+      ]),
+    );
+  });
+
   it("rejects invalid animation playback speed in presentation actions", () => {
     expect(
       validatePresentationActions({

@@ -16,6 +16,10 @@ definitions:
         type: number
         exclusiveMinimum: 0
         description: Playback speed multiplier. 1 is authored speed, 2 is twice as fast, 0.5 is half speed.
+      loop:
+        type: boolean
+        default: false
+        description: Repeat an update animation indefinitely without blocking line or render completion. Not supported for transitions.
     additionalProperties: false
 
   animationRef:
