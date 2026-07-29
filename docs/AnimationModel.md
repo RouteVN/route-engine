@@ -135,6 +135,37 @@ and `0.5` is half speed. Keyframe `duration` values stay authored in
 milliseconds; playback speed scales elapsed time at runtime and scales
 persistent animation expiry by the same multiplier.
 
+### Looping playback
+
+Looping is also selected when an animation resource is applied:
+
+```yaml
+visual:
+  items:
+    - id: ambient-cloud
+      resourceId: cloud
+      transformId: cloud-start
+      animations:
+        resourceId: cloud-drift
+        playback:
+          loop: true
+          speed: 0.5
+```
+
+`loop: true` repeats the complete `update` animation timeline indefinitely.
+It may be combined with `speed`, but it is not valid for `transition`
+animations or animation resources that define `complete`.
+
+Looping playback is ambient:
+
+- it does not block line or renderer completion
+- it remains active after the engine marks the current line complete
+- it stops when the animation selection is omitted, replaced, or its target is
+  removed
+- `continuity: persistent` lets the same loop continue across compatible
+  renders without restarting
+- a persistent loop has no duration-based expiry
+
 ### Same-subject transitions
 
 Because the comparison is done against resolved previous and next presentation

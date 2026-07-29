@@ -1,0 +1,88 @@
+---
+title: Visual Playback Loop
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+description: |
+  A visual action should apply looping playback without putting playback
+  metadata on the reusable animation resource.
+specs:
+  - the loop should be halfway through its movement after 250ms at speed 2
+  - the loop should wrap to its initial position after 500ms at speed 2
+  - the loop should continue into the next iteration after line completion
+steps:
+  - action: wait
+    ms: 80
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 250
+  - action: screenshot
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 250
+  - action: screenshot
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 125
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+resources:
+  layouts:
+    marker:
+      elements:
+        - id: marker-shape
+          type: rect
+          width: 120
+          height: 120
+          colorId: markerColor
+  transforms:
+    markerEnd:
+      x: 1300
+      y: 540
+      anchorX: 0.5
+      anchorY: 0.5
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+  animations:
+    horizontalLoop:
+      type: update
+      tween:
+        x:
+          initialValue: 300
+          keyframes:
+            - duration: 1000
+              value: 1300
+              easing: linear
+  colors:
+    markerColor:
+      hex: "#FFFFFF"
+story:
+  initialSceneId: loopScene
+  scenes:
+    loopScene:
+      name: Loop Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                visual:
+                  items:
+                    - id: marker
+                      resourceId: marker
+                      transformId: markerEnd
+                      animations:
+                        resourceId: horizontalLoop
+                        playback:
+                          speed: 2
+                          loop: true

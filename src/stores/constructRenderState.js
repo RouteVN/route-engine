@@ -114,6 +114,32 @@ const createAnimationInstance = ({
       `${animationPath}.playback`,
     );
     if (normalizedPlayback !== undefined) {
+      const authoredDurationMs =
+        normalizedPlayback.loop === true
+          ? getAuthoredAnimationDurationMs(normalized)
+          : null;
+
+      if (normalizedPlayback.loop === true && normalized.type !== "update") {
+        throw new Error(
+          `[${animationPath}.playback] playback.loop is only supported for type "update".`,
+        );
+      }
+      if (
+        normalizedPlayback.loop === true &&
+        normalized.complete !== undefined
+      ) {
+        throw new Error(
+          `[${animationPath}.playback] animation.complete is not allowed when playback.loop is true because a loop never completes.`,
+        );
+      }
+      if (
+        normalizedPlayback.loop === true &&
+        (!Number.isFinite(authoredDurationMs) || authoredDurationMs <= 0)
+      ) {
+        throw new Error(
+          `[${animationPath}.playback] playback.loop requires an animation with a finite duration greater than 0.`,
+        );
+      }
       normalized.playback = normalizedPlayback;
     }
   }
@@ -202,6 +228,10 @@ const normalizeAnimationPlayback = (
     );
   }
 
+  if (playback.loop !== undefined && typeof playback.loop !== "boolean") {
+    throw new Error(`[${animationPath}] playback.loop must be a boolean.`);
+  }
+
   const normalized = {};
 
   if (playback.continuity !== undefined) {
@@ -210,6 +240,10 @@ const normalizeAnimationPlayback = (
 
   if (playback.speed !== undefined && playback.speed !== 1) {
     normalized.speed = playback.speed;
+  }
+
+  if (playback.loop === true) {
+    normalized.loop = true;
   }
 
   return Object.keys(normalized).length > 0 ? normalized : undefined;
@@ -299,6 +333,14 @@ const getTweenDurationMs = (tween) => {
   }, 0);
 };
 
+const getAuthoredAnimationDurationMs = (animationInstance) =>
+  Math.max(
+    getTweenDurationMs(animationInstance?.tween),
+    getTweenDurationMs(animationInstance?.prev?.tween),
+    getTweenDurationMs(animationInstance?.next?.tween),
+    getTweenPropertyDurationMs(animationInstance?.mask?.progress),
+  );
+
 export const getAnimationInstanceDurationMs = (animationInstance) => {
   if (
     !animationInstance ||
@@ -308,14 +350,18 @@ export const getAnimationInstanceDurationMs = (animationInstance) => {
     return 0;
   }
 
-  const authoredDurationMs = Math.max(
-    getTweenDurationMs(animationInstance.tween),
-    getTweenDurationMs(animationInstance.prev?.tween),
-    getTweenDurationMs(animationInstance.next?.tween),
-    getTweenPropertyDurationMs(animationInstance.mask?.progress),
-  );
+  if (animationInstance.playback?.loop === true) {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  const authoredDurationMs = getAuthoredAnimationDurationMs(animationInstance);
   return authoredDurationMs / getAnimationPlaybackSpeed(animationInstance);
 };
+
+const hasLoopingAnimationInstance = (animationInstances) =>
+  animationInstances.some(
+    (animationInstance) => animationInstance?.playback?.loop === true,
+  );
 
 const hasPersistentAnimationContinuation = ({
   animationInstances,
@@ -363,6 +409,10 @@ const shouldEmitAnimationSelection = ({
     skipTransitionsAndAnimations
   ) {
     return false;
+  }
+
+  if (hasLoopingAnimationInstance(animationInstances)) {
+    return true;
   }
 
   if (isAuthoredOnCurrentLine && !isLineCompleted) {
