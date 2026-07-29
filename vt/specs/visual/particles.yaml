@@ -1,0 +1,64 @@
+---
+title: Particle Visual
+description: |
+  A first-class structured particle resource renders through a visual action.
+  The fixed seed and burst emission keep the screenshot deterministic.
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#000000"
+resources:
+  particles:
+    fireflies:
+      width: 600
+      height: 500
+      seed: 42
+      modules:
+        emission:
+          mode: burst
+          burstCount: 28
+          particleLifetime: 60
+          source:
+            kind: rect
+            data:
+              x: 12
+              y: 12
+              width: 576
+              height: 476
+        appearance:
+          texture:
+            shape: circle
+            radius: 12
+            color: "#FFFFFF"
+          scale:
+            mode: range
+            min: 0.5
+            max: 1
+  transforms:
+    particleArea:
+      x: 660
+      y: 290
+      anchorX: 0
+      anchorY: 0
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+story:
+  initialSceneId: particleScene
+  scenes:
+    particleScene:
+      name: Particle Scene
+      initialSectionId: main
+      sections:
+        main:
+          name: Main
+          lines:
+            - id: particleVisual
+              actions:
+                visual:
+                  items:
+                    - id: fireflies
+                      resourceId: fireflies
+                      transformId: particleArea
+                      layer: 50

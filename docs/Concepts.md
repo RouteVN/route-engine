@@ -66,7 +66,7 @@ flowchart TD
 
 Static, read-only data that defines the visual novel content:
 
-- **resources**: Images, audio, animations, transforms, layouts, characters, fonts, colors, and `textStyles`
+- **resources**: Images, videos, spritesheets, particles, audio, animations, transforms, layouts, characters, fonts, colors, and `textStyles`
   - Localization is not implemented in the current runtime. The planned patch-based model is documented in `docs/L10n.md`
   - Computed variables are derived read-only values declared under `resources.variables[*].computed`; their authored interface is documented in `docs/ComputedVariables.md`
   - Achievements are stable, platform-agnostic definitions under `resources.achievements`; the engine exposes cloned resource selectors and emits ordered effects for external consumers. The primitives are documented in `docs/Achievements.md`
@@ -129,7 +129,7 @@ Presentation state includes:
   - `colorId` references `resources.colors` for the persistent solid backing color behind the background resource; if omitted, the backing color falls back to `screen.backgroundColor`, then black
 - `dialogue`: Speaker, layered speaker sprite, text content, mode (ADV/NVL)
 - `character`: Character sprites and positions
-- `visual`: Additional visual elements, including resource-backed visuals and text-backed visuals
+- `visual`: Additional visual elements, including image, video, spritesheet, particle, layout, and text-backed visuals
 - `bgm` / `sfx` / `voice`: Audio configuration
 - `animation`: Active animations
 - `layout`: UI layouts
