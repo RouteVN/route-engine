@@ -1,8 +1,14 @@
 ---
-title: Particle Visual
+title: Particle Visual Variants
+diffThreshold: 0.3
 description: |
-  A first-class structured particle resource renders through a visual action.
-  The fixed seed and burst emission keep the screenshot deterministic.
+  First-class particle resources render through visual actions using:
+  - a legacy circular emitter with ellipse textures
+  - a structured rectangular emitter with circle textures
+  - a structured line emitter with rotated rectangle textures
+
+  Fixed seeds, burst emission, and long lifetimes keep the screenshot
+  deterministic.
 ---
 screen:
   width: 1920
@@ -10,8 +16,37 @@ screen:
   backgroundColor: "#000000"
 resources:
   particles:
-    fireflies:
-      width: 600
+    legacyRing:
+      width: 400
+      height: 500
+      texture:
+        shape: ellipse
+        width: 10
+        height: 24
+        color: "#737373"
+      behaviors:
+        - type: spawnShape
+          config:
+            type: circle
+            data:
+              x: 200
+              y: 250
+              radius: 160
+              innerRadius: 135
+        - type: noRotation
+          config:
+            rotation: -45
+      emitter:
+        lifetime:
+          min: 60
+          max: 60
+        frequency: 0
+        particlesPerWave: 24
+        maxParticles: 24
+        emitterLifetime: -1
+        seed: 84
+    circleField:
+      width: 500
       height: 500
       seed: 42
       modules:
@@ -24,7 +59,7 @@ resources:
             data:
               x: 12
               y: 12
-              width: 576
+              width: 476
               height: 476
         appearance:
           texture:
@@ -35,9 +70,54 @@ resources:
             mode: range
             min: 0.5
             max: 1
+    lineSparks:
+      width: 400
+      height: 500
+      seed: 126
+      modules:
+        emission:
+          mode: burst
+          burstCount: 22
+          particleLifetime: 60
+          source:
+            kind: line
+            data:
+              x1: 20
+              y1: 450
+              x2: 380
+              y2: 50
+        appearance:
+          texture:
+            shape: rect
+            width: 8
+            height: 24
+            color: "#A6A6A6"
+          scale:
+            mode: range
+            min: 0.6
+            max: 1
+          rotation:
+            mode: fixed
+            value: 45
   transforms:
-    particleArea:
-      x: 660
+    legacyArea:
+      x: 180
+      y: 290
+      anchorX: 0
+      anchorY: 0
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+    circleArea:
+      x: 710
+      y: 290
+      anchorX: 0
+      anchorY: 0
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+    lineArea:
+      x: 1340
       y: 290
       anchorX: 0
       anchorY: 0
@@ -58,7 +138,15 @@ story:
               actions:
                 visual:
                   items:
-                    - id: fireflies
-                      resourceId: fireflies
-                      transformId: particleArea
+                    - id: legacyRing
+                      resourceId: legacyRing
+                      transformId: legacyArea
+                      layer: 50
+                    - id: circleField
+                      resourceId: circleField
+                      transformId: circleArea
+                      layer: 50
+                    - id: lineSparks
+                      resourceId: lineSparks
+                      transformId: lineArea
                       layer: 50
