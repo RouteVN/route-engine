@@ -232,6 +232,99 @@ properties:
         required: [fileId, jsonData, width, height]
         additionalProperties: false
 
+  particles:
+    type: object
+    description: Particle effect resources rendered by visual actions
+    patternProperties:
+      "^.+$":
+        type: object
+        description: Route Graphics particle configuration without element identity or placement
+        properties:
+          width:
+            type: number
+            exclusiveMinimum: 0
+            description: Width of the particle simulation area
+          height:
+            type: number
+            exclusiveMinimum: 0
+            description: Height of the particle simulation area
+          seed:
+            type: number
+            description: Optional deterministic random seed for structured particles
+          modules:
+            type: object
+            description: Structured particle emission, movement, appearance, and bounds modules
+            properties:
+              emission:
+                type: object
+                additionalProperties: true
+              movement:
+                type: object
+                additionalProperties: true
+              appearance:
+                type: object
+                additionalProperties: true
+              bounds:
+                type: object
+                additionalProperties: true
+            required: [emission, appearance]
+            additionalProperties: false
+          count:
+            type: integer
+            minimum: 1
+            description: Legacy initial or maximum particle count
+          texture:
+            description: Legacy particle texture asset key or generated-shape configuration
+            oneOf:
+              - type: string
+                minLength: 1
+              - type: object
+                additionalProperties: true
+          behaviors:
+            type: array
+            minItems: 1
+            description: Legacy Route Graphics particle behaviors
+            items:
+              type: object
+              properties:
+                type:
+                  type: string
+                  minLength: 1
+                config:
+                  type: object
+                  additionalProperties: true
+              required: [type]
+              additionalProperties: false
+          emitter:
+            type: object
+            description: Legacy Route Graphics particle emitter settings
+            properties:
+              lifetime:
+                type: object
+                properties:
+                  min:
+                    type: number
+                    minimum: 0
+                  max:
+                    type: number
+                    minimum: 0
+                required: [min, max]
+                additionalProperties: true
+            required: [lifetime]
+            additionalProperties: true
+        required: [width, height]
+        oneOf:
+          - required: [modules]
+            not:
+              anyOf:
+                - required: [count]
+                - required: [texture]
+                - required: [behaviors]
+                - required: [emitter]
+          - required: [texture, behaviors, emitter]
+        additionalProperties: false
+    additionalProperties: false
+
   transforms:
     type: object
     description: Transform configurations for positioning elements

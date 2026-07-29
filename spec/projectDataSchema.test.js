@@ -229,6 +229,88 @@ describe("projectData schema", () => {
     );
   });
 
+  it("accepts structured and legacy particle resources", () => {
+    const projectData = createMinimalProjectData({
+      resources: {
+        particles: {
+          fireflies: {
+            width: 640,
+            height: 360,
+            seed: 42,
+            modules: {
+              emission: {
+                mode: "burst",
+                burstCount: 12,
+                particleLifetime: 30,
+                source: {
+                  kind: "rect",
+                  data: { x: 0, y: 0, width: 640, height: 360 },
+                },
+              },
+              appearance: {
+                texture: {
+                  shape: "circle",
+                  radius: 5,
+                  color: "#FFFFFF",
+                },
+              },
+            },
+          },
+          snow: {
+            width: 1920,
+            height: 1080,
+            texture: "snowflake",
+            behaviors: [
+              {
+                type: "spawnShape",
+                config: {
+                  type: "rect",
+                  data: { x: 0, y: 0, w: 1920, h: 10 },
+                },
+              },
+            ],
+            emitter: {
+              lifetime: { min: 4, max: 8 },
+              frequency: 0.05,
+            },
+          },
+        },
+      },
+    });
+
+    expect(validateProjectData(projectData)).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
+
+  it("requires particle dimensions and one supported particle configuration", () => {
+    const projectData = createMinimalProjectData({
+      resources: {
+        particles: {
+          incomplete: {
+            width: 640,
+          },
+        },
+      },
+    });
+
+    expect(validateProjectData(projectData)).toBe(false);
+    expect(validateProjectData.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          instancePath: "/resources/particles/incomplete",
+          keyword: "required",
+          params: {
+            missingProperty: "height",
+          },
+        }),
+        expect.objectContaining({
+          instancePath: "/resources/particles/incomplete",
+          keyword: "oneOf",
+        }),
+      ]),
+    );
+  });
+
   it("rejects non-hex screen backgroundColor", () => {
     expect(
       validateProjectData(

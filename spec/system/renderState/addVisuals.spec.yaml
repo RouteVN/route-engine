@@ -1644,6 +1644,197 @@ out:
   animations: []
   audio: []
 ---
+case: add structured particle resource as a visual
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "fireflies"
+            resourceId: "fireflyParticles"
+            transformId: "particleArea"
+            opacity: 0.7
+            blur:
+              x: 2
+              y: 2
+    resources:
+      particles:
+        fireflyParticles:
+          width: 640
+          height: 360
+          seed: 42
+          modules:
+            emission:
+              mode: "burst"
+              burstCount: 12
+              particleLifetime: 30
+              source:
+                kind: "rect"
+                data:
+                  x: 0
+                  y: 0
+                  width: 640
+                  height: 360
+            appearance:
+              texture:
+                shape: "circle"
+                radius: 5
+                color: "#FFFFFF"
+      transforms:
+        particleArea:
+          x: 640
+          y: 360
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 5
+          scaleX: 1.2
+          scaleY: 1.2
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-fireflies"
+          type: "container"
+          x: 640
+          y: 360
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 5
+          scaleX: 1.2
+          scaleY: 1.2
+          alpha: 0.7
+          blur:
+            x: 2
+            y: 2
+          children:
+            - id: "visual-fireflies-particles"
+              type: "particles"
+              x: 0
+              y: 0
+              width: 640
+              height: 360
+              seed: 42
+              modules:
+                emission:
+                  mode: "burst"
+                  burstCount: 12
+                  particleLifetime: 30
+                  source:
+                    kind: "rect"
+                    data:
+                      x: 0
+                      y: 0
+                      width: 640
+                      height: 360
+                appearance:
+                  texture:
+                    shape: "circle"
+                    radius: 5
+                    color: "#FFFFFF"
+  animations: []
+  audio: []
+---
+case: resolves image resource references in particle textures
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "leaves"
+            resourceId: "leafParticles"
+            transformId: "fullscreen"
+    resources:
+      images:
+        leaf:
+          fileId: "leaf.png"
+          width: 24
+          height: 24
+      particles:
+        leafParticles:
+          width: 1920
+          height: 1080
+          modules:
+            emission:
+              mode: "burst"
+              burstCount: 1
+              particleLifetime: 30
+              source:
+                kind: "point"
+                data:
+                  x: 960
+                  y: 540
+            appearance:
+              texture:
+                mode: "single"
+                items:
+                  - imageId: "leaf"
+      transforms:
+        fullscreen:
+          x: 0
+          y: 0
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-leaves"
+          type: "container"
+          x: 0
+          y: 0
+          anchorX: 0
+          anchorY: 0
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+          children:
+            - id: "visual-leaves-particles"
+              type: "particles"
+              x: 0
+              y: 0
+              width: 1920
+              height: 1080
+              modules:
+                emission:
+                  mode: "burst"
+                  burstCount: 1
+                  particleLifetime: 30
+                  source:
+                    kind: "point"
+                    data:
+                      x: 960
+                      y: 540
+                appearance:
+                  texture:
+                    mode: "single"
+                    items:
+                      - src: "leaf.png"
+  animations: []
+  audio: []
+---
 case: resolves textStyleId in visual layout elements
 in:
   - elements:

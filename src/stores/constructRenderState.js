@@ -1477,6 +1477,89 @@ const getVisualSubjectKey = (item = {}) => {
   return undefined;
 };
 
+const resolveParticleTextureReference = (texture, resources = {}) => {
+  if (typeof texture === "string") {
+    return resources.images?.[texture]?.fileId ?? texture;
+  }
+
+  if (!texture || typeof texture !== "object" || Array.isArray(texture)) {
+    return texture;
+  }
+
+  if (texture.imageId) {
+    return resources.images?.[texture.imageId]?.fileId ?? texture.imageId;
+  }
+
+  if (!Array.isArray(texture.items)) {
+    return texture;
+  }
+
+  return {
+    ...texture,
+    items: texture.items.map((item) => {
+      if (typeof item === "string") {
+        return resources.images?.[item]?.fileId ?? item;
+      }
+
+      if (!item || typeof item !== "object" || Array.isArray(item)) {
+        return item;
+      }
+
+      if (item.imageId) {
+        const { imageId, ...rest } = item;
+        return {
+          ...rest,
+          src: resources.images?.[imageId]?.fileId ?? imageId,
+        };
+      }
+
+      if (typeof item.src === "string") {
+        return {
+          ...item,
+          src: resources.images?.[item.src]?.fileId ?? item.src,
+        };
+      }
+
+      return item;
+    }),
+  };
+};
+
+const createParticleVisualElement = ({ item, particle, resources }) => {
+  const transform = getRequiredVisualTransform(resources, item);
+  const particleElement = structuredClone(particle);
+  const appearanceTexture = particleElement.modules?.appearance?.texture;
+
+  if (appearanceTexture !== undefined) {
+    particleElement.modules.appearance.texture =
+      resolveParticleTextureReference(appearanceTexture, resources);
+  }
+
+  if (particleElement.texture !== undefined) {
+    particleElement.texture = resolveParticleTextureReference(
+      particleElement.texture,
+      resources,
+    );
+  }
+
+  const visualContainer = {
+    id: `visual-${item.id}`,
+    type: "container",
+    children: [
+      {
+        ...particleElement,
+        id: `visual-${item.id}-particles`,
+        type: "particles",
+        x: 0,
+        y: 0,
+      },
+    ],
+    ...getElementTransform(transform, item),
+  };
+  Object.assign(visualContainer, getItemAppearance(item));
+  return visualContainer;
+};
+
 const assertVisualTextConfig = (item) => {
   if (!item.text) {
     return;
@@ -2976,6 +3059,16 @@ export const addVisuals = (
 
             storyContainer.children.push(element);
           }
+        }
+      }
+
+      if (item.resourceId) {
+        const particle = resources.particles?.[item.resourceId];
+
+        if (particle) {
+          storyContainer.children.push(
+            createParticleVisualElement({ item, particle, resources }),
+          );
         }
       }
 

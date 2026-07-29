@@ -862,13 +862,13 @@ callers can use the exported `RENDER_LAYER`, `VISUAL_LAYER`, and
 
 ### Text Visuals
 
-Visual items can be backed by text instead of an image, video, spritesheet, or
-layout resource. A text-backed visual uses the same visual item placement,
+Visual items can be backed by text instead of an image, video, spritesheet,
+particle, or layout resource. A text-backed visual uses the same visual item placement,
 layer, opacity, blur, and animation fields as every other visual item.
 
 New visual items choose one render subject:
 
-- `resourceId` for image, video, spritesheet, or layout resources
+- `resourceId` for image, video, spritesheet, particle, or layout resources
 - `text` for direct RouteGraphics text
 
 `resourceId` and `text` are mutually exclusive. The `text` object owns only
@@ -927,6 +927,55 @@ visual:
 
 For a new text visual, `text.content` and `text.textStyleId` are both required.
 For a patch to an existing text visual, either field can be supplied alone.
+
+### Particle Visuals
+
+Particle effects are authored under `resources.particles` and selected from a
+normal visual item with `resourceId`. A particle resource owns its simulation
+area and Route Graphics particle configuration; the visual item owns placement,
+layer, opacity, blur, and animations.
+
+Structured particle modules are the preferred format:
+
+```yaml
+resources:
+  particles:
+    fireflies:
+      width: 640
+      height: 360
+      seed: 42
+      modules:
+        emission:
+          mode: burst
+          burstCount: 20
+          particleLifetime: 30
+          source:
+            kind: rect
+            data:
+              x: 0
+              y: 0
+              width: 640
+              height: 360
+        appearance:
+          texture:
+            shape: circle
+            radius: 5
+            color: "#FFFFFF"
+visual:
+  items:
+    - id: fireflies
+      resourceId: fireflies
+      transformId: particleArea
+      layer: 50
+      opacity: 0.8
+```
+
+Particle textures can reference project images. Use an image resource ID as a
+texture string, or use `imageId` on an item in a structured texture selection;
+the engine resolves it to the image resource's `fileId`. Generated `circle`,
+`ellipse`, and `rect` texture shapes pass through unchanged. Legacy Route
+Graphics particle resources with `texture`, `behaviors`, and `emitter` are also
+supported.
 
 ### Item Transform Overrides
 

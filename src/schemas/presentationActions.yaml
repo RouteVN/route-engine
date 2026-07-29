@@ -453,7 +453,7 @@ properties:
               description: Override the animation speed
             resourceId:
               type: string
-              description: ID of the resource
+              description: ID of an image, video, spritesheet, particle, or layout resource
             text:
               $ref: "#/definitions/visualText"
             transformId:
