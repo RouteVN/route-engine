@@ -51,12 +51,12 @@ describe("RouteEngine runtime", () => {
 
     expect(runtime.dialogueTextSpeed).toBe(50);
     expect(runtime.autoForwardDelay).toBe(1000);
-    expect(runtime.autoForwardSpeed).toBe(1);
+    expect(runtime.autoForwardSpeed).toBe(50);
     expect(runtime.muteAll).toBe(false);
     expect(runtime.saveLoadPagination).toBe(1);
     expect(state.global.dialogueTextSpeed).toBe(50);
     expect(state.global.autoForwardDelay).toBe(1000);
-    expect(state.global.autoForwardSpeed).toBe(1);
+    expect(state.global.autoForwardSpeed).toBe(50);
     expect(state.global.muteAll).toBe(false);
     expect(state.global.variables).toEqual({});
     expect(state.contexts[0].runtime).toBeUndefined();
@@ -77,7 +77,7 @@ describe("RouteEngine runtime", () => {
           globalRuntime: {
             dialogueTextSpeed: 84,
             autoForwardDelay: 1000,
-            autoForwardSpeed: 1,
+            autoForwardSpeed: 50,
             skipUnseenText: false,
             skipTransitionsAndAnimations: false,
             soundVolume: 50,
@@ -92,17 +92,17 @@ describe("RouteEngine runtime", () => {
     ]);
   });
 
-  it("updates and persists the auto-forward speed multiplier", () => {
+  it("updates and persists the auto-forward speed setting", () => {
     const store = createSystemStore({
       projectData: createProjectData(),
     });
 
-    store.setAutoForwardSpeed({ value: 1.5 });
+    store.setAutoForwardSpeed({ value: 75 });
 
-    expect(store.selectRuntime().autoForwardSpeed).toBe(1.5);
+    expect(store.selectRuntime().autoForwardSpeed).toBe(75);
     expect(
       store.selectPendingEffects()[0].payload.globalRuntime.autoForwardSpeed,
-    ).toBe(1.5);
+    ).toBe(75);
   });
 
   it("does not route updateVariable operations into runtime values", () => {
@@ -423,16 +423,19 @@ describe("RouteEngine runtime", () => {
     ).toThrowError("dialogueTextSpeed requires a finite numeric value");
   });
 
-  it("rejects non-positive persisted auto-forward speed multipliers", () => {
-    expect(() =>
-      createSystemStore({
-        global: {
-          runtime: {
-            autoForwardSpeed: 0,
+  it.each([-1, 101])(
+    "rejects out-of-range persisted auto-forward speed %s",
+    (autoForwardSpeed) => {
+      expect(() =>
+        createSystemStore({
+          global: {
+            runtime: {
+              autoForwardSpeed,
+            },
           },
-        },
-        projectData: createProjectData(),
-      }),
-    ).toThrowError("autoForwardSpeed requires a value greater than 0");
-  });
+          projectData: createProjectData(),
+        }),
+      ).toThrowError("autoForwardSpeed requires a value between 0 and 100");
+    },
+  );
 });

@@ -157,11 +157,12 @@ properties:
 
   setAutoForwardSpeed:
     type: object
-    description: Set the global auto mode reading-speed multiplier
+    description: Set the global auto mode speed from 0 (slowest) to 100 (fastest)
     properties:
       value:
         type: number
-        exclusiveMinimum: 0
+        minimum: 0
+        maximum: 100
     required: [value]
     additionalProperties: false
 

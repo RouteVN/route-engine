@@ -49,7 +49,7 @@ export const RUNTIME_FIELDS = Object.freeze({
 export const GLOBAL_RUNTIME_DEFAULTS = Object.freeze({
   dialogueTextSpeed: 50,
   autoForwardDelay: 1000,
-  autoForwardSpeed: 1,
+  autoForwardSpeed: 50,
   skipUnseenText: false,
   skipTransitionsAndAnimations: false,
   soundVolume: 50,

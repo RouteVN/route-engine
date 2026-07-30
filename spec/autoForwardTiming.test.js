@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   AUTO_FORWARD_MAX_DELAY_MS,
   estimateAutoForwardDelay,
+  getAutoForwardSpeedMultiplier,
   getAutoForwardReadingUnits,
 } from "../src/autoForwardTiming.js";
 
@@ -57,19 +58,25 @@ describe("auto-forward timing", () => {
     ).toBe(1250);
   });
 
-  it("scales only length-derived reading time with the speed multiplier", () => {
+  it("maps the 0–100 speed setting from half to double speed", () => {
+    expect(getAutoForwardSpeedMultiplier(0)).toBe(0.5);
+    expect(getAutoForwardSpeedMultiplier(50)).toBe(1);
+    expect(getAutoForwardSpeedMultiplier(100)).toBe(2);
+  });
+
+  it("scales only length-derived reading time with the speed setting", () => {
     expect(
       estimateAutoForwardDelay({
         text: "abcd",
         baseDelay: 1000,
-        speed: 2,
+        speed: 100,
       }),
     ).toBe(1120);
     expect(
       estimateAutoForwardDelay({
         text: "abcd",
         baseDelay: 1000,
-        speed: 0.5,
+        speed: 0,
       }),
     ).toBe(1480);
   });
@@ -105,14 +112,7 @@ describe("auto-forward timing", () => {
     ).toBe(60);
   });
 
-  it("uses normal speed when the multiplier is invalid", () => {
-    expect(
-      estimateAutoForwardDelay({
-        text: "abcd",
-        baseDelay: 1000,
-        speed: 0,
-      }),
-    ).toBe(1240);
+  it("uses normal speed when the setting is invalid", () => {
     expect(
       estimateAutoForwardDelay({
         text: "abcd",
@@ -120,5 +120,22 @@ describe("auto-forward timing", () => {
         speed: Number.NaN,
       }),
     ).toBe(1240);
+  });
+
+  it("clamps out-of-range speed settings", () => {
+    expect(
+      estimateAutoForwardDelay({
+        text: "abcd",
+        baseDelay: 1000,
+        speed: -1,
+      }),
+    ).toBe(1480);
+    expect(
+      estimateAutoForwardDelay({
+        text: "abcd",
+        baseDelay: 1000,
+        speed: 101,
+      }),
+    ).toBe(1120);
   });
 });

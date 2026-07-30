@@ -1252,19 +1252,20 @@ preference and is cleared by the next dialogue action that omits it.
 ### Auto-Forward Speed
 
 `runtime.autoForwardSpeed` is the persisted user preference for global auto
-mode reading speed. It defaults to `1`; `2` is twice as fast and `0.5` is half
-speed. Update it with the same runtime-action pattern used by dialogue speed and
-audio volume controls:
+mode reading speed. It uses the same `0` to `100` settings range as the volume
+controls and defaults to `50`. A value of `0` is half speed, `50` is normal,
+and `100` is twice as fast. Update it with the same runtime-action pattern used
+by dialogue speed and audio volume controls:
 
 ```yaml
 setAutoForwardSpeed:
-  value: 2
+  value: 100
 ```
 
-The multiplier applies only to the length-derived reading time. The persisted
-`runtime.autoForwardDelay` minimum is still added unchanged, so the effective
-delay is `autoForwardDelay + readingTime / autoForwardSpeed`, subject to the
-auto-mode delay cap. Values must be greater than zero.
+The speed setting is converted exponentially across the half-speed to
+double-speed range and applies only to the length-derived reading time. The
+persisted `runtime.autoForwardDelay` minimum is still added unchanged, subject
+to the auto-mode delay cap.
 
 ### Dialogue Append Reveal
 
