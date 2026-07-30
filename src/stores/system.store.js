@@ -1526,8 +1526,8 @@ const assertRuntimeValueType = (runtimeId, value) => {
 const normalizeRuntimeValue = (runtimeId, value) => {
   assertRuntimeValueType(runtimeId, value);
 
-  if (runtimeId === "autoForwardSpeed" && value <= 0) {
-    throw new Error("autoForwardSpeed requires a value greater than 0");
+  if (runtimeId === "autoForwardSpeed" && (value < 0 || value > 100)) {
+    throw new Error("autoForwardSpeed requires a value between 0 and 100");
   }
 
   if (runtimeId === "saveLoadPagination") {

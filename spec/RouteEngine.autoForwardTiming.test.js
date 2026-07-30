@@ -196,20 +196,29 @@ describe("RouteEngine auto-forward timing", () => {
     expect(store.selectAutoForwardTimerDelay()).toBe(1720);
   });
 
-  it("applies the persisted auto-forward speed multiplier", () => {
+  it("applies the persisted 0–100 auto-forward speed setting", () => {
     const store = createStore();
 
-    store.setAutoForwardSpeed({ value: 2 });
+    store.setAutoForwardSpeed({ value: 100 });
 
-    expect(store.selectRuntime().autoForwardSpeed).toBe(2);
+    expect(store.selectRuntime().autoForwardSpeed).toBe(100);
     expect(store.selectAutoForwardTimerDelay()).toBe(1120);
   });
 
-  it("rejects non-positive auto-forward speed multipliers", () => {
+  it("accepts zero as the slowest auto-forward speed", () => {
     const store = createStore();
 
-    expect(() => store.setAutoForwardSpeed({ value: 0 })).toThrowError(
-      "autoForwardSpeed requires a value greater than 0",
+    store.setAutoForwardSpeed({ value: 0 });
+
+    expect(store.selectRuntime().autoForwardSpeed).toBe(0);
+    expect(store.selectAutoForwardTimerDelay()).toBe(1480);
+  });
+
+  it.each([-1, 101])("rejects out-of-range auto-forward speed %s", (value) => {
+    const store = createStore();
+
+    expect(() => store.setAutoForwardSpeed({ value })).toThrowError(
+      "autoForwardSpeed requires a value between 0 and 100",
     );
   });
 

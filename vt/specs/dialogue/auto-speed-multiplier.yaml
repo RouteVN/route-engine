@@ -1,17 +1,21 @@
 ---
-title: Auto Speed Multiplier
-description: Isolated global auto-mode path proving the speed multiplier shortens length-derived reading time.
+title: Auto Speed Percentage
+description: Isolated click-driven global auto-mode path proving the 0–100 speed setting shortens length-derived reading time.
 specs:
+  - clicking the fast control sets auto speed to 100 and starts auto mode
   - a 48-grapheme Latin line advances at twice the normal reading speed
-  - the configured minimum delay is preserved while reading time is divided by the multiplier
+  - the configured minimum delay is preserved while reading time is speed-adjusted
 skipInitialScreenshot: true
 viewport:
   id: capture
   width: 960
   height: 540
 steps:
+  - action: click
+    x: 480
+    y: 100
   - action: wait
-    ms: 2800
+    ms: 1800
   - action: screenshot
 ---
 screen:
@@ -29,17 +33,55 @@ resources:
           width: 816
           content: ${dialogue.content[0].text}
           textStyleId: dialogueText
+        - id: fast-button
+          type: rect
+          x: 360
+          y: 60
+          width: 240
+          height: 80
+          colorId: buttonColor
+          click:
+            payload:
+              actions:
+                setAutoForwardSpeed:
+                  value: 100
+                startAutoMode: {}
+        - id: fast-label
+          type: text
+          x: 395
+          y: 82
+          content: AUTO SPEED 100
+          textStyleId: buttonText
+    finalLayout:
+      mode: adv
+      elements:
+        - id: dialogue-text
+          type: text
+          x: 72
+          y: 390
+          width: 816
+          content: ${dialogue.content[0].text}
+          textStyleId: dialogueText
   fonts:
     fontDefault:
       fileId: Arial
   colors:
     textColor:
       hex: "#F4F1E8"
+    buttonColor:
+      hex: "#4D4D4D"
   textStyles:
     dialogueText:
       fontId: fontDefault
       colorId: textColor
       fontSize: 32
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    buttonText:
+      fontId: fontDefault
+      colorId: textColor
+      fontSize: 20
       fontWeight: "400"
       fontStyle: normal
       lineHeight: 1.2
@@ -55,9 +97,6 @@ story:
               actions:
                 setAutoForwardDelay:
                   value: 100
-                setAutoForwardSpeed:
-                  value: 2
-                startAutoMode: {}
                 dialogue:
                   mode: adv
                   ui:
@@ -67,5 +106,7 @@ story:
             - id: final-marker
               actions:
                 dialogue:
+                  ui:
+                    resourceId: finalLayout
                   content:
                     - text: "DONE"

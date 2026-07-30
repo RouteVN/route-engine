@@ -460,8 +460,9 @@ properties:
         description: Minimum global auto mode delay in milliseconds before length-based reading time is added
       autoForwardSpeed:
         type: number
-        exclusiveMinimum: 0
-        description: Global auto mode reading-speed multiplier, where 1 is normal and 2 is twice as fast
+        minimum: 0
+        maximum: 100
+        description: Global auto mode speed from 0 (half speed) through 50 (normal) to 100 (double speed)
       skipUnseenText:
         type: boolean
       skipTransitionsAndAnimations:
