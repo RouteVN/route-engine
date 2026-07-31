@@ -22,23 +22,9 @@ definitions:
   package:
     type: object
     properties:
-      formatVersion:
-        const: 1
-      locale:
+      language:
         type: string
         minLength: 1
-      sourceLocale:
-        type: string
-        minLength: 1
-      sourceRevision:
-        type: string
-        minLength: 1
-      fallbackLocales:
-        type: array
-        uniqueItems: true
-        items:
-          type: string
-          minLength: 1
       files:
         type: array
         items:
@@ -51,16 +37,7 @@ definitions:
             - $ref: "#/definitions/lineDialoguePatch"
             - $ref: "#/definitions/scenePatch"
             - $ref: "#/definitions/resourcePatch"
-    required:
-      [
-        formatVersion,
-        locale,
-        sourceLocale,
-        sourceRevision,
-        fallbackLocales,
-        files,
-        patches,
-      ]
+    required: [language, files, patches]
     additionalProperties: false
 
   fileEntry:

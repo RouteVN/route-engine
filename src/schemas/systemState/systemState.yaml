@@ -489,9 +489,9 @@ properties:
           properties:
             l10nId:
               type: [string, "null"]
-            locale:
+            language:
               type: [string, "null"]
-          required: [l10nId, locale]
+          required: [l10nId, language]
           additionalProperties: false
       confirmDialog:
         type: [object, "null"]

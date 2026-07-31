@@ -83,16 +83,11 @@ const createProjectData = ({
 });
 
 const createPackage = ({
-  locale = "ja-JP",
-  fallbackLocales = [],
+  language = "Japanese",
   files = [],
   patches = [],
 } = {}) => ({
-  formatVersion: 1,
-  locale,
-  sourceLocale: "en-US",
-  sourceRevision: "source-revision-1",
-  fallbackLocales,
+  language,
   files,
   patches,
 });
@@ -168,9 +163,9 @@ const addLocalizationMenu = (projectData) => {
       {
         "$for package in localizationPackages:": [
           {
-            id: "locale-${package.locale}",
+            id: "language-${package.language}",
             type: "text",
-            content: "${package.locale}",
+            content: "${package.language}",
             click: {
               payload: {
                 actions: {
@@ -184,7 +179,7 @@ const addLocalizationMenu = (projectData) => {
         ],
       },
       {
-        id: "selected-locale",
+        id: "selected-language",
         type: "text",
         content: "${localizationPackageId}",
       },
@@ -320,19 +315,22 @@ describe("RouteEngine L10n initialization", () => {
         l10nData: {
           packages: {
             japanese: createJapanesePackage(),
-            french: createPackage({ locale: "fr-FR" }),
+            french: createPackage({ language: "French" }),
           },
         },
       },
     });
 
     const renderState = engine.selectRenderState();
-    const sourceOption = findElementById(renderState.elements, "locale-en-US");
+    const sourceOption = findElementById(renderState.elements, "language-");
     const japaneseOption = findElementById(
       renderState.elements,
-      "locale-ja-JP",
+      "language-Japanese",
     );
-    const frenchOption = findElementById(renderState.elements, "locale-fr-FR");
+    const frenchOption = findElementById(
+      renderState.elements,
+      "language-French",
+    );
 
     expect(sourceOption.click.payload.actions).toEqual({
       updateLocalizationPackage: {
@@ -346,7 +344,7 @@ describe("RouteEngine L10n initialization", () => {
     });
     expect(frenchOption).toBeDefined();
     expect(
-      findElementById(renderState.elements, "selected-locale").content,
+      findElementById(renderState.elements, "selected-language").content,
     ).toBeNull();
     expect(engine.selectRuntime().localizationPackageId).toBeNull();
   });
@@ -371,7 +369,7 @@ describe("RouteEngine L10n initialization", () => {
 
     const japaneseOption = findElementById(
       engine.selectRenderState().elements,
-      "locale-ja-JP",
+      "language-Japanese",
     );
     engine.handleActions(japaneseOption.click.payload.actions);
 
@@ -382,7 +380,7 @@ describe("RouteEngine L10n initialization", () => {
       content: "こんにちは。",
     });
     expect(
-      findElementById(engine.selectRenderState().elements, "selected-locale")
+      findElementById(engine.selectRenderState().elements, "selected-language")
         .content,
     ).toBe("japanese");
     expect(effects).toContainEqual({
@@ -399,7 +397,7 @@ describe("RouteEngine L10n initialization", () => {
     effects.length = 0;
     const sourceOption = findElementById(
       engine.selectRenderState().elements,
-      "locale-en-US",
+      "language-",
     );
     engine.handleActions(sourceOption.click.payload.actions);
 
@@ -608,7 +606,7 @@ describe("RouteEngine L10n initialization", () => {
     });
   });
 
-  it("uses imported fallback packages before canonical source content", () => {
+  it("retains canonical content when the selected package has no matching patch", () => {
     const engine = createEngine();
 
     engine.init({
@@ -617,7 +615,7 @@ describe("RouteEngine L10n initialization", () => {
         l10nData: {
           packages: {
             french: createPackage({
-              locale: "fr-FR",
+              language: "French",
               patches: [
                 {
                   type: "line.dialogue",
@@ -629,8 +627,7 @@ describe("RouteEngine L10n initialization", () => {
               ],
             }),
             canadianFrench: createPackage({
-              locale: "fr-CA",
-              fallbackLocales: ["fr-FR", "en-US"],
+              language: "Canadian French",
             }),
           },
         },
@@ -645,7 +642,7 @@ describe("RouteEngine L10n initialization", () => {
     expect(
       findElementById(engine.selectRenderState().elements, "dialogue-body"),
     ).toMatchObject({
-      content: "Bonjour.",
+      content: "Hello.",
     });
   });
 
@@ -756,7 +753,7 @@ describe("RouteEngine L10n initialization", () => {
     ).toThrow(/localizationPackageId requires a string or null value/);
   });
 
-  it("rejects undeclared locale files", () => {
+  it("rejects undeclared localized files", () => {
     const engine = createEngine();
 
     expect(() =>

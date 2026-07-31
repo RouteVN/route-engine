@@ -2042,7 +2042,7 @@ export const createInitialState = (payload) => {
     variables: loadedGlobalVariables = {},
     runtime: loadedGlobalRuntime = {},
     accountViewedRegistry: loadedAccountViewedRegistry = {},
-    localizationPackages = [{ l10nId: null, locale: null }],
+    localizationPackages = [{ l10nId: null, language: null }],
   } = global;
 
   assertUniqueSectionIds(projectData);

@@ -37,7 +37,7 @@ out:
     localizationPackageId: null
     localizationPackages:
       - l10nId: null
-        locale: null
+        language: null
     confirmDialog: null
     formDrafts: {}
     imageGalleryNavigation:
@@ -153,7 +153,7 @@ out:
     localizationPackageId: null
     localizationPackages:
       - l10nId: null
-        locale: null
+        language: null
     confirmDialog: null
     formDrafts: {}
     imageGalleryNavigation:
@@ -282,7 +282,7 @@ out:
     localizationPackageId: null
     localizationPackages:
       - l10nId: null
-        locale: null
+        language: null
     confirmDialog: null
     formDrafts: {}
     imageGalleryNavigation:
@@ -405,7 +405,7 @@ out:
     localizationPackageId: null
     localizationPackages:
       - l10nId: null
-        locale: null
+        language: null
     confirmDialog: null
     formDrafts: {}
     imageGalleryNavigation:
@@ -525,7 +525,7 @@ out:
     localizationPackageId: null
     localizationPackages:
       - l10nId: null
-        locale: null
+        language: null
     confirmDialog: null
     formDrafts: {}
     imageGalleryNavigation:

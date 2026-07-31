@@ -154,11 +154,7 @@ const createMinimalProjectData = (overrides = {}) => ({
 const createMinimalL10nData = (patches = []) => ({
   packages: {
     japanese: {
-      formatVersion: 1,
-      locale: "ja-JP",
-      sourceLocale: "en-US",
-      sourceRevision: "source-revision-1",
-      fallbackLocales: [],
+      language: "Japanese",
       files: [],
       patches,
     },
@@ -179,6 +175,29 @@ describe("l10nData schema", () => {
           keyword: "additionalProperties",
           params: {
             additionalProperty: "activeL10nId",
+          },
+        }),
+      ]),
+    );
+  });
+
+  it.each([
+    ["formatVersion", 1],
+    ["locale", "ja-JP"],
+    ["sourceLocale", "en-US"],
+    ["sourceRevision", "source-revision-1"],
+    ["fallbackLocales", ["en-US"]],
+  ])("rejects the removed %s package field", (field, value) => {
+    const l10nData = createMinimalL10nData();
+    l10nData.packages.japanese[field] = value;
+
+    expect(validateL10nData(l10nData)).toBe(false);
+    expect(validateL10nData.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          keyword: "additionalProperties",
+          params: {
+            additionalProperty: field,
           },
         }),
       ]),

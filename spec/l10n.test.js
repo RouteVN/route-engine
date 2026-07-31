@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { resolveL10nProjectData } from "../src/l10n.js";
+import {
+  getLocalizationPackageOptions,
+  resolveL10nProjectData,
+} from "../src/l10n.js";
 
 const createProjectData = () => ({
   screen: {
@@ -84,17 +87,11 @@ const createProjectData = () => ({
 });
 
 const createPackage = ({
-  locale = "ja-JP",
-  sourceLocale = "en-US",
-  fallbackLocales = [],
+  language = "Japanese",
   files = [],
   patches = [],
 } = {}) => ({
-  formatVersion: 1,
-  locale,
-  sourceLocale,
-  sourceRevision: "source-revision-1",
-  fallbackLocales,
+  language,
   files,
   patches,
 });
@@ -192,6 +189,24 @@ const resourcePatchCases = [
 ];
 
 describe("resolveL10nProjectData", () => {
+  it("exposes the canonical project and imported package languages", () => {
+    expect(
+      getLocalizationPackageOptions({
+        projectData: createProjectData(),
+        l10nData: {
+          packages: {
+            japanese: createPackage(),
+            french: createPackage({ language: "French" }),
+          },
+        },
+      }),
+    ).toEqual([
+      { l10nId: null, language: null },
+      { l10nId: "japanese", language: "Japanese" },
+      { l10nId: "french", language: "French" },
+    ]);
+  });
+
   it("adds every supported resource type and resolves package file references", () => {
     const files = [
       "localized-font",
@@ -519,19 +534,12 @@ describe("resolveL10nProjectData", () => {
     });
   });
 
-  it("uses active patches before ordered fallback packages and canonical source", () => {
+  it("uses only the selected package and retains canonical content for missing patches", () => {
     const resolvedProjectData = resolve({
       packages: {
         french: createPackage({
-          locale: "fr-FR",
+          language: "French",
           patches: [
-            {
-              type: "line.dialogue",
-              lineId: "greeting",
-              payload: {
-                content: [{ text: "Bonjour." }],
-              },
-            },
             {
               type: "story.scene",
               mode: "patch",
@@ -543,8 +551,7 @@ describe("resolveL10nProjectData", () => {
           ],
         }),
         canadianFrench: createPackage({
-          locale: "fr-CA",
-          fallbackLocales: ["fr-FR", "en-US", "missing-LOCALE"],
+          language: "Canadian French",
           patches: [
             {
               type: "line.dialogue",
@@ -564,55 +571,8 @@ describe("resolveL10nProjectData", () => {
         .lines[0].actions.dialogue.content,
     ).toEqual([{ text: "Allô." }]);
     expect(resolvedProjectData.story.scenes["chapter-one"].name).toBe(
-      "Chapitre un",
+      "Chapter One",
     );
-  });
-
-  it.each([
-    {
-      name: "fallback cycles",
-      packages: {
-        french: createPackage({
-          locale: "fr-FR",
-          fallbackLocales: ["fr-CA"],
-        }),
-        canadianFrench: createPackage({
-          locale: "fr-CA",
-          fallbackLocales: ["fr-FR"],
-        }),
-      },
-      error: /fallback chain contains a cycle/,
-    },
-    {
-      name: "ambiguous fallback locale matches",
-      packages: {
-        frenchOne: createPackage({ locale: "fr-FR" }),
-        frenchTwo: createPackage({ locale: "fr-FR" }),
-        canadianFrench: createPackage({
-          locale: "fr-CA",
-          fallbackLocales: ["fr-FR"],
-        }),
-      },
-      error: /matches multiple imported L10n packages/,
-    },
-    {
-      name: "mixed source locales",
-      packages: {
-        japanese: createPackage(),
-        french: createPackage({
-          locale: "fr-FR",
-          sourceLocale: "de-DE",
-        }),
-      },
-      error: /expected source locale "en-US"/,
-    },
-  ])("rejects $name", ({ packages, error }) => {
-    expect(() =>
-      resolve({
-        packages,
-        l10nId: Object.keys(packages).at(-1),
-      }),
-    ).toThrow(error);
   });
 
   it("rejects duplicate patch targets within one package", () => {
@@ -669,7 +629,7 @@ describe("resolveL10nProjectData", () => {
           files: [{ fileId: "localized-image" }],
         }),
         french: createPackage({
-          locale: "fr-FR",
+          language: "French",
           files: [{ fileId: "localized-image" }],
         }),
       },
@@ -736,19 +696,9 @@ describe("resolveL10nProjectData", () => {
 
   it.each([
     {
-      name: "unsupported format versions",
-      packageData: {
-        ...createPackage(),
-        formatVersion: 2,
-      },
-      error: /only formatVersion 1 is supported/,
-    },
-    {
-      name: "duplicate fallback locales",
-      packageData: createPackage({
-        fallbackLocales: ["fr-FR", "fr-FR"],
-      }),
-      error: /must not contain duplicate locales/,
+      name: "empty languages",
+      packageData: createPackage({ language: "" }),
+      error: /language: expected a non-empty string/,
     },
     {
       name: "empty file MIME types",
@@ -798,6 +748,26 @@ describe("resolveL10nProjectData", () => {
         l10nId: "japanese",
       }),
     ).toThrow(error);
+  });
+
+  it.each([
+    ["formatVersion", 1],
+    ["locale", "ja-JP"],
+    ["sourceLocale", "en-US"],
+    ["sourceRevision", "source-revision-1"],
+    ["fallbackLocales", ["en-US"]],
+  ])("rejects the removed %s package field", (field, value) => {
+    expect(() =>
+      resolve({
+        packages: {
+          japanese: {
+            ...createPackage(),
+            [field]: value,
+          },
+        },
+        l10nId: "japanese",
+      }),
+    ).toThrow(new RegExp(`${field}: unknown field`));
   });
 
   it.each([
@@ -1110,38 +1080,5 @@ describe("resolveL10nProjectData", () => {
         l10nId: "japanese",
       }),
     ).toThrow(/does not contain a dialogue action/);
-  });
-
-  it("deduplicates a package reached through more than one fallback path", () => {
-    const resolvedProjectData = resolve({
-      packages: {
-        german: createPackage({
-          locale: "de-DE",
-          patches: [
-            {
-              type: "story.scene",
-              mode: "patch",
-              sceneId: "chapter-one",
-              payload: {
-                name: "Kapitel eins",
-              },
-            },
-          ],
-        }),
-        french: createPackage({
-          locale: "fr-FR",
-          fallbackLocales: ["de-DE"],
-        }),
-        canadianFrench: createPackage({
-          locale: "fr-CA",
-          fallbackLocales: ["fr-FR", "de-DE"],
-        }),
-      },
-      l10nId: "canadianFrench",
-    });
-
-    expect(resolvedProjectData.story.scenes["chapter-one"].name).toBe(
-      "Kapitel eins",
-    );
   });
 });

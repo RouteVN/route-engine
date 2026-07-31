@@ -102,15 +102,7 @@ const RESOURCE_PAYLOAD_VALIDATORS = Object.freeze({
   video: validateResourceVideo,
 });
 
-const PACKAGE_KEYS = new Set([
-  "fallbackLocales",
-  "files",
-  "formatVersion",
-  "locale",
-  "patches",
-  "sourceLocale",
-  "sourceRevision",
-]);
+const PACKAGE_KEYS = new Set(["files", "language", "patches"]);
 
 const LINE_ACTION_PATCH_KEYS = new Set([
   "actionType",
@@ -700,36 +692,8 @@ const validatePackage = ({
 }) => {
   assertRecord(packageData, path);
   assertAllowedKeys(packageData, PACKAGE_KEYS, path);
-  assertRequiredKeys(
-    packageData,
-    [
-      "formatVersion",
-      "locale",
-      "sourceLocale",
-      "sourceRevision",
-      "fallbackLocales",
-      "files",
-      "patches",
-    ],
-    path,
-  );
-
-  if (packageData.formatVersion !== 1) {
-    fail(`${path}.formatVersion`, "only formatVersion 1 is supported");
-  }
-  assertString(packageData.locale, `${path}.locale`);
-  assertString(packageData.sourceLocale, `${path}.sourceLocale`);
-  assertString(packageData.sourceRevision, `${path}.sourceRevision`);
-  assertArray(packageData.fallbackLocales, `${path}.fallbackLocales`);
-  packageData.fallbackLocales.forEach((locale, index) =>
-    assertString(locale, `${path}.fallbackLocales[${index}]`),
-  );
-  if (
-    new Set(packageData.fallbackLocales).size !==
-    packageData.fallbackLocales.length
-  ) {
-    fail(`${path}.fallbackLocales`, "must not contain duplicate locales");
-  }
+  assertRequiredKeys(packageData, ["language", "files", "patches"], path);
+  assertString(packageData.language, `${path}.language`);
 
   const packageFileIds = validateFileEntries(
     packageData.files,
@@ -769,7 +733,6 @@ const validateL10nData = ({ projectData, l10nData }) => {
   if (l10nData === undefined) {
     return {
       packages: new Map(),
-      sourceLocale: null,
     };
   }
 
@@ -782,7 +745,6 @@ const validateL10nData = ({ projectData, l10nData }) => {
   const canonicalFileIds = collectFileIds(projectData?.resources ?? {});
   const packages = new Map();
   const importedFileOwners = new Map();
-  let sourceLocale;
 
   for (const [packageId, packageData] of Object.entries(l10nData.packages)) {
     assertSafeMapId(packageId, `l10nData.packages.${packageId}`);
@@ -794,15 +756,6 @@ const validateL10nData = ({ projectData, l10nData }) => {
       lineIndex,
       canonicalFileIds,
     });
-
-    if (sourceLocale === undefined) {
-      sourceLocale = packageData.sourceLocale;
-    } else if (packageData.sourceLocale !== sourceLocale) {
-      fail(
-        `l10nData.packages.${packageId}.sourceLocale`,
-        `expected source locale "${sourceLocale}"`,
-      );
-    }
 
     for (const fileId of validatedPackage.fileIds) {
       if (canonicalFileIds.has(fileId)) {
@@ -826,75 +779,7 @@ const validateL10nData = ({ projectData, l10nData }) => {
 
   return {
     packages,
-    sourceLocale: sourceLocale ?? null,
   };
-};
-
-const resolvePackagePriority = ({ l10nId, packages }) => {
-  if (l10nId === null) {
-    return [];
-  }
-
-  const packageIdsByLocale = new Map();
-  for (const packageEntry of packages.values()) {
-    const packageIds = packageIdsByLocale.get(packageEntry.data.locale) ?? [];
-    packageIds.push(packageEntry.id);
-    packageIdsByLocale.set(packageEntry.data.locale, packageIds);
-  }
-
-  const priority = [];
-  const included = new Set();
-  const visiting = new Set();
-
-  const visit = (packageId) => {
-    if (visiting.has(packageId)) {
-      fail(
-        `l10nData.packages.${packageId}.fallbackLocales`,
-        "fallback chain contains a cycle",
-      );
-    }
-    if (included.has(packageId)) {
-      return;
-    }
-
-    const packageEntry = packages.get(packageId);
-    visiting.add(packageId);
-    included.add(packageId);
-    priority.push(packageEntry);
-
-    for (const fallbackLocale of packageEntry.data.fallbackLocales) {
-      if (fallbackLocale === packageEntry.data.sourceLocale) {
-        continue;
-      }
-      const fallbackPackageIds = packageIdsByLocale.get(fallbackLocale) ?? [];
-      if (fallbackPackageIds.length > 1) {
-        fail(
-          `l10nData.packages.${packageId}.fallbackLocales`,
-          `locale "${fallbackLocale}" matches multiple imported L10n packages`,
-        );
-      }
-      if (fallbackPackageIds.length === 1) {
-        visit(fallbackPackageIds[0]);
-      }
-    }
-
-    visiting.delete(packageId);
-  };
-
-  visit(l10nId);
-  return priority;
-};
-
-const selectPatches = (packagePriority) => {
-  const selectedPatches = new Map();
-  for (const packageEntry of packagePriority) {
-    for (const patch of packageEntry.patches) {
-      if (!selectedPatches.has(patch.key)) {
-        selectedPatches.set(patch.key, patch);
-      }
-    }
-  }
-  return [...selectedPatches.values()];
 };
 
 const applyResourcePatch = (projectData, validatedPatch) => {
@@ -939,21 +824,15 @@ const applyLineDialoguePatch = (projectData, validatedPatch) => {
  */
 export const getLocalizationPackageOptions = ({ projectData, l10nData }) => {
   const validatedL10nData = validateL10nData({ projectData, l10nData });
-  for (const packageId of validatedL10nData.packages.keys()) {
-    resolvePackagePriority({
-      l10nId: packageId,
-      packages: validatedL10nData.packages,
-    });
-  }
 
   return [
     {
       l10nId: null,
-      locale: validatedL10nData.sourceLocale,
+      language: null,
     },
     ...Array.from(validatedL10nData.packages.values(), (packageEntry) => ({
       l10nId: packageEntry.id,
-      locale: packageEntry.data.locale,
+      language: packageEntry.data.language,
     })),
   ];
 };
@@ -974,22 +853,12 @@ export const resolveL10nProjectData = ({
       fail("l10nId", `package "${l10nId}" was not imported`);
     }
   }
-  for (const packageId of validatedL10nData.packages.keys()) {
-    resolvePackagePriority({
-      l10nId: packageId,
-      packages: validatedL10nData.packages,
-    });
-  }
-  const packagePriority = resolvePackagePriority({
-    l10nId,
-    packages: validatedL10nData.packages,
-  });
-  if (packagePriority.length === 0) {
+  if (l10nId === null) {
     return projectData;
   }
 
   const resolvedProjectData = cloneValue(projectData);
-  const selectedPatches = selectPatches(packagePriority);
+  const selectedPatches = validatedL10nData.packages.get(l10nId).patches;
 
   selectedPatches
     .filter((patch) => patch.kind === "resource")

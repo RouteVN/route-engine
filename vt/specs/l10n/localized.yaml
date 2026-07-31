@@ -19,11 +19,7 @@ steps:
 l10nData:
   packages:
     japanese:
-      formatVersion: 1
-      locale: ja-JP
-      sourceLocale: en-US
-      sourceRevision: l10n-vt-source-1
-      fallbackLocales: []
+      language: Japanese
       files:
         - fileId: l10n-ja-feature-image.svg
           mimeType: image/svg+xml
