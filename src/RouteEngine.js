@@ -14,6 +14,7 @@ import {
   getAnimationInstanceDurationMs,
   getPersistentAnimationContinuationKey,
 } from "./stores/constructRenderState.js";
+import { resolveL10nProjectData } from "./l10n.js";
 
 const PERSISTENT_PLAYBACK_RESET_ACTIONS = new Set([
   "loadSlot",
@@ -76,6 +77,7 @@ export default function createRouteEngine(options) {
   let _persistentAnimationSessions = new Map();
   let _restoredPersistentAnimationSessions = new Map();
   let _renderPersistentAnimationMetadata = new Map();
+  let _l10nData;
 
   const { handlePendingEffects } = options;
 
@@ -152,7 +154,19 @@ export default function createRouteEngine(options) {
   };
 
   const init = ({ initialState, namespace }) => {
-    _systemStore = createSystemStore(initialState);
+    const { l10nData, ...systemInitialState } = initialState;
+    const normalizedL10nData =
+      l10nData === undefined ? undefined : structuredClone(l10nData);
+    const canonicalProjectData = structuredClone(initialState.projectData);
+    const projectData = resolveL10nProjectData({
+      projectData: canonicalProjectData,
+      l10nData: normalizedL10nData,
+    });
+
+    _systemStore = createSystemStore({
+      ...systemInitialState,
+      projectData,
+    });
     _renderSequence = 0;
     _namespace = normalizeNamespace(namespace);
     _actionDispatchDepth = 0;
@@ -163,6 +177,7 @@ export default function createRouteEngine(options) {
     _persistentAnimationSessions = new Map();
     _restoredPersistentAnimationSessions = new Map();
     _renderPersistentAnimationMetadata = new Map();
+    _l10nData = normalizedL10nData;
     _systemStore.appendPendingEffect({ name: "handleLineActions" });
     processEffectsUntilEmpty();
   };
@@ -527,8 +542,17 @@ export default function createRouteEngine(options) {
       return;
     }
 
+    let storePayload = payload;
     if (actionType === "updateProjectData") {
       validateProjectDataUpdatePayload(payload);
+      storePayload = {
+        ...payload,
+        projectData: resolveL10nProjectData({
+          projectData: structuredClone(payload.projectData),
+          l10nData: _l10nData,
+        }),
+      };
+      validateProjectDataUpdatePayload(storePayload);
     }
 
     if (CONDITIONAL_ROUTING_ACTION_TYPES.has(actionType)) {
@@ -542,7 +566,7 @@ export default function createRouteEngine(options) {
         ? snapshotPersistentAnimationSessions(_persistentAnimationSessions)
         : null;
     const cursorBeforeAction = _systemStore.selectRollbackCursor?.() ?? null;
-    const result = _systemStore[actionType](payload);
+    const result = _systemStore[actionType](storePayload);
     if (PERSISTENT_PLAYBACK_RESET_ACTIONS.has(actionType)) {
       _restoredPersistentAnimationSessions =
         persistentAnimationSessionsBeforeAction ?? new Map();

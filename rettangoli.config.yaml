@@ -9,6 +9,7 @@ fe:
 # all visual testing configuration
 vt:
   path: "vt"
+  port: 43123
   name: "ok"
   description: "Visual testing for example1 project"
   timeout: 60000
@@ -57,6 +58,8 @@ vt:
           files: "variables"
         - title: "initialization"
           files: "initialization"
+        - title: "L10n"
+          files: "l10n"
         - title: "Slider"
           files: "slider"
         - title: "Scene Replay"

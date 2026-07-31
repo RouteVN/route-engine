@@ -16,10 +16,12 @@ const presentationActionsSchemaId = new URL(
   schemaBaseUrl,
 ).href;
 const systemActionsSchemaId = new URL("systemActions.yaml", schemaBaseUrl).href;
+const l10nDataSchemaId = new URL("l10nData.yaml", schemaBaseUrl).href;
 const projectDataSchemaPaths = [
   path.join(schemasRoot, "projectData"),
   path.join(schemasRoot, "presentationActions.yaml"),
   path.join(schemasRoot, "systemActions.yaml"),
+  path.join(schemasRoot, "l10nData.yaml"),
 ];
 
 const collectYamlFiles = (dirPath) => {
@@ -118,6 +120,7 @@ const validatePresentationActions = createValidator(
   presentationActionsSchemaId,
 );
 const validateSystemActions = createValidator(systemActionsSchemaId);
+const validateL10nData = createValidator(l10nDataSchemaId);
 
 const createMinimalProjectData = (overrides = {}) => ({
   screen: {
@@ -146,6 +149,259 @@ const createMinimalProjectData = (overrides = {}) => ({
     },
   },
   ...overrides,
+});
+
+const createMinimalL10nData = (patches = []) => ({
+  packages: {
+    japanese: {
+      formatVersion: 1,
+      locale: "ja-JP",
+      sourceLocale: "en-US",
+      sourceRevision: "source-revision-1",
+      fallbackLocales: [],
+      files: [],
+      patches,
+    },
+  },
+  activeL10nId: "japanese",
+});
+
+describe("l10nData schema", () => {
+  it("accepts exact payload schemas for every supported resource patch type", () => {
+    const patches = [
+      {
+        type: "resource.achievement",
+        operation: "add",
+        resourceId: "localizedAchievement",
+        payload: {
+          type: "boolean",
+          name: "Localized achievement",
+          description: "Localized description",
+        },
+      },
+      {
+        type: "resource.animation",
+        operation: "add",
+        resourceId: "localizedAnimation",
+        payload: {
+          type: "update",
+          tween: {
+            alpha: {
+              keyframes: [{ value: 1, duration: 100 }],
+            },
+          },
+        },
+      },
+      {
+        type: "resource.character",
+        operation: "add",
+        resourceId: "localizedCharacter",
+        payload: {
+          name: "Localized character",
+        },
+      },
+      {
+        type: "resource.color",
+        operation: "add",
+        resourceId: "localizedColor",
+        payload: {
+          hex: "#ABCDEF",
+        },
+      },
+      {
+        type: "resource.control",
+        operation: "add",
+        resourceId: "localizedControl",
+        payload: {
+          elements: [],
+        },
+      },
+      {
+        type: "resource.font",
+        operation: "add",
+        resourceId: "localizedFont",
+        payload: {
+          fileId: "localized-font",
+        },
+      },
+      {
+        type: "resource.image",
+        operation: "add",
+        resourceId: "localizedImage",
+        payload: {
+          fileId: "localized-image",
+          width: 640,
+          height: 360,
+        },
+      },
+      {
+        type: "resource.layout",
+        operation: "add",
+        resourceId: "localizedLayout",
+        payload: {
+          elements: [],
+        },
+      },
+      {
+        type: "resource.particle",
+        operation: "add",
+        resourceId: "localizedParticle",
+        payload: {
+          width: 640,
+          height: 360,
+          seed: 42,
+          modules: {
+            emission: {
+              mode: "burst",
+              burstCount: 12,
+              particleLifetime: 30,
+              source: {
+                kind: "rect",
+                data: { x: 0, y: 0, width: 640, height: 360 },
+              },
+            },
+            appearance: {
+              texture: {
+                shape: "circle",
+                radius: 5,
+                color: "#FFFFFF",
+              },
+            },
+          },
+        },
+      },
+      {
+        type: "resource.sound",
+        operation: "add",
+        resourceId: "localizedSound",
+        payload: {
+          fileId: "localized-sound",
+        },
+      },
+      {
+        type: "resource.spritesheet",
+        operation: "add",
+        resourceId: "localizedSpritesheet",
+        payload: {
+          fileId: "localized-spritesheet",
+          jsonData: {},
+          width: 640,
+          height: 360,
+        },
+      },
+      {
+        type: "resource.textStyle",
+        operation: "add",
+        resourceId: "localizedTextStyle",
+        payload: {
+          fontId: "localizedFont",
+          colorId: "localizedColor",
+          fontSize: 24,
+          fontWeight: "400",
+          fontStyle: "normal",
+          lineHeight: 1,
+        },
+      },
+      {
+        type: "resource.transform",
+        operation: "add",
+        resourceId: "localizedTransform",
+        payload: {
+          x: 120,
+          y: 80,
+        },
+      },
+      {
+        type: "resource.video",
+        operation: "add",
+        resourceId: "localizedVideo",
+        payload: {
+          fileId: "localized-video",
+          width: 640,
+          height: 360,
+        },
+      },
+    ];
+
+    expect(validateL10nData(createMinimalL10nData(patches))).toBe(true);
+    expect(validateL10nData.errors).toBeNull();
+  });
+
+  it("accepts complete imported package data", () => {
+    expect(
+      validateL10nData(
+        createMinimalL10nData([
+          {
+            type: "line.dialogue",
+            lineId: "greeting",
+            payload: {
+              content: [{ text: "こんにちは。" }],
+            },
+          },
+          {
+            type: "resource.image",
+            operation: "add",
+            resourceId: "station-sign-ja",
+            payload: {
+              fileId: "station-sign-ja-file",
+              fileType: "image/png",
+              width: 1024,
+              height: 512,
+            },
+          },
+        ]),
+      ),
+    ).toBe(true);
+    expect(validateL10nData.errors).toBeNull();
+  });
+
+  it("requires dialogue action replacements to preserve content separately", () => {
+    expect(
+      validateL10nData(
+        createMinimalL10nData([
+          {
+            type: "line.action",
+            lineId: "greeting",
+            actionType: "dialogue",
+            ignoreFields: ["content"],
+            payload: {
+              ui: {
+                resourceId: "japaneseDialogue",
+              },
+              content: [{ text: "Invalid inline content" }],
+            },
+          },
+        ]),
+      ),
+    ).toBe(false);
+  });
+
+  it("validates resource payloads against their exact project resource schema", () => {
+    expect(
+      validateL10nData(
+        createMinimalL10nData([
+          {
+            type: "resource.image",
+            resourceId: "station-sign",
+            payload: {
+              fileId: "station-sign-ja-file",
+              width: 1024,
+            },
+          },
+        ]),
+      ),
+    ).toBe(false);
+    expect(validateL10nData.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          keyword: "required",
+          params: {
+            missingProperty: "height",
+          },
+        }),
+      ]),
+    );
+  });
 });
 
 describe("projectData schema", () => {

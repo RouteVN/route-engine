@@ -22,7 +22,8 @@ import createRouteGraphics, {
   animatedSpritePlugin,
 } from "./RouteGraphics.js";
 
-const projectData = parse(window.yamlContent);
+const parsedData = parse(window.yamlContent);
+const { l10nData, ...projectData } = parsedData;
 const namespace = `vt:${window.location.pathname}`;
 const isVtCaptureMode = () =>
   window?.RTGL_VT_DEBUG === true || navigator.webdriver === true;
@@ -173,6 +174,10 @@ const init = async () => {
     "mask-diagonal": {
       url: "/public/mask_diagonal.png",
       type: "image/png",
+    },
+    "l10n-ja-feature-image.svg": {
+      url: "/public/l10n/japanese/files/l10n-ja-feature-image.svg",
+      type: "image/svg+xml",
     },
   };
 
@@ -337,6 +342,7 @@ const init = async () => {
         accountViewedRegistry,
       },
       projectData,
+      l10nData,
     },
   });
 

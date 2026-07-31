@@ -1,0 +1,103 @@
+---
+title: Canonical Source
+description: Omitting l10nData renders the canonical image, dialogue layout, and dialogue content.
+viewport:
+  id: capture
+  width: 960
+  height: 540
+---
+screen:
+  width: 960
+  height: 540
+  backgroundColor: "#101820"
+resources:
+  images:
+    featureImage:
+      fileId: la3lka
+      fileType: image/png
+      width: 300
+      height: 300
+  layouts:
+    sourceDialogue:
+      elements:
+        - id: source-panel
+          type: rect
+          x: 40
+          y: 390
+          width: 880
+          height: 110
+          colorId: sourcePanel
+        - id: source-label
+          type: text
+          x: 72
+          y: 412
+          content: SOURCE PROJECT
+          textStyleId: label
+        - id: dialogue-body
+          type: text
+          x: 72
+          y: 454
+          width: 820
+          content: ${dialogue.content[0].text}
+          textStyleId: body
+  colors:
+    background:
+      hex: "#101820"
+    sourcePanel:
+      hex: "#243447"
+    sourceAccent:
+      hex: "#66CCFF"
+    bodyText:
+      hex: "#FFFFFF"
+  fonts:
+    default:
+      fileId: Arial
+  textStyles:
+    label:
+      fontId: default
+      colorId: sourceAccent
+      fontSize: 24
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1.2
+    body:
+      fontId: default
+      colorId: bodyText
+      fontSize: 28
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+  transforms:
+    featureCenter:
+      x: 480
+      y: 190
+      anchorX: 0.5
+      anchorY: 0.5
+      scaleX: 1
+      scaleY: 1
+      rotation: 0
+story:
+  initialSceneId: chapter-one
+  scenes:
+    chapter-one:
+      name: Chapter One
+      initialSectionId: introduction
+      sections:
+        introduction:
+          name: Introduction
+          lines:
+            - id: l10n-vt-line
+              actions:
+                background:
+                  colorId: background
+                visual:
+                  items:
+                    - id: localized-feature
+                      resourceId: featureImage
+                      transformId: featureCenter
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: sourceDialogue
+                  content:
+                    - text: Canonical dialogue content is active.

@@ -1,0 +1,180 @@
+---
+title: Active Package
+description: Active l10nData replaces the image, dialogue layout, dialogue action, scene name, and dialogue content.
+viewport:
+  id: capture
+  width: 960
+  height: 540
+---
+l10nData:
+  packages:
+    japanese:
+      formatVersion: 1
+      locale: ja-JP
+      sourceLocale: en-US
+      sourceRevision: l10n-vt-source-1
+      fallbackLocales: []
+      files:
+        - fileId: l10n-ja-feature-image.svg
+          mimeType: image/svg+xml
+      patches:
+        - type: resource.color
+          operation: add
+          resourceId: localizedAccent
+          payload:
+            hex: "#FF9E00"
+        - type: resource.image
+          resourceId: featureImage
+          payload:
+            fileId: l10n-ja-feature-image.svg
+            fileType: image/svg+xml
+            width: 300
+            height: 300
+        - type: resource.layout
+          operation: add
+          resourceId: localizedDialogue
+          payload:
+            elements:
+              - id: localized-panel
+                type: rect
+                x: 40
+                y: 370
+                width: 880
+                height: 130
+                colorId: localizedPanel
+              - id: localized-label
+                type: text
+                x: 72
+                y: 390
+                content: L10N PACKAGE ACTIVE
+                textStyleId: localizedLabel
+              - id: dialogue-body
+                type: text
+                x: 72
+                y: 446
+                width: 820
+                content: ${dialogue.content[0].text}
+                textStyleId: body
+        - type: story.scene
+          mode: patch
+          sceneId: chapter-one
+          payload:
+            name: Localized Chapter
+        - type: line.action
+          lineId: l10n-vt-line
+          actionType: dialogue
+          ignoreFields: [content]
+          payload:
+            mode: adv
+            ui:
+              resourceId: localizedDialogue
+        - type: line.dialogue
+          lineId: l10n-vt-line
+          payload:
+            content:
+              - text: Localized dialogue content is active.
+  activeL10nId: japanese
+screen:
+  width: 960
+  height: 540
+  backgroundColor: "#101820"
+resources:
+  images:
+    featureImage:
+      fileId: la3lka
+      fileType: image/png
+      width: 300
+      height: 300
+  layouts:
+    sourceDialogue:
+      elements:
+        - id: source-panel
+          type: rect
+          x: 40
+          y: 390
+          width: 880
+          height: 110
+          colorId: sourcePanel
+        - id: source-label
+          type: text
+          x: 72
+          y: 412
+          content: SOURCE PROJECT
+          textStyleId: label
+        - id: dialogue-body
+          type: text
+          x: 72
+          y: 454
+          width: 820
+          content: ${dialogue.content[0].text}
+          textStyleId: body
+  colors:
+    background:
+      hex: "#101820"
+    sourcePanel:
+      hex: "#243447"
+    sourceAccent:
+      hex: "#66CCFF"
+    localizedPanel:
+      hex: "#3C096C"
+    bodyText:
+      hex: "#FFFFFF"
+  fonts:
+    default:
+      fileId: Arial
+  textStyles:
+    label:
+      fontId: default
+      colorId: sourceAccent
+      fontSize: 24
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1.2
+    localizedLabel:
+      fontId: default
+      colorId: localizedAccent
+      fontSize: 24
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1.2
+    body:
+      fontId: default
+      colorId: bodyText
+      fontSize: 28
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+  transforms:
+    featureCenter:
+      x: 480
+      y: 180
+      anchorX: 0.5
+      anchorY: 0.5
+      scaleX: 1
+      scaleY: 1
+      rotation: 0
+story:
+  initialSceneId: chapter-one
+  scenes:
+    chapter-one:
+      name: Chapter One
+      initialSectionId: introduction
+      sections:
+        introduction:
+          name: Introduction
+          lines:
+            - id: l10n-vt-line
+              actions:
+                background:
+                  colorId: background
+                visual:
+                  items:
+                    - id: localized-feature
+                      resourceId: featureImage
+                      transformId: featureCenter
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: sourceDialogue
+                  content:
+                    - text: Canonical dialogue content is active.
