@@ -15,12 +15,6 @@ properties:
       "^.+$":
         $ref: "#/definitions/package"
     additionalProperties: false
-  activeL10nId:
-    description: Initially active L10n package ID; null or omission selects canonical source content
-    type: [string, "null"]
-    minLength: 1
-    not:
-      enum: [__proto__, constructor, prototype]
 required: [packages]
 additionalProperties: false
 

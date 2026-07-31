@@ -163,10 +163,28 @@ const createMinimalL10nData = (patches = []) => ({
       patches,
     },
   },
-  activeL10nId: "japanese",
 });
 
 describe("l10nData schema", () => {
+  it("keeps runtime selection out of imported L10n data", () => {
+    expect(
+      validateL10nData({
+        ...createMinimalL10nData(),
+        activeL10nId: "japanese",
+      }),
+    ).toBe(false);
+    expect(validateL10nData.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          keyword: "additionalProperties",
+          params: {
+            additionalProperty: "activeL10nId",
+          },
+        }),
+      ]),
+    );
+  });
+
   it("accepts exact payload schemas for every supported resource patch type", () => {
     const patches = [
       {
@@ -1883,6 +1901,26 @@ describe("projectData schema", () => {
       validateSystemActions({
         loadSlot: {
           slotId: "_event.slotId",
+        },
+      }),
+    ).toBe(true);
+    expect(validateSystemActions.errors).toBeNull();
+  });
+
+  it("accepts localization package selection as a system action", () => {
+    expect(
+      validateSystemActions({
+        updateLocalizationPackage: {
+          l10nId: "japanese",
+        },
+      }),
+    ).toBe(true);
+    expect(validateSystemActions.errors).toBeNull();
+
+    expect(
+      validateSystemActions({
+        updateLocalizationPackage: {
+          l10nId: null,
         },
       }),
     ).toBe(true);

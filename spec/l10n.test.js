@@ -99,17 +99,13 @@ const createPackage = ({
   patches,
 });
 
-const resolve = ({
-  projectData = createProjectData(),
-  packages,
-  activeL10nId,
-}) =>
+const resolve = ({ projectData = createProjectData(), packages, l10nId }) =>
   resolveL10nProjectData({
     projectData,
     l10nData: {
       packages,
-      activeL10nId,
     },
+    l10nId,
   });
 
 const resourcePatchCases = [
@@ -217,7 +213,7 @@ describe("resolveL10nProjectData", () => {
       packages: {
         japanese: createPackage({ files, patches }),
       },
-      activeL10nId: "japanese",
+      l10nId: "japanese",
     });
 
     resourcePatchCases.forEach(([, collectionName, payload], index) => {
@@ -245,7 +241,7 @@ describe("resolveL10nProjectData", () => {
           ],
         }),
       },
-      activeL10nId: "japanese",
+      l10nId: "japanese",
     });
 
     expect(resolvedProjectData.resources.images.sourceImage).toEqual({
@@ -291,7 +287,7 @@ describe("resolveL10nProjectData", () => {
             patches: [patch],
           }),
         },
-        activeL10nId: "japanese",
+        l10nId: "japanese",
       }),
     ).toThrow(error);
   });
@@ -343,7 +339,7 @@ describe("resolveL10nProjectData", () => {
           ],
         }),
       },
-      activeL10nId: "japanese",
+      l10nId: "japanese",
     });
     const line =
       resolvedProjectData.story.scenes["chapter-one"].sections.introduction
@@ -391,7 +387,7 @@ describe("resolveL10nProjectData", () => {
           ],
         }),
       },
-      activeL10nId: "japanese",
+      l10nId: "japanese",
     });
 
     expect(
@@ -435,7 +431,7 @@ describe("resolveL10nProjectData", () => {
             ],
           }),
         },
-        activeL10nId: "japanese",
+        l10nId: "japanese",
       }),
     ).toThrow(/form behavior must remain identical/);
   });
@@ -473,7 +469,7 @@ describe("resolveL10nProjectData", () => {
               ],
             }),
           },
-          activeL10nId: "japanese",
+          l10nId: "japanese",
         }),
       ).toThrow(
         new RegExp(
@@ -508,7 +504,7 @@ describe("resolveL10nProjectData", () => {
           ],
         }),
       },
-      activeL10nId: "japanese",
+      l10nId: "japanese",
     });
     const actions =
       resolvedProjectData.story.scenes["chapter-one"].sections.introduction
@@ -560,7 +556,7 @@ describe("resolveL10nProjectData", () => {
           ],
         }),
       },
-      activeL10nId: "canadianFrench",
+      l10nId: "canadianFrench",
     });
 
     expect(
@@ -614,7 +610,7 @@ describe("resolveL10nProjectData", () => {
     expect(() =>
       resolve({
         packages,
-        activeL10nId: Object.keys(packages).at(-1),
+        l10nId: Object.keys(packages).at(-1),
       }),
     ).toThrow(error);
   });
@@ -642,7 +638,7 @@ describe("resolveL10nProjectData", () => {
             ],
           }),
         },
-        activeL10nId: "japanese",
+        l10nId: "japanese",
       }),
     ).toThrow(/duplicate patch target "line.dialogue:greeting"/);
   });
@@ -683,7 +679,7 @@ describe("resolveL10nProjectData", () => {
     expect(() =>
       resolve({
         packages,
-        activeL10nId: Object.keys(packages)[0],
+        l10nId: Object.keys(packages)[0],
       }),
     ).toThrow(error);
   });
@@ -733,7 +729,7 @@ describe("resolveL10nProjectData", () => {
         packages: {
           japanese: createPackage({ files, patches }),
         },
-        activeL10nId: "japanese",
+        l10nId: "japanese",
       }),
     ).toThrow(error);
   });
@@ -799,7 +795,7 @@ describe("resolveL10nProjectData", () => {
         packages: {
           japanese: packageData,
         },
-        activeL10nId: "japanese",
+        l10nId: "japanese",
       }),
     ).toThrow(error);
   });
@@ -918,7 +914,7 @@ describe("resolveL10nProjectData", () => {
             patches: [patch],
           }),
         },
-        activeL10nId: "japanese",
+        l10nId: "japanese",
       }),
     ).toThrow(error);
   });
@@ -982,7 +978,7 @@ describe("resolveL10nProjectData", () => {
               ],
             }),
           },
-          activeL10nId: "japanese",
+          l10nId: "japanese",
         }),
       ).toThrow(
         new RegExp(`does not match the resource.${resourceType} schema`),
@@ -1085,7 +1081,7 @@ describe("resolveL10nProjectData", () => {
             patches: [patch],
           }),
         },
-        activeL10nId: "japanese",
+        l10nId: "japanese",
       }),
     ).toThrow(error);
   });
@@ -1111,7 +1107,7 @@ describe("resolveL10nProjectData", () => {
             ],
           }),
         },
-        activeL10nId: "japanese",
+        l10nId: "japanese",
       }),
     ).toThrow(/does not contain a dialogue action/);
   });
@@ -1141,7 +1137,7 @@ describe("resolveL10nProjectData", () => {
           fallbackLocales: ["fr-FR", "de-DE"],
         }),
       },
-      activeL10nId: "canadianFrench",
+      l10nId: "canadianFrench",
     });
 
     expect(resolvedProjectData.story.scenes["chapter-one"].name).toBe(

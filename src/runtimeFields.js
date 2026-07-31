@@ -23,6 +23,9 @@ export const RUNTIME_FIELDS = Object.freeze({
   muteAll: {
     source: "global.muteAll",
   },
+  localizationPackageId: {
+    source: "global.localizationPackageId",
+  },
   saveLoadPagination: {
     source: "context.runtime.saveLoadPagination",
   },
@@ -55,6 +58,7 @@ export const GLOBAL_RUNTIME_DEFAULTS = Object.freeze({
   soundVolume: 50,
   musicVolume: 50,
   muteAll: false,
+  localizationPackageId: null,
   autoMode: false,
   skipMode: false,
   dialogueUIHidden: false,
@@ -76,6 +80,7 @@ export const RUNTIME_FIELD_TYPES = Object.freeze({
   soundVolume: "number",
   musicVolume: "number",
   muteAll: "boolean",
+  localizationPackageId: "nullableString",
   saveLoadPagination: "number",
   menuPage: "string",
   menuEntryPoint: "string",
@@ -94,6 +99,7 @@ export const PERSISTED_GLOBAL_RUNTIME_FIELDS = Object.freeze([
   "soundVolume",
   "musicVolume",
   "muteAll",
+  "localizationPackageId",
 ]);
 
 export const CONTEXT_RUNTIME_FIELDS = Object.freeze([

@@ -34,6 +34,10 @@ out:
     soundVolume: 50
     musicVolume: 50
     muteAll: false
+    localizationPackageId: null
+    localizationPackages:
+      - l10nId: null
+        locale: null
     confirmDialog: null
     formDrafts: {}
     imageGalleryNavigation:
@@ -146,6 +150,10 @@ out:
     soundVolume: 50
     musicVolume: 50
     muteAll: false
+    localizationPackageId: null
+    localizationPackages:
+      - l10nId: null
+        locale: null
     confirmDialog: null
     formDrafts: {}
     imageGalleryNavigation:
@@ -271,6 +279,10 @@ out:
     soundVolume: 50
     musicVolume: 50
     muteAll: false
+    localizationPackageId: null
+    localizationPackages:
+      - l10nId: null
+        locale: null
     confirmDialog: null
     formDrafts: {}
     imageGalleryNavigation:
@@ -390,6 +402,10 @@ out:
     soundVolume: 50
     musicVolume: 50
     muteAll: false
+    localizationPackageId: null
+    localizationPackages:
+      - l10nId: null
+        locale: null
     confirmDialog: null
     formDrafts: {}
     imageGalleryNavigation:
@@ -506,6 +522,10 @@ out:
     soundVolume: 50
     musicVolume: 50
     muteAll: false
+    localizationPackageId: null
+    localizationPackages:
+      - l10nId: null
+        locale: null
     confirmDialog: null
     formDrafts: {}
     imageGalleryNavigation:

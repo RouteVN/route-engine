@@ -1520,6 +1520,13 @@ const assertRuntimeValueType = (runtimeId, value) => {
     return;
   }
 
+  if (type === "nullableString") {
+    if (value !== null && typeof value !== "string") {
+      throw new Error(`${runtimeId} requires a string or null value`);
+    }
+    return;
+  }
+
   throw new Error(`Unsupported runtime field "${runtimeId}"`);
 };
 
@@ -2035,6 +2042,7 @@ export const createInitialState = (payload) => {
     variables: loadedGlobalVariables = {},
     runtime: loadedGlobalRuntime = {},
     accountViewedRegistry: loadedAccountViewedRegistry = {},
+    localizationPackages = [{ l10nId: null, locale: null }],
   } = global;
 
   assertUniqueSectionIds(projectData);
@@ -2084,6 +2092,7 @@ export const createInitialState = (payload) => {
       audioCommandId: 0,
       musicRoomPlayer: createDefaultMusicRoomPlayer(),
       saveSlots: normalizeStoredSaveSlots(saveSlots),
+      localizationPackages: cloneStateValue(localizationPackages),
       overlayStack: [],
       variables: globalVariables,
       ...createInitialGlobalRuntimeState({
@@ -2728,6 +2737,10 @@ export const selectSaveSlot = ({ state }, payload) => {
   return state.global.saveSlots[storageKey];
 };
 
+export const selectLocalizationPackages = ({ state }) => {
+  return cloneStateValue(state.global.localizationPackages);
+};
+
 export const selectRuntime = ({ state }) => {
   return selectRuntimeFromState(state);
 };
@@ -3080,7 +3093,10 @@ export const selectRenderState = ({ state }, options = {}) => {
     state.projectData,
     sectionId,
   );
-  const runtime = selectRuntime({ state });
+  const runtime = {
+    ...selectRuntime({ state }),
+    localizationPackages: selectLocalizationPackages({ state }),
+  };
   const activePersistentAnimations = options?.activePersistentAnimations ?? [];
   const restoredPersistentAnimations =
     options?.restoredPersistentAnimations ?? [];
@@ -4901,6 +4917,43 @@ export const updateProjectData = ({ state }, payload) => {
 };
 
 /**
+ * Installs a pre-resolved localization overlay and persists its device-local
+ * selection. RouteEngine owns canonical project resolution and supplies the
+ * resolved projectData through this internal action payload.
+ */
+export const updateLocalizationPackage = ({ state }, payload) => {
+  const { l10nId, projectData } = payload ?? {};
+  if (l10nId !== null && (typeof l10nId !== "string" || l10nId.length === 0)) {
+    throw new Error("updateLocalizationPackage requires l10nId or null");
+  }
+  if (!isRecord(projectData)) {
+    throw new Error(
+      "updateLocalizationPackage requires resolved projectData internally",
+    );
+  }
+
+  state.projectData = projectData;
+  applyRuntimeValue(state, "localizationPackageId", l10nId);
+  queueGlobalRuntimePersistence(state);
+
+  state.global.pendingEffects.push({ name: "clearAutoNextTimer" });
+  if (
+    state.global.autoMode &&
+    state.global.isLineCompleted &&
+    !selectActiveInteraction({ state })
+  ) {
+    state.global.pendingEffects.push({
+      name: "startAutoNextTimer",
+      payload: {
+        delay: selectAutoForwardTimerDelay({ state }),
+      },
+    });
+  }
+  state.global.pendingEffects.push({ name: "render" });
+  return state;
+};
+
+/**
  * Jumps to a specific line within a section
  * @param {Object} param - Object containing state and dispatch functions
  * @param {Object} payload - Action payload
@@ -5975,6 +6028,7 @@ export const createSystemStore = (initialState) => {
     selectSaveSlotMap,
     selectSaveSlots,
     selectSaveSlot,
+    selectLocalizationPackages,
     selectRuntime,
     selectRuntimeValue,
     selectAllVariables,
@@ -6061,6 +6115,7 @@ export const createSystemStore = (initialState) => {
     saveSlot,
     loadSlot,
     updateProjectData,
+    updateLocalizationPackage,
     sectionTransition,
     jumpToLine,
     nextLine,

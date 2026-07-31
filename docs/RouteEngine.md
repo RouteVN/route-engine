@@ -68,9 +68,11 @@ returned adapter also exposes `clear()` to delete persisted data for that
 namespace.
 
 Initialization may also receive complete imported L10n packages through
-`initialState.l10nData`. Omit it to run canonical source content only. The
-patch format, package layout, and initialization behavior are documented in
-[L10n.md](./L10n.md).
+`initialState.l10nData`. The canonical project is the default; an existing
+device preference under `initialState.global.runtime.localizationPackageId`
+restores an imported package. Authored layouts receive package options and can
+dispatch `updateLocalizationPackage` to switch and render. The patch format,
+package layout, and runtime behavior are documented in [L10n.md](./L10n.md).
 
 The engine will:
 

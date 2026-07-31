@@ -14,13 +14,17 @@ import {
   getAnimationInstanceDurationMs,
   getPersistentAnimationContinuationKey,
 } from "./stores/constructRenderState.js";
-import { resolveL10nProjectData } from "./l10n.js";
+import {
+  getLocalizationPackageOptions,
+  resolveL10nProjectData,
+} from "./l10n.js";
 
 const PERSISTENT_PLAYBACK_RESET_ACTIONS = new Set([
   "loadSlot",
   "resetStoryAtSection",
   "rollbackByOffset",
   "rollbackToLine",
+  "updateLocalizationPackage",
   "updateProjectData",
 ]);
 
@@ -77,7 +81,9 @@ export default function createRouteEngine(options) {
   let _persistentAnimationSessions = new Map();
   let _restoredPersistentAnimationSessions = new Map();
   let _renderPersistentAnimationMetadata = new Map();
+  let _canonicalProjectData;
   let _l10nData;
+  let _localizationPackageId = null;
 
   const { handlePendingEffects } = options;
 
@@ -158,13 +164,53 @@ export default function createRouteEngine(options) {
     const normalizedL10nData =
       l10nData === undefined ? undefined : structuredClone(l10nData);
     const canonicalProjectData = structuredClone(initialState.projectData);
+    const localizationPackages = getLocalizationPackageOptions({
+      projectData: canonicalProjectData,
+      l10nData: normalizedL10nData,
+    });
+    const loadedGlobal = systemInitialState.global ?? {};
+    if (!isRecord(loadedGlobal)) {
+      throw new Error("Malformed global state.");
+    }
+    const loadedGlobalRuntime = loadedGlobal.runtime ?? {};
+    if (!isRecord(loadedGlobalRuntime)) {
+      throw new Error("Malformed global.runtime.");
+    }
+    const loadedLocalizationPackageId =
+      loadedGlobalRuntime.localizationPackageId;
+    if (
+      loadedLocalizationPackageId !== undefined &&
+      loadedLocalizationPackageId !== null &&
+      typeof loadedLocalizationPackageId !== "string"
+    ) {
+      throw new Error("localizationPackageId requires a string or null value");
+    }
+    const importedL10nIds = new Set(
+      localizationPackages
+        .map(({ l10nId }) => l10nId)
+        .filter((l10nId) => l10nId !== null),
+    );
+    const localizationPackageId =
+      typeof loadedLocalizationPackageId === "string" &&
+      importedL10nIds.has(loadedLocalizationPackageId)
+        ? loadedLocalizationPackageId
+        : null;
     const projectData = resolveL10nProjectData({
       projectData: canonicalProjectData,
       l10nData: normalizedL10nData,
+      l10nId: localizationPackageId,
     });
 
     _systemStore = createSystemStore({
       ...systemInitialState,
+      global: {
+        ...loadedGlobal,
+        localizationPackages,
+        runtime: {
+          ...loadedGlobalRuntime,
+          localizationPackageId,
+        },
+      },
       projectData,
     });
     _renderSequence = 0;
@@ -177,7 +223,9 @@ export default function createRouteEngine(options) {
     _persistentAnimationSessions = new Map();
     _restoredPersistentAnimationSessions = new Map();
     _renderPersistentAnimationMetadata = new Map();
+    _canonicalProjectData = canonicalProjectData;
     _l10nData = normalizedL10nData;
+    _localizationPackageId = localizationPackageId;
     _systemStore.appendPendingEffect({ name: "handleLineActions" });
     processEffectsUntilEmpty();
   };
@@ -543,16 +591,34 @@ export default function createRouteEngine(options) {
     }
 
     let storePayload = payload;
+    let nextCanonicalProjectData;
+    let nextLocalizationPackageId;
     if (actionType === "updateProjectData") {
       validateProjectDataUpdatePayload(payload);
+      nextCanonicalProjectData = structuredClone(payload.projectData);
       storePayload = {
         ...payload,
         projectData: resolveL10nProjectData({
-          projectData: structuredClone(payload.projectData),
+          projectData: nextCanonicalProjectData,
           l10nData: _l10nData,
+          l10nId: _localizationPackageId,
         }),
       };
       validateProjectDataUpdatePayload(storePayload);
+    } else if (actionType === "updateLocalizationPackage") {
+      nextLocalizationPackageId =
+        validateLocalizationPackageUpdatePayload(payload);
+      if (nextLocalizationPackageId === _localizationPackageId) {
+        return;
+      }
+      storePayload = {
+        l10nId: nextLocalizationPackageId,
+        projectData: resolveL10nProjectData({
+          projectData: _canonicalProjectData,
+          l10nData: _l10nData,
+          l10nId: nextLocalizationPackageId,
+        }),
+      };
     }
 
     if (CONDITIONAL_ROUTING_ACTION_TYPES.has(actionType)) {
@@ -567,6 +633,12 @@ export default function createRouteEngine(options) {
         : null;
     const cursorBeforeAction = _systemStore.selectRollbackCursor?.() ?? null;
     const result = _systemStore[actionType](storePayload);
+    if (nextCanonicalProjectData !== undefined) {
+      _canonicalProjectData = nextCanonicalProjectData;
+    }
+    if (nextLocalizationPackageId !== undefined) {
+      _localizationPackageId = nextLocalizationPackageId;
+    }
     if (PERSISTENT_PLAYBACK_RESET_ACTIONS.has(actionType)) {
       _restoredPersistentAnimationSessions =
         persistentAnimationSessionsBeforeAction ?? new Map();
@@ -603,6 +675,25 @@ export default function createRouteEngine(options) {
     validateSceneReplayConfig(payload.projectData);
   };
 
+  const validateLocalizationPackageUpdatePayload = (payload) => {
+    if (!isRecord(payload)) {
+      throw new Error("updateLocalizationPackage requires an object payload");
+    }
+    const keys = Object.keys(payload);
+    if (keys.length !== 1 || keys[0] !== "l10nId") {
+      throw new Error("updateLocalizationPackage only accepts l10nId");
+    }
+    if (
+      payload.l10nId !== null &&
+      (typeof payload.l10nId !== "string" || payload.l10nId.length === 0)
+    ) {
+      throw new Error(
+        "updateLocalizationPackage requires a non-empty l10nId or null",
+      );
+    }
+    return payload.l10nId;
+  };
+
   const dispatchConditionalAutoContinue = (
     result,
     sourcePointer,
@@ -636,6 +727,8 @@ export default function createRouteEngine(options) {
     renderPersistentAnimationMetadata: new Map(
       _renderPersistentAnimationMetadata,
     ),
+    canonicalProjectData: _canonicalProjectData,
+    localizationPackageId: _localizationPackageId,
   });
 
   const restoreActionBatchEngineSnapshot = (snapshot) => {
@@ -653,6 +746,8 @@ export default function createRouteEngine(options) {
     _renderPersistentAnimationMetadata = new Map(
       snapshot.renderPersistentAnimationMetadata,
     );
+    _canonicalProjectData = snapshot.canonicalProjectData;
+    _localizationPackageId = snapshot.localizationPackageId;
   };
 
   const runActionBatch = (callback, options = {}) => {

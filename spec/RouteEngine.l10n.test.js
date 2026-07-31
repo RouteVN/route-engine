@@ -162,11 +162,48 @@ const createJapanesePackage = () =>
     ],
   });
 
-const createEngine = () => {
+const addLocalizationMenu = (projectData) => {
+  projectData.resources.layouts.localizationMenu = {
+    elements: [
+      {
+        "$for package in localizationPackages:": [
+          {
+            id: "locale-${package.locale}",
+            type: "text",
+            content: "${package.locale}",
+            click: {
+              payload: {
+                actions: {
+                  updateLocalizationPackage: {
+                    l10nId: "${package.l10nId}",
+                  },
+                },
+              },
+            },
+          },
+        ],
+      },
+      {
+        id: "selected-locale",
+        type: "text",
+        content: "${localizationPackageId}",
+      },
+    ],
+  };
+  projectData.story.scenes[
+    "chapter-one"
+  ].sections.introduction.lines[0].actions.layout = {
+    resourceId: "localizationMenu",
+  };
+  return projectData;
+};
+
+const createEngine = ({ onEffect } = {}) => {
   let engine;
   engine = createRouteEngine({
     handlePendingEffects: (effects) => {
       effects.forEach((effect) => {
+        onEffect?.(effect);
         if (effect.name === "handleLineActions") {
           engine.handleLineActions();
         }
@@ -195,14 +232,13 @@ describe("RouteEngine L10n initialization", () => {
     expect(engine.selectSystemState().projectData).toEqual(projectData);
   });
 
-  it("applies the active package without mutating canonical projectData", () => {
+  it("restores a persisted package without mutating canonical projectData", () => {
     const projectData = createProjectData();
     const canonicalSnapshot = structuredClone(projectData);
     const l10nData = {
       packages: {
         japanese: createJapanesePackage(),
       },
-      activeL10nId: "japanese",
     };
     const l10nSnapshot = structuredClone(l10nData);
     const engine = createEngine();
@@ -211,6 +247,11 @@ describe("RouteEngine L10n initialization", () => {
       initialState: {
         projectData,
         l10nData,
+        global: {
+          runtime: {
+            localizationPackageId: "japanese",
+          },
+        },
       },
     });
 
@@ -247,7 +288,7 @@ describe("RouteEngine L10n initialization", () => {
     });
   });
 
-  it("imports packages without applying one when activeL10nId is null", () => {
+  it("imports packages while defaulting to the canonical project", () => {
     const projectData = createProjectData();
     const engine = createEngine();
 
@@ -258,7 +299,6 @@ describe("RouteEngine L10n initialization", () => {
           packages: {
             japanese: createJapanesePackage(),
           },
-          activeL10nId: null,
         },
       },
     });
@@ -269,6 +309,249 @@ describe("RouteEngine L10n initialization", () => {
     ).toMatchObject({
       content: "Hello.",
     });
+  });
+
+  it("exposes package choices and current selection to authored layouts", () => {
+    const engine = createEngine();
+
+    engine.init({
+      initialState: {
+        projectData: addLocalizationMenu(createProjectData()),
+        l10nData: {
+          packages: {
+            japanese: createJapanesePackage(),
+            french: createPackage({ locale: "fr-FR" }),
+          },
+        },
+      },
+    });
+
+    const renderState = engine.selectRenderState();
+    const sourceOption = findElementById(renderState.elements, "locale-en-US");
+    const japaneseOption = findElementById(
+      renderState.elements,
+      "locale-ja-JP",
+    );
+    const frenchOption = findElementById(renderState.elements, "locale-fr-FR");
+
+    expect(sourceOption.click.payload.actions).toEqual({
+      updateLocalizationPackage: {
+        l10nId: null,
+      },
+    });
+    expect(japaneseOption.click.payload.actions).toEqual({
+      updateLocalizationPackage: {
+        l10nId: "japanese",
+      },
+    });
+    expect(frenchOption).toBeDefined();
+    expect(
+      findElementById(renderState.elements, "selected-locale").content,
+    ).toBeNull();
+    expect(engine.selectRuntime().localizationPackageId).toBeNull();
+  });
+
+  it("switches from layout actions, persists the device setting, and returns to source", () => {
+    const effects = [];
+    const engine = createEngine({
+      onEffect: (effect) => effects.push(structuredClone(effect)),
+    });
+
+    engine.init({
+      initialState: {
+        projectData: addLocalizationMenu(createProjectData()),
+        l10nData: {
+          packages: {
+            japanese: createJapanesePackage(),
+          },
+        },
+      },
+    });
+    effects.length = 0;
+
+    const japaneseOption = findElementById(
+      engine.selectRenderState().elements,
+      "locale-ja-JP",
+    );
+    engine.handleActions(japaneseOption.click.payload.actions);
+
+    expect(engine.selectRuntime().localizationPackageId).toBe("japanese");
+    expect(
+      findElementById(engine.selectRenderState().elements, "dialogue-body"),
+    ).toMatchObject({
+      content: "こんにちは。",
+    });
+    expect(
+      findElementById(engine.selectRenderState().elements, "selected-locale")
+        .content,
+    ).toBe("japanese");
+    expect(effects).toContainEqual({
+      name: "saveGlobalRuntime",
+      payload: {
+        globalRuntime: expect.objectContaining({
+          localizationPackageId: "japanese",
+        }),
+      },
+    });
+    expect(effects).toContainEqual({ name: "clearAutoNextTimer" });
+    expect(effects).toContainEqual({ name: "render" });
+
+    effects.length = 0;
+    const sourceOption = findElementById(
+      engine.selectRenderState().elements,
+      "locale-en-US",
+    );
+    engine.handleActions(sourceOption.click.payload.actions);
+
+    expect(engine.selectRuntime().localizationPackageId).toBeNull();
+    expect(
+      findElementById(engine.selectRenderState().elements, "dialogue-body"),
+    ).toMatchObject({
+      content: "Hello.",
+    });
+    expect(effects).toContainEqual({
+      name: "saveGlobalRuntime",
+      payload: {
+        globalRuntime: expect.objectContaining({
+          localizationPackageId: null,
+        }),
+      },
+    });
+  });
+
+  it("rejects unavailable runtime package selections without changing state", () => {
+    const engine = createEngine();
+    engine.init({
+      initialState: {
+        projectData: createProjectData(),
+        l10nData: {
+          packages: {
+            japanese: createJapanesePackage(),
+          },
+        },
+      },
+    });
+
+    expect(() =>
+      engine.handleActions({
+        updateLocalizationPackage: {
+          l10nId: "missing",
+        },
+      }),
+    ).toThrow(/package "missing" was not imported/);
+    expect(engine.selectRuntime().localizationPackageId).toBeNull();
+    expect(
+      findElementById(engine.selectRenderState().elements, "dialogue-body"),
+    ).toMatchObject({
+      content: "Hello.",
+    });
+  });
+
+  it("reschedules active auto mode from the localized dialogue length", () => {
+    const effects = [];
+    const engine = createEngine({
+      onEffect: (effect) => effects.push(structuredClone(effect)),
+    });
+    engine.init({
+      initialState: {
+        projectData: createProjectData({
+          dialogueText:
+            "This canonical source sentence intentionally takes longer to read.",
+        }),
+        l10nData: {
+          packages: {
+            japanese: createPackage({
+              patches: [
+                {
+                  type: "line.dialogue",
+                  lineId: "greeting",
+                  payload: {
+                    content: [{ text: "短い。" }],
+                  },
+                },
+              ],
+            }),
+          },
+        },
+      },
+    });
+
+    engine.handleActions({
+      startAutoMode: {},
+      markLineCompleted: {},
+    });
+    const canonicalDelay = effects.find(
+      (effect) => effect.name === "startAutoNextTimer",
+    ).payload.delay;
+
+    effects.length = 0;
+    engine.handleActions({
+      updateLocalizationPackage: {
+        l10nId: "japanese",
+      },
+    });
+    const localizedDelay = effects.find(
+      (effect) => effect.name === "startAutoNextTimer",
+    ).payload.delay;
+
+    expect(effects.map(({ name }) => name).slice(-3)).toEqual([
+      "clearAutoNextTimer",
+      "startAutoNextTimer",
+      "render",
+    ]);
+    expect(localizedDelay).toBeLessThan(canonicalDelay);
+  });
+
+  it("does not replay gameplay actions while switching presentation data", () => {
+    const projectData = createProjectData();
+    projectData.resources.variables.score = {
+      type: "number",
+      scope: "context",
+      default: 0,
+    };
+    projectData.story.scenes[
+      "chapter-one"
+    ].sections.introduction.lines[0].actions.updateVariable = {
+      id: "incrementScoreOnEntry",
+      operations: [
+        {
+          variableId: "score",
+          op: "increment",
+          value: 1,
+        },
+      ],
+    };
+    const engine = createEngine();
+
+    engine.init({
+      initialState: {
+        projectData,
+        l10nData: {
+          packages: {
+            japanese: createPackage({
+              patches: [
+                {
+                  type: "line.dialogue",
+                  lineId: "greeting",
+                  payload: {
+                    content: [{ text: "こんにちは。" }],
+                  },
+                },
+              ],
+            }),
+          },
+        },
+      },
+    });
+    expect(engine.selectSystemState().contexts.at(-1).variables.score).toBe(1);
+
+    engine.handleActions({
+      updateLocalizationPackage: {
+        l10nId: "japanese",
+      },
+    });
+
+    expect(engine.selectSystemState().contexts.at(-1).variables.score).toBe(1);
   });
 
   it("preserves canonical dialogue content during dialogue action replacement", () => {
@@ -304,7 +587,11 @@ describe("RouteEngine L10n initialization", () => {
               ],
             }),
           },
-          activeL10nId: "japanese",
+        },
+        global: {
+          runtime: {
+            localizationPackageId: "japanese",
+          },
         },
       },
     });
@@ -346,7 +633,11 @@ describe("RouteEngine L10n initialization", () => {
               fallbackLocales: ["fr-FR", "en-US"],
             }),
           },
-          activeL10nId: "canadianFrench",
+        },
+        global: {
+          runtime: {
+            localizationPackageId: "canadianFrench",
+          },
         },
       },
     });
@@ -358,7 +649,7 @@ describe("RouteEngine L10n initialization", () => {
     });
   });
 
-  it("reapplies the active package when projectData is replaced", () => {
+  it("reapplies the selected package when projectData is replaced", () => {
     const engine = createEngine();
     const packageData = createPackage({
       patches: [
@@ -379,7 +670,11 @@ describe("RouteEngine L10n initialization", () => {
           packages: {
             japanese: packageData,
           },
-          activeL10nId: "japanese",
+        },
+        global: {
+          runtime: {
+            localizationPackageId: "japanese",
+          },
         },
       },
     });
@@ -401,9 +696,45 @@ describe("RouteEngine L10n initialization", () => {
     expect(
       engine.selectSystemState().projectData.story.scenes["chapter-one"].name,
     ).toBe("Updated Chapter");
+
+    engine.handleActions({
+      updateLocalizationPackage: {
+        l10nId: null,
+      },
+    });
+    expect(
+      findElementById(engine.selectRenderState().elements, "dialogue-body"),
+    ).toMatchObject({
+      content: "Updated source.",
+    });
   });
 
-  it("rejects an active package that was not imported", () => {
+  it("falls back to the canonical project when a persisted package is unavailable", () => {
+    const engine = createEngine();
+
+    engine.init({
+      initialState: {
+        projectData: createProjectData(),
+        l10nData: {
+          packages: {},
+        },
+        global: {
+          runtime: {
+            localizationPackageId: "japanese",
+          },
+        },
+      },
+    });
+
+    expect(engine.selectRuntime().localizationPackageId).toBeNull();
+    expect(
+      findElementById(engine.selectRenderState().elements, "dialogue-body"),
+    ).toMatchObject({
+      content: "Hello.",
+    });
+  });
+
+  it("rejects malformed persisted localization package IDs", () => {
     const engine = createEngine();
 
     expect(() =>
@@ -411,12 +742,18 @@ describe("RouteEngine L10n initialization", () => {
         initialState: {
           projectData: createProjectData(),
           l10nData: {
-            packages: {},
-            activeL10nId: "japanese",
+            packages: {
+              japanese: createJapanesePackage(),
+            },
+          },
+          global: {
+            runtime: {
+              localizationPackageId: 1,
+            },
           },
         },
       }),
-    ).toThrow(/package "japanese" was not imported/);
+    ).toThrow(/localizationPackageId requires a string or null value/);
   });
 
   it("rejects undeclared locale files", () => {
@@ -442,7 +779,6 @@ describe("RouteEngine L10n initialization", () => {
                 ],
               }),
             },
-            activeL10nId: "japanese",
           },
         },
       }),
@@ -484,7 +820,6 @@ describe("RouteEngine L10n initialization", () => {
                 ],
               }),
             },
-            activeL10nId: "japanese",
           },
         },
       }),
@@ -515,7 +850,6 @@ describe("RouteEngine L10n initialization", () => {
                 ],
               }),
             },
-            activeL10nId: "japanese",
           },
         },
       }),
@@ -576,7 +910,6 @@ describe("RouteEngine L10n initialization", () => {
                 ],
               }),
             },
-            activeL10nId: "japanese",
           },
         },
       }),
@@ -609,7 +942,6 @@ describe("RouteEngine L10n initialization", () => {
                 ],
               }),
             },
-            activeL10nId: "japanese",
           },
         },
       }),
@@ -640,7 +972,6 @@ describe("RouteEngine L10n initialization", () => {
                 ],
               }),
             },
-            activeL10nId: "japanese",
           },
         },
       }),

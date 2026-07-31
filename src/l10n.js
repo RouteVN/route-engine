@@ -768,23 +768,15 @@ const validatePackage = ({
 const validateL10nData = ({ projectData, l10nData }) => {
   if (l10nData === undefined) {
     return {
-      activeL10nId: null,
       packages: new Map(),
+      sourceLocale: null,
     };
   }
 
   assertRecord(l10nData, "l10nData");
-  assertAllowedKeys(
-    l10nData,
-    new Set(["activeL10nId", "packages"]),
-    "l10nData",
-  );
+  assertAllowedKeys(l10nData, new Set(["packages"]), "l10nData");
   assertRequiredKeys(l10nData, ["packages"], "l10nData");
   assertRecord(l10nData.packages, "l10nData.packages");
-
-  if (l10nData.activeL10nId !== undefined && l10nData.activeL10nId !== null) {
-    assertSafeMapId(l10nData.activeL10nId, "l10nData.activeL10nId");
-  }
 
   const lineIndex = createLineIndex(projectData);
   const canonicalFileIds = collectFileIds(projectData?.resources ?? {});
@@ -832,19 +824,14 @@ const validateL10nData = ({ projectData, l10nData }) => {
     packages.set(packageId, validatedPackage);
   }
 
-  const activeL10nId = l10nData.activeL10nId ?? null;
-  if (activeL10nId !== null && !packages.has(activeL10nId)) {
-    fail("l10nData.activeL10nId", `package "${activeL10nId}" was not imported`);
-  }
-
   return {
-    activeL10nId,
     packages,
+    sourceLocale: sourceLocale ?? null,
   };
 };
 
-const resolvePackagePriority = ({ activeL10nId, packages }) => {
-  if (activeL10nId === null) {
+const resolvePackagePriority = ({ l10nId, packages }) => {
+  if (l10nId === null) {
     return [];
   }
 
@@ -894,7 +881,7 @@ const resolvePackagePriority = ({ activeL10nId, packages }) => {
     visiting.delete(packageId);
   };
 
-  visit(activeL10nId);
+  visit(l10nId);
   return priority;
 };
 
@@ -947,18 +934,56 @@ const applyLineDialoguePatch = (projectData, validatedPatch) => {
 };
 
 /**
- * Validates optional L10n input and materializes the active read-only overlay.
- * The supplied canonical project and L10n data are never mutated.
+ * Returns layout-facing descriptors for the canonical project and every
+ * imported L10n package.
  */
-export const resolveL10nProjectData = ({ projectData, l10nData }) => {
+export const getLocalizationPackageOptions = ({ projectData, l10nData }) => {
   const validatedL10nData = validateL10nData({ projectData, l10nData });
   for (const packageId of validatedL10nData.packages.keys()) {
     resolvePackagePriority({
-      activeL10nId: packageId,
+      l10nId: packageId,
       packages: validatedL10nData.packages,
     });
   }
-  const packagePriority = resolvePackagePriority(validatedL10nData);
+
+  return [
+    {
+      l10nId: null,
+      locale: validatedL10nData.sourceLocale,
+    },
+    ...Array.from(validatedL10nData.packages.values(), (packageEntry) => ({
+      l10nId: packageEntry.id,
+      locale: packageEntry.data.locale,
+    })),
+  ];
+};
+
+/**
+ * Validates optional L10n input and materializes the selected read-only overlay.
+ * The supplied canonical project and L10n data are never mutated.
+ */
+export const resolveL10nProjectData = ({
+  projectData,
+  l10nData,
+  l10nId = null,
+}) => {
+  const validatedL10nData = validateL10nData({ projectData, l10nData });
+  if (l10nId !== null) {
+    assertSafeMapId(l10nId, "l10nId");
+    if (!validatedL10nData.packages.has(l10nId)) {
+      fail("l10nId", `package "${l10nId}" was not imported`);
+    }
+  }
+  for (const packageId of validatedL10nData.packages.keys()) {
+    resolvePackagePriority({
+      l10nId: packageId,
+      packages: validatedL10nData.packages,
+    });
+  }
+  const packagePriority = resolvePackagePriority({
+    l10nId,
+    packages: validatedL10nData.packages,
+  });
   if (packagePriority.length === 0) {
     return projectData;
   }

@@ -114,6 +114,8 @@ properties:
                               $ref: "../systemActions.yaml#/properties/setSkipUnseenText"
                             setSkipTransitionsAndAnimations:
                               $ref: "../systemActions.yaml#/properties/setSkipTransitionsAndAnimations"
+                            updateLocalizationPackage:
+                              $ref: "../systemActions.yaml#/properties/updateLocalizationPackage"
                             setSoundVolume:
                               $ref: "../systemActions.yaml#/properties/setSoundVolume"
                             setMusicVolume:
