@@ -367,6 +367,44 @@ describe("RouteEngine scene replay catalog", () => {
     expect(effects).toEqual([]);
   });
 
+  it("does not unlock the current scene while replaying an earlier finish marker during rollback", () => {
+    const { effects, engine } = createEngine({
+      accountReplayRegistry: { sceneIds: ["firstMeeting"] },
+    });
+    engine.handleActions({
+      sectionTransition: { sectionId: "replayStart" },
+    });
+    engine.handleAction("markLineCompleted", {});
+    engine.handleActions({ nextLine: {} });
+    engine.handleActions({
+      sectionTransition: { sectionId: "secondMemoryStart" },
+    });
+    expect(selectCurrentContext(engine).pointers.read).toMatchObject({
+      sectionId: "secondMemoryStart",
+      lineId: "secondMemory1",
+    });
+    expect(engine.selectSceneReplay().pageReplays[1]).toMatchObject({
+      sceneId: "secondMemory",
+      locked: true,
+    });
+    effects.length = 0;
+
+    engine.handleActions({
+      rollbackToLine: { sectionId: "replayStart", lineId: "replay2" },
+    });
+
+    expect(selectCurrentContext(engine).pointers.read).toMatchObject({
+      sectionId: "replayStart",
+      lineId: "replay2",
+    });
+    expect(engine.selectSystemState().global.accountReplayRegistry).toEqual({
+      sceneIds: ["firstMeeting"],
+    });
+    expect(
+      effects.some((effect) => effect.name === "applyScopedDataUpdates"),
+    ).toBe(false);
+  });
+
   it("starts from fresh defaults plus cloned initial overrides", () => {
     const { engine } = createEngine();
     engine.handleActions({

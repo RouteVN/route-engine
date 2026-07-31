@@ -4516,6 +4516,11 @@ export const finishSceneReplay = ({ state }, payload) => {
     return state;
   }
 
+  const currentContext = getCurrentContext(state);
+  if (currentContext?.rollback?.isRestoring === true) {
+    return state;
+  }
+
   const pointer = selectCurrentPointer({ state })?.pointer;
   const { sceneId } = findSectionInProjectData(
     state.projectData,
