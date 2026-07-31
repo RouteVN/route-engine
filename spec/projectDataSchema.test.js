@@ -2755,10 +2755,9 @@ describe("projectData schema", () => {
           pageSize: 4,
           replays: [
             {
-              id: "memory",
+              sceneId: "scene1",
               title: "Memory",
               thumbnailImageId: "memory",
-              startSectionId: "section1",
               initialVariables: {
                 routeName: "replay",
               },
@@ -2768,7 +2767,7 @@ describe("projectData schema", () => {
       },
     });
     projectData.story.scenes.scene1.sections.section1.lines[0].actions = {
-      startSceneReplay: { replayId: "memory" },
+      startSceneReplay: { sceneId: "scene1" },
       finishSceneReplay: {},
       exitSceneReplay: {},
       moveToSceneReplayPage: { pageIndex: 0 },
@@ -2789,10 +2788,9 @@ describe("projectData schema", () => {
         pageSize: 1,
         replays: [
           {
-            id: "",
+            sceneId: "",
             title: "Memory",
             thumbnailImageId: "memory",
-            startSectionId: "section1",
           },
         ],
       },
@@ -2803,10 +2801,9 @@ describe("projectData schema", () => {
         pageSize: 1,
         replays: [
           {
-            id: "memory",
+            sceneId: "scene1",
             title: "Memory",
             thumbnailImageId: "memory",
-            startSectionId: "section1",
             layoutId: "forbidden",
           },
         ],
@@ -2823,7 +2820,7 @@ describe("projectData schema", () => {
   it("accepts templated replay action values and rejects malformed payloads", () => {
     expect(
       validateSystemActions({
-        startSceneReplay: { replayId: "${variables.replayId}" },
+        startSceneReplay: { sceneId: "${variables.sceneId}" },
         finishSceneReplay: {},
         exitSceneReplay: {},
         moveToSceneReplayPage: { pageIndex: "_event.pageIndex" },
@@ -2835,7 +2832,7 @@ describe("projectData schema", () => {
 
     for (const actions of [
       { startSceneReplay: {} },
-      { startSceneReplay: { replayId: "" } },
+      { startSceneReplay: { sceneId: "" } },
       { moveToSceneReplayPage: { pageIndex: -1 } },
       { moveToNextSceneReplayPage: { unknown: true } },
       { finishSceneReplay: { unknown: true } },

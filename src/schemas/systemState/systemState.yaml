@@ -47,6 +47,19 @@ defs:
     required: [sections, resources]
     additionalProperties: false
 
+  accountReplayRegistry:
+    type: object
+    description: Account-persisted set of scenes unlocked for replay
+    properties:
+      sceneIds:
+        type: array
+        uniqueItems: true
+        items:
+          type: string
+          minLength: 1
+    required: [sceneIds]
+    additionalProperties: false
+
   rollbackCheckpoint:
     type: object
     properties:
@@ -344,7 +357,7 @@ defs:
   sceneReplayContext:
     type: object
     properties:
-      replayId:
+      sceneId:
         type: string
         minLength: 1
       entryId:
@@ -358,7 +371,7 @@ defs:
       returnState:
         $ref: "#/defs/sceneReplayReturnState"
     required:
-      [replayId, entryId, finishOnNextAdvance, exitOnLineCompleted, returnState]
+      [sceneId, entryId, finishOnNextAdvance, exitOnLineCompleted, returnState]
     additionalProperties: false
 
   contextState:
@@ -533,6 +546,8 @@ properties:
         $ref: "#/defs/nextLineConfig"
       accountViewedRegistry:
         $ref: "#/defs/accountViewedRegistry"
+      accountReplayRegistry:
+        $ref: "#/defs/accountReplayRegistry"
       imageGalleryNavigation:
         type: object
         description: Transient navigation state for the singleton image gallery
@@ -615,6 +630,7 @@ properties:
         skipMode,
         nextLineConfig,
         accountViewedRegistry,
+        accountReplayRegistry,
         imageGalleryNavigation,
         sceneReplayNavigation,
         sceneReplayEntryId,

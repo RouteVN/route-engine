@@ -942,7 +942,7 @@ export default function createRouteEngine(options) {
   };
 
   const maskDeclaredSceneReplayId = (payload) => {
-    if (!isRecord(payload) || typeof payload.replayId !== "string") {
+    if (!isRecord(payload) || typeof payload.sceneId !== "string") {
       return {
         templatePayload: payload,
         literalTargetIds: null,
@@ -950,7 +950,7 @@ export default function createRouteEngine(options) {
     }
     const sceneReplay = _systemStore.selectSceneReplayConfig();
     const hasDeclaredReplay = sceneReplay?.replays?.some(
-      (replay) => replay.id === payload.replayId,
+      (replay) => replay.sceneId === payload.sceneId,
     );
     if (!hasDeclaredReplay) {
       return {
@@ -961,10 +961,10 @@ export default function createRouteEngine(options) {
     return {
       templatePayload: {
         ...payload,
-        replayId: null,
+        sceneId: null,
       },
       literalTargetIds: {
-        replayId: payload.replayId,
+        sceneId: payload.sceneId,
       },
     };
   };
@@ -1157,10 +1157,10 @@ export default function createRouteEngine(options) {
   };
 
   const handleLineActions = (payload) => {
-    if (typeof payload?.sceneReplayId === "string") {
+    if (typeof payload?.sceneReplaySceneId === "string") {
       const activeEntry = _systemStore.selectActiveSceneReplayEntry?.();
       if (
-        activeEntry?.replayId !== payload.sceneReplayId ||
+        activeEntry?.sceneId !== payload.sceneReplaySceneId ||
         activeEntry?.entryId !== payload.entryId
       ) {
         return false;

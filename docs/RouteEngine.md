@@ -696,18 +696,20 @@ semantics are documented in [MusicBox.md](./MusicBox.md).
 
 ### Scene Replay Actions
 
-| Action                          | Payload         | Description                                |
-| ------------------------------- | --------------- | ------------------------------------------ |
-| `startSceneReplay`              | `{ replayId }`  | Start a replay in a fresh isolated context |
-| `finishSceneReplay`             | `{}`            | Exit on the next eligible advance          |
-| `exitSceneReplay`               | `{}`            | Exit immediately and restore the caller    |
-| `moveToSceneReplayPage`         | `{ pageIndex }` | Browse a zero-based replay page            |
-| `moveToNextSceneReplayPage`     | `{}`            | Browse the next page without wrapping      |
-| `moveToPreviousSceneReplayPage` | `{}`            | Browse the previous page without wrapping  |
+| Action                          | Payload         | Description                                 |
+| ------------------------------- | --------------- | ------------------------------------------- |
+| `startSceneReplay`              | `{ sceneId }`   | Start an unlocked scene in a fresh context  |
+| `finishSceneReplay`             | `{}`            | Unlock normally, or finish an active replay |
+| `exitSceneReplay`               | `{}`            | Exit immediately and restore the caller     |
+| `moveToSceneReplayPage`         | `{ pageIndex }` | Browse a zero-based replay page             |
+| `moveToNextSceneReplayPage`     | `{}`            | Browse the next page without wrapping       |
+| `moveToPreviousSceneReplayPage` | `{}`            | Browse the previous page without wrapping   |
 
 The optional singleton `resources.sceneReplay` has no layout association.
-Layouts consume the computed `sceneReplay` template root. Replays use a fresh
-context, suppress persistent progress, and restore the caller when they end.
+Layouts consume the computed `sceneReplay` template root, including each
+entry's `locked` flag. Normal-story finish markers persist scene unlocks at
+account scope. Replays use a fresh context, suppress persistent progress, and
+restore the caller when they end.
 See [ReplayScene.md](./ReplayScene.md) for the full contract.
 
 ### Achievement Actions

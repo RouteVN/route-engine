@@ -91,7 +91,7 @@ const PLAY_MUSIC_ROOM_TRACK_KEYS = new Set(["trackId"]);
 const SEEK_MUSIC_ROOM_KEYS = new Set(["positionMs"]);
 const MOVE_TO_MUSIC_ROOM_PAGE_KEYS = new Set(["pageIndex"]);
 const EMPTY_SCENE_REPLAY_ACTION_KEYS = new Set();
-const START_SCENE_REPLAY_KEYS = new Set(["replayId"]);
+const START_SCENE_REPLAY_KEYS = new Set(["sceneId"]);
 const MOVE_TO_SCENE_REPLAY_PAGE_KEYS = new Set(["pageIndex"]);
 
 const createDefaultSceneReplayNavigation = () => ({
@@ -201,6 +201,10 @@ const createDefaultViewedRegistry = () => ({
   resources: [],
 });
 
+const createDefaultReplayRegistry = () => ({
+  sceneIds: [],
+});
+
 const ensureViewedRegistryShape = (registry) => {
   if (!isRecord(registry)) {
     return createDefaultViewedRegistry();
@@ -213,6 +217,16 @@ const ensureViewedRegistryShape = (registry) => {
     registry.resources = [];
   }
 
+  return registry;
+};
+
+const ensureReplayRegistryShape = (registry) => {
+  if (!isRecord(registry)) {
+    return createDefaultReplayRegistry();
+  }
+  if (!Array.isArray(registry.sceneIds)) {
+    registry.sceneIds = [];
+  }
   return registry;
 };
 
@@ -513,6 +527,38 @@ const normalizeLoadedViewedRegistry = (
         }),
       ),
     ),
+  };
+};
+
+const normalizeLoadedReplayRegistry = (
+  registryValue,
+  path = "accountReplayRegistry",
+) => {
+  if (registryValue === undefined) {
+    return createDefaultReplayRegistry();
+  }
+  if (!isRecord(registryValue)) {
+    throw new Error(`Malformed ${path}.`);
+  }
+  if (
+    registryValue.sceneIds !== undefined &&
+    !Array.isArray(registryValue.sceneIds)
+  ) {
+    throw new Error(`Malformed ${path}.sceneIds.`);
+  }
+
+  const sceneIds = registryValue.sceneIds ?? [];
+  return {
+    sceneIds: [
+      ...new Set(
+        sceneIds.map((sceneId, index) => {
+          if (typeof sceneId !== "string" || sceneId.length === 0) {
+            throw new Error(`Malformed ${path}.sceneIds[${index}] entry.`);
+          }
+          return sceneId;
+        }),
+      ),
+    ],
   };
 };
 
@@ -1351,9 +1397,9 @@ const getActiveSceneReplayContext = (state) => {
 };
 
 const applySceneReplayInitialVariables = (state, context) => {
-  const replayId = context?.sceneReplay?.replayId;
+  const sceneId = context?.sceneReplay?.sceneId;
   const replay = state.projectData?.resources?.sceneReplay?.replays?.find(
-    (candidate) => candidate.id === replayId,
+    (candidate) => candidate.sceneId === sceneId,
   );
   Object.entries(replay?.initialVariables ?? {}).forEach(
     ([variableId, value]) => {
@@ -2042,6 +2088,7 @@ export const createInitialState = (payload) => {
     variables: loadedGlobalVariables = {},
     runtime: loadedGlobalRuntime = {},
     accountViewedRegistry: loadedAccountViewedRegistry = {},
+    accountReplayRegistry: loadedAccountReplayRegistry = {},
     localizationPackages = [{ l10nId: null, language: null }],
   } = global;
 
@@ -2084,6 +2131,9 @@ export const createInitialState = (payload) => {
       accountViewedRegistry: normalizeLoadedViewedRegistry(
         loadedAccountViewedRegistry,
         "accountViewedRegistry",
+      ),
+      accountReplayRegistry: normalizeLoadedReplayRegistry(
+        loadedAccountReplayRegistry,
       ),
       nextLineConfig: createDefaultNextLineConfig(),
       imageGalleryNavigation: createDefaultImageGalleryNavigation(),
@@ -2620,10 +2670,13 @@ export const selectActiveSceneReplayEntry = ({ state }) => {
     return null;
   }
   return {
-    replayId: activeContext.sceneReplay.replayId,
+    sceneId: activeContext.sceneReplay.sceneId,
     entryId: activeContext.sceneReplay.entryId,
   };
 };
+
+const isSceneReplayUnlocked = (state, sceneId) =>
+  state.global.accountReplayRegistry?.sceneIds?.includes(sceneId) === true;
 
 export const selectSceneReplay = ({ state }) => {
   const sceneReplay = state.projectData?.resources?.sceneReplay;
@@ -2639,15 +2692,16 @@ export const selectSceneReplay = ({ state }) => {
   const pageReplays = sceneReplay.replays
     .slice(pageStart, pageStart + sceneReplay.pageSize)
     .map((replay) => ({
-      replayId: replay.id,
+      sceneId: replay.sceneId,
       title: replay.title,
       thumbnailImageId: replay.thumbnailImageId,
+      locked: !isSceneReplayUnlocked(state, replay.sceneId),
     }));
   const activeContext = getActiveSceneReplayContext(state);
 
   return {
     isActive: activeContext !== null,
-    activeReplayId: activeContext?.sceneReplay.replayId ?? null,
+    activeSceneId: activeContext?.sceneReplay.sceneId ?? null,
     pageReplays,
     pagination: {
       pageIndex,
@@ -3236,11 +3290,11 @@ const queueEnteredLineEffects = (state, pointer, { screenTransition } = {}) => {
   const handleLineActionsEffect = {
     name: "handleLineActions",
   };
-  if (typeof activeSceneReplayContext?.sceneReplay?.replayId === "string") {
+  if (typeof activeSceneReplayContext?.sceneReplay?.sceneId === "string") {
     const entryId = nextSceneReplayEntryId(state);
     activeSceneReplayContext.sceneReplay.entryId = entryId;
     handleLineActionsEffect.payload = {
-      sceneReplayId: activeSceneReplayContext.sceneReplay.replayId,
+      sceneReplaySceneId: activeSceneReplayContext.sceneReplay.sceneId,
       entryId,
     };
   }
@@ -4380,11 +4434,11 @@ const exitActiveSceneReplay = (state) => {
   }
 
   const returnState = cloneStateValue(activeContext.sceneReplay.returnState);
-  const replayId = activeContext.sceneReplay.replayId;
+  const sceneId = activeContext.sceneReplay.sceneId;
   state.global.pendingEffects = state.global.pendingEffects.filter(
     (effect) =>
       effect?.name !== "handleLineActions" ||
-      effect?.payload?.sceneReplayId !== replayId,
+      effect?.payload?.sceneReplaySceneId !== sceneId,
   );
   state.contexts.pop();
   restoreSceneReplayReturnState(state, returnState);
@@ -4395,7 +4449,7 @@ const exitActiveSceneReplay = (state) => {
 export const startSceneReplay = ({ state }, payload) => {
   const actionName = "startSceneReplay";
   assertImageGalleryActionPayload(actionName, payload, START_SCENE_REPLAY_KEYS);
-  assertNonEmptyImageGalleryActionId(actionName, "replayId", payload.replayId);
+  assertNonEmptyImageGalleryActionId(actionName, "sceneId", payload.sceneId);
 
   if (getActiveSceneReplayContext(state)) {
     throw new Error(
@@ -4405,37 +4459,38 @@ export const startSceneReplay = ({ state }, payload) => {
 
   const sceneReplay = state.projectData?.resources?.sceneReplay;
   const replay = sceneReplay?.replays.find(
-    (candidate) => candidate.id === payload.replayId,
+    (candidate) => candidate.sceneId === payload.sceneId,
   );
-  if (!replay) {
+  if (!replay || !isSceneReplayUnlocked(state, replay.sceneId)) {
     return state;
   }
 
-  const { sceneId, section } = findSectionInProjectData(
-    state.projectData,
-    replay.startSectionId,
-  );
+  const scene = state.projectData.story.scenes[replay.sceneId];
+  const sectionId = scene?.initialSectionId;
+  const section = scene?.sections?.[sectionId];
   const initialLineId = section?.initialLineId ?? section?.lines?.[0]?.id;
   if (
     !section ||
     !initialLineId ||
     !section.lines.some((line) => line.id === initialLineId)
   ) {
-    throw new Error(`Scene replay "${replay.id}" has an invalid start section`);
+    throw new Error(
+      `Scene replay scene "${replay.sceneId}" has an invalid initial section`,
+    );
   }
 
   const returnState = captureSceneReplayReturnState(state);
   prepareSceneReplayTransientState(state);
   const context = createDefaultContextState({
     pointer: {
-      sceneId,
-      sectionId: replay.startSectionId,
+      sceneId: replay.sceneId,
+      sectionId,
       lineId: initialLineId,
     },
     projectData: state.projectData,
     kind: "sceneReplay",
     sceneReplay: {
-      replayId: replay.id,
+      sceneId: replay.sceneId,
       entryId: 0,
       finishOnNextAdvance: false,
       exitOnLineCompleted: false,
@@ -4456,10 +4511,47 @@ export const finishSceneReplay = ({ state }, payload) => {
     EMPTY_SCENE_REPLAY_ACTION_KEYS,
   );
   const activeContext = getActiveSceneReplayContext(state);
-  if (!activeContext) {
+  if (activeContext) {
+    activeContext.sceneReplay.finishOnNextAdvance = true;
     return state;
   }
-  activeContext.sceneReplay.finishOnNextAdvance = true;
+
+  const currentContext = getCurrentContext(state);
+  if (currentContext?.rollback?.isRestoring === true) {
+    return state;
+  }
+
+  const pointer = selectCurrentPointer({ state })?.pointer;
+  const { sceneId } = findSectionInProjectData(
+    state.projectData,
+    pointer?.sectionId,
+  );
+  const isDeclaredReplay =
+    typeof sceneId === "string" &&
+    state.projectData?.resources?.sceneReplay?.replays?.some(
+      (replay) => replay.sceneId === sceneId,
+    );
+  if (!isDeclaredReplay) {
+    return state;
+  }
+
+  state.global.accountReplayRegistry = ensureReplayRegistryShape(
+    state.global.accountReplayRegistry,
+  );
+  if (state.global.accountReplayRegistry.sceneIds.includes(sceneId)) {
+    return state;
+  }
+
+  state.global.accountReplayRegistry.sceneIds.push(sceneId);
+  queueScopedDataPersistence(state, [
+    {
+      scope: "account",
+      path: "replayRegistry",
+      op: "unlock",
+      value: { sceneIds: [sceneId] },
+    },
+  ]);
+  state.global.pendingEffects.push({ name: "render" });
   return state;
 };
 

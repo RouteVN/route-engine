@@ -284,6 +284,7 @@ describe("indexedDbPersistence", () => {
         sections: [{ sectionId: "prologue", lastLineId: "line2" }],
         resources: [],
       },
+      accountReplayRegistry: {},
     });
 
     expect(await betaPersistence.load()).toEqual({
@@ -292,6 +293,7 @@ describe("indexedDbPersistence", () => {
       globalAccountVariables: {},
       globalRuntime: {},
       accountViewedRegistry: {},
+      accountReplayRegistry: {},
     });
   });
 
@@ -375,6 +377,85 @@ describe("indexedDbPersistence", () => {
     });
   });
 
+  it("merges account replay unlocks as a monotonic scene-ID set", async () => {
+    const persistence = createIndexedDbPersistence({
+      indexedDB: createFakeIndexedDB(),
+      namespace: "replay-unlocks-vn",
+    });
+
+    await persistence.applyScopedDataUpdates([
+      {
+        scope: "account",
+        path: "replayRegistry",
+        op: "unlock",
+        value: { sceneIds: ["firstEnding", "firstEnding"] },
+      },
+    ]);
+    await persistence.applyScopedDataUpdates([
+      {
+        scope: "account",
+        path: "replayRegistry",
+        op: "unlock",
+        value: { sceneIds: ["secondEnding", "firstEnding"] },
+      },
+    ]);
+
+    expect((await persistence.load()).accountReplayRegistry).toEqual({
+      sceneIds: ["firstEnding", "secondEnding"],
+    });
+  });
+
+  it.each([
+    [
+      "device scope",
+      {
+        scope: "device",
+        path: "replayRegistry",
+        op: "unlock",
+        value: { sceneIds: ["firstEnding"] },
+      },
+    ],
+    [
+      "unsupported operation",
+      {
+        scope: "account",
+        path: "replayRegistry",
+        op: "set",
+        value: { sceneIds: ["firstEnding"] },
+      },
+    ],
+    [
+      "empty scene list",
+      {
+        scope: "account",
+        path: "replayRegistry",
+        op: "unlock",
+        value: { sceneIds: [] },
+      },
+    ],
+    [
+      "invalid scene ID",
+      {
+        scope: "account",
+        path: "replayRegistry",
+        op: "unlock",
+        value: { sceneIds: [""] },
+      },
+    ],
+  ])(
+    "rejects malformed replay unlock updates with %s",
+    async (_label, update) => {
+      const persistence = createIndexedDbPersistence({
+        indexedDB: createFakeIndexedDB(),
+        namespace: `invalid-replay-unlock-${_label}`,
+      });
+
+      await expect(
+        persistence.applyScopedDataUpdates([update]),
+      ).rejects.toThrow();
+    },
+  );
+
   it("clears persisted data for a single namespace", async () => {
     const indexedDB = createFakeIndexedDB();
     const alphaPersistence = createIndexedDbPersistence({
@@ -404,6 +485,7 @@ describe("indexedDbPersistence", () => {
       globalAccountVariables: {},
       globalRuntime: {},
       accountViewedRegistry: {},
+      accountReplayRegistry: {},
     });
 
     expect(await betaPersistence.load()).toEqual({
@@ -414,6 +496,7 @@ describe("indexedDbPersistence", () => {
       },
       globalRuntime: {},
       accountViewedRegistry: {},
+      accountReplayRegistry: {},
     });
   });
 
@@ -493,6 +576,14 @@ describe("indexedDbPersistence", () => {
                 resources: [{ resourceId: "cg-1" }],
               },
             },
+            {
+              scope: "account",
+              path: "replayRegistry",
+              op: "unlock",
+              value: {
+                sceneIds: ["firstEnding"],
+              },
+            },
           ],
         },
       },
@@ -523,6 +614,9 @@ describe("indexedDbPersistence", () => {
           { sectionId: "branch", lastLineId: "line1" },
         ],
         resources: [{ resourceId: "cg-1" }],
+      },
+      accountReplayRegistry: {
+        sceneIds: ["firstEnding"],
       },
     });
   });

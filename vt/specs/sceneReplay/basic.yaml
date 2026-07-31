@@ -1,11 +1,11 @@
 ---
-title: Scene Replay Lifecycle
-description: Starts a replay through a catalog click, advances through its terminal line, and restores the caller.
+title: Scene Replay Unlock And Lifecycle
+description: A normal-story finish marker unlocks its scene, which can then be replayed and exited through the rendered catalog.
 specs:
-  - catalog data is rendered from the sceneReplay projection
+  - normal-story finishSceneReplay unlocks the current catalog scene
+  - catalog data exposes the unlocked scene and current activity
   - startSceneReplay enters a fresh context with initial variables
-  - finishSceneReplay keeps the terminal line visible until the next advance
-  - the terminal advance restores the caller layout and variables
+  - the replay finish marker exits on advance and restores caller variables
 skipInitialScreenshot: true
 viewport:
   id: capture
@@ -26,7 +26,6 @@ steps:
     y: 410
   - action: wait
     ms: 150
-  - action: screenshot
   - action: click
     x: 480
     y: 410
@@ -51,10 +50,9 @@ resources:
   sceneReplay:
     pageSize: 4
     replays:
-      - id: firstMeeting
+      - sceneId: main
         title: First Meeting
         thumbnailImageId: memoryThumbnail
-        startSectionId: replay
         initialVariables:
           replayValue: isolated replay
   layouts:
@@ -76,10 +74,10 @@ resources:
           type: container
           children:
             - $for replay in sceneReplay.pageReplays:
-                - id: replay-item-${replay.replayId}
+                - id: replay-item-${replay.sceneId}
                   type: container
                   children:
-                    - id: replay-${replay.replayId}
+                    - id: replay-${replay.sceneId}
                       type: rect
                       x: 560
                       y: 380
@@ -90,85 +88,46 @@ resources:
                         payload:
                           actions:
                             startSceneReplay:
-                              replayId: "${replay.replayId}"
-                    - id: replay-label-${replay.replayId}
+                              sceneId: "${replay.sceneId}"
+                    - id: replay-label-${replay.sceneId}
                       type: text
                       content: "Play: ${replay.title}"
                       x: 960
                       y: 495
                       anchorX: 0.5
                       textStyleId: body
+        - id: replay-status
+          type: text
+          content: "Active: ${sceneReplay.isActive} / Locked: ${sceneReplay.pageReplays[0].locked}"
+          x: 960
+          y: 680
+          anchorX: 0.5
+          textStyleId: muted
+        - id: replay-advance
+          type: rect
+          x: 560
+          y: 720
+          width: 800
+          height: 200
+          colorId: button
+          click:
+            payload:
+              actions:
+                nextLine: {}
+        - id: replay-advance-label
+          type: text
+          content: Finish replay
+          x: 960
+          y: 795
+          anchorX: 0.5
+          textStyleId: body
         - id: caller-value
           type: text
           content: "State: ${variables.replayValue}"
           x: 960
-          y: 760
+          y: 980
           anchorX: 0.5
           textStyleId: muted
-    replayFirst:
-      elements:
-        - id: background
-          type: rect
-          width: 1920
-          height: 1080
-          colorId: replayBackground
-        - id: replay-value
-          type: text
-          content: "Inside: ${variables.replayValue}"
-          x: 960
-          y: 260
-          anchorX: 0.5
-          textStyleId: title
-        - id: replay-next
-          type: rect
-          x: 560
-          y: 720
-          width: 800
-          height: 200
-          colorId: button
-          click:
-            payload:
-              actions:
-                nextLine: {}
-        - id: replay-next-label
-          type: text
-          content: Continue
-          x: 960
-          y: 795
-          anchorX: 0.5
-          textStyleId: body
-    replayTerminal:
-      elements:
-        - id: background
-          type: rect
-          width: 1920
-          height: 1080
-          colorId: terminalBackground
-        - id: terminal-title
-          type: text
-          content: Replay complete
-          x: 960
-          y: 260
-          anchorX: 0.5
-          textStyleId: title
-        - id: replay-return
-          type: rect
-          x: 560
-          y: 720
-          width: 800
-          height: 200
-          colorId: button
-          click:
-            payload:
-              actions:
-                nextLine: {}
-        - id: replay-return-label
-          type: text
-          content: Return
-          x: 960
-          y: 795
-          anchorX: 0.5
-          textStyleId: body
   fonts:
     fontDefault:
       fileId: Arial
@@ -217,16 +176,6 @@ story:
           lines:
             - id: caller
               actions:
-                layout:
-                  resourceId: replayCatalog
-        replay:
-          lines:
-            - id: replayStart
-              actions:
-                layout:
-                  resourceId: replayFirst
-            - id: replayEnd
-              actions:
                 finishSceneReplay: {}
                 layout:
-                  resourceId: replayTerminal
+                  resourceId: replayCatalog

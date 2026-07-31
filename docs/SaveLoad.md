@@ -52,7 +52,9 @@ For the current model, that means:
 
 Rollback data lives inside context state and is therefore part of saved story state.
 
-`accountViewedRegistry` is not saved inside slots. It is account-scoped persistent data and is loaded through the global persistence path.
+`accountViewedRegistry` and `accountReplayRegistry` are not saved inside slots.
+They are account-scoped persistent data loaded through the global persistence
+path.
 
 ### Persistent Global Variables
 
@@ -65,7 +67,8 @@ These are not story-local and should not be stored inside save slot state.
 
 They persist through their own storage path.
 
-The account-level viewed registry follows the same rule: it persists outside slots and is not restored or backfilled from a slot.
+The account-level viewed and replay registries follow the same rule: they
+persist outside slots and are not restored or backfilled from a slot.
 
 The built-in IndexedDB adapter stores account-scoped data per browser namespace. A host that needs cross-device account persistence should provide a persistence adapter that maps `applyScopedDataUpdates` account operations and load hydration to account storage.
 
@@ -399,6 +402,7 @@ The host app is responsible for:
 - hydrating `initialState.global.saveSlots` from durable storage before engine init
 - hydrating persistent global variables before engine init
 - hydrating `initialState.global.accountViewedRegistry` before engine init
+- hydrating `initialState.global.accountReplayRegistry` before engine init
 - hydrating `initialState.global.runtime` before engine init, including device preferences such as `skipUnseenText`
 - choosing and reusing a per-VN `namespace` during persistence hydration and `engine.init(...)`
 - calling `createIndexedDbPersistence({ namespace }).clear()` when the host wants to wipe one VN's persisted data
@@ -442,11 +446,14 @@ Important constraints:
 - `formatVersion` is required on every loadable save slot
 - `state.contexts` is authoritative for story restoration
 - runtime-only globals are not part of this slot payload
-- account-level viewed state is not part of this slot payload
+- account-level viewed and replay-unlock state are not part of this slot payload
 
 `state.contexts[*].rollback.timeline` is the active branch history for rollback navigation. It can cross sections, and it is pruned when the player rolls back and then advances onto a different branch.
 
 Skip-unseen text uses `accountViewedRegistry`, which lives outside save slot state and is not replaced by `loadSlot`.
+
+Scene Replay uses `accountReplayRegistry` under the same rule, so loading an
+older slot cannot relock scenes already completed by the account.
 
 ## How It Works Today
 
@@ -457,6 +464,7 @@ At initialization:
 - `createInitialState` receives `payload.global.saveSlots`
 - `createInitialState` also receives preloaded persistent global variables
 - `createInitialState` receives `payload.global.accountViewedRegistry`
+- `createInitialState` receives `payload.global.accountReplayRegistry`
 - `createInitialState` receives `payload.global.runtime`
 - those become part of initial in-memory system state
 - hydrated save slots are validated immediately, including required `formatVersion`
@@ -466,6 +474,7 @@ This means startup hydration is split:
 - slot map comes from the host app into store initialization
 - persistent globals come from the host app into store initialization
 - account-level viewed state comes from the host app into store initialization
+- account-level replay unlock state comes from the host app into store initialization
 - device runtime preferences come from the host app into store initialization
 
 ### Save Flow
