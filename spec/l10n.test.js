@@ -22,6 +22,11 @@ const createProjectData = () => ({
         elements: [],
       },
     },
+    controls: {
+      sourceControl: {
+        elements: [],
+      },
+    },
   },
   story: {
     initialSceneId: "chapter-one",
@@ -61,6 +66,12 @@ const createProjectData = () => ({
                     submitActions: {
                       nextLine: {},
                     },
+                  },
+                  control: {
+                    resourceId: "sourceControl",
+                  },
+                  voice: {
+                    resourceId: "sourceVoice",
                   },
                 },
               },
@@ -427,6 +438,89 @@ describe("resolveL10nProjectData", () => {
         activeL10nId: "japanese",
       }),
     ).toThrow(/form behavior must remain identical/);
+  });
+
+  it.each([
+    {
+      actionType: "control",
+      payload: {},
+    },
+    {
+      actionType: "voice",
+      payload: {},
+    },
+    {
+      actionType: "background",
+      payload: {
+        resourceId: "sourceImage",
+        unsupported: true,
+      },
+    },
+  ])(
+    "rejects schema-invalid $actionType action replacements",
+    ({ actionType, payload }) => {
+      expect(() =>
+        resolve({
+          packages: {
+            japanese: createPackage({
+              patches: [
+                {
+                  type: "line.action",
+                  lineId: "greeting",
+                  actionType,
+                  payload,
+                },
+              ],
+            }),
+          },
+          activeL10nId: "japanese",
+        }),
+      ).toThrow(
+        new RegExp(
+          `does not match the ${actionType} presentation-action schema`,
+        ),
+      );
+    },
+  );
+
+  it("accepts schema-valid control and voice action replacements", () => {
+    const resolvedProjectData = resolve({
+      packages: {
+        japanese: createPackage({
+          patches: [
+            {
+              type: "line.action",
+              lineId: "greeting",
+              actionType: "control",
+              payload: {
+                resourceId: "localizedControl",
+              },
+            },
+            {
+              type: "line.action",
+              lineId: "greeting",
+              actionType: "voice",
+              payload: {
+                resourceId: "localizedVoice",
+                volume: 75,
+              },
+            },
+          ],
+        }),
+      },
+      activeL10nId: "japanese",
+    });
+    const actions =
+      resolvedProjectData.story.scenes["chapter-one"].sections.introduction
+        .lines[0].actions;
+
+    expect(actions.control).toEqual({
+      resourceId: "localizedControl",
+    });
+    expect(actions.voice).toEqual({
+      resourceId: "localizedVoice",
+      volume: 75,
+    });
   });
 
   it("uses active patches before ordered fallback packages and canonical source", () => {
@@ -828,6 +922,73 @@ describe("resolveL10nProjectData", () => {
       }),
     ).toThrow(error);
   });
+
+  it.each([
+    {
+      resourceType: "achievement",
+      payload: {
+        type: "number",
+        name: "Localized achievement",
+        description: "Localized description",
+      },
+    },
+    {
+      resourceType: "animation",
+      payload: {
+        type: "update",
+        tween: {},
+      },
+    },
+    {
+      resourceType: "particle",
+      payload: {
+        width: 640,
+        height: 360,
+        modules: {
+          emission: {},
+        },
+      },
+    },
+    {
+      resourceType: "textStyle",
+      payload: {
+        fontId: "localizedFont",
+        colorId: "localizedColor",
+      },
+    },
+    {
+      resourceType: "image",
+      payload: {
+        fileId: "source-image",
+        width: 100,
+        height: 100,
+        unsupported: true,
+      },
+    },
+  ])(
+    "rejects complete-schema violations for resource.$resourceType",
+    ({ resourceType, payload }) => {
+      expect(() =>
+        resolve({
+          packages: {
+            japanese: createPackage({
+              patches: [
+                {
+                  type: `resource.${resourceType}`,
+                  operation: "add",
+                  resourceId: `invalid-${resourceType}`,
+                  payload,
+                },
+              ],
+            }),
+          },
+          activeL10nId: "japanese",
+        }),
+      ).toThrow(
+        new RegExp(`does not match the resource.${resourceType} schema`),
+      );
+    },
+  );
 
   it.each([
     {

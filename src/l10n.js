@@ -1,3 +1,33 @@
+import {
+  validateActionBackground,
+  validateActionBgm,
+  validateActionCharacter,
+  validateActionChoice,
+  validateActionCleanAll,
+  validateActionControl,
+  validateActionDialogue,
+  validateActionForm,
+  validateActionLayout,
+  validateActionScreen,
+  validateActionSfx,
+  validateActionVisual,
+  validateActionVoice,
+  validateResourceAchievement,
+  validateResourceAnimation,
+  validateResourceCharacter,
+  validateResourceColor,
+  validateResourceControl,
+  validateResourceFont,
+  validateResourceImage,
+  validateResourceLayout,
+  validateResourceParticle,
+  validateResourceSound,
+  validateResourceSpritesheet,
+  validateResourceTextStyle,
+  validateResourceTransform,
+  validateResourceVideo,
+} from "./generated/l10nPayloadValidators.js";
+
 const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
 
 const isRecord = (value) =>
@@ -38,6 +68,39 @@ const PRESENTATION_ACTION_TYPES = new Set([
   "visual",
   "voice",
 ]);
+
+const ACTION_PAYLOAD_VALIDATORS = Object.freeze({
+  background: validateActionBackground,
+  bgm: validateActionBgm,
+  character: validateActionCharacter,
+  choice: validateActionChoice,
+  cleanAll: validateActionCleanAll,
+  control: validateActionControl,
+  dialogue: validateActionDialogue,
+  form: validateActionForm,
+  layout: validateActionLayout,
+  screen: validateActionScreen,
+  sfx: validateActionSfx,
+  visual: validateActionVisual,
+  voice: validateActionVoice,
+});
+
+const RESOURCE_PAYLOAD_VALIDATORS = Object.freeze({
+  achievement: validateResourceAchievement,
+  animation: validateResourceAnimation,
+  character: validateResourceCharacter,
+  color: validateResourceColor,
+  control: validateResourceControl,
+  font: validateResourceFont,
+  image: validateResourceImage,
+  layout: validateResourceLayout,
+  particle: validateResourceParticle,
+  sound: validateResourceSound,
+  spritesheet: validateResourceSpritesheet,
+  textStyle: validateResourceTextStyle,
+  transform: validateResourceTransform,
+  video: validateResourceVideo,
+});
 
 const PACKAGE_KEYS = new Set([
   "fallbackLocales",
@@ -114,6 +177,49 @@ const assertRequiredKeys = (value, requiredKeys, path) => {
       fail(path, `missing required field "${key}"`);
     }
   }
+};
+
+const decodeJsonPointerToken = (value) =>
+  value.replaceAll("~1", "/").replaceAll("~0", "~");
+
+const schemaErrorPath = (path, error) => {
+  const segments = (error?.instancePath ?? "")
+    .split("/")
+    .slice(1)
+    .map(decodeJsonPointerToken);
+  if (error?.keyword === "required") {
+    segments.push(error.params.missingProperty);
+  } else if (error?.keyword === "additionalProperties") {
+    segments.push(error.params.additionalProperty);
+  }
+  return segments.reduce(
+    (result, segment) =>
+      /^\d+$/.test(segment) ? `${result}[${segment}]` : `${result}.${segment}`,
+    path,
+  );
+};
+
+const selectSchemaError = (errors = []) =>
+  errors
+    .filter((error) => !["anyOf", "if", "not", "oneOf"].includes(error.keyword))
+    .reduce((selected, error) => {
+      if (selected === undefined) {
+        return error;
+      }
+      const depth = error.instancePath.split("/").length;
+      const selectedDepth = selected.instancePath.split("/").length;
+      return depth > selectedDepth ? error : selected;
+    }, undefined) ?? errors[0];
+
+const assertExactSchema = ({ value, validator, path, contract }) => {
+  if (validator(value)) {
+    return;
+  }
+  const error = selectSchemaError(validator.errors);
+  fail(
+    schemaErrorPath(path, error),
+    `does not match ${contract}: ${error?.message ?? "schema validation failed"}`,
+  );
 };
 
 const assertSafeMapId = (value, path) => {
@@ -299,7 +405,6 @@ const validateLineActionPatch = ({ patch, path, lineIndex }) => {
       `"${patch.actionType}" is not a localizable presentation action`,
     );
   }
-
   const location = resolveLineLocation(
     lineIndex,
     patch.lineId,
@@ -343,6 +448,12 @@ const validateLineActionPatch = ({ patch, path, lineIndex }) => {
     patch.payload,
     `${path}.payload`,
   );
+  assertExactSchema({
+    value: patch.payload,
+    validator: ACTION_PAYLOAD_VALIDATORS[patch.actionType],
+    path: `${path}.payload`,
+    contract: `the ${patch.actionType} presentation-action schema`,
+  });
 
   return {
     kind: "line.action",
@@ -454,6 +565,13 @@ const validateResourcePayload = (resourceType, payload, path) => {
       fail(`${path}.hex`, "expected an opaque #RGB or #RRGGBB color");
     }
   }
+
+  assertExactSchema({
+    value: payload,
+    validator: RESOURCE_PAYLOAD_VALIDATORS[resourceType],
+    path,
+    contract: `the resource.${resourceType} schema`,
+  });
 };
 
 const validateResourcePatch = ({

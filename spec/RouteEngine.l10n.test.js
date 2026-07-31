@@ -582,4 +582,68 @@ describe("RouteEngine L10n initialization", () => {
       }),
     ).toThrow(/choice item IDs and events must remain identical/);
   });
+
+  it("rejects schema-invalid presentation actions during engine initialization", () => {
+    const projectData = createProjectData();
+    projectData.story.scenes[
+      "chapter-one"
+    ].sections.introduction.lines[0].actions.control = {
+      resourceId: "sourceControl",
+    };
+    const engine = createEngine();
+
+    expect(() =>
+      engine.init({
+        initialState: {
+          projectData,
+          l10nData: {
+            packages: {
+              japanese: createPackage({
+                patches: [
+                  {
+                    type: "line.action",
+                    lineId: "greeting",
+                    actionType: "control",
+                    payload: {},
+                  },
+                ],
+              }),
+            },
+            activeL10nId: "japanese",
+          },
+        },
+      }),
+    ).toThrow(/does not match the control presentation-action schema/);
+  });
+
+  it("rejects incomplete resource payloads during engine initialization", () => {
+    const engine = createEngine();
+
+    expect(() =>
+      engine.init({
+        initialState: {
+          projectData: createProjectData(),
+          l10nData: {
+            packages: {
+              japanese: createPackage({
+                patches: [
+                  {
+                    type: "resource.achievement",
+                    operation: "add",
+                    resourceId: "localizedProgress",
+                    payload: {
+                      type: "number",
+                      name: "Localized progress",
+                      description: "Localized progress description",
+                    },
+                  },
+                ],
+              }),
+            },
+            activeL10nId: "japanese",
+          },
+        },
+      }),
+    ).toThrow(/does not match the resource.achievement schema/);
+  });
 });

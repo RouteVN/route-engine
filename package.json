@@ -34,6 +34,7 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
+    "generate:l10n-validator": "node scripts/generate-l10n-payload-validators.js",
     "prepare": "husky",
     "prepack": "bun run build",
     "build": "bun run esbuild.js",
