@@ -447,6 +447,41 @@ describe("projectData schema", () => {
     expect(validateProjectData.errors).toBeNull();
   });
 
+  it("accepts project-configured runtime defaults", () => {
+    expect(
+      validateProjectData(
+        createMinimalProjectData({
+          config: {
+            runtimeDefaults: {
+              dialogueTextSpeed: 72,
+              autoForwardDelay: 1800,
+              autoForwardSpeed: 65,
+              skipUnseenText: true,
+              skipTransitionsAndAnimations: true,
+              soundVolume: 40,
+              musicVolume: 35,
+              muteAll: false,
+            },
+          },
+        }),
+      ),
+    ).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
+
+  it.each([
+    ["unknown config fields", { runtimeDefaults: {}, theme: "dark" }],
+    ["unknown runtime defaults", { runtimeDefaults: { autoMode: true } }],
+    ["out-of-range auto speed", { runtimeDefaults: { autoForwardSpeed: 101 } }],
+    ["out-of-range sound volume", { runtimeDefaults: { soundVolume: -1 } }],
+    ["negative auto delay", { runtimeDefaults: { autoForwardDelay: -1 } }],
+    ["invalid setting types", { runtimeDefaults: { muteAll: "no" } }],
+  ])("rejects %s", (_description, config) => {
+    expect(validateProjectData(createMinimalProjectData({ config }))).toBe(
+      false,
+    );
+  });
+
   it("accepts optional screen backgroundColor", () => {
     expect(
       validateProjectData(

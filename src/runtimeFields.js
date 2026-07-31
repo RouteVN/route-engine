@@ -102,11 +102,131 @@ export const PERSISTED_GLOBAL_RUNTIME_FIELDS = Object.freeze([
   "localizationPackageId",
 ]);
 
+export const PROJECT_RUNTIME_DEFAULT_FIELDS = Object.freeze([
+  "dialogueTextSpeed",
+  "autoForwardDelay",
+  "autoForwardSpeed",
+  "skipUnseenText",
+  "skipTransitionsAndAnimations",
+  "soundVolume",
+  "musicVolume",
+  "muteAll",
+]);
+
 export const CONTEXT_RUNTIME_FIELDS = Object.freeze([
   "saveLoadPagination",
   "menuPage",
   "menuEntryPoint",
 ]);
+
+const isRecord = (value) => {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+};
+
+const assertRuntimeValueType = (runtimeId, value) => {
+  const type = RUNTIME_FIELD_TYPES[runtimeId];
+
+  if (type === "number") {
+    if (typeof value !== "number" || !Number.isFinite(value)) {
+      throw new Error(`${runtimeId} requires a finite numeric value`);
+    }
+    return;
+  }
+
+  if (type === "boolean") {
+    if (typeof value !== "boolean") {
+      throw new Error(`${runtimeId} requires a boolean value`);
+    }
+    return;
+  }
+
+  if (type === "string") {
+    if (typeof value !== "string") {
+      throw new Error(`${runtimeId} requires a string value`);
+    }
+    return;
+  }
+
+  if (type === "nullableString") {
+    if (value !== null && typeof value !== "string") {
+      throw new Error(`${runtimeId} requires a string or null value`);
+    }
+    return;
+  }
+
+  throw new Error(`Unsupported runtime field "${runtimeId}"`);
+};
+
+export const normalizeRuntimeValue = (runtimeId, value) => {
+  assertRuntimeValueType(runtimeId, value);
+
+  if (runtimeId === "autoForwardDelay" && value < 0) {
+    throw new Error(
+      "autoForwardDelay requires a value greater than or equal to 0",
+    );
+  }
+
+  if (
+    ["autoForwardSpeed", "soundVolume", "musicVolume"].includes(runtimeId) &&
+    (value < 0 || value > 100)
+  ) {
+    throw new Error(`${runtimeId} requires a value between 0 and 100`);
+  }
+
+  if (runtimeId === "saveLoadPagination") {
+    return Math.max(1, Math.trunc(value));
+  }
+
+  return value;
+};
+
+export const resolveProjectRuntimeDefaults = (projectData = {}) => {
+  const config = projectData?.config;
+  if (config === undefined) {
+    return { ...GLOBAL_RUNTIME_DEFAULTS };
+  }
+  if (!isRecord(config)) {
+    throw new Error("projectData.config must be an object");
+  }
+
+  const unsupportedConfigField = Object.keys(config).find(
+    (field) => field !== "runtimeDefaults",
+  );
+  if (unsupportedConfigField) {
+    throw new Error(
+      `projectData.config contains unsupported field "${unsupportedConfigField}"`,
+    );
+  }
+
+  const authoredDefaults = config.runtimeDefaults;
+  if (authoredDefaults === undefined) {
+    return { ...GLOBAL_RUNTIME_DEFAULTS };
+  }
+  if (!isRecord(authoredDefaults)) {
+    throw new Error("projectData.config.runtimeDefaults must be an object");
+  }
+
+  const allowedFields = new Set(PROJECT_RUNTIME_DEFAULT_FIELDS);
+  const unsupportedRuntimeField = Object.keys(authoredDefaults).find(
+    (field) => !allowedFields.has(field),
+  );
+  if (unsupportedRuntimeField) {
+    throw new Error(
+      `projectData.config.runtimeDefaults contains unsupported field "${unsupportedRuntimeField}"`,
+    );
+  }
+
+  const defaults = { ...GLOBAL_RUNTIME_DEFAULTS };
+  PROJECT_RUNTIME_DEFAULT_FIELDS.forEach((runtimeId) => {
+    if (authoredDefaults[runtimeId] !== undefined) {
+      defaults[runtimeId] = normalizeRuntimeValue(
+        runtimeId,
+        authoredDefaults[runtimeId],
+      );
+    }
+  });
+  return defaults;
+};
 
 const readRuntimeValueFromState = (state, source) => {
   if (source.startsWith("global.")) {

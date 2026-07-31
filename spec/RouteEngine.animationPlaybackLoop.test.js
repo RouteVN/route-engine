@@ -160,4 +160,36 @@ describe("RouteEngine animation playback loop", () => {
     const nextLineRender = routeGraphics.render.mock.calls.at(-1)?.[0];
     expect(nextLineRender.animations).toEqual([]);
   });
+
+  it("omits authored animations when the project default skips animations", () => {
+    const routeGraphics = {
+      render: vi.fn(),
+    };
+    const projectData = createProjectData();
+    projectData.config = {
+      runtimeDefaults: {
+        skipTransitionsAndAnimations: true,
+      },
+    };
+
+    let engine;
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics,
+      ticker: createTicker(),
+      persistence: createPersistence(),
+    });
+    engine = createRouteEngine({
+      handlePendingEffects: effectsHandler,
+    });
+
+    engine.init({
+      initialState: {
+        projectData,
+      },
+    });
+
+    expect(engine.selectRuntime().skipTransitionsAndAnimations).toBe(true);
+    expect(routeGraphics.render.mock.calls.at(-1)?.[0].animations).toEqual([]);
+  });
 });

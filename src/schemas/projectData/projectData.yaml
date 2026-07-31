@@ -3,6 +3,10 @@ title: Project Data Schema
 description: Main schema for visual novel project data that references all other schemas
 type: object
 properties:
+  config:
+    $ref: "config.yaml"
+    description: Project-authored engine configuration and initial defaults
+
   screen:
     type: object
     description: Screen configuration for the project

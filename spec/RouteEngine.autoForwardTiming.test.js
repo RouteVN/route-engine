@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { createSystemStore } from "../src/stores/system.store.js";
 
-const createProjectData = (lines, variables = {}) => ({
+const createProjectData = (lines, variables = {}, config) => ({
+  ...(config === undefined ? {} : { config }),
   screen: {
     width: 1280,
     height: 720,
@@ -24,7 +25,7 @@ const createProjectData = (lines, variables = {}) => ({
   },
 });
 
-const createStore = ({ lines, global } = {}) =>
+const createStore = ({ lines, global, projectConfig } = {}) =>
   createSystemStore({
     global,
     projectData: createProjectData(
@@ -38,6 +39,8 @@ const createStore = ({ lines, global } = {}) =>
           },
         },
       ],
+      {},
+      projectConfig,
     ),
   });
 
@@ -149,6 +152,19 @@ describe("RouteEngine auto-forward timing", () => {
     });
 
     expect(store.selectAutoForwardTimerDelay()).toBe(1000);
+  });
+
+  it("uses project-configured auto timing defaults", () => {
+    const store = createStore({
+      projectConfig: {
+        runtimeDefaults: {
+          autoForwardDelay: 2000,
+          autoForwardSpeed: 100,
+        },
+      },
+    });
+
+    expect(store.selectAutoForwardTimerDelay()).toBe(2120);
   });
 
   it("ignores authored content discarded by dialogue.clear", () => {

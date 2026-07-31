@@ -17,8 +17,7 @@ That means:
 - authored content should read engine state through `runtime.*`
 - engine-owned mutations should happen through explicit actions, not
   `updateVariable`
-- project-level config/default overrides are deferred from the first
-  implementation pass
+- selected device preference defaults can be configured by each project
 
 ## Non-Goals
 
@@ -26,7 +25,6 @@ Out of scope for this migration:
 
 - turning all engine state into generic mutable data
 - adding a generic `updateRuntime` action
-- adding project-level runtime/config default overrides in v1
 - keeping long-term dual support for old internal-variable authoring
 - exposing every `state.global` property to authored templates/conditions
 - solving every future runtime feature in this pass
@@ -58,18 +56,15 @@ Implementation rule:
 - `selectSystemState()` may continue to exist for debugging/tooling, but it is
   not part of the authored/view contract
 
-### 2. Project config is deferred from v1
+### 2. Project config provides initial device preference defaults
 
-The first implementation pass does not add a new `projectData.config` shape.
+`projectData.config.runtimeDefaults` can override the engine defaults for text
+and auto speed, auto delay, skip behavior, animation skipping, audio volumes,
+and mute state. Every field is optional.
 
-V1 uses engine-defined defaults only.
-
-Possible future direction:
-
-- add a top-level `projectData.config`
-- allow selected runtime defaults to be overridden there
-
-But this is intentionally not part of the first coding pass.
+Persisted device preferences override project defaults field by field. Runtime
+mode flags, context UI state, and localization selection are not configurable
+defaults.
 
 ### 3. Keep `state.global` as engine storage
 
@@ -334,17 +329,16 @@ Implementation points:
 - `src/util.js`
 - `src/schemas/systemState/systemState.yaml`
 
-### Phase 3: Defer project config/default overrides
-
-Do not add project-level runtime/config overrides in v1.
+### Phase 3: Add project config/default overrides
 
 During engine init:
 
-- use engine hardcoded defaults
-- then merge loaded persisted values / loaded save-slot values on top
+- start with engine hardcoded defaults
+- apply `projectData.config.runtimeDefaults`
+- merge loaded persisted device preferences on top, field by field
 
-Any future `projectData.config` work should be a follow-up once the runtime API
-surface is stable.
+Project updates validate the configuration but do not reapply its defaults to
+an already-running device state.
 
 ### Phase 4: Add `selectRuntime`
 
@@ -744,7 +738,8 @@ Files:
 After migration:
 
 - engine defaults remain canonical
-- no project-level override layer exists in v1
+- selected device preferences may have project-level initial defaults
+- persisted device preferences take precedence over project defaults
 
 ### Old internal-variable references
 
@@ -814,7 +809,7 @@ Recommended order:
 - runtime must stay outside `resources`
 - runtime exposure must come from a source-only registry
 - no generic `updateRuntime`
-- no project-level config/default override layer in v1
+- project-level defaults remain limited to the explicit device preference list
 - explicit actions remain the only mutation path for engine-owned runtime state
 - the public authored surface must be a flat `runtime.*` API regardless of
   whether the underlying value lives in `state.global` or the active context

@@ -470,6 +470,7 @@ properties:
         type: number
       autoForwardDelay:
         type: number
+        minimum: 0
         description: Minimum global auto mode delay in milliseconds before length-based reading time is added
       autoForwardSpeed:
         type: number
