@@ -64,6 +64,179 @@ describe("RouteEngine runtime", () => {
     expect(state.contexts[0].runtime).toBeUndefined();
   });
 
+  it("uses project-configured defaults for every configurable device preference", () => {
+    const projectData = createProjectData();
+    projectData.config = {
+      runtimeDefaults: {
+        dialogueTextSpeed: 72,
+        autoForwardDelay: 1800,
+        autoForwardSpeed: 65,
+        skipUnseenText: true,
+        skipTransitionsAndAnimations: true,
+        soundVolume: 40,
+        musicVolume: 35,
+        muteAll: true,
+      },
+    };
+
+    const store = createSystemStore({ projectData });
+
+    expect(store.selectRuntime()).toMatchObject({
+      dialogueTextSpeed: 72,
+      autoForwardDelay: 1800,
+      autoForwardSpeed: 65,
+      skipUnseenText: true,
+      skipTransitionsAndAnimations: true,
+      soundVolume: 40,
+      musicVolume: 35,
+      muteAll: true,
+      localizationPackageId: null,
+      autoMode: false,
+      skipMode: false,
+    });
+  });
+
+  it("lets persisted device preferences override project defaults field by field", () => {
+    const projectData = createProjectData();
+    projectData.config = {
+      runtimeDefaults: {
+        dialogueTextSpeed: 72,
+        autoForwardDelay: 1800,
+        soundVolume: 40,
+        musicVolume: 35,
+      },
+    };
+
+    const store = createSystemStore({
+      global: {
+        runtime: {
+          dialogueTextSpeed: 91,
+          musicVolume: 80,
+          localizationPackageId: "saved-package",
+        },
+      },
+      projectData,
+    });
+
+    expect(store.selectRuntime()).toMatchObject({
+      dialogueTextSpeed: 91,
+      autoForwardDelay: 1800,
+      soundVolume: 40,
+      musicVolume: 80,
+      localizationPackageId: "saved-package",
+    });
+  });
+
+  it("persists the effective project defaults when a device preference changes", () => {
+    const projectData = createProjectData();
+    projectData.config = {
+      runtimeDefaults: {
+        autoForwardDelay: 1800,
+        autoForwardSpeed: 65,
+        soundVolume: 40,
+        musicVolume: 35,
+      },
+    };
+    const store = createSystemStore({ projectData });
+
+    store.setMusicVolume({ value: 60 });
+
+    expect(store.selectPendingEffects()[0]).toEqual({
+      name: "saveGlobalRuntime",
+      payload: {
+        globalRuntime: {
+          dialogueTextSpeed: 50,
+          autoForwardDelay: 1800,
+          autoForwardSpeed: 65,
+          skipUnseenText: false,
+          skipTransitionsAndAnimations: false,
+          soundVolume: 40,
+          musicVolume: 60,
+          muteAll: false,
+          localizationPackageId: null,
+        },
+      },
+    });
+  });
+
+  it("does not reapply project defaults when project data is updated", () => {
+    const initialProjectData = createProjectData();
+    initialProjectData.config = {
+      runtimeDefaults: {
+        musicVolume: 25,
+        skipUnseenText: true,
+      },
+    };
+    const store = createSystemStore({ projectData: initialProjectData });
+    store.setMusicVolume({ value: 70 });
+
+    const replacementProjectData = createProjectData();
+    replacementProjectData.config = {
+      runtimeDefaults: {
+        musicVolume: 5,
+        skipUnseenText: false,
+      },
+    };
+    store.updateProjectData({ projectData: replacementProjectData });
+
+    expect(store.selectRuntime()).toMatchObject({
+      musicVolume: 70,
+      skipUnseenText: true,
+    });
+  });
+
+  it("rejects invalid defaults on project update without changing state", () => {
+    const store = createSystemStore({
+      projectData: createProjectData(),
+    });
+    const stateBefore = store.selectSystemState();
+    const replacementProjectData = createProjectData();
+    replacementProjectData.config = {
+      runtimeDefaults: {
+        musicVolume: -1,
+      },
+    };
+
+    expect(() =>
+      store.updateProjectData({ projectData: replacementProjectData }),
+    ).toThrowError("musicVolume requires a value between 0 and 100");
+    expect(store.selectSystemState()).toEqual(stateBefore);
+  });
+
+  it.each([
+    ["a non-object config", null, "projectData.config must be an object"],
+    [
+      "an unsupported config field",
+      { theme: "dark" },
+      'projectData.config contains unsupported field "theme"',
+    ],
+    [
+      "non-object runtime defaults",
+      { runtimeDefaults: [] },
+      "projectData.config.runtimeDefaults must be an object",
+    ],
+    [
+      "an unsupported runtime default",
+      { runtimeDefaults: { autoMode: true } },
+      'projectData.config.runtimeDefaults contains unsupported field "autoMode"',
+    ],
+    [
+      "an invalid runtime default type",
+      { runtimeDefaults: { skipUnseenText: "yes" } },
+      "skipUnseenText requires a boolean value",
+    ],
+    [
+      "an out-of-range runtime default",
+      { runtimeDefaults: { soundVolume: 101 } },
+      "soundVolume requires a value between 0 and 100",
+    ],
+  ])("rejects %s", (_description, config, error) => {
+    const projectData = createProjectData();
+    projectData.config = config;
+
+    expect(() => createSystemStore({ projectData })).toThrowError(error);
+  });
+
   it("updates runtime through explicit actions and queues runtime persistence", () => {
     const store = createSystemStore({
       projectData: createProjectData(),
@@ -177,47 +350,49 @@ describe("RouteEngine runtime", () => {
     );
   });
 
-  it("renders runtime values into authored layout templates", () => {
+  it("renders a project-default text speed into authored layout templates", () => {
     const engine = createRouteEngine({
       handlePendingEffects: () => {},
     });
 
-    engine.init({
-      initialState: {
-        global: {
-          runtime: {
-            dialogueTextSpeed: 77,
-          },
-        },
-        projectData: createProjectData(
-          {},
-          {
-            scenes: {
-              scene1: {
-                initialSectionId: "section1",
-                sections: {
-                  section1: {
-                    lines: [
-                      {
-                        id: "line1",
-                        actions: {
-                          layout: {
-                            resourceId: "runtimeHud",
-                          },
-                        },
+    const projectData = createProjectData(
+      {},
+      {
+        scenes: {
+          scene1: {
+            initialSectionId: "section1",
+            sections: {
+              section1: {
+                lines: [
+                  {
+                    id: "line1",
+                    actions: {
+                      layout: {
+                        resourceId: "runtimeHud",
                       },
-                    ],
+                    },
                   },
-                },
+                ],
               },
             },
           },
-        ),
+        },
+      },
+    );
+    projectData.config = {
+      runtimeDefaults: {
+        dialogueTextSpeed: 72,
+      },
+    };
+
+    engine.init({
+      initialState: {
+        projectData,
       },
     });
 
-    const projectData = engine.selectSystemState().projectData;
-    projectData.resources.layouts.runtimeHud = {
+    const updatedProjectData = engine.selectSystemState().projectData;
+    updatedProjectData.resources.layouts.runtimeHud = {
       elements: [
         {
           id: "runtime-text",
@@ -228,7 +403,7 @@ describe("RouteEngine runtime", () => {
     };
 
     engine.handleAction("updateProjectData", {
-      projectData,
+      projectData: updatedProjectData,
     });
 
     const renderState = engine.selectRenderState();
@@ -239,10 +414,10 @@ describe("RouteEngine runtime", () => {
       (element) => element.id === "layout-runtimeHud",
     );
 
-    expect(runtimeText.children[0].content).toBe(77);
+    expect(runtimeText.children[0].content).toBe(72);
   });
 
-  it("renders runtime-driven boolean action payloads into authored layouts", () => {
+  it("renders a project-default skip preference into authored action payloads", () => {
     const projectData = createProjectData(
       {},
       {
@@ -289,6 +464,11 @@ describe("RouteEngine runtime", () => {
         },
       ],
     };
+    projectData.config = {
+      runtimeDefaults: {
+        skipUnseenText: true,
+      },
+    };
 
     const engine = createRouteEngine({
       handlePendingEffects: () => {},
@@ -296,11 +476,6 @@ describe("RouteEngine runtime", () => {
 
     engine.init({
       initialState: {
-        global: {
-          runtime: {
-            skipUnseenText: false,
-          },
-        },
         projectData,
       },
     });
@@ -315,9 +490,9 @@ describe("RouteEngine runtime", () => {
 
     expect(
       layoutContainer.children[0].click.payload.actions.setSkipUnseenText.value,
-    ).toBe(true);
+    ).toBe(false);
 
-    engine.handleAction("setSkipUnseenText", { value: true });
+    engine.handleAction("setSkipUnseenText", { value: false });
 
     renderState = engine.selectRenderState();
     storyContainer = renderState.elements.find(
@@ -329,7 +504,7 @@ describe("RouteEngine runtime", () => {
 
     expect(
       layoutContainer.children[0].click.payload.actions.setSkipUnseenText.value,
-    ).toBe(false);
+    ).toBe(true);
   });
 
   it("does not expose duplicate top-level runtime fields to authored layouts", () => {

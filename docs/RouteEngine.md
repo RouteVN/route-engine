@@ -74,6 +74,36 @@ restores an imported package. Authored layouts receive package options and can
 dispatch `updateLocalizationPackage` to switch and render. The patch format,
 package layout, and runtime behavior are documented in [L10n.md](./L10n.md).
 
+### Project Runtime Defaults
+
+Projects can override the initial values of device-level preferences under
+`projectData.config.runtimeDefaults`:
+
+```yaml
+config:
+  runtimeDefaults:
+    dialogueTextSpeed: 50
+    autoForwardDelay: 1000
+    autoForwardSpeed: 50
+    skipUnseenText: false
+    skipTransitionsAndAnimations: false
+    soundVolume: 50
+    musicVolume: 50
+    muteAll: false
+```
+
+Every field is optional. Omitted fields retain the engine default. During
+initialization, a persisted device preference overrides the project default for
+that field. Project defaults are only initialization fallbacks: changing
+project data, resetting story progress, loading a slot, or rolling back does
+not overwrite the active device preferences.
+
+`autoForwardSpeed`, `soundVolume`, and `musicVolume` accept values from `0` to
+`100`; `autoForwardDelay` is a non-negative number of milliseconds. Runtime
+mode flags, context UI state, and `localizationPackageId` are intentionally not
+project-configurable. The canonical project remains the initial localization
+unless the device has a saved localization selection.
+
 The engine will:
 
 1. Create the system store with initial state
@@ -1523,10 +1553,11 @@ The effective output is:
 (channelVolume * runtimeVolume * soundVolume) / 10000;
 ```
 
-Each omitted volume defaults to `100`. Runtime defaults come from
-`GLOBAL_RUNTIME_DEFAULTS`. `runtime.muteAll` emits `muted: true` on every
-channel without destroying its configured volume. A channel's authored
-`muted: true` is combined with the runtime mute.
+Each omitted authored volume defaults to `100`. Runtime volume preferences use
+the project runtime default when configured, otherwise the engine default.
+Persisted device preferences take precedence over both. `runtime.muteAll` emits
+`muted: true` on every channel without destroying its configured volume. A
+channel's authored `muted: true` is combined with the runtime mute.
 
 Legacy single-sound BGM and Voice payloads preserve their previous effective
 volume behavior when compiled into channels.

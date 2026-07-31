@@ -1,8 +1,9 @@
 ---
-title: Auto Speed Percentage
-description: Isolated click-driven global auto-mode path proving the 0–100 speed setting shortens length-derived reading time.
+title: Project-Default Auto Speed Percentage
+description: Isolated click-driven auto-mode path proving project-configured 0–100 speed and delay defaults shorten length-derived reading time.
 specs:
-  - clicking the fast control sets auto speed to 100 and starts auto mode
+  - project defaults initialize auto speed to 100 and the minimum delay to 100ms
+  - clicking the control starts auto mode without first editing either preference
   - a 48-grapheme Latin line advances at twice the normal reading speed
   - the configured minimum delay is preserved while reading time is speed-adjusted
 skipInitialScreenshot: true
@@ -18,6 +19,10 @@ steps:
     ms: 1800
   - action: screenshot
 ---
+config:
+  runtimeDefaults:
+    autoForwardDelay: 100
+    autoForwardSpeed: 100
 screen:
   width: 960
   height: 540
@@ -43,8 +48,6 @@ resources:
           click:
             payload:
               actions:
-                setAutoForwardSpeed:
-                  value: 100
                 startAutoMode: {}
         - id: fast-label
           type: text
@@ -95,8 +98,6 @@ story:
           lines:
             - id: fast-latin
               actions:
-                setAutoForwardDelay:
-                  value: 100
                 dialogue:
                   mode: adv
                   ui:

@@ -25,10 +25,10 @@ import { interpolateDialogueText } from "../dialogueText.js";
 import {
   CONTEXT_RUNTIME_DEFAULTS,
   CONTEXT_RUNTIME_FIELDS,
-  GLOBAL_RUNTIME_DEFAULTS,
   PERSISTED_GLOBAL_RUNTIME_FIELDS,
+  normalizeRuntimeValue,
   pickPersistedGlobalRuntime,
-  RUNTIME_FIELD_TYPES,
+  resolveProjectRuntimeDefaults,
   selectRuntimeFromState,
   selectRuntimeValueFromState,
 } from "../runtimeFields.js";
@@ -1364,11 +1364,14 @@ const normalizeLoadedRuntimeFields = ({
   };
 };
 
-const createInitialGlobalRuntimeState = ({ loadedGlobalRuntime = {} }) => {
+const createInitialGlobalRuntimeState = ({
+  projectData,
+  loadedGlobalRuntime = {},
+}) => {
   return normalizeLoadedRuntimeFields({
     loadedRuntime: loadedGlobalRuntime,
     runtimeIds: PERSISTED_GLOBAL_RUNTIME_FIELDS,
-    defaults: GLOBAL_RUNTIME_DEFAULTS,
+    defaults: resolveProjectRuntimeDefaults(projectData),
     path: "global.runtime",
   }).runtimeState;
 };
@@ -1536,58 +1539,6 @@ const queueGlobalRuntimePersistence = (state) => {
       globalRuntime: getPersistedGlobalRuntime(state),
     },
   });
-};
-
-const getRuntimeFieldType = (runtimeId) => {
-  return RUNTIME_FIELD_TYPES[runtimeId];
-};
-
-const assertRuntimeValueType = (runtimeId, value) => {
-  const type = getRuntimeFieldType(runtimeId);
-
-  if (type === "number") {
-    if (typeof value !== "number" || !Number.isFinite(value)) {
-      throw new Error(`${runtimeId} requires a finite numeric value`);
-    }
-    return;
-  }
-
-  if (type === "boolean") {
-    if (typeof value !== "boolean") {
-      throw new Error(`${runtimeId} requires a boolean value`);
-    }
-    return;
-  }
-
-  if (type === "string") {
-    if (typeof value !== "string") {
-      throw new Error(`${runtimeId} requires a string value`);
-    }
-    return;
-  }
-
-  if (type === "nullableString") {
-    if (value !== null && typeof value !== "string") {
-      throw new Error(`${runtimeId} requires a string or null value`);
-    }
-    return;
-  }
-
-  throw new Error(`Unsupported runtime field "${runtimeId}"`);
-};
-
-const normalizeRuntimeValue = (runtimeId, value) => {
-  assertRuntimeValueType(runtimeId, value);
-
-  if (runtimeId === "autoForwardSpeed" && (value < 0 || value > 100)) {
-    throw new Error("autoForwardSpeed requires a value between 0 and 100");
-  }
-
-  if (runtimeId === "saveLoadPagination") {
-    return Math.max(1, Math.trunc(value));
-  }
-
-  return value;
 };
 
 const applyRuntimeValue = (state, runtimeId, value) => {
@@ -2146,6 +2097,7 @@ export const createInitialState = (payload) => {
       overlayStack: [],
       variables: globalVariables,
       ...createInitialGlobalRuntimeState({
+        projectData,
         loadedGlobalRuntime,
       }),
     },
@@ -4977,6 +4929,7 @@ export const updateProjectData = ({ state }, payload) => {
   validateMusicRoomConfig(projectData);
   validateSceneReplayConfig(projectData);
   validateComputedVariableConfigs(projectData?.resources?.variables ?? {});
+  resolveProjectRuntimeDefaults(projectData);
 
   state.projectData = projectData;
   state.global.imageGalleryNavigation = createDefaultImageGalleryNavigation();

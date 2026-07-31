@@ -1,0 +1,42 @@
+$schema: http://json-schema.org/draft-07/schema#
+title: Project Configuration Schema
+description: Project-authored engine configuration
+type: object
+properties:
+  runtimeDefaults:
+    type: object
+    description: Initial device preference values used when no saved value exists
+    properties:
+      dialogueTextSpeed:
+        type: number
+        description: Default dialogue reveal speed
+      autoForwardDelay:
+        type: number
+        minimum: 0
+        description: Default minimum auto mode delay in milliseconds
+      autoForwardSpeed:
+        type: number
+        minimum: 0
+        maximum: 100
+        description: Default auto mode speed from 0 (slowest) to 100 (fastest)
+      skipUnseenText:
+        type: boolean
+        description: Whether skip mode includes unseen text by default
+      skipTransitionsAndAnimations:
+        type: boolean
+        description: Whether transitions and animations are skipped by default
+      soundVolume:
+        type: number
+        minimum: 0
+        maximum: 100
+        description: Default SFX and voice volume
+      musicVolume:
+        type: number
+        minimum: 0
+        maximum: 100
+        description: Default music volume
+      muteAll:
+        type: boolean
+        description: Whether all audio is muted by default
+    additionalProperties: false
+additionalProperties: false

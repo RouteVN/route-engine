@@ -240,6 +240,31 @@ describe("RouteEngine audio channels", () => {
     ]);
   });
 
+  it("applies project-default volumes and mute state to rendered audio channels", () => {
+    const projectData = createProjectData();
+    projectData.config = {
+      runtimeDefaults: {
+        soundVolume: 20,
+        musicVolume: 25,
+        muteAll: true,
+      },
+    };
+    const engine = createEngine();
+
+    engine.init({ initialState: { projectData } });
+
+    expect(
+      engine
+        .selectRenderState()
+        .audio.map(({ id, volume, muted }) => ({ id, volume, muted })),
+    ).toEqual([
+      { id: "channel:bgm", volume: 20, muted: true },
+      { id: "channel:sfx:ui", volume: 15, muted: true },
+      { id: "channel:sfx:environment", volume: 20, muted: true },
+      { id: "channel:voice", volume: 10, muted: true },
+    ]);
+  });
+
   it("renders a looping BGM channel as one scheduled sequence", () => {
     const projectData = createProjectData();
     const actions =

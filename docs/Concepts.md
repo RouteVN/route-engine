@@ -66,6 +66,10 @@ flowchart TD
 
 Static, read-only data that defines the visual novel content:
 
+- **config**: Optional project-level engine configuration. `runtimeDefaults`
+  defines initial device preferences for text and auto speed, auto delay,
+  skip behavior, animation skipping, audio volumes, and mute state. Saved
+  device preferences override these defaults field by field.
 - **resources**: Images, videos, spritesheets, particles, audio, animations, transforms, layouts, characters, fonts, colors, and `textStyles`
   - Localization is not implemented in the current runtime. The planned patch-based model is documented in `docs/L10n.md`
   - Computed variables are derived read-only values declared under `resources.variables[*].computed`; their authored interface is documented in `docs/ComputedVariables.md`
