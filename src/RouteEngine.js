@@ -786,6 +786,18 @@ export default function createRouteEngine(options) {
                 routingSequence,
               );
             }
+
+            const settledPointer =
+              _systemStore.selectCurrentPointer()?.pointer ?? null;
+            if (
+              options.rollbackSource === "line" &&
+              isSameStoryPointer(sourcePointer, settledPointer)
+            ) {
+              _systemStore.recordCurrentDialogueHistory({
+                savedCheckpointOccurrences:
+                  navigationContext.savedCheckpointOccurrences,
+              });
+            }
           } finally {
             _rollbackNavigationContexts.pop();
             const enteredAnotherCheckpoint =

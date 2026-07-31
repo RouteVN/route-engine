@@ -160,6 +160,35 @@ describe("systemState schema", () => {
     expect(validateSystemState.errors).toBeNull();
   });
 
+  it("accepts durable dialogue history and rejects an invalid history cursor", () => {
+    const projectData = createMinimalProjectData();
+    projectData.story.scenes.scene1.sections.section1.lines[0].actions = {
+      dialogue: {
+        content: [{ text: "Hello" }],
+      },
+    };
+    let engine;
+    engine = createRouteEngine({
+      handlePendingEffects: (effects) => {
+        if (effects.some((effect) => effect.name === "handleLineActions")) {
+          engine.handleLineActions();
+        }
+      },
+    });
+    engine.init({ initialState: { projectData } });
+
+    const systemState = toJsonSnapshot(engine.selectSystemState());
+    expect(systemState.contexts[0].dialogueHistory).toEqual({
+      entries: [{ sectionId: "section1", lineId: "line1" }],
+      currentLength: 1,
+      checkpointLengths: [1],
+    });
+    expect(validateSystemState(systemState)).toBe(true);
+
+    systemState.contexts[0].dialogueHistory.currentLength = -1;
+    expect(validateSystemState(systemState)).toBe(false);
+  });
+
   it("accepts an active scene-replay context and rejects mismatched context kinds", () => {
     const projectData = createMinimalProjectData();
     projectData.resources = {

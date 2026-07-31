@@ -1633,7 +1633,9 @@ Roots with special presence semantics:
 - `choice` is added by the choice-layout render path when a choice is active
 - `form` is added by the form-layout render path when a form is active
 - `historyDialogue` is always present in the shared template data and defaults
-  to `[]`
+  to `[]`. It contains chronological dialogue from the active context across
+  section boundaries and follows save/load, rollback, branching, and story-reset
+  semantics.
 - `confirmDialog` is always present in the shared template data and is
   `undefined` when no confirm dialog is active
 

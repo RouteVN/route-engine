@@ -60,6 +60,40 @@ defs:
     required: [sceneIds]
     additionalProperties: false
 
+  dialogueHistoryEntry:
+    type: object
+    description: Authored dialogue line occurrence retained in context-local chronological history
+    properties:
+      sectionId:
+        type: string
+        minLength: 1
+      lineId:
+        type: string
+        minLength: 1
+    required: [sectionId, lineId]
+    additionalProperties: false
+
+  dialogueHistoryState:
+    type: object
+    description: Context-local dialogue history with an active-branch cursor
+    properties:
+      entries:
+        type: array
+        items:
+          $ref: "#/defs/dialogueHistoryEntry"
+      currentLength:
+        type: integer
+        minimum: 0
+        description: Number of retained entries visible on the active story branch
+      checkpointLengths:
+        type: array
+        description: Dialogue-history length associated with each rollback checkpoint
+        items:
+          type: integer
+          minimum: 0
+    required: [entries, currentLength, checkpointLengths]
+    additionalProperties: false
+
   rollbackCheckpoint:
     type: object
     properties:
@@ -408,6 +442,8 @@ defs:
       variables:
         type: object
         additionalProperties: true
+      dialogueHistory:
+        $ref: "#/defs/dialogueHistoryState"
       runtime:
         type: object
         properties:

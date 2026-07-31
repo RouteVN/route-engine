@@ -257,6 +257,73 @@ const createDialogueHistoryEntry = ({
   characterName,
 });
 
+const createDefaultDialogueHistoryState = (checkpointCount = 0) => ({
+  entries: [],
+  currentLength: 0,
+  checkpointLengths: Array(checkpointCount).fill(0),
+});
+
+const isDialogueHistoryPointer = (value) =>
+  isRecord(value) &&
+  typeof value.sectionId === "string" &&
+  value.sectionId.length > 0 &&
+  typeof value.lineId === "string" &&
+  value.lineId.length > 0;
+
+const getDialogueHistoryState = (context) => {
+  if (!isRecord(context?.dialogueHistory)) {
+    return null;
+  }
+
+  const history = context.dialogueHistory;
+  if (
+    !Array.isArray(history.entries) ||
+    !Number.isInteger(history.currentLength) ||
+    !Array.isArray(history.checkpointLengths)
+  ) {
+    return null;
+  }
+  return history;
+};
+
+const ensureDialogueHistoryState = (context) => {
+  if (!isRecord(context?.dialogueHistory)) {
+    context.dialogueHistory = createDefaultDialogueHistoryState(
+      context?.rollback?.timeline?.length ?? 0,
+    );
+    return context.dialogueHistory;
+  }
+
+  const history = context.dialogueHistory;
+  if (!Array.isArray(history.entries)) {
+    history.entries = [];
+  }
+  if (!Number.isInteger(history.currentLength)) {
+    history.currentLength = history.entries.length;
+  }
+  if (!Array.isArray(history.checkpointLengths)) {
+    history.checkpointLengths = Array(
+      context?.rollback?.timeline?.length ?? 0,
+    ).fill(0);
+  }
+  history.currentLength = Math.min(
+    Math.max(history.currentLength, 0),
+    history.entries.length,
+  );
+  return history;
+};
+
+const truncateDialogueHistoryToCursor = (context) => {
+  const history = getDialogueHistoryState(context);
+  if (!history) {
+    return null;
+  }
+  if (history.currentLength < history.entries.length) {
+    history.entries = history.entries.slice(0, history.currentLength);
+  }
+  return history;
+};
+
 const createDefaultBgmState = () => ({
   resourceId: undefined,
 });
@@ -607,6 +674,113 @@ const getRollbackLine = (projectData, checkpoint) => {
   return section?.lines?.find((line) => line.id === checkpoint?.lineId);
 };
 
+const normalizeLoadedDialogueHistory = (dialogueHistory, projectData, path) => {
+  if (!isRecord(dialogueHistory)) {
+    throw new Error(`Malformed save slot ${path}.`);
+  }
+  if (!Array.isArray(dialogueHistory.entries)) {
+    throw new Error(`Malformed save slot ${path}.entries.`);
+  }
+  if (!Number.isInteger(dialogueHistory.currentLength)) {
+    throw new Error(`Malformed save slot ${path}.currentLength.`);
+  }
+  if (!Array.isArray(dialogueHistory.checkpointLengths)) {
+    throw new Error(`Malformed save slot ${path}.checkpointLengths.`);
+  }
+
+  const entries = dialogueHistory.entries.map((entry, entryIndex) => {
+    const pointer = normalizeLoadedReadPointer(
+      entry,
+      projectData,
+      `${path}.entries[${entryIndex}]`,
+    );
+    return {
+      sectionId: pointer.sectionId,
+      lineId: pointer.lineId,
+    };
+  });
+
+  if (
+    dialogueHistory.currentLength < 0 ||
+    dialogueHistory.currentLength > entries.length
+  ) {
+    throw new Error(
+      `Malformed save slot ${path}.currentLength: must reference the retained entries.`,
+    );
+  }
+
+  const checkpointLengths = dialogueHistory.checkpointLengths.map(
+    (length, checkpointIndex) => {
+      if (!Number.isInteger(length) || length < 0 || length > entries.length) {
+        throw new Error(
+          `Malformed save slot ${path}.checkpointLengths[${checkpointIndex}].`,
+        );
+      }
+      return length;
+    },
+  );
+
+  return {
+    entries,
+    currentLength: dialogueHistory.currentLength,
+    checkpointLengths,
+  };
+};
+
+const isDialogueHistoryLine = (projectData, pointer) =>
+  isRecord(getRollbackLine(projectData, pointer)?.actions?.dialogue);
+
+const rebuildLegacyDialogueHistory = (rollback, projectData) => {
+  const history = createDefaultDialogueHistoryState();
+
+  rollback.timeline.forEach((checkpoint) => {
+    if (
+      checkpoint.returnable !== false &&
+      isDialogueHistoryLine(projectData, checkpoint)
+    ) {
+      history.entries.push({
+        sectionId: checkpoint.sectionId,
+        lineId: checkpoint.lineId,
+      });
+    }
+    history.checkpointLengths.push(history.entries.length);
+  });
+
+  history.currentLength = history.checkpointLengths[rollback.currentIndex] ?? 0;
+  return history.entries.length > 0 ? history : null;
+};
+
+const synchronizeLoadedDialogueHistory = (
+  dialogueHistory,
+  rollback,
+  projectData,
+) => {
+  let derivedLength = 0;
+
+  const checkpointLengths = rollback.timeline.map((checkpoint) => {
+    const nextEntry = dialogueHistory.entries[derivedLength];
+    if (
+      checkpoint.returnable !== false &&
+      isDialogueHistoryLine(projectData, checkpoint) &&
+      nextEntry?.sectionId === checkpoint.sectionId &&
+      nextEntry?.lineId === checkpoint.lineId
+    ) {
+      derivedLength += 1;
+    }
+    return derivedLength;
+  });
+
+  if (derivedLength !== dialogueHistory.entries.length) {
+    throw new Error(
+      "Malformed save slot dialogueHistory: entries must follow the rollback timeline.",
+    );
+  }
+
+  dialogueHistory.checkpointLengths = checkpointLengths;
+  dialogueHistory.currentLength = checkpointLengths[rollback.currentIndex] ?? 0;
+  return dialogueHistory;
+};
+
 const getNextAuthoredRollbackPointer = (projectData, checkpoint) => {
   const { section } = findSectionInProjectData(
     projectData,
@@ -953,6 +1127,24 @@ const normalizeLoadedContext = (context, projectData, index) => {
       : {},
   });
 
+  const rollback = normalizeLoadedRollback(
+    context.rollback,
+    readPointer,
+    projectData,
+  );
+  const dialogueHistory =
+    context.dialogueHistory === undefined
+      ? rebuildLegacyDialogueHistory(rollback, projectData)
+      : synchronizeLoadedDialogueHistory(
+          normalizeLoadedDialogueHistory(
+            context.dialogueHistory,
+            projectData,
+            `contexts[${index}].dialogueHistory`,
+          ),
+          rollback,
+          projectData,
+        );
+
   const normalizedContext = {
     currentPointerMode: "read",
     pointers: {
@@ -971,11 +1163,8 @@ const normalizeLoadedContext = (context, projectData, index) => {
       ...contextVariableDefaults,
       ...loadedContextVariables,
     },
-    rollback: normalizeLoadedRollback(
-      context.rollback,
-      readPointer,
-      projectData,
-    ),
+    ...(dialogueHistory ? { dialogueHistory } : {}),
+    rollback,
   };
 
   if (loadedContextRuntime) {
@@ -1711,6 +1900,8 @@ const appendRollbackCheckpoint = (state, payload) => {
     return;
   }
 
+  const dialogueHistory = truncateDialogueHistoryToCursor(lastContext);
+
   if (rollback.currentIndex < rollback.timeline.length - 1) {
     rollback.timeline = rollback.timeline.slice(0, rollback.currentIndex + 1);
   }
@@ -1719,6 +1910,13 @@ const appendRollbackCheckpoint = (state, payload) => {
   // even when it revisits the same authored line and policy back-to-back.
   rollback.timeline.push(createRollbackCheckpoint(payload));
   rollback.currentIndex = rollback.timeline.length - 1;
+  if (dialogueHistory) {
+    dialogueHistory.checkpointLengths = dialogueHistory.checkpointLengths.slice(
+      0,
+      rollback.currentIndex,
+    );
+    dialogueHistory.checkpointLengths.push(dialogueHistory.currentLength);
+  }
 };
 
 export const selectRollbackCursor = ({ state }) => {
@@ -1833,6 +2031,11 @@ const getCurrentRollbackCheckpoint = (state) => {
     checkpointIndex < rollback.timeline.length - 1
   ) {
     rollback.timeline = rollback.timeline.slice(0, checkpointIndex + 1);
+    const dialogueHistory = truncateDialogueHistoryToCursor(lastContext);
+    if (dialogueHistory) {
+      dialogueHistory.checkpointLengths =
+        dialogueHistory.checkpointLengths.slice(0, checkpointIndex + 1);
+    }
   }
 
   return rollback.timeline[checkpointIndex] ?? null;
@@ -1859,6 +2062,11 @@ export const beginRollbackActionBatch = ({ state }, payload = {}) => {
 
   if (rollback.currentIndex < rollback.timeline.length - 1) {
     rollback.timeline = rollback.timeline.slice(0, rollback.currentIndex + 1);
+    const dialogueHistory = truncateDialogueHistoryToCursor(lastContext);
+    if (dialogueHistory) {
+      dialogueHistory.checkpointLengths =
+        dialogueHistory.checkpointLengths.slice(0, rollback.currentIndex + 1);
+    }
   }
 
   rollbackActionBatchStack.push({
@@ -2013,6 +2221,13 @@ const restoreRollbackCheckpoint = (state, checkpointIndex) => {
       sectionId: checkpoint.sectionId,
       lineId: checkpoint.lineId,
     };
+    const dialogueHistory = getDialogueHistoryState(lastContext);
+    if (dialogueHistory) {
+      dialogueHistory.currentLength = Math.min(
+        dialogueHistory.checkpointLengths[checkpointIndex] ?? 0,
+        dialogueHistory.entries.length,
+      );
+    }
     if (lastContext.kind === "sceneReplay") {
       lastContext.sceneReplay.entryId = nextSceneReplayEntryId(state);
     }
@@ -2138,21 +2353,32 @@ export const selectDialogueHistory = ({ state }) => {
     return [];
   }
 
-  const { sectionId, lineId } = lastContext.pointers.read;
-  const section = selectSection({ state }, { sectionId });
-
-  if (!section?.lines || !Array.isArray(section.lines)) {
-    return [];
+  let historyPointers;
+  if (
+    isRecord(lastContext.dialogueHistory) &&
+    Array.isArray(lastContext.dialogueHistory.entries) &&
+    Number.isInteger(lastContext.dialogueHistory.currentLength)
+  ) {
+    historyPointers = lastContext.dialogueHistory.entries.slice(
+      0,
+      lastContext.dialogueHistory.currentLength,
+    );
+  } else {
+    // Compatibility for direct selector consumers and pre-history state.
+    const { sectionId, lineId } = lastContext.pointers.read;
+    const section = selectSection({ state }, { sectionId });
+    if (!section?.lines || !Array.isArray(section.lines)) {
+      return [];
+    }
+    const currentLineIndex = section.lines.findIndex(
+      (line) => line.id === lineId,
+    );
+    historyPointers = section.lines
+      .slice(0, currentLineIndex + 1)
+      .map((line) => ({ sectionId, lineId: line.id }));
   }
 
-  // Get all lines up to and including the current line
-  const currentLineIndex = section.lines.findIndex(
-    (line) => line.id === lineId,
-  );
-  const linesUpToCurrent = section.lines.slice(0, currentLineIndex + 1);
-
   const historyContent = [];
-  let presentationState = {};
   const variables = selectVariablesWithComputedValues({
     variables: {
       ...(state.global?.variables ?? {}),
@@ -2163,17 +2389,24 @@ export const selectDialogueHistory = ({ state }) => {
     eager: false,
   });
 
-  for (const line of linesUpToCurrent) {
+  for (const pointer of historyPointers) {
+    if (!isDialogueHistoryPointer(pointer)) {
+      continue;
+    }
+    const section = selectSection({ state }, { sectionId: pointer.sectionId });
+    const line = section?.lines?.find((item) => item.id === pointer.lineId);
+    if (!line) {
+      continue;
+    }
     const lineActions = line.actions || {};
-    presentationState = constructPresentationState([
-      presentationState,
-      lineActions,
-    ]);
-
     if (!lineActions.dialogue) {
       continue;
     }
 
+    const presentationState = selectPresentationStateForPointer({
+      state,
+      pointer,
+    });
     const dialogueState = presentationState.dialogue || {};
     const characterName = resolveCharacterDisplayName({
       characterId: dialogueState.characterId,
@@ -2183,7 +2416,7 @@ export const selectDialogueHistory = ({ state }) => {
     });
 
     const historyEntry = createDialogueHistoryEntry({
-      sectionId,
+      sectionId: pointer.sectionId,
       lineId: line.id,
       content:
         lineActions.dialogue.append === true
@@ -2193,7 +2426,11 @@ export const selectDialogueHistory = ({ state }) => {
       characterName,
     });
 
-    if (lineActions.dialogue.append === true && historyContent.length > 0) {
+    const previousHistoryEntry = historyContent[historyContent.length - 1];
+    if (
+      lineActions.dialogue.append === true &&
+      previousHistoryEntry?.sectionId === pointer.sectionId
+    ) {
       historyContent[historyContent.length - 1] = {
         ...historyContent[historyContent.length - 1],
         content: historyEntry.content,
@@ -2209,6 +2446,115 @@ export const selectDialogueHistory = ({ state }) => {
   }
 
   return historyContent;
+};
+
+const patchSavedDialogueHistory = (
+  state,
+  savedCheckpointOccurrences,
+  dialogueHistory,
+) => {
+  let patchedSaveSlot = false;
+
+  for (const occurrence of savedCheckpointOccurrences ?? []) {
+    const { slotId, saveSlotIdentity, checkpointIndex, sectionId, lineId } =
+      occurrence;
+    const saveSlot = state.global.saveSlots?.[toSlotStorageKey(slotId)];
+    const saveSlotOriginal = isDraft(saveSlot) ? original(saveSlot) : saveSlot;
+    const savedContext = saveSlot?.state?.contexts?.at(-1);
+    const checkpoint = savedContext?.rollback?.timeline?.[checkpointIndex];
+    if (
+      !saveSlot ||
+      saveSlotOriginal !== saveSlotIdentity ||
+      savedContext?.pointers?.read?.sectionId !== sectionId ||
+      savedContext?.pointers?.read?.lineId !== lineId ||
+      checkpoint?.sectionId !== sectionId ||
+      checkpoint?.lineId !== lineId
+    ) {
+      continue;
+    }
+
+    savedContext.dialogueHistory = cloneStateValue(dialogueHistory);
+    patchedSaveSlot = true;
+  }
+
+  if (patchedSaveSlot) {
+    state.global.pendingEffects.push({
+      name: "saveSlots",
+      payload: {
+        saveSlots: { ...state.global.saveSlots },
+      },
+    });
+  }
+};
+
+export const recordCurrentDialogueHistory = ({ state }, payload = {}) => {
+  const context = getCurrentContext(state);
+  const pointer = context?.pointers?.read;
+  const line = selectCurrentLine({ state });
+  if (!context || !isRecord(line?.actions?.dialogue)) {
+    return state;
+  }
+
+  const rollback = ensureRollbackState(context);
+  const checkpoint = rollback.timeline?.[rollback.currentIndex];
+  const checkpointMatchesPointer =
+    checkpoint?.sectionId === pointer?.sectionId &&
+    checkpoint?.lineId === pointer?.lineId;
+  const existingDialogueHistory = getDialogueHistoryState(context);
+  const checkpointHistoryLength =
+    existingDialogueHistory?.checkpointLengths?.[rollback.currentIndex];
+  const previousCheckpointHistoryLength =
+    rollback.currentIndex > 0
+      ? (existingDialogueHistory?.checkpointLengths?.[
+          rollback.currentIndex - 1
+        ] ?? 0)
+      : 0;
+  const lastHistoryEntry =
+    existingDialogueHistory?.entries?.[
+      existingDialogueHistory.currentLength - 1
+    ];
+  if (
+    checkpointMatchesPointer &&
+    existingDialogueHistory &&
+    checkpointHistoryLength === existingDialogueHistory.currentLength &&
+    checkpointHistoryLength > previousCheckpointHistoryLength &&
+    lastHistoryEntry?.sectionId === pointer.sectionId &&
+    lastHistoryEntry?.lineId === pointer.lineId
+  ) {
+    return state;
+  }
+
+  const dialogueHistory = ensureDialogueHistoryState(context);
+  if (dialogueHistory.currentLength < dialogueHistory.entries.length) {
+    dialogueHistory.entries = dialogueHistory.entries.slice(
+      0,
+      dialogueHistory.currentLength,
+    );
+  }
+  dialogueHistory.entries.push({
+    sectionId: pointer.sectionId,
+    lineId: pointer.lineId,
+  });
+  dialogueHistory.currentLength = dialogueHistory.entries.length;
+
+  if (checkpointMatchesPointer) {
+    while (
+      dialogueHistory.checkpointLengths.length < rollback.timeline.length
+    ) {
+      dialogueHistory.checkpointLengths.push(
+        dialogueHistory.checkpointLengths.at(-1) ?? 0,
+      );
+    }
+    dialogueHistory.checkpointLengths[rollback.currentIndex] =
+      dialogueHistory.currentLength;
+  }
+
+  patchSavedDialogueHistory(
+    state,
+    payload.savedCheckpointOccurrences,
+    dialogueHistory,
+  );
+  return state;
 };
 
 export const selectConfirmDialog = ({ state }) => {
@@ -6126,6 +6472,7 @@ export const createSystemStore = (initialState) => {
     endRollbackActionBatch,
     markRollbackCheckpointTransient,
     markSavedRollbackCheckpointTransient,
+    recordCurrentDialogueHistory,
     addViewedLine,
     addViewedResource,
     showImageGalleryVariant,

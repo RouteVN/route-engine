@@ -54,7 +54,19 @@ History does not change story state.
 
 History is a separate feature and should not be conflated with rollback.
 
-In the current engine, dialogue history is a render-time projection for the current section. It is not the same data as `rollback.timeline`, and it is not a durable all-sections visit log.
+Dialogue history is a durable, context-local chronological log that crosses
+section boundaries. It remains separate from `rollback.timeline`: history is
+read-only presentation data, while rollback checkpoints reconstruct playable
+story state. Their cursors are coordinated so rolling back hides later dialogue
+and taking a new branch discards the abandoned future from both structures.
+
+Dialogue history retention follows these rules:
+
+- it is isolated per context, including scene replay contexts
+- it is stored and restored with save slots
+- `resetStoryAtSection` starts a fresh history
+- abandoned future entries are removed when play continues after rollback
+- entries are otherwise retained without an engine-imposed count limit
 
 ### Checkpoint
 
@@ -456,7 +468,6 @@ Without this guard, rollback reconstruction can:
 This document does not define:
 
 - dialogue history UI
-- history retention rules
 - fixed rollback behavior
 - blocked rollback behavior
 - roll-forward UX
