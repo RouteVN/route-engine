@@ -64,6 +64,7 @@ The destination line then runs as normal through queued `handleLineActions`.
 - `global.saveSlots`
 - `global.variables` for `device` and `account` scopes
 - `global.accountViewedRegistry`
+- `global.accountReplayRegistry`
 
 ## What It Resets
 

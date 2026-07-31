@@ -246,6 +246,7 @@ const init = async () => {
     globalAccountVariables,
     globalRuntime,
     accountViewedRegistry,
+    accountReplayRegistry,
   } = await persistence.load();
 
   let engine;
@@ -340,6 +341,7 @@ const init = async () => {
         variables: { ...globalDeviceVariables, ...globalAccountVariables },
         runtime: globalRuntime,
         accountViewedRegistry,
+        accountReplayRegistry,
       },
       projectData,
       l10nData,

@@ -510,10 +510,9 @@ const MUSIC_ROOM_TRACK_KEYS = new Set([
 ]);
 const SCENE_REPLAY_KEYS = new Set(["pageSize", "replays"]);
 const SCENE_REPLAY_ENTRY_KEYS = new Set([
-  "id",
+  "sceneId",
   "title",
   "thumbnailImageId",
-  "startSectionId",
   "initialVariables",
 ]);
 
@@ -776,14 +775,8 @@ export const validateSceneReplayConfig = (projectData = {}) => {
     throw new Error("resources.sceneReplay.replays must be an array");
   }
 
-  const sections = new Map();
-  Object.values(projectData?.story?.scenes ?? {}).forEach((scene) => {
-    Object.entries(scene?.sections ?? {}).forEach(([sectionId, section]) => {
-      sections.set(sectionId, section);
-    });
-  });
-
-  const replayIds = new Set();
+  const scenes = projectData?.story?.scenes ?? {};
+  const replaySceneIds = new Set();
   for (const [replayIndex, replay] of sceneReplay.replays.entries()) {
     const replayPath = `resources.sceneReplay.replays[${replayIndex}]`;
     if (!isRecord(replay)) {
@@ -791,34 +784,36 @@ export const validateSceneReplayConfig = (projectData = {}) => {
     }
     assertImageGalleryObjectKeys(replay, SCENE_REPLAY_ENTRY_KEYS, replayPath);
 
-    for (const fieldName of [
-      "id",
-      "title",
-      "thumbnailImageId",
-      "startSectionId",
-    ]) {
+    for (const fieldName of ["sceneId", "title", "thumbnailImageId"]) {
       assertNonEmptyImageGalleryId(
         replay[fieldName],
         `${replayPath}.${fieldName}`,
       );
     }
 
-    if (replayIds.has(replay.id)) {
-      throw new Error(`Duplicate scene replay id "${replay.id}"`);
+    if (replaySceneIds.has(replay.sceneId)) {
+      throw new Error(`Duplicate scene replay sceneId "${replay.sceneId}"`);
     }
-    replayIds.add(replay.id);
+    replaySceneIds.add(replay.sceneId);
 
     if (!hasOwn(projectData?.resources?.images, replay.thumbnailImageId)) {
       throw new Error(
-        `Scene replay "${replay.id}" references unknown thumbnail image "${replay.thumbnailImageId}"`,
+        `Scene replay scene "${replay.sceneId}" references unknown thumbnail image "${replay.thumbnailImageId}"`,
       );
     }
-    if (!sections.has(replay.startSectionId)) {
+    const scene = scenes[replay.sceneId];
+    if (!scene) {
       throw new Error(
-        `Scene replay "${replay.id}" references unknown start section "${replay.startSectionId}"`,
+        `Scene replay references unknown scene "${replay.sceneId}"`,
       );
     }
-    const startSection = sections.get(replay.startSectionId);
+    const startSectionId = scene.initialSectionId;
+    const startSection = scene.sections?.[startSectionId];
+    if (!startSection) {
+      throw new Error(
+        `Scene replay scene "${replay.sceneId}" references unknown initial section "${startSectionId}"`,
+      );
+    }
     if (
       startSection.initialLineId !== undefined &&
       !startSection.lines?.some(
@@ -826,7 +821,7 @@ export const validateSceneReplayConfig = (projectData = {}) => {
       )
     ) {
       throw new Error(
-        `Scene replay "${replay.id}" start section "${replay.startSectionId}" references unknown initial line "${startSection.initialLineId}"`,
+        `Scene replay scene "${replay.sceneId}" initial section "${startSectionId}" references unknown initial line "${startSection.initialLineId}"`,
       );
     }
 
@@ -841,22 +836,22 @@ export const validateSceneReplayConfig = (projectData = {}) => {
       const variableConfig = projectData?.resources?.variables?.[variableId];
       if (!variableConfig) {
         throw new Error(
-          `Scene replay "${replay.id}" initialVariables references unknown variable "${variableId}"`,
+          `Scene replay scene "${replay.sceneId}" initialVariables references unknown variable "${variableId}"`,
         );
       }
       if (isComputedVariableConfig(variableConfig)) {
         throw new Error(
-          `Scene replay "${replay.id}" cannot initialize computed variable "${variableId}"`,
+          `Scene replay scene "${replay.sceneId}" cannot initialize computed variable "${variableId}"`,
         );
       }
       if (variableConfig.readonly === true) {
         throw new Error(
-          `Scene replay "${replay.id}" cannot initialize readonly variable "${variableId}"`,
+          `Scene replay scene "${replay.sceneId}" cannot initialize readonly variable "${variableId}"`,
         );
       }
       if (variableConfig.scope !== "context") {
         throw new Error(
-          `Scene replay "${replay.id}" can only initialize context variable "${variableId}"`,
+          `Scene replay scene "${replay.sceneId}" can only initialize context variable "${variableId}"`,
         );
       }
       assertSceneReplayInitialVariableValue(variableId, variableConfig, value);

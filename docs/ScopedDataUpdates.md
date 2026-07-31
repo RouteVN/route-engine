@@ -2,7 +2,8 @@
 
 `applyScopedDataUpdates` is a public runtime-facing persistence effect. Hosts and runtime adapters must treat it as a stable interface.
 
-It is for scoped data that lives outside save slots, such as device/account variables and account-level viewed state.
+It is for scoped data that lives outside save slots, such as device/account
+variables, account-level viewed state, and replay unlocks.
 
 ## Effect Shape
 
@@ -14,7 +15,10 @@ type ApplyScopedDataUpdatesEffect = {
   };
 };
 
-type ScopedDataUpdate = VariableSetUpdate | ViewedRegistryMarkViewedUpdate;
+type ScopedDataUpdate =
+  | VariableSetUpdate
+  | ViewedRegistryMarkViewedUpdate
+  | ReplayRegistryUnlockUpdate;
 
 type Scope = "device" | "account";
 
@@ -37,6 +41,15 @@ type ViewedRegistryMarkViewedUpdate = {
     resources?: Array<{
       resourceId: string;
     }>;
+  };
+};
+
+type ReplayRegistryUnlockUpdate = {
+  scope: "account";
+  path: "replayRegistry";
+  op: "unlock";
+  value: {
+    sceneIds: string[];
   };
 };
 ```
@@ -72,6 +85,14 @@ type ViewedRegistryMarkViewedUpdate = {
           resources: [
             { resourceId: "cg-opening" },
           ],
+        },
+      },
+      {
+        scope: "account",
+        path: "replayRegistry",
+        op: "unlock",
+        value: {
+          sceneIds: ["firstEnding"],
         },
       },
     ],
@@ -137,6 +158,30 @@ Rules:
 
 `markViewed` is intentionally not a generic `merge` or `set`. It depends on viewed-registry semantics, including section line ordering and monotonic frontier advancement. Runtime implementations and persistence adapters must apply it through viewed-registry logic, not plain object merge.
 
+## Replay Registry
+
+Replay registry updates unlock scenes at account scope:
+
+```js
+{
+  scope: "account",
+  path: "replayRegistry",
+  op: "unlock",
+  value: {
+    sceneIds: ["firstEnding"],
+  },
+}
+```
+
+Rules:
+
+- `scope` must be `account`.
+- `path` must be `replayRegistry`.
+- `op` must be `unlock`.
+- `sceneIds` must be a non-empty array of non-empty strings.
+- Scene IDs are set-like and idempotent.
+- The operation is monotonic and must never remove an existing unlock.
+
 ## Storage Notes
 
 Save slots must not store this effect payload. Save slots keep story context state only.
@@ -147,4 +192,5 @@ Host persistence adapters that implement account sync must map:
 
 - `{ scope: "account", path: "variables.<id>" }` to account variable storage
 - `{ scope: "account", path: "viewedRegistry" }` to account viewed-state storage
+- `{ scope: "account", path: "replayRegistry" }` to account replay-unlock storage
 - `{ scope: "device", path: "variables.<id>" }` to device-local variable storage

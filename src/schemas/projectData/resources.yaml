@@ -124,10 +124,10 @@ properties:
         items:
           type: object
           properties:
-            id:
+            sceneId:
               type: string
               minLength: 1
-              description: Scene-replay-wide unique replay ID
+              description: Authored scene unlocked and replayed by this entry
             title:
               type: string
               minLength: 1
@@ -135,15 +135,11 @@ properties:
               type: string
               minLength: 1
               description: Reference to a resources.images entry
-            startSectionId:
-              type: string
-              minLength: 1
-              description: Section whose initial or first line starts the replay
             initialVariables:
               type: object
               description: Optional overrides for stored context-scoped variables
               additionalProperties: true
-          required: [id, title, thumbnailImageId, startSectionId]
+          required: [sceneId, title, thumbnailImageId]
           additionalProperties: false
     required: [pageSize, replays]
     additionalProperties: false

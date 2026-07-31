@@ -63,6 +63,8 @@ out:
     accountViewedRegistry:
       sections: []
       resources: []
+    accountReplayRegistry:
+      sceneIds: []
     nextLineConfig:
       manual:
         enabled: true
@@ -179,6 +181,8 @@ out:
     accountViewedRegistry:
       sections: []
       resources: []
+    accountReplayRegistry:
+      sceneIds: []
     nextLineConfig:
       manual:
         enabled: true
@@ -308,6 +312,8 @@ out:
     accountViewedRegistry:
       sections: []
       resources: []
+    accountReplayRegistry:
+      sceneIds: []
     nextLineConfig:
       manual:
         enabled: true
@@ -431,6 +437,8 @@ out:
     accountViewedRegistry:
       sections: []
       resources: []
+    accountReplayRegistry:
+      sceneIds: []
     nextLineConfig:
       manual:
         enabled: true
@@ -551,6 +559,8 @@ out:
     accountViewedRegistry:
       sections: []
       resources: []
+    accountReplayRegistry:
+      sceneIds: []
     nextLineConfig:
       manual:
         enabled: true

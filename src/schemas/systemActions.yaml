@@ -650,17 +650,17 @@ properties:
 
   startSceneReplay:
     type: object
-    description: Start a replay in a fresh isolated context
+    description: Start an unlocked scene replay in a fresh isolated context
     properties:
-      replayId:
+      sceneId:
         type: string
         minLength: 1
-    required: [replayId]
+    required: [sceneId]
     additionalProperties: false
 
   finishSceneReplay:
     type: object
-    description: Mark an active replay to exit on its next eligible advance
+    description: Unlock the current scene during normal play, or mark an active replay to exit on its next eligible advance
     properties: {}
     additionalProperties: false
 

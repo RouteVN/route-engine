@@ -174,10 +174,9 @@ describe("systemState schema", () => {
         pageSize: 1,
         replays: [
           {
-            id: "memory",
+            sceneId: "scene1",
             title: "Memory",
             thumbnailImageId: "memory",
-            startSectionId: "section1",
           },
         ],
       },
@@ -188,16 +187,19 @@ describe("systemState schema", () => {
     engine.init({
       initialState: {
         projectData,
+        global: {
+          accountReplayRegistry: { sceneIds: ["scene1"] },
+        },
       },
     });
-    engine.handleAction("startSceneReplay", { replayId: "memory" });
+    engine.handleAction("startSceneReplay", { sceneId: "scene1" });
 
     const systemState = toJsonSnapshot(engine.selectSystemState());
     expect(systemState.contexts).toHaveLength(2);
     expect(systemState.contexts[1]).toMatchObject({
       kind: "sceneReplay",
       sceneReplay: {
-        replayId: "memory",
+        sceneId: "scene1",
         entryId: 1,
         finishOnNextAdvance: false,
         exitOnLineCompleted: false,
@@ -538,14 +540,14 @@ describe("systemState schema", () => {
     systemState.global.pendingEffects = [
       {
         name: "handleLineActions",
-        payload: { sceneReplayId: "firstMeeting", entryId: 1 },
+        payload: { sceneReplaySceneId: "firstMeeting", entryId: 1 },
       },
     ];
 
     expect(validateSystemState(systemState)).toBe(true);
     expect(validateSystemState.errors).toBeNull();
 
-    systemState.global.pendingEffects[0].payload.sceneReplayId = "";
+    systemState.global.pendingEffects[0].payload.sceneReplaySceneId = "";
     expect(validateSystemState(systemState)).toBe(false);
     expect(validateSystemState.errors).not.toBeNull();
   });

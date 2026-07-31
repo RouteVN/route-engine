@@ -8,6 +8,7 @@ const createEmptyPersistedState = () => ({
   globalAccountVariables: {},
   globalRuntime: {},
   accountViewedRegistry: {},
+  accountReplayRegistry: {},
 });
 
 const isPlainObject = (value) =>
@@ -159,6 +160,36 @@ const markViewedInRegistry = (currentRegistry, markViewedValue) => {
   return { sections, resources };
 };
 
+const normalizeStoredReplayRegistry = (value = {}) => {
+  const registry = isPlainObject(value) ? value : {};
+  const sceneIds = Array.isArray(registry.sceneIds) ? registry.sceneIds : [];
+  return {
+    sceneIds: [
+      ...new Set(
+        sceneIds.filter(
+          (sceneId) => typeof sceneId === "string" && sceneId.length > 0,
+        ),
+      ),
+    ],
+  };
+};
+
+const unlockReplayScenesInRegistry = (currentRegistry, value) => {
+  const current = normalizeStoredReplayRegistry(currentRegistry);
+  const sceneIds =
+    isPlainObject(value) && Array.isArray(value.sceneIds) ? value.sceneIds : [];
+  return {
+    sceneIds: [
+      ...new Set([
+        ...current.sceneIds,
+        ...sceneIds.filter(
+          (sceneId) => typeof sceneId === "string" && sceneId.length > 0,
+        ),
+      ]),
+    ],
+  };
+};
+
 const normalizePersistedState = (value = {}) => {
   const normalizedValue = isPlainObject(value) ? value : {};
 
@@ -179,6 +210,9 @@ const normalizePersistedState = (value = {}) => {
       : {},
     accountViewedRegistry: isPlainObject(normalizedValue.accountViewedRegistry)
       ? normalizedValue.accountViewedRegistry
+      : {},
+    accountReplayRegistry: isPlainObject(normalizedValue.accountReplayRegistry)
+      ? normalizedValue.accountReplayRegistry
       : {},
   };
 };
@@ -244,6 +278,35 @@ const normalizeScopedDataUpdates = (updates = []) => {
       return update;
     }
 
+    if (update.path === "replayRegistry") {
+      if (update.scope !== "account") {
+        throw new Error(
+          `Unsupported applyScopedDataUpdates scope "${update.scope}" at updates[${index}].`,
+        );
+      }
+      if (update.op !== "unlock") {
+        throw new Error(
+          `Unsupported applyScopedDataUpdates operation "${update.op}" at updates[${index}].`,
+        );
+      }
+      if (
+        !isPlainObject(update.value) ||
+        !Array.isArray(update.value.sceneIds) ||
+        update.value.sceneIds.length === 0 ||
+        update.value.sceneIds.some(
+          (sceneId) => typeof sceneId !== "string" || sceneId.length === 0,
+        )
+      ) {
+        throw new Error(
+          `Malformed applyScopedDataUpdates replayRegistry value at updates[${index}].`,
+        );
+      }
+      return {
+        ...update,
+        value: { sceneIds: [...new Set(update.value.sceneIds)] },
+      };
+    }
+
     if (typeof update.path !== "string") {
       throw new Error(
         `Malformed applyScopedDataUpdates path at updates[${index}].`,
@@ -263,6 +326,14 @@ const createPersistedStatePatch = (currentRecord, updates) => {
     if (update.path === "viewedRegistry") {
       nextPatch.accountViewedRegistry = markViewedInRegistry(
         nextPatch.accountViewedRegistry ?? currentRecord.accountViewedRegistry,
+        update.value,
+      );
+      return;
+    }
+
+    if (update.path === "replayRegistry") {
+      nextPatch.accountReplayRegistry = unlockReplayScenesInRegistry(
+        nextPatch.accountReplayRegistry ?? currentRecord.accountReplayRegistry,
         update.value,
       );
       return;

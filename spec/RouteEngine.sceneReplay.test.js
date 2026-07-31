@@ -6,26 +6,23 @@ const ABSENT_SCENE_REPLAY = Symbol("absent-scene-replay");
 
 const createReplayEntries = () => [
   {
-    id: "firstMeeting",
+    sceneId: "firstMeeting",
     title: "First Meeting",
     thumbnailImageId: "firstMeetingThumb",
-    startSectionId: "replayStart",
     initialVariables: {
       affection: 10,
       replayObject: { route: "replay" },
     },
   },
   {
-    id: "secondMemory",
+    sceneId: "secondMemory",
     title: "Second Memory",
     thumbnailImageId: "secondMemoryThumb",
-    startSectionId: "replayStart",
   },
   {
-    id: "thirdMemory",
+    sceneId: "thirdMemory",
     title: "Third Memory",
     thumbnailImageId: "thirdMemoryThumb",
-    startSectionId: "replayStart",
   },
 ];
 
@@ -107,6 +104,11 @@ const createProjectData = ({
                 { id: "caller2", actions: {} },
               ],
             },
+          },
+        },
+        firstMeeting: {
+          initialSectionId: "replayStart",
+          sections: {
             replayStart: {
               initialLineId: "replay1",
               lines: replayLines ?? [
@@ -131,6 +133,22 @@ const createProjectData = ({
             },
           },
         },
+        secondMemory: {
+          initialSectionId: "secondMemoryStart",
+          sections: {
+            secondMemoryStart: {
+              lines: [{ id: "secondMemory1", actions: {} }],
+            },
+          },
+        },
+        thirdMemory: {
+          initialSectionId: "thirdMemoryStart",
+          sections: {
+            thirdMemoryStart: {
+              lines: [{ id: "thirdMemory1", actions: {} }],
+            },
+          },
+        },
       },
     },
   };
@@ -139,6 +157,9 @@ const createProjectData = ({
 const createEngine = ({
   projectData = createProjectData(),
   accountViewedRegistry = { sections: [], resources: [] },
+  accountReplayRegistry = {
+    sceneIds: ["firstMeeting", "secondMemory", "thirdMemory"],
+  },
 } = {}) => {
   let engine;
   const effects = [];
@@ -153,7 +174,7 @@ const createEngine = ({
   engine.init({
     initialState: {
       projectData,
-      global: { accountViewedRegistry },
+      global: { accountViewedRegistry, accountReplayRegistry },
     },
   });
   effects.length = 0;
@@ -177,17 +198,19 @@ describe("RouteEngine scene replay catalog", () => {
     const { engine } = createEngine();
     expect(engine.selectSceneReplay()).toEqual({
       isActive: false,
-      activeReplayId: null,
+      activeSceneId: null,
       pageReplays: [
         {
-          replayId: "firstMeeting",
+          sceneId: "firstMeeting",
           title: "First Meeting",
           thumbnailImageId: "firstMeetingThumb",
+          locked: false,
         },
         {
-          replayId: "secondMemory",
+          sceneId: "secondMemory",
           title: "Second Memory",
           thumbnailImageId: "secondMemoryThumb",
+          locked: false,
         },
       ],
       pagination: {
@@ -200,7 +223,7 @@ describe("RouteEngine scene replay catalog", () => {
 
     engine.handleActions({ moveToNextSceneReplayPage: {} });
     expect(
-      engine.selectSceneReplay().pageReplays.map((item) => item.replayId),
+      engine.selectSceneReplay().pageReplays.map((item) => item.sceneId),
     ).toEqual(["thirdMemory"]);
     expect(engine.selectSceneReplay().pagination).toEqual({
       pageIndex: 1,
@@ -214,6 +237,134 @@ describe("RouteEngine scene replay catalog", () => {
       moveToPreviousSceneReplayPage: {},
     });
     expect(engine.selectSceneReplay().pagination.pageIndex).toBe(0);
+  });
+
+  it("projects locked scenes and refuses to start them", () => {
+    const { effects, engine } = createEngine({
+      accountReplayRegistry: { sceneIds: [] },
+    });
+
+    expect(engine.selectSceneReplay().pageReplays).toEqual([
+      expect.objectContaining({ sceneId: "firstMeeting", locked: true }),
+      expect.objectContaining({ sceneId: "secondMemory", locked: true }),
+    ]);
+
+    engine.handleActions({
+      startSceneReplay: { sceneId: "firstMeeting" },
+    });
+    expect(engine.selectIsSceneReplayActive()).toBe(false);
+    expect(effects).toEqual([]);
+  });
+
+  it("deduplicates loaded replay unlocks and rejects malformed registries", () => {
+    const { engine } = createEngine({
+      accountReplayRegistry: {
+        sceneIds: ["firstMeeting", "firstMeeting", "retiredScene"],
+      },
+    });
+    expect(engine.selectSystemState().global.accountReplayRegistry).toEqual({
+      sceneIds: ["firstMeeting", "retiredScene"],
+    });
+
+    for (const accountReplayRegistry of [
+      null,
+      { sceneIds: "firstMeeting" },
+      { sceneIds: [""] },
+      { sceneIds: [1] },
+    ]) {
+      expect(() => createEngine({ accountReplayRegistry })).toThrow(
+        "Malformed accountReplayRegistry",
+      );
+    }
+  });
+
+  it("automatically unlocks the current scene at its normal-story finish marker", () => {
+    const { effects, engine } = createEngine({
+      accountReplayRegistry: { sceneIds: [] },
+    });
+
+    engine.handleActions({
+      sectionTransition: { sectionId: "replayStart" },
+    });
+    engine.handleAction("markLineCompleted", {});
+    effects.length = 0;
+    engine.handleActions({ nextLine: {} });
+
+    expect(engine.selectSystemState().global.accountReplayRegistry).toEqual({
+      sceneIds: ["firstMeeting"],
+    });
+    expect(engine.selectSceneReplay().pageReplays[0]).toMatchObject({
+      sceneId: "firstMeeting",
+      locked: false,
+    });
+    expect(effects).toContainEqual({
+      name: "applyScopedDataUpdates",
+      payload: {
+        updates: [
+          {
+            scope: "account",
+            path: "replayRegistry",
+            op: "unlock",
+            value: { sceneIds: ["firstMeeting"] },
+          },
+        ],
+      },
+    });
+
+    effects.length = 0;
+    engine.handleActions({ finishSceneReplay: {} });
+    expect(effects).toEqual([]);
+    expect(
+      engine.selectSystemState().global.accountReplayRegistry.sceneIds,
+    ).toEqual(["firstMeeting"]);
+  });
+
+  it("keeps account replay unlocks when loading a save made before completion", () => {
+    const { engine } = createEngine({
+      accountReplayRegistry: { sceneIds: [] },
+    });
+    engine.handleActions({ saveSlot: { slotId: 1, savedAt: 1700000000000 } });
+
+    engine.handleActions({
+      sectionTransition: { sectionId: "replayStart" },
+    });
+    engine.handleAction("markLineCompleted", {});
+    engine.handleActions({ nextLine: {} });
+    expect(engine.selectSceneReplay().pageReplays[0].locked).toBe(false);
+
+    engine.handleActions({ loadSlot: { slotId: 1 } });
+
+    expect(selectCurrentContext(engine).pointers.read).toMatchObject({
+      sectionId: "caller",
+      lineId: "caller1",
+    });
+    expect(engine.selectSystemState().global.accountReplayRegistry).toEqual({
+      sceneIds: ["firstMeeting"],
+    });
+    expect(engine.selectSceneReplay().pageReplays[0].locked).toBe(false);
+  });
+
+  it("rolls back a new unlock and its persistence effect when the action batch fails", () => {
+    const { effects, engine } = createEngine({
+      accountReplayRegistry: { sceneIds: [] },
+    });
+    engine.handleActions({
+      sectionTransition: { sectionId: "replayStart" },
+    });
+    effects.length = 0;
+
+    expect(() =>
+      engine.handleActions({
+        finishSceneReplay: {},
+        moveToSceneReplayPage: { pageIndex: -1 },
+      }),
+    ).toThrow("requires a non-negative integer pageIndex");
+
+    expect(engine.selectSystemState().global.accountReplayRegistry).toEqual({
+      sceneIds: [],
+    });
+    expect(engine.selectSceneReplay().pageReplays[0].locked).toBe(true);
+    expect(effects).toEqual([]);
   });
 
   it("starts from fresh defaults plus cloned initial overrides", () => {
@@ -231,7 +382,7 @@ describe("RouteEngine scene replay catalog", () => {
           },
         ],
       },
-      startSceneReplay: { replayId: "firstMeeting" },
+      startSceneReplay: { sceneId: "firstMeeting" },
     });
 
     const context = selectCurrentContext(engine);
@@ -248,7 +399,7 @@ describe("RouteEngine scene replay catalog", () => {
     });
     expect(engine.selectSceneReplay()).toMatchObject({
       isActive: true,
-      activeReplayId: "firstMeeting",
+      activeSceneId: "firstMeeting",
     });
     expect(engine.selectIsSceneReplayActive()).toBe(true);
 
@@ -284,7 +435,7 @@ describe("RouteEngine scene replay catalog", () => {
   it("keeps a finish-marked line visible and exits on the next completed advance", () => {
     const { engine } = createEngine();
     engine.handleActions({
-      startSceneReplay: { replayId: "firstMeeting" },
+      startSceneReplay: { sceneId: "firstMeeting" },
     });
 
     engine.handleAction("markLineCompleted", {});
@@ -326,7 +477,7 @@ describe("RouteEngine scene replay catalog", () => {
       }),
     });
     engine.handleActions({
-      startSceneReplay: { replayId: "firstMeeting" },
+      startSceneReplay: { sceneId: "firstMeeting" },
     });
     engine.handleAction("markLineCompleted", {});
     engine.handleActions({ nextLine: {} });
@@ -344,7 +495,7 @@ describe("RouteEngine scene replay catalog", () => {
     expect(selectCurrentContext(engine).pointers.read.lineId).toBe("caller1");
   });
 
-  it("supports immediate exit and treats finish/exit outside replay as no-ops", () => {
+  it("supports immediate exit without unlocking and ignores an unlisted normal scene", () => {
     const { engine } = createEngine();
     const before = engine.selectSystemState();
 
@@ -355,10 +506,13 @@ describe("RouteEngine scene replay catalog", () => {
     expect(engine.selectSystemState()).toEqual(before);
 
     engine.handleActions({
-      startSceneReplay: { replayId: "firstMeeting" },
+      startSceneReplay: { sceneId: "firstMeeting" },
       exitSceneReplay: {},
     });
     expect(engine.selectIsSceneReplayActive()).toBe(false);
+    expect(engine.selectSystemState().global.accountReplayRegistry).toEqual(
+      before.global.accountReplayRegistry,
+    );
   });
 
   it("does not restore a dialog that started replay from its confirm actions", () => {
@@ -367,7 +521,7 @@ describe("RouteEngine scene replay catalog", () => {
       showConfirmDialog: {
         resourceId: "confirmReplay",
         confirmActions: {
-          startSceneReplay: { replayId: "firstMeeting" },
+          startSceneReplay: { sceneId: "firstMeeting" },
         },
       },
     });
@@ -395,7 +549,7 @@ describe("RouteEngine scene replay catalog", () => {
     expect(selectCurrentContext(engine).variables.affection).toBe(2);
 
     engine.handleActions({
-      startSceneReplay: { replayId: "firstMeeting" },
+      startSceneReplay: { sceneId: "firstMeeting" },
       exitSceneReplay: {},
     });
 
@@ -417,7 +571,7 @@ describe("RouteEngine scene replay catalog", () => {
 
     engine.handleActions({
       jumpToLine: { lineId: "caller2" },
-      startSceneReplay: { replayId: "firstMeeting" },
+      startSceneReplay: { sceneId: "firstMeeting" },
       exitSceneReplay: {},
     });
 
@@ -456,6 +610,7 @@ describe("RouteEngine scene replay catalog", () => {
         projectData,
         global: {
           accountViewedRegistry: { sections: [], resources: [] },
+          accountReplayRegistry: { sceneIds: ["firstMeeting"] },
         },
       },
     });
@@ -463,7 +618,7 @@ describe("RouteEngine scene replay catalog", () => {
 
     engine.handleActions({
       appendPendingEffect: { name: "exitReplayBeforeOwnedLineWork" },
-      startSceneReplay: { replayId: "firstMeeting" },
+      startSceneReplay: { sceneId: "firstMeeting" },
     });
 
     expect(engine.selectIsSceneReplayActive()).toBe(false);
@@ -472,13 +627,14 @@ describe("RouteEngine scene replay catalog", () => {
 
   it("does not reuse captured line work after effect-driven replay navigation", () => {
     const projectData = createProjectData();
-    projectData.story.scenes.main.sections.replayBranch.lines[0].actions = {
-      updateVariable: {
-        id: "countBranchEntry",
-        operations: [{ variableId: "affection", op: "increment", value: 1 }],
-      },
-      finishSceneReplay: {},
-    };
+    projectData.story.scenes.firstMeeting.sections.replayBranch.lines[0].actions =
+      {
+        updateVariable: {
+          id: "countBranchEntry",
+          operations: [{ variableId: "affection", op: "increment", value: 1 }],
+        },
+        finishSceneReplay: {},
+      };
     let engine;
     const handlePendingEffects = createEffectsHandler({
       getEngine: () => engine,
@@ -498,13 +654,14 @@ describe("RouteEngine scene replay catalog", () => {
         projectData,
         global: {
           accountViewedRegistry: { sections: [], resources: [] },
+          accountReplayRegistry: { sceneIds: ["firstMeeting"] },
         },
       },
     });
 
     engine.handleActions({
       appendPendingEffect: { name: "routeReplayBeforeOwnedLineWork" },
-      startSceneReplay: { replayId: "firstMeeting" },
+      startSceneReplay: { sceneId: "firstMeeting" },
     });
 
     expect(selectCurrentContext(engine)).toMatchObject({
@@ -514,7 +671,7 @@ describe("RouteEngine scene replay catalog", () => {
     });
   });
 
-  it("does not reuse captured line work after restarting the same replay ID", () => {
+  it("does not reuse captured line work after restarting the same replay scene", () => {
     const projectData = createProjectData({
       replayLines: [
         {
@@ -539,7 +696,7 @@ describe("RouteEngine scene replay catalog", () => {
         if (effect.name === "restartReplayBeforeOwnedLineWork") {
           engine.handleActions({
             exitSceneReplay: {},
-            startSceneReplay: { replayId: "firstMeeting" },
+            startSceneReplay: { sceneId: "firstMeeting" },
           });
         }
       },
@@ -550,19 +707,20 @@ describe("RouteEngine scene replay catalog", () => {
         projectData,
         global: {
           accountViewedRegistry: { sections: [], resources: [] },
+          accountReplayRegistry: { sceneIds: ["firstMeeting"] },
         },
       },
     });
 
     engine.handleActions({
       appendPendingEffect: { name: "restartReplayBeforeOwnedLineWork" },
-      startSceneReplay: { replayId: "firstMeeting" },
+      startSceneReplay: { sceneId: "firstMeeting" },
     });
 
     expect(selectCurrentContext(engine)).toMatchObject({
       pointers: { read: { sectionId: "replayStart", lineId: "replay1" } },
       variables: { affection: 11 },
-      sceneReplay: { replayId: "firstMeeting", entryId: 2 },
+      sceneReplay: { sceneId: "firstMeeting", entryId: 2 },
     });
   });
 
@@ -570,7 +728,7 @@ describe("RouteEngine scene replay catalog", () => {
     const { engine } = createEngine();
     const structuredCloneSpy = vi.spyOn(globalThis, "structuredClone");
 
-    engine.handleAction("startSceneReplay", { replayId: "firstMeeting" });
+    engine.handleAction("startSceneReplay", { sceneId: "firstMeeting" });
 
     const clonedFullProject = structuredCloneSpy.mock.calls.some(
       ([value]) =>
@@ -605,7 +763,7 @@ describe("RouteEngine scene replay catalog", () => {
     const caller = engine.selectSystemState().global;
 
     engine.handleActions({
-      startSceneReplay: { replayId: "firstMeeting" },
+      startSceneReplay: { sceneId: "firstMeeting" },
     });
     expect(engine.selectSystemState().global).toMatchObject({
       autoMode: false,
@@ -632,7 +790,7 @@ describe("RouteEngine scene replay catalog", () => {
   it("allows normal cross-section routing inside an isolated replay", () => {
     const { engine } = createEngine();
     engine.handleActions({
-      startSceneReplay: { replayId: "firstMeeting" },
+      startSceneReplay: { sceneId: "firstMeeting" },
       sectionTransition: { sectionId: "replayBranch" },
     });
     expect(selectCurrentContext(engine)).toMatchObject({
@@ -652,7 +810,7 @@ describe("RouteEngine scene replay catalog", () => {
   it("restores replay initial variables and finish state during rollback", () => {
     const { engine } = createEngine();
     engine.handleActions({
-      startSceneReplay: { replayId: "firstMeeting" },
+      startSceneReplay: { sceneId: "firstMeeting" },
     });
     engine.handleAction("markLineCompleted", {});
     engine.handleActions({ nextLine: {} });
@@ -684,7 +842,7 @@ describe("RouteEngine scene replay catalog", () => {
     });
 
     engine.handleActions({
-      startSceneReplay: { replayId: "firstMeeting" },
+      startSceneReplay: { sceneId: "firstMeeting" },
     });
     engine.handleAction("markLineCompleted", {});
     engine.handleActions({ nextLine: {} });
@@ -699,7 +857,7 @@ describe("RouteEngine scene replay catalog", () => {
   it("suppresses progress and achievements while allowing device preferences", () => {
     const { effects, engine } = createEngine();
     engine.handleActions({
-      startSceneReplay: { replayId: "firstMeeting" },
+      startSceneReplay: { sceneId: "firstMeeting" },
       addViewedLine: { sectionId: "replayStart", lineId: "replay1" },
       addViewedResource: { resourceId: "firstMeetingThumb" },
       completeAchievement: { resourceId: "undeclared-is-suppressed" },
@@ -726,7 +884,7 @@ describe("RouteEngine scene replay catalog", () => {
   it("rejects persistent mutations and nested replay starts atomically", () => {
     const { engine } = createEngine();
     engine.handleActions({
-      startSceneReplay: { replayId: "firstMeeting" },
+      startSceneReplay: { sceneId: "firstMeeting" },
     });
 
     expect(() =>
@@ -768,7 +926,7 @@ describe("RouteEngine scene replay catalog", () => {
     ).toThrow("Cannot update project data while a scene replay is active");
     expect(() =>
       engine.handleActions({
-        startSceneReplay: { replayId: "secondMemory" },
+        startSceneReplay: { sceneId: "secondMemory" },
       }),
     ).toThrow("Cannot start a scene replay while another replay is active");
   });
@@ -778,7 +936,7 @@ describe("RouteEngine scene replay catalog", () => {
 
     expect(() =>
       engine.handleActions({
-        startSceneReplay: { replayId: "firstMeeting" },
+        startSceneReplay: { sceneId: "firstMeeting" },
         updateVariable: {
           id: "forbiddenAfterStart",
           operations: [{ variableId: "accountFlag", op: "set", value: true }],
@@ -796,39 +954,43 @@ describe("RouteEngine scene replay catalog", () => {
     });
   });
 
-  it("preserves declared template-looking replay IDs through real action dispatch", () => {
-    const replayId = "${variables.routeName}";
+  it("preserves declared template-looking scene IDs through real action dispatch", () => {
+    const sceneId = "${variables.routeName}";
     const projectData = createProjectData({
       sceneReplay: {
         pageSize: 1,
         replays: [
           {
-            id: replayId,
+            sceneId,
             title: "Literal ID",
             thumbnailImageId: "firstMeetingThumb",
-            startSectionId: "replayStart",
           },
         ],
       },
     });
-    const { engine } = createEngine({ projectData });
+    projectData.story.scenes[sceneId] = projectData.story.scenes.firstMeeting;
+    delete projectData.story.scenes.firstMeeting;
+    const { engine } = createEngine({
+      projectData,
+      accountReplayRegistry: { sceneIds: [sceneId] },
+    });
 
     engine.handleActions({
-      startSceneReplay: { replayId },
+      startSceneReplay: { sceneId },
     });
     expect(engine.selectSceneReplay()).toMatchObject({
       isActive: true,
-      activeReplayId: replayId,
+      activeSceneId: sceneId,
     });
   });
 
   it.each([
     [
-      "a duplicate replay ID",
+      "a duplicate replay scene ID",
       (projectData) => {
-        projectData.resources.sceneReplay.replays[1].id = "firstMeeting";
+        projectData.resources.sceneReplay.replays[1].sceneId = "firstMeeting";
       },
-      'Duplicate scene replay id "firstMeeting"',
+      'Duplicate scene replay sceneId "firstMeeting"',
     ],
     [
       "an unknown thumbnail",
@@ -839,16 +1001,16 @@ describe("RouteEngine scene replay catalog", () => {
       'references unknown thumbnail image "missing"',
     ],
     [
-      "an unknown start section",
+      "an unknown scene",
       (projectData) => {
-        projectData.resources.sceneReplay.replays[0].startSectionId = "missing";
+        projectData.resources.sceneReplay.replays[0].sceneId = "missing";
       },
-      'references unknown start section "missing"',
+      'references unknown scene "missing"',
     ],
     [
       "an invalid section initial line",
       (projectData) => {
-        projectData.story.scenes.main.sections.replayStart.initialLineId =
+        projectData.story.scenes.firstMeeting.sections.replayStart.initialLineId =
           "missing";
       },
       'references unknown initial line "missing"',

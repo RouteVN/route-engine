@@ -33,7 +33,7 @@ const dispatchRouteGraphicsClick = async (engine, element) => {
   });
 };
 
-const createProjectData = (replayId) => ({
+const createProjectData = (sceneId) => ({
   screen: { width: 1920, height: 1080 },
   resources: {
     images: {
@@ -54,10 +54,9 @@ const createProjectData = (replayId) => ({
       pageSize: 4,
       replays: [
         {
-          id: replayId,
+          sceneId,
           title: "First Meeting",
           thumbnailImageId: "memory",
-          startSectionId: "memory",
         },
       ],
     },
@@ -71,13 +70,13 @@ const createProjectData = (replayId) => ({
               {
                 "$for replay in sceneReplay.pageReplays": [
                   {
-                    id: "start-${replay.replayId}",
+                    id: "start-${replay.sceneId}",
                     type: "container",
                     click: {
                       payload: {
                         actions: {
                           startSceneReplay: {
-                            replayId: "${replay.replayId}",
+                            sceneId: "${replay.sceneId}",
                           },
                         },
                       },
@@ -94,7 +93,7 @@ const createProjectData = (replayId) => ({
           {
             id: "active-replay",
             type: "text",
-            content: "${sceneReplay.activeReplayId}",
+            content: "${sceneReplay.activeSceneId}",
           },
           {
             id: "exit-replay",
@@ -127,6 +126,11 @@ const createProjectData = (replayId) => ({
               },
             ],
           },
+        },
+      },
+      [sceneId]: {
+        initialSectionId: "memory",
+        sections: {
           memory: {
             lines: [
               {
@@ -145,27 +149,27 @@ const createProjectData = (replayId) => ({
 
 describe("RouteEngine scene replay render API", () => {
   it("renders catalog data and dispatches start/exit through the real click path", async () => {
-    const replayId = "${variables.redirect}";
+    const sceneId = "${variables.redirect}";
     const engine = createRouteEngine({
       handlePendingEffects: () => {},
     });
     engine.init({
       initialState: {
-        projectData: createProjectData(replayId),
+        projectData: createProjectData(sceneId),
+        global: {
+          accountReplayRegistry: { sceneIds: [sceneId] },
+        },
       },
     });
 
     const menuState = engine.selectRenderState();
-    const startButton = findElementById(
-      menuState.elements,
-      `start-${replayId}`,
-    );
+    const startButton = findElementById(menuState.elements, `start-${sceneId}`);
     expect(startButton).toMatchObject({
       click: {
         payload: {
           actions: {
             startSceneReplay: {
-              replayId,
+              sceneId,
             },
           },
         },
@@ -175,14 +179,14 @@ describe("RouteEngine scene replay render API", () => {
     await dispatchRouteGraphicsClick(engine, startButton);
     expect(engine.selectSceneReplay()).toMatchObject({
       isActive: true,
-      activeReplayId: replayId,
+      activeSceneId: sceneId,
     });
 
     const replayState = engine.selectRenderState();
     expect(
       findElementById(replayState.elements, "active-replay"),
     ).toMatchObject({
-      content: replayId,
+      content: sceneId,
     });
 
     await dispatchRouteGraphicsClick(
