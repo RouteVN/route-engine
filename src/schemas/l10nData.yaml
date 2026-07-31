@@ -1,0 +1,353 @@
+$schema: http://json-schema.org/draft-07/schema#
+title: L10n Data Schema
+description: Complete set of sparse localization packages imported during Route Engine initialization
+type: object
+properties:
+  packages:
+    type: object
+    description: Imported L10n packages keyed by their L10n directory ID
+    propertyNames:
+      type: string
+      minLength: 1
+      not:
+        enum: [__proto__, constructor, prototype]
+    patternProperties:
+      "^.+$":
+        $ref: "#/definitions/package"
+    additionalProperties: false
+required: [packages]
+additionalProperties: false
+
+definitions:
+  package:
+    type: object
+    properties:
+      language:
+        type: string
+        minLength: 1
+      files:
+        type: array
+        items:
+          $ref: "#/definitions/fileEntry"
+      patches:
+        type: array
+        items:
+          oneOf:
+            - $ref: "#/definitions/lineActionPatch"
+            - $ref: "#/definitions/lineDialoguePatch"
+            - $ref: "#/definitions/scenePatch"
+            - $ref: "#/definitions/resourcePatch"
+    required: [language, files, patches]
+    additionalProperties: false
+
+  fileEntry:
+    type: object
+    properties:
+      fileId:
+        type: string
+        minLength: 1
+        allOf:
+          - not:
+              enum: [".", ".."]
+          - not:
+              pattern: '[/\\]'
+      mimeType:
+        type: string
+        minLength: 1
+    required: [fileId]
+    additionalProperties: false
+
+  lineActionPatch:
+    type: object
+    properties:
+      type:
+        const: line.action
+      lineId:
+        type: string
+        minLength: 1
+      actionType:
+        enum:
+          [
+            background,
+            bgm,
+            character,
+            choice,
+            cleanAll,
+            control,
+            dialogue,
+            form,
+            layout,
+            screen,
+            sfx,
+            visual,
+            voice,
+          ]
+      mode:
+        const: replace
+      ignoreFields:
+        const: [content]
+      payload:
+        type: object
+    required: [type, lineId, actionType, payload]
+    additionalProperties: false
+    allOf:
+      - if:
+          properties:
+            actionType:
+              const: dialogue
+          required: [actionType]
+        then:
+          required: [ignoreFields]
+          properties:
+            payload:
+              allOf:
+                - $ref: "presentationActions.yaml#/properties/dialogue"
+                - not:
+                    required: [content]
+        else:
+          not:
+            required: [ignoreFields]
+      - oneOf:
+          - properties:
+              actionType:
+                const: background
+              payload:
+                $ref: "presentationActions.yaml#/properties/background"
+            required: [actionType, payload]
+          - properties:
+              actionType:
+                const: bgm
+              payload:
+                $ref: "presentationActions.yaml#/properties/bgm"
+            required: [actionType, payload]
+          - properties:
+              actionType:
+                const: character
+              payload:
+                $ref: "presentationActions.yaml#/properties/character"
+            required: [actionType, payload]
+          - properties:
+              actionType:
+                const: choice
+              payload:
+                $ref: "presentationActions.yaml#/properties/choice"
+            required: [actionType, payload]
+          - properties:
+              actionType:
+                const: cleanAll
+              payload:
+                $ref: "presentationActions.yaml#/properties/cleanAll"
+            required: [actionType, payload]
+          - properties:
+              actionType:
+                const: control
+              payload:
+                $ref: "presentationActions.yaml#/properties/control"
+            required: [actionType, payload]
+          - properties:
+              actionType:
+                const: dialogue
+              payload:
+                $ref: "presentationActions.yaml#/properties/dialogue"
+            required: [actionType, payload]
+          - properties:
+              actionType:
+                const: form
+              payload:
+                $ref: "presentationActions.yaml#/properties/form"
+            required: [actionType, payload]
+          - properties:
+              actionType:
+                const: layout
+              payload:
+                $ref: "presentationActions.yaml#/properties/layout"
+            required: [actionType, payload]
+          - properties:
+              actionType:
+                const: screen
+              payload:
+                $ref: "presentationActions.yaml#/properties/screen"
+            required: [actionType, payload]
+          - properties:
+              actionType:
+                const: sfx
+              payload:
+                $ref: "presentationActions.yaml#/properties/sfx"
+            required: [actionType, payload]
+          - properties:
+              actionType:
+                const: visual
+              payload:
+                $ref: "presentationActions.yaml#/properties/visual"
+            required: [actionType, payload]
+          - properties:
+              actionType:
+                const: voice
+              payload:
+                $ref: "presentationActions.yaml#/properties/voice"
+            required: [actionType, payload]
+
+  lineDialoguePatch:
+    type: object
+    properties:
+      type:
+        const: line.dialogue
+      lineId:
+        type: string
+        minLength: 1
+      mode:
+        const: replace
+      payload:
+        type: object
+        properties:
+          content:
+            type: array
+            items:
+              type: object
+              properties:
+                text:
+                  type: string
+              required: [text]
+              additionalProperties: false
+        required: [content]
+        additionalProperties: false
+    required: [type, lineId, payload]
+    additionalProperties: false
+
+  scenePatch:
+    type: object
+    properties:
+      type:
+        const: story.scene
+      mode:
+        const: patch
+      sceneId:
+        type: string
+        minLength: 1
+      payload:
+        type: object
+        properties:
+          name:
+            type: string
+        required: [name]
+        additionalProperties: false
+    required: [type, mode, sceneId, payload]
+    additionalProperties: false
+
+  resourcePatch:
+    type: object
+    properties:
+      type:
+        enum:
+          [
+            resource.achievement,
+            resource.animation,
+            resource.character,
+            resource.color,
+            resource.control,
+            resource.font,
+            resource.image,
+            resource.layout,
+            resource.particle,
+            resource.sound,
+            resource.spritesheet,
+            resource.textStyle,
+            resource.transform,
+            resource.video,
+          ]
+      mode:
+        const: replace
+      operation:
+        const: add
+      resourceId:
+        type: string
+        minLength: 1
+      payload:
+        type: object
+    required: [type, resourceId, payload]
+    additionalProperties: false
+    oneOf:
+      - properties:
+          type:
+            const: resource.achievement
+          payload:
+            $ref: "projectData/resources.yaml#/properties/achievements/patternProperties/^.+$"
+        required: [type, payload]
+      - properties:
+          type:
+            const: resource.animation
+          payload:
+            $ref: "projectData/resources.yaml#/properties/animations/patternProperties/^.+$"
+        required: [type, payload]
+      - properties:
+          type:
+            const: resource.character
+          payload:
+            $ref: "projectData/resources.yaml#/properties/characters/patternProperties/^.+$"
+        required: [type, payload]
+      - properties:
+          type:
+            const: resource.color
+          payload:
+            $ref: "projectData/resources.yaml#/properties/colors/patternProperties/^.+$"
+        required: [type, payload]
+      - properties:
+          type:
+            const: resource.control
+          payload:
+            $ref: "projectData/resources.yaml#/properties/controls/patternProperties/^.+$"
+        required: [type, payload]
+      - properties:
+          type:
+            const: resource.font
+          payload:
+            $ref: "projectData/resources.yaml#/properties/fonts/patternProperties/^.+$"
+        required: [type, payload]
+      - properties:
+          type:
+            const: resource.image
+          payload:
+            $ref: "projectData/resources.yaml#/properties/images/patternProperties/^.+$"
+        required: [type, payload]
+      - properties:
+          type:
+            const: resource.layout
+          payload:
+            $ref: "projectData/resources.yaml#/properties/layouts/patternProperties/^.+$"
+        required: [type, payload]
+      - properties:
+          type:
+            const: resource.particle
+          payload:
+            $ref: "projectData/resources.yaml#/properties/particles/patternProperties/^.+$"
+        required: [type, payload]
+      - properties:
+          type:
+            const: resource.sound
+          payload:
+            $ref: "projectData/resources.yaml#/properties/sounds/patternProperties/^.+$"
+        required: [type, payload]
+      - properties:
+          type:
+            const: resource.spritesheet
+          payload:
+            $ref: "projectData/resources.yaml#/properties/spritesheets/patternProperties/^.+$"
+        required: [type, payload]
+      - properties:
+          type:
+            const: resource.textStyle
+          payload:
+            $ref: "projectData/resources.yaml#/properties/textStyles/patternProperties/^.+$"
+        required: [type, payload]
+      - properties:
+          type:
+            const: resource.transform
+          payload:
+            $ref: "projectData/resources.yaml#/properties/transforms/patternProperties/^.+$"
+        required: [type, payload]
+      - properties:
+          type:
+            const: resource.video
+          payload:
+            $ref: "projectData/resources.yaml#/properties/videos/patternProperties/^.+$"
+        required: [type, payload]

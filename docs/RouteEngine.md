@@ -67,8 +67,12 @@ different visual novels on the same domain do not share persistence. The
 returned adapter also exposes `clear()` to delete persisted data for that
 namespace.
 
-Localization is not implemented in the current runtime. The planned
-patch-based l10n model is documented in [L10n.md](./L10n.md).
+Initialization may also receive complete imported L10n packages through
+`initialState.l10nData`. The canonical project is the default; an existing
+device preference under `initialState.global.runtime.localizationPackageId`
+restores an imported package. Authored layouts receive package options and can
+dispatch `updateLocalizationPackage` to switch and render. The patch format,
+package layout, and runtime behavior are documented in [L10n.md](./L10n.md).
 
 The engine will:
 

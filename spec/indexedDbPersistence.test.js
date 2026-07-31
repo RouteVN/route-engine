@@ -245,6 +245,9 @@ describe("indexedDbPersistence", () => {
     await alphaPersistence.saveGlobalDeviceVariables({
       textSpeed: 42,
     });
+    await alphaPersistence.saveGlobalRuntime({
+      localizationPackageId: "japanese",
+    });
     await alphaPersistence.applyScopedDataUpdates([
       {
         scope: "device",
@@ -274,7 +277,9 @@ describe("indexedDbPersistence", () => {
         textSpeed: 60,
       },
       globalAccountVariables: {},
-      globalRuntime: {},
+      globalRuntime: {
+        localizationPackageId: "japanese",
+      },
       accountViewedRegistry: {
         sections: [{ sectionId: "prologue", lastLineId: "line2" }],
         resources: [],

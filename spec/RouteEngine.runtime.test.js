@@ -53,11 +53,13 @@ describe("RouteEngine runtime", () => {
     expect(runtime.autoForwardDelay).toBe(1000);
     expect(runtime.autoForwardSpeed).toBe(50);
     expect(runtime.muteAll).toBe(false);
+    expect(runtime.localizationPackageId).toBeNull();
     expect(runtime.saveLoadPagination).toBe(1);
     expect(state.global.dialogueTextSpeed).toBe(50);
     expect(state.global.autoForwardDelay).toBe(1000);
     expect(state.global.autoForwardSpeed).toBe(50);
     expect(state.global.muteAll).toBe(false);
+    expect(state.global.localizationPackageId).toBeNull();
     expect(state.global.variables).toEqual({});
     expect(state.contexts[0].runtime).toBeUndefined();
   });
@@ -83,6 +85,7 @@ describe("RouteEngine runtime", () => {
             soundVolume: 50,
             musicVolume: 50,
             muteAll: false,
+            localizationPackageId: null,
           },
         },
       },

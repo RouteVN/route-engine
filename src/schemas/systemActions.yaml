@@ -184,6 +184,18 @@ properties:
     required: [value]
     additionalProperties: false
 
+  updateLocalizationPackage:
+    type: object
+    description: Select an imported L10n package or return to the canonical project
+    properties:
+      l10nId:
+        type: [string, "null"]
+        minLength: 1
+        not:
+          enum: [__proto__, constructor, prototype]
+    required: [l10nId]
+    additionalProperties: false
+
   setSoundVolume:
     type: object
     description: Set effective SFX volume

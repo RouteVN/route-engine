@@ -477,6 +477,22 @@ properties:
         maximum: 100
       muteAll:
         type: boolean
+      localizationPackageId:
+        description: Device-persisted selected L10n package ID; null selects the canonical project
+        type: [string, "null"]
+      localizationPackages:
+        description: Layout-facing imported L10n package descriptors, including the canonical project first
+        type: array
+        minItems: 1
+        items:
+          type: object
+          properties:
+            l10nId:
+              type: [string, "null"]
+            language:
+              type: [string, "null"]
+          required: [l10nId, language]
+          additionalProperties: false
       confirmDialog:
         type: [object, "null"]
         properties:
@@ -591,6 +607,8 @@ properties:
         soundVolume,
         musicVolume,
         muteAll,
+        localizationPackageId,
+        localizationPackages,
         confirmDialog,
         formDrafts,
         autoMode,
