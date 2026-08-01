@@ -32,7 +32,9 @@ GitHub Actions runs each healthy robustness scenario in an isolated container.
 OS-level watchdog in addition to RTGL's own timeout, so a crashed browser cannot
 leave a CI runner waiting indefinitely. The capture container has networking
 disabled; all browser dependencies are built into `VtDependencies.js` so CDN
-availability cannot stall or invalidate the visual gate.
+availability cannot stall or invalidate the visual gate. Capture runs in headed
+Chromium under Xvfb so GPU-less hosted runners use a stable software-rendering
+path instead of returning an empty WebGL canvas.
 
 Only deterministic scenarios belong in the CI matrix. A scenario with a healthy
 reference can still remain local-only when its capture depends on a narrow

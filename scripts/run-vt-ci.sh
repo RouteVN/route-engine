@@ -53,6 +53,14 @@ trap cleanup EXIT INT TERM
 run_vt_container() {
   local phase="$1"
   shift
+  local -a container_command=(rtgl vt "$@")
+
+  if [[ "$phase" == "screenshot" ]]; then
+    # GitHub-hosted runners expose no GPU to Docker. Headless Chromium can
+    # initialize WebGL without producing pixels there, so use Xvfb's software
+    # rendering path and make the browser explicitly headed.
+    container_command=(xvfb-run -a rtgl vt "$@" --headed)
+  fi
 
   current_container="${container_name}-${phase}"
   echo "Running VT $phase for $VT_ITEM with watchdog ${VT_PROCESS_TIMEOUT_SECONDS}s"
@@ -73,7 +81,7 @@ run_vt_container() {
     --volume "$project_dir:/app" \
     --workdir /app \
     "$VT_IMAGE" \
-    rtgl vt "$@"; then
+    "${container_command[@]}"; then
     current_container=""
     return 0
   else
