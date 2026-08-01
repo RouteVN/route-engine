@@ -104,7 +104,7 @@ mode flags, context UI state, and `localizationPackageId` are intentionally not
 project-configurable. The canonical project remains the initial localization
 unless the device has a saved localization selection.
 
-The engine will:
+During initialization, the engine:
 
 1. Create the system store with initial state
 2. Append a `render` effect
@@ -646,18 +646,64 @@ in the same action.
 
 Playback timing semantics:
 
-- Global `autoMode` waits for the current line to complete before starting its `_autoForwardTime` delay.
+- Global `autoMode` waits for the current line to complete before starting a
+  length-aware delay. The delay combines `runtime.autoForwardDelay` with
+  grapheme-based reading time adjusted by `runtime.autoForwardSpeed`. The result
+  is capped at 20 seconds unless the configured base delay itself is higher; in
+  that case, the higher base delay is preserved as the effective delay.
 - That completion is driven by Route Graphics `renderComplete`, so revealing text and other tracked render work finish first.
 - Global `skipMode` does not use that completion gate; it advances on its own fast timer.
 - `nextLineConfig.auto` is separate and may use `trigger: "fromStart"` or `trigger: "fromComplete"` depending on authored behavior.
 
+### Runtime and Localization Actions
+
+| Action                            | Payload      | Description                                                 |
+| --------------------------------- | ------------ | ----------------------------------------------------------- |
+| `setDialogueTextSpeed`            | `{ value }`  | Set dialogue reveal speed                                   |
+| `setAutoForwardDelay`             | `{ value }`  | Set non-negative base auto delay in milliseconds            |
+| `setAutoForwardSpeed`             | `{ value }`  | Set length-aware auto speed from 0 to 100                   |
+| `setSkipUnseenText`               | `{ value }`  | Set whether skip mode may pass unseen dialogue              |
+| `setSkipTransitionsAndAnimations` | `{ value }`  | Set whether authored transitions and animations are skipped |
+| `setSoundVolume`                  | `{ value }`  | Set Voice/SFX volume from 0 to 100                          |
+| `setMusicVolume`                  | `{ value }`  | Set BGM/music-room volume from 0 to 100                     |
+| `setMuteAll`                      | `{ value }`  | Set global audio mute                                       |
+| `updateLocalizationPackage`       | `{ l10nId }` | Select an imported package, or `null` for canonical content |
+| `setSaveLoadPagination`           | `{ value }`  | Set the active context's one-based save/load page           |
+| `incrementSaveLoadPagination`     | `{}`         | Increment the active save/load page                         |
+| `decrementSaveLoadPagination`     | `{}`         | Decrement the active save/load page, clamped to page 1      |
+| `setMenuPage`                     | `{ value }`  | Set the active context's menu page string                   |
+| `setMenuEntryPoint`               | `{ value }`  | Set the active context's menu entry-point string            |
+
+The first nine actions update device-persisted runtime preferences. Save/load and
+menu navigation values are context-local and included in save slots. Rollback
+currently clears context runtime state, so these values return to their defaults
+rather than replaying their earlier setters. L10n selection behavior is
+documented in [L10n.md](./L10n.md).
+
 ### UI Actions
 
-| Action             | Payload | Description                   |
-| ------------------ | ------- | ----------------------------- |
-| `showDialogueUI`   | -       | Show the dialogue UI          |
-| `hideDialogueUI`   | -       | Hide the dialogue UI          |
-| `toggleDialogueUI` | -       | Toggle dialogue UI visibility |
+| Action               | Payload                                          | Description                                     |
+| -------------------- | ------------------------------------------------ | ----------------------------------------------- |
+| `showDialogueUI`     | `{}`                                             | Show the dialogue UI                            |
+| `hideDialogueUI`     | `{}`                                             | Hide the dialogue UI                            |
+| `toggleDialogueUI`   | `{}`                                             | Toggle dialogue UI visibility                   |
+| `pushOverlay`        | `{ resourceId }`                                 | Push a layout onto the authored overlay stack   |
+| `popOverlay`         | `{}`                                             | Remove the last overlay                         |
+| `replaceLastOverlay` | `{ resourceId }`                                 | Replace the last overlay                        |
+| `clearOverlays`      | `{}`                                             | Clear overlays, confirm dialog, and form drafts |
+| `showConfirmDialog`  | `{ resourceId, confirmActions, cancelActions? }` | Show a transient layout-backed confirm dialog   |
+| `hideConfirmDialog`  | `{}`                                             | Hide the current confirm dialog                 |
+
+Confirm-dialog normalization, deferred actions, lifecycle, and rendering are
+documented in [ConfirmDialog.md](./ConfirmDialog.md).
+
+### Form Actions
+
+| Action            | Payload                      | Description                                    |
+| ----------------- | ---------------------------- | ---------------------------------------------- |
+| `updateFormField` | `{ formKey, field, value? }` | Update a transient draft field                 |
+| `submitForm`      | `{ formKey, actions? }`      | Validate and commit the active form, then act  |
+| `cancelForm`      | `{ formKey, actions? }`      | Clear the active form draft and run follow-ups |
 
 ### State Management Actions
 
@@ -809,6 +855,7 @@ The system store exposes these selectors (called internally):
 | `selectMusicRoom`               | -                       | Computed singleton music-room projection or `null`     |
 | `selectSceneReplay`             | -                       | Computed singleton scene-replay projection or `null`   |
 | `selectIsSceneReplayActive`     | -                       | Whether the current context is a replay                |
+| `selectRuntime`                 | -                       | Cloned authored `runtime.*` projection                 |
 | `selectSaveSlotMap`             | -                       | Save slots object map                                  |
 | `selectSaveSlot`                | `{ slotId }`            | Save slot data                                         |
 | `selectSaveSlotPage`            | `{ slotsPerPage? }`     | Paged save slot list for UI                            |

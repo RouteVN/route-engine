@@ -71,7 +71,7 @@ Static, read-only data that defines the visual novel content:
   skip behavior, animation skipping, audio volumes, and mute state. Saved
   device preferences override these defaults field by field.
 - **resources**: Images, videos, spritesheets, particles, audio, animations, transforms, layouts, characters, fonts, colors, and `textStyles`
-  - Localization is not implemented in the current runtime. The planned patch-based model is documented in `docs/L10n.md`
+  - Runtime-selectable, patch-based localization is supported through optional L10n packages. Packages can replace presentation actions and dialogue content, patch scene names, and add or replace supported resource items. The current contract and remaining coverage are documented in [L10n.md](./L10n.md).
   - Computed variables are derived read-only values declared under `resources.variables[*].computed`; their authored interface is documented in `docs/ComputedVariables.md`
   - Achievements are stable, platform-agnostic definitions under `resources.achievements`; the engine exposes cloned resource selectors and emits ordered effects for external consumers. The primitives are documented in `docs/Achievements.md`
   - Voice audio is stored under `resources.voices[sceneId][voiceId]` and line actions reference the scene-local `voiceId`
@@ -85,7 +85,9 @@ Static, read-only data that defines the visual novel content:
   - Scene containers remain part of authored story structure
   - Section IDs are globally unique across scenes and are the primary runtime routing key
 
-Project data is loaded once and never mutated during runtime.
+Project data is treated as immutable runtime input. It can be atomically
+replaced through `updateProjectData`; an active L10n package is reapplied to the
+new canonical project before the replacement is installed.
 
 ### System State
 
@@ -105,7 +107,7 @@ Mutable runtime state managed by the system store. Key components:
   - `currentPointerMode`: Always `'read'`
   - `pointers`: Position tracker for the active read location
   - `configuration`: Context-specific settings
-  - `views`: Overlay stack
+  - `views`: Context-owned compatibility view metadata. Active authored overlays live in `global.overlayStack`.
   - `bgm`: Current background music
   - `variables`: Stored game variables. Computed variables are projected from state and resources when template data is built; they are not stored here.
   - `dialogueHistory`: Chronological, context-local dialogue occurrences and the active-branch cursor. It is created lazily when dialogue is displayed and saved with the context.

@@ -1,11 +1,13 @@
 # Rollback Implementation Plan
 
-This document translates [Rollback.md](/home/han4wluc/repositories/RouteVN/route-engine/docs/Rollback.md) into an implementation plan for `route-engine`.
+This document translates [Rollback.md](./Rollback.md) into an implementation
+plan for `route-engine`.
 
 It is intentionally technical.
 
-The landing-point eligibility slice described below is implemented. The
-remaining future-policy and cleanup items continue to serve as a roadmap.
+The line-level, cross-section rollback model and landing-point eligibility
+described below are implemented. The remaining `fixed`/`blocked` policies and
+roll-forward behavior continue to serve as a roadmap.
 
 ## Goal
 
@@ -37,40 +39,38 @@ Out of scope:
 - roll-forward
 - save UI changes
 
-## Current State
+## Current Implementation
 
-The previous engine mixed history-pointer navigation with rollback. That has
-been removed from gameplay back behavior.
+Each context owns a line-level rollback timeline. Gameplay Back behavior uses
+that timeline rather than the removed history-pointer navigation model.
 
 The current rollback entry points are:
 
 1. `rollbackToLine` / `rollbackByOffset`
 
-- resets context variables to a section `initialState`
-- replays recorded `updateVariable` actions
-- is limited by the current section-oriented history structure
+- reset context variables from current project defaults
+- replay rollbackable story mutations through the selected checkpoint
+- cross section boundaries within the active context
+- restore the read pointer and presentation without emitting normal progression side effects
 
-The implementation currently depends on:
+The implementation depends on:
 
-- `contexts[*].historySequence`
-- `pointers.read`
-- `pointers.history`
-- `currentPointerMode`
-- event-sourced replay of context variable mutations inside a section
+- `contexts[*].pointers.read`
+- `contexts[*].rollback.timeline`
+- `contexts[*].rollback.currentIndex`
+- per-checkpoint landing-point eligibility through `returnable`
+- replay of rollbackable mutations across the retained active path
 
 Player-facing target selection resolves offsets over eligible landing points.
 Internal timeline entries for lines that immediately route elsewhere remain
 available for replay but are skipped as Back destinations.
 
-This is not the right long-term model for:
+The timeline is also saved and loaded, and future checkpoints are pruned when
+the player advances onto a different branch after rollback.
 
-- cross-section rollback
-- line-level checkpoints across the full playthrough
-- future rollback policy expansion
+## Implemented State Model
 
-## Target Model
-
-Each context should own one ordered rollback timeline.
+Each context owns one ordered rollback timeline.
 
 Conceptually:
 
@@ -99,14 +99,14 @@ contexts: [
 
 ### Required properties
 
-Each checkpoint should eventually be able to hold:
+Each checkpoint holds:
 
 - `sectionId`
 - `lineId`
 - `rollbackPolicy`
 - whether the entry is a rollback landing point
 
-For initial implementation:
+Current implementation rules:
 
 - the array index is the sequence identity
 - `rollbackPolicy` can default to `"free"`
@@ -136,11 +136,11 @@ Specifically:
   - move `read` pointer to the target checkpoint
   - reconstruct presentation/render state from restored story state
 
-For now, the only required rollbackable story mutation type is:
+The current rollbackable story mutation type is:
 
 - `updateVariable`
 
-Implementation default for v1:
+Current implementation:
 
 - replay source is the project-data line actions for each visited checkpoint
 - replay only the rollbackable subset of those actions
@@ -184,9 +184,13 @@ Implementation rule:
 - rollback restore must use a dedicated restore path
 - it must not rely on normal live line-action execution
 
-## Data Structure Migration
+## Historical Implementation Sequence
 
-### Phase 1: Introduce rollback timeline alongside current structures
+The phases in this section record how the current model was introduced. They
+are complete for `route-engine`; references to the former history structures
+describe temporary migration steps, not current dependencies.
+
+### Phase 1: Introduce rollback timeline alongside current structures (complete)
 
 Add a new context-local structure:
 
@@ -198,10 +202,10 @@ rollback: {
 }
 ```
 
-Target model rule:
+Current model rule:
 
-- rollback state should not store a duplicate `baselineVariables` snapshot
-- restore start state should be derived on demand from project-defined defaults for context-scoped variables
+- rollback state does not store a duplicate `baselineVariables` snapshot
+- restore start state is derived on demand from project-defined defaults for context-scoped variables
 
 Checkpoint shape:
 
@@ -226,7 +230,7 @@ Current pointer rule:
 - `rollback.currentIndex` is the single source of truth for rollback position inside the timeline
 - array order is the sequence identity
 
-### Phase 2: Keep old history structures temporarily
+### Phase 2: Keep old history structures temporarily (complete and removed)
 
 Do not remove these immediately:
 
@@ -589,7 +593,7 @@ conditional is invoked by a later player interaction.
 
 ### `jumpToLine`
 
-Do not append rollback checkpoints for `jumpToLine` in the initial implementation.
+The current contract does not append rollback checkpoints for `jumpToLine`.
 
 Treat it as out of the player rollback flow unless it is later reclassified as true gameplay navigation.
 
@@ -616,7 +620,7 @@ Recommendation:
 
 ## Save/Load
 
-Rollback timeline should be saved and loaded as part of context state.
+Rollback timeline is saved and loaded as part of context state.
 
 That is necessary for:
 

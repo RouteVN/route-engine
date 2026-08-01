@@ -16,7 +16,7 @@ In `route-engine`, save/load is separate from:
 Save/load should restore the story to a coherent playable point, not resume every temporary UI or timer detail from the moment the save was made.
 
 Overwrite confirmation for occupied save slots is a related but separate
-transient UI concern. The planned confirm-dialog design is documented in
+transient UI concern. The implemented confirm-dialog contract is documented in
 [ConfirmDialog.md](./ConfirmDialog.md).
 
 ## Product Summary
@@ -26,7 +26,7 @@ The product model for save/load is:
 - save slots store story-local runtime state
 - save slots restore a coherent playable reading position
 - rollback timeline is part of saved story state and must survive save/load
-- viewed/seen registry is saved and restored
+- account viewed and replay-unlock registries persist outside save slots and are not restored by loading
 - persistent global variables are not part of slot state
 - transient runtime globals are not part of slot state
 - loading a slot must reinitialize transient runtime globals instead of inheriting stale values from the pre-load session
@@ -85,6 +85,9 @@ Examples:
 - `dialogueUIHidden`
 - `nextLineConfig`
 - `overlayStack`
+- `confirmDialog`
+- form drafts
+- music-room playback state
 - `isLineCompleted`
 - `pendingEffects`
 - live timer callbacks and in-flight timing state
@@ -160,6 +163,9 @@ That includes resetting:
 - `dialogueUIHidden`
 - `nextLineConfig`
 - `overlayStack`
+- `confirmDialog`
+- form drafts
+- music-room playback state
 - `isLineCompleted`
 
 It also includes clearing runtime timers/effects that belong to the prior live session.

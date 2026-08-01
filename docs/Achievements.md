@@ -214,15 +214,21 @@ The following draft-07 schema describes the implemented value of
 Achievement source-language text lives directly on the resource. Do not add a
 parallel `localizations` object to each achievement.
 
-The planned patch-based localization model should target the stable achievement
-resource ID and override only the translated fields:
+The patch-based L10n runtime targets achievements by stable resource ID with a
+`resource.achievement` patch. Resource patches use complete replacement
+semantics, so the payload must repeat the complete valid achievement definition,
+including `type` and `target` when applicable, while replacing translated fields
+such as:
 
 - `name`
 - `description`
 - `lockedName`
 - `lockedDescription`
 
-See [L10n.md](./L10n.md) for the project-wide localization direction.
+The runtime validates the replacement against the achievement resource schema.
+It does not currently enforce that gameplay-bearing fields such as `type` and
+`target` remain identical to the canonical resource; protected-field rules are
+listed as remaining design work in [L10n.md](./L10n.md).
 
 ## Public Selectors
 
