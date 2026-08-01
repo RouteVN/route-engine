@@ -54,12 +54,17 @@ run_vt_container() {
   local phase="$1"
   shift
   local -a container_command=(rtgl vt "$@")
+  local -a container_user=(--user "$(id -u):$(id -g)")
 
   if [[ "$phase" == "screenshot" ]]; then
-    # GitHub-hosted runners expose no GPU to Docker. Headless Chromium can
-    # initialize WebGL without producing pixels there, so use Xvfb's software
-    # rendering path and make the browser explicitly headed.
-    container_command=(xvfb-run -a rtgl vt "$@" --headed)
+    # The wrapper needs root only to patch the pinned image's Chromium launch
+    # flags. It drops back to this host user's IDs before RTGL writes anything.
+    container_user=()
+    container_command=(
+      bash /app/scripts/run-vt-browser-ci.sh
+      "$(id -u)" "$(id -g)"
+      rtgl vt "$@"
+    )
   fi
 
   current_container="${container_name}-${phase}"
@@ -76,7 +81,7 @@ run_vt_container() {
     --init \
     --network none \
     --shm-size=1g \
-    --user "$(id -u):$(id -g)" \
+    "${container_user[@]}" \
     --env RTGL_VT_DEBUG=true \
     --volume "$project_dir:/app" \
     --workdir /app \
