@@ -59,6 +59,9 @@ section boundaries. It remains separate from `rollback.timeline`: history is
 read-only presentation data, while rollback checkpoints reconstruct playable
 story state. Their cursors are coordinated so rolling back hides later dialogue
 and taking a new branch discards the abandoned future from both structures.
+Dialogue occurrences may exist without rollback checkpoints—for example after
+`jumpToLine`—and are still retained by save/load until rollback or branching
+moves the visible history cursor.
 
 Dialogue history retention follows these rules:
 

@@ -132,6 +132,103 @@ describe("RouteEngine cross-section dialogue history", () => {
     ]);
   });
 
+  it("keeps append occurrences separate after a section re-entry", () => {
+    const projectData = createHistoryProjectData();
+    projectData.story.scenes.main.sections.reentry = {
+      initialLineId: "append-only",
+      lines: [
+        dialogueLine("append-only", "Repeated append", { append: true }),
+        {
+          id: "reenter",
+          actions: { sectionTransition: { sectionId: "reentry" } },
+        },
+      ],
+    };
+    const engine = createEngine(projectData);
+
+    engine.handleAction("sectionTransition", { sectionId: "reentry" });
+    expect(getHistoryText(engine)).toEqual([
+      "Introduction one",
+      "Repeated append",
+    ]);
+
+    advance(engine);
+    expect(getHistoryText(engine)).toEqual([
+      "Introduction one",
+      "Repeated append",
+      "Repeated append",
+    ]);
+    expect(
+      engine
+        .selectSystemState()
+        .contexts.at(-1)
+        .dialogueHistory.entries.slice(-2),
+    ).toEqual([
+      { sectionId: "reentry", lineId: "append-only" },
+      { sectionId: "reentry", lineId: "append-only" },
+    ]);
+
+    engine.handleAction("saveSlot", { slotId: 6, savedAt: 600 });
+    engine.handleAction("sectionTransition", { sectionId: "alternate" });
+    engine.handleAction("loadSlot", { slotId: 6 });
+    expect(getHistoryText(engine)).toEqual([
+      "Introduction one",
+      "Repeated append",
+      "Repeated append",
+    ]);
+  });
+
+  it("projects a long single-section history with one action read per line", () => {
+    const lineCount = 2000;
+    let actionReads = 0;
+    const lines = Array.from({ length: lineCount }, (_, index) => {
+      const line = { id: `line-${index}` };
+      const actions = {
+        dialogue: { content: [{ text: `Line ${index}` }] },
+      };
+      Object.defineProperty(line, "actions", {
+        enumerable: true,
+        get: () => {
+          actionReads += 1;
+          return actions;
+        },
+      });
+      return line;
+    });
+    const state = {
+      projectData: {
+        resources: createResources(),
+        story: {
+          scenes: {
+            main: {
+              sections: { long: { lines } },
+            },
+          },
+        },
+      },
+      global: { variables: {} },
+      contexts: [
+        {
+          pointers: {
+            read: { sectionId: "long", lineId: `line-${lineCount - 1}` },
+          },
+          variables: {},
+          dialogueHistory: {
+            entries: Array.from({ length: lineCount }, (_, index) => ({
+              sectionId: "long",
+              lineId: `line-${index}`,
+            })),
+            currentLength: lineCount,
+            checkpointLengths: [],
+          },
+        },
+      ],
+    };
+
+    expect(selectDialogueHistory({ state })).toHaveLength(lineCount);
+    expect(actionReads).toBe(lineCount);
+  });
+
   it("restores slot-local history and patches saves authored on a dialogue line", () => {
     const projectData = createHistoryProjectData();
     projectData.story.scenes.main.sections.introduction.lines[0].actions.saveSlot =
@@ -212,18 +309,56 @@ describe("RouteEngine cross-section dialogue history", () => {
     });
   });
 
-  it("derives loaded history cursors from the rollback timeline", () => {
+  it("loads engine-generated saves containing checkpoint-less jump history", () => {
     const projectData = createHistoryProjectData();
     const sourceEngine = createEngine(projectData);
-    advance(sourceEngine);
+    sourceEngine.handleAction("jumpToLine", {
+      sectionId: "chapter",
+      lineId: "chapter-1",
+    });
+    sourceEngine.handleAction("saveSlot", { slotId: 3, savedAt: 300 });
+    const checkpointLessSave = structuredClone(
+      sourceEngine.selectSystemState().global.saveSlots["3"],
+    );
+    expect(checkpointLessSave.state.contexts[0].dialogueHistory).toEqual({
+      entries: [
+        { sectionId: "introduction", lineId: "intro-1" },
+        { sectionId: "chapter", lineId: "chapter-1" },
+      ],
+      currentLength: 2,
+      checkpointLengths: [1],
+    });
+
+    const checkpointLessEngine = createEngine(projectData, {
+      saveSlots: { 3: checkpointLessSave },
+    });
+    checkpointLessEngine.handleAction("loadSlot", { slotId: 3 });
+    expect(getHistoryText(checkpointLessEngine)).toEqual([
+      "Introduction one",
+      "Chapter one",
+    ]);
+    expect(
+      checkpointLessEngine.selectSystemState().contexts.at(-1).dialogueHistory,
+    ).toMatchObject({
+      currentLength: 2,
+      checkpointLengths: [1, 2],
+    });
+
     advance(sourceEngine);
     sourceEngine.handleAction("saveSlot", { slotId: 4, savedAt: 400 });
 
     const saveSlot = structuredClone(
       sourceEngine.selectSystemState().global.saveSlots["4"],
     );
-    saveSlot.state.contexts[0].dialogueHistory.currentLength = 0;
-    saveSlot.state.contexts[0].dialogueHistory.checkpointLengths.fill(0);
+    expect(saveSlot.state.contexts[0].dialogueHistory).toEqual({
+      entries: [
+        { sectionId: "introduction", lineId: "intro-1" },
+        { sectionId: "chapter", lineId: "chapter-1" },
+        { sectionId: "chapter", lineId: "chapter-2" },
+      ],
+      currentLength: 3,
+      checkpointLengths: [1, 3],
+    });
 
     const engine = createEngine(projectData, {
       saveSlots: { 4: saveSlot },
@@ -232,18 +367,21 @@ describe("RouteEngine cross-section dialogue history", () => {
 
     expect(getHistoryText(engine)).toEqual([
       "Introduction one",
-      "Introduction two",
       "Chapter one",
+      "Chapter prefix: ",
     ]);
     expect(engine.selectSystemState().contexts.at(-1).dialogueHistory).toEqual({
       entries: [
         { sectionId: "introduction", lineId: "intro-1" },
-        { sectionId: "introduction", lineId: "intro-2" },
         { sectionId: "chapter", lineId: "chapter-1" },
+        { sectionId: "chapter", lineId: "chapter-2" },
       ],
       currentLength: 3,
-      checkpointLengths: [1, 2, 2, 3],
+      checkpointLengths: [1, 3],
     });
+
+    engine.handleAction("rollbackByOffset", { offset: -1 });
+    expect(getHistoryText(engine)).toEqual(["Introduction one"]);
   });
 
   it("moves the history cursor on rollback and prunes the abandoned branch", () => {

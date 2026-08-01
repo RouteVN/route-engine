@@ -694,9 +694,18 @@ const normalizeLoadedDialogueHistory = (dialogueHistory, projectData, path) => {
       projectData,
       `${path}.entries[${entryIndex}]`,
     );
+    if (
+      entry.appendToPrevious !== undefined &&
+      typeof entry.appendToPrevious !== "boolean"
+    ) {
+      throw new Error(
+        `Malformed save slot ${path}.entries[${entryIndex}].appendToPrevious.`,
+      );
+    }
     return {
       sectionId: pointer.sectionId,
       lineId: pointer.lineId,
+      ...(entry.appendToPrevious === true ? { appendToPrevious: true } : {}),
     };
   });
 
@@ -730,6 +739,24 @@ const normalizeLoadedDialogueHistory = (dialogueHistory, projectData, path) => {
 const isDialogueHistoryLine = (projectData, pointer) =>
   isRecord(getRollbackLine(projectData, pointer)?.actions?.dialogue);
 
+const isForwardDialogueHistoryContinuation = (
+  projectData,
+  previousEntry,
+  pointer,
+) => {
+  if (!previousEntry || previousEntry.sectionId !== pointer.sectionId) {
+    return false;
+  }
+  const { section } = findSectionInProjectData(projectData, pointer.sectionId);
+  const previousIndex = section?.lines?.findIndex(
+    (line) => line.id === previousEntry.lineId,
+  );
+  const currentIndex = section?.lines?.findIndex(
+    (line) => line.id === pointer.lineId,
+  );
+  return previousIndex >= 0 && currentIndex > previousIndex;
+};
+
 const rebuildLegacyDialogueHistory = (rollback, projectData) => {
   const history = createDefaultDialogueHistoryState();
 
@@ -738,9 +765,19 @@ const rebuildLegacyDialogueHistory = (rollback, projectData) => {
       checkpoint.returnable !== false &&
       isDialogueHistoryLine(projectData, checkpoint)
     ) {
+      const line = getRollbackLine(projectData, checkpoint);
+      const previousEntry = history.entries.at(-1);
+      const appendToPrevious =
+        line.actions.dialogue.append === true &&
+        isForwardDialogueHistoryContinuation(
+          projectData,
+          previousEntry,
+          checkpoint,
+        );
       history.entries.push({
         sectionId: checkpoint.sectionId,
         lineId: checkpoint.lineId,
+        ...(appendToPrevious ? { appendToPrevious: true } : {}),
       });
     }
     history.checkpointLengths.push(history.entries.length);
@@ -750,34 +787,36 @@ const rebuildLegacyDialogueHistory = (rollback, projectData) => {
   return history.entries.length > 0 ? history : null;
 };
 
-const synchronizeLoadedDialogueHistory = (
-  dialogueHistory,
-  rollback,
-  projectData,
-) => {
-  let derivedLength = 0;
-
-  const checkpointLengths = rollback.timeline.map((checkpoint) => {
-    const nextEntry = dialogueHistory.entries[derivedLength];
-    if (
-      checkpoint.returnable !== false &&
-      isDialogueHistoryLine(projectData, checkpoint) &&
-      nextEntry?.sectionId === checkpoint.sectionId &&
-      nextEntry?.lineId === checkpoint.lineId
-    ) {
-      derivedLength += 1;
-    }
-    return derivedLength;
-  });
-
-  if (derivedLength !== dialogueHistory.entries.length) {
+const synchronizeLoadedDialogueHistory = (dialogueHistory, rollback) => {
+  const missingCheckpointLengthCount =
+    rollback.timeline.length - dialogueHistory.checkpointLengths.length;
+  if (missingCheckpointLengthCount < 0 || missingCheckpointLengthCount > 1) {
     throw new Error(
-      "Malformed save slot dialogueHistory: entries must follow the rollback timeline.",
+      "Malformed save slot dialogueHistory.checkpointLengths: expected one length per rollback checkpoint.",
     );
   }
+  if (
+    missingCheckpointLengthCount === 1 &&
+    rollback.currentIndex !== rollback.timeline.length - 1
+  ) {
+    throw new Error(
+      "Malformed save slot dialogueHistory.checkpointLengths: missing checkpoint is not the active read pointer.",
+    );
+  }
+  if (missingCheckpointLengthCount === 1) {
+    dialogueHistory.checkpointLengths.push(dialogueHistory.currentLength);
+  }
 
-  dialogueHistory.checkpointLengths = checkpointLengths;
-  dialogueHistory.currentLength = checkpointLengths[rollback.currentIndex] ?? 0;
+  let previousLength = 0;
+  dialogueHistory.checkpointLengths.forEach((length, checkpointIndex) => {
+    if (length < previousLength) {
+      throw new Error(
+        `Malformed save slot dialogueHistory.checkpointLengths[${checkpointIndex}]: lengths must be chronological.`,
+      );
+    }
+    previousLength = length;
+  });
+
   return dialogueHistory;
 };
 
@@ -1142,7 +1181,6 @@ const normalizeLoadedContext = (context, projectData, index) => {
             `contexts[${index}].dialogueHistory`,
           ),
           rollback,
-          projectData,
         );
 
   const normalizedContext = {
@@ -2354,11 +2392,11 @@ export const selectDialogueHistory = ({ state }) => {
   }
 
   let historyPointers;
-  if (
+  const hasDurableHistory =
     isRecord(lastContext.dialogueHistory) &&
     Array.isArray(lastContext.dialogueHistory.entries) &&
-    Number.isInteger(lastContext.dialogueHistory.currentLength)
-  ) {
+    Number.isInteger(lastContext.dialogueHistory.currentLength);
+  if (hasDurableHistory) {
     historyPointers = lastContext.dialogueHistory.entries.slice(
       0,
       lastContext.dialogueHistory.currentLength,
@@ -2389,25 +2427,61 @@ export const selectDialogueHistory = ({ state }) => {
     eager: false,
   });
 
+  const sectionProjectionCaches = new Map();
+  const getHistoryLineProjection = (pointer) => {
+    let cache = sectionProjectionCaches.get(pointer.sectionId);
+    if (!cache) {
+      const section = selectSection(
+        { state },
+        { sectionId: pointer.sectionId },
+      );
+      const lines = Array.isArray(section?.lines) ? section.lines : [];
+      cache = {
+        lines,
+        lineIndexes: new Map(lines.map((line, index) => [line.id, index])),
+        projections: new Map(),
+        nextLineIndex: 0,
+        presentationState: {},
+      };
+      sectionProjectionCaches.set(pointer.sectionId, cache);
+    }
+
+    const targetLineIndex = cache.lineIndexes.get(pointer.lineId);
+    if (targetLineIndex === undefined) {
+      return null;
+    }
+
+    while (cache.nextLineIndex <= targetLineIndex) {
+      const line = cache.lines[cache.nextLineIndex];
+      const lineActions = line.actions || {};
+      cache.presentationState = constructPresentationState([
+        cache.presentationState,
+        lineActions,
+      ]);
+      cache.projections.set(line.id, {
+        line,
+        lineActions,
+        dialogueState: cache.presentationState.dialogue || {},
+      });
+      cache.nextLineIndex += 1;
+    }
+
+    return cache.projections.get(pointer.lineId) ?? null;
+  };
+
   for (const pointer of historyPointers) {
     if (!isDialogueHistoryPointer(pointer)) {
       continue;
     }
-    const section = selectSection({ state }, { sectionId: pointer.sectionId });
-    const line = section?.lines?.find((item) => item.id === pointer.lineId);
-    if (!line) {
+    const projection = getHistoryLineProjection(pointer);
+    if (!projection) {
       continue;
     }
-    const lineActions = line.actions || {};
+    const { line, lineActions, dialogueState } = projection;
     if (!lineActions.dialogue) {
       continue;
     }
 
-    const presentationState = selectPresentationStateForPointer({
-      state,
-      pointer,
-    });
-    const dialogueState = presentationState.dialogue || {};
     const characterName = resolveCharacterDisplayName({
       characterId: dialogueState.characterId,
       character: dialogueState.character,
@@ -2428,7 +2502,9 @@ export const selectDialogueHistory = ({ state }) => {
 
     const previousHistoryEntry = historyContent[historyContent.length - 1];
     if (
-      lineActions.dialogue.append === true &&
+      (hasDurableHistory
+        ? pointer.appendToPrevious === true
+        : lineActions.dialogue.append === true) &&
       previousHistoryEntry?.sectionId === pointer.sectionId
     ) {
       historyContent[historyContent.length - 1] = {
@@ -2514,6 +2590,13 @@ export const recordCurrentDialogueHistory = ({ state }, payload = {}) => {
       existingDialogueHistory.currentLength - 1
     ];
   if (
+    payload.reuseExistingOccurrence === true &&
+    lastHistoryEntry?.sectionId === pointer.sectionId &&
+    lastHistoryEntry?.lineId === pointer.lineId
+  ) {
+    return state;
+  }
+  if (
     checkpointMatchesPointer &&
     existingDialogueHistory &&
     checkpointHistoryLength === existingDialogueHistory.currentLength &&
@@ -2531,9 +2614,14 @@ export const recordCurrentDialogueHistory = ({ state }, payload = {}) => {
       dialogueHistory.currentLength,
     );
   }
+  const appendToPrevious =
+    line.actions.dialogue.append === true &&
+    payload.appendToPrevious === true &&
+    lastHistoryEntry?.sectionId === pointer.sectionId;
   dialogueHistory.entries.push({
     sectionId: pointer.sectionId,
     lineId: pointer.lineId,
+    ...(appendToPrevious ? { appendToPrevious: true } : {}),
   });
   dialogueHistory.currentLength = dialogueHistory.entries.length;
 

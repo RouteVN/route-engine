@@ -451,9 +451,11 @@ Important constraints:
 `state.contexts[*].rollback.timeline` is the active branch history for rollback navigation. It can cross sections, and it is pruned when the player rolls back and then advances onto a different branch.
 
 `state.contexts[*].dialogueHistory` is the chronological dialogue backlog for
-that context. It also crosses sections and carries an independent cursor tied
-to rollback checkpoints, so loading or rolling back exposes exactly the active
-branch prefix. The log is created lazily when dialogue first settles.
+that context. It also crosses sections and carries an independent cursor plus
+the history length associated with each rollback checkpoint. Dialogue reached
+through checkpoint-less navigation such as `jumpToLine` remains in the saved
+log even though it has no matching rollback checkpoint. The log is created
+lazily when dialogue first settles.
 
 Skip-unseen text uses `accountViewedRegistry`, which lives outside save slot state and is not replaced by `loadSlot`.
 

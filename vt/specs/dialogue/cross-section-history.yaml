@@ -1,11 +1,17 @@
 ---
 title: Cross-section Dialogue History
-description: Verifies that the rendered history overlay keeps dialogue from the prior section after a section transition.
+description: Verifies that rendered history crosses sections and keeps repeated append occurrences separate after section re-entry.
 viewport:
   id: capture
   width: 960
   height: 540
 steps:
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 80
+  - action: screenshot
   - action: click
     x: 480
     y: 270
@@ -28,15 +34,14 @@ resources:
       elements:
         - id: click-area
           type: rect
+          y: 160
           width: 1920
-          height: 1080
+          height: 920
           colorId: bg
           click:
             payload:
               actions:
                 nextLine: {}
-    chapterControl:
-      elements:
         - id: history-button
           type: rect
           x: 1500
@@ -225,11 +230,16 @@ story:
             - id: chapter-dialogue
               actions:
                 control:
-                  resourceId: chapterControl
+                  resourceId: readingControl
                 dialogue:
                   mode: adv
+                  append: true
                   ui:
                     resourceId: dialogueLayout
                   characterId: bob
                   content:
-                    - text: This dialogue came from the chapter section.
+                    - text: Repeated append from the chapter section.
+            - id: reenter-chapter
+              actions:
+                sectionTransition:
+                  sectionId: chapter

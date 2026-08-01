@@ -185,6 +185,13 @@ describe("systemState schema", () => {
     });
     expect(validateSystemState(systemState)).toBe(true);
 
+    systemState.contexts[0].dialogueHistory.entries[0].appendToPrevious = true;
+    expect(validateSystemState(systemState)).toBe(true);
+    systemState.contexts[0].dialogueHistory.entries[0].appendToPrevious =
+      "true";
+    expect(validateSystemState(systemState)).toBe(false);
+    delete systemState.contexts[0].dialogueHistory.entries[0].appendToPrevious;
+
     systemState.contexts[0].dialogueHistory.currentLength = -1;
     expect(validateSystemState(systemState)).toBe(false);
   });
