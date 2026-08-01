@@ -4,6 +4,7 @@ import {
   createIntegrationProject,
   findRenderElement,
 } from "./helpers/createEngineIntegrationHarness.js";
+import { itKnownDefect } from "./helpers/knownDefect.js";
 
 const createSingleLineProject = ({
   actions = {},
@@ -701,9 +702,9 @@ describe("L10n packages through initialization, rendering, and actions", () => {
     ).toThrow(/fileId "translated-feature\.png" is not declared/);
   });
 
-  it.fails(
+  itKnownDefect(
     "validates localized references before installing the package",
-    () => {
+    ({ expectFailure }) => {
       const projectData = createL10nProject();
       projectData.resources.textStyles.body = {
         fontId: "bodyFont",
@@ -736,15 +737,25 @@ describe("L10n packages through initialization, rendering, and actions", () => {
         },
       };
 
-      expect(() =>
-        createEngineIntegrationHarness({ projectData, l10nData }),
-      ).toThrow(/missingFont|missingColor|not found/);
+      let initializationError;
+      try {
+        createEngineIntegrationHarness({ projectData, l10nData });
+      } catch (error) {
+        initializationError = error;
+      }
+      expectFailure({
+        observed: () => expect(initializationError).toBeUndefined(),
+        desired: () =>
+          expect(initializationError?.message ?? "").toMatch(
+            /missingFont|missingColor|not found/,
+          ),
+      });
     },
   );
 
-  it.fails(
+  itKnownDefect(
     "rejects a localized choice with an empty layout resource ID",
-    () => {
+    ({ expectFailure }) => {
       const projectData = createSingleLineProject({
         resources: {
           layouts: { choiceLayout: { elements: [] } },
@@ -786,25 +797,45 @@ describe("L10n packages through initialization, rendering, and actions", () => {
         },
       };
 
-      expect(() =>
-        createEngineIntegrationHarness({ projectData, l10nData }),
-      ).toThrow(/resourceId|non-empty/);
+      let initializationError;
+      try {
+        createEngineIntegrationHarness({ projectData, l10nData });
+      } catch (error) {
+        initializationError = error;
+      }
+      expectFailure({
+        observed: () => expect(initializationError).toBeUndefined(),
+        desired: () =>
+          expect(initializationError?.message ?? "").toMatch(
+            /resourceId|non-empty/,
+          ),
+      });
     },
   );
 });
 
 describe("renderer resilience for schema-optional resource collections", () => {
-  it.fails(
+  itKnownDefect(
     "does not leak a TypeError when the layouts collection is absent",
-    () => {
+    ({ expectFailure }) => {
       const projectData = createSingleLineProject({
         actions: { layout: { resourceId: "missing" } },
       });
       delete projectData.resources.layouts;
 
-      expect(() =>
-        createEngineIntegrationHarness({ projectData }),
-      ).not.toThrow();
+      let initializationError;
+      try {
+        createEngineIntegrationHarness({ projectData });
+      } catch (error) {
+        initializationError = error;
+      }
+      expectFailure({
+        observed: () =>
+          expect(initializationError?.message).toMatch(
+            /Cannot read properties of undefined \(reading 'missing'\)/,
+          ),
+        desired: () => expect(initializationError).toBeUndefined(),
+      });
     },
   );
 });

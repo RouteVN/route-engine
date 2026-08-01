@@ -21,32 +21,42 @@ const copyVtRouteGraphicsBundle = () => {
   fs.copyFileSync(source, target);
 };
 
-esbuild
-  .build({
+const build = async () => {
+  await esbuild.build({
     bundle: true,
     minify: true,
     sourcemap: false,
     format: "esm",
     outfile: `./dist/RouteEngine.js`,
     entryPoints: [`src/index.js`],
-  })
-  .then(() => console.log("Build completed"))
-  .catch(() => {
-    console.log("Build failed");
   });
 
-copyVtRouteGraphicsBundle();
-
-esbuild
-  .build({
+  await esbuild.build({
     bundle: true,
     minify: true,
     sourcemap: true,
     format: "esm",
     outfile: `./vt/static/RouteEngine.js`,
     entryPoints: [`src/index.js`],
-  })
-  .then(() => console.log("Build completed"))
-  .catch(() => {
-    console.log("Build failed");
   });
+
+  await esbuild.build({
+    bundle: true,
+    minify: true,
+    sourcemap: false,
+    format: "esm",
+    platform: "browser",
+    outfile: `./vt/static/VtDependencies.js`,
+    entryPoints: [`vt/vtDependencies.js`],
+  });
+
+  copyVtRouteGraphicsBundle();
+  console.log("Build completed");
+};
+
+try {
+  await build();
+} catch (error) {
+  console.error("Build failed", error);
+  process.exitCode = 1;
+}

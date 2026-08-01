@@ -91,11 +91,14 @@ export const createEngineIntegrationHarness = ({
   projectData,
   global,
   l10nData,
+  namespace = "integration-test",
   preprocessPayload,
   handleUnhandledEffect,
+  ticker: providedTicker,
+  persistence: providedPersistence,
 } = {}) => {
-  const ticker = createIntegrationTicker();
-  const persistence = createIntegrationPersistence();
+  const ticker = providedTicker ?? createIntegrationTicker();
+  const persistence = providedPersistence ?? createIntegrationPersistence();
   const renderStates = [];
   const routeGraphics = {
     render: vi.fn((renderState) => {
@@ -130,7 +133,7 @@ export const createEngineIntegrationHarness = ({
   };
   const init = () => {
     engine.init({
-      namespace: "integration-test",
+      namespace,
       initialState,
     });
   };

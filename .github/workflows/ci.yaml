@@ -26,24 +26,55 @@ jobs:
 
       - run: bun run test
 
-      - name: Install rtgl CLI
-        if: false # VT remains local-only until GitHub runner stability is addressed
-        run: bun install -g rtgl
-
-      - name: Run Visual Tests (Docker)
-        if: false # VT remains local-only until GitHub runner stability is addressed
-        env:
-          RTGL_VT_DEBUG: true
-          VT_DOCKER_ARGS: --init --ipc=host
-          VT_DOCKER_CONCURRENCY: 1
-          VT_DOCKER_TIMEOUT: 120000
-        run: bun run vt:report
-
-      - name: Upload VT Images as Artifacts
-        uses: actions/upload-artifact@v4
-        if: false # VT remains local-only until GitHub runner stability is addressed
+  visual-test:
+    name: VT (${{ matrix.id }})
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: l10n-roundtrip
+            item: robustness/l10n-layout-roundtrip.yaml
+          - id: particle-texture
+            item: robustness/particle-image-texture.yaml
+          - id: save-load-timers
+            item: robustness/save-load-skip-timer-cleanup.yaml
+          - id: settings-batch
+            item: robustness/settings-runtime-batch.yaml
+          - id: template-click
+            item: robustness/visual-layout-template-click.yaml
+    steps:
+      - uses: actions/checkout@v4
         with:
-          name: vt-images-${{ github.run_number }}
-          path: .rettangoli/
+          lfs: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24.x"
+
+      - uses: oven-sh/setup-bun@v2
+
+      - run: bun install --frozen-lockfile
+
+      - name: Capture and compare healthy VT scenario
+        env:
+          VT_CASE_ID: ${{ matrix.id }}
+          VT_ITEM: ${{ matrix.item }}
+        run: bun run vt:ci
+
+      - name: Upload VT diagnostics
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vt-${{ matrix.id }}-${{ github.run_number }}
+          path: |
+            .rettangoli/vt/metrics.json
+            .rettangoli/vt/report.json
+            .rettangoli/vt/_site/report.html
+            .rettangoli/vt/_site/candidate/**/*.webp
+            .rettangoli/vt/_site/diff/**/*.png
           include-hidden-files: true
-          retention-days: 30
+          if-no-files-found: warn
+          retention-days: 14
