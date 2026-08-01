@@ -679,6 +679,7 @@ describe("known persistence compatibility gaps", () => {
     });
     const replacementProject = createJourneyProject();
     replacementProject.resources.variables = {};
+    delete replacementProject.resources.sceneReplay.replays[0].initialVariables;
 
     harness.engine.handleAction("updateProjectData", {
       projectData: replacementProject,
@@ -717,6 +718,9 @@ describe("known persistence compatibility gaps", () => {
           },
         },
       });
+      replacementProject.resources.sceneReplay.replays[0].initialVariables = {
+        contextScore: "replay-safe",
+      };
       engine.handleAction("updateProjectData", {
         projectData: replacementProject,
       });

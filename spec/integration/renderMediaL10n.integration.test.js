@@ -710,6 +710,8 @@ describe("L10n packages through initialization, rendering, and actions", () => {
         colorId: "bodyColor",
         fontSize: 24,
         lineHeight: 1.2,
+        fontWeight: "400",
+        fontStyle: "normal",
       };
       const l10nData = {
         packages: {
@@ -725,6 +727,8 @@ describe("L10n packages through initialization, rendering, and actions", () => {
                   colorId: "missingColor",
                   fontSize: 24,
                   lineHeight: 1.2,
+                  fontWeight: "400",
+                  fontStyle: "normal",
                 },
               },
             ],
