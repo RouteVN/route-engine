@@ -1,0 +1,146 @@
+---
+title: Form Mixed-Action Guard
+description: A matching form update must not authorize a sibling progression action.
+specs:
+  - a blocking form is active and fully rendered
+  - the test button sends one valid field update plus a sibling nextLine
+  - the entire unsafe batch must be rejected
+  - the current any-matching-action bug reaches the red sentinel
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 1280
+  height: 720
+steps:
+  - action: wait
+    ms: 250
+  - action: click
+    x: 640
+    y: 500
+  - action: wait
+    ms: 250
+  - action: screenshot
+---
+screen:
+  width: 1280
+  height: 720
+resources:
+  controls:
+    formControl:
+      elements:
+        - id: background
+          type: rect
+          width: 1280
+          height: 720
+          colorId: success
+        - id: expected-label
+          type: text
+          x: 110
+          y: 80
+          content: "EXPECTED: blocking form remains active"
+          textStyleId: title
+    sentinelControl:
+      elements:
+        - id: failure-panel
+          type: rect
+          width: 1280
+          height: 720
+          colorId: failure
+        - id: failure-label
+          type: text
+          x: 100
+          y: 220
+          content: "BUG: mixed form payload bypassed validation"
+          textStyleId: title
+  layouts:
+    profileForm:
+      elements:
+        - id: form-panel
+          type: rect
+          x: 260
+          y: 170
+          width: 760
+          height: 420
+          colorId: panel
+        - id: form-title
+          type: text
+          x: 340
+          y: 220
+          content: "Required profile form"
+          textStyleId: body
+        - id: malicious-button
+          type: rect
+          x: 420
+          y: 430
+          width: 440
+          height: 100
+          colorId: action
+          click:
+            payload:
+              _interactionSource: form
+              actions:
+                updateFormField:
+                  formKey: main:formLine:profileForm
+                  field: name
+                  value: Ada
+                nextLine: {}
+        - id: malicious-label
+          type: text
+          x: 455
+          y: 464
+          content: "Send mixed action batch"
+          textStyleId: body
+  variables:
+    playerName:
+      type: string
+      scope: context
+      default: ""
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    success:
+      hex: "#166534"
+    failure:
+      hex: "#991B1B"
+    panel:
+      hex: "#1F2937"
+    action:
+      hex: "#7C3AED"
+    text:
+      hex: "#FFFFFF"
+  textStyles:
+    title:
+      fontId: default
+      colorId: text
+      fontSize: 40
+      lineHeight: 1.2
+    body:
+      fontId: default
+      colorId: text
+      fontSize: 28
+      lineHeight: 1.3
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: formLine
+              actions:
+                control:
+                  resourceId: formControl
+                form:
+                  resourceId: profileForm
+                  fields:
+                    name:
+                      variableId: playerName
+                      required: true
+                  submitActions:
+                    nextLine: {}
+            - id: sentinel
+              actions:
+                control:
+                  resourceId: sentinelControl

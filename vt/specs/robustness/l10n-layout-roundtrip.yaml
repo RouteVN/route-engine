@@ -1,0 +1,182 @@
+---
+title: L10n Layout Round Trip
+description: A rendered layout switches to an imported package and back to the canonical project.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 100
+  - action: screenshot
+  - action: click
+    x: 480
+    y: 390
+  - action: wait
+    ms: 100
+  - action: screenshot
+  - action: click
+    x: 480
+    y: 390
+  - action: wait
+    ms: 100
+  - action: screenshot
+---
+l10nData:
+  packages:
+    package-7f3c:
+      language: Test Translation
+      files: []
+      patches:
+        - type: resource.color
+          operation: add
+          resourceId: translatedPanel
+          payload:
+            hex: "#4D4D4D"
+        - type: resource.layout
+          operation: add
+          resourceId: translatedMenu
+          payload:
+            elements:
+              - id: translated-panel
+                type: rect
+                x: 80
+                y: 60
+                width: 800
+                height: 420
+                colorId: translatedPanel
+              - id: translated-title
+                type: text
+                x: 480
+                y: 145
+                anchorX: 0.5
+                content: TRANSLATED PACKAGE
+                textStyleId: title
+              - id: translated-detail
+                type: text
+                x: 480
+                y: 230
+                anchorX: 0.5
+                content: The imported layout is active
+                textStyleId: body
+              - id: source-button
+                type: rect
+                x: 300
+                y: 345
+                width: 360
+                height: 90
+                colorId: button
+                click:
+                  payload:
+                    actions:
+                      updateLocalizationPackage:
+                        l10nId: null
+              - id: source-button-label
+                type: text
+                x: 480
+                y: 390
+                anchorX: 0.5
+                anchorY: 0.5
+                content: RETURN TO SOURCE
+                textStyleId: buttonText
+        - type: line.action
+          lineId: language-menu
+          actionType: layout
+          payload:
+            resourceId: translatedMenu
+screen:
+  width: 960
+  height: 540
+  backgroundColor: "#000000"
+resources:
+  layouts:
+    sourceMenu:
+      elements:
+        - id: source-panel
+          type: rect
+          x: 80
+          y: 60
+          width: 800
+          height: 420
+          colorId: sourcePanel
+        - id: source-title
+          type: text
+          x: 480
+          y: 145
+          anchorX: 0.5
+          content: CANONICAL PROJECT
+          textStyleId: title
+        - id: source-detail
+          type: text
+          x: 480
+          y: 230
+          anchorX: 0.5
+          content: No localization package is active
+          textStyleId: body
+        - id: package-button
+          type: rect
+          x: 300
+          y: 345
+          width: 360
+          height: 90
+          colorId: button
+          click:
+            payload:
+              actions:
+                updateLocalizationPackage:
+                  l10nId: package-7f3c
+        - id: package-button-label
+          type: text
+          x: 480
+          y: 390
+          anchorX: 0.5
+          anchorY: 0.5
+          content: USE TRANSLATION
+          textStyleId: buttonText
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    sourcePanel:
+      hex: "#4D4D4D"
+    button:
+      hex: "#737373"
+    text:
+      hex: "#FFFFFF"
+  textStyles:
+    title:
+      fontId: default
+      colorId: text
+      fontSize: 42
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1.2
+    body:
+      fontId: default
+      colorId: text
+      fontSize: 27
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    buttonText:
+      fontId: default
+      colorId: text
+      fontSize: 25
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      name: Main
+      initialSectionId: main
+      sections:
+        main:
+          name: Main
+          lines:
+            - id: language-menu
+              actions:
+                layout:
+                  resourceId: sourceMenu

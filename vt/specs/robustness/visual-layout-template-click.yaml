@@ -1,0 +1,143 @@
+---
+title: Visual Layout Template Click
+description: A visual layout resolves nested image and text resources, then its click action rerenders template data.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 100
+  - action: screenshot
+  - action: click
+    x: 480
+    y: 385
+  - action: wait
+    ms: 100
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+  backgroundColor: "#000000"
+resources:
+  variables:
+    score:
+      type: number
+      scope: context
+      default: 2
+  images:
+    badge:
+      fileId: mask-diagonal
+      width: 512
+      height: 512
+  layouts:
+    background:
+      elements:
+        - id: background-fill
+          type: rect
+          width: 960
+          height: 540
+          colorId: background
+    statusCard:
+      elements:
+        - id: card
+          type: rect
+          x: 180
+          y: 70
+          width: 600
+          height: 400
+          colorId: card
+        - id: badge
+          type: sprite
+          imageId: badge
+          x: 330
+          y: 205
+          anchorX: 0.5
+          anchorY: 0.5
+          width: 120
+          height: 120
+        - id: score-label
+          type: text
+          x: 590
+          y: 180
+          anchorX: 0.5
+          content: SCORE ${variables.score}
+          textStyleId: score
+        - id: increment-button
+          type: rect
+          x: 320
+          y: 340
+          width: 320
+          height: 90
+          colorId: button
+          click:
+            payload:
+              actions:
+                updateVariable:
+                  id: incrementScore
+                  operations:
+                    - variableId: score
+                      op: increment
+                      value: 1
+        - id: increment-label
+          type: text
+          x: 480
+          y: 385
+          anchorX: 0.5
+          anchorY: 0.5
+          content: INCREMENT
+          textStyleId: buttonText
+  transforms:
+    origin:
+      x: 0
+      y: 0
+      anchorX: 0
+      anchorY: 0
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    background:
+      hex: "#000000"
+    card:
+      hex: "#4D4D4D"
+    button:
+      hex: "#737373"
+    text:
+      hex: "#FFFFFF"
+  textStyles:
+    score:
+      fontId: default
+      colorId: text
+      fontSize: 42
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1.2
+    buttonText:
+      fontId: default
+      colorId: text
+      fontSize: 27
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      name: Main
+      initialSectionId: main
+      sections:
+        main:
+          name: Main
+          lines:
+            - id: status
+              actions:
+                background:
+                  resourceId: background
+                visual:
+                  items:
+                    - id: status-card
+                      resourceId: statusCard
+                      transformId: origin

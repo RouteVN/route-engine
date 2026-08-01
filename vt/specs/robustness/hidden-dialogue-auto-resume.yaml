@@ -1,0 +1,119 @@
+---
+title: Hidden Dialogue Auto Resume
+description: Auto mode continues after its first timer reveals hidden dialogue instead of consuming progression permanently.
+specs:
+  - start auto mode on a completed line
+  - hide dialogue UI while the timer is active
+  - the first timer reveals the UI without advancing
+  - a renewed timer must then advance to the expected line
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 1280
+  height: 720
+steps:
+  - action: wait
+    ms: 250
+  - action: click
+    x: 640
+    y: 350
+  - action: wait
+    ms: 450
+  - action: screenshot
+---
+screen:
+  width: 1280
+  height: 720
+resources:
+  controls:
+    sourceControl:
+      elements:
+        - id: failure-panel
+          type: rect
+          width: 1280
+          height: 720
+          colorId: failure
+        - id: failure-title
+          type: text
+          x: 100
+          y: 130
+          content: "BUG: revealing hidden dialogue consumed auto mode"
+          textStyleId: title
+        - id: run-button
+          type: rect
+          x: 420
+          y: 280
+          width: 440
+          height: 140
+          colorId: action
+          click:
+            payload:
+              actions:
+                setAutoForwardDelay:
+                  value: 150
+                startAutoMode: {}
+                hideDialogueUI: {}
+        - id: run-label
+          type: text
+          x: 505
+          y: 328
+          content: "Start auto and hide UI"
+          textStyleId: body
+        - id: status
+          type: text
+          x: 420
+          y: 500
+          content: "hidden=${runtime.dialogueUIHidden} auto=${runtime.autoMode}"
+          textStyleId: body
+    expectedControl:
+      elements:
+        - id: success-panel
+          type: rect
+          width: 1280
+          height: 720
+          colorId: success
+        - id: expected-title
+          type: text
+          x: 100
+          y: 220
+          content: "EXPECTED: auto resumed and advanced"
+          textStyleId: title
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    action:
+      hex: "#2563EB"
+    success:
+      hex: "#166534"
+    failure:
+      hex: "#991B1B"
+    text:
+      hex: "#FFFFFF"
+  textStyles:
+    title:
+      fontId: default
+      colorId: text
+      fontSize: 42
+      lineHeight: 1.2
+    body:
+      fontId: default
+      colorId: text
+      fontSize: 29
+      lineHeight: 1.3
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: source
+              actions:
+                control:
+                  resourceId: sourceControl
+            - id: expected
+              actions:
+                control:
+                  resourceId: expectedControl

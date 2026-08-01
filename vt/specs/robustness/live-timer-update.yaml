@@ -1,0 +1,168 @@
+---
+title: Live Timer Update
+description: Replacing an enabled authored timer must cancel its previous callback.
+specs:
+  - start a 200 ms from-start timer
+  - replace it with a 1500 ms timer before it fires
+  - waiting past 200 ms must keep the current line active
+  - the current stale-timer bug reaches the red sentinel
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 1280
+  height: 720
+steps:
+  - action: wait
+    ms: 200
+  - action: click
+    x: 300
+    y: 330
+  - action: wait
+    ms: 30
+  - action: click
+    x: 780
+    y: 330
+  - action: wait
+    ms: 400
+  - action: screenshot
+---
+screen:
+  width: 1280
+  height: 720
+resources:
+  controls:
+    timerControl:
+      elements:
+        - id: background
+          type: rect
+          width: 1280
+          height: 720
+          colorId: background
+        - id: updated-panel
+          $when: variables.timerUpdated
+          type: rect
+          x: 60
+          y: 60
+          width: 1160
+          height: 600
+          colorId: success
+        - id: title
+          type: text
+          x: 100
+          y: 90
+          content: "Replace the live timer before 200 ms"
+          textStyleId: title
+        - id: short-button
+          type: rect
+          x: 100
+          y: 260
+          width: 400
+          height: 140
+          colorId: action
+          click:
+            payload:
+              actions:
+                setNextLineConfig:
+                  auto:
+                    enabled: true
+                    trigger: fromStart
+                    delay: 200
+        - id: short-label
+          type: text
+          x: 175
+          y: 308
+          content: "1. Start 200 ms"
+          textStyleId: body
+        - id: long-button
+          type: rect
+          x: 580
+          y: 260
+          width: 400
+          height: 140
+          colorId: action
+          click:
+            payload:
+              actions:
+                setNextLineConfig:
+                  auto:
+                    enabled: true
+                    trigger: fromStart
+                    delay: 1500
+                updateVariable:
+                  id: markTimerUpdated
+                  operations:
+                    - variableId: timerUpdated
+                      op: set
+                      value: true
+        - id: long-label
+          type: text
+          x: 650
+          y: 308
+          content: "2. Extend to 1500 ms"
+          textStyleId: body
+        - id: expected-label
+          $when: variables.timerUpdated
+          type: text
+          x: 145
+          y: 500
+          content: "EXPECTED: still on the timer line"
+          textStyleId: title
+    sentinelControl:
+      elements:
+        - id: failure-panel
+          type: rect
+          width: 1280
+          height: 720
+          colorId: failure
+        - id: failure-label
+          type: text
+          x: 120
+          y: 220
+          content: "BUG: the stale 200 ms timer advanced"
+          textStyleId: title
+  variables:
+    timerUpdated:
+      type: boolean
+      scope: context
+      default: false
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    background:
+      hex: "#111827"
+    action:
+      hex: "#2563EB"
+    success:
+      hex: "#166534"
+    failure:
+      hex: "#991B1B"
+    text:
+      hex: "#FFFFFF"
+  textStyles:
+    title:
+      fontId: default
+      colorId: text
+      fontSize: 42
+      lineHeight: 1.2
+    body:
+      fontId: default
+      colorId: text
+      fontSize: 29
+      lineHeight: 1.3
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: timer
+              actions:
+                control:
+                  resourceId: timerControl
+            - id: sentinel
+              actions:
+                control:
+                  resourceId: sentinelControl

@@ -262,11 +262,34 @@ const init = async () => {
       },
     },
     ticker,
+    handleUnhandledEffect: (effect) => {
+      if (
+        effect?.name !== "vt:dispatchActions" ||
+        !effect.payload?.actions ||
+        typeof effect.payload.actions !== "object" ||
+        Array.isArray(effect.payload.actions)
+      ) {
+        throw new Error(`Unhandled VT effect "${effect?.name}".`);
+      }
+
+      engine.handleActions(effect.payload.actions);
+    },
   });
 
   const routeGraphicsEventHandler =
     effectsHandler.createRouteGraphicsEventHandler({
       preprocessPayload: async (eventName, payload) => {
+        const preprocessDelayMs = payload?._vtPreprocessDelayMs;
+        if (
+          Number.isFinite(preprocessDelayMs) &&
+          preprocessDelayMs > 0 &&
+          isVtCaptureMode()
+        ) {
+          await new Promise((resolve) => {
+            window.setTimeout(resolve, preprocessDelayMs);
+          });
+        }
+
         const saveAction = payload?.actions?.saveSlot;
         if (saveAction) {
           const saveTimestamp = Date.now();
