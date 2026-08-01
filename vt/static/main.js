@@ -58,6 +58,10 @@ const renderBootstrapFailure = async (error) => {
     color: "#ffffff",
     font: "24px/1.4 monospace",
   });
+  // RTGL prefers this hook over a browser screenshot. Disable it so a failure
+  // that occurs after the hook was installed captures this diagnostic DOM,
+  // never a stale or blank Route Graphics canvas.
+  window.takeVtScreenshotBase64 = undefined;
   document.body.replaceChildren(output);
   window.__vtBootstrapError = message;
   console.error("[vt][bootstrap]", error);

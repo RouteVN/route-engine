@@ -186,10 +186,15 @@ describe("engine/effects integration ownership regressions", () => {
 
       harness.ticker.tick(100);
 
-      const settledLineId = harness.getPointer().lineId;
+      const timerState = {
+        lineId: harness.getPointer().lineId,
+        timerCount: harness.ticker.size,
+      };
       expectFailure({
-        observed: () => expect(settledLineId).toBe("line2"),
-        desired: () => expect(settledLineId).toBe("line1"),
+        observed: () =>
+          expect(timerState).toEqual({ lineId: "line2", timerCount: 1 }),
+        desired: () =>
+          expect(timerState).toEqual({ lineId: "line1", timerCount: 1 }),
       });
     },
   );
@@ -207,10 +212,15 @@ describe("engine/effects integration ownership regressions", () => {
 
       harness.ticker.tick(100);
 
-      const settledLineId = harness.getPointer().lineId;
+      const timerState = {
+        lineId: harness.getPointer().lineId,
+        timerCount: harness.ticker.size,
+      };
       expectFailure({
-        observed: () => expect(settledLineId).toBe("line2"),
-        desired: () => expect(settledLineId).toBe("line1"),
+        observed: () =>
+          expect(timerState).toEqual({ lineId: "line2", timerCount: 0 }),
+        desired: () =>
+          expect(timerState).toEqual({ lineId: "line1", timerCount: 1 }),
       });
     },
   );
@@ -272,10 +282,21 @@ describe("engine/effects integration ownership regressions", () => {
 
       harness.reinitialize();
 
-      const completionAccepted = harness.completeLatestRender();
+      const completionState = {
+        completionAccepted: harness.completeLatestRender(),
+        lineCompleted: harness.getState().global.isLineCompleted,
+      };
       expectFailure({
-        observed: () => expect(completionAccepted).toBe(false),
-        desired: () => expect(completionAccepted).toBe(true),
+        observed: () =>
+          expect(completionState).toEqual({
+            completionAccepted: false,
+            lineCompleted: false,
+          }),
+        desired: () =>
+          expect(completionState).toEqual({
+            completionAccepted: true,
+            lineCompleted: true,
+          }),
       });
     },
   );
