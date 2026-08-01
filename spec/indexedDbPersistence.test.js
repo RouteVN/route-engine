@@ -620,4 +620,48 @@ describe("indexedDbPersistence", () => {
       },
     });
   });
+
+  it("keeps queued writes with their owning namespace across reinit", async () => {
+    const indexedDB = createFakeIndexedDB();
+    let engine;
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      indexedDB,
+      routeGraphics: {
+        render: vi.fn(),
+      },
+      ticker: createTicker(),
+    });
+    engine = createRouteEngine({ handlePendingEffects: effectsHandler });
+
+    engine.init({
+      namespace: "lifecycle-alpha",
+      initialState: { projectData: createProjectData() },
+    });
+    engine.handleAction("setAutoForwardSpeed", { value: 10 });
+
+    engine.init({
+      namespace: "lifecycle-beta",
+      initialState: { projectData: createProjectData() },
+    });
+    engine.handleAction("setAutoForwardSpeed", { value: 90 });
+
+    await flushAsync();
+    await flushAsync();
+
+    const alphaPersistence = createIndexedDbPersistence({
+      indexedDB,
+      namespace: "lifecycle-alpha",
+    });
+    const betaPersistence = createIndexedDbPersistence({
+      indexedDB,
+      namespace: "lifecycle-beta",
+    });
+    expect((await alphaPersistence.load()).globalRuntime.autoForwardSpeed).toBe(
+      10,
+    );
+    expect((await betaPersistence.load()).globalRuntime.autoForwardSpeed).toBe(
+      90,
+    );
+  });
 });

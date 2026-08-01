@@ -5,7 +5,7 @@ specs:
   - the first button pauses its payload in the VT preprocessor
   - the second button advances immediately to line two
   - resolving the older click must leave line two active
-  - the current stale-input bug advances to the red sentinel line
+  - the red sentinel line must never appear
 skipInitialScreenshot: true
 viewport:
   id: capture

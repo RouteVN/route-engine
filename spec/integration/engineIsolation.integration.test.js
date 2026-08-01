@@ -4,7 +4,6 @@ import {
   createIntegrationProject,
   createIntegrationTicker,
 } from "./helpers/createEngineIntegrationHarness.js";
-import { itKnownDefect } from "./helpers/knownDefect.js";
 
 const createIsolationProject = (label) =>
   createIntegrationProject({
@@ -107,34 +106,28 @@ describe("multiple RouteEngine instances", () => {
     expect(second.getPointer().lineId).toBe("line2");
   });
 
-  itKnownDefect(
-    "rejects another engine's render completion event",
-    ({ expectFailure }) => {
-      const first = createEngineIntegrationHarness({
-        namespace: "isolation:render-first",
-        projectData: createIsolationProject("first"),
-      });
-      const second = createEngineIntegrationHarness({
-        namespace: "isolation:render-second",
-        projectData: createIsolationProject("second"),
-      });
-      const firstRenderId = first.renderStates.at(-1).id;
+  it("rejects another engine's render completion event", () => {
+    const first = createEngineIntegrationHarness({
+      namespace: "isolation:render-first",
+      projectData: createIsolationProject("first"),
+    });
+    const second = createEngineIntegrationHarness({
+      namespace: "isolation:render-second",
+      projectData: createIsolationProject("second"),
+    });
+    const firstRenderId = first.renderStates.at(-1).id;
 
-      const completionAccepted = second.effectsHandler.handleRouteGraphicsEvent(
-        "renderComplete",
-        {
-          id: firstRenderId,
-          aborted: false,
-        },
-      );
-      expectFailure({
-        observed: () => expect(completionAccepted).toBe(true),
-        desired: () => expect(completionAccepted).toBe(false),
-      });
-      expect(second.getState().global.isLineCompleted).toBe(true);
-      expect(first.getState().global.isLineCompleted).toBe(false);
-    },
-  );
+    const completionAccepted = second.effectsHandler.handleRouteGraphicsEvent(
+      "renderComplete",
+      {
+        id: firstRenderId,
+        aborted: false,
+      },
+    );
+    expect(completionAccepted).toBe(false);
+    expect(second.getState().global.isLineCompleted).toBe(false);
+    expect(first.getState().global.isLineCompleted).toBe(false);
+  });
 
   it("does not disturb another engine when one instance is reinitialized", () => {
     const ticker = createIntegrationTicker();
