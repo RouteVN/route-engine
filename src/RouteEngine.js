@@ -541,6 +541,7 @@ export default function createRouteEngine(options) {
         pointerBeforeAction?.lineId !== pointerAfterAction.lineId,
       reuseExistingOccurrence:
         DIALOGUE_HISTORY_RESTORE_ACTION_TYPES.has(actionType),
+      forceNewOccurrence: actionType === "jumpToLine",
     };
   };
 
@@ -871,6 +872,8 @@ export default function createRouteEngine(options) {
                   options.dialogueHistoryAppendToPrevious === true,
                 reuseExistingOccurrence:
                   options.dialogueHistoryReuseExistingOccurrence === true,
+                forceNewOccurrence:
+                  options.dialogueHistoryForceNewOccurrence === true,
               });
             }
           } finally {
@@ -1277,6 +1280,8 @@ export default function createRouteEngine(options) {
               dialogueHistoryLineEntry?.appendToPrevious === true,
             dialogueHistoryReuseExistingOccurrence:
               dialogueHistoryLineEntry?.reuseExistingOccurrence === true,
+            dialogueHistoryForceNewOccurrence:
+              dialogueHistoryLineEntry?.forceNewOccurrence === true,
           });
         } catch (error) {
           _pendingRollbackLineEntrySaveHandoff =

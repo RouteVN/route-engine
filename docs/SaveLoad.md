@@ -508,7 +508,7 @@ Current load flow:
 3. validate and normalize `slotData.state`
 4. validate each loaded read pointer against current `projectData`
 5. normalize loaded contexts and rollback state
-6. restore dialogue history, reconstructing it from valid rollback checkpoints when loading an older slot that predates the log
+6. restore dialogue history, pruning entries whose authored lines no longer exist and remapping checkpoint lengths to the retained log; when loading an older slot that predates the log, reconstruct it from valid rollback checkpoints
 7. reset transient runtime globals to a clean playable baseline
 8. leave account viewed state unchanged
 9. queue timer-clear effects and append `render`

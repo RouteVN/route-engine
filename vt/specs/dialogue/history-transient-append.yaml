@@ -1,0 +1,188 @@
+---
+title: Dialogue History Transient Append Boundary
+description: Verifies that an append line reached through an undisplayed dialogue does not replace the last displayed history entry.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: click
+    x: 480
+    y: 270
+  - action: wait
+    ms: 100
+  - action: click
+    x: 820
+    y: 40
+  - action: wait
+    ms: 100
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+resources:
+  controls:
+    readingControl:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          colorId: bg
+          click:
+            payload:
+              actions:
+                nextLine: {}
+        - id: history-button
+          type: rect
+          x: 1500
+          y: 40
+          width: 260
+          height: 80
+          colorId: button
+          click:
+            payload:
+              actions:
+                pushOverlay:
+                  resourceId: historyLayout
+                  resourceType: layout
+        - id: history-label
+          type: text
+          x: 1560
+          y: 65
+          content: History
+          textStyleId: buttonText
+          click:
+            payload:
+              actions:
+                pushOverlay:
+                  resourceId: historyLayout
+                  resourceType: layout
+  layouts:
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: dialogue-panel
+          type: rect
+          x: 100
+          y: 760
+          width: 1720
+          height: 220
+          colorId: panel
+        - id: dialogue-text
+          type: text
+          x: 150
+          y: 835
+          content: ${dialogue.content[0].text}
+          textStyleId: body
+    historyLayout:
+      elements:
+        - id: overlay-background
+          type: rect
+          width: 1920
+          height: 1080
+          colorId: bg
+        - id: history-panel
+          type: rect
+          x: 360
+          y: 150
+          width: 1200
+          height: 780
+          colorId: panel
+        - id: history-title
+          type: text
+          x: 450
+          y: 220
+          content: Displayed dialogue history
+          textStyleId: title
+        - id: history-list
+          type: container
+          x: 450
+          y: 330
+          direction: vertical
+          gapY: 40
+          children:
+            - $for item, i in historyDialogue:
+                - id: history-item-${i}
+                  type: text
+                  content: ${item.text}
+                  textStyleId: body
+  fonts:
+    fontDefault:
+      fileId: Arial
+  colors:
+    bg:
+      hex: "#000000"
+    panel:
+      hex: "#4D4D4D"
+    button:
+      hex: "#737373"
+    fg:
+      hex: "#FFFFFF"
+  textStyles:
+    body:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 30
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    buttonText:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 28
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+    title:
+      fontId: fontDefault
+      colorId: fg
+      fontSize: 38
+      fontWeight: bold
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: test
+      sections:
+        test:
+          lines:
+            - id: displayed
+              actions:
+                control:
+                  resourceId: readingControl
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: Displayed dialogue
+            - id: transient-append-base
+              actions:
+                control:
+                  resourceId: readingControl
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "Transient prefix: "
+                conditional:
+                  branches:
+                    - when: false
+                      actions: {}
+            - id: settled-append
+              actions:
+                control:
+                  resourceId: readingControl
+                dialogue:
+                  mode: adv
+                  append: true
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: continued

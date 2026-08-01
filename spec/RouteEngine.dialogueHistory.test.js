@@ -254,6 +254,63 @@ describe("RouteEngine cross-section dialogue history", () => {
     expect(getHistoryText(engine)).toEqual(["Introduction one"]);
   });
 
+  it("patches a line-authored save reached without a rollback checkpoint", () => {
+    const projectData = createHistoryProjectData();
+    projectData.story.scenes.main.sections.chapter.lines[0].actions.saveSlot = {
+      slotId: 7,
+      savedAt: 700,
+    };
+    const engine = createEngine(projectData);
+
+    engine.handleAction("jumpToLine", {
+      sectionId: "chapter",
+      lineId: "chapter-1",
+    });
+
+    expect(
+      engine.selectSystemState().global.saveSlots["7"].state.contexts[0]
+        .dialogueHistory,
+    ).toEqual({
+      entries: [
+        { sectionId: "introduction", lineId: "intro-1" },
+        { sectionId: "chapter", lineId: "chapter-1" },
+      ],
+      currentLength: 2,
+      checkpointLengths: [1],
+    });
+
+    engine.handleAction("loadSlot", { slotId: 7 });
+    expect(getHistoryText(engine)).toEqual(["Introduction one", "Chapter one"]);
+  });
+
+  it("prunes stale historical lines and remaps rollback history lengths", () => {
+    const projectData = createHistoryProjectData();
+    const engine = createEngine(projectData);
+    advance(engine);
+    advance(engine);
+    engine.handleAction("saveSlot", { slotId: 8, savedAt: 800 });
+
+    const updatedProjectData = structuredClone(projectData);
+    updatedProjectData.story.scenes.main.sections.introduction.lines =
+      updatedProjectData.story.scenes.main.sections.introduction.lines.filter(
+        (line) => line.id !== "intro-2",
+      );
+    engine.handleAction("updateProjectData", {
+      projectData: updatedProjectData,
+    });
+
+    expect(() => engine.handleAction("loadSlot", { slotId: 8 })).not.toThrow();
+    expect(getHistoryText(engine)).toEqual(["Introduction one", "Chapter one"]);
+    expect(engine.selectSystemState().contexts.at(-1).dialogueHistory).toEqual({
+      entries: [
+        { sectionId: "introduction", lineId: "intro-1" },
+        { sectionId: "chapter", lineId: "chapter-1" },
+      ],
+      currentLength: 2,
+      checkpointLengths: [1, 1, 2],
+    });
+  });
+
   it("reconstructs history when loading an older slot without a history log", () => {
     const projectData = createHistoryProjectData();
     const engine = createEngine(projectData, {
@@ -415,6 +472,70 @@ describe("RouteEngine cross-section dialogue history", () => {
       sectionId: "chapter",
       lineId: "chapter-3",
     });
+  });
+
+  it("does not append across an undisplayed transient dialogue", () => {
+    const projectData = createHistoryProjectData();
+    projectData.story.scenes.main.sections.introduction.lines = [
+      dialogueLine("displayed", "Displayed dialogue"),
+      {
+        id: "transient-append-base",
+        actions: {
+          dialogue: { content: [{ text: "Transient prefix: " }] },
+          conditional: { branches: [{ when: false, actions: {} }] },
+        },
+      },
+      dialogueLine("settled-append", "continued", { append: true }),
+    ];
+    const engine = createEngine(projectData);
+
+    advance(engine);
+
+    expect(getHistoryText(engine)).toEqual([
+      "Displayed dialogue",
+      "Transient prefix: continued",
+    ]);
+    expect(
+      engine.selectSystemState().contexts.at(-1).dialogueHistory.entries,
+    ).toEqual([
+      { sectionId: "introduction", lineId: "displayed" },
+      { sectionId: "introduction", lineId: "settled-append" },
+    ]);
+
+    engine.handleAction("saveSlot", { slotId: 9, savedAt: 900 });
+    const legacySlot = structuredClone(
+      engine.selectSystemState().global.saveSlots["9"],
+    );
+    delete legacySlot.state.contexts[0].dialogueHistory;
+    const legacyEngine = createEngine(projectData, {
+      saveSlots: { 9: legacySlot },
+    });
+    legacyEngine.handleAction("loadSlot", { slotId: 9 });
+    expect(getHistoryText(legacyEngine)).toEqual([
+      "Displayed dialogue",
+      "Transient prefix: continued",
+    ]);
+  });
+
+  it("records and reloads a same-line jump as a new occurrence", () => {
+    const engine = createEngine(createHistoryProjectData());
+
+    engine.handleAction("jumpToLine", {
+      sectionId: "introduction",
+      lineId: "intro-1",
+    });
+    expect(getHistoryText(engine)).toEqual([
+      "Introduction one",
+      "Introduction one",
+    ]);
+
+    engine.handleAction("saveSlot", { slotId: 10, savedAt: 1000 });
+    engine.handleAction("sectionTransition", { sectionId: "alternate" });
+    engine.handleAction("loadSlot", { slotId: 10 });
+    expect(getHistoryText(engine)).toEqual([
+      "Introduction one",
+      "Introduction one",
+    ]);
   });
 
   it("does not record a dialogue line that routes away before it can render", () => {
