@@ -1,0 +1,783 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore content selectors
+suites:
+  - selectOverlayStack
+  - selectConfirmDialog
+  - selectAchievements
+  - selectAchievement
+  - selectLocalizationPackages
+  - selectImageGalleryConfig
+  - selectImageGallery
+  - selectMusicRoomConfig
+  - selectMusicRoom
+  - selectSceneReplayConfig
+  - selectIsSceneReplayActive
+  - selectActiveSceneReplayEntry
+  - selectSceneReplay
+---
+suite: selectOverlayStack
+exportName: selectOverlayStack
+---
+case: defaults a missing overlay stack to an empty array
+in:
+  - state:
+      global: {}
+out: []
+---
+case: returns an empty overlay stack
+in:
+  - state:
+      global:
+        overlayStack: []
+out: []
+---
+case: returns overlays in stack order
+in:
+  - state:
+      global:
+        overlayStack:
+          - resourceId: menu
+          - resourceId: settings
+out:
+  - resourceId: menu
+  - resourceId: settings
+---
+suite: selectConfirmDialog
+exportName: selectConfirmDialog
+---
+case: defaults a missing confirm dialog to null
+in:
+  - state:
+      global: {}
+out: null
+---
+case: preserves an explicit null confirm dialog
+in:
+  - state:
+      global:
+        confirmDialog: null
+out: null
+---
+case: returns the active confirm dialog
+in:
+  - state:
+      global:
+        confirmDialog:
+          resourceId: confirm-layout
+          confirmActions:
+            saveSlot:
+              slotId: 2
+out:
+  resourceId: confirm-layout
+  confirmActions:
+    saveSlot:
+      slotId: 2
+---
+suite: selectAchievements
+exportName: selectAchievements
+---
+case: defaults missing achievements to an empty object
+in:
+  - state:
+      projectData:
+        resources: {}
+out: {}
+---
+case: returns empty authored achievements
+in:
+  - state:
+      projectData:
+        resources:
+          achievements: {}
+out: {}
+---
+case: returns every authored achievement
+in:
+  - state:
+      projectData:
+        resources:
+          achievements:
+            ending:
+              type: boolean
+              title: First ending
+            collector:
+              type: number
+              title: Collector
+              target: 10
+out:
+  ending:
+    type: boolean
+    title: First ending
+  collector:
+    type: number
+    title: Collector
+    target: 10
+---
+suite: selectAchievement
+exportName: selectAchievement
+---
+case: returns an authored achievement by resource id
+in:
+  - state:
+      projectData:
+        resources:
+          achievements:
+            ending:
+              type: boolean
+              title: First ending
+  - resourceId: ending
+out:
+  type: boolean
+  title: First ending
+---
+case: returns undefined for an unknown achievement
+in:
+  - state:
+      projectData:
+        resources:
+          achievements: {}
+  - resourceId: missing
+out: __undefined__
+---
+case: returns undefined when the payload has no resource id
+in:
+  - state:
+      projectData:
+        resources:
+          achievements:
+            ending:
+              type: boolean
+  - {}
+out: __undefined__
+---
+case: returns undefined when achievements are absent
+in:
+  - state:
+      projectData:
+        resources: {}
+  - resourceId: ending
+out: __undefined__
+---
+suite: selectLocalizationPackages
+exportName: selectLocalizationPackages
+---
+case: returns the main project localization entry
+in:
+  - state:
+      global:
+        localizationPackages:
+          - l10nId: null
+            language: English
+out:
+  - l10nId: null
+    language: English
+---
+case: returns all selectable localization packages in order
+in:
+  - state:
+      global:
+        localizationPackages:
+          - l10nId: null
+            language: English
+          - l10nId: package-a
+            language: Japanese
+          - l10nId: package-b
+            language: French
+out:
+  - l10nId: null
+    language: English
+  - l10nId: package-a
+    language: Japanese
+  - l10nId: package-b
+    language: French
+---
+suite: selectImageGalleryConfig
+exportName: selectImageGalleryConfig
+---
+case: returns undefined when image gallery is not configured
+in:
+  - state:
+      projectData:
+        resources: {}
+out: __undefined__
+---
+case: returns the authored image gallery config
+in:
+  - state:
+      projectData:
+        resources:
+          imageGallery:
+            pageSize: 6
+            groups:
+              - id: chapter-one
+                variants:
+                  - id: day
+                    imageId: cg-day
+out:
+  pageSize: 6
+  groups:
+    - id: chapter-one
+      variants:
+        - id: day
+          imageId: cg-day
+---
+suite: selectImageGallery
+exportName: selectImageGallery
+---
+case: returns null when image gallery is not configured
+in:
+  - state:
+      projectData:
+        resources: {}
+      global: {}
+out: null
+---
+case: projects an empty gallery
+in:
+  - state:
+      projectData:
+        resources:
+          imageGallery:
+            pageSize: 2
+            groups: []
+      global: {}
+out:
+  pageGroups: []
+  selection: null
+  pagination:
+    pageIndex: 0
+    pageCount: 0
+    canMoveToPreviousPage: false
+    canMoveToNextPage: false
+---
+case: projects locks pagination and an unlocked selection
+in:
+  - state:
+      projectData:
+        resources:
+          imageGallery:
+            pageSize: 2
+            groups:
+              - id: g1
+                variants:
+                  - id: v1
+                    imageId: i1
+                  - id: v2
+                    imageId: i2
+              - id: g2
+                variants:
+                  - id: v3
+                    imageId: i3
+              - id: g3
+                variants:
+                  - id: v4
+                    imageId: i4
+      global:
+        accountViewedRegistry:
+          resources:
+            - resourceId: i1
+            - resourceId: i2
+            - resourceId: i4
+        imageGalleryNavigation:
+          groupId: g1
+          variantId: v1
+          pageIndex: 0
+out:
+  pageGroups:
+    - groupId: g1
+      locked: false
+      variants:
+        - variantId: v1
+          imageId: i1
+          locked: false
+        - variantId: v2
+          imageId: i2
+          locked: false
+    - groupId: g2
+      locked: true
+      variants:
+        - variantId: v3
+          imageId: i3
+          locked: true
+  selection:
+    groupId: g1
+    variantId: v1
+    imageId: i1
+    canMoveToPreviousVariant: false
+    canMoveToNextVariant: true
+  pagination:
+    pageIndex: 0
+    pageCount: 2
+    canMoveToPreviousPage: false
+    canMoveToNextPage: true
+---
+case: clamps an out-of-range gallery page to the last page
+in:
+  - state:
+      projectData:
+        resources:
+          imageGallery:
+            pageSize: 1
+            groups:
+              - id: g1
+                variants:
+                  - id: v1
+                    imageId: i1
+              - id: g2
+                variants:
+                  - id: v2
+                    imageId: i2
+      global:
+        accountViewedRegistry:
+          resources:
+            - resourceId: i2
+        imageGalleryNavigation:
+          groupId: null
+          variantId: null
+          pageIndex: 99
+out:
+  pageGroups:
+    - groupId: g2
+      locked: false
+      variants:
+        - variantId: v2
+          imageId: i2
+          locked: false
+  selection: null
+  pagination:
+    pageIndex: 1
+    pageCount: 2
+    canMoveToPreviousPage: true
+    canMoveToNextPage: false
+---
+case: suppresses a locked gallery selection
+in:
+  - state:
+      projectData:
+        resources:
+          imageGallery:
+            pageSize: 1
+            groups:
+              - id: g1
+                variants:
+                  - id: v1
+                    imageId: locked-image
+      global:
+        accountViewedRegistry:
+          resources: []
+        imageGalleryNavigation:
+          groupId: g1
+          variantId: v1
+          pageIndex: 0
+out:
+  pageGroups:
+    - groupId: g1
+      locked: true
+      variants:
+        - variantId: v1
+          imageId: locked-image
+          locked: true
+  selection: null
+  pagination:
+    pageIndex: 0
+    pageCount: 1
+    canMoveToPreviousPage: false
+    canMoveToNextPage: false
+---
+suite: selectMusicRoomConfig
+exportName: selectMusicRoomConfig
+---
+case: returns undefined when music room is not configured
+in:
+  - state:
+      projectData:
+        resources: {}
+out: __undefined__
+---
+case: returns the authored music room config
+in:
+  - state:
+      projectData:
+        resources:
+          musicRoom:
+            pageSize: 8
+            tracks:
+              - id: opening
+                soundId: opening-theme
+                title: Opening
+out:
+  pageSize: 8
+  tracks:
+    - id: opening
+      soundId: opening-theme
+      title: Opening
+---
+suite: selectMusicRoom
+exportName: selectMusicRoom
+---
+case: returns null when music room is not configured
+in:
+  - state:
+      projectData:
+        resources: {}
+      global: {}
+out: null
+---
+case: projects an empty music room
+in:
+  - state:
+      projectData:
+        resources:
+          musicRoom:
+            pageSize: 3
+            tracks: []
+      global: {}
+out:
+  pageTracks: []
+  selection: null
+  playback: null
+  pagination:
+    pageIndex: 0
+    pageCount: 0
+    canMoveToPreviousPage: false
+    canMoveToNextPage: false
+---
+case: projects locked tracks playback controls and formatted durations
+in:
+  - state:
+      projectData:
+        resources:
+          musicRoom:
+            pageSize: 2
+            tracks:
+              - id: t1
+                soundId: s1
+                title: One
+                artist: A
+              - id: t2
+                soundId: s2
+                title: Two
+              - id: t3
+                soundId: s3
+                title: Three
+      global:
+        accountViewedRegistry:
+          resources:
+            - resourceId: s1
+            - resourceId: s3
+        musicRoomPlayer:
+          trackId: t1
+          status: playing
+          readiness: ready
+          positionMs: 65000
+          durationMs: 3661000
+          pageIndex: 0
+out:
+  pageTracks:
+    - trackId: t1
+      soundId: s1
+      title: One
+      artist: A
+      album: null
+      description: null
+      coverImageId: null
+      locked: false
+    - trackId: t2
+      soundId: s2
+      title: Two
+      artist: null
+      album: null
+      description: null
+      coverImageId: null
+      locked: true
+  selection:
+    trackId: t1
+    soundId: s1
+    title: One
+    artist: A
+    album: null
+    description: null
+    coverImageId: null
+    canPlayPreviousTrack: false
+    canPlayNextTrack: true
+  playback:
+    status: playing
+    readiness: ready
+    positionMs: 65000
+    durationMs: 3661000
+    positionText: "1:05"
+    durationText: "1:01:01"
+    canPlay: false
+    canPause: true
+    canSeek: true
+  pagination:
+    pageIndex: 0
+    pageCount: 2
+    canMoveToPreviousPage: false
+    canMoveToNextPage: true
+---
+case: disables seeking until duration and readiness are available
+in:
+  - state:
+      projectData:
+        resources:
+          musicRoom:
+            pageSize: 1
+            tracks:
+              - id: t1
+                soundId: s1
+                title: One
+      global:
+        accountViewedRegistry:
+          resources:
+            - resourceId: s1
+        musicRoomPlayer:
+          trackId: t1
+          status: paused
+          readiness: loading
+          positionMs: 0
+          durationMs: null
+          pageIndex: 0
+out:
+  pageTracks:
+    - trackId: t1
+      soundId: s1
+      title: One
+      artist: null
+      album: null
+      description: null
+      coverImageId: null
+      locked: false
+  selection:
+    trackId: t1
+    soundId: s1
+    title: One
+    artist: null
+    album: null
+    description: null
+    coverImageId: null
+    canPlayPreviousTrack: false
+    canPlayNextTrack: false
+  playback:
+    status: paused
+    readiness: loading
+    positionMs: 0
+    durationMs: null
+    positionText: "0:00"
+    durationText: null
+    canPlay: true
+    canPause: false
+    canSeek: false
+  pagination:
+    pageIndex: 0
+    pageCount: 1
+    canMoveToPreviousPage: false
+    canMoveToNextPage: false
+---
+suite: selectSceneReplayConfig
+exportName: selectSceneReplayConfig
+---
+case: returns undefined when scene replay is not configured
+in:
+  - state:
+      projectData:
+        resources: {}
+out: __undefined__
+---
+case: returns the authored scene replay config
+in:
+  - state:
+      projectData:
+        resources:
+          sceneReplay:
+            pageSize: 4
+            replays:
+              - sceneId: ending
+                title: Ending
+                thumbnailImageId: ending-thumb
+out:
+  pageSize: 4
+  replays:
+    - sceneId: ending
+      title: Ending
+      thumbnailImageId: ending-thumb
+---
+suite: selectIsSceneReplayActive
+exportName: selectIsSceneReplayActive
+---
+case: false when there are no contexts
+in:
+  - state:
+      contexts: []
+out: false
+---
+case: false for a normal story context
+in:
+  - state:
+      contexts:
+        - kind: story
+out: false
+---
+case: false when a replay context has no replay metadata
+in:
+  - state:
+      contexts:
+        - kind: sceneReplay
+out: false
+---
+case: true only when the active context is a replay
+in:
+  - state:
+      contexts:
+        - kind: story
+        - kind: sceneReplay
+          sceneReplay:
+            sceneId: ending
+            entryId: 3
+out: true
+---
+suite: selectActiveSceneReplayEntry
+exportName: selectActiveSceneReplayEntry
+---
+case: returns null without an active replay
+in:
+  - state:
+      contexts:
+        - kind: story
+out: null
+---
+case: returns the active replay identity
+in:
+  - state:
+      contexts:
+        - kind: sceneReplay
+          sceneReplay:
+            sceneId: ending
+            entryId: 12
+out:
+  sceneId: ending
+  entryId: 12
+---
+case: ignores a replay context that is no longer active
+in:
+  - state:
+      contexts:
+        - kind: sceneReplay
+          sceneReplay:
+            sceneId: ending
+            entryId: 12
+        - kind: story
+out: null
+---
+suite: selectSceneReplay
+exportName: selectSceneReplay
+---
+case: returns null when scene replay is not configured
+in:
+  - state:
+      projectData:
+        resources: {}
+      global: {}
+      contexts: []
+out: null
+---
+case: projects an empty scene replay menu
+in:
+  - state:
+      projectData:
+        resources:
+          sceneReplay:
+            pageSize: 2
+            replays: []
+      global: {}
+      contexts: []
+out:
+  isActive: false
+  activeSceneId: null
+  pageReplays: []
+  pagination:
+    pageIndex: 0
+    pageCount: 0
+    canMoveToPreviousPage: false
+    canMoveToNextPage: false
+---
+case: projects replay locks pagination and active scene
+in:
+  - state:
+      projectData:
+        resources:
+          sceneReplay:
+            pageSize: 2
+            replays:
+              - sceneId: a
+                title: A
+                thumbnailImageId: ia
+              - sceneId: b
+                title: B
+                thumbnailImageId: ib
+              - sceneId: c
+                title: C
+                thumbnailImageId: ic
+      global:
+        accountReplayRegistry:
+          sceneIds: [a, c]
+        sceneReplayNavigation:
+          pageIndex: 0
+      contexts:
+        - kind: story
+        - kind: sceneReplay
+          sceneReplay:
+            sceneId: a
+            entryId: 7
+out:
+  isActive: true
+  activeSceneId: a
+  pageReplays:
+    - sceneId: a
+      title: A
+      thumbnailImageId: ia
+      locked: false
+    - sceneId: b
+      title: B
+      thumbnailImageId: ib
+      locked: true
+  pagination:
+    pageIndex: 0
+    pageCount: 2
+    canMoveToPreviousPage: false
+    canMoveToNextPage: true
+---
+case: clamps replay navigation to the final page
+in:
+  - state:
+      projectData:
+        resources:
+          sceneReplay:
+            pageSize: 1
+            replays:
+              - sceneId: a
+                title: A
+                thumbnailImageId: ia
+              - sceneId: b
+                title: B
+                thumbnailImageId: ib
+      global:
+        accountReplayRegistry:
+          sceneIds: [b]
+        sceneReplayNavigation:
+          pageIndex: 99
+      contexts:
+        - kind: story
+out:
+  isActive: false
+  activeSceneId: null
+  pageReplays:
+    - sceneId: b
+      title: B
+      thumbnailImageId: ib
+      locked: false
+  pagination:
+    pageIndex: 1
+    pageCount: 2
+    canMoveToPreviousPage: true
+    canMoveToNextPage: false

@@ -1,0 +1,456 @@
+file: "../../src/runtimeFields.js"
+group: runtimeFields
+suites:
+  - normalizeRuntimeValue
+  - resolveProjectRuntimeDefaults
+  - selectRuntimeFromState
+  - selectRuntimeValueFromState
+  - pickPersistedGlobalRuntime
+---
+suite: normalizeRuntimeValue
+exportName: normalizeRuntimeValue
+---
+case: accepts zero auto-forward speed
+in: [autoForwardSpeed, 0]
+out: 0
+---
+case: accepts maximum auto-forward speed
+in: [autoForwardSpeed, 100]
+out: 100
+---
+case: accepts an in-range sound volume
+in: [soundVolume, 37]
+out: 37
+---
+case: accepts zero music volume
+in: [musicVolume, 0]
+out: 0
+---
+case: accepts a zero auto-forward delay
+in: [autoForwardDelay, 0]
+out: 0
+---
+case: truncates fractional save pagination
+in: [saveLoadPagination, 4.9]
+out: 4
+---
+case: clamps save pagination to page one
+in: [saveLoadPagination, -3]
+out: 1
+---
+case: accepts a null localization package
+in: [localizationPackageId, null]
+out: null
+---
+case: accepts a localization package id
+in: [localizationPackageId, package-a]
+out: package-a
+---
+case: accepts a menu page string
+in: [menuPage, settings]
+out: settings
+---
+case: accepts a boolean skip-unseen value
+in: [skipUnseenText, true]
+out: true
+---
+case: rejects a non-numeric dialogue speed
+in: [dialogueTextSpeed, fast]
+throws: dialogueTextSpeed requires a finite numeric value
+---
+case: rejects a negative auto-forward delay
+in: [autoForwardDelay, -1]
+throws: autoForwardDelay requires a value greater than or equal to 0
+---
+case: rejects auto-forward speed below zero
+in: [autoForwardSpeed, -1]
+throws: autoForwardSpeed requires a value between 0 and 100
+---
+case: rejects auto-forward speed above one hundred
+in: [autoForwardSpeed, 101]
+throws: autoForwardSpeed requires a value between 0 and 100
+---
+case: rejects sound volume above one hundred
+in: [soundVolume, 101]
+throws: soundVolume requires a value between 0 and 100
+---
+case: rejects music volume below zero
+in: [musicVolume, -1]
+throws: musicVolume requires a value between 0 and 100
+---
+case: rejects a non-boolean mute value
+in: [muteAll, 1]
+throws: muteAll requires a boolean value
+---
+case: rejects a non-boolean animation-skip value
+in: [skipTransitionsAndAnimations, "false"]
+throws: skipTransitionsAndAnimations requires a boolean value
+---
+case: rejects a numeric localization package id
+in: [localizationPackageId, 42]
+throws: localizationPackageId requires a string or null value
+---
+case: rejects a non-string menu entry point
+in: [menuEntryPoint, false]
+throws: menuEntryPoint requires a string value
+---
+case: rejects an unknown runtime field
+in: [unknownSetting, 1]
+throws: 'Unsupported runtime field "unknownSetting"'
+---
+suite: resolveProjectRuntimeDefaults
+exportName: resolveProjectRuntimeDefaults
+---
+case: returns engine defaults when project data is omitted
+in: []
+out:
+  dialogueTextSpeed: 50
+  autoForwardDelay: 1000
+  autoForwardSpeed: 50
+  skipUnseenText: false
+  skipTransitionsAndAnimations: false
+  soundVolume: 50
+  musicVolume: 50
+  muteAll: false
+  localizationPackageId: null
+  autoMode: false
+  skipMode: false
+  dialogueUIHidden: false
+  isLineCompleted: false
+---
+case: returns engine defaults when config is absent
+in:
+  - story: {}
+out:
+  dialogueTextSpeed: 50
+  autoForwardDelay: 1000
+  autoForwardSpeed: 50
+  skipUnseenText: false
+  skipTransitionsAndAnimations: false
+  soundVolume: 50
+  musicVolume: 50
+  muteAll: false
+  localizationPackageId: null
+  autoMode: false
+  skipMode: false
+  dialogueUIHidden: false
+  isLineCompleted: false
+---
+case: merges partial project-authored defaults
+in:
+  - config:
+      runtimeDefaults:
+        dialogueTextSpeed: 72
+        autoForwardDelay: 2400
+        autoForwardSpeed: 88
+        skipUnseenText: true
+        soundVolume: 63
+out:
+  dialogueTextSpeed: 72
+  autoForwardDelay: 2400
+  autoForwardSpeed: 88
+  skipUnseenText: true
+  skipTransitionsAndAnimations: false
+  soundVolume: 63
+  musicVolume: 50
+  muteAll: false
+  localizationPackageId: null
+  autoMode: false
+  skipMode: false
+  dialogueUIHidden: false
+  isLineCompleted: false
+---
+case: preserves explicit zero and false authored defaults
+in:
+  - config:
+      runtimeDefaults:
+        autoForwardDelay: 0
+        autoForwardSpeed: 0
+        soundVolume: 0
+        musicVolume: 0
+        muteAll: false
+out:
+  dialogueTextSpeed: 50
+  autoForwardDelay: 0
+  autoForwardSpeed: 0
+  skipUnseenText: false
+  skipTransitionsAndAnimations: false
+  soundVolume: 0
+  musicVolume: 0
+  muteAll: false
+  localizationPackageId: null
+  autoMode: false
+  skipMode: false
+  dialogueUIHidden: false
+  isLineCompleted: false
+---
+case: rejects non-object config
+in:
+  - config: settings
+throws: projectData.config must be an object
+---
+case: rejects unsupported config fields
+in:
+  - config:
+      runtimeDefaults: {}
+      locale: en-US
+throws: 'projectData.config contains unsupported field "locale"'
+---
+case: rejects non-object runtime defaults
+in:
+  - config:
+      runtimeDefaults: defaults
+throws: projectData.config.runtimeDefaults must be an object
+---
+case: rejects unsupported runtime default fields
+in:
+  - config:
+      runtimeDefaults:
+        menuPage: options
+throws: 'projectData.config.runtimeDefaults contains unsupported field "menuPage"'
+---
+case: rejects invalid authored speed
+in:
+  - config:
+      runtimeDefaults:
+        autoForwardSpeed: 101
+throws: autoForwardSpeed requires a value between 0 and 100
+---
+case: rejects invalid authored boolean
+in:
+  - config:
+      runtimeDefaults:
+        skipUnseenText: yes
+throws: skipUnseenText requires a boolean value
+---
+suite: selectRuntimeFromState
+exportName: selectRuntimeFromState
+---
+case: returns every runtime default for an empty state
+in: [{}]
+out:
+  dialogueTextSpeed: 50
+  autoForwardDelay: 1000
+  autoForwardSpeed: 50
+  skipUnseenText: false
+  skipTransitionsAndAnimations: false
+  soundVolume: 50
+  musicVolume: 50
+  muteAll: false
+  localizationPackageId: __undefined__
+  saveLoadPagination: 1
+  menuPage: ""
+  menuEntryPoint: ""
+  autoMode: false
+  skipMode: false
+  dialogueUIHidden: false
+  isLineCompleted: false
+---
+case: reads global and active-context runtime values
+in:
+  - global:
+      dialogueTextSpeed: 81
+      autoForwardSpeed: 24
+      skipUnseenText: true
+      localizationPackageId: package-b
+      autoMode: true
+      isLineCompleted: true
+    contexts:
+      - runtime:
+          saveLoadPagination: 4
+          menuPage: save
+          menuEntryPoint: title
+out:
+  dialogueTextSpeed: 81
+  autoForwardDelay: 1000
+  autoForwardSpeed: 24
+  skipUnseenText: true
+  skipTransitionsAndAnimations: false
+  soundVolume: 50
+  musicVolume: 50
+  muteAll: false
+  localizationPackageId: package-b
+  saveLoadPagination: 4
+  menuPage: save
+  menuEntryPoint: title
+  autoMode: true
+  skipMode: false
+  dialogueUIHidden: false
+  isLineCompleted: true
+---
+case: uses only the last context runtime
+in:
+  - contexts:
+      - runtime:
+          saveLoadPagination: 9
+          menuPage: stale
+      - runtime:
+          saveLoadPagination: 2
+          menuPage: active
+out:
+  dialogueTextSpeed: 50
+  autoForwardDelay: 1000
+  autoForwardSpeed: 50
+  skipUnseenText: false
+  skipTransitionsAndAnimations: false
+  soundVolume: 50
+  musicVolume: 50
+  muteAll: false
+  localizationPackageId: __undefined__
+  saveLoadPagination: 2
+  menuPage: active
+  menuEntryPoint: ""
+  autoMode: false
+  skipMode: false
+  dialogueUIHidden: false
+  isLineCompleted: false
+---
+case: fills missing fields in a partial context runtime
+in:
+  - contexts:
+      - runtime:
+          menuPage: backlog
+out:
+  dialogueTextSpeed: 50
+  autoForwardDelay: 1000
+  autoForwardSpeed: 50
+  skipUnseenText: false
+  skipTransitionsAndAnimations: false
+  soundVolume: 50
+  musicVolume: 50
+  muteAll: false
+  localizationPackageId: __undefined__
+  saveLoadPagination: 1
+  menuPage: backlog
+  menuEntryPoint: ""
+  autoMode: false
+  skipMode: false
+  dialogueUIHidden: false
+  isLineCompleted: false
+---
+case: preserves explicit false zero empty-string and null values
+in:
+  - global:
+      autoForwardDelay: 0
+      autoForwardSpeed: 0
+      soundVolume: 0
+      musicVolume: 0
+      muteAll: false
+      localizationPackageId: null
+    contexts:
+      - runtime:
+          saveLoadPagination: 0
+          menuPage: ""
+          menuEntryPoint: ""
+out:
+  dialogueTextSpeed: 50
+  autoForwardDelay: 0
+  autoForwardSpeed: 0
+  skipUnseenText: false
+  skipTransitionsAndAnimations: false
+  soundVolume: 0
+  musicVolume: 0
+  muteAll: false
+  localizationPackageId: null
+  saveLoadPagination: 0
+  menuPage: ""
+  menuEntryPoint: ""
+  autoMode: false
+  skipMode: false
+  dialogueUIHidden: false
+  isLineCompleted: false
+---
+suite: selectRuntimeValueFromState
+exportName: selectRuntimeValueFromState
+---
+case: returns a default global value
+in:
+  - {}
+  - autoForwardSpeed
+out: 50
+---
+case: returns a stored global value
+in:
+  - global:
+      musicVolume: 17
+  - musicVolume
+out: 17
+---
+case: returns a value from the active context
+in:
+  - contexts:
+      - runtime:
+          menuPage: gallery
+  - menuPage
+out: gallery
+---
+suite: pickPersistedGlobalRuntime
+exportName: pickPersistedGlobalRuntime
+---
+case: projects defaults from an empty global state
+in: [{}]
+out:
+  dialogueTextSpeed: 50
+  autoForwardDelay: 1000
+  autoForwardSpeed: 50
+  skipUnseenText: false
+  skipTransitionsAndAnimations: false
+  soundVolume: 50
+  musicVolume: 50
+  muteAll: false
+  localizationPackageId: null
+---
+case: merges stored settings with persistence defaults
+in:
+  - dialogueTextSpeed: 64
+    autoForwardSpeed: 92
+    skipUnseenText: true
+    musicVolume: 11
+out:
+  dialogueTextSpeed: 64
+  autoForwardDelay: 1000
+  autoForwardSpeed: 92
+  skipUnseenText: true
+  skipTransitionsAndAnimations: false
+  soundVolume: 50
+  musicVolume: 11
+  muteAll: false
+  localizationPackageId: null
+---
+case: preserves explicit zero false and null values
+in:
+  - autoForwardDelay: 0
+    autoForwardSpeed: 0
+    skipUnseenText: false
+    soundVolume: 0
+    musicVolume: 0
+    muteAll: false
+    localizationPackageId: null
+out:
+  dialogueTextSpeed: 50
+  autoForwardDelay: 0
+  autoForwardSpeed: 0
+  skipUnseenText: false
+  skipTransitionsAndAnimations: false
+  soundVolume: 0
+  musicVolume: 0
+  muteAll: false
+  localizationPackageId: null
+---
+case: ignores transient runtime and unrelated global fields
+in:
+  - autoMode: true
+    skipMode: true
+    dialogueUIHidden: true
+    saveSlots:
+      1: ignored
+out:
+  dialogueTextSpeed: 50
+  autoForwardDelay: 1000
+  autoForwardSpeed: 50
+  skipUnseenText: false
+  skipTransitionsAndAnimations: false
+  soundVolume: 50
+  musicVolume: 50
+  muteAll: false
+  localizationPackageId: null

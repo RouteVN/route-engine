@@ -1,0 +1,480 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore runtime settings
+suites:
+  - setDialogueTextSpeed
+  - setAutoForwardDelay
+  - setAutoForwardSpeed
+  - setSkipUnseenText
+  - setSkipTransitionsAndAnimations
+  - setSoundVolume
+  - setMusicVolume
+  - setMuteAll
+  - setSaveLoadPagination
+  - incrementSaveLoadPagination
+  - decrementSaveLoadPagination
+  - setMenuPage
+  - setMenuEntryPoint
+---
+suite: setDialogueTextSpeed
+exportName: setDialogueTextSpeed
+---
+case: updates text speed and persists the complete global runtime
+in:
+  - state:
+      global:
+        pendingEffects: []
+  - value: 72
+out:
+  global:
+    pendingEffects:
+      - name: saveGlobalRuntime
+        payload:
+          globalRuntime:
+            dialogueTextSpeed: 72
+            autoForwardDelay: 1000
+            autoForwardSpeed: 50
+            skipUnseenText: false
+            skipTransitionsAndAnimations: false
+            soundVolume: 50
+            musicVolume: 50
+            muteAll: false
+            localizationPackageId: null
+      - name: render
+    dialogueTextSpeed: 72
+---
+case: rejects a missing text speed value
+in:
+  - state:
+      global:
+        pendingEffects: []
+  - {}
+throws: dialogueTextSpeed requires a finite numeric value
+---
+suite: setAutoForwardDelay
+exportName: setAutoForwardDelay
+---
+case: updates auto-forward delay including zero
+in:
+  - state:
+      global:
+        pendingEffects: []
+  - value: 0
+out:
+  global:
+    pendingEffects:
+      - name: saveGlobalRuntime
+        payload:
+          globalRuntime:
+            dialogueTextSpeed: 50
+            autoForwardDelay: 0
+            autoForwardSpeed: 50
+            skipUnseenText: false
+            skipTransitionsAndAnimations: false
+            soundVolume: 50
+            musicVolume: 50
+            muteAll: false
+            localizationPackageId: null
+      - name: render
+    autoForwardDelay: 0
+---
+case: rejects a negative auto-forward delay
+in:
+  - state:
+      global:
+        pendingEffects: []
+  - value: -1
+throws: autoForwardDelay requires a value greater than or equal to 0
+---
+suite: setAutoForwardSpeed
+exportName: setAutoForwardSpeed
+---
+case: updates auto-forward speed on the percentage scale
+in:
+  - state:
+      global:
+        pendingEffects: []
+  - value: 83
+out:
+  global:
+    pendingEffects:
+      - name: saveGlobalRuntime
+        payload:
+          globalRuntime:
+            dialogueTextSpeed: 50
+            autoForwardDelay: 1000
+            autoForwardSpeed: 83
+            skipUnseenText: false
+            skipTransitionsAndAnimations: false
+            soundVolume: 50
+            musicVolume: 50
+            muteAll: false
+            localizationPackageId: null
+      - name: render
+    autoForwardSpeed: 83
+---
+case: rejects auto-forward speed above the percentage range
+in:
+  - state:
+      global:
+        pendingEffects: []
+  - value: 101
+throws: autoForwardSpeed requires a value between 0 and 100
+---
+suite: setSkipUnseenText
+exportName: setSkipUnseenText
+---
+case: enables skipping unseen text and persists it
+in:
+  - state:
+      global:
+        pendingEffects: []
+  - value: true
+out:
+  global:
+    pendingEffects:
+      - name: saveGlobalRuntime
+        payload:
+          globalRuntime:
+            dialogueTextSpeed: 50
+            autoForwardDelay: 1000
+            autoForwardSpeed: 50
+            skipUnseenText: true
+            skipTransitionsAndAnimations: false
+            soundVolume: 50
+            musicVolume: 50
+            muteAll: false
+            localizationPackageId: null
+      - name: render
+    skipUnseenText: true
+---
+case: rejects non-boolean skip-unseen input
+in:
+  - state:
+      global:
+        pendingEffects: []
+  - value: 1
+throws: skipUnseenText requires a boolean value
+---
+suite: setSkipTransitionsAndAnimations
+exportName: setSkipTransitionsAndAnimations
+---
+case: enables transition and animation skipping
+in:
+  - state:
+      global:
+        pendingEffects: []
+  - value: true
+out:
+  global:
+    pendingEffects:
+      - name: saveGlobalRuntime
+        payload:
+          globalRuntime:
+            dialogueTextSpeed: 50
+            autoForwardDelay: 1000
+            autoForwardSpeed: 50
+            skipUnseenText: false
+            skipTransitionsAndAnimations: true
+            soundVolume: 50
+            musicVolume: 50
+            muteAll: false
+            localizationPackageId: null
+      - name: render
+    skipTransitionsAndAnimations: true
+---
+case: rejects non-boolean transition skipping input
+in:
+  - state:
+      global:
+        pendingEffects: []
+  - value: "true"
+throws: skipTransitionsAndAnimations requires a boolean value
+---
+suite: setSoundVolume
+exportName: setSoundVolume
+---
+case: updates sound volume and preserves existing global runtime values
+in:
+  - state:
+      global:
+        pendingEffects: []
+        dialogueTextSpeed: 61
+        autoForwardDelay: 1500
+        autoForwardSpeed: 74
+        skipUnseenText: true
+        skipTransitionsAndAnimations: true
+        musicVolume: 32
+        muteAll: true
+        localizationPackageId: package-a
+  - value: 19
+out:
+  global:
+    pendingEffects:
+      - name: saveGlobalRuntime
+        payload:
+          globalRuntime:
+            dialogueTextSpeed: 61
+            autoForwardDelay: 1500
+            autoForwardSpeed: 74
+            skipUnseenText: true
+            skipTransitionsAndAnimations: true
+            soundVolume: 19
+            musicVolume: 32
+            muteAll: true
+            localizationPackageId: package-a
+      - name: render
+    dialogueTextSpeed: 61
+    autoForwardDelay: 1500
+    autoForwardSpeed: 74
+    skipUnseenText: true
+    skipTransitionsAndAnimations: true
+    musicVolume: 32
+    muteAll: true
+    localizationPackageId: package-a
+    soundVolume: 19
+---
+case: rejects sound volume below zero
+in:
+  - state:
+      global:
+        pendingEffects: []
+  - value: -1
+throws: soundVolume requires a value between 0 and 100
+---
+suite: setMusicVolume
+exportName: setMusicVolume
+---
+case: updates music volume to its maximum
+in:
+  - state:
+      global:
+        pendingEffects: []
+  - value: 100
+out:
+  global:
+    pendingEffects:
+      - name: saveGlobalRuntime
+        payload:
+          globalRuntime:
+            dialogueTextSpeed: 50
+            autoForwardDelay: 1000
+            autoForwardSpeed: 50
+            skipUnseenText: false
+            skipTransitionsAndAnimations: false
+            soundVolume: 50
+            musicVolume: 100
+            muteAll: false
+            localizationPackageId: null
+      - name: render
+    musicVolume: 100
+---
+case: rejects music volume above one hundred
+in:
+  - state:
+      global:
+        pendingEffects: []
+  - value: 101
+throws: musicVolume requires a value between 0 and 100
+---
+suite: setMuteAll
+exportName: setMuteAll
+---
+case: persists the master mute flag
+in:
+  - state:
+      global:
+        pendingEffects: []
+  - value: true
+out:
+  global:
+    pendingEffects:
+      - name: saveGlobalRuntime
+        payload:
+          globalRuntime:
+            dialogueTextSpeed: 50
+            autoForwardDelay: 1000
+            autoForwardSpeed: 50
+            skipUnseenText: false
+            skipTransitionsAndAnimations: false
+            soundVolume: 50
+            musicVolume: 50
+            muteAll: true
+            localizationPackageId: null
+      - name: render
+    muteAll: true
+---
+case: rejects a missing master mute value
+in:
+  - state:
+      global:
+        pendingEffects: []
+  - {}
+throws: muteAll requires a boolean value
+---
+suite: setSaveLoadPagination
+exportName: setSaveLoadPagination
+---
+case: creates context runtime and truncates fractional pages
+in:
+  - state:
+      global:
+        pendingEffects: []
+      contexts:
+        - {}
+  - value: 4.8
+out:
+  global:
+    pendingEffects:
+      - name: render
+  contexts:
+    - runtime:
+        saveLoadPagination: 4
+        menuPage: ""
+        menuEntryPoint: ""
+---
+case: leaves story state intact when no context exists
+in:
+  - state:
+      global:
+        pendingEffects: []
+      contexts: []
+  - value: 3
+out:
+  global:
+    pendingEffects:
+      - name: render
+  contexts: []
+---
+suite: incrementSaveLoadPagination
+exportName: incrementSaveLoadPagination
+---
+case: increments the active context page
+in:
+  - state:
+      global:
+        pendingEffects: []
+      contexts:
+        - runtime:
+            saveLoadPagination: 3
+            menuPage: save
+            menuEntryPoint: menu
+out:
+  global:
+    pendingEffects:
+      - name: render
+  contexts:
+    - runtime:
+        saveLoadPagination: 4
+        menuPage: save
+        menuEntryPoint: menu
+---
+suite: decrementSaveLoadPagination
+exportName: decrementSaveLoadPagination
+---
+case: decrements the active context page
+in:
+  - state:
+      global:
+        pendingEffects: []
+      contexts:
+        - runtime:
+            saveLoadPagination: 3
+            menuPage: save
+            menuEntryPoint: menu
+out:
+  global:
+    pendingEffects:
+      - name: render
+  contexts:
+    - runtime:
+        saveLoadPagination: 2
+        menuPage: save
+        menuEntryPoint: menu
+---
+case: clamps page decrement at one
+in:
+  - state:
+      global:
+        pendingEffects: []
+      contexts:
+        - runtime:
+            saveLoadPagination: 1
+            menuPage: ""
+            menuEntryPoint: ""
+out:
+  global:
+    pendingEffects:
+      - name: render
+  contexts:
+    - runtime:
+        saveLoadPagination: 1
+        menuPage: ""
+        menuEntryPoint: ""
+---
+suite: setMenuPage
+exportName: setMenuPage
+---
+case: updates the active context menu page
+in:
+  - state:
+      global:
+        pendingEffects: []
+      contexts:
+        - runtime:
+            saveLoadPagination: 2
+            menuPage: title
+            menuEntryPoint: startup
+  - value: settings
+out:
+  global:
+    pendingEffects:
+      - name: render
+  contexts:
+    - runtime:
+        saveLoadPagination: 2
+        menuPage: settings
+        menuEntryPoint: startup
+---
+case: rejects a non-string menu page
+in:
+  - state:
+      global:
+        pendingEffects: []
+      contexts:
+        - {}
+  - value: 2
+throws: menuPage requires a string value
+---
+suite: setMenuEntryPoint
+exportName: setMenuEntryPoint
+---
+case: updates the active context menu entry point
+in:
+  - state:
+      global:
+        pendingEffects: []
+      contexts:
+        - runtime:
+            saveLoadPagination: 1
+            menuPage: save
+            menuEntryPoint: title
+  - value: pause
+out:
+  global:
+    pendingEffects:
+      - name: render
+  contexts:
+    - runtime:
+        saveLoadPagination: 1
+        menuPage: save
+        menuEntryPoint: pause
+---
+case: rejects a missing menu entry point
+in:
+  - state:
+      global:
+        pendingEffects: []
+      contexts:
+        - {}
+  - {}
+throws: menuEntryPoint requires a string value
