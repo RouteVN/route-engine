@@ -108,13 +108,14 @@ Mutable runtime state managed by the system store. Key components:
   - `views`: Overlay stack
   - `bgm`: Current background music
   - `variables`: Stored game variables. Computed variables are projected from state and resources when template data is built; they are not stored here.
+  - `dialogueHistory`: Chronological, context-local dialogue occurrences and the active-branch cursor. It is created lazily when dialogue is displayed and saved with the context.
   - `rollback`: Active branch timeline for rollback navigation
 
 ### History and Seen State
 
 The engine has separate concepts that should not be collapsed:
 
-- `historyDialogue`: A render-time dialogue backlog projection for the current section. It is used by layouts and does not restore state.
+- `historyDialogue`: A render-time dialogue backlog projection of the active context's chronological dialogue log. It crosses section boundaries, follows the active branch, and is used by layouts without restoring story state.
 - `context.rollback.timeline`: The active path for rollback navigation in the current context. It crosses sections and is saved with slots, but abandoned future checkpoints are removed when the player rolls back and branches.
 - `global.accountViewedRegistry`: The account-level seen snapshot. It is persisted outside slots and is not replaced by `loadSlot`.
 - `global.accountReplayRegistry`: The account-level replay unlock set. It is persisted outside slots and is not replaced by `loadSlot`.

@@ -450,6 +450,13 @@ Important constraints:
 
 `state.contexts[*].rollback.timeline` is the active branch history for rollback navigation. It can cross sections, and it is pruned when the player rolls back and then advances onto a different branch.
 
+`state.contexts[*].dialogueHistory` is the chronological dialogue backlog for
+that context. It also crosses sections and carries an independent cursor plus
+the history length associated with each rollback checkpoint. Dialogue reached
+through checkpoint-less navigation such as `jumpToLine` remains in the saved
+log even though it has no matching rollback checkpoint. The log is created
+lazily when dialogue first settles.
+
 Skip-unseen text uses `accountViewedRegistry`, which lives outside save slot state and is not replaced by `loadSlot`.
 
 Scene Replay uses `accountReplayRegistry` under the same rule, so loading an
@@ -483,9 +490,10 @@ Current save flow:
 
 1. clone current `contexts`
 2. strip obsolete rollback-only compatibility fields from cloned contexts
-3. write `{ slotId, savedAt, image, state }` into `state.global.saveSlots`
-4. append `saveSlots` effect
-5. append `render` effect
+3. include each context's dialogue history and active cursor
+4. write `{ slotId, savedAt, image, state }` into `state.global.saveSlots`
+5. append `saveSlots` effect
+6. append `render` effect
 
 The store writes to the in-memory slot map first.
 
@@ -500,13 +508,18 @@ Current load flow:
 3. validate and normalize `slotData.state`
 4. validate each loaded read pointer against current `projectData`
 5. normalize loaded contexts and rollback state
-6. reset transient runtime globals to a clean playable baseline
-7. leave account viewed state unchanged
-8. queue timer-clear effects and append `render`
+6. restore dialogue history, pruning entries whose authored lines no longer exist and remapping checkpoint lengths to the retained log; when loading an older slot that predates the log, reconstruct it from valid rollback checkpoints
+7. reset transient runtime globals to a clean playable baseline
+8. leave account viewed state unchanged
+9. queue timer-clear effects and append `render`
 
 ## Relationship to Rollback
 
 Rollback state is part of context state and therefore part of slot state.
+
+Dialogue history is also context state and therefore save-local. Loading a slot
+restores its chronological backlog. Rolling back moves its visible cursor to the
+target checkpoint; continuing from there prunes the abandoned dialogue branch.
 
 Required behavior:
 

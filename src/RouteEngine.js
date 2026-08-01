@@ -51,6 +51,15 @@ const ROLLBACK_CURSOR_REPLACING_ACTION_TYPES = new Set([
   "rollbackByOffset",
   "rollbackToLine",
 ]);
+const DIALOGUE_HISTORY_CONTINUATION_ACTION_TYPES = new Set([
+  "nextLine",
+  "nextLineFromSystem",
+]);
+const DIALOGUE_HISTORY_RESTORE_ACTION_TYPES = new Set([
+  "loadSlot",
+  "rollbackByOffset",
+  "rollbackToLine",
+]);
 const FORM_INTERACTION_SOURCE = "form";
 const FORM_ACTION_TYPES = new Set(["submitForm", "cancelForm"]);
 const SHOW_IMAGE_GALLERY_VARIANT_ACTION_TYPE = "showImageGalleryVariant";
@@ -78,6 +87,7 @@ export default function createRouteEngine(options) {
   let _conditionalRoutingSequence = 0;
   let _rollbackNavigationContexts = [];
   let _pendingRollbackLineEntrySaveHandoff = null;
+  let _pendingDialogueHistoryLineEntry = null;
   let _persistentAnimationSessions = new Map();
   let _restoredPersistentAnimationSessions = new Map();
   let _renderPersistentAnimationMetadata = new Map();
@@ -220,6 +230,7 @@ export default function createRouteEngine(options) {
     _conditionalRoutingSequence = 0;
     _rollbackNavigationContexts = [];
     _pendingRollbackLineEntrySaveHandoff = null;
+    _pendingDialogueHistoryLineEntry = null;
     _persistentAnimationSessions = new Map();
     _restoredPersistentAnimationSessions = new Map();
     _renderPersistentAnimationMetadata = new Map();
@@ -488,6 +499,52 @@ export default function createRouteEngine(options) {
     return handoff.savedCheckpointOccurrences;
   };
 
+  const takeDialogueHistoryLineEntry = (pointer) => {
+    const lineEntry = _pendingDialogueHistoryLineEntry;
+    if (!lineEntry || !isSameStoryPointer(lineEntry.pointer, pointer)) {
+      return null;
+    }
+
+    _pendingDialogueHistoryLineEntry = null;
+    return lineEntry;
+  };
+
+  const updatePendingDialogueHistoryLineEntry = ({
+    actionType,
+    pointerBeforeAction,
+    pointerAfterAction,
+    cursorBeforeAction,
+    cursorAfterAction,
+    wasSceneReplayActive,
+    isSceneReplayActive,
+  }) => {
+    if (!pointerAfterAction) {
+      return;
+    }
+
+    const enteredLine =
+      !isSameStoryPointer(pointerBeforeAction, pointerAfterAction) ||
+      cursorBeforeAction?.checkpoint !== cursorAfterAction?.checkpoint ||
+      cursorBeforeAction?.checkpointIndex !==
+        cursorAfterAction?.checkpointIndex ||
+      actionType === "jumpToLine";
+    if (!enteredLine) {
+      return;
+    }
+
+    _pendingDialogueHistoryLineEntry = {
+      pointer: pointerAfterAction,
+      appendToPrevious:
+        DIALOGUE_HISTORY_CONTINUATION_ACTION_TYPES.has(actionType) &&
+        wasSceneReplayActive === isSceneReplayActive &&
+        pointerBeforeAction?.sectionId === pointerAfterAction.sectionId &&
+        pointerBeforeAction?.lineId !== pointerAfterAction.lineId,
+      reuseExistingOccurrence:
+        DIALOGUE_HISTORY_RESTORE_ACTION_TYPES.has(actionType),
+      forceNewOccurrence: actionType === "jumpToLine",
+    };
+  };
+
   const finalizeRollbackNavigationCandidate = (navigationContext) => {
     if (!navigationContext.markCurrentCheckpointTransient) {
       return;
@@ -631,6 +688,8 @@ export default function createRouteEngine(options) {
       PERSISTENT_PLAYBACK_RESTORE_ACTIONS.has(actionType)
         ? snapshotPersistentAnimationSessions(_persistentAnimationSessions)
         : null;
+    const pointerBeforeAction =
+      _systemStore.selectCurrentPointer()?.pointer ?? null;
     const cursorBeforeAction = _systemStore.selectRollbackCursor?.() ?? null;
     const result = _systemStore[actionType](storePayload);
     if (nextCanonicalProjectData !== undefined) {
@@ -650,6 +709,8 @@ export default function createRouteEngine(options) {
       _persistentAnimationSessions = new Map();
       _restoredPersistentAnimationSessions = new Map();
     }
+    const pointerAfterAction =
+      _systemStore.selectCurrentPointer()?.pointer ?? null;
     const cursorAfterAction = _systemStore.selectRollbackCursor?.() ?? null;
     if (actionType === "saveSlot") {
       recordActiveRollbackSave(payload);
@@ -659,6 +720,15 @@ export default function createRouteEngine(options) {
       cursorBeforeAction,
       cursorAfterAction,
     );
+    updatePendingDialogueHistoryLineEntry({
+      actionType,
+      pointerBeforeAction,
+      pointerAfterAction,
+      cursorBeforeAction,
+      cursorAfterAction,
+      wasSceneReplayActive,
+      isSceneReplayActive,
+    });
     processEffectsUntilEmpty();
     return result;
   };
@@ -720,6 +790,7 @@ export default function createRouteEngine(options) {
     conditionalRoutingSequence: _conditionalRoutingSequence,
     rollbackNavigationContexts: _rollbackNavigationContexts.slice(),
     pendingRollbackLineEntrySaveHandoff: _pendingRollbackLineEntrySaveHandoff,
+    pendingDialogueHistoryLineEntry: _pendingDialogueHistoryLineEntry,
     persistentAnimationSessions: new Map(_persistentAnimationSessions),
     restoredPersistentAnimationSessions: new Map(
       _restoredPersistentAnimationSessions,
@@ -737,6 +808,7 @@ export default function createRouteEngine(options) {
     _rollbackNavigationContexts = snapshot.rollbackNavigationContexts.slice();
     _pendingRollbackLineEntrySaveHandoff =
       snapshot.pendingRollbackLineEntrySaveHandoff;
+    _pendingDialogueHistoryLineEntry = snapshot.pendingDialogueHistoryLineEntry;
     _persistentAnimationSessions = new Map(
       snapshot.persistentAnimationSessions,
     );
@@ -785,6 +857,24 @@ export default function createRouteEngine(options) {
                 sourcePointer,
                 routingSequence,
               );
+            }
+
+            const settledPointer =
+              _systemStore.selectCurrentPointer()?.pointer ?? null;
+            if (
+              options.rollbackSource === "line" &&
+              isSameStoryPointer(sourcePointer, settledPointer)
+            ) {
+              _systemStore.recordCurrentDialogueHistory({
+                savedCheckpointOccurrences:
+                  navigationContext.savedCheckpointOccurrences,
+                appendToPrevious:
+                  options.dialogueHistoryAppendToPrevious === true,
+                reuseExistingOccurrence:
+                  options.dialogueHistoryReuseExistingOccurrence === true,
+                forceNewOccurrence:
+                  options.dialogueHistoryForceNewOccurrence === true,
+              });
             }
           } finally {
             _rollbackNavigationContexts.pop();
@@ -1172,10 +1262,13 @@ export default function createRouteEngine(options) {
       const rollbackCursor = _systemStore.selectRollbackCursor?.() ?? null;
       const pendingRollbackLineEntrySaveHandoff =
         _pendingRollbackLineEntrySaveHandoff;
+      const pendingDialogueHistoryLineEntry = _pendingDialogueHistoryLineEntry;
       const savedCheckpointOccurrences = takeRollbackLineEntrySaveHandoff(
         enteredPointer,
         rollbackCursor,
       );
+      const dialogueHistoryLineEntry =
+        takeDialogueHistoryLineEntry(enteredPointer);
       const line = _systemStore.selectCurrentLine();
       let handledLineActions = false;
       if (line?.actions) {
@@ -1183,10 +1276,17 @@ export default function createRouteEngine(options) {
           handleActions(line.actions, undefined, {
             rollbackSource: "line",
             savedCheckpointOccurrences,
+            dialogueHistoryAppendToPrevious:
+              dialogueHistoryLineEntry?.appendToPrevious === true,
+            dialogueHistoryReuseExistingOccurrence:
+              dialogueHistoryLineEntry?.reuseExistingOccurrence === true,
+            dialogueHistoryForceNewOccurrence:
+              dialogueHistoryLineEntry?.forceNewOccurrence === true,
           });
         } catch (error) {
           _pendingRollbackLineEntrySaveHandoff =
             pendingRollbackLineEntrySaveHandoff;
+          _pendingDialogueHistoryLineEntry = pendingDialogueHistoryLineEntry;
           throw error;
         }
         handledLineActions = true;
