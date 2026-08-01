@@ -7,6 +7,7 @@ engine3/coverage
 vt/static/RouteEngine.js
 vt/static/RouteEngine.js.map
 vt/static/RouteGraphics.js
+vt/static/VtDependencies.js
 vt/static/renderer.js
 .claude
 .playwright-cli/

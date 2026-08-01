@@ -66,6 +66,7 @@ run_vt_container() {
     --name "$current_container" \
     --rm \
     --init \
+    --network none \
     --shm-size=1g \
     --user "$(id -u):$(id -g)" \
     --env RTGL_VT_DEBUG=true \

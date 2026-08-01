@@ -30,7 +30,9 @@ reference until their production fix renders the expected state.
 GitHub Actions runs each healthy robustness scenario in an isolated container.
 `scripts/run-vt-ci.sh` rejects scenarios without references and applies an
 OS-level watchdog in addition to RTGL's own timeout, so a crashed browser cannot
-leave a CI runner waiting indefinitely.
+leave a CI runner waiting indefinitely. The capture container has networking
+disabled; all browser dependencies are built into `VtDependencies.js` so CDN
+availability cannot stall or invalidate the visual gate.
 
 Only deterministic scenarios belong in the CI matrix. A scenario with a healthy
 reference can still remain local-only when its capture depends on a narrow
