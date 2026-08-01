@@ -1,20 +1,18 @@
-# Confirm Dialog Design
+# Confirm Dialog
 
-This document defines the planned confirm-dialog model for `route-engine`.
-
-It is a design and requirements document, not a guarantee that the current
-implementation already matches every rule below.
+This document defines the implemented confirm-dialog contract for
+`route-engine` and records the design rationale behind it.
 
 ## Purpose
 
-The first target use case is save-slot overwrite confirmation:
+The first supported use case is save-slot overwrite confirmation:
 
 - saving into an empty slot should save immediately
 - saving into an occupied slot should show a confirmation dialog
 - confirming should execute the deferred save
 - cancelling should dismiss the dialog without changing slot data
 
-The design below intentionally treats this as a dedicated confirm-dialog system,
+The runtime treats this as a dedicated confirm-dialog system,
 not as a generic use of overlays.
 
 ## Product Goals
@@ -23,9 +21,9 @@ not as a generic use of overlays.
 - confirm dialogs are authored with a normal layout resource
 - confirm dialogs can dispatch a deferred action batch on confirm or cancel
 - confirm dialogs do not require stable magic element IDs
-- confirm dialogs should work with the current save screenshot injection path
+- confirm dialogs work with the current save screenshot injection path
 - confirm dialogs must not leak into save/load persistence
-- confirm dialogs should not become part of rollback-restored story state
+- confirm dialogs are not part of rollback-restored story state
 
 ## Non-Goals
 
@@ -47,24 +45,24 @@ to keep confirm dialogs as a dedicated transient concept in system state.
 
 ## Chosen Direction
 
-The engine will add a dedicated transient `confirmDialog` state, plus explicit
-actions to show and hide it.
+The engine stores dedicated transient `confirmDialog` state and exposes
+explicit actions to show and hide it.
 
-Planned state shape:
+Normalized state shape:
 
 ```yaml
 global:
   confirmDialog:
     resourceId: saveOverwriteConfirmLayout
     confirmActions:
+      hideConfirmDialog: {}
       saveSlot:
         slotId: 3
-      hideConfirmDialog: {}
     cancelActions:
       hideConfirmDialog: {}
 ```
 
-Planned actions:
+Actions:
 
 - `showConfirmDialog({ resourceId, confirmActions, cancelActions? })`
 - `hideConfirmDialog()`
@@ -140,11 +138,11 @@ This works technically, but it has several downsides:
   default lifecycle for a transient confirm prompt
 - it mixes confirm-dialog behavior with a more generic presentation feature
 
-For this reason, confirm dialogs should get dedicated state and actions.
+For this reason, confirm dialogs use dedicated state and actions.
 
 ## Save Overwrite Flow
 
-Desired behavior for save screens:
+Save-screen behavior:
 
 1. user clicks a slot card
 2. if the slot is empty, dispatch `saveSlot(...)` immediately
@@ -180,7 +178,7 @@ follow the steps above.
 
 ## Action Normalization Rules
 
-`showConfirmDialog` should normalize its payload before storing it in state.
+`showConfirmDialog` normalizes its payload before storing it in state.
 
 Rules:
 
@@ -192,16 +190,19 @@ Rules:
 hideConfirmDialog: {}
 ```
 
-- `hideConfirmDialog: {}` should be automatically appended to
-  `confirmActions` if it is not already present
-- `hideConfirmDialog: {}` should be automatically appended to
-  `cancelActions` if it is not already present
+- `hideConfirmDialog: {}` is automatically inserted into `confirmActions` if
+  it is not already present
+- `hideConfirmDialog: {}` is automatically inserted into `cancelActions` if
+  it is not already present
+- normalized action batches execute `hideConfirmDialog` before the remaining
+  deferred actions
 
 Rationale:
 
 - authors should not need to remember cleanup on every confirm dialog
-- the dialog should close on both confirm and cancel by default
-- auto-append is safer than requiring every authored site to include hide logic
+- the dialog closes on both confirm and cancel by default
+- normalizing cleanup ahead of the deferred batch is safer than requiring every
+  authored site to include and correctly order hide logic
 
 ## Why Auto-Hide Is Not Sufficient For Screenshot Capture
 
@@ -209,28 +210,27 @@ The save screenshot integration captures `saveSlot` before the action batch is
 executed. That means `hideConfirmDialog` cannot be relied on to clean the frame
 before screenshot capture.
 
-Therefore:
+The implemented rendering path therefore:
 
-- the confirm dialog should render outside the `story` capture target, similar
+- renders the confirm dialog outside the `story` capture target, similar
   to how save/load overlays avoid contaminating the story preview
-- confirm clicks must still produce a normal top-level `saveSlot` action batch
+- keeps confirm clicks as a normal top-level `saveSlot` action batch
   so the host/integration can inject `thumbnailImage` and `savedAt`
 
 This is a critical constraint for overwrite confirmation.
 
 ## Interaction With Event Templating
 
-Deferred confirm actions should be stored as concrete actions whenever possible.
+The `showConfirmDialog` action resolves its top-level fields, including
+`resourceId`, when the dialog is opened. Its nested `confirmActions` and
+`cancelActions` remain deferred and are stored without eager template
+resolution.
 
-In normal usage:
-
-1. the original slot click uses `_event.slotId`
-2. `handleActions(...)` resolves nested `_event.*` bindings before state changes
-3. `showConfirmDialog(...)` stores a concrete `confirmActions` object
-4. the confirm button later re-dispatches that concrete action batch
-
-That means the confirm layout should not need to reason about original event
-payloads. It only dispatches already-prepared actions from `confirmDialog`.
+When a confirm or cancel control later dispatches one of those batches, normal
+action-template processing resolves it against the then-current runtime,
+variables, and click event. The event that opened the dialog is not retained
+implicitly; a deferred `_event.*` binding refers to the later confirm/cancel
+interaction and requires that interaction to provide the value.
 
 ## Persistence Rules
 
@@ -238,11 +238,13 @@ payloads. It only dispatches already-prepared actions from `confirmDialog`.
 
 It must not be included in save slots.
 
-It should also be cleared on:
+It is also cleared on:
 
 - engine init
 - save-slot load
 - project-data replacement
+- rollback and story reset
+- `clearOverlays`
 - any other full runtime reset path
 
 This matches the same reasoning already used for:
@@ -254,21 +256,14 @@ This matches the same reasoning already used for:
 
 ## Rollback Rules
 
-Confirm dialogs should not be treated as branch-defining story state.
-
-The intended rule is:
-
-- `confirmDialog` should not be rollback-restored
-
-In practice, that means the confirm-dialog actions should not be recorded as
-rollback-restorable UI state in the same way overlays currently are.
-
-If rollback occurs while a confirm dialog is visible, the expected result is
-that the dialog disappears and the story returns to the rollback target.
+Confirm dialogs are not branch-defining story state. Their actions are not
+recorded as rollback-restorable UI state. If rollback occurs while a confirm
+dialog is visible, the dialog is cleared and the story returns to the rollback
+target.
 
 ## Rendering Rules
 
-The confirm dialog should render above:
+The confirm dialog renders above:
 
 - base story render
 - dialogue UI
@@ -276,11 +271,12 @@ The confirm dialog should render above:
 
 That makes it behave as a true modal prompt.
 
-The confirm dialog should also block interaction with everything below it.
+The renderer inserts a full-screen click blocker, so the dialog blocks
+interaction with everything below it.
 
-## Minimal First-Version Interface
+## Current Interface
 
-The minimal first version should keep the payload narrow:
+The current payload is intentionally narrow:
 
 ```yaml
 showConfirmDialog:
@@ -290,10 +286,10 @@ showConfirmDialog:
       slotId: 3
 ```
 
-`cancelActions` should be optional because the runtime can default it to
+`cancelActions` is optional because the runtime defaults it to
 `hideConfirmDialog: {}`.
 
-The first version should not require:
+The interface does not require:
 
 - `title`
 - `message`
@@ -366,10 +362,8 @@ Chosen combination:
 - template-based action injection from `confirmDialog.confirmActions` and
   `confirmDialog.cancelActions`
 
-## Open Questions
+## Future Considerations
 
-- Should `clearOverlays` also hide `confirmDialog` automatically if both are
-  visible?
 - Do we want one reusable confirm layout by convention, or should each feature
   provide its own `resourceId`?
 - Should later versions allow optional dynamic copy fields such as `title` or

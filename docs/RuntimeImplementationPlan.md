@@ -6,6 +6,19 @@ an implementation plan across `route-engine`, `routevn-creator-model`, and
 
 It is intentionally technical and migration-oriented.
 
+## Status
+
+The `route-engine` portion of this migration is implemented. The engine now
+uses a source-only runtime-field registry, exposes authored values through
+`runtime.*`, mutates them through explicit actions, persists device preferences,
+and applies optional `projectData.config.runtimeDefaults`. The legacy internal
+variable IDs listed later in this document are historical starting-point
+problems, not supported current engine interfaces.
+
+This document retains the original cross-repository rollout plan. It does not
+claim that the corresponding Creator Model and Creator Client migrations are
+complete.
+
 ## Goal
 
 Replace hidden engine-owned variable ids with a first-class runtime surface.
@@ -137,7 +150,7 @@ Existing explicit actions remain explicit:
 This is intentionally less flexible than `updateVariable`, but more precise and
 robust for engine-owned state.
 
-## Current State Problems
+## Historical Starting-Point Problems
 
 Today the contract is split and drifting:
 
@@ -190,22 +203,22 @@ values.
 
 ### Canonical runtime ids
 
-| Canonical runtime id | Replaces old ids / concepts |
-| --- | --- |
-| `dialogueTextSpeed` | `_dialogueTextSpeed`, `_textSpeed` |
-| `autoForwardDelay` | `_autoForwardTime` |
-| `skipUnseenText` | `_skipUnseenText` |
-| `skipTransitionsAndAnimations` | `_skipTransitionsAndAnimations` |
-| `soundVolume` | `_soundVolume` |
-| `musicVolume` | `_musicVolume` |
-| `muteAll` | `_muteAll` |
-| `saveLoadPagination` | `_currentSaveLoadPagination`, `loadPage` |
-| `menuPage` | `_currentMenuPage` |
-| `menuEntryPoint` | `_menuEntryPoint` |
-| `autoMode` | current `state.global.autoMode` |
-| `skipMode` | current `state.global.skipMode` |
-| `dialogueUIHidden` | current `state.global.dialogueUIHidden` |
-| `isLineCompleted` | current `state.global.isLineCompleted` |
+| Canonical runtime id           | Replaces old ids / concepts              |
+| ------------------------------ | ---------------------------------------- |
+| `dialogueTextSpeed`            | `_dialogueTextSpeed`, `_textSpeed`       |
+| `autoForwardDelay`             | `_autoForwardTime`                       |
+| `skipUnseenText`               | `_skipUnseenText`                        |
+| `skipTransitionsAndAnimations` | `_skipTransitionsAndAnimations`          |
+| `soundVolume`                  | `_soundVolume`                           |
+| `musicVolume`                  | `_musicVolume`                           |
+| `muteAll`                      | `_muteAll`                               |
+| `saveLoadPagination`           | `_currentSaveLoadPagination`, `loadPage` |
+| `menuPage`                     | `_currentMenuPage`                       |
+| `menuEntryPoint`               | `_menuEntryPoint`                        |
+| `autoMode`                     | current `state.global.autoMode`          |
+| `skipMode`                     | current `state.global.skipMode`          |
+| `dialogueUIHidden`             | current `state.global.dialogueUIHidden`  |
+| `isLineCompleted`              | current `state.global.isLineCompleted`   |
 
 Notes:
 
