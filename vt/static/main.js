@@ -26,6 +26,43 @@ const { l10nData, ...projectData } = parsedData;
 const namespace = `vt:${window.location.pathname}`;
 const isVtCaptureMode = () =>
   window?.RTGL_VT_DEBUG === true || navigator.webdriver === true;
+const dispatchVtReady = () => {
+  window.dispatchEvent(new CustomEvent("vt:ready"));
+};
+const setBootstrapPhase = (phase) => {
+  window.__vtBootstrapPhase = phase;
+};
+
+const renderBootstrapFailure = async (error) => {
+  const message = error instanceof Error ? error.stack : String(error);
+  const output = document.createElement("pre");
+  output.dataset.vtBootstrapFailure = "true";
+  output.textContent = [
+    "VT BOOTSTRAP FAILED",
+    `phase: ${window.__vtBootstrapPhase ?? "unknown"}`,
+    message,
+  ].join("\n\n");
+  Object.assign(output.style, {
+    boxSizing: "border-box",
+    width: "100vw",
+    height: "100vh",
+    margin: "0",
+    padding: "32px",
+    overflow: "hidden",
+    whiteSpace: "pre-wrap",
+    background: "#7f1d1d",
+    color: "#ffffff",
+    font: "24px/1.4 monospace",
+  });
+  document.body.replaceChildren(output);
+  window.__vtBootstrapError = message;
+  console.error("[vt][bootstrap]", error);
+
+  await new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  });
+  dispatchVtReady();
+};
 
 const downscaleBase64Image = async (base64, scale = 0.5) => {
   if (!isVtCaptureMode() || scale === 1) {
@@ -55,6 +92,7 @@ const downscaleBase64Image = async (base64, scale = 0.5) => {
 };
 
 const init = async () => {
+  setBootstrapPhase("prepare project and assets");
   const screenWidth = projectData?.screen?.width ?? 1920;
   const screenHeight = projectData?.screen?.height ?? 1080;
   const assets = {
@@ -238,6 +276,7 @@ const init = async () => {
     }
     return bytes.buffer;
   };
+  setBootstrapPhase("load persistence");
   const persistence = createIndexedDbPersistence({ namespace });
   const {
     saveSlots,
@@ -335,16 +374,19 @@ const init = async () => {
 
   window.__vtHandleRouteGraphicsEvent = routeGraphicsEventHandler;
 
+  setBootstrapPhase("initialize Route Graphics");
   await routeGraphics.init({
     width: screenWidth,
     height: screenHeight,
     plugins,
     eventHandler: routeGraphicsEventHandler,
     onFirstRender: () => {
-      window.dispatchEvent(new CustomEvent("vt:ready"));
+      setBootstrapPhase("ready");
+      dispatchVtReady();
     },
     debug: window?.RTGL_VT_DEBUG ?? false,
   });
+  setBootstrapPhase("load assets");
   await routeGraphics.loadAssets(assetBufferMap);
 
   const canvasHost = document.getElementById("canvas");
@@ -353,6 +395,7 @@ const init = async () => {
     e.preventDefault();
   });
 
+  setBootstrapPhase("initialize Route Engine");
   engine = createRouteEngine({ handlePendingEffects: effectsHandler });
 
   engine.init({
@@ -379,6 +422,27 @@ const init = async () => {
       nextLine: {},
     });
   });
+  setBootstrapPhase("complete");
 };
 
-await init();
+const bootstrapTimeoutMs = 10_000;
+let bootstrapTimeout;
+
+try {
+  await Promise.race([
+    init(),
+    new Promise((_, reject) => {
+      bootstrapTimeout = window.setTimeout(() => {
+        reject(
+          new Error(
+            `VT bootstrap exceeded ${bootstrapTimeoutMs}ms in phase "${window.__vtBootstrapPhase ?? "unknown"}".`,
+          ),
+        );
+      }, bootstrapTimeoutMs);
+    }),
+  ]);
+} catch (error) {
+  await renderBootstrapFailure(error);
+} finally {
+  window.clearTimeout(bootstrapTimeout);
+}
