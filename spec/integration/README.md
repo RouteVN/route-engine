@@ -12,12 +12,27 @@ their external boundaries so journeys stay deterministic.
 - Assert both the user-visible result and important ownership state, such as
   the current pointer, active interaction, timer count, or persisted payload.
 - Use ordinary `it` for supported behavior.
-- Use `it.fails` only for a reproduced engine defect whose expectation states
-  the desired contract. When the defect is fixed, remove `.fails`; Vitest will
-  fail if an expected-failure test unexpectedly becomes healthy.
-- Keep each expected-failure case narrow enough that setup errors cannot be
-  mistaken for the intended regression.
+- Use `itKnownDefect` only for a reproduced engine defect. Put setup and
+  precondition assertions outside its `expectFailure` call. Inside it, provide
+  one `observed` assertion that fingerprints the exact current defect and one
+  `desired` assertion for the intended contract. Both must contain exactly one
+  synchronous `expect` call. Setup, schema, changed-defect, and unrelated
+  assertion failures remain real failures. When the desired contract becomes
+  healthy, the observed fingerprint or the helper itself fails and asks for the
+  marker to be removed.
+- Keep each known-defect case narrow enough that the marked assertion identifies
+  one specific regression.
 
 Browser-level counterparts live in `vt/specs/robustness`. Healthy scenarios
 have committed references. Known-broken scenarios intentionally have no
 reference until their production fix renders the expected state.
+
+GitHub Actions runs each healthy robustness scenario in an isolated container.
+`scripts/run-vt-ci.sh` rejects scenarios without references and applies an
+OS-level watchdog in addition to RTGL's own timeout, so a crashed browser cannot
+leave a CI runner waiting indefinitely.
+
+Only deterministic scenarios belong in the CI matrix. A scenario with a healthy
+reference can still remain local-only when its capture depends on a narrow
+wall-clock window; `choice-skip-pause-resume.yaml` is currently excluded for
+that reason.

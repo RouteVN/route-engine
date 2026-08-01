@@ -1,8 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect } from "vitest";
 import {
   createEngineIntegrationHarness,
   createIntegrationProject,
 } from "./helpers/createEngineIntegrationHarness.js";
+import { itKnownDefect } from "./helpers/knownDefect.js";
 
 const createProject = ({ lines, variables = {} }) =>
   createIntegrationProject({
@@ -16,44 +17,57 @@ const advance = (engine) => {
 };
 
 describe("engine persistence and live-project integration regressions", () => {
-  it.fails("restores authored context runtime when rolling back", () => {
-    const projectData = createProject({
-      lines: [
-        {
-          id: "line1",
-          actions: {
-            setSaveLoadPagination: { value: 3 },
-            setMenuPage: { value: "library" },
-            setMenuEntryPoint: { value: "title" },
+  itKnownDefect(
+    "restores authored context runtime when rolling back",
+    ({ expectFailure }) => {
+      const projectData = createProject({
+        lines: [
+          {
+            id: "line1",
+            actions: {
+              setSaveLoadPagination: { value: 3 },
+              setMenuPage: { value: "library" },
+              setMenuEntryPoint: { value: "title" },
+            },
           },
-        },
-        {
-          id: "line2",
-          actions: {
-            incrementSaveLoadPagination: {},
-            setMenuPage: { value: "settings" },
-            setMenuEntryPoint: { value: "pause" },
+          {
+            id: "line2",
+            actions: {
+              incrementSaveLoadPagination: {},
+              setMenuPage: { value: "settings" },
+              setMenuEntryPoint: { value: "pause" },
+            },
           },
-        },
-        { id: "line3", actions: {} },
-      ],
-    });
-    const { engine } = createEngineIntegrationHarness({ projectData });
+          { id: "line3", actions: {} },
+        ],
+      });
+      const { engine } = createEngineIntegrationHarness({ projectData });
 
-    advance(engine);
-    advance(engine);
-    engine.handleAction("rollbackByOffset", {});
+      advance(engine);
+      advance(engine);
+      engine.handleAction("rollbackByOffset", {});
 
-    expect(engine.selectRuntime()).toMatchObject({
-      saveLoadPagination: 4,
-      menuPage: "settings",
-      menuEntryPoint: "pause",
-    });
-  });
+      const runtimeState = engine.selectRuntime();
+      expectFailure({
+        observed: () =>
+          expect(runtimeState).toMatchObject({
+            saveLoadPagination: 1,
+            menuPage: "",
+            menuEntryPoint: "",
+          }),
+        desired: () =>
+          expect(runtimeState).toMatchObject({
+            saveLoadPagination: 4,
+            menuPage: "settings",
+            menuEntryPoint: "pause",
+          }),
+      });
+    },
+  );
 
-  it.fails(
+  itKnownDefect(
     "restores interaction context runtime after save, load, and rollback",
-    () => {
+    ({ expectFailure }) => {
       const projectData = createProject({
         lines: [
           { id: "line1", actions: {} },
@@ -78,17 +92,27 @@ describe("engine persistence and live-project integration regressions", () => {
       engine.handleAction("loadSlot", { slotId: "slot" });
       engine.handleAction("rollbackByOffset", {});
 
-      expect(engine.selectRuntime()).toMatchObject({
-        saveLoadPagination: 4,
-        menuPage: "gallery",
-        menuEntryPoint: "title",
+      const runtimeState = engine.selectRuntime();
+      expectFailure({
+        observed: () =>
+          expect(runtimeState).toMatchObject({
+            saveLoadPagination: 1,
+            menuPage: "",
+            menuEntryPoint: "",
+          }),
+        desired: () =>
+          expect(runtimeState).toMatchObject({
+            saveLoadPagination: 4,
+            menuPage: "gallery",
+            menuEntryPoint: "title",
+          }),
       });
     },
   );
 
-  it.fails(
+  itKnownDefect(
     "prunes removed rollback checkpoints during a live project update",
-    () => {
+    ({ expectFailure }) => {
       const initialProject = createProject({
         lines: ["line1", "line2", "line3"].map((id) => ({ id, actions: {} })),
       });
@@ -104,18 +128,37 @@ describe("engine persistence and live-project integration regressions", () => {
       engine.handleAction("updateProjectData", {
         projectData: replacementProject,
       });
-      engine.handleAction("rollbackByOffset", {});
-
-      expect(
-        engine.selectSystemState().contexts.at(-1).pointers.read,
-      ).toMatchObject({ sectionId: "main", lineId: "line1" });
-      expect(engine.selectPresentationState()).toBeDefined();
+      let rollbackError;
+      try {
+        engine.handleAction("rollbackByOffset", {});
+      } catch (error) {
+        rollbackError = error;
+      }
+      const rollbackResult = {
+        rollbackError: rollbackError?.message,
+        pointer: engine.selectSystemState().contexts.at(-1).pointers.read,
+        hasPresentation: engine.selectPresentationState() !== undefined,
+      };
+      expectFailure({
+        observed: () =>
+          expect(rollbackResult).toEqual({
+            rollbackError: undefined,
+            pointer: { sectionId: "main", lineId: "line2" },
+            hasPresentation: true,
+          }),
+        desired: () =>
+          expect(rollbackResult).toEqual({
+            rollbackError: undefined,
+            pointer: { sectionId: "main", lineId: "line1" },
+            hasPresentation: true,
+          }),
+      });
     },
   );
 
-  it.fails(
+  itKnownDefect(
     "removes a stale context value when its variable moves scope",
-    () => {
+    ({ expectFailure }) => {
       const lines = [{ id: "line1", actions: {} }];
       const initialProject = createProject({
         lines,
@@ -142,14 +185,25 @@ describe("engine persistence and live-project integration regressions", () => {
       });
 
       const state = engine.selectSystemState();
-      expect(state.contexts.at(-1).variables).not.toHaveProperty("route");
-      expect(state.global.variables.route).toBe(2);
+      const migratedValues = {
+        contextRoute: state.contexts.at(-1).variables.route,
+        accountRoute: state.global.variables.route,
+      };
+      expectFailure({
+        observed: () =>
+          expect(migratedValues).toEqual({ contextRoute: 7, accountRoute: 2 }),
+        desired: () =>
+          expect(migratedValues).toEqual({
+            contextRoute: undefined,
+            accountRoute: 2,
+          }),
+      });
     },
   );
 
-  it.fails(
+  itKnownDefect(
     "drops incompatible historical variable operations after a type change",
-    () => {
+    ({ expectFailure }) => {
       const lines = ["line1", "line2", "line3"].map((id) => ({
         id,
         actions: {},
@@ -179,16 +233,35 @@ describe("engine persistence and live-project integration regressions", () => {
         projectData: replacementProject,
       });
 
-      expect(() => engine.handleAction("rollbackByOffset", {})).not.toThrow();
-      expect(engine.selectSystemState().contexts.at(-1).variables.route).toBe(
-        "safe",
-      );
+      let rollbackError;
+      try {
+        engine.handleAction("rollbackByOffset", {});
+      } catch (error) {
+        rollbackError = error;
+      }
+      const rollbackResult = {
+        rollbackError: rollbackError?.message,
+        route: engine.selectSystemState().contexts.at(-1).variables.route,
+      };
+      expectFailure({
+        observed: () =>
+          expect(rollbackResult).toEqual({
+            rollbackError:
+              'Operation "increment" is not valid for variable "route" of type "string". Valid operations: set',
+            route: 1,
+          }),
+        desired: () =>
+          expect(rollbackResult).toEqual({
+            rollbackError: undefined,
+            route: "safe",
+          }),
+      });
     },
   );
 
-  it.fails(
+  itKnownDefect(
     "filters persisted values that violate the current variable type",
-    () => {
+    ({ expectFailure }) => {
       const projectData = createProject({
         lines: [{ id: "line1", actions: {} }],
         variables: {
@@ -200,46 +273,102 @@ describe("engine persistence and live-project integration regressions", () => {
         global: { variables: { score: "stale" } },
       });
 
-      engine.handleAction("updateVariable", {
-        id: "incrementScore",
-        operations: [{ variableId: "score", op: "increment", value: 1 }],
+      let updateError;
+      try {
+        engine.handleAction("updateVariable", {
+          id: "incrementScore",
+          operations: [{ variableId: "score", op: "increment", value: 1 }],
+        });
+      } catch (error) {
+        updateError = error;
+      }
+      const updateResult = {
+        updateError: updateError?.message,
+        score: engine.selectSystemState().global.variables.score,
+      };
+      expectFailure({
+        observed: () =>
+          expect(updateResult).toEqual({
+            updateError:
+              'Operation "increment" requires current value to be a number.',
+            score: "stale",
+          }),
+        desired: () =>
+          expect(updateResult).toEqual({ updateError: undefined, score: 1 }),
       });
-
-      expect(engine.selectSystemState().global.variables.score).toBe(1);
     },
   );
 
-  it.fails("keeps numeric-looking string slot IDs stable and loadable", () => {
-    const projectData = createProject({
-      lines: [{ id: "line1", actions: {} }],
-    });
-    const { engine } = createEngineIntegrationHarness({ projectData });
-    engine.handleAction("saveSlot", { slotId: "01", savedAt: 1 });
+  itKnownDefect(
+    "keeps numeric-looking string slot IDs stable and loadable",
+    ({ expectFailure }) => {
+      const projectData = createProject({
+        lines: [{ id: "line1", actions: {} }],
+      });
+      const { engine } = createEngineIntegrationHarness({ projectData });
+      engine.handleAction("saveSlot", { slotId: "01", savedAt: 1 });
 
-    const slot = engine.selectSaveSlot({ slotId: "01" });
+      const slot = engine.selectSaveSlot({ slotId: "01" });
 
-    expect(slot.slotId).toBe("01");
-    expect(engine.selectSaveSlot({ slotId: slot.slotId })).toEqual(slot);
-  });
+      const slotResult = {
+        slotId: slot.slotId,
+        roundTrip: engine.selectSaveSlot({ slotId: slot.slotId }),
+      };
+      expectFailure({
+        observed: () =>
+          expect(slotResult).toEqual({ slotId: 1, roundTrip: undefined }),
+        desired: () =>
+          expect(slotResult).toEqual({ slotId: "01", roundTrip: slot }),
+      });
+    },
+  );
 
-  it.fails("does not expose inherited object properties as save slots", () => {
-    const projectData = createProject({
-      lines: [{ id: "line1", actions: {} }],
-    });
-    const { engine } = createEngineIntegrationHarness({ projectData });
+  itKnownDefect(
+    "does not expose inherited object properties as save slots",
+    ({ expectFailure }) => {
+      const projectData = createProject({
+        lines: [{ id: "line1", actions: {} }],
+      });
+      const { engine } = createEngineIntegrationHarness({ projectData });
 
-    expect(engine.selectSaveSlot({ slotId: "__proto__" })).toBeUndefined();
-    expect(engine.selectSaveSlot({ slotId: "constructor" })).toBeUndefined();
-  });
+      const inheritedSlotResult = {
+        prototypeSlot: engine.selectSaveSlot({ slotId: "__proto__" }),
+        constructorSlot: engine.selectSaveSlot({ slotId: "constructor" }),
+      };
+      expectFailure({
+        observed: () =>
+          expect({
+            prototypeIsObject:
+              typeof inheritedSlotResult.prototypeSlot === "object",
+            constructorIsObject: inheritedSlotResult.constructorSlot === Object,
+          }).toEqual({ prototypeIsObject: true, constructorIsObject: true }),
+        desired: () =>
+          expect(inheritedSlotResult).toEqual({
+            prototypeSlot: undefined,
+            constructorSlot: undefined,
+          }),
+      });
+    },
+  );
 
-  it.fails("rejects non-finite slot IDs through the public action", () => {
-    const projectData = createProject({
-      lines: [{ id: "line1", actions: {} }],
-    });
-    const { engine } = createEngineIntegrationHarness({ projectData });
+  itKnownDefect(
+    "rejects non-finite slot IDs through the public action",
+    ({ expectFailure }) => {
+      const projectData = createProject({
+        lines: [{ id: "line1", actions: {} }],
+      });
+      const { engine } = createEngineIntegrationHarness({ projectData });
 
-    expect(() =>
-      engine.handleAction("saveSlot", { slotId: Number.NaN }),
-    ).toThrow(/slotId/);
-  });
+      let saveError;
+      try {
+        engine.handleAction("saveSlot", { slotId: Number.NaN });
+      } catch (error) {
+        saveError = error;
+      }
+      expectFailure({
+        observed: () => expect(saveError).toBeUndefined(),
+        desired: () => expect(saveError?.message ?? "").toMatch(/slotId/),
+      });
+    },
+  );
 });
