@@ -648,8 +648,9 @@ Playback timing semantics:
 
 - Global `autoMode` waits for the current line to complete before starting a
   length-aware delay. The delay combines `runtime.autoForwardDelay` with
-  grapheme-based reading time adjusted by `runtime.autoForwardSpeed` and capped
-  at 20 seconds.
+  grapheme-based reading time adjusted by `runtime.autoForwardSpeed`. The result
+  is capped at 20 seconds unless the configured base delay itself is higher; in
+  that case, the higher base delay is preserved as the effective delay.
 - That completion is driven by Route Graphics `renderComplete`, so revealing text and other tracked render work finish first.
 - Global `skipMode` does not use that completion gate; it advances on its own fast timer.
 - `nextLineConfig.auto` is separate and may use `trigger: "fromStart"` or `trigger: "fromComplete"` depending on authored behavior.
@@ -674,8 +675,10 @@ Playback timing semantics:
 | `setMenuEntryPoint`               | `{ value }`  | Set the active context's menu entry-point string            |
 
 The first nine actions update device-persisted runtime preferences. Save/load and
-menu navigation values are context-local, included in save slots, and restored
-by rollback. L10n selection behavior is documented in [L10n.md](./L10n.md).
+menu navigation values are context-local and included in save slots. Rollback
+currently clears context runtime state, so these values return to their defaults
+rather than replaying their earlier setters. L10n selection behavior is
+documented in [L10n.md](./L10n.md).
 
 ### UI Actions
 
