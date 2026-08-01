@@ -1,0 +1,184 @@
+---
+title: Context Runtime Rollback
+description: Back reconstructs context-local menu and pagination runtime from line actions.
+specs:
+  - line one sets library/title/page three
+  - line two sets settings/pause and increments to page four
+  - line three changes all values again
+  - one Back action must restore the line-two runtime values
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 1280
+  height: 720
+steps:
+  - action: wait
+    ms: 200
+  - action: click
+    x: 1040
+    y: 625
+  - action: wait
+    ms: 180
+  - action: click
+    x: 1040
+    y: 625
+  - action: wait
+    ms: 180
+  - action: click
+    x: 240
+    y: 625
+  - action: wait
+    ms: 220
+  - action: screenshot
+---
+screen:
+  width: 1280
+  height: 720
+resources:
+  controls:
+    runtimeControl:
+      elements:
+        - id: background
+          type: rect
+          width: 1280
+          height: 720
+          colorId: background
+        - id: expected-panel
+          $when: runtime.menuPage == "settings"
+          type: rect
+          x: 60
+          y: 60
+          width: 1160
+          height: 520
+          colorId: success
+        - id: failure-panel
+          $when: runtime.menuPage != "settings"
+          type: rect
+          x: 60
+          y: 60
+          width: 1160
+          height: 520
+          colorId: failure
+        - id: title
+          type: text
+          x: 120
+          y: 110
+          content: "Context runtime after Back"
+          textStyleId: title
+        - id: menu-page
+          type: text
+          x: 120
+          y: 220
+          content: "menuPage: ${runtime.menuPage}"
+          textStyleId: body
+        - id: entry-point
+          type: text
+          x: 120
+          y: 280
+          content: "menuEntryPoint: ${runtime.menuEntryPoint}"
+          textStyleId: body
+        - id: pagination
+          type: text
+          x: 120
+          y: 340
+          content: "saveLoadPagination: ${runtime.saveLoadPagination}"
+          textStyleId: body
+        - id: expected
+          type: text
+          x: 120
+          y: 430
+          content: "EXPECTED: settings / pause / 4"
+          textStyleId: body
+        - id: back-button
+          type: rect
+          x: 100
+          y: 590
+          width: 280
+          height: 90
+          colorId: action
+          click:
+            payload:
+              actions:
+                rollbackByOffset:
+                  offset: -1
+        - id: back-label
+          type: text
+          x: 180
+          y: 620
+          content: "Back"
+          textStyleId: body
+        - id: next-button
+          type: rect
+          x: 900
+          y: 590
+          width: 280
+          height: 90
+          colorId: action
+          click:
+            payload:
+              actions:
+                nextLine: {}
+        - id: next-label
+          type: text
+          x: 980
+          y: 620
+          content: "Next"
+          textStyleId: body
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    background:
+      hex: "#111827"
+    success:
+      hex: "#166534"
+    failure:
+      hex: "#991B1B"
+    action:
+      hex: "#2563EB"
+    text:
+      hex: "#FFFFFF"
+  textStyles:
+    title:
+      fontId: default
+      colorId: text
+      fontSize: 44
+      lineHeight: 1.2
+    body:
+      fontId: default
+      colorId: text
+      fontSize: 30
+      lineHeight: 1.3
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                control:
+                  resourceId: runtimeControl
+                setSaveLoadPagination:
+                  value: 3
+                setMenuPage:
+                  value: library
+                setMenuEntryPoint:
+                  value: title
+            - id: line2
+              actions:
+                incrementSaveLoadPagination: {}
+                setMenuPage:
+                  value: settings
+                setMenuEntryPoint:
+                  value: pause
+            - id: line3
+              actions:
+                setSaveLoadPagination:
+                  value: 8
+                setMenuPage:
+                  value: credits
+                setMenuEntryPoint:
+                  value: pause

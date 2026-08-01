@@ -1,0 +1,158 @@
+---
+title: Effect-Owned Line Actions
+description: Effect-driven navigation must invalidate line work captured for an older entry.
+specs:
+  - clicking queues line work for the first destination
+  - a custom VT effect navigates to the final destination first
+  - final destination actions execute exactly once
+  - the green expected state is 10; the current duplicate-execution bug shows red 20
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 1280
+  height: 720
+steps:
+  - action: wait
+    ms: 150
+  - action: click
+    x: 300
+    y: 350
+  - action: wait
+    ms: 200
+  - action: screenshot
+---
+screen:
+  width: 1280
+  height: 720
+resources:
+  controls:
+    sourceControl:
+      elements:
+        - id: background
+          type: rect
+          width: 1280
+          height: 720
+          colorId: background
+        - id: title
+          type: text
+          x: 100
+          y: 100
+          content: "Effect ownership regression"
+          textStyleId: title
+        - id: run-button
+          type: rect
+          x: 100
+          y: 280
+          width: 400
+          height: 140
+          colorId: action
+          click:
+            payload:
+              actions:
+                appendPendingEffect:
+                  name: vt:dispatchActions
+                  payload:
+                    actions:
+                      sectionTransition:
+                        sectionId: finalDestination
+                sectionTransition:
+                  sectionId: firstDestination
+        - id: run-label
+          type: text
+          x: 180
+          y: 328
+          content: "Run navigation"
+          textStyleId: body
+    finalControl:
+      elements:
+        - id: background
+          type: rect
+          width: 1280
+          height: 720
+          colorId: background
+        - id: expected-panel
+          $when: "variables.score == 10"
+          type: rect
+          x: 80
+          y: 80
+          width: 1120
+          height: 560
+          colorId: success
+        - id: failure-panel
+          $when: "variables.score != 10"
+          type: rect
+          x: 80
+          y: 80
+          width: 1120
+          height: 560
+          colorId: failure
+        - id: result-title
+          type: text
+          x: 140
+          y: 160
+          content: "Final line action count: ${variables.score}"
+          textStyleId: title
+        - id: result-detail
+          type: text
+          x: 140
+          y: 270
+          content: "EXPECTED 10 — duplicate stale work produces 20"
+          textStyleId: body
+  variables:
+    score:
+      type: number
+      scope: context
+      default: 0
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    background:
+      hex: "#111827"
+    action:
+      hex: "#2563EB"
+    success:
+      hex: "#166534"
+    failure:
+      hex: "#991B1B"
+    text:
+      hex: "#FFFFFF"
+  textStyles:
+    title:
+      fontId: default
+      colorId: text
+      fontSize: 48
+      lineHeight: 1.2
+    body:
+      fontId: default
+      colorId: text
+      fontSize: 30
+      lineHeight: 1.3
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: source
+      sections:
+        source:
+          lines:
+            - id: source
+              actions:
+                control:
+                  resourceId: sourceControl
+        firstDestination:
+          lines:
+            - id: first
+              actions: {}
+        finalDestination:
+          lines:
+            - id: final
+              actions:
+                updateVariable:
+                  id: countFinalEntry
+                  operations:
+                    - variableId: score
+                      op: increment
+                      value: 10
+                control:
+                  resourceId: finalControl

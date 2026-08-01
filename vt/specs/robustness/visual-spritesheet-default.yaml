@@ -1,0 +1,113 @@
+---
+title: Visual Spritesheet Default Animation
+description: A spritesheet visual without animationName uses its first declared animation.
+specs:
+  - animationName is intentionally omitted from the visual item
+  - the schema permits the omission
+  - the fighter must still render using the first animation
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 1280
+  height: 720
+steps:
+  - action: wait
+    ms: 300
+  - action: screenshot
+---
+screen:
+  width: 1280
+  height: 720
+resources:
+  controls:
+    backgroundControl:
+      elements:
+        - id: background
+          type: rect
+          width: 1280
+          height: 720
+          colorId: background
+        - id: title
+          type: text
+          x: 80
+          y: 80
+          content: "EXPECTED: animated fighter is visible"
+          textStyleId: title
+        - id: detail
+          type: text
+          x: 80
+          y: 145
+          content: "animationName omitted → first animation selected"
+          textStyleId: body
+  spritesheets:
+    fighter:
+      fileId: fighter-spritesheet
+      width: 175
+      height: 240
+      jsonData:
+        frames:
+          rollSequence0000.png:
+            frame: { x: 483, y: 692, w: 169, h: 226 }
+            rotated: false
+            trimmed: true
+            spriteSourceSize: { x: 3, y: 4, w: 169, h: 226 }
+            sourceSize: { w: 175, h: 240 }
+          rollSequence0001.png:
+            frame: { x: 468, y: 2, w: 169, h: 226 }
+            rotated: false
+            trimmed: true
+            spriteSourceSize: { x: 3, y: 4, w: 169, h: 226 }
+            sourceSize: { w: 175, h: 240 }
+        meta:
+          format: RGBA8888
+          size: { w: 1024, h: 1024 }
+          scale: "1"
+      animations:
+        idle:
+          frames: [0, 1]
+          animationSpeed: 0.1
+          loop: true
+  transforms:
+    center:
+      x: 640
+      y: 420
+      anchorX: 0.5
+      anchorY: 0.5
+      scaleX: 1.4
+      scaleY: 1.4
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    background:
+      hex: "#111827"
+    text:
+      hex: "#FFFFFF"
+  textStyles:
+    title:
+      fontId: default
+      colorId: text
+      fontSize: 40
+      lineHeight: 1.2
+    body:
+      fontId: default
+      colorId: text
+      fontSize: 26
+      lineHeight: 1.3
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                control:
+                  resourceId: backgroundControl
+                visual:
+                  items:
+                    - id: fighter
+                      resourceId: fighter
+                      transformId: center

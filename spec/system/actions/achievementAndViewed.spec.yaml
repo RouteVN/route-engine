@@ -1,0 +1,611 @@
+file: "../../../src/stores/system.store.js"
+group: systemStore achievements and viewed registries
+suites:
+  - completeAchievement
+  - setAchievementProgress
+  - addViewedLine
+  - addViewedResource
+---
+suite: completeAchievement
+exportName: completeAchievement
+---
+case: queues completion for a boolean achievement
+in:
+  - state:
+      projectData:
+        resources:
+          achievements:
+            ending:
+              type: boolean
+      global:
+        pendingEffects: []
+      contexts: []
+  - resourceId: ending
+out:
+  projectData:
+    resources:
+      achievements:
+        ending:
+          type: boolean
+  global:
+    pendingEffects:
+      - name: completeAchievement
+        payload:
+          resourceId: ending
+  contexts: []
+---
+case: queues completion for a numeric achievement
+in:
+  - state:
+      projectData:
+        resources:
+          achievements:
+            collector:
+              type: number
+              target: 10
+      global:
+        pendingEffects: []
+      contexts: []
+  - resourceId: collector
+out:
+  projectData:
+    resources:
+      achievements:
+        collector:
+          type: number
+          target: 10
+  global:
+    pendingEffects:
+      - name: completeAchievement
+        payload:
+          resourceId: collector
+  contexts: []
+---
+case: suppresses achievement completion during scene replay
+in:
+  - state:
+      projectData:
+        resources:
+          achievements:
+            ending:
+              type: boolean
+      global:
+        pendingEffects: []
+      contexts:
+        - kind: sceneReplay
+          sceneReplay:
+            sceneId: ending-scene
+  - resourceId: ending
+out:
+  projectData:
+    resources:
+      achievements:
+        ending:
+          type: boolean
+  global:
+    pendingEffects: []
+  contexts:
+    - kind: sceneReplay
+      sceneReplay:
+        sceneId: ending-scene
+---
+case: rejects a missing achievement id
+in:
+  - state:
+      projectData:
+        resources:
+          achievements: {}
+      global:
+        pendingEffects: []
+      contexts: []
+  - {}
+throws: Achievement action requires a non-empty resourceId
+---
+case: rejects an unknown achievement
+in:
+  - state:
+      projectData:
+        resources:
+          achievements: {}
+      global:
+        pendingEffects: []
+      contexts: []
+  - resourceId: missing
+throws: 'Achievement resource "missing" not found'
+---
+case: rejects an achievement with an unsupported type
+in:
+  - state:
+      projectData:
+        resources:
+          achievements:
+            broken:
+              type: string
+      global:
+        pendingEffects: []
+      contexts: []
+  - resourceId: broken
+throws: 'Achievement resource "broken" has invalid type "string"'
+---
+suite: setAchievementProgress
+exportName: setAchievementProgress
+---
+case: queues partial numeric achievement progress
+in:
+  - state:
+      projectData:
+        resources:
+          achievements:
+            collector:
+              type: number
+              target: 5
+      global:
+        pendingEffects: []
+      contexts: []
+  - resourceId: collector
+    current: 3
+out:
+  projectData:
+    resources:
+      achievements:
+        collector:
+          type: number
+          target: 5
+  global:
+    pendingEffects:
+      - name: setAchievementProgress
+        payload:
+          resourceId: collector
+          current: 3
+          target: 5
+          completed: false
+  contexts: []
+---
+case: caps progress at the target and marks completion
+in:
+  - state:
+      projectData:
+        resources:
+          achievements:
+            collector:
+              type: number
+              target: 5
+      global:
+        pendingEffects: []
+      contexts: []
+  - resourceId: collector
+    current: 8
+out:
+  projectData:
+    resources:
+      achievements:
+        collector:
+          type: number
+          target: 5
+  global:
+    pendingEffects:
+      - name: setAchievementProgress
+        payload:
+          resourceId: collector
+          current: 5
+          target: 5
+          completed: true
+  contexts: []
+---
+case: suppresses numeric progress during scene replay
+in:
+  - state:
+      projectData:
+        resources:
+          achievements:
+            collector:
+              type: number
+              target: 5
+      global:
+        pendingEffects: []
+      contexts:
+        - kind: sceneReplay
+          sceneReplay:
+            sceneId: ending-scene
+  - resourceId: collector
+    current: 3
+out:
+  projectData:
+    resources:
+      achievements:
+        collector:
+          type: number
+          target: 5
+  global:
+    pendingEffects: []
+  contexts:
+    - kind: sceneReplay
+      sceneReplay:
+        sceneId: ending-scene
+---
+case: rejects progress for a boolean achievement
+in:
+  - state:
+      projectData:
+        resources:
+          achievements:
+            ending:
+              type: boolean
+      global:
+        pendingEffects: []
+      contexts: []
+  - resourceId: ending
+    current: 1
+throws: 'Achievement resource "ending" does not support numeric progress'
+---
+case: rejects negative progress
+in:
+  - state:
+      projectData:
+        resources:
+          achievements:
+            collector:
+              type: number
+              target: 5
+      global:
+        pendingEffects: []
+      contexts: []
+  - resourceId: collector
+    current: -1
+throws: 'Achievement progress for "collector" must be a non-negative integer'
+---
+case: rejects fractional progress
+in:
+  - state:
+      projectData:
+        resources:
+          achievements:
+            collector:
+              type: number
+              target: 5
+      global:
+        pendingEffects: []
+      contexts: []
+  - resourceId: collector
+    current: 1.5
+throws: 'Achievement progress for "collector" must be a non-negative integer'
+---
+case: rejects a non-positive target
+in:
+  - state:
+      projectData:
+        resources:
+          achievements:
+            collector:
+              type: number
+              target: 0
+      global:
+        pendingEffects: []
+      contexts: []
+  - resourceId: collector
+    current: 0
+throws: 'Achievement resource "collector" must have a positive integer target'
+---
+suite: addViewedLine
+exportName: addViewedLine
+---
+case: records a new account-viewed line and persists a patch
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            story:
+              sections:
+                intro:
+                  lines:
+                    - id: one
+                    - id: two
+      global:
+        pendingEffects: []
+        accountViewedRegistry:
+          sections: []
+          resources: []
+      contexts: []
+  - sectionId: intro
+    lineId: two
+out:
+  projectData:
+    story:
+      scenes:
+        story:
+          sections:
+            intro:
+              lines:
+                - id: one
+                - id: two
+  global:
+    pendingEffects:
+      - name: applyScopedDataUpdates
+        payload:
+          updates:
+            - scope: account
+              path: viewedRegistry
+              op: markViewed
+              value:
+                sections:
+                  - sectionId: intro
+                    lineId: two
+                resources: []
+      - name: render
+    accountViewedRegistry:
+      sections:
+        - sectionId: intro
+          lastLineId: two
+      resources: []
+  contexts: []
+---
+case: advances an existing section viewed cursor
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            story:
+              sections:
+                intro:
+                  lines:
+                    - id: one
+                    - id: two
+                    - id: three
+      global:
+        pendingEffects: []
+        accountViewedRegistry:
+          sections:
+            - sectionId: intro
+              lastLineId: one
+          resources: []
+      contexts: []
+  - sectionId: intro
+    lineId: three
+out:
+  projectData:
+    story:
+      scenes:
+        story:
+          sections:
+            intro:
+              lines:
+                - id: one
+                - id: two
+                - id: three
+  global:
+    pendingEffects:
+      - name: applyScopedDataUpdates
+        payload:
+          updates:
+            - scope: account
+              path: viewedRegistry
+              op: markViewed
+              value:
+                sections:
+                  - sectionId: intro
+                    lineId: three
+                resources: []
+      - name: render
+    accountViewedRegistry:
+      sections:
+        - sectionId: intro
+          lastLineId: three
+      resources: []
+  contexts: []
+---
+case: does not regress an existing viewed cursor
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            story:
+              sections:
+                intro:
+                  lines:
+                    - id: one
+                    - id: two
+      global:
+        pendingEffects: []
+        accountViewedRegistry:
+          sections:
+            - sectionId: intro
+              lastLineId: two
+          resources: []
+      contexts: []
+  - sectionId: intro
+    lineId: one
+out:
+  projectData:
+    story:
+      scenes:
+        story:
+          sections:
+            intro:
+              lines:
+                - id: one
+                - id: two
+  global:
+    pendingEffects:
+      - name: render
+    accountViewedRegistry:
+      sections:
+        - sectionId: intro
+          lastLineId: two
+      resources: []
+  contexts: []
+---
+case: renders without persisting when account registry is unavailable
+in:
+  - state:
+      projectData: {}
+      global:
+        pendingEffects: []
+      contexts: []
+  - sectionId: intro
+    lineId: one
+out:
+  projectData: {}
+  global:
+    pendingEffects:
+      - name: render
+  contexts: []
+---
+case: suppresses account mutation during scene replay but still renders
+in:
+  - state:
+      projectData: {}
+      global:
+        pendingEffects: []
+        accountViewedRegistry:
+          sections: []
+          resources: []
+      contexts:
+        - kind: sceneReplay
+          sceneReplay:
+            sceneId: ending
+  - sectionId: intro
+    lineId: one
+out:
+  projectData: {}
+  global:
+    pendingEffects:
+      - name: render
+    accountViewedRegistry:
+      sections: []
+      resources: []
+  contexts:
+    - kind: sceneReplay
+      sceneReplay:
+        sceneId: ending
+---
+suite: addViewedResource
+exportName: addViewedResource
+---
+case: records a new account-viewed resource and persists a patch
+in:
+  - state:
+      projectData: {}
+      global:
+        pendingEffects: []
+        accountViewedRegistry:
+          sections: []
+          resources: []
+      contexts: []
+  - resourceId: cg-one
+out:
+  projectData: {}
+  global:
+    pendingEffects:
+      - name: applyScopedDataUpdates
+        payload:
+          updates:
+            - scope: account
+              path: viewedRegistry
+              op: markViewed
+              value:
+                sections: []
+                resources:
+                  - resourceId: cg-one
+      - name: render
+    accountViewedRegistry:
+      sections: []
+      resources:
+        - resourceId: cg-one
+  contexts: []
+---
+case: does not persist a duplicate viewed resource
+in:
+  - state:
+      projectData: {}
+      global:
+        pendingEffects: []
+        accountViewedRegistry:
+          sections: []
+          resources:
+            - resourceId: cg-one
+      contexts: []
+  - resourceId: cg-one
+out:
+  projectData: {}
+  global:
+    pendingEffects:
+      - name: render
+    accountViewedRegistry:
+      sections: []
+      resources:
+        - resourceId: cg-one
+  contexts: []
+---
+case: renders without persistence when account registry is unavailable
+in:
+  - state:
+      projectData: {}
+      global:
+        pendingEffects: []
+      contexts: []
+  - resourceId: cg-one
+out:
+  projectData: {}
+  global:
+    pendingEffects:
+      - name: render
+  contexts: []
+---
+case: normalizes a malformed registry before recording a resource
+in:
+  - state:
+      projectData: {}
+      global:
+        pendingEffects: []
+        accountViewedRegistry: invalid
+      contexts: []
+  - resourceId: cg-one
+out:
+  projectData: {}
+  global:
+    pendingEffects:
+      - name: applyScopedDataUpdates
+        payload:
+          updates:
+            - scope: account
+              path: viewedRegistry
+              op: markViewed
+              value:
+                sections: []
+                resources:
+                  - resourceId: cg-one
+      - name: render
+    accountViewedRegistry:
+      sections: []
+      resources:
+        - resourceId: cg-one
+  contexts: []
+---
+case: suppresses resource tracking and rendering during scene replay
+in:
+  - state:
+      projectData: {}
+      global:
+        pendingEffects: []
+        accountViewedRegistry:
+          sections: []
+          resources: []
+      contexts:
+        - kind: sceneReplay
+          sceneReplay:
+            sceneId: ending
+  - resourceId: cg-one
+out:
+  projectData: {}
+  global:
+    pendingEffects: []
+    accountViewedRegistry:
+      sections: []
+      resources: []
+  contexts:
+    - kind: sceneReplay
+      sceneReplay:
+        sceneId: ending

@@ -1,0 +1,114 @@
+---
+title: Particle Image Texture Reference
+description: A first-class particle visual resolves an imageId texture through engine and renderer boundaries.
+skipInitialScreenshot: true
+diffThreshold: 0.3
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 250
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+  backgroundColor: "#000000"
+resources:
+  images:
+    sparkTexture:
+      fileId: mask-diagonal
+      width: 512
+      height: 512
+  particles:
+    imageSparks:
+      width: 700
+      height: 340
+      seed: 31415
+      modules:
+        emission:
+          mode: burst
+          burstCount: 18
+          particleLifetime: 60
+          source:
+            kind: rect
+            data:
+              x: 30
+              y: 30
+              width: 640
+              height: 280
+        appearance:
+          texture:
+            imageId: sparkTexture
+          scale:
+            mode: range
+            min: 0.08
+            max: 0.16
+  transforms:
+    particleArea:
+      x: 130
+      y: 130
+      anchorX: 0
+      anchorY: 0
+  layouts:
+    titleCard:
+      elements:
+        - id: background
+          type: rect
+          width: 960
+          height: 540
+          colorId: background
+        - id: title
+          type: text
+          x: 480
+          y: 65
+          anchorX: 0.5
+          content: IMAGE-TEXTURED PARTICLES
+          textStyleId: title
+        - id: frame
+          type: rect
+          x: 120
+          y: 120
+          width: 720
+          height: 360
+          colorId: frame
+          alpha: 0.35
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    background:
+      hex: "#000000"
+    frame:
+      hex: "#4D4D4D"
+    text:
+      hex: "#FFFFFF"
+  textStyles:
+    title:
+      fontId: default
+      colorId: text
+      fontSize: 31
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1.2
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      name: Main
+      initialSectionId: main
+      sections:
+        main:
+          name: Main
+          lines:
+            - id: particles
+              actions:
+                background:
+                  resourceId: titleCard
+                visual:
+                  items:
+                    - id: image-sparks
+                      resourceId: imageSparks
+                      transformId: particleArea

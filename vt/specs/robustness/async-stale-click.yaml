@@ -1,0 +1,160 @@
+---
+title: Async Stale Click Ownership
+description: A delayed click from an older render must not act on a newer line.
+specs:
+  - the first button pauses its payload in the VT preprocessor
+  - the second button advances immediately to line two
+  - resolving the older click must leave line two active
+  - the current stale-input bug advances to the red sentinel line
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 1280
+  height: 720
+steps:
+  - action: wait
+    ms: 250
+  - action: click
+    x: 300
+    y: 300
+  - action: wait
+    ms: 30
+  - action: click
+    x: 780
+    y: 300
+  - action: wait
+    ms: 1000
+  - action: screenshot
+---
+screen:
+  width: 1280
+  height: 720
+resources:
+  controls:
+    sourceControl:
+      elements:
+        - id: background
+          type: rect
+          width: 1280
+          height: 720
+          colorId: background
+        - id: title
+          type: text
+          x: 100
+          y: 90
+          content: "Start delayed click, then advance immediately"
+          textStyleId: title
+        - id: delayed-button
+          type: rect
+          x: 100
+          y: 230
+          width: 400
+          height: 140
+          colorId: delayed
+          click:
+            payload:
+              _vtPreprocessDelayMs: 800
+              actions:
+                nextLine: {}
+        - id: delayed-label
+          type: text
+          x: 175
+          y: 278
+          content: "1. Delayed next"
+          textStyleId: body
+        - id: immediate-button
+          type: rect
+          x: 580
+          y: 230
+          width: 400
+          height: 140
+          colorId: immediate
+          click:
+            payload:
+              actions:
+                nextLine: {}
+        - id: immediate-label
+          type: text
+          x: 650
+          y: 278
+          content: "2. Immediate next"
+          textStyleId: body
+    expectedControl:
+      elements:
+        - id: expected-panel
+          type: rect
+          width: 1280
+          height: 720
+          colorId: success
+        - id: expected-title
+          type: text
+          x: 120
+          y: 180
+          content: "EXPECTED: line two remains active"
+          textStyleId: title
+        - id: expected-detail
+          type: text
+          x: 120
+          y: 290
+          content: "The delayed line-one click was discarded."
+          textStyleId: body
+    sentinelControl:
+      elements:
+        - id: failure-panel
+          type: rect
+          width: 1280
+          height: 720
+          colorId: failure
+        - id: failure-title
+          type: text
+          x: 120
+          y: 180
+          content: "BUG: stale line-one click advanced line two"
+          textStyleId: title
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    background:
+      hex: "#111827"
+    delayed:
+      hex: "#7C3AED"
+    immediate:
+      hex: "#2563EB"
+    success:
+      hex: "#166534"
+    failure:
+      hex: "#991B1B"
+    text:
+      hex: "#FFFFFF"
+  textStyles:
+    title:
+      fontId: default
+      colorId: text
+      fontSize: 44
+      lineHeight: 1.2
+    body:
+      fontId: default
+      colorId: text
+      fontSize: 30
+      lineHeight: 1.3
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line1
+              actions:
+                control:
+                  resourceId: sourceControl
+            - id: line2
+              actions:
+                control:
+                  resourceId: expectedControl
+            - id: line3
+              actions:
+                control:
+                  resourceId: sentinelControl

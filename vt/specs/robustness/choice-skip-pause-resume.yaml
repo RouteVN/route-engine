@@ -1,0 +1,183 @@
+---
+title: Choice Skip Pause and Resume
+description: Skip remains enabled across a blocking choice, pauses its timer, and resumes only after an authorized choice click.
+specs:
+  - entering a choice with skip enabled does not bypass the choice
+  - the rendered choice payload advances exactly one line
+  - skip remains enabled after the choice
+  - the resumed timer advances the following line at skip cadence
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 1280
+  height: 720
+steps:
+  - action: wait
+    ms: 200
+  - action: click
+    x: 310
+    y: 330
+  - action: wait
+    ms: 150
+  - action: screenshot
+  - action: click
+    x: 870
+    y: 330
+  - action: wait
+    ms: 40
+  - action: screenshot
+  - action: wait
+    ms: 100
+  - action: screenshot
+---
+screen:
+  width: 1280
+  height: 720
+resources:
+  controls:
+    entryControl:
+      elements:
+        - id: background
+          type: rect
+          width: 1280
+          height: 720
+          colorId: background
+        - id: title
+          type: text
+          x: 100
+          y: 100
+          content: "Skip timer ownership across a choice"
+          textStyleId: title
+        - id: enter-choice
+          type: rect
+          x: 100
+          y: 260
+          width: 420
+          height: 140
+          colorId: action
+          click:
+            payload:
+              actions:
+                setSkipUnseenText:
+                  value: true
+                startSkipMode: {}
+                jumpToLine:
+                  sectionId: main
+                  lineId: choice
+        - id: enter-label
+          type: text
+          x: 150
+          y: 308
+          content: "Enter choice with skip"
+          textStyleId: body
+    afterChoiceControl:
+      elements:
+        - id: after-choice-panel
+          type: rect
+          width: 1280
+          height: 720
+          colorId: success
+        - id: after-choice-title
+          type: text
+          x: 100
+          y: 180
+          content: "EXPECTED: choice advanced once; skip resumed"
+          textStyleId: title
+        - id: after-choice-status
+          type: text
+          x: 100
+          y: 290
+          content: "skipMode: ${runtime.skipMode}"
+          textStyleId: body
+    advancedControl:
+      elements:
+        - id: advanced-panel
+          type: rect
+          width: 1280
+          height: 720
+          colorId: success
+        - id: advanced-title
+          type: text
+          x: 100
+          y: 220
+          content: "EXPECTED: resumed skip timer advanced"
+          textStyleId: title
+  layouts:
+    choiceLayout:
+      elements:
+        - id: choice-panel
+          type: rect
+          x: 620
+          y: 220
+          width: 500
+          height: 220
+          colorId: panel
+        - id: continue-choice
+          type: rect
+          x: 690
+          y: 270
+          width: 360
+          height: 120
+          colorId: action
+          click:
+            payload:
+              actions:
+                nextLine: {}
+        - id: continue-label
+          type: text
+          x: 760
+          y: 312
+          content: "Continue choice"
+          textStyleId: body
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    background:
+      hex: "#111827"
+    panel:
+      hex: "#1F2937"
+    action:
+      hex: "#2563EB"
+    success:
+      hex: "#166534"
+    text:
+      hex: "#FFFFFF"
+  textStyles:
+    title:
+      fontId: default
+      colorId: text
+      fontSize: 42
+      lineHeight: 1.2
+    body:
+      fontId: default
+      colorId: text
+      fontSize: 29
+      lineHeight: 1.3
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: entry
+              actions:
+                control:
+                  resourceId: entryControl
+            - id: choice
+              actions:
+                choice:
+                  resourceId: choiceLayout
+                  items:
+                    - id: continue
+                      content: Continue
+            - id: after-choice
+              actions:
+                control:
+                  resourceId: afterChoiceControl
+            - id: advanced
+              actions:
+                control:
+                  resourceId: advancedControl

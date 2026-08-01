@@ -1,0 +1,168 @@
+---
+title: Auto Speed Live Update
+description: Changing auto-mode speed while its timer is running reschedules the active line.
+specs:
+  - start auto mode at maximum speed with a short base delay
+  - switch to minimum speed before the timer fires
+  - the line must remain active past the old timer deadline
+  - the current stale-speed bug reaches the red sentinel
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 1280
+  height: 720
+steps:
+  - action: wait
+    ms: 250
+  - action: click
+    x: 300
+    y: 330
+  - action: wait
+    ms: 30
+  - action: click
+    x: 780
+    y: 330
+  - action: wait
+    ms: 1300
+  - action: screenshot
+---
+screen:
+  width: 1280
+  height: 720
+resources:
+  controls:
+    autoControl:
+      elements:
+        - id: background
+          type: rect
+          width: 1280
+          height: 720
+          colorId: background
+        - id: updated-panel
+          $when: variables.speedUpdated
+          type: rect
+          x: 60
+          y: 60
+          width: 1160
+          height: 600
+          colorId: success
+        - id: title
+          type: text
+          x: 100
+          y: 90
+          content: "Change auto speed while its timer is active"
+          textStyleId: title
+        - id: start-button
+          type: rect
+          x: 100
+          y: 260
+          width: 400
+          height: 140
+          colorId: action
+          click:
+            payload:
+              actions:
+                setAutoForwardDelay:
+                  value: 200
+                setAutoForwardSpeed:
+                  value: 100
+                startAutoMode: {}
+        - id: start-label
+          type: text
+          x: 145
+          y: 308
+          content: "1. Start at speed 100"
+          textStyleId: body
+        - id: update-button
+          type: rect
+          x: 580
+          y: 260
+          width: 400
+          height: 140
+          colorId: action
+          click:
+            payload:
+              actions:
+                setAutoForwardSpeed:
+                  value: 0
+                updateVariable:
+                  id: markSpeedUpdated
+                  operations:
+                    - variableId: speedUpdated
+                      op: set
+                      value: true
+        - id: update-label
+          type: text
+          x: 645
+          y: 308
+          content: "2. Slow to speed 0"
+          textStyleId: body
+        - id: expected-label
+          $when: variables.speedUpdated
+          type: text
+          x: 140
+          y: 500
+          content: "EXPECTED: active timer uses the new speed"
+          textStyleId: title
+    sentinelControl:
+      elements:
+        - id: failure-panel
+          type: rect
+          width: 1280
+          height: 720
+          colorId: failure
+        - id: failure-label
+          type: text
+          x: 120
+          y: 220
+          content: "BUG: the old auto-speed timer advanced"
+          textStyleId: title
+  variables:
+    speedUpdated:
+      type: boolean
+      scope: context
+      default: false
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    background:
+      hex: "#111827"
+    action:
+      hex: "#2563EB"
+    success:
+      hex: "#166534"
+    failure:
+      hex: "#991B1B"
+    text:
+      hex: "#FFFFFF"
+  textStyles:
+    title:
+      fontId: default
+      colorId: text
+      fontSize: 42
+      lineHeight: 1.2
+    body:
+      fontId: default
+      colorId: text
+      fontSize: 29
+      lineHeight: 1.3
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: auto
+              actions:
+                control:
+                  resourceId: autoControl
+                dialogue:
+                  content:
+                    - text: "Speed changes now."
+            - id: sentinel
+              actions:
+                control:
+                  resourceId: sentinelControl

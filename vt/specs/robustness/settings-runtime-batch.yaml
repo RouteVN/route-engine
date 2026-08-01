@@ -1,0 +1,144 @@
+---
+title: Settings Runtime Batch
+description: A rendered settings action updates and persists the complete device runtime contract as one visible state.
+specs:
+  - one renderer click updates text and auto timing
+  - the same batch updates skip policy, animation skipping, audio volume, and mute
+  - the rerender exposes every final normalized value together
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 1280
+  height: 720
+steps:
+  - action: wait
+    ms: 200
+  - action: click
+    x: 980
+    y: 590
+  - action: wait
+    ms: 200
+  - action: screenshot
+---
+screen:
+  width: 1280
+  height: 720
+resources:
+  variables:
+    applied:
+      type: boolean
+      scope: context
+      default: false
+  controls:
+    settingsControl:
+      elements:
+        - id: background
+          type: rect
+          width: 1280
+          height: 720
+          colorId: background
+        - id: applied-panel
+          $when: variables.applied
+          type: rect
+          x: 40
+          y: 40
+          width: 1200
+          height: 640
+          colorId: success
+        - id: title
+          type: text
+          x: 80
+          y: 70
+          content: "Device runtime settings"
+          textStyleId: title
+        - id: timing
+          type: text
+          x: 80
+          y: 165
+          content: "text=${runtime.dialogueTextSpeed}  delay=${runtime.autoForwardDelay}  autoSpeed=${runtime.autoForwardSpeed}"
+          textStyleId: body
+        - id: policies
+          type: text
+          x: 80
+          y: 245
+          content: "skipUnseen=${runtime.skipUnseenText}  skipAnimations=${runtime.skipTransitionsAndAnimations}"
+          textStyleId: body
+        - id: audio
+          type: text
+          x: 80
+          y: 325
+          content: "sound=${runtime.soundVolume}  music=${runtime.musicVolume}  mute=${runtime.muteAll}"
+          textStyleId: body
+        - id: apply-button
+          type: rect
+          x: 820
+          y: 530
+          width: 320
+          height: 120
+          colorId: action
+          click:
+            payload:
+              actions:
+                setDialogueTextSpeed:
+                  value: 73
+                setAutoForwardDelay:
+                  value: 1450
+                setAutoForwardSpeed:
+                  value: 62
+                setSkipUnseenText:
+                  value: true
+                setSkipTransitionsAndAnimations:
+                  value: true
+                setSoundVolume:
+                  value: 41
+                setMusicVolume:
+                  value: 52
+                setMuteAll:
+                  value: true
+                updateVariable:
+                  id: markApplied
+                  operations:
+                    - variableId: applied
+                      op: set
+                      value: true
+        - id: apply-label
+          type: text
+          x: 900
+          y: 570
+          content: "Apply batch"
+          textStyleId: body
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    background:
+      hex: "#111827"
+    action:
+      hex: "#2563EB"
+    success:
+      hex: "#166534"
+    text:
+      hex: "#FFFFFF"
+  textStyles:
+    title:
+      fontId: default
+      colorId: text
+      fontSize: 44
+      lineHeight: 1.2
+    body:
+      fontId: default
+      colorId: text
+      fontSize: 28
+      lineHeight: 1.3
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: settings
+              actions:
+                control:
+                  resourceId: settingsControl
