@@ -29,6 +29,10 @@ const isVtCaptureMode = () =>
 const dispatchVtReady = () => {
   window.dispatchEvent(new CustomEvent("vt:ready"));
 };
+const waitForPaint = () =>
+  new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  });
 const setBootstrapPhase = (phase) => {
   window.__vtBootstrapPhase = phase;
 };
@@ -58,9 +62,7 @@ const renderBootstrapFailure = async (error) => {
   window.__vtBootstrapError = message;
   console.error("[vt][bootstrap]", error);
 
-  await new Promise((resolve) => {
-    requestAnimationFrame(() => requestAnimationFrame(resolve));
-  });
+  await waitForPaint();
   dispatchVtReady();
 };
 
@@ -380,10 +382,6 @@ const init = async () => {
     height: screenHeight,
     plugins,
     eventHandler: routeGraphicsEventHandler,
-    onFirstRender: () => {
-      setBootstrapPhase("ready");
-      dispatchVtReady();
-    },
     debug: window?.RTGL_VT_DEBUG ?? false,
   });
   setBootstrapPhase("load assets");
@@ -422,7 +420,10 @@ const init = async () => {
       nextLine: {},
     });
   });
+  setBootstrapPhase("wait for initialized render");
+  await waitForPaint();
   setBootstrapPhase("complete");
+  dispatchVtReady();
 };
 
 const bootstrapTimeoutMs = 10_000;
