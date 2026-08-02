@@ -4,7 +4,6 @@ import {
   createEngineIntegrationHarness,
   createIntegrationProject,
 } from "./helpers/createEngineIntegrationHarness.js";
-import { itKnownDefect } from "./helpers/knownDefect.js";
 
 const createLinearProject = ({ lineActions = {}, resources = {} } = {}) =>
   createIntegrationProject({
@@ -20,65 +19,59 @@ const createLinearProject = ({ lineActions = {}, resources = {} } = {}) =>
   });
 
 describe("engine/effects integration ownership regressions", () => {
-  itKnownDefect(
-    "executes destination line actions once after effect-driven navigation",
-    ({ expectFailure }) => {
-      const projectData = createIntegrationProject({
-        resources: {
-          variables: {
-            score: { type: "number", scope: "context", default: 0 },
-          },
+  it("executes destination line actions once after effect-driven navigation", () => {
+    const projectData = createIntegrationProject({
+      resources: {
+        variables: {
+          score: { type: "number", scope: "context", default: 0 },
         },
-        initialSectionId: "source",
-        sections: {
-          source: { lines: [{ id: "source", actions: {} }] },
-          firstDestination: {
-            lines: [{ id: "first", actions: {} }],
-          },
-          finalDestination: {
-            lines: [
-              {
-                id: "final",
-                actions: {
-                  updateVariable: {
-                    id: "countFinalEntry",
-                    operations: [
-                      { variableId: "score", op: "increment", value: 10 },
-                    ],
-                  },
+      },
+      initialSectionId: "source",
+      sections: {
+        source: { lines: [{ id: "source", actions: {} }] },
+        firstDestination: {
+          lines: [{ id: "first", actions: {} }],
+        },
+        finalDestination: {
+          lines: [
+            {
+              id: "final",
+              actions: {
+                updateVariable: {
+                  id: "countFinalEntry",
+                  operations: [
+                    { variableId: "score", op: "increment", value: 10 },
+                  ],
                 },
               },
-            ],
-          },
+            },
+          ],
         },
-      });
-      const harness = createEngineIntegrationHarness({
-        projectData,
-        handleUnhandledEffect: (effect, { engine }) => {
-          if (effect.name === "integration:navigate") {
-            engine.handleActions({
-              sectionTransition: { sectionId: "finalDestination" },
-            });
-          }
-        },
-      });
+      },
+    });
+    const harness = createEngineIntegrationHarness({
+      projectData,
+      handleUnhandledEffect: (effect, { engine }) => {
+        if (effect.name === "integration:navigate") {
+          engine.handleActions({
+            sectionTransition: { sectionId: "finalDestination" },
+          });
+        }
+      },
+    });
 
-      harness.engine.handleActions({
-        appendPendingEffect: { name: "integration:navigate" },
-        sectionTransition: { sectionId: "firstDestination" },
-      });
+    harness.engine.handleActions({
+      appendPendingEffect: { name: "integration:navigate" },
+      sectionTransition: { sectionId: "firstDestination" },
+    });
 
-      expect(harness.getPointer()).toEqual({
-        sectionId: "finalDestination",
-        lineId: "final",
-      });
-      const score = harness.getState().contexts.at(-1).variables.score;
-      expectFailure({
-        observed: () => expect(score).toBe(20),
-        desired: () => expect(score).toBe(10),
-      });
-    },
-  );
+    expect(harness.getPointer()).toEqual({
+      sectionId: "finalDestination",
+      lineId: "final",
+    });
+    const score = harness.getState().contexts.at(-1).variables.score;
+    expect(score).toBe(10);
+  });
 
   it("drops an asynchronously preprocessed click after a newer render", async () => {
     const deferred = createDeferred();
@@ -113,163 +106,124 @@ describe("engine/effects integration ownership regressions", () => {
     });
   });
 
-  itKnownDefect(
-    "blocks mixed form and progression actions as one unsafe batch",
-    async ({ expectFailure }) => {
-      const projectData = createLinearProject({
-        resources: {
-          layouts: { profileForm: { elements: [] } },
-          variables: {
-            playerName: { type: "string", scope: "context", default: "" },
-          },
+  it("blocks mixed form and progression actions as one unsafe batch", async () => {
+    const projectData = createLinearProject({
+      resources: {
+        layouts: { profileForm: { elements: [] } },
+        variables: {
+          playerName: { type: "string", scope: "context", default: "" },
         },
-        lineActions: {
-          line1: {
-            form: {
-              resourceId: "profileForm",
-              fields: {
-                name: { variableId: "playerName", required: true },
-              },
-              submitActions: { nextLine: {} },
+      },
+      lineActions: {
+        line1: {
+          form: {
+            resourceId: "profileForm",
+            fields: {
+              name: { variableId: "playerName", required: true },
             },
+            submitActions: { nextLine: {} },
           },
         },
-      });
-      const harness = createEngineIntegrationHarness({ projectData });
-      const activeForm = harness.engine.selectActiveInteraction();
+      },
+    });
+    const harness = createEngineIntegrationHarness({ projectData });
+    const activeForm = harness.engine.selectActiveInteraction();
 
-      await harness.eventHandler("change", {
-        _interactionSource: "form",
-        actions: {
-          updateFormField: {
-            formKey: activeForm.formKey,
-            field: "name",
-            value: "Ada",
-          },
-          nextLine: {},
+    await harness.eventHandler("change", {
+      _interactionSource: "form",
+      actions: {
+        updateFormField: {
+          formKey: activeForm.formKey,
+          field: "name",
+          value: "Ada",
         },
-      });
+        nextLine: {},
+      },
+    });
 
-      expect(harness.getPointer().lineId).toBe("line1");
-      const interactionState = {
-        formVisible: harness.engine.selectIsFormVisible(),
-        lineCompleted: harness.getState().global.isLineCompleted,
-      };
-      expectFailure({
-        observed: () =>
-          expect(interactionState).toEqual({
-            formVisible: true,
-            lineCompleted: true,
-          }),
-        desired: () =>
-          expect(interactionState).toEqual({
-            formVisible: true,
-            lineCompleted: false,
-          }),
-      });
-    },
-  );
+    expect(harness.getPointer().lineId).toBe("line1");
+    const interactionState = {
+      formVisible: harness.engine.selectIsFormVisible(),
+      lineCompleted: harness.getState().global.isLineCompleted,
+    };
+    expect(interactionState).toEqual({
+      formVisible: true,
+      lineCompleted: false,
+    });
+  });
 
-  itKnownDefect(
-    "restarts an enabled authored timer when its delay changes",
-    ({ expectFailure }) => {
-      const harness = createEngineIntegrationHarness({
-        projectData: createLinearProject(),
-      });
-      harness.engine.handleAction("setNextLineConfig", {
-        auto: { enabled: true, trigger: "fromStart", delay: 100 },
-      });
-      harness.engine.handleAction("setNextLineConfig", {
-        auto: { enabled: true, trigger: "fromStart", delay: 1000 },
-      });
+  it("restarts an enabled authored timer when its delay changes", () => {
+    const harness = createEngineIntegrationHarness({
+      projectData: createLinearProject(),
+    });
+    harness.engine.handleAction("setNextLineConfig", {
+      auto: { enabled: true, trigger: "fromStart", delay: 100 },
+    });
+    harness.engine.handleAction("setNextLineConfig", {
+      auto: { enabled: true, trigger: "fromStart", delay: 1000 },
+    });
 
-      harness.ticker.tick(100);
+    harness.ticker.tick(100);
 
-      const timerState = {
-        lineId: harness.getPointer().lineId,
-        timerCount: harness.ticker.size,
-      };
-      expectFailure({
-        observed: () =>
-          expect(timerState).toEqual({ lineId: "line2", timerCount: 1 }),
-        desired: () =>
-          expect(timerState).toEqual({ lineId: "line1", timerCount: 1 }),
-      });
-    },
-  );
+    const timerState = {
+      lineId: harness.getPointer().lineId,
+      timerCount: harness.ticker.size,
+    };
+    expect(timerState).toEqual({ lineId: "line1", timerCount: 1 });
+  });
 
-  itKnownDefect(
-    "reschedules global auto mode when its base delay changes",
-    ({ expectFailure }) => {
-      const harness = createEngineIntegrationHarness({
-        global: { runtime: { autoForwardDelay: 100 } },
-        projectData: createLinearProject(),
-      });
-      harness.completeLatestRender();
-      harness.engine.handleAction("startAutoMode", {});
-      harness.engine.handleAction("setAutoForwardDelay", { value: 1000 });
+  it("reschedules global auto mode when its base delay changes", () => {
+    const harness = createEngineIntegrationHarness({
+      global: { runtime: { autoForwardDelay: 100 } },
+      projectData: createLinearProject(),
+    });
+    harness.completeLatestRender();
+    harness.engine.handleAction("startAutoMode", {});
+    harness.engine.handleAction("setAutoForwardDelay", { value: 1000 });
 
-      harness.ticker.tick(100);
+    harness.ticker.tick(100);
 
-      const timerState = {
-        lineId: harness.getPointer().lineId,
-        timerCount: harness.ticker.size,
-      };
-      expectFailure({
-        observed: () =>
-          expect(timerState).toEqual({ lineId: "line2", timerCount: 0 }),
-        desired: () =>
-          expect(timerState).toEqual({ lineId: "line1", timerCount: 1 }),
-      });
-    },
-  );
+    const timerState = {
+      lineId: harness.getPointer().lineId,
+      timerCount: harness.ticker.size,
+    };
+    expect(timerState).toEqual({ lineId: "line1", timerCount: 1 });
+  });
 
-  itKnownDefect(
-    "clears authored auto state after manual advance at section end",
-    ({ expectFailure }) => {
-      const projectData = createIntegrationProject({
-        sections: { main: { lines: [{ id: "only", actions: {} }] } },
-      });
-      const harness = createEngineIntegrationHarness({ projectData });
-      harness.engine.handleAction("setNextLineConfig", {
-        auto: { enabled: true, trigger: "fromStart", delay: 100 },
-      });
+  it("clears authored auto state after manual advance at section end", () => {
+    const projectData = createIntegrationProject({
+      sections: { main: { lines: [{ id: "only", actions: {} }] } },
+    });
+    const harness = createEngineIntegrationHarness({ projectData });
+    harness.engine.handleAction("setNextLineConfig", {
+      auto: { enabled: true, trigger: "fromStart", delay: 100 },
+    });
 
-      harness.engine.handleAction("nextLine", {});
+    harness.engine.handleAction("nextLine", {});
 
-      expect(harness.ticker.size).toBe(0);
-      const authoredAutoEnabled =
-        harness.getState().global.nextLineConfig.auto.enabled;
-      expectFailure({
-        observed: () => expect(authoredAutoEnabled).toBe(true),
-        desired: () => expect(authoredAutoEnabled).toBe(false),
-      });
-    },
-  );
+    expect(harness.ticker.size).toBe(0);
+    const authoredAutoEnabled =
+      harness.getState().global.nextLineConfig.auto.enabled;
+    expect(authoredAutoEnabled).toBe(false);
+  });
 
-  itKnownDefect(
-    "keeps auto mode progressing after it reveals hidden dialogue",
-    ({ expectFailure }) => {
-      const harness = createEngineIntegrationHarness({
-        global: { runtime: { autoForwardDelay: 100 } },
-        projectData: createLinearProject(),
-      });
-      harness.completeLatestRender();
-      harness.engine.handleAction("startAutoMode", {});
-      harness.engine.handleAction("hideDialogueUI", {});
+  it("keeps auto mode progressing after it reveals hidden dialogue", () => {
+    const harness = createEngineIntegrationHarness({
+      global: { runtime: { autoForwardDelay: 100 } },
+      projectData: createLinearProject(),
+    });
+    harness.completeLatestRender();
+    harness.engine.handleAction("startAutoMode", {});
+    harness.engine.handleAction("hideDialogueUI", {});
 
-      harness.ticker.tick(100);
-      expect(harness.getPointer().lineId).toBe("line1");
-      expect(harness.getState().global.dialogueUIHidden).toBe(false);
-      harness.ticker.tick(100);
+    harness.ticker.tick(100);
+    expect(harness.getPointer().lineId).toBe("line1");
+    expect(harness.getState().global.dialogueUIHidden).toBe(false);
+    harness.ticker.tick(100);
 
-      const settledLineId = harness.getPointer().lineId;
-      expectFailure({
-        observed: () => expect(settledLineId).toBe("line1"),
-        desired: () => expect(settledLineId).toBe("line2"),
-      });
-    },
-  );
+    const settledLineId = harness.getPointer().lineId;
+    expect(settledLineId).toBe("line2");
+  });
 
   it("accepts only the current render completion after reinitializing", () => {
     const harness = createEngineIntegrationHarness({

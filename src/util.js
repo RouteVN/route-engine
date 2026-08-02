@@ -917,11 +917,40 @@ export const resolveCharacterDisplayName = ({
 
 export const isComputedVariableConfig = (config) => hasOwn(config, "computed");
 
-export const filterStoredVariables = (variables = {}, variableConfigs = {}) =>
+export const isVariableValueCompatible = (variableConfig, value) => {
+  switch (variableConfig?.type) {
+    case "number":
+      return typeof value === "number" && Number.isFinite(value);
+    case "boolean":
+      return typeof value === "boolean";
+    case "string":
+      return typeof value === "string";
+    case "object":
+      return (
+        value !== null && typeof value === "object" && !Array.isArray(value)
+      );
+    default:
+      return false;
+  }
+};
+
+export const filterStoredVariables = (
+  variables = {},
+  variableConfigs = {},
+  { allowedScopes, preserveUnknown = false } = {},
+) =>
   Object.fromEntries(
-    Object.entries(variables ?? {}).filter(
-      ([variableId]) => !isComputedVariableConfig(variableConfigs[variableId]),
-    ),
+    Object.entries(variables ?? {}).filter(([variableId, value]) => {
+      const variableConfig = variableConfigs[variableId];
+      if (variableConfig === undefined) {
+        return preserveUnknown;
+      }
+      return (
+        !isComputedVariableConfig(variableConfig) &&
+        (!allowedScopes || allowedScopes.includes(variableConfig.scope)) &&
+        isVariableValueCompatible(variableConfig, value)
+      );
+    }),
   );
 
 const createInvalidComputedReferencePathError = (path, pathLabel) =>
@@ -2169,7 +2198,9 @@ export const selectVariablesWithComputedValues = ({
   const { evaluationOrder } =
     computedVariableValidationCache.get(variableConfigs) ??
     validateComputedVariableConfigs(variableConfigs);
-  const storedVariables = filterStoredVariables(variables, variableConfigs);
+  const storedVariables = filterStoredVariables(variables, variableConfigs, {
+    preserveUnknown: true,
+  });
   const computedVariableIds = Object.entries(variableConfigs)
     .filter(([, config]) => isComputedVariableConfig(config))
     .map(([variableId]) => variableId);

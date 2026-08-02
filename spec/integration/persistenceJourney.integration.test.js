@@ -3,7 +3,6 @@ import {
   createEngineIntegrationHarness,
   createIntegrationResources,
 } from "./helpers/createEngineIntegrationHarness.js";
-import { itKnownDefect } from "./helpers/knownDefect.js";
 
 const dialogueLine = (id, text, actions = {}) => ({
   id,
@@ -644,133 +643,103 @@ describe("scene replay persistence journeys", () => {
 });
 
 describe("known persistence compatibility gaps", () => {
-  itKnownDefect(
-    "keeps the active pointer valid after a live project edit",
-    ({ expectFailure }) => {
-      const initialProject = createJourneyProject();
-      const harness = createEngineIntegrationHarness({
-        projectData: initialProject,
-      });
-      advance(harness.engine);
+  it("keeps the active pointer valid after a live project edit", () => {
+    const initialProject = createJourneyProject();
+    const harness = createEngineIntegrationHarness({
+      projectData: initialProject,
+    });
+    advance(harness.engine);
 
-      const replacementProject = structuredClone(initialProject);
-      replacementProject.story.scenes.main.sections.opening.lines.splice(1, 1);
-      harness.engine.handleAction("updateProjectData", {
-        projectData: replacementProject,
-      });
+    const replacementProject = structuredClone(initialProject);
+    replacementProject.story.scenes.main.sections.opening.lines.splice(1, 1);
+    harness.engine.handleAction("updateProjectData", {
+      projectData: replacementProject,
+    });
 
-      const pointer = currentPointer(harness.engine);
-      const activeSection =
-        harness.getState().projectData.story.scenes.main.sections[
-          pointer.sectionId
-        ];
-      const pointerIsValid = activeSection.lines.some(
-        ({ id }) => id === pointer.lineId,
-      );
-      expectFailure({
-        observed: () => expect(pointerIsValid).toBe(false),
-        desired: () => expect(pointerIsValid).toBe(true),
-      });
-    },
-  );
+    const pointer = currentPointer(harness.engine);
+    const activeSection =
+      harness.getState().projectData.story.scenes.main.sections[
+        pointer.sectionId
+      ];
+    const pointerIsValid = activeSection.lines.some(
+      ({ id }) => id === pointer.lineId,
+    );
+    expect(pointerIsValid).toBe(true);
+  });
 
-  itKnownDefect(
-    "drops variables removed by a live project edit",
-    ({ expectFailure }) => {
-      const harness = createEngineIntegrationHarness({
-        projectData: createJourneyProject(),
-      });
-      harness.engine.handleAction("updateVariable", {
-        id: "valuesToRemove",
-        operations: [
-          { variableId: "contextScore", op: "set", value: 4 },
-          { variableId: "accountFlag", op: "set", value: true },
-        ],
-      });
-      const replacementProject = createJourneyProject();
-      replacementProject.resources.variables = {};
-      delete replacementProject.resources.sceneReplay.replays[0]
-        .initialVariables;
+  it("drops variables removed by a live project edit", () => {
+    const harness = createEngineIntegrationHarness({
+      projectData: createJourneyProject(),
+    });
+    harness.engine.handleAction("updateVariable", {
+      id: "valuesToRemove",
+      operations: [
+        { variableId: "contextScore", op: "set", value: 4 },
+        { variableId: "accountFlag", op: "set", value: true },
+      ],
+    });
+    const replacementProject = createJourneyProject();
+    replacementProject.resources.variables = {};
+    delete replacementProject.resources.sceneReplay.replays[0].initialVariables;
 
-      harness.engine.handleAction("updateProjectData", {
-        projectData: replacementProject,
-      });
+    harness.engine.handleAction("updateProjectData", {
+      projectData: replacementProject,
+    });
 
-      const remainingValues = {
-        contextScore: currentContext(harness.engine).variables.contextScore,
-        accountFlag: harness.getState().global.variables.accountFlag,
-      };
-      expectFailure({
-        observed: () =>
-          expect(remainingValues).toEqual({
-            contextScore: 4,
-            accountFlag: true,
-          }),
-        desired: () =>
-          expect(remainingValues).toEqual({
-            contextScore: undefined,
-            accountFlag: undefined,
-          }),
-      });
-    },
-  );
+    const remainingValues = {
+      contextScore: currentContext(harness.engine).variables.contextScore,
+      accountFlag: harness.getState().global.variables.accountFlag,
+    };
+    expect(remainingValues).toEqual({
+      contextScore: undefined,
+      accountFlag: undefined,
+    });
+  });
 
-  itKnownDefect(
-    "keeps rollback usable after loading a save across a variable type change",
-    ({ expectFailure }) => {
-      const initialProject = createJourneyProject();
-      const harness = createEngineIntegrationHarness({
-        projectData: initialProject,
-      });
-      const { engine } = harness;
-      engine.handleAction("updateVariable", {
-        id: "oldIncrement",
-        operations: [{ variableId: "contextScore", op: "increment", value: 1 }],
-      });
-      advance(engine);
-      advance(engine);
-      engine.handleAction("saveSlot", { slotId: "old-type", savedAt: 1 });
+  it("keeps rollback usable after loading a save across a variable type change", () => {
+    const initialProject = createJourneyProject();
+    const harness = createEngineIntegrationHarness({
+      projectData: initialProject,
+    });
+    const { engine } = harness;
+    engine.handleAction("updateVariable", {
+      id: "oldIncrement",
+      operations: [{ variableId: "contextScore", op: "increment", value: 1 }],
+    });
+    advance(engine);
+    advance(engine);
+    engine.handleAction("saveSlot", { slotId: "old-type", savedAt: 1 });
 
-      const replacementProject = createJourneyProject({
-        variables: {
-          contextScore: {
-            type: "string",
-            scope: "context",
-            default: "safe",
-          },
+    const replacementProject = createJourneyProject({
+      variables: {
+        contextScore: {
+          type: "string",
+          scope: "context",
+          default: "safe",
         },
-      });
-      replacementProject.resources.sceneReplay.replays[0].initialVariables = {
-        contextScore: "replay-safe",
-      };
-      engine.handleAction("updateProjectData", {
-        projectData: replacementProject,
-      });
-      engine.handleAction("loadSlot", { slotId: "old-type" });
+      },
+    });
+    replacementProject.resources.sceneReplay.replays[0].initialVariables = {
+      contextScore: "replay-safe",
+    };
+    engine.handleAction("updateProjectData", {
+      projectData: replacementProject,
+    });
+    engine.handleAction("loadSlot", { slotId: "old-type" });
 
-      let rollbackError;
-      try {
-        engine.handleAction("rollbackByOffset", {});
-      } catch (error) {
-        rollbackError = error;
-      }
-      const rollbackResult = {
-        rollbackError: rollbackError?.message,
-        contextScore: currentContext(engine).variables.contextScore,
-      };
-      expectFailure({
-        observed: () =>
-          expect(rollbackResult).toEqual({
-            rollbackError:
-              'Operation "increment" is not valid for variable "contextScore" of type "string". Valid operations: set',
-            contextScore: 1,
-          }),
-        desired: () =>
-          expect(rollbackResult).toEqual({
-            rollbackError: undefined,
-            contextScore: "safe",
-          }),
-      });
-    },
-  );
+    let rollbackError;
+    try {
+      engine.handleAction("rollbackByOffset", {});
+    } catch (error) {
+      rollbackError = error;
+    }
+    const rollbackResult = {
+      rollbackError: rollbackError?.message,
+      contextScore: currentContext(engine).variables.contextScore,
+    };
+    expect(rollbackResult).toEqual({
+      rollbackError: undefined,
+      contextScore: "safe",
+    });
+  });
 });

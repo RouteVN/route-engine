@@ -9,7 +9,6 @@ import {
   createIntegrationResources,
   createIntegrationTicker,
 } from "./helpers/createEngineIntegrationHarness.js";
-import { itKnownDefect } from "./helpers/knownDefect.js";
 
 const createLinearProject = ({
   lineActions = {},
@@ -690,71 +689,55 @@ describe("public navigation and timing integration matrix", () => {
     await vi.waitFor(() => expect(calls).toEqual([1, 2]));
   });
 
-  itKnownDefect(
-    "reschedules enabled authored auto when its trigger changes",
-    ({ expectFailure }) => {
-      const harness = createEngineIntegrationHarness({
-        projectData: createLinearProject(),
-      });
-      harness.engine.handleAction("setNextLineConfig", {
-        auto: { enabled: true, trigger: "fromComplete", delay: 100 },
-      });
-      expect(harness.ticker.size).toBe(0);
+  it("reschedules enabled authored auto when its trigger changes", () => {
+    const harness = createEngineIntegrationHarness({
+      projectData: createLinearProject(),
+    });
+    harness.engine.handleAction("setNextLineConfig", {
+      auto: { enabled: true, trigger: "fromComplete", delay: 100 },
+    });
+    expect(harness.ticker.size).toBe(0);
 
-      harness.engine.handleAction("setNextLineConfig", {
-        auto: { enabled: true, trigger: "fromStart", delay: 100 },
-      });
+    harness.engine.handleAction("setNextLineConfig", {
+      auto: { enabled: true, trigger: "fromStart", delay: 100 },
+    });
 
-      harness.ticker.tick(100);
-      const schedulingState = {
-        pointer: harness.getPointer().lineId,
-        timerCount: harness.ticker.size,
-      };
-      expectFailure({
-        observed: () =>
-          expect(schedulingState).toEqual({ pointer: "line1", timerCount: 0 }),
-        desired: () =>
-          expect(schedulingState).toEqual({ pointer: "line2", timerCount: 1 }),
-      });
-    },
-  );
+    harness.ticker.tick(100);
+    const schedulingState = {
+      pointer: harness.getPointer().lineId,
+      timerCount: harness.ticker.size,
+    };
+    expect(schedulingState).toEqual({ pointer: "line2", timerCount: 1 });
+  });
 
-  itKnownDefect(
-    "reschedules active global auto when speed changes",
-    ({ expectFailure }) => {
-      const projectData = createLinearProject({
-        lineActions: {
-          line1: {
-            dialogue: {
-              content: [{ text: "A deliberately long line for auto timing." }],
-            },
+  it("reschedules active global auto when speed changes", () => {
+    const projectData = createLinearProject({
+      lineActions: {
+        line1: {
+          dialogue: {
+            content: [{ text: "A deliberately long line for auto timing." }],
           },
         },
-      });
-      const harness = createEngineIntegrationHarness({
-        projectData,
-        global: {
-          runtime: { autoForwardDelay: 100, autoForwardSpeed: 100 },
-        },
-      });
-      harness.completeLatestRender();
-      harness.engine.handleAction("startAutoMode", {});
-      harness.engine.handleAction("setAutoForwardSpeed", { value: 0 });
+      },
+    });
+    const harness = createEngineIntegrationHarness({
+      projectData,
+      global: {
+        runtime: { autoForwardDelay: 100, autoForwardSpeed: 100 },
+      },
+    });
+    harness.completeLatestRender();
+    harness.engine.handleAction("startAutoMode", {});
+    harness.engine.handleAction("setAutoForwardSpeed", { value: 0 });
 
-      harness.ticker.tick(1300);
+    harness.ticker.tick(1300);
 
-      const schedulingState = {
-        pointer: harness.getPointer().lineId,
-        timerCount: harness.ticker.size,
-      };
-      expectFailure({
-        observed: () =>
-          expect(schedulingState).toEqual({ pointer: "line2", timerCount: 0 }),
-        desired: () =>
-          expect(schedulingState).toEqual({ pointer: "line1", timerCount: 1 }),
-      });
-    },
-  );
+    const schedulingState = {
+      pointer: harness.getPointer().lineId,
+      timerCount: harness.ticker.size,
+    };
+    expect(schedulingState).toEqual({ pointer: "line1", timerCount: 1 });
+  });
 
   it("does not replay committed line actions after a renderer failure", () => {
     const ticker = createIntegrationTicker();

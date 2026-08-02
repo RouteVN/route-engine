@@ -158,13 +158,26 @@ export default function createRouteEngine(options) {
     _isProcessingPendingEffects = true;
     try {
       while (_systemStore.selectPendingEffects().length > 0) {
-        const snapshot = [..._systemStore.selectPendingEffects()];
+        const enteredLinePointer =
+          _systemStore.selectCurrentPointer()?.pointer ?? null;
+        const pendingSnapshot = [..._systemStore.selectPendingEffects()];
+        const snapshot = pendingSnapshot.map((effect) => {
+          if (effect.name !== "handleLineActions") return effect;
+
+          return {
+            ...effect,
+            payload: {
+              ...effect.payload,
+              pointer: structuredClone(enteredLinePointer),
+            },
+          };
+        });
         _systemStore.clearPendingEffects();
         try {
           handlePendingEffects(snapshot);
         } catch (error) {
           _systemStore.clearPendingEffects();
-          snapshot.forEach((effect) => {
+          pendingSnapshot.forEach((effect) => {
             _systemStore.appendPendingEffect(effect);
           });
           throw error;
@@ -682,6 +695,12 @@ export default function createRouteEngine(options) {
         navigationContext.rollbackCursor = cursorAfterAction;
         navigationContext.markCurrentCheckpointTransient = createdCheckpoint;
         navigationContext.savedCheckpointOccurrences = [];
+      } else if (replacedCheckpoint && actionType === "updateProjectData") {
+        // Live project reconciliation may replace structurally compatible
+        // checkpoint objects. Keep the in-flight navigation owner aligned
+        // with the reconciled identity so transient-source finalization still
+        // reaches the live checkpoint.
+        navigationContext.rollbackCursor = cursorAfterAction;
       }
       return;
     }
@@ -1303,6 +1322,13 @@ export default function createRouteEngine(options) {
 
   const handleLineActions = (payload) => {
     assertActive("line action handling");
+    const currentPointer = _systemStore.selectCurrentPointer()?.pointer;
+    if (
+      payload?.pointer &&
+      !isSameStoryPointer(payload.pointer, currentPointer)
+    ) {
+      return false;
+    }
     if (typeof payload?.sceneReplaySceneId === "string") {
       const activeEntry = _systemStore.selectActiveSceneReplayEntry?.();
       if (

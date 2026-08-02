@@ -694,9 +694,9 @@ Playback timing semantics:
 
 The first nine actions update device-persisted runtime preferences. Save/load and
 menu navigation values are context-local and included in save slots. Rollback
-currently clears context runtime state, so these values return to their defaults
-rather than replaying their earlier setters. L10n selection behavior is
-documented in [L10n.md](./L10n.md).
+reconstructs these context runtime values by replaying their authored and
+interaction-originated setters up to the selected checkpoint. L10n selection
+behavior is documented in [L10n.md](./L10n.md).
 
 ### UI Actions
 

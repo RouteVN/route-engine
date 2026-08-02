@@ -214,6 +214,48 @@ const assertExactSchema = ({ value, validator, path, contract }) => {
   );
 };
 
+const assertFiniteNumbers = (value, path, seen = new WeakSet()) => {
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) {
+      fail(path, "expected a finite number");
+    }
+    return;
+  }
+  if (value === null || typeof value !== "object" || seen.has(value)) {
+    return;
+  }
+  seen.add(value);
+  if (Array.isArray(value)) {
+    value.forEach((entry, index) =>
+      assertFiniteNumbers(entry, `${path}[${index}]`, seen),
+    );
+    return;
+  }
+  Object.entries(value).forEach(([key, entry]) =>
+    assertFiniteNumbers(entry, `${path}.${key}`, seen),
+  );
+};
+
+const assertNonEmptyResourceIds = (value, path, seen = new WeakSet()) => {
+  if (value === null || typeof value !== "object" || seen.has(value)) {
+    return;
+  }
+  seen.add(value);
+  if (Array.isArray(value)) {
+    value.forEach((entry, index) =>
+      assertNonEmptyResourceIds(entry, `${path}[${index}]`, seen),
+    );
+    return;
+  }
+  Object.entries(value).forEach(([key, entry]) => {
+    const entryPath = `${path}.${key}`;
+    if (key === "resourceId" && entry === "") {
+      fail(entryPath, "expected a non-empty resourceId");
+    }
+    assertNonEmptyResourceIds(entry, entryPath, seen);
+  });
+};
+
 const assertSafeMapId = (value, path) => {
   assertString(value, path);
   if (
@@ -446,6 +488,8 @@ const validateLineActionPatch = ({ patch, path, lineIndex }) => {
     path: `${path}.payload`,
     contract: `the ${patch.actionType} presentation-action schema`,
   });
+  assertFiniteNumbers(patch.payload, `${path}.payload`);
+  assertNonEmptyResourceIds(patch.payload, `${path}.payload`);
 
   return {
     kind: "line.action",
@@ -564,6 +608,7 @@ const validateResourcePayload = (resourceType, payload, path) => {
     path,
     contract: `the resource.${resourceType} schema`,
   });
+  assertFiniteNumbers(payload, path);
 };
 
 const validateResourcePatch = ({
@@ -620,8 +665,79 @@ const validateResourcePatch = ({
     kind: "resource",
     key: `${patch.type}:${patch.resourceId}`,
     collectionName,
+    path,
     patch,
   };
+};
+
+const assertLocalizedResourceReference = ({
+  resources,
+  collectionName,
+  resourceId,
+  path,
+  label,
+}) => {
+  if (resourceId === undefined) {
+    return;
+  }
+  if (
+    typeof resourceId !== "string" ||
+    resourceId.length === 0 ||
+    !hasOwn(resources?.[collectionName] ?? {}, resourceId)
+  ) {
+    fail(path, `${label} resource "${resourceId}" was not found`);
+  }
+};
+
+const validateLocalizedTextStyleReferences = (
+  projectData,
+  validatedPackage,
+) => {
+  const resolvedProjectData = cloneValue(projectData);
+  for (const validatedPatch of validatedPackage.patches) {
+    if (validatedPatch.kind !== "resource") {
+      continue;
+    }
+    resolvedProjectData.resources[validatedPatch.collectionName] ??= {};
+    resolvedProjectData.resources[validatedPatch.collectionName][
+      validatedPatch.patch.resourceId
+    ] = cloneValue(validatedPatch.patch.payload);
+  }
+
+  const resources = resolvedProjectData.resources ?? {};
+  for (const validatedPatch of validatedPackage.patches) {
+    if (validatedPatch.patch.type !== "resource.textStyle") {
+      continue;
+    }
+    const textStyle = validatedPatch.patch.payload;
+    const fontIds = Array.isArray(textStyle.fontId)
+      ? textStyle.fontId
+      : [textStyle.fontId];
+    fontIds.forEach((fontId, index) =>
+      assertLocalizedResourceReference({
+        resources,
+        collectionName: "fonts",
+        resourceId: fontId,
+        path: `${validatedPatch.path}.payload.fontId${
+          fontIds.length > 1 ? `[${index}]` : ""
+        }`,
+        label: "font",
+      }),
+    );
+    for (const [fieldName, colorId] of [
+      ["colorId", textStyle.colorId],
+      ["strokeColorId", textStyle.strokeColorId],
+      ["shadow.colorId", textStyle.shadow?.colorId],
+    ]) {
+      assertLocalizedResourceReference({
+        resources,
+        collectionName: "colors",
+        resourceId: colorId,
+        path: `${validatedPatch.path}.payload.${fieldName}`,
+        label: "color",
+      });
+    }
+  }
 };
 
 const validatePatch = ({
@@ -773,6 +889,8 @@ const validateL10nData = ({ projectData, l10nData }) => {
       }
       importedFileOwners.set(fileId, packageId);
     }
+
+    validateLocalizedTextStyleReferences(projectData, validatedPackage);
 
     packages.set(packageId, validatedPackage);
   }

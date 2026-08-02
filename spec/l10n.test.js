@@ -168,8 +168,8 @@ const resourcePatchCases = [
     "textStyle",
     "textStyles",
     {
-      fontId: "localizedFont",
-      colorId: "localizedColor",
+      fontId: "localized-5",
+      colorId: "localized-3",
       fontSize: 24,
       fontWeight: "400",
       fontStyle: "normal",
