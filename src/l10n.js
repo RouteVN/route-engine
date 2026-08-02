@@ -236,24 +236,115 @@ const assertFiniteNumbers = (value, path, seen = new WeakSet()) => {
   );
 };
 
-const assertNonEmptyResourceIds = (value, path, seen = new WeakSet()) => {
-  if (value === null || typeof value !== "object" || seen.has(value)) {
-    return;
+const assertNonEmptyPresentationResourceId = (resourceId, path) => {
+  if (resourceId === "") {
+    fail(path, "expected a non-empty resourceId");
   }
-  seen.add(value);
-  if (Array.isArray(value)) {
-    value.forEach((entry, index) =>
-      assertNonEmptyResourceIds(entry, `${path}[${index}]`, seen),
+};
+
+const validatePresentationResourceIds = (actionType, payload, path) => {
+  const validateAnimation = (animation, animationPath) =>
+    assertNonEmptyPresentationResourceId(
+      animation?.resourceId,
+      `${animationPath}.resourceId`,
     );
-    return;
+  const validateSounds = (sounds, soundsPath) =>
+    (sounds ?? []).forEach((sound, index) =>
+      assertNonEmptyPresentationResourceId(
+        sound?.resourceId,
+        `${soundsPath}[${index}].resourceId`,
+      ),
+    );
+  const validateAudio = (audio, audioPath) => {
+    assertNonEmptyPresentationResourceId(
+      audio?.resourceId,
+      `${audioPath}.resourceId`,
+    );
+    validateSounds(audio?.sounds, `${audioPath}.sounds`);
+  };
+
+  switch (actionType) {
+    case "background":
+      assertNonEmptyPresentationResourceId(
+        payload.resourceId,
+        `${path}.resourceId`,
+      );
+      validateAnimation(payload.animations, `${path}.animations`);
+      break;
+    case "bgm":
+    case "voice":
+      validateAudio(payload, path);
+      break;
+    case "sfx":
+      validateSounds(payload.items, `${path}.items`);
+      (payload.channels ?? []).forEach((channel, index) =>
+        validateSounds(channel?.sounds, `${path}.channels[${index}].sounds`),
+      );
+      break;
+    case "character":
+      (payload.items ?? []).forEach((item, itemIndex) => {
+        (item.sprites ?? []).forEach((sprite, spriteIndex) =>
+          assertNonEmptyPresentationResourceId(
+            sprite?.resourceId,
+            `${path}.items[${itemIndex}].sprites[${spriteIndex}].resourceId`,
+          ),
+        );
+        validateAnimation(
+          item.animations,
+          `${path}.items[${itemIndex}].animations`,
+        );
+      });
+      break;
+    case "choice":
+    case "form":
+    case "layout":
+      assertNonEmptyPresentationResourceId(
+        payload.resourceId,
+        `${path}.resourceId`,
+      );
+      validateAnimation(payload.animations, `${path}.animations`);
+      break;
+    case "control":
+      assertNonEmptyPresentationResourceId(
+        payload.resourceId,
+        `${path}.resourceId`,
+      );
+      break;
+    case "dialogue":
+      assertNonEmptyPresentationResourceId(
+        payload.ui?.resourceId,
+        `${path}.ui.resourceId`,
+      );
+      validateAnimation(payload.ui?.animations, `${path}.ui.animations`);
+      (payload.character?.sprite?.items ?? []).forEach((item, index) =>
+        assertNonEmptyPresentationResourceId(
+          item?.resourceId,
+          `${path}.character.sprite.items[${index}].resourceId`,
+        ),
+      );
+      validateAnimation(
+        payload.character?.sprite?.animations,
+        `${path}.character.sprite.animations`,
+      );
+      break;
+    case "screen":
+      validateAnimation(payload.animations, `${path}.animations`);
+      break;
+    case "visual":
+      (payload.items ?? []).forEach((item, index) => {
+        assertNonEmptyPresentationResourceId(
+          item?.resourceId,
+          `${path}.items[${index}].resourceId`,
+        );
+        validateAnimation(
+          item?.animations,
+          `${path}.items[${index}].animations`,
+        );
+      });
+      break;
+    default:
+      break;
   }
-  Object.entries(value).forEach(([key, entry]) => {
-    const entryPath = `${path}.${key}`;
-    if (key === "resourceId" && entry === "") {
-      fail(entryPath, "expected a non-empty resourceId");
-    }
-    assertNonEmptyResourceIds(entry, entryPath, seen);
-  });
 };
 
 const assertSafeMapId = (value, path) => {
@@ -489,7 +580,11 @@ const validateLineActionPatch = ({ patch, path, lineIndex }) => {
     contract: `the ${patch.actionType} presentation-action schema`,
   });
   assertFiniteNumbers(patch.payload, `${path}.payload`);
-  assertNonEmptyResourceIds(patch.payload, `${path}.payload`);
+  validatePresentationResourceIds(
+    patch.actionType,
+    patch.payload,
+    `${path}.payload`,
+  );
 
   return {
     kind: "line.action",

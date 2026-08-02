@@ -795,6 +795,60 @@ describe("L10n packages through initialization, rendering, and actions", () => {
     }
     expect(initializationError?.message ?? "").toMatch(/resourceId|non-empty/);
   });
+
+  it("allows empty resourceId keys inside preserved choice application data", () => {
+    const preservedEvents = {
+      click: {
+        actions: { nextLine: {} },
+        value: { resourceId: "" },
+      },
+    };
+    const projectData = createSingleLineProject({
+      resources: {
+        layouts: { choiceLayout: { elements: [] } },
+      },
+      actions: {
+        choice: {
+          resourceId: "choiceLayout",
+          items: [
+            {
+              id: "continue",
+              events: preservedEvents,
+            },
+          ],
+        },
+      },
+    });
+    const l10nData = {
+      packages: {
+        validChoice: {
+          language: "Valid choice",
+          files: [],
+          patches: [
+            {
+              type: "line.action",
+              lineId: "entry",
+              actionType: "choice",
+              payload: {
+                resourceId: "choiceLayout",
+                items: [
+                  {
+                    id: "continue",
+                    content: "Continue",
+                    events: structuredClone(preservedEvents),
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      },
+    };
+
+    expect(() =>
+      createEngineIntegrationHarness({ projectData, l10nData }),
+    ).not.toThrow();
+  });
 });
 
 describe("renderer resilience for schema-optional resource collections", () => {
