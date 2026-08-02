@@ -2347,6 +2347,13 @@ const restoreRollbackCheckpoint = (state, checkpointIndex) => {
 
 export const createInitialState = (payload) => {
   const { projectData } = payload;
+  const initialAudioCommandId = payload.initialAudioCommandId ?? 0;
+  if (
+    !Number.isSafeInteger(initialAudioCommandId) ||
+    initialAudioCommandId < 0
+  ) {
+    throw new Error("Internal initial audio command counter is invalid");
+  }
   const global = payload.global ?? {};
   const {
     saveSlots = {},
@@ -2404,7 +2411,7 @@ export const createInitialState = (payload) => {
       imageGalleryNavigation: createDefaultImageGalleryNavigation(),
       sceneReplayNavigation: createDefaultSceneReplayNavigation(),
       sceneReplayEntryId: 0,
-      audioCommandId: 0,
+      audioCommandId: initialAudioCommandId,
       musicRoomPlayer: createDefaultMusicRoomPlayer(),
       saveSlots: normalizeStoredSaveSlots(saveSlots),
       localizationPackages: cloneStateValue(localizationPackages),

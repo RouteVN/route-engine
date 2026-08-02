@@ -17,6 +17,30 @@ const createLinearProject = () =>
     },
   });
 
+const createMusicRoomProject = () =>
+  createIntegrationProject({
+    resources: {
+      sounds: {
+        openingSound: { fileId: "opening.ogg" },
+      },
+      musicRoom: {
+        pageSize: 1,
+        tracks: [
+          {
+            id: "opening",
+            soundId: "openingSound",
+            title: "Opening",
+          },
+        ],
+      },
+    },
+    sections: {
+      main: {
+        lines: [{ id: "line1", actions: {} }],
+      },
+    },
+  });
+
 const createRetainingTicker = () => {
   const callbacks = new Set();
   const registeredCallbacks = [];
@@ -130,6 +154,87 @@ describe("RouteEngine lifecycle ownership", () => {
     expect(harness.getPointer().lineId).toBe("line1");
     expect(harness.getState().global.skipMode).toBe(false);
     expect(harness.completeLatestRender()).toBe(true);
+  });
+
+  it("rejects stale command-controlled audio events after disposal and reinit", () => {
+    const harness = createEngineIntegrationHarness({
+      projectData: createMusicRoomProject(),
+      global: {
+        accountViewedRegistry: {
+          sections: [],
+          resources: [{ resourceId: "openingSound" }],
+        },
+      },
+    });
+    const dispatchSoundEvent = (eventName, event) =>
+      harness.effectsHandler.handleRouteGraphicsEvent(eventName, {
+        _event: {
+          id: "music-room:player",
+          ...event,
+        },
+      });
+
+    harness.engine.handleAction("playMusicRoomTrack", {
+      trackId: "opening",
+    });
+    const staleCommandId =
+      harness.getState().global.musicRoomPlayer.playback.commandId;
+    dispatchSoundEvent("soundReady", {
+      commandId: staleCommandId,
+      positionMs: 0,
+      durationMs: 100,
+    });
+
+    harness.engine.dispose();
+    harness.reinitialize();
+    harness.engine.handleAction("playMusicRoomTrack", {
+      trackId: "opening",
+    });
+    const currentCommandId =
+      harness.getState().global.musicRoomPlayer.playback.commandId;
+    expect(currentCommandId).toBeGreaterThan(staleCommandId);
+
+    dispatchSoundEvent("soundReady", {
+      commandId: staleCommandId,
+      positionMs: 0,
+      durationMs: 100,
+    });
+    expect(harness.engine.selectMusicRoom().playback.readiness).toBe("loading");
+
+    dispatchSoundEvent("soundReady", {
+      commandId: currentCommandId,
+      positionMs: 0,
+      durationMs: 100,
+    });
+    expect(harness.engine.selectMusicRoom().playback.readiness).toBe("ready");
+
+    dispatchSoundEvent("soundProgress", {
+      commandId: staleCommandId,
+      positionMs: 50,
+      durationMs: 100,
+    });
+    dispatchSoundEvent("soundComplete", {
+      commandId: staleCommandId,
+      positionMs: 100,
+      durationMs: 100,
+    });
+    dispatchSoundEvent("soundError", {
+      commandId: staleCommandId,
+      errorCode: "playback-failed",
+    });
+    expect(harness.engine.selectMusicRoom().playback).toMatchObject({
+      status: "playing",
+      readiness: "ready",
+      positionMs: 0,
+      durationMs: 100,
+    });
+
+    dispatchSoundEvent("soundProgress", {
+      commandId: currentCommandId,
+      positionMs: 25,
+      durationMs: 100,
+    });
+    expect(harness.engine.selectMusicRoom().playback.positionMs).toBe(25);
   });
 
   it("keeps the active generation running when a replacement init is invalid", () => {

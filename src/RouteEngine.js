@@ -191,6 +191,8 @@ export default function createRouteEngine(options) {
   };
 
   const init = ({ initialState, namespace }) => {
+    const previousAudioCommandId =
+      _systemStore?.selectSystemState?.()?.global?.audioCommandId ?? 0;
     const { l10nData, ...systemInitialState } = initialState;
     const normalizedL10nData =
       l10nData === undefined ? undefined : structuredClone(l10nData);
@@ -243,6 +245,7 @@ export default function createRouteEngine(options) {
         },
       },
       projectData,
+      initialAudioCommandId: previousAudioCommandId,
     });
 
     handlePendingEffects.reset?.();
