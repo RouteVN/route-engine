@@ -156,6 +156,26 @@ describe("RouteEngine lifecycle ownership", () => {
     expect(harness.completeLatestRender()).toBe(true);
   });
 
+  it("does not commit a render after the renderer disposes the engine", () => {
+    const harness = createEngineIntegrationHarness({
+      projectData: createLinearProject(),
+    });
+    expect(harness.completeLatestRender()).toBe(true);
+    const commitRenderState = vi.spyOn(harness.engine, "commitRenderState");
+    harness.routeGraphics.render.mockImplementation(() => {
+      harness.engine.dispose();
+    });
+
+    expect(() => harness.engine.handleAction("nextLine", {})).not.toThrow();
+
+    expect(harness.getPointer().lineId).toBe("line2");
+    expect(harness.getState().global.pendingEffects).toEqual([]);
+    expect(commitRenderState).not.toHaveBeenCalled();
+    expect(() => harness.engine.handleAction("nextLine", {})).toThrow(
+      'RouteEngine action "nextLine" requires an active engine',
+    );
+  });
+
   it("rejects stale command-controlled audio events after disposal and reinit", () => {
     const harness = createEngineIntegrationHarness({
       projectData: createMusicRoomProject(),

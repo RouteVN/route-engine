@@ -360,7 +360,10 @@ export default function createRouteEngine(options) {
   };
 
   const commitRenderState = (renderState) => {
-    assertActive("render commit");
+    if (!_isActive || !_systemStore) {
+      return;
+    }
+
     const renderId =
       typeof renderState?.id === "string" && renderState.id.length > 0
         ? renderState.id

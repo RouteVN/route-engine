@@ -1,4 +1,7 @@
-import { createIndexedDbPersistence } from "./indexedDbPersistence.js";
+import {
+  createIndexedDbPersistence,
+  normalizeNamespace,
+} from "./indexedDbPersistence.js";
 
 const createTimerState = () => {
   let elapsed = 0;
@@ -31,7 +34,16 @@ const isMusicRoomSoundEvent = (eventName, payload) =>
   MUSIC_ROOM_SOUND_EVENT_ACTIONS.has(eventName) &&
   payload?._event?.id === MUSIC_ROOM_SOUND_ID;
 
-const render = ({ engine, routeGraphics, trackRenderDispatch }, payload) => {
+const render = (
+  {
+    engine,
+    routeGraphics,
+    trackRenderDispatch,
+    lifecycleGeneration,
+    isCurrentLifecycle,
+  },
+  payload,
+) => {
   if (engine.selectHasPendingRenderWork?.()) {
     return;
   }
@@ -40,11 +52,23 @@ const render = ({ engine, routeGraphics, trackRenderDispatch }, payload) => {
     engine.prepareRenderState?.(payload) ?? engine.selectRenderState(payload);
   trackRenderDispatch?.(renderState);
   routeGraphics.render(renderState);
+
+  if (!isCurrentLifecycle(lifecycleGeneration)) {
+    return;
+  }
+
   engine.commitRenderState?.(renderState);
 };
 
 const handleLineActions = (
-  { engine, routeGraphics, trackRenderDispatch, getRenderDispatchCount },
+  {
+    engine,
+    routeGraphics,
+    trackRenderDispatch,
+    getRenderDispatchCount,
+    lifecycleGeneration,
+    isCurrentLifecycle,
+  },
   payload,
 ) => {
   const renderDispatchCountBefore = getRenderDispatchCount?.() ?? 0;
@@ -53,7 +77,16 @@ const handleLineActions = (
 
   const renderDispatchCountAfter = getRenderDispatchCount?.() ?? 0;
   if (renderDispatchCountAfter === renderDispatchCountBefore) {
-    render({ engine, routeGraphics, trackRenderDispatch }, payload);
+    render(
+      {
+        engine,
+        routeGraphics,
+        trackRenderDispatch,
+        lifecycleGeneration,
+        isCurrentLifecycle,
+      },
+      payload,
+    );
   }
 };
 
@@ -342,7 +375,7 @@ const createEffectsHandler = ({
   const autoTimer = createTimerState();
   const skipTimer = createTimerState();
   const nextLineConfigTimerState = createTimerState();
-  let persistence = providedPersistence ?? null;
+  const persistenceByNamespace = new Map();
   let persistenceWriteQueue = Promise.resolve();
   let latestRenderId = null;
   let lastHandledRenderCompleteId = null;
@@ -377,9 +410,6 @@ const createEffectsHandler = ({
     lifecycleGeneration += 1;
     clearOwnedTimers();
     resetRenderOwnership();
-    if (!providedPersistence) {
-      persistence = null;
-    }
     isActive = true;
   };
 
@@ -388,9 +418,6 @@ const createEffectsHandler = ({
     isActive = false;
     clearOwnedTimers();
     resetRenderOwnership();
-    if (!providedPersistence) {
-      persistence = null;
-    }
   };
 
   const isCurrentLifecycle = (candidateGeneration) =>
@@ -405,37 +432,45 @@ const createEffectsHandler = ({
     console.error("RouteEngine persistence write failed.", error);
   };
 
-  const getPersistence = () => {
-    if (persistence) {
-      return persistence;
+  const getPersistence = (persistenceNamespace) => {
+    if (providedPersistence) {
+      return providedPersistence;
     }
 
-    const engine = getEngine();
-    persistence = createIndexedDbPersistence({
+    const normalizedNamespace = normalizeNamespace(persistenceNamespace);
+    const cachedPersistence = persistenceByNamespace.get(normalizedNamespace);
+    if (cachedPersistence) {
+      return cachedPersistence;
+    }
+
+    const persistence = createIndexedDbPersistence({
       indexedDB,
-      namespace: namespace ?? engine?.getNamespace?.(),
+      namespace: normalizedNamespace,
     });
+    persistenceByNamespace.set(normalizedNamespace, persistence);
     return persistence;
   };
 
   const enqueuePersistenceWrite = (write) => {
+    const persistenceNamespace = providedPersistence
+      ? null
+      : normalizeNamespace(namespace ?? getEngine()?.getNamespace?.());
     let persistenceAdapter;
-    let persistenceResolutionError;
-    try {
-      persistenceAdapter = getPersistence();
-    } catch (error) {
-      persistenceResolutionError = error;
-    }
 
     persistenceWriteQueue = persistenceWriteQueue
       .catch(() => undefined)
       .then(() => {
-        if (persistenceResolutionError) {
-          throw persistenceResolutionError;
-        }
+        persistenceAdapter = getPersistence(persistenceNamespace);
         return write(persistenceAdapter);
       })
       .catch((error) => {
+        if (
+          !providedPersistence &&
+          persistenceByNamespace.get(persistenceNamespace) ===
+            persistenceAdapter
+        ) {
+          persistenceByNamespace.delete(persistenceNamespace);
+        }
         reportPersistenceError(error);
       });
   };
