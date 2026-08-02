@@ -178,6 +178,35 @@ const createFakeIndexedDB = () => {
   };
 };
 
+const createControlledOpenIndexedDB = () => {
+  const database = new FakeDatabase("route-engine", 1);
+  const requests = [];
+  const indexedDB = {
+    open: vi.fn((_name, _version) => {
+      const request = new FakeRequest();
+      requests.push(request);
+      return request;
+    }),
+  };
+
+  const resolveRequest = (index) => {
+    const request = requests[index];
+    request.result = database;
+    if (!database.objectStoreNames.contains("projectPersistence")) {
+      request.onupgradeneeded?.({ target: request });
+    }
+    request.onsuccess?.({ target: request });
+  };
+
+  const rejectRequest = (index, error) => {
+    const request = requests[index];
+    request.error = error;
+    request.onerror?.({ target: request });
+  };
+
+  return { indexedDB, rejectRequest, resolveRequest };
+};
+
 const flushAsync = async () => {
   await Promise.resolve();
   await new Promise((resolve) => setTimeout(resolve, 0));
@@ -618,6 +647,99 @@ describe("indexedDbPersistence", () => {
       accountReplayRegistry: {
         sceneIds: ["firstEnding"],
       },
+    });
+  });
+
+  it("keeps queued writes with their owning namespace across reinit", async () => {
+    const indexedDB = createFakeIndexedDB();
+    let engine;
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      indexedDB,
+      routeGraphics: {
+        render: vi.fn(),
+      },
+      ticker: createTicker(),
+    });
+    engine = createRouteEngine({ handlePendingEffects: effectsHandler });
+
+    engine.init({
+      namespace: "lifecycle-alpha",
+      initialState: { projectData: createProjectData() },
+    });
+    engine.handleAction("setAutoForwardSpeed", { value: 10 });
+
+    engine.init({
+      namespace: "lifecycle-beta",
+      initialState: { projectData: createProjectData() },
+    });
+    engine.handleAction("setAutoForwardSpeed", { value: 90 });
+
+    await flushAsync();
+    await flushAsync();
+
+    const alphaPersistence = createIndexedDbPersistence({
+      indexedDB,
+      namespace: "lifecycle-alpha",
+    });
+    const betaPersistence = createIndexedDbPersistence({
+      indexedDB,
+      namespace: "lifecycle-beta",
+    });
+    expect((await alphaPersistence.load()).globalRuntime.autoForwardSpeed).toBe(
+      10,
+    );
+    expect((await betaPersistence.load()).globalRuntime.autoForwardSpeed).toBe(
+      90,
+    );
+  });
+
+  it("opens each namespace adapter only when its queued write begins", async () => {
+    const controlledIndexedDB = createControlledOpenIndexedDB();
+    const handlePersistenceError = vi.fn();
+    let currentNamespace = "lifecycle-alpha";
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => ({
+        getNamespace: () => currentNamespace,
+      }),
+      indexedDB: controlledIndexedDB.indexedDB,
+      routeGraphics: {
+        render: vi.fn(),
+      },
+      ticker: createTicker(),
+      handlePersistenceError,
+    });
+
+    effectsHandler([
+      {
+        name: "saveGlobalRuntime",
+        payload: { globalRuntime: { autoForwardSpeed: 10 } },
+      },
+    ]);
+    currentNamespace = "lifecycle-beta";
+    effectsHandler.reset();
+    effectsHandler([
+      {
+        name: "saveGlobalRuntime",
+        payload: { globalRuntime: { autoForwardSpeed: 90 } },
+      },
+    ]);
+
+    expect(controlledIndexedDB.indexedDB.open).not.toHaveBeenCalled();
+
+    await vi.waitFor(() => {
+      expect(controlledIndexedDB.indexedDB.open).toHaveBeenCalledTimes(1);
+    });
+    controlledIndexedDB.resolveRequest(0);
+
+    await vi.waitFor(() => {
+      expect(controlledIndexedDB.indexedDB.open).toHaveBeenCalledTimes(2);
+    });
+    const openError = new Error("beta open failed");
+    controlledIndexedDB.rejectRequest(1, openError);
+
+    await vi.waitFor(() => {
+      expect(handlePersistenceError).toHaveBeenCalledWith(openError);
     });
   });
 });

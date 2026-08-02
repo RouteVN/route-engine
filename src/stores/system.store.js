@@ -1576,7 +1576,6 @@ const buildFormTemplateData = ({ state, form, pointer }) => {
   };
 };
 
-const rollbackActionBatchStack = [];
 const ROLLBACK_ACTION_SOURCE_LINE = "line";
 const ROLLBACK_ACTION_SOURCE_INTERACTION = "interaction";
 
@@ -2093,7 +2092,7 @@ export const markSavedRollbackCheckpointTransient = (
   return state;
 };
 
-const getCurrentRollbackCheckpoint = (state) => {
+const getCurrentRollbackCheckpoint = (state, rollbackActionBatchStack) => {
   const lastContext = state.contexts?.[state.contexts.length - 1];
   const rollback = lastContext?.rollback;
 
@@ -2106,8 +2105,7 @@ const getCurrentRollbackCheckpoint = (state) => {
     return null;
   }
 
-  const activeBatch =
-    rollbackActionBatchStack[rollbackActionBatchStack.length - 1];
+  const activeBatch = rollbackActionBatchStack?.at(-1);
   const checkpointIndex =
     typeof activeBatch?.checkpointIndex === "number"
       ? activeBatch.checkpointIndex
@@ -2132,7 +2130,10 @@ const getCurrentRollbackCheckpoint = (state) => {
   return rollback.timeline[checkpointIndex] ?? null;
 };
 
-export const beginRollbackActionBatch = ({ state }, payload = {}) => {
+export const beginRollbackActionBatch = (
+  { state, rollbackActionBatchStack },
+  payload = {},
+) => {
   const source =
     payload?.source === ROLLBACK_ACTION_SOURCE_LINE
       ? ROLLBACK_ACTION_SOURCE_LINE
@@ -2167,20 +2168,27 @@ export const beginRollbackActionBatch = ({ state }, payload = {}) => {
   return state;
 };
 
-export const endRollbackActionBatch = ({ state }) => {
+export const endRollbackActionBatch = ({ state, rollbackActionBatchStack }) => {
   rollbackActionBatchStack.pop();
   return state;
 };
 
-const recordRollbackAction = (state, actionType, payload) => {
-  const activeBatch =
-    rollbackActionBatchStack[rollbackActionBatchStack.length - 1];
+const recordRollbackAction = (
+  state,
+  actionType,
+  payload,
+  rollbackActionBatchStack,
+) => {
+  const activeBatch = rollbackActionBatchStack?.at(-1);
   const source = activeBatch?.source ?? ROLLBACK_ACTION_SOURCE_INTERACTION;
   if (!shouldRecordRollbackActionType(actionType, source)) {
     return;
   }
 
-  const checkpoint = getCurrentRollbackCheckpoint(state);
+  const checkpoint = getCurrentRollbackCheckpoint(
+    state,
+    rollbackActionBatchStack,
+  );
   if (!checkpoint) {
     return;
   }
@@ -2339,6 +2347,13 @@ const restoreRollbackCheckpoint = (state, checkpointIndex) => {
 
 export const createInitialState = (payload) => {
   const { projectData } = payload;
+  const initialAudioCommandId = payload.initialAudioCommandId ?? 0;
+  if (
+    !Number.isSafeInteger(initialAudioCommandId) ||
+    initialAudioCommandId < 0
+  ) {
+    throw new Error("Internal initial audio command counter is invalid");
+  }
   const global = payload.global ?? {};
   const {
     saveSlots = {},
@@ -2396,7 +2411,7 @@ export const createInitialState = (payload) => {
       imageGalleryNavigation: createDefaultImageGalleryNavigation(),
       sceneReplayNavigation: createDefaultSceneReplayNavigation(),
       sceneReplayEntryId: 0,
-      audioCommandId: 0,
+      audioCommandId: initialAudioCommandId,
       musicRoomPlayer: createDefaultMusicRoomPlayer(),
       saveSlots: normalizeStoredSaveSlots(saveSlots),
       localizationPackages: cloneStateValue(localizationPackages),
@@ -3659,35 +3674,53 @@ export const hideConfirmDialog = ({ state }) => {
   return state;
 };
 
-export const pushOverlay = ({ state }, payload) => {
+export const pushOverlay = ({ state, rollbackActionBatchStack }, payload) => {
   state.global.overlayStack.push(payload);
   state.global.pendingEffects.push({ name: "render" });
-  recordRollbackAction(state, "pushOverlay", payload);
+  recordRollbackAction(state, "pushOverlay", payload, rollbackActionBatchStack);
   return state;
 };
 
-export const popOverlay = ({ state }) => {
+export const popOverlay = ({ state, rollbackActionBatchStack }) => {
   state.global.overlayStack.pop();
   state.global.pendingEffects.push({ name: "render" });
-  recordRollbackAction(state, "popOverlay", undefined);
+  recordRollbackAction(
+    state,
+    "popOverlay",
+    undefined,
+    rollbackActionBatchStack,
+  );
   return state;
 };
 
-export const replaceLastOverlay = ({ state }, payload) => {
+export const replaceLastOverlay = (
+  { state, rollbackActionBatchStack },
+  payload,
+) => {
   if (state.global.overlayStack.length > 0) {
     state.global.overlayStack[state.global.overlayStack.length - 1] = payload;
   }
   state.global.pendingEffects.push({ name: "render" });
-  recordRollbackAction(state, "replaceLastOverlay", payload);
+  recordRollbackAction(
+    state,
+    "replaceLastOverlay",
+    payload,
+    rollbackActionBatchStack,
+  );
   return state;
 };
 
-export const clearOverlays = ({ state }) => {
+export const clearOverlays = ({ state, rollbackActionBatchStack }) => {
   state.global.overlayStack = [];
   clearConfirmDialog(state);
   clearFormDrafts(state);
   state.global.pendingEffects.push({ name: "render" });
-  recordRollbackAction(state, "clearOverlays", undefined);
+  recordRollbackAction(
+    state,
+    "clearOverlays",
+    undefined,
+    rollbackActionBatchStack,
+  );
   return state;
 };
 
@@ -3882,30 +3915,41 @@ export const toggleSkipMode = ({ state }) => {
   return state;
 };
 
-export const showDialogueUI = ({ state }) => {
+export const showDialogueUI = ({ state, rollbackActionBatchStack }) => {
   state.global.dialogueUIHidden = false;
   state.global.pendingEffects.push({
     name: "render",
   });
-  recordRollbackAction(state, "showDialogueUI", undefined);
+  recordRollbackAction(
+    state,
+    "showDialogueUI",
+    undefined,
+    rollbackActionBatchStack,
+  );
   return state;
 };
 
-export const hideDialogueUI = ({ state }) => {
+export const hideDialogueUI = ({ state, rollbackActionBatchStack }) => {
   state.global.dialogueUIHidden = true;
   state.global.pendingEffects.push({
     name: "render",
   });
-  recordRollbackAction(state, "hideDialogueUI", undefined);
+  recordRollbackAction(
+    state,
+    "hideDialogueUI",
+    undefined,
+    rollbackActionBatchStack,
+  );
   return state;
 };
 
-export const toggleDialogueUI = ({ state }) => {
+export const toggleDialogueUI = (context) => {
+  const { state } = context;
   const dialogueUIHidden = selectDialogueUIHidden({ state });
   if (dialogueUIHidden) {
-    showDialogueUI({ state });
+    showDialogueUI(context);
   } else {
-    hideDialogueUI({ state });
+    hideDialogueUI(context);
   }
   return state;
 };
@@ -3919,14 +3963,25 @@ const setGlobalRuntimeField = (state, runtimeId, value) => {
   return state;
 };
 
-const setContextRuntimeField = (state, runtimeId, value, actionType) => {
+const setContextRuntimeField = (
+  state,
+  runtimeId,
+  value,
+  actionType,
+  rollbackActionBatchStack,
+) => {
   const normalizedValue = applyRuntimeValue(state, runtimeId, value);
   state.global.pendingEffects.push({
     name: "render",
   });
-  recordRollbackAction(state, actionType, {
-    value: normalizedValue,
-  });
+  recordRollbackAction(
+    state,
+    actionType,
+    {
+      value: normalizedValue,
+    },
+    rollbackActionBatchStack,
+  );
   return state;
 };
 
@@ -3966,16 +4021,23 @@ export const setMuteAll = ({ state }, payload) => {
   return setGlobalRuntimeField(state, "muteAll", payload?.value);
 };
 
-export const setSaveLoadPagination = ({ state }, payload) => {
+export const setSaveLoadPagination = (
+  { state, rollbackActionBatchStack },
+  payload,
+) => {
   return setContextRuntimeField(
     state,
     "saveLoadPagination",
     payload?.value,
     "setSaveLoadPagination",
+    rollbackActionBatchStack,
   );
 };
 
-export const incrementSaveLoadPagination = ({ state }) => {
+export const incrementSaveLoadPagination = ({
+  state,
+  rollbackActionBatchStack,
+}) => {
   const nextValue =
     selectRuntimeValueFromState(state, "saveLoadPagination") + 1;
   setContextRuntimeField(
@@ -3983,11 +4045,15 @@ export const incrementSaveLoadPagination = ({ state }) => {
     "saveLoadPagination",
     nextValue,
     "incrementSaveLoadPagination",
+    rollbackActionBatchStack,
   );
   return state;
 };
 
-export const decrementSaveLoadPagination = ({ state }) => {
+export const decrementSaveLoadPagination = ({
+  state,
+  rollbackActionBatchStack,
+}) => {
   const nextValue =
     selectRuntimeValueFromState(state, "saveLoadPagination") - 1;
   setContextRuntimeField(
@@ -3995,25 +4061,31 @@ export const decrementSaveLoadPagination = ({ state }) => {
     "saveLoadPagination",
     nextValue,
     "decrementSaveLoadPagination",
+    rollbackActionBatchStack,
   );
   return state;
 };
 
-export const setMenuPage = ({ state }, payload) => {
+export const setMenuPage = ({ state, rollbackActionBatchStack }, payload) => {
   return setContextRuntimeField(
     state,
     "menuPage",
     payload?.value,
     "setMenuPage",
+    rollbackActionBatchStack,
   );
 };
 
-export const setMenuEntryPoint = ({ state }, payload) => {
+export const setMenuEntryPoint = (
+  { state, rollbackActionBatchStack },
+  payload,
+) => {
   return setContextRuntimeField(
     state,
     "menuEntryPoint",
     payload?.value,
     "setMenuEntryPoint",
+    rollbackActionBatchStack,
   );
 };
 
@@ -5220,7 +5292,10 @@ export const musicRoomSoundError = ({ state }, payload) => {
  * If both manual and auto configurations are provided, performs complete replacement.
  * If only one configuration is provided, performs partial merge with existing config.
  */
-export const setNextLineConfig = ({ state }, payload) => {
+export const setNextLineConfig = (
+  { state, rollbackActionBatchStack },
+  payload,
+) => {
   const manual = normalizeLegacyManualNextLineConfig(payload.manual);
   const { auto, applyMode } = payload;
   const previousAutoEnabled = state.global.nextLineConfig.auto?.enabled;
@@ -5298,7 +5373,12 @@ export const setNextLineConfig = ({ state }, payload) => {
   state.global.pendingEffects.push({
     name: "render",
   });
-  recordRollbackAction(state, "setNextLineConfig", payload);
+  recordRollbackAction(
+    state,
+    "setNextLineConfig",
+    payload,
+    rollbackActionBatchStack,
+  );
   return state;
 };
 
@@ -5559,7 +5639,7 @@ export const jumpToLine = ({ state }, payload) => {
   return state;
 };
 
-export const nextLine = ({ state }, payload) => {
+export const nextLine = ({ state, rollbackActionBatchStack }, payload) => {
   //const isAutoOrSkip = state.global.autoMode || state.global.skipMode;
 
   if (!state.global.nextLineConfig.manual.enabled) {
@@ -5567,7 +5647,7 @@ export const nextLine = ({ state }, payload) => {
   }
 
   if (state.global.dialogueUIHidden) {
-    showDialogueUI({ state });
+    showDialogueUI({ state, rollbackActionBatchStack });
     return state;
   }
 
@@ -5796,11 +5876,14 @@ export const sectionTransition = ({ state }, payload) => {
   });
 };
 
-export const nextLineFromSystem = ({ state }, payload) => {
+export const nextLineFromSystem = (
+  { state, rollbackActionBatchStack },
+  payload,
+) => {
   const isConditionalContinuation = payload?._conditionalContinuation === true;
 
   if (state.global.dialogueUIHidden && !isConditionalContinuation) {
-    showDialogueUI({ state });
+    showDialogueUI({ state, rollbackActionBatchStack });
     return state;
   }
 
@@ -6032,7 +6115,10 @@ export const updateFormField = ({ state }, payload = {}) => {
   return state;
 };
 
-export const submitForm = ({ state }, payload = {}) => {
+export const submitForm = (
+  { state, rollbackActionBatchStack },
+  payload = {},
+) => {
   const activeForm = getActiveFormForPayload(state, payload);
   if (!activeForm) {
     return {
@@ -6123,10 +6209,15 @@ export const submitForm = ({ state }, payload = {}) => {
   });
 
   if (contextVariableModified) {
-    recordRollbackAction(state, "updateVariable", {
-      id: "submitForm",
-      operations: contextOperations,
-    });
+    recordRollbackAction(
+      state,
+      "updateVariable",
+      {
+        id: "submitForm",
+        operations: contextOperations,
+      },
+      rollbackActionBatchStack,
+    );
   }
 
   queueScopedDataPersistence(state, globalUpdates);
@@ -6171,7 +6262,10 @@ export const cancelForm = ({ state }, payload = {}) => {
   };
 };
 
-export const updateVariable = ({ state }, payload) => {
+export const updateVariable = (
+  { state, rollbackActionBatchStack },
+  payload,
+) => {
   const { id, operations = [] } = payload;
 
   // Validate required id field
@@ -6242,10 +6336,15 @@ export const updateVariable = ({ state }, payload) => {
   });
 
   if (contextVariableModified) {
-    recordRollbackAction(state, "updateVariable", {
-      id,
-      operations: contextOperations,
-    });
+    recordRollbackAction(
+      state,
+      "updateVariable",
+      {
+        id,
+        operations: contextOperations,
+      },
+      rollbackActionBatchStack,
+    );
   }
 
   queueScopedDataPersistence(state, globalUpdates);
@@ -6530,6 +6629,7 @@ export const rollbackToLine = ({ state }, payload) => {
 // Export the store using createStore from util.js
 export const createSystemStore = (initialState) => {
   const _initialState = createInitialState(initialState);
+  const rollbackActionBatchStack = [];
 
   // Gather all selectors and actions for the store
   const selectorsAndActions = {
@@ -6669,7 +6769,7 @@ export const createSystemStore = (initialState) => {
 
   return createStore(_initialState, selectorsAndActions, {
     transformActionFirstArgument: (state) => {
-      return { state };
+      return { state, rollbackActionBatchStack };
     },
     transformSelectorFirstArgument: (state) => {
       return { state };

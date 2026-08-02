@@ -35,6 +35,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - id: async-stale-click
+            item: robustness/async-stale-click.yaml
           - id: l10n-roundtrip
             item: robustness/l10n-layout-roundtrip.yaml
           - id: particle-texture

@@ -1,4 +1,7 @@
-import { createIndexedDbPersistence } from "./indexedDbPersistence.js";
+import {
+  createIndexedDbPersistence,
+  normalizeNamespace,
+} from "./indexedDbPersistence.js";
 
 const createTimerState = () => {
   let elapsed = 0;
@@ -31,7 +34,16 @@ const isMusicRoomSoundEvent = (eventName, payload) =>
   MUSIC_ROOM_SOUND_EVENT_ACTIONS.has(eventName) &&
   payload?._event?.id === MUSIC_ROOM_SOUND_ID;
 
-const render = ({ engine, routeGraphics, trackRenderDispatch }, payload) => {
+const render = (
+  {
+    engine,
+    routeGraphics,
+    trackRenderDispatch,
+    lifecycleGeneration,
+    isCurrentLifecycle,
+  },
+  payload,
+) => {
   if (engine.selectHasPendingRenderWork?.()) {
     return;
   }
@@ -40,11 +52,23 @@ const render = ({ engine, routeGraphics, trackRenderDispatch }, payload) => {
     engine.prepareRenderState?.(payload) ?? engine.selectRenderState(payload);
   trackRenderDispatch?.(renderState);
   routeGraphics.render(renderState);
+
+  if (!isCurrentLifecycle(lifecycleGeneration)) {
+    return;
+  }
+
   engine.commitRenderState?.(renderState);
 };
 
 const handleLineActions = (
-  { engine, routeGraphics, trackRenderDispatch, getRenderDispatchCount },
+  {
+    engine,
+    routeGraphics,
+    trackRenderDispatch,
+    getRenderDispatchCount,
+    lifecycleGeneration,
+    isCurrentLifecycle,
+  },
   payload,
 ) => {
   const renderDispatchCountBefore = getRenderDispatchCount?.() ?? 0;
@@ -53,11 +77,31 @@ const handleLineActions = (
 
   const renderDispatchCountAfter = getRenderDispatchCount?.() ?? 0;
   if (renderDispatchCountAfter === renderDispatchCountBefore) {
-    render({ engine, routeGraphics, trackRenderDispatch }, payload);
+    render(
+      {
+        engine,
+        routeGraphics,
+        trackRenderDispatch,
+        lifecycleGeneration,
+        isCurrentLifecycle,
+      },
+      payload,
+    );
   }
 };
 
-const startAutoNextTimer = ({ engine, ticker, autoTimer }, payload) => {
+const retireStaleTimerCallback = ({ ticker, timerState, callback }) => {
+  ticker.remove(callback);
+  if (timerState.getCallback() === callback) {
+    timerState.setCallback(null);
+    timerState.setElapsed(0);
+  }
+};
+
+const startAutoNextTimer = (
+  { engine, ticker, autoTimer, lifecycleGeneration, isCurrentLifecycle },
+  payload,
+) => {
   // Remove old callback if exists
   const existingCallback = autoTimer.getCallback();
   if (existingCallback) {
@@ -69,6 +113,15 @@ const startAutoNextTimer = ({ engine, ticker, autoTimer }, payload) => {
 
   // Create new ticker callback for auto mode (one-shot)
   const newCallback = (time) => {
+    if (!isCurrentLifecycle(lifecycleGeneration)) {
+      retireStaleTimerCallback({
+        ticker,
+        timerState: autoTimer,
+        callback: newCallback,
+      });
+      return;
+    }
+
     autoTimer.addElapsed(time.deltaMS);
 
     const delay = payload.delay ?? 1000;
@@ -98,7 +151,10 @@ const clearAutoNextTimer = ({ ticker, autoTimer }, payload) => {
   autoTimer.setElapsed(0);
 };
 
-const startSkipNextTimer = ({ engine, ticker, skipTimer }, payload) => {
+const startSkipNextTimer = (
+  { engine, ticker, skipTimer, lifecycleGeneration, isCurrentLifecycle },
+  payload,
+) => {
   // Remove old callback if exists
   const existingCallback = skipTimer.getCallback();
   if (existingCallback) {
@@ -110,6 +166,15 @@ const startSkipNextTimer = ({ engine, ticker, skipTimer }, payload) => {
 
   // Create new ticker callback for skip mode
   const newCallback = (time) => {
+    if (!isCurrentLifecycle(lifecycleGeneration)) {
+      retireStaleTimerCallback({
+        ticker,
+        timerState: skipTimer,
+        callback: newCallback,
+      });
+      return;
+    }
+
     skipTimer.addElapsed(time.deltaMS);
 
     const delay = payload?.delay ?? DEFAULT_SKIP_NEXT_DELAY_MS;
@@ -136,7 +201,13 @@ const clearSkipNextTimer = ({ ticker, skipTimer }, payload) => {
 };
 
 const nextLineConfigTimer = (
-  { engine, ticker, nextLineConfigTimerState },
+  {
+    engine,
+    ticker,
+    nextLineConfigTimerState,
+    lifecycleGeneration,
+    isCurrentLifecycle,
+  },
   payload,
 ) => {
   // Remove old callback if exists
@@ -150,6 +221,15 @@ const nextLineConfigTimer = (
 
   // Create new ticker callback for scene mode
   const newCallback = (time) => {
+    if (!isCurrentLifecycle(lifecycleGeneration)) {
+      retireStaleTimerCallback({
+        ticker,
+        timerState: nextLineConfigTimerState,
+        callback: newCallback,
+      });
+      return;
+    }
+
     nextLineConfigTimerState.addElapsed(time.deltaMS);
 
     const delay = payload.delay ?? 1000;
@@ -295,12 +375,53 @@ const createEffectsHandler = ({
   const autoTimer = createTimerState();
   const skipTimer = createTimerState();
   const nextLineConfigTimerState = createTimerState();
-  let persistence = providedPersistence ?? null;
+  const persistenceByNamespace = new Map();
   let persistenceWriteQueue = Promise.resolve();
   let latestRenderId = null;
   let lastHandledRenderCompleteId = null;
   let handledIdlessRenderComplete = false;
   let renderDispatchCount = 0;
+  let lifecycleGeneration = 0;
+  let isActive = true;
+
+  const clearTimer = (timerState) => {
+    const callback = timerState.getCallback();
+    if (callback) {
+      ticker.remove(callback);
+    }
+    timerState.setCallback(null);
+    timerState.setElapsed(0);
+  };
+
+  const clearOwnedTimers = () => {
+    clearTimer(autoTimer);
+    clearTimer(skipTimer);
+    clearTimer(nextLineConfigTimerState);
+  };
+
+  const resetRenderOwnership = () => {
+    latestRenderId = null;
+    lastHandledRenderCompleteId = null;
+    handledIdlessRenderComplete = false;
+    renderDispatchCount = 0;
+  };
+
+  const reset = () => {
+    lifecycleGeneration += 1;
+    clearOwnedTimers();
+    resetRenderOwnership();
+    isActive = true;
+  };
+
+  const dispose = () => {
+    lifecycleGeneration += 1;
+    isActive = false;
+    clearOwnedTimers();
+    resetRenderOwnership();
+  };
+
+  const isCurrentLifecycle = (candidateGeneration) =>
+    isActive && candidateGeneration === lifecycleGeneration;
 
   const reportPersistenceError = (error) => {
     if (handlePersistenceError) {
@@ -311,32 +432,54 @@ const createEffectsHandler = ({
     console.error("RouteEngine persistence write failed.", error);
   };
 
-  const getPersistence = () => {
-    if (persistence) {
-      return persistence;
+  const getPersistence = (persistenceNamespace) => {
+    if (providedPersistence) {
+      return providedPersistence;
     }
 
-    const engine = getEngine();
-    persistence = createIndexedDbPersistence({
+    const normalizedNamespace = normalizeNamespace(persistenceNamespace);
+    const cachedPersistence = persistenceByNamespace.get(normalizedNamespace);
+    if (cachedPersistence) {
+      return cachedPersistence;
+    }
+
+    const persistence = createIndexedDbPersistence({
       indexedDB,
-      namespace: namespace ?? engine?.getNamespace?.(),
+      namespace: normalizedNamespace,
     });
+    persistenceByNamespace.set(normalizedNamespace, persistence);
     return persistence;
   };
 
   const enqueuePersistenceWrite = (write) => {
+    const persistenceNamespace = providedPersistence
+      ? null
+      : normalizeNamespace(namespace ?? getEngine()?.getNamespace?.());
+    let persistenceAdapter;
+
     persistenceWriteQueue = persistenceWriteQueue
       .catch(() => undefined)
       .then(() => {
-        const persistenceAdapter = getPersistence();
+        persistenceAdapter = getPersistence(persistenceNamespace);
         return write(persistenceAdapter);
       })
       .catch((error) => {
+        if (
+          !providedPersistence &&
+          persistenceByNamespace.get(persistenceNamespace) ===
+            persistenceAdapter
+        ) {
+          persistenceByNamespace.delete(persistenceNamespace);
+        }
         reportPersistenceError(error);
       });
   };
 
   const trackRenderDispatch = (renderState) => {
+    if (!isActive) {
+      return;
+    }
+
     const renderId =
       typeof renderState?.id === "string" && renderState.id.length > 0
         ? renderState.id
@@ -350,6 +493,10 @@ const createEffectsHandler = ({
   const getRenderDispatchCount = () => renderDispatchCount;
 
   const shouldHandleRenderComplete = (payload = {}) => {
+    if (!isActive) {
+      return false;
+    }
+
     if (payload?.aborted === true) {
       return false;
     }
@@ -385,6 +532,10 @@ const createEffectsHandler = ({
   };
 
   const handleRouteGraphicsEvent = (eventName, payload = {}) => {
+    if (!isActive) {
+      return false;
+    }
+
     if (isMusicRoomSoundEvent(eventName, payload)) {
       const musicRoomAction = MUSIC_ROOM_SOUND_EVENT_ACTIONS.get(eventName);
       const engine = getEngine();
@@ -544,18 +695,32 @@ const createEffectsHandler = ({
     onEvent,
   } = {}) => {
     return async (eventName, payload = {}) => {
+      if (!isActive) {
+        return false;
+      }
+
       if (isMusicRoomSoundEvent(eventName, payload)) {
         handleRouteGraphicsEvent(eventName, payload);
         return onEvent?.(eventName, payload);
       }
 
       const engine = getEngine();
+      const eventLifecycleGeneration = lifecycleGeneration;
+      const eventRenderDispatchCount = renderDispatchCount;
       if (shouldBlockInteractionActions(engine, payload)) {
         return onEvent?.(eventName, payload);
       }
 
       const nextPayload =
         (await preprocessPayload?.(eventName, payload)) ?? payload;
+
+      if (
+        !isCurrentLifecycle(eventLifecycleGeneration) ||
+        getEngine() !== engine ||
+        renderDispatchCount !== eventRenderDispatchCount
+      ) {
+        return false;
+      }
 
       if (shouldBlockInteractionActions(engine, nextPayload)) {
         return onEvent?.(eventName, nextPayload);
@@ -596,6 +761,11 @@ const createEffectsHandler = ({
   };
 
   const handlePendingEffects = (pendingEffects) => {
+    if (!isActive) {
+      return;
+    }
+
+    const handlingLifecycleGeneration = lifecycleGeneration;
     const engine = getEngine();
     const normalizedEffects = coalescePendingEffects(pendingEffects);
     const hasEnteredLineWork = normalizedEffects.some(
@@ -618,9 +788,15 @@ const createEffectsHandler = ({
       trackRenderDispatch,
       getRenderDispatchCount,
       enqueuePersistenceWrite,
+      lifecycleGeneration,
+      isCurrentLifecycle,
     };
 
     for (const effect of normalizedEffects) {
+      if (!isCurrentLifecycle(handlingLifecycleGeneration)) {
+        break;
+      }
+
       // Entered-line actions can queue newer render work. Let that work settle
       // before rendering so this snapshot cannot flash or duplicate old state.
       if (hasEnteredLineWork && effect.name === "render") {
@@ -640,6 +816,8 @@ const createEffectsHandler = ({
   handlePendingEffects.handleRouteGraphicsEvent = handleRouteGraphicsEvent;
   handlePendingEffects.createRouteGraphicsEventHandler =
     createRouteGraphicsEventHandler;
+  handlePendingEffects.reset = reset;
+  handlePendingEffects.dispose = dispose;
 
   return handlePendingEffects;
 };

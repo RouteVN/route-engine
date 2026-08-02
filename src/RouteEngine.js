@@ -69,6 +69,14 @@ const START_SCENE_REPLAY_ACTION_TYPE = "startSceneReplay";
 const isRecord = (value) =>
   value !== null && typeof value === "object" && !Array.isArray(value);
 
+const createEngineInstanceId = () => {
+  if (typeof globalThis.crypto?.randomUUID === "function") {
+    return globalThis.crypto.randomUUID();
+  }
+
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+};
+
 const isConditionalAutoContinue = (value) =>
   value?.type === CONDITIONAL_AUTO_CONTINUE;
 
@@ -79,7 +87,10 @@ const isSameStoryPointer = (left, right) =>
  * Creates a RouteEngine instance.
  */
 export default function createRouteEngine(options) {
+  const _engineInstanceId = createEngineInstanceId();
   let _systemStore;
+  let _lifecycleGeneration = 0;
+  let _isActive = false;
   let _renderSequence = 0;
   let _namespace = null;
   let _actionDispatchDepth = 0;
@@ -96,6 +107,12 @@ export default function createRouteEngine(options) {
   let _localizationPackageId = null;
 
   const { handlePendingEffects } = options;
+
+  const assertActive = (operation) => {
+    if (!_isActive || !_systemStore) {
+      throw new Error(`RouteEngine ${operation} requires an active engine`);
+    }
+  };
 
   const snapshotPersistentAnimationSessions = (
     sessions = new Map(),
@@ -130,6 +147,10 @@ export default function createRouteEngine(options) {
   };
 
   const processEffectsUntilEmpty = () => {
+    if (!_isActive) {
+      return;
+    }
+
     if (_actionDispatchDepth > 0 || _isProcessingPendingEffects) {
       return;
     }
@@ -170,6 +191,8 @@ export default function createRouteEngine(options) {
   };
 
   const init = ({ initialState, namespace }) => {
+    const previousAudioCommandId =
+      _systemStore?.selectSystemState?.()?.global?.audioCommandId ?? 0;
     const { l10nData, ...systemInitialState } = initialState;
     const normalizedL10nData =
       l10nData === undefined ? undefined : structuredClone(l10nData);
@@ -211,7 +234,7 @@ export default function createRouteEngine(options) {
       l10nId: localizationPackageId,
     });
 
-    _systemStore = createSystemStore({
+    const nextSystemStore = createSystemStore({
       ...systemInitialState,
       global: {
         ...loadedGlobal,
@@ -222,7 +245,13 @@ export default function createRouteEngine(options) {
         },
       },
       projectData,
+      initialAudioCommandId: previousAudioCommandId,
     });
+
+    handlePendingEffects.reset?.();
+    _systemStore = nextSystemStore;
+    _lifecycleGeneration += 1;
+    _isActive = true;
     _renderSequence = 0;
     _namespace = normalizeNamespace(namespace);
     _actionDispatchDepth = 0;
@@ -239,6 +268,25 @@ export default function createRouteEngine(options) {
     _localizationPackageId = localizationPackageId;
     _systemStore.appendPendingEffect({ name: "handleLineActions" });
     processEffectsUntilEmpty();
+  };
+
+  const dispose = () => {
+    if (!_isActive) {
+      return;
+    }
+
+    _isActive = false;
+    _lifecycleGeneration += 1;
+    _systemStore?.clearPendingEffects?.();
+    _actionDispatchDepth = 0;
+    _isProcessingPendingEffects = false;
+    _rollbackNavigationContexts = [];
+    _pendingRollbackLineEntrySaveHandoff = null;
+    _pendingDialogueHistoryLineEntry = null;
+    _persistentAnimationSessions = new Map();
+    _restoredPersistentAnimationSessions = new Map();
+    _renderPersistentAnimationMetadata = new Map();
+    handlePendingEffects.dispose?.();
   };
 
   const getNamespace = () => {
@@ -258,6 +306,7 @@ export default function createRouteEngine(options) {
   };
 
   const buildRenderState = (options = {}) => {
+    assertActive("rendering");
     _renderSequence += 1;
     const builtAt = Date.now();
     pruneExpiredPersistentAnimationSessions(builtAt);
@@ -286,7 +335,7 @@ export default function createRouteEngine(options) {
     });
     const nextRenderState = {
       ...renderState,
-      id: `render-${_renderSequence}`,
+      id: `render-${_engineInstanceId}-${_lifecycleGeneration}-${_renderSequence}`,
     };
 
     _renderPersistentAnimationMetadata.set(nextRenderState.id, {
@@ -311,6 +360,10 @@ export default function createRouteEngine(options) {
   };
 
   const commitRenderState = (renderState) => {
+    if (!_isActive || !_systemStore) {
+      return;
+    }
+
     const renderId =
       typeof renderState?.id === "string" && renderState.id.length > 0
         ? renderState.id
@@ -643,6 +696,7 @@ export default function createRouteEngine(options) {
   };
 
   const dispatchStoreAction = (actionType, payload) => {
+    assertActive(`action "${actionType}"`);
     if (!_systemStore[actionType]) {
       return;
     }
@@ -823,6 +877,7 @@ export default function createRouteEngine(options) {
   };
 
   const runActionBatch = (callback, options = {}) => {
+    assertActive("action batch");
     return runWithDeferredEffects(() => {
       const engineSnapshot = createActionBatchEngineSnapshot();
       try {
@@ -1247,6 +1302,7 @@ export default function createRouteEngine(options) {
   };
 
   const handleLineActions = (payload) => {
+    assertActive("line action handling");
     if (typeof payload?.sceneReplaySceneId === "string") {
       const activeEntry = _systemStore.selectActiveSceneReplayEntry?.();
       if (
@@ -1302,6 +1358,7 @@ export default function createRouteEngine(options) {
 
   return {
     init,
+    dispose,
     handleAction,
     handleInternalAction,
     handleActions,

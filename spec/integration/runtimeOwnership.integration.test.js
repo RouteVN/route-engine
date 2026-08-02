@@ -1,4 +1,4 @@
-import { describe, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
   createDeferred,
   createEngineIntegrationHarness,
@@ -80,39 +80,38 @@ describe("engine/effects integration ownership regressions", () => {
     },
   );
 
-  itKnownDefect(
-    "drops an asynchronously preprocessed click after a newer render",
-    async ({ expectFailure }) => {
-      const deferred = createDeferred();
-      const harness = createEngineIntegrationHarness({
-        projectData: createLinearProject(),
-        preprocessPayload: async (_eventName, payload) => {
-          if (payload.defer === true) {
-            await deferred.promise;
-          }
-          return payload;
-        },
-      });
-      harness.completeLatestRender();
+  it("drops an asynchronously preprocessed click after a newer render", async () => {
+    const deferred = createDeferred();
+    const harness = createEngineIntegrationHarness({
+      projectData: createLinearProject(),
+      preprocessPayload: async (_eventName, payload) => {
+        if (payload.defer === true) {
+          await deferred.promise;
+        }
+        return payload;
+      },
+    });
+    harness.completeLatestRender();
 
-      const staleClick = harness.eventHandler("click", {
-        defer: true,
-        actions: { nextLine: {} },
-      });
-      harness.engine.handleActions({ nextLine: {} });
-      harness.completeLatestRender();
-      expect(harness.getPointer().lineId).toBe("line2");
+    const staleClick = harness.eventHandler("click", {
+      defer: true,
+      actions: { nextLine: {} },
+    });
+    harness.engine.handleActions({ nextLine: {} });
+    harness.completeLatestRender();
+    expect(harness.getPointer().lineId).toBe("line2");
 
-      deferred.resolve();
-      await staleClick;
+    deferred.resolve();
+    const staleClickAccepted = await staleClick;
 
-      const settledLineId = harness.getPointer().lineId;
-      expectFailure({
-        observed: () => expect(settledLineId).toBe("line3"),
-        desired: () => expect(settledLineId).toBe("line2"),
-      });
-    },
-  );
+    expect({
+      staleClickAccepted,
+      settledLineId: harness.getPointer().lineId,
+    }).toEqual({
+      staleClickAccepted: false,
+      settledLineId: "line2",
+    });
+  });
 
   itKnownDefect(
     "blocks mixed form and progression actions as one unsafe batch",
@@ -272,51 +271,44 @@ describe("engine/effects integration ownership regressions", () => {
     },
   );
 
-  itKnownDefect(
-    "accepts render completion after reinitializing the same engine",
-    ({ expectFailure }) => {
-      const harness = createEngineIntegrationHarness({
-        projectData: createLinearProject(),
+  it("accepts only the current render completion after reinitializing", () => {
+    const harness = createEngineIntegrationHarness({
+      projectData: createLinearProject(),
+    });
+    const previousRenderId = harness.renderStates.at(-1).id;
+    expect(harness.completeLatestRender()).toBe(true);
+
+    harness.reinitialize();
+    const currentRenderId = harness.renderStates.at(-1).id;
+
+    const staleCompletionAccepted =
+      harness.effectsHandler.handleRouteGraphicsEvent("renderComplete", {
+        id: previousRenderId,
+        aborted: false,
       });
-      expect(harness.completeLatestRender()).toBe(true);
+    const currentCompletionAccepted = harness.completeLatestRender();
+    expect({
+      renderIdsAreUnique: currentRenderId !== previousRenderId,
+      staleCompletionAccepted,
+      currentCompletionAccepted,
+      lineCompleted: harness.getState().global.isLineCompleted,
+    }).toEqual({
+      renderIdsAreUnique: true,
+      staleCompletionAccepted: false,
+      currentCompletionAccepted: true,
+      lineCompleted: true,
+    });
+  });
 
-      harness.reinitialize();
+  it("clears ticker callbacks when reinitializing the same engine", () => {
+    const harness = createEngineIntegrationHarness({
+      projectData: createLinearProject(),
+    });
+    harness.engine.handleAction("startSkipMode", {});
+    expect(harness.ticker.size).toBe(1);
 
-      const completionState = {
-        completionAccepted: harness.completeLatestRender(),
-        lineCompleted: harness.getState().global.isLineCompleted,
-      };
-      expectFailure({
-        observed: () =>
-          expect(completionState).toEqual({
-            completionAccepted: false,
-            lineCompleted: false,
-          }),
-        desired: () =>
-          expect(completionState).toEqual({
-            completionAccepted: true,
-            lineCompleted: true,
-          }),
-      });
-    },
-  );
+    harness.reinitialize();
 
-  itKnownDefect(
-    "clears ticker callbacks when reinitializing the same engine",
-    ({ expectFailure }) => {
-      const harness = createEngineIntegrationHarness({
-        projectData: createLinearProject(),
-      });
-      harness.engine.handleAction("startSkipMode", {});
-      expect(harness.ticker.size).toBe(1);
-
-      harness.reinitialize();
-
-      const timerCount = harness.ticker.size;
-      expectFailure({
-        observed: () => expect(timerCount).toBe(1),
-        desired: () => expect(timerCount).toBe(0),
-      });
-    },
-  );
+    expect(harness.ticker.size).toBe(0);
+  });
 });

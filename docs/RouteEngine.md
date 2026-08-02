@@ -112,6 +112,24 @@ During initialization, the engine:
 4. Trigger pending effects handler
 5. Clear pending effects
 
+Calling `init(...)` again replaces the active runtime generation. Engine-owned
+timers, render-completion ownership, and pending asynchronous renderer input
+from the previous generation are invalidated before the replacement begins.
+If validation of the replacement state fails, the existing generation remains
+active.
+
+### `dispose()`
+
+Stops the active engine generation and releases engine-owned timers and event
+ownership. Disposal is idempotent. Renderer events and story actions from the
+disposed generation are rejected. Read-only state remains available through
+`selectSystemState()`. A later successful `init(...)` starts a fresh generation
+on the same engine instance.
+
+Hosts should call `dispose()` before permanently discarding an engine. Pending
+persistence writes that were already handed to the persistence adapter are not
+cancelled.
+
 ## Project Data Interfaces
 
 ### Computed Variables

@@ -234,8 +234,8 @@ no track is selected; public playback is then `null`.
 
 Route Engine owns one monotonically increasing audio-command counter shared by
 all command-controlled sounds. It advances for every transport command, is not
-advanced by renderer events or ordinary rerenders, and is never reused during
-one engine lifetime.
+advanced by renderer events or ordinary rerenders, and is never reused by one
+engine instance, including after disposal and reinitialization.
 
 While selected, Route Engine renders a stable `music-room:player` sound node
 using the strict interface released in Route Graphics `1.31.0`:
