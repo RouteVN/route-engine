@@ -269,7 +269,33 @@ const init = async () => {
 
   // Create dedicated ticker for auto mode
   const ticker = new Ticker();
+  const playbackTickerCallbacks = new Set();
+  const usesDeterministicPlaybackTicker =
+    isVtCaptureMode() &&
+    projectData.resources?.variables?.vtDeterministicPlaybackTicker?.default ===
+      true;
+  const playbackTicker = {
+    add(callback) {
+      playbackTickerCallbacks.add(callback);
+      if (!usesDeterministicPlaybackTicker) {
+        ticker.add(callback);
+      }
+    },
+    remove(callback) {
+      playbackTickerCallbacks.delete(callback);
+      if (!usesDeterministicPlaybackTicker) {
+        ticker.remove(callback);
+      }
+    },
+  };
   ticker.start();
+  window.addEventListener("vt:tickPlayback", (event) => {
+    const deltaMS = Number(event?.detail?.deltaMS);
+    if (!Number.isFinite(deltaMS) || deltaMS < 0) {
+      throw new Error("vt:tickPlayback requires finite non-negative deltaMS");
+    }
+    [...playbackTickerCallbacks].forEach((callback) => callback({ deltaMS }));
+  });
 
   const base64ToArrayBuffer = (base64) => {
     const binaryString = window.atob(
@@ -305,7 +331,7 @@ const init = async () => {
         routeGraphics.render(renderState);
       },
     },
-    ticker,
+    ticker: playbackTicker,
     handleUnhandledEffect: (effect) => {
       if (
         effect?.name !== "vt:dispatchActions" ||

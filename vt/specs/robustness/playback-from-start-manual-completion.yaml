@@ -1,0 +1,176 @@
+---
+title: Playback From-Start Manual Completion
+description: Completing reveal manually must preserve the original from-start deadline.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 100
+  - action: customEvent
+    name: vt:tickPlayback
+    detail:
+      deltaMS: 4000
+  - action: wait
+    ms: 500
+  - action: click
+    x: 640
+    y: 360
+  - action: wait
+    ms: 500
+  - action: customEvent
+    name: vt:tickPlayback
+    detail:
+      deltaMS: 6000
+  - action: wait
+    ms: 700
+  - action: screenshot
+---
+screen:
+  width: 1280
+  height: 720
+resources:
+  controls:
+    advanceControl:
+      elements:
+        - id: advance-click-area
+          type: rect
+          width: 1280
+          height: 720
+          alpha: 0.001
+          colorId: background
+          click:
+            payload:
+              actions:
+                nextLine: {}
+  layouts:
+    dialogueLayout:
+      mode: adv
+      elements:
+        - id: background
+          type: rect
+          width: 1280
+          height: 720
+          colorId: background
+        - id: dialogue-box
+          type: rect
+          x: 80
+          y: 430
+          width: 1120
+          height: 220
+          colorId: panel
+        - id: dialogue-text
+          type: text-revealing
+          x: 120
+          y: 485
+          width: 1040
+          displaySpeed: 2
+          revealEffect: typewriter
+          content: ${dialogue.content}
+          textStyleId: body
+    successLayout:
+      mode: adv
+      elements:
+        - id: success-panel
+          type: rect
+          width: 1280
+          height: 720
+          colorId: success
+        - id: success-title
+          type: text
+          x: 125
+          y: 250
+          content: ${dialogue.content}
+          textStyleId: title
+    failureLayout:
+      mode: adv
+      elements:
+        - id: failure-panel
+          type: rect
+          width: 1280
+          height: 720
+          colorId: failure
+        - id: failure-title
+          type: text
+          x: 115
+          y: 250
+          content: ${dialogue.content}
+          textStyleId: title
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    background:
+      hex: "#111827"
+    panel:
+      hex: "#374151"
+    success:
+      hex: "#166534"
+    failure:
+      hex: "#991B1B"
+    text:
+      hex: "#FFFFFF"
+  textStyles:
+    title:
+      fontId: default
+      colorId: text
+      fontSize: 40
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1.2
+    body:
+      fontId: default
+      colorId: text
+      fontSize: 30
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.25
+  variables:
+    vtDeterministicPlaybackTicker:
+      type: boolean
+      scope: context
+      default: true
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: source
+              actions:
+                setNextLineConfig:
+                  auto:
+                    enabled: true
+                    trigger: fromStart
+                    delay: 10000
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "This deliberately slow and very long revealing sentence must still be incomplete when the manual click arrives, so the click completes the reveal while the authored from-start deadline keeps its original remaining time."
+                control:
+                  resourceId: advanceControl
+            - id: success
+              actions:
+                setNextLineConfig:
+                  auto:
+                    enabled: false
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: successLayout
+                  content:
+                    - text: "PASS: original from-start deadline won"
+            - id: failure
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: failureLayout
+                  content:
+                    - text: "BUG: manual reveal completion canceled timing"

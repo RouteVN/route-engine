@@ -40,3 +40,12 @@ Only deterministic scenarios belong in the CI matrix. A scenario with a healthy
 reference can still remain local-only when its capture depends on a narrow
 wall-clock window; `choice-skip-pause-resume.yaml` is currently excluded for
 that reason.
+
+Playback timing scenarios can opt into the VT harness's deterministic ticker by
+declaring the context boolean variable
+`vtDeterministicPlaybackTicker` with `default: true`. Their steps advance the
+clock with `customEvent` named `vt:tickPlayback` and a non-negative `deltaMS`.
+RTGL transports structured custom-event detail as strings; the harness parses
+and validates that boundary before invoking the installed playback callback.
+Use this path for deadline assertions instead of wall-clock waits, and keep a
+companion integration journey that loads the exact YAML project.

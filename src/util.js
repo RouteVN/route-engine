@@ -182,14 +182,42 @@ export const createStore = (
   selectorsAndActions,
   options = {},
 ) => {
-  let state = structuredClone(initialState);
   const selectors = {};
   const actions = {};
 
   const {
     transformSelectorFirstArgument = (state) => state,
     transformActionFirstArgument = (state) => state,
+    createTransactionalMetadata,
+    updateTransactionalMetadata,
+    finalizeTransactionalMetadata,
   } = options;
+  const usesTransactionalMetadata =
+    typeof createTransactionalMetadata === "function";
+  let storeValue = {
+    state: structuredClone(initialState),
+    ...(usesTransactionalMetadata
+      ? {
+          transactionalMetadata: structuredClone(createTransactionalMetadata()),
+        }
+      : {}),
+  };
+  let transactionDepth = 0;
+
+  const finalizeStoreValue = (candidate, previous) => {
+    if (!usesTransactionalMetadata || !finalizeTransactionalMetadata) {
+      return candidate;
+    }
+
+    return produce(candidate, (draft) => {
+      finalizeTransactionalMetadata({
+        state: draft.state,
+        transactionalMetadata: draft.transactionalMetadata,
+        previousState: previous.state,
+        previousTransactionalMetadata: previous.transactionalMetadata,
+      });
+    });
+  };
 
   for (const [name, func] of Object.entries(selectorsAndActions)) {
     if (name === "createInitialState") {
@@ -197,16 +225,42 @@ export const createStore = (
       continue;
     } else if (name.startsWith("select")) {
       selectors[name] = (...args) =>
-        func(transformSelectorFirstArgument(state), ...args);
+        func(
+          transformSelectorFirstArgument(
+            storeValue.state,
+            storeValue.transactionalMetadata,
+          ),
+          ...args,
+        );
     } else {
       actions[name] = (...args) => {
         let actionResult;
-        const newState = produce(state, (draft) => {
-          const result = func(transformActionFirstArgument(draft), ...args);
+        const previous = storeValue;
+        let candidate = produce(storeValue, (draft) => {
+          const result = func(
+            transformActionFirstArgument(
+              draft.state,
+              draft.transactionalMetadata,
+            ),
+            ...args,
+          );
           actionResult =
             result !== undefined && !isDraft(result) ? result : undefined;
+          if (usesTransactionalMetadata && updateTransactionalMetadata) {
+            updateTransactionalMetadata({
+              actionName: name,
+              args,
+              state: draft.state,
+              transactionalMetadata: draft.transactionalMetadata,
+              previousState: previous.state,
+              previousTransactionalMetadata: previous.transactionalMetadata,
+            });
+          }
         });
-        state = newState;
+        if (transactionDepth === 0) {
+          candidate = finalizeStoreValue(candidate, previous);
+        }
+        storeValue = candidate;
         return actionResult;
       };
     }
@@ -217,13 +271,27 @@ export const createStore = (
       throw new Error("Store transaction requires a callback");
     }
 
-    const previousState = state;
+    const previous = storeValue;
+    const isOutermostTransaction = transactionDepth === 0;
+    transactionDepth += 1;
+    let result;
     try {
-      return callback();
+      result = callback();
     } catch (error) {
-      state = previousState;
+      transactionDepth -= 1;
+      storeValue = previous;
       throw error;
     }
+    transactionDepth -= 1;
+    if (isOutermostTransaction) {
+      try {
+        storeValue = finalizeStoreValue(storeValue, previous);
+      } catch (error) {
+        storeValue = previous;
+        throw error;
+      }
+    }
+    return result;
   };
 
   return {

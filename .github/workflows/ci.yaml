@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -23,6 +25,11 @@ jobs:
       - run: bun install --frozen-lockfile
 
       - run: bun run lint
+
+      - name: Check changed-file formatting
+        env:
+          FORMAT_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: bun run format:changed
 
       - run: bun run test
 
@@ -41,6 +48,12 @@ jobs:
             item: robustness/l10n-layout-roundtrip.yaml
           - id: particle-texture
             item: robustness/particle-image-texture.yaml
+          - id: playback-auto-authored
+            item: robustness/playback-auto-authored-co-due.yaml
+          - id: playback-from-start
+            item: robustness/playback-from-start-manual-completion.yaml
+          - id: playback-skip-authored
+            item: robustness/playback-skip-authored-co-due.yaml
           - id: save-load-timers
             item: robustness/save-load-skip-timer-cleanup.yaml
           - id: settings-batch

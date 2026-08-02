@@ -3504,7 +3504,15 @@ const selectCurrentLineAutoForwardText = (state) => {
     return "";
   }
 
-  const variables = selectAllVariables({ state });
+  const variables = selectVariablesWithComputedValues({
+    variables: {
+      ...(state.global?.variables ?? {}),
+      ...(getCurrentContext(state)?.variables ?? {}),
+    },
+    runtime: selectRuntimeFromState(state),
+    variableConfigs: state.projectData.resources?.variables ?? {},
+    eager: false,
+  });
   return dialogue.content
     .map((item) => {
       const text = interpolateDialogueText(item?.text, { variables });
@@ -6824,14 +6832,261 @@ export const rollbackToLine = ({ state }, payload) => {
   return restoreRollbackCheckpoint(state, targetLineIndex);
 };
 
+const createPlaybackOwnership = () => ({
+  lineEntryId: 1,
+  autoSessionId: 0,
+  skipSessionId: 0,
+  rollbackAuthoredSuppression: null,
+});
+
+const incrementPlaybackIdentity = (playbackOwnership, fieldName) => {
+  const currentValue = playbackOwnership[fieldName];
+  if (!Number.isSafeInteger(currentValue) || currentValue < 0) {
+    throw new RangeError(`Internal playback ${fieldName} is invalid`);
+  }
+  if (currentValue === Number.MAX_SAFE_INTEGER) {
+    throw new RangeError(`Internal playback ${fieldName} is exhausted`);
+  }
+  playbackOwnership[fieldName] = currentValue + 1;
+  return playbackOwnership[fieldName];
+};
+
+const selectPlaybackPointer = (state) => {
+  const context = state.contexts?.[state.contexts.length - 1];
+  return context?.pointers?.read ?? null;
+};
+
+const selectPlaybackRollbackIndex = (state) => {
+  const context = state.contexts?.[state.contexts.length - 1];
+  return Number.isInteger(context?.rollback?.currentIndex)
+    ? context.rollback.currentIndex
+    : null;
+};
+
+const isSamePlaybackPointer = (left, right) =>
+  left?.sectionId === right?.sectionId && left?.lineId === right?.lineId;
+
+const getNormalizedAuthoredConfig = (state) => {
+  const auto = state.global?.nextLineConfig?.auto;
+  if (auto?.enabled !== true) {
+    return { enabled: false };
+  }
+  return {
+    enabled: true,
+    trigger: auto.trigger === "fromStart" ? "fromStart" : "fromComplete",
+    delayMs: auto.delay ?? 1000,
+  };
+};
+
+const getNormalizedAuthoredConfigKey = (state) =>
+  JSON.stringify(getNormalizedAuthoredConfig(state));
+
+const didInstallPlaybackLineOccurrence = ({
+  actionName,
+  args,
+  state,
+  previousState,
+}) => {
+  const previousPointer = selectPlaybackPointer(previousState);
+  const nextPointer = selectPlaybackPointer(state);
+  if (!isSamePlaybackPointer(previousPointer, nextPointer)) {
+    return true;
+  }
+
+  if (previousState.contexts?.length !== state.contexts?.length) {
+    return true;
+  }
+
+  if (
+    (actionName === "rollbackByOffset" || actionName === "rollbackToLine") &&
+    selectPlaybackRollbackIndex(previousState) !==
+      selectPlaybackRollbackIndex(state)
+  ) {
+    return true;
+  }
+
+  const payload = args[0] ?? {};
+  if (actionName === "jumpToLine") {
+    const targetSectionId = payload.sectionId ?? previousPointer?.sectionId;
+    return (
+      typeof payload.lineId === "string" &&
+      nextPointer?.sectionId === targetSectionId &&
+      nextPointer?.lineId === payload.lineId &&
+      state.global.isLineCompleted === false
+    );
+  }
+
+  if (
+    actionName === "sectionTransition" ||
+    actionName === "resetStoryAtSection"
+  ) {
+    const targetSection = findSectionInProjectData(
+      state.projectData,
+      payload.sectionId,
+    ).section;
+    const targetLineId =
+      targetSection?.initialLineId ?? targetSection?.lines?.[0]?.id;
+    return (
+      typeof targetLineId === "string" &&
+      nextPointer?.sectionId === payload.sectionId &&
+      nextPointer?.lineId === targetLineId &&
+      state.global.isLineCompleted === false
+    );
+  }
+
+  if (actionName === "loadSlot") {
+    const slotId = payload.slotId;
+    return Object.prototype.hasOwnProperty.call(
+      previousState.global?.saveSlots ?? {},
+      toSlotStorageKey(slotId),
+    );
+  }
+
+  return false;
+};
+
+const updatePlaybackOwnership = ({
+  actionName,
+  args,
+  state,
+  transactionalMetadata: playbackOwnership,
+  previousState,
+}) => {
+  const enteredLine = didInstallPlaybackLineOccurrence({
+    actionName,
+    args,
+    state,
+    previousState,
+  });
+
+  if (enteredLine) {
+    const lineEntryId = incrementPlaybackIdentity(
+      playbackOwnership,
+      "lineEntryId",
+    );
+    if (actionName === "rollbackByOffset" || actionName === "rollbackToLine") {
+      playbackOwnership.rollbackAuthoredSuppression = {
+        lineEntryId,
+        configKey: getNormalizedAuthoredConfigKey(state),
+      };
+    } else {
+      playbackOwnership.rollbackAuthoredSuppression = null;
+    }
+  }
+
+  const restoredReplayCaller =
+    (previousState.contexts?.length ?? 0) > (state.contexts?.length ?? 0);
+  const previousInteraction =
+    actionName === "startAutoMode" || actionName === "startSkipMode"
+      ? selectActiveInteraction({ state: previousState })
+      : null;
+  const acceptedAutoStart =
+    state.global.autoMode === true &&
+    ((actionName === "startAutoMode" && !previousInteraction) ||
+      (actionName === "toggleAutoMode" &&
+        previousState.global.autoMode !== true) ||
+      (restoredReplayCaller && previousState.global.autoMode !== true));
+  if (acceptedAutoStart) {
+    incrementPlaybackIdentity(playbackOwnership, "autoSessionId");
+  }
+
+  const acceptedSkipStart =
+    state.global.skipMode === true &&
+    ((actionName === "startSkipMode" && !previousInteraction) ||
+      (actionName === "toggleSkipMode" &&
+        previousState.global.skipMode !== true) ||
+      (restoredReplayCaller && previousState.global.skipMode !== true));
+  if (acceptedSkipStart) {
+    incrementPlaybackIdentity(playbackOwnership, "skipSessionId");
+  }
+};
+
+const finalizePlaybackOwnership = ({
+  state,
+  transactionalMetadata: playbackOwnership,
+}) => {
+  const suppression = playbackOwnership.rollbackAuthoredSuppression;
+  if (
+    suppression &&
+    (suppression.lineEntryId !== playbackOwnership.lineEntryId ||
+      suppression.configKey !== getNormalizedAuthoredConfigKey(state))
+  ) {
+    playbackOwnership.rollbackAuthoredSuppression = null;
+  }
+};
+
+const selectDesiredPlaybackTimers = ({ state, playbackOwnership }) => {
+  const activeInteraction = selectActiveInteraction({ state });
+  const lineEntryId = playbackOwnership.lineEntryId;
+  const autoEligible =
+    !activeInteraction &&
+    state.global.autoMode === true &&
+    state.global.isLineCompleted === true;
+  const skipEligible = !activeInteraction && state.global.skipMode === true;
+  const authoredConfig = getNormalizedAuthoredConfig(state);
+  const authoredSuppression = playbackOwnership.rollbackAuthoredSuppression;
+  const authoredEligible =
+    !activeInteraction &&
+    authoredConfig.enabled &&
+    (authoredConfig.trigger === "fromStart" ||
+      state.global.isLineCompleted === true) &&
+    !(
+      authoredSuppression?.lineEntryId === lineEntryId &&
+      authoredSuppression.configKey === getNormalizedAuthoredConfigKey(state)
+    );
+  const autoContentKey = autoEligible
+    ? selectCurrentLineAutoForwardText(state)
+    : null;
+
+  return {
+    auto: autoEligible
+      ? {
+          owner: {
+            sessionId: playbackOwnership.autoSessionId,
+            lineEntryId,
+          },
+          delayMs: estimateAutoForwardDelay({
+            text: autoContentKey,
+            baseDelay: selectRuntimeValueFromState(state, "autoForwardDelay"),
+            speed: selectRuntimeValueFromState(state, "autoForwardSpeed"),
+          }),
+          contentKey: autoContentKey,
+        }
+      : null,
+    skip: skipEligible
+      ? {
+          owner: {
+            sessionId: playbackOwnership.skipSessionId,
+          },
+          delayMs: 80,
+        }
+      : null,
+    authored: authoredEligible
+      ? {
+          owner: { lineEntryId },
+          delayMs: authoredConfig.delayMs,
+          trigger: authoredConfig.trigger,
+        }
+      : null,
+  };
+};
+
+const selectPlaybackLineEntryId = ({ playbackOwnership }) =>
+  playbackOwnership.lineEntryId;
+
 /**************************
  * Store Export
  *************************/
 
 // Export the store using createStore from util.js
-export const createSystemStore = (initialState) => {
+export const createSystemStore = (initialState, options = {}) => {
   const _initialState = createInitialState(initialState);
   const rollbackActionBatchStack = [];
+  const createPlaybackOwnershipForStore =
+    options.createPlaybackOwnership ?? createPlaybackOwnership;
+  if (typeof createPlaybackOwnershipForStore !== "function") {
+    throw new TypeError("createPlaybackOwnership must be a function");
+  }
 
   // Gather all selectors and actions for the store
   const selectorsAndActions = {
@@ -6881,6 +7136,8 @@ export const createSystemStore = (initialState) => {
     selectLineIdByOffset,
     selectCanRollback,
     selectRollbackCursor,
+    selectDesiredPlaybackTimers,
+    selectPlaybackLineEntryId,
 
     // Actions
     startAutoMode,
@@ -6970,11 +7227,14 @@ export const createSystemStore = (initialState) => {
   };
 
   return createStore(_initialState, selectorsAndActions, {
-    transformActionFirstArgument: (state) => {
-      return { state, rollbackActionBatchStack };
+    createTransactionalMetadata: createPlaybackOwnershipForStore,
+    updateTransactionalMetadata: updatePlaybackOwnership,
+    finalizeTransactionalMetadata: finalizePlaybackOwnership,
+    transformActionFirstArgument: (state, playbackOwnership) => {
+      return { state, rollbackActionBatchStack, playbackOwnership };
     },
-    transformSelectorFirstArgument: (state) => {
-      return { state };
+    transformSelectorFirstArgument: (state, playbackOwnership) => {
+      return { state, playbackOwnership };
     },
   });
 };

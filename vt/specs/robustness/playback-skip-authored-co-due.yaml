@@ -1,0 +1,148 @@
+---
+title: Playback Skip And Authored Co-Due
+description: Skip and authored auto expiring together must advance exactly one line.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 200
+  - action: click
+    x: 640
+    y: 360
+  - action: customEvent
+    name: vt:tickPlayback
+    detail:
+      deltaMS: 80
+  - action: wait
+    ms: 200
+  - action: screenshot
+---
+screen:
+  width: 1280
+  height: 720
+resources:
+  controls:
+    startControl:
+      elements:
+        - id: background
+          type: rect
+          width: 1280
+          height: 720
+          colorId: background
+        - id: title
+          type: text
+          x: 165
+          y: 125
+          content: "SKIP + AUTHORED: one progression"
+          textStyleId: title
+        - id: start-button
+          type: rect
+          x: 390
+          y: 390
+          width: 500
+          height: 130
+          colorId: action
+          click:
+            payload:
+              actions:
+                setSkipUnseenText:
+                  value: true
+                setNextLineConfig:
+                  auto:
+                    enabled: true
+                    trigger: fromStart
+                    delay: 80
+                startSkipMode: {}
+        - id: start-label
+          type: text
+          x: 485
+          y: 430
+          content: "START BOTH TIMERS"
+          textStyleId: body
+    successControl:
+      elements:
+        - id: success-panel
+          type: rect
+          width: 1280
+          height: 720
+          colorId: success
+        - id: success-title
+          type: text
+          x: 170
+          y: 250
+          content: "PASS: advanced exactly one line"
+          textStyleId: title
+    failureControl:
+      elements:
+        - id: failure-panel
+          type: rect
+          width: 1280
+          height: 720
+          colorId: failure
+        - id: failure-title
+          type: text
+          x: 120
+          y: 250
+          content: "BUG: two callbacks skipped the success line"
+          textStyleId: title
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    background:
+      hex: "#111827"
+    action:
+      hex: "#7C3AED"
+    success:
+      hex: "#166534"
+    failure:
+      hex: "#991B1B"
+    text:
+      hex: "#FFFFFF"
+  textStyles:
+    title:
+      fontId: default
+      colorId: text
+      fontSize: 42
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1.2
+    body:
+      fontId: default
+      colorId: text
+      fontSize: 30
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+  variables:
+    vtDeterministicPlaybackTicker:
+      type: boolean
+      scope: context
+      default: true
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: source
+              actions:
+                control:
+                  resourceId: startControl
+            - id: success
+              actions:
+                stopSkipMode: {}
+                setNextLineConfig:
+                  auto:
+                    enabled: false
+                control:
+                  resourceId: successControl
+            - id: failure
+              actions:
+                control:
+                  resourceId: failureControl

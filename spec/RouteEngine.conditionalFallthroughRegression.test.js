@@ -373,8 +373,8 @@ describe("conditional fallthrough runtime invariants", () => {
       expect(
         engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
       ).toBe("line2");
-      expect(ticker.add).toHaveBeenCalledTimes(1);
-      expect(ticker.remove).toHaveBeenCalledWith(ticker.add.mock.calls[0][0]);
+      expect(ticker.add).not.toHaveBeenCalled();
+      expect(ticker.remove).not.toHaveBeenCalled();
     },
   );
 
@@ -423,10 +423,8 @@ describe("conditional fallthrough runtime invariants", () => {
     expect(
       engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
     ).toBe("line2");
-    expect(ticker.add).toHaveBeenCalledTimes(2);
-    const sourceCallback = ticker.add.mock.calls[0][0];
-    const destinationCallback = ticker.add.mock.calls[1][0];
-    expect(ticker.remove).toHaveBeenCalledWith(sourceCallback);
+    expect(ticker.add).toHaveBeenCalledTimes(1);
+    const destinationCallback = ticker.add.mock.calls[0][0];
     expect(ticker.remove).not.toHaveBeenCalledWith(destinationCallback);
     expect(ticker.has(destinationCallback)).toBe(true);
   });
@@ -504,10 +502,8 @@ describe("conditional fallthrough runtime invariants", () => {
         expect(
           engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
         ).toBe(expectedLineId);
-        expect(ticker.add).toHaveBeenCalledTimes(1);
-        const sourceCallback = ticker.add.mock.calls[0][0];
-        expect(ticker.remove).toHaveBeenCalledWith(sourceCallback);
-        expect(ticker.has(sourceCallback)).toBe(false);
+        expect(ticker.add).not.toHaveBeenCalled();
+        expect(ticker.remove).not.toHaveBeenCalled();
 
         ticker.tick(1000);
         expect(
@@ -547,6 +543,7 @@ describe("conditional fallthrough runtime invariants", () => {
     });
     engine.handleAction("markLineCompleted", {});
     const sourceCallback = ticker.add.mock.calls[0][0];
+    ticker.tick(40);
 
     engine.handleAction("conditional", {
       branches: [{ when: true, actions: { nextLine: {} } }],
@@ -555,11 +552,17 @@ describe("conditional fallthrough runtime invariants", () => {
     expect(
       engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
     ).toBe("line2");
-    expect(ticker.add).toHaveBeenCalledTimes(2);
-    const destinationCallback = ticker.add.mock.calls[1][0];
-    expect(ticker.remove).toHaveBeenCalledWith(sourceCallback);
-    expect(ticker.remove).not.toHaveBeenCalledWith(destinationCallback);
-    expect(ticker.has(destinationCallback)).toBe(true);
+    expect(ticker.add).toHaveBeenCalledTimes(1);
+    expect(ticker.remove).not.toHaveBeenCalledWith(sourceCallback);
+    expect(ticker.has(sourceCallback)).toBe(true);
+    ticker.tick(99);
+    expect(
+      engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
+    ).toBe("line2");
+    ticker.tick(1);
+    expect(
+      engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
+    ).toBe("line3");
   });
 
   it("keeps a destination from-start timer queued by entered-line actions", () => {
@@ -615,10 +618,8 @@ describe("conditional fallthrough runtime invariants", () => {
     expect(
       engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
     ).toBe("line2");
-    expect(ticker.add).toHaveBeenCalledTimes(2);
-    const sourceCallback = ticker.add.mock.calls[0][0];
-    const destinationCallback = ticker.add.mock.calls[1][0];
-    expect(ticker.remove).toHaveBeenCalledWith(sourceCallback);
+    expect(ticker.add).toHaveBeenCalledTimes(1);
+    const destinationCallback = ticker.add.mock.calls[0][0];
     expect(ticker.has(destinationCallback)).toBe(true);
 
     ticker.tick(99);
@@ -687,10 +688,8 @@ describe("conditional fallthrough runtime invariants", () => {
     expect(
       engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
     ).toBe("line2");
-    expect(ticker.add).toHaveBeenCalledTimes(2);
-    const sourceCallback = ticker.add.mock.calls[0][0];
-    const destinationCallback = ticker.add.mock.calls[1][0];
-    expect(ticker.remove).toHaveBeenCalledWith(sourceCallback);
+    expect(ticker.add).toHaveBeenCalledTimes(1);
+    const destinationCallback = ticker.add.mock.calls[0][0];
     expect(ticker.has(destinationCallback)).toBe(true);
 
     ticker.tick(199);
