@@ -4,7 +4,6 @@ import {
   createIntegrationProject,
   findRenderElement,
 } from "./helpers/createEngineIntegrationHarness.js";
-import { itKnownDefect } from "./helpers/knownDefect.js";
 
 const createSingleLineProject = ({
   actions = {},
@@ -702,140 +701,169 @@ describe("L10n packages through initialization, rendering, and actions", () => {
     ).toThrow(/fileId "translated-feature\.png" is not declared/);
   });
 
-  itKnownDefect(
-    "validates localized references before installing the package",
-    ({ expectFailure }) => {
-      const projectData = createL10nProject();
-      projectData.resources.textStyles.body = {
-        fontId: "bodyFont",
-        colorId: "bodyColor",
-        fontSize: 24,
-        lineHeight: 1.2,
-        fontWeight: "400",
-        fontStyle: "normal",
-      };
-      const l10nData = {
-        packages: {
-          brokenReferences: {
-            language: "Broken references",
-            files: [],
-            patches: [
-              {
-                type: "resource.textStyle",
-                resourceId: "body",
-                payload: {
-                  fontId: "missingFont",
-                  colorId: "missingColor",
-                  fontSize: 24,
-                  lineHeight: 1.2,
-                  fontWeight: "400",
-                  fontStyle: "normal",
-                },
+  it("validates localized references before installing the package", () => {
+    const projectData = createL10nProject();
+    projectData.resources.textStyles.body = {
+      fontId: "bodyFont",
+      colorId: "bodyColor",
+      fontSize: 24,
+      lineHeight: 1.2,
+      fontWeight: "400",
+      fontStyle: "normal",
+    };
+    const l10nData = {
+      packages: {
+        brokenReferences: {
+          language: "Broken references",
+          files: [],
+          patches: [
+            {
+              type: "resource.textStyle",
+              resourceId: "body",
+              payload: {
+                fontId: "missingFont",
+                colorId: "missingColor",
+                fontSize: 24,
+                lineHeight: 1.2,
+                fontWeight: "400",
+                fontStyle: "normal",
               },
-            ],
-          },
+            },
+          ],
         },
-      };
+      },
+    };
 
-      let initializationError;
-      try {
-        createEngineIntegrationHarness({ projectData, l10nData });
-      } catch (error) {
-        initializationError = error;
-      }
-      expectFailure({
-        observed: () => expect(initializationError).toBeUndefined(),
-        desired: () =>
-          expect(initializationError?.message ?? "").toMatch(
-            /missingFont|missingColor|not found/,
-          ),
-      });
-    },
-  );
+    let initializationError;
+    try {
+      createEngineIntegrationHarness({ projectData, l10nData });
+    } catch (error) {
+      initializationError = error;
+    }
+    expect(initializationError?.message ?? "").toMatch(
+      /missingFont|missingColor|not found/,
+    );
+  });
 
-  itKnownDefect(
-    "rejects a localized choice with an empty layout resource ID",
-    ({ expectFailure }) => {
-      const projectData = createSingleLineProject({
-        resources: {
-          layouts: { choiceLayout: { elements: [] } },
+  it("rejects a localized choice with an empty layout resource ID", () => {
+    const projectData = createSingleLineProject({
+      resources: {
+        layouts: { choiceLayout: { elements: [] } },
+      },
+      actions: {
+        choice: {
+          resourceId: "choiceLayout",
+          items: [
+            {
+              id: "continue",
+              events: { click: { actions: { nextLine: {} } } },
+            },
+          ],
         },
-        actions: {
-          choice: {
-            resourceId: "choiceLayout",
-            items: [
-              {
-                id: "continue",
-                events: { click: { actions: { nextLine: {} } } },
+      },
+    });
+    const l10nData = {
+      packages: {
+        invalidChoice: {
+          language: "Invalid choice",
+          files: [],
+          patches: [
+            {
+              type: "line.action",
+              lineId: "entry",
+              actionType: "choice",
+              payload: {
+                resourceId: "",
+                items: [
+                  {
+                    id: "continue",
+                    events: { click: { actions: { nextLine: {} } } },
+                  },
+                ],
               },
-            ],
-          },
+            },
+          ],
         },
-      });
-      const l10nData = {
-        packages: {
-          invalidChoice: {
-            language: "Invalid choice",
-            files: [],
-            patches: [
-              {
-                type: "line.action",
-                lineId: "entry",
-                actionType: "choice",
-                payload: {
-                  resourceId: "",
-                  items: [
-                    {
-                      id: "continue",
-                      events: { click: { actions: { nextLine: {} } } },
-                    },
-                  ],
-                },
-              },
-            ],
-          },
-        },
-      };
+      },
+    };
 
-      let initializationError;
-      try {
-        createEngineIntegrationHarness({ projectData, l10nData });
-      } catch (error) {
-        initializationError = error;
-      }
-      expectFailure({
-        observed: () => expect(initializationError).toBeUndefined(),
-        desired: () =>
-          expect(initializationError?.message ?? "").toMatch(
-            /resourceId|non-empty/,
-          ),
-      });
-    },
-  );
+    let initializationError;
+    try {
+      createEngineIntegrationHarness({ projectData, l10nData });
+    } catch (error) {
+      initializationError = error;
+    }
+    expect(initializationError?.message ?? "").toMatch(/resourceId|non-empty/);
+  });
+
+  it("allows empty resourceId keys inside preserved choice application data", () => {
+    const preservedEvents = {
+      click: {
+        actions: { nextLine: {} },
+        value: { resourceId: "" },
+      },
+    };
+    const projectData = createSingleLineProject({
+      resources: {
+        layouts: { choiceLayout: { elements: [] } },
+      },
+      actions: {
+        choice: {
+          resourceId: "choiceLayout",
+          items: [
+            {
+              id: "continue",
+              events: preservedEvents,
+            },
+          ],
+        },
+      },
+    });
+    const l10nData = {
+      packages: {
+        validChoice: {
+          language: "Valid choice",
+          files: [],
+          patches: [
+            {
+              type: "line.action",
+              lineId: "entry",
+              actionType: "choice",
+              payload: {
+                resourceId: "choiceLayout",
+                items: [
+                  {
+                    id: "continue",
+                    content: "Continue",
+                    events: structuredClone(preservedEvents),
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      },
+    };
+
+    expect(() =>
+      createEngineIntegrationHarness({ projectData, l10nData }),
+    ).not.toThrow();
+  });
 });
 
 describe("renderer resilience for schema-optional resource collections", () => {
-  itKnownDefect(
-    "does not leak a TypeError when the layouts collection is absent",
-    ({ expectFailure }) => {
-      const projectData = createSingleLineProject({
-        actions: { layout: { resourceId: "missing" } },
-      });
-      delete projectData.resources.layouts;
+  it("does not leak a TypeError when the layouts collection is absent", () => {
+    const projectData = createSingleLineProject({
+      actions: { layout: { resourceId: "missing" } },
+    });
+    delete projectData.resources.layouts;
 
-      let initializationError;
-      try {
-        createEngineIntegrationHarness({ projectData });
-      } catch (error) {
-        initializationError = error;
-      }
-      expectFailure({
-        observed: () =>
-          expect(initializationError?.message).toMatch(
-            /Cannot read properties of undefined \(reading 'missing'\)/,
-          ),
-        desired: () => expect(initializationError).toBeUndefined(),
-      });
-    },
-  );
+    let initializationError;
+    try {
+      createEngineIntegrationHarness({ projectData });
+    } catch (error) {
+      initializationError = error;
+    }
+    expect(initializationError).toBeUndefined();
+  });
 });

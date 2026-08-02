@@ -168,8 +168,8 @@ const resourcePatchCases = [
     "textStyle",
     "textStyles",
     {
-      fontId: "localizedFont",
-      colorId: "localizedColor",
+      fontId: "localized-5",
+      colorId: "localized-3",
       fontSize: 24,
       fontWeight: "400",
       fontStyle: "normal",
@@ -375,8 +375,18 @@ describe("resolveL10nProjectData", () => {
     expect(projectData).toEqual(sourceSnapshot);
   });
 
-  it("allows form presentation and placeholder changes without behavior changes", () => {
+  it("allows form presentation changes with preserved nested application data", () => {
+    const projectData = createProjectData();
+    const submitActions = {
+      customApplicationAction: {
+        value: { resourceId: "" },
+      },
+    };
+    projectData.story.scenes[
+      "chapter-one"
+    ].sections.introduction.lines[0].actions.form.submitActions = submitActions;
     const resolvedProjectData = resolve({
+      projectData,
       packages: {
         japanese: createPackage({
           patches: [
@@ -394,9 +404,7 @@ describe("resolveL10nProjectData", () => {
                     placeholder: "名前",
                   },
                 },
-                submitActions: {
-                  nextLine: {},
-                },
+                submitActions: structuredClone(submitActions),
               },
             },
           ],
@@ -415,6 +423,7 @@ describe("resolveL10nProjectData", () => {
           placeholder: "名前",
         },
       },
+      submitActions,
     });
   });
 

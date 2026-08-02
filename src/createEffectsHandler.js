@@ -618,28 +618,15 @@ const createEffectsHandler = ({
     return hasMatchingFormKey(value, activeInteraction);
   };
 
-  const hasFormInteractionAction = (actions = {}) => {
-    return Object.keys(actions).some((actionType) =>
-      formInteractionActionTypes.has(actionType),
-    );
-  };
+  const isAllowedFormActionBatch = (actions = {}, activeInteraction) =>
+    Object.keys(actions).length > 0 &&
+    Object.entries(actions).every(([actionType, actionPayload]) => {
+      if (formInteractionActionTypes.has(actionType)) {
+        return matchesFormAction(actionPayload, activeInteraction);
+      }
 
-  const hasMatchingFormAction = (actions = {}, activeInteraction) => {
-    return Object.entries(actions).some(
-      ([actionType, actionPayload]) =>
-        formInteractionActionTypes.has(actionType) &&
-        matchesFormAction(actionPayload, activeInteraction),
-    );
-  };
-
-  const isFormConcurrentActionPayload = (actions = {}) => {
-    return (
-      Object.keys(actions).length > 0 &&
-      Object.keys(actions).every((actionType) =>
-        formConcurrentActionTypes.has(actionType),
-      )
-    );
-  };
+      return formConcurrentActionTypes.has(actionType);
+    });
 
   const isInteractionPayload = (payload = {}, activeInteraction) => {
     const actions = payload?.actions;
@@ -649,15 +636,7 @@ const createEffectsHandler = ({
         return false;
       }
 
-      if (hasMatchingFormAction(actions, activeInteraction)) {
-        return true;
-      }
-
-      if (hasFormInteractionAction(actions)) {
-        return false;
-      }
-
-      return isFormConcurrentActionPayload(actions);
+      return isAllowedFormActionBatch(actions, activeInteraction);
     }
 
     if (matchesInteraction(payload, activeInteraction)) {

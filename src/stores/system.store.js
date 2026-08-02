@@ -4,6 +4,7 @@ import {
   evaluateRouteCondition,
   filterStoredVariables,
   getDefaultVariablesFromProjectData,
+  isVariableValueCompatible,
   isComputedVariableConfig,
   selectVariablesWithComputedValues,
   validateComputedVariableConfigs,
@@ -118,6 +119,17 @@ const resetNextLineConfigIfSingleLine = (state) => {
   }
 };
 
+const disableNextLineConfigAuto = (state) => {
+  if (!state.global.nextLineConfig.auto?.enabled) {
+    return;
+  }
+
+  state.global.nextLineConfig.auto.enabled = false;
+  state.global.pendingEffects.push({
+    name: "clearNextLineConfigTimer",
+  });
+};
+
 const cloneStateValue = (value) => {
   const source = isDraft(value) ? current(value) : value;
   return structuredClone(source);
@@ -192,6 +204,20 @@ const getAchievementForAction = (state, resourceId) => {
   }
 
   return achievement;
+};
+
+const assertValidSlotId = (slotId, actionName) => {
+  if (slotId === undefined || slotId === null || slotId === "") {
+    throw new Error(`${actionName} requires slotId`);
+  }
+
+  const isValidString = typeof slotId === "string" && slotId.length > 0;
+  const isValidNumber = typeof slotId === "number" && Number.isFinite(slotId);
+  if (!isValidString && !isValidNumber) {
+    throw new Error(
+      `${actionName} requires a non-empty string or finite number slotId`,
+    );
+  }
 };
 
 const toSlotStorageKey = (slotId) => String(slotId);
@@ -385,16 +411,7 @@ const assertUniqueSectionIds = (projectData) => {
 };
 
 const normalizeStoredSlotId = (slotId) => {
-  if (typeof slotId === "number") {
-    return slotId;
-  }
-
-  if (typeof slotId !== "string") {
-    return slotId;
-  }
-
-  const numericSlotId = Number(slotId);
-  return Number.isFinite(numericSlotId) ? numericSlotId : slotId;
+  return slotId;
 };
 
 const normalizeSaveSlotFormatVersion = (formatVersion) => {
@@ -444,21 +461,75 @@ const normalizeStoredSaveSlots = (saveSlots = {}) => {
   );
 };
 
-const sanitizePersistedRollbackExecutedActions = (executedActions) => {
+const sanitizeRollbackUpdateVariablePayload = (payload, projectData) => {
+  if (!isRecord(payload) || !Array.isArray(payload.operations)) {
+    return null;
+  }
+
+  const operations = payload.operations.filter((operation) => {
+    if (!isRecord(operation)) {
+      return false;
+    }
+    const { variableId, op, value, roundTo } = operation;
+    const variableConfig = projectData?.resources?.variables?.[variableId];
+    if (
+      !variableConfig ||
+      isComputedVariableConfig(variableConfig) ||
+      variableConfig.readonly === true ||
+      variableConfig.scope !== "context"
+    ) {
+      return false;
+    }
+
+    try {
+      validateVariableOperation(variableConfig.type, op, variableId);
+      validateVariableOperationValue(
+        variableConfig.type,
+        op,
+        value,
+        variableId,
+        {
+          roundTo,
+        },
+      );
+      return op !== "set" || isVariableValueCompatible(variableConfig, value);
+    } catch {
+      return false;
+    }
+  });
+
+  return operations.length > 0 ? { ...payload, operations } : null;
+};
+
+const sanitizePersistedRollbackExecutedActions = (
+  executedActions,
+  projectData,
+) => {
   if (!Array.isArray(executedActions)) {
     return undefined;
   }
 
-  const sanitizedExecutedActions = executedActions.filter(({ type }) =>
-    shouldPersistRollbackActionType(type),
-  );
+  const sanitizedExecutedActions = executedActions.flatMap((action) => {
+    if (!isRecord(action) || !shouldPersistRollbackActionType(action.type)) {
+      return [];
+    }
+    if (action.type !== "updateVariable" || projectData === undefined) {
+      return [action];
+    }
+
+    const payload = sanitizeRollbackUpdateVariablePayload(
+      action.payload,
+      projectData,
+    );
+    return payload ? [{ ...action, payload }] : [];
+  });
 
   return sanitizedExecutedActions.length > 0
     ? sanitizedExecutedActions
     : undefined;
 };
 
-const sanitizePersistedRollback = (rollback) => {
+const sanitizePersistedRollback = (rollback, projectData) => {
   if (!isRecord(rollback) || !Array.isArray(rollback.timeline)) {
     return;
   }
@@ -476,6 +547,7 @@ const sanitizePersistedRollback = (rollback) => {
 
     const sanitizedExecutedActions = sanitizePersistedRollbackExecutedActions(
       checkpoint.executedActions,
+      projectData,
     );
 
     if (sanitizedExecutedActions) {
@@ -661,6 +733,67 @@ const normalizeLoadedReadPointer = (pointer, projectData, path) => {
     sectionId,
     lineId,
   };
+};
+
+const getInitialProjectPointer = (projectData) => {
+  const sceneId = projectData.story.initialSceneId;
+  const scene = projectData.story.scenes[sceneId];
+  const sectionId = scene.initialSectionId;
+  const section = scene.sections[sectionId];
+  return normalizeLoadedReadPointer(
+    {
+      sceneId,
+      sectionId,
+      lineId: section.initialLineId ?? section.lines[0].id,
+    },
+    projectData,
+    "projectData initial pointer",
+  );
+};
+
+const hasResolvableInitialProjectPointer = (projectData) => {
+  try {
+    getInitialProjectPointer(projectData);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const resolveCompatibleReadPointer = (context, projectData, path) => {
+  const sourcePointer = context?.pointers?.read;
+  if (
+    !isRecord(sourcePointer) ||
+    typeof sourcePointer.sectionId !== "string" ||
+    sourcePointer.sectionId.length === 0 ||
+    typeof sourcePointer.lineId !== "string" ||
+    sourcePointer.lineId.length === 0
+  ) {
+    return normalizeLoadedReadPointer(sourcePointer, projectData, path);
+  }
+
+  try {
+    return normalizeLoadedReadPointer(sourcePointer, projectData, path);
+  } catch {
+    const timeline = Array.isArray(context?.rollback?.timeline)
+      ? context.rollback.timeline
+      : [];
+    const currentIndex = Number.isInteger(context?.rollback?.currentIndex)
+      ? Math.min(context.rollback.currentIndex, timeline.length - 1)
+      : timeline.length - 1;
+    for (let index = currentIndex; index >= 0; index -= 1) {
+      try {
+        return normalizeLoadedReadPointer(
+          timeline[index],
+          projectData,
+          `${path} compatibility checkpoint`,
+        );
+      } catch {
+        // Continue toward the nearest earlier authored checkpoint.
+      }
+    }
+    return getInitialProjectPointer(projectData);
+  }
 };
 
 const isSameRollbackPointer = (left, right) =>
@@ -1093,6 +1226,7 @@ const normalizeLoadedRollback = (rollback, readPointer, projectData) => {
 
       const sanitizedExecutedActions = sanitizePersistedRollbackExecutedActions(
         cloneStateValue(checkpoint.executedActions),
+        projectData,
       );
       if (sanitizedExecutedActions) {
         normalizedCheckpoint.executedActions = sanitizedExecutedActions;
@@ -1195,8 +1329,8 @@ const normalizeLoadedContext = (context, projectData, index) => {
 
   const contextVariableDefaults =
     getRollbackContextVariableDefaults(projectData);
-  const readPointer = normalizeLoadedReadPointer(
-    context.pointers?.read,
+  const readPointer = resolveCompatibleReadPointer(
+    context,
     projectData,
     `contexts[${index}].pointers.read`,
   );
@@ -1212,6 +1346,7 @@ const normalizeLoadedContext = (context, projectData, index) => {
     ? filterStoredVariables(
         cloneStateValue(context.variables),
         projectData.resources?.variables ?? {},
+        { allowedScopes: ["context"] },
       )
     : {};
   const loadedContextRuntime = createInitialContextRuntimeState({
@@ -2391,6 +2526,10 @@ export const createInitialState = (payload) => {
     ...filterStoredVariables(
       loadedGlobalVariables,
       projectData.resources?.variables ?? {},
+      {
+        allowedScopes: ["device", "account"],
+        preserveUnknown: true,
+      },
     ),
   };
 
@@ -3243,7 +3382,12 @@ export const selectSaveSlotMap = ({ state }) => {
 export const selectSaveSlot = ({ state }, payload) => {
   const slotId = payload?.slotId;
   const storageKey = toSlotStorageKey(slotId);
-  return state.global.saveSlots[storageKey];
+  return Object.prototype.hasOwnProperty.call(
+    state.global.saveSlots ?? {},
+    storageKey,
+  )
+    ? state.global.saveSlots[storageKey]
+    : undefined;
 };
 
 export const selectLocalizationPackages = ({ state }) => {
@@ -3990,11 +4134,33 @@ export const setDialogueTextSpeed = ({ state }, payload) => {
 };
 
 export const setAutoForwardDelay = ({ state }, payload) => {
-  return setGlobalRuntimeField(state, "autoForwardDelay", payload?.value);
+  setGlobalRuntimeField(state, "autoForwardDelay", payload?.value);
+  if (
+    state.global.autoMode &&
+    state.global.isLineCompleted &&
+    !selectActiveInteraction({ state })
+  ) {
+    state.global.pendingEffects.push({
+      name: "startAutoNextTimer",
+      payload: { delay: selectAutoForwardTimerDelay({ state }) },
+    });
+  }
+  return state;
 };
 
 export const setAutoForwardSpeed = ({ state }, payload) => {
-  return setGlobalRuntimeField(state, "autoForwardSpeed", payload?.value);
+  setGlobalRuntimeField(state, "autoForwardSpeed", payload?.value);
+  if (
+    state.global.autoMode &&
+    state.global.isLineCompleted &&
+    !selectActiveInteraction({ state })
+  ) {
+    state.global.pendingEffects.push({
+      name: "startAutoNextTimer",
+      payload: { delay: selectAutoForwardTimerDelay({ state }) },
+    });
+  }
+  return state;
 };
 
 export const setSkipUnseenText = ({ state }, payload) => {
@@ -5299,6 +5465,8 @@ export const setNextLineConfig = (
   const manual = normalizeLegacyManualNextLineConfig(payload.manual);
   const { auto, applyMode } = payload;
   const previousAutoEnabled = state.global.nextLineConfig.auto?.enabled;
+  const previousAutoTrigger = state.global.nextLineConfig.auto?.trigger;
+  const previousAutoDelay = state.global.nextLineConfig.auto?.delay;
   const previousApplyMode = state.global.nextLineConfig?.applyMode;
   const isRollbackRestoring =
     state.contexts?.[state.contexts.length - 1]?.rollback?.isRestoring === true;
@@ -5334,40 +5502,30 @@ export const setNextLineConfig = (
   }
 
   const currentAutoEnabled = state.global.nextLineConfig.auto?.enabled;
+  const currentAutoTrigger = state.global.nextLineConfig.auto?.trigger;
+  const currentAutoDelay = state.global.nextLineConfig.auto?.delay;
   const activeInteraction = selectActiveInteraction({ state });
+  const autoConfigChanged =
+    auto !== undefined &&
+    (currentAutoEnabled !== previousAutoEnabled ||
+      currentAutoTrigger !== previousAutoTrigger ||
+      currentAutoDelay !== previousAutoDelay);
 
-  // If auto.enabled state has changed, dispatch timer effects
-  if (
-    !isRollbackRestoring &&
-    !activeInteraction &&
-    currentAutoEnabled === true &&
-    !previousAutoEnabled
-  ) {
-    const trigger = state.global.nextLineConfig.auto?.trigger;
-
-    // Event-based: only start timer immediately if trigger is "fromStart"
-    // or if line is already completed (for "fromComplete" trigger)
-    // Otherwise, markLineCompleted will start it when renderComplete fires
-    if (trigger === "fromStart") {
+  if (!isRollbackRestoring && autoConfigChanged) {
+    const shouldRunTimer =
+      !activeInteraction &&
+      currentAutoEnabled === true &&
+      (currentAutoTrigger === "fromStart" || state.global.isLineCompleted);
+    if (shouldRunTimer) {
       state.global.pendingEffects.push({
         name: "nextLineConfigTimer",
-        payload: { delay: state.global.nextLineConfig.auto.delay },
+        payload: { delay: currentAutoDelay },
       });
-    } else if (state.global.isLineCompleted) {
-      // trigger === "fromComplete" (or default) and line is already completed
+    } else if (previousAutoEnabled === true) {
       state.global.pendingEffects.push({
-        name: "nextLineConfigTimer",
-        payload: { delay: state.global.nextLineConfig.auto.delay },
+        name: "clearNextLineConfigTimer",
       });
     }
-  } else if (
-    !isRollbackRestoring &&
-    currentAutoEnabled === false &&
-    previousAutoEnabled
-  ) {
-    state.global.pendingEffects.push({
-      name: "clearNextLineConfigTimer",
-    });
   }
 
   state.global.pendingEffects.push({
@@ -5395,9 +5553,7 @@ export const saveSlot = ({ state }, payload) => {
     throw new Error("Cannot save while a scene replay is active");
   }
   const slotId = payload?.slotId;
-  if (slotId === undefined || slotId === null || slotId === "") {
-    throw new Error("saveSlot requires slotId");
-  }
+  assertValidSlotId(slotId, "saveSlot");
   const { thumbnailImage } = payload;
   const savedAt = payload?.savedAt;
   const storageKey = toSlotStorageKey(slotId);
@@ -5405,7 +5561,7 @@ export const saveSlot = ({ state }, payload) => {
   contexts?.forEach((context) => {
     ensureReadPointerState(context);
     removeLegacyRollbackBaseline(context.rollback);
-    sanitizePersistedRollback(context.rollback);
+    sanitizePersistedRollback(context.rollback, state.projectData);
   });
 
   const currentState = {
@@ -5446,11 +5602,14 @@ export const loadSlot = ({ state }, payload) => {
     throw new Error("Cannot load while a scene replay is active");
   }
   const slotId = payload?.slotId;
-  if (slotId === undefined || slotId === null || slotId === "") {
-    throw new Error("loadSlot requires slotId");
-  }
+  assertValidSlotId(slotId, "loadSlot");
   const storageKey = toSlotStorageKey(slotId);
-  const slotData = state.global.saveSlots[storageKey];
+  const slotData = Object.prototype.hasOwnProperty.call(
+    state.global.saveSlots ?? {},
+    storageKey,
+  )
+    ? state.global.saveSlots[storageKey]
+    : undefined;
   if (slotData) {
     const normalizedSlot = normalizeLoadedSaveSlot(slotData, state.projectData);
 
@@ -5499,27 +5658,33 @@ export const updateProjectData = ({ state }, payload) => {
   validateComputedVariableConfigs(projectData?.resources?.variables ?? {});
   resolveProjectRuntimeDefaults(projectData);
 
+  const shouldReconcileAuthoredState =
+    hasResolvableInitialProjectPointer(projectData);
+  const normalizedContexts = shouldReconcileAuthoredState
+    ? state.contexts?.map((context, index) =>
+        normalizeLoadedContext(cloneStateValue(context), projectData, index),
+      )
+    : undefined;
+
   state.projectData = projectData;
   state.global.imageGalleryNavigation = createDefaultImageGalleryNavigation();
   state.global.sceneReplayNavigation = createDefaultSceneReplayNavigation();
   resetMusicRoomPlayer(state);
-  const variableConfigs = projectData?.resources?.variables ?? {};
-  const { contextVariableDefaultValues, globalVariablesDefaultValues } =
-    getDefaultVariablesFromProjectData(projectData ?? {});
-  if (Object.prototype.hasOwnProperty.call(state.global ?? {}, "variables")) {
-    state.global.variables = {
-      ...globalVariablesDefaultValues,
-      ...filterStoredVariables(state.global.variables, variableConfigs),
-    };
-  }
-  state.contexts?.forEach((context) => {
-    if (Object.prototype.hasOwnProperty.call(context ?? {}, "variables")) {
-      context.variables = {
-        ...contextVariableDefaultValues,
-        ...filterStoredVariables(context.variables, variableConfigs),
+  if (shouldReconcileAuthoredState) {
+    const variableConfigs = projectData?.resources?.variables ?? {};
+    const { globalVariablesDefaultValues } = getDefaultVariablesFromProjectData(
+      projectData ?? {},
+    );
+    if (Object.prototype.hasOwnProperty.call(state.global ?? {}, "variables")) {
+      state.global.variables = {
+        ...globalVariablesDefaultValues,
+        ...filterStoredVariables(state.global.variables, variableConfigs, {
+          allowedScopes: ["device", "account"],
+        }),
       };
     }
-  });
+    state.contexts = normalizedContexts;
+  }
   clearConfirmDialog(state);
   clearFormDrafts(state);
 
@@ -5695,7 +5860,12 @@ export const nextLine = ({ state, rollbackActionBatchStack }, payload) => {
 
     // If scene mode (nextLineConfig.auto) is enabled with fromComplete trigger, restart the timer
     const nextLineConfig = state.global.nextLineConfig;
-    if (nextLineConfig?.auto?.enabled && !activeInteraction) {
+    const section = selectSection({ state }, { sectionId });
+    const isLastLine =
+      Array.isArray(section?.lines) && section.lines.at(-1)?.id === lineId;
+    if (isLastLine) {
+      disableNextLineConfigAuto(state);
+    } else if (nextLineConfig?.auto?.enabled && !activeInteraction) {
       const trigger = nextLineConfig.auto.trigger;
       // Default trigger is "fromComplete", so start timer if not explicitly "fromStart"
       if (trigger !== "fromStart") {
@@ -5801,6 +5971,7 @@ export const nextLine = ({ state, rollbackActionBatchStack }, payload) => {
     if (state.global.skipMode) {
       stopSkipMode({ state });
     }
+    disableNextLineConfigAuto(state);
   }
 
   return state;
@@ -5884,6 +6055,12 @@ export const nextLineFromSystem = (
 
   if (state.global.dialogueUIHidden && !isConditionalContinuation) {
     showDialogueUI({ state, rollbackActionBatchStack });
+    if (state.global.autoMode) {
+      state.global.pendingEffects.push({
+        name: "startAutoNextTimer",
+        payload: { delay: selectAutoForwardTimerDelay({ state }) },
+      });
+    }
     return state;
   }
 
@@ -6005,12 +6182,7 @@ export const nextLineFromSystem = (
     if (state.global.skipMode) {
       stopSkipMode({ state });
     }
-    if (state.global.nextLineConfig.auto?.enabled) {
-      state.global.nextLineConfig.auto.enabled = false;
-      state.global.pendingEffects.push({
-        name: "clearNextLineConfigTimer",
-      });
-    }
+    disableNextLineConfigAuto(state);
   }
 
   return state;
@@ -6438,6 +6610,36 @@ const ROLLBACK_ACTION_DEFINITIONS = {
   },
   setNextLineConfig: {
     replayLine: replayStoreActionForRollback(setNextLineConfig),
+  },
+  setSaveLoadPagination: {
+    recordSources: [ROLLBACK_ACTION_SOURCE_INTERACTION],
+    replayLine: replayStoreActionForRollback(setSaveLoadPagination),
+    replayRecorded: replayStoreActionForRollback(setSaveLoadPagination),
+    persistInSaveSlot: true,
+  },
+  incrementSaveLoadPagination: {
+    recordSources: [ROLLBACK_ACTION_SOURCE_INTERACTION],
+    replayLine: replayStoreActionForRollback(incrementSaveLoadPagination),
+    replayRecorded: replayStoreActionForRollback(incrementSaveLoadPagination),
+    persistInSaveSlot: true,
+  },
+  decrementSaveLoadPagination: {
+    recordSources: [ROLLBACK_ACTION_SOURCE_INTERACTION],
+    replayLine: replayStoreActionForRollback(decrementSaveLoadPagination),
+    replayRecorded: replayStoreActionForRollback(decrementSaveLoadPagination),
+    persistInSaveSlot: true,
+  },
+  setMenuPage: {
+    recordSources: [ROLLBACK_ACTION_SOURCE_INTERACTION],
+    replayLine: replayStoreActionForRollback(setMenuPage),
+    replayRecorded: replayStoreActionForRollback(setMenuPage),
+    persistInSaveSlot: true,
+  },
+  setMenuEntryPoint: {
+    recordSources: [ROLLBACK_ACTION_SOURCE_INTERACTION],
+    replayLine: replayStoreActionForRollback(setMenuEntryPoint),
+    replayRecorded: replayStoreActionForRollback(setMenuEntryPoint),
+    persistInSaveSlot: true,
   },
   finishSceneReplay: {
     replayLine: replayStoreActionForRollback(finishSceneReplay),

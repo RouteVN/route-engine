@@ -214,6 +214,139 @@ const assertExactSchema = ({ value, validator, path, contract }) => {
   );
 };
 
+const assertFiniteNumbers = (value, path, seen = new WeakSet()) => {
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) {
+      fail(path, "expected a finite number");
+    }
+    return;
+  }
+  if (value === null || typeof value !== "object" || seen.has(value)) {
+    return;
+  }
+  seen.add(value);
+  if (Array.isArray(value)) {
+    value.forEach((entry, index) =>
+      assertFiniteNumbers(entry, `${path}[${index}]`, seen),
+    );
+    return;
+  }
+  Object.entries(value).forEach(([key, entry]) =>
+    assertFiniteNumbers(entry, `${path}.${key}`, seen),
+  );
+};
+
+const assertNonEmptyPresentationResourceId = (resourceId, path) => {
+  if (resourceId === "") {
+    fail(path, "expected a non-empty resourceId");
+  }
+};
+
+const validatePresentationResourceIds = (actionType, payload, path) => {
+  const validateAnimation = (animation, animationPath) =>
+    assertNonEmptyPresentationResourceId(
+      animation?.resourceId,
+      `${animationPath}.resourceId`,
+    );
+  const validateSounds = (sounds, soundsPath) =>
+    (sounds ?? []).forEach((sound, index) =>
+      assertNonEmptyPresentationResourceId(
+        sound?.resourceId,
+        `${soundsPath}[${index}].resourceId`,
+      ),
+    );
+  const validateAudio = (audio, audioPath) => {
+    assertNonEmptyPresentationResourceId(
+      audio?.resourceId,
+      `${audioPath}.resourceId`,
+    );
+    validateSounds(audio?.sounds, `${audioPath}.sounds`);
+  };
+
+  switch (actionType) {
+    case "background":
+      assertNonEmptyPresentationResourceId(
+        payload.resourceId,
+        `${path}.resourceId`,
+      );
+      validateAnimation(payload.animations, `${path}.animations`);
+      break;
+    case "bgm":
+    case "voice":
+      validateAudio(payload, path);
+      break;
+    case "sfx":
+      validateSounds(payload.items, `${path}.items`);
+      (payload.channels ?? []).forEach((channel, index) =>
+        validateSounds(channel?.sounds, `${path}.channels[${index}].sounds`),
+      );
+      break;
+    case "character":
+      (payload.items ?? []).forEach((item, itemIndex) => {
+        (item.sprites ?? []).forEach((sprite, spriteIndex) =>
+          assertNonEmptyPresentationResourceId(
+            sprite?.resourceId,
+            `${path}.items[${itemIndex}].sprites[${spriteIndex}].resourceId`,
+          ),
+        );
+        validateAnimation(
+          item.animations,
+          `${path}.items[${itemIndex}].animations`,
+        );
+      });
+      break;
+    case "choice":
+    case "form":
+    case "layout":
+      assertNonEmptyPresentationResourceId(
+        payload.resourceId,
+        `${path}.resourceId`,
+      );
+      validateAnimation(payload.animations, `${path}.animations`);
+      break;
+    case "control":
+      assertNonEmptyPresentationResourceId(
+        payload.resourceId,
+        `${path}.resourceId`,
+      );
+      break;
+    case "dialogue":
+      assertNonEmptyPresentationResourceId(
+        payload.ui?.resourceId,
+        `${path}.ui.resourceId`,
+      );
+      validateAnimation(payload.ui?.animations, `${path}.ui.animations`);
+      (payload.character?.sprite?.items ?? []).forEach((item, index) =>
+        assertNonEmptyPresentationResourceId(
+          item?.resourceId,
+          `${path}.character.sprite.items[${index}].resourceId`,
+        ),
+      );
+      validateAnimation(
+        payload.character?.sprite?.animations,
+        `${path}.character.sprite.animations`,
+      );
+      break;
+    case "screen":
+      validateAnimation(payload.animations, `${path}.animations`);
+      break;
+    case "visual":
+      (payload.items ?? []).forEach((item, index) => {
+        assertNonEmptyPresentationResourceId(
+          item?.resourceId,
+          `${path}.items[${index}].resourceId`,
+        );
+        validateAnimation(
+          item?.animations,
+          `${path}.items[${index}].animations`,
+        );
+      });
+      break;
+    default:
+      break;
+  }
+};
+
 const assertSafeMapId = (value, path) => {
   assertString(value, path);
   if (
@@ -446,6 +579,12 @@ const validateLineActionPatch = ({ patch, path, lineIndex }) => {
     path: `${path}.payload`,
     contract: `the ${patch.actionType} presentation-action schema`,
   });
+  assertFiniteNumbers(patch.payload, `${path}.payload`);
+  validatePresentationResourceIds(
+    patch.actionType,
+    patch.payload,
+    `${path}.payload`,
+  );
 
   return {
     kind: "line.action",
@@ -564,6 +703,7 @@ const validateResourcePayload = (resourceType, payload, path) => {
     path,
     contract: `the resource.${resourceType} schema`,
   });
+  assertFiniteNumbers(payload, path);
 };
 
 const validateResourcePatch = ({
@@ -620,8 +760,79 @@ const validateResourcePatch = ({
     kind: "resource",
     key: `${patch.type}:${patch.resourceId}`,
     collectionName,
+    path,
     patch,
   };
+};
+
+const assertLocalizedResourceReference = ({
+  resources,
+  collectionName,
+  resourceId,
+  path,
+  label,
+}) => {
+  if (resourceId === undefined) {
+    return;
+  }
+  if (
+    typeof resourceId !== "string" ||
+    resourceId.length === 0 ||
+    !hasOwn(resources?.[collectionName] ?? {}, resourceId)
+  ) {
+    fail(path, `${label} resource "${resourceId}" was not found`);
+  }
+};
+
+const validateLocalizedTextStyleReferences = (
+  projectData,
+  validatedPackage,
+) => {
+  const resolvedProjectData = cloneValue(projectData);
+  for (const validatedPatch of validatedPackage.patches) {
+    if (validatedPatch.kind !== "resource") {
+      continue;
+    }
+    resolvedProjectData.resources[validatedPatch.collectionName] ??= {};
+    resolvedProjectData.resources[validatedPatch.collectionName][
+      validatedPatch.patch.resourceId
+    ] = cloneValue(validatedPatch.patch.payload);
+  }
+
+  const resources = resolvedProjectData.resources ?? {};
+  for (const validatedPatch of validatedPackage.patches) {
+    if (validatedPatch.patch.type !== "resource.textStyle") {
+      continue;
+    }
+    const textStyle = validatedPatch.patch.payload;
+    const fontIds = Array.isArray(textStyle.fontId)
+      ? textStyle.fontId
+      : [textStyle.fontId];
+    fontIds.forEach((fontId, index) =>
+      assertLocalizedResourceReference({
+        resources,
+        collectionName: "fonts",
+        resourceId: fontId,
+        path: `${validatedPatch.path}.payload.fontId${
+          fontIds.length > 1 ? `[${index}]` : ""
+        }`,
+        label: "font",
+      }),
+    );
+    for (const [fieldName, colorId] of [
+      ["colorId", textStyle.colorId],
+      ["strokeColorId", textStyle.strokeColorId],
+      ["shadow.colorId", textStyle.shadow?.colorId],
+    ]) {
+      assertLocalizedResourceReference({
+        resources,
+        collectionName: "colors",
+        resourceId: colorId,
+        path: `${validatedPatch.path}.payload.${fieldName}`,
+        label: "color",
+      });
+    }
+  }
 };
 
 const validatePatch = ({
@@ -773,6 +984,8 @@ const validateL10nData = ({ projectData, l10nData }) => {
       }
       importedFileOwners.set(fileId, packageId);
     }
+
+    validateLocalizedTextStyleReferences(projectData, validatedPackage);
 
     packages.set(packageId, validatedPackage);
   }

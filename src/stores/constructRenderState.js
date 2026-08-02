@@ -702,6 +702,8 @@ const createAnimatedSpriteElement = ({
   animationName,
   animationSpeed,
   loop,
+  width,
+  height,
   transform = {},
 } = {}) => {
   const resolvedAnimationName = resolveSpritesheetAnimationName(
@@ -722,8 +724,8 @@ const createAnimatedSpriteElement = ({
     id,
     type: "spritesheet-animation",
     ...transform,
-    width: spritesheet.width,
-    height: spritesheet.height,
+    width: width ?? spritesheet.width,
+    height: height ?? spritesheet.height,
     src: spritesheet.fileId,
     atlas: spritesheet.jsonData,
     playback: {
@@ -3056,37 +3058,23 @@ export const addVisuals = (
         const spritesheet = spritesheets[item.resourceId];
         if (spritesheet) {
           const transform = getRequiredVisualTransform(resources, item);
-          const animationName = item.animationName;
-
-          if (animationName) {
-            const animationDef = spritesheet.animations?.[animationName];
-
-            if (!animationDef) {
-              throw new Error(
-                `Animation '${animationName}' not found in spritesheet resource '${item.resourceId}'`,
-              );
-            }
-
-            const itemAppearance = getItemAppearance(item);
-            const element = {
-              id: `visual-${item.id}`,
-              type: "spritesheet-animation",
+          const itemAppearance = getItemAppearance(item);
+          const element = createAnimatedSpriteElement({
+            id: `visual-${item.id}`,
+            resourceId: item.resourceId,
+            spritesheet,
+            animationName: item.animationName,
+            animationSpeed: item.animationSpeed,
+            loop: item.loop,
+            width: item.width,
+            height: item.height,
+            transform: {
               ...getElementTransform(transform, item),
-              width: item.width ?? spritesheet.width,
-              height: item.height ?? spritesheet.height,
               alpha: itemAppearance.alpha ?? item.alpha ?? 1,
-              src: spritesheet.fileId,
-              atlas: spritesheet.jsonData,
-              playback: {
-                frames: animationDef.frames,
-                animationSpeed:
-                  item.animationSpeed ?? animationDef.animationSpeed ?? 0.5,
-                loop: item.loop ?? animationDef.loop ?? true,
-              },
-            };
-            if (itemAppearance.blur) {
-              element.blur = itemAppearance.blur;
-            }
+              ...(itemAppearance.blur ? { blur: itemAppearance.blur } : {}),
+            },
+          });
+          if (element) {
             storyContainer.children.push(structuredClone(element));
           }
         } else {
@@ -3115,7 +3103,12 @@ export const addVisuals = (
         }
       }
 
-      if (item.resourceId) {
+      const hasMediaResource = !!(
+        resources.spritesheets?.[item.resourceId] ||
+        resources.images?.[item.resourceId] ||
+        resources.videos?.[item.resourceId]
+      );
+      if (item.resourceId && !hasMediaResource) {
         const particle = resources.particles?.[item.resourceId];
 
         if (particle) {
@@ -3125,7 +3118,8 @@ export const addVisuals = (
         }
       }
 
-      if (item.resourceId) {
+      const hasParticleResource = !!resources.particles?.[item.resourceId];
+      if (item.resourceId && !hasMediaResource && !hasParticleResource) {
         const { layouts = {} } = resources;
         let layout = layouts[item.resourceId];
 
@@ -3455,7 +3449,7 @@ export const addChoices = (
     const storyContainer = getStoryContainer(elements);
     if (!storyContainer) return state;
 
-    const layout = resources?.layouts[presentationState.choice.resourceId];
+    const layout = resources?.layouts?.[presentationState.choice.resourceId];
     if (layout && layout.elements) {
       const wrappedTemplate = { elements: layout.elements };
       const result = renderLayoutTemplate(wrappedTemplate, {
@@ -4093,7 +4087,7 @@ export const addLayout = (
     const storyContainer = getStoryContainer(elements);
     if (!storyContainer) return state;
 
-    const layout = resources.layouts[presentationState.layout.resourceId];
+    const layout = resources.layouts?.[presentationState.layout.resourceId];
 
     if (!layout) {
       return state;
@@ -4268,7 +4262,7 @@ export const addOverlayStack = (
   if (overlayStack && overlayStack.length > 0) {
     // Add each overlay from the stack above the base presentation.
     overlayStack.forEach((overlay, index) => {
-      const layout = resources.layouts[overlay.resourceId];
+      const layout = resources.layouts?.[overlay.resourceId];
 
       if (!layout) {
         console.warn(`Overlay layout not found: ${overlay.resourceId}`);
