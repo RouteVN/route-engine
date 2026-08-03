@@ -23,6 +23,24 @@ their external boundaries so journeys stay deterministic.
 - Keep each known-defect case narrow enough that the marked assertion identifies
   one specific regression.
 
+## Action-pipeline characterization
+
+`createActionPipelineTranscriptHarness` records only observable boundaries:
+host or renderer dispatch, rendered snapshots, external effects, persistence
+writes, errors, and a compact public-state summary. Use it to protect action
+ordering and transaction behavior without asserting private executor details.
+
+- Distinguish a store/action failure before commit from an effect or renderer
+  failure after commit.
+- Assert repeated external effects by payload and order; do not collapse them
+  by effect name.
+- Include the settled pointer, relevant variables, active interaction, render
+  count, and pending-effect state when navigation is involved.
+- Do not snapshot random engine/render IDs or the entire system state.
+- When a VT project covers the same contract, load that exact YAML in a
+  companion integration journey so an unrelated fixture failure cannot make a
+  healthy visual reference misleading.
+
 Browser-level counterparts live in `vt/specs/robustness`. Healthy scenarios
 have committed references. Known-broken scenarios intentionally have no
 reference until their production fix renders the expected state.
