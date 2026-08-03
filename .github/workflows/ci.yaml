@@ -52,6 +52,10 @@ jobs:
             item: robustness/playback-auto-authored-co-due.yaml
           - id: playback-from-start
             item: robustness/playback-from-start-manual-completion.yaml
+          - id: playback-runtime-derived-text
+            item: robustness/playback-runtime-derived-auto-text.yaml
+          - id: playback-section-reentry
+            item: robustness/playback-section-reentry-first-line.yaml
           - id: playback-skip-authored
             item: robustness/playback-skip-authored-co-due.yaml
           - id: save-load-timers

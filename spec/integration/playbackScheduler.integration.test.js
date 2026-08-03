@@ -173,6 +173,129 @@ describe("reconciled playback scheduler integration", () => {
     expect(harness.getPointer().lineId).toBe("line2");
   });
 
+  it("assigns a fresh line occurrence when a section re-enters its first authored line", () => {
+    const projectData = createIntegrationProject({
+      sections: {
+        main: {
+          initialLineId: "initial",
+          lines: [
+            { id: "entry", actions: {} },
+            { id: "initial", actions: {} },
+          ],
+        },
+      },
+    });
+    const store = createSystemStore({ projectData });
+    const initialEntryId = store.selectPlaybackLineEntryId();
+    const initialPointer = store.selectCurrentPointer().pointer.lineId;
+
+    store.sectionTransition({ sectionId: "main" });
+    const firstTransitionEntryId = store.selectPlaybackLineEntryId();
+    store.sectionTransition({ sectionId: "main" });
+
+    expect({
+      initialPointer,
+      currentPointer: store.selectCurrentPointer().pointer.lineId,
+      firstTransitionEntryId,
+      secondTransitionEntryId: store.selectPlaybackLineEntryId(),
+    }).toEqual({
+      initialPointer: "initial",
+      currentPointer: "entry",
+      firstTransitionEntryId: initialEntryId + 1,
+      secondTransitionEntryId: initialEntryId + 2,
+    });
+  });
+
+  it("restarts from-start timing when that first authored line is re-entered", () => {
+    const projectData = createIntegrationProject({
+      sections: {
+        main: {
+          initialLineId: "initial",
+          lines: [
+            { id: "entry", actions: authoredAuto("fromStart", 100) },
+            { id: "initial", actions: {} },
+          ],
+        },
+      },
+    });
+    const harness = createEngineIntegrationHarness({ projectData });
+
+    harness.engine.handleAction("sectionTransition", { sectionId: "main" });
+    harness.ticker.tick(40);
+    harness.engine.handleAction("sectionTransition", { sectionId: "main" });
+
+    harness.ticker.tick(60);
+    expect({
+      pointer: harness.getPointer().lineId,
+      physicalCallbacks: harness.ticker.size,
+    }).toEqual({ pointer: "entry", physicalCallbacks: 1 });
+
+    harness.ticker.tick(39);
+    expect(harness.getPointer().lineId).toBe("entry");
+    harness.ticker.tick(1);
+    expect(harness.getPointer().lineId).toBe("initial");
+  });
+
+  it("restarts global auto timing when runtime changes derived dialogue text", () => {
+    const longCopy = "L".repeat(100);
+    const projectData = createIntegrationProject({
+      resources: {
+        variables: {
+          autoCopy: {
+            type: "string",
+            scope: "context",
+            computed: {
+              branches: [
+                {
+                  when: { eq: [{ var: "runtime.muteAll" }, true] },
+                  expr: longCopy,
+                },
+              ],
+              default: { expr: "A" },
+            },
+          },
+        },
+      },
+      sections: {
+        main: {
+          lines: [
+            {
+              id: "line1",
+              actions: {
+                dialogue: {
+                  mode: "adv",
+                  content: [{ text: "${variables.autoCopy}" }],
+                },
+              },
+            },
+            { id: "line2", actions: {} },
+          ],
+        },
+      },
+    });
+    const harness = createEngineIntegrationHarness({
+      global: {
+        runtime: { autoForwardDelay: 0, autoForwardSpeed: 100 },
+      },
+      projectData,
+    });
+    harness.completeLatestRender();
+    harness.engine.handleAction("startAutoMode", {});
+
+    harness.ticker.tick(10);
+    harness.engine.handleAction("setMuteAll", { value: true });
+    harness.ticker.tick(20);
+    expect({
+      pointer: harness.getPointer().lineId,
+      physicalCallbacks: harness.ticker.size,
+    }).toEqual({ pointer: "line1", physicalCallbacks: 1 });
+
+    harness.ticker.tick(2979);
+    expect(harness.getPointer().lineId).toBe("line1");
+    harness.ticker.tick(1);
+    expect(harness.getPointer().lineId).toBe("line2");
+  });
+
   it("derives auto text without evaluating unrelated computed variables", () => {
     const projectData = createProject({
       line1Actions: {

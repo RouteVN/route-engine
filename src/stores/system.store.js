@@ -4325,6 +4325,8 @@ export const setAchievementProgress = ({ state }, payload) => {
   return state;
 };
 
+const getSectionTransitionEntryLine = (section) => section?.lines?.[0];
+
 const transitionToSection = (
   state,
   { sectionId, resetStoryState = false, screen },
@@ -4336,7 +4338,7 @@ const transitionToSection = (
     return state;
   }
 
-  const firstLine = targetSection.lines?.[0];
+  const firstLine = getSectionTransitionEntryLine(targetSection);
   if (!firstLine) {
     console.warn(`Section ${sectionId} has no lines`);
     return state;
@@ -6924,8 +6926,7 @@ const didInstallPlaybackLineOccurrence = ({
       state.projectData,
       payload.sectionId,
     ).section;
-    const targetLineId =
-      targetSection?.initialLineId ?? targetSection?.lines?.[0]?.id;
+    const targetLineId = getSectionTransitionEntryLine(targetSection)?.id;
     return (
       typeof targetLineId === "string" &&
       nextPointer?.sectionId === payload.sectionId &&

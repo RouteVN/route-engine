@@ -1,0 +1,195 @@
+---
+title: Playback Runtime-derived Auto Text
+description: Changing runtime-derived dialogue while auto mode is active must replace the old text deadline.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 1280
+  height: 720
+steps:
+  - action: wait
+    ms: 300
+  - action: click
+    x: 300
+    y: 540
+  - action: customEvent
+    name: vt:tickPlayback
+    detail:
+      deltaMS: 10
+  - action: wait
+    ms: 100
+  - action: click
+    x: 980
+    y: 540
+  - action: customEvent
+    name: vt:tickPlayback
+    detail:
+      deltaMS: 20
+  - action: wait
+    ms: 300
+  - action: screenshot
+---
+screen:
+  width: 1280
+  height: 720
+resources:
+  controls:
+    sourceControl:
+      elements:
+        - id: background
+          type: rect
+          width: 1280
+          height: 720
+          colorId: background
+        - id: success-panel
+          $when: runtime.muteAll
+          type: rect
+          width: 1280
+          height: 720
+          colorId: success
+        - id: initial-title
+          $when: "!runtime.muteAll"
+          type: text
+          x: 150
+          y: 180
+          content: "Start auto, advance 10 ms, then change derived text"
+          textStyleId: title
+        - id: success-title
+          $when: runtime.muteAll
+          type: text
+          x: 115
+          y: 180
+          content: "PASS: the old 30 ms deadline was replaced"
+          textStyleId: title
+        - id: derived-dialogue
+          type: text
+          x: 140
+          y: 300
+          width: 1000
+          content: "Derived dialogue: ${variables.autoCopy}"
+          textStyleId: body
+        - id: start-button
+          type: rect
+          x: 120
+          y: 460
+          width: 360
+          height: 150
+          colorId: action
+          click:
+            payload:
+              actions:
+                setAutoForwardDelay:
+                  value: 0
+                setAutoForwardSpeed:
+                  value: 100
+                startAutoMode: {}
+        - id: start-label
+          type: text
+          x: 205
+          y: 510
+          content: "START AUTO"
+          textStyleId: body
+        - id: mutate-button
+          type: rect
+          x: 800
+          y: 460
+          width: 360
+          height: 150
+          colorId: action
+          click:
+            payload:
+              actions:
+                setMuteAll:
+                  value: true
+        - id: mutate-label
+          type: text
+          x: 860
+          y: 510
+          content: "CHANGE TEXT"
+          textStyleId: body
+    failureControl:
+      elements:
+        - id: failure-panel
+          type: rect
+          width: 1280
+          height: 720
+          colorId: failure
+        - id: failure-title
+          type: text
+          x: 125
+          y: 265
+          content: "BUG: stale short-text deadline advanced"
+          textStyleId: title
+  layouts:
+    dialogueLayout:
+      mode: adv
+      elements: []
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    background:
+      hex: "#111827"
+    action:
+      hex: "#2563EB"
+    success:
+      hex: "#166534"
+    failure:
+      hex: "#991B1B"
+    text:
+      hex: "#FFFFFF"
+  textStyles:
+    title:
+      fontId: default
+      colorId: text
+      fontSize: 40
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1.2
+    body:
+      fontId: default
+      colorId: text
+      fontSize: 30
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+  variables:
+    vtDeterministicPlaybackTicker:
+      type: boolean
+      scope: context
+      default: true
+    autoCopy:
+      type: string
+      scope: context
+      computed:
+        branches:
+          - when:
+              eq:
+                - var: runtime.muteAll
+                - true
+            expr: Runtime changed this dialogue into a substantially longer sentence for auto timing.
+        default:
+          expr: A
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: source
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogueLayout
+                  content:
+                    - text: "${variables.autoCopy}"
+                control:
+                  resourceId: sourceControl
+            - id: failure
+              actions:
+                stopAutoMode: {}
+                control:
+                  resourceId: failureControl

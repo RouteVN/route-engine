@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { loadAll } from "js-yaml";
 import { describe, expect, it } from "vitest";
+import { estimateAutoForwardDelay } from "../../src/autoForwardTiming.js";
 import { createEngineIntegrationHarness } from "./helpers/createEngineIntegrationHarness.js";
 
 const loadVtProject = (filename) => {
@@ -61,5 +62,63 @@ describe("playback scheduler VT companion journeys", () => {
     expect(harness.getPointer().lineId).toBe("source");
     harness.ticker.tick(1);
     expect(harness.getPointer().lineId).toBe("success");
+  });
+
+  it("executes the exact section re-entry VT project with a fresh line deadline", () => {
+    const projectData = loadVtProject(
+      "playback-section-reentry-first-line.yaml",
+    );
+    const harness = createEngineIntegrationHarness({ projectData });
+
+    harness.engine.handleActions(
+      getControlActions(projectData, "startControl", "start-button"),
+    );
+    harness.ticker.tick(40);
+    harness.engine.handleActions(
+      getControlActions(projectData, "reenterControl", "reenter-button"),
+    );
+
+    harness.ticker.tick(60);
+    expect({
+      pointer: harness.getPointer().lineId,
+      physicalCallbacks: harness.ticker.size,
+    }).toEqual({ pointer: "entry", physicalCallbacks: 1 });
+
+    harness.ticker.tick(40);
+    expect(harness.getPointer().lineId).toBe("failure");
+  });
+
+  it("executes the exact runtime-derived text VT project with a replacement auto deadline", () => {
+    const projectData = loadVtProject(
+      "playback-runtime-derived-auto-text.yaml",
+    );
+    const harness = createEngineIntegrationHarness({ projectData });
+    harness.completeLatestRender();
+
+    harness.engine.handleActions(
+      getControlActions(projectData, "sourceControl", "start-button"),
+    );
+    harness.ticker.tick(10);
+    harness.engine.handleActions(
+      getControlActions(projectData, "sourceControl", "mutate-button"),
+    );
+
+    harness.ticker.tick(20);
+    expect({
+      pointer: harness.getPointer().lineId,
+      physicalCallbacks: harness.ticker.size,
+    }).toEqual({ pointer: "source", physicalCallbacks: 1 });
+
+    const longCopy =
+      projectData.resources.variables.autoCopy.computed.branches[0].expr;
+    const expectedDelay = estimateAutoForwardDelay({
+      text: longCopy,
+      baseDelay: 0,
+      speed: 100,
+    });
+    harness.ticker.tick(expectedDelay - 21);
+    expect(harness.getPointer().lineId).toBe("source");
+    harness.ticker.tick(1);
+    expect(harness.getPointer().lineId).toBe("failure");
   });
 });

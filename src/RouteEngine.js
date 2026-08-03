@@ -110,6 +110,16 @@ const isConditionalAutoContinue = (value) =>
 const isSameStoryPointer = (left, right) =>
   left?.sectionId === right?.sectionId && left?.lineId === right?.lineId;
 
+const didRuntimeChange = (before, after) => {
+  const runtimeIds = new Set([
+    ...Object.keys(before ?? {}),
+    ...Object.keys(after ?? {}),
+  ]);
+  return [...runtimeIds].some(
+    (runtimeId) => !Object.is(before?.[runtimeId], after?.[runtimeId]),
+  );
+};
+
 /**
  * Creates a RouteEngine instance.
  */
@@ -945,6 +955,10 @@ export default function createRouteEngine(options) {
       _conditionalRoutingSequence += 1;
     }
 
+    const autoModeWasActive = _systemStore.selectAutoMode();
+    const runtimeBeforeAction = autoModeWasActive
+      ? _systemStore.selectRuntime()
+      : null;
     const wasSceneReplayActive =
       _systemStore.selectIsSceneReplayActive?.() === true;
     const persistentAnimationSessionsBeforeAction =
@@ -1000,9 +1014,15 @@ export default function createRouteEngine(options) {
       wasSceneReplayActive,
       isSceneReplayActive,
     });
+    const autoModeIsActive = _systemStore.selectAutoMode();
+    const autoContentMayHaveChanged =
+      autoModeIsActive &&
+      (actionType === "updateVariable" ||
+        (autoModeWasActive &&
+          didRuntimeChange(runtimeBeforeAction, _systemStore.selectRuntime())));
     if (
       PLAYBACK_DIRTY_ACTION_TYPES.has(actionType) ||
-      (actionType === "updateVariable" && _systemStore.selectAutoMode())
+      autoContentMayHaveChanged
     ) {
       _playbackScheduleDirty = true;
     }
