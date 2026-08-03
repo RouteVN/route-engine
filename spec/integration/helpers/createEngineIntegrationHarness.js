@@ -99,6 +99,7 @@ export const createEngineIntegrationHarness = ({
   onPlaybackSchedule,
   ticker: providedTicker,
   persistence: providedPersistence,
+  autoInitialize = true,
 } = {}) => {
   const ticker = providedTicker ?? createIntegrationTicker();
   const persistence = providedPersistence ?? createIntegrationPersistence();
@@ -151,9 +152,7 @@ export const createEngineIntegrationHarness = ({
       initialState,
     });
   };
-  init();
-
-  return {
+  const harness = {
     engine,
     eventHandler,
     effectsHandler,
@@ -174,6 +173,13 @@ export const createEngineIntegrationHarness = ({
     getState() {
       return engine.selectSystemState();
     },
+    initialize: init,
     reinitialize: init,
   };
+
+  if (autoInitialize) {
+    harness.initialize();
+  }
+
+  return harness;
 };

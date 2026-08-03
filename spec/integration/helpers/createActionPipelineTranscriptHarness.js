@@ -4,6 +4,11 @@ import { createEngineIntegrationHarness } from "./createEngineIntegrationHarness
 const clone = (value) =>
   value === undefined ? undefined : structuredClone(value);
 
+const sanitizeRenderState = (renderState) => {
+  const { id: _renderId, ...stableRenderState } = renderState ?? {};
+  return clone(stableRenderState);
+};
+
 const createTranscriptPersistence = (transcript) => {
   const record = (operation) =>
     vi.fn((payload) => {
@@ -32,10 +37,7 @@ const summarizeState = (harness) => {
   return {
     pointer: clone(context?.pointers?.read ?? null),
     variables: clone(context?.variables ?? {}),
-    rollbackCheckpointIndex:
-      context?.rollback?.checkpointIndex ??
-      context?.rollback?.currentCheckpointIndex ??
-      null,
+    rollbackCheckpointIndex: context?.rollback?.currentIndex ?? null,
     dialogueHistoryLength: context?.dialogueHistory?.currentLength ?? 0,
     interaction: activeInteraction
       ? {
@@ -79,10 +81,12 @@ export const createActionPipelineTranscriptHarness = ({
     preprocessPayload,
     ticker,
     persistence,
-    onRender: () => {
+    autoInitialize: false,
+    onRender: (renderState) => {
       transcript.push({
         type: "render",
         sequence: ++renderSequence,
+        payload: sanitizeRenderState(renderState),
       });
     },
     handleUnhandledEffect: (effect, dependencies) => {
@@ -97,6 +101,7 @@ export const createActionPipelineTranscriptHarness = ({
       });
     },
   });
+  harness.initialize();
 
   const clearTranscript = () => {
     transcript.length = 0;

@@ -5,6 +5,7 @@ import { createActionPipelineTranscriptHarness } from "./helpers/createActionPip
 import {
   createEngineIntegrationHarness,
   createIntegrationProject,
+  findRenderElement,
 } from "./helpers/createEngineIntegrationHarness.js";
 
 const updateScore = (value) => ({
@@ -48,6 +49,81 @@ const findElement = (elements, elementId) =>
   elements.find((element) => element.id === elementId);
 
 describe("action pipeline black-box characterization", () => {
+  it("records stable rendered snapshots without lifecycle-specific render IDs", () => {
+    const projectData = createPipelineProject({
+      resources: {
+        layouts: {
+          markerLayout: {
+            elements: [
+              { id: "rendered-marker", type: "text", content: "Rendered" },
+            ],
+          },
+        },
+      },
+      sections: {
+        main: {
+          lines: [
+            {
+              id: "line1",
+              actions: { layout: { resourceId: "markerLayout" } },
+            },
+          ],
+        },
+      },
+    });
+
+    const trace = createActionPipelineTranscriptHarness({ projectData });
+    const renderEntry = trace.transcript.find(({ type }) => type === "render");
+
+    expect(renderEntry).toMatchObject({
+      type: "render",
+      sequence: 1,
+      payload: {
+        animations: [],
+        audio: [],
+      },
+    });
+    expect(renderEntry.payload).not.toHaveProperty("id");
+    expect(
+      findRenderElement(renderEntry.payload.elements, "rendered-marker"),
+    ).toMatchObject({ type: "text", content: "Rendered" });
+  });
+
+  it("makes the initialized harness available to initial external effects", () => {
+    let effectHarness;
+    let initialPointer;
+    const projectData = createPipelineProject({
+      sections: {
+        main: {
+          lines: [
+            {
+              id: "line1",
+              actions: {
+                appendPendingEffect: { name: "pipeline:initial" },
+              },
+            },
+          ],
+        },
+      },
+    });
+
+    const trace = createActionPipelineTranscriptHarness({
+      projectData,
+      onExternalEffect: (effect, { harness }) => {
+        expect(effect.name).toBe("pipeline:initial");
+        effectHarness = harness;
+        initialPointer = harness.getPointer();
+      },
+    });
+
+    expect(effectHarness).toBe(trace.harness);
+    expect(initialPointer).toEqual({
+      sceneId: "scene",
+      sectionId: "main",
+      lineId: "line1",
+    });
+  });
+
   it("settles batched navigation at only the final destination and renders once", () => {
     const projectData = createPipelineProject({
       sections: {
@@ -270,19 +346,38 @@ describe("action pipeline black-box characterization", () => {
     trace.clearTranscript();
 
     trace.dispatchActions({ nextLine: {} });
-    await vi.waitFor(() =>
-      expect(
-        trace.transcript.filter(
+    await vi.waitFor(() => {
+      const persistedSlots = trace.transcript
+        .filter(
           ({ type, operation }) =>
             type === "persistence" && operation === "saveSlots",
-        ),
-      ).toHaveLength(1),
-    );
-
-    const slot = trace.harness.engine.selectSaveSlot({
-      slotId: "destination",
+        )
+        .at(-1)?.payload;
+      const persistedSlot = Object.values(persistedSlots ?? {}).find(
+        ({ slotId }) => slotId === "destination",
+      );
+      const persistedContext = persistedSlot?.state?.contexts?.at(-1);
+      expect({
+        pointer: persistedContext?.pointers?.read,
+        rollbackIndex: persistedContext?.rollback?.currentIndex,
+        historyLength: persistedContext?.dialogueHistory?.currentLength,
+      }).toEqual({
+        pointer: { sectionId: "main", lineId: "destination" },
+        rollbackIndex: 1,
+        historyLength: 2,
+      });
     });
-    const slotContext = slot.state.contexts.at(-1);
+
+    const persistedSlots = trace.transcript
+      .filter(
+        ({ type, operation }) =>
+          type === "persistence" && operation === "saveSlots",
+      )
+      .at(-1).payload;
+    const persistedSlot = Object.values(persistedSlots).find(
+      ({ slotId }) => slotId === "destination",
+    );
+    const slotContext = persistedSlot.state.contexts.at(-1);
     const slotHistory = slotContext.dialogueHistory.entries.slice(
       0,
       slotContext.dialogueHistory.currentLength,
@@ -303,14 +398,17 @@ describe("action pipeline black-box characterization", () => {
       ],
     });
 
-    trace.harness.completeLatestRender();
-    trace.dispatchActions({ nextLine: {} });
-    trace.dispatchActions({ loadSlot: { slotId: "destination" } });
-    trace.dispatchActions({ rollbackByOffset: { offset: -1 } });
+    const reloaded = createActionPipelineTranscriptHarness({
+      projectData,
+      global: { saveSlots: persistedSlots },
+    });
+    reloaded.dispatchActions({ loadSlot: { slotId: "destination" } });
+    reloaded.dispatchActions({ rollbackByOffset: { offset: -1 } });
 
-    expect(trace.summarizeState()).toMatchObject({
+    expect(reloaded.summarizeState()).toMatchObject({
       pointer: { sectionId: "main", lineId: "source" },
       variables: { score: 0 },
+      rollbackCheckpointIndex: 0,
     });
   });
 
@@ -356,6 +454,7 @@ describe("action pipeline black-box characterization", () => {
     trace.harness.completeLatestRender();
     trace.dispatchActions({ nextLine: {} });
     expect(getScore(trace.harness)).toBe(11);
+    expect(trace.summarizeState().rollbackCheckpointIndex).toBe(1);
     trace.clearTranscript();
 
     trace.dispatchActions({ rollbackByOffset: { offset: -1 } });
@@ -363,6 +462,7 @@ describe("action pipeline black-box characterization", () => {
     expect(trace.summarizeState()).toMatchObject({
       pointer: { sectionId: "main", lineId: "line1" },
       variables: { score: 1 },
+      rollbackCheckpointIndex: 0,
     });
     expect(
       trace.transcript.filter(({ type }) => type === "externalEffect"),
