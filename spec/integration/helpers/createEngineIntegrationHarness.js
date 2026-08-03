@@ -94,6 +94,9 @@ export const createEngineIntegrationHarness = ({
   namespace = "integration-test",
   preprocessPayload,
   handleUnhandledEffect,
+  onRender,
+  onRendererEvent,
+  onPlaybackSchedule,
   ticker: providedTicker,
   persistence: providedPersistence,
 } = {}) => {
@@ -102,7 +105,9 @@ export const createEngineIntegrationHarness = ({
   const renderStates = [];
   const routeGraphics = {
     render: vi.fn((renderState) => {
-      renderStates.push(structuredClone(renderState));
+      const capturedRenderState = structuredClone(renderState);
+      renderStates.push(capturedRenderState);
+      onRender?.(structuredClone(capturedRenderState));
     }),
   };
   let engine;
@@ -121,8 +126,17 @@ export const createEngineIntegrationHarness = ({
         }
       : {}),
   });
+  if (onPlaybackSchedule) {
+    const reconcilePlaybackScheduleV1 =
+      effectsHandler.reconcilePlaybackScheduleV1.bind(effectsHandler);
+    effectsHandler.reconcilePlaybackScheduleV1 = (schedule) => {
+      onPlaybackSchedule(structuredClone(schedule));
+      return reconcilePlaybackScheduleV1(schedule);
+    };
+  }
   const eventHandler = effectsHandler.createRouteGraphicsEventHandler({
     preprocessPayload,
+    onEvent: onRendererEvent,
   });
   engine = createRouteEngine({ handlePendingEffects: effectsHandler });
 

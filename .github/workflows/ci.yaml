@@ -44,6 +44,12 @@ jobs:
         include:
           - id: async-stale-click
             item: robustness/async-stale-click.yaml
+          - id: context-runtime-rollback
+            item: robustness/context-runtime-rollback.yaml
+          - id: effect-owned-line-actions
+            item: robustness/effect-owned-line-actions.yaml
+          - id: form-mixed-action-guard
+            item: robustness/form-mixed-action-guard.yaml
           - id: l10n-roundtrip
             item: robustness/l10n-layout-roundtrip.yaml
           - id: particle-texture
