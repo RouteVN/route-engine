@@ -673,6 +673,84 @@ Playback timing semantics:
 - Global `skipMode` does not use that completion gate; it advances on its own fast timer.
 - `nextLineConfig.auto` is separate and may use `trigger: "fromStart"` or `trigger: "fromComplete"` depending on authored behavior.
 
+#### Playback scheduling and ownership
+
+The built-in effects handler reconciles auto, skip, and authored auto timing as
+one authoritative schedule. It owns at most one physical ticker callback per
+engine even when multiple logical deadlines are active. If two deadlines
+become due on the same tick, the engine performs one progression attempt; it
+does not skip a second line.
+
+Logical deadlines retain their exact remaining duration while their descriptor
+is unchanged. This includes an authored `fromStart` deadline when a manual
+click only completes the current reveal. Auto and authored deadlines restart
+for a new line occurrence or changed delay; authored timing also restarts when
+its trigger changes, while auto restarts for an accepted mode restart or
+changed resolved text. Skip timing belongs to the active skip session and
+therefore continues across ordinary line changes until it becomes due or skip
+mode restarts. Duration accumulation uses exact binary64 arithmetic, so
+repeated fractional deltas and very large finite delays do not drift at the due
+boundary.
+
+Timer ownership is private runtime metadata. It is absent from
+`selectSystemState()`, save slots, persistence payloads, and render state.
+Loading, reinitializing, or entering a fresh occurrence derives a new schedule
+from the settled semantic state; partial elapsed time is never serialized.
+Rollback deliberately suppresses a restored line's authored auto deadline
+until that line occurrence or its authored auto configuration changes.
+
+The engine reconciles only after an outer action batch and all of its effects
+settle. Effect or reconciliation failures send an `unsettled` schedule and
+remove active timing fail-closed. A failed progression that did not commit is
+not retried repeatedly with the same ownership descriptor. A committed
+destination may schedule again after a later successful reconciliation.
+
+Custom effect handlers remain compatible in two modes:
+
+- A handler without `reconcilePlaybackScheduleV1` receives the existing six
+  timer start/clear effects unchanged.
+- A handler that defines `reconcilePlaybackScheduleV1` must also define
+  synchronous `reset` and `dispose` methods. The engine then withholds the six
+  legacy timer effects and calls the reconciler with a complete cloned
+  schedule. Capabilities are captured when the engine is created, and the
+  reconciler must complete synchronously without mutating, initializing, or
+  disposing the engine reentrantly.
+
+The V1 reconciler receives one of these shapes:
+
+```js
+{
+  contractVersion: 1,
+  status: "settled",
+  lineEntryId: 42,
+  timers: {
+    auto: {
+      owner: { sessionId: 3, lineEntryId: 42 },
+      delayMs: 1800,
+      contentKey: "Resolved dialogue text",
+    },
+    skip: null,
+    authored: {
+      owner: { lineEntryId: 42 },
+      delayMs: 1000,
+      trigger: "fromStart",
+    },
+  },
+}
+
+// Fail-closed invalidation
+{
+  contractVersion: 1,
+  status: "unsettled",
+  lineEntryId: 42,
+  timers: null,
+}
+```
+
+All fields and ownership IDs are authoritative and opaque to the host. A
+reconciler should preserve elapsed time only when a logical descriptor is
+field-for-field equivalent to the currently installed descriptor.
+
 ### Runtime and Localization Actions
 
 | Action                            | Payload      | Description                                                 |
@@ -894,7 +972,10 @@ Effects queued by actions for external handling:
 
 Built-in effect handling notes:
 
-- `createEffectsHandler(...)` coalesces only the latest occurrence of replaceable built-in effects such as `render`, timer start/clear effects, `handleLineActions`, and full-snapshot persistence effects.
+- `createEffectsHandler(...)` coalesces only the latest occurrence of replaceable built-in effects such as `render`, `handleLineActions`, full-snapshot persistence effects, and legacy timer start/clear effects before translating them.
+- With the built-in V1 playback capability, the engine filters legacy timer
+  effects and supplies a complete authoritative schedule instead. Custom
+  handlers that do not opt into V1 continue to receive the legacy effects.
 - `applyScopedDataUpdates` is incremental and ordered, so it must not be last-write coalesced by effect name.
 - Achievement effects are external, ordered, and never coalesced by effect name.
 - Unknown effect names are not silently dropped; `createEffectsHandler(...)` throws unless you provide `handleUnhandledEffect`.

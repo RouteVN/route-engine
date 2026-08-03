@@ -1,6 +1,6 @@
 {
   "name": "route-engine-js",
-  "version": "1.36.3",
+  "version": "1.37.0",
   "description": "A lightweight Visual Novel engine built in JavaScript for creating interactive narrative games with branching storylines",
   "repository": {
     "type": "git",
@@ -40,6 +40,7 @@
     "build": "node esbuild.js",
     "lint": "bun run prettier src -c",
     "lint:fix": "bun run prettier src -w",
+    "format:changed": "bash scripts/check-changed-format.sh",
     "coverage": "bun run vitest run --coverage",
     "vt:generate": "node esbuild.js && rtgl vt generate",
     "vt:docker": "node esbuild.js && docker run --rm ${VT_DOCKER_ARGS:-} --user $(id -u):$(id -g) -e RTGL_VT_DEBUG=true -v \"$PWD:/app\" -w /app docker.io/han4wluc/rtgl:playwright-v1.57.0-rtgl-v1.0.10 rtgl vt screenshot --wait-event vt:ready --concurrency ${VT_DOCKER_CONCURRENCY:-2} --timeout ${VT_DOCKER_TIMEOUT:-60000}",

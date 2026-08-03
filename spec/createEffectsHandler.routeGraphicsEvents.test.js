@@ -630,7 +630,7 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
     );
   });
 
-  it("keeps a replacement next-line-config timer tracked after timer-driven dispatch", () => {
+  it("keeps the physical callback stable when authored timing is replaced", () => {
     const ticker = createTicker();
     let effectsHandler;
     const engine = {
@@ -655,11 +655,10 @@ describe("createEffectsHandler RouteGraphics event bridge", () => {
     const originalCallback = ticker.add.mock.calls[0][0];
     originalCallback({ deltaMS: 50 });
 
-    expect(ticker.add).toHaveBeenCalledTimes(2);
-    const replacementCallback = ticker.add.mock.calls[1][0];
+    expect(ticker.add).toHaveBeenCalledTimes(1);
     effectsHandler([{ name: "clearNextLineConfigTimer" }]);
 
-    expect(ticker.remove).toHaveBeenCalledWith(replacementCallback);
+    expect(ticker.remove).toHaveBeenCalledWith(originalCallback);
   });
 
   it("advances global auto mode only after its calculated delay", () => {

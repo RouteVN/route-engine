@@ -254,6 +254,15 @@ Global playback modes use a different timing model:
 - Global `skipMode` does not wait for completion; it advances aggressively on its own short timer.
 - `nextLineConfig.auto` is the only built-in auto-like behavior that can intentionally start from line start via `trigger: "fromStart"`.
 - `nextLineConfig.auto.delay` remains a fixed authored delay and is not length-adjusted.
+- The built-in effects handler reconciles all three timing sources onto one
+  physical ticker callback. Co-due logical timers produce one progression,
+  while unchanged descriptors preserve their exact remaining duration.
+- Line occurrences and auto/skip sessions have private monotonic ownership
+  identities. They are transactional with story state but are not public or
+  persisted. Rollback-restored authored timing remains suppressed until its
+  occurrence or configuration changes.
+- Scheduler reconciliation occurs only after the outer action/effect cycle is
+  settled. An unsettled or failed cycle clears timing fail-closed.
 
 ## Dialogue Modes
 
@@ -285,11 +294,17 @@ Side effects queued during action execution:
 
 - `render`: Re-render the current state
 - `handleLineActions`: Process actions attached to a line
-- `startAutoNextTimer` / `clearAutoNextTimer`: Auto mode timers
-- `startSkipNextTimer` / `clearSkipNextTimer`: Skip mode timers
-- `nextLineConfigTimer` / `clearNextLineConfigTimer`: Authored next-line timers
+- `startAutoNextTimer` / `clearAutoNextTimer`: Legacy auto timer compatibility
+- `startSkipNextTimer` / `clearSkipNextTimer`: Legacy skip timer compatibility
+- `nextLineConfigTimer` / `clearNextLineConfigTimer`: Legacy authored timer compatibility
 
-The built-in `createEffectsHandler(...)` coalesces only the latest occurrence of replaceable built-in effects such as `render`, timer effects, line-action dispatch, and persistence effects. Custom effect names are preserved and must be handled explicitly.
+The built-in `createEffectsHandler(...)` opts into the V1 playback schedule, so
+the engine filters those six legacy timer effects and supplies one complete
+authoritative schedule after state settles. A custom handler without the V1
+capability continues to receive the legacy effects unchanged. Other
+replaceable built-in effects such as `render`, line-action dispatch, and
+full-snapshot persistence are coalesced; custom effect names are preserved and
+must be handled explicitly.
 
 ## Store Architecture
 

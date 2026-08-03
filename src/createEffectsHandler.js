@@ -2,27 +2,11 @@ import {
   createIndexedDbPersistence,
   normalizeNamespace,
 } from "./indexedDbPersistence.js";
+import {
+  createPlaybackScheduler,
+  PLAYBACK_TIMER_EFFECT_NAMES,
+} from "./playbackScheduler.js";
 
-const createTimerState = () => {
-  let elapsed = 0;
-  let callback = null;
-
-  return {
-    getElapsed: () => elapsed,
-    setElapsed: (value) => {
-      elapsed = value;
-    },
-    addElapsed: (value) => {
-      elapsed += value;
-    },
-    getCallback: () => callback,
-    setCallback: (value) => {
-      callback = value;
-    },
-  };
-};
-
-const DEFAULT_SKIP_NEXT_DELAY_MS = 80;
 const MUSIC_ROOM_SOUND_ID = "music-room:player";
 const MUSIC_ROOM_SOUND_EVENT_ACTIONS = new Map([
   ["soundReady", "musicRoomSoundReady"],
@@ -90,180 +74,6 @@ const handleLineActions = (
   }
 };
 
-const retireStaleTimerCallback = ({ ticker, timerState, callback }) => {
-  ticker.remove(callback);
-  if (timerState.getCallback() === callback) {
-    timerState.setCallback(null);
-    timerState.setElapsed(0);
-  }
-};
-
-const startAutoNextTimer = (
-  { engine, ticker, autoTimer, lifecycleGeneration, isCurrentLifecycle },
-  payload,
-) => {
-  // Remove old callback if exists
-  const existingCallback = autoTimer.getCallback();
-  if (existingCallback) {
-    ticker.remove(existingCallback);
-  }
-
-  // Reset elapsed time
-  autoTimer.setElapsed(0);
-
-  // Create new ticker callback for auto mode (one-shot)
-  const newCallback = (time) => {
-    if (!isCurrentLifecycle(lifecycleGeneration)) {
-      retireStaleTimerCallback({
-        ticker,
-        timerState: autoTimer,
-        callback: newCallback,
-      });
-      return;
-    }
-
-    autoTimer.addElapsed(time.deltaMS);
-
-    const delay = payload.delay ?? 1000;
-    if (autoTimer.getElapsed() >= delay) {
-      // Remove timer before advancing (one-shot behavior)
-      ticker.remove(newCallback);
-      autoTimer.setCallback(null);
-      autoTimer.setElapsed(0);
-      // Advance to next line - markLineCompleted will restart timer when ready
-      dispatchInternalAction(engine, "nextLineFromSystem", {});
-    }
-  };
-
-  autoTimer.setCallback(newCallback);
-
-  // Add to auto ticker
-  ticker.add(newCallback);
-};
-
-const clearAutoNextTimer = ({ ticker, autoTimer }, payload) => {
-  // Remove ticker callback
-  const existingCallback = autoTimer.getCallback();
-  if (existingCallback) {
-    ticker.remove(existingCallback);
-    autoTimer.setCallback(null);
-  }
-  autoTimer.setElapsed(0);
-};
-
-const startSkipNextTimer = (
-  { engine, ticker, skipTimer, lifecycleGeneration, isCurrentLifecycle },
-  payload,
-) => {
-  // Remove old callback if exists
-  const existingCallback = skipTimer.getCallback();
-  if (existingCallback) {
-    ticker.remove(existingCallback);
-  }
-
-  // Reset elapsed time
-  skipTimer.setElapsed(0);
-
-  // Create new ticker callback for skip mode
-  const newCallback = (time) => {
-    if (!isCurrentLifecycle(lifecycleGeneration)) {
-      retireStaleTimerCallback({
-        ticker,
-        timerState: skipTimer,
-        callback: newCallback,
-      });
-      return;
-    }
-
-    skipTimer.addElapsed(time.deltaMS);
-
-    const delay = payload?.delay ?? DEFAULT_SKIP_NEXT_DELAY_MS;
-    if (skipTimer.getElapsed() >= delay) {
-      skipTimer.setElapsed(0);
-      dispatchInternalAction(engine, "nextLineFromSystem", {});
-    }
-  };
-
-  skipTimer.setCallback(newCallback);
-
-  // Add to skip ticker
-  ticker.add(newCallback);
-};
-
-const clearSkipNextTimer = ({ ticker, skipTimer }, payload) => {
-  // Remove ticker callback
-  const existingCallback = skipTimer.getCallback();
-  if (existingCallback) {
-    ticker.remove(existingCallback);
-    skipTimer.setCallback(null);
-  }
-  skipTimer.setElapsed(0);
-};
-
-const nextLineConfigTimer = (
-  {
-    engine,
-    ticker,
-    nextLineConfigTimerState,
-    lifecycleGeneration,
-    isCurrentLifecycle,
-  },
-  payload,
-) => {
-  // Remove old callback if exists
-  const existingCallback = nextLineConfigTimerState.getCallback();
-  if (existingCallback) {
-    ticker.remove(existingCallback);
-  }
-
-  // Reset elapsed time
-  nextLineConfigTimerState.setElapsed(0);
-
-  // Create new ticker callback for scene mode
-  const newCallback = (time) => {
-    if (!isCurrentLifecycle(lifecycleGeneration)) {
-      retireStaleTimerCallback({
-        ticker,
-        timerState: nextLineConfigTimerState,
-        callback: newCallback,
-      });
-      return;
-    }
-
-    nextLineConfigTimerState.addElapsed(time.deltaMS);
-
-    const delay = payload.delay ?? 1000;
-    if (nextLineConfigTimerState.getElapsed() >= delay) {
-      nextLineConfigTimerState.setElapsed(0);
-      // Use the dedicated system action
-      dispatchInternalAction(engine, "nextLineFromSystem", {});
-      // Stop this timer instance; the action will re-queue it if needed
-      ticker.remove(newCallback);
-      if (nextLineConfigTimerState.getCallback() === newCallback) {
-        nextLineConfigTimerState.setCallback(null);
-      }
-    }
-  };
-
-  nextLineConfigTimerState.setCallback(newCallback);
-
-  // Add to ticker
-  ticker.add(newCallback);
-};
-
-const clearNextLineConfigTimer = (
-  { ticker, nextLineConfigTimerState },
-  payload,
-) => {
-  // Remove ticker callback
-  const existingCallback = nextLineConfigTimerState.getCallback();
-  if (existingCallback) {
-    ticker.remove(existingCallback);
-    nextLineConfigTimerState.setCallback(null);
-  }
-  nextLineConfigTimerState.setElapsed(0);
-};
-
 const saveSlots = ({ enqueuePersistenceWrite }, payload) => {
   enqueuePersistenceWrite((persistence) =>
     persistence.saveSlots(payload?.saveSlots),
@@ -307,12 +117,6 @@ const effects = {
   saveGlobalRuntime,
   applyScopedDataUpdates,
   handleLineActions,
-  startAutoNextTimer,
-  clearAutoNextTimer,
-  startSkipNextTimer,
-  clearSkipNextTimer,
-  nextLineConfigTimer,
-  clearNextLineConfigTimer,
 };
 
 const COALESCIBLE_EFFECT_NAMES = new Set([
@@ -372,9 +176,6 @@ const createEffectsHandler = ({
   persistence: providedPersistence,
   namespace,
 }) => {
-  const autoTimer = createTimerState();
-  const skipTimer = createTimerState();
-  const nextLineConfigTimerState = createTimerState();
   const persistenceByNamespace = new Map();
   let persistenceWriteQueue = Promise.resolve();
   let latestRenderId = null;
@@ -383,21 +184,13 @@ const createEffectsHandler = ({
   let renderDispatchCount = 0;
   let lifecycleGeneration = 0;
   let isActive = true;
-
-  const clearTimer = (timerState) => {
-    const callback = timerState.getCallback();
-    if (callback) {
-      ticker.remove(callback);
-    }
-    timerState.setCallback(null);
-    timerState.setElapsed(0);
-  };
-
-  const clearOwnedTimers = () => {
-    clearTimer(autoTimer);
-    clearTimer(skipTimer);
-    clearTimer(nextLineConfigTimerState);
-  };
+  const playbackScheduler = createPlaybackScheduler({
+    ticker,
+    dispatchAutomaticAttempt: () =>
+      dispatchInternalAction(getEngine(), "nextLineFromSystem", {}),
+    classifyAutomaticAttemptError: (error) =>
+      getEngine()?.classifyAutomaticAttemptError?.(error) ?? "preCommit",
+  });
 
   const resetRenderOwnership = () => {
     latestRenderId = null;
@@ -407,8 +200,8 @@ const createEffectsHandler = ({
   };
 
   const reset = () => {
+    playbackScheduler.reset();
     lifecycleGeneration += 1;
-    clearOwnedTimers();
     resetRenderOwnership();
     isActive = true;
   };
@@ -416,8 +209,8 @@ const createEffectsHandler = ({
   const dispose = () => {
     lifecycleGeneration += 1;
     isActive = false;
-    clearOwnedTimers();
     resetRenderOwnership();
+    playbackScheduler.dispose();
   };
 
   const isCurrentLifecycle = (candidateGeneration) =>
@@ -752,7 +545,11 @@ const createEffectsHandler = ({
     );
 
     normalizedEffects.forEach((effect) => {
-      if (!effects[effect.name] && !handleUnhandledEffect) {
+      if (
+        !effects[effect.name] &&
+        !PLAYBACK_TIMER_EFFECT_NAMES.has(effect.name) &&
+        !handleUnhandledEffect
+      ) {
         throw new Error(`Unhandled pending effect "${effect.name}".`);
       }
     });
@@ -761,9 +558,6 @@ const createEffectsHandler = ({
       engine,
       routeGraphics,
       ticker,
-      autoTimer,
-      skipTimer,
-      nextLineConfigTimerState,
       trackRenderDispatch,
       getRenderDispatchCount,
       enqueuePersistenceWrite,
@@ -782,6 +576,11 @@ const createEffectsHandler = ({
         continue;
       }
 
+      if (PLAYBACK_TIMER_EFFECT_NAMES.has(effect.name)) {
+        playbackScheduler.handleLegacyEffect(effect);
+        continue;
+      }
+
       const handler = effects[effect.name];
       if (handler) {
         handler(deps, effect.payload);
@@ -797,6 +596,8 @@ const createEffectsHandler = ({
     createRouteGraphicsEventHandler;
   handlePendingEffects.reset = reset;
   handlePendingEffects.dispose = dispose;
+  handlePendingEffects.reconcilePlaybackScheduleV1 = (schedule) =>
+    playbackScheduler.reconcilePlaybackScheduleV1(schedule);
 
   return handlePendingEffects;
 };

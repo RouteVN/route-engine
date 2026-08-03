@@ -18,6 +18,7 @@ import {
   getLocalizationPackageOptions,
   resolveL10nProjectData,
 } from "./l10n.js";
+import { PLAYBACK_TIMER_EFFECT_NAMES } from "./playbackScheduler.js";
 
 const PERSISTENT_PLAYBACK_RESET_ACTIONS = new Set([
   "loadSlot",
@@ -65,6 +66,32 @@ const FORM_ACTION_TYPES = new Set(["submitForm", "cancelForm"]);
 const SHOW_IMAGE_GALLERY_VARIANT_ACTION_TYPE = "showImageGalleryVariant";
 const PLAY_MUSIC_ROOM_TRACK_ACTION_TYPE = "playMusicRoomTrack";
 const START_SCENE_REPLAY_ACTION_TYPE = "startSceneReplay";
+const PLAYBACK_DIRTY_ACTION_TYPES = new Set([
+  "startAutoMode",
+  "stopAutoMode",
+  "toggleAutoMode",
+  "startSkipMode",
+  "stopSkipMode",
+  "toggleSkipMode",
+  "setAutoForwardDelay",
+  "setAutoForwardSpeed",
+  "setNextLineConfig",
+  "markLineCompleted",
+  "nextLine",
+  "nextLineFromSystem",
+  "jumpToLine",
+  "sectionTransition",
+  "resetStoryAtSection",
+  "loadSlot",
+  "rollbackByOffset",
+  "rollbackToLine",
+  "startSceneReplay",
+  "exitSceneReplay",
+  "updateProjectData",
+  "updateLocalizationPackage",
+  "submitForm",
+  "cancelForm",
+]);
 
 const isRecord = (value) =>
   value !== null && typeof value === "object" && !Array.isArray(value);
@@ -82,6 +109,16 @@ const isConditionalAutoContinue = (value) =>
 
 const isSameStoryPointer = (left, right) =>
   left?.sectionId === right?.sectionId && left?.lineId === right?.lineId;
+
+const didRuntimeChange = (before, after) => {
+  const runtimeIds = new Set([
+    ...Object.keys(before ?? {}),
+    ...Object.keys(after ?? {}),
+  ]);
+  return [...runtimeIds].some(
+    (runtimeId) => !Object.is(before?.[runtimeId], after?.[runtimeId]),
+  );
+};
 
 /**
  * Creates a RouteEngine instance.
@@ -105,13 +142,158 @@ export default function createRouteEngine(options) {
   let _canonicalProjectData;
   let _l10nData;
   let _localizationPackageId = null;
+  let _playbackScheduleDirty = false;
+  let _isReconcilingPlayback = false;
+  let _automaticAttemptDepth = 0;
+  const _automaticAttemptErrors = new Map();
 
   const { handlePendingEffects } = options;
+  if (typeof handlePendingEffects !== "function") {
+    throw new TypeError("RouteEngine requires handlePendingEffects");
+  }
+  const handleEffects = handlePendingEffects.bind(handlePendingEffects);
+  const reconcilePlayback =
+    typeof handlePendingEffects.reconcilePlaybackScheduleV1 === "function"
+      ? handlePendingEffects.reconcilePlaybackScheduleV1.bind(
+          handlePendingEffects,
+        )
+      : null;
+  const resetEffects =
+    typeof handlePendingEffects.reset === "function"
+      ? handlePendingEffects.reset.bind(handlePendingEffects)
+      : null;
+  const disposeEffects =
+    typeof handlePendingEffects.dispose === "function"
+      ? handlePendingEffects.dispose.bind(handlePendingEffects)
+      : null;
+  if (reconcilePlayback && (!resetEffects || !disposeEffects)) {
+    throw new TypeError(
+      "reconcilePlaybackScheduleV1 requires reset and dispose capabilities",
+    );
+  }
+
+  const assertNotReconcilingPlayback = (operation) => {
+    if (_isReconcilingPlayback) {
+      throw new Error(
+        `RouteEngine cannot ${operation} during playback reconciliation`,
+      );
+    }
+  };
 
   const assertActive = (operation) => {
+    assertNotReconcilingPlayback(operation);
     if (!_isActive || !_systemStore) {
       throw new Error(`RouteEngine ${operation} requires an active engine`);
     }
+  };
+
+  const setAutomaticAttemptErrorClassification = (error, classification) => {
+    if (_automaticAttemptDepth === 0) {
+      return;
+    }
+    const priorities = {
+      preCommit: 0,
+      postCommitUnsettled: 1,
+      reconcileFailed: 2,
+    };
+    const current = _automaticAttemptErrors.get(error);
+    if (
+      current === undefined ||
+      priorities[classification] > priorities[current]
+    ) {
+      _automaticAttemptErrors.set(error, classification);
+    }
+  };
+
+  const classifyAutomaticAttemptError = (error) => {
+    const classification = _automaticAttemptErrors.get(error) ?? "preCommit";
+    _automaticAttemptErrors.delete(error);
+    return classification;
+  };
+
+  const callPlaybackReconciler = (schedule) => {
+    if (!reconcilePlayback) return;
+    _isReconcilingPlayback = true;
+    try {
+      const result = reconcilePlayback(structuredClone(schedule));
+      if (
+        result !== null &&
+        (typeof result === "object" || typeof result === "function") &&
+        typeof result.then === "function"
+      ) {
+        throw new TypeError(
+          "reconcilePlaybackScheduleV1 must complete synchronously",
+        );
+      }
+    } finally {
+      _isReconcilingPlayback = false;
+    }
+  };
+
+  const createUnsettledPlaybackSchedule = () => ({
+    contractVersion: 1,
+    status: "unsettled",
+    lineEntryId: _systemStore?.selectPlaybackLineEntryId?.() ?? 0,
+    timers: null,
+  });
+
+  const invalidatePlaybackSchedule = (primaryError) => {
+    if (!reconcilePlayback || !_isActive || !_systemStore) return;
+    _playbackScheduleDirty = true;
+    try {
+      callPlaybackReconciler(createUnsettledPlaybackSchedule());
+    } catch (cleanupError) {
+      if (primaryError) {
+        const aggregateError = new AggregateError(
+          [primaryError, cleanupError],
+          "Playback work and schedule invalidation both failed",
+        );
+        _automaticAttemptErrors.delete(primaryError);
+        setAutomaticAttemptErrorClassification(
+          aggregateError,
+          "reconcileFailed",
+        );
+        throw aggregateError;
+      }
+      setAutomaticAttemptErrorClassification(cleanupError, "reconcileFailed");
+      throw cleanupError;
+    }
+  };
+
+  const reconcilePlaybackIfDirty = () => {
+    if (
+      !reconcilePlayback ||
+      !_playbackScheduleDirty ||
+      !_isActive ||
+      !_systemStore ||
+      _actionDispatchDepth > 0 ||
+      _isProcessingPendingEffects
+    ) {
+      return;
+    }
+
+    let timers;
+    try {
+      timers = _systemStore.selectDesiredPlaybackTimers();
+    } catch (error) {
+      setAutomaticAttemptErrorClassification(error, "reconcileFailed");
+      invalidatePlaybackSchedule(error);
+      throw error;
+    }
+
+    try {
+      callPlaybackReconciler({
+        contractVersion: 1,
+        status: "settled",
+        lineEntryId: _systemStore.selectPlaybackLineEntryId(),
+        timers,
+      });
+    } catch (error) {
+      setAutomaticAttemptErrorClassification(error, "reconcileFailed");
+      invalidatePlaybackSchedule(error);
+      throw error;
+    }
+    _playbackScheduleDirty = false;
   };
 
   const snapshotPersistentAnimationSessions = (
@@ -174,18 +356,28 @@ export default function createRouteEngine(options) {
         });
         _systemStore.clearPendingEffects();
         try {
-          handlePendingEffects(snapshot);
+          const deliveredSnapshot = reconcilePlayback
+            ? snapshot.filter(
+                (effect) => !PLAYBACK_TIMER_EFFECT_NAMES.has(effect.name),
+              )
+            : snapshot;
+          if (deliveredSnapshot.length > 0) {
+            handleEffects(deliveredSnapshot);
+          }
         } catch (error) {
           _systemStore.clearPendingEffects();
           pendingSnapshot.forEach((effect) => {
             _systemStore.appendPendingEffect(effect);
           });
+          setAutomaticAttemptErrorClassification(error, "postCommitUnsettled");
+          invalidatePlaybackSchedule(error);
           throw error;
         }
       }
     } finally {
       _isProcessingPendingEffects = false;
     }
+    reconcilePlaybackIfDirty();
   };
 
   const runWithDeferredEffects = (callback) => {
@@ -204,6 +396,7 @@ export default function createRouteEngine(options) {
   };
 
   const init = ({ initialState, namespace }) => {
+    assertNotReconcilingPlayback("initialize");
     const previousAudioCommandId =
       _systemStore?.selectSystemState?.()?.global?.audioCommandId ?? 0;
     const { l10nData, ...systemInitialState } = initialState;
@@ -261,7 +454,7 @@ export default function createRouteEngine(options) {
       initialAudioCommandId: previousAudioCommandId,
     });
 
-    handlePendingEffects.reset?.();
+    resetEffects?.();
     _systemStore = nextSystemStore;
     _lifecycleGeneration += 1;
     _isActive = true;
@@ -279,11 +472,16 @@ export default function createRouteEngine(options) {
     _canonicalProjectData = canonicalProjectData;
     _l10nData = normalizedL10nData;
     _localizationPackageId = localizationPackageId;
+    _playbackScheduleDirty = true;
+    _isReconcilingPlayback = false;
+    _automaticAttemptDepth = 0;
+    _automaticAttemptErrors.clear();
     _systemStore.appendPendingEffect({ name: "handleLineActions" });
     processEffectsUntilEmpty();
   };
 
   const dispose = () => {
+    assertNotReconcilingPlayback("dispose");
     if (!_isActive) {
       return;
     }
@@ -299,7 +497,9 @@ export default function createRouteEngine(options) {
     _persistentAnimationSessions = new Map();
     _restoredPersistentAnimationSessions = new Map();
     _renderPersistentAnimationMetadata = new Map();
-    handlePendingEffects.dispose?.();
+    _playbackScheduleDirty = false;
+    _automaticAttemptErrors.clear();
+    disposeEffects?.();
   };
 
   const getNamespace = () => {
@@ -755,6 +955,10 @@ export default function createRouteEngine(options) {
       _conditionalRoutingSequence += 1;
     }
 
+    const autoModeWasActive = _systemStore.selectAutoMode();
+    const runtimeBeforeAction = autoModeWasActive
+      ? _systemStore.selectRuntime()
+      : null;
     const wasSceneReplayActive =
       _systemStore.selectIsSceneReplayActive?.() === true;
     const persistentAnimationSessionsBeforeAction =
@@ -764,7 +968,15 @@ export default function createRouteEngine(options) {
     const pointerBeforeAction =
       _systemStore.selectCurrentPointer()?.pointer ?? null;
     const cursorBeforeAction = _systemStore.selectRollbackCursor?.() ?? null;
-    const result = _systemStore[actionType](storePayload);
+    let storeCommitted = false;
+    let result;
+    try {
+      result = _systemStore[actionType](storePayload);
+      storeCommitted = true;
+    } catch (error) {
+      setAutomaticAttemptErrorClassification(error, "preCommit");
+      throw error;
+    }
     if (nextCanonicalProjectData !== undefined) {
       _canonicalProjectData = nextCanonicalProjectData;
     }
@@ -802,7 +1014,26 @@ export default function createRouteEngine(options) {
       wasSceneReplayActive,
       isSceneReplayActive,
     });
-    processEffectsUntilEmpty();
+    const autoModeIsActive = _systemStore.selectAutoMode();
+    const autoContentMayHaveChanged =
+      autoModeIsActive &&
+      (actionType === "updateVariable" ||
+        (autoModeWasActive &&
+          didRuntimeChange(runtimeBeforeAction, _systemStore.selectRuntime())));
+    if (
+      PLAYBACK_DIRTY_ACTION_TYPES.has(actionType) ||
+      autoContentMayHaveChanged
+    ) {
+      _playbackScheduleDirty = true;
+    }
+    try {
+      processEffectsUntilEmpty();
+    } catch (error) {
+      if (storeCommitted) {
+        setAutomaticAttemptErrorClassification(error, "postCommitUnsettled");
+      }
+      throw error;
+    }
     return result;
   };
 
@@ -873,6 +1104,7 @@ export default function createRouteEngine(options) {
     ),
     canonicalProjectData: _canonicalProjectData,
     localizationPackageId: _localizationPackageId,
+    playbackScheduleDirty: _playbackScheduleDirty,
   });
 
   const restoreActionBatchEngineSnapshot = (snapshot) => {
@@ -893,6 +1125,7 @@ export default function createRouteEngine(options) {
     );
     _canonicalProjectData = snapshot.canonicalProjectData;
     _localizationPackageId = snapshot.localizationPackageId;
+    _playbackScheduleDirty = snapshot.playbackScheduleDirty;
   };
 
   const runActionBatch = (callback, options = {}) => {
@@ -1000,7 +1233,16 @@ export default function createRouteEngine(options) {
   };
 
   const handleInternalAction = (actionType, payload) => {
-    handleAction(actionType, payload);
+    if (actionType !== "nextLineFromSystem") {
+      return handleAction(actionType, payload);
+    }
+
+    _automaticAttemptDepth += 1;
+    try {
+      return handleAction(actionType, payload);
+    } finally {
+      _automaticAttemptDepth = Math.max(0, _automaticAttemptDepth - 1);
+    }
   };
 
   const buildActionTemplateContext = (eventContext) => {
@@ -1412,5 +1654,6 @@ export default function createRouteEngine(options) {
     selectHasPendingRenderWork,
     handleLineActions,
     getNamespace,
+    classifyAutomaticAttemptError,
   };
 }

@@ -1,0 +1,174 @@
+---
+title: Playback Section Re-entry First Line
+description: Re-entering a section's first authored line must create a fresh playback occurrence even when initialLineId points elsewhere.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 1280
+  height: 720
+steps:
+  - action: wait
+    ms: 200
+  - action: click
+    x: 640
+    y: 520
+  - action: customEvent
+    name: vt:tickPlayback
+    detail:
+      deltaMS: 40
+  - action: wait
+    ms: 100
+  - action: click
+    x: 640
+    y: 520
+  - action: customEvent
+    name: vt:tickPlayback
+    detail:
+      deltaMS: 60
+  - action: wait
+    ms: 200
+  - action: screenshot
+---
+screen:
+  width: 1280
+  height: 720
+resources:
+  controls:
+    startControl:
+      elements:
+        - id: background
+          type: rect
+          width: 1280
+          height: 720
+          colorId: background
+        - id: title
+          type: text
+          x: 125
+          y: 210
+          content: "Section initialLineId intentionally differs from lines[0]"
+          textStyleId: title
+        - id: start-button
+          type: rect
+          x: 390
+          y: 450
+          width: 500
+          height: 130
+          colorId: action
+          click:
+            payload:
+              actions:
+                sectionTransition:
+                  sectionId: main
+        - id: start-label
+          type: text
+          x: 485
+          y: 490
+          content: "ENTER FIRST LINE"
+          textStyleId: body
+    reenterControl:
+      elements:
+        - id: success-panel
+          type: rect
+          width: 1280
+          height: 720
+          colorId: success
+        - id: success-title
+          type: text
+          x: 145
+          y: 220
+          content: "PASS: re-entry owns a fresh 100 ms deadline"
+          textStyleId: title
+        - id: reenter-button
+          type: rect
+          x: 390
+          y: 450
+          width: 500
+          height: 130
+          colorId: action
+          click:
+            payload:
+              actions:
+                sectionTransition:
+                  sectionId: main
+        - id: reenter-label
+          type: text
+          x: 470
+          y: 490
+          content: "RE-ENTER SAME LINE"
+          textStyleId: body
+    failureControl:
+      elements:
+        - id: failure-panel
+          type: rect
+          width: 1280
+          height: 720
+          colorId: failure
+        - id: failure-title
+          type: text
+          x: 125
+          y: 265
+          content: "BUG: stale deadline fired after only 60 ms"
+          textStyleId: title
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    background:
+      hex: "#111827"
+    action:
+      hex: "#2563EB"
+    success:
+      hex: "#166534"
+    failure:
+      hex: "#991B1B"
+    text:
+      hex: "#FFFFFF"
+  textStyles:
+    title:
+      fontId: default
+      colorId: text
+      fontSize: 40
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1.2
+    body:
+      fontId: default
+      colorId: text
+      fontSize: 30
+      fontWeight: "400"
+      fontStyle: normal
+      lineHeight: 1.2
+  variables:
+    vtDeterministicPlaybackTicker:
+      type: boolean
+      scope: context
+      default: true
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          initialLineId: setup
+          lines:
+            - id: entry
+              actions:
+                setNextLineConfig:
+                  auto:
+                    enabled: true
+                    trigger: fromStart
+                    delay: 100
+                control:
+                  resourceId: reenterControl
+            - id: failure
+              actions:
+                setNextLineConfig:
+                  auto:
+                    enabled: false
+                control:
+                  resourceId: failureControl
+            - id: setup
+              actions:
+                control:
+                  resourceId: startControl
