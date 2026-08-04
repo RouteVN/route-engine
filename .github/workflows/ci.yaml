@@ -26,6 +26,8 @@ jobs:
 
       - run: bun run lint
 
+      - run: bun run check:test-markers
+
       - name: Check changed-file formatting
         env:
           FORMAT_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
