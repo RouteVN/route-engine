@@ -12,9 +12,10 @@ their external boundaries so journeys stay deterministic.
 - Assert both the user-visible result and important ownership state, such as
   the current pointer, active interaction, timer count, or persisted payload.
 - Use ordinary `it` for supported behavior.
-- `bun run check:test-markers` scans every executable test file in the
-  repository and rejects focused, skipped, todo, conditionally disabled,
-  expected-failure, and known-defect markers. Merged behavior-neutral refactor
+- `bun run check:test-markers` scans every executable JavaScript, TypeScript,
+  and Puty YAML test file in the repository. It rejects focused, skipped, todo,
+  conditionally disabled, expected-failure, and known-defect markers, including
+  parameterized and option-based Vitest forms. Merged behavior-neutral refactor
   preparation must keep every contract active; product defects are reproduced
   and fixed in their own PRs.
 - During local defect reproduction, use `itKnownDefect` only for a reproduced
