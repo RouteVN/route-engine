@@ -124,7 +124,45 @@ describe("action pipeline black-box characterization", () => {
     });
   });
 
-  it("settles batched navigation at only the final destination and renders once", () => {
+  it("tracks only successful lifecycle boundaries through every exposed path", async () => {
+    const projectData = createPipelineProject({
+      sections: {
+        main: { lines: [{ id: "line1", actions: {} }] },
+      },
+    });
+    const trace = createActionPipelineTranscriptHarness({ projectData });
+
+    expect(trace.summarizeState().successfulLifecycleEpoch).toBe(1);
+
+    trace.harness.reinitialize();
+    expect(trace.summarizeState().successfulLifecycleEpoch).toBe(2);
+
+    expect(() =>
+      trace.harness.engine.init({
+        namespace: "invalid-transcript-lifecycle",
+        initialState: { projectData: {} },
+      }),
+    ).toThrow();
+    expect(trace.summarizeState().successfulLifecycleEpoch).toBe(2);
+
+    trace.harness.engine.dispose();
+    expect(trace.summarizeState().successfulLifecycleEpoch).toBe(3);
+    trace.harness.engine.dispose();
+    expect(trace.summarizeState().successfulLifecycleEpoch).toBe(3);
+
+    trace.reinitialize();
+    expect(trace.summarizeState().successfulLifecycleEpoch).toBe(4);
+
+    trace.harness.engine.init({
+      namespace: "direct-transcript-lifecycle",
+      initialState: { projectData },
+    });
+    expect(trace.summarizeState().successfulLifecycleEpoch).toBe(5);
+
+    await trace.settlePersistence();
+  });
+
+  it("settles batched navigation at only the final destination and renders once", async () => {
     const projectData = createPipelineProject({
       sections: {
         source: { lines: [{ id: "source", actions: {} }] },
@@ -148,7 +186,7 @@ describe("action pipeline black-box characterization", () => {
       },
     });
     const trace = createActionPipelineTranscriptHarness({ projectData });
-    trace.clearTranscript();
+    await trace.clearTranscript();
 
     trace.dispatchActions({
       ...updateScore(1),
@@ -160,7 +198,13 @@ describe("action pipeline black-box characterization", () => {
       trace.transcript
         .filter(({ type }) => type !== "persistence")
         .map(({ type }) => type),
-    ).toEqual(["dispatch", "render", "externalEffect", "settled"]);
+    ).toEqual([
+      "dispatch",
+      "render",
+      "externalEffect",
+      "playbackSchedule",
+      "settled",
+    ]);
     expect(
       trace.transcript.filter(({ type }) => type === "externalEffect"),
     ).toEqual([
@@ -177,12 +221,12 @@ describe("action pipeline black-box characterization", () => {
     });
   });
 
-  it("rolls back state, effects, and rendering when store work fails before commit", () => {
+  it("rolls back state, effects, and rendering when store work fails before commit", async () => {
     const projectData = createPipelineProject({
       sections: { main: { lines: [{ id: "line1", actions: {} }] } },
     });
     const trace = createActionPipelineTranscriptHarness({ projectData });
-    trace.clearTranscript();
+    await trace.clearTranscript();
 
     expect(() =>
       trace.dispatchActions({
@@ -203,7 +247,7 @@ describe("action pipeline black-box characterization", () => {
     });
   });
 
-  it("keeps a committed mutation and retries its effect after post-commit failure", () => {
+  it("keeps a committed mutation and retries its effect after post-commit failure", async () => {
     let attempts = 0;
     const projectData = createPipelineProject({
       sections: { main: { lines: [{ id: "line1", actions: {} }] } },
@@ -220,7 +264,7 @@ describe("action pipeline black-box characterization", () => {
         }
       },
     });
-    trace.clearTranscript();
+    await trace.clearTranscript();
 
     expect(() =>
       trace.dispatchActions({
@@ -245,7 +289,7 @@ describe("action pipeline black-box characterization", () => {
     ).toHaveLength(1);
   });
 
-  it("drains reentrant actions after the current effect without duplicating work", () => {
+  it("drains reentrant actions after the current effect without duplicating work", async () => {
     const projectData = createPipelineProject({
       sections: { main: { lines: [{ id: "line1", actions: {} }] } },
     });
@@ -260,7 +304,7 @@ describe("action pipeline black-box characterization", () => {
         }
       },
     });
-    trace.clearTranscript();
+    await trace.clearTranscript();
 
     trace.dispatchActions({
       appendPendingEffect: { name: "pipeline:outer" },
@@ -278,7 +322,7 @@ describe("action pipeline black-box characterization", () => {
     expect(trace.summarizeState().pendingEffects).toEqual([]);
   });
 
-  it("reconciles playback once after the complete outer action batch", () => {
+  it("reconciles playback once after the complete outer action batch", async () => {
     const schedules = [];
     const projectData = createPipelineProject({
       sections: {
@@ -343,7 +387,7 @@ describe("action pipeline black-box characterization", () => {
     });
     const trace = createActionPipelineTranscriptHarness({ projectData });
     trace.harness.completeLatestRender();
-    trace.clearTranscript();
+    await trace.clearTranscript();
 
     trace.dispatchActions({ nextLine: {} });
     await vi.waitFor(() => {
@@ -412,7 +456,7 @@ describe("action pipeline black-box characterization", () => {
     });
   });
 
-  it("restores rollback state without replaying external line effects", () => {
+  it("restores rollback state without replaying external line effects", async () => {
     const projectData = createPipelineProject({
       resources: {
         achievements: {
@@ -455,7 +499,7 @@ describe("action pipeline black-box characterization", () => {
     trace.dispatchActions({ nextLine: {} });
     expect(getScore(trace.harness)).toBe(11);
     expect(trace.summarizeState().rollbackCheckpointIndex).toBe(1);
-    trace.clearTranscript();
+    await trace.clearTranscript();
 
     trace.dispatchActions({ rollbackByOffset: { offset: -1 } });
 
@@ -491,7 +535,7 @@ describe("action pipeline black-box characterization", () => {
     const trace = createActionPipelineTranscriptHarness({ projectData });
     trace.harness.completeLatestRender();
     const formKey = trace.harness.engine.selectActiveInteraction().formKey;
-    trace.clearTranscript();
+    await trace.clearTranscript();
 
     await trace.dispatchRendererEvent("click", {
       _interactionSource: "form",
@@ -571,7 +615,7 @@ describe("action pipeline black-box characterization", () => {
     });
     const trace = createActionPipelineTranscriptHarness({ projectData });
     trace.harness.completeLatestRender();
-    trace.clearTranscript();
+    await trace.clearTranscript();
 
     await trace.dispatchRendererEvent("click", {
       bypassChoice: true,

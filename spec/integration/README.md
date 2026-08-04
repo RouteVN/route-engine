@@ -12,7 +12,13 @@ their external boundaries so journeys stay deterministic.
 - Assert both the user-visible result and important ownership state, such as
   the current pointer, active interaction, timer count, or persisted payload.
 - Use ordinary `it` for supported behavior.
-- Use `itKnownDefect` only for a reproduced engine defect. Put setup and
+- `bun run check:test-markers` scans every executable test file in the
+  repository and rejects focused, skipped, todo, conditionally disabled,
+  expected-failure, and known-defect markers. Merged behavior-neutral refactor
+  preparation must keep every contract active; product defects are reproduced
+  and fixed in their own PRs.
+- During local defect reproduction, use `itKnownDefect` only for a reproduced
+  engine defect, and remove the marker before merging. Put setup and
   precondition assertions outside its `expectFailure` call. Inside it, provide
   one `observed` assertion that fingerprints the exact current defect and one
   `desired` assertion for the intended contract. Both must contain exactly one
@@ -27,8 +33,19 @@ their external boundaries so journeys stay deterministic.
 
 `createActionPipelineTranscriptHarness` records only observable boundaries:
 host or renderer dispatch, rendered snapshots, external effects, persistence
-writes, errors, and a compact public-state summary. Use it to protect action
-ordering and transaction behavior without asserting private executor details.
+writes, playback schedule publications, physical ticker ownership changes,
+errors, and a compact public-state summary. Use it to protect action ordering
+and transaction behavior without asserting private executor details. Only
+random render UUIDs are removed; playback, timer, rollback, and history
+ownership remains visible.
+
+`actionPipelineDispatchMatrix.integration.test.js` closes the action inventory
+across authored system actions, presentation actions, store actions, and
+explicit internal/test actions. It also locks host-single, host-batch,
+line-authored, renderer choice/form/general, post-preprocess, and internal
+dispatch admission. `actionPipelineWorkCounts.integration.test.js` protects
+observable render/effect/persistence/schedule/ticker counts and repeats
+successful and failed batches to detect leaked work.
 
 - Distinguish a store/action failure before commit from an effect or renderer
   failure after commit.

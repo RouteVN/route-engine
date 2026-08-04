@@ -40,6 +40,7 @@
     "build": "node esbuild.js",
     "lint": "bun run prettier src -c",
     "lint:fix": "bun run prettier src -w",
+    "check:test-markers": "node scripts/check-test-markers.js",
     "format:changed": "bash scripts/check-changed-format.sh",
     "coverage": "bun run vitest run --coverage",
     "vt:generate": "node esbuild.js && rtgl vt generate",
