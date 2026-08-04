@@ -2033,6 +2033,94 @@ describe("projectData schema", () => {
     expect(validateSystemActions.errors).toBeNull();
   });
 
+  it("accepts all random distributions and recursive nested actions", () => {
+    const distributions = [
+      {
+        type: "dice",
+        count: "${variables.diceCount}",
+        sides: 20,
+        modifier: "${variables.bonus}",
+        keep: { type: "highest", count: 1 },
+      },
+      { type: "integer", min: -10, max: "${variables.max}" },
+      { type: "chance", probability: "${variables.probability}" },
+      {
+        type: "weighted",
+        outcomes: [
+          { value: "common", weight: 3 },
+          { value: "rare", weight: "${variables.rareWeight}" },
+        ],
+      },
+    ];
+
+    distributions.forEach((distribution) => {
+      expect(
+        validateSystemActions({
+          random: {
+            distribution,
+            actions: {
+              conditional: {
+                branches: [
+                  {
+                    when: { eq: [{ var: "_random.type" }, distribution.type] },
+                    actions: {
+                      updateVariable: {
+                        id: "storeRandom",
+                        operations: [
+                          {
+                            variableId: "result",
+                            op: "set",
+                            value: "_random.value",
+                          },
+                        ],
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        }),
+      ).toBe(true);
+      expect(validateSystemActions.errors).toBeNull();
+    });
+  });
+
+  it("rejects malformed random distribution shapes", () => {
+    expect(
+      validateSystemActions({
+        random: {
+          distribution: { type: "dice", sides: 1 },
+          actions: {},
+        },
+      }),
+    ).toBe(false);
+    expect(
+      validateSystemActions({
+        random: {
+          distribution: {
+            type: "weighted",
+            outcomes: [{ value: "only" }],
+          },
+          actions: {},
+        },
+      }),
+    ).toBe(false);
+  });
+
+  it("accepts random actions on story lines", () => {
+    const projectData = createMinimalProjectData();
+    projectData.story.scenes.scene1.sections.section1.lines[0].actions = {
+      random: {
+        distribution: { type: "integer", min: 1, max: 6 },
+        actions: {},
+      },
+    };
+
+    expect(validateProjectData(projectData)).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
+
   it("accepts conditional actions on story lines", () => {
     expect(
       validateProjectData(

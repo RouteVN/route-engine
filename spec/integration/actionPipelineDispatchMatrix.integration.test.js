@@ -42,6 +42,8 @@ const NON_AUTHORED_STORE_ACTION_TYPES = [
   "appendPendingEffect",
   "beginRollbackActionBatch",
   "endRollbackActionBatch",
+  "ensureRandomReplayOccurrence",
+  "recordRandomOutcome",
   "markRollbackCheckpointTransient",
   "markSavedRollbackCheckpointTransient",
   "recordCurrentDialogueHistory",
@@ -114,7 +116,7 @@ describe("action pipeline closed action inventory", () => {
     );
     expect(
       systemActionTypes.filter((type) => !storeActionTypes.includes(type)),
-    ).toEqual(["conditional"]);
+    ).toEqual(["conditional", "random"]);
     expect(
       storeActionTypes.filter((type) => !systemActionTypes.includes(type)),
     ).toEqual(NON_AUTHORED_STORE_ACTION_TYPES);
@@ -138,6 +140,8 @@ describe("action pipeline closed action inventory", () => {
       "clearPendingEffects",
       "beginRollbackActionBatch",
       "endRollbackActionBatch",
+      "ensureRandomReplayOccurrence",
+      "recordRandomOutcome",
       "markRollbackCheckpointTransient",
       "markSavedRollbackCheckpointTransient",
       "recordCurrentDialogueHistory",

@@ -360,6 +360,35 @@ describe("systemState schema", () => {
     expect(validateSystemState.errors).not.toBeNull();
   });
 
+  it("validates persisted rollback random outcomes", () => {
+    const engine = createRouteEngine({ handlePendingEffects: () => {} });
+    engine.init({ initialState: { projectData: createMinimalProjectData() } });
+    const systemState = toJsonSnapshot(engine.selectSystemState());
+    const checkpoint = systemState.contexts[0].rollback.timeline[0];
+    checkpoint.randomOutcomeVersion = 1;
+    checkpoint.randomOutcomes = [
+      {
+        path: "random",
+        ordinal: 0,
+        type: "dice",
+        result: {
+          type: "dice",
+          value: 8,
+          rolls: [3, 5],
+          keptRolls: [3, 5],
+          discardedRolls: [],
+          modifier: 0,
+        },
+      },
+    ];
+
+    expect(validateSystemState(systemState)).toBe(true);
+    expect(validateSystemState.errors).toBeNull();
+
+    checkpoint.randomOutcomes[0].result.value = "8";
+    expect(validateSystemState(systemState)).toBe(false);
+  });
+
   it("accepts numeric viewed resource IDs in account viewed state", () => {
     const engine = createRouteEngine({
       handlePendingEffects: () => {},

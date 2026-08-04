@@ -97,6 +97,76 @@ defs:
     required: [entries, currentLength, checkpointLengths]
     additionalProperties: false
 
+  randomOutcomeResult:
+    oneOf:
+      - type: object
+        properties:
+          type:
+            const: dice
+          value:
+            type: integer
+          rolls:
+            type: array
+            items:
+              type: integer
+              minimum: 1
+          keptRolls:
+            type: array
+            items:
+              type: integer
+              minimum: 1
+          discardedRolls:
+            type: array
+            items:
+              type: integer
+              minimum: 1
+          modifier:
+            type: integer
+        required: [type, value, rolls, keptRolls, discardedRolls, modifier]
+        additionalProperties: false
+      - type: object
+        properties:
+          type:
+            const: integer
+          value:
+            type: integer
+        required: [type, value]
+        additionalProperties: false
+      - type: object
+        properties:
+          type:
+            const: chance
+          value:
+            type: boolean
+        required: [type, value]
+        additionalProperties: false
+      - type: object
+        properties:
+          type:
+            const: weighted
+          value:
+            type: string
+            minLength: 1
+        required: [type, value]
+        additionalProperties: false
+
+  randomOutcome:
+    type: object
+    properties:
+      path:
+        type: string
+        minLength: 1
+      ordinal:
+        type: integer
+        minimum: 0
+      type:
+        type: string
+        enum: [dice, integer, chance, weighted]
+      result:
+        $ref: "#/defs/randomOutcomeResult"
+    required: [path, ordinal, type, result]
+    additionalProperties: false
+
   rollbackCheckpoint:
     type: object
     properties:
@@ -120,6 +190,13 @@ defs:
               description: Action payload captured for rollback replay
           required: [type]
           additionalProperties: false
+      randomOutcomeVersion:
+        const: 1
+        description: Persisted random-outcome replay contract version
+      randomOutcomes:
+        type: array
+        items:
+          $ref: "#/defs/randomOutcome"
     required: [sectionId, lineId]
     additionalProperties: false
 

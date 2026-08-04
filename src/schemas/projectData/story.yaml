@@ -84,6 +84,8 @@ properties:
                               $ref: "../systemActions.yaml#/properties/nextLine"
                             conditional:
                               $ref: "../systemActions.yaml#/properties/conditional"
+                            random:
+                              $ref: "../systemActions.yaml#/properties/random"
                             setNextLineConfig:
                               $ref: "../systemActions.yaml#/properties/setNextLineConfig"
                             startAutoMode:

@@ -424,7 +424,18 @@ const init = async () => {
   });
 
   setBootstrapPhase("initialize Route Engine");
-  engine = createRouteEngine({ handlePendingEffects: effectsHandler });
+  const deterministicRandomWord =
+    projectData.resources?.variables?.vtRandomUint32?.default;
+  const randomSource =
+    Number.isInteger(deterministicRandomWord) &&
+    deterministicRandomWord >= 0 &&
+    deterministicRandomWord <= 0xffff_ffff
+      ? { nextUint32: () => deterministicRandomWord }
+      : undefined;
+  engine = createRouteEngine({
+    handlePendingEffects: effectsHandler,
+    randomSource,
+  });
 
   engine.init({
     namespace,

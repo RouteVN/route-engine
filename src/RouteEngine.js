@@ -19,6 +19,7 @@ import {
   resolveL10nProjectData,
 } from "./l10n.js";
 import { PLAYBACK_TIMER_EFFECT_NAMES } from "./playbackScheduler.js";
+import { normalizeRandomSource, sampleRandomDistribution } from "./random.js";
 
 const PERSISTENT_PLAYBACK_RESET_ACTIONS = new Set([
   "loadSlot",
@@ -36,7 +37,9 @@ const PERSISTENT_PLAYBACK_RESTORE_ACTIONS = new Set([
 ]);
 
 const CONDITIONAL_ACTION_TYPE = "conditional";
+const RANDOM_ACTION_TYPE = "random";
 const CONDITIONAL_AUTO_CONTINUE = Symbol("conditionalAutoContinue");
+const RANDOM_CONTEXT_AUTHORITY = Symbol("randomContextAuthority");
 const CONDITIONAL_ROUTING_ACTION_TYPES = new Set([
   "sectionTransition",
   "resetStoryAtSection",
@@ -146,6 +149,7 @@ export default function createRouteEngine(options) {
   let _isReconcilingPlayback = false;
   let _automaticAttemptDepth = 0;
   const _automaticAttemptErrors = new Map();
+  const _randomSource = normalizeRandomSource(options.randomSource);
 
   const { handlePendingEffects } = options;
   if (typeof handlePendingEffects !== "function") {
@@ -1214,8 +1218,19 @@ export default function createRouteEngine(options) {
   };
 
   const handleAction = (actionType, payload, eventContext, options = {}) => {
-    if (actionType === CONDITIONAL_ACTION_TYPE) {
+    if (
+      actionType === CONDITIONAL_ACTION_TYPE ||
+      actionType === RANDOM_ACTION_TYPE
+    ) {
       return runActionBatch(() => {
+        const actionOptions = {
+          ...options,
+          actionPath: options.actionPath ?? [actionType],
+          randomOutcomeOrdinals: options.randomOutcomeOrdinals ?? new Map(),
+        };
+        if (actionType === RANDOM_ACTION_TYPE) {
+          return handleRandomAction(payload, eventContext, actionOptions);
+        }
         const context = buildActionTemplateContext(eventContext);
         const processedActions = processActionTemplates(
           { [actionType]: payload },
@@ -1224,7 +1239,7 @@ export default function createRouteEngine(options) {
         return handleConditionalAction(
           processedActions[actionType],
           eventContext,
-          options,
+          actionOptions,
         );
       }, options);
     }
@@ -1259,13 +1274,20 @@ export default function createRouteEngine(options) {
         'eventContext key "event" is no longer supported. Use "_event".',
       );
     }
-    const { _event, ...additionalContext } = eventContext;
+    if (
+      Object.prototype.hasOwnProperty.call(eventContext, "_random") &&
+      eventContext[RANDOM_CONTEXT_AUTHORITY] !== true
+    ) {
+      throw new Error('eventContext key "_random" is reserved by RouteEngine.');
+    }
+    const { _event, _random, ...additionalContext } = eventContext;
     const variables = _systemStore.selectAllVariables
       ? _systemStore.selectAllVariables()
       : undefined;
     return {
       ...additionalContext,
       _event,
+      ...(eventContext[RANDOM_CONTEXT_AUTHORITY] === true ? { _random } : {}),
       variables,
       runtime: _systemStore.selectRuntime ? _systemStore.selectRuntime() : {},
     };
@@ -1425,17 +1447,85 @@ export default function createRouteEngine(options) {
         continue;
       }
 
-      const branchResult = processActionEntries(
-        branch.actions,
-        eventContext,
-        options,
-      );
+      const branchResult = processActionEntries(branch.actions, eventContext, {
+        ...options,
+        actionPath: [
+          ...(options.actionPath ?? [CONDITIONAL_ACTION_TYPE]),
+          "branches",
+          String(index),
+          "actions",
+        ],
+      });
       return isConditionalAutoContinue(branchResult)
         ? mergeConditionalAutoContinue(autoContinue, branchResult)
         : autoContinue;
     }
 
     return autoContinue;
+  };
+
+  const assertRandomActionPayload = (payload) => {
+    if (!isRecord(payload)) {
+      throw new Error("random action payload must be an object");
+    }
+    const unexpectedKey = Object.keys(payload).find(
+      (key) => key !== "distribution" && key !== "actions",
+    );
+    if (unexpectedKey !== undefined) {
+      throw new Error(`random action.${unexpectedKey} is not supported`);
+    }
+    if (!isRecord(payload.distribution)) {
+      throw new Error("random action requires distribution object");
+    }
+    if (!isRecord(payload.actions)) {
+      throw new Error("random action requires actions object");
+    }
+  };
+
+  const handleRandomAction = (payload, eventContext, options) => {
+    assertRandomActionPayload(payload);
+    const templateContext = buildActionTemplateContext(eventContext);
+    const result = sampleRandomDistribution(payload.distribution, {
+      randomSource: _randomSource,
+      resolveNumeric(value) {
+        return processActionTemplates({ value }, templateContext).value;
+      },
+    });
+
+    if (options.rollbackSource === "line") {
+      _systemStore.ensureRandomReplayOccurrence({});
+      const path = (options.actionPath ?? [RANDOM_ACTION_TYPE]).join(".");
+      const randomOutcomeOrdinals = options.randomOutcomeOrdinals ?? new Map();
+      const ordinal = randomOutcomeOrdinals.get(path) ?? 0;
+      randomOutcomeOrdinals.set(path, ordinal + 1);
+      _systemStore.recordRandomOutcome({
+        path,
+        ordinal,
+        type: result.type,
+        result,
+      });
+    }
+
+    const nestedEventContext = {
+      ...(eventContext ?? {}),
+      _random: result,
+      [RANDOM_CONTEXT_AUTHORITY]: true,
+    };
+    const nestedResult = processActionEntries(
+      payload.actions,
+      nestedEventContext,
+      {
+        ...options,
+        actionPath: [
+          ...(options.actionPath ?? [RANDOM_ACTION_TYPE]),
+          "actions",
+        ],
+      },
+    );
+    const autoContinue = createConditionalAutoContinue(options);
+    return isConditionalAutoContinue(nestedResult)
+      ? mergeConditionalAutoContinue(autoContinue, nestedResult)
+      : autoContinue;
   };
 
   const buildFormActionEventContext = (eventContext, formContext) => {
@@ -1469,6 +1559,9 @@ export default function createRouteEngine(options) {
   };
 
   const handleActionEntry = (actionType, payload, eventContext, options) => {
+    if (actionType === RANDOM_ACTION_TYPE) {
+      return handleRandomAction(payload, eventContext, options);
+    }
     const context = buildActionTemplateContext(eventContext);
     let maskedPayload = {
       templatePayload: payload,
@@ -1520,11 +1613,15 @@ export default function createRouteEngine(options) {
     let result;
 
     Object.entries(actions).forEach(([actionType, payload]) => {
+      const actionOptions = {
+        ...options,
+        actionPath: [...(options?.actionPath ?? []), actionType],
+      };
       const entryResult = handleActionEntry(
         actionType,
         payload,
         eventContext,
-        options,
+        actionOptions,
       );
       if (isConditionalAutoContinue(entryResult)) {
         result = mergeConditionalAutoContinue(result, entryResult);
@@ -1535,9 +1632,13 @@ export default function createRouteEngine(options) {
   };
 
   const handleActions = (actions, eventContext, options = {}) => {
+    const batchOptions = {
+      ...options,
+      randomOutcomeOrdinals: new Map(),
+    };
     return runActionBatch(
-      () => processActionEntries(actions, eventContext, options),
-      options,
+      () => processActionEntries(actions, eventContext, batchOptions),
+      batchOptions,
     );
   };
 

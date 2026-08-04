@@ -25,6 +25,12 @@ const engine = createRouteEngine({
 });
 ```
 
+For deterministic tests, `createRouteEngine` also accepts a `randomSource`
+with a synchronous `nextUint32()` method. It must return an integer from `0`
+through `4294967295`. Production hosts can omit it; the engine uses
+`crypto.getRandomValues` when available and falls back to `Math.random` for
+compatibility.
+
 ## Initialization
 
 ### `init({ initialState, namespace })`
@@ -650,6 +656,51 @@ rendering or pausing on an empty conditional line. Conditionals triggered later
 from an already-presented interaction leave that source eligible for Back. See
 [Rollback.md](./Rollback.md); player-facing rollback skips the transient source
 in the same action.
+
+### Random Actions
+
+Use `random` to sample a typed dice, integer, chance, or weighted result and run
+a nested action batch with that result in `_random`:
+
+```yaml
+actions:
+  random:
+    distribution:
+      type: dice
+      sides: 20
+      modifier: "${variables.lockpickBonus}"
+    actions:
+      updateVariable:
+        id: storeLockpickRoll
+        operations:
+          - variableId: lastLockpickRoll
+            op: set
+            value: "_random.value"
+      conditional:
+        branches:
+          - when:
+              gte:
+                - var: _random.value
+                - 15
+            actions:
+              jumpToLine:
+                lineId: lockOpened
+          - actions:
+              jumpToLine:
+                lineId: lockFailed
+```
+
+Bare bindings such as `_random.value`, `_random.rolls`, and `_random` preserve
+their number, boolean, array, or object type. Jempl interpolation such as
+`"Rolled ${_random.value}"` remains available for strings. The result is scoped
+to the synchronous nested batch; store it in a variable before opening a form
+or confirmation dialog if deferred actions need it.
+
+Like `conditional`, `random` automatically continues once unless its action
+batch navigates. Line-authored outcomes are recorded with rollback history so
+save/load and rollback replay the sampled result without rerolling. The full
+distribution contract and authoring-tool interface are in
+[RandomAction.md](./RandomAction.md).
 
 ### Playback Mode Actions
 
