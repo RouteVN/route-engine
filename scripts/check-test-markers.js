@@ -17,16 +17,21 @@ const FORBIDDEN_JAVASCRIPT_MARKERS = [
   {
     label: "focused, skipped, todo, or expected-failure test",
     pattern:
-      /\.\s*(?:only|skip|fails|todo|skipIf)\s*(?:\.\s*each\s*)?(?:\(|`)/g,
+      /\.\s*(?:only|skip|fails|todo|skipIf)\s*(?:\.\s*(?:each|for)\s*)?(?:\(|`)/g,
   },
   {
     label: "option-based focused, skipped, or expected-failure test",
     pattern:
-      /\b(?:describe|suite|test|it)\s*\(\s*(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)\s*,\s*\{[^{}]*\b(?:only|skip|fails)\s*:\s*true\b/g,
+      /\b(?:describe|suite|test|it)\s*\(\s*(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)\s*,\s*\{[^{}]*\b(?:only|skip|fails|todo)\s*:\s*true\b/g,
   },
   {
-    label: "statically disabled conditional test",
-    pattern: /\.\s*runIf\s*\(\s*false\s*\)/g,
+    label: "conditionally disabled test",
+    pattern: /\.\s*runIf\s*\(/g,
+  },
+  {
+    label: "handler-less todo test",
+    pattern:
+      /\b(?:test|it)\s*\(\s*(?:"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)\s*\)/g,
   },
   {
     label: "known-defect test",
@@ -74,14 +79,17 @@ const javascriptDetectorProbes = [
   "test" + ".skip('case', fn)",
   "it" + ".fails('case', fn)",
   "test" + ".skip.each(cases)('case', fn)",
+  "test" + ".skip.for(cases)('case', fn)",
   "describe" + ".only.each(cases)('case', fn)",
   "it" + ".fails.each`case`(fn)",
   "test" + ".todo('case')",
   "it" + ".skipIf(condition)('case', fn)",
-  "test" + ".runIf(false)('case', fn)",
+  "test" + ".runIf(0)('case', fn)",
   "test('case', { " + "skip: true }, fn)",
   "describe('case', { " + "only: true }, fn)",
   "it('case', { " + "fails: true }, fn)",
+  "test('case', { " + "todo: true }, fn)",
+  "test('case'" + ")",
   "itKnown" + "Defect({})",
 ];
 for (const probe of javascriptDetectorProbes) {

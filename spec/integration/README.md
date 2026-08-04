@@ -15,9 +15,12 @@ their external boundaries so journeys stay deterministic.
 - `bun run check:test-markers` scans every executable JavaScript, TypeScript,
   and Puty YAML test file in the repository. It rejects focused, skipped, todo,
   conditionally disabled, expected-failure, and known-defect markers, including
-  parameterized and option-based Vitest forms. Merged behavior-neutral refactor
-  preparation must keep every contract active; product defects are reproduced
-  and fixed in their own PRs.
+  parameterized, option-based, and handler-less Vitest forms. The full test run
+  also verifies every collected task has `run` mode, does not invert failures,
+  and does not skip dynamically at runtime, so supported syntax cannot bypass
+  the static diagnostics. Merged behavior-neutral refactor preparation must
+  keep every contract active; product defects are reproduced and fixed in
+  their own PRs.
 - During local defect reproduction, use `itKnownDefect` only for a reproduced
   engine defect, and remove the marker before merging. Put setup and
   precondition assertions outside its `expectFailure` call. Inside it, provide
