@@ -414,6 +414,30 @@ describe("systemState schema", () => {
     expect(validateSystemState(systemState)).toBe(false);
   });
 
+  it.each(["integer", "chance"])(
+    "rejects removed %s random outcome records",
+    (type) => {
+      const engine = createRouteEngine({ handlePendingEffects: () => {} });
+      engine.init({
+        initialState: { projectData: createMinimalProjectData() },
+      });
+      const systemState = toJsonSnapshot(engine.selectSystemState());
+      const checkpoint = systemState.contexts[0].rollback.timeline[0];
+      checkpoint.randomOutcomeVersion = 1;
+      checkpoint.randomOutcomes = [
+        {
+          path: "random",
+          ordinal: 0,
+          type,
+          result: { type, value: type === "integer" ? 3 : true },
+        },
+      ];
+
+      expect(validateSystemState(systemState)).toBe(false);
+      expect(validateSystemState.errors).not.toBeNull();
+    },
+  );
+
   it("accepts numeric viewed resource IDs in account viewed state", () => {
     const engine = createRouteEngine({
       handlePendingEffects: () => {},

@@ -5,8 +5,10 @@ specs:
   - the initial line shows one isolated roll button
   - clicking the button dispatches a random dice action through the real input path
   - the deterministic VT random source rolls 15 and applies a modifier of 2
+  - the dice action stores 17 directly in the declared lastRoll variable
+  - a following conditional reads lastRoll before automatic continuation
   - a nested weighted random selects its first outcome actions
-  - the selected outcome condition reads the outer dice result and renders success with score 17
+  - the selected weighted outcome renders the success destination
 skipInitialScreenshot: true
 viewport:
   id: capture
@@ -89,35 +91,29 @@ resources:
                     type: dice
                     sides: 20
                     modifier: 2
-                  actions:
-                    updateVariable:
-                      id: storeRoll
-                      operations:
-                        - variableId: lastRoll
-                          op: set
-                          value: "_random.value"
-                    random:
-                      distribution:
-                        type: weighted
-                        outcomes:
-                          - weight: 1
-                            actions:
-                              conditional:
-                                branches:
-                                  - when:
-                                      gte:
-                                        - var: _random.value
-                                        - 15
-                                    actions:
-                                      jumpToLine:
-                                        lineId: success
-                                  - actions:
-                                      jumpToLine:
-                                        lineId: failure
-                          - weight: 1
-                            actions:
-                              jumpToLine:
-                                lineId: failure
+                  variableId: lastRoll
+                conditional:
+                  branches:
+                    - when:
+                        gte:
+                          - var: variables.lastRoll
+                          - 15
+                      actions:
+                        random:
+                          distribution:
+                            type: weighted
+                            outcomes:
+                              - weight: 1
+                                actions:
+                                  jumpToLine:
+                                    lineId: success
+                              - weight: 1
+                                actions:
+                                  jumpToLine:
+                                    lineId: failure
+                    - actions:
+                        jumpToLine:
+                          lineId: failure
         - id: roll-label
           type: text
           x: 800

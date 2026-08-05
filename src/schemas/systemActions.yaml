@@ -54,30 +54,6 @@ definitions:
     required: [type, sides]
     additionalProperties: false
 
-  randomIntegerDistribution:
-    type: object
-    properties:
-      type:
-        const: integer
-      min:
-        type: integer
-      max:
-        type: integer
-    required: [type, min, max]
-    additionalProperties: false
-
-  randomChanceDistribution:
-    type: object
-    properties:
-      type:
-        const: chance
-      probability:
-        type: number
-        minimum: 0
-        maximum: 1
-    required: [type, probability]
-    additionalProperties: false
-
   randomWeightedOutcome:
     type: object
     properties:
@@ -103,12 +79,6 @@ definitions:
     required: [type, outcomes]
     additionalProperties: false
 
-  randomValueDistribution:
-    oneOf:
-      - $ref: "#/definitions/randomDiceDistribution"
-      - $ref: "#/definitions/randomIntegerDistribution"
-      - $ref: "#/definitions/randomChanceDistribution"
-
 properties:
   conditional:
     type: object
@@ -123,15 +93,16 @@ properties:
     additionalProperties: false
 
   random:
-    description: Sample a random distribution, run the value action batch with _random or the selected weighted outcome actions, then immediately continue once unless the batch navigates
+    description: Roll dice into a declared number variable or run the selected weighted outcome actions, then immediately continue once unless the batch navigates
     oneOf:
       - type: object
         properties:
           distribution:
-            $ref: "#/definitions/randomValueDistribution"
-          actions:
-            $ref: "#"
-        required: [distribution, actions]
+            $ref: "#/definitions/randomDiceDistribution"
+          variableId:
+            type: string
+            minLength: 1
+        required: [distribution, variableId]
         additionalProperties: false
       - type: object
         properties:

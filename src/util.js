@@ -3144,7 +3144,6 @@ const resolveScopedBindingString = (value, context, scope) => {
 
 const OPAQUE_ACTION_BRANCHES = {
   conditional: new Set(["branches"]),
-  random: new Set(["actions"]),
   updateProjectData: new Set(["projectData"]),
   showConfirmDialog: new Set(["confirmActions", "cancelActions"]),
   form: new Set(["submitActions", "cancelActions"]),
@@ -3178,12 +3177,10 @@ const processActionTemplateValue = (value, context, path = []) => {
   }
 
   if (typeof value === "string") {
-    for (const scope of ["_event", "_random"]) {
-      if (value === scope || value.startsWith(`${scope}.`)) {
-        // Scoped values are runtime data. Do not reinterpret template-looking
-        // strings or nested objects after direct binding resolution.
-        return resolveScopedBindingString(value, context, scope);
-      }
+    if (value === "_event" || value.startsWith("_event.")) {
+      // Event values are runtime data. Do not reinterpret template-looking
+      // strings or nested objects after direct binding resolution.
+      return resolveScopedBindingString(value, context, "_event");
     }
     return parseAndRender(value, context);
   }
@@ -3194,8 +3191,7 @@ const processActionTemplateValue = (value, context, path = []) => {
 /**
  * Processes action payloads by resolving scoped bindings and rendering jempl templates.
  *
- * `_event.*` and engine-owned `_random.*` bindings resolve directly from their
- * scoped contexts.
+ * `_event.*` bindings resolve directly from their scoped context.
  * jempl interpolation remains available for `${variables.*}` and similar templates.
  *
  * @param {Object} actions - Action payload object that may contain scoped bindings and jempl template strings

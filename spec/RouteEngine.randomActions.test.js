@@ -16,6 +16,18 @@ const createProjectData = ({ lineActions = {}, extraLines = [] } = {}) => ({
       bonus: { type: "number", scope: "context", default: 2 },
       selected: { type: "string", scope: "context", default: "" },
       result: { type: "object", scope: "context", default: {} },
+      readonlyScore: {
+        type: "number",
+        scope: "context",
+        default: 0,
+        readonly: true,
+      },
+      computedScore: {
+        type: "number",
+        scope: "context",
+        computed: { expr: 1 },
+      },
+      deviceScore: { type: "number", scope: "device", default: 0 },
     },
     transforms: {},
     sectionTransitions: {},
@@ -88,7 +100,7 @@ const setVariable = (id, variableId, value) => ({
 });
 
 describe("RouteEngine random actions", () => {
-  it("exposes a typed dice result to nested actions and continues once", () => {
+  it("stores the dice total before later actions and continues once", () => {
     const engine = createEngine(
       createProjectData({
         extraLines: [{ id: "line2", actions: {} }],
@@ -103,31 +115,22 @@ describe("RouteEngine random actions", () => {
           sides: 20,
           modifier: 2,
         },
-        actions: {
-          ...setVariable("storeResult", "result", "_random"),
-          conditional: {
-            branches: [
-              {
-                when: { gte: [{ var: "_random.value" }, 15] },
-                actions: setVariable("success", "score", "_random.value"),
-              },
-              { actions: setVariable("failure", "score", -1) },
-            ],
+        variableId: "score",
+      },
+      conditional: {
+        branches: [
+          {
+            when: { gte: [{ var: "variables.score" }, 15] },
+            actions: setVariable("success", "bonus", "${variables.score}"),
           },
-        },
+          { actions: setVariable("failure", "bonus", -1) },
+        ],
       },
     });
 
     const state = engine.selectSystemState();
-    expect(state.contexts[0].variables.result).toEqual({
-      type: "dice",
-      value: 17,
-      rolls: [15],
-      keptRolls: [15],
-      discardedRolls: [],
-      modifier: 2,
-    });
     expect(state.contexts[0].variables.score).toBe(17);
+    expect(state.contexts[0].variables.bonus).toBe(17);
     expect(state.contexts[0].pointers.read.lineId).toBe("line2");
   });
 
@@ -160,11 +163,9 @@ describe("RouteEngine random actions", () => {
     );
   });
 
-  it("rejects top-level actions and does not expose a weighted result binding", () => {
-    const engine = createEngine(
-      createProjectData(),
-      createQueuedRandomSource(0, 0),
-    );
+  it("enforces dice and weighted payload ownership", () => {
+    const randomSource = createQueuedRandomSource(0, 0);
+    const engine = createEngine(createProjectData(), randomSource);
 
     expect(() =>
       engine.handleActions({
@@ -176,82 +177,48 @@ describe("RouteEngine random actions", () => {
           actions: {},
         },
       }),
-    ).toThrow("does not support top-level actions");
+    ).toThrow("random action.actions is not supported");
 
     expect(() =>
       engine.handleActions({
         random: {
           distribution: {
             type: "weighted",
-            outcomes: [
-              {
-                weight: 1,
-                actions: setVariable(
-                  "invalidWeightedBinding",
-                  "selected",
-                  "_random.value",
-                ),
-              },
-            ],
+            outcomes: [{ weight: 1, actions: {} }],
           },
+          variableId: "score",
         },
       }),
-    ).toThrow('requires event context "_random"');
-    expect(engine.selectSystemState().contexts[0].variables.selected).toBe("");
-  });
-
-  it("shadows nested random context without changing later outer siblings", () => {
-    const engine = createEngine(
-      createProjectData(),
-      createQueuedRandomSource(2, 8),
-    );
-
-    engine.handleActions({
-      random: {
-        distribution: { type: "integer", min: 1, max: 10 },
-        actions: {
-          random: {
-            distribution: { type: "integer", min: 1, max: 10 },
-            actions: setVariable("inner", "score", "_random.value"),
-          },
-          ...setVariable("outer", "bonus", "_random.value"),
-        },
-      },
-    });
-
-    const variables = engine.selectSystemState().contexts[0].variables;
-    expect(variables.score).toBe(9);
-    expect(variables.bonus).toBe(3);
-  });
-
-  it("rejects caller injection and prototype traversal of _random", () => {
-    const engine = createEngine(
-      createProjectData(),
-      createQueuedRandomSource(0, 0),
-    );
-
-    expect(() =>
-      engine.handleAction(
-        "random",
-        {
-          distribution: { type: "integer", min: 1, max: 1 },
-          actions: {},
-        },
-        { _random: { value: 99 } },
-      ),
-    ).toThrow("reserved by RouteEngine");
+    ).toThrow("does not support variableId");
 
     expect(() =>
       engine.handleActions({
         random: {
-          distribution: { type: "integer", min: 1, max: 1 },
-          actions: setVariable("unsafe", "score", "_random.constructor"),
+          distribution: { type: "dice", sides: 6 },
         },
       }),
-    ).toThrow("could not be resolved");
+    ).toThrow("requires variableId");
+
+    for (const variableId of [
+      "result",
+      "missingScore",
+      "readonlyScore",
+      "computedScore",
+      "deviceScore",
+    ]) {
+      expect(() =>
+        engine.handleActions({
+          random: {
+            distribution: { type: "dice", sides: 6 },
+            variableId,
+          },
+        }),
+      ).toThrow("writable context number variable");
+    }
+    expect(randomSource.calls).toBe(0);
   });
 
-  it("rolls back earlier nested mutations when a later binding fails", () => {
+  it("rolls back the stored dice value when a later sibling fails", () => {
     const engine = createEngine(
       createProjectData(),
       createQueuedRandomSource(4),
@@ -260,24 +227,12 @@ describe("RouteEngine random actions", () => {
     expect(() =>
       engine.handleActions({
         random: {
-          distribution: { type: "integer", min: 1, max: 10 },
-          actions: {
-            ...setVariable("firstMutation", "score", "_random.value"),
-            conditional: {
-              branches: [
-                {
-                  actions: setVariable(
-                    "invalidBinding",
-                    "bonus",
-                    "_random.missing",
-                  ),
-                },
-              ],
-            },
-          },
+          distribution: { type: "dice", sides: 10 },
+          variableId: "score",
         },
+        ...setVariable("invalidValue", "bonus", "invalid"),
       }),
-    ).toThrow("could not be resolved");
+    ).toThrow('requires value to be a number for variable "bonus"');
 
     expect(engine.selectSystemState().contexts[0].variables.score).toBe(0);
   });
@@ -288,8 +243,8 @@ describe("RouteEngine random actions", () => {
       createProjectData({
         lineActions: {
           random: {
-            distribution: { type: "integer", min: 1, max: 10 },
-            actions: setVariable("rolled", "score", "_random.value"),
+            distribution: { type: "dice", sides: 10 },
+            variableId: "score",
           },
         },
         extraLines: [{ id: "line2", actions: {} }],
@@ -308,8 +263,15 @@ describe("RouteEngine random actions", () => {
         {
           path: "random",
           ordinal: 0,
-          type: "integer",
-          result: { type: "integer", value: 7 },
+          type: "dice",
+          result: {
+            type: "dice",
+            value: 7,
+            rolls: [7],
+            keptRolls: [7],
+            discardedRolls: [],
+            modifier: 0,
+          },
         },
       ],
     });
@@ -336,8 +298,8 @@ describe("RouteEngine random actions", () => {
       createProjectData({
         lineActions: {
           random: {
-            distribution: { type: "integer", min: 1, max: 10 },
-            actions: {},
+            distribution: { type: "dice", sides: 10 },
+            variableId: "score",
           },
         },
         extraLines: [{ id: "line2", actions: {} }],
@@ -375,12 +337,8 @@ describe("RouteEngine random actions", () => {
                   actions: {
                     ...setVariable("rare", "selected", "rare"),
                     random: {
-                      distribution: { type: "integer", min: 1, max: 10 },
-                      actions: setVariable(
-                        "nestedRoll",
-                        "score",
-                        "_random.value",
-                      ),
+                      distribution: { type: "dice", sides: 10 },
+                      variableId: "score",
                     },
                   },
                 },
@@ -408,8 +366,15 @@ describe("RouteEngine random actions", () => {
         {
           path: "random.distribution.outcomes.1.actions.random",
           ordinal: 0,
-          type: "integer",
-          result: { type: "integer", value: 7 },
+          type: "dice",
+          result: {
+            type: "dice",
+            value: 7,
+            rolls: [7],
+            keptRolls: [7],
+            discardedRolls: [],
+            modifier: 0,
+          },
         },
       ],
     });
@@ -529,8 +494,8 @@ describe("RouteEngine random actions", () => {
             id: "line2",
             actions: {
               random: {
-                distribution: { type: "integer", min: 1, max: 10 },
-                actions: setVariable("rolled", "score", "_random.value"),
+                distribution: { type: "dice", sides: 10 },
+                variableId: "score",
               },
             },
           },
@@ -557,62 +522,14 @@ describe("RouteEngine random actions", () => {
     expect(randomSource.calls).toBe(2);
   });
 
-  it("records distinct nested paths and replays both scoped results", () => {
-    const randomSource = createQueuedRandomSource(2, 8);
-    const engine = createEngine(
-      createProjectData({
-        lineActions: {
-          random: {
-            distribution: { type: "integer", min: 1, max: 10 },
-            actions: {
-              ...setVariable("outer", "bonus", "_random.value"),
-              random: {
-                distribution: { type: "integer", min: 1, max: 10 },
-                actions: setVariable("inner", "score", "_random.value"),
-              },
-            },
-          },
-        },
-        extraLines: [{ id: "line2", actions: {} }],
-      }),
-      randomSource,
-      { handleLineActions: true },
-    );
-
-    let state = engine.selectSystemState();
-    expect(state.contexts[0].rollback.timeline[0].randomOutcomes).toEqual([
-      {
-        path: "random",
-        ordinal: 0,
-        type: "integer",
-        result: { type: "integer", value: 3 },
-      },
-      {
-        path: "random.actions.random",
-        ordinal: 0,
-        type: "integer",
-        result: { type: "integer", value: 9 },
-      },
-    ]);
-
-    engine.handleAction("rollbackToLine", {
-      sectionId: "section1",
-      lineId: "line1",
-    });
-    state = engine.selectSystemState();
-    expect(state.contexts[0].variables.bonus).toBe(3);
-    expect(state.contexts[0].variables.score).toBe(9);
-    expect(randomSource.calls).toBe(2);
-  });
-
   it("records same-line re-entry as a distinct replay occurrence", () => {
     const randomSource = createQueuedRandomSource(1, 8);
     const engine = createEngine(
       createProjectData({
         lineActions: {
           random: {
-            distribution: { type: "integer", min: 1, max: 10 },
-            actions: setVariable("rolled", "score", "_random.value"),
+            distribution: { type: "dice", sides: 10 },
+            variableId: "score",
           },
         },
       }),
@@ -641,8 +558,8 @@ describe("RouteEngine random actions", () => {
         lineActions: {
           jumpToLine: { lineId: "line2" },
           random: {
-            distribution: { type: "integer", min: 1, max: 10 },
-            actions: setVariable("rolled", "score", "_random.value"),
+            distribution: { type: "dice", sides: 10 },
+            variableId: "score",
           },
         },
         extraLines: [
@@ -662,8 +579,15 @@ describe("RouteEngine random actions", () => {
         {
           path: "random",
           ordinal: 0,
-          type: "integer",
-          result: { type: "integer", value: 7 },
+          type: "dice",
+          result: {
+            type: "dice",
+            value: 7,
+            rolls: [7],
+            keptRolls: [7],
+            discardedRolls: [],
+            modifier: 0,
+          },
         },
       ],
     });
@@ -686,8 +610,8 @@ describe("RouteEngine random actions", () => {
     const originalProjectData = createProjectData({
       lineActions: {
         random: {
-          distribution: { type: "integer", min: 1, max: 10 },
-          actions: setVariable("rolled", "score", "_random.value"),
+          distribution: { type: "dice", sides: 10 },
+          variableId: "score",
         },
       },
       extraLines: [{ id: "line2", actions: {} }],
@@ -700,8 +624,10 @@ describe("RouteEngine random actions", () => {
     const replacementProjectData = createProjectData({
       lineActions: {
         random: {
-          distribution: { type: "dice", sides: 6 },
-          actions: setVariable("rolled", "score", "_random.value"),
+          distribution: {
+            type: "weighted",
+            outcomes: [{ weight: 1, actions: {} }],
+          },
         },
       },
       extraLines: [{ id: "line2", actions: {} }],
@@ -735,8 +661,8 @@ describe("RouteEngine random actions", () => {
             {
               actions: {
                 random: {
-                  distribution: { type: "integer", min: 1, max: 10 },
-                  actions: setVariable("rolled", "score", "_random.value"),
+                  distribution: { type: "dice", sides: 10 },
+                  variableId: "score",
                 },
               },
             },
@@ -757,8 +683,15 @@ describe("RouteEngine random actions", () => {
     const expectedOutcome = {
       path: "conditional.branches.0.actions.random",
       ordinal: 0,
-      type: "integer",
-      result: { type: "integer", value: 6 },
+      type: "dice",
+      result: {
+        type: "dice",
+        value: 6,
+        rolls: [6],
+        keptRolls: [6],
+        discardedRolls: [],
+        modifier: 0,
+      },
     };
     expect(state.contexts[0].rollback.timeline[0].randomOutcomes).toEqual([
       expectedOutcome,
@@ -774,8 +707,8 @@ describe("RouteEngine random actions", () => {
       createProjectData({
         lineActions: {
           random: {
-            distribution: { type: "integer", min: 1, max: 10 },
-            actions: setVariable("rolled", "score", "_random.value"),
+            distribution: { type: "dice", sides: 10 },
+            variableId: "score",
           },
         },
         extraLines: [{ id: "line2", actions: {} }],
@@ -789,8 +722,10 @@ describe("RouteEngine random actions", () => {
     const replacementProjectData = createProjectData({
       lineActions: {
         random: {
-          distribution: { type: "chance", probability: 0.5 },
-          actions: {},
+          distribution: {
+            type: "weighted",
+            outcomes: [{ weight: 1, actions: {} }],
+          },
         },
       },
       extraLines: [{ id: "line2", actions: {} }],
@@ -812,8 +747,8 @@ describe("RouteEngine random actions", () => {
     const projectData = createProjectData({
       lineActions: {
         random: {
-          distribution: { type: "integer", min: 1, max: 10 },
-          actions: {},
+          distribution: { type: "dice", sides: 10 },
+          variableId: "score",
         },
       },
       extraLines: [{ id: "line2", actions: {} }],
@@ -846,8 +781,8 @@ describe("RouteEngine random actions", () => {
     const projectData = createProjectData({
       lineActions: {
         random: {
-          distribution: { type: "integer", min: 1, max: 10 },
-          actions: {},
+          distribution: { type: "dice", sides: 10 },
+          variableId: "score",
         },
       },
       extraLines: [{ id: "line2", actions: {} }],

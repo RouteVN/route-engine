@@ -127,22 +127,6 @@ defs:
       - type: object
         properties:
           type:
-            const: integer
-          value:
-            type: integer
-        required: [type, value]
-        additionalProperties: false
-      - type: object
-        properties:
-          type:
-            const: chance
-          value:
-            type: boolean
-        required: [type, value]
-        additionalProperties: false
-      - type: object
-        properties:
-          type:
             const: weighted
           outcomeIndex:
             type: integer
@@ -162,7 +146,7 @@ defs:
         minimum: 0
       type:
         type: string
-        enum: [dice, integer, chance, weighted]
+        enum: [dice, weighted]
       result:
         $ref: "#/defs/randomOutcomeResult"
     required: [path, ordinal, type, result]

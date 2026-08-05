@@ -580,7 +580,18 @@ const reconcilePersistedRandomOutcomes = (outcomes, checkpoint, projectData) =>
         canonicalAction.distribution.outcomes?.[result.outcomeIndex]?.actions,
       );
     }
-    return isRecord(canonicalAction.actions);
+    if (type === "dice") {
+      const variableConfig =
+        projectData?.resources?.variables?.[canonicalAction.variableId];
+      return (
+        typeof canonicalAction.variableId === "string" &&
+        variableConfig?.type === "number" &&
+        variableConfig.scope === "context" &&
+        variableConfig.readonly !== true &&
+        !isComputedVariableConfig(variableConfig)
+      );
+    }
+    return false;
   });
 
 const sanitizePersistedRandomOutcomes = (checkpoint, projectData) => {
@@ -6939,37 +6950,30 @@ const replayRollbackRandomAction = (
     cloneStateValue(outcome.result),
     outcome.type,
   );
-  const isWeighted = result.type === "weighted";
-  const nestedActions = isWeighted
-    ? payload.distribution.outcomes?.[result.outcomeIndex]?.actions
-    : payload.actions;
+  if (result.type === "dice") {
+    applyRollbackCheckpointUpdateVariable(state, {
+      id: "randomResult",
+      operations: [
+        { variableId: payload.variableId, op: "set", value: result.value },
+      ],
+    });
+    return;
+  }
+
+  const nestedActions =
+    payload.distribution.outcomes?.[result.outcomeIndex]?.actions;
   if (!isRecord(nestedActions)) {
     throw new Error(
       `recorded random outcome does not match canonical action at ${path}`,
     );
   }
-  replayRollbackActionEntries(
-    state,
-    nestedActions,
-    isWeighted
-      ? replayContext
-      : {
-          ...replayContext,
-          bindings: {
-            ...(replayContext?.bindings ?? {}),
-            _random: result,
-          },
-        },
-    isWeighted
-      ? [
-          ...actionPath,
-          "distribution",
-          "outcomes",
-          String(result.outcomeIndex),
-          "actions",
-        ]
-      : [...actionPath, "actions"],
-  );
+  replayRollbackActionEntries(state, nestedActions, replayContext, [
+    ...actionPath,
+    "distribution",
+    "outcomes",
+    String(result.outcomeIndex),
+    "actions",
+  ]);
 };
 
 const ROLLBACK_ACTION_DEFINITIONS = {

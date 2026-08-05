@@ -197,55 +197,6 @@ const sampleDice = (distribution, randomSource) => {
   });
 };
 
-const sampleInteger = (distribution, randomSource) => {
-  assertAllowedKeys(
-    distribution,
-    new Set(["type", "min", "max"]),
-    "random.distribution",
-  );
-  if (!Object.prototype.hasOwnProperty.call(distribution, "min")) {
-    throw new Error("random.distribution.min is required");
-  }
-  if (!Object.prototype.hasOwnProperty.call(distribution, "max")) {
-    throw new Error("random.distribution.max is required");
-  }
-  const min = assertSafeInteger(distribution.min, "random.distribution.min");
-  const max = assertSafeInteger(distribution.max, "random.distribution.max");
-  const cardinality = max - min + 1;
-  if (cardinality < 1 || cardinality > UINT32_CARDINALITY) {
-    throw new Error(
-      "random integer range must contain from 1 through 4294967296 values",
-    );
-  }
-  return cloneAndFreeze({
-    type: "integer",
-    value: min + sampleUint32Range(randomSource, cardinality),
-  });
-};
-
-const sampleChance = (distribution, randomSource) => {
-  assertAllowedKeys(
-    distribution,
-    new Set(["type", "probability"]),
-    "random.distribution",
-  );
-  if (!Object.prototype.hasOwnProperty.call(distribution, "probability")) {
-    throw new Error("random.distribution.probability is required");
-  }
-  const probability = assertFiniteNumber(
-    distribution.probability,
-    "random.distribution.probability",
-    { min: 0, max: 1 },
-  );
-  const value =
-    probability === 0
-      ? false
-      : probability === 1
-        ? true
-        : sampleUnit53(randomSource) < probability;
-  return cloneAndFreeze({ type: "chance", value });
-};
-
 const sampleWeighted = (distribution, randomSource) => {
   assertAllowedKeys(
     distribution,
@@ -317,15 +268,11 @@ export const sampleRandomDistribution = (distribution, { randomSource }) => {
   assertRecord(distribution, "random.distribution");
   const samplers = {
     dice: sampleDice,
-    integer: sampleInteger,
-    chance: sampleChance,
     weighted: sampleWeighted,
   };
   const sampler = samplers[distribution.type];
   if (!sampler) {
-    throw new Error(
-      'random.distribution.type must be "dice", "integer", "chance", or "weighted"',
-    );
+    throw new Error('random.distribution.type must be "dice" or "weighted"');
   }
   return sampler(distribution, randomSource);
 };
@@ -401,18 +348,7 @@ export const validateRandomResult = (result, expectedType) => {
       max: MAX_WEIGHTED_OUTCOMES - 1,
     });
   } else {
-    assertAllowedKeys(result, new Set(["type", "value"]), "random result");
-    if (expectedType === "integer") {
-      assertSafeInteger(result.value, "random result.value");
-    } else if (expectedType === "chance") {
-      if (typeof result.value !== "boolean") {
-        throw new Error("random result.value must be a boolean");
-      }
-    } else {
-      throw new Error(
-        `unsupported recorded random result type: ${expectedType}`,
-      );
-    }
+    throw new Error(`unsupported recorded random result type: ${expectedType}`);
   }
   return cloneAndFreeze(result);
 };

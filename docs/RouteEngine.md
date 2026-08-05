@@ -659,8 +659,8 @@ in the same action.
 
 ### Random Actions
 
-Use `random` to sample dice, integer, or chance values and run a nested action
-batch with the typed result in `_random`:
+Use `random` to roll dice directly into a declared writable context number
+variable:
 
 ```yaml
 actions:
@@ -669,38 +669,30 @@ actions:
       type: dice
       sides: 20
       modifier: 3
-    actions:
-      updateVariable:
-        id: storeLockpickRoll
-        operations:
-          - variableId: lastLockpickRoll
-            op: set
-            value: "_random.value"
-      conditional:
-        branches:
-          - when:
-              gte:
-                - var: _random.value
-                - 15
-            actions:
-              jumpToLine:
-                lineId: lockOpened
-          - actions:
-              jumpToLine:
-                lineId: lockFailed
+    variableId: lastLockpickRoll
+  conditional:
+    branches:
+      - when:
+          gte:
+            - var: variables.lastLockpickRoll
+            - 15
+        actions:
+          jumpToLine:
+            lineId: lockOpened
+      - actions:
+          jumpToLine:
+            lineId: lockFailed
 ```
 
-Bare bindings such as `_random.value`, `_random.rolls`, and `_random` preserve
-their number, boolean, array, or object type. Jempl interpolation such as
-`"Rolled ${_random.value}"` remains available for strings. The result is scoped
-to the synchronous nested batch; store it in a variable before opening a form
-or confirmation dialog if deferred actions need it.
+The dice total is stored before later sibling actions execute. Place a following
+`conditional` after `random` when it should branch on the result. Detailed rolls
+and kept/discarded breakdowns remain internal for deterministic rollback.
 
 Distribution configuration is fixed authored data: numeric fields accept only
 literal numbers and do not resolve variables or action templates.
 
 Weighted selection is branch-only: each outcome contains its own action batch,
-with no authored value and no weighted `_random` result:
+with no authored value or result variable:
 
 ```yaml
 actions:
@@ -718,11 +710,12 @@ actions:
               lineId: rareReward
 ```
 
-Like `conditional`, `random` automatically continues once unless its action
-batch navigates. For weighted selection this means the selected outcome's
-actions. Line-authored outcomes are recorded with rollback history so save/load
-and rollback replay the sampled value or weighted branch without rerolling. The
-full distribution contract and authoring-tool interface are in
+Like `conditional`, `random` automatically continues once unless the outer
+batch or selected weighted actions navigate. Line-authored outcomes are
+recorded with rollback history so save/load and rollback replay the stored dice
+total or weighted branch without rerolling. Integer ranges use one die plus a
+modifier; chance routing uses two weighted outcomes. The full contract and
+authoring-tool interface are in
 [RandomAction.md](./RandomAction.md).
 
 ### Playback Mode Actions

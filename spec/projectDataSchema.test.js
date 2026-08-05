@@ -2033,50 +2033,22 @@ describe("projectData schema", () => {
     expect(validateSystemActions.errors).toBeNull();
   });
 
-  it("accepts all random distributions and recursive nested actions", () => {
-    const distributions = [
-      {
-        type: "dice",
-        count: 2,
-        sides: 20,
-        modifier: 3,
-        keep: { type: "highest", count: 1 },
-      },
-      { type: "integer", min: -10, max: 10 },
-      { type: "chance", probability: 0.4 },
-    ];
-
-    distributions.forEach((distribution) => {
-      expect(
-        validateSystemActions({
-          random: {
-            distribution,
-            actions: {
-              conditional: {
-                branches: [
-                  {
-                    when: { eq: [{ var: "_random.type" }, distribution.type] },
-                    actions: {
-                      updateVariable: {
-                        id: "storeRandom",
-                        operations: [
-                          {
-                            variableId: "result",
-                            op: "set",
-                            value: "_random.value",
-                          },
-                        ],
-                      },
-                    },
-                  },
-                ],
-              },
-            },
+  it("accepts dice variable output and recursive weighted actions", () => {
+    expect(
+      validateSystemActions({
+        random: {
+          distribution: {
+            type: "dice",
+            count: 2,
+            sides: 20,
+            modifier: 3,
+            keep: { type: "highest", count: 1 },
           },
-        }),
-      ).toBe(true);
-      expect(validateSystemActions.errors).toBeNull();
-    });
+          variableId: "lastRoll",
+        },
+      }),
+    ).toBe(true);
+    expect(validateSystemActions.errors).toBeNull();
 
     expect(
       validateSystemActions({
@@ -2114,7 +2086,7 @@ describe("projectData schema", () => {
       validateSystemActions({
         random: {
           distribution: { type: "dice", sides: 1 },
-          actions: {},
+          variableId: "lastRoll",
         },
       }),
     ).toBe(false);
@@ -2135,7 +2107,7 @@ describe("projectData schema", () => {
             type: "dice",
             sides: "${variables.diceSides}",
           },
-          actions: {},
+          variableId: "lastRoll",
         },
       }),
     ).toBe(false);
@@ -2166,7 +2138,30 @@ describe("projectData schema", () => {
             type: "weighted",
             outcomes: [{ weight: 1, actions: {} }],
           },
-          actions: {},
+          variableId: "lastRoll",
+        },
+      }),
+    ).toBe(false);
+    expect(
+      validateSystemActions({
+        random: {
+          distribution: { type: "dice", sides: 6 },
+        },
+      }),
+    ).toBe(false);
+    expect(
+      validateSystemActions({
+        random: {
+          distribution: { type: "integer", min: 1, max: 6 },
+          variableId: "lastRoll",
+        },
+      }),
+    ).toBe(false);
+    expect(
+      validateSystemActions({
+        random: {
+          distribution: { type: "chance", probability: 0.5 },
+          variableId: "lastRoll",
         },
       }),
     ).toBe(false);
@@ -2176,8 +2171,8 @@ describe("projectData schema", () => {
     const projectData = createMinimalProjectData();
     projectData.story.scenes.scene1.sections.section1.lines[0].actions = {
       random: {
-        distribution: { type: "integer", min: 1, max: 6 },
-        actions: {},
+        distribution: { type: "dice", sides: 6 },
+        variableId: "lastRoll",
       },
     };
 

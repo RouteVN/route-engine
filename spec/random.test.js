@@ -46,17 +46,7 @@ describe("random distributions", () => {
     });
   });
 
-  it("samples inclusive integer endpoints without modulo bias", () => {
-    expect(
-      sample({ type: "integer", min: -2, max: 2 }, [0xffff_ffff, 4]),
-    ).toEqual({ type: "integer", value: 2 });
-  });
-
-  it("uses a 53-bit unit sample for chance and weighted selection", () => {
-    expect(sample({ type: "chance", probability: 0.5 }, [0, 0])).toEqual({
-      type: "chance",
-      value: true,
-    });
+  it("uses a 53-bit unit sample for weighted selection", () => {
     expect(
       sample(
         {
@@ -108,8 +98,6 @@ describe("random distributions", () => {
 
   it.each([
     { type: "dice", sides: "${variables.sides}" },
-    { type: "integer", min: 1, max: "${variables.max}" },
-    { type: "chance", probability: "${variables.probability}" },
     {
       type: "weighted",
       outcomes: [{ weight: "${variables.weight}", actions: {} }],
@@ -120,8 +108,8 @@ describe("random distributions", () => {
 
   it.each([
     [{ type: "dice", count: 101, sides: 6 }, "count"],
-    [{ type: "integer", min: 0, max: 0x1_0000_0000 }, "range"],
-    [{ type: "chance", probability: Number.NaN }, "finite number"],
+    [{ type: "integer", min: 1, max: 6 }, 'must be "dice" or "weighted"'],
+    [{ type: "chance", probability: 0.5 }, 'must be "dice" or "weighted"'],
     [
       {
         type: "weighted",
@@ -153,7 +141,7 @@ describe("random distributions", () => {
   it("validates every injected uint32 value", () => {
     expect(() =>
       sampleRandomDistribution(
-        { type: "integer", min: 1, max: 2 },
+        { type: "dice", sides: 2 },
         {
           randomSource: normalizeRandomSource({
             nextUint32: () => 0x1_0000_0000,
@@ -166,21 +154,10 @@ describe("random distributions", () => {
   it("bounds rejection sampling attempts", () => {
     expect(() =>
       sample(
-        { type: "integer", min: 1, max: 5 },
+        { type: "dice", sides: 5 },
         Array.from({ length: 128 }, () => 0xffff_ffff),
       ),
     ).toThrow("128 rejected samples");
-  });
-
-  it("does not consume random words for certain chance outcomes", () => {
-    expect(sample({ type: "chance", probability: 0 }, [])).toEqual({
-      type: "chance",
-      value: false,
-    });
-    expect(sample({ type: "chance", probability: 1 }, [])).toEqual({
-      type: "chance",
-      value: true,
-    });
   });
 
   it("returns deeply frozen result snapshots", () => {

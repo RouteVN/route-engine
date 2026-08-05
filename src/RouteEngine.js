@@ -2,6 +2,7 @@ import { createSystemStore } from "./stores/system.store.js";
 import { normalizeNamespace } from "./indexedDbPersistence.js";
 import {
   evaluateRouteCondition,
+  isComputedVariableConfig,
   processActionTemplates,
   RUN_STORE_TRANSACTION,
   validateComputedVariableConfigs,
@@ -39,7 +40,6 @@ const PERSISTENT_PLAYBACK_RESTORE_ACTIONS = new Set([
 const CONDITIONAL_ACTION_TYPE = "conditional";
 const RANDOM_ACTION_TYPE = "random";
 const CONDITIONAL_AUTO_CONTINUE = Symbol("conditionalAutoContinue");
-const RANDOM_CONTEXT_AUTHORITY = Symbol("randomContextAuthority");
 const CONDITIONAL_ROUTING_ACTION_TYPES = new Set([
   "sectionTransition",
   "resetStoryAtSection",
@@ -1290,12 +1290,6 @@ export default function createRouteEngine(options) {
         'eventContext key "event" is no longer supported. Use "_event".',
       );
     }
-    if (
-      Object.prototype.hasOwnProperty.call(eventContext, "_random") &&
-      eventContext[RANDOM_CONTEXT_AUTHORITY] !== true
-    ) {
-      throw new Error('eventContext key "_random" is reserved by RouteEngine.');
-    }
   };
 
   const buildActionTemplateContext = (eventContext) => {
@@ -1308,14 +1302,13 @@ export default function createRouteEngine(options) {
         runtime: _systemStore.selectRuntime ? _systemStore.selectRuntime() : {},
       };
     }
-    const { _event, _random, ...additionalContext } = eventContext;
+    const { _event, ...additionalContext } = eventContext;
     const variables = _systemStore.selectAllVariables
       ? _systemStore.selectAllVariables()
       : undefined;
     return {
       ...additionalContext,
       _event,
-      ...(eventContext[RANDOM_CONTEXT_AUTHORITY] === true ? { _random } : {}),
       variables,
       runtime: _systemStore.selectRuntime ? _systemStore.selectRuntime() : {},
     };
@@ -1497,7 +1490,7 @@ export default function createRouteEngine(options) {
       throw new Error("random action payload must be an object");
     }
     const unexpectedKey = Object.keys(payload).find(
-      (key) => key !== "distribution" && key !== "actions",
+      (key) => key !== "distribution" && key !== "variableId",
     );
     if (unexpectedKey !== undefined) {
       throw new Error(`random action.${unexpectedKey} is not supported`);
@@ -1506,13 +1499,26 @@ export default function createRouteEngine(options) {
       throw new Error("random action requires distribution object");
     }
     if (payload.distribution.type === "weighted") {
-      if (Object.prototype.hasOwnProperty.call(payload, "actions")) {
+      if (Object.prototype.hasOwnProperty.call(payload, "variableId")) {
+        throw new Error("weighted random action does not support variableId");
+      }
+    } else if (payload.distribution.type === "dice") {
+      if (typeof payload.variableId !== "string" || !payload.variableId) {
+        throw new Error("dice random action requires variableId");
+      }
+      const variableConfig =
+        _canonicalProjectData?.resources?.variables?.[payload.variableId];
+      if (
+        !variableConfig ||
+        variableConfig.type !== "number" ||
+        variableConfig.scope !== "context" ||
+        variableConfig.readonly === true ||
+        isComputedVariableConfig(variableConfig)
+      ) {
         throw new Error(
-          "weighted random action does not support top-level actions",
+          `dice random action variableId must reference a writable context number variable: ${payload.variableId}`,
         );
       }
-    } else if (!isRecord(payload.actions)) {
-      throw new Error("random action requires actions object");
     }
   };
 
@@ -1541,33 +1547,30 @@ export default function createRouteEngine(options) {
       refreshActiveRollbackCursor();
     }
 
-    const isWeighted = result.type === "weighted";
-    const nestedActions = isWeighted
-      ? payload.distribution.outcomes[result.outcomeIndex].actions
-      : payload.actions;
-    const nestedEventContext = isWeighted
-      ? eventContext
-      : {
-          ...(eventContext ?? {}),
-          _random: result,
-          [RANDOM_CONTEXT_AUTHORITY]: true,
-        };
-    const nestedResult = processActionEntries(
-      nestedActions,
-      nestedEventContext,
-      {
-        ...options,
-        actionPath: isWeighted
-          ? [
-              ...(options.actionPath ?? [RANDOM_ACTION_TYPE]),
-              "distribution",
-              "outcomes",
-              String(result.outcomeIndex),
-              "actions",
-            ]
-          : [...(options.actionPath ?? [RANDOM_ACTION_TYPE]), "actions"],
-      },
-    );
+    let nestedResult;
+    if (result.type === "dice") {
+      dispatchStoreAction("updateVariable", {
+        id: "randomResult",
+        operations: [
+          { variableId: payload.variableId, op: "set", value: result.value },
+        ],
+      });
+    } else {
+      nestedResult = processActionEntries(
+        payload.distribution.outcomes[result.outcomeIndex].actions,
+        eventContext,
+        {
+          ...options,
+          actionPath: [
+            ...(options.actionPath ?? [RANDOM_ACTION_TYPE]),
+            "distribution",
+            "outcomes",
+            String(result.outcomeIndex),
+            "actions",
+          ],
+        },
+      );
+    }
     const autoContinue = createConditionalAutoContinue(options);
     return isConditionalAutoContinue(nestedResult)
       ? mergeConditionalAutoContinue(autoContinue, nestedResult)
