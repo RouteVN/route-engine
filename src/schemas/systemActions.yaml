@@ -19,39 +19,20 @@ definitions:
     required: [actions]
     additionalProperties: false
 
-  randomDiceKeep:
+  randomIntegerDistribution:
     type: object
     properties:
       type:
-        type: string
-        enum: [highest, lowest]
-      count:
+        const: integer
+      min:
         type: integer
-        minimum: 1
-        maximum: 100
-    required: [type, count]
-    additionalProperties: false
-
-  randomDiceDistribution:
-    type: object
-    properties:
-      type:
-        const: dice
-      count:
+        minimum: -9007199254740991
+        maximum: 9007199254740991
+      max:
         type: integer
-        minimum: 1
-        maximum: 100
-        default: 1
-      sides:
-        type: integer
-        minimum: 2
-        maximum: 4294967296
-      modifier:
-        type: integer
-        default: 0
-      keep:
-        $ref: "#/definitions/randomDiceKeep"
-    required: [type, sides]
+        minimum: -9007199254740991
+        maximum: 9007199254740991
+    required: [type, min, max]
     additionalProperties: false
 
   randomWeightedOutcome:
@@ -100,12 +81,12 @@ properties:
     additionalProperties: false
 
   random:
-    description: Roll dice into a declared number variable or run the selected weighted outcome actions, then immediately continue once unless the batch navigates
+    description: Generate an inclusive uniform integer into a declared number variable or run the selected weighted outcome actions, then immediately continue once unless the batch navigates
     oneOf:
       - type: object
         properties:
           distribution:
-            $ref: "#/definitions/randomDiceDistribution"
+            $ref: "#/definitions/randomIntegerDistribution"
           variableId:
             type: string
             minLength: 1

@@ -659,23 +659,23 @@ in the same action.
 
 ### Random Actions
 
-Use `random` to roll dice directly into a declared writable context number
-variable:
+Use `random` to generate a uniformly distributed integer directly into a
+declared writable context number variable:
 
 ```yaml
 actions:
   random:
     distribution:
-      type: dice
-      sides: 20
-      modifier: 3
-    variableId: lastLockpickRoll
+      type: integer
+      min: 1
+      max: 100
+    variableId: randomNumber
   conditional:
     branches:
       - when:
           gte:
-            - var: variables.lastLockpickRoll
-            - 15
+            - var: variables.randomNumber
+            - 75
         actions:
           jumpToLine:
             lineId: lockOpened
@@ -684,9 +684,9 @@ actions:
             lineId: lockFailed
 ```
 
-The dice total is stored before later sibling actions execute. Place a following
-`conditional` after `random` when it should branch on the result. Detailed rolls
-and kept/discarded breakdowns remain internal for deterministic rollback.
+Both bounds are inclusive. Every integer from `min` through `max` has equal
+probability. The generated number is stored before later sibling actions
+execute, so a following `conditional` can branch on it.
 
 Distribution configuration is fixed authored data: numeric fields accept only
 literal numbers and do not resolve variables or action templates.
@@ -712,10 +712,9 @@ actions:
 
 Like `conditional`, `random` automatically continues once unless the outer
 batch or selected weighted actions navigate. Line-authored outcomes are
-recorded with rollback history so save/load and rollback replay the stored dice
-total or weighted branch without rerolling. Integer ranges use one die plus a
-modifier; chance routing uses two weighted outcomes. The full contract and
-authoring-tool interface are in
+recorded with rollback history so save/load and rollback replay the stored
+integer or weighted branch without rerolling. Chance routing uses two weighted
+outcomes. The full contract and authoring-tool interface are in
 [RandomAction.md](./RandomAction.md).
 
 ### Playback Mode Actions

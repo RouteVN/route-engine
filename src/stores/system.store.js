@@ -565,6 +565,22 @@ const selectCanonicalRandomAction = (projectData, checkpoint, path) => {
     : undefined;
 };
 
+const isSupportedIntegerRandomDistribution = (distribution) => {
+  if (
+    distribution?.type !== "integer" ||
+    !Number.isSafeInteger(distribution.min) ||
+    !Number.isSafeInteger(distribution.max)
+  ) {
+    return false;
+  }
+  const cardinality = distribution.max - distribution.min + 1;
+  return (
+    Number.isSafeInteger(cardinality) &&
+    cardinality >= 1 &&
+    cardinality <= 0x1_0000_0000
+  );
+};
+
 const reconcilePersistedRandomOutcomes = (outcomes, checkpoint, projectData) =>
   outcomes.filter(({ path, type, result }) => {
     const canonicalAction = selectCanonicalRandomAction(
@@ -580,7 +596,7 @@ const reconcilePersistedRandomOutcomes = (outcomes, checkpoint, projectData) =>
         canonicalAction.distribution.outcomes?.[result.outcomeIndex]?.actions,
       );
     }
-    if (type === "dice") {
+    if (type === "integer") {
       const variableConfig =
         projectData?.resources?.variables?.[canonicalAction.variableId];
       return (
@@ -588,7 +604,10 @@ const reconcilePersistedRandomOutcomes = (outcomes, checkpoint, projectData) =>
         variableConfig?.type === "number" &&
         variableConfig.scope === "context" &&
         variableConfig.readonly !== true &&
-        !isComputedVariableConfig(variableConfig)
+        !isComputedVariableConfig(variableConfig) &&
+        isSupportedIntegerRandomDistribution(canonicalAction.distribution) &&
+        result.value >= canonicalAction.distribution.min &&
+        result.value <= canonicalAction.distribution.max
       );
     }
     return false;
@@ -6950,7 +6969,16 @@ const replayRollbackRandomAction = (
     cloneStateValue(outcome.result),
     outcome.type,
   );
-  if (result.type === "dice") {
+  if (result.type === "integer") {
+    if (
+      !isSupportedIntegerRandomDistribution(payload.distribution) ||
+      result.value < payload.distribution.min ||
+      result.value > payload.distribution.max
+    ) {
+      throw new Error(
+        `recorded random outcome does not match canonical action at ${path}`,
+      );
+    }
     applyRollbackCheckpointUpdateVariable(state, {
       id: "randomResult",
       operations: [

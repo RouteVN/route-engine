@@ -1502,9 +1502,9 @@ export default function createRouteEngine(options) {
       if (Object.prototype.hasOwnProperty.call(payload, "variableId")) {
         throw new Error("weighted random action does not support variableId");
       }
-    } else if (payload.distribution.type === "dice") {
+    } else if (payload.distribution.type === "integer") {
       if (typeof payload.variableId !== "string" || !payload.variableId) {
-        throw new Error("dice random action requires variableId");
+        throw new Error("integer random action requires variableId");
       }
       const variableConfig =
         _canonicalProjectData?.resources?.variables?.[payload.variableId];
@@ -1516,7 +1516,7 @@ export default function createRouteEngine(options) {
         isComputedVariableConfig(variableConfig)
       ) {
         throw new Error(
-          `dice random action variableId must reference a writable context number variable: ${payload.variableId}`,
+          `integer random action variableId must reference a writable context number variable: ${payload.variableId}`,
         );
       }
     }
@@ -1548,7 +1548,7 @@ export default function createRouteEngine(options) {
     }
 
     let nestedResult;
-    if (result.type === "dice") {
+    if (result.type === "integer") {
       dispatchStoreAction("updateVariable", {
         id: "randomResult",
         operations: [

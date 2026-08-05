@@ -1,12 +1,12 @@
 ---
-title: Choice Random Branch
-description: A choice click deterministically rolls dice, selects a weighted action branch, and renders the matching destination.
+title: Choice Random Integer Branch
+description: A choice click deterministically generates an integer, selects a weighted action branch, and renders the matching destination.
 specs:
-  - the initial line shows one isolated roll button
-  - clicking the button dispatches a random dice action through the real input path
-  - the deterministic VT random source rolls 15 and applies a modifier of 2
-  - the dice action stores 17 directly in the declared lastRoll variable
-  - a following conditional reads lastRoll before automatic continuation
+  - the initial line shows one isolated random-integer button
+  - clicking the button dispatches a uniform integer action through the real input path
+  - the deterministic VT random source selects 17 from the inclusive 1 through 20 range
+  - the integer action stores 17 directly in the declared randomNumber variable
+  - a following conditional reads randomNumber before automatic continuation
   - a nested weighted random selects its first outcome actions
   - the selected weighted outcome renders the success destination
 skipInitialScreenshot: true
@@ -33,9 +33,9 @@ resources:
     vtRandomUint32:
       type: number
       scope: context
-      default: 14
+      default: 16
       readonly: true
-    lastRoll:
+    randomNumber:
       type: number
       scope: context
       default: 0
@@ -67,16 +67,16 @@ resources:
           width: 1300
           content: ${dialogue.content[0].text}
           textStyleId: textMain
-        - id: roll-display
+        - id: random-number-display
           type: text
           x: 1760
           y: 80
           anchorX: 1
-          content: "Roll: ${variables.lastRoll}"
+          content: "Number: ${variables.randomNumber}"
           textStyleId: textMuted
     choiceLayout:
       elements:
-        - id: roll-button
+        - id: generate-button
           type: rect
           x: 600
           y: 300
@@ -88,15 +88,15 @@ resources:
               actions:
                 random:
                   distribution:
-                    type: dice
-                    sides: 20
-                    modifier: 2
-                  variableId: lastRoll
+                    type: integer
+                    min: 1
+                    max: 20
+                  variableId: randomNumber
                 conditional:
                   branches:
                     - when:
                         gte:
-                          - var: variables.lastRoll
+                          - var: variables.randomNumber
                           - 15
                       actions:
                         random:
@@ -114,7 +114,7 @@ resources:
                     - actions:
                         jumpToLine:
                           lineId: failure
-        - id: roll-label
+        - id: generate-label
           type: text
           x: 800
           y: 338
@@ -166,13 +166,13 @@ story:
                   ui:
                     resourceId: dialogueLayout
                   content:
-                    - text: "Roll the lockpick check."
+                    - text: "Generate an integer from 1 through 20."
                   characterId: narrator
                 choice:
                   resourceId: choiceLayout
                   items:
-                    - id: roll
-                      content: "Roll d20 + 2"
+                    - id: generate
+                      content: "Generate 1–20"
             - id: success
               actions:
                 choice: {}

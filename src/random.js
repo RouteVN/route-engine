@@ -2,7 +2,6 @@ const UINT32_CARDINALITY = 0x1_0000_0000;
 const UINT53_CARDINALITY = 0x20_0000_0000_0000;
 const MIN_WEIGHT_SHARE = 1 / UINT53_CARDINALITY;
 const MAX_REJECTION_ATTEMPTS = 128;
-const MAX_DICE_COUNT = 100;
 const MAX_WEIGHTED_OUTCOMES = 1000;
 
 const isRecord = (value) =>
@@ -110,90 +109,36 @@ const sampleUnit53 = (randomSource) => {
   return (high * 0x4_000_000 + low) / UINT53_CARDINALITY;
 };
 
-const sampleDice = (distribution, randomSource) => {
+const sampleInteger = (distribution, randomSource) => {
   assertAllowedKeys(
     distribution,
-    new Set(["type", "count", "sides", "modifier", "keep"]),
+    new Set(["type", "min", "max"]),
     "random.distribution",
   );
-  const count = assertSafeInteger(
-    distribution.count ?? 1,
-    "random.distribution.count",
-    { min: 1, max: MAX_DICE_COUNT },
-  );
-  if (!Object.prototype.hasOwnProperty.call(distribution, "sides")) {
-    throw new Error("random.distribution.sides is required");
+  if (!Object.prototype.hasOwnProperty.call(distribution, "min")) {
+    throw new Error("random.distribution.min is required");
   }
-  const sides = assertSafeInteger(
-    distribution.sides,
-    "random.distribution.sides",
-    { min: 2, max: UINT32_CARDINALITY },
-  );
-  const modifier = assertSafeInteger(
-    distribution.modifier ?? 0,
-    "random.distribution.modifier",
-  );
-
-  let keepCount = count;
-  let keepType;
-  if (distribution.keep !== undefined) {
-    assertRecord(distribution.keep, "random.distribution.keep");
-    assertAllowedKeys(
-      distribution.keep,
-      new Set(["type", "count"]),
-      "random.distribution.keep",
-    );
-    keepType = distribution.keep.type;
-    if (keepType !== "highest" && keepType !== "lowest") {
-      throw new Error(
-        'random.distribution.keep.type must be "highest" or "lowest"',
-      );
-    }
-    if (!Object.prototype.hasOwnProperty.call(distribution.keep, "count")) {
-      throw new Error("random.distribution.keep.count is required");
-    }
-    keepCount = assertSafeInteger(
-      distribution.keep.count,
-      "random.distribution.keep.count",
-      { min: 1, max: count },
+  if (!Object.prototype.hasOwnProperty.call(distribution, "max")) {
+    throw new Error("random.distribution.max is required");
+  }
+  const min = assertSafeInteger(distribution.min, "random.distribution.min");
+  const max = assertSafeInteger(distribution.max, "random.distribution.max");
+  const cardinality = max - min + 1;
+  if (
+    !Number.isSafeInteger(cardinality) ||
+    cardinality < 1 ||
+    cardinality > UINT32_CARDINALITY
+  ) {
+    throw new Error(
+      "random integer range must contain from 1 through 4294967296 values",
     );
   }
-
-  const minTotal = keepCount + modifier;
-  const maxTotal = keepCount * sides + modifier;
-  if (!Number.isSafeInteger(minTotal) || !Number.isSafeInteger(maxTotal)) {
-    throw new Error("random dice result range must contain only safe integers");
-  }
-
-  const rolls = Array.from(
-    { length: count },
-    () => sampleUint32Range(randomSource, sides) + 1,
-  );
-  const selectedIndexes = new Set(
-    rolls
-      .map((value, index) => ({ value, index }))
-      .sort((left, right) => {
-        const comparison = left.value - right.value;
-        return (
-          (keepType === "highest" ? -comparison : comparison) ||
-          left.index - right.index
-        );
-      })
-      .slice(0, keepCount)
-      .map(({ index }) => index),
-  );
-  const keptRolls = rolls.filter((_, index) => selectedIndexes.has(index));
-  const discardedRolls = rolls.filter(
-    (_, index) => !selectedIndexes.has(index),
-  );
-
   return cloneAndFreeze({
-    type: "dice",
-    value: keptRolls.reduce((total, roll) => total + roll, modifier),
-    rolls,
-    keptRolls,
-    discardedRolls,
-    modifier,
+    type: "integer",
+    value:
+      cardinality === 1
+        ? min
+        : min + sampleUint32Range(randomSource, cardinality),
   });
 };
 
@@ -267,12 +212,12 @@ const sampleWeighted = (distribution, randomSource) => {
 export const sampleRandomDistribution = (distribution, { randomSource }) => {
   assertRecord(distribution, "random.distribution");
   const samplers = {
-    dice: sampleDice,
+    integer: sampleInteger,
     weighted: sampleWeighted,
   };
   const sampler = samplers[distribution.type];
   if (!sampler) {
-    throw new Error('random.distribution.type must be "dice" or "weighted"');
+    throw new Error('random.distribution.type must be "integer" or "weighted"');
   }
   return sampler(distribution, randomSource);
 };
@@ -282,61 +227,9 @@ export const validateRandomResult = (result, expectedType) => {
   if (result.type !== expectedType) {
     throw new Error("random result type does not match its recorded type");
   }
-  if (expectedType === "dice") {
-    assertAllowedKeys(
-      result,
-      new Set([
-        "type",
-        "value",
-        "rolls",
-        "keptRolls",
-        "discardedRolls",
-        "modifier",
-      ]),
-      "random result",
-    );
+  if (expectedType === "integer") {
+    assertAllowedKeys(result, new Set(["type", "value"]), "random result");
     assertSafeInteger(result.value, "random result.value");
-    assertSafeInteger(result.modifier, "random result.modifier");
-    for (const key of ["rolls", "keptRolls", "discardedRolls"]) {
-      if (
-        !Array.isArray(result[key]) ||
-        result[key].some(
-          (value) =>
-            !Number.isSafeInteger(value) ||
-            value < 1 ||
-            value > UINT32_CARDINALITY,
-        )
-      ) {
-        throw new Error(
-          `random result.${key} must be an array of positive integers`,
-        );
-      }
-    }
-    const breakdownCounts = new Map();
-    [...result.keptRolls, ...result.discardedRolls].forEach((roll) => {
-      breakdownCounts.set(roll, (breakdownCounts.get(roll) ?? 0) + 1);
-    });
-    const rollsMatchBreakdown = result.rolls.every((roll) => {
-      const count = breakdownCounts.get(roll) ?? 0;
-      if (count === 0) return false;
-      breakdownCounts.set(roll, count - 1);
-      return true;
-    });
-    const expectedValue = result.keptRolls.reduce(
-      (total, roll) => total + roll,
-      result.modifier,
-    );
-    if (
-      result.rolls.length < 1 ||
-      result.rolls.length > MAX_DICE_COUNT ||
-      result.keptRolls.length < 1 ||
-      result.keptRolls.length + result.discardedRolls.length !==
-        result.rolls.length ||
-      !rollsMatchBreakdown ||
-      expectedValue !== result.value
-    ) {
-      throw new Error("random dice result breakdown is inconsistent");
-    }
   } else if (expectedType === "weighted") {
     assertAllowedKeys(
       result,

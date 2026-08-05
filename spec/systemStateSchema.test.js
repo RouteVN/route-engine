@@ -370,15 +370,8 @@ describe("systemState schema", () => {
       {
         path: "random",
         ordinal: 0,
-        type: "dice",
-        result: {
-          type: "dice",
-          value: 8,
-          rolls: [3, 5],
-          keptRolls: [3, 5],
-          discardedRolls: [],
-          modifier: 0,
-        },
+        type: "integer",
+        result: { type: "integer", value: 8 },
       },
     ];
 
@@ -386,6 +379,9 @@ describe("systemState schema", () => {
     expect(validateSystemState.errors).toBeNull();
 
     checkpoint.randomOutcomes[0].result.value = "8";
+    expect(validateSystemState(systemState)).toBe(false);
+
+    checkpoint.randomOutcomes[0].result.value = Number.MAX_SAFE_INTEGER + 1;
     expect(validateSystemState(systemState)).toBe(false);
   });
 
@@ -401,12 +397,8 @@ describe("systemState schema", () => {
         ordinal: 0,
         type: "weighted",
         result: {
-          type: "dice",
+          type: "integer",
           value: 4,
-          rolls: [4],
-          keptRolls: [4],
-          discardedRolls: [],
-          modifier: 0,
         },
       },
     ];
@@ -417,7 +409,7 @@ describe("systemState schema", () => {
     checkpoint.randomOutcomes[0] = {
       path: "random",
       ordinal: 0,
-      type: "dice",
+      type: "integer",
       result: { type: "weighted", outcomeIndex: 0 },
     };
     expect(validateSystemState(systemState)).toBe(false);
@@ -474,7 +466,7 @@ describe("systemState schema", () => {
     expect(validateSystemState(systemState)).toBe(false);
   });
 
-  it.each(["integer", "chance"])(
+  it.each(["dice", "chance"])(
     "rejects removed %s random outcome records",
     (type) => {
       const engine = createRouteEngine({ handlePendingEffects: () => {} });
@@ -489,7 +481,7 @@ describe("systemState schema", () => {
           path: "random",
           ordinal: 0,
           type,
-          result: { type, value: type === "integer" ? 3 : true },
+          result: { type, value: type === "dice" ? 3 : true },
         },
       ];
 

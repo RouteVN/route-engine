@@ -97,31 +97,16 @@ defs:
     required: [entries, currentLength, checkpointLengths]
     additionalProperties: false
 
-  randomDiceOutcomeResult:
+  randomIntegerOutcomeResult:
     type: object
     properties:
       type:
-        const: dice
+        const: integer
       value:
         type: integer
-      rolls:
-        type: array
-        items:
-          type: integer
-          minimum: 1
-      keptRolls:
-        type: array
-        items:
-          type: integer
-          minimum: 1
-      discardedRolls:
-        type: array
-        items:
-          type: integer
-          minimum: 1
-      modifier:
-        type: integer
-    required: [type, value, rolls, keptRolls, discardedRolls, modifier]
+        minimum: -9007199254740991
+        maximum: 9007199254740991
+    required: [type, value]
     additionalProperties: false
 
   randomWeightedOutcomeResult:
@@ -147,9 +132,9 @@ defs:
             type: integer
             minimum: 0
           type:
-            const: dice
+            const: integer
           result:
-            $ref: "#/defs/randomDiceOutcomeResult"
+            $ref: "#/defs/randomIntegerOutcomeResult"
         required: [path, ordinal, type, result]
         additionalProperties: false
       - type: object
