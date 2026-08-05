@@ -2879,3 +2879,65 @@ in:
               elements: []
     resources: {}
 throws: 'Visual item "status" requires transformId or transform'
+---
+case: inline visual layout supports transition animation on removal
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "title"
+            animations:
+              resourceId: "fadeOut"
+    previousPresentationState:
+      visual:
+        items:
+          - id: "title"
+            layout:
+              elements:
+                - id: "title-text"
+                  type: "text"
+                  content: "Chapter 1"
+                  textStyleId: "title"
+            transform:
+              x: 400
+              y: 120
+              anchorX: 0.5
+              anchorY: 0.5
+    resources:
+      animations:
+        fadeOut:
+          type: transition
+          prev:
+            tween:
+              alpha:
+                initialValue: 1
+                keyframes:
+                  - duration: 300
+                    value: 0
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations:
+    - id: "title-animation-out"
+      type: "transition"
+      targetId: "visual-title"
+      prev:
+        tween:
+          alpha:
+            initialValue: 1
+            keyframes:
+              - duration: 300
+                value: 0
+  audio: []

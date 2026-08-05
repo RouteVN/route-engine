@@ -790,3 +790,60 @@ in:
               sectionId: "section1"
               lineId: "2"
 out: {}
+---
+case: "Detect an appearance patch for a persisted inline visual layout"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        visual:
+                          items:
+                            - id: "title"
+                              layout:
+                                elements:
+                                  - id: "title-text"
+                                    type: "text"
+                                    content: "Chapter 1"
+                                    textStyleId: "title"
+                              transform:
+                                x: 400
+                                y: 120
+                                anchorX: 0.5
+                                anchorY: 0.5
+                    - id: "2"
+                      actions:
+                        visual:
+                          items:
+                            - id: "title"
+                              opacity: 0.5
+      contexts:
+        - currentPointerMode: "read"
+          pointers:
+            read:
+              sectionId: "section1"
+              lineId: "2"
+out:
+  visual:
+    changeType: "update"
+    data:
+      items:
+        - id: "title"
+          layout:
+            elements:
+              - id: "title-text"
+                type: "text"
+                content: "Chapter 1"
+                textStyleId: "title"
+          transform:
+            x: 400
+            y: 120
+            anchorX: 0.5
+            anchorY: 0.5
+          opacity: 0.5

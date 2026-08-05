@@ -1,0 +1,130 @@
+---
+title: Visual Inline Layout Persistent Transition
+description: |
+  An inline-layout visual using an inline transform persists into the next
+  line so an animation-only action can fade out its previous render target.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 100
+  - action: screenshot
+  - action: customEvent
+    name: vt:nextLine
+  - action: wait
+    ms: 50
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 300
+  - action: screenshot
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 300
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+  backgroundColor: "#000000"
+resources:
+  colors:
+    background:
+      hex: "#000000"
+    panel:
+      hex: "#4D4D4D"
+    text:
+      hex: "#FFFFFF"
+    muted:
+      hex: "#D9D9D9"
+  fonts:
+    default:
+      fileId: Arial
+  textStyles:
+    heading:
+      fontId: default
+      colorId: muted
+      fontSize: 24
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1.2
+      align: center
+    status:
+      fontId: default
+      colorId: text
+      fontSize: 48
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1.2
+      align: center
+  animations:
+    inline-fade-out:
+      type: transition
+      prev:
+        tween:
+          alpha:
+            initialValue: 1
+            keyframes:
+              - duration: 600
+                value: 0
+                easing: linear
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      name: Main
+      initialSectionId: main
+      sections:
+        main:
+          name: Main
+          lines:
+            - id: inline-layout
+              actions:
+                background:
+                  colorId: background
+                visual:
+                  items:
+                    - id: status-card
+                      layout:
+                        elements:
+                          - id: card
+                            type: rect
+                            width: 600
+                            height: 400
+                            colorId: panel
+                          - id: heading
+                            type: text
+                            x: 300
+                            y: 70
+                            anchorX: 0.5
+                            anchorY: 0.5
+                            content: PERSISTED INLINE LAYOUT
+                            textStyleId: heading
+                          - id: score
+                            type: text
+                            x: 300
+                            y: 190
+                            anchorX: 0.5
+                            anchorY: 0.5
+                            content: READY TO FADE
+                            textStyleId: status
+                      transform:
+                        x: 180
+                        y: 70
+                        anchorX: 0
+                        anchorY: 0
+                        scaleX: 1
+                        scaleY: 1
+                        rotation: 0
+                      layer: 70
+            - id: fade-out
+              actions:
+                visual:
+                  items:
+                    - id: status-card
+                      animations:
+                        resourceId: inline-fade-out

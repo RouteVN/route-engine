@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { constructPresentationState } from "../src/stores/constructPresentationState.js";
 import { constructRenderState } from "../src/stores/constructRenderState.js";
+import { normalizePersistentPresentationState } from "../src/util.js";
 
 const createResources = () => ({
   images: {
@@ -286,6 +287,90 @@ describe("inline visual layouts", () => {
       scaleY: 2,
       rotation: 12,
     });
+  });
+
+  it("preserves an inline layout for an animation-only exit on the next line", () => {
+    const resources = createResources();
+    resources.animations.fadeOut = {
+      type: "transition",
+      prev: {
+        tween: {
+          alpha: {
+            initialValue: 1,
+            keyframes: [{ duration: 300, value: 0 }],
+          },
+        },
+      },
+    };
+
+    const previousPresentationState = normalizePersistentPresentationState(
+      constructPresentationState([
+        {
+          visual: {
+            items: [
+              {
+                id: "title",
+                layout: {
+                  elements: [
+                    {
+                      id: "title-text",
+                      type: "text",
+                      content: "Chapter 1",
+                      textStyleId: "title",
+                    },
+                  ],
+                },
+                transform: {
+                  x: 400,
+                  y: 120,
+                  anchorX: 0.5,
+                  anchorY: 0.5,
+                },
+              },
+            ],
+          },
+        },
+      ]),
+    );
+
+    expect(previousPresentationState.visual.items[0]).toMatchObject({
+      id: "title",
+      layout: {
+        elements: [{ id: "title-text", content: "Chapter 1" }],
+      },
+      transform: {
+        x: 400,
+        y: 120,
+      },
+    });
+
+    const presentationState = constructPresentationState([
+      previousPresentationState,
+      {
+        visual: {
+          items: [
+            {
+              id: "title",
+              animations: { resourceId: "fadeOut" },
+            },
+          ],
+        },
+      },
+    ]);
+    const renderState = constructRenderState({
+      presentationState,
+      previousPresentationState,
+      resources,
+    });
+
+    expect(findVisual(renderState, "title")).toBeUndefined();
+    expect(renderState.animations).toEqual([
+      expect.objectContaining({
+        id: "title-animation-out",
+        type: "transition",
+        targetId: "visual-title",
+      }),
+    ]);
   });
 
   it("rejects ambiguous subjects and transform sources", () => {
