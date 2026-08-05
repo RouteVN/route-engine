@@ -91,6 +91,21 @@ describe("random distributions", () => {
     });
   });
 
+  it("keeps the smallest supported weighted interval reachable", () => {
+    expect(
+      sample(
+        {
+          type: "weighted",
+          outcomes: [
+            { weight: 2 ** 52, actions: {} },
+            { weight: 1, actions: {} },
+          ],
+        },
+        [0xffff_ffff, 0xffff_ffff],
+      ),
+    ).toEqual({ type: "weighted", outcomeIndex: 1 });
+  });
+
   it.each([
     { type: "dice", sides: "${variables.sides}" },
     { type: "integer", min: 1, max: "${variables.max}" },
@@ -120,6 +135,16 @@ describe("random distributions", () => {
         outcomes: [{ value: "removed", weight: 1, actions: {} }],
       },
       "value is not supported",
+    ],
+    [
+      {
+        type: "weighted",
+        outcomes: [
+          { weight: 2 ** 53, actions: {} },
+          { weight: 1, actions: {} },
+        ],
+      },
+      "below the supported probability resolution",
     ],
   ])("rejects an invalid distribution %#", (distribution, message) => {
     expect(() => sample(distribution, [0, 0])).toThrow(message);

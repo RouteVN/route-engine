@@ -291,7 +291,7 @@ const sampleWeighted = (distribution, randomSource) => {
   scaledOutcomes.forEach((outcome, index) => {
     if (
       outcomes[index].weight > 0 &&
-      (outcome.weight === 0 || outcome.weight / totalWeight < MIN_WEIGHT_SHARE)
+      (outcome.weight === 0 || outcome.weight / totalWeight <= MIN_WEIGHT_SHARE)
     ) {
       throw new Error(
         `random.distribution.outcomes[${index}].weight is below the supported probability resolution`,

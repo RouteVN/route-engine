@@ -584,8 +584,18 @@ const reconcilePersistedRandomOutcomes = (outcomes, checkpoint, projectData) =>
   });
 
 const sanitizePersistedRandomOutcomes = (checkpoint, projectData) => {
-  if (checkpoint?.randomOutcomeVersion !== RANDOM_OUTCOME_VERSION) {
+  if (
+    !Object.prototype.hasOwnProperty.call(
+      checkpoint ?? {},
+      "randomOutcomeVersion",
+    )
+  ) {
     return undefined;
+  }
+  if (checkpoint.randomOutcomeVersion !== RANDOM_OUTCOME_VERSION) {
+    throw new Error(
+      `unsupported rollback random outcome version: ${checkpoint.randomOutcomeVersion}`,
+    );
   }
   if (!Array.isArray(checkpoint.randomOutcomes)) {
     throw new Error("versioned rollback random outcomes must be an array");
@@ -7045,12 +7055,10 @@ const replayRollbackLineAction = (
   }
 
   const bindings = replayContext?.bindings ?? {};
-  const processedPayload = Object.keys(bindings).length
-    ? processActionTemplates(
-        { [actionType]: payload },
-        { ...buildRollbackConditionContext(state), ...bindings },
-      )[actionType]
-    : payload;
+  const processedPayload = processActionTemplates(
+    { [actionType]: payload },
+    { ...buildRollbackConditionContext(state), ...bindings },
+  )[actionType];
   definition.replayLine(state, processedPayload);
 };
 

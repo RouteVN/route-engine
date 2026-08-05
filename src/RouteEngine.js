@@ -880,6 +880,15 @@ export default function createRouteEngine(options) {
     });
   };
 
+  const refreshActiveRollbackCursor = () => {
+    const navigationContext = _rollbackNavigationContexts.at(-1);
+    if (!navigationContext) {
+      return;
+    }
+    navigationContext.rollbackCursor =
+      _systemStore.selectRollbackCursor?.() ?? null;
+  };
+
   const updateActiveRollbackNavigation = (
     actionType,
     cursorBeforeAction,
@@ -1526,6 +1535,10 @@ export default function createRouteEngine(options) {
         type: result.type,
         result,
       });
+      // Recording changes the checkpoint through Immer. Keep navigation
+      // ownership aligned with the replacement object so transient-source
+      // finalization can still identify the live checkpoint.
+      refreshActiveRollbackCursor();
     }
 
     const isWeighted = result.type === "weighted";

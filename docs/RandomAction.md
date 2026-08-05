@@ -281,12 +281,12 @@ distribution:
   avoids overflow and subnormal-total rounding bias.
 - Selection is proportional to authored weight within IEEE-754 precision and
   the engine's `2^-53` unit-interval resolution.
-- Every positive normalized weight must be at least `2^-53`; smaller positive
-  outcomes are rejected rather than silently becoming unreachable.
+- Every positive normalized weight must be greater than `2^-53`; weights at or
+  below that boundary are rejected rather than silently becoming unreachable
+  through unit-interval resolution or floating-point total rounding.
 - Zero-weight outcomes cannot be selected.
 - Exactly one selected outcome's actions execute; unselected actions remain
-  lazy and are not validated or templated until reached by normal action
-  processing.
+  lazy and are not templated or executed.
 - Weighted selection exposes no gameplay value. The selected array index is
   retained only in internal rollback state so replay can execute the same
   canonical branch.
@@ -487,6 +487,10 @@ during its historical replay are treated as absent rather than sampled. This
 represents a playthrough created before random outcomes existed. Newly recorded
 outcomes add the marker to their checkpoint or jump-created replay occurrence
 without changing how older checkpoints replay.
+
+A present marker with any unsupported version is incompatible data. Loading or
+project reconciliation rejects it transactionally instead of deleting its
+ledger or treating it as legacy history.
 
 Even in a versioned occurrence, a replayed structural path may have no outcome
 because that path was not executed originally and a condition now selects a

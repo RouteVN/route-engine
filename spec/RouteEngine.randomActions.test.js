@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import createRouteEngine from "../src/RouteEngine.js";
+import { selectCanRollback } from "../src/stores/system.store.js";
 
 const createProjectData = ({ lineActions = {}, extraLines = [] } = {}) => ({
   screen: { width: 1920, height: 1080 },
@@ -330,6 +331,32 @@ describe("RouteEngine random actions", () => {
     expect(randomSource.calls).toBe(1);
   });
 
+  it("marks an auto-continuing line random action as a transient Back source", () => {
+    const engine = createEngine(
+      createProjectData({
+        lineActions: {
+          random: {
+            distribution: { type: "integer", min: 1, max: 10 },
+            actions: {},
+          },
+        },
+        extraLines: [{ id: "line2", actions: {} }],
+      }),
+      createQueuedRandomSource(6),
+      { handleLineActions: true },
+    );
+
+    const state = engine.selectSystemState();
+    expect(state.contexts[0].pointers.read.lineId).toBe("line2");
+    expect(state.contexts[0].rollback.timeline[0].returnable).toBe(false);
+    expect(selectCanRollback({ state })).toBe(false);
+
+    engine.handleAction("rollbackByOffset", {});
+    expect(engine.selectSystemState().contexts[0].pointers.read.lineId).toBe(
+      "line2",
+    );
+  });
+
   it("records and replays the selected weighted branch without rerolling", () => {
     const randomSource = createQueuedRandomSource(0xffff_ffff, 0xffff_ffff, 6);
     const engine = createEngine(
@@ -399,6 +426,44 @@ describe("RouteEngine random actions", () => {
     expect(state.contexts[0].variables.selected).toBe("rare");
     expect(state.contexts[0].variables.score).toBe(7);
     expect(randomSource.calls).toBe(3);
+  });
+
+  it("renders ordinary variable templates in weighted rollback replay", () => {
+    const randomSource = createQueuedRandomSource(0, 0);
+    const engine = createEngine(
+      createProjectData({
+        lineActions: {
+          random: {
+            distribution: {
+              type: "weighted",
+              outcomes: [
+                {
+                  weight: 1,
+                  actions: setVariable(
+                    "templatedValue",
+                    "score",
+                    "${variables.bonus}",
+                  ),
+                },
+              ],
+            },
+          },
+        },
+        extraLines: [{ id: "line2", actions: {} }],
+      }),
+      randomSource,
+      { handleLineActions: true },
+    );
+
+    expect(engine.selectSystemState().contexts[0].variables.score).toBe(2);
+    expect(() =>
+      engine.handleAction("rollbackToLine", {
+        sectionId: "section1",
+        lineId: "line1",
+      }),
+    ).not.toThrow();
+    expect(engine.selectSystemState().contexts[0].variables.score).toBe(2);
+    expect(randomSource.calls).toBe(2);
   });
 
   it("drops a recorded weighted branch removed by a project update", () => {
@@ -774,6 +839,43 @@ describe("RouteEngine random actions", () => {
         projectData: structuredClone(projectData),
       }),
     ).toThrow("invalid rollback random outcome at index 1");
+    expect(engine.selectSystemState()).toEqual(before);
+  });
+
+  it("rejects unsupported persisted outcome versions transactionally", () => {
+    const projectData = createProjectData({
+      lineActions: {
+        random: {
+          distribution: { type: "integer", min: 1, max: 10 },
+          actions: {},
+        },
+      },
+      extraLines: [{ id: "line2", actions: {} }],
+    });
+    const originalEngine = createEngine(
+      projectData,
+      createQueuedRandomSource(2),
+      { handleLineActions: true },
+    );
+    originalEngine.handleAction("saveSlot", { slotId: 1, savedAt: 100 });
+    const saveSlots = originalEngine.selectSystemState().global.saveSlots;
+    saveSlots["1"].state.contexts[0].rollback.timeline[0].randomOutcomeVersion =
+      2;
+
+    const engine = createEngine(projectData, createQueuedRandomSource(), {
+      global: { saveSlots },
+    });
+    const before = engine.selectSystemState();
+
+    expect(() => engine.handleAction("loadSlot", { slotId: 1 })).toThrow(
+      "unsupported rollback random outcome version: 2",
+    );
+    expect(engine.selectSystemState()).toEqual(before);
+    expect(() =>
+      engine.handleAction("updateProjectData", {
+        projectData: structuredClone(projectData),
+      }),
+    ).toThrow("unsupported rollback random outcome version: 2");
     expect(engine.selectSystemState()).toEqual(before);
   });
 });
