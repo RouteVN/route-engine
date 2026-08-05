@@ -1496,7 +1496,13 @@ export default function createRouteEngine(options) {
     if (!isRecord(payload.distribution)) {
       throw new Error("random action requires distribution object");
     }
-    if (!isRecord(payload.actions)) {
+    if (payload.distribution.type === "weighted") {
+      if (Object.prototype.hasOwnProperty.call(payload, "actions")) {
+        throw new Error(
+          "weighted random action does not support top-level actions",
+        );
+      }
+    } else if (!isRecord(payload.actions)) {
       throw new Error("random action requires actions object");
     }
   };
@@ -1522,20 +1528,31 @@ export default function createRouteEngine(options) {
       });
     }
 
-    const nestedEventContext = {
-      ...(eventContext ?? {}),
-      _random: result,
-      [RANDOM_CONTEXT_AUTHORITY]: true,
-    };
+    const isWeighted = result.type === "weighted";
+    const nestedActions = isWeighted
+      ? payload.distribution.outcomes[result.outcomeIndex].actions
+      : payload.actions;
+    const nestedEventContext = isWeighted
+      ? eventContext
+      : {
+          ...(eventContext ?? {}),
+          _random: result,
+          [RANDOM_CONTEXT_AUTHORITY]: true,
+        };
     const nestedResult = processActionEntries(
-      payload.actions,
+      nestedActions,
       nestedEventContext,
       {
         ...options,
-        actionPath: [
-          ...(options.actionPath ?? [RANDOM_ACTION_TYPE]),
-          "actions",
-        ],
+        actionPath: isWeighted
+          ? [
+              ...(options.actionPath ?? [RANDOM_ACTION_TYPE]),
+              "distribution",
+              "outcomes",
+              String(result.outcomeIndex),
+              "actions",
+            ]
+          : [...(options.actionPath ?? [RANDOM_ACTION_TYPE]), "actions"],
       },
     );
     const autoContinue = createConditionalAutoContinue(options);

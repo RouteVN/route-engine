@@ -7,10 +7,9 @@ action implemented in Route Engine 1.38.0.
 
 ## Purpose
 
-The `random` action provides game-friendly random sampling and passes the
-sampled result into a nested action batch. Authors can use the existing
-`conditional` action to route based on that result, or explicitly store the
-result with `updateVariable` when later lines need it.
+The `random` action provides game-friendly random sampling. Dice, integer, and
+chance distributions pass a sampled value into a nested action batch. Weighted
+distributions select and execute one authored outcome action batch directly.
 
 The action is synchronous and non-presentational. It does not display dice,
 wait for player input, or produce an animation. A choice, layout button, or
@@ -19,7 +18,8 @@ other renderer event may dispatch it when the roll should be player-triggered.
 ## Goals
 
 - Support a small set of useful, explicitly typed random distributions.
-- Reuse the existing action batch and conditional grammars.
+- Reuse the existing action batch and conditional grammars for value results,
+  and the normal action batch grammar for weighted branches.
 - Make the common case readable in YAML and straightforward for an editor to
   generate.
 - Preserve the exact sampled outcome through save/load and rollback
@@ -40,7 +40,8 @@ other renderer event may dispatch it when the roll should be player-triggered.
 
 ## Authored Interface
 
-The action has one `distribution` and one nested `actions` batch:
+Dice, integer, and chance distributions have one `distribution` and one nested
+`actions` batch:
 
 ```yaml
 actions:
@@ -74,23 +75,26 @@ actions:
                 lineId: lockFailed
 ```
 
-`actions` is required and uses the normal system-action schema recursively. An
-empty object is valid and means that the engine samples and immediately
-continues, matching the existing allowance for empty conditional branch action
-objects.
+For these value distributions, `actions` is required and uses the normal
+system-action schema recursively. An empty object is valid and means that the
+engine samples and immediately continues. Weighted distributions instead put a
+required `actions` batch on every outcome and do not accept top-level
+`random.actions`; see [Weighted selection](#weighted-selection).
 
 Outcome identity is internal. Authors do not provide an ID merely to support
 rollback bookkeeping. The engine identifies an occurrence from its rollback
 source occurrence, structural action path, nesting, and execution ordinal.
 
-The `random` action deliberately does not define its own `branches` language.
-Authors compose it with `conditional`, which keeps ordering, comparison, lazy
-template evaluation, and navigation behavior identical to other routes.
+Dice, integer, and chance deliberately do not define their own `branches`
+language. Authors compose them with `conditional`, which keeps ordering,
+comparison, lazy template evaluation, and navigation behavior identical to
+other routes. Weighted outcomes are already direct branches, so they need no
+intermediate value or conditional.
 
 ## Result Context
 
-Nested actions receive a scoped `_random` context. Every result has these
-fields:
+Nested actions for dice, integer, and chance receive a scoped `_random`
+context. Every exposed result has these fields:
 
 ```yaml
 _random:
@@ -115,6 +119,11 @@ _random:
 
 The result object is an immutable snapshot for the nested action batch. Values
 copied into engine state must be cloned rather than retained by reference.
+Weighted selection does not create or replace `_random`; its selected outcome
+actions execute in the surrounding lexical action context. A top-level
+weighted action therefore has no `_random` binding. If it is nested inside a
+value-producing random action, the selected actions continue to see that outer
+result.
 
 ### Direct bindings
 
@@ -158,9 +167,6 @@ The binding rules are:
   Later sibling actions in the outer batch continue to see the outer result.
 - Semantic conditions reference it through the existing variable-path form,
   for example `{ var: _random.value }`.
-- A directly resolved value is terminal. A weighted result that happens to look
-  like `${variables.value}`, `_event.value`, or another binding is returned as
-  literal data and is not interpreted again.
 - Directly returned arrays and objects are cloned before they enter mutable
   engine state.
 - Within the active scope, the literal strings `_random` and `_random.*` are
@@ -178,8 +184,8 @@ prototypes.
 Every distribution field is fixed authored data. Dice count, sides, modifier,
 and keep count; integer bounds; chance probability; and weighted weights must
 be literal JSON/YAML numbers. Distribution fields do not resolve action
-templates or read variables. Nested `actions` retain the normal action-template
-behavior after a result has been sampled.
+templates or read variables. Value-result actions and weighted outcome actions
+retain normal lazy action-template behavior after sampling.
 
 The `distribution` wrapper is intentional. It keeps generator configuration
 separate from control fields such as `actions` and leaves one discriminated
@@ -253,17 +259,22 @@ distribution:
 distribution:
   type: weighted
   outcomes:
-    - value: common
-      weight: 70
-    - value: rare
-      weight: 25
-    - value: legendary
-      weight: 5
+    - weight: 70
+      actions:
+        jumpToLine:
+          lineId: commonReward
+    - weight: 25
+      actions:
+        jumpToLine:
+          lineId: rareReward
+    - weight: 5
+      actions:
+        jumpToLine:
+          lineId: legendaryReward
 ```
 
 - `outcomes` is required and contains from `1` through `1000` entries.
-- Outcome values are static, unique strings from `1` through `128` Unicode code
-  points long.
+- Every outcome requires `weight` and `actions`; the action object may be empty.
 - A weight must be a finite number greater than or equal to `0`.
 - At least one weight must be greater than `0`.
 - Weights are rescaled by the largest weight before cumulative sampling, which
@@ -273,19 +284,20 @@ distribution:
 - Every positive normalized weight must be at least `2^-53`; smaller positive
   outcomes are rejected rather than silently becoming unreachable.
 - Zero-weight outcomes cannot be selected.
-- `_random.value` is the selected authored outcome value.
-
-Static strings are used instead of arbitrary weighted values so conditions,
-save data, debugging output, and future authoring tools have one predictable
-representation. Branch actions may translate the selected value into any other
-game value.
+- Exactly one selected outcome's actions execute; unselected actions remain
+  lazy and are not validated or templated until reached by normal action
+  processing.
+- Weighted selection exposes no gameplay value. The selected array index is
+  retained only in internal rollback state so replay can execute the same
+  canonical branch.
 
 ## Schema and Runtime Validation
 
-The Draft-07 system-action schema defines `random.distribution` as a
-discriminated `oneOf`; every distribution variant and nested object has
-`additionalProperties: false`. `random.actions` recursively references the
-system-action root and may be empty.
+The Draft-07 system-action schema defines `random` as a discriminated `oneOf`.
+Every distribution variant and nested object has `additionalProperties:
+false`. Dice, integer, and chance require `random.actions`; weighted forbids it
+and each weighted outcome recursively references the system-action root through
+its own `actions`. Every permitted action batch may be empty.
 
 Numeric fields accept only JSON/YAML numbers and receive their ordinary JSON
 Schema bounds. Runtime validation repeats the full type, integer, finite,
@@ -293,13 +305,13 @@ range, total, and cross-field rules for direct API and renderer payloads. The
 literal string `"10"` and template strings such as
 `"${variables.diceSides}"` are rejected rather than coerced or resolved.
 
-`distribution.type`, dice keep type, weighted outcome count/order, and weighted
-outcome values are schema-visible static fields and never action-templated.
+`distribution.type`, dice keep type, and weighted outcome count/order are
+schema-visible static fields and never action-templated.
 Permissively shaped renderer event payloads and direct API payloads receive the
 same runtime validation when each random action is reached, before that action
 requests a random word. Nested actions and inactive conditional branches retain
 their existing lazy validation behavior; they are not eagerly resolved merely
-because they appear below `random.actions`.
+because they appear below a random action branch.
 
 The closed story action schema must explicitly expose `random` through the
 system-action definition, just as it exposes `conditional`.
@@ -310,17 +322,20 @@ Execution is ordered and synchronous:
 
 1. Validate the static distribution shape.
 2. Validate the distribution values and worst-case bounds.
-3. Draw exactly one result.
-4. For a line-source action, record the sampled result on its rollback replay
+3. Draw exactly one value or weighted branch index.
+4. For a line-source action, record that internal result on its rollback replay
    occurrence.
-5. Process `actions` in insertion order with `_random` in scope.
+5. For dice, integer, and chance, process top-level `actions` in insertion order
+   with `_random` in scope. For weighted, process the selected outcome's
+   `actions` without creating a result binding.
 6. Request one conditional-style automatic continuation after the entire outer
    action batch settles.
 
-`random.actions` is an opaque/deferred template branch. It must not be rendered
-before the result exists. Each nested action is templated immediately before it
-executes, so it sees state mutations made by earlier nested actions as well as
-the same `_random` snapshot.
+Every random action batch is opaque and deferred. It must not be rendered before
+its value or branch is selected. Each nested action is templated immediately
+before it executes, so it sees state mutations made by earlier nested actions.
+Value actions also see the same `_random` snapshot; weighted actions see only
+the surrounding lexical bindings.
 
 The random action uses the existing conditional continuation rules:
 
@@ -341,7 +356,8 @@ source line transient.
 
 The direct `handleAction("random", payload)` API follows the same transactional
 and continuation path as an authored random action. Its return value remains
-`undefined`; the result is intentionally scoped to its nested actions.
+`undefined`; value results are intentionally scoped to their nested actions and
+weighted selections remain internal.
 
 ## Transactions and Failure
 
@@ -417,16 +433,19 @@ Canonical project actions remain the executable source.
 During replay, the engine establishes a scoped replay context for the active
 checkpoint or internal replay occurrence. When canonical replay reaches a
 `random` action, it consumes the one outcome record matching that structural
-path and ordinal, validates its type and result shape, installs `_random`, and
-lazily replays the canonical nested actions at that exact authored position. It
-does not consult `randomSource`. Recursive conditional and random replay receive
-the same scoped context.
+path and ordinal and validates its type and result shape. Value distributions
+install `_random` and replay canonical top-level actions. Weighted distributions
+use the internal recorded index to replay that outcome's canonical actions,
+without installing `_random`. Replay never executes action data from the save
+or consults `randomSource`. Recursive conditional and random replay receive the
+same scoped context.
 
-The guarantee is the same sampled result, not unconditionally the same branch.
-Nested templates and conditions are re-evaluated under the engine's normal
-rollback rules. In particular, device/account variables do not roll back, so a
-condition that depends on them may select a different branch. When every other
-input reconstructs deterministically, the same result produces the same branch.
+For value distributions, the guarantee is the same sampled result, not
+unconditionally the same conditional branch. Nested templates and conditions
+are re-evaluated under the engine's normal rollback rules. For weighted, the
+selected authored outcome position itself is replayed. If that position no
+longer exists after a project update, the record is orphaned and dropped rather
+than rebound.
 
 Line-entry action batches reached through `jumpToLine` currently lack their own
 rollback checkpoint. A line-entry batch containing `random` must receive an
@@ -505,8 +524,9 @@ future truncation, and compatibility tests.
 existing systems:
 
 1. A choice or layout button dispatches `random`.
-2. Nested actions optionally store `_random.value` in a declared variable.
-3. Nested routing enters a line or layout that presents the result.
+2. Value-result actions may store `_random.value`, while weighted outcomes route
+   directly.
+3. The selected routing enters a line or layout that presents the result.
 
 Choice dispatch uses the existing generated choice authorization. While a form
 is active, a renderer event must not dispatch top-level `random` as a concurrent
@@ -515,9 +535,9 @@ form action. Random may run inside the authorized actions of a successful
 forward. The implementation must not add arbitrary random batches to the
 shallow form-action whitelist.
 
-Opening a form or confirm dialog from `random.actions` does not capture the
-result for its later submit/confirm actions. Store the value first if those
-deferred actions need it.
+Opening a form or confirm dialog from a value-result `random.actions` batch does
+not capture the result for later submit/confirm actions. Store the value first
+if those deferred actions need it.
 
 If the product later requires a built-in animated dice roller, that should be a
 separate presentation/interaction feature. It may eventually dispatch this
@@ -551,6 +571,24 @@ The editor may provide convenience controls that serialize to existing actions:
 - Chance is displayed as a percentage for authors while serializing the
   `probability` value from `0` through `1`.
 
+For weighted selection, the same editor switches to branch rows:
+
+```text
+Random
+  Method      [ Weighted v ]
+
+  Outcome 1   Weight [ 70 ]
+              [ nested action builder ]
+  Outcome 2   Weight [ 30 ]
+              [ nested action builder ]
+
+  [ Add outcome ]
+```
+
+There is no value field or top-level "after rolling" batch for weighted
+selection. Reordering rows changes their structural identity for rollback, so
+the editor should treat a reorder like an authored branch-tree change.
+
 These are editor conveniences, not additional engine schema fields such as
 `resultVariableId`, `storeAs`, or random-specific branches.
 
@@ -570,9 +608,11 @@ Implementation is not complete until it includes:
   keep/tie rules, weighted zeroes, invalid totals, and result shapes;
   frequency-based statistical assertions are not required
 - action-template coverage for exact `_random`, nested paths, missing paths,
-  typed values, terminal template-looking results, interpolated strings,
-  laziness, nested shadowing, external `_random` injection, forbidden inherited
-  paths, and deferred-scope expiration
+  typed values, interpolated strings, laziness, nested shadowing, external
+  `_random` injection, forbidden inherited paths, and deferred-scope expiration
+- weighted coverage for branch-only execution, forbidden top-level actions,
+  absent weighted value bindings, internal branch-index replay, and orphaned
+  indexes after project replacement
 - system coverage for action ordering, conditional composition, single
   continuation, navigation suppression, transaction rollback, and direct API
   dispatch

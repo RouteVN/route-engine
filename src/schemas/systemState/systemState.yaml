@@ -144,10 +144,11 @@ defs:
         properties:
           type:
             const: weighted
-          value:
-            type: string
-            minLength: 1
-        required: [type, value]
+          outcomeIndex:
+            type: integer
+            minimum: 0
+            maximum: 999
+        required: [type, outcomeIndex]
         additionalProperties: false
 
   randomOutcome:

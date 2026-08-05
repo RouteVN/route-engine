@@ -62,45 +62,33 @@ describe("random distributions", () => {
         {
           type: "weighted",
           outcomes: [
-            { value: "never", weight: 0 },
-            { value: "common", weight: 1 },
-            { value: "rare", weight: 3 },
+            { weight: 0, actions: {} },
+            { weight: 1, actions: {} },
+            { weight: 3, actions: {} },
           ],
         },
         [0xffff_ffff, 0xffff_ffff],
       ),
-    ).toEqual({ type: "weighted", value: "rare" });
+    ).toEqual({ type: "weighted", outcomeIndex: 2 });
   });
 
   it("samples equal subnormal weights without skew", () => {
     const distribution = {
       type: "weighted",
       outcomes: [
-        { value: "first", weight: Number.MIN_VALUE },
-        { value: "second", weight: Number.MIN_VALUE },
+        { weight: Number.MIN_VALUE, actions: {} },
+        { weight: Number.MIN_VALUE, actions: {} },
       ],
     };
 
     expect(sample(distribution, [0, 0])).toEqual({
       type: "weighted",
-      value: "first",
+      outcomeIndex: 0,
     });
     expect(sample(distribution, [0x8000_0000, 0])).toEqual({
       type: "weighted",
-      value: "second",
+      outcomeIndex: 1,
     });
-  });
-
-  it("keeps weighted outcome values literal", () => {
-    const result = sample(
-      {
-        type: "weighted",
-        outcomes: [{ value: "${variables.literal}", weight: 5 }],
-      },
-      [0, 0],
-    );
-
-    expect(result.value).toBe("${variables.literal}");
   });
 
   it.each([
@@ -109,7 +97,7 @@ describe("random distributions", () => {
     { type: "chance", probability: "${variables.probability}" },
     {
       type: "weighted",
-      outcomes: [{ value: "only", weight: "${variables.weight}" }],
+      outcomes: [{ weight: "${variables.weight}", actions: {} }],
     },
   ])("rejects non-literal numeric distribution fields %#", (distribution) => {
     expect(() => sample(distribution, [0, 0])).toThrow(/number|integer/);
@@ -122,12 +110,16 @@ describe("random distributions", () => {
     [
       {
         type: "weighted",
-        outcomes: [
-          { value: "same", weight: 1 },
-          { value: "same", weight: 1 },
-        ],
+        outcomes: [{ weight: 1 }],
       },
-      "unique",
+      "actions",
+    ],
+    [
+      {
+        type: "weighted",
+        outcomes: [{ value: "removed", weight: 1, actions: {} }],
+      },
+      "value is not supported",
     ],
   ])("rejects an invalid distribution %#", (distribution, message) => {
     expect(() => sample(distribution, [0, 0])).toThrow(message);

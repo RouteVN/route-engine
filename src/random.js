@@ -4,7 +4,6 @@ const MIN_WEIGHT_SHARE = 1 / UINT53_CARDINALITY;
 const MAX_REJECTION_ATTEMPTS = 128;
 const MAX_DICE_COUNT = 100;
 const MAX_WEIGHTED_OUTCOMES = 1000;
-const MAX_WEIGHTED_VALUE_CODE_POINTS = 128;
 
 const isRecord = (value) =>
   value !== null && typeof value === "object" && !Array.isArray(value);
@@ -263,29 +262,15 @@ const sampleWeighted = (distribution, randomSource) => {
     );
   }
 
-  const values = new Set();
   const outcomes = distribution.outcomes.map((outcome, index) => {
     const path = `random.distribution.outcomes[${index}]`;
     assertRecord(outcome, path);
-    assertAllowedKeys(outcome, new Set(["value", "weight"]), path);
-    if (
-      typeof outcome.value !== "string" ||
-      [...outcome.value].length < 1 ||
-      [...outcome.value].length > MAX_WEIGHTED_VALUE_CODE_POINTS
-    ) {
-      throw new Error(
-        `${path}.value must contain from 1 through 128 characters`,
-      );
-    }
-    if (values.has(outcome.value)) {
-      throw new Error(`${path}.value must be unique`);
-    }
-    values.add(outcome.value);
+    assertAllowedKeys(outcome, new Set(["weight", "actions"]), path);
     if (!Object.prototype.hasOwnProperty.call(outcome, "weight")) {
       throw new Error(`${path}.weight is required`);
     }
+    assertRecord(outcome.actions, `${path}.actions`);
     return {
-      value: outcome.value,
       weight: assertFiniteNumber(outcome.weight, `${path}.weight`, {
         min: 0,
       }),
@@ -316,15 +301,16 @@ const sampleWeighted = (distribution, randomSource) => {
 
   const target = sampleUnit53(randomSource) * totalWeight;
   let cumulativeWeight = 0;
-  let selected = scaledOutcomes.findLast(({ weight }) => weight > 0).value;
-  for (const outcome of scaledOutcomes) {
+  let outcomeIndex = scaledOutcomes.findLastIndex(({ weight }) => weight > 0);
+  for (let index = 0; index < scaledOutcomes.length; index += 1) {
+    const outcome = scaledOutcomes[index];
     cumulativeWeight += outcome.weight;
     if (target < cumulativeWeight) {
-      selected = outcome.value;
+      outcomeIndex = index;
       break;
     }
   }
-  return cloneAndFreeze({ type: "weighted", value: selected });
+  return cloneAndFreeze({ type: "weighted", outcomeIndex });
 };
 
 export const sampleRandomDistribution = (distribution, { randomSource }) => {
@@ -404,6 +390,16 @@ export const validateRandomResult = (result, expectedType) => {
     ) {
       throw new Error("random dice result breakdown is inconsistent");
     }
+  } else if (expectedType === "weighted") {
+    assertAllowedKeys(
+      result,
+      new Set(["type", "outcomeIndex"]),
+      "random result",
+    );
+    assertSafeInteger(result.outcomeIndex, "random result.outcomeIndex", {
+      min: 0,
+      max: MAX_WEIGHTED_OUTCOMES - 1,
+    });
   } else {
     assertAllowedKeys(result, new Set(["type", "value"]), "random result");
     if (expectedType === "integer") {
@@ -411,14 +407,6 @@ export const validateRandomResult = (result, expectedType) => {
     } else if (expectedType === "chance") {
       if (typeof result.value !== "boolean") {
         throw new Error("random result.value must be a boolean");
-      }
-    } else if (expectedType === "weighted") {
-      if (
-        typeof result.value !== "string" ||
-        [...result.value].length < 1 ||
-        [...result.value].length > MAX_WEIGHTED_VALUE_CODE_POINTS
-      ) {
-        throw new Error("random result.value must be a supported string");
       }
     } else {
       throw new Error(

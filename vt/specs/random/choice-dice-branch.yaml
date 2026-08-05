@@ -1,11 +1,12 @@
 ---
-title: Choice Dice Branch
-description: A choice click deterministically rolls dice, stores the typed result, and renders the matching destination.
+title: Choice Random Branch
+description: A choice click deterministically rolls dice, selects a weighted action branch, and renders the matching destination.
 specs:
   - the initial line shows one isolated roll button
   - clicking the button dispatches a random dice action through the real input path
   - the deterministic VT random source rolls 15 and applies a modifier of 2
-  - the nested conditional renders the success destination with score 17
+  - a nested weighted random selects its first outcome actions
+  - the selected outcome condition reads the outer dice result and renders success with score 17
 skipInitialScreenshot: true
 viewport:
   id: capture
@@ -95,18 +96,28 @@ resources:
                         - variableId: lastRoll
                           op: set
                           value: "_random.value"
-                    conditional:
-                      branches:
-                        - when:
-                            gte:
-                              - var: _random.value
-                              - 15
-                          actions:
-                            jumpToLine:
-                              lineId: success
-                        - actions:
-                            jumpToLine:
-                              lineId: failure
+                    random:
+                      distribution:
+                        type: weighted
+                        outcomes:
+                          - weight: 1
+                            actions:
+                              conditional:
+                                branches:
+                                  - when:
+                                      gte:
+                                        - var: _random.value
+                                        - 15
+                                    actions:
+                                      jumpToLine:
+                                        lineId: success
+                                  - actions:
+                                      jumpToLine:
+                                        lineId: failure
+                          - weight: 1
+                            actions:
+                              jumpToLine:
+                                lineId: failure
         - id: roll-label
           type: text
           x: 800

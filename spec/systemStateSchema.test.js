@@ -389,6 +389,31 @@ describe("systemState schema", () => {
     expect(validateSystemState(systemState)).toBe(false);
   });
 
+  it("validates the internal weighted branch index", () => {
+    const engine = createRouteEngine({ handlePendingEffects: () => {} });
+    engine.init({ initialState: { projectData: createMinimalProjectData() } });
+    const systemState = toJsonSnapshot(engine.selectSystemState());
+    const checkpoint = systemState.contexts[0].rollback.timeline[0];
+    checkpoint.randomOutcomeVersion = 1;
+    checkpoint.randomOutcomes = [
+      {
+        path: "random",
+        ordinal: 0,
+        type: "weighted",
+        result: { type: "weighted", outcomeIndex: 3 },
+      },
+    ];
+
+    expect(validateSystemState(systemState)).toBe(true);
+    expect(validateSystemState.errors).toBeNull();
+
+    checkpoint.randomOutcomes[0].result = {
+      type: "weighted",
+      value: "removed",
+    };
+    expect(validateSystemState(systemState)).toBe(false);
+  });
+
   it("accepts numeric viewed resource IDs in account viewed state", () => {
     const engine = createRouteEngine({
       handlePendingEffects: () => {},

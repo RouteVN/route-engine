@@ -659,8 +659,8 @@ in the same action.
 
 ### Random Actions
 
-Use `random` to sample a typed dice, integer, chance, or weighted result and run
-a nested action batch with that result in `_random`:
+Use `random` to sample dice, integer, or chance values and run a nested action
+batch with the typed result in `_random`:
 
 ```yaml
 actions:
@@ -699,10 +699,30 @@ or confirmation dialog if deferred actions need it.
 Distribution configuration is fixed authored data: numeric fields accept only
 literal numbers and do not resolve variables or action templates.
 
+Weighted selection is branch-only: each outcome contains its own action batch,
+with no authored value and no weighted `_random` result:
+
+```yaml
+actions:
+  random:
+    distribution:
+      type: weighted
+      outcomes:
+        - weight: 70
+          actions:
+            jumpToLine:
+              lineId: commonReward
+        - weight: 30
+          actions:
+            jumpToLine:
+              lineId: rareReward
+```
+
 Like `conditional`, `random` automatically continues once unless its action
-batch navigates. Line-authored outcomes are recorded with rollback history so
-save/load and rollback replay the sampled result without rerolling. The full
-distribution contract and authoring-tool interface are in
+batch navigates. For weighted selection this means the selected outcome's
+actions. Line-authored outcomes are recorded with rollback history so save/load
+and rollback replay the sampled value or weighted branch without rerolling. The
+full distribution contract and authoring-tool interface are in
 [RandomAction.md](./RandomAction.md).
 
 ### Playback Mode Actions

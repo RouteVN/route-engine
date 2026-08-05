@@ -532,7 +532,7 @@ const sanitizePersistedRollbackExecutedActions = (
     : undefined;
 };
 
-const selectCanonicalRandomActionType = (projectData, checkpoint, path) => {
+const selectCanonicalRandomAction = (projectData, checkpoint, path) => {
   const { section } = findSectionInProjectData(
     projectData,
     checkpoint?.sectionId,
@@ -561,15 +561,27 @@ const selectCanonicalRandomActionType = (projectData, checkpoint, path) => {
     currentValue = currentValue[segment];
   }
   return segments.at(-1) === "random" && isRecord(currentValue?.distribution)
-    ? currentValue.distribution.type
+    ? currentValue
     : undefined;
 };
 
 const reconcilePersistedRandomOutcomes = (outcomes, checkpoint, projectData) =>
-  outcomes.filter(
-    ({ path, type }) =>
-      selectCanonicalRandomActionType(projectData, checkpoint, path) === type,
-  );
+  outcomes.filter(({ path, type, result }) => {
+    const canonicalAction = selectCanonicalRandomAction(
+      projectData,
+      checkpoint,
+      path,
+    );
+    if (canonicalAction?.distribution?.type !== type) {
+      return false;
+    }
+    if (type === "weighted") {
+      return isRecord(
+        canonicalAction.distribution.outcomes?.[result.outcomeIndex]?.actions,
+      );
+    }
+    return isRecord(canonicalAction.actions);
+  });
 
 const sanitizePersistedRandomOutcomes = (checkpoint, projectData) => {
   if (checkpoint?.randomOutcomeVersion !== RANDOM_OUTCOME_VERSION) {
@@ -6907,9 +6919,6 @@ const replayRollbackRandomAction = (
     // reached because an enclosing conditional selected another branch.
     return;
   }
-  if (!isRecord(payload?.actions)) {
-    throw new Error("random action requires actions object");
-  }
   if (payload?.distribution?.type !== outcome.type) {
     throw new Error(
       `recorded random outcome type does not match canonical action at ${path}`,
@@ -6920,17 +6929,36 @@ const replayRollbackRandomAction = (
     cloneStateValue(outcome.result),
     outcome.type,
   );
+  const isWeighted = result.type === "weighted";
+  const nestedActions = isWeighted
+    ? payload.distribution.outcomes?.[result.outcomeIndex]?.actions
+    : payload.actions;
+  if (!isRecord(nestedActions)) {
+    throw new Error(
+      `recorded random outcome does not match canonical action at ${path}`,
+    );
+  }
   replayRollbackActionEntries(
     state,
-    payload.actions,
-    {
-      ...replayContext,
-      bindings: {
-        ...(replayContext?.bindings ?? {}),
-        _random: result,
-      },
-    },
-    [...actionPath, "actions"],
+    nestedActions,
+    isWeighted
+      ? replayContext
+      : {
+          ...replayContext,
+          bindings: {
+            ...(replayContext?.bindings ?? {}),
+            _random: result,
+          },
+        },
+    isWeighted
+      ? [
+          ...actionPath,
+          "distribution",
+          "outcomes",
+          String(result.outcomeIndex),
+          "actions",
+        ]
+      : [...actionPath, "actions"],
   );
 };
 

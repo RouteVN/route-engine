@@ -81,13 +81,12 @@ definitions:
   randomWeightedOutcome:
     type: object
     properties:
-      value:
-        type: string
-        minLength: 1
       weight:
         type: number
         minimum: 0
-    required: [value, weight]
+      actions:
+        $ref: "#"
+    required: [weight, actions]
     additionalProperties: false
 
   randomWeightedDistribution:
@@ -104,12 +103,11 @@ definitions:
     required: [type, outcomes]
     additionalProperties: false
 
-  randomDistribution:
+  randomValueDistribution:
     oneOf:
       - $ref: "#/definitions/randomDiceDistribution"
       - $ref: "#/definitions/randomIntegerDistribution"
       - $ref: "#/definitions/randomChanceDistribution"
-      - $ref: "#/definitions/randomWeightedDistribution"
 
 properties:
   conditional:
@@ -125,15 +123,22 @@ properties:
     additionalProperties: false
 
   random:
-    type: object
-    description: Sample a typed random result, expose it as _random to nested actions, then immediately continue once unless the batch navigates
-    properties:
-      distribution:
-        $ref: "#/definitions/randomDistribution"
-      actions:
-        $ref: "#"
-    required: [distribution, actions]
-    additionalProperties: false
+    description: Sample a random distribution, run the value action batch with _random or the selected weighted outcome actions, then immediately continue once unless the batch navigates
+    oneOf:
+      - type: object
+        properties:
+          distribution:
+            $ref: "#/definitions/randomValueDistribution"
+          actions:
+            $ref: "#"
+        required: [distribution, actions]
+        additionalProperties: false
+      - type: object
+        properties:
+          distribution:
+            $ref: "#/definitions/randomWeightedDistribution"
+        required: [distribution]
+        additionalProperties: false
 
   nextLine:
     type: object

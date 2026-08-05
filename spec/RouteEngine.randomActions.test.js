@@ -130,25 +130,73 @@ describe("RouteEngine random actions", () => {
     expect(state.contexts[0].pointers.read.lineId).toBe("line2");
   });
 
-  it("keeps weighted values literal after direct binding resolution", () => {
+  it("runs only the selected weighted outcome actions", () => {
     const engine = createEngine(
       createProjectData(),
-      createQueuedRandomSource(0, 0),
+      createQueuedRandomSource(0xffff_ffff, 0xffff_ffff),
     );
 
     engine.handleActions({
       random: {
         distribution: {
           type: "weighted",
-          outcomes: [{ value: "${variables.score}", weight: 2 }],
+          outcomes: [
+            {
+              weight: 3,
+              actions: setVariable("common", "selected", "common"),
+            },
+            {
+              weight: 1,
+              actions: setVariable("rare", "selected", "rare"),
+            },
+          ],
         },
-        actions: setVariable("literal", "selected", "_random.value"),
       },
     });
 
     expect(engine.selectSystemState().contexts[0].variables.selected).toBe(
-      "${variables.score}",
+      "rare",
     );
+  });
+
+  it("rejects top-level actions and does not expose a weighted result binding", () => {
+    const engine = createEngine(
+      createProjectData(),
+      createQueuedRandomSource(0, 0),
+    );
+
+    expect(() =>
+      engine.handleActions({
+        random: {
+          distribution: {
+            type: "weighted",
+            outcomes: [{ weight: 1, actions: {} }],
+          },
+          actions: {},
+        },
+      }),
+    ).toThrow("does not support top-level actions");
+
+    expect(() =>
+      engine.handleActions({
+        random: {
+          distribution: {
+            type: "weighted",
+            outcomes: [
+              {
+                weight: 1,
+                actions: setVariable(
+                  "invalidWeightedBinding",
+                  "selected",
+                  "_random.value",
+                ),
+              },
+            ],
+          },
+        },
+      }),
+    ).toThrow('requires event context "_random"');
+    expect(engine.selectSystemState().contexts[0].variables.selected).toBe("");
   });
 
   it("shadows nested random context without changing later outer siblings", () => {
@@ -280,6 +328,131 @@ describe("RouteEngine random actions", () => {
     expect(state.contexts[0].variables.score).toBe(7);
     expect(state.contexts[0].pointers.read.lineId).toBe("line1");
     expect(randomSource.calls).toBe(1);
+  });
+
+  it("records and replays the selected weighted branch without rerolling", () => {
+    const randomSource = createQueuedRandomSource(0xffff_ffff, 0xffff_ffff, 6);
+    const engine = createEngine(
+      createProjectData({
+        lineActions: {
+          random: {
+            distribution: {
+              type: "weighted",
+              outcomes: [
+                {
+                  weight: 1,
+                  actions: setVariable("common", "selected", "common"),
+                },
+                {
+                  weight: 3,
+                  actions: {
+                    ...setVariable("rare", "selected", "rare"),
+                    random: {
+                      distribution: { type: "integer", min: 1, max: 10 },
+                      actions: setVariable(
+                        "nestedRoll",
+                        "score",
+                        "_random.value",
+                      ),
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+        extraLines: [{ id: "line2", actions: {} }],
+      }),
+      randomSource,
+      { handleLineActions: true },
+    );
+
+    let state = engine.selectSystemState();
+    expect(state.contexts[0].variables.selected).toBe("rare");
+    expect(state.contexts[0].rollback.timeline[0]).toMatchObject({
+      randomOutcomeVersion: 1,
+      randomOutcomes: [
+        {
+          path: "random",
+          ordinal: 0,
+          type: "weighted",
+          result: { type: "weighted", outcomeIndex: 1 },
+        },
+        {
+          path: "random.distribution.outcomes.1.actions.random",
+          ordinal: 0,
+          type: "integer",
+          result: { type: "integer", value: 7 },
+        },
+      ],
+    });
+    expect(state.contexts[0].variables.score).toBe(7);
+    expect(randomSource.calls).toBe(3);
+
+    engine.handleActions(setVariable("clear", "selected", ""));
+    engine.handleAction("rollbackToLine", {
+      sectionId: "section1",
+      lineId: "line1",
+    });
+
+    state = engine.selectSystemState();
+    expect(state.contexts[0].variables.selected).toBe("rare");
+    expect(state.contexts[0].variables.score).toBe(7);
+    expect(randomSource.calls).toBe(3);
+  });
+
+  it("drops a recorded weighted branch removed by a project update", () => {
+    const randomSource = createQueuedRandomSource(0xffff_ffff, 0xffff_ffff);
+    const originalProjectData = createProjectData({
+      lineActions: {
+        random: {
+          distribution: {
+            type: "weighted",
+            outcomes: [
+              { weight: 1, actions: {} },
+              {
+                weight: 3,
+                actions: setVariable("selected", "selected", "rare"),
+              },
+            ],
+          },
+        },
+      },
+      extraLines: [{ id: "line2", actions: {} }],
+    });
+    const engine = createEngine(originalProjectData, randomSource, {
+      handleLineActions: true,
+    });
+    engine.handleAction("saveSlot", { slotId: 1, savedAt: 100 });
+
+    const replacementProjectData = createProjectData({
+      lineActions: {
+        random: {
+          distribution: {
+            type: "weighted",
+            outcomes: [{ weight: 1, actions: {} }],
+          },
+        },
+      },
+      extraLines: [{ id: "line2", actions: {} }],
+    });
+    engine.handleAction("updateProjectData", {
+      projectData: replacementProjectData,
+    });
+
+    const state = engine.selectSystemState();
+    expect(state.contexts[0].rollback.timeline[0].randomOutcomes).toEqual([]);
+    expect(
+      state.global.saveSlots["1"].state.contexts[0].rollback.timeline[0]
+        .randomOutcomes,
+    ).toEqual([]);
+    expect(() =>
+      engine.handleAction("rollbackToLine", {
+        sectionId: "section1",
+        lineId: "line1",
+      }),
+    ).not.toThrow();
+    expect(randomSource.calls).toBe(2);
   });
 
   it("draws a new result after rolling back past the occurrence", () => {

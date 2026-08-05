@@ -2044,13 +2044,6 @@ describe("projectData schema", () => {
       },
       { type: "integer", min: -10, max: 10 },
       { type: "chance", probability: 0.4 },
-      {
-        type: "weighted",
-        outcomes: [
-          { value: "common", weight: 3 },
-          { value: "rare", weight: 1 },
-        ],
-      },
     ];
 
     distributions.forEach((distribution) => {
@@ -2084,6 +2077,36 @@ describe("projectData schema", () => {
       ).toBe(true);
       expect(validateSystemActions.errors).toBeNull();
     });
+
+    expect(
+      validateSystemActions({
+        random: {
+          distribution: {
+            type: "weighted",
+            outcomes: [
+              {
+                weight: 3,
+                actions: {
+                  updateVariable: {
+                    id: "common",
+                    operations: [
+                      { variableId: "result", op: "set", value: "common" },
+                    ],
+                  },
+                },
+              },
+              {
+                weight: 1,
+                actions: {
+                  jumpToLine: { lineId: "rareRoute" },
+                },
+              },
+            ],
+          },
+        },
+      }),
+    ).toBe(true);
+    expect(validateSystemActions.errors).toBeNull();
   });
 
   it("rejects malformed random distribution shapes", () => {
@@ -2100,9 +2123,8 @@ describe("projectData schema", () => {
         random: {
           distribution: {
             type: "weighted",
-            outcomes: [{ value: "only" }],
+            outcomes: [{ weight: 1 }],
           },
-          actions: {},
         },
       }),
     ).toBe(false);
@@ -2122,7 +2144,27 @@ describe("projectData schema", () => {
         random: {
           distribution: {
             type: "weighted",
-            outcomes: [{ value: "only", weight: "${variables.weight}" }],
+            outcomes: [{ weight: "${variables.weight}", actions: {} }],
+          },
+        },
+      }),
+    ).toBe(false);
+    expect(
+      validateSystemActions({
+        random: {
+          distribution: {
+            type: "weighted",
+            outcomes: [{ value: "removed", weight: 1, actions: {} }],
+          },
+        },
+      }),
+    ).toBe(false);
+    expect(
+      validateSystemActions({
+        random: {
+          distribution: {
+            type: "weighted",
+            outcomes: [{ weight: 1, actions: {} }],
           },
           actions: {},
         },
