@@ -76,6 +76,13 @@ definitions:
         maxItems: 1000
         items:
           $ref: "#/definitions/randomWeightedOutcome"
+        contains:
+          type: object
+          properties:
+            weight:
+              type: number
+              exclusiveMinimum: 0
+          required: [weight]
     required: [type, outcomes]
     additionalProperties: false
 

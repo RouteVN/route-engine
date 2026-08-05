@@ -389,6 +389,66 @@ describe("systemState schema", () => {
     expect(validateSystemState(systemState)).toBe(false);
   });
 
+  it("requires persisted random record and result types to match", () => {
+    const engine = createRouteEngine({ handlePendingEffects: () => {} });
+    engine.init({ initialState: { projectData: createMinimalProjectData() } });
+    const systemState = toJsonSnapshot(engine.selectSystemState());
+    const checkpoint = systemState.contexts[0].rollback.timeline[0];
+    checkpoint.randomOutcomeVersion = 1;
+    checkpoint.randomOutcomes = [
+      {
+        path: "random",
+        ordinal: 0,
+        type: "weighted",
+        result: {
+          type: "dice",
+          value: 4,
+          rolls: [4],
+          keptRolls: [4],
+          discardedRolls: [],
+          modifier: 0,
+        },
+      },
+    ];
+
+    expect(validateSystemState(systemState)).toBe(false);
+    expect(validateSystemState.errors).not.toBeNull();
+
+    checkpoint.randomOutcomes[0] = {
+      path: "random",
+      ordinal: 0,
+      type: "dice",
+      result: { type: "weighted", outcomeIndex: 0 },
+    };
+    expect(validateSystemState(systemState)).toBe(false);
+    expect(validateSystemState.errors).not.toBeNull();
+  });
+
+  it("requires random outcome ledger fields together", () => {
+    const engine = createRouteEngine({ handlePendingEffects: () => {} });
+    engine.init({ initialState: { projectData: createMinimalProjectData() } });
+    const systemState = toJsonSnapshot(engine.selectSystemState());
+    const checkpoint = systemState.contexts[0].rollback.timeline[0];
+    delete checkpoint.randomOutcomeVersion;
+    delete checkpoint.randomOutcomes;
+
+    expect(validateSystemState(systemState)).toBe(true);
+    expect(validateSystemState.errors).toBeNull();
+
+    checkpoint.randomOutcomeVersion = 1;
+    expect(validateSystemState(systemState)).toBe(false);
+    expect(validateSystemState.errors).not.toBeNull();
+
+    delete checkpoint.randomOutcomeVersion;
+    checkpoint.randomOutcomes = [];
+    expect(validateSystemState(systemState)).toBe(false);
+    expect(validateSystemState.errors).not.toBeNull();
+
+    checkpoint.randomOutcomeVersion = 1;
+    expect(validateSystemState(systemState)).toBe(true);
+    expect(validateSystemState.errors).toBeNull();
+  });
+
   it("validates the internal weighted branch index", () => {
     const engine = createRouteEngine({ handlePendingEffects: () => {} });
     engine.init({ initialState: { projectData: createMinimalProjectData() } });

@@ -97,60 +97,75 @@ defs:
     required: [entries, currentLength, checkpointLengths]
     additionalProperties: false
 
-  randomOutcomeResult:
+  randomDiceOutcomeResult:
+    type: object
+    properties:
+      type:
+        const: dice
+      value:
+        type: integer
+      rolls:
+        type: array
+        items:
+          type: integer
+          minimum: 1
+      keptRolls:
+        type: array
+        items:
+          type: integer
+          minimum: 1
+      discardedRolls:
+        type: array
+        items:
+          type: integer
+          minimum: 1
+      modifier:
+        type: integer
+    required: [type, value, rolls, keptRolls, discardedRolls, modifier]
+    additionalProperties: false
+
+  randomWeightedOutcomeResult:
+    type: object
+    properties:
+      type:
+        const: weighted
+      outcomeIndex:
+        type: integer
+        minimum: 0
+        maximum: 999
+    required: [type, outcomeIndex]
+    additionalProperties: false
+
+  randomOutcome:
     oneOf:
       - type: object
         properties:
+          path:
+            type: string
+            minLength: 1
+          ordinal:
+            type: integer
+            minimum: 0
           type:
             const: dice
-          value:
-            type: integer
-          rolls:
-            type: array
-            items:
-              type: integer
-              minimum: 1
-          keptRolls:
-            type: array
-            items:
-              type: integer
-              minimum: 1
-          discardedRolls:
-            type: array
-            items:
-              type: integer
-              minimum: 1
-          modifier:
-            type: integer
-        required: [type, value, rolls, keptRolls, discardedRolls, modifier]
+          result:
+            $ref: "#/defs/randomDiceOutcomeResult"
+        required: [path, ordinal, type, result]
         additionalProperties: false
       - type: object
         properties:
-          type:
-            const: weighted
-          outcomeIndex:
+          path:
+            type: string
+            minLength: 1
+          ordinal:
             type: integer
             minimum: 0
-            maximum: 999
-        required: [type, outcomeIndex]
+          type:
+            const: weighted
+          result:
+            $ref: "#/defs/randomWeightedOutcomeResult"
+        required: [path, ordinal, type, result]
         additionalProperties: false
-
-  randomOutcome:
-    type: object
-    properties:
-      path:
-        type: string
-        minLength: 1
-      ordinal:
-        type: integer
-        minimum: 0
-      type:
-        type: string
-        enum: [dice, weighted]
-      result:
-        $ref: "#/defs/randomOutcomeResult"
-    required: [path, ordinal, type, result]
-    additionalProperties: false
 
   rollbackCheckpoint:
     type: object
@@ -182,6 +197,9 @@ defs:
         type: array
         items:
           $ref: "#/defs/randomOutcome"
+    dependencies:
+      randomOutcomeVersion: [randomOutcomes]
+      randomOutcomes: [randomOutcomeVersion]
     required: [sectionId, lineId]
     additionalProperties: false
 

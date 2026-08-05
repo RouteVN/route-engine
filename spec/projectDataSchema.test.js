@@ -2095,6 +2095,19 @@ describe("projectData schema", () => {
         random: {
           distribution: {
             type: "weighted",
+            outcomes: [
+              { weight: 0, actions: {} },
+              { weight: 0, actions: {} },
+            ],
+          },
+        },
+      }),
+    ).toBe(false);
+    expect(
+      validateSystemActions({
+        random: {
+          distribution: {
+            type: "weighted",
             outcomes: [{ weight: 1 }],
           },
         },
@@ -2165,6 +2178,24 @@ describe("projectData schema", () => {
         },
       }),
     ).toBe(false);
+  });
+
+  it("rejects all-zero weighted outcomes on story lines", () => {
+    const projectData = createMinimalProjectData();
+    projectData.story.scenes.scene1.sections.section1.lines[0].actions = {
+      random: {
+        distribution: {
+          type: "weighted",
+          outcomes: [
+            { weight: 0, actions: {} },
+            { weight: 0, actions: {} },
+          ],
+        },
+      },
+    };
+
+    expect(validateProjectData(projectData)).toBe(false);
+    expect(validateProjectData.errors).not.toBeNull();
   });
 
   it("accepts random actions on story lines", () => {
