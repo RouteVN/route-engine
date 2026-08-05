@@ -153,9 +153,11 @@ Execution is ordered and synchronous:
 5. Request one conditional-style automatic continuation after the outer action
    batch settles.
 
-Integer writes are visible to later sibling actions in the same authored
-object. Authors should place integer generation before a conditional that reads
-its variable.
+Integer `random` runs in the State phase and `conditional` runs in the Decision
+phase. Integer writes are therefore visible to a sibling conditional regardless
+of their YAML property order. Weighted `random` runs in the Decision phase
+immediately before `conditional`. Every selected outcome action object is a
+nested batch and uses the same canonical schedule.
 
 Continuation follows the same rules as `conditional`:
 

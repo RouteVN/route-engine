@@ -1284,8 +1284,8 @@ describe("projectData schema", () => {
   });
 
   it("accepts whole-screen transition payloads on section navigation actions", () => {
-    expect(
-      validateSystemActions({
+    for (const actions of [
+      {
         sectionTransition: {
           sectionId: "chapter2",
           screen: {
@@ -1294,6 +1294,8 @@ describe("projectData schema", () => {
             },
           },
         },
+      },
+      {
         resetStoryAtSection: {
           sectionId: "title",
           screen: {
@@ -1302,9 +1304,11 @@ describe("projectData schema", () => {
             },
           },
         },
-      }),
-    ).toBe(true);
-    expect(validateSystemActions.errors).toBeNull();
+      },
+    ]) {
+      expect(validateSystemActions(actions)).toBe(true);
+      expect(validateSystemActions.errors).toBeNull();
+    }
 
     expect(
       validateProjectData(
@@ -2033,6 +2037,33 @@ describe("projectData schema", () => {
     expect(validateSystemActions.errors).toBeNull();
   });
 
+  it("rejects multiple direct navigation actions in system batches", () => {
+    expect(
+      validateSystemActions({
+        jumpToLine: { lineId: "intermediate" },
+        sectionTransition: { sectionId: "final" },
+      }),
+    ).toBe(false);
+    expect(validateSystemActions.errors).not.toBeNull();
+
+    expect(
+      validateSystemActions({
+        conditional: {
+          branches: [
+            {
+              when: true,
+              actions: {
+                jumpToLine: { lineId: "intermediate" },
+                nextLine: {},
+              },
+            },
+          ],
+        },
+      }),
+    ).toBe(false);
+    expect(validateSystemActions.errors).not.toBeNull();
+  });
+
   it("accepts integer variable output and recursive weighted actions", () => {
     expect(
       validateSystemActions({
@@ -2241,6 +2272,17 @@ describe("projectData schema", () => {
 
     expect(validateProjectData(projectData)).toBe(true);
     expect(validateProjectData.errors).toBeNull();
+  });
+
+  it("rejects multiple direct navigation actions on story lines", () => {
+    const projectData = createMinimalProjectData();
+    projectData.story.scenes.scene1.sections.section1.lines[0].actions = {
+      jumpToLine: { lineId: "intermediate" },
+      sectionTransition: { sectionId: "final" },
+    };
+
+    expect(validateProjectData(projectData)).toBe(false);
+    expect(validateProjectData.errors).not.toBeNull();
   });
 
   it("accepts conditional actions on story lines", () => {
@@ -3011,14 +3053,22 @@ describe("projectData schema", () => {
         },
       },
     });
-    projectData.story.scenes.scene1.sections.section1.lines[0].actions = {
-      startSceneReplay: { sceneId: "scene1" },
-      finishSceneReplay: {},
-      exitSceneReplay: {},
-      moveToSceneReplayPage: { pageIndex: 0 },
-      moveToNextSceneReplayPage: {},
-      moveToPreviousSceneReplayPage: {},
-    };
+    projectData.story.scenes.scene1.sections.section1.lines = [
+      {
+        id: "line1",
+        actions: { startSceneReplay: { sceneId: "scene1" } },
+      },
+      {
+        id: "line2",
+        actions: {
+          finishSceneReplay: {},
+          moveToSceneReplayPage: { pageIndex: 0 },
+          moveToNextSceneReplayPage: {},
+          moveToPreviousSceneReplayPage: {},
+        },
+      },
+      { id: "line3", actions: { exitSceneReplay: {} } },
+    ];
 
     expect(validateProjectData(projectData)).toBe(true);
     expect(validateProjectData.errors).toBeNull();
@@ -3067,12 +3117,13 @@ describe("projectData schema", () => {
       validateSystemActions({
         startSceneReplay: { sceneId: "${variables.sceneId}" },
         finishSceneReplay: {},
-        exitSceneReplay: {},
         moveToSceneReplayPage: { pageIndex: "_event.pageIndex" },
         moveToNextSceneReplayPage: {},
         moveToPreviousSceneReplayPage: {},
       }),
     ).toBe(true);
+    expect(validateSystemActions.errors).toBeNull();
+    expect(validateSystemActions({ exitSceneReplay: {} })).toBe(true);
     expect(validateSystemActions.errors).toBeNull();
 
     for (const actions of [

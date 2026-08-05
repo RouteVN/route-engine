@@ -53,6 +53,8 @@ properties:
                         actions:
                           type: object
                           description: Actions
+                          allOf:
+                            - $ref: "../systemActions.yaml#/definitions/unambiguousNavigationActions"
                           properties:
                             cleanAll:
                               $ref: "../presentationActions.yaml#/properties/cleanAll"

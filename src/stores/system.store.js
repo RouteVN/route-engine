@@ -21,6 +21,10 @@ import {
   resolveCharacterDisplayName,
 } from "../util.js";
 import { validateRandomResult } from "../random.js";
+import {
+  assertUnambiguousNavigationActions,
+  orderActionEntries,
+} from "../actionExecutionOrder.js";
 import { constructPresentationState } from "./constructPresentationState.js";
 import { constructRenderState } from "./constructRenderState.js";
 import { estimateAutoForwardDelay } from "../autoForwardTiming.js";
@@ -7100,12 +7104,15 @@ const replayRollbackActionEntries = (
   replayContext,
   basePath,
 ) => {
-  Object.entries(actions).forEach(([actionType, actionPayload]) => {
+  const orderedEntries = orderActionEntries(actions);
+  assertUnambiguousNavigationActions(orderedEntries);
+
+  for (const [actionType, actionPayload] of orderedEntries) {
     replayRollbackLineAction(state, actionType, actionPayload, replayContext, [
       ...basePath,
       actionType,
     ]);
-  });
+  }
 };
 
 const isRollbackCheckpointReturnable = (checkpoint) =>

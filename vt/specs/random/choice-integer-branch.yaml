@@ -5,8 +5,8 @@ specs:
   - the initial line shows one isolated random-integer button
   - clicking the button dispatches a uniform integer action through the real input path
   - the deterministic VT random source selects 17 from the inclusive 1 through 20 range
-  - the integer action stores 17 directly in the declared randomNumber variable
-  - a following conditional reads randomNumber before automatic continuation
+  - the conditional is authored before random to exercise canonical scheduling
+  - the integer action still stores 17 before conditional reads randomNumber
   - a nested weighted random selects its first outcome actions
   - the selected weighted outcome renders the success destination
 skipInitialScreenshot: true
@@ -86,12 +86,6 @@ resources:
           click:
             payload:
               actions:
-                random:
-                  distribution:
-                    type: integer
-                    min: 1
-                    max: 20
-                  variableId: randomNumber
                 conditional:
                   branches:
                     - when:
@@ -114,6 +108,12 @@ resources:
                     - actions:
                         jumpToLine:
                           lineId: failure
+                random:
+                  distribution:
+                    type: integer
+                    min: 1
+                    max: 20
+                  variableId: randomNumber
         - id: generate-label
           type: text
           x: 800

@@ -3,6 +3,30 @@ title: System Actions Schema
 description: Schema for authored/public system actions in the Route Engine runtime
 type: object
 definitions:
+  unambiguousNavigationActions:
+    description: An action batch may contain at most one direct navigation action.
+    oneOf:
+      - not:
+          anyOf:
+            - required: [loadSlot]
+            - required: [rollbackByOffset]
+            - required: [rollbackToLine]
+            - required: [resetStoryAtSection]
+            - required: [sectionTransition]
+            - required: [jumpToLine]
+            - required: [startSceneReplay]
+            - required: [exitSceneReplay]
+            - required: [nextLine]
+      - required: [loadSlot]
+      - required: [rollbackByOffset]
+      - required: [rollbackToLine]
+      - required: [resetStoryAtSection]
+      - required: [sectionTransition]
+      - required: [jumpToLine]
+      - required: [startSceneReplay]
+      - required: [exitSceneReplay]
+      - required: [nextLine]
+
   jemplCondition:
     description: Semantic JSON condition. Comparisons are strict and non-coercive; ordered comparisons accept two finite numbers or two strings. String expression conditions are not supported.
     not:
@@ -759,5 +783,8 @@ properties:
     description: Move to the previous scene-replay catalog page
     properties: {}
     additionalProperties: false
+
+allOf:
+  - $ref: "#/definitions/unambiguousNavigationActions"
 
 additionalProperties: false

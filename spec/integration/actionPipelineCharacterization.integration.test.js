@@ -162,7 +162,7 @@ describe("action pipeline black-box characterization", () => {
     await trace.settlePersistence();
   });
 
-  it("settles batched navigation at only the final destination and renders once", async () => {
+  it("rejects ambiguous batched navigation before any action runs", async () => {
     const projectData = createPipelineProject({
       sections: {
         source: { lines: [{ id: "source", actions: {} }] },
@@ -188,35 +188,23 @@ describe("action pipeline black-box characterization", () => {
     const trace = createActionPipelineTranscriptHarness({ projectData });
     await trace.clearTranscript();
 
-    trace.dispatchActions({
-      ...updateScore(1),
-      jumpToLine: { sectionId: "intermediate", lineId: "intermediate" },
-      sectionTransition: { sectionId: "final" },
-    });
+    expect(() =>
+      trace.dispatchActions({
+        ...updateScore(1),
+        jumpToLine: { sectionId: "intermediate", lineId: "intermediate" },
+        sectionTransition: { sectionId: "final" },
+      }),
+    ).toThrow(
+      "action batch cannot contain multiple navigation actions: sectionTransition, jumpToLine",
+    );
 
-    expect(
-      trace.transcript
-        .filter(({ type }) => type !== "persistence")
-        .map(({ type }) => type),
-    ).toEqual([
+    expect(trace.transcript.map(({ type }) => type)).toEqual([
       "dispatch",
-      "render",
-      "externalEffect",
-      "playbackSchedule",
-      "settled",
-    ]);
-    expect(
-      trace.transcript.filter(({ type }) => type === "externalEffect"),
-    ).toEqual([
-      {
-        type: "externalEffect",
-        name: "pipeline:destination",
-        payload: { marker: "final" },
-      },
+      "error",
     ]);
     expect(trace.summarizeState()).toMatchObject({
-      pointer: { sectionId: "final", lineId: "final" },
-      variables: { score: 11 },
+      pointer: { sectionId: "source", lineId: "source" },
+      variables: { score: 0 },
       pendingEffects: [],
     });
   });
@@ -286,7 +274,7 @@ describe("action pipeline black-box characterization", () => {
     ).toEqual(["pipeline:retry", "pipeline:retry"]);
     expect(
       trace.transcript.filter(({ type }) => type === "render"),
-    ).toHaveLength(1);
+    ).toHaveLength(2);
   });
 
   it("drains reentrant actions after the current effect without duplicating work", async () => {

@@ -159,7 +159,7 @@ describe("action pipeline closed action inventory", () => {
 });
 
 describe("action pipeline dispatch and admission matrix", () => {
-  it("keeps direct host actions raw while batches render templates incrementally", async () => {
+  it("keeps direct host actions raw while batches render in canonical order", async () => {
     const trace = createActionPipelineTranscriptHarness({
       projectData: createMatrixProject(),
     });
@@ -173,8 +173,8 @@ describe("action pipeline dispatch and admission matrix", () => {
     );
 
     trace.dispatchActions({
-      ...setVariable("targetPage", "backlog"),
       setMenuPage: { value: "${variables.targetPage}" },
+      ...setVariable("targetPage", "backlog"),
     });
 
     expect(trace.harness.engine.selectRuntime().menuPage).toBe("backlog");

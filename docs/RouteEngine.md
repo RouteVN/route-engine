@@ -556,6 +556,139 @@ const sectionLineChanges = engine.selectSectionLineChanges({
 
 ## Available Actions
 
+### Action Batch Execution Order
+
+`handleActions` and every nested action batch use the following canonical
+schedule. YAML/JavaScript object property order has no effect. Phases and the
+actions inside each phase run from top to bottom.
+
+1. Cleanup
+   1. `cleanAll`
+2. State
+   1. `updateVariable`
+   2. `updateFormField`
+   3. `updateLocalizationPackage`
+   4. integer `random`
+3. Decision
+   1. `submitForm`
+   2. `cancelForm`
+   3. weighted `random`
+   4. `conditional`
+4. Presentation
+   1. `screen`
+   2. `background`
+   3. `dialogue`
+   4. `character`
+   5. `visual`
+   6. `choice`
+   7. `form`
+   8. `sfx`
+   9. `bgm`
+   10. `voice`
+   11. `control`
+   12. `layout`
+5. Runtime
+   1. `setNextLineConfig`
+   2. `startAutoMode`
+   3. `stopAutoMode`
+   4. `toggleAutoMode`
+   5. `startSkipMode`
+   6. `stopSkipMode`
+   7. `toggleSkipMode`
+   8. `showDialogueUI`
+   9. `hideDialogueUI`
+   10. `toggleDialogueUI`
+   11. `setDialogueTextSpeed`
+   12. `setAutoForwardDelay`
+   13. `setAutoForwardSpeed`
+   14. `setSkipUnseenText`
+   15. `setSkipTransitionsAndAnimations`
+   16. `setSoundVolume`
+   17. `setMusicVolume`
+   18. `setMuteAll`
+   19. `setSaveLoadPagination`
+   20. `incrementSaveLoadPagination`
+   21. `decrementSaveLoadPagination`
+   22. `setMenuPage`
+   23. `setMenuEntryPoint`
+   24. `showConfirmDialog`
+   25. `hideConfirmDialog`
+   26. `pushOverlay`
+   27. `popOverlay`
+   28. `replaceLastOverlay`
+   29. `clearOverlays`
+   30. `completeAchievement`
+   31. `setAchievementProgress`
+   32. `showImageGalleryVariant`
+   33. `moveToPreviousImageGalleryVariant`
+   34. `moveToNextImageGalleryVariant`
+   35. `clearImageGallerySelection`
+   36. `moveToImageGalleryPage`
+   37. `moveToNextImageGalleryPage`
+   38. `moveToPreviousImageGalleryPage`
+   39. `playMusicRoomTrack`
+   40. `playMusicRoom`
+   41. `pauseMusicRoom`
+   42. `stopMusicRoom`
+   43. `seekMusicRoom`
+   44. `playPreviousMusicRoomTrack`
+   45. `playNextMusicRoomTrack`
+   46. `clearMusicRoomSelection`
+   47. `moveToMusicRoomPage`
+   48. `moveToNextMusicRoomPage`
+   49. `moveToPreviousMusicRoomPage`
+   50. `finishSceneReplay`
+   51. `moveToSceneReplayPage`
+   52. `moveToNextSceneReplayPage`
+   53. `moveToPreviousSceneReplayPage`
+6. Persistence
+   1. `saveSlot`
+7. Navigation
+   1. `loadSlot`
+   2. `rollbackByOffset`
+   3. `rollbackToLine`
+   4. `resetStoryAtSection`
+   5. `sectionTransition`
+   6. `jumpToLine`
+   7. `startSceneReplay`
+   8. `exitSceneReplay`
+   9. `nextLine`
+
+Engine-only and test store actions have fixed positions in the same schedule:
+
+- Cleanup, before `cleanAll`: `clearPendingEffects`.
+- State, before `updateVariable`: `addViewedLine`, `addViewedResource`.
+- State, after `updateFormField`: `updateProjectData`.
+- State, after `updateLocalizationPackage`: `markLineCompleted`.
+- Runtime, after `moveToPreviousSceneReplayPage`: `musicRoomSoundReady`,
+  `musicRoomSoundProgress`, `musicRoomSoundComplete`, `musicRoomSoundError`,
+  `appendPendingEffect`, `beginRollbackActionBatch`,
+  `endRollbackActionBatch`, `ensureRandomReplayOccurrence`,
+  `recordRandomOutcome`, `markRollbackCheckpointTransient`,
+  `markSavedRollbackCheckpointTransient`, `recordCurrentDialogueHistory`.
+- Navigation, after `nextLine`: `nextLineFromSystem`.
+
+Templates are resolved immediately before their scheduled action, so later
+phases observe state produced by earlier phases. An integer `random` therefore
+always writes its declared variable before `conditional`, even if
+`conditional` appears first in YAML. Weighted `random` is a decision because it
+executes a selected nested action batch.
+
+Nested batches use the same schedule. A navigation selected inside a nested
+batch is deferred until the outermost batch reaches its Navigation phase. This
+lets outer Runtime and Persistence actions settle before navigation executes;
+the navigation is then terminal.
+
+A batch containing multiple direct navigation actions is rejected before any
+action runs. If separately nested actions select more than one reachable route,
+the whole transaction is rejected before any route executes. Conditional and
+weighted branches remain the supported way to author mutually exclusive
+navigation.
+
+Unknown host-only batch actions are ordered by code-unit name after Runtime and
+before Persistence. Authored project schemas reject unknown actions. Direct
+`handleAction` dispatch remains immediate and does not use the batch schedule.
+
 ### Navigation Actions
 
 | Action              | Payload                  | Description                                                 |
@@ -685,8 +818,9 @@ actions:
 ```
 
 Both bounds are inclusive. Every integer from `min` through `max` has equal
-probability. The generated number is stored before later sibling actions
-execute, so a following `conditional` can branch on it.
+probability. Integer `random` is in the State phase and `conditional` is in the
+Decision phase, so the generated number is stored first regardless of their
+YAML property order.
 
 Distribution configuration is fixed authored data: numeric fields accept only
 literal numbers and do not resolve variables or action templates.

@@ -355,7 +355,7 @@ describe("RouteEngine rollback landing points", () => {
     });
   });
 
-  it("skips every unsettled checkpoint created by a multi-route line batch", () => {
+  it("skips every unsettled checkpoint created by consecutive routed lines", () => {
     const engine = createEngine(
       createProjectData({
         initialSectionId: "source",
@@ -376,14 +376,15 @@ describe("RouteEngine rollback landing points", () => {
                     },
                   ],
                 },
-                sectionTransition: {
-                  sectionId: "destination2",
-                },
               }),
             ],
           },
           destination1: {
-            lines: [settledLine("neverSettled")],
+            lines: [
+              settledLine("neverSettled", {
+                sectionTransition: { sectionId: "destination2" },
+              }),
+            ],
           },
           destination2: {
             lines: [
@@ -432,7 +433,7 @@ describe("RouteEngine rollback landing points", () => {
     });
   });
 
-  it("keeps only the settled interaction source returnable in a multi-route batch", () => {
+  it("keeps only the settled interaction source returnable across routed lines", () => {
     const engine = createEngine(
       createProjectData({
         initialSectionId: "source",
@@ -441,7 +442,11 @@ describe("RouteEngine rollback landing points", () => {
             lines: [settledLine("before"), settledLine("interactionSource")],
           },
           destination1: {
-            lines: [settledLine("neverSettled")],
+            lines: [
+              settledLine("neverSettled", {
+                sectionTransition: { sectionId: "destination2" },
+              }),
+            ],
           },
           destination2: {
             lines: [settledLine("finalDestination")],
@@ -463,9 +468,6 @@ describe("RouteEngine rollback landing points", () => {
             },
           },
         ],
-      },
-      sectionTransition: {
-        sectionId: "destination2",
       },
     });
 
@@ -563,7 +565,7 @@ describe("RouteEngine rollback landing points", () => {
     });
   });
 
-  it("preserves a settled occurrence across checkpoint-less interaction re-entry", () => {
+  it("preserves settled occurrences across separate re-entry routes", () => {
     const engine = createEngine(
       createProjectData({
         initialSectionId: "beforeSection",
@@ -586,13 +588,9 @@ describe("RouteEngine rollback landing points", () => {
     });
     expect(getPointer(engine).lineId).toBe("settledSource");
 
+    engine.handleActions({ jumpToLine: { lineId: "temporary" } });
+    engine.handleActions({ sectionTransition: { sectionId: "source" } });
     engine.handleActions({
-      jumpToLine: {
-        lineId: "temporary",
-      },
-      sectionTransition: {
-        sectionId: "source",
-      },
       conditional: {
         branches: [
           {
@@ -617,7 +615,7 @@ describe("RouteEngine rollback landing points", () => {
     ).not.toBe(false);
     expect(
       getCheckpoint(engine, "source", "settledSource", 1)?.returnable,
-    ).toBe(false);
+    ).not.toBe(false);
 
     engine.handleAction("rollbackByOffset", {});
 
@@ -1037,7 +1035,7 @@ describe("RouteEngine rollback landing points", () => {
     });
   });
 
-  it("refreshes a same-pointer reset root before a sibling route", () => {
+  it("rejects reset plus sibling routing without replacing rollback state", () => {
     const engine = createEngine(
       createProjectData({
         initialSectionId: "source",
@@ -1046,16 +1044,7 @@ describe("RouteEngine rollback landing points", () => {
             lines: [settledLine("before")],
           },
           main: {
-            lines: [
-              settledLine("router", {
-                resetStoryAtSection: {
-                  sectionId: "main",
-                },
-                sectionTransition: {
-                  sectionId: "destination",
-                },
-              }),
-            ],
+            lines: [settledLine("router")],
           },
           destination: {
             lines: [settledLine("after")],
@@ -1067,35 +1056,20 @@ describe("RouteEngine rollback landing points", () => {
     engine.handleAction("sectionTransition", {
       sectionId: "main",
     });
+    const before = engine.selectSystemState();
 
-    expect(getPointer(engine)).toMatchObject({
-      sectionId: "destination",
-      lineId: "after",
-    });
-    expect(getTimeline(engine)).toEqual([
-      expect.objectContaining({
-        sectionId: "main",
-        lineId: "router",
-        returnable: false,
+    expect(() =>
+      engine.handleActions({
+        resetStoryAtSection: { sectionId: "main" },
+        sectionTransition: { sectionId: "destination" },
       }),
-      expect.objectContaining({
-        sectionId: "destination",
-        lineId: "after",
-      }),
-    ]);
-    expect(selectCanRollback({ state: engine.selectSystemState() })).toBe(
-      false,
+    ).toThrow(
+      "action batch cannot contain multiple navigation actions: resetStoryAtSection, sectionTransition",
     );
-
-    engine.handleAction("rollbackByOffset", {});
-
-    expect(getPointer(engine)).toMatchObject({
-      sectionId: "destination",
-      lineId: "after",
-    });
+    expect(engine.selectSystemState()).toEqual(before);
   });
 
-  it("finalizes a saved occurrence before a same-pointer reset replaces it", () => {
+  it("keeps a separately saved occurrence returnable across a later reset", () => {
     const engine = createEngine(
       createProjectData({
         initialSectionId: "source",
@@ -1114,16 +1088,13 @@ describe("RouteEngine rollback landing points", () => {
     );
 
     engine.handleActions({
-      sectionTransition: {
-        sectionId: "destination",
-      },
-      saveSlot: {
-        slotId: 1,
-        savedAt: 1700000000000,
-      },
-      resetStoryAtSection: {
-        sectionId: "destination",
-      },
+      sectionTransition: { sectionId: "destination" },
+    });
+    engine.handleActions({
+      saveSlot: { slotId: 1, savedAt: 1700000000000 },
+    });
+    engine.handleActions({
+      resetStoryAtSection: { sectionId: "destination" },
     });
 
     expect(getTimeline(engine)).toHaveLength(1);
@@ -1136,15 +1107,15 @@ describe("RouteEngine rollback landing points", () => {
     expect(
       savedRollback.timeline.find(({ lineId }) => lineId === "router")
         ?.returnable,
-    ).toBe(false);
+    ).not.toBe(false);
 
     engine.handleAction("loadSlot", { slotId: 1 });
     engine.handleAction("sectionTransition", { sectionId: "final" });
     engine.handleAction("rollbackByOffset", {});
 
     expect(getPointer(engine)).toMatchObject({
-      sectionId: "source",
-      lineId: "before",
+      sectionId: "destination",
+      lineId: "router",
     });
   });
 
@@ -1609,7 +1580,7 @@ describe("RouteEngine rollback landing points", () => {
     });
   });
 
-  it("finalizes a saved occurrence before a same-pointer load replaces it", () => {
+  it("keeps a separately saved occurrence returnable across a later load", () => {
     const projectData = createProjectData({
       initialSectionId: "source",
       sections: {
@@ -1645,17 +1616,12 @@ describe("RouteEngine rollback landing points", () => {
     });
 
     engine.handleActions({
-      sectionTransition: {
-        sectionId: "destination",
-      },
-      saveSlot: {
-        slotId: 1,
-        savedAt: 1700000000000,
-      },
-      loadSlot: {
-        slotId: 2,
-      },
+      sectionTransition: { sectionId: "destination" },
     });
+    engine.handleActions({
+      saveSlot: { slotId: 1, savedAt: 1700000000000 },
+    });
+    engine.handleActions({ loadSlot: { slotId: 2 } });
 
     expect(getCheckpoint(engine, "destination", "router")?.returnable).not.toBe(
       false,
@@ -1666,15 +1632,15 @@ describe("RouteEngine rollback landing points", () => {
     expect(
       savedRollback.timeline.find(({ lineId }) => lineId === "router")
         ?.returnable,
-    ).toBe(false);
+    ).not.toBe(false);
 
     engine.handleAction("loadSlot", { slotId: 1 });
     engine.handleAction("sectionTransition", { sectionId: "final" });
     engine.handleAction("rollbackByOffset", {});
 
     expect(getPointer(engine)).toMatchObject({
-      sectionId: "source",
-      lineId: "before",
+      sectionId: "destination",
+      lineId: "router",
     });
   });
 
@@ -1872,16 +1838,20 @@ describe("RouteEngine rollback landing points", () => {
               sectionTransition: {
                 sectionId: "destination",
               },
-              saveSlot: {
-                slotId: 1,
-                savedAt: 1700000000000,
-              },
             }),
           ],
         },
         destination: {
           lines: [
-            conditionalLine("destinationRouter", "matched"),
+            settledLine("destinationRouter", {
+              conditional: {
+                branches: createConditionalBranches("matched"),
+              },
+              saveSlot: {
+                slotId: 1,
+                savedAt: 1700000000000,
+              },
+            }),
             settledLine("after"),
           ],
         },
@@ -1928,7 +1898,7 @@ describe("RouteEngine rollback landing points", () => {
     });
   });
 
-  it("restores a routed-save handoff when destination line actions fail", () => {
+  it("saves a routed destination only after its state actions succeed", () => {
     const replacementSections = {
       source: {
         lines: [settledLine("sourceRouter")],
@@ -1970,10 +1940,6 @@ describe("RouteEngine rollback landing points", () => {
               sectionTransition: {
                 sectionId: "destination",
               },
-              saveSlot: {
-                slotId: 1,
-                savedAt: 1700000000000,
-              },
             }),
           ],
         },
@@ -1981,6 +1947,10 @@ describe("RouteEngine rollback landing points", () => {
           lines: [
             settledLine("destinationRouter", {
               updateProjectData: "${variables.nextProject}",
+              saveSlot: {
+                slotId: 1,
+                savedAt: 1700000000000,
+              },
               sectionTransition: {
                 sectionId: "final",
               },
@@ -2015,6 +1985,7 @@ describe("RouteEngine rollback landing points", () => {
     expect(() => engine.handleLineActions()).toThrow(
       "Computed variable cycle detected: a -> b -> a",
     );
+    expect(engine.selectSystemState().global.saveSlots["1"]).toBeUndefined();
 
     engine.handleAction("updateVariable", {
       id: "repairReplacement",

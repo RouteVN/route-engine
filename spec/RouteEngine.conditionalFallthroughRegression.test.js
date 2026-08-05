@@ -473,7 +473,6 @@ describe("conditional fallthrough runtime invariants", () => {
                           {
                             when: true,
                             actions: {
-                              nextLine: {},
                               ...navigationAction,
                             },
                           },
@@ -581,7 +580,6 @@ describe("conditional fallthrough runtime invariants", () => {
                       {
                         when: true,
                         actions: {
-                          nextLine: {},
                           jumpToLine: { lineId: "line2" },
                         },
                       },

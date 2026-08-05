@@ -21,6 +21,11 @@ import {
 } from "./l10n.js";
 import { PLAYBACK_TIMER_EFFECT_NAMES } from "./playbackScheduler.js";
 import { normalizeRandomSource, sampleRandomDistribution } from "./random.js";
+import {
+  assertUnambiguousNavigationActions,
+  isTerminalNavigationActionType,
+  orderActionEntries,
+} from "./actionExecutionOrder.js";
 
 const PERSISTENT_PLAYBACK_RESET_ACTIONS = new Set([
   "loadSlot",
@@ -1248,6 +1253,10 @@ export default function createRouteEngine(options) {
       return runActionBatch(() => {
         const actionOptions = {
           ...options,
+          executionContext: options.executionContext ?? {
+            depth: 0,
+            pendingNavigation: null,
+          },
           actionPath: options.actionPath ?? [actionType],
           randomOutcomeOrdinals: options.randomOutcomeOrdinals ?? new Map(),
         };
@@ -1660,22 +1669,64 @@ export default function createRouteEngine(options) {
 
   const processActionEntries = (actions, eventContext, options) => {
     let result;
+    const executionContext = options?.executionContext ?? {
+      depth: 0,
+      pendingNavigation: null,
+    };
+    const orderedEntries = orderActionEntries(actions);
+    assertUnambiguousNavigationActions(orderedEntries);
 
-    Object.entries(actions).forEach(([actionType, payload]) => {
-      const actionOptions = {
-        ...options,
-        actionPath: [...(options?.actionPath ?? []), actionType],
-      };
-      const entryResult = handleActionEntry(
-        actionType,
-        payload,
-        eventContext,
-        actionOptions,
-      );
-      if (isConditionalAutoContinue(entryResult)) {
-        result = mergeConditionalAutoContinue(result, entryResult);
+    executionContext.depth += 1;
+    try {
+      for (const [actionType, payload] of orderedEntries) {
+        const actionOptions = {
+          ...options,
+          executionContext,
+          actionPath: [...(options?.actionPath ?? []), actionType],
+        };
+        if (isTerminalNavigationActionType(actionType)) {
+          // Nested decisions discover routes before the outer batch reaches its
+          // Navigation phase. Hold the one selected route until every earlier
+          // outer phase, including Persistence, has settled.
+          const pendingNavigation = executionContext.pendingNavigation;
+          if (pendingNavigation) {
+            throw new Error(
+              `action batch cannot execute multiple navigation actions: ${pendingNavigation.actionType}, ${actionType}`,
+            );
+          }
+          executionContext.pendingNavigation = {
+            actionType,
+            payload,
+            eventContext,
+            options: actionOptions,
+          };
+          continue;
+        }
+
+        const entryResult = handleActionEntry(
+          actionType,
+          payload,
+          eventContext,
+          actionOptions,
+        );
+        if (isConditionalAutoContinue(entryResult)) {
+          result = mergeConditionalAutoContinue(result, entryResult);
+        }
       }
-    });
+    } finally {
+      executionContext.depth -= 1;
+    }
+
+    if (executionContext.depth === 0 && executionContext.pendingNavigation) {
+      const navigation = executionContext.pendingNavigation;
+      executionContext.pendingNavigation = null;
+      handleActionEntry(
+        navigation.actionType,
+        navigation.payload,
+        navigation.eventContext,
+        navigation.options,
+      );
+    }
 
     return result;
   };
@@ -1683,6 +1734,7 @@ export default function createRouteEngine(options) {
   const handleActions = (actions, eventContext, options = {}) => {
     const batchOptions = {
       ...options,
+      executionContext: { depth: 0, pendingNavigation: null },
       randomOutcomeOrdinals: new Map(),
     };
     return runActionBatch(

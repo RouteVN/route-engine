@@ -100,7 +100,7 @@ const setVariable = (id, variableId, value) => ({
 });
 
 describe("RouteEngine random actions", () => {
-  it("stores the uniform integer before later actions and continues once", () => {
+  it("stores an integer before conditional regardless of authored key order", () => {
     const engine = createEngine(
       createProjectData({
         extraLines: [{ id: "line2", actions: {} }],
@@ -109,14 +109,6 @@ describe("RouteEngine random actions", () => {
     );
 
     engine.handleActions({
-      random: {
-        distribution: {
-          type: "integer",
-          min: 1,
-          max: 20,
-        },
-        variableId: "score",
-      },
       conditional: {
         branches: [
           {
@@ -125,6 +117,14 @@ describe("RouteEngine random actions", () => {
           },
           { actions: setVariable("failure", "bonus", -1) },
         ],
+      },
+      random: {
+        distribution: {
+          type: "integer",
+          min: 1,
+          max: 20,
+        },
+        variableId: "score",
       },
     });
 
@@ -161,6 +161,34 @@ describe("RouteEngine random actions", () => {
     expect(engine.selectSystemState().contexts[0].variables.selected).toBe(
       "rare",
     );
+  });
+
+  it("defers weighted navigation until earlier outer phases finish", () => {
+    const engine = createEngine(
+      createProjectData({
+        extraLines: [{ id: "line2", actions: {} }],
+      }),
+      createQueuedRandomSource(0, 0),
+    );
+    engine.handleActions({
+      setMenuPage: { value: "runs-before-navigation" },
+      random: {
+        distribution: {
+          type: "weighted",
+          outcomes: [
+            {
+              weight: 1,
+              actions: { jumpToLine: { lineId: "line2" } },
+            },
+          ],
+        },
+      },
+    });
+
+    expect(
+      engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
+    ).toBe("line2");
+    expect(engine.selectRuntime().menuPage).toBe("runs-before-navigation");
   });
 
   it("enforces integer and weighted payload ownership", () => {
@@ -545,11 +573,20 @@ describe("RouteEngine random actions", () => {
     expect(randomSource.calls).toBe(2);
   });
 
-  it("keeps outcomes on the source occurrence when an earlier sibling navigates", () => {
+  it("replays canonical state and decision order before terminal navigation", () => {
     const randomSource = createQueuedRandomSource(6);
     const engine = createEngine(
       createProjectData({
         lineActions: {
+          conditional: {
+            branches: [
+              {
+                when: { gte: [{ var: "variables.score" }, 7] },
+                actions: setVariable("selected", "bonus", 7),
+              },
+              { actions: setVariable("fallback", "bonus", -1) },
+            ],
+          },
           jumpToLine: { lineId: "line2" },
           random: {
             distribution: { type: "integer", min: 1, max: 10 },
@@ -582,6 +619,7 @@ describe("RouteEngine random actions", () => {
     engine.handleAction("markLineCompleted", {});
     engine.handleAction("nextLine", {});
     engine.handleActions(setVariable("clear", "score", 0));
+    engine.handleActions(setVariable("clearBonus", "bonus", 0));
     engine.handleAction("rollbackToLine", {
       sectionId: "section1",
       lineId: "line1",
@@ -589,6 +627,7 @@ describe("RouteEngine random actions", () => {
 
     state = engine.selectSystemState();
     expect(state.contexts[0].variables.score).toBe(7);
+    expect(state.contexts[0].variables.bonus).toBe(7);
     expect(randomSource.calls).toBe(1);
   });
 
