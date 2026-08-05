@@ -156,11 +156,10 @@ describe("RouteEngine conditional actions", () => {
     ).toBe("line2");
   });
 
-  it("evaluates each conditional against state mutated by earlier actions in the same batch", () => {
+  it("evaluates conditional after state actions regardless of key order", () => {
     const engine = createEngine(createProjectData({ trust: 20 }));
 
     engine.handleActions({
-      ...setTrustAction("raiseTrust", 80),
       conditional: {
         branches: [
           {
@@ -174,10 +173,118 @@ describe("RouteEngine conditional actions", () => {
           },
         ],
       },
+      ...setTrustAction("raiseTrust", 80),
     });
 
     expect(engine.selectSystemState().contexts[0].variables.trust).toBe(80);
     expect(engine.selectSystemState().contexts[0].variables.score).toBe(7);
+  });
+
+  it("defers nested navigation until earlier outer phases finish", () => {
+    const engine = createEngine(
+      createProjectData({
+        extraLines: [{ id: "line2", actions: {} }],
+      }),
+    );
+    engine.handleActions({
+      setMenuPage: { value: "runs-before-navigation" },
+      conditional: {
+        branches: [
+          {
+            when: true,
+            actions: {
+              jumpToLine: { lineId: "line2" },
+            },
+          },
+        ],
+      },
+    });
+
+    expect(
+      engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
+    ).toBe("line2");
+    expect(engine.selectRuntime().menuPage).toBe("runs-before-navigation");
+  });
+
+  it("persists the settled pre-navigation state before a nested route", () => {
+    const engine = createEngine(
+      createProjectData({
+        extraLines: [{ id: "line2", actions: {} }],
+      }),
+    );
+
+    engine.handleActions({
+      conditional: {
+        branches: [
+          {
+            when: true,
+            actions: { jumpToLine: { lineId: "line2" } },
+          },
+        ],
+      },
+      saveSlot: { slotId: 1, savedAt: 1700000000000 },
+    });
+
+    expect(
+      engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
+    ).toBe("line2");
+    expect(
+      engine.selectSaveSlot({ slotId: 1 }).state.contexts.at(-1).pointers.read
+        .lineId,
+    ).toBe("line1");
+  });
+
+  it("rejects ambiguous sibling navigation before mutating the batch", () => {
+    const engine = createEngine(
+      createProjectData({
+        extraLines: [{ id: "line2", actions: {} }],
+      }),
+    );
+
+    expect(() =>
+      engine.handleActions({
+        nextLine: {},
+        ...setScoreAction("mustRollback", 9),
+        jumpToLine: { lineId: "line2" },
+      }),
+    ).toThrow(
+      "action batch cannot contain multiple navigation actions: jumpToLine, nextLine",
+    );
+
+    expect(engine.selectSystemState().contexts[0].variables.score).toBe(0);
+    expect(
+      engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
+    ).toBe("line1");
+  });
+
+  it("rejects multiple reachable nested and sibling routes transactionally", () => {
+    const engine = createEngine(
+      createProjectData({
+        extraLines: [{ id: "line2", actions: {} }],
+      }),
+    );
+
+    expect(() =>
+      engine.handleActions({
+        ...setScoreAction("mustRollback", 9),
+        conditional: {
+          branches: [
+            {
+              when: true,
+              actions: { jumpToLine: { lineId: "line2" } },
+            },
+          ],
+        },
+        sectionTransition: { sectionId: "section1" },
+      }),
+    ).toThrow(
+      "action batch cannot execute multiple navigation actions: jumpToLine, sectionTransition",
+    );
+
+    expect(engine.selectSystemState().contexts[0].variables.score).toBe(0);
+    expect(
+      engine.selectSystemState().contexts.at(-1).pointers.read.lineId,
+    ).toBe("line1");
   });
 
   it("dispatches conditional actions through the single-action API", () => {

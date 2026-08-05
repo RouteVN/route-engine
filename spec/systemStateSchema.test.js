@@ -360,6 +360,136 @@ describe("systemState schema", () => {
     expect(validateSystemState.errors).not.toBeNull();
   });
 
+  it("validates persisted rollback random outcomes", () => {
+    const engine = createRouteEngine({ handlePendingEffects: () => {} });
+    engine.init({ initialState: { projectData: createMinimalProjectData() } });
+    const systemState = toJsonSnapshot(engine.selectSystemState());
+    const checkpoint = systemState.contexts[0].rollback.timeline[0];
+    checkpoint.randomOutcomeVersion = 1;
+    checkpoint.randomOutcomes = [
+      {
+        path: "random",
+        ordinal: 0,
+        type: "integer",
+        result: { type: "integer", value: 8 },
+      },
+    ];
+
+    expect(validateSystemState(systemState)).toBe(true);
+    expect(validateSystemState.errors).toBeNull();
+
+    checkpoint.randomOutcomes[0].result.value = "8";
+    expect(validateSystemState(systemState)).toBe(false);
+
+    checkpoint.randomOutcomes[0].result.value = Number.MAX_SAFE_INTEGER + 1;
+    expect(validateSystemState(systemState)).toBe(false);
+  });
+
+  it("requires persisted random record and result types to match", () => {
+    const engine = createRouteEngine({ handlePendingEffects: () => {} });
+    engine.init({ initialState: { projectData: createMinimalProjectData() } });
+    const systemState = toJsonSnapshot(engine.selectSystemState());
+    const checkpoint = systemState.contexts[0].rollback.timeline[0];
+    checkpoint.randomOutcomeVersion = 1;
+    checkpoint.randomOutcomes = [
+      {
+        path: "random",
+        ordinal: 0,
+        type: "weighted",
+        result: {
+          type: "integer",
+          value: 4,
+        },
+      },
+    ];
+
+    expect(validateSystemState(systemState)).toBe(false);
+    expect(validateSystemState.errors).not.toBeNull();
+
+    checkpoint.randomOutcomes[0] = {
+      path: "random",
+      ordinal: 0,
+      type: "integer",
+      result: { type: "weighted", outcomeIndex: 0 },
+    };
+    expect(validateSystemState(systemState)).toBe(false);
+    expect(validateSystemState.errors).not.toBeNull();
+  });
+
+  it("requires random outcome ledger fields together", () => {
+    const engine = createRouteEngine({ handlePendingEffects: () => {} });
+    engine.init({ initialState: { projectData: createMinimalProjectData() } });
+    const systemState = toJsonSnapshot(engine.selectSystemState());
+    const checkpoint = systemState.contexts[0].rollback.timeline[0];
+    delete checkpoint.randomOutcomeVersion;
+    delete checkpoint.randomOutcomes;
+
+    expect(validateSystemState(systemState)).toBe(true);
+    expect(validateSystemState.errors).toBeNull();
+
+    checkpoint.randomOutcomeVersion = 1;
+    expect(validateSystemState(systemState)).toBe(false);
+    expect(validateSystemState.errors).not.toBeNull();
+
+    delete checkpoint.randomOutcomeVersion;
+    checkpoint.randomOutcomes = [];
+    expect(validateSystemState(systemState)).toBe(false);
+    expect(validateSystemState.errors).not.toBeNull();
+
+    checkpoint.randomOutcomeVersion = 1;
+    expect(validateSystemState(systemState)).toBe(true);
+    expect(validateSystemState.errors).toBeNull();
+  });
+
+  it("validates the internal weighted branch index", () => {
+    const engine = createRouteEngine({ handlePendingEffects: () => {} });
+    engine.init({ initialState: { projectData: createMinimalProjectData() } });
+    const systemState = toJsonSnapshot(engine.selectSystemState());
+    const checkpoint = systemState.contexts[0].rollback.timeline[0];
+    checkpoint.randomOutcomeVersion = 1;
+    checkpoint.randomOutcomes = [
+      {
+        path: "random",
+        ordinal: 0,
+        type: "weighted",
+        result: { type: "weighted", outcomeIndex: 3 },
+      },
+    ];
+
+    expect(validateSystemState(systemState)).toBe(true);
+    expect(validateSystemState.errors).toBeNull();
+
+    checkpoint.randomOutcomes[0].result = {
+      type: "weighted",
+      value: "removed",
+    };
+    expect(validateSystemState(systemState)).toBe(false);
+  });
+
+  it.each(["dice", "chance"])(
+    "rejects removed %s random outcome records",
+    (type) => {
+      const engine = createRouteEngine({ handlePendingEffects: () => {} });
+      engine.init({
+        initialState: { projectData: createMinimalProjectData() },
+      });
+      const systemState = toJsonSnapshot(engine.selectSystemState());
+      const checkpoint = systemState.contexts[0].rollback.timeline[0];
+      checkpoint.randomOutcomeVersion = 1;
+      checkpoint.randomOutcomes = [
+        {
+          path: "random",
+          ordinal: 0,
+          type,
+          result: { type, value: type === "dice" ? 3 : true },
+        },
+      ];
+
+      expect(validateSystemState(systemState)).toBe(false);
+      expect(validateSystemState.errors).not.toBeNull();
+    },
+  );
+
   it("accepts numeric viewed resource IDs in account viewed state", () => {
     const engine = createRouteEngine({
       handlePendingEffects: () => {},

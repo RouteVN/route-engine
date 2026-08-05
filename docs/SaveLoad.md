@@ -350,7 +350,7 @@ Important constraint:
 
 Rationale:
 
-- authored action order should stay intact
+- the engine's canonical action schedule should run once for the whole payload
 - rollback action batching should stay intact
 - save plus other authored actions should continue to behave as one logical interaction
 

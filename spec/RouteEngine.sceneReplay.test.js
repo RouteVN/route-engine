@@ -543,10 +543,8 @@ describe("RouteEngine scene replay catalog", () => {
     });
     expect(engine.selectSystemState()).toEqual(before);
 
-    engine.handleActions({
-      startSceneReplay: { sceneId: "firstMeeting" },
-      exitSceneReplay: {},
-    });
+    engine.handleActions({ startSceneReplay: { sceneId: "firstMeeting" } });
+    engine.handleActions({ exitSceneReplay: {} });
     expect(engine.selectIsSceneReplayActive()).toBe(false);
     expect(engine.selectSystemState().global.accountReplayRegistry).toEqual(
       before.global.accountReplayRegistry,
@@ -575,7 +573,7 @@ describe("RouteEngine scene replay catalog", () => {
     expect(engine.selectSystemState().global.confirmDialog).toBeNull();
   });
 
-  it("drops deferred replay entry work without re-running caller line actions", () => {
+  it("exits after replay entry without re-running caller line actions", () => {
     const projectData = createProjectData();
     projectData.story.scenes.main.sections.caller.lines[0].actions = {
       updateVariable: {
@@ -586,18 +584,16 @@ describe("RouteEngine scene replay catalog", () => {
     const { effects, engine } = createEngine({ projectData });
     expect(selectCurrentContext(engine).variables.affection).toBe(2);
 
-    engine.handleActions({
-      startSceneReplay: { sceneId: "firstMeeting" },
-      exitSceneReplay: {},
-    });
+    engine.handleActions({ startSceneReplay: { sceneId: "firstMeeting" } });
+    engine.handleActions({ exitSceneReplay: {} });
 
     expect(selectCurrentContext(engine).variables.affection).toBe(2);
     expect(effects.some((effect) => effect.name === "handleLineActions")).toBe(
-      false,
+      true,
     );
   });
 
-  it("preserves caller line work queued before a same-batch replay exit", () => {
+  it("preserves caller line work across replay entry and exit", () => {
     const projectData = createProjectData();
     projectData.story.scenes.main.sections.caller.lines[1].actions = {
       updateVariable: {
@@ -607,11 +603,9 @@ describe("RouteEngine scene replay catalog", () => {
     };
     const { engine } = createEngine({ projectData });
 
-    engine.handleActions({
-      jumpToLine: { lineId: "caller2" },
-      startSceneReplay: { sceneId: "firstMeeting" },
-      exitSceneReplay: {},
-    });
+    engine.handleActions({ jumpToLine: { lineId: "caller2" } });
+    engine.handleActions({ startSceneReplay: { sceneId: "firstMeeting" } });
+    engine.handleActions({ exitSceneReplay: {} });
 
     expect(selectCurrentContext(engine)).toMatchObject({
       pointers: { read: { lineId: "caller2" } },
@@ -732,8 +726,8 @@ describe("RouteEngine scene replay catalog", () => {
       ticker: { add: vi.fn(), remove: vi.fn() },
       handleUnhandledEffect: (effect) => {
         if (effect.name === "restartReplayBeforeOwnedLineWork") {
+          engine.handleActions({ exitSceneReplay: {} });
           engine.handleActions({
-            exitSceneReplay: {},
             startSceneReplay: { sceneId: "firstMeeting" },
           });
         }
@@ -827,8 +821,8 @@ describe("RouteEngine scene replay catalog", () => {
 
   it("allows normal cross-section routing inside an isolated replay", () => {
     const { engine } = createEngine();
+    engine.handleActions({ startSceneReplay: { sceneId: "firstMeeting" } });
     engine.handleActions({
-      startSceneReplay: { sceneId: "firstMeeting" },
       sectionTransition: { sectionId: "replayBranch" },
     });
     expect(selectCurrentContext(engine)).toMatchObject({
@@ -894,8 +888,8 @@ describe("RouteEngine scene replay catalog", () => {
 
   it("suppresses progress and achievements while allowing device preferences", () => {
     const { effects, engine } = createEngine();
+    engine.handleActions({ startSceneReplay: { sceneId: "firstMeeting" } });
     engine.handleActions({
-      startSceneReplay: { sceneId: "firstMeeting" },
       addViewedLine: { sectionId: "replayStart", lineId: "replay1" },
       addViewedResource: { resourceId: "firstMeetingThumb" },
       completeAchievement: { resourceId: "undeclared-is-suppressed" },
@@ -969,20 +963,18 @@ describe("RouteEngine scene replay catalog", () => {
     ).toThrow("Cannot start a scene replay while another replay is active");
   });
 
-  it("rolls back replay entry when a later action in the batch fails", () => {
+  it("does not enter replay when an earlier state action fails", () => {
     const { engine } = createEngine();
 
     expect(() =>
       engine.handleActions({
         startSceneReplay: { sceneId: "firstMeeting" },
         updateVariable: {
-          id: "forbiddenAfterStart",
-          operations: [{ variableId: "accountFlag", op: "set", value: true }],
+          id: "invalidBeforeStart",
+          operations: [{ variableId: "missing", op: "set", value: true }],
         },
       }),
-    ).toThrow(
-      'Cannot update account-scoped variable "accountFlag" while a scene replay is active',
-    );
+    ).toThrow("Variable scope is required for variable: missing");
 
     expect(engine.selectIsSceneReplayActive()).toBe(false);
     expect(engine.selectSystemState().contexts).toHaveLength(1);

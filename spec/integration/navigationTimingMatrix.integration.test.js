@@ -253,7 +253,7 @@ describe("public navigation and timing integration matrix", () => {
     expect(harness.getPointer().lineId).toBe("destination2");
   });
 
-  it("executes only the final destination line actions for synchronous batched navigation", () => {
+  it("rejects synchronous batches with multiple navigation actions", () => {
     const projectData = createIntegrationProject({
       resources: {
         variables: {
@@ -273,16 +273,21 @@ describe("public navigation and timing integration matrix", () => {
     });
     const harness = createEngineIntegrationHarness({ projectData });
 
-    harness.engine.handleActions({
-      jumpToLine: { sectionId: "intermediate", lineId: "intermediate" },
-      sectionTransition: { sectionId: "final" },
-    });
+    expect(() =>
+      harness.engine.handleActions({
+        jumpToLine: { sectionId: "intermediate", lineId: "intermediate" },
+        sectionTransition: { sectionId: "final" },
+      }),
+    ).toThrow(
+      "action batch cannot contain multiple navigation actions: sectionTransition, jumpToLine",
+    );
 
     expect(harness.getPointer()).toEqual({
-      sectionId: "final",
-      lineId: "final",
+      sceneId: "scene",
+      sectionId: "source",
+      lineId: "source",
     });
-    expect(getContextVariable(harness, "score")).toBe(10);
+    expect(getContextVariable(harness, "score")).toBe(0);
   });
 
   it("executes an ordinary section destination line action exactly once", () => {

@@ -97,6 +97,61 @@ defs:
     required: [entries, currentLength, checkpointLengths]
     additionalProperties: false
 
+  randomIntegerOutcomeResult:
+    type: object
+    properties:
+      type:
+        const: integer
+      value:
+        type: integer
+        minimum: -9007199254740991
+        maximum: 9007199254740991
+    required: [type, value]
+    additionalProperties: false
+
+  randomWeightedOutcomeResult:
+    type: object
+    properties:
+      type:
+        const: weighted
+      outcomeIndex:
+        type: integer
+        minimum: 0
+        maximum: 999
+    required: [type, outcomeIndex]
+    additionalProperties: false
+
+  randomOutcome:
+    oneOf:
+      - type: object
+        properties:
+          path:
+            type: string
+            minLength: 1
+          ordinal:
+            type: integer
+            minimum: 0
+          type:
+            const: integer
+          result:
+            $ref: "#/defs/randomIntegerOutcomeResult"
+        required: [path, ordinal, type, result]
+        additionalProperties: false
+      - type: object
+        properties:
+          path:
+            type: string
+            minLength: 1
+          ordinal:
+            type: integer
+            minimum: 0
+          type:
+            const: weighted
+          result:
+            $ref: "#/defs/randomWeightedOutcomeResult"
+        required: [path, ordinal, type, result]
+        additionalProperties: false
+
   rollbackCheckpoint:
     type: object
     properties:
@@ -120,6 +175,16 @@ defs:
               description: Action payload captured for rollback replay
           required: [type]
           additionalProperties: false
+      randomOutcomeVersion:
+        const: 1
+        description: Persisted random-outcome replay contract version
+      randomOutcomes:
+        type: array
+        items:
+          $ref: "#/defs/randomOutcome"
+    dependencies:
+      randomOutcomeVersion: [randomOutcomes]
+      randomOutcomes: [randomOutcomeVersion]
     required: [sectionId, lineId]
     additionalProperties: false
 

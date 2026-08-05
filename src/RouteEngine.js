@@ -2,6 +2,7 @@ import { createSystemStore } from "./stores/system.store.js";
 import { normalizeNamespace } from "./indexedDbPersistence.js";
 import {
   evaluateRouteCondition,
+  isComputedVariableConfig,
   processActionTemplates,
   RUN_STORE_TRANSACTION,
   validateComputedVariableConfigs,
@@ -19,6 +20,12 @@ import {
   resolveL10nProjectData,
 } from "./l10n.js";
 import { PLAYBACK_TIMER_EFFECT_NAMES } from "./playbackScheduler.js";
+import { normalizeRandomSource, sampleRandomDistribution } from "./random.js";
+import {
+  assertUnambiguousNavigationActions,
+  isTerminalNavigationActionType,
+  orderActionEntries,
+} from "./actionExecutionOrder.js";
 
 const PERSISTENT_PLAYBACK_RESET_ACTIONS = new Set([
   "loadSlot",
@@ -36,6 +43,7 @@ const PERSISTENT_PLAYBACK_RESTORE_ACTIONS = new Set([
 ]);
 
 const CONDITIONAL_ACTION_TYPE = "conditional";
+const RANDOM_ACTION_TYPE = "random";
 const CONDITIONAL_AUTO_CONTINUE = Symbol("conditionalAutoContinue");
 const CONDITIONAL_ROUTING_ACTION_TYPES = new Set([
   "sectionTransition",
@@ -146,6 +154,7 @@ export default function createRouteEngine(options) {
   let _isReconcilingPlayback = false;
   let _automaticAttemptDepth = 0;
   const _automaticAttemptErrors = new Map();
+  const _randomSource = normalizeRandomSource(options.randomSource);
 
   const { handlePendingEffects } = options;
   if (typeof handlePendingEffects !== "function") {
@@ -864,6 +873,27 @@ export default function createRouteEngine(options) {
     });
   };
 
+  const refreshActiveRollbackSaveIdentities = () => {
+    const navigationContext = _rollbackNavigationContexts.at(-1);
+    navigationContext?.savedCheckpointOccurrences.forEach((occurrence) => {
+      const saveSlot = _systemStore.selectSaveSlot({
+        slotId: occurrence.slotId,
+      });
+      if (saveSlot) {
+        occurrence.saveSlotIdentity = saveSlot;
+      }
+    });
+  };
+
+  const refreshActiveRollbackCursor = () => {
+    const navigationContext = _rollbackNavigationContexts.at(-1);
+    if (!navigationContext) {
+      return;
+    }
+    navigationContext.rollbackCursor =
+      _systemStore.selectRollbackCursor?.() ?? null;
+  };
+
   const updateActiveRollbackNavigation = (
     actionType,
     cursorBeforeAction,
@@ -999,6 +1029,8 @@ export default function createRouteEngine(options) {
     const cursorAfterAction = _systemStore.selectRollbackCursor?.() ?? null;
     if (actionType === "saveSlot") {
       recordActiveRollbackSave(payload);
+    } else if (actionType === "updateProjectData") {
+      refreshActiveRollbackSaveIdentities();
     }
     updateActiveRollbackNavigation(
       actionType,
@@ -1214,8 +1246,23 @@ export default function createRouteEngine(options) {
   };
 
   const handleAction = (actionType, payload, eventContext, options = {}) => {
-    if (actionType === CONDITIONAL_ACTION_TYPE) {
+    if (
+      actionType === CONDITIONAL_ACTION_TYPE ||
+      actionType === RANDOM_ACTION_TYPE
+    ) {
       return runActionBatch(() => {
+        const actionOptions = {
+          ...options,
+          executionContext: options.executionContext ?? {
+            depth: 0,
+            pendingNavigation: null,
+          },
+          actionPath: options.actionPath ?? [actionType],
+          randomOutcomeOrdinals: options.randomOutcomeOrdinals ?? new Map(),
+        };
+        if (actionType === RANDOM_ACTION_TYPE) {
+          return handleRandomAction(payload, eventContext, actionOptions);
+        }
         const context = buildActionTemplateContext(eventContext);
         const processedActions = processActionTemplates(
           { [actionType]: payload },
@@ -1224,7 +1271,7 @@ export default function createRouteEngine(options) {
         return handleConditionalAction(
           processedActions[actionType],
           eventContext,
-          options,
+          actionOptions,
         );
       }, options);
     }
@@ -1245,7 +1292,17 @@ export default function createRouteEngine(options) {
     }
   };
 
+  const assertActionEventContext = (eventContext) => {
+    if (!eventContext) return;
+    if (Object.prototype.hasOwnProperty.call(eventContext, "event")) {
+      throw new Error(
+        'eventContext key "event" is no longer supported. Use "_event".',
+      );
+    }
+  };
+
   const buildActionTemplateContext = (eventContext) => {
+    assertActionEventContext(eventContext);
     if (!eventContext) {
       return {
         variables: _systemStore.selectAllVariables
@@ -1253,11 +1310,6 @@ export default function createRouteEngine(options) {
           : undefined,
         runtime: _systemStore.selectRuntime ? _systemStore.selectRuntime() : {},
       };
-    }
-    if (Object.prototype.hasOwnProperty.call(eventContext, "event")) {
-      throw new Error(
-        'eventContext key "event" is no longer supported. Use "_event".',
-      );
     }
     const { _event, ...additionalContext } = eventContext;
     const variables = _systemStore.selectAllVariables
@@ -1425,17 +1477,113 @@ export default function createRouteEngine(options) {
         continue;
       }
 
-      const branchResult = processActionEntries(
-        branch.actions,
-        eventContext,
-        options,
-      );
+      const branchResult = processActionEntries(branch.actions, eventContext, {
+        ...options,
+        actionPath: [
+          ...(options.actionPath ?? [CONDITIONAL_ACTION_TYPE]),
+          "branches",
+          String(index),
+          "actions",
+        ],
+      });
       return isConditionalAutoContinue(branchResult)
         ? mergeConditionalAutoContinue(autoContinue, branchResult)
         : autoContinue;
     }
 
     return autoContinue;
+  };
+
+  const assertRandomActionPayload = (payload) => {
+    if (!isRecord(payload)) {
+      throw new Error("random action payload must be an object");
+    }
+    const unexpectedKey = Object.keys(payload).find(
+      (key) => key !== "distribution" && key !== "variableId",
+    );
+    if (unexpectedKey !== undefined) {
+      throw new Error(`random action.${unexpectedKey} is not supported`);
+    }
+    if (!isRecord(payload.distribution)) {
+      throw new Error("random action requires distribution object");
+    }
+    if (payload.distribution.type === "weighted") {
+      if (Object.prototype.hasOwnProperty.call(payload, "variableId")) {
+        throw new Error("weighted random action does not support variableId");
+      }
+    } else if (payload.distribution.type === "integer") {
+      if (typeof payload.variableId !== "string" || !payload.variableId) {
+        throw new Error("integer random action requires variableId");
+      }
+      const variableConfig =
+        _canonicalProjectData?.resources?.variables?.[payload.variableId];
+      if (
+        !variableConfig ||
+        variableConfig.type !== "number" ||
+        variableConfig.scope !== "context" ||
+        variableConfig.readonly === true ||
+        isComputedVariableConfig(variableConfig)
+      ) {
+        throw new Error(
+          `integer random action variableId must reference a writable context number variable: ${payload.variableId}`,
+        );
+      }
+    }
+  };
+
+  const handleRandomAction = (payload, eventContext, options) => {
+    assertRandomActionPayload(payload);
+    assertActionEventContext(eventContext);
+    const result = sampleRandomDistribution(payload.distribution, {
+      randomSource: _randomSource,
+    });
+
+    if (options.rollbackSource === "line") {
+      _systemStore.ensureRandomReplayOccurrence({});
+      const path = (options.actionPath ?? [RANDOM_ACTION_TYPE]).join(".");
+      const randomOutcomeOrdinals = options.randomOutcomeOrdinals ?? new Map();
+      const ordinal = randomOutcomeOrdinals.get(path) ?? 0;
+      randomOutcomeOrdinals.set(path, ordinal + 1);
+      _systemStore.recordRandomOutcome({
+        path,
+        ordinal,
+        type: result.type,
+        result,
+      });
+      // Recording changes the checkpoint through Immer. Keep navigation
+      // ownership aligned with the replacement object so transient-source
+      // finalization can still identify the live checkpoint.
+      refreshActiveRollbackCursor();
+    }
+
+    let nestedResult;
+    if (result.type === "integer") {
+      dispatchStoreAction("updateVariable", {
+        id: "randomResult",
+        operations: [
+          { variableId: payload.variableId, op: "set", value: result.value },
+        ],
+      });
+    } else {
+      nestedResult = processActionEntries(
+        payload.distribution.outcomes[result.outcomeIndex].actions,
+        eventContext,
+        {
+          ...options,
+          actionPath: [
+            ...(options.actionPath ?? [RANDOM_ACTION_TYPE]),
+            "distribution",
+            "outcomes",
+            String(result.outcomeIndex),
+            "actions",
+          ],
+        },
+      );
+    }
+    const autoContinue = createConditionalAutoContinue(options);
+    return isConditionalAutoContinue(nestedResult)
+      ? mergeConditionalAutoContinue(autoContinue, nestedResult)
+      : autoContinue;
   };
 
   const buildFormActionEventContext = (eventContext, formContext) => {
@@ -1469,6 +1617,9 @@ export default function createRouteEngine(options) {
   };
 
   const handleActionEntry = (actionType, payload, eventContext, options) => {
+    if (actionType === RANDOM_ACTION_TYPE) {
+      return handleRandomAction(payload, eventContext, options);
+    }
     const context = buildActionTemplateContext(eventContext);
     let maskedPayload = {
       templatePayload: payload,
@@ -1518,26 +1669,77 @@ export default function createRouteEngine(options) {
 
   const processActionEntries = (actions, eventContext, options) => {
     let result;
+    const executionContext = options?.executionContext ?? {
+      depth: 0,
+      pendingNavigation: null,
+    };
+    const orderedEntries = orderActionEntries(actions);
+    assertUnambiguousNavigationActions(orderedEntries);
 
-    Object.entries(actions).forEach(([actionType, payload]) => {
-      const entryResult = handleActionEntry(
-        actionType,
-        payload,
-        eventContext,
-        options,
-      );
-      if (isConditionalAutoContinue(entryResult)) {
-        result = mergeConditionalAutoContinue(result, entryResult);
+    executionContext.depth += 1;
+    try {
+      for (const [actionType, payload] of orderedEntries) {
+        const actionOptions = {
+          ...options,
+          executionContext,
+          actionPath: [...(options?.actionPath ?? []), actionType],
+        };
+        if (isTerminalNavigationActionType(actionType)) {
+          // Nested decisions discover routes before the outer batch reaches its
+          // Navigation phase. Hold the one selected route until every earlier
+          // outer phase, including Persistence, has settled.
+          const pendingNavigation = executionContext.pendingNavigation;
+          if (pendingNavigation) {
+            throw new Error(
+              `action batch cannot execute multiple navigation actions: ${pendingNavigation.actionType}, ${actionType}`,
+            );
+          }
+          executionContext.pendingNavigation = {
+            actionType,
+            payload,
+            eventContext,
+            options: actionOptions,
+          };
+          continue;
+        }
+
+        const entryResult = handleActionEntry(
+          actionType,
+          payload,
+          eventContext,
+          actionOptions,
+        );
+        if (isConditionalAutoContinue(entryResult)) {
+          result = mergeConditionalAutoContinue(result, entryResult);
+        }
       }
-    });
+    } finally {
+      executionContext.depth -= 1;
+    }
+
+    if (executionContext.depth === 0 && executionContext.pendingNavigation) {
+      const navigation = executionContext.pendingNavigation;
+      executionContext.pendingNavigation = null;
+      handleActionEntry(
+        navigation.actionType,
+        navigation.payload,
+        navigation.eventContext,
+        navigation.options,
+      );
+    }
 
     return result;
   };
 
   const handleActions = (actions, eventContext, options = {}) => {
+    const batchOptions = {
+      ...options,
+      executionContext: { depth: 0, pendingNavigation: null },
+      randomOutcomeOrdinals: new Map(),
+    };
     return runActionBatch(
-      () => processActionEntries(actions, eventContext, options),
-      options,
+      () => processActionEntries(actions, eventContext, batchOptions),
+      batchOptions,
     );
   };
 

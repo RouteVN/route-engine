@@ -34,6 +34,8 @@ vt:
           files: "nextLineConfig"
         - title: "Choice"
           files: "choice"
+        - title: "Random"
+          files: "random"
         - title: "Form"
           files: "form"
         - title: "Complete"

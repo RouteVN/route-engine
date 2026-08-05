@@ -17,8 +17,14 @@ import {
   applyVariableOperation,
   diffPresentationState,
   normalizePersistentPresentationState,
+  processActionTemplates,
   resolveCharacterDisplayName,
 } from "../util.js";
+import { validateRandomResult } from "../random.js";
+import {
+  assertUnambiguousNavigationActions,
+  orderActionEntries,
+} from "../actionExecutionOrder.js";
 import { constructPresentationState } from "./constructPresentationState.js";
 import { constructRenderState } from "./constructRenderState.js";
 import { estimateAutoForwardDelay } from "../autoForwardTiming.js";
@@ -47,6 +53,7 @@ const DEFAULT_NEXT_LINE_CONFIG = {
 
 const CURRENT_SAVE_FORMAT_VERSION = 1;
 const ROLLBACK_RETURNABILITY_VERSION = 1;
+const RANDOM_OUTCOME_VERSION = 1;
 const CHOICE_INTERACTION_SOURCE = "choice";
 const FORM_INTERACTION_SOURCE = "form";
 
@@ -529,6 +536,135 @@ const sanitizePersistedRollbackExecutedActions = (
     : undefined;
 };
 
+const selectCanonicalRandomAction = (projectData, checkpoint, path) => {
+  const { section } = findSectionInProjectData(
+    projectData,
+    checkpoint?.sectionId,
+  );
+  const line = section?.lines?.find(({ id }) => id === checkpoint?.lineId);
+  let currentValue = line?.actions;
+  const segments = path.split(".");
+  for (const segment of segments) {
+    if (Array.isArray(currentValue)) {
+      if (!/^(0|[1-9]\d*)$/.test(segment)) {
+        return undefined;
+      }
+      const index = Number(segment);
+      if (!Object.prototype.hasOwnProperty.call(currentValue, index)) {
+        return undefined;
+      }
+      currentValue = currentValue[index];
+      continue;
+    }
+    if (
+      !isRecord(currentValue) ||
+      !Object.prototype.hasOwnProperty.call(currentValue, segment)
+    ) {
+      return undefined;
+    }
+    currentValue = currentValue[segment];
+  }
+  return segments.at(-1) === "random" && isRecord(currentValue?.distribution)
+    ? currentValue
+    : undefined;
+};
+
+const isSupportedIntegerRandomDistribution = (distribution) => {
+  if (
+    distribution?.type !== "integer" ||
+    !Number.isSafeInteger(distribution.min) ||
+    !Number.isSafeInteger(distribution.max)
+  ) {
+    return false;
+  }
+  const cardinality = distribution.max - distribution.min + 1;
+  return (
+    Number.isSafeInteger(cardinality) &&
+    cardinality >= 1 &&
+    cardinality <= 0x1_0000_0000
+  );
+};
+
+const reconcilePersistedRandomOutcomes = (outcomes, checkpoint, projectData) =>
+  outcomes.filter(({ path, type, result }) => {
+    const canonicalAction = selectCanonicalRandomAction(
+      projectData,
+      checkpoint,
+      path,
+    );
+    if (canonicalAction?.distribution?.type !== type) {
+      return false;
+    }
+    if (type === "weighted") {
+      return isRecord(
+        canonicalAction.distribution.outcomes?.[result.outcomeIndex]?.actions,
+      );
+    }
+    if (type === "integer") {
+      const variableConfig =
+        projectData?.resources?.variables?.[canonicalAction.variableId];
+      return (
+        typeof canonicalAction.variableId === "string" &&
+        variableConfig?.type === "number" &&
+        variableConfig.scope === "context" &&
+        variableConfig.readonly !== true &&
+        !isComputedVariableConfig(variableConfig) &&
+        isSupportedIntegerRandomDistribution(canonicalAction.distribution) &&
+        result.value >= canonicalAction.distribution.min &&
+        result.value <= canonicalAction.distribution.max
+      );
+    }
+    return false;
+  });
+
+const sanitizePersistedRandomOutcomes = (checkpoint, projectData) => {
+  if (
+    !Object.prototype.hasOwnProperty.call(
+      checkpoint ?? {},
+      "randomOutcomeVersion",
+    )
+  ) {
+    return undefined;
+  }
+  if (checkpoint.randomOutcomeVersion !== RANDOM_OUTCOME_VERSION) {
+    throw new Error(
+      `unsupported rollback random outcome version: ${checkpoint.randomOutcomeVersion}`,
+    );
+  }
+  if (!Array.isArray(checkpoint.randomOutcomes)) {
+    throw new Error("versioned rollback random outcomes must be an array");
+  }
+
+  const paths = new Set();
+  const outcomes = checkpoint.randomOutcomes.map((outcome, index) => {
+    const identity = `${outcome?.path}\u0000${outcome?.ordinal}`;
+    if (
+      !isRecord(outcome) ||
+      typeof outcome.path !== "string" ||
+      outcome.path.length === 0 ||
+      !Number.isSafeInteger(outcome.ordinal) ||
+      outcome.ordinal < 0 ||
+      paths.has(identity)
+    ) {
+      throw new Error(`invalid rollback random outcome at index ${index}`);
+    }
+    paths.add(identity);
+    return {
+      path: outcome.path,
+      ordinal: outcome.ordinal,
+      type: outcome.type,
+      result: validateRandomResult(
+        cloneStateValue(outcome.result),
+        outcome.type,
+      ),
+    };
+  });
+
+  return projectData === undefined
+    ? outcomes
+    : reconcilePersistedRandomOutcomes(outcomes, checkpoint, projectData);
+};
+
 const sanitizePersistedRollback = (rollback, projectData) => {
   if (!isRecord(rollback) || !Array.isArray(rollback.timeline)) {
     return;
@@ -552,11 +688,60 @@ const sanitizePersistedRollback = (rollback, projectData) => {
 
     if (sanitizedExecutedActions) {
       checkpoint.executedActions = sanitizedExecutedActions;
-      return;
+    } else {
+      delete checkpoint.executedActions;
     }
 
-    delete checkpoint.executedActions;
+    const sanitizedRandomOutcomes = sanitizePersistedRandomOutcomes(
+      checkpoint,
+      projectData,
+    );
+    if (sanitizedRandomOutcomes) {
+      checkpoint.randomOutcomeVersion = RANDOM_OUTCOME_VERSION;
+      checkpoint.randomOutcomes = sanitizedRandomOutcomes;
+    } else {
+      delete checkpoint.randomOutcomeVersion;
+      delete checkpoint.randomOutcomes;
+    }
   });
+};
+
+const reconcileStoredSaveSlotRollbacks = (saveSlots, projectData) => {
+  const reconciledSaveSlots = saveSlots ?? {};
+  Object.values(reconciledSaveSlots).forEach((saveSlot) => {
+    const contexts = saveSlot?.state?.contexts;
+    if (!Array.isArray(contexts)) {
+      return;
+    }
+    contexts.forEach((context) => {
+      const timeline = context?.rollback?.timeline;
+      if (!Array.isArray(timeline)) {
+        return;
+      }
+      timeline.forEach((checkpoint) => {
+        if (!isRecord(checkpoint)) {
+          return;
+        }
+        const sanitizedRandomOutcomes = sanitizePersistedRandomOutcomes(
+          checkpoint,
+          projectData,
+        );
+        if (sanitizedRandomOutcomes) {
+          checkpoint.randomOutcomeVersion = RANDOM_OUTCOME_VERSION;
+          if (
+            JSON.stringify(checkpoint.randomOutcomes) !==
+            JSON.stringify(sanitizedRandomOutcomes)
+          ) {
+            checkpoint.randomOutcomes = sanitizedRandomOutcomes;
+          }
+        } else {
+          delete checkpoint.randomOutcomeVersion;
+          delete checkpoint.randomOutcomes;
+        }
+      });
+    });
+  });
+  return reconciledSaveSlots;
 };
 
 const normalizeLoadedViewedRegistryEntry = (
@@ -1208,17 +1393,33 @@ const normalizeLoadedRollback = (rollback, readPointer, projectData) => {
       return [];
     }
 
+    // Versioned random ledgers are compatibility-critical: malformed or
+    // duplicate records must reject the load instead of silently rerolling.
+    const sanitizedRandomOutcomes = sanitizePersistedRandomOutcomes(checkpoint);
     try {
       const normalizedPointer = normalizeLoadedReadPointer(
         checkpoint,
         projectData,
         `rollback.timeline[${index}]`,
       );
+      const reconciledRandomOutcomes = sanitizedRandomOutcomes
+        ? reconcilePersistedRandomOutcomes(
+            sanitizedRandomOutcomes,
+            normalizedPointer,
+            projectData,
+          )
+        : undefined;
       const normalizedCheckpoint = createRollbackCheckpoint({
         sectionId: normalizedPointer.sectionId,
         lineId: normalizedPointer.lineId,
         rollbackPolicy: checkpoint.rollbackPolicy,
         returnable: checkpoint.returnable,
+        ...(reconciledRandomOutcomes
+          ? {
+              randomOutcomeVersion: RANDOM_OUTCOME_VERSION,
+              randomOutcomes: reconciledRandomOutcomes,
+            }
+          : {}),
       });
       if (typeof checkpoint.returnable === "boolean") {
         checkpointsWithExplicitReturnability.add(normalizedCheckpoint);
@@ -1719,11 +1920,19 @@ const createRollbackCheckpoint = ({
   lineId,
   rollbackPolicy,
   returnable,
+  randomOutcomeVersion,
+  randomOutcomes,
 }) => ({
   sectionId,
   lineId,
   rollbackPolicy: rollbackPolicy ?? "free",
   ...(typeof returnable === "boolean" ? { returnable } : {}),
+  ...(randomOutcomeVersion === RANDOM_OUTCOME_VERSION
+    ? {
+        randomOutcomeVersion: RANDOM_OUTCOME_VERSION,
+        randomOutcomes: cloneStateValue(randomOutcomes ?? []),
+      }
+    : {}),
 });
 
 const getRollbackContextVariableDefaults = (projectData) => {
@@ -2266,7 +2475,7 @@ const getCurrentRollbackCheckpoint = (state, rollbackActionBatchStack) => {
 };
 
 export const beginRollbackActionBatch = (
-  { state, rollbackActionBatchStack },
+  { state, rollbackActionBatchStack, playbackOwnership },
   payload = {},
 ) => {
   const source =
@@ -2296,15 +2505,112 @@ export const beginRollbackActionBatch = (
     }
   }
 
+  const pointer = lastContext?.pointers?.read;
+  const lineEntryId = playbackOwnership?.lineEntryId;
+  const hasTrackedLineEntryCheckpoint =
+    source === ROLLBACK_ACTION_SOURCE_LINE &&
+    (playbackOwnership?.rollbackCheckpointLineEntryId === undefined
+      ? rollback.timeline[rollback.currentIndex]?.sectionId ===
+          pointer?.sectionId &&
+        rollback.timeline[rollback.currentIndex]?.lineId === pointer?.lineId
+      : playbackOwnership.rollbackCheckpointLineEntryId === lineEntryId);
+
   rollbackActionBatchStack.push({
     checkpointIndex: rollback.currentIndex,
     source,
+    ...(source === ROLLBACK_ACTION_SOURCE_LINE
+      ? {
+          lineEntryId,
+          sourcePointer: pointer
+            ? { sectionId: pointer.sectionId, lineId: pointer.lineId }
+            : null,
+          hasTrackedLineEntryCheckpoint,
+        }
+      : {}),
   });
   return state;
 };
 
 export const endRollbackActionBatch = ({ state, rollbackActionBatchStack }) => {
   rollbackActionBatchStack.pop();
+  return state;
+};
+
+export const ensureRandomReplayOccurrence = ({
+  state,
+  rollbackActionBatchStack,
+  playbackOwnership,
+}) => {
+  const activeBatch = rollbackActionBatchStack?.at(-1);
+  if (activeBatch?.source !== ROLLBACK_ACTION_SOURCE_LINE) {
+    return state;
+  }
+  if (activeBatch.hasTrackedLineEntryCheckpoint) {
+    return state;
+  }
+  const pointer = activeBatch.sourcePointer;
+  if (!pointer) {
+    return state;
+  }
+
+  appendRollbackCheckpoint(state, {
+    sectionId: pointer.sectionId,
+    lineId: pointer.lineId,
+    returnable: false,
+  });
+  const lastContext = state.contexts?.at(-1);
+  const rollback = lastContext.rollback;
+  activeBatch.checkpointIndex = rollback.currentIndex;
+  activeBatch.hasTrackedLineEntryCheckpoint = true;
+  if (playbackOwnership?.lineEntryId === activeBatch.lineEntryId) {
+    playbackOwnership.rollbackCheckpointLineEntryId = activeBatch.lineEntryId;
+  }
+  return state;
+};
+
+export const recordRandomOutcome = (
+  { state, rollbackActionBatchStack },
+  payload,
+) => {
+  const activeBatch = rollbackActionBatchStack?.at(-1);
+  if (activeBatch?.source !== ROLLBACK_ACTION_SOURCE_LINE) {
+    return state;
+  }
+  if (typeof payload?.path !== "string" || payload.path.length === 0) {
+    throw new Error("random rollback outcome requires a structural path");
+  }
+  if (!Number.isSafeInteger(payload.ordinal) || payload.ordinal < 0) {
+    throw new Error("random rollback outcome requires a non-negative ordinal");
+  }
+  const result = validateRandomResult(payload.result, payload.type);
+  const checkpoint = getCurrentRollbackCheckpoint(
+    state,
+    rollbackActionBatchStack,
+  );
+  if (!checkpoint) {
+    return state;
+  }
+
+  if (checkpoint.randomOutcomeVersion !== RANDOM_OUTCOME_VERSION) {
+    checkpoint.randomOutcomeVersion = RANDOM_OUTCOME_VERSION;
+    checkpoint.randomOutcomes = [];
+  }
+  if (
+    checkpoint.randomOutcomes.some(
+      ({ path, ordinal }) =>
+        path === payload.path && ordinal === payload.ordinal,
+    )
+  ) {
+    throw new Error(
+      `duplicate random outcome identity in rollback occurrence: ${payload.path}#${payload.ordinal}`,
+    );
+  }
+  checkpoint.randomOutcomes.push({
+    path: payload.path,
+    ordinal: payload.ordinal,
+    type: payload.type,
+    result,
+  });
   return state;
 };
 
@@ -2392,9 +2698,12 @@ const replayRollbackLineActions = (state, payload) => {
     return;
   }
 
-  Object.entries(actions).forEach(([actionType, actionPayload]) => {
-    replayRollbackLineAction(state, actionType, actionPayload);
-  });
+  replayRollbackActionEntries(
+    state,
+    actions,
+    { checkpoint: payload, bindings: {}, randomOutcomeOrdinals: new Map() },
+    [],
+  );
 };
 
 const restoreRollbackCheckpoint = (state, checkpointIndex) => {
@@ -5675,6 +5984,9 @@ export const updateProjectData = ({ state }, payload) => {
         normalizeLoadedContext(cloneStateValue(context), projectData, index),
       )
     : undefined;
+  const normalizedSaveSlots = shouldReconcileAuthoredState
+    ? reconcileStoredSaveSlotRollbacks(state.global.saveSlots, projectData)
+    : undefined;
 
   state.projectData = projectData;
   state.global.imageGalleryNavigation = createDefaultImageGalleryNavigation();
@@ -5694,13 +6006,21 @@ export const updateProjectData = ({ state }, payload) => {
       };
     }
     state.contexts = normalizedContexts;
+    state.global.saveSlots = normalizedSaveSlots;
   }
   clearConfirmDialog(state);
   clearFormDrafts(state);
 
-  state.global.pendingEffects.push({
-    name: "render",
-  });
+  if (
+    shouldReconcileAuthoredState &&
+    Object.keys(state.global.saveSlots ?? {}).length > 0
+  ) {
+    state.global.pendingEffects.push({
+      name: "saveSlots",
+      payload: { saveSlots: { ...state.global.saveSlots } },
+    });
+  }
+  state.global.pendingEffects.push({ name: "render" });
   return state;
 };
 
@@ -6586,7 +6906,12 @@ const assertRollbackConditionalBranch = (branch, index, branchCount) => {
   }
 };
 
-const replayRollbackConditionalAction = (state, payload) => {
+const replayRollbackConditionalAction = (
+  state,
+  payload,
+  replayContext,
+  actionPath,
+) => {
   assertRollbackConditionalPayload(payload);
 
   for (let index = 0; index < payload.branches.length; index += 1) {
@@ -6596,21 +6921,99 @@ const replayRollbackConditionalAction = (state, payload) => {
     const hasCondition = Object.prototype.hasOwnProperty.call(branch, "when");
     if (
       hasCondition &&
-      !evaluateRouteCondition(branch.when, buildRollbackConditionContext(state))
+      !evaluateRouteCondition(branch.when, {
+        ...buildRollbackConditionContext(state),
+        ...(replayContext?.bindings ?? {}),
+      })
     ) {
       continue;
     }
 
-    Object.entries(branch.actions).forEach(([actionType, actionPayload]) => {
-      replayRollbackLineAction(state, actionType, actionPayload);
+    replayRollbackActionEntries(state, branch.actions, replayContext, [
+      ...actionPath,
+      "branches",
+      String(index),
+      "actions",
+    ]);
+    return;
+  }
+};
+
+const replayRollbackRandomAction = (
+  state,
+  payload,
+  replayContext,
+  actionPath,
+) => {
+  const checkpoint = replayContext?.checkpoint;
+  if (checkpoint?.randomOutcomeVersion !== RANDOM_OUTCOME_VERSION) {
+    // Historical checkpoints predate random outcome persistence. Treat their
+    // random actions as no-ops instead of producing a different state.
+    return;
+  }
+  const path = actionPath.join(".");
+  const randomOutcomeOrdinals = replayContext.randomOutcomeOrdinals;
+  const ordinal = randomOutcomeOrdinals.get(path) ?? 0;
+  randomOutcomeOrdinals.set(path, ordinal + 1);
+  const outcome = checkpoint.randomOutcomes?.find(
+    (candidate) => candidate.path === path && candidate.ordinal === ordinal,
+  );
+  if (!outcome) {
+    // A versioned checkpoint can legitimately contain a path that was not
+    // reached because an enclosing conditional selected another branch.
+    return;
+  }
+  if (payload?.distribution?.type !== outcome.type) {
+    throw new Error(
+      `recorded random outcome type does not match canonical action at ${path}`,
+    );
+  }
+
+  const result = validateRandomResult(
+    cloneStateValue(outcome.result),
+    outcome.type,
+  );
+  if (result.type === "integer") {
+    if (
+      !isSupportedIntegerRandomDistribution(payload.distribution) ||
+      result.value < payload.distribution.min ||
+      result.value > payload.distribution.max
+    ) {
+      throw new Error(
+        `recorded random outcome does not match canonical action at ${path}`,
+      );
+    }
+    applyRollbackCheckpointUpdateVariable(state, {
+      id: "randomResult",
+      operations: [
+        { variableId: payload.variableId, op: "set", value: result.value },
+      ],
     });
     return;
   }
+
+  const nestedActions =
+    payload.distribution.outcomes?.[result.outcomeIndex]?.actions;
+  if (!isRecord(nestedActions)) {
+    throw new Error(
+      `recorded random outcome does not match canonical action at ${path}`,
+    );
+  }
+  replayRollbackActionEntries(state, nestedActions, replayContext, [
+    ...actionPath,
+    "distribution",
+    "outcomes",
+    String(result.outcomeIndex),
+    "actions",
+  ]);
 };
 
 const ROLLBACK_ACTION_DEFINITIONS = {
   conditional: {
     replayLine: replayRollbackConditionalAction,
+  },
+  random: {
+    replayLine: replayRollbackRandomAction,
   },
   updateVariable: {
     recordSources: [ROLLBACK_ACTION_SOURCE_INTERACTION],
@@ -6671,8 +7074,45 @@ const replayRecordedRollbackAction = (state, actionType, payload) => {
   getRollbackActionDefinition(actionType)?.replayRecorded?.(state, payload);
 };
 
-const replayRollbackLineAction = (state, actionType, payload) => {
-  getRollbackActionDefinition(actionType)?.replayLine?.(state, payload);
+const replayRollbackLineAction = (
+  state,
+  actionType,
+  payload,
+  replayContext,
+  actionPath,
+) => {
+  const definition = getRollbackActionDefinition(actionType);
+  if (!definition?.replayLine) {
+    return;
+  }
+  if (actionType === "conditional" || actionType === "random") {
+    definition.replayLine(state, payload, replayContext, actionPath);
+    return;
+  }
+
+  const bindings = replayContext?.bindings ?? {};
+  const processedPayload = processActionTemplates(
+    { [actionType]: payload },
+    { ...buildRollbackConditionContext(state), ...bindings },
+  )[actionType];
+  definition.replayLine(state, processedPayload);
+};
+
+const replayRollbackActionEntries = (
+  state,
+  actions,
+  replayContext,
+  basePath,
+) => {
+  const orderedEntries = orderActionEntries(actions);
+  assertUnambiguousNavigationActions(orderedEntries);
+
+  for (const [actionType, actionPayload] of orderedEntries) {
+    replayRollbackLineAction(state, actionType, actionPayload, replayContext, [
+      ...basePath,
+      actionType,
+    ]);
+  }
 };
 
 const isRollbackCheckpointReturnable = (checkpoint) =>
@@ -6836,6 +7276,7 @@ export const rollbackToLine = ({ state }, payload) => {
 
 const createPlaybackOwnership = () => ({
   lineEntryId: 1,
+  rollbackCheckpointLineEntryId: 1,
   autoSessionId: 0,
   skipSessionId: 0,
   rollbackAuthoredSuppression: null,
@@ -6973,6 +7414,8 @@ const updatePlaybackOwnership = ({
     } else {
       playbackOwnership.rollbackAuthoredSuppression = null;
     }
+    playbackOwnership.rollbackCheckpointLineEntryId =
+      actionName === "jumpToLine" ? null : lineEntryId;
   }
 
   const restoredReplayCaller =
@@ -7172,6 +7615,8 @@ export const createSystemStore = (initialState, options = {}) => {
     setAchievementProgress,
     beginRollbackActionBatch,
     endRollbackActionBatch,
+    ensureRandomReplayOccurrence,
+    recordRandomOutcome,
     markRollbackCheckpointTransient,
     markSavedRollbackCheckpointTransient,
     recordCurrentDialogueHistory,

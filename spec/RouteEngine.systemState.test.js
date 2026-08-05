@@ -482,26 +482,28 @@ describe("RouteEngine selectSystemState", () => {
       sectionTransition: {
         sectionId: "afterSave",
       },
+    });
+    engine.handleActions({
       saveSlot: {
         slotId: 1,
       },
     });
 
     let state = engine.selectSystemState();
-    expect(state.global.saveSlots["1"].state.contexts[0].rollback.timeline).toEqual(
-      [
-        {
-          sectionId: "entry",
-          lineId: "line1",
-          rollbackPolicy: "free",
-        },
-        {
-          sectionId: "afterSave",
-          lineId: "line2",
-          rollbackPolicy: "free",
-        },
-      ],
-    );
+    expect(
+      state.global.saveSlots["1"].state.contexts[0].rollback.timeline,
+    ).toEqual([
+      {
+        sectionId: "entry",
+        lineId: "line1",
+        rollbackPolicy: "free",
+      },
+      {
+        sectionId: "afterSave",
+        lineId: "line2",
+        rollbackPolicy: "free",
+      },
+    ]);
 
     engine.handleAction("loadSlot", { slotId: 1 });
 

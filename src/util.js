@@ -3096,37 +3096,50 @@ const getValueByPath = (source, path) => {
   let current = source;
   for (const segment of path.split(".")) {
     if (current === null || current === undefined) return undefined;
-    if (!(segment in Object(current))) return undefined;
+    if (
+      segment === "__proto__" ||
+      segment === "prototype" ||
+      segment === "constructor" ||
+      !Object.prototype.hasOwnProperty.call(Object(current), segment)
+    ) {
+      return undefined;
+    }
     current = current[segment];
   }
   return current;
 };
 
-const resolveEventBindingString = (value, eventData) => {
+const cloneScopedBindingValue = (value) =>
+  value !== null && typeof value === "object" ? structuredClone(value) : value;
+
+const resolveScopedBindingString = (value, context, scope) => {
   if (typeof value !== "string") return value;
-  if (value === "_event") {
-    if (eventData === undefined || eventData === null) {
+  const scopedValue = Object.prototype.hasOwnProperty.call(context ?? {}, scope)
+    ? context[scope]
+    : undefined;
+  if (value === scope) {
+    if (scopedValue === undefined || scopedValue === null) {
       throw new Error(
-        'Action template binding "_event" requires event context "_event".',
+        `Action template binding "${scope}" requires event context "${scope}".`,
       );
     }
-    return eventData;
+    return cloneScopedBindingValue(scopedValue);
   }
-  if (!value.startsWith("_event.")) return value;
-  if (eventData === undefined || eventData === null) {
+  if (!value.startsWith(`${scope}.`)) return value;
+  if (scopedValue === undefined || scopedValue === null) {
     throw new Error(
-      `Action template binding "${value}" requires event context "_event".`,
+      `Action template binding "${value}" requires event context "${scope}".`,
     );
   }
 
-  const path = value.slice("_event.".length);
-  const resolved = getValueByPath(eventData, path);
+  const path = value.slice(scope.length + 1);
+  const resolved = getValueByPath(scopedValue, path);
   if (resolved === undefined) {
     throw new Error(
-      `Action template binding "${value}" could not be resolved from "_event".`,
+      `Action template binding "${value}" could not be resolved from "${scope}".`,
     );
   }
-  return resolved;
+  return cloneScopedBindingValue(resolved);
 };
 
 const OPAQUE_ACTION_BRANCHES = {
@@ -3166,8 +3179,8 @@ const processActionTemplateValue = (value, context, path = []) => {
   if (typeof value === "string") {
     if (value === "_event" || value.startsWith("_event.")) {
       // Event values are runtime data. Do not reinterpret template-looking
-      // strings or nested objects supplied by the renderer.
-      return resolveEventBindingString(value, context._event);
+      // strings or nested objects after direct binding resolution.
+      return resolveScopedBindingString(value, context, "_event");
     }
     return parseAndRender(value, context);
   }
@@ -3176,12 +3189,12 @@ const processActionTemplateValue = (value, context, path = []) => {
 };
 
 /**
- * Processes action payloads by resolving `_event.*` bindings and rendering jempl templates.
+ * Processes action payloads by resolving scoped bindings and rendering jempl templates.
  *
- * `_event.*` bindings are resolved directly from event context.
+ * `_event.*` bindings resolve directly from their scoped context.
  * jempl interpolation remains available for `${variables.*}` and similar templates.
  *
- * @param {Object} actions - Action payload object that may contain `_event.*` and jempl template strings
+ * @param {Object} actions - Action payload object that may contain scoped bindings and jempl template strings
  * @param {Object} context - Context object (e.g., { _event: { value: 42 }, variables: {...} })
  * @returns {Object} Processed actions with event bindings and templates resolved
  */
