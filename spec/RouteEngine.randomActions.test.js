@@ -58,7 +58,7 @@ const createQueuedRandomSource = (...values) => {
 const createEngine = (
   projectData,
   randomSource,
-  { handleLineActions = false } = {},
+  { handleLineActions = false, global } = {},
 ) => {
   let engine;
   const handlePendingEffects = (effects) => {
@@ -70,7 +70,12 @@ const createEngine = (
     });
   };
   engine = createRouteEngine({ handlePendingEffects, randomSource });
-  engine.init({ initialState: { projectData } });
+  engine.init({
+    initialState: {
+      projectData,
+      ...(global === undefined ? {} : { global }),
+    },
+  });
   return engine;
 };
 
@@ -95,7 +100,7 @@ describe("RouteEngine random actions", () => {
         distribution: {
           type: "dice",
           sides: 20,
-          modifier: "${variables.bonus}",
+          modifier: 2,
         },
         actions: {
           ...setVariable("storeResult", "result", "_random"),
@@ -135,9 +140,7 @@ describe("RouteEngine random actions", () => {
       random: {
         distribution: {
           type: "weighted",
-          outcomes: [
-            { value: "${variables.score}", weight: "${variables.bonus}" },
-          ],
+          outcomes: [{ value: "${variables.score}", weight: 2 }],
         },
         actions: setVariable("literal", "selected", "_random.value"),
       },
@@ -362,5 +365,242 @@ describe("RouteEngine random actions", () => {
     expect(state.contexts[0].variables.bonus).toBe(3);
     expect(state.contexts[0].variables.score).toBe(9);
     expect(randomSource.calls).toBe(2);
+  });
+
+  it("records same-line re-entry as a distinct replay occurrence", () => {
+    const randomSource = createQueuedRandomSource(1, 8);
+    const engine = createEngine(
+      createProjectData({
+        lineActions: {
+          random: {
+            distribution: { type: "integer", min: 1, max: 10 },
+            actions: setVariable("rolled", "score", "_random.value"),
+          },
+        },
+      }),
+      randomSource,
+      { handleLineActions: true },
+    );
+
+    engine.handleAction("jumpToLine", { lineId: "line1" });
+
+    const occurrences = engine
+      .selectSystemState()
+      .contexts[0].rollback.timeline.filter(
+        ({ randomOutcomeVersion }) => randomOutcomeVersion === 1,
+      );
+    expect(occurrences).toHaveLength(2);
+    expect(
+      occurrences.map(({ randomOutcomes }) => randomOutcomes[0].result.value),
+    ).toEqual([2, 9]);
+    expect(randomSource.calls).toBe(2);
+  });
+
+  it("keeps outcomes on the source occurrence when an earlier sibling navigates", () => {
+    const randomSource = createQueuedRandomSource(6);
+    const engine = createEngine(
+      createProjectData({
+        lineActions: {
+          jumpToLine: { lineId: "line2" },
+          random: {
+            distribution: { type: "integer", min: 1, max: 10 },
+            actions: setVariable("rolled", "score", "_random.value"),
+          },
+        },
+        extraLines: [
+          { id: "line2", actions: {} },
+          { id: "line3", actions: {} },
+        ],
+      }),
+      randomSource,
+      { handleLineActions: true },
+    );
+
+    let state = engine.selectSystemState();
+    expect(state.contexts[0].rollback.timeline[0]).toMatchObject({
+      sectionId: "section1",
+      lineId: "line1",
+      randomOutcomes: [
+        {
+          path: "random",
+          ordinal: 0,
+          type: "integer",
+          result: { type: "integer", value: 7 },
+        },
+      ],
+    });
+
+    engine.handleAction("markLineCompleted", {});
+    engine.handleAction("nextLine", {});
+    engine.handleActions(setVariable("clear", "score", 0));
+    engine.handleAction("rollbackToLine", {
+      sectionId: "section1",
+      lineId: "line1",
+    });
+
+    state = engine.selectSystemState();
+    expect(state.contexts[0].variables.score).toBe(7);
+    expect(randomSource.calls).toBe(1);
+  });
+
+  it("drops active and saved outcomes orphaned by a project update", () => {
+    const randomSource = createQueuedRandomSource(6);
+    const originalProjectData = createProjectData({
+      lineActions: {
+        random: {
+          distribution: { type: "integer", min: 1, max: 10 },
+          actions: setVariable("rolled", "score", "_random.value"),
+        },
+      },
+      extraLines: [{ id: "line2", actions: {} }],
+    });
+    const engine = createEngine(originalProjectData, randomSource, {
+      handleLineActions: true,
+    });
+    engine.handleAction("saveSlot", { slotId: 1, savedAt: 100 });
+
+    const replacementProjectData = createProjectData({
+      lineActions: {
+        random: {
+          distribution: { type: "dice", sides: 6 },
+          actions: setVariable("rolled", "score", "_random.value"),
+        },
+      },
+      extraLines: [{ id: "line2", actions: {} }],
+    });
+    engine.handleAction("updateProjectData", {
+      projectData: replacementProjectData,
+    });
+
+    let state = engine.selectSystemState();
+    expect(state.contexts[0].rollback.timeline[0].randomOutcomes).toEqual([]);
+    expect(
+      state.global.saveSlots["1"].state.contexts[0].rollback.timeline[0]
+        .randomOutcomes,
+    ).toEqual([]);
+    expect(() =>
+      engine.handleAction("rollbackToLine", {
+        sectionId: "section1",
+        lineId: "line1",
+      }),
+    ).not.toThrow();
+    state = engine.selectSystemState();
+    expect(state.contexts[0].variables.score).toBe(0);
+    expect(randomSource.calls).toBe(1);
+  });
+
+  it("retains outcomes that still match a nested canonical action", () => {
+    const projectData = createProjectData({
+      lineActions: {
+        conditional: {
+          branches: [
+            {
+              actions: {
+                random: {
+                  distribution: { type: "integer", min: 1, max: 10 },
+                  actions: setVariable("rolled", "score", "_random.value"),
+                },
+              },
+            },
+          ],
+        },
+      },
+      extraLines: [{ id: "line2", actions: {} }],
+    });
+    const engine = createEngine(projectData, createQueuedRandomSource(5), {
+      handleLineActions: true,
+    });
+    engine.handleAction("saveSlot", { slotId: 1, savedAt: 100 });
+    engine.handleAction("updateProjectData", {
+      projectData: structuredClone(projectData),
+    });
+
+    const state = engine.selectSystemState();
+    const expectedOutcome = {
+      path: "conditional.branches.0.actions.random",
+      ordinal: 0,
+      type: "integer",
+      result: { type: "integer", value: 6 },
+    };
+    expect(state.contexts[0].rollback.timeline[0].randomOutcomes).toEqual([
+      expectedOutcome,
+    ]);
+    expect(
+      state.global.saveSlots["1"].state.contexts[0].rollback.timeline[0]
+        .randomOutcomes,
+    ).toEqual([expectedOutcome]);
+  });
+
+  it("drops an orphaned outcome when loading an older save", () => {
+    const originalEngine = createEngine(
+      createProjectData({
+        lineActions: {
+          random: {
+            distribution: { type: "integer", min: 1, max: 10 },
+            actions: setVariable("rolled", "score", "_random.value"),
+          },
+        },
+        extraLines: [{ id: "line2", actions: {} }],
+      }),
+      createQueuedRandomSource(3),
+      { handleLineActions: true },
+    );
+    originalEngine.handleAction("saveSlot", { slotId: 1, savedAt: 100 });
+    const saveSlots = originalEngine.selectSystemState().global.saveSlots;
+
+    const replacementProjectData = createProjectData({
+      lineActions: {
+        random: {
+          distribution: { type: "chance", probability: 0.5 },
+          actions: {},
+        },
+      },
+      extraLines: [{ id: "line2", actions: {} }],
+    });
+    const engine = createEngine(
+      replacementProjectData,
+      createQueuedRandomSource(),
+      { global: { saveSlots } },
+    );
+
+    expect(() => engine.handleAction("loadSlot", { slotId: 1 })).not.toThrow();
+    expect(
+      engine.selectSystemState().contexts[0].rollback.timeline[0]
+        .randomOutcomes,
+    ).toEqual([]);
+  });
+
+  it("rejects malformed saved ledgers transactionally during project updates", () => {
+    const projectData = createProjectData({
+      lineActions: {
+        random: {
+          distribution: { type: "integer", min: 1, max: 10 },
+          actions: {},
+        },
+      },
+      extraLines: [{ id: "line2", actions: {} }],
+    });
+    const originalEngine = createEngine(
+      projectData,
+      createQueuedRandomSource(2),
+      { handleLineActions: true },
+    );
+    originalEngine.handleAction("saveSlot", { slotId: 1, savedAt: 100 });
+    const saveSlots = originalEngine.selectSystemState().global.saveSlots;
+    const randomOutcomes =
+      saveSlots["1"].state.contexts[0].rollback.timeline[0].randomOutcomes;
+    randomOutcomes.push(structuredClone(randomOutcomes[0]));
+
+    const engine = createEngine(projectData, createQueuedRandomSource(), {
+      global: { saveSlots },
+    });
+    const before = engine.selectSystemState();
+
+    expect(() =>
+      engine.handleAction("updateProjectData", {
+        projectData: structuredClone(projectData),
+      }),
+    ).toThrow("invalid rollback random outcome at index 1");
+    expect(engine.selectSystemState()).toEqual(before);
   });
 });

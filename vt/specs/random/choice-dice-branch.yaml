@@ -32,10 +32,6 @@ resources:
       scope: context
       default: 14
       readonly: true
-    lockpickBonus:
-      type: number
-      scope: context
-      default: 2
     lastRoll:
       type: number
       scope: context
@@ -91,7 +87,7 @@ resources:
                   distribution:
                     type: dice
                     sides: 20
-                    modifier: "${variables.lockpickBonus}"
+                    modifier: 2
                   actions:
                     updateVariable:
                       id: storeRoll

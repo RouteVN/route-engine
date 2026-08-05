@@ -532,7 +532,46 @@ const sanitizePersistedRollbackExecutedActions = (
     : undefined;
 };
 
-const sanitizePersistedRandomOutcomes = (checkpoint) => {
+const selectCanonicalRandomActionType = (projectData, checkpoint, path) => {
+  const { section } = findSectionInProjectData(
+    projectData,
+    checkpoint?.sectionId,
+  );
+  const line = section?.lines?.find(({ id }) => id === checkpoint?.lineId);
+  let currentValue = line?.actions;
+  const segments = path.split(".");
+  for (const segment of segments) {
+    if (Array.isArray(currentValue)) {
+      if (!/^(0|[1-9]\d*)$/.test(segment)) {
+        return undefined;
+      }
+      const index = Number(segment);
+      if (!Object.prototype.hasOwnProperty.call(currentValue, index)) {
+        return undefined;
+      }
+      currentValue = currentValue[index];
+      continue;
+    }
+    if (
+      !isRecord(currentValue) ||
+      !Object.prototype.hasOwnProperty.call(currentValue, segment)
+    ) {
+      return undefined;
+    }
+    currentValue = currentValue[segment];
+  }
+  return segments.at(-1) === "random" && isRecord(currentValue?.distribution)
+    ? currentValue.distribution.type
+    : undefined;
+};
+
+const reconcilePersistedRandomOutcomes = (outcomes, checkpoint, projectData) =>
+  outcomes.filter(
+    ({ path, type }) =>
+      selectCanonicalRandomActionType(projectData, checkpoint, path) === type,
+  );
+
+const sanitizePersistedRandomOutcomes = (checkpoint, projectData) => {
   if (checkpoint?.randomOutcomeVersion !== RANDOM_OUTCOME_VERSION) {
     return undefined;
   }
@@ -565,7 +604,9 @@ const sanitizePersistedRandomOutcomes = (checkpoint) => {
     };
   });
 
-  return outcomes;
+  return projectData === undefined
+    ? outcomes
+    : reconcilePersistedRandomOutcomes(outcomes, checkpoint, projectData);
 };
 
 const sanitizePersistedRollback = (rollback, projectData) => {
@@ -595,7 +636,10 @@ const sanitizePersistedRollback = (rollback, projectData) => {
       delete checkpoint.executedActions;
     }
 
-    const sanitizedRandomOutcomes = sanitizePersistedRandomOutcomes(checkpoint);
+    const sanitizedRandomOutcomes = sanitizePersistedRandomOutcomes(
+      checkpoint,
+      projectData,
+    );
     if (sanitizedRandomOutcomes) {
       checkpoint.randomOutcomeVersion = RANDOM_OUTCOME_VERSION;
       checkpoint.randomOutcomes = sanitizedRandomOutcomes;
@@ -604,6 +648,44 @@ const sanitizePersistedRollback = (rollback, projectData) => {
       delete checkpoint.randomOutcomes;
     }
   });
+};
+
+const reconcileStoredSaveSlotRollbacks = (saveSlots, projectData) => {
+  const reconciledSaveSlots = saveSlots ?? {};
+  Object.values(reconciledSaveSlots).forEach((saveSlot) => {
+    const contexts = saveSlot?.state?.contexts;
+    if (!Array.isArray(contexts)) {
+      return;
+    }
+    contexts.forEach((context) => {
+      const timeline = context?.rollback?.timeline;
+      if (!Array.isArray(timeline)) {
+        return;
+      }
+      timeline.forEach((checkpoint) => {
+        if (!isRecord(checkpoint)) {
+          return;
+        }
+        const sanitizedRandomOutcomes = sanitizePersistedRandomOutcomes(
+          checkpoint,
+          projectData,
+        );
+        if (sanitizedRandomOutcomes) {
+          checkpoint.randomOutcomeVersion = RANDOM_OUTCOME_VERSION;
+          if (
+            JSON.stringify(checkpoint.randomOutcomes) !==
+            JSON.stringify(sanitizedRandomOutcomes)
+          ) {
+            checkpoint.randomOutcomes = sanitizedRandomOutcomes;
+          }
+        } else {
+          delete checkpoint.randomOutcomeVersion;
+          delete checkpoint.randomOutcomes;
+        }
+      });
+    });
+  });
+  return reconciledSaveSlots;
 };
 
 const normalizeLoadedViewedRegistryEntry = (
@@ -1264,15 +1346,22 @@ const normalizeLoadedRollback = (rollback, readPointer, projectData) => {
         projectData,
         `rollback.timeline[${index}]`,
       );
+      const reconciledRandomOutcomes = sanitizedRandomOutcomes
+        ? reconcilePersistedRandomOutcomes(
+            sanitizedRandomOutcomes,
+            normalizedPointer,
+            projectData,
+          )
+        : undefined;
       const normalizedCheckpoint = createRollbackCheckpoint({
         sectionId: normalizedPointer.sectionId,
         lineId: normalizedPointer.lineId,
         rollbackPolicy: checkpoint.rollbackPolicy,
         returnable: checkpoint.returnable,
-        ...(sanitizedRandomOutcomes
+        ...(reconciledRandomOutcomes
           ? {
               randomOutcomeVersion: RANDOM_OUTCOME_VERSION,
-              randomOutcomes: sanitizedRandomOutcomes,
+              randomOutcomes: reconciledRandomOutcomes,
             }
           : {}),
       });
@@ -2330,7 +2419,7 @@ const getCurrentRollbackCheckpoint = (state, rollbackActionBatchStack) => {
 };
 
 export const beginRollbackActionBatch = (
-  { state, rollbackActionBatchStack },
+  { state, rollbackActionBatchStack, playbackOwnership },
   payload = {},
 ) => {
   const source =
@@ -2360,9 +2449,28 @@ export const beginRollbackActionBatch = (
     }
   }
 
+  const pointer = lastContext?.pointers?.read;
+  const lineEntryId = playbackOwnership?.lineEntryId;
+  const hasTrackedLineEntryCheckpoint =
+    source === ROLLBACK_ACTION_SOURCE_LINE &&
+    (playbackOwnership?.rollbackCheckpointLineEntryId === undefined
+      ? rollback.timeline[rollback.currentIndex]?.sectionId ===
+          pointer?.sectionId &&
+        rollback.timeline[rollback.currentIndex]?.lineId === pointer?.lineId
+      : playbackOwnership.rollbackCheckpointLineEntryId === lineEntryId);
+
   rollbackActionBatchStack.push({
     checkpointIndex: rollback.currentIndex,
     source,
+    ...(source === ROLLBACK_ACTION_SOURCE_LINE
+      ? {
+          lineEntryId,
+          sourcePointer: pointer
+            ? { sectionId: pointer.sectionId, lineId: pointer.lineId }
+            : null,
+          hasTrackedLineEntryCheckpoint,
+        }
+      : {}),
   });
   return state;
 };
@@ -2375,25 +2483,17 @@ export const endRollbackActionBatch = ({ state, rollbackActionBatchStack }) => {
 export const ensureRandomReplayOccurrence = ({
   state,
   rollbackActionBatchStack,
+  playbackOwnership,
 }) => {
   const activeBatch = rollbackActionBatchStack?.at(-1);
   if (activeBatch?.source !== ROLLBACK_ACTION_SOURCE_LINE) {
     return state;
   }
-
-  const lastContext = state.contexts?.at(-1);
-  const pointer = lastContext?.pointers?.read;
-  if (!pointer) {
+  if (activeBatch.hasTrackedLineEntryCheckpoint) {
     return state;
   }
-  const checkpoint = getCurrentRollbackCheckpoint(
-    state,
-    rollbackActionBatchStack,
-  );
-  if (
-    checkpoint?.sectionId === pointer.sectionId &&
-    checkpoint?.lineId === pointer.lineId
-  ) {
+  const pointer = activeBatch.sourcePointer;
+  if (!pointer) {
     return state;
   }
 
@@ -2402,8 +2502,13 @@ export const ensureRandomReplayOccurrence = ({
     lineId: pointer.lineId,
     returnable: false,
   });
+  const lastContext = state.contexts?.at(-1);
   const rollback = lastContext.rollback;
   activeBatch.checkpointIndex = rollback.currentIndex;
+  activeBatch.hasTrackedLineEntryCheckpoint = true;
+  if (playbackOwnership?.lineEntryId === activeBatch.lineEntryId) {
+    playbackOwnership.rollbackCheckpointLineEntryId = activeBatch.lineEntryId;
+  }
   return state;
 };
 
@@ -5823,6 +5928,9 @@ export const updateProjectData = ({ state }, payload) => {
         normalizeLoadedContext(cloneStateValue(context), projectData, index),
       )
     : undefined;
+  const normalizedSaveSlots = shouldReconcileAuthoredState
+    ? reconcileStoredSaveSlotRollbacks(state.global.saveSlots, projectData)
+    : undefined;
 
   state.projectData = projectData;
   state.global.imageGalleryNavigation = createDefaultImageGalleryNavigation();
@@ -5842,13 +5950,21 @@ export const updateProjectData = ({ state }, payload) => {
       };
     }
     state.contexts = normalizedContexts;
+    state.global.saveSlots = normalizedSaveSlots;
   }
   clearConfirmDialog(state);
   clearFormDrafts(state);
 
-  state.global.pendingEffects.push({
-    name: "render",
-  });
+  if (
+    shouldReconcileAuthoredState &&
+    Object.keys(state.global.saveSlots ?? {}).length > 0
+  ) {
+    state.global.pendingEffects.push({
+      name: "saveSlots",
+      payload: { saveSlots: { ...state.global.saveSlots } },
+    });
+  }
+  state.global.pendingEffects.push({ name: "render" });
   return state;
 };
 
@@ -7085,6 +7201,7 @@ export const rollbackToLine = ({ state }, payload) => {
 
 const createPlaybackOwnership = () => ({
   lineEntryId: 1,
+  rollbackCheckpointLineEntryId: 1,
   autoSessionId: 0,
   skipSessionId: 0,
   rollbackAuthoredSuppression: null,
@@ -7222,6 +7339,8 @@ const updatePlaybackOwnership = ({
     } else {
       playbackOwnership.rollbackAuthoredSuppression = null;
     }
+    playbackOwnership.rollbackCheckpointLineEntryId =
+      actionName === "jumpToLine" ? null : lineEntryId;
   }
 
   const restoredReplayCaller =

@@ -868,6 +868,18 @@ export default function createRouteEngine(options) {
     });
   };
 
+  const refreshActiveRollbackSaveIdentities = () => {
+    const navigationContext = _rollbackNavigationContexts.at(-1);
+    navigationContext?.savedCheckpointOccurrences.forEach((occurrence) => {
+      const saveSlot = _systemStore.selectSaveSlot({
+        slotId: occurrence.slotId,
+      });
+      if (saveSlot) {
+        occurrence.saveSlotIdentity = saveSlot;
+      }
+    });
+  };
+
   const updateActiveRollbackNavigation = (
     actionType,
     cursorBeforeAction,
@@ -1003,6 +1015,8 @@ export default function createRouteEngine(options) {
     const cursorAfterAction = _systemStore.selectRollbackCursor?.() ?? null;
     if (actionType === "saveSlot") {
       recordActiveRollbackSave(payload);
+    } else if (actionType === "updateProjectData") {
+      refreshActiveRollbackSaveIdentities();
     }
     updateActiveRollbackNavigation(
       actionType,
@@ -1260,15 +1274,8 @@ export default function createRouteEngine(options) {
     }
   };
 
-  const buildActionTemplateContext = (eventContext) => {
-    if (!eventContext) {
-      return {
-        variables: _systemStore.selectAllVariables
-          ? _systemStore.selectAllVariables()
-          : undefined,
-        runtime: _systemStore.selectRuntime ? _systemStore.selectRuntime() : {},
-      };
-    }
+  const assertActionEventContext = (eventContext) => {
+    if (!eventContext) return;
     if (Object.prototype.hasOwnProperty.call(eventContext, "event")) {
       throw new Error(
         'eventContext key "event" is no longer supported. Use "_event".',
@@ -1279,6 +1286,18 @@ export default function createRouteEngine(options) {
       eventContext[RANDOM_CONTEXT_AUTHORITY] !== true
     ) {
       throw new Error('eventContext key "_random" is reserved by RouteEngine.');
+    }
+  };
+
+  const buildActionTemplateContext = (eventContext) => {
+    assertActionEventContext(eventContext);
+    if (!eventContext) {
+      return {
+        variables: _systemStore.selectAllVariables
+          ? _systemStore.selectAllVariables()
+          : undefined,
+        runtime: _systemStore.selectRuntime ? _systemStore.selectRuntime() : {},
+      };
     }
     const { _event, _random, ...additionalContext } = eventContext;
     const variables = _systemStore.selectAllVariables
@@ -1484,12 +1503,9 @@ export default function createRouteEngine(options) {
 
   const handleRandomAction = (payload, eventContext, options) => {
     assertRandomActionPayload(payload);
-    const templateContext = buildActionTemplateContext(eventContext);
+    assertActionEventContext(eventContext);
     const result = sampleRandomDistribution(payload.distribution, {
       randomSource: _randomSource,
-      resolveNumeric(value) {
-        return processActionTemplates({ value }, templateContext).value;
-      },
     });
 
     if (options.rollbackSource === "line") {

@@ -668,7 +668,7 @@ actions:
     distribution:
       type: dice
       sides: 20
-      modifier: "${variables.lockpickBonus}"
+      modifier: 3
     actions:
       updateVariable:
         id: storeLockpickRoll
@@ -695,6 +695,9 @@ their number, boolean, array, or object type. Jempl interpolation such as
 `"Rolled ${_random.value}"` remains available for strings. The result is scoped
 to the synchronous nested batch; store it in a variable before opening a form
 or confirmation dialog if deferred actions need it.
+
+Distribution configuration is fixed authored data: numeric fields accept only
+literal numbers and do not resolve variables or action templates.
 
 Like `conditional`, `random` automatically continues once unless its action
 batch navigates. Line-authored outcomes are recorded with rollback history so

@@ -2037,18 +2037,18 @@ describe("projectData schema", () => {
     const distributions = [
       {
         type: "dice",
-        count: "${variables.diceCount}",
+        count: 2,
         sides: 20,
-        modifier: "${variables.bonus}",
+        modifier: 3,
         keep: { type: "highest", count: 1 },
       },
-      { type: "integer", min: -10, max: "${variables.max}" },
-      { type: "chance", probability: "${variables.probability}" },
+      { type: "integer", min: -10, max: 10 },
+      { type: "chance", probability: 0.4 },
       {
         type: "weighted",
         outcomes: [
           { value: "common", weight: 3 },
-          { value: "rare", weight: "${variables.rareWeight}" },
+          { value: "rare", weight: 1 },
         ],
       },
     ];
@@ -2101,6 +2101,28 @@ describe("projectData schema", () => {
           distribution: {
             type: "weighted",
             outcomes: [{ value: "only" }],
+          },
+          actions: {},
+        },
+      }),
+    ).toBe(false);
+    expect(
+      validateSystemActions({
+        random: {
+          distribution: {
+            type: "dice",
+            sides: "${variables.diceSides}",
+          },
+          actions: {},
+        },
+      }),
+    ).toBe(false);
+    expect(
+      validateSystemActions({
+        random: {
+          distribution: {
+            type: "weighted",
+            outcomes: [{ value: "only", weight: "${variables.weight}" }],
           },
           actions: {},
         },

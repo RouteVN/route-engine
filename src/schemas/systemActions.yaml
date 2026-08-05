@@ -26,7 +26,7 @@ definitions:
         type: string
         enum: [highest, lowest]
       count:
-        type: [integer, string]
+        type: integer
         minimum: 1
         maximum: 100
     required: [type, count]
@@ -38,16 +38,16 @@ definitions:
       type:
         const: dice
       count:
-        type: [integer, string]
+        type: integer
         minimum: 1
         maximum: 100
         default: 1
       sides:
-        type: [integer, string]
+        type: integer
         minimum: 2
         maximum: 4294967296
       modifier:
-        type: [integer, string]
+        type: integer
         default: 0
       keep:
         $ref: "#/definitions/randomDiceKeep"
@@ -60,9 +60,9 @@ definitions:
       type:
         const: integer
       min:
-        type: [integer, string]
+        type: integer
       max:
-        type: [integer, string]
+        type: integer
     required: [type, min, max]
     additionalProperties: false
 
@@ -72,7 +72,7 @@ definitions:
       type:
         const: chance
       probability:
-        type: [number, string]
+        type: number
         minimum: 0
         maximum: 1
     required: [type, probability]
@@ -85,7 +85,7 @@ definitions:
         type: string
         minLength: 1
       weight:
-        type: [number, string]
+        type: number
         minimum: 0
     required: [value, weight]
     additionalProperties: false

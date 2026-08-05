@@ -24,7 +24,7 @@ const assertRecord = (value, path) => {
 
 const assertSafeInteger = (value, path, { min, max } = {}) => {
   if (!Number.isSafeInteger(value)) {
-    throw new Error(`${path} must resolve to a safe integer`);
+    throw new Error(`${path} must be a safe integer`);
   }
   if (min !== undefined && value < min) {
     throw new Error(`${path} must be at least ${min}`);
@@ -37,7 +37,7 @@ const assertSafeInteger = (value, path, { min, max } = {}) => {
 
 const assertFiniteNumber = (value, path, { min, max } = {}) => {
   if (typeof value !== "number" || !Number.isFinite(value)) {
-    throw new Error(`${path} must resolve to a finite number`);
+    throw new Error(`${path} must be a finite number`);
   }
   if (min !== undefined && value < min) {
     throw new Error(`${path} must be at least ${min}`);
@@ -111,37 +111,28 @@ const sampleUnit53 = (randomSource) => {
   return (high * 0x4_000_000 + low) / UINT53_CARDINALITY;
 };
 
-const resolveInteger = (value, path, resolveNumeric, constraints) =>
-  assertSafeInteger(resolveNumeric(value, path), path, constraints);
-
-const resolveNumber = (value, path, resolveNumeric, constraints) =>
-  assertFiniteNumber(resolveNumeric(value, path), path, constraints);
-
-const sampleDice = (distribution, randomSource, resolveNumeric) => {
+const sampleDice = (distribution, randomSource) => {
   assertAllowedKeys(
     distribution,
     new Set(["type", "count", "sides", "modifier", "keep"]),
     "random.distribution",
   );
-  const count = resolveInteger(
+  const count = assertSafeInteger(
     distribution.count ?? 1,
     "random.distribution.count",
-    resolveNumeric,
     { min: 1, max: MAX_DICE_COUNT },
   );
   if (!Object.prototype.hasOwnProperty.call(distribution, "sides")) {
     throw new Error("random.distribution.sides is required");
   }
-  const sides = resolveInteger(
+  const sides = assertSafeInteger(
     distribution.sides,
     "random.distribution.sides",
-    resolveNumeric,
     { min: 2, max: UINT32_CARDINALITY },
   );
-  const modifier = resolveInteger(
+  const modifier = assertSafeInteger(
     distribution.modifier ?? 0,
     "random.distribution.modifier",
-    resolveNumeric,
   );
 
   let keepCount = count;
@@ -162,10 +153,9 @@ const sampleDice = (distribution, randomSource, resolveNumeric) => {
     if (!Object.prototype.hasOwnProperty.call(distribution.keep, "count")) {
       throw new Error("random.distribution.keep.count is required");
     }
-    keepCount = resolveInteger(
+    keepCount = assertSafeInteger(
       distribution.keep.count,
       "random.distribution.keep.count",
-      resolveNumeric,
       { min: 1, max: count },
     );
   }
@@ -208,7 +198,7 @@ const sampleDice = (distribution, randomSource, resolveNumeric) => {
   });
 };
 
-const sampleInteger = (distribution, randomSource, resolveNumeric) => {
+const sampleInteger = (distribution, randomSource) => {
   assertAllowedKeys(
     distribution,
     new Set(["type", "min", "max"]),
@@ -220,16 +210,8 @@ const sampleInteger = (distribution, randomSource, resolveNumeric) => {
   if (!Object.prototype.hasOwnProperty.call(distribution, "max")) {
     throw new Error("random.distribution.max is required");
   }
-  const min = resolveInteger(
-    distribution.min,
-    "random.distribution.min",
-    resolveNumeric,
-  );
-  const max = resolveInteger(
-    distribution.max,
-    "random.distribution.max",
-    resolveNumeric,
-  );
+  const min = assertSafeInteger(distribution.min, "random.distribution.min");
+  const max = assertSafeInteger(distribution.max, "random.distribution.max");
   const cardinality = max - min + 1;
   if (cardinality < 1 || cardinality > UINT32_CARDINALITY) {
     throw new Error(
@@ -242,7 +224,7 @@ const sampleInteger = (distribution, randomSource, resolveNumeric) => {
   });
 };
 
-const sampleChance = (distribution, randomSource, resolveNumeric) => {
+const sampleChance = (distribution, randomSource) => {
   assertAllowedKeys(
     distribution,
     new Set(["type", "probability"]),
@@ -251,10 +233,9 @@ const sampleChance = (distribution, randomSource, resolveNumeric) => {
   if (!Object.prototype.hasOwnProperty.call(distribution, "probability")) {
     throw new Error("random.distribution.probability is required");
   }
-  const probability = resolveNumber(
+  const probability = assertFiniteNumber(
     distribution.probability,
     "random.distribution.probability",
-    resolveNumeric,
     { min: 0, max: 1 },
   );
   const value =
@@ -266,7 +247,7 @@ const sampleChance = (distribution, randomSource, resolveNumeric) => {
   return cloneAndFreeze({ type: "chance", value });
 };
 
-const sampleWeighted = (distribution, randomSource, resolveNumeric) => {
+const sampleWeighted = (distribution, randomSource) => {
   assertAllowedKeys(
     distribution,
     new Set(["type", "outcomes"]),
@@ -305,20 +286,28 @@ const sampleWeighted = (distribution, randomSource, resolveNumeric) => {
     }
     return {
       value: outcome.value,
-      weight: resolveNumber(outcome.weight, `${path}.weight`, resolveNumeric, {
+      weight: assertFiniteNumber(outcome.weight, `${path}.weight`, {
         min: 0,
       }),
     };
   });
-  const totalWeight = outcomes.reduce(
+  const maxWeight = Math.max(...outcomes.map(({ weight }) => weight));
+  if (maxWeight <= 0) {
+    throw new Error("random weighted total weight must be positive");
+  }
+  const scaledOutcomes = outcomes.map((outcome) => ({
+    ...outcome,
+    weight: outcome.weight / maxWeight,
+  }));
+  const totalWeight = scaledOutcomes.reduce(
     (total, outcome) => total + outcome.weight,
     0,
   );
-  if (!Number.isFinite(totalWeight) || totalWeight <= 0) {
-    throw new Error("random weighted total weight must be finite and positive");
-  }
-  outcomes.forEach((outcome, index) => {
-    if (outcome.weight > 0 && outcome.weight / totalWeight < MIN_WEIGHT_SHARE) {
+  scaledOutcomes.forEach((outcome, index) => {
+    if (
+      outcomes[index].weight > 0 &&
+      (outcome.weight === 0 || outcome.weight / totalWeight < MIN_WEIGHT_SHARE)
+    ) {
       throw new Error(
         `random.distribution.outcomes[${index}].weight is below the supported probability resolution`,
       );
@@ -327,8 +316,8 @@ const sampleWeighted = (distribution, randomSource, resolveNumeric) => {
 
   const target = sampleUnit53(randomSource) * totalWeight;
   let cumulativeWeight = 0;
-  let selected = outcomes.findLast(({ weight }) => weight > 0).value;
-  for (const outcome of outcomes) {
+  let selected = scaledOutcomes.findLast(({ weight }) => weight > 0).value;
+  for (const outcome of scaledOutcomes) {
     cumulativeWeight += outcome.weight;
     if (target < cumulativeWeight) {
       selected = outcome.value;
@@ -338,10 +327,7 @@ const sampleWeighted = (distribution, randomSource, resolveNumeric) => {
   return cloneAndFreeze({ type: "weighted", value: selected });
 };
 
-export const sampleRandomDistribution = (
-  distribution,
-  { randomSource, resolveNumeric = (value) => value },
-) => {
+export const sampleRandomDistribution = (distribution, { randomSource }) => {
   assertRecord(distribution, "random.distribution");
   const samplers = {
     dice: sampleDice,
@@ -355,7 +341,7 @@ export const sampleRandomDistribution = (
       'random.distribution.type must be "dice", "integer", "chance", or "weighted"',
     );
   }
-  return sampler(distribution, randomSource, resolveNumeric);
+  return sampler(distribution, randomSource);
 };
 
 export const validateRandomResult = (result, expectedType) => {

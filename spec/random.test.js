@@ -18,10 +18,9 @@ const createSource = (...values) => {
   });
 };
 
-const sample = (distribution, values, resolveNumeric = (value) => value) =>
+const sample = (distribution, values) =>
   sampleRandomDistribution(distribution, {
     randomSource: createSource(...values),
-    resolveNumeric,
   });
 
 describe("random distributions", () => {
@@ -73,24 +72,47 @@ describe("random distributions", () => {
     ).toEqual({ type: "weighted", value: "rare" });
   });
 
-  it("resolves only numeric fields and validates the resolved values", () => {
-    const resolvedPaths = [];
+  it("samples equal subnormal weights without skew", () => {
+    const distribution = {
+      type: "weighted",
+      outcomes: [
+        { value: "first", weight: Number.MIN_VALUE },
+        { value: "second", weight: Number.MIN_VALUE },
+      ],
+    };
+
+    expect(sample(distribution, [0, 0])).toEqual({
+      type: "weighted",
+      value: "first",
+    });
+    expect(sample(distribution, [0x8000_0000, 0])).toEqual({
+      type: "weighted",
+      value: "second",
+    });
+  });
+
+  it("keeps weighted outcome values literal", () => {
     const result = sample(
       {
         type: "weighted",
-        outcomes: [
-          { value: "${variables.literal}", weight: "${variables.weight}" },
-        ],
+        outcomes: [{ value: "${variables.literal}", weight: 5 }],
       },
       [0, 0],
-      (value, path) => {
-        resolvedPaths.push(path);
-        return value === "${variables.weight}" ? 5 : value;
-      },
     );
 
     expect(result.value).toBe("${variables.literal}");
-    expect(resolvedPaths).toEqual(["random.distribution.outcomes[0].weight"]);
+  });
+
+  it.each([
+    { type: "dice", sides: "${variables.sides}" },
+    { type: "integer", min: 1, max: "${variables.max}" },
+    { type: "chance", probability: "${variables.probability}" },
+    {
+      type: "weighted",
+      outcomes: [{ value: "only", weight: "${variables.weight}" }],
+    },
+  ])("rejects non-literal numeric distribution fields %#", (distribution) => {
+    expect(() => sample(distribution, [0, 0])).toThrow(/number|integer/);
   });
 
   it.each([

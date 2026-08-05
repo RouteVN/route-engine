@@ -8,7 +8,7 @@ action implemented in Route Engine 1.38.0.
 ## Purpose
 
 The `random` action provides game-friendly random sampling and passes the
-resolved result into a nested action batch. Authors can use the existing
+sampled result into a nested action batch. Authors can use the existing
 `conditional` action to route based on that result, or explicitly store the
 result with `updateVariable` when later lines need it.
 
@@ -49,7 +49,7 @@ actions:
       type: dice
       count: 1
       sides: 20
-      modifier: "${variables.lockpickBonus}"
+      modifier: 3
 
     actions:
       updateVariable:
@@ -175,12 +175,11 @@ prototypes.
 
 ## Distributions
 
-`distribution.type`, collection shape/order, weighted outcome values, and the
-dice keep mode are static authored data. Only numeric fields may be numbers or
-action-template strings: dice count/sides/modifier/keep count, integer min/max,
-chance probability, and weights. Numeric templates are resolved immediately
-before sampling, then the resolved values are validated strictly. Numeric
-strings are not coerced.
+Every distribution field is fixed authored data. Dice count, sides, modifier,
+and keep count; integer bounds; chance probability; and weighted weights must
+be literal JSON/YAML numbers. Distribution fields do not resolve action
+templates or read variables. Nested `actions` retain the normal action-template
+behavior after a result has been sampled.
 
 The `distribution` wrapper is intentional. It keeps generator configuration
 separate from control fields such as `actions` and leaves one discriminated
@@ -204,7 +203,7 @@ distribution:
   (`2^32`).
 - `modifier` defaults to `0` and must be a safe integer.
 - `keep` is optional and has a static `type` of `highest` or `lowest` plus a
-  `count` that resolves to an integer from `1` through the dice count.
+  `count` that is an integer from `1` through the dice count.
 - Without `keep`, every roll is kept.
 - `value` is the sum of `keptRolls` plus `modifier`.
 - `rolls` preserves generation order. `keptRolls` and `discardedRolls` also
@@ -265,10 +264,11 @@ distribution:
 - `outcomes` is required and contains from `1` through `1000` entries.
 - Outcome values are static, unique strings from `1` through `128` Unicode code
   points long.
-- A weight must resolve to a finite number greater than or equal to `0`.
-- At least one resolved weight must be greater than `0`.
-- The resolved total weight must be finite.
-- Selection is proportional to resolved weight within IEEE-754 precision and
+- A weight must be a finite number greater than or equal to `0`.
+- At least one weight must be greater than `0`.
+- Weights are rescaled by the largest weight before cumulative sampling, which
+  avoids overflow and subnormal-total rounding bias.
+- Selection is proportional to authored weight within IEEE-754 precision and
   the engine's `2^-53` unit-interval resolution.
 - Every positive normalized weight must be at least `2^-53`; smaller positive
   outcomes are rejected rather than silently becoming unreachable.
@@ -287,11 +287,11 @@ discriminated `oneOf`; every distribution variant and nested object has
 `additionalProperties: false`. `random.actions` recursively references the
 system-action root and may be empty.
 
-Static numeric literals receive their ordinary JSON Schema bounds. Numeric
-template fields also accept strings at schema time, because their resolved type
-is unavailable until execution. Runtime validation applies the full type,
-integer, finite, range, total, and cross-field rules after template resolution;
-the literal string `"10"` is not coerced to the number `10`.
+Numeric fields accept only JSON/YAML numbers and receive their ordinary JSON
+Schema bounds. Runtime validation repeats the full type, integer, finite,
+range, total, and cross-field rules for direct API and renderer payloads. The
+literal string `"10"` and template strings such as
+`"${variables.diceSides}"` are rejected rather than coerced or resolved.
 
 `distribution.type`, dice keep type, weighted outcome count/order, and weighted
 outcome values are schema-visible static fields and never action-templated.
@@ -309,13 +309,12 @@ system-action definition, just as it exposes `conditional`.
 Execution is ordered and synchronous:
 
 1. Validate the static distribution shape.
-2. Resolve only its numeric template fields.
-3. Validate the fully resolved distribution and its worst-case bounds.
-4. Draw exactly one result.
-5. For a line-source action, record the resolved result on its rollback replay
+2. Validate the distribution values and worst-case bounds.
+3. Draw exactly one result.
+4. For a line-source action, record the sampled result on its rollback replay
    occurrence.
-6. Process `actions` in insertion order with `_random` in scope.
-7. Request one conditional-style automatic continuation after the entire outer
+5. Process `actions` in insertion order with `_random` in scope.
+6. Request one conditional-style automatic continuation after the entire outer
    action batch settles.
 
 `random.actions` is an opaque/deferred template branch. It must not be rendered
@@ -399,18 +398,18 @@ to hang the synchronous engine. The dice count limit therefore also bounds the
 maximum random-source work for an action.
 
 The specific generator algorithm is not part of authored content or save
-compatibility. Save and rollback correctness is based on recording resolved
+compatibility. Save and rollback correctness is based on recording sampled
 outcomes, not on reproducing a generator sequence.
 
 ## Save, Load, and Rollback
 
-Authored line replay is nondeterministic unless the resolved result is retained.
+Authored line replay is nondeterministic unless the sampled result is retained.
 Line-source outcomes therefore use a dedicated ordered `randomOutcomes` ledger
 on the exact rollback replay occurrence. A record contains only:
 
 - an internal structural action path and execution ordinal
 - the distribution type
-- the cloned resolved result
+- the cloned sampled result
 
 It never stores or executes an authored nested `actions` object from save data.
 Canonical project actions remain the executable source.
@@ -534,7 +533,7 @@ Random
   Method      [ Dice v ]
 
   Dice        [ 1 ] d [ 20 ]
-  Modifier    [ Variable: lockpickBonus ]
+  Modifier    [ 3 ]
   Keep        [ All v ]
 
   Insert result
@@ -561,9 +560,8 @@ Implementation is not complete until it includes:
 
 - Draft-07 discriminated `oneOf` system-action definitions for every
   distribution, with closed properties and a recursive `actions` reference
-- system-action and project-data schema coverage separating statically invalid
-  shapes from strings that are schema-valid templates but invalid after runtime
-  resolution
+- system-action and project-data schema coverage rejecting templates and other
+  non-literal distribution values
 - initial project validation and transactional `updateProjectData` rejection
   coverage for invalid random trees, plus retained/orphaned outcome
   reconciliation
