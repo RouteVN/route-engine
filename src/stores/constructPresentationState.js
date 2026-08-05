@@ -74,6 +74,8 @@ const BACKGROUND_RESOURCE_PLAYBACK_FIELDS = [
 ];
 
 const hasItemTransform = (item) =>
+  hasDefinedProperty(item, "transformId") ||
+  hasDefinedProperty(item, "transform") ||
   ITEM_TRANSFORM_FIELDS.some((field) => hasDefinedProperty(item, field));
 
 const hasCompleteVisualText = (item) =>
@@ -81,7 +83,11 @@ const hasCompleteVisualText = (item) =>
   hasDefinedProperty(item.text, "content") &&
   hasDefinedProperty(item.text, "textStyleId");
 
-const hasVisualTextPatch = (item) => hasDefinedProperty(item, "text");
+const hasCompleteVisualLayout = (item) =>
+  item?.layout && Array.isArray(item.layout.elements);
+
+const hasVisualSubjectPatch = (item) =>
+  hasDefinedProperty(item, "text") || hasDefinedProperty(item, "layout");
 
 const hasVisualSubject = (item, previousItem) => {
   if (item.resourceId) {
@@ -89,7 +95,11 @@ const hasVisualSubject = (item, previousItem) => {
   }
 
   if (!hasCompleteVisualText(item)) {
-    return false;
+    if (!hasCompleteVisualLayout(item)) {
+      return false;
+    }
+
+    return !previousItem?.layout;
   }
 
   return !previousItem?.text;
@@ -108,28 +118,67 @@ const mergeVisualItemPatch = (previousItem, item) => {
     };
   }
 
+  if (item.transform && previousItem.transform) {
+    mergedItem.transform = {
+      ...clonePresentationValue(previousItem.transform),
+      ...clonePresentationValue(item.transform),
+    };
+  }
+
+  if (hasDefinedProperty(item, "transform")) {
+    delete mergedItem.transformId;
+
+    for (const field of ITEM_TRANSFORM_FIELDS) {
+      if (!hasDefinedProperty(item, field)) {
+        delete mergedItem[field];
+      }
+    }
+  } else if (hasDefinedProperty(item, "transformId")) {
+    delete mergedItem.transform;
+  }
+
   return mergedItem;
 };
 
-const assertVisualTextPatch = (item, previousItem) => {
-  if (!hasVisualTextPatch(item)) {
-    return;
-  }
+const assertVisualSubjectPatch = (item, previousItem) => {
+  const subjectCount = [item.resourceId, item.text, item.layout].filter(
+    (subject) => subject !== undefined,
+  ).length;
 
-  if (item.resourceId) {
+  if (subjectCount > 1) {
+    if (
+      subjectCount === 2 &&
+      item.resourceId !== undefined &&
+      item.text !== undefined
+    ) {
+      throw new Error(
+        `Visual item "${item.id}" cannot define both resourceId and text`,
+      );
+    }
+
     throw new Error(
-      `Visual item "${item.id}" cannot define both resourceId and text`,
+      `Visual item "${item.id}" must define only one of resourceId, text, or layout`,
     );
   }
 
-  if (hasCompleteVisualText(item)) {
-    return;
+  if (item.transformId && item.transform) {
+    throw new Error(
+      `Visual item "${item.id}" cannot define both transformId and transform`,
+    );
   }
 
-  if (!previousItem?.text) {
+  if (
+    hasDefinedProperty(item, "text") &&
+    !hasCompleteVisualText(item) &&
+    !previousItem?.text
+  ) {
     throw new Error(
       `Visual item "${item.id}" text requires content and textStyleId`,
     );
+  }
+
+  if (hasDefinedProperty(item, "layout") && !hasCompleteVisualLayout(item)) {
+    throw new Error(`Visual item "${item.id}" layout requires elements`);
   }
 };
 
@@ -894,7 +943,10 @@ export const visual = (state, presentation) => {
     const previousItems = state.visual?.items || [];
 
     presentation.visual.items?.forEach((item, index) => {
-      assertVisualTextPatch(item, findPreviousItem(previousItems, item, index));
+      assertVisualSubjectPatch(
+        item,
+        findPreviousItem(previousItems, item, index),
+      );
     });
 
     const { hasValidItems, processedItems } = processItemsWithAnimations(
@@ -902,7 +954,7 @@ export const visual = (state, presentation) => {
       hasVisualSubject,
       previousItems,
       {
-        hasPatchFn: hasVisualTextPatch,
+        hasPatchFn: hasVisualSubjectPatch,
         mergeItemFn: mergeVisualItemPatch,
       },
     );

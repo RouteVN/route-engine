@@ -590,8 +590,20 @@ const getCharacterContainerId = (
 };
 
 const getRequiredVisualTransform = (resources, item) => {
+  if (item.transformId && item.transform) {
+    throw new Error(
+      `Visual item "${item.id}" cannot define both transformId and transform`,
+    );
+  }
+
+  if (item.transform) {
+    return item.transform;
+  }
+
   if (!item.transformId) {
-    throw new Error(`Visual item "${item.id}" requires transformId`);
+    throw new Error(
+      `Visual item "${item.id}" requires transformId or transform`,
+    );
   }
 
   const transform = resources.transforms?.[item.transformId];
@@ -1496,7 +1508,9 @@ const VISUAL_TEXT_RESERVED_FIELDS = [
   "id",
   "type",
   "resourceId",
+  "layout",
   "transformId",
+  "transform",
   "x",
   "y",
   "anchorX",
@@ -1517,6 +1531,9 @@ const hasCompleteVisualText = (item = {}) =>
   hasOwnProperty(item.text, "content") &&
   hasOwnProperty(item.text, "textStyleId");
 
+const hasCompleteVisualLayout = (item = {}) =>
+  item.layout && Array.isArray(item.layout.elements);
+
 const getVisualSubjectKey = (item = {}) => {
   if (item.resourceId) {
     return item.resourceId;
@@ -1524,6 +1541,10 @@ const getVisualSubjectKey = (item = {}) => {
 
   if (hasCompleteVisualText(item)) {
     return "text";
+  }
+
+  if (hasCompleteVisualLayout(item)) {
+    return "inline-layout";
   }
 
   return undefined;
@@ -1612,28 +1633,50 @@ const createParticleVisualElement = ({ item, particle, resources }) => {
   return visualContainer;
 };
 
-const assertVisualTextConfig = (item) => {
-  if (!item.text) {
-    return;
-  }
+const assertVisualItemConfig = (item) => {
+  const subjectCount = [item.resourceId, item.text, item.layout].filter(
+    (subject) => subject !== undefined,
+  ).length;
 
-  if (item.resourceId) {
+  if (subjectCount > 1) {
+    if (
+      subjectCount === 2 &&
+      item.resourceId !== undefined &&
+      item.text !== undefined
+    ) {
+      throw new Error(
+        `Visual item "${item.id}" cannot define both resourceId and text`,
+      );
+    }
+
     throw new Error(
-      `Visual item "${item.id}" cannot define both resourceId and text`,
+      `Visual item "${item.id}" must define only one of resourceId, text, or layout`,
     );
   }
 
-  if (!hasCompleteVisualText(item)) {
+  if (item.transformId && item.transform) {
+    throw new Error(
+      `Visual item "${item.id}" cannot define both transformId and transform`,
+    );
+  }
+
+  if (item.text && !hasCompleteVisualText(item)) {
     throw new Error(
       `Visual item "${item.id}" text requires content and textStyleId`,
     );
   }
 
-  for (const fieldName of VISUAL_TEXT_RESERVED_FIELDS) {
-    if (hasOwnProperty(item.text, fieldName)) {
-      throw new Error(
-        `Visual item "${item.id}" text.${fieldName} is reserved for the visual item`,
-      );
+  if (item.layout && !hasCompleteVisualLayout(item)) {
+    throw new Error(`Visual item "${item.id}" layout requires elements`);
+  }
+
+  if (item.text) {
+    for (const fieldName of VISUAL_TEXT_RESERVED_FIELDS) {
+      if (hasOwnProperty(item.text, fieldName)) {
+        throw new Error(
+          `Visual item "${item.id}" text.${fieldName} is reserved for the visual item`,
+        );
+      }
     }
   }
 };
@@ -2954,7 +2997,10 @@ const assertVisualLayer = (layer, path) => {
 };
 
 const resolveVisualItemLayer = (item, previousItem) => {
-  const hasCurrentSubject = !!item.resourceId || hasCompleteVisualText(item);
+  const hasCurrentSubject =
+    !!item.resourceId ||
+    hasCompleteVisualText(item) ||
+    hasCompleteVisualLayout(item);
   const layer =
     item.layer ??
     (!hasCurrentSubject ? previousItem?.layer : undefined) ??
@@ -3032,7 +3078,29 @@ export const addVisuals = (
         continue;
       }
 
-      assertVisualTextConfig(item);
+      assertVisualItemConfig(item);
+
+      if (item.layout) {
+        const transform = getRequiredVisualTransform(resources, item);
+        const visualContainer = {
+          id: `visual-${item.id}`,
+          type: "container",
+          children: structuredClone(item.layout.elements),
+          ...getElementTransform(transform, item),
+        };
+        Object.assign(visualContainer, getItemAppearance(item));
+
+        storyContainer.children.push(
+          renderTemplatedLayoutContainer({
+            container: visualContainer,
+            resources,
+            templateData: visualTemplateData,
+            isLineCompleted,
+            skipMode,
+            skipTransitionsAndAnimations,
+          }),
+        );
+      }
 
       if (item.text) {
         const transform = getRequiredVisualTransform(resources, item);

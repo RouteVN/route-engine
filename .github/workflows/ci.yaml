@@ -72,6 +72,8 @@ jobs:
             item: robustness/settings-runtime-batch.yaml
           - id: template-click
             item: robustness/visual-layout-template-click.yaml
+          - id: inline-layout-click
+            item: robustness/visual-inline-layout-click.yaml
     steps:
       - uses: actions/checkout@v4
         with:

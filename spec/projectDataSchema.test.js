@@ -996,6 +996,101 @@ describe("projectData schema", () => {
     expect(validatePresentationActions.errors).toBeNull();
   });
 
+  it("accepts inline-layout visual items with inline transforms", () => {
+    expect(
+      validatePresentationActions({
+        visual: {
+          items: [
+            {
+              id: "title-card",
+              layout: {
+                elements: [
+                  {
+                    id: "title",
+                    type: "text",
+                    content: "Chapter 1",
+                    textStyleId: "title",
+                  },
+                  {
+                    id: "badge",
+                    type: "sprite",
+                    imageId: "badge",
+                  },
+                ],
+              },
+              transform: {
+                x: 960,
+                y: 180,
+                anchorX: 0.5,
+                anchorY: 0.5,
+                scaleX: 1,
+                scaleY: 1,
+                rotation: 0,
+              },
+              layer: 70,
+            },
+          ],
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+  });
+
+  it("accepts inline-layout and inline-transform visual patches", () => {
+    expect(
+      validatePresentationActions({
+        visual: {
+          items: [
+            {
+              id: "title-card",
+              layout: {
+                elements: [],
+              },
+            },
+            {
+              id: "status-card",
+              transform: {
+                y: 240,
+              },
+            },
+          ],
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+  });
+
+  it("rejects ambiguous inline-layout subjects and transforms", () => {
+    expect(
+      validatePresentationActions({
+        visual: {
+          items: [
+            {
+              id: "title-card",
+              resourceId: "title-card",
+              layout: { elements: [] },
+            },
+          ],
+        },
+      }),
+    ).toBe(false);
+
+    expect(
+      validatePresentationActions({
+        visual: {
+          items: [
+            {
+              id: "title-card",
+              layout: { elements: [] },
+              transformId: "center",
+              transform: { x: 0 },
+            },
+          ],
+        },
+      }),
+    ).toBe(false);
+  });
+
   it("rejects ambiguous text-backed visual items", () => {
     expect(
       validatePresentationActions({
