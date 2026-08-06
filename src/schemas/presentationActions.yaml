@@ -681,6 +681,11 @@ properties:
               type: string
               enum: [immediate, loopEnd]
               description: How active channel playback stops when the channel is interrupted
+            applyMode:
+              type: string
+              enum: [singleLine, persistent]
+              default: singleLine
+              description: Whether the channel is active only for its authored line or retained across following lines until replaced or stopped
             sounds:
               type: array
               items:

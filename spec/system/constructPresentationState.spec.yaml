@@ -312,6 +312,115 @@ out:
     resourceId: "backgroundMusic"
     loop: true
 ---
+case: single-line SFX channels clear when the next presentation omits SFX
+in:
+  - - sfx:
+        channels:
+          - id: "ui"
+            applyMode: "singleLine"
+            sounds:
+              - id: "confirm"
+                resourceId: "confirm"
+    - dialogue:
+        content:
+          - text: "Next line"
+out:
+  dialogue:
+    content:
+      - text: "Next line"
+---
+case: persistent SFX channels remain when the next presentation omits SFX
+in:
+  - - sfx:
+        channels:
+          - id: "environment"
+            applyMode: "persistent"
+            sounds:
+              - id: "rain"
+                resourceId: "rain"
+    - dialogue:
+        content:
+          - text: "Next line"
+out:
+  sfx:
+    channels:
+      - id: "environment"
+        applyMode: "persistent"
+        sounds:
+          - id: "rain"
+            resourceId: "rain"
+  dialogue:
+    content:
+      - text: "Next line"
+---
+case: new SFX channels merge with omitted persistent channels
+in:
+  - - sfx:
+        channels:
+          - id: "environment"
+            applyMode: "persistent"
+            sounds:
+              - id: "rain"
+                resourceId: "rain"
+    - sfx:
+        channels:
+          - id: "ui"
+            sounds:
+              - id: "confirm"
+                resourceId: "confirm"
+out:
+  sfx:
+    channels:
+      - id: "environment"
+        applyMode: "persistent"
+        sounds:
+          - id: "rain"
+            resourceId: "rain"
+      - id: "ui"
+        sounds:
+          - id: "confirm"
+            resourceId: "confirm"
+---
+case: an empty SFX channel stops the persistent channel with the same id
+in:
+  - - sfx:
+        channels:
+          - id: "environment"
+            applyMode: "persistent"
+            sounds:
+              - id: "rain"
+                resourceId: "rain"
+          - id: "ambience"
+            applyMode: "persistent"
+            sounds:
+              - id: "wind"
+                resourceId: "wind"
+    - sfx:
+        channels:
+          - id: "environment"
+            sounds: []
+out:
+  sfx:
+    channels:
+      - id: "ambience"
+        applyMode: "persistent"
+        sounds:
+          - id: "wind"
+            resourceId: "wind"
+---
+case: an empty SFX channel collection stops all persistent channels
+in:
+  - - sfx:
+        channels:
+          - id: "environment"
+            applyMode: "persistent"
+            sounds:
+              - id: "rain"
+                resourceId: "rain"
+    - sfx:
+        channels: []
+out: {}
+---
 case: construct presentation state with clean all and multiple presentations
 in:
   - - cleanAll: true

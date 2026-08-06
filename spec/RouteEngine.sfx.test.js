@@ -118,4 +118,56 @@ describe("RouteEngine SFX rendering", () => {
       },
     ]);
   });
+
+  it("retains only persistent canonical SFX channels on the next line", () => {
+    const projectData = createProjectData();
+    projectData.story.scenes.scene1.sections.section1.lines = [
+      {
+        id: "line1",
+        actions: {
+          sfx: {
+            channels: [
+              {
+                id: "ui",
+                sounds: [{ id: "confirm", resourceId: "click" }],
+              },
+              {
+                id: "environment",
+                applyMode: "persistent",
+                sounds: [{ id: "rain", resourceId: "click" }],
+              },
+            ],
+          },
+        },
+      },
+      { id: "line2", actions: {} },
+    ];
+
+    const engine = createRouteEngineWithInlineEffects();
+    engine.init({ initialState: { projectData } });
+
+    expect(engine.selectRenderState().audio.map(({ id }) => id)).toEqual([
+      "channel:sfx:ui",
+      "channel:sfx:environment",
+    ]);
+
+    engine.handleAction("markLineCompleted", {});
+    engine.handleAction("nextLine", {});
+
+    expect(engine.selectRenderState().audio).toEqual([
+      {
+        id: "channel:sfx:environment",
+        type: "audio-channel",
+        volume: 50,
+        muted: false,
+        pan: 0,
+        children: [
+          expect.objectContaining({
+            id: "sfx:environment:rain",
+            src: "click.wav",
+          }),
+        ],
+      },
+    ]);
+  });
 });

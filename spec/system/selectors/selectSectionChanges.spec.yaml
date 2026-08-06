@@ -263,6 +263,64 @@ out:
     - id: "3"
       changes: {}
 ---
+case: "Persistent SFX channels remain until explicitly stopped"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        sfx:
+                          channels:
+                            - id: "environment"
+                              applyMode: "persistent"
+                              sounds:
+                                - id: "rain"
+                                  resourceId: "rain"
+                    - id: "2"
+                      actions:
+                        dialogue:
+                          content:
+                            - text: "Still raining"
+                    - id: "3"
+                      actions:
+                        sfx:
+                          channels:
+                            - id: "environment"
+                              sounds: []
+  - sectionId: "section1"
+out:
+  lines:
+    - id: "1"
+      changes:
+        sfx:
+          changeType: "add"
+          data:
+            channels:
+              - id: "environment"
+                applyMode: "persistent"
+                sounds:
+                  - id: "rain"
+                    resourceId: "rain"
+    - id: "2"
+      changes: {}
+    - id: "3"
+      changes:
+        sfx:
+          changeType: "delete"
+          data:
+            channels:
+              - id: "environment"
+                applyMode: "persistent"
+                sounds:
+                  - id: "rain"
+                    resourceId: "rain"
+---
 case: "Detect dialogue ui addition"
 in:
   - state:

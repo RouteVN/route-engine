@@ -1193,7 +1193,7 @@ Actions that can be attached to lines to control presentation:
 | `character`  | `{ items }`                                                                                                                                          | Display character sprites. Each item can set transform overrides, `opacity`, and `blur`                                           |
 | `visual`     | `{ items }`                                                                                                                                          | Display resource-backed or inline-layout visual elements. Each item can set `layer`, transform, `opacity`, `blur`, and animations |
 | `bgm`        | `{ sounds, loop?, volume?, muted?, pan? }`                                                                                                           | Control the persistent, multi-sound BGM channel                                                                                   |
-| `sfx`        | `{ channels: [{ id, sounds, loop?, volume?, muted?, pan? }] }`                                                                                       | Play any number of line-scoped SFX channels, each with its own sounds                                                             |
+| `sfx`        | `{ channels: [{ id, sounds, applyMode?, loop?, volume?, muted?, pan? }] }`                                                                           | Play any number of single-line or persistent SFX channels, each with its own sounds                                               |
 | `voice`      | `{ sounds, loop?, volume?, muted?, pan? }`                                                                                                           | Control the line-scoped, multi-sound Voice channel; resources resolve from the current scene                                      |
 | `animation`  | `{ ... }`                                                                                                                                            | Apply animations                                                                                                                  |
 | `layout`     | `{ resourceId }`                                                                                                                                     | Display layout                                                                                                                    |
@@ -1933,7 +1933,8 @@ Engine audio is authored with `sounds` and rendered as Route Graphics
 
 - BGM owns one persistent channel and may contain many sounds.
 - Voice owns one line-scoped channel and may contain many sounds.
-- SFX may contain any number of line-scoped channels, each with many sounds.
+- SFX may contain any number of single-line or persistent channels, each with
+  many sounds.
 - Channel and sound IDs are namespaced in render state so authored IDs remain
   stable and globally unique.
 - Canonical sound IDs must be unique within their channel, and canonical SFX
@@ -1977,6 +1978,7 @@ actions:
       - id: environment
         pan: 0.5
         loop: true
+        applyMode: persistent
         sounds:
           - id: rain
             resourceId: rain
@@ -1997,8 +1999,12 @@ Voice actions, top-level `loop` and `startDelayMs` continue to configure that
 sound.
 
 Omitting `bgm` preserves its current desired channel state. `bgm.sounds: []`
-stops the BGM channel. Voice and SFX sounds are cleared when the next line omits
-their action.
+stops the BGM channel. Voice channels and SFX channels whose `applyMode` is
+`singleLine` are cleared when the next line omits their action. `singleLine` is
+the default SFX apply mode. A persistent SFX channel remains active across
+following lines until an action replaces its ID, provides that ID with
+`sounds: []`, provides `sfx.channels: []` to stop every SFX channel, or uses
+`cleanAll`.
 
 The previous single-sound forms remain compatibility shorthands:
 
