@@ -52,7 +52,6 @@ const DEFAULT_NEXT_LINE_CONFIG = {
 };
 
 const CURRENT_SAVE_FORMAT_VERSION = 1;
-const ROLLBACK_RETURNABILITY_VERSION = 1;
 const RANDOM_OUTCOME_VERSION = 1;
 const CHOICE_INTERACTION_SOURCE = "choice";
 const FORM_INTERACTION_SOURCE = "form";
@@ -670,8 +669,6 @@ const sanitizePersistedRollback = (rollback, projectData) => {
     return;
   }
 
-  rollback.returnabilityVersion = ROLLBACK_RETURNABILITY_VERSION;
-
   rollback.timeline.forEach((checkpoint) => {
     if (!isRecord(checkpoint)) {
       return;
@@ -1176,204 +1173,6 @@ const synchronizeLoadedDialogueHistory = (
   return dialogueHistory;
 };
 
-const getNextAuthoredRollbackPointer = (projectData, checkpoint) => {
-  const { section } = findSectionInProjectData(
-    projectData,
-    checkpoint?.sectionId,
-  );
-  const currentLineIndex = section?.lines?.findIndex(
-    (line) => line.id === checkpoint?.lineId,
-  );
-  if (typeof currentLineIndex !== "number" || currentLineIndex < 0) {
-    return null;
-  }
-
-  const nextLine = section.lines[currentLineIndex + 1];
-  return nextLine
-    ? { sectionId: checkpoint.sectionId, lineId: nextLine.id }
-    : null;
-};
-
-const sectionTransitionTargetsRollbackPointer = (
-  projectData,
-  payload,
-  checkpoint,
-) => {
-  if (typeof payload?.sectionId !== "string") {
-    return false;
-  }
-
-  const { section } = findSectionInProjectData(projectData, payload.sectionId);
-  return isSameRollbackPointer(
-    {
-      sectionId: payload.sectionId,
-      lineId: section?.lines?.[0]?.id,
-    },
-    checkpoint,
-  );
-};
-
-const CONDITIONAL_ROLLBACK_ROUTING_ACTIONS = new Set([
-  "jumpToLine",
-  "rollbackByOffset",
-  "rollbackToLine",
-  "sectionTransition",
-  "resetStoryAtSection",
-]);
-
-const LEGACY_CONDITIONAL_BRANCH_REACHABILITY = {
-  always: "always",
-  maybe: "maybe",
-  never: "never",
-};
-
-const getLegacyConditionalBranchReachability = (branch) => {
-  if (!Object.prototype.hasOwnProperty.call(branch ?? {}, "when")) {
-    return LEGACY_CONDITIONAL_BRANCH_REACHABILITY.always;
-  }
-
-  const condition = branch.when;
-  let staticValue;
-  if (
-    condition === null ||
-    typeof condition === "boolean" ||
-    typeof condition === "number"
-  ) {
-    staticValue = condition;
-  } else if (
-    isRecord(condition) &&
-    Object.keys(condition).length === 1 &&
-    Object.prototype.hasOwnProperty.call(condition, "literal")
-  ) {
-    staticValue = condition.literal;
-  } else {
-    // Legacy checkpoints do not retain the variables/runtime from every
-    // occurrence. Treat dynamic conditions as possibly taken instead of
-    // evaluating them against the final save state.
-    return LEGACY_CONDITIONAL_BRANCH_REACHABILITY.maybe;
-  }
-
-  return staticValue
-    ? LEGACY_CONDITIONAL_BRANCH_REACHABILITY.always
-    : LEGACY_CONDITIONAL_BRANCH_REACHABILITY.never;
-};
-
-const someReachableLegacyConditionalBranch = (payload, predicate) => {
-  if (!Array.isArray(payload?.branches)) {
-    return false;
-  }
-
-  for (const branch of payload.branches) {
-    const reachability = getLegacyConditionalBranchReachability(branch);
-    if (reachability === LEGACY_CONDITIONAL_BRANCH_REACHABILITY.never) {
-      continue;
-    }
-
-    if (predicate(branch)) {
-      return true;
-    }
-
-    if (reachability === LEGACY_CONDITIONAL_BRANCH_REACHABILITY.always) {
-      return false;
-    }
-  }
-
-  return false;
-};
-
-const conditionalContainsRollbackRoutingAction = (payload) => {
-  return someReachableLegacyConditionalBranch(payload, (branch) =>
-    Object.entries(branch?.actions ?? {}).some(([actionType, actionPayload]) =>
-      actionType === "conditional"
-        ? conditionalContainsRollbackRoutingAction(actionPayload)
-        : CONDITIONAL_ROLLBACK_ROUTING_ACTIONS.has(actionType),
-    ),
-  );
-};
-
-const conditionalCanRouteToRollbackPointer = (
-  projectData,
-  payload,
-  checkpoint,
-) => {
-  return someReachableLegacyConditionalBranch(payload, (branch) =>
-    Object.entries(branch?.actions ?? {}).some(
-      ([actionType, actionPayload]) => {
-        if (actionType === "sectionTransition") {
-          return sectionTransitionTargetsRollbackPointer(
-            projectData,
-            actionPayload,
-            checkpoint,
-          );
-        }
-        if (actionType === "conditional") {
-          return conditionalCanRouteToRollbackPointer(
-            projectData,
-            actionPayload,
-            checkpoint,
-          );
-        }
-        return false;
-      },
-    ),
-  );
-};
-
-const deriveLegacyRollbackCheckpointReturnable = (
-  checkpoint,
-  nextCheckpoint,
-  projectData,
-) => {
-  if (!nextCheckpoint) {
-    return true;
-  }
-
-  const actions = getRollbackLine(projectData, checkpoint)?.actions;
-  if (!isRecord(actions)) {
-    return true;
-  }
-
-  if (
-    sectionTransitionTargetsRollbackPointer(
-      projectData,
-      actions.sectionTransition,
-      nextCheckpoint,
-    )
-  ) {
-    return false;
-  }
-
-  const conditional = actions.conditional;
-  if (!conditional) {
-    return true;
-  }
-
-  if (
-    conditionalCanRouteToRollbackPointer(
-      projectData,
-      conditional,
-      nextCheckpoint,
-    )
-  ) {
-    return false;
-  }
-
-  const hasBlockingInteraction =
-    actions.choice?.resourceId || actions.form?.resourceId;
-  if (
-    !hasBlockingInteraction &&
-    !conditionalContainsRollbackRoutingAction(conditional) &&
-    isSameRollbackPointer(
-      getNextAuthoredRollbackPointer(projectData, checkpoint),
-      nextCheckpoint,
-    )
-  ) {
-    return false;
-  }
-
-  return true;
-};
-
 const normalizeLoadedRollback = (rollback, readPointer, projectData) => {
   if (!isRecord(rollback) || !Array.isArray(rollback.timeline)) {
     return {
@@ -1386,7 +1185,6 @@ const normalizeLoadedRollback = (rollback, readPointer, projectData) => {
     };
   }
 
-  const checkpointsWithExplicitReturnability = new WeakSet();
   const sourceCheckpointIndexes = [];
   const timeline = rollback.timeline.flatMap((checkpoint, index) => {
     if (!isRecord(checkpoint)) {
@@ -1421,10 +1219,6 @@ const normalizeLoadedRollback = (rollback, readPointer, projectData) => {
             }
           : {}),
       });
-      if (typeof checkpoint.returnable === "boolean") {
-        checkpointsWithExplicitReturnability.add(normalizedCheckpoint);
-      }
-
       const sanitizedExecutedActions = sanitizePersistedRollbackExecutedActions(
         cloneStateValue(checkpoint.executedActions),
         projectData,
@@ -1449,23 +1243,6 @@ const normalizeLoadedRollback = (rollback, readPointer, projectData) => {
       sourceCheckpointIndexes: [null],
       sourceTimelineLength: rollback.timeline.length,
     };
-  }
-
-  const shouldDeriveLegacyReturnability =
-    rollback.returnabilityVersion !== ROLLBACK_RETURNABILITY_VERSION;
-  if (shouldDeriveLegacyReturnability) {
-    timeline.forEach((checkpoint, index) => {
-      if (
-        !checkpointsWithExplicitReturnability.has(checkpoint) &&
-        !deriveLegacyRollbackCheckpointReturnable(
-          checkpoint,
-          timeline[index + 1],
-          projectData,
-        )
-      ) {
-        checkpoint.returnable = false;
-      }
-    });
   }
 
   const sourceCurrentIndex =
@@ -2426,7 +2203,6 @@ export const markSavedRollbackCheckpointTransient = (
   }
 
   checkpoint.returnable = false;
-  rollback.returnabilityVersion = ROLLBACK_RETURNABILITY_VERSION;
   state.global.pendingEffects.push({
     name: "saveSlots",
     payload: {
