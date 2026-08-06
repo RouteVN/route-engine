@@ -438,6 +438,26 @@ const shouldEmitAnimationSelection = ({
   return false;
 };
 
+const isItemAnimationAuthoredOnCurrentLine = (
+  currentLineActions,
+  actionKey,
+  itemId,
+  itemIndex,
+  currentItems,
+) => {
+  if (currentLineActions === undefined) {
+    return true;
+  }
+
+  const occurrenceIndex = currentItems
+    .slice(0, itemIndex)
+    .filter((item) => item?.id === itemId).length;
+  const authoredItem = currentLineActions?.[actionKey]?.items
+    ?.filter((item) => item?.id === itemId)
+    .at(occurrenceIndex);
+  return hasOwnProperty(authoredItem ?? {}, "animations");
+};
+
 const hasLegacyAnimationLifecycleConfig = (animationsDef) => {
   if (
     !animationsDef ||
@@ -2858,10 +2878,12 @@ export const addCharacters = (
   {
     presentationState,
     previousPresentationState,
+    currentLineActions,
     resources,
     isLineCompleted,
     skipTransitionsAndAnimations,
     activePersistentAnimations,
+    restoredPersistentAnimations,
   },
 ) => {
   const { elements, animations } = state;
@@ -2895,6 +2917,14 @@ export const addCharacters = (
               previousDuplicateCharacterIds,
             )
           : undefined;
+      const isAnimationAuthoredOnCurrentLine =
+        isItemAnimationAuthoredOnCurrentLine(
+          currentLineActions,
+          "character",
+          item.id,
+          i,
+          items,
+        );
 
       const characterAnimationInstances = createAnimationInstances({
         animationsDef: item.animations,
@@ -2921,6 +2951,8 @@ export const addCharacters = (
           isLineCompleted,
           skipTransitionsAndAnimations,
           activePersistentAnimations,
+          restoredPersistentAnimations,
+          isAuthoredOnCurrentLine: isAnimationAuthoredOnCurrentLine,
         })
       ) {
         animations.push(...characterAnimationInstances);
@@ -2979,6 +3011,8 @@ export const addCharacters = (
           isLineCompleted,
           skipTransitionsAndAnimations,
           activePersistentAnimations,
+          restoredPersistentAnimations,
+          isAuthoredOnCurrentLine: isAnimationAuthoredOnCurrentLine,
         })
       ) {
         animations.push(...characterAnimationInstances);
@@ -3020,6 +3054,7 @@ export const addVisuals = (
   {
     presentationState,
     previousPresentationState,
+    currentLineActions,
     resources,
     isLineCompleted,
     skipTransitionsAndAnimations,
@@ -3029,6 +3064,7 @@ export const addVisuals = (
     sceneReplay,
     runtime,
     activePersistentAnimations,
+    restoredPersistentAnimations,
     autoMode,
     skipMode,
     isChoiceVisible,
@@ -3070,8 +3106,16 @@ export const addVisuals = (
       assertVisualLayer(visualLayer, "visualLayer");
     }
 
-    for (const item of items) {
+    for (const [itemIndex, item] of items.entries()) {
       const previousItem = previousItems.find((p) => p.id === item.id);
+      const isAnimationAuthoredOnCurrentLine =
+        isItemAnimationAuthoredOnCurrentLine(
+          currentLineActions,
+          "visual",
+          item.id,
+          itemIndex,
+          items,
+        );
       const itemLayer = resolveVisualItemLayer(item, previousItem);
 
       if (visualLayer !== undefined && itemLayer !== visualLayer) {
@@ -3240,6 +3284,8 @@ export const addVisuals = (
           isLineCompleted,
           skipTransitionsAndAnimations,
           activePersistentAnimations,
+          restoredPersistentAnimations,
+          isAuthoredOnCurrentLine: isAnimationAuthoredOnCurrentLine,
         })
       ) {
         animations.push(...visualAnimationInstances);

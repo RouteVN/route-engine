@@ -1,0 +1,113 @@
+---
+title: Persistent Animation Removal Re-Add
+description: |
+  A persistent animation authored on an animation-only removal must clear on
+  the following line and must not attach when that visual id is later re-added.
+specs:
+  - the animation-only action removes the original visual
+  - the persistent selection clears on the following line
+  - re-adding the same id produces a stationary visual
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 100
+  - action: screenshot
+  - action: customEvent
+    name: vt:nextLine
+  - action: wait
+    ms: 50
+  - action: customEvent
+    name: vt:nextLine
+  - action: wait
+    ms: 50
+  - action: customEvent
+    name: vt:nextLine
+  - action: wait
+    ms: 50
+  - action: customEvent
+    name: vt:nextLine
+  - action: wait
+    ms: 50
+  - action: customEvent
+    name: vt:nextLine
+  - action: wait
+    ms: 50
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 250
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+  backgroundColor: "#000000"
+resources:
+  layouts:
+    marker:
+      elements:
+        - id: marker-shape
+          type: rect
+          width: 120
+          height: 120
+          colorId: markerColor
+  transforms:
+    markerStart:
+      x: 240
+      y: 270
+      anchorX: 0.5
+      anchorY: 0.5
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+  animations:
+    horizontalLoop:
+      type: update
+      tween:
+        x:
+          initialValue: 240
+          keyframes:
+            - duration: 1000
+              value: 720
+              easing: linear
+  colors:
+    markerColor:
+      hex: "#FFFFFF"
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: shown
+              actions:
+                visual:
+                  items:
+                    - id: marker
+                      resourceId: marker
+                      transformId: markerStart
+            - id: removed
+              actions:
+                visual:
+                  items:
+                    - id: marker
+                      animations:
+                        resourceId: horizontalLoop
+                        playback:
+                          continuity: persistent
+                          loop: true
+            - id: cleared
+              actions: {}
+            - id: re-added
+              actions:
+                visual:
+                  items:
+                    - id: marker
+                      resourceId: marker
+                      transformId: markerStart

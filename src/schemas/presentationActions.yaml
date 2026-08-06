@@ -11,7 +11,7 @@ definitions:
         type: string
         enum: [render, persistent]
         default: render
-        description: Whether animation continuity is render-scoped or persists across later renders while the action remains active
+        description: Whether animation continuity is render-scoped or persists across later compatible renders. Persistent character and visual item selections remain active while the same item id is retained.
       speed:
         type: number
         exclusiveMinimum: 0

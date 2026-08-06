@@ -904,6 +904,150 @@ out:
     content:
       - text: "So beautiful!"
 ---
+case: preserve persistent visual item animations when later presentations omit the visual action
+in:
+  - - visual:
+        items:
+          - id: "sparkle"
+            resourceId: "effect-sparkle"
+            animations:
+              resourceId: "spin"
+              playback:
+                continuity: "persistent"
+                loop: true
+    - dialogue:
+        mode: "adv"
+        content:
+          - text: "Still spinning!"
+out:
+  visual:
+    items:
+      - id: "sparkle"
+        resourceId: "effect-sparkle"
+        animations:
+          resourceId: "spin"
+          playback:
+            continuity: "persistent"
+            loop: true
+  dialogue:
+    mode: "adv"
+    content:
+      - text: "Still spinning!"
+---
+case: preserve persistent character item animations when later presentations omit the character action
+in:
+  - - character:
+        items:
+          - id: "sakura"
+            resourceId: "char-sakura"
+            animations:
+              resourceId: "drift"
+              playback:
+                continuity: "persistent"
+                loop: true
+    - dialogue:
+        mode: "adv"
+        content:
+          - text: "Still moving!"
+out:
+  character:
+    items:
+      - id: "sakura"
+        resourceId: "char-sakura"
+        animations:
+          resourceId: "drift"
+          playback:
+            continuity: "persistent"
+            loop: true
+  dialogue:
+    mode: "adv"
+    content:
+      - text: "Still moving!"
+---
+case: id-only visual removal does not inherit a persistent animation
+in:
+  - - visual:
+        items:
+          - id: "sparkle"
+            resourceId: "effect-sparkle"
+            animations:
+              resourceId: "spin"
+              playback:
+                continuity: "persistent"
+    - visual:
+        items:
+          - id: "sparkle"
+out: {}
+---
+case: id-only character removal does not inherit a persistent animation
+in:
+  - - character:
+        items:
+          - id: "sakura"
+            resourceId: "char-sakura"
+            animations:
+              resourceId: "drift"
+              playback:
+                continuity: "persistent"
+    - character:
+        items:
+          - id: "sakura"
+out: {}
+---
+case: clear persistent visual animation after an animation-only removal
+in:
+  - - visual:
+        items:
+          - id: "sparkle"
+            resourceId: "effect-sparkle"
+    - visual:
+        items:
+          - id: "sparkle"
+            animations:
+              resourceId: "spin"
+              playback:
+                continuity: "persistent"
+    - dialogue:
+        mode: "adv"
+        content:
+          - text: "Removed"
+out:
+  visual:
+    items:
+      - id: "sparkle"
+        animations: {}
+  dialogue:
+    mode: "adv"
+    content:
+      - text: "Removed"
+---
+case: clear persistent character animation after an animation-only removal
+in:
+  - - character:
+        items:
+          - id: "sakura"
+            resourceId: "char-sakura"
+    - character:
+        items:
+          - id: "sakura"
+            animations:
+              resourceId: "drift"
+              playback:
+                continuity: "persistent"
+    - dialogue:
+        mode: "adv"
+        content:
+          - text: "Removed"
+out:
+  character:
+    items:
+      - id: "sakura"
+        animations: {}
+  dialogue:
+    mode: "adv"
+    content:
+      - text: "Removed"
+---
 case: preserve visual item layer in presentation state
 in:
   - - visual:

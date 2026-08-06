@@ -105,6 +105,11 @@ const hasVisualSubject = (item, previousItem) => {
   return !previousItem?.text;
 };
 
+const hasCharacterSubject = (item) =>
+  (item?.sprites && item.sprites.length > 0) ||
+  item?.transformId ||
+  item?.resourceId;
+
 const mergeVisualItemPatch = (previousItem, item) => {
   const mergedItem = {
     ...clonePresentationValue(previousItem),
@@ -309,8 +314,23 @@ const processItemsWithAnimations = (
               ...clonePresentationValue(previousItem),
               ...processedItem,
             };
+      }
 
-        if (!hasAnimations) {
+      if (!hasAnimations) {
+        const previousHasResource = previousItem
+          ? hasResourceFn(previousItem)
+          : false;
+        const nextHasResource = hasResourceFn(processedItem);
+
+        if (
+          previousHasResource &&
+          nextHasResource &&
+          hasPersistentAnimationSelection(previousItem)
+        ) {
+          processedItem.animations = clonePresentationValue(
+            previousItem.animations,
+          );
+        } else {
           delete processedItem.animations;
         }
       }
@@ -965,10 +985,14 @@ export const visual = (state, presentation) => {
       delete state.visual;
     }
   } else {
-    // Only clear animations from items that have them
+    // Render-scoped selections end with their authored presentation. Persistent
+    // selections remain attached to the same item id across later lines.
     if (state.visual?.items) {
       state.visual.items = state.visual.items.map((item) => {
-        if (item.animations) {
+        if (
+          item.animations &&
+          (!hasVisualSubject(item) || !hasPersistentAnimationSelection(item))
+        ) {
           return { ...item, animations: {} };
         }
         return item;
@@ -984,10 +1008,14 @@ export const visual = (state, presentation) => {
  */
 export const character = (state, presentation) => {
   if (!presentation.character) {
-    // Only clear animations from items that have them
+    // Render-scoped selections end with their authored presentation. Persistent
+    // selections remain attached to the same item id across later lines.
     if (state.character?.items) {
       state.character.items = state.character.items.map((item) => {
-        if (item.animations) {
+        if (
+          item.animations &&
+          (!hasCharacterSubject(item) || !hasPersistentAnimationSelection(item))
+        ) {
           return { ...item, animations: {} };
         }
         return item;
@@ -998,10 +1026,7 @@ export const character = (state, presentation) => {
 
   const { hasValidItems, processedItems } = processItemsWithAnimations(
     presentation.character.items,
-    (item) =>
-      (item.sprites && item.sprites.length > 0) ||
-      item.transformId ||
-      item.resourceId,
+    hasCharacterSubject,
     state.character?.items || [],
   );
 

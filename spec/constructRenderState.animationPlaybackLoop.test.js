@@ -219,4 +219,81 @@ describe("constructRenderState animation playback loop", () => {
       "[visual.items[marker].animations.playback] playback.loop requires an animation with a finite duration greater than 0.",
     );
   });
+
+  it("emits an animation authored on the second duplicate character occurrence", () => {
+    const characterItems = [
+      {
+        id: "twin",
+        transformId: "left",
+        sprites: [{ id: "body", resourceId: "body" }],
+      },
+      {
+        id: "twin",
+        transformId: "right",
+        sprites: [{ id: "body", resourceId: "body" }],
+        animations: {
+          resourceId: "drift",
+        },
+      },
+    ];
+    const renderState = constructRenderState({
+      presentationState: {
+        character: {
+          items: characterItems,
+        },
+      },
+      currentLineActions: {
+        character: {
+          items: characterItems,
+        },
+      },
+      resources: {
+        images: {
+          body: {
+            fileId: "body.png",
+            width: 100,
+            height: 200,
+          },
+        },
+        transforms: {
+          left: {
+            x: 300,
+            y: 900,
+            anchorX: 0.5,
+            anchorY: 1,
+            rotation: 0,
+            scaleX: 1,
+            scaleY: 1,
+          },
+          right: {
+            x: 1600,
+            y: 900,
+            anchorX: 0.5,
+            anchorY: 1,
+            rotation: 0,
+            scaleX: 1,
+            scaleY: 1,
+          },
+        },
+        animations: {
+          drift: {
+            type: "update",
+            tween: {
+              x: {
+                initialValue: 1600,
+                keyframes: [{ duration: 1000, value: 1400 }],
+              },
+            },
+          },
+        },
+      },
+      isLineCompleted: false,
+    });
+
+    expect(renderState.animations).toEqual([
+      expect.objectContaining({
+        targetId: "character-container-twin-1-body",
+      }),
+    ]);
+  });
 });

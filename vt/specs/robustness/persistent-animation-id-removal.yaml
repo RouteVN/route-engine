@@ -1,0 +1,89 @@
+---
+title: Persistent Animation Id-Only Removal
+description: |
+  Removing a persistently animated visual with an id-only item must stop the
+  outgoing loop instead of keeping its old render target alive.
+specs:
+  - an id-only visual item removes the target and stops its loop
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 100
+  - action: customEvent
+    name: vt:nextLine
+  - action: wait
+    ms: 50
+  - action: customEvent
+    name: vt:nextLine
+  - action: wait
+    ms: 50
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 250
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+  backgroundColor: "#000000"
+resources:
+  layouts:
+    marker:
+      elements:
+        - id: marker-shape
+          type: rect
+          width: 120
+          height: 120
+          colorId: markerColor
+  transforms:
+    markerStart:
+      x: 240
+      y: 270
+      anchorX: 0.5
+      anchorY: 0.5
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+  animations:
+    horizontalLoop:
+      type: update
+      tween:
+        x:
+          initialValue: 240
+          keyframes:
+            - duration: 1000
+              value: 720
+              easing: linear
+  colors:
+    markerColor:
+      hex: "#FFFFFF"
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: animated
+              actions:
+                visual:
+                  items:
+                    - id: marker
+                      resourceId: marker
+                      transformId: markerStart
+                      animations:
+                        resourceId: horizontalLoop
+                        playback:
+                          continuity: persistent
+                          loop: true
+            - id: removed
+              actions:
+                visual:
+                  items:
+                    - id: marker
