@@ -13,6 +13,20 @@ const hasPersistentAnimationSelection = (value) =>
 const hasDefinedProperty = (value, key) =>
   hasOwnProperty(value ?? {}, key) && value[key] !== undefined;
 
+const isPersistentSfxChannel = (channel) => channel?.applyMode === "persistent";
+
+const DEFAULT_SFX_CHANNEL_ID = "default";
+
+const getPersistentSfxChannels = (sfxState) => {
+  if (!Array.isArray(sfxState?.channels)) {
+    return [];
+  }
+
+  return sfxState.channels
+    .filter(isPersistentSfxChannel)
+    .map(clonePresentationValue);
+};
+
 /**
  * Helper to handle animations-only state when no resource is provided
  * @param {Object} presentation - The presentation object
@@ -912,22 +926,76 @@ export const dialogue = (state, presentation) => {
  * @param {Object} presentation - The presentation to apply
  */
 export const sfx = (state, presentation) => {
-  if (presentation.sfx) {
-    const hasLegacyItems =
-      Array.isArray(presentation.sfx.items) &&
-      presentation.sfx.items.length > 0;
-    const hasChannels =
-      Array.isArray(presentation.sfx.channels) &&
-      presentation.sfx.channels.length > 0;
+  const persistentChannels = getPersistentSfxChannels(state.sfx);
 
-    if (!hasLegacyItems && !hasChannels) {
+  if (!presentation.sfx) {
+    if (persistentChannels.length > 0) {
+      state.sfx = { channels: persistentChannels };
+      return;
+    }
+
+    delete state.sfx;
+    return;
+  }
+
+  if (Array.isArray(presentation.sfx.items)) {
+    const unrelatedPersistentChannels = persistentChannels.filter(
+      (channel) => channel.id !== DEFAULT_SFX_CHANNEL_ID,
+    );
+
+    if (presentation.sfx.items.length === 0) {
+      if (unrelatedPersistentChannels.length > 0) {
+        state.sfx = { channels: unrelatedPersistentChannels };
+        return;
+      }
+
       delete state.sfx;
       return;
     }
+
     state.sfx = clonePresentationValue(presentation.sfx);
-  } else if (state.sfx) {
-    delete state.sfx;
+
+    if (unrelatedPersistentChannels.length > 0) {
+      state.sfx.channels = unrelatedPersistentChannels;
+    }
+
+    return;
   }
+
+  if (!Array.isArray(presentation.sfx.channels)) {
+    if (persistentChannels.length > 0) {
+      state.sfx = { channels: persistentChannels };
+      return;
+    }
+
+    delete state.sfx;
+    return;
+  }
+
+  if (presentation.sfx.channels.length === 0) {
+    delete state.sfx;
+    return;
+  }
+
+  const incomingChannelIds = new Set(
+    presentation.sfx.channels.map((channel) => channel.id),
+  );
+  const nextChannels = persistentChannels.filter(
+    (channel) => !incomingChannelIds.has(channel.id),
+  );
+
+  for (const channel of presentation.sfx.channels) {
+    if (Array.isArray(channel.sounds) && channel.sounds.length > 0) {
+      nextChannels.push(clonePresentationValue(channel));
+    }
+  }
+
+  if (nextChannels.length === 0) {
+    delete state.sfx;
+    return;
+  }
+
+  state.sfx = { channels: nextChannels };
 };
 
 /**

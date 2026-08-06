@@ -3982,21 +3982,25 @@ export const addSfx = (state, { presentationState, resources, runtime }) => {
 
   if (presentationState.sfx && resources) {
     const sfx = presentationState.sfx;
-    const usesLegacyChannel = !Array.isArray(sfx.channels);
-    const channels = !usesLegacyChannel
-      ? sfx.channels
-      : [
-          {
-            id: DEFAULT_SFX_CHANNEL_ID,
-            sounds: sfx.items ?? [],
-          },
-        ];
+    const canonicalChannels = Array.isArray(sfx.channels) ? sfx.channels : [];
+    const channels = canonicalChannels.map((channel) => ({
+      channel,
+      usesLegacyChannel: false,
+    }));
 
-    if (!usesLegacyChannel) {
-      assertUniqueAudioIds(channels, "SFX channel");
+    assertUniqueAudioIds(canonicalChannels, "SFX channel");
+
+    if (Array.isArray(sfx.items)) {
+      channels.push({
+        channel: {
+          id: DEFAULT_SFX_CHANNEL_ID,
+          sounds: sfx.items,
+        },
+        usesLegacyChannel: true,
+      });
     }
 
-    channels.forEach((channel) => {
+    channels.forEach(({ channel, usesLegacyChannel }) => {
       const loopsChannel = !usesLegacyChannel && channel.loop === true;
       const children = [];
 

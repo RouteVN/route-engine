@@ -2940,7 +2940,7 @@ const diffBackground = (prevBackground, currBackground) => {
  */
 export const diffPresentationState = (prev = {}, curr = {}) => {
   const changes = {};
-  const instantaneousKeys = ["sfx", "voice"];
+  const instantaneousKeys = ["voice"];
 
   const diffObject = (key) => {
     const prevItem = prev[key];
@@ -2949,7 +2949,15 @@ export const diffPresentationState = (prev = {}, curr = {}) => {
     if (currItem && !prevItem) {
       changes[key] = { changeType: "add", data: currItem };
     } else if (prevItem && !currItem) {
-      if (!instantaneousKeys.includes(key)) {
+      const hasPersistentSfxChannel =
+        key === "sfx" &&
+        prevItem.channels?.some(
+          (channel) => channel.applyMode === "persistent",
+        );
+      if (
+        !instantaneousKeys.includes(key) &&
+        (key !== "sfx" || hasPersistentSfxChannel)
+      ) {
         changes[key] = { changeType: "delete", data: prevItem };
       }
     } else if (prevItem && currItem) {
@@ -2994,6 +3002,20 @@ export const diffPresentationState = (prev = {}, curr = {}) => {
 
 export const normalizePersistentPresentationState = (state = {}) => {
   const normalizedState = structuredClone(state);
+
+  if (normalizedState.sfx) {
+    const persistentChannels = Array.isArray(normalizedState.sfx.channels)
+      ? normalizedState.sfx.channels.filter(
+          (channel) => channel.applyMode === "persistent",
+        )
+      : [];
+
+    if (persistentChannels.length > 0) {
+      normalizedState.sfx = { channels: persistentChannels };
+    } else {
+      delete normalizedState.sfx;
+    }
+  }
 
   if (normalizedState.background) {
     if (

@@ -1615,6 +1615,7 @@ describe("projectData schema", () => {
             {
               id: "environment",
               pan: 0.5,
+              applyMode: "persistent",
               sounds: [{ id: "rain", resourceId: "rain", loop: true }],
             },
           ],
@@ -1622,6 +1623,22 @@ describe("projectData schema", () => {
       }),
     ).toBe(true);
     expect(validatePresentationActions.errors).toBeNull();
+  });
+
+  it("rejects an invalid SFX channel apply mode", () => {
+    expect(
+      validatePresentationActions({
+        sfx: {
+          channels: [
+            {
+              id: "environment",
+              applyMode: "scene",
+              sounds: [{ id: "rain", resourceId: "rain" }],
+            },
+          ],
+        },
+      }),
+    ).toBe(false);
   });
 
   it("rejects invalid sound output and playback controls", () => {
