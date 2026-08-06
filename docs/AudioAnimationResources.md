@@ -84,15 +84,16 @@ The engine resolves:
 - resource lookup
 - previous/next BGM diffing
 - target property values
-- runtime master-volume scaling
+- an independent runtime master-volume control
 - action-level speed
-- skip policy
+- explicit skip settlement control
 
 Route Graphics owns:
 
-- a shared Web Audio start clock for both sides
+- a shared Web Audio start clock when both sides are ready at reconciliation
 - decode and delayed-start behavior
 - outgoing/incoming instance overlap
+- independent master and authored/automation gain layers
 - automation interruption from the renderer-owned current value
 - exit cleanup
 - `loopEnd` tail coordination
@@ -203,8 +204,12 @@ previous main: current volume -> 0
 next main:                    0 -> 80
 ```
 
-Both sides begin from the same Route Graphics reconciliation clock when the
-incoming source is ready. Decode-delay behavior follows the renderer contract.
+When the incoming source is ready at reconciliation, both sides begin from the
+same Route Graphics Web Audio base time. When decoding delays the incoming
+source, the outgoing fade still begins immediately and is never postponed. The
+incoming source and its fade begin together only after decode, validation, and
+`startDelayMs` complete. The remaining overlap may therefore be shorter, or an
+audible gap may occur if the outgoing side finishes first.
 
 ### Entry
 
@@ -546,16 +551,19 @@ side and all incoming sounds belong to the `next` side. The fade is applied at
 side-owned gain stages so a complete scheduled BGM channel can crossfade as one
 unit without rewriting each sound's authored volume.
 
-This is distinct from the persistent runtime music-volume gain. Side gains are
-temporary renderer-owned handoff gains:
+This is distinct from the persistent runtime music master gain. Route Graphics
+must keep that master gain as a separate stage from authored channel volume,
+authored sound volume, temporary side gains, and retained-property automation:
 
 ```text
-effective gain = runtime music gain * authored channel gain
+effective gain = runtime master gain * authored channel gain
                * authored sound gain * handoff side gain
 ```
 
 After completion, the next side settles without a handoff gain and the previous
-side is released.
+side is released. One shared master stage multiplies both handoff sides, so a
+runtime setting change affects outgoing and incoming audio uniformly without
+changing either local fade envelope.
 
 ## Route Graphics Prerequisite
 
@@ -585,6 +593,24 @@ owned by the Route Graphics change, but the contract must carry:
 - optional previous-side volume automation
 - optional next-side volume automation
 - shared reconciliation ownership
+- an independent persistent master-volume gain/control
+- an explicit automation-settlement control that is valid without a handoff or
+  current animation selection
+
+The normalized renderer input must include an explicit command equivalent to:
+
+```yaml
+audioAnimationControl:
+  commandId: 42
+  operation: settle
+```
+
+The exact field name may follow Route Graphics conventions, but the command is
+not optional behavior. `commandId` is monotonically increasing within an engine
+lifetime, making repeated renders and stale commands deterministic. A render
+without this command preserves active automation; a render carrying a newer
+accepted `settle` command performs settlement even if it has no handoff, update,
+or current animation selection.
 
 The handoff is supplied with the next render state and may target nodes resolved
 from the previous state, next state, or both. Route Graphics normalizes it to
@@ -593,13 +619,25 @@ the same internal keyframe automation used by inline audio transitions.
 Required semantics:
 
 - one renderer validation pass sees previous audio, next audio, and handoff
-- both ready sides use one Web Audio base time
-- pending decode does not postpone outgoing teardown
+- both sides use one Web Audio base time only when the incoming side is ready at
+  reconciliation
+- outgoing automation begins immediately at reconciliation and pending decode
+  never postpones its fade, teardown, or cleanup
+- a delayed incoming source starts its fade from the beginning when playback
+  actually starts; its automation does not advance silently during decode
+- incoming decode/validation failure does not restore or postpone the outgoing
+  side
 - interruption begins from renderer-owned current gain
 - outgoing cleanup waits for its finite fade and applicable `loopEnd` tail
 - handoffs do not block `renderComplete`
-- enabling skip settles both active handoffs and retained-property update
-  automation immediately at the latest declared state
+- master-volume changes multiply active local automation without cancelling,
+  restarting, rescaling, or extending its timeline
+- an explicit settle control cancels both active handoffs and retained-property
+  update automation immediately at the latest declared state
+- settle commands are monotonic and idempotent; stale commands cannot affect a
+  newer renderer generation
+- ordinary omission of animation input does not settle or cancel active
+  automation
 - inline node transitions and a handoff may not target the same lifecycle side
   simultaneously
 - existing inline and legacy `audioEffects` inputs remain compatible
@@ -624,8 +662,10 @@ Inputs:
 
 Outputs:
 
-- settled Route Graphics audio graph
+- settled Route Graphics audio graph with authored/local volume separate from
+  runtime master volume
 - optional concrete renderer audio handoff/update input
+- explicit renderer automation-settlement control when skip is active
 
 Resolution order:
 
@@ -633,11 +673,15 @@ Resolution order:
 2. Resolve the selected resource ID and reject a missing resource.
 3. Validate that resource `type` matches the graph diff.
 4. Normalize playback speed; default to `1`.
-5. Resolve authored values against the final rendered target properties.
+5. Resolve authored values against unscaled authored/local target properties.
 6. Scale delays and durations by speed.
 7. Remove authoring-only `name`, `resourceId`, `target`, and playback metadata.
-8. Emit concrete Route Graphics handoff/update data.
-9. Omit all audio animation data when skip policy requires immediate settlement.
+8. Emit runtime music volume through its independent renderer master-gain
+   control.
+9. Emit concrete Route Graphics handoff/update data when skip is false.
+10. When skip is true, omit new animation input and emit the explicit settle
+    control even when the current action has no animation selection. Omission
+    alone is never a settlement signal.
 
 Errors must include both selection and resource paths, for example:
 
@@ -650,17 +694,42 @@ Audio animation resource "music-crossfade" does not exist.
 
 ### Master volume
 
-Resolve final channel target values after applying runtime music volume. A
-reusable update ending at `target` therefore lands on the actual Route Graphics
-node value, not the pre-runtime authored value.
+Do not pre-scale authored BGM channel volume by runtime music volume. Route
+Graphics must expose a separate persistent master-gain stage/control so local
+animation and device settings remain independently multiplicative.
+
+A reusable update ending at `target` resolves to the authored/local channel
+value. Changing `musicVolume` updates only the independent master gain and must
+not cancel, restart, rebase, rescale, or extend an active fade or retained
+update.
 
 Example:
 
 ```text
 authored BGM volume: 70
 runtime music volume: 50
-renderer channel volume and update target: 35
+renderer local channel volume and update target: 70
+renderer master volume: 50
+effective output before sound/side gains: 35
 ```
+
+The renderer input is conceptually:
+
+```yaml
+id: channel:bgm
+type: audio-channel
+volume: 70
+masterVolume: 50
+```
+
+The exact master field name may follow Route Graphics conventions. Its separate
+gain parameter and reconciliation behavior are required: a settings-only render
+changes `masterVolume`, leaves `volume` unchanged, and does not touch scheduled
+local volume automation.
+
+This requires replacing the current combined BGM channel volume emitted by
+`addBgm`. Legacy and canonical BGM must preserve their existing effective output
+while using separate local and master renderer parameters.
 
 ### Mute
 
@@ -671,7 +740,9 @@ renderer-owned automation value.
 ### Skip
 
 When `skipTransitionsAndAnimations` is true at dispatch, add, remove, replace,
-and update settle immediately with no audio animation input.
+and update settle immediately. The engine emits no new animation input and does
+emit an explicit renderer settlement control on every skipped render, including
+renders whose current action has no audio animation selection.
 
 If skip becomes true while either a handoff or retained `type: update`
 automation is active, Route Graphics must cancel all applicable scheduled
@@ -679,10 +750,11 @@ automation at one shared current Web Audio time. It must then settle handoff
 targets at the next declared state, release previous handoff sides, and set
 retained update targets to their latest declared volume or pan immediately.
 Merely removing an inline declaration is insufficient under the current
-renderer contract: when a retained property's declaration is unchanged, its
-already-scheduled automation otherwise continues. Active handoff and retained
-update settlement are therefore both part of the renderer prerequisite and
-must have browser/audio coverage.
+renderer contract: ordinary omission must allow scheduled automation to
+continue, and when a retained property's declaration is unchanged its envelope
+otherwise has no reason to stop. The explicit signal is therefore part of the
+renderer prerequisite and active handoff and retained-update settlement must
+both have browser/audio coverage.
 
 ### New actions during active automation
 
@@ -731,11 +803,14 @@ test passing.
 
 1. Specify next-render-owned previous/next audio handoffs.
 2. Add normalization and schema validation.
-3. Implement shared-clock previous/next side gain automation.
-4. Implement interruption, decode-delay, failure, cleanup, and skip settlement.
-5. Add targeted unit/system tests.
-6. Add isolated deterministic audio visual tests.
-7. Release Route Graphics.
+3. Add an independent persistent master-volume gain stage/control.
+4. Implement shared-clock previous/next side gain automation for ready sources
+   and immediate outgoing progress during delayed incoming decode.
+5. Add explicit automation settlement independent of handoff/selection input.
+6. Implement interruption, failure, cleanup, and idempotent settlement.
+7. Add targeted unit/system tests.
+8. Add isolated deterministic audio visual tests.
+9. Release Route Graphics.
 
 This phase is a hard dependency for the one-reference authoring contract.
 
@@ -756,8 +831,12 @@ This phase is a hard dependency for the one-reference authoring contract.
 3. Add the isolated audio animation resolver.
 4. Compile transition resources into renderer handoffs.
 5. Compile update resources into concrete retained-node automation.
-6. Apply runtime volume, mute, speed, and skip rules.
-7. Add exact-path semantic errors.
+6. Emit authored BGM volume and runtime master volume as independent renderer
+   controls.
+7. Emit explicit settlement whenever skip is active, including without a
+   current animation selection.
+8. Apply mute and speed rules.
+9. Add exact-path semantic errors.
 
 ### Phase 3: Verification and documentation
 
@@ -816,10 +895,16 @@ Reject:
 - same BGM emits no handoff
 - wrong structural type throws with exact action/resource paths
 - update retains source identity and emits no replacement
-- target resolution uses final runtime-scaled volume
+- target resolution uses authored/local volume without runtime pre-scaling
+- runtime music volume is emitted through an independent master control
+- changing runtime music volume mid-animation does not emit replacement/update
+  automation or alter authored keyframe timing
 - speed scales delay and duration on every applicable side
 - mute remains a hard gate
-- skip emits immediate settled audio
+- skip emits explicit immediate settlement even without a current animation
+  selection
+- settlement command IDs increase monotonically and stale commands are ignored
+- ordinary omission of animation input does not settle active automation
 - duplicate/escaped authored sound IDs remain deterministic
 - resource objects are never mutated
 - authoring-only fields do not reach render output
@@ -835,6 +920,8 @@ Reject:
   the newest graph
 - enabling skip during a retained update cancels its automation and settles the
   latest declared property value immediately
+- changing runtime music volume during a handoff or retained update preserves
+  local automation progress and changes only the independent master gain
 
 ### Browser and audio-path tests
 
@@ -851,8 +938,14 @@ Create isolated fixtures that each exercise one behavior:
 6. transition interruption by a newer replacement
 7. skip enabled before dispatch
 8. skip enabled during an active handoff fade
-9. skip enabled during an active retained-property update
-10. incoming decode delay while outgoing cleanup continues
+9. retained-property update continues onto a line with no animation selection,
+   then skip explicitly settles it
+10. incoming decode delay while the outgoing fade and cleanup continue, then
+    incoming fade starts from its beginning at actual playback
+11. incoming decode/validation failure without outgoing postponement or
+    restoration
+12. runtime music-volume change during an active handoff
+13. runtime music-volume change during an active retained-property update
 
 Engine VT must prove the authored click/input path reaches the expected concrete
 renderer handoff. Route Graphics deterministic audio visual tests must prove the
@@ -894,11 +987,14 @@ The feature is complete when:
 3. retained-property updates use `type: update` and `tween`
 4. no separate enter/exit/replace resource types exist
 5. authored resource metadata never reaches Route Graphics
-6. runtime volume, mute, speed, skip, interruption, and cleanup contracts pass
-7. audio animations remain non-blocking
-8. schemas, generated localization validators, system tests, engine browser
+6. runtime volume remains an independent gain layer throughout active
+   automation
+7. explicit skip settlement, mute, speed, interruption, decode-delay, failure,
+   and cleanup contracts pass
+8. audio animations remain non-blocking
+9. schemas, generated localization validators, system tests, engine browser
    fixtures, and Route Graphics deterministic audio visual tests all pass
-9. existing BGM and visual animation authoring remains compatible
+10. existing BGM and visual animation authoring remains compatible
 
 ## Open Implementation Detail
 
