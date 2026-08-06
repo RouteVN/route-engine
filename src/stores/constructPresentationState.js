@@ -15,6 +15,8 @@ const hasDefinedProperty = (value, key) =>
 
 const isPersistentSfxChannel = (channel) => channel?.applyMode === "persistent";
 
+const DEFAULT_SFX_CHANNEL_ID = "default";
+
 const getPersistentSfxChannels = (sfxState) => {
   if (!Array.isArray(sfxState?.channels)) {
     return [];
@@ -937,19 +939,40 @@ export const sfx = (state, presentation) => {
   }
 
   if (Array.isArray(presentation.sfx.items)) {
+    const unrelatedPersistentChannels = persistentChannels.filter(
+      (channel) => channel.id !== DEFAULT_SFX_CHANNEL_ID,
+    );
+
     if (presentation.sfx.items.length === 0) {
+      if (unrelatedPersistentChannels.length > 0) {
+        state.sfx = { channels: unrelatedPersistentChannels };
+        return;
+      }
+
       delete state.sfx;
       return;
     }
 
     state.sfx = clonePresentationValue(presentation.sfx);
+
+    if (unrelatedPersistentChannels.length > 0) {
+      state.sfx.channels = unrelatedPersistentChannels;
+    }
+
     return;
   }
 
-  if (
-    !Array.isArray(presentation.sfx.channels) ||
-    presentation.sfx.channels.length === 0
-  ) {
+  if (!Array.isArray(presentation.sfx.channels)) {
+    if (persistentChannels.length > 0) {
+      state.sfx = { channels: persistentChannels };
+      return;
+    }
+
+    delete state.sfx;
+    return;
+  }
+
+  if (presentation.sfx.channels.length === 0) {
     delete state.sfx;
     return;
   }

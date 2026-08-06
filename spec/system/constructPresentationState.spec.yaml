@@ -353,6 +353,29 @@ out:
     content:
       - text: "Next line"
 ---
+case: persistent SFX channels remain when the next presentation has an empty SFX action
+in:
+  - - sfx:
+        channels:
+          - id: "ui"
+            sounds:
+              - id: "confirm"
+                resourceId: "confirm"
+          - id: "environment"
+            applyMode: "persistent"
+            sounds:
+              - id: "rain"
+                resourceId: "rain"
+    - sfx: {}
+out:
+  sfx:
+    channels:
+      - id: "environment"
+        applyMode: "persistent"
+        sounds:
+          - id: "rain"
+            resourceId: "rain"
+---
 case: new SFX channels merge with omitted persistent channels
 in:
   - - sfx:
@@ -380,6 +403,61 @@ out:
         sounds:
           - id: "confirm"
             resourceId: "confirm"
+---
+case: legacy SFX items merge the default channel with unrelated persistent channels
+in:
+  - - sfx:
+        channels:
+          - id: "environment"
+            applyMode: "persistent"
+            sounds:
+              - id: "rain"
+                resourceId: "rain"
+          - id: "default"
+            applyMode: "persistent"
+            sounds:
+              - id: "old-default"
+                resourceId: "old-default"
+    - sfx:
+        items:
+          - id: "confirm"
+            resourceId: "confirm"
+out:
+  sfx:
+    items:
+      - id: "confirm"
+        resourceId: "confirm"
+    channels:
+      - id: "environment"
+        applyMode: "persistent"
+        sounds:
+          - id: "rain"
+            resourceId: "rain"
+---
+case: empty legacy SFX items stop only the default channel
+in:
+  - - sfx:
+        channels:
+          - id: "environment"
+            applyMode: "persistent"
+            sounds:
+              - id: "rain"
+                resourceId: "rain"
+          - id: "default"
+            applyMode: "persistent"
+            sounds:
+              - id: "old-default"
+                resourceId: "old-default"
+    - sfx:
+        items: []
+out:
+  sfx:
+    channels:
+      - id: "environment"
+        applyMode: "persistent"
+        sounds:
+          - id: "rain"
+            resourceId: "rain"
 ---
 case: an empty SFX channel stops the persistent channel with the same id
 in:

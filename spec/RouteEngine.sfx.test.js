@@ -170,4 +170,49 @@ describe("RouteEngine SFX rendering", () => {
       },
     ]);
   });
+
+  it("renders legacy default-channel SFX without dropping persistent channels", () => {
+    const projectData = createProjectData();
+    projectData.story.scenes.scene1.sections.section1.lines = [
+      {
+        id: "line1",
+        actions: {
+          sfx: {
+            channels: [
+              {
+                id: "environment",
+                applyMode: "persistent",
+                sounds: [{ id: "rain", resourceId: "click" }],
+              },
+            ],
+          },
+        },
+      },
+      {
+        id: "line2",
+        actions: {
+          sfx: {
+            items: [{ id: "confirm", resourceId: "click" }],
+          },
+        },
+      },
+    ];
+
+    const engine = createRouteEngineWithInlineEffects();
+    engine.init({ initialState: { projectData } });
+
+    engine.handleAction("markLineCompleted", {});
+    engine.handleAction("nextLine", {});
+
+    expect(engine.selectRenderState().audio).toEqual([
+      expect.objectContaining({
+        id: "channel:sfx:environment",
+        children: [expect.objectContaining({ id: "sfx:environment:rain" })],
+      }),
+      expect.objectContaining({
+        id: "channel:sfx:default",
+        children: [expect.objectContaining({ id: "sfx:default:0:confirm" })],
+      }),
+    ]);
+  });
 });
