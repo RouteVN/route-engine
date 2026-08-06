@@ -133,6 +133,57 @@ Consequences:
 - save data stores settled BGM state, not active animation progress
 - resource IDs and temporary side ownership do not become renderer node identity
 
+### Own each accepted action occurrence
+
+Action scope also needs an occurrence identity. An authored story/action path is
+not sufficient: a settings-only render can observe the same current action
+metadata without accepting it again, while rollback or a later visit can
+legitimately execute the same authored path again.
+
+Extend the system store's existing transactional playback ownership with a
+monotonic `bgmActionOccurrenceId`. Every successfully accepted BGM action gets
+an immutable identity equivalent to:
+
+```yaml
+lifecycleGeneration: 3
+lineEntryId: 27
+bgmActionOccurrenceId: 9
+```
+
+The `lineEntryId` records the line occurrence; the BGM-specific counter keeps
+ownership explicit instead of assuming that an authored path or render count is
+an action edge. A legitimate revisit receives new line-entry and BGM occurrence
+IDs even when its path and payload are identical. Settings changes, unrelated
+renders, and repeated `selectRenderState()` or `prepareRenderState()` calls do
+not allocate a new occurrence. Allocation is part of the accepted action's
+transaction: failed validation, failed action execution, or transaction rollback
+cannot leak an occurrence ID or pending record.
+
+For an occurrence with an animation selection, the engine retains a pending
+record containing the identity, selection, and immutable previous/next
+canonical BGM snapshots. Selection is pure: every render prepared before
+commit carries the same occurrence-keyed handoff or update. After
+`routeGraphics.render()` accepts a current-lifecycle render,
+`commitRenderState()` consumes that occurrence. Later renders omit it. If
+renderer dispatch throws or commit is not reached, the occurrence remains
+pending and a retry uses the same identity and payload.
+
+The ownership state machine is:
+
+- accepted action: allocate the occurrence and mark its animation `pending`
+- render selection/preparation: read `pending` without changing it
+- failed renderer dispatch: remain `pending`
+- accepted current-lifecycle render commit: atomically mark that occurrence
+  `consumed`
+- later commit of another prepared render for the consumed occurrence: no-op
+
+Route Graphics must accept an identical duplicate occurrence idempotently
+without restarting automation. Reusing an occurrence ID with different
+handoff/update content is a contract error. Deduplication is scoped to the
+engine lifecycle generation, so a later visit to the same authored action is a
+new animation rather than a false duplicate. Pending and consumed occurrence
+metadata is engine-owned runtime state and is never serialized.
+
 ## Goals
 
 - define reusable BGM fade, crossfade, and retained-property animation resources
@@ -551,19 +602,45 @@ side and all incoming sounds belong to the `next` side. The fade is applied at
 side-owned gain stages so a complete scheduled BGM channel can crossfade as one
 unit without rewriting each sound's authored volume.
 
-This is distinct from the persistent runtime music master gain. Route Graphics
-must keep that master gain as a separate stage from authored channel volume,
-authored sound volume, temporary side gains, and retained-property automation:
+Each handoff side must also own an immutable channel-processing snapshot. The
+previous branch keeps the previous graph's authored channel `volume`, `pan`, and
+`muted` values and its sound-local processing; the next branch uses the next
+graph's values. Reconciliation of the stable public `channel:bgm` target must
+not replace processing shared by both branches. Otherwise a replacement that
+changes channel volume, pan, or mute would apply the next value to outgoing
+audio before its fade completes.
+
+Conceptually, Route Graphics keeps occurrence-scoped internal branches beneath
+one runtime output stage:
 
 ```text
-effective gain = runtime master gain * authored channel gain
-               * authored sound gain * handoff side gain
+prev sounds -> prev sound processing -> prev channel volume/pan/mute -> prev side gain --\
+                                                                                         +-> runtime music master -> muteAll gate
+next sounds -> next sound processing -> next channel volume/pan/mute -> next side gain --/
+```
+
+The runtime output stage is the only shared processing above the two branches:
+its persistent music master gain affects both sides uniformly, and its separate
+global `muteAll` gate affects both sides immediately. No authored BGM channel
+gain, panner, or mute gate is shared during a handoff. Internal branch IDs are
+namespaced by the action occurrence; they do not replace the stable public
+channel or sound identity contract.
+
+This is also distinct from retained-property automation. Route Graphics must
+keep the master gain, per-side authored channel processing, authored sound
+processing, temporary side gains, and retained automation as independent
+stages:
+
+```text
+effective gain per side = runtime master gain * authored side channel gain
+                        * authored side sound gain * handoff side gain
 ```
 
 After completion, the next side settles without a handoff gain and the previous
-side is released. One shared master stage multiplies both handoff sides, so a
-runtime setting change affects outgoing and incoming audio uniformly without
-changing either local fade envelope.
+side and its processing snapshot are released. The next snapshot becomes the
+retained channel processing. A runtime setting render may update only the
+shared runtime output stage; it cannot reconcile or rebase either side's local
+state or fade envelope.
 
 ## Route Graphics Prerequisite
 
@@ -588,12 +665,14 @@ and timing races.
 Add a next-render-owned audio handoff input to Route Graphics. Exact naming is
 owned by the Route Graphics change, but the contract must carry:
 
-- stable handoff ID
+- lifecycle-scoped action-occurrence ID and occurrence-derived stable handoff ID
 - target audio graph/node ID
+- complete immutable previous- and next-side channel-processing snapshots
 - optional previous-side volume automation
 - optional next-side volume automation
 - shared reconciliation ownership
 - an independent persistent master-volume gain/control
+- independent authored side mute gates and a global runtime mute gate
 - an explicit automation-settlement control that is valid without a handoff or
   current animation selection
 
@@ -619,6 +698,11 @@ the same internal keyframe automation used by inline audio transitions.
 Required semantics:
 
 - one renderer validation pass sees previous audio, next audio, and handoff
+- an identical duplicate action occurrence is idempotent and cannot restart,
+  reschedule, or extend automation; conflicting content for the same occurrence
+  ID is rejected
+- previous and next channel volume, pan, authored mute, and sound-local state
+  remain isolated for the lifetime of a handoff
 - both sides use one Web Audio base time only when the incoming side is ready at
   reconciliation
 - outgoing automation begins immediately at reconciliation and pending decode
@@ -632,6 +716,8 @@ Required semantics:
 - handoffs do not block `renderComplete`
 - master-volume changes multiply active local automation without cancelling,
   restarting, rescaling, or extending its timeline
+- authored and global mute changes use independent gates and never cancel,
+  hold, rewrite, or settle scheduled volume/side-gain automation
 - an explicit settle control cancels both active handoffs and retained-property
   update automation immediately at the latest declared state
 - settle commands are monotonic and idempotent; stale commands cannot affect a
@@ -653,9 +739,9 @@ is `src/resolveAudioAnimation.js`.
 
 Inputs:
 
-- previous resolved canonical BGM
-- next resolved canonical BGM
-- current action's audio animation selection
+- pending accepted BGM action occurrence, including lifecycle generation,
+  `lineEntryId`, `bgmActionOccurrenceId`, selection, and immutable previous/next
+  canonical BGM snapshots
 - `resources.audioAnimations`
 - resolved runtime music volume and mute/skip state
 - stable render/audio target IDs
@@ -664,24 +750,44 @@ Outputs:
 
 - settled Route Graphics audio graph with authored/local volume separate from
   runtime master volume
-- optional concrete renderer audio handoff/update input
+- optional occurrence-keyed concrete renderer audio handoff/update input with
+  isolated previous/next channel-processing snapshots
 - explicit renderer automation-settlement control when skip is active
 
 Resolution order:
 
-1. Resolve canonical previous and next BGM graphs without animation metadata.
-2. Resolve the selected resource ID and reject a missing resource.
-3. Validate that resource `type` matches the graph diff.
-4. Normalize playback speed; default to `1`.
-5. Resolve authored values against unscaled authored/local target properties.
-6. Scale delays and durations by speed.
-7. Remove authoring-only `name`, `resourceId`, `target`, and playback metadata.
-8. Emit runtime music volume through its independent renderer master-gain
+1. Read the pending accepted occurrence without consuming it. A render with no
+   pending occurrence has no action animation to rediscover from the current
+   authored path.
+2. Read its captured canonical previous and next BGM graphs without animation
+   metadata.
+3. Resolve the selected resource ID and reject a missing resource.
+4. Validate that resource `type` matches the captured graph diff.
+5. Normalize playback speed; default to `1`.
+6. Resolve authored values against unscaled authored/local target properties.
+7. Scale delays and durations by speed.
+8. Remove authoring-only `name`, `resourceId`, `target`, and playback metadata.
+9. Emit runtime music volume through its independent renderer master-gain
    control.
-9. Emit concrete Route Graphics handoff/update data when skip is false.
-10. When skip is true, omit new animation input and emit the explicit settle
-    control even when the current action has no animation selection. Omission
-    alone is never a settlement signal.
+10. Emit concrete Route Graphics handoff/update data with the occurrence ID when
+    skip is false.
+11. When skip is true, omit new animation input and emit the explicit settle
+    control even when there is no pending occurrence. Omission alone is never a
+    settlement signal.
+
+Resolution and render-state selection do not consume the occurrence. The engine
+associates the occurrence with the prepared render ID in private sidecar
+metadata, matching the existing persistent-animation commit pattern.
+`commitRenderState()` consumes it only after Route Graphics accepts that exact
+current-lifecycle render. Multiple prepared renders for one occurrence therefore
+produce deterministic duplicate handoffs, while a settings-only render after a
+successful commit cannot regenerate one. A newly accepted action supersedes an
+older pending occurrence; Route Graphics interruption semantics start the new
+occurrence from renderer-owned current values.
+
+A skipped render also associates and consumes any pending occurrence after the
+renderer accepts its settlement control, despite emitting no new handoff or
+update. Disabling skip later cannot replay the skipped action.
 
 Errors must include both selection and resource paths, for example:
 
@@ -733,9 +839,25 @@ while using separate local and master renderer parameters.
 
 ### Mute
 
-`muteAll` and authored `muted` remain immediate hard gates. Fade resources
-automate volume and do not tween booleans. Unmuting reveals the current
-renderer-owned automation value.
+`muteAll` and authored `muted` remain immediate hard gates. They must not be
+implemented by setting the same gain parameter used for a handoff fade or a
+retained volume update.
+
+Route Graphics must use independent gain parameters:
+
+- each handoff side owns an authored channel mute gate captured in that side's
+  processing snapshot
+- a retained channel keeps an authored mute gate separate from its automatable
+  volume gain
+- the runtime output stage owns a global `muteAll` gate separate from the
+  persistent music master gain
+
+A gate change sets only its own parameter to `0` or `1` at the current Web Audio
+time. It does not cancel, hold, rewrite, restart, or settle automation on local
+volume or temporary side gains. Automation clocks continue while inaudible, so
+unmuting reveals the renderer-owned envelope value for that instant, not its
+initial value or final target. Fade resources automate volume and never tween
+the boolean gates.
 
 ### Skip
 
@@ -772,8 +894,8 @@ A newer accepted BGM action supersedes active handoff/update automation:
 - The renderer retains outgoing playback internally until finite exit work and
   any completable `loopEnd` tail finish.
 - Save payloads contain settled BGM declarations only.
-- Active audio clocks, side gains, resource selections, and partial progress are
-  not serialized.
+- Active audio clocks, side gains, resource selections, occurrence
+  pending/consumed state, and partial progress are not serialized.
 - Load, engine reinitialization, and project replacement settle audio without
   replaying the historical line action's animation.
 - Rollback restores the target BGM state immediately in the first release; a
@@ -803,14 +925,17 @@ test passing.
 
 1. Specify next-render-owned previous/next audio handoffs.
 2. Add normalization and schema validation.
-3. Add an independent persistent master-volume gain stage/control.
-4. Implement shared-clock previous/next side gain automation for ready sources
+3. Add occurrence-keyed idempotent handoff acceptance.
+4. Add isolated previous/next channel-processing snapshots.
+5. Add an independent persistent master-volume gain stage/control plus separate
+   per-side authored and global runtime mute gates.
+6. Implement shared-clock previous/next side gain automation for ready sources
    and immediate outgoing progress during delayed incoming decode.
-5. Add explicit automation settlement independent of handoff/selection input.
-6. Implement interruption, failure, cleanup, and idempotent settlement.
-7. Add targeted unit/system tests.
-8. Add isolated deterministic audio visual tests.
-9. Release Route Graphics.
+7. Add explicit automation settlement independent of handoff/selection input.
+8. Implement interruption, failure, cleanup, and idempotent settlement.
+9. Add targeted unit/system tests.
+10. Add isolated deterministic audio visual tests.
+11. Release Route Graphics.
 
 This phase is a hard dependency for the one-reference authoring contract.
 
@@ -827,16 +952,20 @@ This phase is a hard dependency for the one-reference authoring contract.
 
 1. Upgrade the Route Graphics dependency and VT bundle to the released handoff
    version.
-2. Keep action-scoped BGM animation metadata available to render construction.
-3. Add the isolated audio animation resolver.
-4. Compile transition resources into renderer handoffs.
-5. Compile update resources into concrete retained-node automation.
-6. Emit authored BGM volume and runtime master volume as independent renderer
+2. Allocate transactional BGM action-occurrence ownership beneath the existing
+   line-entry identity and consume it only after accepted render commit.
+3. Keep pending action-scoped BGM animation metadata and canonical graph
+   snapshots available to render construction.
+4. Add the isolated audio animation resolver.
+5. Compile transition resources into occurrence-keyed renderer handoffs.
+6. Compile update resources into concrete retained-node automation.
+7. Emit authored BGM volume and runtime master volume as independent renderer
    controls.
-7. Emit explicit settlement whenever skip is active, including without a
+8. Emit explicit settlement whenever skip is active, including without a
    current animation selection.
-8. Apply mute and speed rules.
-9. Add exact-path semantic errors.
+9. Emit authored and runtime mute through independent gates and apply speed
+   rules.
+10. Add exact-path semantic errors.
 
 ### Phase 3: Verification and documentation
 
@@ -887,6 +1016,24 @@ Reject:
 - zero/non-finite speed
 - BGM animation selection combined with legacy `resourceId` shorthand
 
+### Route Graphics prerequisite tests
+
+- normalizing the same occurrence and byte-equivalent handoff twice creates one
+  automation schedule and preserves its original base time
+- conflicting handoff/update content for an accepted occurrence ID is rejected
+- previous and next channel volume, pan, authored mute gates, and sound-local
+  processing remain distinct until previous-side cleanup
+- changing the runtime master during a handoff or retained update touches only
+  the persistent master parameter
+- toggling `muteAll` during an active handoff touches only the global mute gate;
+  scheduled side-gain events and their base times remain unchanged, and unmute
+  exposes the values expected at the advanced audio clock
+- toggling authored `muted` during an active retained volume update touches only
+  its authored gate; scheduled volume events and their base time remain
+  unchanged, and unmute exposes the value expected at the advanced audio clock
+- settlement cancels active handoff and retained-update parameters but never
+  aliases either mute gate
+
 ### Resolver and render-state tests
 
 - no previous BGM emits next-only handoff
@@ -895,12 +1042,20 @@ Reject:
 - same BGM emits no handoff
 - wrong structural type throws with exact action/resource paths
 - update retains source identity and emits no replacement
+- prepared renders for one pending action carry the same occurrence ID and
+  byte-equivalent handoff/update content
+- a settings-only render after occurrence commit emits no handoff/update
 - target resolution uses authored/local volume without runtime pre-scaling
 - runtime music volume is emitted through an independent master control
 - changing runtime music volume mid-animation does not emit replacement/update
   automation or alter authored keyframe timing
+- a replacement that changes channel volume, pan, or authored mute emits
+  distinct previous/next processing snapshots
+- the previous snapshot remains unchanged when the next graph or runtime master
+  is reconciled
 - speed scales delay and duration on every applicable side
-- mute remains a hard gate
+- authored and global mute values are emitted through gates independent from
+  automatable volume and handoff side gains
 - skip emits explicit immediate settlement even without a current animation
   selection
 - settlement command IDs increase monotonically and stale commands are ignored
@@ -912,6 +1067,13 @@ Reject:
 ### State and lifecycle tests
 
 - action selection does not persist into settled BGM presentation state
+- successful acceptance allocates one BGM occurrence beneath the current
+  `lineEntryId`; repeated render selection and settings renders allocate none
+- successful render commit consumes the pending occurrence exactly once
+- failed renderer dispatch leaves the same occurrence pending for deterministic
+  retry, and Route Graphics accepts the identical duplicate without restarting
+- revisiting the same authored line allocates a new occurrence and runs its
+  animation exactly once
 - save/load does not serialize or replay partial animation progress
 - rollback settles restored BGM without replaying the source action
 - localization validates and resolves audio animation resources
@@ -922,6 +1084,10 @@ Reject:
   latest declared property value immediately
 - changing runtime music volume during a handoff or retained update preserves
   local automation progress and changes only the independent master gain
+- toggling `muteAll` during a handoff preserves the active side-gain clocks and
+  unmuting reveals their current values
+- toggling authored `muted` during a retained volume update preserves that
+  update's clock and unmuting reveals its current value
 
 ### Browser and audio-path tests
 
@@ -946,6 +1112,21 @@ Create isolated fixtures that each exercise one behavior:
     restoration
 12. runtime music-volume change during an active handoff
 13. runtime music-volume change during an active retained-property update
+14. settings-only rerender while an animated action remains current, proving
+    the accepted occurrence does not restart
+15. leave and revisit the same authored animated line, proving the new
+    occurrence runs exactly once
+16. replacement with a different authored channel volume, proving the outgoing
+    branch retains its previous volume through its fade
+17. replacement with a different authored channel pan, proving the outgoing and
+    incoming branches keep independent panners
+18. replacement with different authored `muted` values, proving each handoff
+    branch keeps its own mute gate
+19. `muteAll` mute/unmute during an active handoff, proving both fade clocks
+    continue and unmute reveals their in-progress values
+20. authored `muted` mute/unmute during an active retained volume update,
+    proving its automation clock continues and unmute reveals its in-progress
+    value
 
 Engine VT must prove the authored click/input path reaches the expected concrete
 renderer handoff. Route Graphics deterministic audio visual tests must prove the
@@ -987,14 +1168,21 @@ The feature is complete when:
 3. retained-property updates use `type: update` and `tween`
 4. no separate enter/exit/replace resource types exist
 5. authored resource metadata never reaches Route Graphics
-6. runtime volume remains an independent gain layer throughout active
+6. every accepted BGM action occurrence is dispatched at most once after commit,
+   identical retries are idempotent, and a legitimate authored-line revisit
+   receives a new occurrence
+7. outgoing and incoming handoff sides retain independent authored channel
+   volume, pan, mute, and sound-local processing snapshots
+8. runtime volume remains an independent gain layer throughout active
    automation
-7. explicit skip settlement, mute, speed, interruption, decode-delay, failure,
-   and cleanup contracts pass
-8. audio animations remain non-blocking
-9. schemas, generated localization validators, system tests, engine browser
-   fixtures, and Route Graphics deterministic audio visual tests all pass
-10. existing BGM and visual animation authoring remains compatible
+9. authored and global mute gates remain independent from volume/side-gain
+   automation, whose clocks continue while muted
+10. explicit skip settlement, mute, speed, interruption, decode-delay, failure,
+    and cleanup contracts pass
+11. audio animations remain non-blocking
+12. schemas, generated localization validators, system tests, engine browser
+    fixtures, and Route Graphics deterministic audio visual tests all pass
+13. existing BGM and visual animation authoring remains compatible
 
 ## Open Implementation Detail
 
