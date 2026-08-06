@@ -201,10 +201,6 @@ defs:
         type: boolean
       replayStartIndex:
         type: integer
-      returnabilityVersion:
-        type: integer
-        minimum: 1
-        description: Persisted migration marker for sparse rollback landing-point eligibility
     required: [timeline, currentIndex, isRestoring, replayStartIndex]
     additionalProperties: false
 

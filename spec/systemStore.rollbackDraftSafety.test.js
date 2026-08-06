@@ -285,7 +285,6 @@ describe("system.store rollback/save draft safety", () => {
       currentIndex: 1,
       isRestoring: false,
       replayStartIndex: 0,
-      returnabilityVersion: 1,
       timeline: [
         {
           sectionId: "section1",
@@ -317,7 +316,6 @@ describe("system.store rollback/save draft safety", () => {
               currentIndex: 1,
               isRestoring: false,
               replayStartIndex: 0,
-              returnabilityVersion: 1,
               timeline: [
                 { sectionId: "section1", lineId: "1" },
                 { sectionId: "section1", lineId: "2" },

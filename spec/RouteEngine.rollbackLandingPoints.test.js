@@ -76,7 +76,6 @@ const createSavedTimelineSlot = ({
   readPointer,
   timeline,
   currentIndex = timeline.length - 1,
-  returnabilityVersion,
 }) => ({
   formatVersion: 1,
   slotId,
@@ -93,9 +92,6 @@ const createSavedTimelineSlot = ({
           currentIndex,
           isRestoring: false,
           replayStartIndex: 0,
-          ...(returnabilityVersion === undefined
-            ? {}
-            : { returnabilityVersion }),
           timeline,
         },
       },
@@ -414,7 +410,7 @@ describe("RouteEngine rollback landing points", () => {
     const savedRollback =
       engine.selectSystemState().global.saveSlots["1"].state.contexts[0]
         .rollback;
-    expect(savedRollback.returnabilityVersion).toBe(1);
+    expect(savedRollback).not.toHaveProperty("returnabilityVersion");
     expect(
       savedRollback.timeline.find(({ lineId }) => lineId === "router")
         ?.returnable,
@@ -1195,7 +1191,7 @@ describe("RouteEngine rollback landing points", () => {
     });
   });
 
-  it("derives a legacy line-entry conditional as transient on load", () => {
+  it("treats a loaded conditional without returnability metadata as returnable", () => {
     const projectData = createProjectData({
       initialSectionId: "bootstrap",
       sections: {
@@ -1224,17 +1220,17 @@ describe("RouteEngine rollback landing points", () => {
       ],
     });
 
-    expect(getCheckpoint(engine, "main", "router")?.returnable).toBe(false);
+    expect(getCheckpoint(engine, "main", "router")?.returnable).toBeUndefined();
 
     engine.handleAction("rollbackByOffset", {});
 
     expect(getPointer(engine)).toEqual({
       sectionId: "main",
-      lineId: "before",
+      lineId: "router",
     });
   });
 
-  it("derives a legacy line-entry section transition as transient on load", () => {
+  it("treats a loaded transition without returnability metadata as returnable", () => {
     const projectData = createProjectData({
       initialSectionId: "bootstrap",
       sections: {
@@ -1269,13 +1265,15 @@ describe("RouteEngine rollback landing points", () => {
       ],
     });
 
-    expect(getCheckpoint(engine, "source", "router")?.returnable).toBe(false);
+    expect(
+      getCheckpoint(engine, "source", "router")?.returnable,
+    ).toBeUndefined();
 
     engine.handleAction("rollbackByOffset", {});
 
     expect(getPointer(engine)).toEqual({
       sectionId: "source",
-      lineId: "before",
+      lineId: "router",
     });
   });
 
@@ -1283,7 +1281,7 @@ describe("RouteEngine rollback landing points", () => {
     { name: "boolean false", when: false },
     { name: "literal false", when: { literal: false } },
   ])(
-    "keeps a legacy interaction checkpoint eligible past a $name route",
+    "keeps a loaded interaction checkpoint eligible past a $name route",
     ({ when }) => {
       const projectData = createProjectData({
         initialSectionId: "bootstrap",
@@ -1344,7 +1342,7 @@ describe("RouteEngine rollback landing points", () => {
     },
   );
 
-  it("ignores legacy conditional branches after a definite match", () => {
+  it("does not infer returnability from loaded conditional branches", () => {
     const projectData = createProjectData({
       initialSectionId: "bootstrap",
       sections: {
@@ -1406,7 +1404,7 @@ describe("RouteEngine rollback landing points", () => {
     });
   });
 
-  it("derives implicit continuation past a statically untaken legacy route", () => {
+  it("does not infer returnability from a statically untaken loaded route", () => {
     const projectData = createProjectData({
       initialSectionId: "bootstrap",
       sections: {
@@ -1451,17 +1449,17 @@ describe("RouteEngine rollback landing points", () => {
       ],
     });
 
-    expect(getCheckpoint(engine, "main", "router")?.returnable).toBe(false);
+    expect(getCheckpoint(engine, "main", "router")?.returnable).toBeUndefined();
 
     engine.handleAction("rollbackByOffset", {});
 
     expect(getPointer(engine)).toMatchObject({
       sectionId: "main",
-      lineId: "before",
+      lineId: "router",
     });
   });
 
-  it("respects explicit legacy eligibility instead of re-deriving it", () => {
+  it("respects explicit loaded returnability metadata", () => {
     const projectData = createProjectData({
       initialSectionId: "bootstrap",
       sections: {
@@ -1548,7 +1546,6 @@ describe("RouteEngine rollback landing points", () => {
               sectionId: "destination",
               lineId: "loadedCurrent",
             },
-            returnabilityVersion: 1,
             timeline: [
               { sectionId: "main", lineId: "before" },
               { sectionId: "main", lineId: "loader" },
@@ -1605,7 +1602,6 @@ describe("RouteEngine rollback landing points", () => {
               sectionId: "destination",
               lineId: "router",
             },
-            returnabilityVersion: 1,
             timeline: [
               { sectionId: "source", lineId: "before" },
               { sectionId: "destination", lineId: "router" },
@@ -1644,7 +1640,7 @@ describe("RouteEngine rollback landing points", () => {
     });
   });
 
-  it("uses the save returnability version to preserve a settled conditional", () => {
+  it("preserves a settled conditional without explicit returnability metadata", () => {
     const engine = createEngine(
       createProjectData({
         initialSectionId: "source",
@@ -1690,7 +1686,7 @@ describe("RouteEngine rollback landing points", () => {
     const savedRollback =
       engine.selectSystemState().global.saveSlots["1"].state.contexts[0]
         .rollback;
-    expect(savedRollback.returnabilityVersion).toBe(1);
+    expect(savedRollback).not.toHaveProperty("returnabilityVersion");
     expect(
       savedRollback.timeline.find(
         ({ lineId }) => lineId === "settledConditional",
@@ -1764,7 +1760,7 @@ describe("RouteEngine rollback landing points", () => {
       const savedRollback =
         engine.selectSystemState().global.saveSlots["1"].state.contexts[0]
           .rollback;
-      expect(savedRollback.returnabilityVersion).toBe(1);
+      expect(savedRollback).not.toHaveProperty("returnabilityVersion");
       expect(
         savedRollback.timeline.find(({ lineId }) => lineId === "router")
           ?.returnable,
@@ -1811,7 +1807,7 @@ describe("RouteEngine rollback landing points", () => {
     const savedRollback =
       engine.selectSystemState().global.saveSlots["1"].state.contexts[0]
         .rollback;
-    expect(savedRollback.returnabilityVersion).toBe(1);
+    expect(savedRollback).not.toHaveProperty("returnabilityVersion");
     expect(
       savedRollback.timeline.find(({ lineId }) => lineId === "router")
         ?.returnable,
@@ -1874,7 +1870,7 @@ describe("RouteEngine rollback landing points", () => {
     const savedRollback =
       engine.selectSystemState().global.saveSlots["1"].state.contexts[0]
         .rollback;
-    expect(savedRollback.returnabilityVersion).toBe(1);
+    expect(savedRollback).not.toHaveProperty("returnabilityVersion");
     expect(
       savedRollback.timeline.find(
         ({ lineId }) => lineId === "destinationRouter",
@@ -2074,7 +2070,7 @@ describe("RouteEngine rollback landing points", () => {
       const savedRollback =
         engine.selectSystemState().global.saveSlots["1"].state.contexts[0]
           .rollback;
-      expect(savedRollback.returnabilityVersion).toBe(1);
+      expect(savedRollback).not.toHaveProperty("returnabilityVersion");
       expect(
         savedRollback.timeline.find(({ lineId }) => lineId === "router")
           ?.returnable,
@@ -2167,7 +2163,7 @@ describe("rollback landing-point selectors", () => {
 
   it("treats missing and explicit true eligibility as returnable", () => {
     const state = createSelectorState(3, [
-      { sectionId: "main", lineId: "legacy" },
+      { sectionId: "main", lineId: "withoutMetadata" },
       { sectionId: "main", lineId: "router", returnable: false },
       { sectionId: "main", lineId: "explicit", returnable: true },
       { sectionId: "main", lineId: "current" },
@@ -2177,7 +2173,7 @@ describe("rollback landing-point selectors", () => {
       "explicit",
     );
     expect(selectLineIdByOffset({ state }, { offset: -2 })?.lineId).toBe(
-      "legacy",
+      "withoutMetadata",
     );
   });
 
