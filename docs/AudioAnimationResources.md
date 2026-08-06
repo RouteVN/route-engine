@@ -598,6 +598,8 @@ Required semantics:
 - interruption begins from renderer-owned current gain
 - outgoing cleanup waits for its finite fade and applicable `loopEnd` tail
 - handoffs do not block `renderComplete`
+- enabling skip settles both active handoffs and retained-property update
+  automation immediately at the latest declared state
 - inline node transitions and a handoff may not target the same lifecycle side
   simultaneously
 - existing inline and legacy `audioEffects` inputs remain compatible
@@ -671,10 +673,15 @@ renderer-owned automation value.
 When `skipTransitionsAndAnimations` is true at dispatch, add, remove, replace,
 and update settle immediately with no audio animation input.
 
-If skip becomes true while a handoff is active, Route Graphics must settle the
-next state immediately, cancel pending automation, and release the previous
-side. Merely removing an inline declaration is insufficient under the current
-renderer contract, so this behavior is part of the handoff prerequisite and
+If skip becomes true while either a handoff or retained `type: update`
+automation is active, Route Graphics must cancel all applicable scheduled
+automation at one shared current Web Audio time. It must then settle handoff
+targets at the next declared state, release previous handoff sides, and set
+retained update targets to their latest declared volume or pan immediately.
+Merely removing an inline declaration is insufficient under the current
+renderer contract: when a retained property's declaration is unchanged, its
+already-scheduled automation otherwise continues. Active handoff and retained
+update settlement are therefore both part of the renderer prerequisite and
 must have browser/audio coverage.
 
 ### New actions during active automation
@@ -826,6 +833,8 @@ Reject:
 - reinitialization/disposal cannot restore prior-generation handoff state
 - a newer BGM action supersedes active automation without stale cleanup deleting
   the newest graph
+- enabling skip during a retained update cancels its automation and settles the
+  latest declared property value immediately
 
 ### Browser and audio-path tests
 
@@ -841,8 +850,9 @@ Create isolated fixtures that each exercise one behavior:
 5. retained channel volume update
 6. transition interruption by a newer replacement
 7. skip enabled before dispatch
-8. skip enabled during active fade
-9. incoming decode delay while outgoing cleanup continues
+8. skip enabled during an active handoff fade
+9. skip enabled during an active retained-property update
+10. incoming decode delay while outgoing cleanup continues
 
 Engine VT must prove the authored click/input path reaches the expected concrete
 renderer handoff. Route Graphics deterministic audio visual tests must prove the
