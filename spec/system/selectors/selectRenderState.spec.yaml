@@ -97,7 +97,7 @@ out:
   audio:
     - id: "channel:bgm"
       type: "audio-channel"
-      volume: 50
+      volume: 100
       muted: false
       pan: 0
       children:
@@ -107,6 +107,10 @@ out:
           loop: true
           volume: 100
           startDelayMs: 0
+  audioMasters:
+    - id: "channel:bgm"
+      volume: 50
+      muted: false
   global: {}
 ---
 case: current line screen animation targets the full story container
@@ -489,7 +493,7 @@ out:
   audio:
     - id: "channel:bgm"
       type: "audio-channel"
-      volume: 50
+      volume: 100
       muted: false
       pan: 0
       children:
@@ -499,4 +503,8 @@ out:
           loop: true
           volume: 100
           startDelayMs: 0
+  audioMasters:
+    - id: "channel:bgm"
+      volume: 50
+      muted: false
   global: {}

@@ -327,6 +327,16 @@ const init = async () => {
       render: (renderState) => {
         if (isVtCaptureMode()) {
           window.__vtLastRenderState = structuredClone(renderState);
+          if (renderState.audioAnimations?.length > 0) {
+            window.__vtLastAudioAnimation = structuredClone(
+              renderState.audioAnimations[0],
+            );
+          }
+          if (renderState.audioAnimationControl) {
+            window.__vtLastAudioAnimationControl = structuredClone(
+              renderState.audioAnimationControl,
+            );
+          }
         }
         routeGraphics.render(renderState);
       },

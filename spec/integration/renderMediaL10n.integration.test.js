@@ -432,7 +432,7 @@ describe("render, media, and animation contracts through engine effects", () => 
     expect(harness.renderStates.at(-1).audio).toEqual([
       expect.objectContaining({
         id: "channel:bgm",
-        volume: 40,
+        volume: 80,
         children: [
           expect.objectContaining({ id: "bgm:main%3Atheme", volume: 25 }),
         ],
@@ -451,6 +451,9 @@ describe("render, media, and animation contracts through engine effects", () => 
         volume: 24,
         children: [expect.objectContaining({ id: "voice:scene:lead%25voice" })],
       }),
+    ]);
+    expect(harness.renderStates.at(-1).audioMasters).toEqual([
+      { id: "channel:bgm", volume: 50, muted: false },
     ]);
   });
 

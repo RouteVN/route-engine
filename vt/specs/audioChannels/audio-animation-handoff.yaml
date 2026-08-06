@@ -1,0 +1,205 @@
+---
+title: Reusable BGM Audio Animation
+description: Isolated browser fixture for Engine-owned handoff/update occurrences, independent runtime mute, and skip settlement.
+skipScreenshot: true
+specs:
+  - a user gesture starts the old BGM before one selected resource crossfades to the replacement
+  - the renderer receives complete previous and next BGM snapshots plus an independent music master
+  - mute and unmute settings renders do not replay the accepted occurrence
+  - a retained volume update compiles target and skip emits explicit settlement without a current selection
+steps:
+  - action: click
+    x: 100
+    y: 180
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audio.0.volume
+    value: 80
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audioMasters.0.volume
+    value: 50
+  - action: click
+    x: 100
+    y: 180
+  - action: assert
+    type: js
+    global: __vtLastAudioAnimation.type
+    value: transition
+  - action: assert
+    type: js
+    global: __vtLastAudioAnimation.prev.channel.children.0.src
+    value: 3ka3s
+  - action: assert
+    type: js
+    global: __vtLastAudioAnimation.next.channel.children.0.src
+    value: xk393
+  - action: click
+    x: 400
+    y: 180
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audioMasters.0.muted
+    value: true
+  - action: click
+    x: 550
+    y: 180
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audioMasters.0.muted
+    value: false
+  - action: click
+    x: 100
+    y: 180
+  - action: assert
+    type: js
+    global: __vtLastAudioAnimation.type
+    value: update
+  - action: assert
+    type: js
+    global: __vtLastAudioAnimation.tween.volume.keyframes.0.value
+    value: 30
+  - action: click
+    x: 400
+    y: 180
+  - action: assert
+    type: js
+    global: __vtLastAudioAnimationControl.operation
+    value: settle
+---
+screen:
+  width: 640
+  height: 360
+resources:
+  sounds:
+    old-theme:
+      fileId: 3ka3s
+    new-theme:
+      fileId: xk393
+  audioAnimations:
+    crossfade:
+      type: transition
+      prev:
+        fade:
+          duration: 1000
+          easing: easeInOutSine
+      next:
+        fade:
+          duration: 1000
+          easing: easeInOutSine
+    smooth-volume:
+      type: update
+      tween:
+        volume:
+          keyframes:
+            - value: target
+              duration: 1000
+              easing: linear
+  colors:
+    advance:
+      hex: "#10131A"
+    mute:
+      hex: "#421B1B"
+    unmute:
+      hex: "#164E3A"
+  controls:
+    advance:
+      elements:
+        - id: advance
+          type: rect
+          width: 640
+          height: 360
+          colorId: advance
+          click:
+            payload:
+              actions:
+                nextLine: {}
+    handoff-controls:
+      elements:
+        - id: next
+          type: rect
+          width: 320
+          height: 360
+          colorId: advance
+          click:
+            payload:
+              actions:
+                nextLine: {}
+        - id: mute
+          type: rect
+          x: 320
+          width: 160
+          height: 360
+          colorId: mute
+          click:
+            payload:
+              actions:
+                setMuteAll:
+                  value: true
+        - id: unmute
+          type: rect
+          x: 480
+          width: 160
+          height: 360
+          colorId: unmute
+          click:
+            payload:
+              actions:
+                setMuteAll:
+                  value: false
+    update-controls:
+      elements:
+        - id: settle
+          type: rect
+          x: 320
+          width: 320
+          height: 360
+          colorId: mute
+          click:
+            payload:
+              actions:
+                setSkipTransitionsAndAnimations:
+                  value: true
+story:
+  initialSceneId: scene1
+  scenes:
+    scene1:
+      initialSectionId: section1
+      sections:
+        section1:
+          lines:
+            - id: silent
+              actions:
+                control:
+                  resourceId: advance
+            - id: old-theme
+              actions:
+                control:
+                  resourceId: advance
+                bgm:
+                  volume: 80
+                  sounds:
+                    - id: main
+                      resourceId: old-theme
+            - id: crossfade
+              actions:
+                control:
+                  resourceId: handoff-controls
+                bgm:
+                  volume: 60
+                  animations:
+                    resourceId: crossfade
+                  sounds:
+                    - id: main
+                      resourceId: new-theme
+            - id: retained-update
+              actions:
+                control:
+                  resourceId: update-controls
+                bgm:
+                  volume: 30
+                  animations:
+                    resourceId: smooth-volume
+                  sounds:
+                    - id: main
+                      resourceId: new-theme

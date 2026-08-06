@@ -4112,6 +4112,11 @@ export const selectRenderState = ({ state }, options = {}) => {
     musicRoom,
     sceneReplay,
     musicRoomPlayer: cloneStateValue(state.global.musicRoomPlayer),
+    pendingAudioAnimationOccurrence:
+      options?.pendingAudioAnimationOccurrence ?? null,
+    audioAnimationControlCommandId: options?.audioAnimationControlCommandId,
+    forceAudioAnimationSettlement:
+      options?.forceAudioAnimationSettlement === true,
   });
   return renderState;
 };
@@ -7570,6 +7575,7 @@ export const createSystemStore = (initialState, options = {}) => {
     selectSection,
     selectCurrentLine,
     selectPresentationState,
+    selectPreviousPresentationState,
     selectAutoForwardTimerDelay,
     selectPresentationChanges,
     selectSectionLineChanges,

@@ -927,6 +927,7 @@ export const bgm = (state, presentation) => {
     }
 
     state.bgm = clonePresentationValue(presentation.bgm);
+    delete state.bgm.animations;
     if (presentation.bgm.resourceId) {
       state.bgm.loop = presentation.bgm.loop ?? true;
     }

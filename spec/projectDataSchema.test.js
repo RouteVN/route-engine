@@ -3232,4 +3232,74 @@ describe("projectData schema", () => {
       expect(validateSystemActions.errors).not.toBeNull();
     }
   });
+
+  it("accepts reusable audio transition and update resources selected by canonical BGM", () => {
+    const projectData = createMinimalProjectData({
+      resources: {
+        sounds: { theme: { fileId: "theme.ogg" } },
+        audioAnimations: {
+          crossfade: {
+            name: "Crossfade",
+            type: "transition",
+            prev: {
+              fade: {
+                delay: 100,
+                duration: 600,
+                easing: "easeInOutSine",
+              },
+            },
+            next: { fade: { duration: 900 } },
+          },
+          smooth: {
+            type: "update",
+            tween: {
+              volume: {
+                keyframes: [{ value: "target", duration: 500 }],
+              },
+              pan: {
+                keyframes: [
+                  { value: 0, duration: 100 },
+                  { value: "target", duration: 400 },
+                ],
+              },
+            },
+          },
+        },
+      },
+    });
+    projectData.story.scenes.scene1.sections.section1.lines[0].actions.bgm = {
+      animations: {
+        resourceId: "crossfade",
+        playback: { speed: 2 },
+      },
+      sounds: [{ id: "main", resourceId: "theme" }],
+    };
+
+    expect(validateProjectData(projectData)).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
+
+  it("rejects audio animation selection on legacy BGM and invalid resource structure", () => {
+    expect(
+      validatePresentationActions({
+        bgm: {
+          resourceId: "theme",
+          animations: { resourceId: "crossfade" },
+        },
+      }),
+    ).toBe(false);
+
+    const projectData = createMinimalProjectData({
+      resources: {
+        audioAnimations: {
+          invalid: {
+            type: "update",
+            prev: { fade: { duration: 100 } },
+          },
+        },
+      },
+    });
+    expect(validateProjectData(projectData)).toBe(false);
+    expect(validateProjectData.errors).not.toBeNull();
+  });
 });

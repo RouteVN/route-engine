@@ -125,11 +125,12 @@ describe("RouteEngine audio channels", () => {
       },
     });
 
-    expect(engine.selectRenderState().audio).toEqual([
+    const renderState = engine.selectRenderState();
+    expect(renderState.audio).toEqual([
       {
         id: "channel:bgm",
         type: "audio-channel",
-        volume: 40,
+        volume: 80,
         muted: false,
         pan: -0.25,
         playback: {
@@ -225,6 +226,9 @@ describe("RouteEngine audio channels", () => {
         ],
       },
     ]);
+    expect(renderState.audioMasters).toEqual([
+      { id: "channel:bgm", volume: 50, muted: false },
+    ]);
 
     engine.handleAction("markLineCompleted", {});
     engine.handleAction("nextLine", {});
@@ -253,15 +257,21 @@ describe("RouteEngine audio channels", () => {
 
     engine.init({ initialState: { projectData } });
 
+    const renderState = engine.selectRenderState();
     expect(
-      engine
-        .selectRenderState()
-        .audio.map(({ id, volume, muted }) => ({ id, volume, muted })),
+      renderState.audio.map(({ id, volume, muted }) => ({
+        id,
+        volume,
+        muted,
+      })),
     ).toEqual([
-      { id: "channel:bgm", volume: 20, muted: true },
+      { id: "channel:bgm", volume: 80, muted: false },
       { id: "channel:sfx:ui", volume: 15, muted: true },
       { id: "channel:sfx:environment", volume: 20, muted: true },
       { id: "channel:voice", volume: 10, muted: true },
+    ]);
+    expect(renderState.audioMasters).toEqual([
+      { id: "channel:bgm", volume: 25, muted: true },
     ]);
   });
 
@@ -288,11 +298,12 @@ describe("RouteEngine audio channels", () => {
     const engine = createEngine();
     engine.init({ initialState: { projectData } });
 
-    expect(engine.selectRenderState().audio).toEqual([
+    const renderState = engine.selectRenderState();
+    expect(renderState.audio).toEqual([
       {
         id: "channel:bgm",
         type: "audio-channel",
-        volume: 40,
+        volume: 80,
         muted: false,
         pan: 0,
         loop: true,
@@ -320,6 +331,9 @@ describe("RouteEngine audio channels", () => {
           },
         ],
       },
+    ]);
+    expect(renderState.audioMasters).toEqual([
+      { id: "channel:bgm", volume: 50, muted: false },
     ]);
   });
 

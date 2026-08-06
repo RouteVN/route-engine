@@ -37,7 +37,7 @@ out:
   audio:
     - id: "channel:bgm"
       type: "audio-channel"
-      volume: 70
+      volume: 100
       muted: false
       pan: 0
       children:
@@ -47,6 +47,10 @@ out:
           loop: true
           volume: 100
           startDelayMs: 0
+  audioMasters:
+    - id: "channel:bgm"
+      volume: 70
+      muted: false
 ---
 case: add bgm with default values
 in:
@@ -78,7 +82,7 @@ out:
   audio:
     - id: "channel:bgm"
       type: "audio-channel"
-      volume: 50
+      volume: 100
       muted: false
       pan: 0
       children:
@@ -88,6 +92,10 @@ out:
           loop: true
           volume: 100
           startDelayMs: 0
+  audioMasters:
+    - id: "channel:bgm"
+      volume: 50
+      muted: false
 ---
 case: add bgm with custom settings
 in:
@@ -121,7 +129,7 @@ out:
   audio:
     - id: "channel:bgm"
       type: "audio-channel"
-      volume: 30
+      volume: 100
       muted: false
       pan: 0
       children:
@@ -131,6 +139,10 @@ out:
           loop: false
           volume: 100
           startDelayMs: 1000
+  audioMasters:
+    - id: "channel:bgm"
+      volume: 30
+      muted: false
 ---
 case: add bgm applies authored volume with runtime music volume
 in:
@@ -164,7 +176,7 @@ out:
   audio:
     - id: "channel:bgm"
       type: "audio-channel"
-      volume: 30
+      volume: 100
       muted: false
       pan: 0
       children:
@@ -174,6 +186,10 @@ out:
           loop: true
           volume: 60
           startDelayMs: 0
+  audioMasters:
+    - id: "channel:bgm"
+      volume: 30
+      muted: false
 ---
 case: no presentationState.bgm - return unchanged state
 in:
@@ -320,7 +336,7 @@ out:
   audio:
     - id: "channel:bgm"
       type: "audio-channel"
-      volume: 32
+      volume: 80
       muted: false
       pan: 0
       loop: true
@@ -337,3 +353,7 @@ out:
           loop: false
           volume: 100
           startDelayMs: 12000
+  audioMasters:
+    - id: "channel:bgm"
+      volume: 40
+      muted: false

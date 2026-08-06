@@ -12,6 +12,7 @@ import {
   VISUAL_LAYER,
   VISUAL_LAYER_VALUES,
 } from "../renderLayers.js";
+import { resolveAudioAnimation } from "../resolveAudioAnimation.js";
 
 const jemplFunctions = {
   __arrayOrEmpty: (value) => (Array.isArray(value) ? value : []),
@@ -3793,94 +3794,151 @@ export const addControl = (
   return state;
 };
 
+export const createBgmChannelNode = ({
+  presentationState,
+  resources,
+  musicRoomPlayer,
+}) => {
+  if (!presentationState?.bgm || !resources) return null;
+
+  const bgm = presentationState.bgm;
+  const usesLegacySound = !Array.isArray(bgm.sounds);
+  const sounds = usesLegacySound
+    ? bgm.resourceId
+      ? [
+          {
+            id: "default",
+            resourceId: bgm.resourceId,
+            loop: bgm.loop ?? true,
+            volume: bgm.volume,
+            startDelayMs: bgm.startDelayMs ?? 0,
+          },
+        ]
+      : []
+    : bgm.sounds;
+  const loopsChannel = !usesLegacySound && bgm.loop === true;
+  const children = [];
+
+  if (!usesLegacySound) {
+    assertUniqueAudioIds(sounds, "BGM sound");
+  }
+  if (loopsChannel) {
+    const loopingSound = sounds.find((sound) => sound.loop === true);
+    if (loopingSound) {
+      throw new Error(
+        `BGM sound "${loopingSound.id}" cannot loop inside a looping BGM channel.`,
+      );
+    }
+  }
+
+  sounds.forEach((sound) => {
+    const audioResource = resources.sounds?.[sound.resourceId];
+    if (!audioResource) return;
+    const renderSound = loopsChannel
+      ? { ...sound, loop: sound.loop ?? false }
+      : sound;
+    children.push(
+      createSoundNode({
+        id: createAudioRenderId("bgm", usesLegacySound ? "default" : sound.id),
+        sound: renderSound,
+        resource: audioResource,
+        defaultLoop: loopsChannel ? false : true,
+      }),
+    );
+  });
+
+  if (children.length === 0) return null;
+  return createChannelNode({
+    id: BGM_CHANNEL_ID,
+    volume: usesLegacySound
+      ? DEFAULT_AUTHORED_AUDIO_VOLUME
+      : (bgm.volume ?? DEFAULT_AUTHORED_AUDIO_VOLUME),
+    muted: bgm.muted,
+    pan: bgm.pan,
+    loop: usesLegacySound ? undefined : bgm.loop,
+    playback: musicRoomPlayer?.bgmPlayback,
+    interruption: bgm.interruption,
+    children,
+  });
+};
+
 export const addBgm = (
   state,
-  { presentationState, resources, runtime, variables, musicRoomPlayer },
+  {
+    presentationState,
+    previousPresentationState,
+    resources,
+    runtime,
+    variables,
+    musicRoomPlayer,
+    pendingAudioAnimationOccurrence,
+    audioAnimationControlCommandId,
+    forceAudioAnimationSettlement,
+    skipTransitionsAndAnimations,
+  },
 ) => {
-  const { elements, audio } = state;
-  if (presentationState.bgm && resources) {
-    // Find the story container
-    const storyContainer = getStoryContainer(elements);
-    if (!storyContainer) return state;
+  const nextChannel = createBgmChannelNode({
+    presentationState,
+    resources,
+    musicRoomPlayer,
+  });
+  const previousChannel = createBgmChannelNode({
+    presentationState: previousPresentationState,
+    resources,
+    musicRoomPlayer,
+  });
+  if (nextChannel && !getStoryContainer(state.elements)) {
+    return state;
+  }
+  if (nextChannel) {
+    state.audio.push(nextChannel);
+  }
 
-    const bgm = presentationState.bgm;
-    const usesLegacySound = !Array.isArray(bgm.sounds);
-    const sounds = usesLegacySound
-      ? bgm.resourceId
-        ? [
-            {
-              id: "default",
-              resourceId: bgm.resourceId,
-              loop: bgm.loop ?? true,
-              volume: bgm.volume,
-              startDelayMs: bgm.startDelayMs ?? 0,
-            },
-          ]
-        : []
-      : bgm.sounds;
-    const loopsChannel = !usesLegacySound && bgm.loop === true;
-    const children = [];
-
-    if (!usesLegacySound) {
-      assertUniqueAudioIds(sounds, "BGM sound");
-    }
-
-    if (loopsChannel) {
-      const loopingSound = sounds.find((sound) => sound.loop === true);
-      if (loopingSound) {
-        throw new Error(
-          `BGM sound "${loopingSound.id}" cannot loop inside a looping BGM channel.`,
-        );
-      }
-    }
-
-    sounds.forEach((sound) => {
-      const audioResource = resources.sounds?.[sound.resourceId];
-      if (!audioResource) return;
-
-      const renderSound = loopsChannel
-        ? { ...sound, loop: sound.loop ?? false }
-        : sound;
-
-      children.push(
-        createSoundNode({
-          id: createAudioRenderId(
-            "bgm",
-            usesLegacySound ? "default" : sound.id,
-          ),
-          sound: renderSound,
-          resource: audioResource,
-          defaultLoop: loopsChannel ? false : true,
-        }),
-      );
-    });
-
-    if (children.length === 0) return state;
-
+  if (
+    nextChannel ||
+    previousChannel ||
+    pendingAudioAnimationOccurrence?.previousChannel ||
+    pendingAudioAnimationOccurrence?.nextChannel
+  ) {
     const resolvedRuntime = createLayoutTemplateData({
       variables,
       runtime,
     }).runtime;
+    state.audioMasters ??= [];
+    state.audioMasters.push({
+      id: BGM_CHANNEL_ID,
+      volume: getRuntimeAudioVolume(resolvedRuntime, "musicVolume"),
+      muted: !!resolvedRuntime.muteAll,
+    });
+  }
 
-    audio.push(
-      createChannelNode({
-        id: BGM_CHANNEL_ID,
-        volume: getEffectiveChannelVolume(
-          resolvedRuntime,
-          "musicVolume",
-          usesLegacySound
-            ? DEFAULT_AUTHORED_AUDIO_VOLUME
-            : (bgm.volume ?? DEFAULT_AUTHORED_AUDIO_VOLUME),
-        ),
-        muted: bgm.muted,
-        pan: bgm.pan,
-        loop: usesLegacySound ? undefined : bgm.loop,
-        playback: musicRoomPlayer?.bgmPlayback,
-        interruption: bgm.interruption,
-        children,
-        runtime: resolvedRuntime,
-      }),
-    );
+  const audioAnimation = resolveAudioAnimation({
+    occurrence: pendingAudioAnimationOccurrence,
+    resources,
+    previousChannel: pendingAudioAnimationOccurrence
+      ? pendingAudioAnimationOccurrence.previousChannel
+      : previousChannel,
+    nextChannel: pendingAudioAnimationOccurrence
+      ? pendingAudioAnimationOccurrence.nextChannel
+      : nextChannel,
+  });
+  if (
+    audioAnimation &&
+    !skipTransitionsAndAnimations &&
+    !forceAudioAnimationSettlement
+  ) {
+    state.audioAnimations ??= [];
+    state.audioAnimations.push(audioAnimation);
+  }
+  if (
+    skipTransitionsAndAnimations ||
+    forceAudioAnimationSettlement ||
+    pendingAudioAnimationOccurrence?.requiresSettlement === true
+  ) {
+    state.audioAnimationControl = {
+      commandId: audioAnimationControlCommandId ?? 0,
+      operation: "settle",
+    };
   }
   return state;
 };
