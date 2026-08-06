@@ -76,6 +76,8 @@ jobs:
             item: robustness/visual-inline-layout-click.yaml
           - id: inline-layout-transition
             item: robustness/visual-inline-layout-transition.yaml
+          - id: inline-transform-replaces-overrides
+            item: robustness/visual-inline-transform-replaces-overrides.yaml
     steps:
       - uses: actions/checkout@v4
         with:
