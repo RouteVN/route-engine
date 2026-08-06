@@ -442,14 +442,19 @@ const isItemAnimationAuthoredOnCurrentLine = (
   currentLineActions,
   actionKey,
   itemId,
+  itemIndex,
+  currentItems,
 ) => {
   if (currentLineActions === undefined) {
     return true;
   }
 
-  const authoredItem = currentLineActions?.[actionKey]?.items?.find(
-    (item) => item?.id === itemId,
-  );
+  const occurrenceIndex = currentItems
+    .slice(0, itemIndex)
+    .filter((item) => item?.id === itemId).length;
+  const authoredItem = currentLineActions?.[actionKey]?.items
+    ?.filter((item) => item?.id === itemId)
+    .at(occurrenceIndex);
   return hasOwnProperty(authoredItem ?? {}, "animations");
 };
 
@@ -2917,6 +2922,8 @@ export const addCharacters = (
           currentLineActions,
           "character",
           item.id,
+          i,
+          items,
         );
 
       const characterAnimationInstances = createAnimationInstances({
@@ -3099,13 +3106,15 @@ export const addVisuals = (
       assertVisualLayer(visualLayer, "visualLayer");
     }
 
-    for (const item of items) {
+    for (const [itemIndex, item] of items.entries()) {
       const previousItem = previousItems.find((p) => p.id === item.id);
       const isAnimationAuthoredOnCurrentLine =
         isItemAnimationAuthoredOnCurrentLine(
           currentLineActions,
           "visual",
           item.id,
+          itemIndex,
+          items,
         );
       const itemLayer = resolveVisualItemLayer(item, previousItem);
 

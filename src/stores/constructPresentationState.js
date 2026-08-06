@@ -105,6 +105,11 @@ const hasVisualSubject = (item, previousItem) => {
   return !previousItem?.text;
 };
 
+const hasCharacterSubject = (item) =>
+  (item?.sprites && item.sprites.length > 0) ||
+  item?.transformId ||
+  item?.resourceId;
+
 const mergeVisualItemPatch = (previousItem, item) => {
   const mergedItem = {
     ...clonePresentationValue(previousItem),
@@ -312,7 +317,16 @@ const processItemsWithAnimations = (
       }
 
       if (!hasAnimations) {
-        if (hasPersistentAnimationSelection(previousItem)) {
+        const previousHasResource = previousItem
+          ? hasResourceFn(previousItem)
+          : false;
+        const nextHasResource = hasResourceFn(processedItem);
+
+        if (
+          previousHasResource &&
+          nextHasResource &&
+          hasPersistentAnimationSelection(previousItem)
+        ) {
           processedItem.animations = clonePresentationValue(
             previousItem.animations,
           );
@@ -975,7 +989,10 @@ export const visual = (state, presentation) => {
     // selections remain attached to the same item id across later lines.
     if (state.visual?.items) {
       state.visual.items = state.visual.items.map((item) => {
-        if (item.animations && !hasPersistentAnimationSelection(item)) {
+        if (
+          item.animations &&
+          (!hasVisualSubject(item) || !hasPersistentAnimationSelection(item))
+        ) {
           return { ...item, animations: {} };
         }
         return item;
@@ -995,7 +1012,10 @@ export const character = (state, presentation) => {
     // selections remain attached to the same item id across later lines.
     if (state.character?.items) {
       state.character.items = state.character.items.map((item) => {
-        if (item.animations && !hasPersistentAnimationSelection(item)) {
+        if (
+          item.animations &&
+          (!hasCharacterSubject(item) || !hasPersistentAnimationSelection(item))
+        ) {
           return { ...item, animations: {} };
         }
         return item;
@@ -1006,10 +1026,7 @@ export const character = (state, presentation) => {
 
   const { hasValidItems, processedItems } = processItemsWithAnimations(
     presentation.character.items,
-    (item) =>
-      (item.sprites && item.sprites.length > 0) ||
-      item.transformId ||
-      item.resourceId,
+    hasCharacterSubject,
     state.character?.items || [],
   );
 

@@ -228,6 +228,167 @@ describe("RouteEngine animation playback loop", () => {
     ]);
   });
 
+  it("stops a persistent loop on an id-only visual removal", () => {
+    const routeGraphics = {
+      render: vi.fn(),
+    };
+
+    let engine;
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics,
+      ticker: createTicker(),
+      persistence: createPersistence(),
+    });
+    engine = createRouteEngine({
+      handlePendingEffects: effectsHandler,
+    });
+
+    engine.init({
+      initialState: {
+        projectData: createProjectData({
+          persistent: true,
+          nextLineActions: {
+            visual: {
+              items: [{ id: "marker" }],
+            },
+          },
+        }),
+      },
+    });
+
+    const initialRender = routeGraphics.render.mock.calls.at(-1)?.[0];
+    expect(
+      effectsHandler.handleRouteGraphicsEvent("renderComplete", {
+        id: initialRender.id,
+        aborted: false,
+      }),
+    ).toBe(true);
+
+    engine.handleActions({
+      nextLine: {},
+    });
+
+    expect(engine.selectPresentationState().visual).toBeUndefined();
+    expect(routeGraphics.render.mock.calls.at(-1)?.[0].animations).toEqual([]);
+  });
+
+  it("does not reattach a persistent animation-only removal to a re-added visual", () => {
+    const projectData = createProjectData();
+    projectData.story.scenes.scene1.sections.section1.lines = [
+      {
+        id: "line1",
+        actions: {
+          visual: {
+            items: [
+              {
+                id: "marker",
+                resourceId: "marker",
+                transformId: "markerStart",
+              },
+            ],
+          },
+        },
+      },
+      {
+        id: "line2",
+        actions: {
+          visual: {
+            items: [
+              {
+                id: "marker",
+                animations: {
+                  resourceId: "drift",
+                  playback: createLoopPlayback(true),
+                },
+              },
+            ],
+          },
+        },
+      },
+      {
+        id: "line3",
+        actions: {},
+      },
+      {
+        id: "line4",
+        actions: {
+          visual: {
+            items: [
+              {
+                id: "marker",
+                resourceId: "marker",
+                transformId: "markerStart",
+              },
+            ],
+          },
+        },
+      },
+    ];
+
+    const routeGraphics = {
+      render: vi.fn(),
+    };
+    let engine;
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics,
+      ticker: createTicker(),
+      persistence: createPersistence(),
+    });
+    engine = createRouteEngine({
+      handlePendingEffects: effectsHandler,
+    });
+    engine.init({
+      initialState: {
+        projectData,
+      },
+    });
+
+    const advanceLine = () => {
+      const currentRender = routeGraphics.render.mock.calls.at(-1)?.[0];
+      expect(
+        effectsHandler.handleRouteGraphicsEvent("renderComplete", {
+          id: currentRender.id,
+          aborted: false,
+        }),
+      ).toBe(true);
+      engine.handleActions({ nextLine: {} });
+    };
+
+    advanceLine();
+    expect(routeGraphics.render.mock.calls.at(-1)?.[0].animations).toEqual([
+      expect.objectContaining({
+        targetId: "visual-marker",
+        playback: {
+          continuity: "persistent",
+          loop: true,
+        },
+      }),
+    ]);
+
+    advanceLine();
+    expect(engine.selectPresentationState().visual.items).toEqual([
+      {
+        id: "marker",
+        animations: {},
+      },
+    ]);
+    expect(routeGraphics.render.mock.calls.at(-1)?.[0].animations).toEqual([]);
+
+    advanceLine();
+    expect(engine.selectPresentationState().visual.items).toEqual([
+      expect.objectContaining({
+        id: "marker",
+        resourceId: "marker",
+      }),
+    ]);
+    expect(engine.selectPresentationState().visual.items[0]).not.toHaveProperty(
+      "animations",
+    );
+    expect(routeGraphics.render.mock.calls.at(-1)?.[0].animations).toEqual([]);
+  });
+
   it("stops a persistent loop when the visual item id changes", () => {
     const routeGraphics = {
       render: vi.fn(),
