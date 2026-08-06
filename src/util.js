@@ -3065,7 +3065,9 @@ export const normalizePersistentPresentationState = (state = {}) => {
     normalizedState[key].items = items
       .map((item) => {
         const normalizedItem = { ...item };
-        delete normalizedItem.animations;
+        if (normalizedItem.animations?.playback?.continuity !== "persistent") {
+          delete normalizedItem.animations;
+        }
         return hasPersistentFields(normalizedItem) ? normalizedItem : null;
       })
       .filter(Boolean);

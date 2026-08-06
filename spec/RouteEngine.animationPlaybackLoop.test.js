@@ -15,7 +15,20 @@ const createPersistence = () => ({
   applyScopedDataUpdates: vi.fn().mockResolvedValue(undefined),
 });
 
-const createProjectData = () => ({
+const createLoopPlayback = (persistent) => {
+  const playback = {
+    loop: true,
+  };
+  if (persistent) {
+    playback.continuity = "persistent";
+  }
+  return playback;
+};
+
+const createProjectData = ({
+  persistent = false,
+  nextLineActions = {},
+} = {}) => ({
   screen: {
     width: 1920,
     height: 1080,
@@ -81,9 +94,7 @@ const createProjectData = () => ({
                         transformId: "markerStart",
                         animations: {
                           resourceId: "drift",
-                          playback: {
-                            loop: true,
-                          },
+                          playback: createLoopPlayback(persistent),
                         },
                       },
                     ],
@@ -92,7 +103,7 @@ const createProjectData = () => ({
               },
               {
                 id: "line2",
-                actions: {},
+                actions: nextLineActions,
               },
             ],
           },
@@ -159,6 +170,118 @@ describe("RouteEngine animation playback loop", () => {
 
     const nextLineRender = routeGraphics.render.mock.calls.at(-1)?.[0];
     expect(nextLineRender.animations).toEqual([]);
+  });
+
+  it("continues a persistent loop on later lines while the visual item id remains", () => {
+    const routeGraphics = {
+      render: vi.fn(),
+    };
+
+    let engine;
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics,
+      ticker: createTicker(),
+      persistence: createPersistence(),
+    });
+    engine = createRouteEngine({
+      handlePendingEffects: effectsHandler,
+    });
+
+    engine.init({
+      initialState: {
+        projectData: createProjectData({ persistent: true }),
+      },
+    });
+
+    const initialRender = routeGraphics.render.mock.calls.at(-1)?.[0];
+    expect(
+      effectsHandler.handleRouteGraphicsEvent("renderComplete", {
+        id: initialRender.id,
+        aborted: false,
+      }),
+    ).toBe(true);
+
+    engine.handleActions({
+      nextLine: {},
+    });
+
+    expect(engine.selectPresentationState().visual.items[0]).toMatchObject({
+      id: "marker",
+      animations: {
+        resourceId: "drift",
+        playback: {
+          continuity: "persistent",
+          loop: true,
+        },
+      },
+    });
+    expect(routeGraphics.render.mock.calls.at(-1)?.[0].animations).toEqual([
+      expect.objectContaining({
+        id: "marker-animation-update",
+        targetId: "visual-marker",
+        playback: {
+          continuity: "persistent",
+          loop: true,
+        },
+      }),
+    ]);
+  });
+
+  it("stops a persistent loop when the visual item id changes", () => {
+    const routeGraphics = {
+      render: vi.fn(),
+    };
+    const nextLineActions = {
+      visual: {
+        items: [
+          {
+            id: "replacement",
+            resourceId: "marker",
+            transformId: "markerStart",
+          },
+        ],
+      },
+    };
+
+    let engine;
+    const effectsHandler = createEffectsHandler({
+      getEngine: () => engine,
+      routeGraphics,
+      ticker: createTicker(),
+      persistence: createPersistence(),
+    });
+    engine = createRouteEngine({
+      handlePendingEffects: effectsHandler,
+    });
+
+    engine.init({
+      initialState: {
+        projectData: createProjectData({
+          persistent: true,
+          nextLineActions,
+        }),
+      },
+    });
+
+    const initialRender = routeGraphics.render.mock.calls.at(-1)?.[0];
+    expect(
+      effectsHandler.handleRouteGraphicsEvent("renderComplete", {
+        id: initialRender.id,
+        aborted: false,
+      }),
+    ).toBe(true);
+
+    engine.handleActions({
+      nextLine: {},
+    });
+
+    expect(engine.selectPresentationState().visual.items).toEqual([
+      expect.objectContaining({
+        id: "replacement",
+      }),
+    ]);
+    expect(routeGraphics.render.mock.calls.at(-1)?.[0].animations).toEqual([]);
   });
 
   it("omits authored animations when the project default skips animations", () => {

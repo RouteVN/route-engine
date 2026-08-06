@@ -619,6 +619,75 @@ out:
           content:
             - text: "Still fading"
 ---
+case: "Include carried persistent visual animations in per-line presentationState"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        visual:
+                          items:
+                            - id: "sparkle"
+                              resourceId: "effect-sparkle"
+                              animations:
+                                resourceId: "spin"
+                                playback:
+                                  continuity: "persistent"
+                                  loop: true
+                    - id: "2"
+                      actions:
+                        dialogue:
+                          content:
+                            - text: "Still spinning"
+  - sectionId: "section1"
+    includePresentationState: true
+out:
+  lines:
+    - id: "1"
+      changes:
+        visual:
+          changeType: "add"
+          data:
+            items:
+              - id: "sparkle"
+                resourceId: "effect-sparkle"
+                animations:
+                  resourceId: "spin"
+                  playback:
+                    continuity: "persistent"
+                    loop: true
+      presentationState:
+        visual:
+          items:
+            - id: "sparkle"
+              resourceId: "effect-sparkle"
+              animations:
+                resourceId: "spin"
+                playback:
+                  continuity: "persistent"
+                  loop: true
+    - id: "2"
+      changes: {}
+      presentationState:
+        visual:
+          items:
+            - id: "sparkle"
+              resourceId: "effect-sparkle"
+              animations:
+                resourceId: "spin"
+                playback:
+                  continuity: "persistent"
+                  loop: true
+        dialogue:
+          content:
+            - text: "Still spinning"
+---
 case: "Background animation metadata should not create duplicate next-line changes"
 in:
   - state:

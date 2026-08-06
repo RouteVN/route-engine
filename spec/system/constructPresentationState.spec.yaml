@@ -904,6 +904,66 @@ out:
     content:
       - text: "So beautiful!"
 ---
+case: preserve persistent visual item animations when later presentations omit the visual action
+in:
+  - - visual:
+        items:
+          - id: "sparkle"
+            resourceId: "effect-sparkle"
+            animations:
+              resourceId: "spin"
+              playback:
+                continuity: "persistent"
+                loop: true
+    - dialogue:
+        mode: "adv"
+        content:
+          - text: "Still spinning!"
+out:
+  visual:
+    items:
+      - id: "sparkle"
+        resourceId: "effect-sparkle"
+        animations:
+          resourceId: "spin"
+          playback:
+            continuity: "persistent"
+            loop: true
+  dialogue:
+    mode: "adv"
+    content:
+      - text: "Still spinning!"
+---
+case: preserve persistent character item animations when later presentations omit the character action
+in:
+  - - character:
+        items:
+          - id: "sakura"
+            resourceId: "char-sakura"
+            animations:
+              resourceId: "drift"
+              playback:
+                continuity: "persistent"
+                loop: true
+    - dialogue:
+        mode: "adv"
+        content:
+          - text: "Still moving!"
+out:
+  character:
+    items:
+      - id: "sakura"
+        resourceId: "char-sakura"
+        animations:
+          resourceId: "drift"
+          playback:
+            continuity: "persistent"
+            loop: true
+  dialogue:
+    mode: "adv"
+    content:
+      - text: "Still moving!"
+---
 case: preserve visual item layer in presentation state
 in:
   - - visual:

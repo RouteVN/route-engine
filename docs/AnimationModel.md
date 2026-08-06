@@ -72,6 +72,22 @@ when one exists, otherwise the previous subject for removals.
 
 If a `transition` resolves to the same compatible visual subject on both sides, the runtime may optimize execution into a single-subject tween. That is an execution optimization, not a separate authoring concept.
 
+## Persistent Item Playback Selection
+
+Character and visual animation selections with
+`playback.continuity: persistent` stay attached to the item with the same `id`
+across later lines.
+
+In practice:
+
+- later lines do not need to repeat the same item animation payload
+- a finite animation continues only while its persistent playback session is
+  active
+- a looping update continues until the item is removed, its `id` changes, or a
+  later action replaces its animation selection
+- render-scoped animation selections still end when their authored
+  presentation ends
+
 ## Current Background Behavior
 
 Background animation dispatch is based on resolved presentation state, not only
@@ -160,8 +176,9 @@ Looping playback is ambient:
 
 - it does not block line or renderer completion
 - it remains active after the engine marks the current line complete
-- it stops when the animation selection is omitted, replaced, or its target is
-  removed
+- render-scoped playback stops when the animation selection is omitted,
+  replaced, or its target is removed
+- persistent item playback stays selected while the same item `id` remains
 - `continuity: persistent` lets the same loop continue across compatible
   renders without restarting
 - a persistent loop has no duration-based expiry

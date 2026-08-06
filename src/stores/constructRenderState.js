@@ -438,6 +438,21 @@ const shouldEmitAnimationSelection = ({
   return false;
 };
 
+const isItemAnimationAuthoredOnCurrentLine = (
+  currentLineActions,
+  actionKey,
+  itemId,
+) => {
+  if (currentLineActions === undefined) {
+    return true;
+  }
+
+  const authoredItem = currentLineActions?.[actionKey]?.items?.find(
+    (item) => item?.id === itemId,
+  );
+  return hasOwnProperty(authoredItem ?? {}, "animations");
+};
+
 const hasLegacyAnimationLifecycleConfig = (animationsDef) => {
   if (
     !animationsDef ||
@@ -2858,10 +2873,12 @@ export const addCharacters = (
   {
     presentationState,
     previousPresentationState,
+    currentLineActions,
     resources,
     isLineCompleted,
     skipTransitionsAndAnimations,
     activePersistentAnimations,
+    restoredPersistentAnimations,
   },
 ) => {
   const { elements, animations } = state;
@@ -2895,6 +2912,12 @@ export const addCharacters = (
               previousDuplicateCharacterIds,
             )
           : undefined;
+      const isAnimationAuthoredOnCurrentLine =
+        isItemAnimationAuthoredOnCurrentLine(
+          currentLineActions,
+          "character",
+          item.id,
+        );
 
       const characterAnimationInstances = createAnimationInstances({
         animationsDef: item.animations,
@@ -2921,6 +2944,8 @@ export const addCharacters = (
           isLineCompleted,
           skipTransitionsAndAnimations,
           activePersistentAnimations,
+          restoredPersistentAnimations,
+          isAuthoredOnCurrentLine: isAnimationAuthoredOnCurrentLine,
         })
       ) {
         animations.push(...characterAnimationInstances);
@@ -2979,6 +3004,8 @@ export const addCharacters = (
           isLineCompleted,
           skipTransitionsAndAnimations,
           activePersistentAnimations,
+          restoredPersistentAnimations,
+          isAuthoredOnCurrentLine: isAnimationAuthoredOnCurrentLine,
         })
       ) {
         animations.push(...characterAnimationInstances);
@@ -3020,6 +3047,7 @@ export const addVisuals = (
   {
     presentationState,
     previousPresentationState,
+    currentLineActions,
     resources,
     isLineCompleted,
     skipTransitionsAndAnimations,
@@ -3029,6 +3057,7 @@ export const addVisuals = (
     sceneReplay,
     runtime,
     activePersistentAnimations,
+    restoredPersistentAnimations,
     autoMode,
     skipMode,
     isChoiceVisible,
@@ -3072,6 +3101,12 @@ export const addVisuals = (
 
     for (const item of items) {
       const previousItem = previousItems.find((p) => p.id === item.id);
+      const isAnimationAuthoredOnCurrentLine =
+        isItemAnimationAuthoredOnCurrentLine(
+          currentLineActions,
+          "visual",
+          item.id,
+        );
       const itemLayer = resolveVisualItemLayer(item, previousItem);
 
       if (visualLayer !== undefined && itemLayer !== visualLayer) {
@@ -3240,6 +3275,8 @@ export const addVisuals = (
           isLineCompleted,
           skipTransitionsAndAnimations,
           activePersistentAnimations,
+          restoredPersistentAnimations,
+          isAuthoredOnCurrentLine: isAnimationAuthoredOnCurrentLine,
         })
       ) {
         animations.push(...visualAnimationInstances);
