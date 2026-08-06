@@ -1185,22 +1185,22 @@ Built-in effect handling notes:
 
 Actions that can be attached to lines to control presentation:
 
-| Action       | Properties                                                                                                                                           | Description                                                                                                               |
-| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `screen`     | `{ opacity?, blur?, animations? }`                                                                                                                   | Set whole-screen appearance or transition. `opacity`/`blur` apply to the composed story frame                             |
-| `background` | `{ resourceId?, colorId?, transformId?, x?, y?, anchorX?, anchorY?, scaleX?, scaleY?, rotation?, originX?, originY?, opacity?, blur?, animations? }` | Set background/CG. Transform fields are renderer pixels/unitless multipliers/degrees; `blur: null` clears background blur |
-| `dialogue`   | `{ characterId?, character?, character.sprite?, persistCharacter?, persistSprite?, content, append?, mode?, ui?, clear? }`                           | Display dialogue                                                                                                          |
-| `character`  | `{ items }`                                                                                                                                          | Display character sprites. Each item can set transform overrides, `opacity`, and `blur`                                   |
-| `visual`     | `{ items }`                                                                                                                                          | Display visual elements. Each item can set `layer`, transform overrides, `opacity`, `blur`, and animations                |
-| `bgm`        | `{ sounds, loop?, volume?, muted?, pan? }`                                                                                                           | Control the persistent, multi-sound BGM channel                                                                           |
-| `sfx`        | `{ channels: [{ id, sounds, loop?, volume?, muted?, pan? }] }`                                                                                       | Play any number of line-scoped SFX channels, each with its own sounds                                                     |
-| `voice`      | `{ sounds, loop?, volume?, muted?, pan? }`                                                                                                           | Control the line-scoped, multi-sound Voice channel; resources resolve from the current scene                              |
-| `animation`  | `{ ... }`                                                                                                                                            | Apply animations                                                                                                          |
-| `layout`     | `{ resourceId }`                                                                                                                                     | Display layout                                                                                                            |
-| `control`    | `{ resourceId }`                                                                                                                                     | Activate control bindings and control UI                                                                                  |
-| `choice`     | `{ resourceId, items }`                                                                                                                              | Display choice menu                                                                                                       |
-| `form`       | `{ resourceId, fields, submitActions?, cancelActions? }`                                                                                             | Display a blocking multi-input form                                                                                       |
-| `cleanAll`   | `true`                                                                                                                                               | Clear all presentation state                                                                                              |
+| Action       | Properties                                                                                                                                           | Description                                                                                                                       |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `screen`     | `{ opacity?, blur?, animations? }`                                                                                                                   | Set whole-screen appearance or transition. `opacity`/`blur` apply to the composed story frame                                     |
+| `background` | `{ resourceId?, colorId?, transformId?, x?, y?, anchorX?, anchorY?, scaleX?, scaleY?, rotation?, originX?, originY?, opacity?, blur?, animations? }` | Set background/CG. Transform fields are renderer pixels/unitless multipliers/degrees; `blur: null` clears background blur         |
+| `dialogue`   | `{ characterId?, character?, character.sprite?, persistCharacter?, persistSprite?, content, append?, mode?, ui?, clear? }`                           | Display dialogue                                                                                                                  |
+| `character`  | `{ items }`                                                                                                                                          | Display character sprites. Each item can set transform overrides, `opacity`, and `blur`                                           |
+| `visual`     | `{ items }`                                                                                                                                          | Display resource-backed or inline-layout visual elements. Each item can set `layer`, transform, `opacity`, `blur`, and animations |
+| `bgm`        | `{ sounds, loop?, volume?, muted?, pan? }`                                                                                                           | Control the persistent, multi-sound BGM channel                                                                                   |
+| `sfx`        | `{ channels: [{ id, sounds, loop?, volume?, muted?, pan? }] }`                                                                                       | Play any number of line-scoped SFX channels, each with its own sounds                                                             |
+| `voice`      | `{ sounds, loop?, volume?, muted?, pan? }`                                                                                                           | Control the line-scoped, multi-sound Voice channel; resources resolve from the current scene                                      |
+| `animation`  | `{ ... }`                                                                                                                                            | Apply animations                                                                                                                  |
+| `layout`     | `{ resourceId }`                                                                                                                                     | Display layout                                                                                                                    |
+| `control`    | `{ resourceId }`                                                                                                                                     | Activate control bindings and control UI                                                                                          |
+| `choice`     | `{ resourceId, items }`                                                                                                                              | Display choice menu                                                                                                               |
+| `form`       | `{ resourceId, fields, submitActions?, cancelActions? }`                                                                                             | Display a blocking multi-input form                                                                                               |
+| `cleanAll`   | `true`                                                                                                                                               | Clear all presentation state                                                                                                      |
 
 Animation selections use `animations.resourceId` plus optional
 `animations.playback`. `playback.speed` is a unitless multiplier: `1` is normal,
@@ -1242,21 +1242,191 @@ screen transitions, overlay stack entries, and confirm dialogs. JavaScript
 callers can use the exported `RENDER_LAYER`, `VISUAL_LAYER`, and
 `DEFAULT_VISUAL_LAYER` constants when generating project data.
 
-### Text Visuals
+### Inline Visual Layouts
 
-Visual items can be backed by text instead of an image, video, spritesheet,
-particle, or layout resource. A text-backed visual uses the same visual item placement,
-layer, opacity, blur, and animation fields as every other visual item.
+Visual items can contain a layout directly instead of referencing an image,
+video, spritesheet, particle, or shared layout resource. Inline layouts use the
+same RouteGraphics element format and the same template and resource-reference
+resolution as `resources.layouts`.
 
-New visual items choose one render subject:
+A new visual item chooses one render subject:
 
-- `resourceId` for image, video, spritesheet, particle, or layout resources
-- `text` for direct RouteGraphics text
+- `resourceId` for an existing image, video, spritesheet, particle, or layout
+  resource
+- `layout` for layout elements authored directly on the visual item
+- `text` for the legacy direct-text form
 
-`resourceId` and `text` are mutually exclusive. The `text` object owns only
-text-specific fields such as `content`, `textStyleId`, and optional text layout
-fields like `width`. It must not contain visual item fields such as `x`,
-`layer`, or `animations`.
+These fields are mutually exclusive. Prefer `layout` for new inline content;
+it covers text while also allowing containers, rectangles, sprites, input
+handlers, and future layout element types.
+
+#### Plain text
+
+A plain text visual is a one-element inline layout:
+
+```yaml
+visual:
+  items:
+    - id: chapterTitle
+      layout:
+        elements:
+          - id: chapter-title-text
+            type: text
+            content: "Chapter 1"
+            textStyleId: title
+            width: 720
+      transformId: titleTop
+      layer: 70
+      opacity: 0.9
+      animations:
+        resourceId: titleFadeIn
+```
+
+#### Mixed visual content
+
+One visual can group multiple layout elements under a stable visual container:
+
+```yaml
+visual:
+  items:
+    - id: locationCard
+      layout:
+        elements:
+          - id: card-background
+            type: rect
+            width: 640
+            height: 180
+            colorId: cardBackground
+          - id: location-icon
+            type: sprite
+            imageId: mapPin
+            x: 70
+            y: 90
+            anchorX: 0.5
+            anchorY: 0.5
+          - id: location-name
+            type: text
+            content: "Old Town"
+            textStyleId: locationTitle
+            x: 380
+            y: 90
+            anchorX: 0.5
+            anchorY: 0.5
+      transformId: locationCardPosition
+      layer: 70
+```
+
+`imageId`, `textStyleId`, and `colorId` are resolved from the normal project
+resource collections. Raw renderer fields such as sprite `src`, text
+`textStyle`, and rectangle `fill` should not be authored directly.
+
+#### Templates and input
+
+Inline visual layouts receive the same template data as shared visual layouts.
+They can also contain normal layout input handlers:
+
+```yaml
+visual:
+  items:
+    - id: scoreCard
+      layout:
+        elements:
+          - id: score-label
+            type: text
+            content: "SCORE ${variables.score}"
+            textStyleId: score
+          - id: increment-button
+            type: rect
+            y: 80
+            width: 240
+            height: 72
+            colorId: button
+            click:
+              payload:
+                actions:
+                  updateVariable:
+                    id: incrementScore
+                    operations:
+                      - variableId: score
+                        op: increment
+                        value: 1
+      transformId: scoreCardPosition
+```
+
+#### Shared and inline transforms
+
+A visual can use a shared transform resource:
+
+```yaml
+- id: chapterTitle
+  layout:
+    elements:
+      - id: title
+        type: text
+        content: "Chapter 1"
+        textStyleId: title
+  transformId: titleTop
+```
+
+Or it can own an inline transform without creating a transform resource:
+
+```yaml
+- id: chapterTitle
+  layout:
+    elements:
+      - id: title
+        type: text
+        content: "Chapter 1"
+        textStyleId: title
+  transform:
+    x: 960
+    y: 180
+    anchorX: 0.5
+    anchorY: 0.5
+    scaleX: 1
+    scaleY: 1
+    rotation: 0
+```
+
+`transformId` and `transform` are mutually exclusive. Existing top-level
+transform fields remain supported as overrides for compatibility.
+
+#### Updating an inline layout
+
+Later lines can replace the inline layout by visual `id` while retaining its
+transform, layer, opacity, and blur. Inline transform patches merge by field:
+
+```yaml
+visual:
+  items:
+    - id: chapterTitle
+      layout:
+        elements:
+          - id: title
+            type: text
+            content: "Chapter 2"
+            textStyleId: title
+      transform:
+        y: 220
+```
+
+Appearance-only and animation-only updates do not need to repeat the layout:
+
+```yaml
+visual:
+  items:
+    - id: chapterTitle
+      opacity: 0.5
+      animations:
+        resourceId: titleFadeOut
+```
+
+#### Legacy direct text
+
+The existing `text` form remains supported for compatibility. New projects
+should prefer an inline layout so the visual can grow beyond one text element.
+For a new legacy text visual, both `text.content` and `text.textStyleId` are
+required; later patches can supply either field alone.
 
 ```yaml
 visual:
@@ -1265,50 +1435,8 @@ visual:
       text:
         content: "Chapter 1"
         textStyleId: title
-        width: 720
       transformId: titleTop
-      layer: 70
-      opacity: 0.9
-      animations:
-        resourceId: titleFadeIn
 ```
-
-`text.content` can be a plain string or the same rich content run shape used by
-RouteGraphics text. Rich runs can override styles with `textStyleId`, and
-furigana can use its own nested `textStyleId`.
-
-```yaml
-visual:
-  items:
-    - id: locationLabel
-      text:
-        content:
-          - text: "Kanji"
-            furigana:
-              text: "reading"
-              textStyleId: ruby
-          - text: " label"
-            textStyleId: emphasis
-        textStyleId: title
-        width: 640
-      transformId: titleTop
-      anchorX: 0.5
-      anchorY: 0.5
-```
-
-After a text visual exists, later lines can patch it by `id` without restating
-the whole text config:
-
-```yaml
-visual:
-  items:
-    - id: chapterTitle
-      text:
-        content: "Chapter 2"
-```
-
-For a new text visual, `text.content` and `text.textStyleId` are both required.
-For a patch to an existing text visual, either field can be supplied alone.
 
 ### Particle Visuals
 

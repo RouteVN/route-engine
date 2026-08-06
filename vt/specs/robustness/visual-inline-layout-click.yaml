@@ -1,0 +1,172 @@
+---
+title: Visual Inline Layout Click
+description: |
+  An inline layout authored directly on a visual item renders at its inline
+  transform. Clicking its child button advances to a second inline layout.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 100
+  - action: screenshot
+  - action: click
+    x: 480
+    y: 385
+  - action: wait
+    ms: 300
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+  backgroundColor: "#000000"
+resources:
+  colors:
+    background:
+      hex: "#000000"
+    panel:
+      hex: "#4D4D4D"
+    button:
+      hex: "#737373"
+    text:
+      hex: "#FFFFFF"
+    muted:
+      hex: "#D9D9D9"
+  fonts:
+    default:
+      fileId: Arial
+  textStyles:
+    heading:
+      fontId: default
+      colorId: muted
+      fontSize: 24
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1.2
+      align: center
+    status:
+      fontId: default
+      colorId: text
+      fontSize: 48
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1.2
+      align: center
+    button:
+      fontId: default
+      colorId: text
+      fontSize: 27
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1.2
+      align: center
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      name: Main
+      initialSectionId: main
+      sections:
+        main:
+          name: Main
+          lines:
+            - id: inline-layout
+              actions:
+                background:
+                  colorId: background
+                visual:
+                  items:
+                    - id: status-card
+                      layout:
+                        elements:
+                          - id: card
+                            type: rect
+                            width: 600
+                            height: 400
+                            colorId: panel
+                          - id: heading
+                            type: text
+                            x: 300
+                            y: 70
+                            anchorX: 0.5
+                            anchorY: 0.5
+                            content: INLINE VISUAL LAYOUT
+                            textStyleId: heading
+                          - id: score
+                            type: text
+                            x: 300
+                            y: 190
+                            anchorX: 0.5
+                            anchorY: 0.5
+                            content: READY
+                            textStyleId: status
+                          - id: increment-button
+                            type: rect
+                            x: 140
+                            y: 270
+                            width: 320
+                            height: 90
+                            colorId: button
+                            click:
+                              payload:
+                                actions:
+                                  nextLine: {}
+                          - id: increment-label
+                            type: text
+                            x: 300
+                            y: 315
+                            anchorX: 0.5
+                            anchorY: 0.5
+                            content: CONTINUE
+                            textStyleId: button
+                      transform:
+                        x: 180
+                        y: 70
+                        anchorX: 0
+                        anchorY: 0
+                        scaleX: 1
+                        scaleY: 1
+                        rotation: 0
+                      layer: 70
+            - id: result
+              actions:
+                background:
+                  colorId: background
+                visual:
+                  items:
+                    - id: result-card
+                      layout:
+                        elements:
+                          - id: card
+                            type: rect
+                            width: 600
+                            height: 400
+                            colorId: panel
+                          - id: heading
+                            type: text
+                            x: 300
+                            y: 95
+                            anchorX: 0.5
+                            anchorY: 0.5
+                            content: INLINE VISUAL LAYOUT
+                            textStyleId: heading
+                          - id: result
+                            type: text
+                            x: 300
+                            y: 220
+                            anchorX: 0.5
+                            anchorY: 0.5
+                            content: CLICK RECEIVED
+                            textStyleId: status
+                      transform:
+                        x: 180
+                        y: 70
+                        anchorX: 0
+                        anchorY: 0
+                        scaleX: 1
+                        scaleY: 1
+                        rotation: 0
+                      layer: 70

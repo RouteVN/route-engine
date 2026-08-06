@@ -76,7 +76,8 @@ Static, read-only data that defines the visual novel content:
   - Achievements are stable, platform-agnostic definitions under `resources.achievements`; the engine exposes cloned resource selectors and emits ordered effects for external consumers. The primitives are documented in `docs/Achievements.md`
   - Voice audio is stored under `resources.voices[sceneId][voiceId]` and line actions reference the scene-local `voiceId`
   - Layout text elements should reference shared styles with `textStyleId`
-  - Text-backed visual items should put text-specific data under `text` and reference shared styles with `text.textStyleId`
+  - Inline-layout visual items should put RouteGraphics elements under `layout.elements`; this is the preferred way to author direct text or mixed inline visual content
+  - Legacy text-backed visual items put text-specific data under `text` and reference shared styles with `text.textStyleId`
   - `resources.colors[*].hex` should be opaque hex only; text fill, stroke, and shadow transparency should be authored on `resources.textStyles` with `colorAlpha`, `strokeAlpha`, and `shadow.alpha`, not inside `resources.colors`
   - Layout sprite elements should reference images with `imageId` and optional `hoverImageId` / `clickImageId`
   - Layout rect elements should reference shared colors with `colorId` and optional `hover.colorId` / `click.colorId` / `rightClick.colorId`
@@ -138,7 +139,7 @@ Presentation state includes:
   - `colorId` references `resources.colors` for the persistent solid backing color behind the background resource; if omitted, the backing color falls back to `screen.backgroundColor`, then black
 - `dialogue`: Speaker, layered speaker sprite, text content, mode (ADV/NVL)
 - `character`: Character sprites and positions
-- `visual`: Additional visual elements, including image, video, spritesheet, particle, layout, and text-backed visuals
+- `visual`: Additional visual elements, including image, video, spritesheet, particle, shared-layout, inline-layout, and legacy text-backed visuals
 - `bgm` / `sfx` / `voice`: Audio configuration
 - `animation`: Active animations
 - `layout`: UI layouts

@@ -3084,7 +3084,12 @@ export const normalizePersistentPresentationState = (state = {}) => {
   );
   stripAnimationsFromItems(
     "visual",
-    (item) => item.resourceId || item.transformId,
+    (item) =>
+      item.resourceId ||
+      item.text ||
+      item.layout ||
+      item.transformId ||
+      item.transform,
   );
 
   return normalizedState;

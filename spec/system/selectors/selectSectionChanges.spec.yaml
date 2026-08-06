@@ -729,3 +729,86 @@ out:
                   resourceId: "fadeIn"
     - id: "2"
       changes: {}
+---
+case: "Carry an inline visual layout into the next line presentation state"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        visual:
+                          items:
+                            - id: "title"
+                              layout:
+                                elements:
+                                  - id: "title-text"
+                                    type: "text"
+                                    content: "Chapter 1"
+                                    textStyleId: "title"
+                              transform:
+                                x: 400
+                                y: 120
+                                anchorX: 0.5
+                                anchorY: 0.5
+                    - id: "2"
+                      actions: {}
+  - sectionId: "section1"
+    includePresentationState: true
+out:
+  lines:
+    - id: "1"
+      changes:
+        visual:
+          changeType: "add"
+          data:
+            items:
+              - id: "title"
+                layout:
+                  elements:
+                    - id: "title-text"
+                      type: "text"
+                      content: "Chapter 1"
+                      textStyleId: "title"
+                transform:
+                  x: 400
+                  y: 120
+                  anchorX: 0.5
+                  anchorY: 0.5
+      presentationState:
+        visual:
+          items:
+            - id: "title"
+              layout:
+                elements:
+                  - id: "title-text"
+                    type: "text"
+                    content: "Chapter 1"
+                    textStyleId: "title"
+              transform:
+                x: 400
+                y: 120
+                anchorX: 0.5
+                anchorY: 0.5
+    - id: "2"
+      changes: {}
+      presentationState:
+        visual:
+          items:
+            - id: "title"
+              layout:
+                elements:
+                  - id: "title-text"
+                    type: "text"
+                    content: "Chapter 1"
+                    textStyleId: "title"
+              transform:
+                x: 400
+                y: 120
+                anchorX: 0.5
+                anchorY: 0.5

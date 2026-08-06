@@ -1676,3 +1676,78 @@ out:
     characterId: "bob"
     content:
       - text: "Second ADV line"
+---
+case: inline visual layout replacement preserves item state and merges inline transform
+in:
+  - - visual:
+        items:
+          - id: "title"
+            layout:
+              elements:
+                - id: "title-text"
+                  type: "text"
+                  content: "Chapter 1"
+                  textStyleId: "title"
+            transform:
+              x: 100
+              y: 120
+              anchorX: 0.5
+              anchorY: 0.5
+              rotation: 0
+              scaleX: 1
+              scaleY: 1
+            layer: 70
+            opacity: 0.8
+    - visual:
+        items:
+          - id: "title"
+            layout:
+              elements:
+                - id: "title-text"
+                  type: "text"
+                  content: "Chapter 2"
+                  textStyleId: "title"
+            transform:
+              y: 180
+out:
+  visual:
+    items:
+      - id: "title"
+        layout:
+          elements:
+            - id: "title-text"
+              type: "text"
+              content: "Chapter 2"
+              textStyleId: "title"
+        transform:
+          x: 100
+          y: 180
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 0
+          scaleX: 1
+          scaleY: 1
+        layer: 70
+        opacity: 0.8
+---
+case: inline visual layout cannot be combined with resourceId
+in:
+  - - visual:
+        items:
+          - id: "title"
+            resourceId: "title-image"
+            layout:
+              elements: []
+throws: 'Visual item "title" must define only one of resourceId, text, or layout'
+---
+case: visual item cannot combine transformId and inline transform
+in:
+  - - visual:
+        items:
+          - id: "title"
+            layout:
+              elements: []
+            transformId: "center"
+            transform:
+              x: 100
+throws: 'Visual item "title" cannot define both transformId and transform'

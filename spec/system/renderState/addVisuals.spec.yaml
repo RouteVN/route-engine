@@ -495,7 +495,7 @@ in:
       images:
         image1:
           fileId: "visual.png"
-throws: 'Visual item "visual1" requires transformId'
+throws: 'Visual item "visual1" requires transformId or transform'
 ---
 case: incomplete visual text should throw clear error
 in:
@@ -2712,3 +2712,232 @@ in:
           scaleX: 1
           scaleY: 1
 throws: 'Visual item "fog" layer must be one of: 10, 30, 50, 70, 90.'
+---
+case: render inline visual layout with templated text and inline transform
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "status"
+            layout:
+              elements:
+                - id: "panel"
+                  type: "rect"
+                  width: 360
+                  height: 180
+                  colorId: "panel"
+                - id: "label"
+                  type: "text"
+                  x: 180
+                  y: 90
+                  anchorX: 0.5
+                  anchorY: 0.5
+                  content: "SCORE ${variables.score}"
+                  textStyleId: "label"
+            transform:
+              x: 120
+              y: 80
+              anchorX: 0
+              anchorY: 0
+              rotation: -2
+              scaleX: 1.25
+              scaleY: 1.25
+            opacity: 0.85
+    resources:
+      colors:
+        panel:
+          hex: "#222222"
+        text:
+          hex: "#FFFFFF"
+      fonts:
+        default:
+          fileId: "Arial"
+      textStyles:
+        label:
+          fontId: "default"
+          colorId: "text"
+          fontSize: 32
+          fontWeight: "700"
+          fontStyle: "normal"
+          lineHeight: 1.2
+    variables:
+      score: 2
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-status"
+          type: "container"
+          x: 120
+          y: 80
+          anchorX: 0
+          anchorY: 0
+          rotation: -2
+          scaleX: 1.25
+          scaleY: 1.25
+          alpha: 0.85
+          children:
+            - id: "panel"
+              type: "rect"
+              width: 360
+              height: 180
+              fill: "#222222"
+            - id: "label"
+              type: "text"
+              x: 180
+              y: 90
+              anchorX: 0.5
+              anchorY: 0.5
+              content: "SCORE 2"
+              textStyle:
+                fontFamily: "Arial"
+                fontSize: 32
+                fontWeight: "700"
+                fontStyle: "normal"
+                lineHeight: 1.2
+                fill: "#FFFFFF"
+  animations: []
+  audio: []
+---
+case: render resource-backed visual with inline transform
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "badge"
+            resourceId: "badge"
+            transform:
+              x: 320
+              y: 180
+              anchorX: 0.5
+              anchorY: 0.5
+              rotation: 12
+              scaleX: 2
+              scaleY: 2
+    resources:
+      images:
+        badge:
+          fileId: "badge.png"
+          width: 64
+          height: 64
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "visual-badge"
+          type: "sprite"
+          src: "badge.png"
+          width: 64
+          height: 64
+          x: 320
+          y: 180
+          anchorX: 0.5
+          anchorY: 0.5
+          rotation: 12
+          scaleX: 2
+          scaleY: 2
+  animations: []
+  audio: []
+---
+case: inline visual layout requires transform source
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "status"
+            layout:
+              elements: []
+    resources: {}
+throws: 'Visual item "status" requires transformId or transform'
+---
+case: inline visual layout supports transition animation on removal
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+    audio: []
+  - presentationState:
+      visual:
+        items:
+          - id: "title"
+            animations:
+              resourceId: "fadeOut"
+    previousPresentationState:
+      visual:
+        items:
+          - id: "title"
+            layout:
+              elements:
+                - id: "title-text"
+                  type: "text"
+                  content: "Chapter 1"
+                  textStyleId: "title"
+            transform:
+              x: 400
+              y: 120
+              anchorX: 0.5
+              anchorY: 0.5
+    resources:
+      animations:
+        fadeOut:
+          type: transition
+          prev:
+            tween:
+              alpha:
+                initialValue: 1
+                keyframes:
+                  - duration: 300
+                    value: 0
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children: []
+  animations:
+    - id: "title-animation-out"
+      type: "transition"
+      targetId: "visual-title"
+      prev:
+        tween:
+          alpha:
+            initialValue: 1
+            keyframes:
+              - duration: 300
+                value: 0
+  audio: []

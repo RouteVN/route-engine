@@ -159,7 +159,9 @@ definitions:
         - required: [id]
         - required: [type]
         - required: [resourceId]
+        - required: [layout]
         - required: [transformId]
+        - required: [transform]
         - required: [x]
         - required: [y]
         - required: [anchorX]
@@ -174,6 +176,44 @@ definitions:
         - required: [blur]
         - required: [animations]
     additionalProperties: true
+
+  visualInlineLayout:
+    type: object
+    description: Inline RouteGraphics layout rendered as one visual item. The visual item owns placement, layer, appearance, and animations.
+    properties:
+      elements:
+        type: array
+        description: Layout elements authored with the same shape as resources.layouts entries
+        items:
+          type: object
+          additionalProperties: true
+    required: [elements]
+    additionalProperties: false
+
+  visualInlineTransform:
+    type: object
+    description: Inline transform used instead of a shared transform resource
+    properties:
+      x:
+        type: number
+      y:
+        type: number
+      anchorX:
+        type: number
+      anchorY:
+        type: number
+      scaleX:
+        type: number
+      scaleY:
+        type: number
+      rotation:
+        type: number
+      originX:
+        type: number
+      originY:
+        type: number
+    minProperties: 1
+    additionalProperties: false
 
 properties:
   cleanAll:
@@ -460,9 +500,13 @@ properties:
               description: ID of an image, video, spritesheet, particle, or layout resource
             text:
               $ref: "#/definitions/visualText"
+            layout:
+              $ref: "#/definitions/visualInlineLayout"
             transformId:
               type: string
               description: ID of the transform where visual appears
+            transform:
+              $ref: "#/definitions/visualInlineTransform"
             x:
               type: number
               description: Custom x position to override transform x
@@ -512,6 +556,12 @@ properties:
           allOf:
             - not:
                 required: [resourceId, text]
+            - not:
+                required: [resourceId, layout]
+            - not:
+                required: [text, layout]
+            - not:
+                required: [transformId, transform]
           additionalProperties: false
     additionalProperties: false
 
