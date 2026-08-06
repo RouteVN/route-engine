@@ -1,0 +1,102 @@
+---
+title: Visual Inline Transform Replaces Persisted Overrides
+description: |
+  A persisted visual moves from a shared transform with top-level coordinate
+  overrides to an inline transform without retaining the stale overrides.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 100
+  - action: screenshot
+  - action: customEvent
+    name: vt:nextLine
+  - action: wait
+    ms: 100
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+  backgroundColor: "#111827"
+resources:
+  colors:
+    background:
+      hex: "#111827"
+    panel:
+      hex: "#2563EB"
+    text:
+      hex: "#FFFFFF"
+  fonts:
+    default:
+      fileId: Arial
+  textStyles:
+    label:
+      fontId: default
+      colorId: text
+      fontSize: 28
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1.2
+      align: center
+  transforms:
+    initial:
+      x: 180
+      y: 190
+      anchorX: 0
+      anchorY: 0
+      scaleX: 1
+      scaleY: 1
+      rotation: 0
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      name: Main
+      initialSectionId: main
+      sections:
+        main:
+          name: Main
+          lines:
+            - id: shared-transform-with-overrides
+              actions:
+                background:
+                  colorId: background
+                visual:
+                  items:
+                    - id: transform-card
+                      layout:
+                        elements:
+                          - id: card
+                            type: rect
+                            width: 300
+                            height: 160
+                            colorId: panel
+                          - id: label
+                            type: text
+                            x: 150
+                            y: 80
+                            anchorX: 0.5
+                            anchorY: 0.5
+                            content: INLINE TRANSFORM
+                            textStyleId: label
+                      transformId: initial
+                      x: 80
+                      y: 190
+                      layer: 70
+            - id: switch-to-inline-transform
+              actions:
+                visual:
+                  items:
+                    - id: transform-card
+                      transform:
+                        x: 580
+                        y: 190
+                        anchorX: 0
+                        anchorY: 0
+                        scaleX: 1
+                        scaleY: 1
+                        rotation: 0

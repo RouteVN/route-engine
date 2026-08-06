@@ -251,8 +251,11 @@ const applyPersistentItemTransform = (item, previousItem) => {
     return item;
   }
 
+  const hasInlineTransform = hasDefinedProperty(item, "transform");
+
   for (const field of ITEM_TRANSFORM_FIELDS) {
     if (
+      !hasInlineTransform &&
       !hasDefinedProperty(item, field) &&
       hasDefinedProperty(previousItem, field)
     ) {

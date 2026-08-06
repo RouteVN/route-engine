@@ -289,6 +289,66 @@ describe("inline visual layouts", () => {
     });
   });
 
+  it("replaces persisted top-level overrides with an authored inline transform", () => {
+    const presentationState = constructPresentationState([
+      {
+        visual: {
+          items: [
+            {
+              id: "badge",
+              resourceId: "badge",
+              transformId: "center",
+              x: 100,
+              y: 120,
+            },
+          ],
+        },
+      },
+      {
+        visual: {
+          items: [
+            {
+              id: "badge",
+              transform: {
+                x: 300,
+                y: 180,
+                anchorX: 0.5,
+                anchorY: 0.5,
+                scaleX: 1.5,
+                scaleY: 1.5,
+                rotation: 8,
+              },
+            },
+          ],
+        },
+      },
+    ]);
+
+    const item = presentationState.visual.items[0];
+    expect(item).not.toHaveProperty("transformId");
+    expect(item).not.toHaveProperty("x");
+    expect(item).not.toHaveProperty("y");
+    expect(item.transform).toMatchObject({ x: 300, y: 180 });
+
+    expect(
+      findVisual(
+        constructRenderState({
+          presentationState,
+          resources: createResources(),
+        }),
+        "badge",
+      ),
+    ).toMatchObject({
+      x: 300,
+      y: 180,
+      anchorX: 0.5,
+      anchorY: 0.5,
+      scaleX: 1.5,
+      scaleY: 1.5,
+      rotation: 8,
+    });
+  });
+
   it("preserves an inline layout for an animation-only exit on the next line", () => {
     const resources = createResources();
     resources.animations.fadeOut = {
