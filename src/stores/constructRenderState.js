@@ -1403,8 +1403,6 @@ export const resolveImageIds = (node, resources = {}, path = "root") => {
 // Route Engine projects were documented with `opacity`, so normalize only
 // element objects (not nested interaction metadata) and prefer an explicitly
 // authored alpha when both names are present.
-const LAYOUT_INTERACTION_FIELDS = new Set(["hover", "click", "rightClick"]);
-
 const cloneLayoutValue = (value) => {
   if (Array.isArray(value)) {
     return value.map(cloneLayoutValue);
@@ -1422,29 +1420,42 @@ const cloneLayoutValue = (value) => {
   );
 };
 
-const resolveLayoutAlphaAliases = (node) => {
+const isLayoutTemplateBranchField = (key) =>
+  key === "$else" || key.startsWith("$if ") || key.startsWith("$for ");
+
+const resolveLayoutAlphaAliases = (node, { isElementPatch = false } = {}) => {
   if (Array.isArray(node)) {
-    return node.map(resolveLayoutAlphaAliases);
+    return node.map((value) =>
+      resolveLayoutAlphaAliases(value, { isElementPatch }),
+    );
   }
 
   if (!node || typeof node !== "object") {
     return node;
   }
 
-  const resolvedNode = Object.fromEntries(
-    Object.entries(node).map(([key, value]) => [
-      key,
-      LAYOUT_INTERACTION_FIELDS.has(key)
-        ? cloneLayoutValue(value)
-        : resolveLayoutAlphaAliases(value),
-    ]),
-  );
+  const resolvedNode = cloneLayoutValue(node);
+  const isElement = typeof node.type === "string";
 
-  if (typeof node.type === "string" && hasOwnProperty(node, "opacity")) {
+  if ((isElement || isElementPatch) && hasOwnProperty(node, "opacity")) {
     if (!hasOwnProperty(node, "alpha")) {
       resolvedNode.alpha = node.opacity;
     }
     delete resolvedNode.opacity;
+  }
+
+  for (const fieldName of ["elements", "children"]) {
+    if (hasOwnProperty(node, fieldName)) {
+      resolvedNode[fieldName] = resolveLayoutAlphaAliases(node[fieldName]);
+    }
+  }
+
+  for (const [key, value] of Object.entries(node)) {
+    if (isLayoutTemplateBranchField(key)) {
+      resolvedNode[key] = resolveLayoutAlphaAliases(value, {
+        isElementPatch: isElement || isElementPatch,
+      });
+    }
   }
 
   return resolvedNode;
