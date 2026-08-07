@@ -347,6 +347,12 @@ properties:
           scaleY:
             description: Y scale factor
             type: number
+          flipX:
+            description: Whether to multiply the resolved X scale by -1
+            type: boolean
+          flipY:
+            description: Whether to multiply the resolved Y scale by -1
+            type: boolean
           rotation:
             description: Rotation angle in degrees
             type: number

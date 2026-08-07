@@ -142,6 +142,8 @@ describe("constructPresentationState background transforms", () => {
           y: 400,
           scaleX: 1.3,
           scaleY: 1.3,
+          flipX: true,
+          flipY: true,
         },
       },
       {
@@ -158,6 +160,8 @@ describe("constructPresentationState background transforms", () => {
       y: 400,
       scaleX: 1.3,
       scaleY: 1.3,
+      flipX: true,
+      flipY: true,
       opacity: 0.5,
     });
 
@@ -173,9 +177,35 @@ describe("constructPresentationState background transforms", () => {
     expect(findBackgroundSprite(renderState.elements)).toMatchObject({
       x: 300,
       y: 400,
-      scaleX: 1.3,
-      scaleY: 1.3,
+      scaleX: -1.3,
+      scaleY: -1.3,
       alpha: 0.5,
+    });
+  });
+
+  it("uses scale 1 when an inline flip has no authored scale", () => {
+    const presentationState = constructPresentationState([
+      {
+        background: {
+          resourceId: "bg",
+          flipX: true,
+          flipY: true,
+        },
+      },
+    ]);
+
+    const renderState = constructRenderState({
+      presentationState,
+      resources: createResources(),
+      screen: {
+        width: 1920,
+        height: 1080,
+      },
+    });
+
+    expect(findBackgroundSprite(renderState.elements)).toMatchObject({
+      scaleX: -1,
+      scaleY: -1,
     });
   });
 });

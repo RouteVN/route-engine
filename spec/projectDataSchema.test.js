@@ -682,6 +682,8 @@ describe("projectData schema", () => {
           anchorY: 1,
           scaleX: 1.2,
           scaleY: 0.8,
+          flipX: true,
+          flipY: false,
           rotation: -8,
           originX: 64,
           originY: 128,
@@ -702,6 +704,8 @@ describe("projectData schema", () => {
               anchorY: 1,
               scaleX: 0.8,
               scaleY: 0.9,
+              flipX: true,
+              flipY: false,
               rotation: 12,
               originX: 64,
               originY: 128,
@@ -718,6 +722,8 @@ describe("projectData schema", () => {
               anchorY: 0,
               scaleX: 1.2,
               scaleY: 1.3,
+              flipX: false,
+              flipY: true,
               rotation: -8,
               originX: 20,
               originY: 40,
@@ -743,7 +749,7 @@ describe("projectData schema", () => {
     expect(validatePresentationActions.errors).toBeNull();
   });
 
-  it("accepts transform origins in resource transforms", () => {
+  it("accepts transform origins and flips in resource transforms", () => {
     expect(
       validateProjectData(
         createMinimalProjectData({
@@ -756,6 +762,8 @@ describe("projectData schema", () => {
                 anchorY: 0.5,
                 scaleX: 1,
                 scaleY: 1,
+                flipX: true,
+                flipY: false,
                 rotation: 0,
                 originX: 64,
                 originY: 128,
@@ -766,6 +774,33 @@ describe("projectData schema", () => {
       ),
     ).toBe(true);
     expect(validateProjectData.errors).toBeNull();
+  });
+
+  it("requires transform flip fields to be boolean", () => {
+    expect(
+      validateProjectData(
+        createMinimalProjectData({
+          resources: {
+            transforms: {
+              centerStage: {
+                flipX: "true",
+                flipY: 1,
+              },
+            },
+          },
+        }),
+      ),
+    ).toBe(false);
+    expect(validateProjectData.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          instancePath: "/resources/transforms/centerStage/flipX",
+        }),
+        expect.objectContaining({
+          instancePath: "/resources/transforms/centerStage/flipY",
+        }),
+      ]),
+    );
   });
 
   it("accepts background colorId in presentation actions", () => {
@@ -886,6 +921,8 @@ describe("projectData schema", () => {
               anchorY: 1,
               scaleX: 0.8,
               scaleY: 0.9,
+              flipX: true,
+              flipY: false,
               rotation: 12,
               originX: 64,
               originY: 128,
@@ -921,6 +958,8 @@ describe("projectData schema", () => {
               anchorY: 0,
               scaleX: 1.2,
               scaleY: 1.3,
+              flipX: false,
+              flipY: true,
               rotation: -8,
               originX: 20,
               originY: 40,
@@ -1025,6 +1064,8 @@ describe("projectData schema", () => {
                 anchorY: 0.5,
                 scaleX: 1,
                 scaleY: 1,
+                flipX: true,
+                flipY: false,
                 rotation: 0,
               },
               layer: 70,

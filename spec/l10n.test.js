@@ -176,7 +176,11 @@ const resourcePatchCases = [
       lineHeight: 1,
     },
   ],
-  ["transform", "transforms", { x: 120, y: 80 }],
+  [
+    "transform",
+    "transforms",
+    { x: 120, y: 80, scaleX: 0.8, scaleY: 1.2, flipX: true, flipY: false },
+  ],
   [
     "video",
     "videos",
