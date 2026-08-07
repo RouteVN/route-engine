@@ -853,7 +853,16 @@ describe("projectData schema", () => {
     expect(validateProjectData.errors).toBeNull();
   });
 
-  it("accepts background opacity and blur in presentation actions", () => {
+  it("accepts preferred background alpha and legacy opacity in presentation actions", () => {
+    expect(
+      validatePresentationActions({
+        background: {
+          alpha: 0.64,
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+
     expect(
       validatePresentationActions({
         background: {
@@ -880,7 +889,16 @@ describe("projectData schema", () => {
     expect(validatePresentationActions.errors).toBeNull();
   });
 
-  it("accepts screen opacity and blur in presentation actions", () => {
+  it("accepts preferred screen alpha and legacy opacity in presentation actions", () => {
+    expect(
+      validatePresentationActions({
+        screen: {
+          alpha: 0.64,
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+
     expect(
       validatePresentationActions({
         screen: {
@@ -926,7 +944,7 @@ describe("projectData schema", () => {
               rotation: 12,
               originX: 64,
               originY: 128,
-              opacity: 0.72,
+              alpha: 0.72,
               blur: {
                 x: 6,
                 y: 9,
@@ -941,6 +959,17 @@ describe("projectData schema", () => {
                   animationName: "idle",
                   animationSpeed: 0.25,
                   loop: true,
+                },
+              ],
+            },
+            {
+              id: "legacy-lead",
+              transformId: "center",
+              opacity: 0.6,
+              sprites: [
+                {
+                  id: "body",
+                  resourceId: "leadBody",
                 },
               ],
             },
@@ -963,8 +992,14 @@ describe("projectData schema", () => {
               rotation: -8,
               originX: 20,
               originY: 40,
-              opacity: 0.45,
+              alpha: 0.45,
               blur: null,
+            },
+            {
+              id: "legacy-fog",
+              resourceId: "fog",
+              transformId: "fullscreen",
+              opacity: 0.35,
             },
           ],
         },

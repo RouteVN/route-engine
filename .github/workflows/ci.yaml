@@ -44,6 +44,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - id: alpha-opacity-compat
+            item: robustness/alpha-opacity-compat.yaml
           - id: async-stale-click
             item: robustness/async-stale-click.yaml
           - id: context-runtime-rollback

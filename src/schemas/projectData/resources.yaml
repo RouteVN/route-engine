@@ -488,7 +488,7 @@ properties:
         properties:
           hex:
             type: string
-            description: Opaque hex color code. Use #RGB or #RRGGBB only; author transparency separately with element opacity or textStyle colorAlpha / strokeAlpha
+            description: Opaque hex color code. Use #RGB or #RRGGBB only; author transparency separately with element alpha or textStyle colorAlpha / strokeAlpha
             pattern: "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$"
         required: [hex]
         additionalProperties: false

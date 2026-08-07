@@ -51,6 +51,29 @@ out:
           children: []
   animations: []
 ---
+case: prefer whole-screen alpha over legacy opacity
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      screen:
+        alpha: 0.8
+        opacity: 0.2
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      alpha: 0.8
+      children: []
+  animations: []
+---
 case: ignore null screen blur
 in:
   - elements:

@@ -13,6 +13,24 @@ const hasPersistentAnimationSelection = (value) =>
 const hasDefinedProperty = (value, key) =>
   hasOwnProperty(value ?? {}, key) && value[key] !== undefined;
 
+const hasAuthoredAlpha = (value) =>
+  hasDefinedProperty(value, "alpha") || hasDefinedProperty(value, "opacity");
+
+const getAuthoredAlpha = (value) =>
+  hasDefinedProperty(value, "alpha") ? value.alpha : value?.opacity;
+
+// Presentation state historically stores the public `opacity` field. Accept
+// renderer-native `alpha` as the preferred authoring name while keeping the
+// internal shape stable for selectors, saved state, and existing consumers.
+const normalizeAlphaAlias = (value) => {
+  if (hasDefinedProperty(value, "alpha")) {
+    value.opacity = value.alpha;
+  }
+
+  delete value.alpha;
+  return value;
+};
+
 const isPersistentSfxChannel = (channel) => channel?.applyMode === "persistent";
 
 const DEFAULT_SFX_CHANNEL_ID = "default";
@@ -55,7 +73,7 @@ const getAnimationsOnlyState = (presentation, hasResourceFn) => {
  * @returns {{ hasValidItems: boolean, processedItems: Array }}
  */
 const hasItemAppearance = (item) =>
-  hasDefinedProperty(item, "opacity") || hasDefinedProperty(item, "blur");
+  hasAuthoredAlpha(item) || hasDefinedProperty(item, "blur");
 
 const ITEM_TRANSFORM_FIELDS = [
   "x",
@@ -322,7 +340,7 @@ const processItemsWithAnimations = (
       const hasTransform = hasItemTransform(item);
       const hasPatch = hasPatchFn(item);
       const hasAnimations = hasOwnProperty(item, "animations");
-      let processedItem = clonePresentationValue(item);
+      let processedItem = normalizeAlphaAlias(clonePresentationValue(item));
 
       if (
         !hasResource &&
@@ -514,7 +532,7 @@ export const screen = (state, presentation) => {
     return;
   }
 
-  const hasOpacity = hasDefinedProperty(presentation.screen, "opacity");
+  const hasOpacity = hasAuthoredAlpha(presentation.screen);
   const hasBlur = hasDefinedProperty(presentation.screen, "blur");
   const hasAnimations = hasOwnProperty(presentation.screen, "animations");
 
@@ -529,7 +547,7 @@ export const screen = (state, presentation) => {
   const nextScreen = {};
 
   if (hasOpacity) {
-    nextScreen.opacity = presentation.screen.opacity;
+    nextScreen.opacity = getAuthoredAlpha(presentation.screen);
   } else if (hasDefinedProperty(previousScreen, "opacity")) {
     nextScreen.opacity = previousScreen.opacity;
   }
@@ -572,7 +590,7 @@ export const background = (state, presentation) => {
       "resourceId",
     );
     const hasColorId = hasDefinedProperty(presentation.background, "colorId");
-    const hasOpacity = hasDefinedProperty(presentation.background, "opacity");
+    const hasOpacity = hasAuthoredAlpha(presentation.background);
     const hasBlur = hasDefinedProperty(presentation.background, "blur");
     const hasTransformId = hasDefinedProperty(
       presentation.background,
@@ -588,7 +606,7 @@ export const background = (state, presentation) => {
       (p) =>
         hasDefinedProperty(p, "resourceId") ||
         hasDefinedProperty(p, "colorId") ||
-        hasDefinedProperty(p, "opacity") ||
+        hasAuthoredAlpha(p) ||
         hasDefinedProperty(p, "blur") ||
         hasDefinedProperty(p, "transformId") ||
         hasBackgroundTransform(p) ||
@@ -619,7 +637,9 @@ export const background = (state, presentation) => {
     }
 
     const previousBackground = state.background;
-    const nextBackground = clonePresentationValue(presentation.background);
+    const nextBackground = normalizeAlphaAlias(
+      clonePresentationValue(presentation.background),
+    );
 
     if (!hasResourceId && previousBackground?.resourceId) {
       nextBackground.resourceId = previousBackground.resourceId;

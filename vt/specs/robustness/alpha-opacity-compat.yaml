@@ -1,0 +1,91 @@
+---
+title: Alpha and Legacy Opacity Compatibility
+description: |
+  Top-level layout alpha is canonical, while legacy top-level opacity is
+  normalized to the same Route Graphics alpha field before rendering.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 100
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+  backgroundColor: "#000000"
+resources:
+  layouts:
+    comparison:
+      elements:
+        - id: canvas
+          type: rect
+          width: 960
+          height: 540
+          colorId: canvas
+        - id: preferred-alpha-panel
+          type: rect
+          x: 120
+          y: 150
+          width: 300
+          height: 260
+          alpha: 0.4
+          colorId: panel
+        - id: legacy-opacity-panel
+          type: rect
+          x: 540
+          y: 150
+          width: 300
+          height: 260
+          opacity: 0.4
+          colorId: panel
+        - id: preferred-label
+          type: text
+          x: 270
+          y: 95
+          anchorX: 0.5
+          content: ALPHA
+          textStyleId: label
+        - id: legacy-label
+          type: text
+          x: 690
+          y: 95
+          anchorX: 0.5
+          content: LEGACY OPACITY
+          textStyleId: label
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    canvas:
+      hex: "#FFFFFF"
+    panel:
+      hex: "#505078"
+    label:
+      hex: "#000000"
+  textStyles:
+    label:
+      fontId: default
+      colorId: label
+      fontSize: 32
+      fontWeight: "700"
+      fontStyle: normal
+      lineHeight: 1.2
+      align: center
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      name: Main
+      initialSectionId: main
+      sections:
+        main:
+          name: Main
+          lines:
+            - id: comparison
+              actions:
+                background:
+                  resourceId: comparison
