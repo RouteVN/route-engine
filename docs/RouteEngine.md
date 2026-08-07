@@ -1185,22 +1185,22 @@ Built-in effect handling notes:
 
 Actions that can be attached to lines to control presentation:
 
-| Action       | Properties                                                                                                                                           | Description                                                                                                                       |
-| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `screen`     | `{ opacity?, blur?, animations? }`                                                                                                                   | Set whole-screen appearance or transition. `opacity`/`blur` apply to the composed story frame                                     |
-| `background` | `{ resourceId?, colorId?, transformId?, x?, y?, anchorX?, anchorY?, scaleX?, scaleY?, rotation?, originX?, originY?, opacity?, blur?, animations? }` | Set background/CG. Transform fields are renderer pixels/unitless multipliers/degrees; `blur: null` clears background blur         |
-| `dialogue`   | `{ characterId?, character?, character.sprite?, persistCharacter?, persistSprite?, content, append?, mode?, ui?, clear? }`                           | Display dialogue                                                                                                                  |
-| `character`  | `{ items }`                                                                                                                                          | Display character sprites. Each item can set transform overrides, `opacity`, and `blur`                                           |
-| `visual`     | `{ items }`                                                                                                                                          | Display resource-backed or inline-layout visual elements. Each item can set `layer`, transform, `opacity`, `blur`, and animations |
-| `bgm`        | `{ sounds, loop?, volume?, muted?, pan? }`                                                                                                           | Control the persistent, multi-sound BGM channel                                                                                   |
-| `sfx`        | `{ channels: [{ id, sounds, applyMode?, loop?, volume?, muted?, pan? }] }`                                                                           | Play any number of single-line or persistent SFX channels, each with its own sounds                                               |
-| `voice`      | `{ sounds, loop?, volume?, muted?, pan? }`                                                                                                           | Control the line-scoped, multi-sound Voice channel; resources resolve from the current scene                                      |
-| `animation`  | `{ ... }`                                                                                                                                            | Apply animations                                                                                                                  |
-| `layout`     | `{ resourceId }`                                                                                                                                     | Display layout                                                                                                                    |
-| `control`    | `{ resourceId }`                                                                                                                                     | Activate control bindings and control UI                                                                                          |
-| `choice`     | `{ resourceId, items }`                                                                                                                              | Display choice menu                                                                                                               |
-| `form`       | `{ resourceId, fields, submitActions?, cancelActions? }`                                                                                             | Display a blocking multi-input form                                                                                               |
-| `cleanAll`   | `true`                                                                                                                                               | Clear all presentation state                                                                                                      |
+| Action       | Properties                                                                                                                                                           | Description                                                                                                                       |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `screen`     | `{ opacity?, blur?, animations? }`                                                                                                                                   | Set whole-screen appearance or transition. `opacity`/`blur` apply to the composed story frame                                     |
+| `background` | `{ resourceId?, colorId?, transformId?, x?, y?, anchorX?, anchorY?, scaleX?, scaleY?, flipX?, flipY?, rotation?, originX?, originY?, opacity?, blur?, animations? }` | Set background/CG. Transform fields are renderer pixels/unitless multipliers/degrees; `blur: null` clears background blur         |
+| `dialogue`   | `{ characterId?, character?, character.sprite?, persistCharacter?, persistSprite?, content, append?, mode?, ui?, clear? }`                                           | Display dialogue                                                                                                                  |
+| `character`  | `{ items }`                                                                                                                                                          | Display character sprites. Each item can set transform overrides, `opacity`, and `blur`                                           |
+| `visual`     | `{ items }`                                                                                                                                                          | Display resource-backed or inline-layout visual elements. Each item can set `layer`, transform, `opacity`, `blur`, and animations |
+| `bgm`        | `{ sounds, loop?, volume?, muted?, pan? }`                                                                                                                           | Control the persistent, multi-sound BGM channel                                                                                   |
+| `sfx`        | `{ channels: [{ id, sounds, applyMode?, loop?, volume?, muted?, pan? }] }`                                                                                           | Play any number of single-line or persistent SFX channels, each with its own sounds                                               |
+| `voice`      | `{ sounds, loop?, volume?, muted?, pan? }`                                                                                                                           | Control the line-scoped, multi-sound Voice channel; resources resolve from the current scene                                      |
+| `animation`  | `{ ... }`                                                                                                                                                            | Apply animations                                                                                                                  |
+| `layout`     | `{ resourceId }`                                                                                                                                                     | Display layout                                                                                                                    |
+| `control`    | `{ resourceId }`                                                                                                                                                     | Activate control bindings and control UI                                                                                          |
+| `choice`     | `{ resourceId, items }`                                                                                                                                              | Display choice menu                                                                                                               |
+| `form`       | `{ resourceId, fields, submitActions?, cancelActions? }`                                                                                                             | Display a blocking multi-input form                                                                                               |
+| `cleanAll`   | `true`                                                                                                                                                               | Clear all presentation state                                                                                                      |
 
 Animation selections use `animations.resourceId` plus optional
 `animations.playback`. `playback.speed` is a unitless multiplier: `1` is normal,
@@ -1385,6 +1385,8 @@ Or it can own an inline transform without creating a transform resource:
     anchorY: 0.5
     scaleX: 1
     scaleY: 1
+    flipX: true
+    flipY: false
     rotation: 0
 ```
 
@@ -1490,7 +1492,7 @@ supported.
 ### Item Transform Overrides
 
 `resources.transforms` can define `x`, `y`, `anchorX`, `anchorY`, `scaleX`,
-`scaleY`, `rotation`, `originX`, and `originY`. `x` and `y` use renderer pixels,
+`scaleY`, `flipX`, `flipY`, `rotation`, `originX`, and `originY`. `x` and `y` use renderer pixels,
 anchors are normalized unitless values, scale fields are multipliers, and
 `rotation` is degrees. Character and visual items can override any of those
 transform fields for a single item. `originX` and `originY` are passed through
@@ -1500,13 +1502,19 @@ and transform fields to patch that item without restating its sprites or visual
 resource.
 
 Background actions can also set `x`, `y`, `anchorX`, `anchorY`, `scaleX`,
-`scaleY`, `rotation`, `originX`, and `originY` at the top level. These fields
+`scaleY`, `flipX`, `flipY`, `rotation`, `originX`, and `originY` at the top level. These fields
 can override selected values from `transformId`, or position the background
 without any `transformId`. Image, video, and spritesheet backgrounds default to
 centered placement, computed as `x = screen.width / 2` and
 `y = screen.height / 2`, with `anchorX: 0.5`, `anchorY: 0.5`, `rotation: 0`,
 `scaleX: 1`, and `scaleY: 1`. Layout backgrounds use top-left defaults when a
 background transform is authored.
+
+When `flipX` or `flipY` is `true`, the corresponding resolved scale is
+multiplied by `-1`. An omitted scale defaults to `1` for the flip, so
+`flipX: true` resolves to `scaleX: -1`. Item-level flip values override shared
+transform values; explicitly setting a flip to `false` disables an inherited
+flip. A negative authored scale combined with a flip becomes positive.
 
 Background transforms support three authoring modes:
 

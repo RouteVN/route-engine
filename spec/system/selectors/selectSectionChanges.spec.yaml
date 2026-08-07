@@ -224,6 +224,45 @@ out:
     - id: "2"
       changes: {}
 ---
+case: "Report background-only flip changes across a section"
+in:
+  - state:
+      projectData:
+        story:
+          scenes:
+            scene1:
+              sections:
+                section1:
+                  lines:
+                    - id: "1"
+                      actions:
+                        background:
+                          resourceId: "bg1"
+                    - id: "2"
+                      actions:
+                        background:
+                          flipX: true
+                          flipY: true
+  - sectionId: "section1"
+out:
+  lines:
+    - id: "1"
+      changes:
+        background:
+          resource:
+            changeType: "add"
+            data:
+              resourceId: "bg1"
+    - id: "2"
+      changes:
+        background:
+          resource:
+            changeType: "update"
+            data:
+              resourceId: "bg1"
+              flipX: true
+              flipY: true
+---
 case: "Instantaneous actions (sfx) should not persist or show delete"
 in:
   - state:

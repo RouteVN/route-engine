@@ -658,6 +658,8 @@ const BACKGROUND_TRANSFORM_FIELDS = [
   "anchorY",
   "scaleX",
   "scaleY",
+  "flipX",
+  "flipY",
   "rotation",
   "originX",
   "originY",
@@ -1499,6 +1501,13 @@ const getScreenAppearance = (screenState = {}) => {
 
 const getItemAppearance = (item = {}) => getScreenAppearance(item);
 
+const resolveElementScale = (transform, item, scaleField, flipField) => {
+  const scale = item[scaleField] ?? transform[scaleField];
+  const shouldFlip = item[flipField] ?? transform[flipField] ?? false;
+
+  return shouldFlip ? (scale ?? 1) * -1 : scale;
+};
+
 const getElementTransform = (transform = {}, item = {}) => {
   const elementTransform = {
     x: item.x ?? transform.x,
@@ -1506,8 +1515,8 @@ const getElementTransform = (transform = {}, item = {}) => {
     anchorX: item.anchorX ?? transform.anchorX,
     anchorY: item.anchorY ?? transform.anchorY,
     rotation: item.rotation ?? transform.rotation,
-    scaleX: item.scaleX ?? transform.scaleX,
-    scaleY: item.scaleY ?? transform.scaleY,
+    scaleX: resolveElementScale(transform, item, "scaleX", "flipX"),
+    scaleY: resolveElementScale(transform, item, "scaleY", "flipY"),
   };
 
   const originX = item.originX ?? transform.originX;
@@ -1537,6 +1546,8 @@ const VISUAL_TEXT_RESERVED_FIELDS = [
   "anchorY",
   "scaleX",
   "scaleY",
+  "flipX",
+  "flipY",
   "rotation",
   "originX",
   "originY",

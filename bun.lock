@@ -16,7 +16,7 @@
         "ajv": "^8.18.0",
         "husky": "^9.1.7",
         "prettier": "^3.7.4",
-        "route-graphics": "1.33.0",
+        "route-graphics": "1.40.1",
         "vitest": "4.0.16",
       },
     },
@@ -168,7 +168,7 @@
 
     "@types/deep-eql": ["@types/deep-eql@4.0.2", "", {}, "sha512-c9h9dVVMigMPc4bwTvC5dxqtqJZwQPePsWjPlpSOnojbor6pGqdk541lfA7AqFQr5pB1BRdq0juY9db81BwyFw=="],
 
-    "@types/earcut": ["@types/earcut@3.0.0", "", {}, "sha512-k/9fOUGO39yd2sCjrbAJvGDEQvRwRnQIZlBz43roGwUZo5SHAmyVvSFyaVVZkicRVCaDXPKlbxrUcBuJoSWunQ=="],
+    "@types/earcut": ["@types/earcut@2.1.4", "", {}, "sha512-qp3m9PPz4gULB9MhjGID7wpo3gJ4bTGXm7ltNDsmOvsPduTeHp8wSW9YckBj3mljeOh4F0m2z/0JKAALRKbmLQ=="],
 
     "@types/estree": ["@types/estree@1.0.6", "", {}, "sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw=="],
 
@@ -218,7 +218,7 @@
 
     "dunder-proto": ["dunder-proto@1.0.1", "", { "dependencies": { "call-bind-apply-helpers": "^1.0.1", "es-errors": "^1.3.0", "gopd": "^1.2.0" } }, "sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A=="],
 
-    "earcut": ["earcut@3.0.2", "", {}, "sha512-X7hshQbLyMJ/3RPhyObLARM2sNxxmRALLKx1+NVFFnQ9gKzmCrxm9+uLIAdBcvc8FNLpctqlQ2V6AE92Ol9UDQ=="],
+    "earcut": ["earcut@2.2.4", "", {}, "sha512-/pjZsA1b4RPHbeWZQn66SWS8nZZWLQQ23oE3Eam7aroEFGEvwKAsJfZ9ytiEMycfzXWpca4FA9QIOehf7PocBQ=="],
 
     "es-define-property": ["es-define-property@1.0.1", "", {}, "sha512-e3nRfgfUZ4rNGL232gUgX06QNyyez04KdjFrF+LTRoOXmrOgFKDg4BCdsjW8EnT69eqdYGmRpJwiPVYNrCaW3g=="],
 
@@ -257,6 +257,8 @@
     "gifuct-js": ["gifuct-js@2.1.2", "", { "dependencies": { "js-binary-schema-parser": "^2.0.3" } }, "sha512-rI2asw77u0mGgwhV3qA+OEgYqaDn5UNqgs+Bx0FGwSpuqfYn+Ir6RQY5ENNQ8SbIiG/m5gVa7CD5RriO4f4Lsg=="],
 
     "gopd": ["gopd@1.2.0", "", {}, "sha512-ZUKRh6/kUFoAiTAtTYPZJ3hw9wNxx+BIBOijnlG9PnrJsCcSjs1wyyD6vJpaYtgnzDrKYRSqf3OO6Rfa93xsRg=="],
+
+    "gsap": ["gsap@3.15.0", "", {}, "sha512-dMW4CWBTUK1AEEDeZc1g4xpPGIrSf9fJF960qbTZmN/QwZIWY5wgliS6JWl9/25fpTGJrMRtSjGtOmPnfjZB+A=="],
 
     "has-flag": ["has-flag@4.0.0", "", {}, "sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ=="],
 
@@ -322,11 +324,11 @@
 
     "picomatch": ["picomatch@4.0.3", "", {}, "sha512-5gTmgEY/sqK6gFXLIsQNH19lWb4ebPDLA4SdLP7dsWkIXHWlG66oPuVvXSGFPppYZz8ZDZq0dYYrbHfBCVUb1Q=="],
 
-    "pixi.js": ["pixi.js@8.17.1", "", { "dependencies": { "@pixi/colord": "^2.9.6", "@types/earcut": "^3.0.0", "@webgpu/types": "^0.1.69", "@xmldom/xmldom": "^0.8.11", "earcut": "^3.0.2", "eventemitter3": "^5.0.1", "gifuct-js": "^2.1.2", "ismobilejs": "^1.1.1", "parse-svg-path": "^0.1.2", "tiny-lru": "^11.4.7" } }, "sha512-OB4TpZHrP5RYy+7FqmFrAc0IHRhfOoNIfF4sVeinvK3aG1r2pYrSMneJAKi9+WvGKC70Dj7GEpZ2OZGB6o/xdg=="],
+    "pixi.js": ["pixi.js@8.9.2", "", { "dependencies": { "@pixi/colord": "^2.9.6", "@types/css-font-loading-module": "^0.0.12", "@types/earcut": "^2.1.4", "@webgpu/types": "^0.1.40", "@xmldom/xmldom": "^0.8.10", "earcut": "^2.2.4", "eventemitter3": "^5.0.1", "gifuct-js": "^2.1.2", "ismobilejs": "^1.1.1", "parse-svg-path": "^0.1.2" } }, "sha512-oLFBkOOA/O6OpT5T8o05AxgZB9x9yWNzEQ+WTNZZFoCvfU2GdT4sFTjpVFuHQzgZPmAm/1IFhKdNiXVnlL8PRw=="],
 
-    "playwright": ["playwright@1.59.1", "", { "dependencies": { "playwright-core": "1.59.1" }, "optionalDependencies": { "fsevents": "2.3.2" }, "bin": { "playwright": "cli.js" } }, "sha512-C8oWjPR3F81yljW9o5OxcWzfh6avkVwDD2VYdwIGqTkl+OGFISgypqzfu7dOe4QNLL2aqcWBmI3PMtLIK233lw=="],
+    "playwright": ["playwright@1.57.0", "", { "dependencies": { "playwright-core": "1.57.0" }, "optionalDependencies": { "fsevents": "2.3.2" }, "bin": { "playwright": "cli.js" } }, "sha512-ilYQj1s8sr2ppEJ2YVadYBN0Mb3mdo9J0wQ+UuDhzYqURwSoW4n1Xs5vs7ORwgDGmyEh33tRMeS8KhdkMoLXQw=="],
 
-    "playwright-core": ["playwright-core@1.59.1", "", { "bin": { "playwright-core": "cli.js" } }, "sha512-HBV/RJg81z5BiiZ9yPzIiClYV/QMsDCKUyogwH9p3MCP6IYjUFu/MActgYAvK0oWyV9NlwM3GLBjADyWgydVyg=="],
+    "playwright-core": ["playwright-core@1.57.0", "", { "bin": { "playwright-core": "cli.js" } }, "sha512-agTcKlMw/mjBWOnD6kFZttAAGHgi/Nw0CZ2o6JqWSbMlI219lAFLZZCyqByTsvVAJq5XA5H8cA6PrvBRpBWEuQ=="],
 
     "postcss": ["postcss@8.5.6", "", { "dependencies": { "nanoid": "^3.3.11", "picocolors": "^1.1.1", "source-map-js": "^1.2.1" } }, "sha512-3Ybi1tAuwAP9s0r1UQ2J4n5Y0G05bJkpUIO0/bI9MhwmD70S5aTWbXGBwxHrelT+XM1k6dM0pk+SwNkpTRN7Pg=="],
 
@@ -342,7 +344,7 @@
 
     "rollup": ["rollup@4.54.0", "", { "dependencies": { "@types/estree": "1.0.8" }, "optionalDependencies": { "@rollup/rollup-android-arm-eabi": "4.54.0", "@rollup/rollup-android-arm64": "4.54.0", "@rollup/rollup-darwin-arm64": "4.54.0", "@rollup/rollup-darwin-x64": "4.54.0", "@rollup/rollup-freebsd-arm64": "4.54.0", "@rollup/rollup-freebsd-x64": "4.54.0", "@rollup/rollup-linux-arm-gnueabihf": "4.54.0", "@rollup/rollup-linux-arm-musleabihf": "4.54.0", "@rollup/rollup-linux-arm64-gnu": "4.54.0", "@rollup/rollup-linux-arm64-musl": "4.54.0", "@rollup/rollup-linux-loong64-gnu": "4.54.0", "@rollup/rollup-linux-ppc64-gnu": "4.54.0", "@rollup/rollup-linux-riscv64-gnu": "4.54.0", "@rollup/rollup-linux-riscv64-musl": "4.54.0", "@rollup/rollup-linux-s390x-gnu": "4.54.0", "@rollup/rollup-linux-x64-gnu": "4.54.0", "@rollup/rollup-linux-x64-musl": "4.54.0", "@rollup/rollup-openharmony-arm64": "4.54.0", "@rollup/rollup-win32-arm64-msvc": "4.54.0", "@rollup/rollup-win32-ia32-msvc": "4.54.0", "@rollup/rollup-win32-x64-gnu": "4.54.0", "@rollup/rollup-win32-x64-msvc": "4.54.0", "fsevents": "~2.3.2" }, "bin": { "rollup": "dist/bin/rollup" } }, "sha512-3nk8Y3a9Ea8szgKhinMlGMhGMw89mqule3KWczxhIzqudyHdCIOHw8WJlj/r329fACjKLEh13ZSk7oE22kyeIw=="],
 
-    "route-graphics": ["route-graphics@1.33.0", "", { "dependencies": { "@pixi/unsafe-eval": "^7.4.3", "@wasm-audio-decoders/ogg-vorbis": "^0.1.20", "hotkeys-js": "^4.0.0-beta.7", "js-yaml": "^4.1.0", "ogg-opus-decoder": "^1.7.3", "pixi.js": "^8.7.1", "playwright": "^1.44.0" }, "bin": { "route-graphics": "bin/route-graphics.js" } }, "sha512-xNcVvXkUqdFnMZ3CGxA0kTO/SHK2Uvvm100KHNpMADM5eAqJVW7m/dhALTSnNGuPsGQr+twvLpu9SFmrI2AE0A=="],
+    "route-graphics": ["route-graphics@1.40.1", "", { "dependencies": { "@pixi/unsafe-eval": "^7.4.3", "@wasm-audio-decoders/ogg-vorbis": "^0.1.20", "gsap": "3.15.0", "hotkeys-js": "^4.0.0-beta.7", "js-yaml": "^4.1.0", "ogg-opus-decoder": "^1.7.3", "pixi.js": "8.9.2", "playwright": "1.57.0" }, "bin": { "route-graphics": "bin/route-graphics.js" } }, "sha512-glv63eCz6/VrhWmj1eaOuUj5mCpZRflmCenhKFp7otKeklvyzGNlBouk4vQjyqXcGm3qYbXxn1l3Bnq2mKEvAA=="],
 
     "semver": ["semver@7.6.3", "", { "bin": "bin/semver.js" }, "sha512-oVekP1cKtI+CTDvHWYFUcMtsK/00wmAEfyqKfNdARm8u1wNVhSgaX7A8d4UuIlUI5e84iEwOhs7ZPYRmzU9U6A=="],
 
@@ -368,8 +370,6 @@
 
     "supports-color": ["supports-color@7.2.0", "", { "dependencies": { "has-flag": "^4.0.0" } }, "sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw=="],
 
-    "tiny-lru": ["tiny-lru@11.4.7", "", {}, "sha512-w/Te7uMUVeH0CR8vZIjr+XiN41V+30lkDdK+NRIDCUYKKuL9VcmaUEmaPISuwGhLlrTGh5yu18lENtR9axSxYw=="],
-
     "tinybench": ["tinybench@2.9.0", "", {}, "sha512-0+DUvqWMValLmha6lr4kD8iAMK1HzV0/aKnCtWb9v9641TnP/MFb7Pc2bxoxQjTXAErryXVgUOfv2YqNllqGeg=="],
 
     "tinyexec": ["tinyexec@1.0.2", "", {}, "sha512-W/KYk+NFhkmsYpuHq5JykngiOCnxeVL8v8dFnqxSD8qEEdRfXk1SDM6JzNqcERbcGYj9tMrDQBYV9cjgnunFIg=="],
@@ -391,10 +391,6 @@
     "why-is-node-running": ["why-is-node-running@2.3.0", "", { "dependencies": { "siginfo": "^2.0.0", "stackback": "0.0.2" }, "bin": "cli.js" }, "sha512-hUrmaWBdVDcxvYqnyh09zunKzROWjbZTiNy8dBEjkS7ehEDQibXJ7XvlmtbwuTclUiIyN+CyXQD4Vmko8fNm8w=="],
 
     "yaml": ["yaml@2.8.2", "", { "bin": { "yaml": "bin.mjs" } }, "sha512-mplynKqc1C2hTVYxd0PU2xQAc22TI1vShAYGksCCfxbn/dFwnHTNi1bvYsBTkhdUNtGIf5xNOg938rrSSYvS9A=="],
-
-    "@pixi/utils/@types/earcut": ["@types/earcut@2.1.4", "", {}, "sha512-qp3m9PPz4gULB9MhjGID7wpo3gJ4bTGXm7ltNDsmOvsPduTeHp8wSW9YckBj3mljeOh4F0m2z/0JKAALRKbmLQ=="],
-
-    "@pixi/utils/earcut": ["earcut@2.2.4", "", {}, "sha512-/pjZsA1b4RPHbeWZQn66SWS8nZZWLQQ23oE3Eam7aroEFGEvwKAsJfZ9ytiEMycfzXWpca4FA9QIOehf7PocBQ=="],
 
     "@pixi/utils/eventemitter3": ["eventemitter3@4.0.7", "", {}, "sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw=="],
 

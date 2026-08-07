@@ -168,6 +168,8 @@ definitions:
         - required: [anchorY]
         - required: [scaleX]
         - required: [scaleY]
+        - required: [flipX]
+        - required: [flipY]
         - required: [rotation]
         - required: [originX]
         - required: [originY]
@@ -206,6 +208,12 @@ definitions:
         type: number
       scaleY:
         type: number
+      flipX:
+        type: boolean
+        description: Whether to multiply the resolved X scale by -1
+      flipY:
+        type: boolean
+        description: Whether to multiply the resolved Y scale by -1
       rotation:
         type: number
       originX:
@@ -280,6 +288,12 @@ properties:
       scaleY:
         type: number
         description: Custom unitless y scale multiplier to override the background transform scaleY
+      flipX:
+        type: boolean
+        description: Whether to multiply the resolved background X scale by -1
+      flipY:
+        type: boolean
+        description: Whether to multiply the resolved background Y scale by -1
       rotation:
         type: number
         description: Custom rotation in degrees to override the background transform rotation
@@ -427,6 +441,12 @@ properties:
             scaleY:
               type: number
               description: Custom y scale factor to override transform scaleY
+            flipX:
+              type: boolean
+              description: Whether to multiply the resolved character X scale by -1
+            flipY:
+              type: boolean
+              description: Whether to multiply the resolved character Y scale by -1
             rotation:
               type: number
               description: Custom rotation to override transform rotation
@@ -525,6 +545,12 @@ properties:
             scaleY:
               type: number
               description: Custom y scale factor to override transform scaleY
+            flipX:
+              type: boolean
+              description: Whether to multiply the resolved visual X scale by -1
+            flipY:
+              type: boolean
+              description: Whether to multiply the resolved visual Y scale by -1
             rotation:
               type: number
               description: Custom rotation to override transform rotation

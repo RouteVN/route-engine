@@ -2860,6 +2860,8 @@ const toBackgroundResourceChangeData = (background) => {
     "anchorY",
     "scaleX",
     "scaleY",
+    "flipX",
+    "flipY",
     "rotation",
     "originX",
     "originY",
