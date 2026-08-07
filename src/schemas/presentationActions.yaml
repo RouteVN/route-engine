@@ -138,7 +138,7 @@ definitions:
 
   visualText:
     type: object
-    description: Text-backed visual configuration. Placement, layer, opacity, blur, and animations stay on the visual item.
+    description: Text-backed visual configuration. Placement, layer, alpha, blur, and animations stay on the visual item.
     properties:
       content:
         $ref: "#/definitions/visualTextContent"
@@ -174,6 +174,7 @@ definitions:
         - required: [originX]
         - required: [originY]
         - required: [layer]
+        - required: [alpha]
         - required: [opacity]
         - required: [blur]
         - required: [animations]
@@ -237,11 +238,16 @@ properties:
     type: object
     description: Whole-screen appearance and transient transition for the current rendered story frame
     properties:
+      alpha:
+        type: number
+        minimum: 0
+        maximum: 1
+        description: Preferred static whole-screen alpha
       opacity:
         type: number
         minimum: 0
         maximum: 1
-        description: Static whole-screen opacity, mapped to renderer alpha
+        description: Legacy compatibility alias for alpha. Do not use in new projects
       blur:
         $ref: "#/definitions/backgroundBlur"
       animations:
@@ -303,11 +309,16 @@ properties:
       originY:
         type: number
         description: Custom y transform origin in renderer pixels to override the background transform originY
+      alpha:
+        type: number
+        minimum: 0
+        maximum: 1
+        description: Preferred static background alpha
       opacity:
         type: number
         minimum: 0
         maximum: 1
-        description: Static background opacity, mapped to renderer alpha
+        description: Legacy compatibility alias for alpha. Do not use in new projects
       blur:
         $ref: "#/definitions/backgroundBlur"
       animations:
@@ -456,11 +467,16 @@ properties:
             originY:
               type: number
               description: Custom y transform origin to override transform originY
+            alpha:
+              type: number
+              minimum: 0
+              maximum: 1
+              description: Preferred static character item alpha
             opacity:
               type: number
               minimum: 0
               maximum: 1
-              description: Static character item opacity, mapped to renderer alpha
+              description: Legacy compatibility alias for alpha. Do not use in new projects
             blur:
               $ref: "#/definitions/backgroundBlur"
             sprites:
@@ -569,11 +585,16 @@ properties:
                 - 70
                 - 90
               description: Numeric render layer for the visual item. Defaults to 50. Same-layer items preserve array order.
+            alpha:
+              type: number
+              minimum: 0
+              maximum: 1
+              description: Preferred static visual item alpha
             opacity:
               type: number
               minimum: 0
               maximum: 1
-              description: Static visual item opacity, mapped to renderer alpha
+              description: Legacy compatibility alias for alpha. Do not use in new projects
             blur:
               $ref: "#/definitions/backgroundBlur"
             animations:

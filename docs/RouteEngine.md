@@ -411,7 +411,7 @@ resources:
           type: rect
           width: 900
           height: 420
-          opacity: 0.85
+          alpha: 0.85
           colorId: panelBg
           hover:
             colorId: panelBgHover
@@ -1185,22 +1185,22 @@ Built-in effect handling notes:
 
 Actions that can be attached to lines to control presentation:
 
-| Action       | Properties                                                                                                                                                           | Description                                                                                                                       |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `screen`     | `{ opacity?, blur?, animations? }`                                                                                                                                   | Set whole-screen appearance or transition. `opacity`/`blur` apply to the composed story frame                                     |
-| `background` | `{ resourceId?, colorId?, transformId?, x?, y?, anchorX?, anchorY?, scaleX?, scaleY?, flipX?, flipY?, rotation?, originX?, originY?, opacity?, blur?, animations? }` | Set background/CG. Transform fields are renderer pixels/unitless multipliers/degrees; `blur: null` clears background blur         |
-| `dialogue`   | `{ characterId?, character?, character.sprite?, persistCharacter?, persistSprite?, content, append?, mode?, ui?, clear? }`                                           | Display dialogue                                                                                                                  |
-| `character`  | `{ items }`                                                                                                                                                          | Display character sprites. Each item can set transform overrides, `opacity`, and `blur`                                           |
-| `visual`     | `{ items }`                                                                                                                                                          | Display resource-backed or inline-layout visual elements. Each item can set `layer`, transform, `opacity`, `blur`, and animations |
-| `bgm`        | `{ sounds, loop?, volume?, muted?, pan? }`                                                                                                                           | Control the persistent, multi-sound BGM channel                                                                                   |
-| `sfx`        | `{ channels: [{ id, sounds, applyMode?, loop?, volume?, muted?, pan? }] }`                                                                                           | Play any number of single-line or persistent SFX channels, each with its own sounds                                               |
-| `voice`      | `{ sounds, loop?, volume?, muted?, pan? }`                                                                                                                           | Control the line-scoped, multi-sound Voice channel; resources resolve from the current scene                                      |
-| `animation`  | `{ ... }`                                                                                                                                                            | Apply animations                                                                                                                  |
-| `layout`     | `{ resourceId }`                                                                                                                                                     | Display layout                                                                                                                    |
-| `control`    | `{ resourceId }`                                                                                                                                                     | Activate control bindings and control UI                                                                                          |
-| `choice`     | `{ resourceId, items }`                                                                                                                                              | Display choice menu                                                                                                               |
-| `form`       | `{ resourceId, fields, submitActions?, cancelActions? }`                                                                                                             | Display a blocking multi-input form                                                                                               |
-| `cleanAll`   | `true`                                                                                                                                                               | Clear all presentation state                                                                                                      |
+| Action       | Properties                                                                                                                                                                   | Description                                                                                                                     |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `screen`     | `{ alpha?, opacity?, blur?, animations? }`                                                                                                                                   | Set whole-screen appearance or transition. `alpha`/`blur` apply to the composed story frame                                     |
+| `background` | `{ resourceId?, colorId?, transformId?, x?, y?, anchorX?, anchorY?, scaleX?, scaleY?, flipX?, flipY?, rotation?, originX?, originY?, alpha?, opacity?, blur?, animations? }` | Set background/CG. Transform fields are renderer pixels/unitless multipliers/degrees; `blur: null` clears background blur       |
+| `dialogue`   | `{ characterId?, character?, character.sprite?, persistCharacter?, persistSprite?, content, append?, mode?, ui?, clear? }`                                                   | Display dialogue                                                                                                                |
+| `character`  | `{ items }`                                                                                                                                                                  | Display character sprites. Each item can set transform overrides, `alpha`, and `blur`                                           |
+| `visual`     | `{ items }`                                                                                                                                                                  | Display resource-backed or inline-layout visual elements. Each item can set `layer`, transform, `alpha`, `blur`, and animations |
+| `bgm`        | `{ sounds, loop?, volume?, muted?, pan? }`                                                                                                                                   | Control the persistent, multi-sound BGM channel                                                                                 |
+| `sfx`        | `{ channels: [{ id, sounds, applyMode?, loop?, volume?, muted?, pan? }] }`                                                                                                   | Play any number of single-line or persistent SFX channels, each with its own sounds                                             |
+| `voice`      | `{ sounds, loop?, volume?, muted?, pan? }`                                                                                                                                   | Control the line-scoped, multi-sound Voice channel; resources resolve from the current scene                                    |
+| `animation`  | `{ ... }`                                                                                                                                                                    | Apply animations                                                                                                                |
+| `layout`     | `{ resourceId }`                                                                                                                                                             | Display layout                                                                                                                  |
+| `control`    | `{ resourceId }`                                                                                                                                                             | Activate control bindings and control UI                                                                                        |
+| `choice`     | `{ resourceId, items }`                                                                                                                                                      | Display choice menu                                                                                                             |
+| `form`       | `{ resourceId, fields, submitActions?, cancelActions? }`                                                                                                                     | Display a blocking multi-input form                                                                                             |
+| `cleanAll`   | `true`                                                                                                                                                                       | Clear all presentation state                                                                                                    |
 
 Animation selections use `animations.resourceId` plus optional
 `animations.playback`. `playback.speed` is a unitless multiplier: `1` is normal,
@@ -1277,7 +1277,7 @@ visual:
             width: 720
       transformId: titleTop
       layer: 70
-      opacity: 0.9
+      alpha: 0.9
       animations:
         resourceId: titleFadeIn
 ```
@@ -1396,7 +1396,7 @@ transform fields remain supported as overrides for compatibility.
 #### Updating an inline layout
 
 Later lines can replace the inline layout by visual `id` while retaining its
-transform, layer, opacity, and blur. Inline transform patches merge by field:
+transform, layer, alpha, and blur. Inline transform patches merge by field:
 
 ```yaml
 visual:
@@ -1418,7 +1418,7 @@ Appearance-only and animation-only updates do not need to repeat the layout:
 visual:
   items:
     - id: chapterTitle
-      opacity: 0.5
+      alpha: 0.5
       animations:
         resourceId: titleFadeOut
 ```
@@ -1445,7 +1445,7 @@ visual:
 Particle effects are authored under `resources.particles` and selected from a
 normal visual item with `resourceId`. A particle resource owns its simulation
 area and Route Graphics particle configuration; the visual item owns placement,
-layer, opacity, blur, and animations.
+layer, alpha, blur, and animations.
 
 Structured particle modules are the preferred format:
 
@@ -1479,7 +1479,7 @@ visual:
       resourceId: fireflies
       transformId: particleArea
       layer: 50
-      opacity: 0.8
+      alpha: 0.8
 ```
 
 Particle textures can reference project images. Use an image resource ID as a
@@ -1583,9 +1583,17 @@ visual:
 
 ### Item Appearance
 
-Character and visual items can set static `opacity` and `blur`. `opacity` maps
-to renderer alpha and accepts values from `0` to `1`. `blur` uses the same
-shape as `background.blur` and `screen.blur`; `blur: null` clears the item blur.
+Character and visual items can set static `alpha` and `blur`. `alpha` accepts
+values from `0` to `1` and is the preferred field for new projects. `blur` uses
+the same shape as `background.blur` and `screen.blur`; `blur: null` clears the
+item blur.
+
+For backward compatibility, the engine also accepts the legacy `opacity` alias
+wherever top-level appearance `alpha` is accepted: screen and background
+actions, character and visual items, and layout elements. When both fields are
+present, `alpha` wins. New projects should use `alpha`; `opacity` remains only
+so existing projects continue to load. This alias does not apply to visual
+fields nested inside `hover`, `click`, or `rightClick` interaction metadata.
 
 Character item appearance applies to the whole character container, so every
 sprite part is faded or blurred together. Visual item appearance applies to the
@@ -1597,7 +1605,7 @@ character:
   items:
     - id: lead
       transformId: characterCenter
-      opacity: 0.72
+      alpha: 0.72
       blur:
         x: 6
         y: 9
@@ -1616,7 +1624,7 @@ visual:
       resourceId: fog
       transformId: fullscreen
       layer: 30
-      opacity: 0.45
+      alpha: 0.45
       blur:
         x: 6
         y: 9
@@ -1628,7 +1636,7 @@ visual:
       resourceId: vignette
       transformId: fullscreen
       layer: 90
-      opacity: 0.8
+      alpha: 0.8
 ```
 
 ### Forms

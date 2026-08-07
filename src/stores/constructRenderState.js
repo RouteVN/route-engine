@@ -259,6 +259,16 @@ const getAnimationPlaybackSpeed = (animationInstance) => {
 const hasOwnProperty = (value, key) =>
   Object.prototype.hasOwnProperty.call(value, key);
 
+const getAuthoredAlpha = (value = {}) => {
+  if (hasOwnProperty(value, "alpha") && typeof value.alpha === "number") {
+    return value.alpha;
+  }
+
+  return hasOwnProperty(value, "opacity") && typeof value.opacity === "number"
+    ? value.opacity
+    : undefined;
+};
+
 const isPersistentAnimationInstance = (animationInstance) =>
   animationInstance?.playback?.continuity === "persistent";
 
@@ -1389,15 +1399,68 @@ export const resolveImageIds = (node, resources = {}, path = "root") => {
   return resolvedNode;
 };
 
+// Layout elements are RouteGraphics-facing, where `alpha` is canonical. Old
+// Route Engine projects were documented with `opacity`, so normalize only
+// element objects (not nested interaction metadata) and prefer an explicitly
+// authored alpha when both names are present.
+const LAYOUT_INTERACTION_FIELDS = new Set(["hover", "click", "rightClick"]);
+
+const cloneLayoutValue = (value) => {
+  if (Array.isArray(value)) {
+    return value.map(cloneLayoutValue);
+  }
+
+  if (!value || typeof value !== "object") {
+    return value;
+  }
+
+  return Object.fromEntries(
+    Object.entries(value).map(([key, nestedValue]) => [
+      key,
+      cloneLayoutValue(nestedValue),
+    ]),
+  );
+};
+
+const resolveLayoutAlphaAliases = (node) => {
+  if (Array.isArray(node)) {
+    return node.map(resolveLayoutAlphaAliases);
+  }
+
+  if (!node || typeof node !== "object") {
+    return node;
+  }
+
+  const resolvedNode = Object.fromEntries(
+    Object.entries(node).map(([key, value]) => [
+      key,
+      LAYOUT_INTERACTION_FIELDS.has(key)
+        ? cloneLayoutValue(value)
+        : resolveLayoutAlphaAliases(value),
+    ]),
+  );
+
+  if (typeof node.type === "string" && hasOwnProperty(node, "opacity")) {
+    if (!hasOwnProperty(node, "alpha")) {
+      resolvedNode.alpha = node.opacity;
+    }
+    delete resolvedNode.opacity;
+  }
+
+  return resolvedNode;
+};
+
 export const resolveLayoutReferences = (node, resources = {}, path = "root") =>
-  resolveImageIds(
-    resolveColorIds(
-      resolveTextStyleIds(node, resources, path),
+  resolveLayoutAlphaAliases(
+    resolveImageIds(
+      resolveColorIds(
+        resolveTextStyleIds(node, resources, path),
+        resources,
+        path,
+      ),
       resources,
       path,
     ),
-    resources,
-    path,
   );
 
 export const resolveLayoutResourceIds = resolveLayoutReferences;
@@ -1420,15 +1483,7 @@ const resolveBackgroundFill = ({ resources = {}, background = {}, screen }) => {
   return resolveColorResource(resources, background.colorId);
 };
 
-const getBackgroundOpacity = (background = {}) => {
-  if (!hasOwnProperty(background, "opacity")) {
-    return undefined;
-  }
-
-  return typeof background.opacity === "number"
-    ? background.opacity
-    : undefined;
-};
+const getBackgroundAlpha = (background = {}) => getAuthoredAlpha(background);
 
 const getBackgroundBlur = (background = {}) => {
   if (
@@ -1446,12 +1501,12 @@ const getBackgroundAppearance = (
   background = {},
   { includeDefaultAlpha = false } = {},
 ) => {
-  const opacity = getBackgroundOpacity(background);
+  const alpha = getBackgroundAlpha(background);
   const blur = getBackgroundBlur(background);
   const appearance = {};
 
-  if (includeDefaultAlpha || opacity !== undefined) {
-    appearance.alpha = opacity ?? 1;
+  if (includeDefaultAlpha || alpha !== undefined) {
+    appearance.alpha = alpha ?? 1;
   }
 
   if (blur) {
@@ -1461,15 +1516,7 @@ const getBackgroundAppearance = (
   return appearance;
 };
 
-const getScreenOpacity = (screenState = {}) => {
-  if (!hasOwnProperty(screenState, "opacity")) {
-    return undefined;
-  }
-
-  return typeof screenState.opacity === "number"
-    ? screenState.opacity
-    : undefined;
-};
+const getScreenAlpha = (screenState = {}) => getAuthoredAlpha(screenState);
 
 const getScreenBlur = (screenState = {}) => {
   if (
@@ -1484,12 +1531,12 @@ const getScreenBlur = (screenState = {}) => {
 };
 
 const getScreenAppearance = (screenState = {}) => {
-  const opacity = getScreenOpacity(screenState);
+  const alpha = getScreenAlpha(screenState);
   const blur = getScreenBlur(screenState);
   const appearance = {};
 
-  if (opacity !== undefined) {
-    appearance.alpha = opacity;
+  if (alpha !== undefined) {
+    appearance.alpha = alpha;
   }
 
   if (blur) {
@@ -1552,6 +1599,7 @@ const VISUAL_TEXT_RESERVED_FIELDS = [
   "originX",
   "originY",
   "layer",
+  "alpha",
   "opacity",
   "blur",
   "animations",
@@ -1716,7 +1764,7 @@ const createBackgroundColorElement = ({
   resources,
   background,
   screen = { width: 1920, height: 1080 },
-  includeOpacity = false,
+  includeAlpha = false,
 }) => {
   const element = {
     id: BACKGROUND_COLOR_ELEMENT_ID,
@@ -1728,10 +1776,10 @@ const createBackgroundColorElement = ({
     fill: resolveBackgroundFill({ resources, background, screen }),
   };
 
-  if (includeOpacity) {
-    const opacity = getBackgroundOpacity(background);
-    if (opacity !== undefined) {
-      element.alpha = opacity;
+  if (includeAlpha) {
+    const alpha = getBackgroundAlpha(background);
+    if (alpha !== undefined) {
+      element.alpha = alpha;
     }
   }
 
@@ -2697,7 +2745,7 @@ export const addBackgroundOrCg = (
           resources,
           background: backgroundForColorElement,
           screen,
-          includeOpacity: !currentHasRenderableBackgroundResource,
+          includeAlpha: !currentHasRenderableBackgroundResource,
         }),
       );
     }

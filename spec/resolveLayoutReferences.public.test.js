@@ -9,6 +9,7 @@ describe("resolveLayoutReferences public export", () => {
         type: "rect",
         width: 320,
         height: 120,
+        opacity: 0.6,
         colorId: "panelBg",
       },
       {
@@ -67,6 +68,7 @@ describe("resolveLayoutReferences public export", () => {
         type: "rect",
         width: 320,
         height: 120,
+        alpha: 0.6,
         fill: "#112233",
       },
       {
@@ -103,6 +105,7 @@ describe("resolveLayoutReferences public export", () => {
         type: "rect",
         width: 320,
         height: 120,
+        opacity: 0.6,
         colorId: "panelBg",
       },
       {
@@ -119,6 +122,64 @@ describe("resolveLayoutReferences public export", () => {
         clickImageId: "iconActive",
       },
     ]);
+  });
+
+  it("prefers layout alpha while preserving legacy opacity compatibility", () => {
+    const layoutElements = [
+      {
+        id: "container",
+        type: "container",
+        children: [
+          {
+            id: "legacy-panel",
+            type: "rect",
+            width: 100,
+            height: 100,
+            opacity: 0.4,
+            hover: {
+              opacity: 0.9,
+            },
+          },
+          {
+            id: "preferred-panel",
+            type: "rect",
+            width: 100,
+            height: 100,
+            alpha: 0.7,
+            opacity: 0.2,
+          },
+        ],
+      },
+    ];
+
+    expect(resolveLayoutReferences(layoutElements)).toEqual([
+      {
+        id: "container",
+        type: "container",
+        children: [
+          {
+            id: "legacy-panel",
+            type: "rect",
+            width: 100,
+            height: 100,
+            alpha: 0.4,
+            hover: {
+              opacity: 0.9,
+            },
+          },
+          {
+            id: "preferred-panel",
+            type: "rect",
+            width: 100,
+            height: 100,
+            alpha: 0.7,
+          },
+        ],
+      },
+    ]);
+
+    expect(layoutElements[0].children[0]).toHaveProperty("opacity", 0.4);
+    expect(layoutElements[0].children[0]).not.toHaveProperty("alpha");
   });
 
   it("preserves the engine's strict validation errors", () => {
