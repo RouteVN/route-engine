@@ -151,6 +151,20 @@ const createMinimalProjectData = (overrides = {}) => ({
   ...overrides,
 });
 
+const createAudioUpdateProjectData = (property, keyframes) =>
+  createMinimalProjectData({
+    resources: {
+      audioEffects: {
+        testedUpdate: {
+          type: "update",
+          tween: {
+            [property]: { keyframes },
+          },
+        },
+      },
+    },
+  });
+
 const createMinimalL10nData = (patches = []) => ({
   packages: {
     japanese: {
@@ -3324,5 +3338,188 @@ describe("projectData schema", () => {
       expect(validateSystemActions(actions)).toBe(false);
       expect(validateSystemActions.errors).not.toBeNull();
     }
+  });
+
+  it("accepts reusable audio transition and update resources selected by canonical BGM", () => {
+    const projectData = createMinimalProjectData({
+      resources: {
+        sounds: { theme: { fileId: "theme.ogg" } },
+        audioEffects: {
+          crossfade: {
+            name: "Crossfade",
+            type: "transition",
+            prev: {
+              fade: {
+                delay: 100,
+                duration: 600,
+                easing: "easeInOutSine",
+              },
+            },
+            next: { fade: { duration: 900 } },
+          },
+          smooth: {
+            type: "update",
+            tween: {
+              volume: {
+                keyframes: [
+                  {
+                    startValue: 75,
+                    value: "target",
+                    duration: 500,
+                  },
+                ],
+              },
+              pan: {
+                keyframes: [
+                  { value: 0, duration: 100 },
+                  { value: "target", duration: 400 },
+                ],
+              },
+              playbackRate: {
+                keyframes: [{ value: "target", duration: 250 }],
+              },
+            },
+          },
+        },
+      },
+    });
+    projectData.story.scenes.scene1.sections.section1.lines[0].actions.bgm = {
+      audioEffects: {
+        resourceId: "crossfade",
+        playback: { speed: 2 },
+      },
+      sounds: [{ id: "main", resourceId: "theme" }],
+    };
+
+    expect(validateProjectData(projectData)).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
+
+  it.each([
+    ["volume", -0.01, undefined],
+    ["volume", 100.01, false],
+    ["pan", -1.01, undefined],
+    ["pan", 1.01, false],
+    ["playbackRate", -0.01, undefined],
+  ])(
+    "rejects an absolute %s target keyframe with startValue %s",
+    (property, startValue, relative) => {
+      const keyframe = {
+        startValue,
+        value: "target",
+        duration: 100,
+        ...(relative === undefined ? {} : { relative }),
+      };
+
+      expect(
+        validateProjectData(createAudioUpdateProjectData(property, [keyframe])),
+      ).toBe(false);
+      expect(validateProjectData.errors).not.toBeNull();
+    },
+  );
+
+  it.each([
+    ["volume", -0.01],
+    ["volume", 100.01],
+    ["pan", -1.01],
+    ["pan", 1.01],
+    ["playbackRate", -0.01],
+  ])(
+    "rejects an out-of-range absolute numeric %s keyframe value %s",
+    (property, value) => {
+      expect(
+        validateProjectData(
+          createAudioUpdateProjectData(property, [
+            { value, duration: 50 },
+            { value: "target", duration: 50 },
+          ]),
+        ),
+      ).toBe(false);
+      expect(validateProjectData.errors).not.toBeNull();
+    },
+  );
+
+  it.each([
+    ["volume", 0],
+    ["volume", 100],
+    ["pan", -1],
+    ["pan", 1],
+    ["playbackRate", 0],
+  ])(
+    "accepts the absolute %s startValue boundary %s",
+    (property, startValue) => {
+      expect(
+        validateProjectData(
+          createAudioUpdateProjectData(property, [
+            { startValue, value: "target", duration: 100 },
+          ]),
+        ),
+      ).toBe(true);
+      expect(validateProjectData.errors).toBeNull();
+    },
+  );
+
+  it.each([
+    ["volume", -500, 500],
+    ["pan", -5, 5],
+    ["playbackRate", -5, 5],
+  ])(
+    "accepts unbounded relative %s deltas before the absolute target",
+    (property, startValue, value) => {
+      expect(
+        validateProjectData(
+          createAudioUpdateProjectData(property, [
+            { startValue, value, duration: 50, relative: true },
+            { value: "target", duration: 50 },
+          ]),
+        ),
+      ).toBe(true);
+      expect(validateProjectData.errors).toBeNull();
+    },
+  );
+
+  it("rejects legacy audio effect naming, legacy BGM selection, and invalid resources", () => {
+    expect(
+      validatePresentationActions({
+        bgm: {
+          resourceId: "theme",
+          audioEffects: { resourceId: "crossfade" },
+        },
+      }),
+    ).toBe(false);
+
+    expect(
+      validatePresentationActions({
+        bgm: {
+          animations: { resourceId: "crossfade" },
+          sounds: [{ id: "main", resourceId: "theme" }],
+        },
+      }),
+    ).toBe(false);
+
+    const legacyNamedProjectData = createMinimalProjectData({
+      resources: {
+        audioAnimations: {
+          crossfade: {
+            type: "transition",
+            next: { fade: { duration: 100 } },
+          },
+        },
+      },
+    });
+    expect(validateProjectData(legacyNamedProjectData)).toBe(false);
+
+    const projectData = createMinimalProjectData({
+      resources: {
+        audioEffects: {
+          invalid: {
+            type: "update",
+            prev: { fade: { duration: 100 } },
+          },
+        },
+      },
+    });
+    expect(validateProjectData(projectData)).toBe(false);
+    expect(validateProjectData.errors).not.toBeNull();
   });
 });

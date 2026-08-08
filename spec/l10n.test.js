@@ -190,6 +190,14 @@ const resourcePatchCases = [
       height: 360,
     },
   ],
+  [
+    "audioEffect",
+    "audioEffects",
+    {
+      type: "transition",
+      next: { fade: { duration: 500, easing: "easeOutSine" } },
+    },
+  ],
 ];
 
 describe("resolveL10nProjectData", () => {

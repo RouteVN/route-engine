@@ -1,0 +1,117 @@
+---
+title: Audio Effects Batch Skip Enable
+description: An effect settles permanently when its destination line enables transition skipping in the same action batch.
+skipInitialScreenshot: true
+specs:
+  - the destination changes BGM and enables transition skipping together
+  - the transition is omitted from the settled render
+  - disabling skipping in a later interaction does not revive the occurrence
+steps:
+  - action: click
+    x: 320
+    y: 180
+  - action: wait
+    ms: 250
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audio.0.children.0.src
+    value: xk393
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect
+    value: null
+  - action: assert
+    type: js
+    global: __vtAudioEffectOccurrenceCount
+    value: 0
+  - action: click
+    x: 320
+    y: 180
+  - action: wait
+    ms: 100
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect
+    value: null
+  - action: assert
+    type: js
+    global: __vtAudioEffectOccurrenceCount
+    value: 0
+---
+screen:
+  width: 640
+  height: 360
+resources:
+  sounds:
+    old-theme:
+      fileId: 3ka3s
+    new-theme:
+      fileId: xk393
+  audioEffects:
+    crossfade:
+      type: transition
+      prev:
+        fade:
+          duration: 1000
+      next:
+        fade:
+          duration: 1000
+  colors:
+    advance:
+      hex: "#10131A"
+    resume:
+      hex: "#421B1B"
+  controls:
+    advance:
+      elements:
+        - id: advance
+          type: rect
+          width: 640
+          height: 360
+          colorId: advance
+          click:
+            payload:
+              actions:
+                nextLine: {}
+    resume:
+      elements:
+        - id: resume
+          type: rect
+          width: 640
+          height: 360
+          colorId: resume
+          click:
+            payload:
+              actions:
+                setSkipTransitionsAndAnimations:
+                  value: false
+story:
+  initialSceneId: scene1
+  scenes:
+    scene1:
+      initialSectionId: section1
+      sections:
+        section1:
+          lines:
+            - id: old-theme
+              actions:
+                control:
+                  resourceId: advance
+                bgm:
+                  volume: 80
+                  sounds:
+                    - id: main
+                      resourceId: old-theme
+            - id: skipped-transition
+              actions:
+                control:
+                  resourceId: resume
+                bgm:
+                  volume: 60
+                  audioEffects:
+                    resourceId: crossfade
+                  sounds:
+                    - id: main
+                      resourceId: new-theme
+                setSkipTransitionsAndAnimations:
+                  value: true

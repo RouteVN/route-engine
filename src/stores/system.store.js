@@ -3888,6 +3888,7 @@ export const selectRenderState = ({ state }, options = {}) => {
     musicRoom,
     sceneReplay,
     musicRoomPlayer: cloneStateValue(state.global.musicRoomPlayer),
+    activeAudioEffect: options?.activeAudioEffect ?? null,
   });
   return renderState;
 };

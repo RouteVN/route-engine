@@ -1,0 +1,113 @@
+---
+title: Canonical Audio Effects Update Settlement
+description: Isolated browser fixture for one retained BGM update removed through the skip path.
+skipInitialScreenshot: true
+specs:
+  - a retained BGM property change compiles to an audioEffects update occurrence
+  - enabling transition skipping removes the occurrence so Route Graphics settles it
+steps:
+  - action: click
+    x: 320
+    y: 180
+  - action: wait
+    ms: 250
+  - action: click
+    x: 320
+    y: 180
+  - action: wait
+    ms: 250
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect.properties.volume.update.keyframes.0.value
+    value: 30
+  - action: assert
+    type: js
+    global: __vtAudioEffectOccurrenceCount
+    value: 1
+  - action: click
+    x: 320
+    y: 180
+  - action: wait
+    ms: 100
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect
+    value: null
+---
+screen:
+  width: 640
+  height: 360
+resources:
+  sounds:
+    theme:
+      fileId: 3ka3s
+  audioEffects:
+    smooth-volume:
+      type: update
+      tween:
+        volume:
+          keyframes:
+            - value: target
+              duration: 1000
+              easing: linear
+  colors:
+    advance:
+      hex: "#10131A"
+    settle:
+      hex: "#421B1B"
+  controls:
+    advance:
+      elements:
+        - id: advance
+          type: rect
+          width: 640
+          height: 360
+          colorId: advance
+          click:
+            payload:
+              actions:
+                nextLine: {}
+    settle:
+      elements:
+        - id: settle
+          type: rect
+          width: 640
+          height: 360
+          colorId: settle
+          click:
+            payload:
+              actions:
+                setSkipTransitionsAndAnimations:
+                  value: true
+story:
+  initialSceneId: scene1
+  scenes:
+    scene1:
+      initialSectionId: section1
+      sections:
+        section1:
+          lines:
+            - id: silent
+              actions:
+                control:
+                  resourceId: advance
+            - id: theme
+              actions:
+                control:
+                  resourceId: advance
+                bgm:
+                  volume: 80
+                  sounds:
+                    - id: main
+                      resourceId: theme
+            - id: retained-update
+              actions:
+                control:
+                  resourceId: settle
+                bgm:
+                  volume: 30
+                  audioEffects:
+                    resourceId: smooth-volume
+                  sounds:
+                    - id: main
+                      resourceId: theme

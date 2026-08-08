@@ -43,6 +43,7 @@ const actionTypes = [
 const resourceCollections = {
   achievement: "achievements",
   animation: "animations",
+  audioEffect: "audioEffects",
   character: "characters",
   color: "colors",
   control: "controls",

@@ -1956,6 +1956,32 @@ const createSoundNode = ({ id, sound, resource, defaultLoop = false }) => {
   return node;
 };
 
+const clampAudioPan = (pan) => Math.max(-1, Math.min(1, pan));
+
+const applyBgmSoundMix = ({ node, bgm, sound, resource, usesLegacySound }) => {
+  if (!usesLegacySound) {
+    node.volume = getLayeredVolume(
+      bgm.volume ?? DEFAULT_AUTHORED_AUDIO_VOLUME,
+      node.volume ?? DEFAULT_AUTHORED_AUDIO_VOLUME,
+    );
+  }
+
+  const hasBgmMute = bgm.muted !== undefined;
+  const hasSoundMute =
+    sound.muted !== undefined || resource.muted !== undefined;
+  if (hasBgmMute || hasSoundMute) {
+    node.muted = bgm.muted === true || node.muted === true;
+  }
+
+  const hasBgmPan = bgm.pan !== undefined;
+  const hasSoundPan = sound.pan !== undefined || resource.pan !== undefined;
+  if (hasBgmPan || hasSoundPan) {
+    node.pan = clampAudioPan((bgm.pan ?? 0) + (node.pan ?? 0));
+  }
+
+  return node;
+};
+
 const createLayoutTemplateData = ({
   variables,
   imageGallery,
@@ -3909,16 +3935,14 @@ export const addControl = (
   return state;
 };
 
-export const addBgm = (
-  state,
-  { presentationState, resources, runtime, variables, musicRoomPlayer },
-) => {
-  const { elements, audio } = state;
-  if (presentationState.bgm && resources) {
-    // Find the story container
-    const storyContainer = getStoryContainer(elements);
-    if (!storyContainer) return state;
-
+export const createBgmChannelNode = ({
+  presentationState,
+  resources = {},
+  runtime,
+  variables,
+  musicRoomPlayer,
+}) => {
+  if (presentationState?.bgm && resources) {
     const bgm = presentationState.bgm;
     const usesLegacySound = !Array.isArray(bgm.sounds);
     const sounds = usesLegacySound
@@ -3959,44 +3983,62 @@ export const addBgm = (
         : sound;
 
       children.push(
-        createSoundNode({
-          id: createAudioRenderId(
-            "bgm",
-            usesLegacySound ? "default" : sound.id,
-          ),
+        applyBgmSoundMix({
+          node: createSoundNode({
+            id: createAudioRenderId(
+              "bgm",
+              usesLegacySound ? "default" : sound.id,
+            ),
+            sound: renderSound,
+            resource: audioResource,
+            defaultLoop: loopsChannel ? false : true,
+          }),
+          bgm,
           sound: renderSound,
           resource: audioResource,
-          defaultLoop: loopsChannel ? false : true,
+          usesLegacySound,
         }),
       );
     });
 
-    if (children.length === 0) return state;
+    if (children.length === 0) return null;
 
     const resolvedRuntime = createLayoutTemplateData({
       variables,
       runtime,
     }).runtime;
 
-    audio.push(
-      createChannelNode({
-        id: BGM_CHANNEL_ID,
-        volume: getEffectiveChannelVolume(
-          resolvedRuntime,
-          "musicVolume",
-          usesLegacySound
-            ? DEFAULT_AUTHORED_AUDIO_VOLUME
-            : (bgm.volume ?? DEFAULT_AUTHORED_AUDIO_VOLUME),
-        ),
-        muted: bgm.muted,
-        pan: bgm.pan,
-        loop: usesLegacySound ? undefined : bgm.loop,
-        playback: musicRoomPlayer?.bgmPlayback,
-        interruption: bgm.interruption,
-        children,
-        runtime: resolvedRuntime,
-      }),
-    );
+    return createChannelNode({
+      id: BGM_CHANNEL_ID,
+      volume: getRuntimeAudioVolume(resolvedRuntime, "musicVolume"),
+      muted: false,
+      pan: 0,
+      loop: usesLegacySound ? undefined : bgm.loop,
+      playback: musicRoomPlayer?.bgmPlayback,
+      interruption: bgm.interruption,
+      children,
+      runtime: resolvedRuntime,
+    });
+  }
+
+  return null;
+};
+
+export const addBgm = (state, params) => {
+  const storyContainer = getStoryContainer(state.elements);
+  if (!storyContainer) return state;
+
+  const channel = createBgmChannelNode(params);
+  if (channel) state.audio.push(channel);
+  return state;
+};
+
+export const addAudioEffects = (
+  state,
+  { activeAudioEffect, skipTransitionsAndAnimations },
+) => {
+  if (activeAudioEffect && !skipTransitionsAndAnimations) {
+    state.audioEffects = [structuredClone(activeAudioEffect)];
   }
   return state;
 };
@@ -4693,6 +4735,7 @@ export const constructRenderState = (params) => {
     addMusicRoom,
     addSfx,
     addVoice,
+    addAudioEffects,
     addOverlayStack,
     addConfirmDialog,
   ];

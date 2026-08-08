@@ -14,6 +14,7 @@ import {
   validateActionVoice,
   validateResourceAchievement,
   validateResourceAnimation,
+  validateResourceAudioEffect,
   validateResourceCharacter,
   validateResourceColor,
   validateResourceControl,
@@ -39,6 +40,7 @@ const cloneValue = (value) =>
 const RESOURCE_PATCH_COLLECTIONS = Object.freeze({
   achievement: "achievements",
   animation: "animations",
+  audioEffect: "audioEffects",
   character: "characters",
   color: "colors",
   control: "controls",
@@ -88,6 +90,7 @@ const ACTION_PAYLOAD_VALIDATORS = Object.freeze({
 const RESOURCE_PAYLOAD_VALIDATORS = Object.freeze({
   achievement: validateResourceAchievement,
   animation: validateResourceAnimation,
+  audioEffect: validateResourceAudioEffect,
   character: validateResourceCharacter,
   color: validateResourceColor,
   control: validateResourceControl,
@@ -272,6 +275,9 @@ const validatePresentationResourceIds = (actionType, payload, path) => {
       validateAnimation(payload.animations, `${path}.animations`);
       break;
     case "bgm":
+      validateAnimation(payload.audioEffects, `${path}.audioEffects`);
+      validateAudio(payload, path);
+      break;
     case "voice":
       validateAudio(payload, path);
       break;

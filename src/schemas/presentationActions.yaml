@@ -38,6 +38,28 @@ definitions:
     description: Animation selection. Provide a single resourceId whose animation type decides update vs transition.
     $ref: "#/definitions/animationRef"
 
+  audioEffectPlayback:
+    type: object
+    description: Playback contract for a selected audio effect
+    properties:
+      speed:
+        type: number
+        exclusiveMinimum: 0
+        description: Playback speed multiplier
+    additionalProperties: false
+
+  audioEffectSelection:
+    type: object
+    description: Reference to a reusable audio effect resource
+    properties:
+      resourceId:
+        type: string
+        minLength: 1
+      playback:
+        $ref: "#/definitions/audioEffectPlayback"
+    required: [resourceId]
+    additionalProperties: false
+
   audioSound:
     type: object
     description: Sound owned by an audio channel
@@ -780,11 +802,17 @@ properties:
         type: number
         minimum: 0
         description: Legacy delay before the single BGM sound begins, in milliseconds
+      audioEffects:
+        $ref: "#/definitions/audioEffectSelection"
     allOf:
       - not:
           required: [resourceId, sounds]
       - not:
           required: [startDelayMs, sounds]
+      - if:
+          required: [audioEffects]
+        then:
+          required: [sounds]
     additionalProperties: false
 
   voice:
