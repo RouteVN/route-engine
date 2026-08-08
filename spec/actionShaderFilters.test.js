@@ -124,10 +124,7 @@ describe("action shader filters", () => {
       findStoryChild(renderState, "bg-cg-background-sprite").filters,
     ).toEqual([backgroundFilter]);
 
-    const character = findStoryChild(
-      renderState,
-      "character-container-lead",
-    );
+    const character = findStoryChild(renderState, "character-container-lead");
     expect(character.filters).toEqual([characterFilter]);
     expect(character.children[0]).not.toHaveProperty("filters");
 
