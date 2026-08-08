@@ -182,6 +182,51 @@ describe("resolveLayoutReferences public export", () => {
     expect(layoutElements[0].children[0]).not.toHaveProperty("alpha");
   });
 
+  it("treats inline shader filter internals as opaque resource data", () => {
+    const shaderFilter = {
+      id: "shade",
+      type: "shader",
+      parameters: {
+        textStyle: 0.25,
+        textStyleId: 0,
+      },
+      source: {
+        webgl: {
+          fragment: "void main() {}",
+        },
+        webgpu: {
+          source: "@fragment fn mainFragment() {}",
+        },
+      },
+    };
+    const layoutElements = [
+      {
+        id: "panel",
+        type: "rect",
+        colorId: "panelBg",
+        filters: [shaderFilter],
+      },
+    ];
+
+    expect(
+      resolveLayoutReferences(layoutElements, {
+        resources: {
+          colors: {
+            panelBg: { hex: "#D9D9D9" },
+          },
+        },
+      }),
+    ).toEqual([
+      {
+        id: "panel",
+        type: "rect",
+        fill: "#D9D9D9",
+        filters: [shaderFilter],
+      },
+    ]);
+    expect(layoutElements[0].filters).toEqual([shaderFilter]);
+  });
+
   it("normalizes only layout structure and preserves every interaction payload", () => {
     const layout = {
       elements: [

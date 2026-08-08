@@ -461,6 +461,236 @@ describe("projectData schema", () => {
     expect(validateProjectData.errors).toBeNull();
   });
 
+  it("rejects removed layout.transitions resources", () => {
+    const projectData = createMinimalProjectData({
+      resources: {
+        layouts: {
+          legacyAnimatedLayout: {
+            elements: [],
+            transitions: [
+              {
+                id: "legacy-fade",
+                type: "update",
+                tween: {
+                  alpha: {
+                    keyframes: [{ duration: 300, value: 1 }],
+                  },
+                },
+              },
+            ],
+          },
+        },
+      },
+    });
+
+    expect(validateProjectData(projectData)).toBe(false);
+    expect(validateProjectData.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          instancePath: "/resources/layouts/legacyAnimatedLayout/transitions",
+          keyword: "false schema",
+        }),
+      ]),
+    );
+  });
+
+  it("accepts inline shader filters on nested layout elements", () => {
+    const projectData = createMinimalProjectData({
+      resources: {
+        layouts: {
+          shadedHud: {
+            elements: [
+              {
+                id: "hud",
+                type: "container",
+                children: [
+                  {
+                    id: "portrait",
+                    type: "sprite",
+                    imageId: "portrait",
+                    filters: [
+                      {
+                        id: "shade",
+                        type: "shader",
+                        time: true,
+                        parameters: {
+                          strength: 0.6,
+                        },
+                        source: {
+                          webgl: {
+                            fragment: "void main() {}",
+                          },
+                          webgpu: {
+                            source: "@fragment fn mainFragment() {}",
+                          },
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    });
+
+    expect(validateProjectData(projectData)).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
+
+  it("accepts conditional and loop template entries in layout filter arrays", () => {
+    const shaderFilter = {
+      id: "shade",
+      type: "shader",
+      source: {
+        webgl: {
+          fragment: "void main() {}",
+        },
+        webgpu: {
+          source: "@fragment fn mainFragment() {}",
+        },
+      },
+    };
+    const projectData = createMinimalProjectData({
+      resources: {
+        layouts: {
+          shadedHud: {
+            elements: [
+              {
+                id: "conditional-panel",
+                type: "rect",
+                filters: [
+                  {
+                    "$if variables.shadingEnabled": [shaderFilter],
+                    $else: [],
+                  },
+                ],
+              },
+              {
+                id: "looped-panel",
+                type: "rect",
+                filters: [
+                  {
+                    "$for filter in variables.filters": [shaderFilter],
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    });
+
+    expect(validateProjectData(projectData)).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
+
+  it("rejects malformed layout shader filter envelopes", () => {
+    const projectData = createMinimalProjectData({
+      resources: {
+        layouts: {
+          shadedHud: {
+            elements: [
+              {
+                id: "portrait",
+                type: "sprite",
+                imageId: "portrait",
+                filters: [{ type: "shader" }],
+              },
+            ],
+          },
+        },
+      },
+    });
+
+    expect(validateProjectData(projectData)).toBe(false);
+    expect(validateProjectData.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          instancePath: "/resources/layouts/shadedHud/elements/0/filters/0",
+          keyword: "required",
+          params: {
+            missingProperty: "id",
+          },
+        }),
+      ]),
+    );
+  });
+
+  it("accepts inline shader filters on background, character, and visual actions", () => {
+    const shaderFilter = {
+      id: "shade",
+      type: "shader",
+      time: true,
+      parameters: {
+        strength: 0.6,
+        textStyle: 0.25,
+        textStyleId: 0,
+      },
+      source: {
+        webgl: {
+          fragment: "void main() {}",
+        },
+        webgpu: {
+          source: "@fragment fn mainFragment() {}",
+        },
+      },
+    };
+
+    expect(
+      validatePresentationActions({
+        background: {
+          resourceId: "forest",
+          filters: [shaderFilter],
+        },
+        character: {
+          items: [
+            {
+              id: "lead",
+              transformId: "center",
+              sprites: [{ id: "body", resourceId: "leadBody" }],
+              filters: [shaderFilter],
+            },
+          ],
+        },
+        visual: {
+          items: [
+            {
+              id: "fog",
+              resourceId: "fog",
+              transformId: "fullscreen",
+              filters: [shaderFilter],
+            },
+          ],
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+  });
+
+  it("rejects malformed action shader filter envelopes", () => {
+    expect(
+      validatePresentationActions({
+        background: {
+          resourceId: "forest",
+          filters: [{ type: "shader" }],
+        },
+      }),
+    ).toBe(false);
+    expect(validatePresentationActions.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          instancePath: "/background/filters/0",
+          keyword: "required",
+          params: {
+            missingProperty: "id",
+          },
+        }),
+      ]),
+    );
+  });
+
   it("accepts project-configured runtime defaults", () => {
     expect(
       validateProjectData(

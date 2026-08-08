@@ -334,7 +334,7 @@ describe("RouteEngine rollback render state", () => {
     expect(rollbackRender.animations).toEqual([]);
   });
 
-  it("keeps overlay transitions when pushed after line completion", () => {
+  it("does not interpret removed layout.transitions on overlays", () => {
     const routeGraphics = {
       render: vi.fn(),
     };
@@ -373,12 +373,7 @@ describe("RouteEngine rollback render state", () => {
         content: "Overlay panel",
       },
     );
-    expect(overlayRender.animations).toEqual([
-      expect.objectContaining({
-        id: "panel-fade-in",
-        targetId: "overlayStack-0",
-      }),
-    ]);
+    expect(overlayRender.animations).toEqual([]);
   });
 
   it("does not replay persistent background playback when loadSlot restores a completed line", () => {

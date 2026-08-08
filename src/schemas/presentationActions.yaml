@@ -136,6 +136,25 @@ definitions:
         required: [x, y]
         additionalProperties: false
 
+  shaderFilter:
+    type: object
+    description: Inline Route Graphics shader filter owned by an action render target. Route Graphics validates the shader source and runtime configuration.
+    required: [id, type]
+    properties:
+      id:
+        type: string
+        minLength: 1
+        description: Target-local filter identifier
+      type:
+        const: shader
+    additionalProperties: true
+
+  shaderFilters:
+    type: array
+    description: Ordered inline shader filters applied by Route Graphics after managed target effects. An empty array clears persisted filters.
+    items:
+      $ref: "#/definitions/shaderFilter"
+
   visualTextContent:
     description: RouteGraphics text content. A string renders plain text; an array can contain rich text runs such as per-run styles and furigana.
     anyOf:
@@ -160,7 +179,7 @@ definitions:
 
   visualText:
     type: object
-    description: Text-backed visual configuration. Placement, layer, alpha, blur, and animations stay on the visual item.
+    description: Text-backed visual configuration. Placement, layer, alpha, blur, filters, and animations stay on the visual item.
     properties:
       content:
         $ref: "#/definitions/visualTextContent"
@@ -199,6 +218,7 @@ definitions:
         - required: [alpha]
         - required: [opacity]
         - required: [blur]
+        - required: [filters]
         - required: [animations]
     additionalProperties: true
 
@@ -343,6 +363,8 @@ properties:
         description: Legacy compatibility alias for alpha. Do not use in new projects
       blur:
         $ref: "#/definitions/backgroundBlur"
+      filters:
+        $ref: "#/definitions/shaderFilters"
       animations:
         $ref: "#/definitions/animationSelection"
     additionalProperties: false
@@ -501,6 +523,8 @@ properties:
               description: Legacy compatibility alias for alpha. Do not use in new projects
             blur:
               $ref: "#/definitions/backgroundBlur"
+            filters:
+              $ref: "#/definitions/shaderFilters"
             sprites:
               type: array
               description: Array of sprite parts that make up the character
@@ -619,6 +643,8 @@ properties:
               description: Legacy compatibility alias for alpha. Do not use in new projects
             blur:
               $ref: "#/definitions/backgroundBlur"
+            filters:
+              $ref: "#/definitions/shaderFilters"
             animations:
               $ref: "#/definitions/animationSelection"
           required: [id]

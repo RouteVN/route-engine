@@ -521,43 +521,6 @@ const createAnimationInstanceIfPossible = ({
   });
 };
 
-const cloneAnimation = (
-  animation,
-  { defaultTargetId, defaultId, animationPath = "animation" } = {},
-) => {
-  if (!animation || typeof animation !== "object" || Array.isArray(animation)) {
-    return animation;
-  }
-
-  const normalized = structuredClone(animation);
-  assertSupportedAnimationType({
-    animationType: normalized.type,
-    animationId: normalized.id ?? defaultId,
-    animationPath,
-  });
-  normalized.id ??= defaultId;
-  normalized.targetId ??= defaultTargetId;
-  return normalized;
-};
-
-const pushNormalizedLayoutTransitions = ({
-  animations,
-  transitions,
-  defaultTargetId,
-  idPrefix,
-  animationPathPrefix = idPrefix,
-}) => {
-  transitions.forEach((transition, index) => {
-    animations.push(
-      cloneAnimation(transition, {
-        defaultTargetId,
-        defaultId: `${idPrefix}-transition-${index}`,
-        animationPath: `${animationPathPrefix}.transitions[${index}]`,
-      }),
-    );
-  });
-};
-
 const ensureDialogueContentItems = (content, path) => {
   if (content === undefined) {
     return [];
@@ -1055,6 +1018,23 @@ const resolveTextStyleResource = (resources = {}, textStyleId) => {
   return resolvedTextStyle;
 };
 
+const cloneLayoutValue = (value) => {
+  if (Array.isArray(value)) {
+    return value.map(cloneLayoutValue);
+  }
+
+  if (!value || typeof value !== "object") {
+    return value;
+  }
+
+  return Object.fromEntries(
+    Object.entries(value).map(([key, nestedValue]) => [
+      key,
+      cloneLayoutValue(nestedValue),
+    ]),
+  );
+};
+
 export const resolveTextStyleIds = (node, resources = {}, path = "root") => {
   if (Array.isArray(node)) {
     return node.map((item, index) =>
@@ -1075,6 +1055,11 @@ export const resolveTextStyleIds = (node, resources = {}, path = "root") => {
   const resolvedNode = {};
 
   for (const [key, value] of Object.entries(node)) {
+    if (key === "filters") {
+      resolvedNode[key] = cloneLayoutValue(value);
+      continue;
+    }
+
     if (key === "textStyleId") {
       continue;
     }
@@ -1205,6 +1190,11 @@ export const resolveColorIds = (node, resources = {}, path = "root") => {
   const resolvedNode = {};
 
   for (const [key, value] of Object.entries(node)) {
+    if (key === "filters") {
+      resolvedNode[key] = cloneLayoutValue(value);
+      continue;
+    }
+
     if (node.type === "rect" && key === "colorId") {
       continue;
     }
@@ -1340,6 +1330,11 @@ export const resolveImageIds = (node, resources = {}, path = "root") => {
   const resolvedNode = {};
 
   for (const [key, value] of Object.entries(node)) {
+    if (key === "filters") {
+      resolvedNode[key] = cloneLayoutValue(value);
+      continue;
+    }
+
     if (
       node.type === "sprite" &&
       (key === "imageId" || key === "hoverImageId" || key === "clickImageId")
@@ -1403,23 +1398,6 @@ export const resolveImageIds = (node, resources = {}, path = "root") => {
 // Route Engine projects were documented with `opacity`, so normalize only
 // element objects (not nested interaction metadata) and prefer an explicitly
 // authored alpha when both names are present.
-const cloneLayoutValue = (value) => {
-  if (Array.isArray(value)) {
-    return value.map(cloneLayoutValue);
-  }
-
-  if (!value || typeof value !== "object") {
-    return value;
-  }
-
-  return Object.fromEntries(
-    Object.entries(value).map(([key, nestedValue]) => [
-      key,
-      cloneLayoutValue(nestedValue),
-    ]),
-  );
-};
-
 const isLayoutTemplateBranchField = (key) =>
   key === "$else" || key.startsWith("$if ") || key.startsWith("$for ");
 
@@ -1508,12 +1486,16 @@ const getBackgroundBlur = (background = {}) => {
   return background.blur;
 };
 
+const getShaderFilters = (value = {}) =>
+  Array.isArray(value.filters) ? value.filters : undefined;
+
 const getBackgroundAppearance = (
   background = {},
   { includeDefaultAlpha = false } = {},
 ) => {
   const alpha = getBackgroundAlpha(background);
   const blur = getBackgroundBlur(background);
+  const filters = getShaderFilters(background);
   const appearance = {};
 
   if (includeDefaultAlpha || alpha !== undefined) {
@@ -1522,6 +1504,10 @@ const getBackgroundAppearance = (
 
   if (blur) {
     appearance.blur = blur;
+  }
+
+  if (filters) {
+    appearance.filters = filters;
   }
 
   return appearance;
@@ -1557,7 +1543,16 @@ const getScreenAppearance = (screenState = {}) => {
   return appearance;
 };
 
-const getItemAppearance = (item = {}) => getScreenAppearance(item);
+const getItemAppearance = (item = {}) => {
+  const appearance = getScreenAppearance(item);
+  const filters = getShaderFilters(item);
+
+  if (filters) {
+    appearance.filters = filters;
+  }
+
+  return appearance;
+};
 
 const resolveElementScale = (transform, item, scaleField, flipField) => {
   const scale = item[scaleField] ?? transform[scaleField];
@@ -1613,6 +1608,7 @@ const VISUAL_TEXT_RESERVED_FIELDS = [
   "alpha",
   "opacity",
   "blur",
+  "filters",
   "animations",
 ];
 
@@ -1791,6 +1787,11 @@ const createBackgroundColorElement = ({
     const alpha = getBackgroundAlpha(background);
     if (alpha !== undefined) {
       element.alpha = alpha;
+    }
+
+    const filters = getShaderFilters(background);
+    if (filters) {
+      element.filters = filters;
     }
   }
 
@@ -3280,6 +3281,9 @@ export const addVisuals = (
               ...getElementTransform(transform, item),
               alpha: itemAppearance.alpha ?? item.alpha ?? 1,
               ...(itemAppearance.blur ? { blur: itemAppearance.blur } : {}),
+              ...(itemAppearance.filters
+                ? { filters: itemAppearance.filters }
+                : {}),
             },
           });
           if (element) {
@@ -4323,20 +4327,6 @@ export const addLayout = (
       return state;
     }
 
-    if (
-      Array.isArray(layout.transitions) &&
-      !isLineCompleted &&
-      !skipTransitionsAndAnimations
-    ) {
-      pushNormalizedLayoutTransitions({
-        animations,
-        transitions: layout.transitions,
-        defaultTargetId: `layout-${presentationState.layout.resourceId}`,
-        idPrefix: `layout-${presentationState.layout.resourceId}`,
-        animationPathPrefix: "layout",
-      });
-    }
-
     const layoutContainer = {
       id: `layout-${presentationState.layout.resourceId}`,
       type: "container",
@@ -4488,7 +4478,7 @@ export const addOverlayStack = (
     skipTransitionsAndAnimations,
   },
 ) => {
-  const { elements, animations } = state;
+  const { elements } = state;
   if (overlayStack && overlayStack.length > 0) {
     // Add each overlay from the stack above the base presentation.
     overlayStack.forEach((overlay, index) => {
@@ -4497,18 +4487,6 @@ export const addOverlayStack = (
       if (!layout) {
         console.warn(`Overlay layout not found: ${overlay.resourceId}`);
         return;
-      }
-
-      if (Array.isArray(layout.transitions)) {
-        if (!skipTransitionsAndAnimations) {
-          pushNormalizedLayoutTransitions({
-            animations,
-            transitions: layout.transitions,
-            defaultTargetId: `overlayStack-${index}`,
-            idPrefix: `overlayStack-${index}`,
-            animationPathPrefix: `overlayStack[${index}]`,
-          });
-        }
       }
 
       // Create a container for this overlay
@@ -4608,7 +4586,7 @@ export const addConfirmDialog = (
     skipTransitionsAndAnimations,
   },
 ) => {
-  const { elements, animations } = state;
+  const { elements } = state;
 
   if (!confirmDialog?.resourceId) {
     return state;
@@ -4618,16 +4596,6 @@ export const addConfirmDialog = (
   if (!layout) {
     console.warn(`ConfirmDialog layout not found: ${confirmDialog.resourceId}`);
     return state;
-  }
-
-  if (Array.isArray(layout.transitions) && !skipTransitionsAndAnimations) {
-    pushNormalizedLayoutTransitions({
-      animations,
-      transitions: layout.transitions,
-      defaultTargetId: "confirmDialog",
-      idPrefix: "confirmDialog",
-      animationPathPrefix: "confirmDialog",
-    });
   }
 
   const confirmDialogContainer = {
