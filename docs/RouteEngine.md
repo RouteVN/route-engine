@@ -346,7 +346,10 @@ resources:
 Filter IDs must be unique within their owning element. Shader parameters,
 passes, textures, pipeline settings, and source ABI follow the RouteGraphics
 inline shader interface. To filter a complete layout, place its elements under
-a container and attach the filter to that container.
+a container and attach the filter to that container. Route Engine treats filter
+contents as opaque renderer data, so parameter and texture names may overlap
+Engine fields such as `textStyle` or `textStyleId`. Filter arrays may use the
+same `$if` and `$for` template entries as other layout arrays.
 
 #### Layout Text Styles
 

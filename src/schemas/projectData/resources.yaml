@@ -774,7 +774,23 @@ definitions:
     type: array
     description: Ordered inline shader filters applied by Route Graphics after managed element effects
     items:
-      $ref: "#/definitions/layoutShaderFilter"
+      $ref: "#/definitions/layoutShaderFilterEntry"
+
+  layoutShaderFilterEntry:
+    anyOf:
+      - $ref: "#/definitions/layoutShaderFilter"
+      - $ref: "#/definitions/layoutShaderFilterTemplateEntry"
+
+  layoutShaderFilterTemplateEntry:
+    type: object
+    description: Conditional or loop template that renders zero or more inline shader filters
+    minProperties: 1
+    patternProperties:
+      '^\$(if .+|for .+|else)$':
+        type: array
+        items:
+          $ref: "#/definitions/layoutShaderFilterEntry"
+    additionalProperties: false
 
   layoutElement:
     type: object

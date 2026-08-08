@@ -1018,6 +1018,23 @@ const resolveTextStyleResource = (resources = {}, textStyleId) => {
   return resolvedTextStyle;
 };
 
+const cloneLayoutValue = (value) => {
+  if (Array.isArray(value)) {
+    return value.map(cloneLayoutValue);
+  }
+
+  if (!value || typeof value !== "object") {
+    return value;
+  }
+
+  return Object.fromEntries(
+    Object.entries(value).map(([key, nestedValue]) => [
+      key,
+      cloneLayoutValue(nestedValue),
+    ]),
+  );
+};
+
 export const resolveTextStyleIds = (node, resources = {}, path = "root") => {
   if (Array.isArray(node)) {
     return node.map((item, index) =>
@@ -1038,6 +1055,11 @@ export const resolveTextStyleIds = (node, resources = {}, path = "root") => {
   const resolvedNode = {};
 
   for (const [key, value] of Object.entries(node)) {
+    if (key === "filters") {
+      resolvedNode[key] = cloneLayoutValue(value);
+      continue;
+    }
+
     if (key === "textStyleId") {
       continue;
     }
@@ -1168,6 +1190,11 @@ export const resolveColorIds = (node, resources = {}, path = "root") => {
   const resolvedNode = {};
 
   for (const [key, value] of Object.entries(node)) {
+    if (key === "filters") {
+      resolvedNode[key] = cloneLayoutValue(value);
+      continue;
+    }
+
     if (node.type === "rect" && key === "colorId") {
       continue;
     }
@@ -1303,6 +1330,11 @@ export const resolveImageIds = (node, resources = {}, path = "root") => {
   const resolvedNode = {};
 
   for (const [key, value] of Object.entries(node)) {
+    if (key === "filters") {
+      resolvedNode[key] = cloneLayoutValue(value);
+      continue;
+    }
+
     if (
       node.type === "sprite" &&
       (key === "imageId" || key === "hoverImageId" || key === "clickImageId")
@@ -1366,23 +1398,6 @@ export const resolveImageIds = (node, resources = {}, path = "root") => {
 // Route Engine projects were documented with `opacity`, so normalize only
 // element objects (not nested interaction metadata) and prefer an explicitly
 // authored alpha when both names are present.
-const cloneLayoutValue = (value) => {
-  if (Array.isArray(value)) {
-    return value.map(cloneLayoutValue);
-  }
-
-  if (!value || typeof value !== "object") {
-    return value;
-  }
-
-  return Object.fromEntries(
-    Object.entries(value).map(([key, nestedValue]) => [
-      key,
-      cloneLayoutValue(nestedValue),
-    ]),
-  );
-};
-
 const isLayoutTemplateBranchField = (key) =>
   key === "$else" || key.startsWith("$if ") || key.startsWith("$for ");
 

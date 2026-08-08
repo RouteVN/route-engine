@@ -7,7 +7,8 @@ viewport:
   width: 960
   height: 540
 specs:
-  - a nested layout rect should render through its inline shader filter
+  - a conditional filter template should flatten onto its nested layout element
+  - valid textStyle and textStyleId shader parameters should remain opaque to Engine resource resolution
   - time true should advance the shader through deterministic keyframes without an Engine animation
 steps:
   - action: customEvent
@@ -26,6 +27,11 @@ screen:
   height: 540
   backgroundColor: "#000000"
 resources:
+  variables:
+    shadingEnabled:
+      type: boolean
+      scope: context
+      default: true
   colors:
     panel:
       hex: "#D9D9D9"
@@ -43,78 +49,86 @@ resources:
               height: 340
               colorId: panel
               filters:
-                - id: timed-shade
-                  type: shader
-                  time: true
-                  parameters:
-                    shade: 0.25
-                  source:
-                    webgl:
-                      fragment: |
-                        precision mediump float;
+                - $if variables.shadingEnabled:
+                    - id: timed-shade
+                      type: shader
+                      time: true
+                      parameters:
+                        textStyle: 0.25
+                        textStyleId: 0
+                      source:
+                        webgl:
+                          fragment: |
+                            precision mediump float;
 
-                        in vec2 vTextureCoord;
-                        out vec4 finalColor;
+                            in vec2 vTextureCoord;
+                            out vec4 finalColor;
 
-                        uniform sampler2D uTexture;
-                        uniform float uTime;
-                        uniform float uShade;
+                            uniform sampler2D uTexture;
+                            uniform float uTime;
+                            uniform float uTextStyle;
+                            uniform float uTextStyleId;
 
-                        void main(void)
-                        {
-                            vec4 color = texture(uTexture, vTextureCoord);
-                            float phase = smoothstep(0.2, 0.6, uTime);
-                            float level = mix(1.0, uShade, phase);
-                            finalColor = vec4(color.rgb * level, color.a);
-                        }
-                    webgpu:
-                      source: |
-                        struct GlobalFilterUniforms {
-                          uInputSize: vec4<f32>,
-                          uInputPixel: vec4<f32>,
-                          uInputClamp: vec4<f32>,
-                          uOutputFrame: vec4<f32>,
-                          uGlobalFrame: vec4<f32>,
-                          uOutputTexture: vec4<f32>,
-                        };
+                            void main(void)
+                            {
+                                vec4 color = texture(uTexture, vTextureCoord);
+                                float phase = smoothstep(0.2, 0.6, uTime);
+                                float level = mix(1.0, uTextStyle + uTextStyleId, phase);
+                                finalColor = vec4(color.rgb * level, color.a);
+                            }
+                        webgpu:
+                          source: |
+                            struct GlobalFilterUniforms {
+                              uInputSize: vec4<f32>,
+                              uInputPixel: vec4<f32>,
+                              uInputClamp: vec4<f32>,
+                              uOutputFrame: vec4<f32>,
+                              uGlobalFrame: vec4<f32>,
+                              uOutputTexture: vec4<f32>,
+                            };
 
-                        struct ShaderUniforms {
-                          uProgress: f32,
-                          uTime: f32,
-                          uResolution: vec2<f32>,
-                          uShade: f32,
-                        };
+                            struct ShaderUniforms {
+                              uProgress: f32,
+                              uTime: f32,
+                              uResolution: vec2<f32>,
+                              uTextStyle: f32,
+                              uTextStyleId: f32,
+                            };
 
-                        @group(0) @binding(0) var<uniform> gfu: GlobalFilterUniforms;
-                        @group(0) @binding(1) var uTexture: texture_2d<f32>;
-                        @group(0) @binding(2) var uSampler: sampler;
-                        @group(1) @binding(0) var<uniform> shaderUniforms: ShaderUniforms;
+                            @group(0) @binding(0) var<uniform> gfu: GlobalFilterUniforms;
+                            @group(0) @binding(1) var uTexture: texture_2d<f32>;
+                            @group(0) @binding(2) var uSampler: sampler;
+                            @group(1) @binding(0) var<uniform> shaderUniforms: ShaderUniforms;
 
-                        struct VSOutput {
-                          @builtin(position) position: vec4<f32>,
-                          @location(0) uv: vec2<f32>,
-                        };
+                            struct VSOutput {
+                              @builtin(position) position: vec4<f32>,
+                              @location(0) uv: vec2<f32>,
+                            };
 
-                        @vertex
-                        fn mainVertex(@location(0) aPosition: vec2<f32>) -> VSOutput
-                        {
-                          var position = aPosition * gfu.uOutputFrame.zw + gfu.uOutputFrame.xy;
-                          position.x = position.x * (2.0 / gfu.uOutputTexture.x) - 1.0;
-                          position.y =
-                            position.y * (2.0 * gfu.uOutputTexture.z / gfu.uOutputTexture.y) -
-                            gfu.uOutputTexture.z;
-                          let uv = aPosition * (gfu.uOutputFrame.zw * gfu.uInputSize.zw);
-                          return VSOutput(vec4<f32>(position, 0.0, 1.0), uv);
-                        }
+                            @vertex
+                            fn mainVertex(@location(0) aPosition: vec2<f32>) -> VSOutput
+                            {
+                              var position = aPosition * gfu.uOutputFrame.zw + gfu.uOutputFrame.xy;
+                              position.x = position.x * (2.0 / gfu.uOutputTexture.x) - 1.0;
+                              position.y =
+                                position.y * (2.0 * gfu.uOutputTexture.z / gfu.uOutputTexture.y) -
+                                gfu.uOutputTexture.z;
+                              let uv = aPosition * (gfu.uOutputFrame.zw * gfu.uInputSize.zw);
+                              return VSOutput(vec4<f32>(position, 0.0, 1.0), uv);
+                            }
 
-                        @fragment
-                        fn mainFragment(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32>
-                        {
-                          let color = textureSample(uTexture, uSampler, uv);
-                          let phase = smoothstep(0.2, 0.6, shaderUniforms.uTime);
-                          let level = mix(1.0, shaderUniforms.uShade, phase);
-                          return vec4<f32>(color.rgb * level, color.a);
-                        }
+                            @fragment
+                            fn mainFragment(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32>
+                            {
+                              let color = textureSample(uTexture, uSampler, uv);
+                              let phase = smoothstep(0.2, 0.6, shaderUniforms.uTime);
+                              let level = mix(
+                                1.0,
+                                shaderUniforms.uTextStyle + shaderUniforms.uTextStyleId,
+                                phase,
+                              );
+                              return vec4<f32>(color.rgb * level, color.a);
+                            }
 story:
   initialSceneId: scene1
   scenes:

@@ -539,6 +539,53 @@ describe("projectData schema", () => {
     expect(validateProjectData.errors).toBeNull();
   });
 
+  it("accepts conditional and loop template entries in layout filter arrays", () => {
+    const shaderFilter = {
+      id: "shade",
+      type: "shader",
+      source: {
+        webgl: {
+          fragment: "void main() {}",
+        },
+        webgpu: {
+          source: "@fragment fn mainFragment() {}",
+        },
+      },
+    };
+    const projectData = createMinimalProjectData({
+      resources: {
+        layouts: {
+          shadedHud: {
+            elements: [
+              {
+                id: "conditional-panel",
+                type: "rect",
+                filters: [
+                  {
+                    "$if variables.shadingEnabled": [shaderFilter],
+                    $else: [],
+                  },
+                ],
+              },
+              {
+                id: "looped-panel",
+                type: "rect",
+                filters: [
+                  {
+                    "$for filter in variables.filters": [shaderFilter],
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    });
+
+    expect(validateProjectData(projectData)).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
+
   it("rejects malformed layout shader filter envelopes", () => {
     const projectData = createMinimalProjectData({
       resources: {

@@ -150,13 +150,17 @@ const resourcePatchCases = [
           type: "rect",
           filters: [
             {
-              id: "shade",
-              type: "shader",
-              time: true,
-              source: {
-                webgl: { fragment: "void main() {}" },
-                webgpu: { source: "@fragment fn mainFragment() {}" },
-              },
+              "$if variables.shadingEnabled": [
+                {
+                  id: "shade",
+                  type: "shader",
+                  time: true,
+                  source: {
+                    webgl: { fragment: "void main() {}" },
+                    webgpu: { source: "@fragment fn mainFragment() {}" },
+                  },
+                },
+              ],
             },
           ],
         },
