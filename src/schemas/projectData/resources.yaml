@@ -663,10 +663,10 @@ properties:
         properties:
           elements:
             type: array
-            description: Array of UI elements authored with textStyleId, imageId, and colorId references
+            description: Array of UI elements authored with textStyleId, imageId, colorId, and inline shader filters
             items:
-              type: object
-              additionalProperties: true
+              $ref: "#/definitions/layoutElement"
+          transitions: false
         additionalProperties: true
     additionalProperties: false
 
@@ -757,6 +757,37 @@ properties:
 additionalProperties: false
 
 definitions:
+  layoutShaderFilter:
+    type: object
+    description: Inline Route Graphics shader filter owned by a layout element. Route Graphics validates the shader source and runtime configuration.
+    required: [id, type]
+    properties:
+      id:
+        type: string
+        minLength: 1
+        description: Element-local filter identifier
+      type:
+        const: shader
+    additionalProperties: true
+
+  layoutShaderFilters:
+    type: array
+    description: Ordered inline shader filters applied by Route Graphics after managed element effects
+    items:
+      $ref: "#/definitions/layoutShaderFilter"
+
+  layoutElement:
+    type: object
+    description: Route Graphics layout element with Engine resource references and optional inline shader filters
+    properties:
+      filters:
+        $ref: "#/definitions/layoutShaderFilters"
+      children:
+        type: array
+        items:
+          $ref: "#/definitions/layoutElement"
+    additionalProperties: true
+
   computedVariable:
     type: object
     description: Derived variable declaration. Presence implies read-only behavior.

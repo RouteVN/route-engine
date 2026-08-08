@@ -140,7 +140,29 @@ const resourcePatchCases = [
       height: 360,
     },
   ],
-  ["layout", "layouts", { elements: [] }],
+  [
+    "layout",
+    "layouts",
+    {
+      elements: [
+        {
+          id: "localized-panel",
+          type: "rect",
+          filters: [
+            {
+              id: "shade",
+              type: "shader",
+              time: true,
+              source: {
+                webgl: { fragment: "void main() {}" },
+                webgpu: { source: "@fragment fn mainFragment() {}" },
+              },
+            },
+          ],
+        },
+      ],
+    },
+  ],
   [
     "particle",
     "particles",

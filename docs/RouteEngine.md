@@ -310,6 +310,44 @@ that RouteGraphics consumes directly.
 This resolution happens during render-state construction, before RouteGraphics
 parses the layout tree.
 
+#### Layout Shader Filters
+
+Every RouteGraphics visual element in a layout may own an ordered `filters`
+array. Shader effects stay inline with the element that uses them. Route Engine
+preserves the filter configuration through template and resource resolution;
+RouteGraphics validates and compiles the WebGL or WebGPU source.
+
+Set `time: true` when the shader needs RouteGraphics' deterministic `uTime`
+clock. This does not require a Route Engine animation resource.
+
+```yaml
+resources:
+  layouts:
+    shadedHud:
+      elements:
+        - id: portrait
+          type: sprite
+          imageId: portrait
+          filters:
+            - id: shade
+              type: shader
+              time: true
+              parameters:
+                strength: 0.6
+              source:
+                webgl:
+                  fragment: |
+                    # GLSL fragment source
+                webgpu:
+                  source: |
+                    # WGSL source with mainVertex and mainFragment
+```
+
+Filter IDs must be unique within their owning element. Shader parameters,
+passes, textures, pipeline settings, and source ABI follow the RouteGraphics
+inline shader interface. To filter a complete layout, place its elements under
+a container and attach the filter to that container.
+
 #### Layout Text Styles
 
 Layout text should be authored with `textStyleId` and resolved through `resources.textStyles`.

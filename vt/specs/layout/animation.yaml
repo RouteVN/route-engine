@@ -1,18 +1,56 @@
 ---
 title: Layout Animation
-description: Test layout animation in and out
+description: Test action-selected layout animation resources in and out
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+specs:
+  - layout animations should be selected from resources by the line action
+  - a transition resource should animate the entering layout
+  - an update resource should animate the persisted layout out
+steps:
+  - action: customEvent
+    name: vt:nextLine
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 150
+  - action: screenshot
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 150
+  - action: screenshot
+  - action: customEvent
+    name: vt:nextLine
+  - action: customEvent
+    name: vt:nextLine
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 200
+  - action: screenshot
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 200
+  - action: screenshot
 ---
 screen:
-  width: 1920
-  height: 1080
+  width: 960
+  height: 540
+  backgroundColor: "#000000"
 resources:
   controls:
     base1:
       elements:
         - id: af32
           type: rect
-          width: 1920
-          height: 1080
+          width: 960
+          height: 540
+          alpha: 0.001
           click:
             payload:
               actions:
@@ -24,14 +62,13 @@ resources:
       elements:
         - id: menu-container
           type: container
-          x: 400
-          y: 300
+          x: 280
+          y: 100
           children:
             - id: menu-bg
               type: rect
               width: 400
-              height: 400
-              opacity: 0.9
+              height: 340
               colorId: layoutColor2
             - id: menu-title
               type: text
@@ -52,47 +89,39 @@ resources:
               y: 180
               textStyleId: textStyle2
   animations:
-    fadeIn:
-      name: Fade In
-      type: update
-      tween:
-        alpha:
-          initialValue: 0
-          keyframes:
-            - duration: 400
-              value: 1
-              easing: easeOutQuad
     fadeOut:
       name: Fade Out
       type: update
       tween:
         alpha:
+          initialValue: 1
           keyframes:
             - duration: 400
               value: 0
-              easing: easeInQuad
+              easing: linear
     scaleIn:
       name: Scale In
-      type: update
-      tween:
-        scaleX:
-          initialValue: 0.8
-          keyframes:
-            - duration: 300
-              value: 1
-              easing: easeOutQuad
-        scaleY:
-          initialValue: 0.8
-          keyframes:
-            - duration: 300
-              value: 1
-              easing: easeOutQuad
-        alpha:
-          initialValue: 0
-          keyframes:
-            - duration: 300
-              value: 1
-              easing: easeOutQuad
+      type: transition
+      next:
+        tween:
+          scaleX:
+            initialValue: 0.8
+            keyframes:
+              - duration: 300
+                value: 1
+                easing: linear
+          scaleY:
+            initialValue: 0.8
+            keyframes:
+              - duration: 300
+                value: 1
+                easing: linear
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 300
+                value: 1
+                easing: linear
   fonts:
     fontDefault:
       fileId: Arial
@@ -102,7 +131,7 @@ resources:
     layoutColor1:
       hex: "#000000"
     layoutColor2:
-      hex: "#323250"
+      hex: "#4D4D4D"
   textStyles:
     textStyle1:
       fontId: fontDefault
@@ -145,5 +174,6 @@ story:
             - id: line4
               actions:
                 layout:
+                  resourceId: menuLayout
                   animations:
                     resourceId: fadeOut

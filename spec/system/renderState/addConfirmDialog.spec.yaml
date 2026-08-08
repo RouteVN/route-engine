@@ -27,7 +27,7 @@ out:
       children: []
   animations: []
 ---
-case: add confirm dialog layout with templated action batches
+case: add confirm dialog layout without interpreting removed layout transitions
 in:
   - elements:
       - id: "story"
@@ -39,6 +39,14 @@ in:
   - resources:
       layouts:
         saveOverwriteConfirmLayout:
+          transitions:
+            - id: legacy-confirm-fade
+              type: update
+              tween:
+                alpha:
+                  keyframes:
+                    - duration: 300
+                      value: 1
           elements:
             - id: confirm-overlay
               type: rect

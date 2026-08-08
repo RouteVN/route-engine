@@ -54,6 +54,53 @@ out:
       children: []
   animations: []
 ---
+case: ignore removed layout transitions
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      layout:
+        resourceId: "legacyAnimatedLayout"
+    resources:
+      layouts:
+        legacyAnimatedLayout:
+          elements:
+            - id: "layout-content"
+              type: "container"
+              children: []
+          transitions:
+            - id: "legacy-fade"
+              type: "update"
+              tween:
+                alpha:
+                  keyframes:
+                    - duration: 300
+                      value: 1
+    variables: {}
+    autoMode: false
+    skipMode: false
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "layout-legacyAnimatedLayout"
+          type: "container"
+          x: 0
+          y: 0
+          children:
+            - id: "layout-content"
+              type: "container"
+              children: []
+  animations: []
+---
 case: generic layout receives dialogue template data without removing existing aliases
 in:
   - elements:
@@ -512,6 +559,80 @@ out:
                 src: "button-hover.png"
               click:
                 src: "button-active.png"
+  animations: []
+---
+case: preserves inline shader filters on nested layout elements
+in:
+  - elements:
+      - id: "story"
+        type: "container"
+        x: 0
+        y: 0
+        children: []
+    animations: []
+  - presentationState:
+      layout:
+        resourceId: "shadedLayout"
+    resources:
+      layouts:
+        shadedLayout:
+          elements:
+            - id: "layout-content"
+              type: "container"
+              children:
+                - id: "shaded-image"
+                  type: "sprite"
+                  imageId: "portrait"
+                  filters:
+                    - id: "shade"
+                      type: "shader"
+                      time: true
+                      parameters:
+                        strength: 0.6
+                      source:
+                        webgl:
+                          fragment: "void main() {}"
+                        webgpu:
+                          source: "@fragment fn mainFragment() {}"
+      images:
+        portrait:
+          fileId: "portrait.png"
+          width: 320
+          height: 180
+    variables: {}
+    autoMode: false
+    skipMode: false
+out:
+  elements:
+    - id: "story"
+      type: "container"
+      x: 0
+      y: 0
+      children:
+        - id: "layout-shadedLayout"
+          type: "container"
+          x: 0
+          y: 0
+          children:
+            - id: "layout-content"
+              type: "container"
+              children:
+                - id: "shaded-image"
+                  type: "sprite"
+                  filters:
+                    - id: "shade"
+                      type: "shader"
+                      time: true
+                      parameters:
+                        strength: 0.6
+                      source:
+                        webgl:
+                          fragment: "void main() {}"
+                        webgpu:
+                          source: "@fragment fn mainFragment() {}"
+                  src: "portrait.png"
+                  width: 320
+                  height: 180
   animations: []
 ---
 case: resolves templated textStyleId in layout elements

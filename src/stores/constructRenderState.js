@@ -521,43 +521,6 @@ const createAnimationInstanceIfPossible = ({
   });
 };
 
-const cloneAnimation = (
-  animation,
-  { defaultTargetId, defaultId, animationPath = "animation" } = {},
-) => {
-  if (!animation || typeof animation !== "object" || Array.isArray(animation)) {
-    return animation;
-  }
-
-  const normalized = structuredClone(animation);
-  assertSupportedAnimationType({
-    animationType: normalized.type,
-    animationId: normalized.id ?? defaultId,
-    animationPath,
-  });
-  normalized.id ??= defaultId;
-  normalized.targetId ??= defaultTargetId;
-  return normalized;
-};
-
-const pushNormalizedLayoutTransitions = ({
-  animations,
-  transitions,
-  defaultTargetId,
-  idPrefix,
-  animationPathPrefix = idPrefix,
-}) => {
-  transitions.forEach((transition, index) => {
-    animations.push(
-      cloneAnimation(transition, {
-        defaultTargetId,
-        defaultId: `${idPrefix}-transition-${index}`,
-        animationPath: `${animationPathPrefix}.transitions[${index}]`,
-      }),
-    );
-  });
-};
-
 const ensureDialogueContentItems = (content, path) => {
   if (content === undefined) {
     return [];
@@ -4323,20 +4286,6 @@ export const addLayout = (
       return state;
     }
 
-    if (
-      Array.isArray(layout.transitions) &&
-      !isLineCompleted &&
-      !skipTransitionsAndAnimations
-    ) {
-      pushNormalizedLayoutTransitions({
-        animations,
-        transitions: layout.transitions,
-        defaultTargetId: `layout-${presentationState.layout.resourceId}`,
-        idPrefix: `layout-${presentationState.layout.resourceId}`,
-        animationPathPrefix: "layout",
-      });
-    }
-
     const layoutContainer = {
       id: `layout-${presentationState.layout.resourceId}`,
       type: "container",
@@ -4488,7 +4437,7 @@ export const addOverlayStack = (
     skipTransitionsAndAnimations,
   },
 ) => {
-  const { elements, animations } = state;
+  const { elements } = state;
   if (overlayStack && overlayStack.length > 0) {
     // Add each overlay from the stack above the base presentation.
     overlayStack.forEach((overlay, index) => {
@@ -4497,18 +4446,6 @@ export const addOverlayStack = (
       if (!layout) {
         console.warn(`Overlay layout not found: ${overlay.resourceId}`);
         return;
-      }
-
-      if (Array.isArray(layout.transitions)) {
-        if (!skipTransitionsAndAnimations) {
-          pushNormalizedLayoutTransitions({
-            animations,
-            transitions: layout.transitions,
-            defaultTargetId: `overlayStack-${index}`,
-            idPrefix: `overlayStack-${index}`,
-            animationPathPrefix: `overlayStack[${index}]`,
-          });
-        }
       }
 
       // Create a container for this overlay
@@ -4608,7 +4545,7 @@ export const addConfirmDialog = (
     skipTransitionsAndAnimations,
   },
 ) => {
-  const { elements, animations } = state;
+  const { elements } = state;
 
   if (!confirmDialog?.resourceId) {
     return state;
@@ -4618,16 +4555,6 @@ export const addConfirmDialog = (
   if (!layout) {
     console.warn(`ConfirmDialog layout not found: ${confirmDialog.resourceId}`);
     return state;
-  }
-
-  if (Array.isArray(layout.transitions) && !skipTransitionsAndAnimations) {
-    pushNormalizedLayoutTransitions({
-      animations,
-      transitions: layout.transitions,
-      defaultTargetId: "confirmDialog",
-      idPrefix: "confirmDialog",
-      animationPathPrefix: "confirmDialog",
-    });
   }
 
   const confirmDialogContainer = {

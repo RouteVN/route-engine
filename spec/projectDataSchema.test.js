@@ -461,6 +461,116 @@ describe("projectData schema", () => {
     expect(validateProjectData.errors).toBeNull();
   });
 
+  it("rejects removed layout.transitions resources", () => {
+    const projectData = createMinimalProjectData({
+      resources: {
+        layouts: {
+          legacyAnimatedLayout: {
+            elements: [],
+            transitions: [
+              {
+                id: "legacy-fade",
+                type: "update",
+                tween: {
+                  alpha: {
+                    keyframes: [{ duration: 300, value: 1 }],
+                  },
+                },
+              },
+            ],
+          },
+        },
+      },
+    });
+
+    expect(validateProjectData(projectData)).toBe(false);
+    expect(validateProjectData.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          instancePath: "/resources/layouts/legacyAnimatedLayout/transitions",
+          keyword: "false schema",
+        }),
+      ]),
+    );
+  });
+
+  it("accepts inline shader filters on nested layout elements", () => {
+    const projectData = createMinimalProjectData({
+      resources: {
+        layouts: {
+          shadedHud: {
+            elements: [
+              {
+                id: "hud",
+                type: "container",
+                children: [
+                  {
+                    id: "portrait",
+                    type: "sprite",
+                    imageId: "portrait",
+                    filters: [
+                      {
+                        id: "shade",
+                        type: "shader",
+                        time: true,
+                        parameters: {
+                          strength: 0.6,
+                        },
+                        source: {
+                          webgl: {
+                            fragment: "void main() {}",
+                          },
+                          webgpu: {
+                            source: "@fragment fn mainFragment() {}",
+                          },
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    });
+
+    expect(validateProjectData(projectData)).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
+
+  it("rejects malformed layout shader filter envelopes", () => {
+    const projectData = createMinimalProjectData({
+      resources: {
+        layouts: {
+          shadedHud: {
+            elements: [
+              {
+                id: "portrait",
+                type: "sprite",
+                imageId: "portrait",
+                filters: [{ type: "shader" }],
+              },
+            ],
+          },
+        },
+      },
+    });
+
+    expect(validateProjectData(projectData)).toBe(false);
+    expect(validateProjectData.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          instancePath: "/resources/layouts/shadedHud/elements/0/filters/0",
+          keyword: "required",
+          params: {
+            missingProperty: "id",
+          },
+        }),
+      ]),
+    );
+  });
+
   it("accepts project-configured runtime defaults", () => {
     expect(
       validateProjectData(
