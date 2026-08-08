@@ -76,6 +76,7 @@ const FORM_ACTION_TYPES = new Set(["submitForm", "cancelForm"]);
 const SHOW_IMAGE_GALLERY_VARIANT_ACTION_TYPE = "showImageGalleryVariant";
 const PLAY_MUSIC_ROOM_TRACK_ACTION_TYPE = "playMusicRoomTrack";
 const START_SCENE_REPLAY_ACTION_TYPE = "startSceneReplay";
+const BGM_RENDER_CHANNEL_ID = "channel:bgm";
 const PLAYBACK_DIRTY_ACTION_TYPES = new Set([
   "startAutoMode",
   "stopAutoMode",
@@ -151,6 +152,10 @@ export default function createRouteEngine(options) {
   let _renderPersistentAnimationMetadata = new Map();
   let _audioEffectOccurrenceSequence = 0;
   let _activeAudioEffect = null;
+  let _pendingAudioEffectOccurrences = [];
+  let _hasCommittedRenderState = false;
+  let _committedBgmChannel = null;
+  let _pendingEnteredLineBgmHandoff = null;
   let _acceptedLineBgmActionOccurrences = new Map();
   let _canonicalProjectData;
   let _l10nData;
@@ -409,16 +414,45 @@ export default function createRouteEngine(options) {
     }
   };
 
-  const captureCurrentBgmChannel = ({ previous = false } = {}) => {
+  const captureCurrentBgmChannel = () => {
     const systemState = _systemStore.selectSystemState();
     return createBgmChannelNode({
-      presentationState: previous
-        ? _systemStore.selectPreviousPresentationState()
-        : _systemStore.selectPresentationState(),
+      presentationState: _systemStore.selectPresentationState(),
       resources: systemState.projectData?.resources,
       runtime: _systemStore.selectRuntime(),
       musicRoomPlayer: systemState.global?.musicRoomPlayer,
     });
+  };
+
+  const captureOutgoingBgmChannel = () =>
+    structuredClone(
+      _hasCommittedRenderState
+        ? _committedBgmChannel
+        : captureCurrentBgmChannel(),
+    );
+
+  const getSceneIdForSection = (sectionId) => {
+    const scenes =
+      _systemStore.selectSystemState().projectData?.story?.scenes ?? {};
+    return Object.entries(scenes).find(
+      ([, scene]) => scene?.sections?.[sectionId],
+    )?.[0];
+  };
+
+  const finalizePendingAudioEffectOccurrences = () => {
+    if (_pendingAudioEffectOccurrences.length === 0) return;
+
+    const skipsAudioEffects =
+      _systemStore.selectRuntime()?.skipTransitionsAndAnimations === true;
+    const activeEffectId = skipsAudioEffects ? null : _activeAudioEffect?.id;
+    _pendingAudioEffectOccurrences.forEach((occurrence) => {
+      occurrence.status =
+        occurrence.effect?.id === activeEffectId ? "active" : "settled";
+    });
+    if (skipsAudioEffects) {
+      _activeAudioEffect = null;
+    }
+    _pendingAudioEffectOccurrences = [];
   };
 
   const acceptBgmActionOccurrence = (
@@ -433,9 +467,11 @@ export default function createRouteEngine(options) {
     const lineEntryId = _systemStore.selectPlaybackLineEntryId?.() ?? 0;
     const relativeActionPath = (options.actionPath ?? ["bgm"]).join(".");
     const pointer = _systemStore.selectCurrentPointer()?.pointer;
+    const sceneId =
+      pointer?.sceneId ?? getSceneIdForSection(pointer?.sectionId);
     const actionPath =
       options.rollbackSource === "line" && pointer
-        ? `story.scenes[${JSON.stringify(pointer.sceneId)}].sections[${JSON.stringify(pointer.sectionId)}].lines[${JSON.stringify(pointer.lineId)}].actions.${relativeActionPath}`
+        ? `story.scenes[${JSON.stringify(sceneId)}].sections[${JSON.stringify(pointer.sectionId)}].lines[${JSON.stringify(pointer.lineId)}].actions.${relativeActionPath}`
         : relativeActionPath;
     const lineOccurrenceKey =
       options.rollbackSource === "line"
@@ -462,12 +498,10 @@ export default function createRouteEngine(options) {
       previousChannel,
       nextChannel,
     });
-    const skipsAudioEffects =
-      _systemStore.selectRuntime()?.skipTransitionsAndAnimations === true;
     occurrence.effect = effect ? structuredClone(effect) : null;
-    occurrence.status = effect && !skipsAudioEffects ? "active" : "settled";
-    _activeAudioEffect =
-      occurrence.status === "active" ? structuredClone(effect) : null;
+    occurrence.status = effect ? "pending" : "settled";
+    _activeAudioEffect = effect ? structuredClone(effect) : null;
+    _pendingAudioEffectOccurrences.push(occurrence);
 
     if (lineOccurrenceKey) {
       _acceptedLineBgmActionOccurrences.set(lineOccurrenceKey, occurrence);
@@ -556,6 +590,13 @@ export default function createRouteEngine(options) {
     _renderPersistentAnimationMetadata = new Map();
     _audioEffectOccurrenceSequence = 0;
     _activeAudioEffect = null;
+    _pendingAudioEffectOccurrences = [];
+    _hasCommittedRenderState = false;
+    _committedBgmChannel = null;
+    _pendingEnteredLineBgmHandoff = {
+      lineEntryId: _systemStore.selectPlaybackLineEntryId?.() ?? 0,
+      channel: null,
+    };
     _acceptedLineBgmActionOccurrences = new Map();
     _canonicalProjectData = canonicalProjectData;
     _l10nData = normalizedL10nData;
@@ -586,6 +627,10 @@ export default function createRouteEngine(options) {
     _restoredPersistentAnimationSessions = new Map();
     _renderPersistentAnimationMetadata = new Map();
     _activeAudioEffect = null;
+    _pendingAudioEffectOccurrences = [];
+    _hasCommittedRenderState = false;
+    _committedBgmChannel = null;
+    _pendingEnteredLineBgmHandoff = null;
     _acceptedLineBgmActionOccurrences = new Map();
     _playbackScheduleDirty = false;
     _automaticAttemptErrors.clear();
@@ -675,6 +720,14 @@ export default function createRouteEngine(options) {
     if (!_isActive || !_systemStore) {
       return;
     }
+
+    const committedBgmChannel = renderState?.audio?.find(
+      (node) => node?.id === BGM_RENDER_CHANNEL_ID,
+    );
+    _hasCommittedRenderState = true;
+    _committedBgmChannel = committedBgmChannel
+      ? structuredClone(committedBgmChannel)
+      : null;
 
     const renderId =
       typeof renderState?.id === "string" && renderState.id.length > 0
@@ -1095,6 +1148,14 @@ export default function createRouteEngine(options) {
     const pointerBeforeAction =
       _systemStore.selectCurrentPointer()?.pointer ?? null;
     const cursorBeforeAction = _systemStore.selectRollbackCursor?.() ?? null;
+    const capturesEnteredLineBgmHandoff =
+      isTerminalNavigationActionType(actionType);
+    const lineEntryIdBeforeAction = capturesEnteredLineBgmHandoff
+      ? (_systemStore.selectPlaybackLineEntryId?.() ?? 0)
+      : null;
+    const outgoingBgmChannel = capturesEnteredLineBgmHandoff
+      ? captureOutgoingBgmChannel()
+      : null;
     let storeCommitted = false;
     let result;
     try {
@@ -1131,6 +1192,18 @@ export default function createRouteEngine(options) {
     const pointerAfterAction =
       _systemStore.selectCurrentPointer()?.pointer ?? null;
     const cursorAfterAction = _systemStore.selectRollbackCursor?.() ?? null;
+    const lineEntryIdAfterAction = capturesEnteredLineBgmHandoff
+      ? (_systemStore.selectPlaybackLineEntryId?.() ?? 0)
+      : null;
+    if (
+      capturesEnteredLineBgmHandoff &&
+      lineEntryIdAfterAction !== lineEntryIdBeforeAction
+    ) {
+      _pendingEnteredLineBgmHandoff = {
+        lineEntryId: lineEntryIdAfterAction,
+        channel: outgoingBgmChannel,
+      };
+    }
     if (actionType === "saveSlot") {
       recordActiveRollbackSave(payload);
     } else if (actionType === "updateProjectData") {
@@ -1240,6 +1313,10 @@ export default function createRouteEngine(options) {
     ),
     audioEffectOccurrenceSequence: _audioEffectOccurrenceSequence,
     activeAudioEffect: _activeAudioEffect,
+    pendingAudioEffectOccurrences: _pendingAudioEffectOccurrences.slice(),
+    pendingEnteredLineBgmHandoff: _pendingEnteredLineBgmHandoff
+      ? structuredClone(_pendingEnteredLineBgmHandoff)
+      : null,
     acceptedLineBgmActionOccurrences: new Map(
       _acceptedLineBgmActionOccurrences,
     ),
@@ -1266,6 +1343,11 @@ export default function createRouteEngine(options) {
     );
     _audioEffectOccurrenceSequence = snapshot.audioEffectOccurrenceSequence;
     _activeAudioEffect = snapshot.activeAudioEffect;
+    _pendingAudioEffectOccurrences =
+      snapshot.pendingAudioEffectOccurrences.slice();
+    _pendingEnteredLineBgmHandoff = snapshot.pendingEnteredLineBgmHandoff
+      ? structuredClone(snapshot.pendingEnteredLineBgmHandoff)
+      : null;
     _acceptedLineBgmActionOccurrences = new Map(
       snapshot.acceptedLineBgmActionOccurrences,
     );
@@ -1311,6 +1393,8 @@ export default function createRouteEngine(options) {
                 routingSequence,
               );
             }
+
+            finalizePendingAudioEffectOccurrences();
 
             const settledPointer =
               _systemStore.selectCurrentPointer()?.pointer ?? null;
@@ -1393,7 +1477,7 @@ export default function createRouteEngine(options) {
     if (actionType === "bgm") {
       return runActionBatch(() => {
         const previousChannel = payload?.audioEffects
-          ? captureCurrentBgmChannel()
+          ? captureOutgoingBgmChannel()
           : null;
         dispatchStoreAction(actionType, payload);
         acceptBgmActionOccurrence(
@@ -1796,12 +1880,19 @@ export default function createRouteEngine(options) {
       );
     }
 
-    const previousBgmChannel =
-      actionType === "bgm" && processedPayloadWithActionOptions?.audioEffects
-        ? captureCurrentBgmChannel({
-            previous: options.rollbackSource === "line",
-          })
-        : null;
+    let previousBgmChannel = null;
+    if (
+      actionType === "bgm" &&
+      processedPayloadWithActionOptions?.audioEffects
+    ) {
+      const handoff = options.audioEffectHandoff;
+      if (handoff?.available) {
+        handoff.available = false;
+        previousBgmChannel = structuredClone(handoff.channel);
+      } else {
+        previousBgmChannel = captureOutgoingBgmChannel();
+      }
+    }
     dispatchStoreAction(actionType, processedPayloadWithActionOptions);
     if (actionType === "bgm") {
       acceptBgmActionOccurrence(
@@ -1933,6 +2024,12 @@ export default function createRouteEngine(options) {
 
     return runWithDeferredEffects(() => {
       const enteredPointer = _systemStore.selectCurrentPointer()?.pointer;
+      const enteredLineEntryId =
+        _systemStore.selectPlaybackLineEntryId?.() ?? 0;
+      const enteredLineBgmHandoff =
+        _pendingEnteredLineBgmHandoff?.lineEntryId === enteredLineEntryId
+          ? _pendingEnteredLineBgmHandoff
+          : null;
       const rollbackCursor = _systemStore.selectRollbackCursor?.() ?? null;
       const pendingRollbackLineEntrySaveHandoff =
         _pendingRollbackLineEntrySaveHandoff;
@@ -1956,6 +2053,12 @@ export default function createRouteEngine(options) {
               dialogueHistoryLineEntry?.reuseExistingOccurrence === true,
             dialogueHistoryForceNewOccurrence:
               dialogueHistoryLineEntry?.forceNewOccurrence === true,
+            audioEffectHandoff: enteredLineBgmHandoff
+              ? {
+                  available: true,
+                  channel: structuredClone(enteredLineBgmHandoff.channel),
+                }
+              : null,
           });
         } catch (error) {
           _pendingRollbackLineEntrySaveHandoff =
@@ -1964,6 +2067,10 @@ export default function createRouteEngine(options) {
           throw error;
         }
         handledLineActions = true;
+      }
+
+      if (_pendingEnteredLineBgmHandoff?.lineEntryId === enteredLineEntryId) {
+        _pendingEnteredLineBgmHandoff = null;
       }
 
       // The entered line may replace an already-enabled persistent auto config.

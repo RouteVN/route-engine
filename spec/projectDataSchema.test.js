@@ -3381,6 +3381,39 @@ describe("projectData schema", () => {
     expect(validateProjectData.errors).toBeNull();
   });
 
+  it.each([
+    ["volume", 101],
+    ["pan", 1.01],
+    ["playbackRate", -0.01],
+  ])(
+    "rejects an absolute %s target keyframe with an out-of-range startValue",
+    (property, startValue) => {
+      const projectData = createMinimalProjectData({
+        resources: {
+          audioEffects: {
+            invalidStart: {
+              type: "update",
+              tween: {
+                [property]: {
+                  keyframes: [
+                    {
+                      startValue,
+                      value: "target",
+                      duration: 100,
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        },
+      });
+
+      expect(validateProjectData(projectData)).toBe(false);
+      expect(validateProjectData.errors).not.toBeNull();
+    },
+  );
+
   it("rejects legacy audio effect naming, legacy BGM selection, and invalid resources", () => {
     expect(
       validatePresentationActions({

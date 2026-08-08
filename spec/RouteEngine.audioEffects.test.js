@@ -79,7 +79,7 @@ const createProjectData = () => ({
   },
 });
 
-const createEngine = () => {
+const createEngine = ({ projectData = createProjectData(), global } = {}) => {
   let engine;
   const handlePendingEffects = (effects) => {
     for (const effect of effects) {
@@ -89,7 +89,7 @@ const createEngine = () => {
     }
   };
   engine = createRouteEngine({ handlePendingEffects });
-  engine.init({ initialState: { projectData: createProjectData() } });
+  engine.init({ initialState: { projectData, global } });
   const initialRender = engine.selectRenderState();
   engine.commitRenderState(initialRender);
   return engine;
@@ -194,5 +194,147 @@ describe("RouteEngine audioEffects occurrences", () => {
 
     engine.init({ initialState: { projectData: createProjectData() } });
     expect(engine.selectRenderState().audioEffects).toBeUndefined();
+  });
+
+  it("resolves a non-linear update against the committed outgoing BGM", () => {
+    const projectData = createProjectData();
+    const lines = projectData.story.scenes.scene.sections.section.lines;
+    lines.splice(3, 0, {
+      id: "skipped-different-source",
+      actions: {
+        bgm: {
+          volume: 50,
+          sounds: [{ id: "main", resourceId: "next" }],
+        },
+      },
+    });
+    const engine = createEngine({ projectData });
+
+    expect(() =>
+      engine.handleAction("jumpToLine", {
+        sectionId: "section",
+        lineId: "volume-update",
+      }),
+    ).not.toThrow();
+    expect(engine.selectRenderState().audioEffects?.[0]).toMatchObject({
+      targetId: "bgm:main",
+      properties: {
+        volume: {
+          update: {
+            keyframes: [expect.objectContaining({ value: 30 })],
+          },
+        },
+      },
+    });
+  });
+
+  it("carries the committed outgoing BGM across a section transition", () => {
+    const projectData = createProjectData();
+    projectData.story.scenes.scene.sections.destination = {
+      lines: [
+        {
+          id: "destination-update",
+          actions: {
+            bgm: {
+              volume: 25,
+              audioEffects: { resourceId: "smooth" },
+              sounds: [{ id: "main", resourceId: "old" }],
+            },
+          },
+        },
+      ],
+    };
+    const engine = createEngine({ projectData });
+
+    expect(() =>
+      engine.handleAction("sectionTransition", {
+        sectionId: "destination",
+      }),
+    ).not.toThrow();
+    expect(engine.selectRenderState().audioEffects?.[0]).toMatchObject({
+      targetId: "bgm:main",
+      properties: {
+        volume: {
+          update: {
+            keyframes: [expect.objectContaining({ value: 25 })],
+          },
+        },
+      },
+    });
+  });
+
+  it("resolves a rollback update against the committed outgoing BGM", () => {
+    const projectData = createProjectData();
+    const lines = projectData.story.scenes.scene.sections.section.lines;
+    lines.splice(3, 0, {
+      id: "authored-predecessor",
+      actions: {
+        bgm: {
+          volume: 50,
+          sounds: [{ id: "main", resourceId: "next" }],
+        },
+      },
+    });
+    lines.push({
+      id: "after-update",
+      actions: {
+        bgm: {
+          volume: 30,
+          sounds: [{ id: "main", resourceId: "old" }],
+        },
+      },
+    });
+    const engine = createEngine({ projectData });
+    engine.handleAction("jumpToLine", {
+      sectionId: "section",
+      lineId: "authored-predecessor",
+    });
+    expect(() => enterNextLine(engine)).not.toThrow();
+    engine.commitRenderState(engine.selectRenderState());
+    enterNextLine(engine);
+    engine.commitRenderState(engine.selectRenderState());
+
+    expect(() =>
+      engine.handleAction("rollbackToLine", {
+        sectionId: "section",
+        lineId: "volume-update",
+      }),
+    ).not.toThrow();
+    expect(engine.selectRenderState().audio[0].children[0]).toMatchObject({
+      id: "bgm:main",
+      src: "old.ogg",
+      volume: 30,
+    });
+  });
+
+  it("evaluates transition skipping after the complete line batch", () => {
+    const projectData = createProjectData();
+    projectData.story.scenes.scene.sections.section.lines[1].actions.setSkipTransitionsAndAnimations =
+      { value: false };
+    const engine = createEngine({
+      projectData,
+      global: {
+        runtime: { skipTransitionsAndAnimations: true },
+      },
+    });
+
+    enterNextLine(engine);
+
+    expect(engine.selectRuntime().skipTransitionsAndAnimations).toBe(false);
+    expect(engine.selectRenderState().audioEffects).toHaveLength(1);
+  });
+
+  it("uses the owning scene id in line-authored effect diagnostics", () => {
+    const projectData = createProjectData();
+    const scene = projectData.story.scenes.scene;
+    projectData.story.initialSceneId = "actual-scene";
+    projectData.story.scenes = { "actual-scene": scene };
+    scene.sections.section.lines[0].actions.bgm.audioEffects = {
+      resourceId: "missing",
+    };
+
+    expect(() => createEngine({ projectData })).toThrow(
+      'story.scenes["actual-scene"].sections["section"].lines["old"].actions.bgm.audioEffects.resourceId',
+    );
   });
 });

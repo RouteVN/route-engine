@@ -1,0 +1,108 @@
+---
+title: Audio Effects Nonlinear Handoff
+description: A BGM update after a jump resolves against the audio channel that was actually rendered before navigation.
+skipInitialScreenshot: true
+specs:
+  - a user click jumps over a line with a different BGM source
+  - the destination retains the rendered source and emits one volume update
+steps:
+  - action: click
+    x: 320
+    y: 180
+  - action: wait
+    ms: 250
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audio.0.children.0.src
+    value: 3ka3s
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect.type
+    value: audio-transition
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect.properties.volume.update.keyframes.0.value
+    value: 30
+  - action: assert
+    type: js
+    global: __vtAudioEffectOccurrenceCount
+    value: 1
+---
+screen:
+  width: 640
+  height: 360
+resources:
+  sounds:
+    rendered-theme:
+      fileId: 3ka3s
+    skipped-theme:
+      fileId: xk393
+  audioEffects:
+    smooth-volume:
+      type: update
+      tween:
+        volume:
+          keyframes:
+            - value: target
+              duration: 1000
+              easing: linear
+  colors:
+    jump:
+      hex: "#10131A"
+    destination:
+      hex: "#163A2C"
+  controls:
+    jump:
+      elements:
+        - id: jump
+          type: rect
+          width: 640
+          height: 360
+          colorId: jump
+          click:
+            payload:
+              actions:
+                jumpToLine:
+                  lineId: destination
+    destination:
+      elements:
+        - id: destination
+          type: rect
+          width: 640
+          height: 360
+          colorId: destination
+story:
+  initialSceneId: scene1
+  scenes:
+    scene1:
+      initialSectionId: section1
+      sections:
+        section1:
+          lines:
+            - id: rendered
+              actions:
+                control:
+                  resourceId: jump
+                bgm:
+                  volume: 80
+                  sounds:
+                    - id: main
+                      resourceId: rendered-theme
+            - id: skipped
+              actions:
+                bgm:
+                  volume: 80
+                  sounds:
+                    - id: main
+                      resourceId: skipped-theme
+            - id: destination
+              actions:
+                control:
+                  resourceId: destination
+                bgm:
+                  volume: 30
+                  audioEffects:
+                    resourceId: smooth-volume
+                  sounds:
+                    - id: main
+                      resourceId: rendered-theme

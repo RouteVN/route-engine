@@ -1,0 +1,103 @@
+---
+title: Audio Effects Batch Skip Disable
+description: An effect is emitted when its destination line disables transition skipping in the same action batch.
+skipInitialScreenshot: true
+specs:
+  - a user click enables transition skipping before entering the destination
+  - the destination BGM update and skip-disable action settle as one line batch
+  - the final render keeps the update because transition skipping is disabled
+steps:
+  - action: click
+    x: 320
+    y: 180
+  - action: wait
+    ms: 250
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audio.0.children.0.src
+    value: 3ka3s
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect.type
+    value: audio-transition
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect.properties.volume.update.keyframes.0.value
+    value: 30
+  - action: assert
+    type: js
+    global: __vtAudioEffectOccurrenceCount
+    value: 1
+---
+screen:
+  width: 640
+  height: 360
+resources:
+  sounds:
+    theme:
+      fileId: 3ka3s
+  audioEffects:
+    smooth-volume:
+      type: update
+      tween:
+        volume:
+          keyframes:
+            - value: target
+              duration: 1000
+              easing: linear
+  colors:
+    advance:
+      hex: "#10131A"
+    destination:
+      hex: "#163A2C"
+  controls:
+    advance-with-skip:
+      elements:
+        - id: advance
+          type: rect
+          width: 640
+          height: 360
+          colorId: advance
+          click:
+            payload:
+              actions:
+                setSkipTransitionsAndAnimations:
+                  value: true
+                nextLine: {}
+    destination:
+      elements:
+        - id: destination
+          type: rect
+          width: 640
+          height: 360
+          colorId: destination
+story:
+  initialSceneId: scene1
+  scenes:
+    scene1:
+      initialSectionId: section1
+      sections:
+        section1:
+          lines:
+            - id: rendered
+              actions:
+                control:
+                  resourceId: advance-with-skip
+                bgm:
+                  volume: 80
+                  sounds:
+                    - id: main
+                      resourceId: theme
+            - id: destination
+              actions:
+                control:
+                  resourceId: destination
+                bgm:
+                  volume: 30
+                  audioEffects:
+                    resourceId: smooth-volume
+                  sounds:
+                    - id: main
+                      resourceId: theme
+                setSkipTransitionsAndAnimations:
+                  value: false

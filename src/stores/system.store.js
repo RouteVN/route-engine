@@ -7347,7 +7347,6 @@ export const createSystemStore = (initialState, options = {}) => {
     selectSection,
     selectCurrentLine,
     selectPresentationState,
-    selectPreviousPresentationState,
     selectAutoForwardTimerDelay,
     selectPresentationChanges,
     selectSectionLineChanges,
