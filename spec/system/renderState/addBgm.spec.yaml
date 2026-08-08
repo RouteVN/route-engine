@@ -320,7 +320,7 @@ out:
   audio:
     - id: "channel:bgm"
       type: "audio-channel"
-      volume: 32
+      volume: 40
       muted: false
       pan: 0
       loop: true
@@ -329,11 +329,11 @@ out:
           type: "sound"
           src: "theme.mp3"
           loop: false
-          volume: 100
+          volume: 80
           startDelayMs: 0
         - id: "bgm:ambience"
           type: "sound"
           src: "ambience.mp3"
           loop: false
-          volume: 100
+          volume: 80
           startDelayMs: 12000

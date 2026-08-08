@@ -3888,6 +3888,7 @@ export const selectRenderState = ({ state }, options = {}) => {
     musicRoom,
     sceneReplay,
     musicRoomPlayer: cloneStateValue(state.global.musicRoomPlayer),
+    activeAudioEffect: options?.activeAudioEffect ?? null,
   });
   return renderState;
 };
@@ -7346,6 +7347,7 @@ export const createSystemStore = (initialState, options = {}) => {
     selectSection,
     selectCurrentLine,
     selectPresentationState,
+    selectPreviousPresentationState,
     selectAutoForwardTimerDelay,
     selectPresentationChanges,
     selectSectionLineChanges,

@@ -373,6 +373,14 @@ properties:
         $ref: "animationResource.yaml"
     additionalProperties: false
 
+  audioEffects:
+    type: object
+    description: Reusable BGM update and transition resources compiled to audioEffects
+    patternProperties:
+      "^.+$":
+        $ref: "audioEffectResource.yaml"
+    additionalProperties: false
+
   sounds:
     type: object
     description: Sounds, including bgm and sound effects

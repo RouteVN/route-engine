@@ -327,6 +327,18 @@ const init = async () => {
       render: (renderState) => {
         if (isVtCaptureMode()) {
           window.__vtLastRenderState = structuredClone(renderState);
+          const audioEffect = renderState.audioEffects?.[0] ?? null;
+          window.__vtLastAudioEffect =
+            audioEffect === null ? null : structuredClone(audioEffect);
+          window.__vtObservedAudioEffectIds ??= [];
+          if (
+            audioEffect &&
+            !window.__vtObservedAudioEffectIds.includes(audioEffect.id)
+          ) {
+            window.__vtObservedAudioEffectIds.push(audioEffect.id);
+          }
+          window.__vtAudioEffectOccurrenceCount =
+            window.__vtObservedAudioEffectIds.length;
         }
         routeGraphics.render(renderState);
       },

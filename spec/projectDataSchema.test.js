@@ -3325,4 +3325,104 @@ describe("projectData schema", () => {
       expect(validateSystemActions.errors).not.toBeNull();
     }
   });
+
+  it("accepts reusable audio transition and update resources selected by canonical BGM", () => {
+    const projectData = createMinimalProjectData({
+      resources: {
+        sounds: { theme: { fileId: "theme.ogg" } },
+        audioEffects: {
+          crossfade: {
+            name: "Crossfade",
+            type: "transition",
+            prev: {
+              fade: {
+                delay: 100,
+                duration: 600,
+                easing: "easeInOutSine",
+              },
+            },
+            next: { fade: { duration: 900 } },
+          },
+          smooth: {
+            type: "update",
+            tween: {
+              volume: {
+                keyframes: [
+                  {
+                    startValue: 75,
+                    value: "target",
+                    duration: 500,
+                  },
+                ],
+              },
+              pan: {
+                keyframes: [
+                  { value: 0, duration: 100 },
+                  { value: "target", duration: 400 },
+                ],
+              },
+              playbackRate: {
+                keyframes: [{ value: "target", duration: 250 }],
+              },
+            },
+          },
+        },
+      },
+    });
+    projectData.story.scenes.scene1.sections.section1.lines[0].actions.bgm = {
+      audioEffects: {
+        resourceId: "crossfade",
+        playback: { speed: 2 },
+      },
+      sounds: [{ id: "main", resourceId: "theme" }],
+    };
+
+    expect(validateProjectData(projectData)).toBe(true);
+    expect(validateProjectData.errors).toBeNull();
+  });
+
+  it("rejects legacy audio effect naming, legacy BGM selection, and invalid resources", () => {
+    expect(
+      validatePresentationActions({
+        bgm: {
+          resourceId: "theme",
+          audioEffects: { resourceId: "crossfade" },
+        },
+      }),
+    ).toBe(false);
+
+    expect(
+      validatePresentationActions({
+        bgm: {
+          animations: { resourceId: "crossfade" },
+          sounds: [{ id: "main", resourceId: "theme" }],
+        },
+      }),
+    ).toBe(false);
+
+    const legacyNamedProjectData = createMinimalProjectData({
+      resources: {
+        audioAnimations: {
+          crossfade: {
+            type: "transition",
+            next: { fade: { duration: 100 } },
+          },
+        },
+      },
+    });
+    expect(validateProjectData(legacyNamedProjectData)).toBe(false);
+
+    const projectData = createMinimalProjectData({
+      resources: {
+        audioEffects: {
+          invalid: {
+            type: "update",
+            prev: { fade: { duration: 100 } },
+          },
+        },
+      },
+    });
+    expect(validateProjectData(projectData)).toBe(false);
+    expect(validateProjectData.errors).not.toBeNull();
+  });
 });

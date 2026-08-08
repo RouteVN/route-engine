@@ -1,0 +1,142 @@
+---
+title: Canonical Audio Effects Handoff
+description: Isolated browser fixture for one Engine-owned BGM handoff occurrence retained across a mute settings render.
+skipInitialScreenshot: true
+specs:
+  - a user gesture starts the previous BGM before the selected resource replaces it
+  - the engine emits one audioEffects handoff targeting the stable BGM sound
+  - a mute settings render retains the same occurrence instead of restarting it
+steps:
+  - action: click
+    x: 320
+    y: 180
+  - action: wait
+    ms: 250
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audio.0.children.0.src
+    value: 3ka3s
+  - action: click
+    x: 320
+    y: 180
+  - action: wait
+    ms: 250
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audio.0.children.0.src
+    value: xk393
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect.type
+    value: audio-transition
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect.targetId
+    value: bgm:main
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect.properties.volume.exit.keyframes.0.value
+    value: 0
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect.properties.volume.enter.keyframes.0.value
+    value: 60
+  - action: assert
+    type: js
+    global: __vtAudioEffectOccurrenceCount
+    value: 1
+  - action: click
+    x: 320
+    y: 180
+  - action: wait
+    ms: 100
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audio.0.muted
+    value: true
+  - action: assert
+    type: js
+    global: __vtAudioEffectOccurrenceCount
+    value: 1
+---
+screen:
+  width: 640
+  height: 360
+resources:
+  sounds:
+    old-theme:
+      fileId: 3ka3s
+    new-theme:
+      fileId: xk393
+  audioEffects:
+    crossfade:
+      type: transition
+      prev:
+        fade:
+          duration: 1000
+          easing: easeInOutSine
+      next:
+        fade:
+          duration: 1000
+          easing: easeInOutSine
+  colors:
+    advance:
+      hex: "#10131A"
+    mute:
+      hex: "#421B1B"
+  controls:
+    advance:
+      elements:
+        - id: advance
+          type: rect
+          width: 640
+          height: 360
+          colorId: advance
+          click:
+            payload:
+              actions:
+                nextLine: {}
+    mute:
+      elements:
+        - id: mute
+          type: rect
+          width: 640
+          height: 360
+          colorId: mute
+          click:
+            payload:
+              actions:
+                setMuteAll:
+                  value: true
+story:
+  initialSceneId: scene1
+  scenes:
+    scene1:
+      initialSectionId: section1
+      sections:
+        section1:
+          lines:
+            - id: silent
+              actions:
+                control:
+                  resourceId: advance
+            - id: old-theme
+              actions:
+                control:
+                  resourceId: advance
+                bgm:
+                  volume: 80
+                  sounds:
+                    - id: main
+                      resourceId: old-theme
+            - id: crossfade
+              actions:
+                control:
+                  resourceId: mute
+                bgm:
+                  volume: 60
+                  audioEffects:
+                    resourceId: crossfade
+                  sounds:
+                    - id: main
+                      resourceId: new-theme

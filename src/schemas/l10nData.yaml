@@ -242,6 +242,7 @@ definitions:
           [
             resource.achievement,
             resource.animation,
+            resource.audioEffect,
             resource.character,
             resource.color,
             resource.control,
@@ -278,6 +279,12 @@ definitions:
             const: resource.animation
           payload:
             $ref: "projectData/resources.yaml#/properties/animations/patternProperties/^.+$"
+        required: [type, payload]
+      - properties:
+          type:
+            const: resource.audioEffect
+          payload:
+            $ref: "projectData/resources.yaml#/properties/audioEffects/patternProperties/^.+$"
         required: [type, payload]
       - properties:
           type:

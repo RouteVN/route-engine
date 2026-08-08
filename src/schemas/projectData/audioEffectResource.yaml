@@ -1,0 +1,212 @@
+$schema: http://json-schema.org/draft-07/schema#
+title: Audio Effect Resource
+description: Reusable BGM transition or retained-property update compiled to Route Graphics audioEffects
+type: object
+required: [type]
+$defs:
+  easing:
+    type: string
+    enum:
+      - linear
+      - easeInQuad
+      - easeOutQuad
+      - easeInOutQuad
+      - easeInCubic
+      - easeOutCubic
+      - easeInOutCubic
+      - easeInQuart
+      - easeOutQuart
+      - easeInOutQuart
+      - easeInQuint
+      - easeOutQuint
+      - easeInOutQuint
+      - easeInSine
+      - easeOutSine
+      - easeInOutSine
+      - easeInExpo
+      - easeOutExpo
+      - easeInOutExpo
+      - easeInCirc
+      - easeOutCirc
+      - easeInOutCirc
+      - easeInBack
+      - easeOutBack
+      - easeInOutBack
+      - easeInBounce
+      - easeOutBounce
+      - easeInOutBounce
+      - easeInElastic
+      - easeOutElastic
+      - easeInOutElastic
+  fade:
+    type: object
+    required: [duration]
+    properties:
+      delay:
+        type: number
+        minimum: 0
+        default: 0
+      duration:
+        type: number
+        minimum: 0
+      easing:
+        $ref: "#/$defs/easing"
+    additionalProperties: false
+  transitionSide:
+    type: object
+    minProperties: 1
+    properties:
+      fade:
+        $ref: "#/$defs/fade"
+    additionalProperties: false
+  keyframeValue:
+    oneOf:
+      - type: number
+      - const: target
+  keyframe:
+    type: object
+    required: [value, duration]
+    properties:
+      startValue:
+        type: number
+      value:
+        $ref: "#/$defs/keyframeValue"
+      duration:
+        type: number
+        minimum: 0
+      delay:
+        type: number
+        minimum: 0
+        default: 0
+      easing:
+        $ref: "#/$defs/easing"
+      relative:
+        type: boolean
+        default: false
+    additionalProperties: false
+  boundedKeyframe:
+    allOf:
+      - $ref: "#/$defs/keyframe"
+      - if:
+          properties:
+            value:
+              type: number
+            relative:
+              const: false
+          required: [value]
+        then:
+          properties:
+            value:
+              minimum: 0
+              maximum: 100
+            startValue:
+              minimum: 0
+              maximum: 100
+  panKeyframe:
+    allOf:
+      - $ref: "#/$defs/keyframe"
+      - if:
+          properties:
+            value:
+              type: number
+            relative:
+              const: false
+          required: [value]
+        then:
+          properties:
+            value:
+              minimum: -1
+              maximum: 1
+            startValue:
+              minimum: -1
+              maximum: 1
+  playbackRateKeyframe:
+    allOf:
+      - $ref: "#/$defs/keyframe"
+      - if:
+          properties:
+            value:
+              type: number
+            relative:
+              const: false
+          required: [value]
+        then:
+          properties:
+            value:
+              minimum: 0
+            startValue:
+              minimum: 0
+  volumeTweenProperty:
+    type: object
+    required: [keyframes]
+    properties:
+      keyframes:
+        type: array
+        minItems: 1
+        items:
+          $ref: "#/$defs/boundedKeyframe"
+    additionalProperties: false
+  panTweenProperty:
+    type: object
+    required: [keyframes]
+    properties:
+      keyframes:
+        type: array
+        minItems: 1
+        items:
+          $ref: "#/$defs/panKeyframe"
+    additionalProperties: false
+  playbackRateTweenProperty:
+    type: object
+    required: [keyframes]
+    properties:
+      keyframes:
+        type: array
+        minItems: 1
+        items:
+          $ref: "#/$defs/playbackRateKeyframe"
+    additionalProperties: false
+  updateTween:
+    type: object
+    minProperties: 1
+    properties:
+      volume:
+        $ref: "#/$defs/volumeTweenProperty"
+      pan:
+        $ref: "#/$defs/panTweenProperty"
+      playbackRate:
+        $ref: "#/$defs/playbackRateTweenProperty"
+    additionalProperties: false
+properties:
+  name:
+    type: string
+  type:
+    enum: [update, transition]
+  tween:
+    $ref: "#/$defs/updateTween"
+  prev:
+    $ref: "#/$defs/transitionSide"
+  next:
+    $ref: "#/$defs/transitionSide"
+allOf:
+  - if:
+      properties:
+        type:
+          const: update
+    then:
+      required: [tween]
+      not:
+        anyOf:
+          - required: [prev]
+          - required: [next]
+  - if:
+      properties:
+        type:
+          const: transition
+    then:
+      anyOf:
+        - required: [prev]
+        - required: [next]
+      not:
+        required: [tween]
+additionalProperties: false
