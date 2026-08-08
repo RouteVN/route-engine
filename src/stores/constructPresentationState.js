@@ -73,7 +73,9 @@ const getAnimationsOnlyState = (presentation, hasResourceFn) => {
  * @returns {{ hasValidItems: boolean, processedItems: Array }}
  */
 const hasItemAppearance = (item) =>
-  hasAuthoredAlpha(item) || hasDefinedProperty(item, "blur");
+  hasAuthoredAlpha(item) ||
+  hasDefinedProperty(item, "blur") ||
+  hasDefinedProperty(item, "filters");
 
 const ITEM_TRANSFORM_FIELDS = [
   "x",
@@ -311,12 +313,23 @@ const applyPersistentItemAppearance = (item, previousItem) => {
     item.blur = clonePresentationValue(previousItem.blur);
   }
 
+  if (
+    !hasDefinedProperty(item, "filters") &&
+    hasDefinedProperty(previousItem, "filters")
+  ) {
+    item.filters = clonePresentationValue(previousItem.filters);
+  }
+
   if (hasOwnProperty(item, "opacity") && item.opacity === undefined) {
     delete item.opacity;
   }
 
   if (hasOwnProperty(item, "blur") && item.blur === undefined) {
     delete item.blur;
+  }
+
+  if (hasOwnProperty(item, "filters") && item.filters === undefined) {
+    delete item.filters;
   }
 
   return item;
@@ -592,6 +605,7 @@ export const background = (state, presentation) => {
     const hasColorId = hasDefinedProperty(presentation.background, "colorId");
     const hasOpacity = hasAuthoredAlpha(presentation.background);
     const hasBlur = hasDefinedProperty(presentation.background, "blur");
+    const hasFilters = hasDefinedProperty(presentation.background, "filters");
     const hasTransformId = hasDefinedProperty(
       presentation.background,
       "transformId",
@@ -608,6 +622,7 @@ export const background = (state, presentation) => {
         hasDefinedProperty(p, "colorId") ||
         hasAuthoredAlpha(p) ||
         hasDefinedProperty(p, "blur") ||
+        hasDefinedProperty(p, "filters") ||
         hasDefinedProperty(p, "transformId") ||
         hasBackgroundTransform(p) ||
         hasBackgroundResourcePlayback(p),
@@ -628,6 +643,7 @@ export const background = (state, presentation) => {
       !hasColorId &&
       !hasOpacity &&
       !hasBlur &&
+      !hasFilters &&
       !hasTransformId &&
       !hasTransform &&
       !hasResourcePlayback
@@ -676,6 +692,12 @@ export const background = (state, presentation) => {
       nextBackground.blur = clonePresentationValue(previousBackground.blur);
     }
 
+    if (!hasFilters && hasDefinedProperty(previousBackground, "filters")) {
+      nextBackground.filters = clonePresentationValue(
+        previousBackground.filters,
+      );
+    }
+
     if (
       hasOwnProperty(nextBackground, "resourceId") &&
       nextBackground.resourceId === undefined
@@ -716,6 +738,13 @@ export const background = (state, presentation) => {
       nextBackground.blur === undefined
     ) {
       delete nextBackground.blur;
+    }
+
+    if (
+      hasOwnProperty(nextBackground, "filters") &&
+      nextBackground.filters === undefined
+    ) {
+      delete nextBackground.filters;
     }
 
     for (const field of BACKGROUND_RESOURCE_PLAYBACK_FIELDS) {

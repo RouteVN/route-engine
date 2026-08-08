@@ -618,6 +618,79 @@ describe("projectData schema", () => {
     );
   });
 
+  it("accepts inline shader filters on background, character, and visual actions", () => {
+    const shaderFilter = {
+      id: "shade",
+      type: "shader",
+      time: true,
+      parameters: {
+        strength: 0.6,
+        textStyle: 0.25,
+        textStyleId: 0,
+      },
+      source: {
+        webgl: {
+          fragment: "void main() {}",
+        },
+        webgpu: {
+          source: "@fragment fn mainFragment() {}",
+        },
+      },
+    };
+
+    expect(
+      validatePresentationActions({
+        background: {
+          resourceId: "forest",
+          filters: [shaderFilter],
+        },
+        character: {
+          items: [
+            {
+              id: "lead",
+              transformId: "center",
+              sprites: [{ id: "body", resourceId: "leadBody" }],
+              filters: [shaderFilter],
+            },
+          ],
+        },
+        visual: {
+          items: [
+            {
+              id: "fog",
+              resourceId: "fog",
+              transformId: "fullscreen",
+              filters: [shaderFilter],
+            },
+          ],
+        },
+      }),
+    ).toBe(true);
+    expect(validatePresentationActions.errors).toBeNull();
+  });
+
+  it("rejects malformed action shader filter envelopes", () => {
+    expect(
+      validatePresentationActions({
+        background: {
+          resourceId: "forest",
+          filters: [{ type: "shader" }],
+        },
+      }),
+    ).toBe(false);
+    expect(validatePresentationActions.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          instancePath: "/background/filters/0",
+          keyword: "required",
+          params: {
+            missingProperty: "id",
+          },
+        }),
+      ]),
+    );
+  });
+
   it("accepts project-configured runtime defaults", () => {
     expect(
       validateProjectData(

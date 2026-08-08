@@ -1486,12 +1486,16 @@ const getBackgroundBlur = (background = {}) => {
   return background.blur;
 };
 
+const getShaderFilters = (value = {}) =>
+  Array.isArray(value.filters) ? value.filters : undefined;
+
 const getBackgroundAppearance = (
   background = {},
   { includeDefaultAlpha = false } = {},
 ) => {
   const alpha = getBackgroundAlpha(background);
   const blur = getBackgroundBlur(background);
+  const filters = getShaderFilters(background);
   const appearance = {};
 
   if (includeDefaultAlpha || alpha !== undefined) {
@@ -1500,6 +1504,10 @@ const getBackgroundAppearance = (
 
   if (blur) {
     appearance.blur = blur;
+  }
+
+  if (filters) {
+    appearance.filters = filters;
   }
 
   return appearance;
@@ -1535,7 +1543,16 @@ const getScreenAppearance = (screenState = {}) => {
   return appearance;
 };
 
-const getItemAppearance = (item = {}) => getScreenAppearance(item);
+const getItemAppearance = (item = {}) => {
+  const appearance = getScreenAppearance(item);
+  const filters = getShaderFilters(item);
+
+  if (filters) {
+    appearance.filters = filters;
+  }
+
+  return appearance;
+};
 
 const resolveElementScale = (transform, item, scaleField, flipField) => {
   const scale = item[scaleField] ?? transform[scaleField];
@@ -1591,6 +1608,7 @@ const VISUAL_TEXT_RESERVED_FIELDS = [
   "alpha",
   "opacity",
   "blur",
+  "filters",
   "animations",
 ];
 
@@ -1769,6 +1787,11 @@ const createBackgroundColorElement = ({
     const alpha = getBackgroundAlpha(background);
     if (alpha !== undefined) {
       element.alpha = alpha;
+    }
+
+    const filters = getShaderFilters(background);
+    if (filters) {
+      element.filters = filters;
     }
   }
 
@@ -3258,6 +3281,9 @@ export const addVisuals = (
               ...getElementTransform(transform, item),
               alpha: itemAppearance.alpha ?? item.alpha ?? 1,
               ...(itemAppearance.blur ? { blur: itemAppearance.blur } : {}),
+              ...(itemAppearance.filters
+                ? { filters: itemAppearance.filters }
+                : {}),
             },
           });
           if (element) {
