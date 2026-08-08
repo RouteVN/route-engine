@@ -151,6 +151,20 @@ const createMinimalProjectData = (overrides = {}) => ({
   ...overrides,
 });
 
+const createAudioUpdateProjectData = (property, keyframes) =>
+  createMinimalProjectData({
+    resources: {
+      audioEffects: {
+        testedUpdate: {
+          type: "update",
+          tween: {
+            [property]: { keyframes },
+          },
+        },
+      },
+    },
+  });
+
 const createMinimalL10nData = (patches = []) => ({
   packages: {
     japanese: {
@@ -3382,35 +3396,85 @@ describe("projectData schema", () => {
   });
 
   it.each([
-    ["volume", 101],
+    ["volume", -0.01, undefined],
+    ["volume", 100.01, false],
+    ["pan", -1.01, undefined],
+    ["pan", 1.01, false],
+    ["playbackRate", -0.01, undefined],
+  ])(
+    "rejects an absolute %s target keyframe with startValue %s",
+    (property, startValue, relative) => {
+      const keyframe = {
+        startValue,
+        value: "target",
+        duration: 100,
+        ...(relative === undefined ? {} : { relative }),
+      };
+
+      expect(
+        validateProjectData(createAudioUpdateProjectData(property, [keyframe])),
+      ).toBe(false);
+      expect(validateProjectData.errors).not.toBeNull();
+    },
+  );
+
+  it.each([
+    ["volume", -0.01],
+    ["volume", 100.01],
+    ["pan", -1.01],
     ["pan", 1.01],
     ["playbackRate", -0.01],
   ])(
-    "rejects an absolute %s target keyframe with an out-of-range startValue",
-    (property, startValue) => {
-      const projectData = createMinimalProjectData({
-        resources: {
-          audioEffects: {
-            invalidStart: {
-              type: "update",
-              tween: {
-                [property]: {
-                  keyframes: [
-                    {
-                      startValue,
-                      value: "target",
-                      duration: 100,
-                    },
-                  ],
-                },
-              },
-            },
-          },
-        },
-      });
-
-      expect(validateProjectData(projectData)).toBe(false);
+    "rejects an out-of-range absolute numeric %s keyframe value %s",
+    (property, value) => {
+      expect(
+        validateProjectData(
+          createAudioUpdateProjectData(property, [
+            { value, duration: 50 },
+            { value: "target", duration: 50 },
+          ]),
+        ),
+      ).toBe(false);
       expect(validateProjectData.errors).not.toBeNull();
+    },
+  );
+
+  it.each([
+    ["volume", 0],
+    ["volume", 100],
+    ["pan", -1],
+    ["pan", 1],
+    ["playbackRate", 0],
+  ])(
+    "accepts the absolute %s startValue boundary %s",
+    (property, startValue) => {
+      expect(
+        validateProjectData(
+          createAudioUpdateProjectData(property, [
+            { startValue, value: "target", duration: 100 },
+          ]),
+        ),
+      ).toBe(true);
+      expect(validateProjectData.errors).toBeNull();
+    },
+  );
+
+  it.each([
+    ["volume", -500, 500],
+    ["pan", -5, 5],
+    ["playbackRate", -5, 5],
+  ])(
+    "accepts unbounded relative %s deltas before the absolute target",
+    (property, startValue, value) => {
+      expect(
+        validateProjectData(
+          createAudioUpdateProjectData(property, [
+            { startValue, value, duration: 50, relative: true },
+            { value: "target", duration: 50 },
+          ]),
+        ),
+      ).toBe(true);
+      expect(validateProjectData.errors).toBeNull();
     },
   );
 

@@ -1,0 +1,79 @@
+---
+title: Audio Effects Initial Entry
+description: An audio transition on the initial line compiles as an entry-only fade from silence.
+skipInitialScreenshot: true
+specs:
+  - the initial BGM has no outgoing channel
+  - the engine emits one entry fade targeting the initial sound volume
+steps:
+  - action: wait
+    ms: 250
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audio.0.children.0.src
+    value: 3ka3s
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect.type
+    value: audio-transition
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect.targetId
+    value: bgm:main
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect.properties.volume.enter.initialValue
+    value: 0
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect.properties.volume.enter.keyframes.0.value
+    value: 70
+  - action: assert
+    type: js
+    global: __vtAudioEffectOccurrenceCount
+    value: 1
+---
+screen:
+  width: 640
+  height: 360
+resources:
+  sounds:
+    theme:
+      fileId: 3ka3s
+  audioEffects:
+    fade-in:
+      type: transition
+      next:
+        fade:
+          duration: 800
+          easing: easeOutSine
+  colors:
+    initial:
+      hex: "#163A2C"
+  controls:
+    initial:
+      elements:
+        - id: initial
+          type: rect
+          width: 640
+          height: 360
+          colorId: initial
+story:
+  initialSceneId: scene1
+  scenes:
+    scene1:
+      initialSectionId: section1
+      sections:
+        section1:
+          lines:
+            - id: initial
+              actions:
+                control:
+                  resourceId: initial
+                bgm:
+                  volume: 70
+                  audioEffects:
+                    resourceId: fade-in
+                  sounds:
+                    - id: main
+                      resourceId: theme

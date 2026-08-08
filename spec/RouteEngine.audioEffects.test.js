@@ -101,6 +101,28 @@ const enterNextLine = (engine) => {
 };
 
 describe("RouteEngine audioEffects occurrences", () => {
+  it("treats the initial BGM as an entry-only transition", () => {
+    const projectData = createProjectData();
+    projectData.story.scenes.scene.sections.section.lines[0].actions.bgm.audioEffects =
+      { resourceId: "crossfade" };
+
+    const effect = createEngine({ projectData }).selectRenderState()
+      .audioEffects?.[0];
+
+    expect(effect).toMatchObject({
+      targetId: "bgm:main",
+      properties: {
+        volume: {
+          enter: {
+            initialValue: 0,
+            keyframes: [expect.objectContaining({ value: 80 })],
+          },
+        },
+      },
+    });
+    expect(effect.properties.volume).not.toHaveProperty("exit");
+  });
+
   it("retains one immutable handoff across retries and settings renders", () => {
     const engine = createEngine();
     enterNextLine(engine);
@@ -135,6 +157,41 @@ describe("RouteEngine audioEffects occurrences", () => {
 
     engine.commitRenderState(retry);
     expect(engine.selectRenderState().audioEffects).toEqual(first.audioEffects);
+  });
+
+  it("exposes immutable render snapshots for active effects", () => {
+    const engine = createEngine();
+    enterNextLine(engine);
+    const callerOwnedRender = engine.selectRenderState();
+
+    expect(() => {
+      callerOwnedRender.audioEffects[0].properties.volume.enter.keyframes[0].value = 999;
+    }).toThrow(TypeError);
+    expect(() =>
+      callerOwnedRender.audioEffects[0].properties.volume.exit.keyframes.push({
+        value: 999,
+        duration: 999,
+      }),
+    ).toThrow(TypeError);
+
+    const retry = engine.selectRenderState();
+
+    expect(
+      retry.audioEffects[0].properties.volume.enter.keyframes[0].value,
+    ).toBe(60);
+    expect(retry.audioEffects[0].properties.volume.exit.keyframes).toHaveLength(
+      1,
+    );
+  });
+
+  it("reuses the accepted occurrence when the same line actions are delivered twice", () => {
+    const engine = createEngine();
+    enterNextLine(engine);
+    const firstEffect = engine.selectRenderState().audioEffects[0];
+
+    engine.handleLineActions();
+
+    expect(engine.selectRenderState().audioEffects).toEqual([firstEffect]);
   });
 
   it("assigns a fresh effect occurrence when the authored selection runs again", () => {
@@ -228,6 +285,60 @@ describe("RouteEngine audioEffects occurrences", () => {
     });
   });
 
+  it("ignores an uncommitted intermediate BGM when resolving the next line", () => {
+    const projectData = createProjectData();
+    const lines = projectData.story.scenes.scene.sections.section.lines;
+    lines.splice(3, 0, {
+      id: "uncommitted-source",
+      actions: {
+        bgm: {
+          volume: 50,
+          sounds: [{ id: "main", resourceId: "next" }],
+        },
+      },
+    });
+    const engine = createEngine({ projectData });
+    engine.handleAction("jumpToLine", {
+      sectionId: "section",
+      lineId: "uncommitted-source",
+    });
+
+    expect(() => enterNextLine(engine)).not.toThrow();
+    expect(engine.selectRenderState().audioEffects?.[0]).toMatchObject({
+      targetId: "bgm:main",
+      properties: {
+        volume: {
+          update: {
+            keyframes: [expect.objectContaining({ value: 30 })],
+          },
+        },
+      },
+    });
+  });
+
+  it("clones the committed BGM graph before retaining it as the handoff", () => {
+    const engine = createEngine();
+    const committedRender = structuredClone(engine.selectRenderState());
+    engine.commitRenderState(committedRender);
+    committedRender.audio[0].children[0].src = "caller-mutated.ogg";
+
+    expect(() =>
+      engine.handleAction("jumpToLine", {
+        sectionId: "section",
+        lineId: "volume-update",
+      }),
+    ).not.toThrow();
+    expect(engine.selectRenderState().audioEffects?.[0]).toMatchObject({
+      properties: {
+        volume: {
+          update: {
+            keyframes: [expect.objectContaining({ value: 30 })],
+          },
+        },
+      },
+    });
+  });
+
   it("carries the committed outgoing BGM across a section transition", () => {
     const projectData = createProjectData();
     projectData.story.scenes.scene.sections.destination = {
@@ -260,6 +371,50 @@ describe("RouteEngine audioEffects occurrences", () => {
           },
         },
       },
+    });
+  });
+
+  it("carries the committed outgoing BGM into a loaded effect-bearing line", () => {
+    const projectData = createProjectData();
+    const lines = projectData.story.scenes.scene.sections.section.lines;
+    lines.splice(3, 0, {
+      id: "authored-predecessor",
+      actions: {
+        bgm: {
+          volume: 50,
+          sounds: [{ id: "main", resourceId: "next" }],
+        },
+      },
+    });
+    lines.push({
+      id: "away",
+      actions: {
+        bgm: {
+          volume: 80,
+          sounds: [{ id: "main", resourceId: "old" }],
+        },
+      },
+    });
+    const engine = createEngine({ projectData });
+    engine.handleAction("jumpToLine", {
+      sectionId: "section",
+      lineId: "volume-update",
+    });
+    engine.commitRenderState(engine.selectRenderState());
+    engine.handleAction("saveSlot", { slotId: "effect-line", savedAt: 1 });
+    engine.handleAction("jumpToLine", {
+      sectionId: "section",
+      lineId: "away",
+    });
+    engine.commitRenderState(engine.selectRenderState());
+
+    expect(() =>
+      engine.handleAction("loadSlot", { slotId: "effect-line" }),
+    ).not.toThrow();
+    expect(engine.selectRenderState().audio[0].children[0]).toMatchObject({
+      id: "bgm:main",
+      src: "old.ogg",
+      volume: 30,
     });
   });
 
@@ -322,6 +477,85 @@ describe("RouteEngine audioEffects occurrences", () => {
 
     expect(engine.selectRuntime().skipTransitionsAndAnimations).toBe(false);
     expect(engine.selectRenderState().audioEffects).toHaveLength(1);
+  });
+
+  it("settles an effect when the complete line batch enables skipping", () => {
+    const projectData = createProjectData();
+    projectData.story.scenes.scene.sections.section.lines[1].actions.setSkipTransitionsAndAnimations =
+      { value: true };
+    const engine = createEngine({ projectData });
+
+    enterNextLine(engine);
+
+    expect(engine.selectRuntime().skipTransitionsAndAnimations).toBe(true);
+    expect(engine.selectRenderState().audioEffects).toBeUndefined();
+    engine.handleAction("setSkipTransitionsAndAnimations", { value: false });
+    expect(engine.selectRenderState().audioEffects).toBeUndefined();
+  });
+
+  it("does not revive an effect skipped by the settled pre-existing runtime", () => {
+    const engine = createEngine({
+      global: {
+        runtime: { skipTransitionsAndAnimations: true },
+      },
+    });
+
+    enterNextLine(engine);
+    expect(engine.selectRenderState().audioEffects).toBeUndefined();
+
+    engine.handleAction("setSkipTransitionsAndAnimations", { value: false });
+    expect(engine.selectRenderState().audioEffects).toBeUndefined();
+  });
+
+  it("recovers after a rejected line batch without leaking runtime or occurrence state", () => {
+    const projectData = createProjectData();
+    projectData.story.scenes.scene.sections.section.lines[1] = {
+      id: "invalid-update",
+      actions: {
+        bgm: {
+          volume: 30,
+          audioEffects: { resourceId: "crossfade" },
+          sounds: [{ id: "main", resourceId: "old" }],
+        },
+        setMusicVolume: { value: 25 },
+      },
+    };
+    projectData.story.scenes.scene.sections.recovery = {
+      lines: [
+        {
+          id: "valid-update",
+          actions: {
+            bgm: {
+              volume: 30,
+              audioEffects: { resourceId: "smooth" },
+              sounds: [{ id: "main", resourceId: "old" }],
+            },
+          },
+        },
+      ],
+    };
+    const engine = createEngine({ projectData });
+
+    expect(() => enterNextLine(engine)).toThrow(
+      "only updates a retained sound",
+    );
+    expect(engine.selectRuntime().musicVolume).toBe(50);
+    expect(engine.selectRenderState().audioEffects).toBeUndefined();
+
+    expect(() =>
+      engine.handleAction("sectionTransition", { sectionId: "recovery" }),
+    ).not.toThrow();
+    const recoveredEffect = engine.selectRenderState().audioEffects?.[0];
+    expect(recoveredEffect?.id).toMatch(/:audio2$/);
+    expect(recoveredEffect).toMatchObject({
+      properties: {
+        volume: {
+          update: {
+            keyframes: [expect.objectContaining({ value: 30 })],
+          },
+        },
+      },
+    });
   });
 
   it("uses the owning scene id in line-authored effect diagnostics", () => {
