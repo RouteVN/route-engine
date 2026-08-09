@@ -1,0 +1,192 @@
+---
+title: Simultaneous Background Character Transitions
+description: |
+  A persistent background transition and a character sprite transition may run
+  at the same time without preventing the character update or corrupting the
+  following character-removal state.
+specs:
+  - line 9 starts a persistent background transition while showing character A
+  - line 10 keeps that background transition active while changing to character B
+  - line 11 removes the character after both transition surfaces overlapped
+skipInitialScreenshot: true
+steps:
+  - action: wait
+    ms: 100
+  - action: click
+    x: 960
+    y: 540
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 200
+  - action: screenshot
+  - action: click
+    x: 960
+    y: 540
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 600
+  - action: screenshot
+  - action: click
+    x: 960
+    y: 540
+  - action: wait
+    ms: 50
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+resources:
+  images:
+    background-door:
+      fileId: lakjf3lka
+      width: 1920
+      height: 1080
+    background-forest:
+      fileId: dmni32
+      width: 1920
+      height: 1080
+    character-a:
+      fileId: char_sprite_1
+      width: 553
+      height: 865
+    character-b:
+      fileId: char_sprite_3
+      width: 526
+      height: 891
+  transforms:
+    center-stage:
+      x: 960
+      y: 1080
+      anchorX: 0.5
+      anchorY: 1
+  animations:
+    background-fade:
+      type: transition
+      prev:
+        tween:
+          alpha:
+            initialValue: 1
+            keyframes:
+              - duration: 5000
+                value: 0
+                easing: linear
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 5000
+                value: 1
+                easing: linear
+    character-fade:
+      type: transition
+      prev:
+        tween:
+          alpha:
+            initialValue: 1
+            keyframes:
+              - duration: 600
+                value: 0
+                easing: linear
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 600
+                value: 1
+                easing: linear
+  controls:
+    go-to-line-9:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                jumpToLine:
+                  lineId: line9
+          colorId: overlay
+    go-to-line-10:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                jumpToLine:
+                  lineId: line10
+          colorId: overlay
+    go-to-line-11:
+      elements:
+        - id: click-area
+          type: rect
+          width: 1920
+          height: 1080
+          alpha: 0.001
+          click:
+            payload:
+              actions:
+                jumpToLine:
+                  lineId: line11
+          colorId: overlay
+  colors:
+    overlay:
+      hex: "#000000"
+story:
+  initialSceneId: regression-scene
+  scenes:
+    regression-scene:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line8
+              actions:
+                control:
+                  resourceId: go-to-line-9
+                background:
+                  resourceId: background-door
+            - id: line9
+              actions:
+                control:
+                  resourceId: go-to-line-10
+                background:
+                  resourceId: background-forest
+                  animations:
+                    resourceId: background-fade
+                    playback:
+                      continuity: persistent
+                character:
+                  items:
+                    - id: actor
+                      transformId: center-stage
+                      sprites:
+                        - id: body
+                          resourceId: character-a
+            - id: line10
+              actions:
+                control:
+                  resourceId: go-to-line-11
+                character:
+                  items:
+                    - id: actor
+                      transformId: center-stage
+                      sprites:
+                        - id: body
+                          resourceId: character-b
+                      animations:
+                        resourceId: character-fade
+            - id: line11
+              actions:
+                character:
+                  items: []
