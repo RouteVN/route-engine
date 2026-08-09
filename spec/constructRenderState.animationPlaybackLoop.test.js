@@ -292,6 +292,7 @@ describe("constructRenderState animation playback loop", () => {
 
     expect(renderState.animations).toEqual([
       expect.objectContaining({
+        id: "character-container-twin-1-body-animation-update",
         targetId: "character-container-twin-1-body",
       }),
     ]);

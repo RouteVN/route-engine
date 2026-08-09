@@ -1,0 +1,74 @@
+---
+title: Duplicate Character Animation Identity
+description: |
+  Two authored occurrences of the same character ID may animate concurrently.
+  Their resolved occurrence order must keep both render targets and animation
+  IDs distinct.
+specs:
+  - both duplicate character occurrences render during the same transition
+  - each occurrence receives its own animation identity
+skipInitialScreenshot: true
+steps:
+  - action: customEvent
+    name: snapShotKeyFrame
+    detail:
+      deltaMS: 500
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+resources:
+  images:
+    character-body:
+      fileId: char_sprite_1
+      width: 553
+      height: 865
+  transforms:
+    left:
+      x: 480
+      y: 1080
+      anchorX: 0.5
+      anchorY: 1
+    right:
+      x: 1440
+      y: 1080
+      anchorX: 0.5
+      anchorY: 1
+  animations:
+    fade-in:
+      type: transition
+      next:
+        tween:
+          alpha:
+            initialValue: 0
+            keyframes:
+              - duration: 1000
+                value: 1
+                easing: linear
+story:
+  initialSceneId: scene-one
+  scenes:
+    scene-one:
+      initialSectionId: section-one
+      sections:
+        section-one:
+          lines:
+            - id: line-one
+              actions:
+                character:
+                  items:
+                    - id: twin
+                      transformId: left
+                      sprites:
+                        - id: body
+                          resourceId: character-body
+                      animations:
+                        resourceId: fade-in
+                    - id: twin
+                      transformId: right
+                      sprites:
+                        - id: body
+                          resourceId: character-body
+                      animations:
+                        resourceId: fade-in
