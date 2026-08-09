@@ -2993,16 +2993,25 @@ export const addCharacters = (
     const previousItems = previousPresentationState?.character?.items || [];
     const duplicateCharacterIds = getDuplicateItemIds(items);
     const previousDuplicateCharacterIds = getDuplicateItemIds(previousItems);
+    const previousItemIndexesById = new Map();
+    const itemOccurrenceIndexesById = new Map();
+
+    for (let i = 0; i < previousItems.length; i++) {
+      const previousItem = previousItems[i];
+      const indexes = previousItemIndexesById.get(previousItem.id) ?? [];
+      indexes.push(i);
+      previousItemIndexesById.set(previousItem.id, indexes);
+    }
 
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       const { transformId, sprites } = item;
 
-      // Find previous item with same id
-      const previousItem = previousItems.find((p) => p.id === item.id);
-      const previousItemIndex = previousItems.findIndex(
-        (p) => p.id === item.id,
-      );
+      const itemOccurrenceIndex = itemOccurrenceIndexesById.get(item.id) ?? 0;
+      itemOccurrenceIndexesById.set(item.id, itemOccurrenceIndex + 1);
+      const previousItemIndex =
+        previousItemIndexesById.get(item.id)?.[itemOccurrenceIndex] ?? -1;
+      const previousItem = previousItems[previousItemIndex];
       const previousHasSprites =
         previousItem?.sprites && previousItem.sprites.length > 0;
       const currentHasSprites = sprites && sprites.length > 0;
@@ -3014,6 +3023,9 @@ export const addCharacters = (
               previousDuplicateCharacterIds,
             )
           : undefined;
+      const currentContainerId = currentHasSprites
+        ? getCharacterContainerId(item, i, duplicateCharacterIds)
+        : undefined;
       const isAnimationAuthoredOnCurrentLine =
         isItemAnimationAuthoredOnCurrentLine(
           currentLineActions,
@@ -3027,15 +3039,11 @@ export const addCharacters = (
         animationsDef: item.animations,
         resources,
         previousResourceId: previousContainerId,
-        currentResourceId: currentHasSprites
-          ? getCharacterContainerId(item, i, duplicateCharacterIds)
-          : undefined,
+        currentResourceId: currentContainerId,
         previousTargetId: previousContainerId,
-        currentTargetId: currentHasSprites
-          ? getCharacterContainerId(item, i, duplicateCharacterIds)
-          : undefined,
+        currentTargetId: currentContainerId,
         animationPath: `character.items[${i}].animations`,
-        idPrefix: "character",
+        idPrefix: currentContainerId ?? previousContainerId ?? `character-${i}`,
       });
 
       if (
@@ -3068,11 +3076,6 @@ export const addCharacters = (
         continue;
       }
 
-      const containerId = getCharacterContainerId(
-        item,
-        i,
-        duplicateCharacterIds,
-      );
       const transform = resources.transforms[transformId];
       if (!transform) {
         console.warn("Transform not found:", transformId);
@@ -3080,7 +3083,7 @@ export const addCharacters = (
       }
       const characterContainer = {
         type: "container",
-        id: containerId,
+        id: currentContainerId,
         ...getElementTransform(transform, item),
         ...getItemAppearance(item),
         children: [],
@@ -3088,7 +3091,7 @@ export const addCharacters = (
 
       for (const sprite of sprites) {
         const spriteLayer = createCharacterSpriteLayerElement({
-          id: `${containerId}-${sprite.id}`,
+          id: `${currentContainerId}-${sprite.id}`,
           item: sprite,
           resources,
         });

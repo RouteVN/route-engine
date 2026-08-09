@@ -363,7 +363,7 @@ out:
               x: 0
               y: 0
   animations:
-    - id: "character-animation-in"
+    - id: "character-container-char1-animation-in"
       type: "transition"
       targetId: "character-container-char1"
       next:
@@ -445,7 +445,7 @@ out:
               x: 0
               y: 0
   animations:
-    - id: "character-animation-transition"
+    - id: "character-container-char1-animation-transition"
       type: "transition"
       targetId: "character-container-char1"
       playback:
@@ -489,7 +489,7 @@ in:
                 resourceId: "body"
     isLineCompleted: true
     activePersistentAnimations:
-      - id: "character-animation-transition"
+      - id: "character-container-char1-animation-transition"
         type: "transition"
         targetId: "character-container-char1"
         playback:
@@ -551,7 +551,7 @@ out:
               x: 0
               y: 0
   animations:
-    - id: "character-animation-transition"
+    - id: "character-container-char1-animation-transition"
       type: "transition"
       targetId: "character-container-char1"
       playback:
@@ -650,7 +650,7 @@ out:
       y: 0
       children: []
   animations:
-    - id: "character-animation-out"
+    - id: "character-container-char1-animation-out"
       type: "transition"
       targetId: "character-container-char1"
       prev:
@@ -730,7 +730,7 @@ out:
               x: 0
               y: 0
   animations:
-    - id: "character-animation-in"
+    - id: "character-container-char1-animation-in"
       type: "transition"
       targetId: "character-container-char1"
       next:
@@ -821,7 +821,7 @@ out:
               x: 0
               y: 0
   animations:
-    - id: "character-animation-update"
+    - id: "character-container-char1-animation-update"
       type: "update"
       targetId: "character-container-char1"
       tween:
@@ -909,7 +909,7 @@ out:
               x: 0
               y: 0
   animations:
-    - id: "character-animation-update"
+    - id: "character-container-char1-animation-update"
       type: "update"
       targetId: "character-container-char1"
       tween:
@@ -1023,7 +1023,7 @@ out:
               x: 0
               y: 0
   animations:
-    - id: "character-animation-update"
+    - id: "character-container-char1-animation-update"
       type: "update"
       targetId: "character-container-char1"
       tween:

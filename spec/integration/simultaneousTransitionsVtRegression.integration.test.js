@@ -58,7 +58,7 @@ describe("simultaneous transition VT regression", () => {
         targetId: "bg-cg-background-sprite",
       }),
       expect.objectContaining({
-        id: "character-animation-transition",
+        id: "character-container-actor-animation-transition",
         targetId: "character-container-actor",
       }),
     ]);
