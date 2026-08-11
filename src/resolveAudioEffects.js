@@ -78,12 +78,22 @@ const compileFade = (fade, phase, speed, target, resourcePath) => {
         `[${resourcePath}.keyframes] Transition fade keyframes must use absolute values.`,
       );
     }
+    if (phase === "enter" && authoredKeyframes.at(-1)?.value !== 100) {
+      throw new Error(
+        `[${resourcePath}.keyframes] The final incoming transition fade value must be 100.`,
+      );
+    }
+
+    const keyframes = authoredKeyframes.map((keyframe) =>
+      compileFadeKeyframe(keyframe, speed, target),
+    );
+    if (phase === "enter") {
+      keyframes.at(-1).value = target;
+    }
 
     return {
       ...(phase === "enter" ? { initialValue: 0 } : {}),
-      keyframes: authoredKeyframes.map((keyframe) =>
-        compileFadeKeyframe(keyframe, speed, target),
-      ),
+      keyframes,
     };
   }
 
@@ -255,10 +265,18 @@ export const resolveAudioEffect = ({
         `[${actionPath}.audioEffects]\n[${resourcePath}.tween.${property}.keyframes] The final keyframe value must match the persistent BGM ${property} value.`,
       );
     }
+    update.keyframes.at(-1).value = nextValue;
+
+    const previousValue =
+      previousSound[property] ?? DEFAULT_AUDIO_VALUES[property];
+    if (previousValue === nextValue) continue;
+
     properties[property] = {
       update,
     };
   }
+
+  if (Object.keys(properties).length === 0) return null;
 
   return {
     ...createBaseEffect(occurrence, targetId),

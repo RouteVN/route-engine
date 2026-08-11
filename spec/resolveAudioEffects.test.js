@@ -335,38 +335,52 @@ describe("resolveAudioEffect", () => {
     });
   });
 
-  it.each([
-    ["outgoing", "prev", 35, "exit", 28],
-    ["incoming", "next", 65, "enter", 39],
-  ])(
-    "compiles an editable %s final transition fade value",
-    (_label, side, value, phase, expectedValue) => {
-      expect(
-        resolveWith({
-          selection: { resourceId: "crossfade" },
-          resources: {
-            audioEffects: {
-              crossfade: {
-                type: "transition",
-                [side]: {
-                  fade: { keyframes: [{ value, duration: 100 }] },
-                },
+  it("compiles an editable outgoing final transition fade value", () => {
+    expect(
+      resolveWith({
+        selection: { resourceId: "crossfade" },
+        resources: {
+          audioEffects: {
+            crossfade: {
+              type: "transition",
+              prev: {
+                fade: { keyframes: [{ value: 35, duration: 100 }] },
               },
             },
           },
-          previousChannel: oldChannel,
-          nextChannel: newChannel,
-        }).properties.volume[phase].keyframes,
-      ).toEqual([
-        {
-          value: expectedValue,
-          delay: 0,
-          duration: 100,
-          easing: "linear",
         },
-      ]);
-    },
-  );
+        previousChannel: oldChannel,
+        nextChannel: newChannel,
+      }).properties.volume.exit.keyframes,
+    ).toEqual([
+      {
+        value: 28,
+        delay: 0,
+        duration: 100,
+        easing: "linear",
+      },
+    ]);
+  });
+
+  it("requires an incoming transition fade to end at full declared volume", () => {
+    expect(() =>
+      resolveWith({
+        selection: { resourceId: "crossfade" },
+        resources: {
+          audioEffects: {
+            crossfade: {
+              type: "transition",
+              next: {
+                fade: { keyframes: [{ value: 65, duration: 100 }] },
+              },
+            },
+          },
+        },
+        previousChannel: oldChannel,
+        nextChannel: newChannel,
+      }),
+    ).toThrow("final incoming transition fade value must be 100");
+  });
 
   it("rejects relative transition fade keyframes", () => {
     expect(() =>
@@ -393,7 +407,7 @@ describe("resolveAudioEffect", () => {
     ).toThrow("Transition fade keyframes must use absolute values");
   });
 
-  it("runs authored keyframes when the final value equals the previous value", () => {
+  it("returns null when every update property is unchanged", () => {
     const resource = {
       type: "update",
       tween: {
@@ -412,10 +426,35 @@ describe("resolveAudioEffect", () => {
       nextChannel: oldChannel,
     });
 
-    expect(effect.properties.volume.update.keyframes).toEqual([
-      { value: 20, delay: 0, duration: 100, easing: "linear" },
-      { value: 80, delay: 0, duration: 100, easing: "linear" },
-    ]);
+    expect(effect).toBeNull();
+  });
+
+  it("omits unchanged properties while compiling changed update tracks", () => {
+    const effect = resolveWith({
+      resources: {
+        audioEffects: {
+          smooth: {
+            type: "update",
+            tween: {
+              volume: { keyframes: [{ value: 30, duration: 100 }] },
+              pan: { keyframes: [{ value: -0.25, duration: 100 }] },
+            },
+          },
+        },
+      },
+      nextChannel: {
+        ...oldChannel,
+        children: [{ ...oldChannel.children[0], volume: 30 }],
+      },
+    });
+
+    expect(effect.properties).toEqual({
+      volume: {
+        update: {
+          keyframes: [{ value: 30, delay: 0, duration: 100, easing: "linear" }],
+        },
+      },
+    });
   });
 
   it("returns null for absent selections, absent sounds, and inapplicable fades", () => {
@@ -549,7 +588,7 @@ describe("resolveAudioEffect", () => {
       });
 
       expect(effect.properties[property].update.keyframes.at(-1).value).toBe(
-        authoredValue,
+        renderedValue,
       );
     },
   );

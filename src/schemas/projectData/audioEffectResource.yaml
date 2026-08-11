@@ -224,6 +224,7 @@ properties:
     $ref: "#/$defs/transitionSide"
   next:
     $ref: "#/$defs/transitionSide"
+    description: Incoming keyframed fades must end at 100 so the transition settles on the next sound's declared volume
 allOf:
   - if:
       properties:
