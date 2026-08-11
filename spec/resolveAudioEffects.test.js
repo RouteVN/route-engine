@@ -336,12 +336,12 @@ describe("resolveAudioEffect", () => {
   });
 
   it.each([
-    ["outgoing", "prev", 1, 0],
-    ["incoming", "next", 99, 100],
+    ["outgoing", "prev", 35, "exit", 28],
+    ["incoming", "next", 65, "enter", 39],
   ])(
-    "rejects a non-canonical %s transition fade endpoint",
-    (_label, side, value, endpoint) => {
-      expect(() =>
+    "compiles an editable %s final transition fade value",
+    (_label, side, value, phase, expectedValue) => {
+      expect(
         resolveWith({
           selection: { resourceId: "crossfade" },
           resources: {
@@ -356,8 +356,15 @@ describe("resolveAudioEffect", () => {
           },
           previousChannel: oldChannel,
           nextChannel: newChannel,
-        }),
-      ).toThrow(`final transition fade value must be ${endpoint}`);
+        }).properties.volume[phase].keyframes,
+      ).toEqual([
+        {
+          value: expectedValue,
+          delay: 0,
+          duration: 100,
+          easing: "linear",
+        },
+      ]);
     },
   );
 

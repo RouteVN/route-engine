@@ -71,18 +71,11 @@ const compileFadeKeyframe = (keyframe, speed, target) => {
 
 const compileFade = (fade, phase, speed, target, resourcePath) => {
   if (!fade) return undefined;
-  const expectedEndpoint = phase === "exit" ? 0 : 100;
   const authoredKeyframes = fade.keyframes;
   if (authoredKeyframes) {
-    const finalKeyframe = authoredKeyframes.at(-1);
     if (authoredKeyframes.some((keyframe) => keyframe.relative === true)) {
       throw new Error(
         `[${resourcePath}.keyframes] Transition fade keyframes must use absolute values.`,
-      );
-    }
-    if (finalKeyframe?.value !== expectedEndpoint) {
-      throw new Error(
-        `[${resourcePath}.keyframes] The final transition fade value must be ${expectedEndpoint}.`,
       );
     }
 
