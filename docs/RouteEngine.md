@@ -1314,6 +1314,12 @@ Animation selections use `animations.resourceId` plus optional
 `2` is twice as fast, and `0.5` is half speed. `playback.continuity` defaults to
 render-scoped behavior when omitted.
 
+BGM update effects use numeric keyframes for `volume`, `pan`, and
+`playbackRate`. The final keyframe must be absolute. Its value becomes the
+persistent BGM value after the effect finishes; intermediate keyframes only
+shape the tween. Update effects still require one retained BGM sound with a
+stable source identity.
+
 ### Visual Layers
 
 Visual items use a flat `items` array. Each item can set numeric `layer` to

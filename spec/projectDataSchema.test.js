@@ -3580,12 +3580,25 @@ describe("projectData schema", () => {
             type: "transition",
             prev: {
               fade: {
-                delay: 100,
-                duration: 600,
-                easing: "easeInOutSine",
+                keyframes: [
+                  {
+                    value: 40,
+                    delay: 100,
+                    duration: 200,
+                    easing: "easeOutSine",
+                  },
+                  { value: 0, duration: 400, easing: "easeInOutSine" },
+                ],
               },
             },
-            next: { fade: { duration: 900 } },
+            next: {
+              fade: {
+                keyframes: [
+                  { value: 60, duration: 300 },
+                  { value: 100, duration: 600 },
+                ],
+              },
+            },
           },
           smooth: {
             type: "update",
@@ -3594,7 +3607,7 @@ describe("projectData schema", () => {
                 keyframes: [
                   {
                     startValue: 75,
-                    value: "target",
+                    value: 50,
                     duration: 500,
                   },
                 ],
@@ -3602,11 +3615,11 @@ describe("projectData schema", () => {
               pan: {
                 keyframes: [
                   { value: 0, duration: 100 },
-                  { value: "target", duration: 400 },
+                  { value: 0.5, duration: 400 },
                 ],
               },
               playbackRate: {
-                keyframes: [{ value: "target", duration: 250 }],
+                keyframes: [{ value: 0.75, duration: 250 }],
               },
             },
           },
@@ -3626,17 +3639,17 @@ describe("projectData schema", () => {
   });
 
   it.each([
-    ["volume", -0.01, undefined],
-    ["volume", 100.01, false],
-    ["pan", -1.01, undefined],
-    ["pan", 1.01, false],
-    ["playbackRate", -0.01, undefined],
+    ["volume", -0.01, 50, undefined],
+    ["volume", 100.01, 50, false],
+    ["pan", -1.01, 0, undefined],
+    ["pan", 1.01, 0, false],
+    ["playbackRate", -0.01, 1, undefined],
   ])(
-    "rejects an absolute %s target keyframe with startValue %s",
-    (property, startValue, relative) => {
+    "rejects an absolute %s numeric keyframe with startValue %s",
+    (property, startValue, value, relative) => {
       const keyframe = {
         startValue,
-        value: "target",
+        value,
         duration: 100,
         ...(relative === undefined ? {} : { relative }),
       };
@@ -3649,19 +3662,19 @@ describe("projectData schema", () => {
   );
 
   it.each([
-    ["volume", -0.01],
-    ["volume", 100.01],
-    ["pan", -1.01],
-    ["pan", 1.01],
-    ["playbackRate", -0.01],
+    ["volume", -0.01, 50],
+    ["volume", 100.01, 50],
+    ["pan", -1.01, 0],
+    ["pan", 1.01, 0],
+    ["playbackRate", -0.01, 1],
   ])(
     "rejects an out-of-range absolute numeric %s keyframe value %s",
-    (property, value) => {
+    (property, value, finalValue) => {
       expect(
         validateProjectData(
           createAudioUpdateProjectData(property, [
             { value, duration: 50 },
-            { value: "target", duration: 50 },
+            { value: finalValue, duration: 50 },
           ]),
         ),
       ).toBe(false);
@@ -3670,18 +3683,18 @@ describe("projectData schema", () => {
   );
 
   it.each([
-    ["volume", 0],
-    ["volume", 100],
-    ["pan", -1],
-    ["pan", 1],
-    ["playbackRate", 0],
+    ["volume", 0, 50],
+    ["volume", 100, 50],
+    ["pan", -1, 0],
+    ["pan", 1, 0],
+    ["playbackRate", 0, 1],
   ])(
     "accepts the absolute %s startValue boundary %s",
-    (property, startValue) => {
+    (property, startValue, value) => {
       expect(
         validateProjectData(
           createAudioUpdateProjectData(property, [
-            { startValue, value: "target", duration: 100 },
+            { startValue, value, duration: 100 },
           ]),
         ),
       ).toBe(true);
@@ -3690,23 +3703,34 @@ describe("projectData schema", () => {
   );
 
   it.each([
-    ["volume", -500, 500],
-    ["pan", -5, 5],
-    ["playbackRate", -5, 5],
+    ["volume", -500, 500, 50],
+    ["pan", -5, 5, 0],
+    ["playbackRate", -5, 5, 1],
   ])(
-    "accepts unbounded relative %s deltas before the absolute target",
-    (property, startValue, value) => {
+    "accepts unbounded relative %s deltas before the absolute endpoint",
+    (property, startValue, value, finalValue) => {
       expect(
         validateProjectData(
           createAudioUpdateProjectData(property, [
             { startValue, value, duration: 50, relative: true },
-            { value: "target", duration: 50 },
+            { value: finalValue, duration: 50 },
           ]),
         ),
       ).toBe(true);
       expect(validateProjectData.errors).toBeNull();
     },
   );
+
+  it("rejects the legacy target keyframe token", () => {
+    expect(
+      validateProjectData(
+        createAudioUpdateProjectData("volume", [
+          { value: "target", duration: 100 },
+        ]),
+      ),
+    ).toBe(false);
+    expect(validateProjectData.errors).not.toBeNull();
+  });
 
   it("rejects legacy audio effect naming, legacy BGM selection, and invalid resources", () => {
     expect(
