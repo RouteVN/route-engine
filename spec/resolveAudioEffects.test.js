@@ -78,9 +78,26 @@ describe("resolveAudioEffect", () => {
           crossfade: {
             type: "transition",
             prev: {
-              fade: { delay: 100, duration: 1000, easing: "easeInSine" },
+              fade: {
+                keyframes: [
+                  {
+                    value: 50,
+                    delay: 100,
+                    duration: 400,
+                    easing: "easeInSine",
+                  },
+                  { value: 0, duration: 600, easing: "easeOutSine" },
+                ],
+              },
             },
-            next: { fade: { duration: 2000 } },
+            next: {
+              fade: {
+                keyframes: [
+                  { value: 25, duration: 500, easing: "easeInSine" },
+                  { value: 100, duration: 1500, easing: "easeOutSine" },
+                ],
+              },
+            },
           },
         },
       },
@@ -97,10 +114,16 @@ describe("resolveAudioEffect", () => {
           exit: {
             keyframes: [
               {
-                value: 0,
+                value: 40,
                 delay: 50,
-                duration: 500,
+                duration: 200,
                 easing: "easeInSine",
+              },
+              {
+                value: 0,
+                delay: 0,
+                duration: 300,
+                easing: "easeOutSine",
               },
             ],
           },
@@ -108,10 +131,16 @@ describe("resolveAudioEffect", () => {
             initialValue: 0,
             keyframes: [
               {
+                value: 15,
+                delay: 0,
+                duration: 250,
+                easing: "easeInSine",
+              },
+              {
                 value: 60,
                 delay: 0,
-                duration: 1000,
-                easing: "linear",
+                duration: 750,
+                easing: "easeOutSine",
               },
             ],
           },
@@ -306,6 +335,57 @@ describe("resolveAudioEffect", () => {
     });
   });
 
+  it.each([
+    ["outgoing", "prev", 1, 0],
+    ["incoming", "next", 99, 100],
+  ])(
+    "rejects a non-canonical %s transition fade endpoint",
+    (_label, side, value, endpoint) => {
+      expect(() =>
+        resolveWith({
+          selection: { resourceId: "crossfade" },
+          resources: {
+            audioEffects: {
+              crossfade: {
+                type: "transition",
+                [side]: {
+                  fade: { keyframes: [{ value, duration: 100 }] },
+                },
+              },
+            },
+          },
+          previousChannel: oldChannel,
+          nextChannel: newChannel,
+        }),
+      ).toThrow(`final transition fade value must be ${endpoint}`);
+    },
+  );
+
+  it("rejects relative transition fade keyframes", () => {
+    expect(() =>
+      resolveWith({
+        selection: { resourceId: "crossfade" },
+        resources: {
+          audioEffects: {
+            crossfade: {
+              type: "transition",
+              next: {
+                fade: {
+                  keyframes: [
+                    { value: 50, duration: 100, relative: true },
+                    { value: 100, duration: 100 },
+                  ],
+                },
+              },
+            },
+          },
+        },
+        previousChannel: oldChannel,
+        nextChannel: newChannel,
+      }),
+    ).toThrow("Transition fade keyframes must use absolute values");
+  });
+
   it("runs authored keyframes when the final value equals the previous value", () => {
     const resource = {
       type: "update",
@@ -435,6 +515,37 @@ describe("resolveAudioEffect", () => {
       }),
     ).toThrow("must match the persistent BGM volume value");
   });
+
+  it.each([
+    ["volume", 0.007, (0.007 * 100) / 100],
+    ["pan", -0, 0],
+  ])(
+    "accepts a render-normalized %s endpoint",
+    (property, authoredValue, renderedValue) => {
+      const effect = resolveWith({
+        resources: {
+          audioEffects: {
+            smooth: {
+              type: "update",
+              tween: {
+                [property]: {
+                  keyframes: [{ value: authoredValue, duration: 100 }],
+                },
+              },
+            },
+          },
+        },
+        nextChannel: {
+          ...oldChannel,
+          children: [{ ...oldChannel.children[0], [property]: renderedValue }],
+        },
+      });
+
+      expect(effect.properties[property].update.keyframes.at(-1).value).toBe(
+        authoredValue,
+      );
+    },
+  );
 
   it("writes final update values into the persistent BGM mix without mutating authoring", () => {
     const bgm = {

@@ -34,6 +34,11 @@ const isSameSourceIdentity = (previous, next) =>
 const isSameValue = (previous, next) =>
   JSON.stringify(previous) === JSON.stringify(next);
 
+const areEquivalentAudioValues = (authored, rendered) =>
+  authored === rendered ||
+  Math.abs(authored - rendered) <=
+    Number.EPSILON * Math.max(1, Math.abs(authored), Math.abs(rendered));
+
 const getPlaybackSpeed = (selection, actionPath) => {
   const speed = selection?.playback?.speed ?? 1;
   if (typeof speed !== "number" || !Number.isFinite(speed) || speed <= 0) {
@@ -55,8 +60,40 @@ const compileKeyframe = (keyframe, speed) => ({
   ...(keyframe.relative === true ? { relative: true } : {}),
 });
 
-const compileFade = (fade, phase, speed, target) => {
+const compileFadeKeyframe = (keyframe, speed, target) => {
+  const compiled = compileKeyframe(keyframe, speed);
+  compiled.value = (compiled.value * target) / 100;
+  if (hasOwn(compiled, "startValue")) {
+    compiled.startValue = (compiled.startValue * target) / 100;
+  }
+  return compiled;
+};
+
+const compileFade = (fade, phase, speed, target, resourcePath) => {
   if (!fade) return undefined;
+  const expectedEndpoint = phase === "exit" ? 0 : 100;
+  const authoredKeyframes = fade.keyframes;
+  if (authoredKeyframes) {
+    const finalKeyframe = authoredKeyframes.at(-1);
+    if (authoredKeyframes.some((keyframe) => keyframe.relative === true)) {
+      throw new Error(
+        `[${resourcePath}.keyframes] Transition fade keyframes must use absolute values.`,
+      );
+    }
+    if (finalKeyframe?.value !== expectedEndpoint) {
+      throw new Error(
+        `[${resourcePath}.keyframes] The final transition fade value must be ${expectedEndpoint}.`,
+      );
+    }
+
+    return {
+      ...(phase === "enter" ? { initialValue: 0 } : {}),
+      keyframes: authoredKeyframes.map((keyframe) =>
+        compileFadeKeyframe(keyframe, speed, target),
+      ),
+    };
+  }
+
   return {
     ...(phase === "enter" ? { initialValue: 0 } : {}),
     keyframes: [
@@ -179,13 +216,15 @@ export const resolveAudioEffect = ({
       previousSound ? resource.prev?.fade : undefined,
       "exit",
       speed,
-      0,
+      previousSound?.volume ?? DEFAULT_AUDIO_VALUES.volume,
+      `${resourcePath}.prev.fade`,
     );
     const enter = compileFade(
       nextSound ? resource.next?.fade : undefined,
       "enter",
       speed,
       nextSound?.volume ?? DEFAULT_AUDIO_VALUES.volume,
+      `${resourcePath}.next.fade`,
     );
     if (exit) volume.exit = exit;
     if (enter) volume.enter = enter;
@@ -218,7 +257,7 @@ export const resolveAudioEffect = ({
     });
     const nextValue = nextSound[property] ?? DEFAULT_AUDIO_VALUES[property];
     const finalValue = update.keyframes.at(-1).value;
-    if (!Object.is(finalValue, nextValue)) {
+    if (!areEquivalentAudioValues(finalValue, nextValue)) {
       throw new Error(
         `[${actionPath}.audioEffects]\n[${resourcePath}.tween.${property}.keyframes] The final keyframe value must match the persistent BGM ${property} value.`,
       );

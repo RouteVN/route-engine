@@ -3580,12 +3580,25 @@ describe("projectData schema", () => {
             type: "transition",
             prev: {
               fade: {
-                delay: 100,
-                duration: 600,
-                easing: "easeInOutSine",
+                keyframes: [
+                  {
+                    value: 40,
+                    delay: 100,
+                    duration: 200,
+                    easing: "easeOutSine",
+                  },
+                  { value: 0, duration: 400, easing: "easeInOutSine" },
+                ],
               },
             },
-            next: { fade: { duration: 900 } },
+            next: {
+              fade: {
+                keyframes: [
+                  { value: 60, duration: 300 },
+                  { value: 100, duration: 600 },
+                ],
+              },
+            },
           },
           smooth: {
             type: "update",
