@@ -1602,6 +1602,7 @@ const selectPresentationStateForPointer = ({ state, pointer }) => {
 
   return constructPresentationState(
     lines.slice(0, currentLineIndex + 1).map((line) => line.actions || {}),
+    { resources: state.projectData.resources },
   );
 };
 
@@ -2746,10 +2747,12 @@ export const selectDialogueHistory = ({ state }) => {
     while (cache.nextLineIndex <= targetLineIndex) {
       const line = cache.lines[cache.nextLineIndex];
       const lineActions = line.actions || {};
-      cache.presentationState = constructPresentationState([
-        cache.presentationState,
-        lineActions,
-      ]);
+      cache.presentationState = constructPresentationState(
+        [cache.presentationState, lineActions],
+        {
+          resources: state.projectData.resources,
+        },
+      );
       cache.projections.set(line.id, {
         line,
         lineActions,
@@ -3579,7 +3582,9 @@ export const selectPresentationState = ({ state }) => {
     return presentationData;
   });
 
-  const presentationState = constructPresentationState(presentationActions);
+  const presentationState = constructPresentationState(presentationActions, {
+    resources: state.projectData.resources,
+  });
   return presentationState;
 };
 
@@ -3618,10 +3623,12 @@ export const selectPresentationChanges = ({ state }) => {
   const currentLine = selectCurrentLine({ state });
   const currentLineActions = currentLine?.actions ?? {};
 
-  const presentationStateAfterLineActions = constructPresentationState([
-    previousPresentationState ?? {},
-    currentLineActions,
-  ]);
+  const presentationStateAfterLineActions = constructPresentationState(
+    [previousPresentationState ?? {}, currentLineActions],
+    {
+      resources: state.projectData.resources,
+    },
+  );
 
   return diffPresentationState(
     previousPresentationState ?? {},
@@ -3641,10 +3648,12 @@ const buildSectionLineEntries = ({ state }, { sectionId }) => {
   for (const line of section.lines) {
     const currentLineActions = line.actions || {};
 
-    const presentationStateAfterLineActions = constructPresentationState([
-      previousPresentationState,
-      currentLineActions,
-    ]);
+    const presentationStateAfterLineActions = constructPresentationState(
+      [previousPresentationState, currentLineActions],
+      {
+        resources: state.projectData.resources,
+      },
+    );
 
     const changes = diffPresentationState(
       previousPresentationState,
@@ -3711,7 +3720,9 @@ export const selectPreviousPresentationState = ({ state }) => {
   });
 
   return normalizePersistentPresentationState(
-    constructPresentationState(presentationActions),
+    constructPresentationState(presentationActions, {
+      resources: state.projectData.resources,
+    }),
   );
 };
 

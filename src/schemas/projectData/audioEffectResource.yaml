@@ -60,9 +60,8 @@ $defs:
         $ref: "#/$defs/fade"
     additionalProperties: false
   keyframeValue:
-    oneOf:
-      - type: number
-      - const: target
+    type: number
+    description: Numeric tween value; the final absolute value becomes the persistent BGM property value
   keyframe:
     type: object
     required: [value, duration]

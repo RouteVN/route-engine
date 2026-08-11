@@ -18,7 +18,10 @@ const createProjectData = () => ({
         type: "update",
         tween: {
           volume: {
-            keyframes: [{ value: "target", duration: 1000, easing: "linear" }],
+            keyframes: [
+              { value: 50, duration: 400, easing: "easeOutQuad" },
+              { value: 30, duration: 600, easing: "linear" },
+            ],
           },
         },
       },
@@ -65,7 +68,7 @@ const createProjectData = () => ({
                 id: "volume-update",
                 actions: {
                   bgm: {
-                    volume: 30,
+                    volume: 90,
                     audioEffects: { resourceId: "smooth" },
                     sounds: [{ id: "main", resourceId: "old" }],
                   },
@@ -220,7 +223,10 @@ describe("RouteEngine audioEffects occurrences", () => {
       properties: {
         volume: {
           update: {
-            keyframes: [expect.objectContaining({ value: 30 })],
+            keyframes: [
+              expect.objectContaining({ value: 50 }),
+              expect.objectContaining({ value: 30 }),
+            ],
           },
         },
       },
@@ -228,8 +234,14 @@ describe("RouteEngine audioEffects occurrences", () => {
 
     engine.handleAction("setSkipTransitionsAndAnimations", { value: true });
     expect(engine.selectRenderState().audioEffects).toBeUndefined();
+    expect(engine.selectPresentationState().bgm).toMatchObject({
+      volume: 30,
+      sounds: [expect.objectContaining({ volume: 100 })],
+    });
+    expect(engine.selectRenderState().audio[0].children[0].volume).toBe(30);
     engine.handleAction("setSkipTransitionsAndAnimations", { value: false });
     expect(engine.selectRenderState().audioEffects).toBeUndefined();
+    expect(engine.selectRenderState().audio[0].children[0].volume).toBe(30);
   });
 
   it("removes an active effect when an unanimated BGM action supersedes it", () => {
@@ -278,7 +290,9 @@ describe("RouteEngine audioEffects occurrences", () => {
       properties: {
         volume: {
           update: {
-            keyframes: [expect.objectContaining({ value: 30 })],
+            keyframes: expect.arrayContaining([
+              expect.objectContaining({ value: 30 }),
+            ]),
           },
         },
       },
@@ -309,7 +323,9 @@ describe("RouteEngine audioEffects occurrences", () => {
       properties: {
         volume: {
           update: {
-            keyframes: [expect.objectContaining({ value: 30 })],
+            keyframes: expect.arrayContaining([
+              expect.objectContaining({ value: 30 }),
+            ]),
           },
         },
       },
@@ -332,7 +348,9 @@ describe("RouteEngine audioEffects occurrences", () => {
       properties: {
         volume: {
           update: {
-            keyframes: [expect.objectContaining({ value: 30 })],
+            keyframes: expect.arrayContaining([
+              expect.objectContaining({ value: 30 }),
+            ]),
           },
         },
       },
@@ -367,7 +385,9 @@ describe("RouteEngine audioEffects occurrences", () => {
       properties: {
         volume: {
           update: {
-            keyframes: [expect.objectContaining({ value: 25 })],
+            keyframes: expect.arrayContaining([
+              expect.objectContaining({ value: 30 }),
+            ]),
           },
         },
       },
@@ -551,7 +571,9 @@ describe("RouteEngine audioEffects occurrences", () => {
       properties: {
         volume: {
           update: {
-            keyframes: [expect.objectContaining({ value: 30 })],
+            keyframes: expect.arrayContaining([
+              expect.objectContaining({ value: 30 }),
+            ]),
           },
         },
       },

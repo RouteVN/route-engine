@@ -1,5 +1,6 @@
 import { current, isDraft } from "immer";
 import { createSequentialActionsExecutor } from "../util.js";
+import { applyAudioEffectUpdateEndpoints } from "../resolveAudioEffects.js";
 
 const clonePresentationValue = (value) =>
   structuredClone(isDraft(value) ? current(value) : value);
@@ -1059,7 +1060,7 @@ export const sfx = (state, presentation) => {
  * @param {Object} state - The current state of the system
  * @param {Object} presentation - The presentation to apply
  */
-export const bgm = (state, presentation) => {
+export const bgm = (state, presentation, resources) => {
   if (presentation.bgm) {
     const hasSounds = Array.isArray(presentation.bgm.sounds);
     if (
@@ -1070,7 +1071,10 @@ export const bgm = (state, presentation) => {
       return;
     }
 
-    state.bgm = clonePresentationValue(presentation.bgm);
+    state.bgm = applyAudioEffectUpdateEndpoints({
+      bgm: clonePresentationValue(presentation.bgm),
+      resources,
+    });
     delete state.bgm.audioEffects;
     if (presentation.bgm.resourceId) {
       state.bgm.loop = presentation.bgm.loop ?? true;
@@ -1309,15 +1313,20 @@ export const cleanAll = (state, presentation) => {
 /**
  * Constructs presentation state by applying all presentation actions to initial state
  * @param {Array} presentations - Array of presentation objects to apply
+ * @param {Object} [options] - Presentation construction options
+ * @param {Object} [options.resources] - Project resources used to resolve audio effect endpoints
  * @returns {Object} Final presentation state
  */
-export const constructPresentationState = (presentations) => {
+export const constructPresentationState = (
+  presentations,
+  { resources } = {},
+) => {
   const actions = [
     cleanAll,
     screen,
     background,
     sfx,
-    bgm,
+    (state, presentation) => bgm(state, presentation, resources),
     visual,
     dialogue,
     character,

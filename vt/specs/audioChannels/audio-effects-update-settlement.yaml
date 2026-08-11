@@ -47,7 +47,7 @@ resources:
       tween:
         volume:
           keyframes:
-            - value: target
+            - value: 30
               duration: 1000
               easing: linear
   colors:

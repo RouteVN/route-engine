@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { resolveAudioEffect } from "../src/resolveAudioEffects.js";
+import {
+  applyAudioEffectUpdateEndpoints,
+  resolveAudioEffect,
+} from "../src/resolveAudioEffects.js";
 
 const oldChannel = {
   id: "channel:bgm",
@@ -41,9 +44,12 @@ const transitionResource = {
 const updateResource = {
   type: "update",
   tween: {
-    volume: { keyframes: [{ value: "target", duration: 100 }] },
-    pan: { keyframes: [{ value: "target", duration: 100 }] },
-    playbackRate: { keyframes: [{ value: "target", duration: 100 }] },
+    volume: {
+      keyframes: [
+        { value: 50, duration: 50 },
+        { value: 30, duration: 100 },
+      ],
+    },
   },
 };
 
@@ -51,7 +57,10 @@ const resolveWith = ({
   selection = { resourceId: "smooth" },
   resources = { audioEffects: { smooth: updateResource } },
   previousChannel = oldChannel,
-  nextChannel = newChannel,
+  nextChannel = {
+    ...oldChannel,
+    children: [{ ...oldChannel.children[0], volume: 30 }],
+  },
 } = {}) =>
   resolveAudioEffect({
     occurrence: { ...occurrence, selection },
@@ -111,7 +120,7 @@ describe("resolveAudioEffect", () => {
     });
   });
 
-  it("compiles retained properties, target endpoints, speed, and startValue", () => {
+  it("compiles retained properties, numeric endpoints, speed, and startValue", () => {
     const retained = {
       ...oldChannel,
       children: [
@@ -138,17 +147,17 @@ describe("resolveAudioEffect", () => {
                   { value: 50, duration: 100 },
                   {
                     startValue: 45,
-                    value: "target",
+                    value: 30,
                     delay: 50,
                     duration: 400,
                   },
                 ],
               },
               pan: {
-                keyframes: [{ value: "target", duration: 200 }],
+                keyframes: [{ value: 0.5, duration: 200 }],
               },
               playbackRate: {
-                keyframes: [{ value: "target", duration: 300 }],
+                keyframes: [{ value: 0.75, duration: 300 }],
               },
             },
           },
@@ -190,7 +199,7 @@ describe("resolveAudioEffect", () => {
     });
   });
 
-  it("rejects topology, resource type, and target endpoint mismatches", () => {
+  it("rejects topology, resource type, and invalid final endpoints", () => {
     expect(() =>
       resolveAudioEffect({
         occurrence,
@@ -218,7 +227,9 @@ describe("resolveAudioEffect", () => {
             bad: {
               type: "update",
               tween: {
-                volume: { keyframes: [{ value: 20, duration: 100 }] },
+                volume: {
+                  keyframes: [{ value: 20, duration: 100, relative: true }],
+                },
               },
             },
           },
@@ -229,7 +240,7 @@ describe("resolveAudioEffect", () => {
           children: [{ ...oldChannel.children[0], volume: 20 }],
         },
       }),
-    ).toThrow('final keyframe must use the absolute value "target"');
+    ).toThrow("final keyframe must use an absolute finite numeric value");
 
     expect(() =>
       resolveAudioEffect({
@@ -295,50 +306,32 @@ describe("resolveAudioEffect", () => {
     });
   });
 
-  it("uses canonical defaults when an updated target omits sound properties", () => {
-    const previousChannel = {
-      ...oldChannel,
-      children: [
-        {
-          ...oldChannel.children[0],
-          volume: 40,
-          pan: 0.5,
-          playbackRate: 0.75,
-        },
-      ],
-    };
-    const nextSound = { ...previousChannel.children[0] };
-    delete nextSound.volume;
-    delete nextSound.pan;
-    delete nextSound.playbackRate;
-
-    const effect = resolveWith({
-      previousChannel,
-      nextChannel: { ...previousChannel, children: [nextSound] },
-    });
-
-    expect(effect.properties).toEqual({
-      volume: {
-        update: {
+  it("runs authored keyframes when the final value equals the previous value", () => {
+    const resource = {
+      type: "update",
+      tween: {
+        volume: {
           keyframes: [
-            { value: 100, delay: 0, duration: 100, easing: "linear" },
+            { value: 20, duration: 100 },
+            { value: 80, duration: 100 },
           ],
         },
       },
-      pan: {
-        update: {
-          keyframes: [{ value: 0, delay: 0, duration: 100, easing: "linear" }],
-        },
-      },
-      playbackRate: {
-        update: {
-          keyframes: [{ value: 1, delay: 0, duration: 100, easing: "linear" }],
-        },
-      },
+    };
+
+    const effect = resolveWith({
+      resources: { audioEffects: { smooth: resource } },
+      previousChannel: oldChannel,
+      nextChannel: oldChannel,
     });
+
+    expect(effect.properties.volume.update.keyframes).toEqual([
+      { value: 20, delay: 0, duration: 100, easing: "linear" },
+      { value: 80, delay: 0, duration: 100, easing: "linear" },
+    ]);
   });
 
-  it("returns null for absent selections, absent sounds, unchanged graphs, and inapplicable fades", () => {
+  it("returns null for absent selections, absent sounds, and inapplicable fades", () => {
     expect(
       resolveAudioEffect({
         occurrence: { ...occurrence, selection: null },
@@ -349,9 +342,6 @@ describe("resolveAudioEffect", () => {
     ).toBeNull();
     expect(
       resolveWith({ previousChannel: null, nextChannel: null }),
-    ).toBeNull();
-    expect(
-      resolveWith({ previousChannel: oldChannel, nextChannel: oldChannel }),
     ).toBeNull();
     expect(
       resolveWith({
@@ -401,7 +391,7 @@ describe("resolveAudioEffect", () => {
     },
   );
 
-  it("rejects unknown resources, unstable ids, unsupported types, and unmatched updates", () => {
+  it("rejects unknown resources, unstable ids, unsupported types, and endpoint mismatches", () => {
     expect(() => resolveWith({ selection: { resourceId: "missing" } })).toThrow(
       'Unknown audio effect resource "missing"',
     );
@@ -432,7 +422,7 @@ describe("resolveAudioEffect", () => {
               type: "update",
               tween: {
                 volume: {
-                  keyframes: [{ value: "target", duration: 100 }],
+                  keyframes: [{ value: 30, duration: 100 }],
                 },
               },
             },
@@ -443,7 +433,53 @@ describe("resolveAudioEffect", () => {
           children: [{ ...oldChannel.children[0], pan: 0.5 }],
         },
       }),
-    ).toThrow("does not animate a BGM sound property changed by this action");
+    ).toThrow("must match the persistent BGM volume value");
+  });
+
+  it("writes final update values into the persistent BGM mix without mutating authoring", () => {
+    const bgm = {
+      volume: 25,
+      pan: 0.75,
+      audioEffects: { resourceId: "smooth" },
+      sounds: [
+        {
+          id: "main",
+          resourceId: "old",
+          volume: 40,
+          pan: 0.25,
+          playbackRate: 2,
+        },
+      ],
+    };
+    const resources = {
+      audioEffects: {
+        smooth: {
+          type: "update",
+          tween: {
+            volume: { keyframes: [{ value: 50, duration: 100 }] },
+            pan: { keyframes: [{ value: -0.5, duration: 100 }] },
+            playbackRate: { keyframes: [{ value: 0.75, duration: 100 }] },
+          },
+        },
+      },
+    };
+    const snapshot = structuredClone(bgm);
+
+    expect(applyAudioEffectUpdateEndpoints({ bgm, resources })).toEqual({
+      volume: 50,
+      pan: -0.5,
+      audioEffects: { resourceId: "smooth" },
+      sounds: [
+        {
+          id: "main",
+          resourceId: "old",
+          volume: 100,
+          pan: 0,
+          playbackRate: 0.75,
+        },
+      ],
+    });
+    expect(bgm).toEqual(snapshot);
   });
 
   it("does not mutate the occurrence, resources, or channel graphs", () => {

@@ -6,6 +6,8 @@ const DEFAULT_AUDIO_VALUES = Object.freeze({
   playbackRate: 1,
 });
 
+const UPDATE_PROPERTIES = ["volume", "pan", "playbackRate"];
+
 const SOURCE_IDENTITY_FIELDS = ["src", "startAt", "endAt", "startDelayMs"];
 
 const getSingleBgmSound = (channel, actionPath) => {
@@ -42,11 +44,11 @@ const getPlaybackSpeed = (selection, actionPath) => {
   return speed;
 };
 
-const compileKeyframe = (keyframe, speed, target) => ({
+const compileKeyframe = (keyframe, speed) => ({
   ...(hasOwn(keyframe, "startValue")
     ? { startValue: keyframe.startValue }
     : {}),
-  value: keyframe.value === "target" ? target : keyframe.value,
+  value: keyframe.value,
   delay: (keyframe.delay ?? 0) / speed,
   duration: keyframe.duration / speed,
   easing: keyframe.easing ?? "linear",
@@ -68,25 +70,60 @@ const compileFade = (fade, phase, speed, target) => {
   };
 };
 
-const compileUpdateProperty = ({
-  property,
-  authored,
-  target,
-  speed,
-  resourcePath,
-}) => {
+const compileUpdateProperty = ({ property, authored, speed, resourcePath }) => {
   const finalKeyframe = authored.keyframes.at(-1);
-  if (finalKeyframe?.value !== "target" || finalKeyframe.relative === true) {
+  if (
+    typeof finalKeyframe?.value !== "number" ||
+    !Number.isFinite(finalKeyframe.value) ||
+    finalKeyframe.relative === true
+  ) {
     throw new Error(
-      `[${resourcePath}.tween.${property}.keyframes] The final keyframe must use the absolute value "target".`,
+      `[${resourcePath}.tween.${property}.keyframes] The final keyframe must use an absolute finite numeric value.`,
     );
   }
 
   return {
     keyframes: authored.keyframes.map((keyframe) =>
-      compileKeyframe(keyframe, speed, target),
+      compileKeyframe(keyframe, speed),
     ),
   };
+};
+
+export const applyAudioEffectUpdateEndpoints = ({ bgm, resources = {} }) => {
+  const resourceId = bgm?.audioEffects?.resourceId;
+  const resource = resources.audioEffects?.[resourceId];
+  if (resource?.type !== "update") return bgm;
+
+  const sounds = bgm.sounds ?? [];
+  if (sounds.length !== 1) return bgm;
+
+  const resolvedBgm = structuredClone(bgm);
+  const sound = resolvedBgm.sounds[0];
+
+  for (const property of UPDATE_PROPERTIES) {
+    if (!hasOwn(resource.tween, property)) continue;
+
+    const finalKeyframe = resource.tween[property].keyframes.at(-1);
+    if (
+      typeof finalKeyframe?.value !== "number" ||
+      !Number.isFinite(finalKeyframe.value) ||
+      finalKeyframe.relative === true
+    ) {
+      continue;
+    }
+
+    if (property === "volume") {
+      resolvedBgm.volume = finalKeyframe.value;
+      sound.volume = DEFAULT_AUDIO_VALUES.volume;
+    } else if (property === "pan") {
+      resolvedBgm.pan = finalKeyframe.value;
+      sound.pan = DEFAULT_AUDIO_VALUES.pan;
+    } else {
+      sound.playbackRate = finalKeyframe.value;
+    }
+  }
+
+  return resolvedBgm;
 };
 
 const createBaseEffect = (occurrence, targetId) => ({
@@ -170,30 +207,25 @@ export const resolveAudioEffect = ({
       `[${actionPath}.audioEffects]\n[${resourcePath}] Audio effect resource "${resourceId}" has type "update", but the BGM action changes source identity. Use a transition resource.`,
     );
   }
-  if (sameGraph) return null;
-
   const properties = {};
-  for (const property of ["volume", "pan", "playbackRate"]) {
+  for (const property of UPDATE_PROPERTIES) {
     if (!hasOwn(resource.tween, property)) continue;
-    const previousValue =
-      previousSound[property] ?? DEFAULT_AUDIO_VALUES[property];
+    const update = compileUpdateProperty({
+      property,
+      authored: resource.tween[property],
+      speed,
+      resourcePath,
+    });
     const nextValue = nextSound[property] ?? DEFAULT_AUDIO_VALUES[property];
-    if (Object.is(previousValue, nextValue)) continue;
+    const finalValue = update.keyframes.at(-1).value;
+    if (!Object.is(finalValue, nextValue)) {
+      throw new Error(
+        `[${actionPath}.audioEffects]\n[${resourcePath}.tween.${property}.keyframes] The final keyframe value must match the persistent BGM ${property} value.`,
+      );
+    }
     properties[property] = {
-      update: compileUpdateProperty({
-        property,
-        authored: resource.tween[property],
-        target: nextValue,
-        speed,
-        resourcePath,
-      }),
+      update,
     };
-  }
-
-  if (Object.keys(properties).length === 0) {
-    throw new Error(
-      `[${actionPath}.audioEffects]\n[${resourcePath}] Audio update resource "${resourceId}" does not animate a BGM sound property changed by this action.`,
-    );
   }
 
   return {
