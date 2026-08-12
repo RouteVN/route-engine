@@ -104,6 +104,12 @@ definitions:
         type: [number, "null"]
         minimum: 0
         description: Optional end offset within the source, in seconds
+      incomingTransition:
+        $ref: "#/definitions/audioEffectSelection"
+        description: Transition applied when this sound enters the BGM channel
+      outgoingTransition:
+        $ref: "#/definitions/audioEffectSelection"
+        description: Transition applied when this sound leaves the BGM channel
     required: [id, resourceId]
     additionalProperties: false
 

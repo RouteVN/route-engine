@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   applyAudioEffectUpdateEndpoints,
   resolveAudioEffect,
+  resolveAudioEffects,
 } from "../src/resolveAudioEffects.js";
 
 const oldChannel = {
@@ -672,5 +673,190 @@ describe("resolveAudioEffect", () => {
       previousChannel,
       nextChannel,
     }).toEqual(snapshots);
+  });
+
+  it("compiles incoming and outgoing transitions owned by different sounds", () => {
+    const effects = resolveAudioEffects({
+      occurrence: { ...occurrence, selection: null },
+      resources: {
+        audioEffects: { crossfade: transitionResource },
+      },
+      previousChannel: {
+        ...oldChannel,
+        children: [{ ...oldChannel.children[0], id: "bgm:old", volume: 80 }],
+      },
+      nextChannel: {
+        ...newChannel,
+        children: [{ ...newChannel.children[0], id: "bgm:new", volume: 60 }],
+      },
+      previousBgm: {
+        sounds: [
+          {
+            id: "old",
+            resourceId: "old",
+            outgoingTransition: {
+              resourceId: "crossfade",
+              playback: { speed: 2 },
+            },
+          },
+        ],
+      },
+      nextBgm: {
+        sounds: [
+          {
+            id: "new",
+            resourceId: "next",
+            incomingTransition: { resourceId: "crossfade" },
+          },
+        ],
+      },
+    });
+
+    expect(effects).toEqual([
+      expect.objectContaining({
+        targetId: "bgm:old",
+        properties: {
+          volume: {
+            exit: {
+              keyframes: [expect.objectContaining({ value: 0, duration: 300 })],
+            },
+          },
+        },
+      }),
+      expect.objectContaining({
+        targetId: "bgm:new",
+        properties: {
+          volume: {
+            enter: {
+              initialValue: 0,
+              keyframes: [
+                expect.objectContaining({ value: 60, duration: 900 }),
+              ],
+            },
+          },
+        },
+      }),
+    ]);
+  });
+
+  it("combines both phases when one stable sound id changes source", () => {
+    const effects = resolveAudioEffects({
+      occurrence: { ...occurrence, selection: null },
+      resources: {
+        audioEffects: { crossfade: transitionResource },
+      },
+      previousChannel: oldChannel,
+      nextChannel: newChannel,
+      previousBgm: {
+        sounds: [
+          {
+            id: "main",
+            resourceId: "old",
+            outgoingTransition: { resourceId: "crossfade" },
+          },
+        ],
+      },
+      nextBgm: {
+        sounds: [
+          {
+            id: "main",
+            resourceId: "next",
+            incomingTransition: { resourceId: "crossfade" },
+          },
+        ],
+      },
+    });
+
+    expect(effects).toHaveLength(1);
+    expect(effects[0]).toMatchObject({
+      targetId: "bgm:main",
+      properties: {
+        volume: {
+          exit: { keyframes: [expect.objectContaining({ value: 0 })] },
+          enter: {
+            initialValue: 0,
+            keyframes: [expect.objectContaining({ value: 60 })],
+          },
+        },
+      },
+    });
+  });
+
+  it("ignores per-sound transitions while the sound source is retained", () => {
+    expect(
+      resolveAudioEffects({
+        occurrence: { ...occurrence, selection: null },
+        resources: { audioEffects: { crossfade: transitionResource } },
+        previousChannel: oldChannel,
+        nextChannel: oldChannel,
+        previousBgm: {
+          sounds: [
+            {
+              id: "main",
+              resourceId: "old",
+              outgoingTransition: { resourceId: "crossfade" },
+            },
+          ],
+        },
+        nextBgm: {
+          sounds: [
+            {
+              id: "main",
+              resourceId: "old",
+              incomingTransition: { resourceId: "crossfade" },
+            },
+          ],
+        },
+      }),
+    ).toEqual([]);
+  });
+
+  it("rejects update resources selected as per-sound transitions", () => {
+    expect(() =>
+      resolveAudioEffects({
+        occurrence: { ...occurrence, selection: null },
+        resources: { audioEffects: { smooth: updateResource } },
+        previousChannel: null,
+        nextChannel: newChannel,
+        previousBgm: null,
+        nextBgm: {
+          sounds: [
+            {
+              id: "main",
+              resourceId: "next",
+              incomingTransition: { resourceId: "smooth" },
+            },
+          ],
+        },
+      }),
+    ).toThrow('require an audio effect resource with type "transition"');
+  });
+
+  it("rejects a transition that does not define the selected sound phase", () => {
+    expect(() =>
+      resolveAudioEffects({
+        occurrence: { ...occurrence, selection: null },
+        resources: {
+          audioEffects: {
+            fadeIn: {
+              type: "transition",
+              next: { fade: { duration: 100 } },
+            },
+          },
+        },
+        previousChannel: oldChannel,
+        nextChannel: null,
+        previousBgm: {
+          sounds: [
+            {
+              id: "main",
+              resourceId: "old",
+              outgoingTransition: { resourceId: "fadeIn" },
+            },
+          ],
+        },
+        nextBgm: null,
+      }),
+    ).toThrow("does not define the required outgoing fade");
   });
 });

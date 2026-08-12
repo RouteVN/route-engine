@@ -593,4 +593,72 @@ describe("RouteEngine audioEffects occurrences", () => {
       'story.scenes["actual-scene"].sections["section"].lines["old"].actions.bgm.audioEffects.resourceId',
     );
   });
+
+  it("renders independent transitions for each outgoing and incoming BGM sound", () => {
+    const projectData = createProjectData();
+    projectData.story.scenes.scene.sections.section.lines = [
+      {
+        id: "outgoing",
+        actions: {
+          bgm: {
+            sounds: [
+              {
+                id: "old",
+                resourceId: "old",
+                volume: 80,
+                outgoingTransition: {
+                  resourceId: "crossfade",
+                  playback: { speed: 2 },
+                },
+              },
+            ],
+          },
+        },
+      },
+      {
+        id: "incoming",
+        actions: {
+          bgm: {
+            sounds: [
+              {
+                id: "new",
+                resourceId: "next",
+                volume: 60,
+                incomingTransition: { resourceId: "crossfade" },
+              },
+            ],
+          },
+        },
+      },
+    ];
+    const engine = createEngine({ projectData });
+
+    enterNextLine(engine);
+
+    expect(engine.selectRenderState().audioEffects).toEqual([
+      expect.objectContaining({
+        targetId: "bgm:old",
+        properties: {
+          volume: {
+            exit: {
+              keyframes: [expect.objectContaining({ duration: 300, value: 0 })],
+            },
+          },
+        },
+      }),
+      expect.objectContaining({
+        targetId: "bgm:new",
+        properties: {
+          volume: {
+            enter: {
+              initialValue: 0,
+              keyframes: [
+                expect.objectContaining({ duration: 900, value: 60 }),
+              ],
+            },
+          },
+        },
+      }),
+    ]);
+  });
 });

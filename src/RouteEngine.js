@@ -16,7 +16,7 @@ import {
   getAnimationInstanceDurationMs,
   getPersistentAnimationContinuationKey,
 } from "./stores/constructRenderState.js";
-import { resolveAudioEffect } from "./resolveAudioEffects.js";
+import { resolveAudioEffects } from "./resolveAudioEffects.js";
 import {
   getLocalizationPackageOptions,
   resolveL10nProjectData,
@@ -151,7 +151,7 @@ export default function createRouteEngine(options) {
   let _restoredPersistentAnimationSessions = new Map();
   let _renderPersistentAnimationMetadata = new Map();
   let _audioEffectOccurrenceSequence = 0;
-  let _activeAudioEffect = null;
+  let _activeAudioEffects = [];
   let _pendingAudioEffectOccurrences = [];
   let _hasCommittedRenderState = false;
   let _committedBgmChannel = null;
@@ -424,6 +424,14 @@ export default function createRouteEngine(options) {
     });
   };
 
+  const captureCurrentBgmPresentation = () =>
+    structuredClone(_systemStore.selectPresentationState()?.bgm ?? null);
+
+  const hasBgmAudioEffectSelections = (previousBgm, nextBgm) =>
+    !!nextBgm?.audioEffects ||
+    previousBgm?.sounds?.some((sound) => sound.outgoingTransition) === true ||
+    nextBgm?.sounds?.some((sound) => sound.incomingTransition) === true;
+
   const captureOutgoingBgmChannel = () =>
     structuredClone(
       _hasCommittedRenderState
@@ -444,13 +452,18 @@ export default function createRouteEngine(options) {
 
     const skipsAudioEffects =
       _systemStore.selectRuntime()?.skipTransitionsAndAnimations === true;
-    const activeEffectId = skipsAudioEffects ? null : _activeAudioEffect?.id;
+    const activeEffectIds = new Set(
+      skipsAudioEffects ? [] : _activeAudioEffects.map((effect) => effect.id),
+    );
     _pendingAudioEffectOccurrences.forEach((occurrence) => {
-      occurrence.status =
-        occurrence.effect?.id === activeEffectId ? "active" : "settled";
+      occurrence.status = occurrence.effects?.some((effect) =>
+        activeEffectIds.has(effect.id),
+      )
+        ? "active"
+        : "settled";
     });
     if (skipsAudioEffects) {
-      _activeAudioEffect = null;
+      _activeAudioEffects = [];
     }
     _pendingAudioEffectOccurrences = [];
   };
@@ -460,10 +473,9 @@ export default function createRouteEngine(options) {
     options,
     previousChannel,
     nextChannel,
+    previousBgm,
+    nextBgm,
   ) => {
-    if (!payload?.audioEffects) {
-      _activeAudioEffect = null;
-    }
     const lineEntryId = _systemStore.selectPlaybackLineEntryId?.() ?? 0;
     const relativeActionPath = (options.actionPath ?? ["bgm"]).join(".");
     const pointer = _systemStore.selectCurrentPointer()?.pointer;
@@ -492,15 +504,17 @@ export default function createRouteEngine(options) {
     };
 
     const resources = _systemStore.selectSystemState().projectData?.resources;
-    const effect = resolveAudioEffect({
+    const effects = resolveAudioEffects({
       occurrence,
       resources,
       previousChannel,
       nextChannel,
+      previousBgm,
+      nextBgm,
     });
-    occurrence.effect = effect ? structuredClone(effect) : null;
-    occurrence.status = effect ? "pending" : "settled";
-    _activeAudioEffect = effect ? structuredClone(effect) : null;
+    occurrence.effects = structuredClone(effects);
+    occurrence.status = effects.length > 0 ? "pending" : "settled";
+    _activeAudioEffects = structuredClone(effects);
     _pendingAudioEffectOccurrences.push(occurrence);
 
     if (lineOccurrenceKey) {
@@ -589,13 +603,14 @@ export default function createRouteEngine(options) {
     _restoredPersistentAnimationSessions = new Map();
     _renderPersistentAnimationMetadata = new Map();
     _audioEffectOccurrenceSequence = 0;
-    _activeAudioEffect = null;
+    _activeAudioEffects = [];
     _pendingAudioEffectOccurrences = [];
     _hasCommittedRenderState = false;
     _committedBgmChannel = null;
     _pendingEnteredLineBgmHandoff = {
       lineEntryId: _systemStore.selectPlaybackLineEntryId?.() ?? 0,
       channel: null,
+      presentation: null,
     };
     _acceptedLineBgmActionOccurrences = new Map();
     _canonicalProjectData = canonicalProjectData;
@@ -626,7 +641,7 @@ export default function createRouteEngine(options) {
     _persistentAnimationSessions = new Map();
     _restoredPersistentAnimationSessions = new Map();
     _renderPersistentAnimationMetadata = new Map();
-    _activeAudioEffect = null;
+    _activeAudioEffects = [];
     _pendingAudioEffectOccurrences = [];
     _hasCommittedRenderState = false;
     _committedBgmChannel = null;
@@ -680,9 +695,7 @@ export default function createRouteEngine(options) {
       restoredPersistentAnimations: collectSessionAnimations(
         restoredPersistentAnimationSessions,
       ),
-      activeAudioEffect: _activeAudioEffect
-        ? structuredClone(_activeAudioEffect)
-        : null,
+      activeAudioEffects: structuredClone(_activeAudioEffects),
     });
     const nextRenderState = {
       ...renderState,
@@ -697,11 +710,13 @@ export default function createRouteEngine(options) {
       ]),
       usedRestoredPersistentAnimationSessions:
         shouldUseRestoredPersistentAnimationSessions,
-      activeAudioEffectId: _activeAudioEffect?.id ?? null,
-      retainsActiveAudioEffect:
-        !!_activeAudioEffect &&
-        (renderState.audioEffects ?? []).some(
-          (effect) => effect.id === _activeAudioEffect.id,
+      activeAudioEffectIds: _activeAudioEffects.map((effect) => effect.id),
+      retainsActiveAudioEffects:
+        _activeAudioEffects.length > 0 &&
+        _activeAudioEffects.every((activeEffect) =>
+          (renderState.audioEffects ?? []).some(
+            (effect) => effect.id === activeEffect.id,
+          ),
         ),
     });
 
@@ -772,11 +787,15 @@ export default function createRouteEngine(options) {
       _restoredPersistentAnimationSessions = new Map();
     }
     if (
-      renderMetadata?.activeAudioEffectId &&
-      !renderMetadata.retainsActiveAudioEffect &&
-      _activeAudioEffect?.id === renderMetadata.activeAudioEffectId
+      renderMetadata?.activeAudioEffectIds?.length > 0 &&
+      !renderMetadata.retainsActiveAudioEffects &&
+      _activeAudioEffects.length ===
+        renderMetadata.activeAudioEffectIds.length &&
+      renderMetadata.activeAudioEffectIds.every((effectId) =>
+        _activeAudioEffects.some((effect) => effect.id === effectId),
+      )
     ) {
-      _activeAudioEffect = null;
+      _activeAudioEffects = [];
     }
   };
 
@@ -1156,6 +1175,9 @@ export default function createRouteEngine(options) {
     const outgoingBgmChannel = capturesEnteredLineBgmHandoff
       ? captureOutgoingBgmChannel()
       : null;
+    const outgoingBgmPresentation = capturesEnteredLineBgmHandoff
+      ? captureCurrentBgmPresentation()
+      : null;
     let storeCommitted = false;
     let result;
     try {
@@ -1175,13 +1197,13 @@ export default function createRouteEngine(options) {
       _restoredPersistentAnimationSessions =
         persistentAnimationSessionsBeforeAction ?? new Map();
       _persistentAnimationSessions = new Map();
-      _activeAudioEffect = null;
+      _activeAudioEffects = [];
     }
     if (
       actionType === "setSkipTransitionsAndAnimations" &&
       storePayload?.value === true
     ) {
-      _activeAudioEffect = null;
+      _activeAudioEffects = [];
     }
     const isSceneReplayActive =
       _systemStore.selectIsSceneReplayActive?.() === true;
@@ -1202,6 +1224,7 @@ export default function createRouteEngine(options) {
       _pendingEnteredLineBgmHandoff = {
         lineEntryId: lineEntryIdAfterAction,
         channel: outgoingBgmChannel,
+        presentation: outgoingBgmPresentation,
       };
     }
     if (actionType === "saveSlot") {
@@ -1312,7 +1335,7 @@ export default function createRouteEngine(options) {
       _renderPersistentAnimationMetadata,
     ),
     audioEffectOccurrenceSequence: _audioEffectOccurrenceSequence,
-    activeAudioEffect: _activeAudioEffect,
+    activeAudioEffects: _activeAudioEffects,
     pendingAudioEffectOccurrences: _pendingAudioEffectOccurrences.slice(),
     pendingEnteredLineBgmHandoff: _pendingEnteredLineBgmHandoff
       ? structuredClone(_pendingEnteredLineBgmHandoff)
@@ -1342,7 +1365,7 @@ export default function createRouteEngine(options) {
       snapshot.renderPersistentAnimationMetadata,
     );
     _audioEffectOccurrenceSequence = snapshot.audioEffectOccurrenceSequence;
-    _activeAudioEffect = snapshot.activeAudioEffect;
+    _activeAudioEffects = snapshot.activeAudioEffects;
     _pendingAudioEffectOccurrences =
       snapshot.pendingAudioEffectOccurrences.slice();
     _pendingEnteredLineBgmHandoff = snapshot.pendingEnteredLineBgmHandoff
@@ -1476,10 +1499,16 @@ export default function createRouteEngine(options) {
 
     if (actionType === "bgm") {
       return runActionBatch(() => {
-        const previousChannel = payload?.audioEffects
+        const previousBgm = captureCurrentBgmPresentation();
+        const resolvesAudioEffects = hasBgmAudioEffectSelections(
+          previousBgm,
+          payload,
+        );
+        const previousChannel = resolvesAudioEffects
           ? captureOutgoingBgmChannel()
           : null;
         dispatchStoreAction(actionType, payload);
+        const nextBgm = captureCurrentBgmPresentation();
         acceptBgmActionOccurrence(
           payload,
           {
@@ -1487,7 +1516,9 @@ export default function createRouteEngine(options) {
             actionPath: options.actionPath ?? [actionType],
           },
           previousChannel,
-          payload?.audioEffects ? captureCurrentBgmChannel() : null,
+          resolvesAudioEffects ? captureCurrentBgmChannel() : null,
+          previousBgm,
+          nextBgm,
         );
       }, options);
     }
@@ -1881,27 +1912,37 @@ export default function createRouteEngine(options) {
     }
 
     let previousBgmChannel = null;
-    if (
-      actionType === "bgm" &&
-      processedPayloadWithActionOptions?.audioEffects
-    ) {
+    let previousBgmPresentation = null;
+    let resolvesBgmAudioEffects = false;
+    if (actionType === "bgm") {
+      const currentBgmPresentation = captureCurrentBgmPresentation();
       const handoff = options.audioEffectHandoff;
-      if (handoff?.available) {
+      const candidatePreviousBgm = handoff?.available
+        ? handoff.presentation
+        : currentBgmPresentation;
+      resolvesBgmAudioEffects = hasBgmAudioEffectSelections(
+        candidatePreviousBgm,
+        processedPayloadWithActionOptions,
+      );
+      if (resolvesBgmAudioEffects && handoff?.available) {
         handoff.available = false;
         previousBgmChannel = structuredClone(handoff.channel);
-      } else {
+        previousBgmPresentation = structuredClone(handoff.presentation);
+      } else if (resolvesBgmAudioEffects) {
         previousBgmChannel = captureOutgoingBgmChannel();
+        previousBgmPresentation = currentBgmPresentation;
       }
     }
     dispatchStoreAction(actionType, processedPayloadWithActionOptions);
     if (actionType === "bgm") {
+      const nextBgmPresentation = captureCurrentBgmPresentation();
       acceptBgmActionOccurrence(
         processedPayloadWithActionOptions,
         options,
         previousBgmChannel,
-        processedPayloadWithActionOptions?.audioEffects
-          ? captureCurrentBgmChannel()
-          : null,
+        resolvesBgmAudioEffects ? captureCurrentBgmChannel() : null,
+        previousBgmPresentation,
+        nextBgmPresentation,
       );
     }
   };
@@ -2057,6 +2098,9 @@ export default function createRouteEngine(options) {
               ? {
                   available: true,
                   channel: structuredClone(enteredLineBgmHandoff.channel),
+                  presentation: structuredClone(
+                    enteredLineBgmHandoff.presentation,
+                  ),
                 }
               : null,
           });

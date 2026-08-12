@@ -4042,10 +4042,10 @@ export const addBgm = (state, params) => {
 
 export const addAudioEffects = (
   state,
-  { activeAudioEffect, skipTransitionsAndAnimations },
+  { activeAudioEffects, skipTransitionsAndAnimations },
 ) => {
-  if (activeAudioEffect && !skipTransitionsAndAnimations) {
-    state.audioEffects = [structuredClone(activeAudioEffect)];
+  if (activeAudioEffects?.length > 0 && !skipTransitionsAndAnimations) {
+    state.audioEffects = structuredClone(activeAudioEffects);
   }
   return state;
 };
