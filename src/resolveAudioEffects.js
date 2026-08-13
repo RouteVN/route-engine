@@ -1,3 +1,5 @@
+import { createAudioRenderId } from "./audioIds.js";
+
 const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
 
 const DEFAULT_AUDIO_VALUES = Object.freeze({
@@ -38,6 +40,56 @@ const areEquivalentAudioValues = (authored, rendered) =>
   authored === rendered ||
   Math.abs(authored - rendered) <=
     Number.EPSILON * Math.max(1, Math.abs(authored), Math.abs(rendered));
+
+const clampAudioPan = (pan) => Math.max(-1, Math.min(1, pan));
+
+const getCanonicalSoundProperty = ({
+  bgm,
+  resources,
+  renderedSound,
+  property,
+}) => {
+  const sound = bgm?.sounds?.find(
+    ({ id }) => createAudioRenderId("bgm", id) === renderedSound?.id,
+  );
+  const resource = resources.sounds?.[sound?.resourceId];
+  return (
+    sound?.[property] ?? resource?.[property] ?? DEFAULT_AUDIO_VALUES[property]
+  );
+};
+
+const normalizeChannelUpdateValue = ({
+  property,
+  value,
+  relative,
+  nextBgm,
+  nextResources,
+  nextSound,
+}) => {
+  if (!nextBgm || !nextSound) return value;
+
+  if (property === "volume") {
+    const soundVolume = getCanonicalSoundProperty({
+      bgm: nextBgm,
+      resources: nextResources,
+      renderedSound: nextSound,
+      property,
+    });
+    return (value * soundVolume) / 100;
+  }
+
+  if (property === "pan" && !relative) {
+    const soundPan = getCanonicalSoundProperty({
+      bgm: nextBgm,
+      resources: nextResources,
+      renderedSound: nextSound,
+      property,
+    });
+    return clampAudioPan(value + soundPan);
+  }
+
+  return value;
+};
 
 const getPlaybackSpeed = (selection, selectionPath) => {
   const speed = selection?.playback?.speed ?? 1;
@@ -110,7 +162,13 @@ const compileFade = (fade, phase, speed, target, resourcePath) => {
   };
 };
 
-const compileUpdateProperty = ({ property, authored, speed, resourcePath }) => {
+const compileUpdateProperty = ({
+  property,
+  authored,
+  speed,
+  resourcePath,
+  normalizeValue = ({ value }) => value,
+}) => {
   const finalKeyframe = authored.keyframes.at(-1);
   if (
     typeof finalKeyframe?.value !== "number" ||
@@ -123,9 +181,23 @@ const compileUpdateProperty = ({ property, authored, speed, resourcePath }) => {
   }
 
   return {
-    keyframes: authored.keyframes.map((keyframe) =>
-      compileKeyframe(keyframe, speed),
-    ),
+    keyframes: authored.keyframes.map((keyframe) => {
+      const compiled = compileKeyframe(keyframe, speed);
+      const relative = compiled.relative === true;
+      compiled.value = normalizeValue({
+        property,
+        value: compiled.value,
+        relative,
+      });
+      if (hasOwn(compiled, "startValue")) {
+        compiled.startValue = normalizeValue({
+          property,
+          value: compiled.startValue,
+          relative,
+        });
+      }
+      return compiled;
+    }),
   };
 };
 
@@ -189,14 +261,8 @@ export const applyAudioEffectUpdateEndpoints = ({ bgm, resources = {} }) => {
 
     if (property === "volume") {
       resolvedBgm.volume = finalKeyframe.value;
-      resolvedBgm.sounds.forEach((sound) => {
-        sound.volume = DEFAULT_AUDIO_VALUES.volume;
-      });
     } else if (property === "pan") {
       resolvedBgm.pan = finalKeyframe.value;
-      resolvedBgm.sounds.forEach((sound) => {
-        sound.pan = DEFAULT_AUDIO_VALUES.pan;
-      });
     } else {
       resolvedBgm.sounds.forEach((sound) => {
         sound.playbackRate = finalKeyframe.value;
@@ -216,8 +282,10 @@ const createBaseEffect = (occurrence, targetId) => ({
 export const resolveAudioEffect = ({
   occurrence,
   resources = {},
+  nextResources = resources,
   previousChannel,
   nextChannel,
+  nextBgm,
 }) => {
   if (!occurrence?.selection) return null;
 
@@ -298,6 +366,15 @@ export const resolveAudioEffect = ({
       authored: resource.tween[property],
       speed,
       resourcePath,
+      normalizeValue: ({ value, relative }) =>
+        normalizeChannelUpdateValue({
+          property,
+          value,
+          relative,
+          nextBgm,
+          nextResources,
+          nextSound,
+        }),
     });
     const nextValue = nextSound[property] ?? DEFAULT_AUDIO_VALUES[property];
     const finalValue = update.keyframes.at(-1).value;

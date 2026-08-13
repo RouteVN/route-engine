@@ -632,8 +632,8 @@ describe("resolveAudioEffect", () => {
         {
           id: "main",
           resourceId: "old",
-          volume: 100,
-          pan: 0,
+          volume: 40,
+          pan: 0.25,
           playbackRate: 0.75,
         },
       ],
@@ -781,6 +781,93 @@ describe("resolveAudioEffect", () => {
     });
   });
 
+  it("normalizes channel updates per sound without flattening the local mix", () => {
+    const previousChannel = {
+      ...oldChannel,
+      children: [
+        { ...oldChannel.children[0], volume: 60, pan: 0.1 },
+        {
+          ...oldChannel.children[0],
+          id: "bgm:ambience",
+          src: "ambience.ogg",
+          volume: 32,
+          pan: -0.2,
+        },
+      ],
+    };
+    const nextChannel = {
+      ...oldChannel,
+      children: [
+        { ...oldChannel.children[0], volume: 22.5, pan: -0.4 },
+        {
+          ...oldChannel.children[0],
+          id: "bgm:ambience",
+          src: "ambience.ogg",
+          volume: 12,
+          pan: -0.7,
+        },
+      ],
+    };
+    const resources = {
+      sounds: {
+        main: { fileId: "old.ogg" },
+        ambience: { fileId: "ambience.ogg" },
+      },
+      audioEffects: {
+        mixed: {
+          type: "update",
+          tween: {
+            volume: {
+              keyframes: [
+                { value: 50, duration: 50 },
+                { value: 30, duration: 100 },
+              ],
+            },
+            pan: { keyframes: [{ value: -0.5, duration: 100 }] },
+          },
+        },
+      },
+    };
+    const effects = resolveAudioEffects({
+      occurrence: {
+        ...occurrence,
+        selection: { resourceId: "mixed" },
+      },
+      resources,
+      nextResources: resources,
+      nextBgm: {
+        volume: 30,
+        pan: -0.5,
+        sounds: [
+          { id: "main", resourceId: "main", volume: 75, pan: 0.1 },
+          {
+            id: "ambience",
+            resourceId: "ambience",
+            volume: 40,
+            pan: -0.2,
+          },
+        ],
+      },
+      previousChannel,
+      nextChannel,
+    });
+
+    expect(effects).toHaveLength(2);
+    expect(effects[0].properties.volume.update.keyframes).toEqual([
+      expect.objectContaining({ value: 37.5 }),
+      expect.objectContaining({ value: 22.5 }),
+    ]);
+    expect(effects[1].properties.volume.update.keyframes).toEqual([
+      expect.objectContaining({ value: 20 }),
+      expect.objectContaining({ value: 12 }),
+    ]);
+    expect(
+      effects.map(
+        (effect) => effect.properties.pan.update.keyframes.at(-1).value,
+      ),
+    ).toEqual([-0.4, -0.7]);
+  });
+
   it("writes update endpoints across a multi-sound BGM channel", () => {
     const bgm = {
       volume: 80,
@@ -808,8 +895,8 @@ describe("resolveAudioEffect", () => {
       volume: 30,
       pan: -0.5,
       sounds: [
-        { volume: 100, pan: 0, playbackRate: 0.75 },
-        { volume: 100, pan: 0, playbackRate: 0.75 },
+        { volume: 75, pan: 0.1, playbackRate: 0.75 },
+        { volume: 40, pan: -0.2, playbackRate: 0.75 },
       ],
     });
   });

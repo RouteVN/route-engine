@@ -439,6 +439,11 @@ export default function createRouteEngine(options) {
     ),
   });
 
+  const captureCurrentSoundResources = () =>
+    structuredClone(
+      _systemStore.selectSystemState().projectData?.resources?.sounds ?? {},
+    );
+
   const hasBgmAudioEffectSelections = (bgm) => !!bgm?.audioEffects;
 
   const captureOutgoingBgmChannel = () =>
@@ -523,7 +528,10 @@ export default function createRouteEngine(options) {
         : null,
     };
 
-    const nextResources = captureCurrentBgmResources();
+    const nextResources = {
+      ...captureCurrentBgmResources(),
+      sounds: captureCurrentSoundResources(),
+    };
     const effects = resolveAudioEffects({
       occurrence,
       resources: nextResources,

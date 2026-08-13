@@ -1317,8 +1317,10 @@ render-scoped behavior when omitted.
 BGM update effects use numeric keyframes for `volume`, `pan`, and
 `playbackRate`. The final keyframe must be absolute. Its value becomes the
 persistent BGM value after the effect finishes; intermediate keyframes only
-shape the tween. Update effects still require one retained BGM sound with a
-stable source identity.
+shape the tween. An update is applied to every retained BGM sound and requires
+the same sound IDs and source identities on both sides. Channel-level volume
+and pan keyframes are flattened into each rendered sound while preserving that
+sound's authored or resource-level volume and pan.
 
 ### Visual Layers
 
@@ -2069,7 +2071,8 @@ Engine audio is authored with `sounds` and rendered as Route Graphics
   stable and globally unique.
 - Canonical sound IDs must be unique within their channel, and canonical SFX
   channel IDs must be unique within the SFX action.
-- Audio transitions are not part of the Engine authoring interface yet.
+- BGM `audioEffects` updates fan out across retained sounds. Transitions target
+  only added, removed, or source-replaced sounds.
 
 ```yaml
 actions:

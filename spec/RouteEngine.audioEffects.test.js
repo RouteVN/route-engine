@@ -157,6 +157,51 @@ describe("RouteEngine audioEffects occurrences", () => {
     });
   });
 
+  it("preserves each local mix while updating a multi-sound BGM channel", () => {
+    const projectData = createProjectData();
+    projectData.resources.sounds.ambience = {
+      fileId: "ambience.ogg",
+      volume: 40,
+    };
+    const lines = projectData.story.scenes.scene.sections.section.lines;
+    lines[0].actions.bgm = {
+      volume: 80,
+      sounds: [
+        { id: "main", resourceId: "old", volume: 75 },
+        { id: "ambience", resourceId: "ambience" },
+      ],
+    };
+    lines[1].actions.bgm = {
+      volume: 30,
+      audioEffects: { resourceId: "smooth" },
+      sounds: [
+        { id: "main", resourceId: "old", volume: 75 },
+        { id: "ambience", resourceId: "ambience" },
+      ],
+    };
+    const engine = createEngine({ projectData });
+
+    expect(() => enterNextLine(engine)).not.toThrow();
+    const renderState = engine.selectRenderState();
+
+    expect(renderState.audio[0].children.map(({ volume }) => volume)).toEqual([
+      22.5, 12,
+    ]);
+    expect(renderState.audioEffects.map((effect) => effect.targetId)).toEqual([
+      "bgm:main",
+      "bgm:ambience",
+    ]);
+    expect(
+      renderState.audioEffects.map(
+        (effect) => effect.properties.volume.update.keyframes.at(-1).value,
+      ),
+    ).toEqual([22.5, 12]);
+    expect(engine.selectPresentationState().bgm.sounds).toEqual([
+      { id: "main", resourceId: "old", volume: 75 },
+      { id: "ambience", resourceId: "ambience" },
+    ]);
+  });
+
   it("retains one immutable handoff across retries and settings renders", () => {
     const engine = createEngine();
     enterNextLine(engine);
@@ -267,7 +312,7 @@ describe("RouteEngine audioEffects occurrences", () => {
     expect(engine.selectRenderState().audioEffects).toBeUndefined();
     expect(engine.selectPresentationState().bgm).toMatchObject({
       volume: 30,
-      sounds: [expect.objectContaining({ volume: 100 })],
+      sounds: [expect.objectContaining({ id: "main", resourceId: "old" })],
     });
     expect(engine.selectRenderState().audio[0].children[0].volume).toBe(30);
     engine.handleAction("setSkipTransitionsAndAnimations", { value: false });
