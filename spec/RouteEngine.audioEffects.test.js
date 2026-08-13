@@ -126,6 +126,37 @@ describe("RouteEngine audioEffects occurrences", () => {
     expect(effect.properties.volume).not.toHaveProperty("exit");
   });
 
+  it("compiles a channel transition across multiple BGM sounds", () => {
+    const projectData = createProjectData();
+    const lines = projectData.story.scenes.scene.sections.section.lines;
+    lines[0].actions.bgm.sounds.push({
+      id: "ambience",
+      resourceId: "old",
+      volume: 40,
+    });
+    lines[1].actions.bgm.sounds.push({
+      id: "ambience",
+      resourceId: "next",
+      volume: 25,
+    });
+    const engine = createEngine({ projectData });
+
+    expect(() => enterNextLine(engine)).not.toThrow();
+    const effects = engine.selectRenderState().audioEffects;
+
+    expect(effects).toHaveLength(2);
+    expect(effects.map((effect) => effect.targetId)).toEqual([
+      "bgm:main",
+      "bgm:ambience",
+    ]);
+    effects.forEach((effect) => {
+      expect(effect.properties.volume).toMatchObject({
+        exit: { keyframes: [expect.objectContaining({ value: 0 })] },
+        enter: { keyframes: [expect.any(Object)] },
+      });
+    });
+  });
+
   it("retains one immutable handoff across retries and settings renders", () => {
     const engine = createEngine();
     enterNextLine(engine);

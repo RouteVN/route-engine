@@ -171,10 +171,9 @@ export const applyAudioEffectUpdateEndpoints = ({ bgm, resources = {} }) => {
   if (resource?.type !== "update") return bgm;
 
   const sounds = bgm.sounds ?? [];
-  if (sounds.length !== 1) return bgm;
+  if (sounds.length === 0) return bgm;
 
   const resolvedBgm = structuredClone(bgm);
-  const sound = resolvedBgm.sounds[0];
 
   for (const property of UPDATE_PROPERTIES) {
     if (!hasOwn(resource.tween, property)) continue;
@@ -190,12 +189,18 @@ export const applyAudioEffectUpdateEndpoints = ({ bgm, resources = {} }) => {
 
     if (property === "volume") {
       resolvedBgm.volume = finalKeyframe.value;
-      sound.volume = DEFAULT_AUDIO_VALUES.volume;
+      resolvedBgm.sounds.forEach((sound) => {
+        sound.volume = DEFAULT_AUDIO_VALUES.volume;
+      });
     } else if (property === "pan") {
       resolvedBgm.pan = finalKeyframe.value;
-      sound.pan = DEFAULT_AUDIO_VALUES.pan;
+      resolvedBgm.sounds.forEach((sound) => {
+        sound.pan = DEFAULT_AUDIO_VALUES.pan;
+      });
     } else {
-      sound.playbackRate = finalKeyframe.value;
+      resolvedBgm.sounds.forEach((sound) => {
+        sound.playbackRate = finalKeyframe.value;
+      });
     }
   }
 
@@ -322,9 +327,104 @@ export const resolveAudioEffect = ({
 
 export const resolveAudioEffects = (options) => {
   const nextResources = options.nextResources ?? options.resources;
-  const legacyEffect = resolveAudioEffect({
-    ...options,
-    resources: nextResources,
+  const occurrence = options.occurrence;
+  if (!occurrence?.selection) return [];
+
+  const previousSounds = options.previousChannel?.children ?? [];
+  const nextSounds = options.nextChannel?.children ?? [];
+  const resourceId = occurrence.selection.resourceId;
+  const resource = nextResources?.audioEffects?.[resourceId];
+
+  const createSingleSoundChannel = (channel, sound) => {
+    if (!sound) return null;
+    return {
+      ...channel,
+      children: [sound],
+    };
+  };
+  const resolveTargets = (targets) =>
+    targets
+      .map(({ previousSound, nextSound }, index) =>
+        resolveAudioEffect({
+          ...options,
+          occurrence:
+            index === 0
+              ? occurrence
+              : {
+                  ...occurrence,
+                  occurrenceId: `${occurrence.occurrenceId}:${index}`,
+                },
+          resources: nextResources,
+          previousChannel: createSingleSoundChannel(
+            options.previousChannel,
+            previousSound,
+          ),
+          nextChannel: createSingleSoundChannel(options.nextChannel, nextSound),
+        }),
+      )
+      .filter(Boolean);
+
+  if (!resource || !["transition", "update"].includes(resource.type)) {
+    return resolveTargets([
+      {
+        previousSound: previousSounds[0],
+        nextSound: nextSounds[0],
+      },
+    ]);
+  }
+
+  const previousById = new Map(
+    previousSounds.map((sound) => [sound.id, sound]),
+  );
+  const nextById = new Map(nextSounds.map((sound) => [sound.id, sound]));
+
+  if (resource.type === "update") {
+    const targets = nextSounds.map((nextSound) => ({
+      previousSound: previousById.get(nextSound.id),
+      nextSound,
+    }));
+    const missingPreviousSound = targets.find(
+      ({ previousSound }) => !previousSound,
+    );
+    if (missingPreviousSound) {
+      return resolveTargets([missingPreviousSound]);
+    }
+    const removedSound = previousSounds.find(
+      (previousSound) => !nextById.has(previousSound.id),
+    );
+    if (removedSound) {
+      return resolveTargets([{ previousSound: removedSound }]);
+    }
+    return resolveTargets(targets);
+  }
+
+  const targets = [];
+  for (const previousSound of previousSounds) {
+    const nextSound = nextById.get(previousSound.id);
+    if (!nextSound || !isSameSourceIdentity(previousSound, nextSound)) {
+      targets.push({ previousSound, nextSound });
+    }
+  }
+  for (const nextSound of nextSounds) {
+    if (!previousById.has(nextSound.id)) {
+      targets.push({ nextSound });
+    }
+  }
+
+  if (targets.length > 0) {
+    return resolveTargets(targets);
+  }
+
+  const changedRetainedSound = previousSounds.find((previousSound) => {
+    const nextSound = nextById.get(previousSound.id);
+    return nextSound && !isSameValue(previousSound, nextSound);
   });
-  return legacyEffect ? [legacyEffect] : [];
+  return resolveTargets([
+    {
+      previousSound: changedRetainedSound ?? previousSounds[0],
+      nextSound: changedRetainedSound
+        ? nextById.get(changedRetainedSound.id)
+        : nextSounds[0],
+    },
+  ]);
 };
