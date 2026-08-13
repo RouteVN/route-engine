@@ -1,0 +1,69 @@
+---
+title: Sound Boundary Effects
+description: Per-sound update presets compile onto the rendered sound instead of top-level lifecycle phases.
+skipInitialScreenshot: true
+specs:
+  - a BGM sound selects reusable update effects for its natural begin and end boundaries
+  - Route Engine emits concrete beginEffect and endEffect tracks on the sound node
+  - no top-level audio effect occurrence is created for sound boundaries
+steps:
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audio.0.children.0.beginEffect.volume.keyframes.0.startValue
+    value: 0
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audio.0.children.0.beginEffect.volume.keyframes.0.value
+    value: 100
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audio.0.children.0.endEffect.volume.keyframes.0.value
+    value: 0
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect
+    value: null
+---
+screen:
+  width: 640
+  height: 360
+resources:
+  sounds:
+    theme:
+      fileId: 3ka3s
+  audioEffects:
+    fade-in:
+      type: update
+      tween:
+        volume:
+          keyframes:
+            - startValue: 0
+              value: 100
+              duration: 300
+    fade-out:
+      type: update
+      tween:
+        volume:
+          keyframes:
+            - value: 0
+              duration: 500
+story:
+  initialSceneId: scene1
+  scenes:
+    scene1:
+      initialSectionId: section1
+      sections:
+        section1:
+          lines:
+            - id: playing
+              actions:
+                bgm:
+                  loop: true
+                  sounds:
+                    - id: main
+                      resourceId: theme
+                      loop: false
+                      beginEffect:
+                        resourceId: fade-in
+                      endEffect:
+                        resourceId: fade-out

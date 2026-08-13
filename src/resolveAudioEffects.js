@@ -39,11 +39,11 @@ const areEquivalentAudioValues = (authored, rendered) =>
   Math.abs(authored - rendered) <=
     Number.EPSILON * Math.max(1, Math.abs(authored), Math.abs(rendered));
 
-const getPlaybackSpeed = (selection, actionPath) => {
+const getPlaybackSpeed = (selection, selectionPath) => {
   const speed = selection?.playback?.speed ?? 1;
   if (typeof speed !== "number" || !Number.isFinite(speed) || speed <= 0) {
     throw new Error(
-      `[${actionPath}.audioEffects.playback.speed] Audio effect speed must be a finite number greater than 0.`,
+      `[${selectionPath}.playback.speed] Audio effect speed must be a finite number greater than 0.`,
     );
   }
   return speed;
@@ -129,6 +129,42 @@ const compileUpdateProperty = ({ property, authored, speed, resourcePath }) => {
   };
 };
 
+export const resolveSoundBoundaryEffect = ({
+  selection,
+  selectionPath,
+  resources = {},
+}) => {
+  if (!selection) return undefined;
+
+  const resourceId = selection.resourceId;
+  const resourcePath = `resources.audioEffects.${resourceId}`;
+  const resource = resources.audioEffects?.[resourceId];
+  if (!resource) {
+    throw new Error(
+      `[${selectionPath}.resourceId]\n[${resourcePath}] Unknown audio effect resource "${resourceId}".`,
+    );
+  }
+  if (resource.type !== "update") {
+    throw new Error(
+      `[${selectionPath}]\n[${resourcePath}] Sound beginEffect and endEffect selections require an audio effect resource with type "update".`,
+    );
+  }
+
+  const speed = getPlaybackSpeed(selection, selectionPath);
+  const properties = {};
+  for (const property of UPDATE_PROPERTIES) {
+    if (!hasOwn(resource.tween, property)) continue;
+    properties[property] = compileUpdateProperty({
+      property,
+      authored: resource.tween[property],
+      speed,
+      resourcePath,
+    });
+  }
+
+  return properties;
+};
+
 export const applyAudioEffectUpdateEndpoints = ({ bgm, resources = {} }) => {
   const resourceId = bgm?.audioEffects?.resourceId;
   const resource = resources.audioEffects?.[resourceId];
@@ -191,7 +227,7 @@ export const resolveAudioEffect = ({
     );
   }
 
-  const speed = getPlaybackSpeed(selection, actionPath);
+  const speed = getPlaybackSpeed(selection, `${actionPath}.audioEffects`);
   const previousSound = getSingleBgmSound(previousChannel, actionPath);
   const nextSound = getSingleBgmSound(nextChannel, actionPath);
   if (!previousSound && !nextSound) return null;
@@ -282,4 +318,13 @@ export const resolveAudioEffect = ({
     ...createBaseEffect(occurrence, targetId),
     properties,
   };
+};
+
+export const resolveAudioEffects = (options) => {
+  const nextResources = options.nextResources ?? options.resources;
+  const legacyEffect = resolveAudioEffect({
+    ...options,
+    resources: nextResources,
+  });
+  return legacyEffect ? [legacyEffect] : [];
 };

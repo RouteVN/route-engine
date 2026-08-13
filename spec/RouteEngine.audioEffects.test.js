@@ -593,4 +593,53 @@ describe("RouteEngine audioEffects occurrences", () => {
       'story.scenes["actual-scene"].sections["section"].lines["old"].actions.bgm.audioEffects.resourceId',
     );
   });
+
+  it("compiles beginEffect and endEffect onto the rendered sound", () => {
+    const projectData = createProjectData();
+    projectData.story.scenes.scene.sections.section.lines = [
+      {
+        id: "sound-effects",
+        actions: {
+          bgm: {
+            loop: true,
+            sounds: [
+              {
+                id: "lead:%main",
+                resourceId: "old",
+                volume: 80,
+                beginEffect: {
+                  resourceId: "smooth",
+                  playback: { speed: 2 },
+                },
+                endEffect: { resourceId: "smooth" },
+              },
+            ],
+          },
+        },
+      },
+    ];
+    const engine = createEngine({ projectData });
+
+    expect(engine.selectRenderState().audioEffects).toBeUndefined();
+    expect(engine.selectRenderState().audio[0].children[0]).toMatchObject({
+      id: "bgm:lead%3A%25main",
+      loop: false,
+      beginEffect: {
+        volume: {
+          keyframes: [
+            expect.objectContaining({ value: 50, duration: 200 }),
+            expect.objectContaining({ value: 30, duration: 300 }),
+          ],
+        },
+      },
+      endEffect: {
+        volume: {
+          keyframes: [
+            expect.objectContaining({ value: 50, duration: 400 }),
+            expect.objectContaining({ value: 30, duration: 600 }),
+          ],
+        },
+      },
+    });
+  });
 });

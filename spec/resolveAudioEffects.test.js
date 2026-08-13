@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   applyAudioEffectUpdateEndpoints,
   resolveAudioEffect,
+  resolveAudioEffects,
+  resolveSoundBoundaryEffect,
 } from "../src/resolveAudioEffects.js";
 
 const oldChannel = {
@@ -672,5 +674,128 @@ describe("resolveAudioEffect", () => {
       previousChannel,
       nextChannel,
     }).toEqual(snapshots);
+  });
+
+  it("keeps per-sound boundary presets out of top-level audioEffects", () => {
+    expect(
+      resolveAudioEffects({
+        occurrence: { ...occurrence, selection: null },
+        resources: { audioEffects: { smooth: updateResource } },
+        previousChannel: null,
+        nextChannel: newChannel,
+      }),
+    ).toEqual([]);
+  });
+});
+
+describe("resolveSoundBoundaryEffect", () => {
+  it("compiles update properties and playback speed", () => {
+    expect(
+      resolveSoundBoundaryEffect({
+        selection: { resourceId: "smooth", playback: { speed: 2 } },
+        selectionPath: 'bgm.sounds["main"].beginEffect',
+        resources: {
+          audioEffects: {
+            smooth: {
+              type: "update",
+              tween: {
+                volume: {
+                  keyframes: [
+                    { startValue: 0, value: 50, duration: 200 },
+                    { value: 100, delay: 40, duration: 400 },
+                  ],
+                },
+                pan: {
+                  keyframes: [{ value: 0.5, duration: 100 }],
+                },
+                playbackRate: {
+                  keyframes: [{ value: 1.25, duration: 300 }],
+                },
+              },
+            },
+          },
+        },
+      }),
+    ).toEqual({
+      volume: {
+        keyframes: [
+          {
+            startValue: 0,
+            value: 50,
+            delay: 0,
+            duration: 100,
+            easing: "linear",
+          },
+          {
+            value: 100,
+            delay: 20,
+            duration: 200,
+            easing: "linear",
+          },
+        ],
+      },
+      pan: {
+        keyframes: [{ value: 0.5, delay: 0, duration: 50, easing: "linear" }],
+      },
+      playbackRate: {
+        keyframes: [{ value: 1.25, delay: 0, duration: 150, easing: "linear" }],
+      },
+    });
+  });
+
+  it("returns undefined without a selection", () => {
+    expect(
+      resolveSoundBoundaryEffect({
+        selection: undefined,
+        selectionPath: 'bgm.sounds["main"].endEffect',
+        resources: {},
+      }),
+    ).toBeUndefined();
+  });
+
+  it("rejects missing, transition, invalid endpoint, and invalid speed inputs", () => {
+    const selectionPath = 'bgm.sounds["main"].beginEffect';
+    expect(() =>
+      resolveSoundBoundaryEffect({
+        selection: { resourceId: "missing" },
+        selectionPath,
+        resources: {},
+      }),
+    ).toThrow('Unknown audio effect resource "missing"');
+
+    expect(() =>
+      resolveSoundBoundaryEffect({
+        selection: { resourceId: "crossfade" },
+        selectionPath,
+        resources: { audioEffects: { crossfade: transitionResource } },
+      }),
+    ).toThrow('require an audio effect resource with type "update"');
+
+    expect(() =>
+      resolveSoundBoundaryEffect({
+        selection: { resourceId: "bad" },
+        selectionPath,
+        resources: {
+          audioEffects: {
+            bad: {
+              type: "update",
+              tween: {
+                volume: {
+                  keyframes: [{ value: 10, duration: 100, relative: true }],
+                },
+              },
+            },
+          },
+        },
+      }),
+    ).toThrow("final keyframe must use an absolute finite numeric value");
+
+    expect(() =>
+      resolveSoundBoundaryEffect({
+        selection: { resourceId: "smooth", playback: { speed: 0 } },
+        selectionPath,
+        resources: { audioEffects: { smooth: updateResource } },
+      }),
+    ).toThrow("must be a finite number greater than 0");
   });
 });
