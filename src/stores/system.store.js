@@ -3812,7 +3812,7 @@ export const selectSaveSlotPage = ({ state }, { slotsPerPage = 6 } = {}) => {
 export const selectSaveSlots = selectSaveSlotMap;
 export const selectCurrentPageSlots = selectSaveSlotPage;
 
-const shouldSettleCurrentLinePresentation = (state) => {
+export const shouldSettleCurrentLinePresentation = (state) => {
   const lastContext = state.contexts?.[state.contexts.length - 1];
   const rollback = lastContext?.rollback;
   if (

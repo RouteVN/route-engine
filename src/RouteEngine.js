@@ -1,4 +1,7 @@
-import { createSystemStore } from "./stores/system.store.js";
+import {
+  createSystemStore,
+  shouldSettleCurrentLinePresentation,
+} from "./stores/system.store.js";
 import { normalizeNamespace } from "./indexedDbPersistence.js";
 import {
   evaluateRouteCondition,
@@ -416,6 +419,14 @@ export default function createRouteEngine(options) {
     }
   };
 
+  const captureCurrentSkipTransitionsAndAnimations = () => {
+    const systemState = _systemStore.selectSystemState();
+    return (
+      _systemStore.selectRuntime()?.skipTransitionsAndAnimations === true ||
+      shouldSettleCurrentLinePresentation(systemState)
+    );
+  };
+
   const captureCurrentBgmChannel = () => {
     const systemState = _systemStore.selectSystemState();
     if (!systemState.projectData) return null;
@@ -424,6 +435,8 @@ export default function createRouteEngine(options) {
       resources: systemState.projectData?.resources,
       runtime: _systemStore.selectRuntime(),
       musicRoomPlayer: systemState.global?.musicRoomPlayer,
+      skipTransitionsAndAnimations:
+        captureCurrentSkipTransitionsAndAnimations(),
     });
   };
 

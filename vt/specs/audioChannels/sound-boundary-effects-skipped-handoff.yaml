@@ -1,0 +1,142 @@
+---
+title: Skipped Sound Boundary Handoff
+description: Isolated browser fixture proving a retained BGM handoff compares the same settled sound graph that was committed while transition skipping is enabled.
+skipInitialScreenshot: true
+specs:
+  - project defaults skip transitions before the BGM sound starts
+  - the committed sound omits its valid begin and end boundary effects
+  - a no-op retained-sound transition uses the same skipped graph without throwing
+  - Route Graphics neither restarts the source nor schedules boundary automation
+steps:
+  - action: click
+    x: 320
+    y: 180
+  - action: wait
+    ms: 250
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect
+    value: null
+  - action: assert
+    type: js
+    global: __vtAudioSourceStartCount
+    value: 1
+  - action: assert
+    type: js
+    global: __vtAudioParamRamps.length
+    value: 0
+  - action: click
+    x: 320
+    y: 180
+  - action: wait
+    ms: 100
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audio.0.children.0.src
+    value: 39csl
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect
+    value: null
+  - action: assert
+    type: js
+    global: __vtAudioEffectOccurrenceCount
+    value: 0
+  - action: assert
+    type: js
+    global: __vtAudioSourceStartCount
+    value: 1
+  - action: assert
+    type: js
+    global: __vtAudioParamRamps.length
+    value: 0
+---
+config:
+  runtimeDefaults:
+    skipTransitionsAndAnimations: true
+screen:
+  width: 640
+  height: 360
+resources:
+  sounds:
+    theme:
+      fileId: 39csl
+  audioEffects:
+    smooth-boundary:
+      type: update
+      tween:
+        volume:
+          keyframes:
+            - startValue: 0
+              value: 100
+              duration: 1000
+    crossfade:
+      type: transition
+      prev:
+        fade:
+          duration: 1000
+      next:
+        fade:
+          duration: 1000
+  colors:
+    advance:
+      hex: "#10131A"
+    complete:
+      hex: "#163A2C"
+  controls:
+    advance:
+      elements:
+        - id: advance
+          type: rect
+          width: 640
+          height: 360
+          colorId: advance
+          click:
+            payload:
+              actions:
+                nextLine: {}
+    complete:
+      elements:
+        - id: complete
+          type: rect
+          width: 640
+          height: 360
+          colorId: complete
+story:
+  initialSceneId: scene1
+  scenes:
+    scene1:
+      initialSectionId: section1
+      sections:
+        section1:
+          lines:
+            - id: silent
+              actions:
+                control:
+                  resourceId: advance
+            - id: skipped-boundaries
+              actions:
+                control:
+                  resourceId: advance
+                bgm:
+                  sounds:
+                    - id: main
+                      resourceId: theme
+                      beginEffect:
+                        resourceId: smooth-boundary
+                      endEffect:
+                        resourceId: smooth-boundary
+            - id: retained-no-op
+              actions:
+                control:
+                  resourceId: complete
+                bgm:
+                  audioEffects:
+                    resourceId: crossfade
+                  sounds:
+                    - id: main
+                      resourceId: theme
+                      beginEffect:
+                        resourceId: smooth-boundary
+                      endEffect:
+                        resourceId: smooth-boundary

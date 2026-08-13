@@ -1,0 +1,172 @@
+---
+title: Rolled-Back Sound Boundary Handoff
+description: Isolated browser fixture proving restored boundary metadata is not mistaken for a top-level retained-sound update after a settled rollback render.
+skipInitialScreenshot: true
+specs:
+  - one BGM sound starts with reusable begin and end boundary effects
+  - rolling back commits the sound without boundary automation in its settled graph
+  - reapplying the same BGM restores boundary metadata without creating a top-level transition
+  - Route Graphics retains the source and does not schedule another boundary ramp
+steps:
+  - action: click
+    x: 320
+    y: 180
+  - action: wait
+    ms: 250
+  - action: assert
+    type: js
+    global: __vtAudioSourceStartCount
+    value: 1
+  - action: assert
+    type: js
+    global: __vtAudioParamRamps.length
+    value: 1
+  - action: click
+    x: 320
+    y: 60
+  - action: wait
+    ms: 100
+  - action: click
+    x: 320
+    y: 180
+  - action: wait
+    ms: 100
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect
+    value: null
+  - action: click
+    x: 320
+    y: 300
+  - action: wait
+    ms: 100
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audio.0.children.0.beginEffect.volume.keyframes.0.value
+    value: 100
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect
+    value: null
+  - action: assert
+    type: js
+    global: __vtAudioEffectOccurrenceCount
+    value: 0
+  - action: assert
+    type: js
+    global: __vtAudioSourceStartCount
+    value: 1
+  - action: assert
+    type: js
+    global: __vtAudioParamRamps.length
+    value: 1
+---
+screen:
+  width: 640
+  height: 360
+resources:
+  sounds:
+    theme:
+      fileId: 39csl
+  audioEffects:
+    smooth-boundary:
+      type: update
+      tween:
+        volume:
+          keyframes:
+            - startValue: 0
+              value: 100
+              duration: 200
+    crossfade:
+      type: transition
+      prev:
+        fade:
+          duration: 1000
+      next:
+        fade:
+          duration: 1000
+  colors:
+    advance:
+      hex: "#10131A"
+    apply:
+      hex: "#163A2C"
+    rollback:
+      hex: "#421B1B"
+  controls:
+    sound-actions:
+      elements:
+        - id: next
+          type: rect
+          width: 640
+          height: 120
+          colorId: advance
+          click:
+            payload:
+              actions:
+                nextLine: {}
+        - id: unlock-audio
+          type: rect
+          y: 120
+          width: 640
+          height: 120
+          colorId: advance
+          click:
+            payload:
+              actions:
+                setMuteAll:
+                  value: false
+        - id: apply
+          type: rect
+          y: 240
+          width: 640
+          height: 120
+          colorId: apply
+          click:
+            payload:
+              actions:
+                bgm:
+                  audioEffects:
+                    resourceId: crossfade
+                  sounds:
+                    - id: main
+                      resourceId: theme
+                      beginEffect:
+                        resourceId: smooth-boundary
+                      endEffect:
+                        resourceId: smooth-boundary
+    rollback:
+      elements:
+        - id: rollback
+          type: rect
+          width: 640
+          height: 360
+          colorId: rollback
+          click:
+            payload:
+              actions:
+                rollbackByOffset:
+                  offset: -1
+story:
+  initialSceneId: scene1
+  scenes:
+    scene1:
+      initialSectionId: section1
+      sections:
+        section1:
+          lines:
+            - id: boundary-sound
+              actions:
+                control:
+                  resourceId: sound-actions
+                bgm:
+                  sounds:
+                    - id: main
+                      resourceId: theme
+                      beginEffect:
+                        resourceId: smooth-boundary
+                      endEffect:
+                        resourceId: smooth-boundary
+            - id: rollback
+              actions:
+                control:
+                  resourceId: rollback

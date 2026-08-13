@@ -91,6 +91,48 @@ const normalizeChannelUpdateValue = ({
   return value;
 };
 
+const resolveRelativeChannelPanKeyframes = ({
+  authoredKeyframes,
+  compiledKeyframes,
+  previousBgm,
+  nextBgm,
+  nextResources,
+  nextSound,
+}) => {
+  if (!nextBgm || !nextSound) return compiledKeyframes;
+
+  const localPan = getCanonicalSoundProperty({
+    bgm: nextBgm,
+    resources: nextResources,
+    renderedSound: nextSound,
+    property: "pan",
+  });
+  let channelPan = previousBgm?.pan ?? DEFAULT_AUDIO_VALUES.pan;
+
+  return compiledKeyframes.map((compiled, index) => {
+    const authored = authoredKeyframes[index];
+    if (authored.relative !== true) {
+      channelPan = authored.value;
+      return compiled;
+    }
+
+    const startChannelPan = hasOwn(authored, "startValue")
+      ? channelPan + authored.startValue
+      : channelPan;
+    const nextChannelPan = startChannelPan + authored.value;
+    const { relative: _, ...absolute } = compiled;
+    channelPan = nextChannelPan;
+
+    return {
+      ...absolute,
+      ...(hasOwn(authored, "startValue")
+        ? { startValue: clampAudioPan(startChannelPan + localPan) }
+        : {}),
+      value: clampAudioPan(nextChannelPan + localPan),
+    };
+  });
+};
+
 const getPlaybackSpeed = (selection, selectionPath) => {
   const speed = selection?.playback?.speed ?? 1;
   if (typeof speed !== "number" || !Number.isFinite(speed) || speed <= 0) {
@@ -279,12 +321,21 @@ const createBaseEffect = (occurrence, targetId) => ({
   targetId,
 });
 
+const getTopLevelTransitionSoundGraph = (sound) => {
+  if (!sound) return sound;
+  const graph = { ...sound };
+  delete graph.beginEffect;
+  delete graph.endEffect;
+  return graph;
+};
+
 export const resolveAudioEffect = ({
   occurrence,
   resources = {},
   nextResources = resources,
   previousChannel,
   nextChannel,
+  previousBgm,
   nextBgm,
 }) => {
   if (!occurrence?.selection) return null;
@@ -313,7 +364,10 @@ export const resolveAudioEffect = ({
 
   const targetId = previousSound?.id ?? nextSound.id;
   const sameSource = isSameSourceIdentity(previousSound, nextSound);
-  const sameGraph = isSameValue(previousSound, nextSound);
+  const sameGraph = isSameValue(
+    getTopLevelTransitionSoundGraph(previousSound),
+    getTopLevelTransitionSoundGraph(nextSound),
+  );
 
   if (resource.type === "transition") {
     if (sameSource) {
@@ -376,6 +430,16 @@ export const resolveAudioEffect = ({
           nextSound,
         }),
     });
+    if (property === "pan") {
+      update.keyframes = resolveRelativeChannelPanKeyframes({
+        authoredKeyframes: resource.tween[property].keyframes,
+        compiledKeyframes: update.keyframes,
+        previousBgm,
+        nextBgm,
+        nextResources,
+        nextSound,
+      });
+    }
     const nextValue = nextSound[property] ?? DEFAULT_AUDIO_VALUES[property];
     const finalValue = update.keyframes.at(-1).value;
     if (!areEquivalentAudioValues(finalValue, nextValue)) {

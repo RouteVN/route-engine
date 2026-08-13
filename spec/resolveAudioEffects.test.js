@@ -409,6 +409,33 @@ describe("resolveAudioEffect", () => {
     ).toThrow("Transition fade keyframes must use absolute values");
   });
 
+  it("ignores sound boundary metadata when classifying a top-level transition", () => {
+    const effect = resolveWith({
+      selection: { resourceId: "crossfade" },
+      resources: { audioEffects: { crossfade: transitionResource } },
+      previousChannel: {
+        ...oldChannel,
+        children: [
+          {
+            ...oldChannel.children[0],
+            endEffect: { volume: { keyframes: [{ value: 0 }] } },
+          },
+        ],
+      },
+      nextChannel: {
+        ...oldChannel,
+        children: [
+          {
+            ...oldChannel.children[0],
+            beginEffect: { volume: { keyframes: [{ value: 100 }] } },
+          },
+        ],
+      },
+    });
+
+    expect(effect).toBeNull();
+  });
+
   it("returns null when every update property is unchanged", () => {
     const resource = {
       type: "update",
@@ -866,6 +893,67 @@ describe("resolveAudioEffect", () => {
         (effect) => effect.properties.pan.update.keyframes.at(-1).value,
       ),
     ).toEqual([-0.4, -0.7]);
+  });
+
+  it("resolves relative channel pan before composing a clamped local pan", () => {
+    const previousChannel = {
+      ...oldChannel,
+      children: [{ ...oldChannel.children[0], pan: 1 }],
+    };
+    const nextChannel = {
+      ...oldChannel,
+      children: [{ ...oldChannel.children[0], pan: 0.9 }],
+    };
+    const resources = {
+      sounds: { old: { fileId: "old.ogg" } },
+      audioEffects: {
+        panCurve: {
+          type: "update",
+          tween: {
+            pan: {
+              keyframes: [
+                { value: -0.2, relative: true, duration: 100 },
+                { value: 0.4, duration: 200 },
+              ],
+            },
+          },
+        },
+      },
+    };
+
+    const [effect] = resolveAudioEffects({
+      occurrence: {
+        ...occurrence,
+        selection: { resourceId: "panCurve" },
+      },
+      resources,
+      nextResources: resources,
+      previousBgm: {
+        pan: 0.9,
+        sounds: [{ id: "main", resourceId: "old", pan: 0.5 }],
+      },
+      nextBgm: {
+        pan: 0.4,
+        sounds: [{ id: "main", resourceId: "old", pan: 0.5 }],
+      },
+      previousChannel,
+      nextChannel,
+    });
+
+    expect(effect.properties.pan.update.keyframes).toEqual([
+      {
+        value: 1,
+        delay: 0,
+        duration: 100,
+        easing: "linear",
+      },
+      {
+        value: 0.9,
+        delay: 0,
+        duration: 200,
+        easing: "linear",
+      },
+    ]);
   });
 
   it("writes update endpoints across a multi-sound BGM channel", () => {

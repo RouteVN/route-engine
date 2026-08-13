@@ -202,6 +202,46 @@ describe("RouteEngine audioEffects occurrences", () => {
     ]);
   });
 
+  it("composes relative channel pan before clamping the rendered sound", () => {
+    const projectData = createProjectData();
+    projectData.resources.audioEffects.panCurve = {
+      type: "update",
+      tween: {
+        pan: {
+          keyframes: [
+            { value: -0.2, relative: true, duration: 100 },
+            { value: 0.4, duration: 200 },
+          ],
+        },
+      },
+    };
+    const lines = projectData.story.scenes.scene.sections.section.lines;
+    lines[0].actions.bgm = {
+      pan: 0.9,
+      sounds: [{ id: "main", resourceId: "old", pan: 0.5 }],
+    };
+    lines[1].actions.bgm = {
+      pan: 0.4,
+      audioEffects: { resourceId: "panCurve" },
+      sounds: [{ id: "main", resourceId: "old", pan: 0.5 }],
+    };
+    const engine = createEngine({ projectData });
+
+    expect(() => enterNextLine(engine)).not.toThrow();
+    const renderState = engine.selectRenderState();
+
+    expect(renderState.audio[0].children[0].pan).toBe(0.9);
+    expect(renderState.audioEffects[0].properties.pan.update.keyframes).toEqual(
+      [
+        expect.objectContaining({ value: 1 }),
+        expect.objectContaining({ value: 0.9 }),
+      ],
+    );
+    expect(
+      renderState.audioEffects[0].properties.pan.update.keyframes[0],
+    ).not.toHaveProperty("relative");
+  });
+
   it("retains one immutable handoff across retries and settings renders", () => {
     const engine = createEngine();
     enterNextLine(engine);
@@ -739,6 +779,35 @@ describe("RouteEngine audioEffects occurrences", () => {
     expect(renderedSound).not.toHaveProperty("endEffect");
   });
 
+  it("uses startup skip state for a no-op boundary-effect handoff", () => {
+    const projectData = createProjectData();
+    const lines = projectData.story.scenes.scene.sections.section.lines;
+    const sound = {
+      id: "main",
+      resourceId: "old",
+      beginEffect: { resourceId: "smooth" },
+      endEffect: { resourceId: "smooth" },
+    };
+    lines[0].actions.bgm = { volume: 80, sounds: [sound] };
+    lines[1].actions.bgm = {
+      volume: 80,
+      audioEffects: { resourceId: "crossfade" },
+      sounds: [structuredClone(sound)],
+    };
+    const engine = createEngine({
+      projectData,
+      global: {
+        runtime: { skipTransitionsAndAnimations: true },
+      },
+    });
+
+    expect(() => enterNextLine(engine)).not.toThrow();
+    expect(engine.selectRenderState().audioEffects).toBeUndefined();
+    expect(engine.selectRenderState().audio[0].children[0]).not.toHaveProperty(
+      "beginEffect",
+    );
+  });
+
   it("removes boundary effects from a retained sound when skipping is enabled", () => {
     const projectData = createProjectData();
     const sound =
@@ -816,5 +885,31 @@ describe("RouteEngine audioEffects occurrences", () => {
 
     expect(renderedSound).not.toHaveProperty("beginEffect");
     expect(renderedSound).not.toHaveProperty("endEffect");
+  });
+
+  it("does not classify restored boundary effects as a top-level update", () => {
+    const projectData = createProjectData();
+    const sound =
+      projectData.story.scenes.scene.sections.section.lines[0].actions.bgm
+        .sounds[0];
+    sound.beginEffect = { resourceId: "smooth" };
+    sound.endEffect = { resourceId: "smooth" };
+    const engine = createEngine({ projectData });
+
+    enterNextLine(engine);
+    engine.commitRenderState(engine.selectRenderState());
+    engine.handleAction("rollbackByOffset", { offset: -1 });
+    engine.commitRenderState(engine.selectRenderState());
+
+    expect(() =>
+      engine.handleAction("bgm", {
+        volume: 80,
+        audioEffects: { resourceId: "crossfade" },
+        sounds: [structuredClone(sound)],
+      }),
+    ).not.toThrow();
+    const renderState = engine.selectRenderState();
+    expect(renderState.audioEffects).toBeUndefined();
+    expect(renderState.audio[0].children[0]).toHaveProperty("beginEffect");
   });
 });
