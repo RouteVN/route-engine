@@ -642,4 +642,41 @@ describe("RouteEngine audioEffects occurrences", () => {
       },
     });
   });
+
+  it("omits sound boundary effects while transitions are skipped", () => {
+    const projectData = createProjectData();
+    const sound =
+      projectData.story.scenes.scene.sections.section.lines[0].actions.bgm
+        .sounds[0];
+    sound.beginEffect = { resourceId: "smooth" };
+    sound.endEffect = { resourceId: "smooth" };
+
+    const engine = createEngine({
+      projectData,
+      global: {
+        runtime: { skipTransitionsAndAnimations: true },
+      },
+    });
+    const renderedSound = engine.selectRenderState().audio[0].children[0];
+
+    expect(renderedSound).not.toHaveProperty("beginEffect");
+    expect(renderedSound).not.toHaveProperty("endEffect");
+  });
+
+  it("omits sound boundary effects from a settled rollback render", () => {
+    const projectData = createProjectData();
+    const sound =
+      projectData.story.scenes.scene.sections.section.lines[0].actions.bgm
+        .sounds[0];
+    sound.beginEffect = { resourceId: "smooth" };
+    sound.endEffect = { resourceId: "smooth" };
+    const engine = createEngine({ projectData });
+
+    enterNextLine(engine);
+    engine.handleAction("rollbackByOffset", { offset: -1 });
+    const renderedSound = engine.selectRenderState().audio[0].children[0];
+
+    expect(renderedSound).not.toHaveProperty("beginEffect");
+    expect(renderedSound).not.toHaveProperty("endEffect");
+  });
 });

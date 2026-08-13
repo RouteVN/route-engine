@@ -1,34 +1,21 @@
 ---
-title: Sound Boundary Effects
-description: Per-sound update presets compile onto the rendered sound instead of top-level lifecycle phases.
+title: Skipped Sound Boundary Effects
+description: The settled transition-skip preference omits per-sound boundary automation from the renderer path.
 skipInitialScreenshot: true
 specs:
-  - a BGM sound selects reusable update effects for its natural begin and end boundaries
-  - Route Engine emits concrete beginEffect and endEffect tracks on the sound node
-  - Route Graphics starts the sound and schedules both boundary gain ramps
-  - no top-level audio effect occurrence is created for sound boundaries
+  - the destination enables transition skipping in the same action batch that starts the sound
+  - Route Engine omits beginEffect and endEffect from the settled sound node
+  - Route Graphics starts the sound without scheduling either boundary gain ramp
 steps:
   - action: click
     x: 320
     y: 180
   - action: wait
-    ms: 750
+    ms: 200
   - action: assert
     type: js
-    global: __vtLastRenderState.audio.0.children.0.beginEffect.volume.keyframes.0.startValue
-    value: 0
-  - action: assert
-    type: js
-    global: __vtLastRenderState.audio.0.children.0.beginEffect.volume.keyframes.0.value
-    value: 100
-  - action: assert
-    type: js
-    global: __vtLastRenderState.audio.0.children.0.endEffect.volume.keyframes.0.value
-    value: 0
-  - action: assert
-    type: js
-    global: __vtLastAudioEffect
-    value: null
+    global: __vtLastRenderState.audio.0.children.0.src
+    value: 39csl
   - action: assert
     type: js
     global: __vtAudioSourceStartCount
@@ -36,14 +23,6 @@ steps:
   - action: assert
     type: js
     global: __vtAudioParamRamps.length
-    value: 2
-  - action: assert
-    type: js
-    global: __vtAudioParamRamps.0.value
-    value: 1
-  - action: assert
-    type: js
-    global: __vtAudioParamRamps.1.value
     value: 0
 ---
 screen:
@@ -96,15 +75,15 @@ story:
               actions:
                 control:
                   resourceId: advance
-            - id: playing
+            - id: skipped
               actions:
                 bgm:
-                  loop: true
                   sounds:
                     - id: main
                       resourceId: theme
-                      loop: false
                       beginEffect:
                         resourceId: fade-in
                       endEffect:
                         resourceId: fade-out
+                setSkipTransitionsAndAnimations:
+                  value: true

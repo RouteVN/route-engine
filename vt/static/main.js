@@ -26,6 +26,44 @@ const { l10nData, ...projectData } = parsedData;
 const namespace = `vt:${window.location.pathname}`;
 const isVtCaptureMode = () =>
   window?.RTGL_VT_DEBUG === true || navigator.webdriver === true;
+const installAudioPathProbe = () => {
+  if (!isVtCaptureMode()) return;
+
+  window.__vtAudioParamRamps = [];
+  window.__vtAudioSourceStartCount = 0;
+
+  const audioParamPrototype = window.AudioParam?.prototype;
+  const rampDescriptor = audioParamPrototype
+    ? Object.getOwnPropertyDescriptor(
+        audioParamPrototype,
+        "linearRampToValueAtTime",
+      )
+    : undefined;
+  if (typeof rampDescriptor?.value === "function") {
+    Object.defineProperty(audioParamPrototype, "linearRampToValueAtTime", {
+      ...rampDescriptor,
+      value(value, endTime) {
+        window.__vtAudioParamRamps.push({ value, endTime });
+        return rampDescriptor.value.call(this, value, endTime);
+      },
+    });
+  }
+
+  const sourcePrototype = window.AudioBufferSourceNode?.prototype;
+  const startDescriptor = sourcePrototype
+    ? Object.getOwnPropertyDescriptor(sourcePrototype, "start")
+    : undefined;
+  if (typeof startDescriptor?.value === "function") {
+    Object.defineProperty(sourcePrototype, "start", {
+      ...startDescriptor,
+      value(...args) {
+        window.__vtAudioSourceStartCount += 1;
+        return startDescriptor.value.apply(this, args);
+      },
+    });
+  }
+};
+installAudioPathProbe();
 const dispatchVtReady = () => {
   window.dispatchEvent(new CustomEvent("vt:ready"));
 };

@@ -2,8 +2,14 @@ import esbuild from "esbuild";
 import fs from "node:fs";
 import path from "node:path";
 
-const copyVtRouteGraphicsBundle = () => {
-  const source = path.resolve(
+const buildVtRouteGraphicsBundle = async () => {
+  const sourceEntry = path.resolve(
+    "node_modules",
+    "route-graphics",
+    "src",
+    "index.js",
+  );
+  const distBundle = path.resolve(
     "node_modules",
     "route-graphics",
     "dist",
@@ -11,14 +17,28 @@ const copyVtRouteGraphicsBundle = () => {
   );
   const target = path.resolve("vt", "static", "RouteGraphics.js");
 
-  if (!fs.existsSync(source)) {
-    throw new Error(
-      "Missing route-graphics dist bundle. Run `bun install` before building VT assets.",
-    );
+  if (fs.existsSync(sourceEntry)) {
+    await esbuild.build({
+      bundle: true,
+      minify: true,
+      sourcemap: false,
+      format: "esm",
+      platform: "browser",
+      outfile: target,
+      entryPoints: [sourceEntry],
+    });
+    return;
   }
 
-  fs.mkdirSync(path.dirname(target), { recursive: true });
-  fs.copyFileSync(source, target);
+  if (fs.existsSync(distBundle)) {
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.copyFileSync(distBundle, target);
+    return;
+  }
+
+  throw new Error(
+    "Missing route-graphics source and dist bundles. Run `bun install` before building VT assets.",
+  );
 };
 
 const build = async () => {
@@ -50,7 +70,7 @@ const build = async () => {
     entryPoints: [`vt/vtDependencies.js`],
   });
 
-  copyVtRouteGraphicsBundle();
+  await buildVtRouteGraphicsBundle();
   console.log("Build completed");
 };
 
