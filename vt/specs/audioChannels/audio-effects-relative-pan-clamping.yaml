@@ -1,0 +1,135 @@
+---
+title: Relative BGM Pan Update Across Clamping
+description: Isolated browser fixture proving relative channel pan is composed with local sound pan before the rendered value is clamped.
+skipInitialScreenshot: true
+specs:
+  - one retained BGM sound starts at the upper pan clamp because channel and local pan are both positive
+  - a relative channel frame remains at the rendered clamp after composition
+  - the following absolute frame reaches the authored persistent rendered pan
+  - Route Graphics schedules both panner ramps without restarting the source
+steps:
+  - action: click
+    x: 320
+    y: 180
+  - action: wait
+    ms: 250
+  - action: assert
+    type: js
+    global: __vtAudioSourceStartCount
+    value: 1
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audio.0.children.0.pan
+    value: 1
+  - action: click
+    x: 320
+    y: 180
+  - action: wait
+    ms: 100
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audioEffects.0.properties.pan.update.keyframes.0.value
+    value: 1
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audioEffects.0.properties.pan.update.keyframes.1.value
+    value: 0.9
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audio.0.children.0.pan
+    value: 0.9
+  - action: assert
+    type: js
+    global: __vtAudioSourceStartCount
+    value: 1
+  - action: assert
+    type: js
+    global: __vtAudioParamRamps.length
+    value: 2
+  - action: assert
+    type: js
+    global: __vtAudioParamRamps.0.value
+    value: 1
+  - action: assert
+    type: js
+    global: __vtAudioParamRamps.1.value
+    value: 0.9
+---
+screen:
+  width: 640
+  height: 360
+resources:
+  sounds:
+    theme:
+      fileId: 3ka3s
+  audioEffects:
+    pan-curve:
+      type: update
+      tween:
+        pan:
+          keyframes:
+            - value: -0.2
+              relative: true
+              duration: 1000
+              easing: linear
+            - value: 0.4
+              duration: 1000
+              easing: linear
+  colors:
+    advance:
+      hex: "#10131A"
+    complete:
+      hex: "#163A2C"
+  controls:
+    advance:
+      elements:
+        - id: advance
+          type: rect
+          width: 640
+          height: 360
+          colorId: advance
+          click:
+            payload:
+              actions:
+                nextLine: {}
+    complete:
+      elements:
+        - id: complete
+          type: rect
+          width: 640
+          height: 360
+          colorId: complete
+story:
+  initialSceneId: scene1
+  scenes:
+    scene1:
+      initialSectionId: section1
+      sections:
+        section1:
+          lines:
+            - id: silent
+              actions:
+                control:
+                  resourceId: advance
+            - id: clamped-pan
+              actions:
+                control:
+                  resourceId: advance
+                bgm:
+                  pan: 0.9
+                  sounds:
+                    - id: main
+                      resourceId: theme
+                      pan: 0.5
+            - id: relative-update
+              actions:
+                control:
+                  resourceId: complete
+                bgm:
+                  pan: 0.4
+                  audioEffects:
+                    resourceId: pan-curve
+                  sounds:
+                    - id: main
+                      resourceId: theme
+                      pan: 0.5

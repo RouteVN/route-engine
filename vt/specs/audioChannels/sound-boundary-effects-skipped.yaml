@@ -1,34 +1,21 @@
 ---
-title: Sound Boundary Effects
-description: Per-sound update presets compile onto the rendered sound instead of top-level lifecycle phases.
+title: Mid-Effect Sound Boundary Skip
+description: Enabling transition skipping settles active per-sound boundary automation through the renderer path.
 skipInitialScreenshot: true
 specs:
-  - a BGM sound selects reusable update effects for its natural begin and end boundaries
-  - Route Engine emits concrete beginEffect and endEffect tracks on the sound node
-  - Route Graphics starts the sound and schedules both boundary gain ramps
-  - no top-level audio effect occurrence is created for sound boundaries
+  - the sound starts a long beginEffect before transition skipping is enabled
+  - Route Engine removes the boundary effect from the retained sound node
+  - Route Graphics cancels the active ramp and settles the gain to its authored value
 steps:
   - action: click
     x: 320
     y: 180
   - action: wait
-    ms: 750
-  - action: assert
-    type: js
-    global: __vtLastRenderState.audio.0.children.0.beginEffect.volume.keyframes.0.startValue
-    value: 0
+    ms: 200
   - action: assert
     type: js
     global: __vtLastRenderState.audio.0.children.0.beginEffect.volume.keyframes.0.value
     value: 100
-  - action: assert
-    type: js
-    global: __vtLastRenderState.audio.0.children.0.endEffect.volume.keyframes.0.value
-    value: 0
-  - action: assert
-    type: js
-    global: __vtLastAudioEffect
-    value: null
   - action: assert
     type: js
     global: __vtAudioSourceStartCount
@@ -36,15 +23,28 @@ steps:
   - action: assert
     type: js
     global: __vtAudioParamRamps.length
-    value: 2
+    value: 1
+  - action: click
+    x: 320
+    y: 180
+  - action: wait
+    ms: 100
   - action: assert
     type: js
-    global: __vtAudioParamRamps.0.value
+    global: __vtAudioSourceStartCount
     value: 1
   - action: assert
     type: js
-    global: __vtAudioParamRamps.1.value
-    value: 0
+    global: __vtAudioParamRamps.length
+    value: 1
+  - action: assert
+    type: js
+    global: __vtAudioBoundarySettlementCancelCount
+    value: 1
+  - action: assert
+    type: js
+    global: __vtLastAudioBoundarySettlementValue
+    value: 1
 ---
 screen:
   width: 640
@@ -61,14 +61,7 @@ resources:
           keyframes:
             - startValue: 0
               value: 100
-              duration: 300
-    fade-out:
-      type: update
-      tween:
-        volume:
-          keyframes:
-            - value: 0
-              duration: 500
+              duration: 2000
   colors:
     advance:
       hex: "#10131A"
@@ -84,6 +77,18 @@ resources:
             payload:
               actions:
                 nextLine: {}
+    skip:
+      elements:
+        - id: skip
+          type: rect
+          width: 640
+          height: 360
+          colorId: advance
+          click:
+            payload:
+              actions:
+                setSkipTransitionsAndAnimations:
+                  value: true
 story:
   initialSceneId: scene1
   scenes:
@@ -98,13 +103,11 @@ story:
                   resourceId: advance
             - id: playing
               actions:
+                control:
+                  resourceId: skip
                 bgm:
-                  loop: true
                   sounds:
                     - id: main
                       resourceId: theme
-                      loop: false
                       beginEffect:
                         resourceId: fade-in
-                      endEffect:
-                        resourceId: fade-out

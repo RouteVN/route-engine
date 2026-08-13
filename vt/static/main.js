@@ -26,6 +26,85 @@ const { l10nData, ...projectData } = parsedData;
 const namespace = `vt:${window.location.pathname}`;
 const isVtCaptureMode = () =>
   window?.RTGL_VT_DEBUG === true || navigator.webdriver === true;
+const installAudioPathProbe = () => {
+  if (!isVtCaptureMode()) return;
+
+  window.__vtAudioParamRamps = [];
+  window.__vtAudioSourceStartCount = 0;
+  window.__vtAudioBoundarySettlementCancelCount = 0;
+  window.__vtLastAudioBoundarySettlementValue = null;
+  let lastRampedAudioParam;
+
+  const audioParamPrototype = window.AudioParam?.prototype;
+  const rampDescriptor = audioParamPrototype
+    ? Object.getOwnPropertyDescriptor(
+        audioParamPrototype,
+        "linearRampToValueAtTime",
+      )
+    : undefined;
+  if (typeof rampDescriptor?.value === "function") {
+    Object.defineProperty(audioParamPrototype, "linearRampToValueAtTime", {
+      ...rampDescriptor,
+      value(value, endTime) {
+        lastRampedAudioParam = this;
+        window.__vtAudioParamRamps.push({ value, endTime });
+        return rampDescriptor.value.call(this, value, endTime);
+      },
+    });
+  }
+
+  const cancelDescriptor = audioParamPrototype
+    ? Object.getOwnPropertyDescriptor(
+        audioParamPrototype,
+        "cancelScheduledValues",
+      )
+    : undefined;
+  if (typeof cancelDescriptor?.value === "function") {
+    Object.defineProperty(audioParamPrototype, "cancelScheduledValues", {
+      ...cancelDescriptor,
+      value(cancelTime) {
+        if (this === lastRampedAudioParam) {
+          window.__vtAudioBoundarySettlementCancelCount += 1;
+        }
+        return cancelDescriptor.value.call(this, cancelTime);
+      },
+    });
+  }
+
+  const setValueDescriptor = audioParamPrototype
+    ? Object.getOwnPropertyDescriptor(audioParamPrototype, "setValueAtTime")
+    : undefined;
+  if (typeof setValueDescriptor?.value === "function") {
+    Object.defineProperty(audioParamPrototype, "setValueAtTime", {
+      ...setValueDescriptor,
+      value(value, startTime) {
+        if (this === lastRampedAudioParam) {
+          window.__vtLastAudioBoundarySettlementValue = value;
+        }
+        return setValueDescriptor.value.call(this, value, startTime);
+      },
+    });
+  }
+
+  let sourcePrototype = window.AudioBufferSourceNode?.prototype;
+  while (sourcePrototype) {
+    const startDescriptor = Object.getOwnPropertyDescriptor(
+      sourcePrototype,
+      "start",
+    );
+    if (typeof startDescriptor?.value === "function") {
+      Object.defineProperty(sourcePrototype, "start", {
+        ...startDescriptor,
+        value(...args) {
+          window.__vtAudioSourceStartCount += 1;
+          return startDescriptor.value.apply(this, args);
+        },
+      });
+    }
+    sourcePrototype = Object.getPrototypeOf(sourcePrototype);
+  }
+};
+installAudioPathProbe();
 const dispatchVtReady = () => {
   window.dispatchEvent(new CustomEvent("vt:ready"));
 };

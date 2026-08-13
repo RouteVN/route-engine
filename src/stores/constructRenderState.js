@@ -1925,6 +1925,7 @@ const createSoundNode = ({
   projectResources,
   soundPath = "sound",
   defaultLoop = false,
+  skipTransitionsAndAnimations = false,
 }) => {
   const node = {
     id,
@@ -1953,7 +1954,7 @@ const createSoundNode = ({
       selectionPath: `${soundPath}.${field}`,
       resources: projectResources,
     });
-    if (effect) node[field] = effect;
+    if (effect && !skipTransitionsAndAnimations) node[field] = effect;
   }
 
   const resolvedStartAt = node.startAt ?? 0;
@@ -3959,6 +3960,7 @@ export const createBgmChannelNode = ({
   runtime,
   variables,
   musicRoomPlayer,
+  skipTransitionsAndAnimations = false,
 }) => {
   if (presentationState?.bgm && resources) {
     const bgm = presentationState.bgm;
@@ -4012,6 +4014,7 @@ export const createBgmChannelNode = ({
             projectResources: resources,
             soundPath: `bgm.sounds[${JSON.stringify(sound.id)}]`,
             defaultLoop: loopsChannel ? false : true,
+            skipTransitionsAndAnimations,
           }),
           bgm,
           sound: renderSound,
@@ -4111,7 +4114,10 @@ export const addMusicRoom = (
   return state;
 };
 
-export const addSfx = (state, { presentationState, resources, runtime }) => {
+export const addSfx = (
+  state,
+  { presentationState, resources, runtime, skipTransitionsAndAnimations },
+) => {
   const { audio: audioElements } = state;
 
   if (presentationState.sfx && resources) {
@@ -4175,6 +4181,7 @@ export const addSfx = (state, { presentationState, resources, runtime }) => {
             projectResources: resources,
             soundPath: `sfx.channels[${JSON.stringify(channel.id)}].sounds[${JSON.stringify(sound.id)}]`,
             defaultLoop: loopsChannel ? false : undefined,
+            skipTransitionsAndAnimations,
           }),
         );
       });
@@ -4213,7 +4220,14 @@ const resolveVoiceResource = (resources, currentSceneId, resourceId) => {
 
 export const addVoice = (
   state,
-  { presentationState, resources, currentSceneId, runtime, variables },
+  {
+    presentationState,
+    resources,
+    currentSceneId,
+    runtime,
+    variables,
+    skipTransitionsAndAnimations,
+  },
 ) => {
   const { audio } = state;
 
@@ -4276,6 +4290,7 @@ export const addVoice = (
         projectResources: resources,
         soundPath: `voice.sounds[${JSON.stringify(sound.id)}]`,
         defaultLoop: loopsChannel ? false : undefined,
+        skipTransitionsAndAnimations,
       }),
     );
   });

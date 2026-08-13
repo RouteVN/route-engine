@@ -409,6 +409,33 @@ describe("resolveAudioEffect", () => {
     ).toThrow("Transition fade keyframes must use absolute values");
   });
 
+  it("ignores sound boundary metadata when classifying a top-level transition", () => {
+    const effect = resolveWith({
+      selection: { resourceId: "crossfade" },
+      resources: { audioEffects: { crossfade: transitionResource } },
+      previousChannel: {
+        ...oldChannel,
+        children: [
+          {
+            ...oldChannel.children[0],
+            endEffect: { volume: { keyframes: [{ value: 0 }] } },
+          },
+        ],
+      },
+      nextChannel: {
+        ...oldChannel,
+        children: [
+          {
+            ...oldChannel.children[0],
+            beginEffect: { volume: { keyframes: [{ value: 100 }] } },
+          },
+        ],
+      },
+    });
+
+    expect(effect).toBeNull();
+  });
+
   it("returns null when every update property is unchanged", () => {
     const resource = {
       type: "update",
@@ -632,8 +659,8 @@ describe("resolveAudioEffect", () => {
         {
           id: "main",
           resourceId: "old",
-          volume: 100,
-          pan: 0,
+          volume: 40,
+          pan: 0.25,
           playbackRate: 0.75,
         },
       ],
@@ -685,6 +712,281 @@ describe("resolveAudioEffect", () => {
         nextChannel: newChannel,
       }),
     ).toEqual([]);
+  });
+
+  it("fans a transition preset out across every replaced BGM sound", () => {
+    const previousChannel = {
+      ...oldChannel,
+      children: [
+        oldChannel.children[0],
+        {
+          ...oldChannel.children[0],
+          id: "bgm:ambience",
+          src: "ambience-old.ogg",
+          volume: 40,
+        },
+      ],
+    };
+    const nextChannel = {
+      ...newChannel,
+      children: [
+        newChannel.children[0],
+        {
+          ...newChannel.children[0],
+          id: "bgm:ambience",
+          src: "ambience-new.ogg",
+          volume: 25,
+        },
+      ],
+    };
+
+    const effects = resolveAudioEffects({
+      occurrence,
+      resources: { audioEffects: { crossfade: transitionResource } },
+      previousChannel,
+      nextChannel,
+    });
+
+    expect(effects).toHaveLength(2);
+    expect(effects.map((effect) => effect.targetId)).toEqual([
+      "bgm:main",
+      "bgm:ambience",
+    ]);
+    expect(new Set(effects.map((effect) => effect.id)).size).toBe(2);
+    expect(effects).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          properties: {
+            volume: {
+              exit: expect.any(Object),
+              enter: expect.any(Object),
+            },
+          },
+        }),
+      ]),
+    );
+  });
+
+  it("fans an update preset out across every retained BGM sound", () => {
+    const previousChannel = {
+      ...oldChannel,
+      children: [
+        oldChannel.children[0],
+        {
+          ...oldChannel.children[0],
+          id: "bgm:ambience",
+          src: "ambience.ogg",
+          volume: 60,
+        },
+      ],
+    };
+    const nextChannel = {
+      ...previousChannel,
+      children: previousChannel.children.map((sound) => ({
+        ...sound,
+        volume: 30,
+      })),
+    };
+
+    const effects = resolveAudioEffects({
+      occurrence: {
+        ...occurrence,
+        selection: { resourceId: "smooth" },
+      },
+      resources: { audioEffects: { smooth: updateResource } },
+      previousChannel,
+      nextChannel,
+    });
+
+    expect(effects).toHaveLength(2);
+    expect(effects.map((effect) => effect.targetId)).toEqual([
+      "bgm:main",
+      "bgm:ambience",
+    ]);
+    effects.forEach((effect) => {
+      expect(effect.properties.volume.update.keyframes.at(-1).value).toBe(30);
+    });
+  });
+
+  it("normalizes channel updates per sound without flattening the local mix", () => {
+    const previousChannel = {
+      ...oldChannel,
+      children: [
+        { ...oldChannel.children[0], volume: 60, pan: 0.1 },
+        {
+          ...oldChannel.children[0],
+          id: "bgm:ambience",
+          src: "ambience.ogg",
+          volume: 32,
+          pan: -0.2,
+        },
+      ],
+    };
+    const nextChannel = {
+      ...oldChannel,
+      children: [
+        { ...oldChannel.children[0], volume: 22.5, pan: -0.4 },
+        {
+          ...oldChannel.children[0],
+          id: "bgm:ambience",
+          src: "ambience.ogg",
+          volume: 12,
+          pan: -0.7,
+        },
+      ],
+    };
+    const resources = {
+      sounds: {
+        main: { fileId: "old.ogg" },
+        ambience: { fileId: "ambience.ogg" },
+      },
+      audioEffects: {
+        mixed: {
+          type: "update",
+          tween: {
+            volume: {
+              keyframes: [
+                { value: 50, duration: 50 },
+                { value: 30, duration: 100 },
+              ],
+            },
+            pan: { keyframes: [{ value: -0.5, duration: 100 }] },
+          },
+        },
+      },
+    };
+    const effects = resolveAudioEffects({
+      occurrence: {
+        ...occurrence,
+        selection: { resourceId: "mixed" },
+      },
+      resources,
+      nextResources: resources,
+      nextBgm: {
+        volume: 30,
+        pan: -0.5,
+        sounds: [
+          { id: "main", resourceId: "main", volume: 75, pan: 0.1 },
+          {
+            id: "ambience",
+            resourceId: "ambience",
+            volume: 40,
+            pan: -0.2,
+          },
+        ],
+      },
+      previousChannel,
+      nextChannel,
+    });
+
+    expect(effects).toHaveLength(2);
+    expect(effects[0].properties.volume.update.keyframes).toEqual([
+      expect.objectContaining({ value: 37.5 }),
+      expect.objectContaining({ value: 22.5 }),
+    ]);
+    expect(effects[1].properties.volume.update.keyframes).toEqual([
+      expect.objectContaining({ value: 20 }),
+      expect.objectContaining({ value: 12 }),
+    ]);
+    expect(
+      effects.map(
+        (effect) => effect.properties.pan.update.keyframes.at(-1).value,
+      ),
+    ).toEqual([-0.4, -0.7]);
+  });
+
+  it("resolves relative channel pan before composing a clamped local pan", () => {
+    const previousChannel = {
+      ...oldChannel,
+      children: [{ ...oldChannel.children[0], pan: 1 }],
+    };
+    const nextChannel = {
+      ...oldChannel,
+      children: [{ ...oldChannel.children[0], pan: 0.9 }],
+    };
+    const resources = {
+      sounds: { old: { fileId: "old.ogg" } },
+      audioEffects: {
+        panCurve: {
+          type: "update",
+          tween: {
+            pan: {
+              keyframes: [
+                { value: -0.2, relative: true, duration: 100 },
+                { value: 0.4, duration: 200 },
+              ],
+            },
+          },
+        },
+      },
+    };
+
+    const [effect] = resolveAudioEffects({
+      occurrence: {
+        ...occurrence,
+        selection: { resourceId: "panCurve" },
+      },
+      resources,
+      nextResources: resources,
+      previousBgm: {
+        pan: 0.9,
+        sounds: [{ id: "main", resourceId: "old", pan: 0.5 }],
+      },
+      nextBgm: {
+        pan: 0.4,
+        sounds: [{ id: "main", resourceId: "old", pan: 0.5 }],
+      },
+      previousChannel,
+      nextChannel,
+    });
+
+    expect(effect.properties.pan.update.keyframes).toEqual([
+      {
+        value: 1,
+        delay: 0,
+        duration: 100,
+        easing: "linear",
+      },
+      {
+        value: 0.9,
+        delay: 0,
+        duration: 200,
+        easing: "linear",
+      },
+    ]);
+  });
+
+  it("writes update endpoints across a multi-sound BGM channel", () => {
+    const bgm = {
+      volume: 80,
+      pan: 0.25,
+      audioEffects: { resourceId: "smooth" },
+      sounds: [
+        { id: "main", resourceId: "old", volume: 75, pan: 0.1 },
+        { id: "ambience", resourceId: "next", volume: 40, pan: -0.2 },
+      ],
+    };
+    const resources = {
+      audioEffects: {
+        smooth: {
+          type: "update",
+          tween: {
+            volume: { keyframes: [{ value: 30, duration: 100 }] },
+            pan: { keyframes: [{ value: -0.5, duration: 100 }] },
+            playbackRate: { keyframes: [{ value: 0.75, duration: 100 }] },
+          },
+        },
+      },
+    };
+
+    expect(applyAudioEffectUpdateEndpoints({ bgm, resources })).toMatchObject({
+      volume: 30,
+      pan: -0.5,
+      sounds: [
+        { volume: 75, pan: 0.1, playbackRate: 0.75 },
+        { volume: 40, pan: -0.2, playbackRate: 0.75 },
+      ],
+    });
   });
 });
 

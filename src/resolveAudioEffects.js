@@ -1,3 +1,5 @@
+import { createAudioRenderId } from "./audioIds.js";
+
 const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
 
 const DEFAULT_AUDIO_VALUES = Object.freeze({
@@ -38,6 +40,98 @@ const areEquivalentAudioValues = (authored, rendered) =>
   authored === rendered ||
   Math.abs(authored - rendered) <=
     Number.EPSILON * Math.max(1, Math.abs(authored), Math.abs(rendered));
+
+const clampAudioPan = (pan) => Math.max(-1, Math.min(1, pan));
+
+const getCanonicalSoundProperty = ({
+  bgm,
+  resources,
+  renderedSound,
+  property,
+}) => {
+  const sound = bgm?.sounds?.find(
+    ({ id }) => createAudioRenderId("bgm", id) === renderedSound?.id,
+  );
+  const resource = resources.sounds?.[sound?.resourceId];
+  return (
+    sound?.[property] ?? resource?.[property] ?? DEFAULT_AUDIO_VALUES[property]
+  );
+};
+
+const normalizeChannelUpdateValue = ({
+  property,
+  value,
+  relative,
+  nextBgm,
+  nextResources,
+  nextSound,
+}) => {
+  if (!nextBgm || !nextSound) return value;
+
+  if (property === "volume") {
+    const soundVolume = getCanonicalSoundProperty({
+      bgm: nextBgm,
+      resources: nextResources,
+      renderedSound: nextSound,
+      property,
+    });
+    return (value * soundVolume) / 100;
+  }
+
+  if (property === "pan" && !relative) {
+    const soundPan = getCanonicalSoundProperty({
+      bgm: nextBgm,
+      resources: nextResources,
+      renderedSound: nextSound,
+      property,
+    });
+    return clampAudioPan(value + soundPan);
+  }
+
+  return value;
+};
+
+const resolveRelativeChannelPanKeyframes = ({
+  authoredKeyframes,
+  compiledKeyframes,
+  previousBgm,
+  nextBgm,
+  nextResources,
+  nextSound,
+}) => {
+  if (!nextBgm || !nextSound) return compiledKeyframes;
+
+  const localPan = getCanonicalSoundProperty({
+    bgm: nextBgm,
+    resources: nextResources,
+    renderedSound: nextSound,
+    property: "pan",
+  });
+  let channelPan = previousBgm?.pan ?? DEFAULT_AUDIO_VALUES.pan;
+
+  return compiledKeyframes.map((compiled, index) => {
+    const authored = authoredKeyframes[index];
+    if (authored.relative !== true) {
+      channelPan = authored.value;
+      return compiled;
+    }
+
+    const startChannelPan = hasOwn(authored, "startValue")
+      ? channelPan + authored.startValue
+      : channelPan;
+    const nextChannelPan = startChannelPan + authored.value;
+    const { relative: _, ...absolute } = compiled;
+    channelPan = nextChannelPan;
+
+    return {
+      ...absolute,
+      ...(hasOwn(authored, "startValue")
+        ? { startValue: clampAudioPan(startChannelPan + localPan) }
+        : {}),
+      value: clampAudioPan(nextChannelPan + localPan),
+    };
+  });
+};
 
 const getPlaybackSpeed = (selection, selectionPath) => {
   const speed = selection?.playback?.speed ?? 1;
@@ -110,7 +204,13 @@ const compileFade = (fade, phase, speed, target, resourcePath) => {
   };
 };
 
-const compileUpdateProperty = ({ property, authored, speed, resourcePath }) => {
+const compileUpdateProperty = ({
+  property,
+  authored,
+  speed,
+  resourcePath,
+  normalizeValue = ({ value }) => value,
+}) => {
   const finalKeyframe = authored.keyframes.at(-1);
   if (
     typeof finalKeyframe?.value !== "number" ||
@@ -123,9 +223,23 @@ const compileUpdateProperty = ({ property, authored, speed, resourcePath }) => {
   }
 
   return {
-    keyframes: authored.keyframes.map((keyframe) =>
-      compileKeyframe(keyframe, speed),
-    ),
+    keyframes: authored.keyframes.map((keyframe) => {
+      const compiled = compileKeyframe(keyframe, speed);
+      const relative = compiled.relative === true;
+      compiled.value = normalizeValue({
+        property,
+        value: compiled.value,
+        relative,
+      });
+      if (hasOwn(compiled, "startValue")) {
+        compiled.startValue = normalizeValue({
+          property,
+          value: compiled.startValue,
+          relative,
+        });
+      }
+      return compiled;
+    }),
   };
 };
 
@@ -171,10 +285,9 @@ export const applyAudioEffectUpdateEndpoints = ({ bgm, resources = {} }) => {
   if (resource?.type !== "update") return bgm;
 
   const sounds = bgm.sounds ?? [];
-  if (sounds.length !== 1) return bgm;
+  if (sounds.length === 0) return bgm;
 
   const resolvedBgm = structuredClone(bgm);
-  const sound = resolvedBgm.sounds[0];
 
   for (const property of UPDATE_PROPERTIES) {
     if (!hasOwn(resource.tween, property)) continue;
@@ -190,12 +303,12 @@ export const applyAudioEffectUpdateEndpoints = ({ bgm, resources = {} }) => {
 
     if (property === "volume") {
       resolvedBgm.volume = finalKeyframe.value;
-      sound.volume = DEFAULT_AUDIO_VALUES.volume;
     } else if (property === "pan") {
       resolvedBgm.pan = finalKeyframe.value;
-      sound.pan = DEFAULT_AUDIO_VALUES.pan;
     } else {
-      sound.playbackRate = finalKeyframe.value;
+      resolvedBgm.sounds.forEach((sound) => {
+        sound.playbackRate = finalKeyframe.value;
+      });
     }
   }
 
@@ -208,11 +321,22 @@ const createBaseEffect = (occurrence, targetId) => ({
   targetId,
 });
 
+const getTopLevelTransitionSoundGraph = (sound) => {
+  if (!sound) return sound;
+  const graph = { ...sound };
+  delete graph.beginEffect;
+  delete graph.endEffect;
+  return graph;
+};
+
 export const resolveAudioEffect = ({
   occurrence,
   resources = {},
+  nextResources = resources,
   previousChannel,
   nextChannel,
+  previousBgm,
+  nextBgm,
 }) => {
   if (!occurrence?.selection) return null;
 
@@ -240,7 +364,10 @@ export const resolveAudioEffect = ({
 
   const targetId = previousSound?.id ?? nextSound.id;
   const sameSource = isSameSourceIdentity(previousSound, nextSound);
-  const sameGraph = isSameValue(previousSound, nextSound);
+  const sameGraph = isSameValue(
+    getTopLevelTransitionSoundGraph(previousSound),
+    getTopLevelTransitionSoundGraph(nextSound),
+  );
 
   if (resource.type === "transition") {
     if (sameSource) {
@@ -293,7 +420,26 @@ export const resolveAudioEffect = ({
       authored: resource.tween[property],
       speed,
       resourcePath,
+      normalizeValue: ({ value, relative }) =>
+        normalizeChannelUpdateValue({
+          property,
+          value,
+          relative,
+          nextBgm,
+          nextResources,
+          nextSound,
+        }),
     });
+    if (property === "pan") {
+      update.keyframes = resolveRelativeChannelPanKeyframes({
+        authoredKeyframes: resource.tween[property].keyframes,
+        compiledKeyframes: update.keyframes,
+        previousBgm,
+        nextBgm,
+        nextResources,
+        nextSound,
+      });
+    }
     const nextValue = nextSound[property] ?? DEFAULT_AUDIO_VALUES[property];
     const finalValue = update.keyframes.at(-1).value;
     if (!areEquivalentAudioValues(finalValue, nextValue)) {
@@ -322,9 +468,104 @@ export const resolveAudioEffect = ({
 
 export const resolveAudioEffects = (options) => {
   const nextResources = options.nextResources ?? options.resources;
-  const legacyEffect = resolveAudioEffect({
-    ...options,
-    resources: nextResources,
+  const occurrence = options.occurrence;
+  if (!occurrence?.selection) return [];
+
+  const previousSounds = options.previousChannel?.children ?? [];
+  const nextSounds = options.nextChannel?.children ?? [];
+  const resourceId = occurrence.selection.resourceId;
+  const resource = nextResources?.audioEffects?.[resourceId];
+
+  const createSingleSoundChannel = (channel, sound) => {
+    if (!sound) return null;
+    return {
+      ...channel,
+      children: [sound],
+    };
+  };
+  const resolveTargets = (targets) =>
+    targets
+      .map(({ previousSound, nextSound }, index) =>
+        resolveAudioEffect({
+          ...options,
+          occurrence:
+            index === 0
+              ? occurrence
+              : {
+                  ...occurrence,
+                  occurrenceId: `${occurrence.occurrenceId}:${index}`,
+                },
+          resources: nextResources,
+          previousChannel: createSingleSoundChannel(
+            options.previousChannel,
+            previousSound,
+          ),
+          nextChannel: createSingleSoundChannel(options.nextChannel, nextSound),
+        }),
+      )
+      .filter(Boolean);
+
+  if (!resource || !["transition", "update"].includes(resource.type)) {
+    return resolveTargets([
+      {
+        previousSound: previousSounds[0],
+        nextSound: nextSounds[0],
+      },
+    ]);
+  }
+
+  const previousById = new Map(
+    previousSounds.map((sound) => [sound.id, sound]),
+  );
+  const nextById = new Map(nextSounds.map((sound) => [sound.id, sound]));
+
+  if (resource.type === "update") {
+    const targets = nextSounds.map((nextSound) => ({
+      previousSound: previousById.get(nextSound.id),
+      nextSound,
+    }));
+    const missingPreviousSound = targets.find(
+      ({ previousSound }) => !previousSound,
+    );
+    if (missingPreviousSound) {
+      return resolveTargets([missingPreviousSound]);
+    }
+    const removedSound = previousSounds.find(
+      (previousSound) => !nextById.has(previousSound.id),
+    );
+    if (removedSound) {
+      return resolveTargets([{ previousSound: removedSound }]);
+    }
+    return resolveTargets(targets);
+  }
+
+  const targets = [];
+  for (const previousSound of previousSounds) {
+    const nextSound = nextById.get(previousSound.id);
+    if (!nextSound || !isSameSourceIdentity(previousSound, nextSound)) {
+      targets.push({ previousSound, nextSound });
+    }
+  }
+  for (const nextSound of nextSounds) {
+    if (!previousById.has(nextSound.id)) {
+      targets.push({ nextSound });
+    }
+  }
+
+  if (targets.length > 0) {
+    return resolveTargets(targets);
+  }
+
+  const changedRetainedSound = previousSounds.find((previousSound) => {
+    const nextSound = nextById.get(previousSound.id);
+    return nextSound && !isSameValue(previousSound, nextSound);
   });
-  return legacyEffect ? [legacyEffect] : [];
+  return resolveTargets([
+    {
+      previousSound: changedRetainedSound ?? previousSounds[0],
+      nextSound: changedRetainedSound
+        ? nextById.get(changedRetainedSound.id)
+        : nextSounds[0],
+    },
+  ]);
 };

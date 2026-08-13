@@ -126,6 +126,122 @@ describe("RouteEngine audioEffects occurrences", () => {
     expect(effect.properties.volume).not.toHaveProperty("exit");
   });
 
+  it("compiles a channel transition across multiple BGM sounds", () => {
+    const projectData = createProjectData();
+    const lines = projectData.story.scenes.scene.sections.section.lines;
+    lines[0].actions.bgm.sounds.push({
+      id: "ambience",
+      resourceId: "old",
+      volume: 40,
+    });
+    lines[1].actions.bgm.sounds.push({
+      id: "ambience",
+      resourceId: "next",
+      volume: 25,
+    });
+    const engine = createEngine({ projectData });
+
+    expect(() => enterNextLine(engine)).not.toThrow();
+    const effects = engine.selectRenderState().audioEffects;
+
+    expect(effects).toHaveLength(2);
+    expect(effects.map((effect) => effect.targetId)).toEqual([
+      "bgm:main",
+      "bgm:ambience",
+    ]);
+    effects.forEach((effect) => {
+      expect(effect.properties.volume).toMatchObject({
+        exit: { keyframes: [expect.objectContaining({ value: 0 })] },
+        enter: { keyframes: [expect.any(Object)] },
+      });
+    });
+  });
+
+  it("preserves each local mix while updating a multi-sound BGM channel", () => {
+    const projectData = createProjectData();
+    projectData.resources.sounds.ambience = {
+      fileId: "ambience.ogg",
+      volume: 40,
+    };
+    const lines = projectData.story.scenes.scene.sections.section.lines;
+    lines[0].actions.bgm = {
+      volume: 80,
+      sounds: [
+        { id: "main", resourceId: "old", volume: 75 },
+        { id: "ambience", resourceId: "ambience" },
+      ],
+    };
+    lines[1].actions.bgm = {
+      volume: 30,
+      audioEffects: { resourceId: "smooth" },
+      sounds: [
+        { id: "main", resourceId: "old", volume: 75 },
+        { id: "ambience", resourceId: "ambience" },
+      ],
+    };
+    const engine = createEngine({ projectData });
+
+    expect(() => enterNextLine(engine)).not.toThrow();
+    const renderState = engine.selectRenderState();
+
+    expect(renderState.audio[0].children.map(({ volume }) => volume)).toEqual([
+      22.5, 12,
+    ]);
+    expect(renderState.audioEffects.map((effect) => effect.targetId)).toEqual([
+      "bgm:main",
+      "bgm:ambience",
+    ]);
+    expect(
+      renderState.audioEffects.map(
+        (effect) => effect.properties.volume.update.keyframes.at(-1).value,
+      ),
+    ).toEqual([22.5, 12]);
+    expect(engine.selectPresentationState().bgm.sounds).toEqual([
+      { id: "main", resourceId: "old", volume: 75 },
+      { id: "ambience", resourceId: "ambience" },
+    ]);
+  });
+
+  it("composes relative channel pan before clamping the rendered sound", () => {
+    const projectData = createProjectData();
+    projectData.resources.audioEffects.panCurve = {
+      type: "update",
+      tween: {
+        pan: {
+          keyframes: [
+            { value: -0.2, relative: true, duration: 100 },
+            { value: 0.4, duration: 200 },
+          ],
+        },
+      },
+    };
+    const lines = projectData.story.scenes.scene.sections.section.lines;
+    lines[0].actions.bgm = {
+      pan: 0.9,
+      sounds: [{ id: "main", resourceId: "old", pan: 0.5 }],
+    };
+    lines[1].actions.bgm = {
+      pan: 0.4,
+      audioEffects: { resourceId: "panCurve" },
+      sounds: [{ id: "main", resourceId: "old", pan: 0.5 }],
+    };
+    const engine = createEngine({ projectData });
+
+    expect(() => enterNextLine(engine)).not.toThrow();
+    const renderState = engine.selectRenderState();
+
+    expect(renderState.audio[0].children[0].pan).toBe(0.9);
+    expect(renderState.audioEffects[0].properties.pan.update.keyframes).toEqual(
+      [
+        expect.objectContaining({ value: 1 }),
+        expect.objectContaining({ value: 0.9 }),
+      ],
+    );
+    expect(
+      renderState.audioEffects[0].properties.pan.update.keyframes[0],
+    ).not.toHaveProperty("relative");
+  });
+
   it("retains one immutable handoff across retries and settings renders", () => {
     const engine = createEngine();
     enterNextLine(engine);
@@ -236,7 +352,7 @@ describe("RouteEngine audioEffects occurrences", () => {
     expect(engine.selectRenderState().audioEffects).toBeUndefined();
     expect(engine.selectPresentationState().bgm).toMatchObject({
       volume: 30,
-      sounds: [expect.objectContaining({ volume: 100 })],
+      sounds: [expect.objectContaining({ id: "main", resourceId: "old" })],
     });
     expect(engine.selectRenderState().audio[0].children[0].volume).toBe(30);
     engine.handleAction("setSkipTransitionsAndAnimations", { value: false });
@@ -641,5 +757,159 @@ describe("RouteEngine audioEffects occurrences", () => {
         },
       },
     });
+  });
+
+  it("omits sound boundary effects while transitions are skipped", () => {
+    const projectData = createProjectData();
+    const sound =
+      projectData.story.scenes.scene.sections.section.lines[0].actions.bgm
+        .sounds[0];
+    sound.beginEffect = { resourceId: "smooth" };
+    sound.endEffect = { resourceId: "smooth" };
+
+    const engine = createEngine({
+      projectData,
+      global: {
+        runtime: { skipTransitionsAndAnimations: true },
+      },
+    });
+    const renderedSound = engine.selectRenderState().audio[0].children[0];
+
+    expect(renderedSound).not.toHaveProperty("beginEffect");
+    expect(renderedSound).not.toHaveProperty("endEffect");
+  });
+
+  it("uses startup skip state for a no-op boundary-effect handoff", () => {
+    const projectData = createProjectData();
+    const lines = projectData.story.scenes.scene.sections.section.lines;
+    const sound = {
+      id: "main",
+      resourceId: "old",
+      beginEffect: { resourceId: "smooth" },
+      endEffect: { resourceId: "smooth" },
+    };
+    lines[0].actions.bgm = { volume: 80, sounds: [sound] };
+    lines[1].actions.bgm = {
+      volume: 80,
+      audioEffects: { resourceId: "crossfade" },
+      sounds: [structuredClone(sound)],
+    };
+    const engine = createEngine({
+      projectData,
+      global: {
+        runtime: { skipTransitionsAndAnimations: true },
+      },
+    });
+
+    expect(() => enterNextLine(engine)).not.toThrow();
+    expect(engine.selectRenderState().audioEffects).toBeUndefined();
+    expect(engine.selectRenderState().audio[0].children[0]).not.toHaveProperty(
+      "beginEffect",
+    );
+  });
+
+  it("removes boundary effects from a retained sound when skipping is enabled", () => {
+    const projectData = createProjectData();
+    const sound =
+      projectData.story.scenes.scene.sections.section.lines[0].actions.bgm
+        .sounds[0];
+    sound.beginEffect = { resourceId: "smooth" };
+    sound.endEffect = { resourceId: "smooth" };
+    const engine = createEngine({ projectData });
+
+    expect(engine.selectRenderState().audio[0].children[0]).toHaveProperty(
+      "beginEffect",
+    );
+
+    engine.handleAction("setSkipTransitionsAndAnimations", { value: true });
+    const settledSound = engine.selectRenderState().audio[0].children[0];
+
+    expect(settledSound).not.toHaveProperty("beginEffect");
+    expect(settledSound).not.toHaveProperty("endEffect");
+  });
+
+  it.each([
+    [
+      "unknown resources",
+      (projectData) => {
+        projectData.story.scenes.scene.sections.section.lines[0].actions.bgm.sounds[0].beginEffect =
+          { resourceId: "missing" };
+      },
+      'Unknown audio effect resource "missing"',
+    ],
+    [
+      "transition resources",
+      (projectData) => {
+        projectData.story.scenes.scene.sections.section.lines[0].actions.bgm.sounds[0].beginEffect =
+          { resourceId: "crossfade" };
+      },
+      'require an audio effect resource with type "update"',
+    ],
+    [
+      "invalid update tracks",
+      (projectData) => {
+        projectData.story.scenes.scene.sections.section.lines[0].actions.bgm.sounds[0].beginEffect =
+          { resourceId: "smooth" };
+        projectData.resources.audioEffects.smooth.tween.volume.keyframes.at(
+          -1,
+        ).relative = true;
+      },
+      "The final keyframe must use an absolute finite numeric value",
+    ],
+  ])("validates %s while transitions are skipped", (_, configure, error) => {
+    const projectData = createProjectData();
+    configure(projectData);
+
+    expect(() =>
+      createEngine({
+        projectData,
+        global: {
+          runtime: { skipTransitionsAndAnimations: true },
+        },
+      }),
+    ).toThrow(error);
+  });
+
+  it("omits sound boundary effects from a settled rollback render", () => {
+    const projectData = createProjectData();
+    const sound =
+      projectData.story.scenes.scene.sections.section.lines[0].actions.bgm
+        .sounds[0];
+    sound.beginEffect = { resourceId: "smooth" };
+    sound.endEffect = { resourceId: "smooth" };
+    const engine = createEngine({ projectData });
+
+    enterNextLine(engine);
+    engine.handleAction("rollbackByOffset", { offset: -1 });
+    const renderedSound = engine.selectRenderState().audio[0].children[0];
+
+    expect(renderedSound).not.toHaveProperty("beginEffect");
+    expect(renderedSound).not.toHaveProperty("endEffect");
+  });
+
+  it("does not classify restored boundary effects as a top-level update", () => {
+    const projectData = createProjectData();
+    const sound =
+      projectData.story.scenes.scene.sections.section.lines[0].actions.bgm
+        .sounds[0];
+    sound.beginEffect = { resourceId: "smooth" };
+    sound.endEffect = { resourceId: "smooth" };
+    const engine = createEngine({ projectData });
+
+    enterNextLine(engine);
+    engine.commitRenderState(engine.selectRenderState());
+    engine.handleAction("rollbackByOffset", { offset: -1 });
+    engine.commitRenderState(engine.selectRenderState());
+
+    expect(() =>
+      engine.handleAction("bgm", {
+        volume: 80,
+        audioEffects: { resourceId: "crossfade" },
+        sounds: [structuredClone(sound)],
+      }),
+    ).not.toThrow();
+    const renderState = engine.selectRenderState();
+    expect(renderState.audioEffects).toBeUndefined();
+    expect(renderState.audio[0].children[0]).toHaveProperty("beginEffect");
   });
 });
