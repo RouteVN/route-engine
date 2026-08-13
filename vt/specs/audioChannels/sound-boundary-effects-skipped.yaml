@@ -1,11 +1,11 @@
 ---
-title: Skipped Sound Boundary Effects
-description: The settled transition-skip preference omits per-sound boundary automation from the renderer path.
+title: Mid-Effect Sound Boundary Skip
+description: Enabling transition skipping settles active per-sound boundary automation through the renderer path.
 skipInitialScreenshot: true
 specs:
-  - the destination enables transition skipping in the same action batch that starts the sound
-  - Route Engine omits beginEffect and endEffect from the settled sound node
-  - Route Graphics starts the sound without scheduling either boundary gain ramp
+  - the sound starts a long beginEffect before transition skipping is enabled
+  - Route Engine removes the boundary effect from the retained sound node
+  - Route Graphics cancels the active ramp and settles the gain to its authored value
 steps:
   - action: click
     x: 320
@@ -14,8 +14,8 @@ steps:
     ms: 200
   - action: assert
     type: js
-    global: __vtLastRenderState.audio.0.children.0.src
-    value: 39csl
+    global: __vtLastRenderState.audio.0.children.0.beginEffect.volume.keyframes.0.value
+    value: 100
   - action: assert
     type: js
     global: __vtAudioSourceStartCount
@@ -23,7 +23,28 @@ steps:
   - action: assert
     type: js
     global: __vtAudioParamRamps.length
-    value: 0
+    value: 1
+  - action: click
+    x: 320
+    y: 180
+  - action: wait
+    ms: 100
+  - action: assert
+    type: js
+    global: __vtAudioSourceStartCount
+    value: 1
+  - action: assert
+    type: js
+    global: __vtAudioParamRamps.length
+    value: 1
+  - action: assert
+    type: js
+    global: __vtAudioBoundarySettlementCancelCount
+    value: 1
+  - action: assert
+    type: js
+    global: __vtLastAudioBoundarySettlementValue
+    value: 1
 ---
 screen:
   width: 640
@@ -40,14 +61,7 @@ resources:
           keyframes:
             - startValue: 0
               value: 100
-              duration: 300
-    fade-out:
-      type: update
-      tween:
-        volume:
-          keyframes:
-            - value: 0
-              duration: 500
+              duration: 2000
   colors:
     advance:
       hex: "#10131A"
@@ -63,6 +77,18 @@ resources:
             payload:
               actions:
                 nextLine: {}
+    skip:
+      elements:
+        - id: skip
+          type: rect
+          width: 640
+          height: 360
+          colorId: advance
+          click:
+            payload:
+              actions:
+                setSkipTransitionsAndAnimations:
+                  value: true
 story:
   initialSceneId: scene1
   scenes:
@@ -75,15 +101,13 @@ story:
               actions:
                 control:
                   resourceId: advance
-            - id: skipped
+            - id: playing
               actions:
+                control:
+                  resourceId: skip
                 bgm:
                   sounds:
                     - id: main
                       resourceId: theme
                       beginEffect:
                         resourceId: fade-in
-                      endEffect:
-                        resourceId: fade-out
-                setSkipTransitionsAndAnimations:
-                  value: true

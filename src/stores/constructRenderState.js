@@ -1948,15 +1948,13 @@ const createSoundNode = ({
   if (sound.playback !== undefined) {
     node.playback = structuredClone(sound.playback);
   }
-  if (!skipTransitionsAndAnimations) {
-    for (const field of ["beginEffect", "endEffect"]) {
-      const effect = resolveSoundBoundaryEffect({
-        selection: sound[field],
-        selectionPath: `${soundPath}.${field}`,
-        resources: projectResources,
-      });
-      if (effect) node[field] = effect;
-    }
+  for (const field of ["beginEffect", "endEffect"]) {
+    const effect = resolveSoundBoundaryEffect({
+      selection: sound[field],
+      selectionPath: `${soundPath}.${field}`,
+      resources: projectResources,
+    });
+    if (effect && !skipTransitionsAndAnimations) node[field] = effect;
   }
 
   const resolvedStartAt = node.startAt ?? 0;

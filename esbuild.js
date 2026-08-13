@@ -2,6 +2,26 @@ import esbuild from "esbuild";
 import fs from "node:fs";
 import path from "node:path";
 
+// Route Graphics always uses the default Opus decoder without speech-quality
+// enhancement. Keep its source-build exclusion so the unused 4 MiB ML model
+// is not embedded in the VT bundle.
+const excludeUnusedOpusMlPlugin = {
+  name: "exclude-unused-opus-ml",
+  setup(build) {
+    build.onResolve({ filter: /^@wasm-audio-decoders\/opus-ml$/ }, () => ({
+      namespace: "unused-opus-ml",
+      path: "unused-opus-ml",
+    }));
+    build.onLoad({ filter: /.*/, namespace: "unused-opus-ml" }, () => ({
+      contents: [
+        "export const OpusMLDecoder = undefined;",
+        "export const OpusMLDecoderWebWorker = undefined;",
+      ].join("\n"),
+      loader: "js",
+    }));
+  },
+};
+
 const buildVtRouteGraphicsBundle = async () => {
   const sourceEntry = path.resolve(
     "node_modules",
@@ -26,6 +46,7 @@ const buildVtRouteGraphicsBundle = async () => {
       platform: "browser",
       outfile: target,
       entryPoints: [sourceEntry],
+      plugins: [excludeUnusedOpusMlPlugin],
     });
     return;
   }

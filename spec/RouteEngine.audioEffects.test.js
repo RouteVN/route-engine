@@ -663,6 +663,68 @@ describe("RouteEngine audioEffects occurrences", () => {
     expect(renderedSound).not.toHaveProperty("endEffect");
   });
 
+  it("removes boundary effects from a retained sound when skipping is enabled", () => {
+    const projectData = createProjectData();
+    const sound =
+      projectData.story.scenes.scene.sections.section.lines[0].actions.bgm
+        .sounds[0];
+    sound.beginEffect = { resourceId: "smooth" };
+    sound.endEffect = { resourceId: "smooth" };
+    const engine = createEngine({ projectData });
+
+    expect(engine.selectRenderState().audio[0].children[0]).toHaveProperty(
+      "beginEffect",
+    );
+
+    engine.handleAction("setSkipTransitionsAndAnimations", { value: true });
+    const settledSound = engine.selectRenderState().audio[0].children[0];
+
+    expect(settledSound).not.toHaveProperty("beginEffect");
+    expect(settledSound).not.toHaveProperty("endEffect");
+  });
+
+  it.each([
+    [
+      "unknown resources",
+      (projectData) => {
+        projectData.story.scenes.scene.sections.section.lines[0].actions.bgm.sounds[0].beginEffect =
+          { resourceId: "missing" };
+      },
+      'Unknown audio effect resource "missing"',
+    ],
+    [
+      "transition resources",
+      (projectData) => {
+        projectData.story.scenes.scene.sections.section.lines[0].actions.bgm.sounds[0].beginEffect =
+          { resourceId: "crossfade" };
+      },
+      'require an audio effect resource with type "update"',
+    ],
+    [
+      "invalid update tracks",
+      (projectData) => {
+        projectData.story.scenes.scene.sections.section.lines[0].actions.bgm.sounds[0].beginEffect =
+          { resourceId: "smooth" };
+        projectData.resources.audioEffects.smooth.tween.volume.keyframes.at(
+          -1,
+        ).relative = true;
+      },
+      "The final keyframe must use an absolute finite numeric value",
+    ],
+  ])("validates %s while transitions are skipped", (_, configure, error) => {
+    const projectData = createProjectData();
+    configure(projectData);
+
+    expect(() =>
+      createEngine({
+        projectData,
+        global: {
+          runtime: { skipTransitionsAndAnimations: true },
+        },
+      }),
+    ).toThrow(error);
+  });
+
   it("omits sound boundary effects from a settled rollback render", () => {
     const projectData = createProjectData();
     const sound =

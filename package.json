@@ -63,7 +63,7 @@
     "ajv": "^8.18.0",
     "husky": "^9.1.7",
     "prettier": "^3.7.4",
-    "route-graphics": "git+https://github.com/RouteVN/route-graphics.git#15a27057513b768272d63482810ebe6689f5427a",
+    "route-graphics": "git+https://github.com/RouteVN/route-graphics.git#d9b88dc33901fd550434e0913167b4a978f9a2b0",
     "vitest": "4.0.16"
   }
 }
