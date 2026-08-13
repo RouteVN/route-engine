@@ -1945,6 +1945,29 @@ describe("projectData schema", () => {
     expect(validatePresentationActions.errors).toBeNull();
   });
 
+  it("accepts begin and end update-effect selections on channel sounds", () => {
+    const effectSound = {
+      id: "theme",
+      resourceId: "music_1",
+      beginEffect: { resourceId: "fade-in", playback: { speed: 1.5 } },
+      endEffect: { resourceId: "fade-out" },
+    };
+
+    for (const actions of [
+      { bgm: { sounds: [effectSound] } },
+      { sfx: { items: [effectSound] } },
+      {
+        sfx: {
+          channels: [{ id: "music", sounds: [effectSound] }],
+        },
+      },
+      { voice: { sounds: [effectSound] } },
+    ]) {
+      expect(validatePresentationActions(actions)).toBe(true);
+      expect(validatePresentationActions.errors).toBeNull();
+    }
+  });
+
   it("rejects an invalid SFX channel apply mode", () => {
     expect(
       validatePresentationActions({

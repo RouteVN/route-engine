@@ -12,6 +12,8 @@ import {
   VISUAL_LAYER,
   VISUAL_LAYER_VALUES,
 } from "../renderLayers.js";
+import { createAudioRenderId } from "../audioIds.js";
+import { resolveSoundBoundaryEffect } from "../resolveAudioEffects.js";
 
 const jemplFunctions = {
   __arrayOrEmpty: (value) => (Array.isArray(value) ? value : []),
@@ -1846,12 +1848,6 @@ const MUSIC_ROOM_SOUND_ID = "music-room:player";
 const VOICE_CHANNEL_ID = "channel:voice";
 const DEFAULT_SFX_CHANNEL_ID = "default";
 
-const escapeAudioIdComponent = (component) =>
-  String(component).replaceAll("%", "%25").replaceAll(":", "%3A");
-
-const createAudioRenderId = (...components) =>
-  components.map(escapeAudioIdComponent).join(":");
-
 const assertUniqueAudioIds = (items, kind, parent) => {
   const seenIds = new Set();
 
@@ -1922,7 +1918,14 @@ const OPTIONAL_SOUND_PROPERTIES = [
   "endAt",
 ];
 
-const createSoundNode = ({ id, sound, resource, defaultLoop = false }) => {
+const createSoundNode = ({
+  id,
+  sound,
+  resource,
+  projectResources,
+  soundPath = "sound",
+  defaultLoop = false,
+}) => {
   const node = {
     id,
     type: "sound",
@@ -1943,6 +1946,14 @@ const createSoundNode = ({ id, sound, resource, defaultLoop = false }) => {
   });
   if (sound.playback !== undefined) {
     node.playback = structuredClone(sound.playback);
+  }
+  for (const field of ["beginEffect", "endEffect"]) {
+    const effect = resolveSoundBoundaryEffect({
+      selection: sound[field],
+      selectionPath: `${soundPath}.${field}`,
+      resources: projectResources,
+    });
+    if (effect) node[field] = effect;
   }
 
   const resolvedStartAt = node.startAt ?? 0;
@@ -3998,6 +4009,8 @@ export const createBgmChannelNode = ({
             ),
             sound: renderSound,
             resource: audioResource,
+            projectResources: resources,
+            soundPath: `bgm.sounds[${JSON.stringify(sound.id)}]`,
             defaultLoop: loopsChannel ? false : true,
           }),
           bgm,
@@ -4079,6 +4092,8 @@ export const addMusicRoom = (
       playback: musicRoomPlayer.playback,
     },
     resource: soundResource,
+    projectResources: resources,
+    soundPath: "musicRoom.sound",
   });
 
   state.audio.push(
@@ -4157,6 +4172,8 @@ export const addSfx = (state, { presentationState, resources, runtime }) => {
               : createAudioRenderId("sfx", channel.id, sound.id),
             sound: renderSound,
             resource: audioResource,
+            projectResources: resources,
+            soundPath: `sfx.channels[${JSON.stringify(channel.id)}].sounds[${JSON.stringify(sound.id)}]`,
             defaultLoop: loopsChannel ? false : undefined,
           }),
         );
@@ -4256,6 +4273,8 @@ export const addVoice = (
         ),
         sound: renderSound,
         resource: voiceResource,
+        projectResources: resources,
+        soundPath: `voice.sounds[${JSON.stringify(sound.id)}]`,
         defaultLoop: loopsChannel ? false : undefined,
       }),
     );

@@ -594,37 +594,24 @@ describe("RouteEngine audioEffects occurrences", () => {
     );
   });
 
-  it("renders independent transitions for each outgoing and incoming BGM sound", () => {
+  it("compiles beginEffect and endEffect onto the rendered sound", () => {
     const projectData = createProjectData();
     projectData.story.scenes.scene.sections.section.lines = [
       {
-        id: "outgoing",
+        id: "sound-effects",
         actions: {
           bgm: {
+            loop: true,
             sounds: [
               {
-                id: "old",
+                id: "lead:%main",
                 resourceId: "old",
                 volume: 80,
-                outgoingTransition: {
-                  resourceId: "crossfade",
+                beginEffect: {
+                  resourceId: "smooth",
                   playback: { speed: 2 },
                 },
-              },
-            ],
-          },
-        },
-      },
-      {
-        id: "incoming",
-        actions: {
-          bgm: {
-            sounds: [
-              {
-                id: "new",
-                resourceId: "next",
-                volume: 60,
-                incomingTransition: { resourceId: "crossfade" },
+                endEffect: { resourceId: "smooth" },
               },
             ],
           },
@@ -633,32 +620,26 @@ describe("RouteEngine audioEffects occurrences", () => {
     ];
     const engine = createEngine({ projectData });
 
-    enterNextLine(engine);
-
-    expect(engine.selectRenderState().audioEffects).toEqual([
-      expect.objectContaining({
-        targetId: "bgm:old",
-        properties: {
-          volume: {
-            exit: {
-              keyframes: [expect.objectContaining({ duration: 300, value: 0 })],
-            },
-          },
+    expect(engine.selectRenderState().audioEffects).toBeUndefined();
+    expect(engine.selectRenderState().audio[0].children[0]).toMatchObject({
+      id: "bgm:lead%3A%25main",
+      loop: false,
+      beginEffect: {
+        volume: {
+          keyframes: [
+            expect.objectContaining({ value: 50, duration: 200 }),
+            expect.objectContaining({ value: 30, duration: 300 }),
+          ],
         },
-      }),
-      expect.objectContaining({
-        targetId: "bgm:new",
-        properties: {
-          volume: {
-            enter: {
-              initialValue: 0,
-              keyframes: [
-                expect.objectContaining({ duration: 900, value: 60 }),
-              ],
-            },
-          },
+      },
+      endEffect: {
+        volume: {
+          keyframes: [
+            expect.objectContaining({ value: 50, duration: 400 }),
+            expect.objectContaining({ value: 30, duration: 600 }),
+          ],
         },
-      }),
-    ]);
+      },
+    });
   });
 });

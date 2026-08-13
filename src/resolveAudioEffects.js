@@ -129,6 +129,42 @@ const compileUpdateProperty = ({ property, authored, speed, resourcePath }) => {
   };
 };
 
+export const resolveSoundBoundaryEffect = ({
+  selection,
+  selectionPath,
+  resources = {},
+}) => {
+  if (!selection) return undefined;
+
+  const resourceId = selection.resourceId;
+  const resourcePath = `resources.audioEffects.${resourceId}`;
+  const resource = resources.audioEffects?.[resourceId];
+  if (!resource) {
+    throw new Error(
+      `[${selectionPath}.resourceId]\n[${resourcePath}] Unknown audio effect resource "${resourceId}".`,
+    );
+  }
+  if (resource.type !== "update") {
+    throw new Error(
+      `[${selectionPath}]\n[${resourcePath}] Sound beginEffect and endEffect selections require an audio effect resource with type "update".`,
+    );
+  }
+
+  const speed = getPlaybackSpeed(selection, selectionPath);
+  const properties = {};
+  for (const property of UPDATE_PROPERTIES) {
+    if (!hasOwn(resource.tween, property)) continue;
+    properties[property] = compileUpdateProperty({
+      property,
+      authored: resource.tween[property],
+      speed,
+      resourcePath,
+    });
+  }
+
+  return properties;
+};
+
 export const applyAudioEffectUpdateEndpoints = ({ bgm, resources = {} }) => {
   const resourceId = bgm?.audioEffects?.resourceId;
   const resource = resources.audioEffects?.[resourceId];
@@ -284,137 +320,11 @@ export const resolveAudioEffect = ({
   };
 };
 
-const PER_SOUND_SOURCE_IDENTITY_FIELDS = [
-  "resourceId",
-  "startAt",
-  "endAt",
-  "startDelayMs",
-];
-
-const isSameAuthoredSoundSource = (previous, next) =>
-  previous?.id === next?.id &&
-  PER_SOUND_SOURCE_IDENTITY_FIELDS.every((field) => {
-    const fallback = field === "endAt" ? null : 0;
-    return (previous?.[field] ?? fallback) === (next?.[field] ?? fallback);
-  });
-
-const getRenderedSound = (channel, soundId) => {
-  const targetId = `bgm:${soundId}`;
-  return channel?.children?.find((sound) => sound.id === targetId);
-};
-
-const compilePerSoundTransitionPhase = ({
-  selection,
-  selectionPath,
-  phase,
-  target,
-  resources,
-}) => {
-  if (!selection) return undefined;
-
-  const resourceId = selection.resourceId;
-  const resourcePath = `resources.audioEffects.${resourceId}`;
-  const resource = resources.audioEffects?.[resourceId];
-  if (!resource) {
-    throw new Error(
-      `[${selectionPath}.resourceId]\n[${resourcePath}] Unknown audio effect resource "${resourceId}".`,
-    );
-  }
-  if (resource.type !== "transition") {
-    throw new Error(
-      `[${selectionPath}]\n[${resourcePath}] Per-sound incoming and outgoing transitions require an audio effect resource with type "transition".`,
-    );
-  }
-
-  const speed = getPlaybackSpeed(selection, selectionPath);
-  const fade = phase === "enter" ? resource.next?.fade : resource.prev?.fade;
-  const fadePath = `${resourcePath}.${phase === "enter" ? "next" : "prev"}.fade`;
-  if (!fade) {
-    throw new Error(
-      `[${selectionPath}]\n[${fadePath}] The selected audio effect does not define the required ${phase === "enter" ? "incoming" : "outgoing"} fade.`,
-    );
-  }
-  return compileFade(fade, phase, speed, target, fadePath);
-};
-
-export const resolvePerSoundAudioTransitions = ({
-  occurrence,
-  resources = {},
-  previousChannel,
-  nextChannel,
-  previousBgm,
-  nextBgm,
-}) => {
-  const previousSounds = previousBgm?.sounds ?? [];
-  const nextSounds = nextBgm?.sounds ?? [];
-  const previousById = new Map(
-    previousSounds.map((sound) => [sound.id, sound]),
-  );
-  const nextById = new Map(nextSounds.map((sound) => [sound.id, sound]));
-  const soundIds = [
-    ...previousSounds.map((sound) => sound.id),
-    ...nextSounds
-      .filter((sound) => !previousById.has(sound.id))
-      .map((sound) => sound.id),
-  ];
-  const effects = [];
-  const actionPath = occurrence?.actionPath ?? "bgm";
-
-  soundIds.forEach((soundId) => {
-    const previousSound = previousById.get(soundId);
-    const nextSound = nextById.get(soundId);
-    if (
-      previousSound &&
-      nextSound &&
-      isSameAuthoredSoundSource(previousSound, nextSound)
-    ) {
-      return;
-    }
-
-    const previousRenderedSound = getRenderedSound(previousChannel, soundId);
-    const nextRenderedSound = getRenderedSound(nextChannel, soundId);
-    const volume = {};
-    const outgoingPath = `${actionPath}.sounds[${JSON.stringify(soundId)}].outgoingTransition`;
-    const incomingPath = `${actionPath}.sounds[${JSON.stringify(soundId)}].incomingTransition`;
-    const exit = compilePerSoundTransitionPhase({
-      selection: previousSound?.outgoingTransition,
-      selectionPath: outgoingPath,
-      phase: "exit",
-      target: previousRenderedSound?.volume ?? DEFAULT_AUDIO_VALUES.volume,
-      resources,
-    });
-    const enter = compilePerSoundTransitionPhase({
-      selection: nextSound?.incomingTransition,
-      selectionPath: incomingPath,
-      phase: "enter",
-      target: nextRenderedSound?.volume ?? DEFAULT_AUDIO_VALUES.volume,
-      resources,
-    });
-    if (exit) volume.exit = exit;
-    if (enter) volume.enter = enter;
-    if (Object.keys(volume).length === 0) return;
-
-    const targetId = previousRenderedSound?.id ?? nextRenderedSound?.id;
-    if (!targetId) return;
-    effects.push({
-      id: `audio-effect:${occurrence.occurrenceId}:sound${effects.length + 1}`,
-      type: "audio-transition",
-      targetId,
-      properties: { volume },
-    });
-  });
-
-  return effects;
-};
-
 export const resolveAudioEffects = (options) => {
-  const legacyEffect = resolveAudioEffect(options);
-  const perSoundEffects = resolvePerSoundAudioTransitions(options);
-  if (legacyEffect && perSoundEffects.length > 0) {
-    const actionPath = options.occurrence?.actionPath ?? "bgm";
-    throw new Error(
-      `[${actionPath}] Channel-level audioEffects cannot be combined with per-sound incomingTransition or outgoingTransition selections.`,
-    );
-  }
-  return legacyEffect ? [legacyEffect] : perSoundEffects;
+  const nextResources = options.nextResources ?? options.resources;
+  const legacyEffect = resolveAudioEffect({
+    ...options,
+    resources: nextResources,
+  });
+  return legacyEffect ? [legacyEffect] : [];
 };
