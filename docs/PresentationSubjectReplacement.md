@@ -433,8 +433,10 @@ subject-bearing actions as partial patches.
 
 Route Engine currently has no project-level presentation-semantics version from
 which to select old versus new merging behavior. The implementation therefore
-needs an explicit release decision. This proposal recommends shipping the
-engine-level rule in a breaking release and documenting the migration.
+needs an explicit release decision. Under the complete-action authoring
+contract, this proposal treats the change as a feature release, bumps Route
+Engine to v1.46.0, and documents the migration risk for partial subject-bearing
+actions.
 
 There is no universal authored clear form for every instance field, so having
 authoring tools emit `alpha: 1`, `blur: null`, and `filters: []` cannot fully
