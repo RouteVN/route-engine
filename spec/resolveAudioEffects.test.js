@@ -81,6 +81,7 @@ describe("resolveAudioEffect", () => {
             type: "transition",
             prev: {
               fade: {
+                initialValue: 75,
                 keyframes: [
                   {
                     value: 50,
@@ -94,6 +95,7 @@ describe("resolveAudioEffect", () => {
             },
             next: {
               fade: {
+                initialValue: 25,
                 keyframes: [
                   { value: 25, duration: 500, easing: "easeInSine" },
                   { value: 100, duration: 1500, easing: "easeOutSine" },
@@ -114,6 +116,7 @@ describe("resolveAudioEffect", () => {
       properties: {
         volume: {
           exit: {
+            initialValue: 60,
             keyframes: [
               {
                 value: 40,
@@ -130,7 +133,7 @@ describe("resolveAudioEffect", () => {
             ],
           },
           enter: {
-            initialValue: 0,
+            initialValue: 15,
             keyframes: [
               {
                 value: 15,
@@ -174,6 +177,7 @@ describe("resolveAudioEffect", () => {
             type: "update",
             tween: {
               volume: {
+                initialValue: 80,
                 keyframes: [
                   { value: 50, duration: 100 },
                   {
@@ -185,9 +189,11 @@ describe("resolveAudioEffect", () => {
                 ],
               },
               pan: {
+                initialValue: -0.5,
                 keyframes: [{ value: 0.5, duration: 200 }],
               },
               playbackRate: {
+                initialValue: 1.25,
                 keyframes: [{ value: 0.75, duration: 300 }],
               },
             },
@@ -201,6 +207,7 @@ describe("resolveAudioEffect", () => {
     expect(effect.properties).toEqual({
       volume: {
         update: {
+          initialValue: 80,
           keyframes: [
             { value: 50, delay: 0, duration: 200, easing: "linear" },
             {
@@ -215,6 +222,7 @@ describe("resolveAudioEffect", () => {
       },
       pan: {
         update: {
+          initialValue: -0.5,
           keyframes: [
             { value: 0.5, delay: 0, duration: 400, easing: "linear" },
           ],
@@ -222,6 +230,7 @@ describe("resolveAudioEffect", () => {
       },
       playbackRate: {
         update: {
+          initialValue: 1.25,
           keyframes: [
             { value: 0.75, delay: 0, duration: 600, easing: "linear" },
           ],
@@ -845,12 +854,16 @@ describe("resolveAudioEffect", () => {
           type: "update",
           tween: {
             volume: {
+              initialValue: 80,
               keyframes: [
                 { value: 50, duration: 50 },
                 { value: 30, duration: 100 },
               ],
             },
-            pan: { keyframes: [{ value: -0.5, duration: 100 }] },
+            pan: {
+              initialValue: -0.25,
+              keyframes: [{ value: -0.5, duration: 100 }],
+            },
           },
         },
       },
@@ -889,6 +902,12 @@ describe("resolveAudioEffect", () => {
       expect.objectContaining({ value: 12 }),
     ]);
     expect(
+      effects.map((effect) => effect.properties.volume.update.initialValue),
+    ).toEqual([60, 32]);
+    expect(
+      effects.map((effect) => effect.properties.pan.update.initialValue),
+    ).toEqual([-0.15, -0.45]);
+    expect(
       effects.map(
         (effect) => effect.properties.pan.update.keyframes.at(-1).value,
       ),
@@ -911,6 +930,7 @@ describe("resolveAudioEffect", () => {
           type: "update",
           tween: {
             pan: {
+              initialValue: 0.2,
               keyframes: [
                 { value: -0.2, relative: true, duration: 100 },
                 { value: 0.4, duration: 200 },
@@ -940,20 +960,23 @@ describe("resolveAudioEffect", () => {
       nextChannel,
     });
 
-    expect(effect.properties.pan.update.keyframes).toEqual([
-      {
-        value: 1,
-        delay: 0,
-        duration: 100,
-        easing: "linear",
-      },
-      {
-        value: 0.9,
-        delay: 0,
-        duration: 200,
-        easing: "linear",
-      },
-    ]);
+    expect(effect.properties.pan.update).toEqual({
+      initialValue: 0.7,
+      keyframes: [
+        {
+          value: 0.5,
+          delay: 0,
+          duration: 100,
+          easing: "linear",
+        },
+        {
+          value: 0.9,
+          delay: 0,
+          duration: 200,
+          easing: "linear",
+        },
+      ],
+    });
   });
 
   it("writes update endpoints across a multi-sound BGM channel", () => {
@@ -1002,15 +1025,18 @@ describe("resolveSoundBoundaryEffect", () => {
               type: "update",
               tween: {
                 volume: {
+                  initialValue: 25,
                   keyframes: [
                     { startValue: 0, value: 50, duration: 200 },
                     { value: 100, delay: 40, duration: 400 },
                   ],
                 },
                 pan: {
+                  initialValue: -0.25,
                   keyframes: [{ value: 0.5, duration: 100 }],
                 },
                 playbackRate: {
+                  initialValue: 1.5,
                   keyframes: [{ value: 1.25, duration: 300 }],
                 },
               },
@@ -1020,6 +1046,7 @@ describe("resolveSoundBoundaryEffect", () => {
       }),
     ).toEqual({
       volume: {
+        initialValue: 25,
         keyframes: [
           {
             startValue: 0,
@@ -1037,9 +1064,11 @@ describe("resolveSoundBoundaryEffect", () => {
         ],
       },
       pan: {
+        initialValue: -0.25,
         keyframes: [{ value: 0.5, delay: 0, duration: 50, easing: "linear" }],
       },
       playbackRate: {
+        initialValue: 1.5,
         keyframes: [{ value: 1.25, delay: 0, duration: 150, easing: "linear" }],
       },
     });
