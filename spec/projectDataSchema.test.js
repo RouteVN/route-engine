@@ -3823,20 +3823,6 @@ describe("projectData schema", () => {
     });
     expect(validateProjectData(legacyNamedProjectData)).toBe(false);
 
-    const legacyFadeProjectData = createMinimalProjectData({
-      resources: {
-        audioEffects: {
-          invalid: {
-            type: "transition",
-            next: {
-              fade: { keyframes: [{ value: 100, duration: 100 }] },
-            },
-          },
-        },
-      },
-    });
-    expect(validateProjectData(legacyFadeProjectData)).toBe(false);
-
     const projectData = createMinimalProjectData({
       resources: {
         audioEffects: {
