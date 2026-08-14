@@ -3608,7 +3608,7 @@ describe("projectData schema", () => {
             name: "Crossfade",
             type: "transition",
             prev: {
-              fade: {
+              volume: {
                 initialValue: 90,
                 keyframes: [
                   {
@@ -3622,7 +3622,7 @@ describe("projectData schema", () => {
               },
             },
             next: {
-              fade: {
+              volume: {
                 initialValue: 10,
                 keyframes: [
                   { value: 60, duration: 300 },
@@ -3814,7 +3814,9 @@ describe("projectData schema", () => {
         audioAnimations: {
           crossfade: {
             type: "transition",
-            next: { fade: { duration: 100 } },
+            next: {
+              volume: { keyframes: [{ value: 100, duration: 100 }] },
+            },
           },
         },
       },
@@ -3826,7 +3828,9 @@ describe("projectData schema", () => {
         audioEffects: {
           invalid: {
             type: "update",
-            prev: { fade: { duration: 100 } },
+            prev: {
+              volume: { keyframes: [{ value: 0, duration: 100 }] },
+            },
           },
         },
       },

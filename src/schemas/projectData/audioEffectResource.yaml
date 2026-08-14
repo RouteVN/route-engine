@@ -38,46 +38,6 @@ $defs:
       - easeInElastic
       - easeOutElastic
       - easeInOutElastic
-  fade:
-    oneOf:
-      - type: object
-        description: Legacy single-segment transition fade
-        required: [duration]
-        properties:
-          initialValue:
-            type: number
-            minimum: 0
-            maximum: 100
-          delay:
-            type: number
-            minimum: 0
-            default: 0
-          duration:
-            type: number
-            minimum: 0
-          easing:
-            $ref: "#/$defs/easing"
-        additionalProperties: false
-      - type: object
-        required: [keyframes]
-        properties:
-          initialValue:
-            type: number
-            minimum: 0
-            maximum: 100
-          keyframes:
-            type: array
-            minItems: 1
-            items:
-              $ref: "#/$defs/fadeKeyframe"
-        additionalProperties: false
-  transitionSide:
-    type: object
-    minProperties: 1
-    properties:
-      fade:
-        $ref: "#/$defs/fade"
-    additionalProperties: false
   keyframeValue:
     type: number
     description: Numeric tween value; the final absolute value becomes the persistent BGM property value
@@ -126,14 +86,6 @@ $defs:
             startValue:
               minimum: 0
               maximum: 100
-  fadeKeyframe:
-    allOf:
-      - $ref: "#/$defs/boundedKeyframe"
-      - not:
-          properties:
-            relative:
-              const: true
-          required: [relative]
   panKeyframe:
     allOf:
       - $ref: "#/$defs/keyframe"
@@ -221,7 +173,7 @@ $defs:
         items:
           $ref: "#/$defs/playbackRateKeyframe"
     additionalProperties: false
-  updateTween:
+  propertyTracks:
     type: object
     minProperties: 1
     properties:
@@ -238,12 +190,12 @@ properties:
   type:
     enum: [update, transition]
   tween:
-    $ref: "#/$defs/updateTween"
+    $ref: "#/$defs/propertyTracks"
   prev:
-    $ref: "#/$defs/transitionSide"
+    $ref: "#/$defs/propertyTracks"
   next:
-    $ref: "#/$defs/transitionSide"
-    description: Incoming keyframed fades must end at 100 so the transition settles on the next sound's declared volume
+    $ref: "#/$defs/propertyTracks"
+    description: Incoming property tracks must end at the next sound's declared property values
 allOf:
   - if:
       properties:

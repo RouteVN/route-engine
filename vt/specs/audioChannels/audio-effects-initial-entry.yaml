@@ -44,9 +44,10 @@ resources:
     fade-in:
       type: transition
       next:
-        fade:
-          duration: 800
-          easing: easeOutSine
+        volume:
+          initialValue: 0
+          keyframes:
+            - { value: 100, duration: 800, easing: easeOutSine }
   colors:
     initial:
       hex: "#163A2C"

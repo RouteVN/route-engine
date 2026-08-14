@@ -221,7 +221,11 @@ const resourcePatchCases = [
     "audioEffects",
     {
       type: "transition",
-      next: { fade: { duration: 500, easing: "easeOutSine" } },
+      next: {
+        volume: {
+          keyframes: [{ value: 100, duration: 500, easing: "easeOutSine" }],
+        },
+      },
     },
   ],
 ];
