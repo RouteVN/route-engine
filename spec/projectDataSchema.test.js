@@ -3608,7 +3608,7 @@ describe("projectData schema", () => {
             name: "Crossfade",
             type: "transition",
             prev: {
-              fade: {
+              volume: {
                 initialValue: 90,
                 keyframes: [
                   {
@@ -3622,7 +3622,7 @@ describe("projectData schema", () => {
               },
             },
             next: {
-              fade: {
+              volume: {
                 initialValue: 10,
                 keyframes: [
                   { value: 60, duration: 300 },
@@ -3814,19 +3814,37 @@ describe("projectData schema", () => {
         audioAnimations: {
           crossfade: {
             type: "transition",
-            next: { fade: { duration: 100 } },
+            next: {
+              volume: { keyframes: [{ value: 100, duration: 100 }] },
+            },
           },
         },
       },
     });
     expect(validateProjectData(legacyNamedProjectData)).toBe(false);
 
+    const legacyFadeProjectData = createMinimalProjectData({
+      resources: {
+        audioEffects: {
+          invalid: {
+            type: "transition",
+            next: {
+              fade: { keyframes: [{ value: 100, duration: 100 }] },
+            },
+          },
+        },
+      },
+    });
+    expect(validateProjectData(legacyFadeProjectData)).toBe(false);
+
     const projectData = createMinimalProjectData({
       resources: {
         audioEffects: {
           invalid: {
             type: "update",
-            prev: { fade: { duration: 100 } },
+            prev: {
+              volume: { keyframes: [{ value: 0, duration: 100 }] },
+            },
           },
         },
       },
