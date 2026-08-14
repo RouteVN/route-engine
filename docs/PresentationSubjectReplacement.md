@@ -388,6 +388,28 @@ while relying on any inherited instance field, including transform, layer,
 backing color, playback, animation, opacity, blur, or filters. Those actions
 will render differently under the proposed semantics.
 
+The affected persistence behavior is not limited to the latest release:
+
+| Existing behavior                                                     | Present since |
+| --------------------------------------------------------------------- | ------------- |
+| Background `colorId` persists across resource updates                 | v1.15.0       |
+| Background opacity and blur persist across updates                    | v1.16.0       |
+| Character and visual opacity and blur persist by item ID              | v1.19.0       |
+| Character and visual transform overrides persist by item ID           | v1.20.0       |
+| Inline background transform overrides persist                         | v1.22.0       |
+| Full text-visual updates preserve placement and appearance            | v1.23.0       |
+| Persistent character and visual animations survive compatible updates | v1.39.1       |
+| Background, character, and visual filters persist                     | v1.42.0       |
+
+Presentation subject merging is materially the same in v1.42.0, v1.43.0, and
+v1.45.0. A project upgrading from any of those recent versions can therefore
+observe the proposed change.
+
+The break is silent rather than structural: existing YAML remains valid, but a
+subject-bearing action that relies on omitted instance fields renders
+differently. Actions that omit the subject for continuation, and replacements
+that explicitly author every required setting, are unaffected.
+
 Route Engine currently has no project-level presentation-semantics version from
 which to select old versus new merging behavior. The implementation therefore
 needs an explicit release decision. This proposal recommends shipping the
