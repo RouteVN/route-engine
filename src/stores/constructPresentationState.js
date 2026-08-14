@@ -144,10 +144,21 @@ const hasVisualSubject = (item, previousItem) => {
   return !previousItem?.text;
 };
 
+const hasExplicitVisualSubject = (item) =>
+  hasDefinedProperty(item, "resourceId") ||
+  hasCompleteVisualText(item) ||
+  hasCompleteVisualLayout(item);
+
 const hasCharacterSubject = (item) =>
   (item?.sprites && item.sprites.length > 0) ||
   item?.transformId ||
   item?.resourceId;
+
+const hasExplicitCharacterSubject = (item) =>
+  hasDefinedProperty(item, "resourceId") ||
+  (hasDefinedProperty(item, "sprites") &&
+    Array.isArray(item.sprites) &&
+    item.sprites.length > 0);
 
 const mergeVisualItemPatch = (previousItem, item) => {
   const mergedItem = {
@@ -340,7 +351,11 @@ const processItemsWithAnimations = (
   items,
   hasResourceFn,
   previousItems = [],
-  { hasPatchFn = () => false, mergeItemFn } = {},
+  {
+    hasPatchFn = () => false,
+    hasSubjectFn = (item, previousItem) => hasResourceFn(item, previousItem),
+    mergeItemFn,
+  } = {},
 ) => {
   if (!items || items.length === 0) {
     return { hasValidItems: false, processedItems: [] };
@@ -349,7 +364,7 @@ const processItemsWithAnimations = (
   const processedItems = items
     .map((item, index) => {
       const previousItem = findPreviousItem(previousItems, item, index);
-      const hasResource = hasResourceFn(item, previousItem);
+      const hasSubject = hasSubjectFn(item, previousItem);
       const hasAppearance = hasItemAppearance(item);
       const hasTransform = hasItemTransform(item);
       const hasPatch = hasPatchFn(item);
@@ -357,7 +372,7 @@ const processItemsWithAnimations = (
       let processedItem = normalizeAlphaAlias(clonePresentationValue(item));
 
       if (
-        !hasResource &&
+        !hasSubject &&
         (hasAppearance || hasTransform || hasPatch) &&
         previousItem
       ) {
@@ -376,6 +391,7 @@ const processItemsWithAnimations = (
         const nextHasResource = hasResourceFn(processedItem);
 
         if (
+          !hasSubject &&
           previousHasResource &&
           nextHasResource &&
           hasPersistentAnimationSelection(previousItem)
@@ -386,6 +402,10 @@ const processItemsWithAnimations = (
         } else {
           delete processedItem.animations;
         }
+      }
+
+      if (hasSubject) {
+        return processedItem;
       }
 
       return applyPersistentItemAppearance(
@@ -677,23 +697,37 @@ export const background = (state, presentation) => {
       }
     }
 
-    applyPersistentBackgroundTransform(nextBackground, previousBackground, {
-      hasAuthoredTransformId: hasTransformId,
-    });
+    if (!hasResourceId) {
+      applyPersistentBackgroundTransform(nextBackground, previousBackground, {
+        hasAuthoredTransformId: hasTransformId,
+      });
+    }
 
-    if (!hasColorId && previousBackground?.colorId) {
+    if (!hasResourceId && !hasColorId && previousBackground?.colorId) {
       nextBackground.colorId = previousBackground.colorId;
     }
 
-    if (!hasOpacity && hasDefinedProperty(previousBackground, "opacity")) {
+    if (
+      !hasResourceId &&
+      !hasOpacity &&
+      hasDefinedProperty(previousBackground, "opacity")
+    ) {
       nextBackground.opacity = previousBackground.opacity;
     }
 
-    if (!hasBlur && hasDefinedProperty(previousBackground, "blur")) {
+    if (
+      !hasResourceId &&
+      !hasBlur &&
+      hasDefinedProperty(previousBackground, "blur")
+    ) {
       nextBackground.blur = clonePresentationValue(previousBackground.blur);
     }
 
-    if (!hasFilters && hasDefinedProperty(previousBackground, "filters")) {
+    if (
+      !hasResourceId &&
+      !hasFilters &&
+      hasDefinedProperty(previousBackground, "filters")
+    ) {
       nextBackground.filters = clonePresentationValue(
         previousBackground.filters,
       );
@@ -763,6 +797,7 @@ export const background = (state, presentation) => {
     }
 
     if (
+      !hasResourceId &&
       previousBackground?.resourceId === nextBackground.resourceId &&
       previousBackground?.transformId === nextBackground.transformId &&
       !hasOwnProperty(nextBackground, "animations") &&
@@ -1104,6 +1139,7 @@ export const visual = (state, presentation) => {
       previousItems,
       {
         hasPatchFn: hasVisualSubjectPatch,
+        hasSubjectFn: hasExplicitVisualSubject,
         mergeItemFn: mergeVisualItemPatch,
       },
     );
@@ -1157,6 +1193,7 @@ export const character = (state, presentation) => {
     presentation.character.items,
     hasCharacterSubject,
     state.character?.items || [],
+    { hasSubjectFn: hasExplicitCharacterSubject },
   );
 
   if (hasValidItems) {

@@ -238,7 +238,7 @@ definitions:
 
   visualText:
     type: object
-    description: Text-backed visual configuration. Placement, layer, alpha, blur, filters, and animations stay on the visual item.
+    description: Text-backed visual configuration. A value with both content and textStyleId defines a fresh visual subject and resets omitted item state; a partial value patches the active text subject. Placement, layer, alpha, blur, filters, and animations stay on the visual item.
     properties:
       content:
         $ref: "#/definitions/visualTextContent"
@@ -283,7 +283,7 @@ definitions:
 
   visualInlineLayout:
     type: object
-    description: Inline RouteGraphics layout rendered as one visual item. The visual item owns placement, layer, appearance, and animations.
+    description: Inline RouteGraphics layout rendered as one visual item. A complete layout defines a fresh visual subject and resets omitted item state. The visual item owns placement, layer, appearance, and animations.
     properties:
       elements:
         type: array
@@ -361,7 +361,7 @@ properties:
     properties:
       resourceId:
         type: string
-        description: ID of the background resource to display
+        description: ID of the background resource to display. Authoring this field creates a fresh background instance and resets omitted color, placement, appearance, playback, and animation state, even when the ID is unchanged. Omit resourceId for a continuation patch.
       animationName:
         type: string
         description: Optional spritesheet animation name. If omitted for a spritesheet resource, the first defined animation is used.
@@ -373,7 +373,7 @@ properties:
         description: Optional video or spritesheet playback loop override
       colorId:
         type: string
-        description: Optional resources.colors ID for the solid color rendered behind the background resource. Persists until changed or cleared with cleanAll
+        description: Optional resources.colors ID for the solid color rendered behind the background resource. Persists through omitted background actions and subject-less patches, but resets when resourceId is authored without colorId.
       transformId:
         type: string
         description: Optional transform resource to position the background
@@ -586,7 +586,7 @@ properties:
               $ref: "#/definitions/shaderFilters"
             sprites:
               type: array
-              description: Array of sprite parts that make up the character
+              description: Array of sprite parts that make up the character. Authoring a non-empty array creates a fresh character item and resets every omitted item field, even when the composition is unchanged. Omit sprites for a continuation patch.
               items:
                 type: object
                 properties:
@@ -638,7 +638,7 @@ properties:
               description: Override the animation speed
             resourceId:
               type: string
-              description: ID of an image, video, spritesheet, particle, or layout resource
+              description: ID of an image, video, spritesheet, particle, or layout resource. Authoring this field creates a fresh visual item and resets every omitted item field, even when the ID is unchanged. Omit all complete visual subjects for a continuation patch.
             text:
               $ref: "#/definitions/visualText"
             layout:

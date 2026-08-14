@@ -36,7 +36,7 @@ out:
   background:
     resourceId: abcd
 ---
-case: background colorId persists across later lines
+case: background resource replacement resets colorId across later lines
 in:
   - state:
       global:
@@ -75,7 +75,6 @@ in:
 out:
   background:
     resourceId: xyz
-    colorId: night
   dialogue:
     mode: adv
     content:

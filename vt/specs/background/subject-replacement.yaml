@@ -1,0 +1,63 @@
+---
+title: Background Subject Replacement
+description: |
+  A subject-less background action should patch the active instance, while
+  explicitly reauthoring the same resourceId should create a fresh instance.
+
+  - the first screenshot should show the forest inset, faded, and blurred
+  - the second screenshot should increase opacity while preserving placement and blur
+  - the third screenshot should show the same forest at default placement and appearance
+skipInitialScreenshot: true
+steps:
+  - action: screenshot
+  - action: customEvent
+    name: vt:nextLine
+  - action: screenshot
+  - action: customEvent
+    name: vt:nextLine
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#FFFFFF"
+resources:
+  images:
+    forest:
+      fileId: dmni32
+      width: 1920
+      height: 1080
+story:
+  initialSceneId: backgroundSubjectScene
+  scenes:
+    backgroundSubjectScene:
+      name: Background Subject Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: styledBackground
+              actions:
+                background:
+                  resourceId: forest
+                  x: 280
+                  y: 180
+                  anchorX: 0
+                  anchorY: 0
+                  scaleX: 0.7
+                  scaleY: 0.7
+                  opacity: 0.5
+                  blur:
+                    x: 6
+                    y: 9
+                    quality: 3
+                    kernelSize: 9
+                    repeatEdgePixels: true
+            - id: patchedBackground
+              actions:
+                background:
+                  opacity: 0.8
+            - id: replacedBackground
+              actions:
+                background:
+                  resourceId: forest

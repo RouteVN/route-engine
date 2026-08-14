@@ -161,7 +161,7 @@ out:
       data:
         colorId: "night"
 ---
-case: "Detect updated background resource without color change"
+case: "Detect updated background resource and cleared color"
 in:
   - state:
       projectData:
@@ -192,6 +192,10 @@ out:
       changeType: "update"
       data:
         resourceId: "bg-home"
+    color:
+      changeType: "delete"
+      data:
+        colorId: "night"
 ---
 case: "Detect updated background color without resource change"
 in:
@@ -259,6 +263,10 @@ out:
       data:
         resourceId: "bg-school"
         transformId: "wide"
+    color:
+      changeType: "delete"
+      data:
+        colorId: "night"
 ---
 case: "Detect updated background inline transform as resource change"
 in:

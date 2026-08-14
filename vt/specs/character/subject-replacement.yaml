@@ -1,0 +1,85 @@
+---
+title: Character Subject Replacement
+description: |
+  A subject-less character item should patch the active instance, while
+  explicitly reauthoring the same sprite composition should create a fresh
+  instance.
+
+  - the first screenshot should show the character left of center, faded, and blurred
+  - the second screenshot should increase opacity while preserving placement and blur
+  - the third screenshot should show the same sprite centered with default appearance
+skipInitialScreenshot: true
+steps:
+  - action: screenshot
+  - action: customEvent
+    name: vt:nextLine
+  - action: screenshot
+  - action: customEvent
+    name: vt:nextLine
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#FFFFFF"
+resources:
+  colors:
+    stageWhite:
+      hex: "#FFFFFF"
+  images:
+    character-a:
+      fileId: char_sprite_1
+      width: 553
+      height: 865
+  transforms:
+    character-center:
+      x: 960
+      y: 1080
+      anchorX: 0.5
+      anchorY: 1
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+story:
+  initialSceneId: characterSubjectScene
+  scenes:
+    characterSubjectScene:
+      name: Character Subject Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: styledCharacter
+              actions:
+                background:
+                  colorId: stageWhite
+                character:
+                  items:
+                    - id: lead
+                      transformId: character-center
+                      x: 520
+                      opacity: 0.5
+                      blur:
+                        x: 6
+                        y: 9
+                        quality: 3
+                        kernelSize: 9
+                        repeatEdgePixels: true
+                      sprites:
+                        - id: body
+                          resourceId: character-a
+            - id: patchedCharacter
+              actions:
+                character:
+                  items:
+                    - id: lead
+                      opacity: 0.8
+            - id: replacedCharacter
+              actions:
+                character:
+                  items:
+                    - id: lead
+                      transformId: character-center
+                      sprites:
+                        - id: body
+                          resourceId: character-a

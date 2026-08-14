@@ -411,11 +411,15 @@ visual:
                 # WGSL source with mainVertex and mainFragment
 ```
 
-Action filters are persistent appearance. A filters-only action updates the
-existing target without repeating its resource, transform, or character sprite
-parts. Omission preserves the current filters; `filters: []` clears them. For a
-background with a renderable resource and a backing `colorId`, filters apply to
-the resource target. A color-only background applies filters to its color rect.
+Action filters are instance appearance. A filters-only continuation action
+updates the existing target without repeating its resource, transform, or
+character sprite parts. Omission on a continuation patch preserves the current
+filters; `filters: []` clears them. Explicitly reauthoring a background
+`resourceId`, a non-empty character `sprites` array, or a complete visual
+subject creates a fresh instance and resets omitted filters along with all other
+omitted instance state. For a background with a renderable resource and a
+backing `colorId`, filters apply to the resource target. A color-only background
+applies filters to its color rect.
 
 #### Layout Text Styles
 
@@ -1510,8 +1514,9 @@ transform fields remain supported as overrides for compatibility.
 
 #### Updating an inline layout
 
-Later lines can replace the inline layout by visual `id` while retaining its
-transform, layer, alpha, and blur. Inline transform patches merge by field:
+A complete inline `layout` reauthors the visual subject and creates a fresh
+instance. Include every non-default transform, layer, appearance, and animation
+field required by that instance:
 
 ```yaml
 visual:
@@ -1524,15 +1529,26 @@ visual:
             content: "Chapter 2"
             textStyleId: title
       transform:
+        x: 960
         y: 220
+        anchorX: 0.5
+        anchorY: 0.5
+        scaleX: 1
+        scaleY: 1
+        rotation: 0
+      layer: 70
 ```
 
-Appearance-only and animation-only updates do not need to repeat the layout:
+To patch the current inline-layout instance, omit `layout`. Inline transform
+patches then merge by field, and appearance-only or animation-only updates do
+not need to repeat the subject:
 
 ```yaml
 visual:
   items:
     - id: chapterTitle
+      transform:
+        y: 240
       alpha: 0.5
       animations:
         resourceId: titleFadeOut
@@ -1543,7 +1559,9 @@ visual:
 The existing `text` form remains supported for compatibility. New projects
 should prefer an inline layout so the visual can grow beyond one text element.
 For a new legacy text visual, both `text.content` and `text.textStyleId` are
-required; later patches can supply either field alone.
+required. A later action containing both fields reauthors the subject and
+creates a fresh instance; a partial text patch can supply either field alone
+and preserves the other instance fields.
 
 ```yaml
 visual:
@@ -1715,6 +1733,20 @@ Character item appearance applies to the whole character container, so every
 sprite part is faded, blurred, or filtered together. Visual item appearance
 applies to the single visual item container, sprite, video, animated sprite,
 particle system, layout, or text element.
+
+Appearance persists when its presentation channel is omitted or when a later
+item action omits the subject. Explicitly authoring a background `resourceId`,
+a non-empty character `sprites` array, a visual `resourceId`, a complete visual
+`layout`, or complete visual `text` creates a fresh instance from that action
+alone. Omitted appearance, placement, layer, playback, and animation fields
+then use their defaults, even if the subject value is unchanged. See
+[Presentation Subject Replacement Semantics](PresentationSubjectReplacement.md)
+for the complete contract and migration notes.
+
+> **Deprecation note:** Subject-less continuation patches such as a background
+> action containing only `opacity` remain supported for compatibility in
+> v1.46.0, but support is planned for removal. New content should omit an
+> unchanged presentation channel or emit its complete subject-bearing action.
 
 ```yaml
 character:
