@@ -62,6 +62,22 @@ settings on each replacement. A future whole-screen filter facility may
 provide a separate persistent scope for global scene grading; that facility is
 outside this proposal.
 
+## Authoring Contract
+
+Subject-bearing actions are complete declarations of the desired presentation
+instance. Authors and authoring tools must include every non-default setting
+the instance needs. An omitted optional field intentionally selects its normal
+default; it is not a request to recover that field from the previous instance.
+
+An intentional patch must omit the subject-bearing field. For example, a
+background action without `resourceId` may adjust the active background, while
+a background action with `resourceId` fully declares a new or reapplied
+background instance.
+
+The engine must not compensate for incomplete subject-bearing actions by
+merging previous state. That would make a syntactically complete action depend
+on execution history and recreate the ambiguity this proposal removes.
+
 ## Terminology
 
 ### Presentation instance
@@ -409,6 +425,11 @@ The break is silent rather than structural: existing YAML remains valid, but a
 subject-bearing action that relies on omitted instance fields renders
 differently. Actions that omit the subject for continuation, and replacements
 that explicitly author every required setting, are unaffected.
+
+The supported authoring contract expects complete subject-bearing actions, so
+the practical risk for conforming projects is low. The migration risk is
+concentrated in hand-authored content and older or third-party tools that used
+subject-bearing actions as partial patches.
 
 Route Engine currently has no project-level presentation-semantics version from
 which to select old versus new merging behavior. The implementation therefore
