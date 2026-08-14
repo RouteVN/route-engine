@@ -92,6 +92,7 @@ const normalizeChannelUpdateValue = ({
 };
 
 const resolveRelativeChannelPanKeyframes = ({
+  authoredInitialValue,
   authoredKeyframes,
   compiledKeyframes,
   previousBgm,
@@ -107,7 +108,8 @@ const resolveRelativeChannelPanKeyframes = ({
     renderedSound: nextSound,
     property: "pan",
   });
-  let channelPan = previousBgm?.pan ?? DEFAULT_AUDIO_VALUES.pan;
+  let channelPan =
+    authoredInitialValue ?? previousBgm?.pan ?? DEFAULT_AUDIO_VALUES.pan;
 
   return compiledKeyframes.map((compiled, index) => {
     const authored = authoredKeyframes[index];
@@ -165,6 +167,12 @@ const compileFadeKeyframe = (keyframe, speed, target) => {
 
 const compileFade = (fade, phase, speed, target, resourcePath) => {
   if (!fade) return undefined;
+  let initialValue;
+  if (hasOwn(fade, "initialValue")) {
+    initialValue = (fade.initialValue * target) / 100;
+  } else if (phase === "enter") {
+    initialValue = 0;
+  }
   const authoredKeyframes = fade.keyframes;
   if (authoredKeyframes) {
     if (authoredKeyframes.some((keyframe) => keyframe.relative === true)) {
@@ -186,13 +194,13 @@ const compileFade = (fade, phase, speed, target, resourcePath) => {
     }
 
     return {
-      ...(phase === "enter" ? { initialValue: 0 } : {}),
+      ...(initialValue === undefined ? {} : { initialValue }),
       keyframes,
     };
   }
 
   return {
-    ...(phase === "enter" ? { initialValue: 0 } : {}),
+    ...(initialValue === undefined ? {} : { initialValue }),
     keyframes: [
       {
         value: phase === "exit" ? 0 : target,
@@ -222,7 +230,7 @@ const compileUpdateProperty = ({
     );
   }
 
-  return {
+  const compiled = {
     keyframes: authored.keyframes.map((keyframe) => {
       const compiled = compileKeyframe(keyframe, speed);
       const relative = compiled.relative === true;
@@ -241,6 +249,14 @@ const compileUpdateProperty = ({
       return compiled;
     }),
   };
+  if (hasOwn(authored, "initialValue")) {
+    compiled.initialValue = normalizeValue({
+      property,
+      value: authored.initialValue,
+      relative: false,
+    });
+  }
+  return compiled;
 };
 
 export const resolveSoundBoundaryEffect = ({
@@ -432,6 +448,7 @@ export const resolveAudioEffect = ({
     });
     if (property === "pan") {
       update.keyframes = resolveRelativeChannelPanKeyframes({
+        authoredInitialValue: resource.tween[property].initialValue,
         authoredKeyframes: resource.tween[property].keyframes,
         compiledKeyframes: update.keyframes,
         previousBgm,
