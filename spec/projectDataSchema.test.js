@@ -151,19 +151,25 @@ const createMinimalProjectData = (overrides = {}) => ({
   ...overrides,
 });
 
-const createAudioUpdateProjectData = (property, keyframes) =>
-  createMinimalProjectData({
+const createAudioUpdateProjectData = (property, keyframes, initialValue) => {
+  const propertyConfig = { keyframes };
+  if (initialValue !== undefined) {
+    propertyConfig.initialValue = initialValue;
+  }
+
+  return createMinimalProjectData({
     resources: {
       audioEffects: {
         testedUpdate: {
           type: "update",
           tween: {
-            [property]: { keyframes },
+            [property]: propertyConfig,
           },
         },
       },
     },
   });
+};
 
 const createMinimalL10nData = (patches = []) => ({
   packages: {
@@ -3602,7 +3608,8 @@ describe("projectData schema", () => {
             name: "Crossfade",
             type: "transition",
             prev: {
-              fade: {
+              volume: {
+                initialValue: 90,
                 keyframes: [
                   {
                     value: 40,
@@ -3615,7 +3622,8 @@ describe("projectData schema", () => {
               },
             },
             next: {
-              fade: {
+              volume: {
+                initialValue: 10,
                 keyframes: [
                   { value: 60, duration: 300 },
                   { value: 100, duration: 600 },
@@ -3627,6 +3635,7 @@ describe("projectData schema", () => {
             type: "update",
             tween: {
               volume: {
+                initialValue: 90,
                 keyframes: [
                   {
                     startValue: 75,
@@ -3636,12 +3645,14 @@ describe("projectData schema", () => {
                 ],
               },
               pan: {
+                initialValue: -0.5,
                 keyframes: [
                   { value: 0, duration: 100 },
                   { value: 0.5, duration: 400 },
                 ],
               },
               playbackRate: {
+                initialValue: 1.25,
                 keyframes: [{ value: 0.75, duration: 250 }],
               },
             },
@@ -3683,6 +3694,30 @@ describe("projectData schema", () => {
       expect(validateProjectData.errors).not.toBeNull();
     },
   );
+
+  it.each([
+    ["volume", -0.01],
+    ["volume", 100.01],
+    ["pan", -1.01],
+    ["pan", 1.01],
+    ["playbackRate", -0.01],
+  ])("rejects an out-of-range %s initialValue %s", (property, initialValue) => {
+    expect(
+      validateProjectData(
+        createAudioUpdateProjectData(
+          property,
+          [
+            {
+              value: property === "volume" ? 50 : property === "pan" ? 0 : 1,
+              duration: 100,
+            },
+          ],
+          initialValue,
+        ),
+      ),
+    ).toBe(false);
+    expect(validateProjectData.errors).not.toBeNull();
+  });
 
   it.each([
     ["volume", -0.01, 50],
@@ -3779,7 +3814,9 @@ describe("projectData schema", () => {
         audioAnimations: {
           crossfade: {
             type: "transition",
-            next: { fade: { duration: 100 } },
+            next: {
+              volume: { keyframes: [{ value: 100, duration: 100 }] },
+            },
           },
         },
       },
@@ -3791,7 +3828,9 @@ describe("projectData schema", () => {
         audioEffects: {
           invalid: {
             type: "update",
-            prev: { fade: { duration: 100 } },
+            prev: {
+              volume: { keyframes: [{ value: 0, duration: 100 }] },
+            },
           },
         },
       },

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  applyAudioEffectUpdateEndpoints,
+  applyAudioEffectEndpoints,
   resolveAudioEffect,
   resolveAudioEffects,
   resolveSoundBoundaryEffect,
@@ -39,8 +39,13 @@ const occurrence = {
 
 const transitionResource = {
   type: "transition",
-  prev: { fade: { duration: 600 } },
-  next: { fade: { duration: 900 } },
+  prev: { volume: { keyframes: [{ value: 0, duration: 600 }] } },
+  next: {
+    volume: {
+      initialValue: 0,
+      keyframes: [{ value: 60, duration: 900 }],
+    },
+  },
 };
 
 const updateResource = {
@@ -80,7 +85,8 @@ describe("resolveAudioEffect", () => {
           crossfade: {
             type: "transition",
             prev: {
-              fade: {
+              volume: {
+                initialValue: 60,
                 keyframes: [
                   {
                     value: 50,
@@ -93,10 +99,11 @@ describe("resolveAudioEffect", () => {
               },
             },
             next: {
-              fade: {
+              volume: {
+                initialValue: 15,
                 keyframes: [
-                  { value: 25, duration: 500, easing: "easeInSine" },
-                  { value: 100, duration: 1500, easing: "easeOutSine" },
+                  { value: 15, duration: 500, easing: "easeInSine" },
+                  { value: 60, duration: 1500, easing: "easeOutSine" },
                 ],
               },
             },
@@ -114,9 +121,10 @@ describe("resolveAudioEffect", () => {
       properties: {
         volume: {
           exit: {
+            initialValue: 60,
             keyframes: [
               {
-                value: 40,
+                value: 50,
                 delay: 50,
                 duration: 200,
                 easing: "easeInSine",
@@ -130,7 +138,7 @@ describe("resolveAudioEffect", () => {
             ],
           },
           enter: {
-            initialValue: 0,
+            initialValue: 15,
             keyframes: [
               {
                 value: 15,
@@ -146,6 +154,74 @@ describe("resolveAudioEffect", () => {
               },
             ],
           },
+        },
+      },
+    });
+  });
+
+  it("compiles volume, pan, and playback-rate transition properties", () => {
+    const effect = resolveAudioEffect({
+      occurrence,
+      resources: {
+        audioEffects: {
+          crossfade: {
+            type: "transition",
+            prev: {
+              volume: { keyframes: [{ value: 0, duration: 200 }] },
+              pan: { keyframes: [{ value: -1, duration: 300 }] },
+              playbackRate: { keyframes: [{ value: 0.5, duration: 400 }] },
+            },
+            next: {
+              volume: {
+                initialValue: 0,
+                keyframes: [{ value: 60, duration: 500 }],
+              },
+              pan: {
+                initialValue: -1,
+                keyframes: [{ value: 0.25, duration: 600 }],
+              },
+              playbackRate: {
+                initialValue: 0.5,
+                keyframes: [{ value: 1, duration: 700 }],
+              },
+            },
+          },
+        },
+      },
+      previousChannel: oldChannel,
+      nextChannel: newChannel,
+    });
+
+    expect(effect.properties).toEqual({
+      volume: {
+        exit: {
+          keyframes: [{ value: 0, delay: 0, duration: 100, easing: "linear" }],
+        },
+        enter: {
+          initialValue: 0,
+          keyframes: [{ value: 60, delay: 0, duration: 250, easing: "linear" }],
+        },
+      },
+      pan: {
+        exit: {
+          keyframes: [{ value: -1, delay: 0, duration: 150, easing: "linear" }],
+        },
+        enter: {
+          initialValue: -1,
+          keyframes: [
+            { value: 0.25, delay: 0, duration: 300, easing: "linear" },
+          ],
+        },
+      },
+      playbackRate: {
+        exit: {
+          keyframes: [
+            { value: 0.5, delay: 0, duration: 200, easing: "linear" },
+          ],
+        },
+        enter: {
+          initialValue: 0.5,
+          keyframes: [{ value: 1, delay: 0, duration: 350, easing: "linear" }],
         },
       },
     });
@@ -174,6 +250,7 @@ describe("resolveAudioEffect", () => {
             type: "update",
             tween: {
               volume: {
+                initialValue: 80,
                 keyframes: [
                   { value: 50, duration: 100 },
                   {
@@ -185,9 +262,11 @@ describe("resolveAudioEffect", () => {
                 ],
               },
               pan: {
+                initialValue: -0.5,
                 keyframes: [{ value: 0.5, duration: 200 }],
               },
               playbackRate: {
+                initialValue: 1.25,
                 keyframes: [{ value: 0.75, duration: 300 }],
               },
             },
@@ -201,6 +280,7 @@ describe("resolveAudioEffect", () => {
     expect(effect.properties).toEqual({
       volume: {
         update: {
+          initialValue: 80,
           keyframes: [
             { value: 50, delay: 0, duration: 200, easing: "linear" },
             {
@@ -215,6 +295,7 @@ describe("resolveAudioEffect", () => {
       },
       pan: {
         update: {
+          initialValue: -0.5,
           keyframes: [
             { value: 0.5, delay: 0, duration: 400, easing: "linear" },
           ],
@@ -222,6 +303,7 @@ describe("resolveAudioEffect", () => {
       },
       playbackRate: {
         update: {
+          initialValue: 1.25,
           keyframes: [
             { value: 0.75, delay: 0, duration: 600, easing: "linear" },
           ],
@@ -238,7 +320,9 @@ describe("resolveAudioEffect", () => {
           audioEffects: {
             crossfade: {
               type: "transition",
-              next: { fade: { duration: 100 } },
+              next: {
+                volume: { keyframes: [{ value: 20, duration: 100 }] },
+              },
             },
           },
         },
@@ -280,7 +364,9 @@ describe("resolveAudioEffect", () => {
           audioEffects: {
             crossfade: {
               type: "transition",
-              next: { fade: { duration: 100 } },
+              next: {
+                volume: { keyframes: [{ value: 60, duration: 100 }] },
+              },
             },
           },
         },
@@ -337,7 +423,7 @@ describe("resolveAudioEffect", () => {
     });
   });
 
-  it("compiles an editable outgoing final transition fade value", () => {
+  it("compiles an editable outgoing transition volume endpoint", () => {
     expect(
       resolveWith({
         selection: { resourceId: "crossfade" },
@@ -346,7 +432,7 @@ describe("resolveAudioEffect", () => {
             crossfade: {
               type: "transition",
               prev: {
-                fade: { keyframes: [{ value: 35, duration: 100 }] },
+                volume: { keyframes: [{ value: 35, duration: 100 }] },
               },
             },
           },
@@ -356,7 +442,7 @@ describe("resolveAudioEffect", () => {
       }).properties.volume.exit.keyframes,
     ).toEqual([
       {
-        value: 28,
+        value: 35,
         delay: 0,
         duration: 100,
         easing: "linear",
@@ -364,7 +450,7 @@ describe("resolveAudioEffect", () => {
     ]);
   });
 
-  it("requires an incoming transition fade to end at full declared volume", () => {
+  it("requires an incoming transition property to match persistent state", () => {
     expect(() =>
       resolveWith({
         selection: { resourceId: "crossfade" },
@@ -373,7 +459,7 @@ describe("resolveAudioEffect", () => {
             crossfade: {
               type: "transition",
               next: {
-                fade: { keyframes: [{ value: 65, duration: 100 }] },
+                volume: { keyframes: [{ value: 65, duration: 100 }] },
               },
             },
           },
@@ -381,32 +467,35 @@ describe("resolveAudioEffect", () => {
         previousChannel: oldChannel,
         nextChannel: newChannel,
       }),
-    ).toThrow("final incoming transition fade value must be 100");
+    ).toThrow("must match the persistent BGM volume value");
   });
 
-  it("rejects relative transition fade keyframes", () => {
-    expect(() =>
-      resolveWith({
-        selection: { resourceId: "crossfade" },
-        resources: {
-          audioEffects: {
-            crossfade: {
-              type: "transition",
-              next: {
-                fade: {
-                  keyframes: [
-                    { value: 50, duration: 100, relative: true },
-                    { value: 100, duration: 100 },
-                  ],
-                },
+  it("compiles relative transition property keyframes", () => {
+    const effect = resolveWith({
+      selection: { resourceId: "crossfade" },
+      resources: {
+        audioEffects: {
+          crossfade: {
+            type: "transition",
+            next: {
+              volume: {
+                keyframes: [
+                  { value: -10, duration: 100, relative: true },
+                  { value: 60, duration: 100 },
+                ],
               },
             },
           },
         },
-        previousChannel: oldChannel,
-        nextChannel: newChannel,
-      }),
-    ).toThrow("Transition fade keyframes must use absolute values");
+      },
+      previousChannel: oldChannel,
+      nextChannel: newChannel,
+    });
+
+    expect(effect.properties.volume.enter.keyframes[0]).toMatchObject({
+      value: -10,
+      relative: true,
+    });
   });
 
   it("ignores sound boundary metadata when classifying a top-level transition", () => {
@@ -505,7 +594,9 @@ describe("resolveAudioEffect", () => {
           audioEffects: {
             crossfade: {
               type: "transition",
-              prev: { fade: { duration: 100 } },
+              prev: {
+                volume: { keyframes: [{ value: 0, duration: 100 }] },
+              },
             },
           },
         },
@@ -651,7 +742,7 @@ describe("resolveAudioEffect", () => {
     };
     const snapshot = structuredClone(bgm);
 
-    expect(applyAudioEffectUpdateEndpoints({ bgm, resources })).toEqual({
+    expect(applyAudioEffectEndpoints({ bgm, resources })).toEqual({
       volume: 50,
       pan: -0.5,
       audioEffects: { resourceId: "smooth" },
@@ -666,6 +757,35 @@ describe("resolveAudioEffect", () => {
       ],
     });
     expect(bgm).toEqual(snapshot);
+  });
+
+  it("writes incoming transition endpoints into the persistent BGM mix", () => {
+    const bgm = {
+      volume: 25,
+      pan: 0.75,
+      audioEffects: { resourceId: "crossfade" },
+      sounds: [{ id: "main", resourceId: "next", playbackRate: 2 }],
+    };
+    const resources = {
+      audioEffects: {
+        crossfade: {
+          type: "transition",
+          prev: { volume: { keyframes: [{ value: 0, duration: 100 }] } },
+          next: {
+            volume: { keyframes: [{ value: 50, duration: 100 }] },
+            pan: { keyframes: [{ value: -0.5, duration: 100 }] },
+            playbackRate: { keyframes: [{ value: 0.75, duration: 100 }] },
+          },
+        },
+      },
+    };
+
+    expect(applyAudioEffectEndpoints({ bgm, resources })).toEqual({
+      volume: 50,
+      pan: -0.5,
+      audioEffects: { resourceId: "crossfade" },
+      sounds: [{ id: "main", resourceId: "next", playbackRate: 0.75 }],
+    });
   });
 
   it("does not mutate the occurrence, resources, or channel graphs", () => {
@@ -740,9 +860,33 @@ describe("resolveAudioEffect", () => {
       ],
     };
 
+    const resources = {
+      sounds: {
+        main: { fileId: "new.ogg", volume: 60 },
+        ambience: { fileId: "ambience-new.ogg", volume: 25 },
+      },
+      audioEffects: {
+        crossfade: {
+          ...transitionResource,
+          next: {
+            volume: {
+              initialValue: 0,
+              keyframes: [{ value: 100, duration: 900 }],
+            },
+          },
+        },
+      },
+    };
     const effects = resolveAudioEffects({
       occurrence,
-      resources: { audioEffects: { crossfade: transitionResource } },
+      resources,
+      nextBgm: {
+        volume: 100,
+        sounds: [
+          { id: "main", resourceId: "main" },
+          { id: "ambience", resourceId: "ambience" },
+        ],
+      },
       previousChannel,
       nextChannel,
     });
@@ -845,12 +989,16 @@ describe("resolveAudioEffect", () => {
           type: "update",
           tween: {
             volume: {
+              initialValue: 80,
               keyframes: [
                 { value: 50, duration: 50 },
                 { value: 30, duration: 100 },
               ],
             },
-            pan: { keyframes: [{ value: -0.5, duration: 100 }] },
+            pan: {
+              initialValue: -0.25,
+              keyframes: [{ value: -0.5, duration: 100 }],
+            },
           },
         },
       },
@@ -889,6 +1037,12 @@ describe("resolveAudioEffect", () => {
       expect.objectContaining({ value: 12 }),
     ]);
     expect(
+      effects.map((effect) => effect.properties.volume.update.initialValue),
+    ).toEqual([60, 32]);
+    expect(
+      effects.map((effect) => effect.properties.pan.update.initialValue),
+    ).toEqual([-0.15, -0.45]);
+    expect(
       effects.map(
         (effect) => effect.properties.pan.update.keyframes.at(-1).value,
       ),
@@ -911,6 +1065,7 @@ describe("resolveAudioEffect", () => {
           type: "update",
           tween: {
             pan: {
+              initialValue: 0.2,
               keyframes: [
                 { value: -0.2, relative: true, duration: 100 },
                 { value: 0.4, duration: 200 },
@@ -940,20 +1095,23 @@ describe("resolveAudioEffect", () => {
       nextChannel,
     });
 
-    expect(effect.properties.pan.update.keyframes).toEqual([
-      {
-        value: 1,
-        delay: 0,
-        duration: 100,
-        easing: "linear",
-      },
-      {
-        value: 0.9,
-        delay: 0,
-        duration: 200,
-        easing: "linear",
-      },
-    ]);
+    expect(effect.properties.pan.update).toEqual({
+      initialValue: 0.7,
+      keyframes: [
+        {
+          value: 0.5,
+          delay: 0,
+          duration: 100,
+          easing: "linear",
+        },
+        {
+          value: 0.9,
+          delay: 0,
+          duration: 200,
+          easing: "linear",
+        },
+      ],
+    });
   });
 
   it("writes update endpoints across a multi-sound BGM channel", () => {
@@ -979,7 +1137,7 @@ describe("resolveAudioEffect", () => {
       },
     };
 
-    expect(applyAudioEffectUpdateEndpoints({ bgm, resources })).toMatchObject({
+    expect(applyAudioEffectEndpoints({ bgm, resources })).toMatchObject({
       volume: 30,
       pan: -0.5,
       sounds: [
@@ -1002,15 +1160,18 @@ describe("resolveSoundBoundaryEffect", () => {
               type: "update",
               tween: {
                 volume: {
+                  initialValue: 25,
                   keyframes: [
                     { startValue: 0, value: 50, duration: 200 },
                     { value: 100, delay: 40, duration: 400 },
                   ],
                 },
                 pan: {
+                  initialValue: -0.25,
                   keyframes: [{ value: 0.5, duration: 100 }],
                 },
                 playbackRate: {
+                  initialValue: 1.5,
                   keyframes: [{ value: 1.25, duration: 300 }],
                 },
               },
@@ -1020,6 +1181,7 @@ describe("resolveSoundBoundaryEffect", () => {
       }),
     ).toEqual({
       volume: {
+        initialValue: 25,
         keyframes: [
           {
             startValue: 0,
@@ -1037,9 +1199,11 @@ describe("resolveSoundBoundaryEffect", () => {
         ],
       },
       pan: {
+        initialValue: -0.25,
         keyframes: [{ value: 0.5, delay: 0, duration: 50, easing: "linear" }],
       },
       playbackRate: {
+        initialValue: 1.5,
         keyframes: [{ value: 1.25, delay: 0, duration: 150, easing: "linear" }],
       },
     });

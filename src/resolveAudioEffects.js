@@ -8,7 +8,7 @@ const DEFAULT_AUDIO_VALUES = Object.freeze({
   playbackRate: 1,
 });
 
-const UPDATE_PROPERTIES = ["volume", "pan", "playbackRate"];
+const AUDIO_EFFECT_PROPERTIES = ["volume", "pan", "playbackRate"];
 
 const SOURCE_IDENTITY_FIELDS = ["src", "startAt", "endAt", "startDelayMs"];
 
@@ -58,21 +58,21 @@ const getCanonicalSoundProperty = ({
   );
 };
 
-const normalizeChannelUpdateValue = ({
+const normalizeChannelPropertyValue = ({
   property,
   value,
   relative,
-  nextBgm,
-  nextResources,
-  nextSound,
+  bgm,
+  resources,
+  renderedSound,
 }) => {
-  if (!nextBgm || !nextSound) return value;
+  if (!bgm || !renderedSound) return value;
 
   if (property === "volume") {
     const soundVolume = getCanonicalSoundProperty({
-      bgm: nextBgm,
-      resources: nextResources,
-      renderedSound: nextSound,
+      bgm,
+      resources,
+      renderedSound,
       property,
     });
     return (value * soundVolume) / 100;
@@ -80,9 +80,9 @@ const normalizeChannelUpdateValue = ({
 
   if (property === "pan" && !relative) {
     const soundPan = getCanonicalSoundProperty({
-      bgm: nextBgm,
-      resources: nextResources,
-      renderedSound: nextSound,
+      bgm,
+      resources,
+      renderedSound,
       property,
     });
     return clampAudioPan(value + soundPan);
@@ -92,22 +92,24 @@ const normalizeChannelUpdateValue = ({
 };
 
 const resolveRelativeChannelPanKeyframes = ({
+  authoredInitialValue,
   authoredKeyframes,
+  baselineBgm,
   compiledKeyframes,
-  previousBgm,
-  nextBgm,
-  nextResources,
-  nextSound,
+  bgm,
+  resources,
+  renderedSound,
 }) => {
-  if (!nextBgm || !nextSound) return compiledKeyframes;
+  if (!bgm || !renderedSound) return compiledKeyframes;
 
   const localPan = getCanonicalSoundProperty({
-    bgm: nextBgm,
-    resources: nextResources,
-    renderedSound: nextSound,
+    bgm,
+    resources,
+    renderedSound,
     property: "pan",
   });
-  let channelPan = previousBgm?.pan ?? DEFAULT_AUDIO_VALUES.pan;
+  let channelPan =
+    authoredInitialValue ?? baselineBgm?.pan ?? DEFAULT_AUDIO_VALUES.pan;
 
   return compiledKeyframes.map((compiled, index) => {
     const authored = authoredKeyframes[index];
@@ -154,61 +156,11 @@ const compileKeyframe = (keyframe, speed) => ({
   ...(keyframe.relative === true ? { relative: true } : {}),
 });
 
-const compileFadeKeyframe = (keyframe, speed, target) => {
-  const compiled = compileKeyframe(keyframe, speed);
-  compiled.value = (compiled.value * target) / 100;
-  if (hasOwn(compiled, "startValue")) {
-    compiled.startValue = (compiled.startValue * target) / 100;
-  }
-  return compiled;
-};
-
-const compileFade = (fade, phase, speed, target, resourcePath) => {
-  if (!fade) return undefined;
-  const authoredKeyframes = fade.keyframes;
-  if (authoredKeyframes) {
-    if (authoredKeyframes.some((keyframe) => keyframe.relative === true)) {
-      throw new Error(
-        `[${resourcePath}.keyframes] Transition fade keyframes must use absolute values.`,
-      );
-    }
-    if (phase === "enter" && authoredKeyframes.at(-1)?.value !== 100) {
-      throw new Error(
-        `[${resourcePath}.keyframes] The final incoming transition fade value must be 100.`,
-      );
-    }
-
-    const keyframes = authoredKeyframes.map((keyframe) =>
-      compileFadeKeyframe(keyframe, speed, target),
-    );
-    if (phase === "enter") {
-      keyframes.at(-1).value = target;
-    }
-
-    return {
-      ...(phase === "enter" ? { initialValue: 0 } : {}),
-      keyframes,
-    };
-  }
-
-  return {
-    ...(phase === "enter" ? { initialValue: 0 } : {}),
-    keyframes: [
-      {
-        value: phase === "exit" ? 0 : target,
-        delay: (fade.delay ?? 0) / speed,
-        duration: fade.duration / speed,
-        easing: fade.easing ?? "linear",
-      },
-    ],
-  };
-};
-
-const compileUpdateProperty = ({
+const compileProperty = ({
   property,
   authored,
   speed,
-  resourcePath,
+  propertyPath,
   normalizeValue = ({ value }) => value,
 }) => {
   const finalKeyframe = authored.keyframes.at(-1);
@@ -218,11 +170,11 @@ const compileUpdateProperty = ({
     finalKeyframe.relative === true
   ) {
     throw new Error(
-      `[${resourcePath}.tween.${property}.keyframes] The final keyframe must use an absolute finite numeric value.`,
+      `[${propertyPath}.keyframes] The final keyframe must use an absolute finite numeric value.`,
     );
   }
 
-  return {
+  const compiled = {
     keyframes: authored.keyframes.map((keyframe) => {
       const compiled = compileKeyframe(keyframe, speed);
       const relative = compiled.relative === true;
@@ -241,6 +193,71 @@ const compileUpdateProperty = ({
       return compiled;
     }),
   };
+  if (hasOwn(authored, "initialValue")) {
+    compiled.initialValue = normalizeValue({
+      property,
+      value: authored.initialValue,
+      relative: false,
+    });
+  }
+  return compiled;
+};
+
+const compileChannelProperty = ({
+  authored,
+  bgm,
+  baselineBgm = bgm,
+  property,
+  propertyPath,
+  renderedSound,
+  resources,
+  speed,
+}) => {
+  const compiled = compileProperty({
+    property,
+    authored,
+    speed,
+    propertyPath,
+    normalizeValue: ({ value, relative }) =>
+      normalizeChannelPropertyValue({
+        property,
+        value,
+        relative,
+        bgm,
+        resources,
+        renderedSound,
+      }),
+  });
+  if (property === "pan") {
+    compiled.keyframes = resolveRelativeChannelPanKeyframes({
+      authoredInitialValue: authored.initialValue,
+      authoredKeyframes: authored.keyframes,
+      baselineBgm,
+      compiledKeyframes: compiled.keyframes,
+      bgm,
+      resources,
+      renderedSound,
+    });
+  }
+  return compiled;
+};
+
+const settlePropertyEndpoint = ({
+  actionPath,
+  compiled,
+  property,
+  propertyPath,
+  renderedSound,
+}) => {
+  const persistentValue =
+    renderedSound[property] ?? DEFAULT_AUDIO_VALUES[property];
+  const finalKeyframe = compiled.keyframes.at(-1);
+  if (!areEquivalentAudioValues(finalKeyframe.value, persistentValue)) {
+    throw new Error(
+      `[${actionPath}.audioEffects]\n[${propertyPath}.keyframes] The final keyframe value must match the persistent BGM ${property} value.`,
+    );
+  }
+  finalKeyframe.value = persistentValue;
 };
 
 export const resolveSoundBoundaryEffect = ({
@@ -266,33 +283,39 @@ export const resolveSoundBoundaryEffect = ({
 
   const speed = getPlaybackSpeed(selection, selectionPath);
   const properties = {};
-  for (const property of UPDATE_PROPERTIES) {
+  for (const property of AUDIO_EFFECT_PROPERTIES) {
     if (!hasOwn(resource.tween, property)) continue;
-    properties[property] = compileUpdateProperty({
+    properties[property] = compileProperty({
       property,
       authored: resource.tween[property],
       speed,
-      resourcePath,
+      propertyPath: `${resourcePath}.tween.${property}`,
     });
   }
 
   return properties;
 };
 
-export const applyAudioEffectUpdateEndpoints = ({ bgm, resources = {} }) => {
+export const applyAudioEffectEndpoints = ({ bgm, resources = {} }) => {
   const resourceId = bgm?.audioEffects?.resourceId;
   const resource = resources.audioEffects?.[resourceId];
-  if (resource?.type !== "update") return bgm;
+  const propertyTracks =
+    resource?.type === "update"
+      ? resource.tween
+      : resource?.type === "transition"
+        ? resource.next
+        : undefined;
+  if (!propertyTracks) return bgm;
 
   const sounds = bgm.sounds ?? [];
   if (sounds.length === 0) return bgm;
 
   const resolvedBgm = structuredClone(bgm);
 
-  for (const property of UPDATE_PROPERTIES) {
-    if (!hasOwn(resource.tween, property)) continue;
+  for (const property of AUDIO_EFFECT_PROPERTIES) {
+    if (!hasOwn(propertyTracks, property)) continue;
 
-    const finalKeyframe = resource.tween[property].keyframes.at(-1);
+    const finalKeyframe = propertyTracks[property].keyframes.at(-1);
     if (
       typeof finalKeyframe?.value !== "number" ||
       !Number.isFinite(finalKeyframe.value) ||
@@ -332,6 +355,7 @@ const getTopLevelTransitionSoundGraph = (sound) => {
 export const resolveAudioEffect = ({
   occurrence,
   resources = {},
+  previousResources = resources,
   nextResources = resources,
   previousChannel,
   nextChannel,
@@ -377,28 +401,53 @@ export const resolveAudioEffect = ({
       );
     }
 
-    const volume = {};
-    const exit = compileFade(
-      previousSound ? resource.prev?.fade : undefined,
-      "exit",
-      speed,
-      previousSound?.volume ?? DEFAULT_AUDIO_VALUES.volume,
-      `${resourcePath}.prev.fade`,
-    );
-    const enter = compileFade(
-      nextSound ? resource.next?.fade : undefined,
-      "enter",
-      speed,
-      nextSound?.volume ?? DEFAULT_AUDIO_VALUES.volume,
-      `${resourcePath}.next.fade`,
-    );
-    if (exit) volume.exit = exit;
-    if (enter) volume.enter = enter;
-    if (Object.keys(volume).length === 0) return null;
+    const properties = {};
+    for (const property of AUDIO_EFFECT_PROPERTIES) {
+      const lifecycle = {};
+      const previousTrack = previousSound
+        ? resource.prev?.[property]
+        : undefined;
+      if (previousTrack) {
+        lifecycle.exit = compileChannelProperty({
+          authored: previousTrack,
+          bgm: previousBgm,
+          property,
+          propertyPath: `${resourcePath}.prev.${property}`,
+          renderedSound: previousSound,
+          resources: previousResources,
+          speed,
+        });
+      }
+
+      const nextTrack = nextSound ? resource.next?.[property] : undefined;
+      if (nextTrack) {
+        lifecycle.enter = compileChannelProperty({
+          authored: nextTrack,
+          bgm: nextBgm,
+          property,
+          propertyPath: `${resourcePath}.next.${property}`,
+          renderedSound: nextSound,
+          resources: nextResources,
+          speed,
+        });
+        settlePropertyEndpoint({
+          actionPath,
+          compiled: lifecycle.enter,
+          property,
+          propertyPath: `${resourcePath}.next.${property}`,
+          renderedSound: nextSound,
+        });
+      }
+
+      if (Object.keys(lifecycle).length > 0) {
+        properties[property] = lifecycle;
+      }
+    }
+    if (Object.keys(properties).length === 0) return null;
 
     return {
       ...createBaseEffect(occurrence, targetId),
-      properties: { volume },
+      properties,
     };
   }
 
@@ -413,41 +462,27 @@ export const resolveAudioEffect = ({
     );
   }
   const properties = {};
-  for (const property of UPDATE_PROPERTIES) {
+  for (const property of AUDIO_EFFECT_PROPERTIES) {
     if (!hasOwn(resource.tween, property)) continue;
-    const update = compileUpdateProperty({
+    const propertyPath = `${resourcePath}.tween.${property}`;
+    const update = compileChannelProperty({
       property,
       authored: resource.tween[property],
       speed,
-      resourcePath,
-      normalizeValue: ({ value, relative }) =>
-        normalizeChannelUpdateValue({
-          property,
-          value,
-          relative,
-          nextBgm,
-          nextResources,
-          nextSound,
-        }),
+      propertyPath,
+      baselineBgm: previousBgm,
+      bgm: nextBgm,
+      resources: nextResources,
+      renderedSound: nextSound,
     });
-    if (property === "pan") {
-      update.keyframes = resolveRelativeChannelPanKeyframes({
-        authoredKeyframes: resource.tween[property].keyframes,
-        compiledKeyframes: update.keyframes,
-        previousBgm,
-        nextBgm,
-        nextResources,
-        nextSound,
-      });
-    }
     const nextValue = nextSound[property] ?? DEFAULT_AUDIO_VALUES[property];
-    const finalValue = update.keyframes.at(-1).value;
-    if (!areEquivalentAudioValues(finalValue, nextValue)) {
-      throw new Error(
-        `[${actionPath}.audioEffects]\n[${resourcePath}.tween.${property}.keyframes] The final keyframe value must match the persistent BGM ${property} value.`,
-      );
-    }
-    update.keyframes.at(-1).value = nextValue;
+    settlePropertyEndpoint({
+      actionPath,
+      compiled: update,
+      property,
+      propertyPath,
+      renderedSound: nextSound,
+    });
 
     const previousValue =
       previousSound[property] ?? DEFAULT_AUDIO_VALUES[property];

@@ -73,11 +73,14 @@ resources:
     crossfade:
       type: transition
       prev:
-        fade:
-          duration: 1000
+        volume:
+          keyframes:
+            - { value: 0, duration: 1000 }
       next:
-        fade:
-          duration: 1000
+        volume:
+          initialValue: 0
+          keyframes:
+            - { value: 100, duration: 1000 }
   colors:
     advance:
       hex: "#10131A"

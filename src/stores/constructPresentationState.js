@@ -1,6 +1,6 @@
 import { current, isDraft } from "immer";
 import { createSequentialActionsExecutor } from "../util.js";
-import { applyAudioEffectUpdateEndpoints } from "../resolveAudioEffects.js";
+import { applyAudioEffectEndpoints } from "../resolveAudioEffects.js";
 
 const clonePresentationValue = (value) =>
   structuredClone(isDraft(value) ? current(value) : value);
@@ -1071,7 +1071,7 @@ export const bgm = (state, presentation, resources) => {
       return;
     }
 
-    state.bgm = applyAudioEffectUpdateEndpoints({
+    state.bgm = applyAudioEffectEndpoints({
       bgm: clonePresentationValue(presentation.bgm),
       resources,
     });

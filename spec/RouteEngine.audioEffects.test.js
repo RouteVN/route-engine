@@ -11,8 +11,17 @@ const createProjectData = () => ({
     audioEffects: {
       crossfade: {
         type: "transition",
-        prev: { fade: { duration: 600, easing: "easeInSine" } },
-        next: { fade: { duration: 900, easing: "easeOutSine" } },
+        prev: {
+          volume: {
+            keyframes: [{ value: 0, duration: 600, easing: "easeInSine" }],
+          },
+        },
+        next: {
+          volume: {
+            initialValue: 0,
+            keyframes: [{ value: 100, duration: 900, easing: "easeOutSine" }],
+          },
+        },
       },
       smooth: {
         type: "update",
@@ -118,7 +127,7 @@ describe("RouteEngine audioEffects occurrences", () => {
         volume: {
           enter: {
             initialValue: 0,
-            keyframes: [expect.objectContaining({ value: 80 })],
+            keyframes: [expect.objectContaining({ value: 100 })],
           },
         },
       },
@@ -256,7 +265,7 @@ describe("RouteEngine audioEffects occurrences", () => {
       properties: {
         volume: {
           exit: { keyframes: [expect.objectContaining({ value: 0 })] },
-          enter: { keyframes: [expect.objectContaining({ value: 60 })] },
+          enter: { keyframes: [expect.objectContaining({ value: 100 })] },
         },
       },
     });
@@ -271,7 +280,7 @@ describe("RouteEngine audioEffects occurrences", () => {
     expect(settingsRender.audio[0]).toMatchObject({
       id: "channel:bgm",
       volume: 25,
-      children: [expect.objectContaining({ id: "bgm:main", volume: 60 })],
+      children: [expect.objectContaining({ id: "bgm:main", volume: 100 })],
     });
 
     engine.commitRenderState(retry);
@@ -297,7 +306,7 @@ describe("RouteEngine audioEffects occurrences", () => {
 
     expect(
       retry.audioEffects[0].properties.volume.enter.keyframes[0].value,
-    ).toBe(60);
+    ).toBe(100);
     expect(retry.audioEffects[0].properties.volume.exit.keyframes).toHaveLength(
       1,
     );
@@ -781,6 +790,7 @@ describe("RouteEngine audioEffects occurrences", () => {
 
   it("uses startup skip state for a no-op boundary-effect handoff", () => {
     const projectData = createProjectData();
+    projectData.resources.audioEffects.crossfade.next.volume.keyframes[0].value = 80;
     const lines = projectData.story.scenes.scene.sections.section.lines;
     const sound = {
       id: "main",
