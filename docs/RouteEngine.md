@@ -1743,6 +1743,11 @@ then use their defaults, even if the subject value is unchanged. See
 [Presentation Subject Replacement Semantics](PresentationSubjectReplacement.md)
 for the complete contract and migration notes.
 
+> **Deprecation note:** Subject-less continuation patches such as a background
+> action containing only `opacity` remain supported for compatibility in
+> v1.46.0, but support is planned for removal. New content should omit an
+> unchanged presentation channel or emit its complete subject-bearing action.
+
 ```yaml
 character:
   items:

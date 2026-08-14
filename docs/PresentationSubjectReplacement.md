@@ -77,6 +77,12 @@ The engine must not compensate for incomplete subject-bearing actions by
 merging previous state. That would make a syntactically complete action depend
 on execution history and recreate the ambiguity this contract removes.
 
+> **Deprecation note:** History-dependent subject-less continuation patches,
+> such as `background: { opacity: 0.8 }`, remain supported for compatibility in
+> v1.46.0 but are planned for removal in a future version. New content and
+> authoring tools should omit the channel when nothing changes, or emit the
+> complete subject-bearing action and every desired non-default field.
+
 ## Terminology
 
 ### Presentation instance
@@ -160,7 +166,9 @@ continues according to its current persistence rules.
 ### Continuation patch
 
 An action without a subject patches the current instance. All omitted instance
-fields are inherited according to the existing patch rules.
+fields are inherited according to the existing patch rules. This is legacy
+compatibility behavior covered by the deprecation note in the authoring
+contract; new content should not rely on it.
 
 ```yaml
 - background:
