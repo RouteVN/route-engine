@@ -1,0 +1,81 @@
+---
+title: Visual Subject Replacement
+description: |
+  A subject-less visual item should patch the active instance, while explicitly
+  reauthoring the same resourceId should create a fresh instance.
+
+  - the first screenshot should show the visual left of center, faded, and blurred
+  - the second screenshot should increase opacity while preserving placement and blur
+  - the third screenshot should show the same resource centered with default appearance
+skipInitialScreenshot: true
+steps:
+  - action: screenshot
+  - action: customEvent
+    name: vt:nextLine
+  - action: screenshot
+  - action: customEvent
+    name: vt:nextLine
+  - action: screenshot
+---
+screen:
+  width: 1920
+  height: 1080
+  backgroundColor: "#FFFFFF"
+resources:
+  colors:
+    stageWhite:
+      hex: "#FFFFFF"
+  images:
+    visual-sprite:
+      fileId: char_sprite_2
+      width: 553
+      height: 865
+  transforms:
+    visual-center:
+      x: 960
+      y: 1080
+      anchorX: 0.5
+      anchorY: 1
+      rotation: 0
+      scaleX: 1
+      scaleY: 1
+story:
+  initialSceneId: visualSubjectScene
+  scenes:
+    visualSubjectScene:
+      name: Visual Subject Scene
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: styledVisual
+              actions:
+                background:
+                  colorId: stageWhite
+                visual:
+                  items:
+                    - id: glow
+                      resourceId: visual-sprite
+                      transformId: visual-center
+                      x: 520
+                      layer: 90
+                      opacity: 0.5
+                      blur:
+                        x: 6
+                        y: 9
+                        quality: 3
+                        kernelSize: 9
+                        repeatEdgePixels: true
+            - id: patchedVisual
+              actions:
+                visual:
+                  items:
+                    - id: glow
+                      opacity: 0.8
+            - id: replacedVisual
+              actions:
+                visual:
+                  items:
+                    - id: glow
+                      resourceId: visual-sprite
+                      transformId: visual-center

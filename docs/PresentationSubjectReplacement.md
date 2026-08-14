@@ -1,7 +1,6 @@
 # Presentation Subject Replacement Semantics
 
-Status: proposed behavior. This document is for review and does not describe
-the behavior currently implemented by Route Engine.
+Status: implemented in Route Engine v1.46.0.
 
 ## Decision Summary
 
@@ -24,7 +23,7 @@ or visual item. This includes appearance, placement, layer, backing color,
 resource playback overrides, and animation selection. The subject and fields
 explicitly present in the replacement action are the complete new instance.
 
-This proposal does not reset other presentation channels or screen-level
+This behavior does not reset other presentation channels or screen-level
 state, and it does not redefine the existing collection and removal rules for
 other item IDs.
 
@@ -60,7 +59,7 @@ presentation of a subject.
 If a project needs settings across several subjects, it should author those
 settings on each replacement. A future whole-screen filter facility may
 provide a separate persistent scope for global scene grading; that facility is
-outside this proposal.
+outside this change.
 
 ## Authoring Contract
 
@@ -76,7 +75,7 @@ background instance.
 
 The engine must not compensate for incomplete subject-bearing actions by
 merging previous state. That would make a syntactically complete action depend
-on execution history and recreate the ambiguity this proposal removes.
+on execution history and recreate the ambiguity this contract removes.
 
 ## Terminology
 
@@ -295,26 +294,15 @@ from the new instance and its normal default applies.
 “Any defined `resourceId`” includes the same string already present in state.
 The engine checks authored presence, not equality.
 
-## Current Behavior
+## Implemented Behavior
 
-The current presentation-state reducer applies a mixture of replacement and
-persistence rules when subject content is explicitly supplied.
+The presentation-state reducer detects explicit subject authoring before it
+applies any previous-state merge or persistence helper. A subject replacement
+uses only the normalized fields in the current action. A continuation patch
+retains the existing field-specific patch and persistence behavior.
 
-For backgrounds, the reducer can copy previous `colorId`, inline transform
-overrides, opacity, blur, filters, and a compatible persistent animation when
-the next action omits those fields. Several of those copies are not conditional
-on whether the action contains `resourceId`, while other fields such as
-`transformId` and resource playback overrides already reset in some
-replacement paths.
-
-For character and visual items, transform and appearance persistence helpers
-run after item processing and can copy fields from the previous item with the
-same `id`. Compatible persistent animations can also be restored. These steps
-are not consistently conditional on whether the item supplied a new or
-reasserted subject. Other fields, including visual `layer`, may already reset.
-
-As a result, this sequence currently transfers the first background's
-appearance to the second:
+As a result, this sequence does not transfer the first background's appearance
+to the second:
 
 ```yaml
 - background:
@@ -324,44 +312,41 @@ appearance to the second:
     resourceId: street
 ```
 
-The implemented result is `street` with the previous blur. The proposed result
-is a new instance containing only `resourceId: street`.
+The result is a new instance containing only `resourceId: street`.
 
-## Implementation Direction
+## Implementation Notes
 
-The implementation should introduce one shared concept of explicit subject
-authoring rather than adding resource-equality branches to each reducer.
+The implementation uses one shared concept of explicit subject authoring rather
+than resource-equality branches in each reducer.
 
-1. Detect background, character-item, and visual-item subject authoring using
+1. It detects background, character-item, and visual-item subject authoring using
    the table above.
-2. For a subject replacement, construct the next instance solely from the
+2. For a subject replacement, it constructs the next instance solely from the
    normalized authored action.
-3. Do not run previous-state merge, transform persistence, appearance
+3. It does not run previous-state merge, transform persistence, appearance
    persistence, playback persistence, or persistent-animation restoration for
    that instance.
-4. For a continuation patch, retain the existing field-specific patch and
+4. For a continuation patch, it retains the existing field-specific patch and
    persistence behavior.
-5. Continue normalizing explicitly authored `alpha` to the internal legacy
+5. It continues normalizing explicitly authored `alpha` to the internal legacy
    `opacity` representation.
-6. Update the public action documentation and schema descriptions in the same
-   implementation PR.
+6. The public action documentation and schema descriptions expose the same
+   contract.
 
-Renderer changes should not be necessary. The render state already consumes
-the resolved presentation state; the behavioral change belongs at the point
-where presentation actions are merged.
+Renderer changes are unnecessary. The render state already consumes the
+resolved presentation state; the behavioral change belongs at the point where
+presentation actions are merged.
 
-Do not add equality checks or infer replacement from changed values. Do not add
-an inheritance flag in the first implementation. Authors who intentionally
-want state on a replacement can state that state explicitly.
+There are no equality checks or inheritance flags. Authors who intentionally
+want state on a replacement state it explicitly.
 
-## Verification Requirements
+## Verification Coverage
 
-The implementation is complete only when both state transitions and rendered
-output are covered.
+Both state transitions and rendered output are covered.
 
 ### Targeted state coverage
 
-Add system or unit cases for background, character, and visual targets proving:
+System and unit cases for background, character, and visual targets prove:
 
 1. an omitted channel preserves existing instance state
 2. a continuation patch preserves the subject and every unmentioned field
@@ -381,8 +366,8 @@ protects the entire opaque filter object, not only blur.
 
 ### Render and VT coverage
 
-Validate the actual visual path with isolated background, character, and visual
-VT scenarios. Each scenario should show:
+The actual visual path is validated with isolated background, character, and
+visual VT scenarios. Each scenario shows:
 
 1. a subject rendered with unmistakable non-default appearance and placement
 2. a continuation patch retaining the unmentioned instance state
@@ -393,16 +378,15 @@ Keep the three targets isolated rather than combining them on one page. This
 makes a failure attributable to one state transition and follows the VT
 isolation requirements in `docs/vt-guidelines.md`.
 
-The implementation PR must run the targeted automated tests and generate or
-compare the relevant VT screenshots before the change is handed back for
-review.
+The implementation PR runs the targeted automated tests and compares the
+relevant VT screenshots before review.
 
 ## Compatibility and Rollout
 
 This is an intentional behavior change. Existing projects may repeat a subject
 while relying on any inherited instance field, including transform, layer,
 backing color, playback, animation, opacity, blur, or filters. Those actions
-will render differently under the proposed semantics.
+will render differently under these semantics.
 
 The affected persistence behavior is not limited to the latest release:
 
@@ -419,7 +403,7 @@ The affected persistence behavior is not limited to the latest release:
 
 Presentation subject merging is materially the same in v1.42.0, v1.43.0, and
 v1.45.0. A project upgrading from any of those recent versions can therefore
-observe the proposed change.
+observe this change.
 
 The break is silent rather than structural: existing YAML remains valid, but a
 subject-bearing action that relies on omitted instance fields renders
@@ -431,17 +415,15 @@ the practical risk for conforming projects is low. The migration risk is
 concentrated in hand-authored content and older or third-party tools that used
 subject-bearing actions as partial patches.
 
-Route Engine currently has no project-level presentation-semantics version from
-which to select old versus new merging behavior. The implementation therefore
-needs an explicit release decision. Under the complete-action authoring
-contract, this proposal treats the change as a feature release, bumps Route
-Engine to v1.46.0, and documents the migration risk for partial subject-bearing
-actions.
+Route Engine has no project-level presentation-semantics version from which to
+select old versus new merging behavior. Under the complete-action authoring
+contract, the change ships as a feature release in Route Engine v1.46.0, with
+the migration risk for partial subject-bearing actions documented here.
 
 There is no universal authored clear form for every instance field, so having
 authoring tools emit `alpha: 1`, `blur: null`, and `filters: []` cannot fully
 reproduce fresh-instance behavior. A compatibility mode would first require a
-versioned project or engine option and is not proposed here.
+versioned project or engine option and is not included here.
 
 For an engine-level rollout, migration tooling should identify subject-bearing
 actions that omit instance fields after prior state was established for the

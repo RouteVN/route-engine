@@ -170,7 +170,7 @@ describe("inline visual layouts", () => {
     });
   });
 
-  it("replaces inline layout content by id while preserving visual state", () => {
+  it("replaces inline layout content by id with only explicitly authored state", () => {
     const presentationState = constructPresentationState([
       {
         visual: {
@@ -226,22 +226,21 @@ describe("inline visual layouts", () => {
       },
     ]);
 
-    expect(presentationState.visual.items[0]).toMatchObject({
+    expect(presentationState.visual.items[0]).toEqual({
       id: "title",
       layout: {
-        elements: [{ content: "Chapter 2" }],
+        elements: [
+          {
+            id: "text",
+            type: "text",
+            content: "Chapter 2",
+            textStyleId: "title",
+          },
+        ],
       },
       transform: {
-        x: 100,
         y: 180,
-        anchorX: 0.5,
-        anchorY: 0.5,
-        scaleX: 1,
-        scaleY: 1,
-        rotation: 0,
       },
-      layer: 70,
-      opacity: 0.8,
     });
   });
 

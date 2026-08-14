@@ -168,11 +168,15 @@ out:
             changeType: "update"
             data:
               resourceId: "bg2"
+          color:
+            changeType: "delete"
+            data:
+              colorId: "night"
     - id: "3"
       changes:
         background:
           color:
-            changeType: "update"
+            changeType: "add"
             data:
               colorId: "day"
     - id: "4"
