@@ -1,4 +1,4 @@
-import { createAudioRenderId } from "./audioIds.js";
+import { createBgmSoundRenderId } from "./audioIds.js";
 
 const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
 
@@ -50,7 +50,7 @@ const getCanonicalSoundProperty = ({
   property,
 }) => {
   const sound = bgm?.sounds?.find(
-    ({ id }) => createAudioRenderId("bgm", id) === renderedSound?.id,
+    (sound) => createBgmSoundRenderId(bgm, sound) === renderedSound?.id,
   );
   const resource = resources.sounds?.[sound?.resourceId];
   return (

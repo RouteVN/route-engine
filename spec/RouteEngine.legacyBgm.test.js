@@ -33,6 +33,7 @@ const createEngine = (actions) => {
           sounds: {
             theme: { fileId: "theme.ogg" },
             other: { fileId: "other.ogg" },
+            mixed: { fileId: "mixed.ogg", volume: 40, pan: 0.25 },
             "theme:mix%": { fileId: "mix.ogg" },
             "theme%3Amix%": { fileId: "another-mix.ogg" },
           },
@@ -40,6 +41,13 @@ const createEngine = (actions) => {
             quieter: {
               type: "update",
               tween: { volume: { keyframes: [{ value: 35, duration: 250 }] } },
+            },
+            mix: {
+              type: "update",
+              tween: {
+                volume: { keyframes: [{ value: 35, duration: 250 }] },
+                pan: { keyframes: [{ value: 0.3, duration: 250 }] },
+              },
             },
           },
         },
@@ -80,6 +88,15 @@ describe("legacy BGM playback identity", () => {
     ["legacy to canonical", legacyBgm, canonicalBgm],
     ["canonical to legacy", canonicalBgm, legacyBgm],
     ["canonical to canonical", canonicalBgm, canonicalBgm],
+    ["legacy to converted default", legacyBgm, convertedLegacyBgm],
+    ["converted default to legacy", convertedLegacyBgm, legacyBgm],
+    ["converted default to canonical", convertedLegacyBgm, canonicalBgm],
+    ["canonical to converted default", canonicalBgm, convertedLegacyBgm],
+    [
+      "converted default to converted default",
+      convertedLegacyBgm,
+      convertedLegacyBgm,
+    ],
   ])("retains identity across %s volume changes", (_, before, after) => {
     const engine = createEngine([{ bgm: before(80) }, { bgm: after(35) }]);
     const projectBefore = structuredClone(
@@ -101,30 +118,74 @@ describe("legacy BGM playback identity", () => {
   });
 
   it.each([
-    ["legacy to converted default", legacyBgm, convertedLegacyBgm],
-    ["converted default to legacy", convertedLegacyBgm, legacyBgm],
-  ])("preserves the existing %s handoff", (_, before, after) => {
-    const engine = createEngine([{ bgm: before(80) }, { bgm: after(35) }]);
-    const previousId = engine.selectRenderState().audio[0].children[0].id;
-    expect(nextLine(engine).audio[0].children[0].id).toBe(previousId);
-  });
+    ["canonical", canonicalBgm],
+    ["converted default", convertedLegacyBgm],
+  ])(
+    "targets a %s update effect at the retained legacy sound",
+    (_, makeBgm) => {
+      const updated = makeBgm(35);
+      updated.audioEffects = { resourceId: "quieter" };
+      const engine = createEngine([{ bgm: legacyBgm(80) }, { bgm: updated }]);
 
-  it("targets an update effect at the retained legacy sound", () => {
-    const updated = canonicalBgm(35);
-    updated.audioEffects = { resourceId: "quieter" };
-    const engine = createEngine([{ bgm: legacyBgm(80) }, { bgm: updated }]);
-
-    const renderState = nextLine(engine);
-    expect(renderState.audioEffects).toHaveLength(1);
-    expect(renderState.audioEffects[0]).toMatchObject({
-      targetId: "bgm:theme",
-      properties: {
-        volume: {
-          update: { keyframes: [expect.objectContaining({ value: 35 })] },
+      const renderState = nextLine(engine);
+      expect(renderState.audioEffects).toHaveLength(1);
+      expect(renderState.audioEffects[0]).toMatchObject({
+        targetId: "bgm:theme",
+        properties: {
+          volume: {
+            update: { keyframes: [expect.objectContaining({ value: 35 })] },
+          },
         },
-      },
-    });
-  });
+      });
+    },
+  );
+
+  it.each([
+    ["sound overrides", { volume: 50, pan: -0.1 }, 17.5, 0.2],
+    ["resource defaults", {}, 14, 0.55],
+  ])(
+    "uses %s when resolving effects for the default alias",
+    (_, overrides, volume, pan) => {
+      const sound = { id: "default", resourceId: "mixed", ...overrides };
+      const engine = createEngine([
+        { bgm: { volume: 80, sounds: [sound] } },
+        {
+          bgm: {
+            volume: 35,
+            pan: 0.3,
+            sounds: [sound],
+            audioEffects: { resourceId: "mix" },
+          },
+        },
+      ]);
+
+      const renderState = nextLine(engine);
+      const renderedSound = renderState.audio[0].children[0];
+      expect(renderedSound.id).toBe("bgm:mixed");
+      expect(renderedSound.volume).toBeCloseTo(volume);
+      expect(renderedSound.pan).toBeCloseTo(pan);
+      expect(renderState.audioEffects).toHaveLength(1);
+      expect(renderState.audioEffects[0]).toMatchObject({
+        targetId: "bgm:mixed",
+        properties: {
+          volume: {
+            update: {
+              keyframes: [
+                expect.objectContaining({ value: renderedSound.volume }),
+              ],
+            },
+          },
+          pan: {
+            update: {
+              keyframes: [
+                expect.objectContaining({ value: renderedSound.pan }),
+              ],
+            },
+          },
+        },
+      });
+    },
+  );
 
   it("keeps the fallback stable when BGM is omitted, stopped, and restored", () => {
     const engine = createEngine([
@@ -139,9 +200,12 @@ describe("legacy BGM playback identity", () => {
     expect(nextLine(engine).audio[0].children[0].id).toBe("bgm:theme");
   });
 
-  it("restores legacy identity through save/load and rollback", () => {
+  it.each([
+    ["legacy", legacyBgm],
+    ["converted default", convertedLegacyBgm],
+  ])("restores %s identity through save/load and rollback", (_, makeBgm) => {
     const engine = createEngine([
-      { bgm: legacyBgm(80) },
+      { bgm: makeBgm(80) },
       { bgm: canonicalBgm(35) },
     ]);
     engine.handleAction("saveSlot", { slotId: "legacy", savedAt: 1 });
@@ -151,7 +215,7 @@ describe("legacy BGM playback identity", () => {
       id: "bgm:theme",
       volume: 80,
     });
-    expect(engine.selectPresentationState().bgm).toEqual(legacyBgm(80));
+    expect(engine.selectPresentationState().bgm).toEqual(makeBgm(80));
     engine.commitRenderState(engine.selectRenderState());
     nextLine(engine);
     engine.handleAction("rollbackToLine", {
@@ -179,11 +243,13 @@ describe("legacy BGM playback identity", () => {
     const engine = createEngine([
       { bgm: { resourceId: "theme:mix%" } },
       { bgm: { sounds: [{ id: "theme:mix%", resourceId: "theme:mix%" }] } },
+      { bgm: { sounds: [{ id: "default", resourceId: "theme:mix%" }] } },
       { bgm: { resourceId: "theme%3Amix%" } },
     ]);
     expect(engine.selectRenderState().audio[0].children[0].id).toBe(
       "bgm:theme%3Amix%25",
     );
+    expect(nextLine(engine).audio[0].children[0].id).toBe("bgm:theme%3Amix%25");
     expect(nextLine(engine).audio[0].children[0].id).toBe("bgm:theme%3Amix%25");
     expect(nextLine(engine).audio[0].children[0].id).toBe(
       "bgm:theme%253Amix%25",
@@ -200,5 +266,13 @@ describe("legacy BGM playback identity", () => {
     expect(
       engine.selectRenderState().audio[0].children.map(({ id }) => id),
     ).toEqual(ids.map((id) => `bgm:${id}`));
+  });
+
+  it("does not alias other explicit single-clip IDs", () => {
+    const engine = createEngine([
+      { bgm: legacyBgm(80) },
+      { bgm: { sounds: [{ id: "custom", resourceId: "theme" }] } },
+    ]);
+    expect(nextLine(engine).audio[0].children[0].id).toBe("bgm:custom");
   });
 });

@@ -12,7 +12,7 @@ import {
   VISUAL_LAYER,
   VISUAL_LAYER_VALUES,
 } from "../renderLayers.js";
-import { createAudioRenderId } from "../audioIds.js";
+import { createAudioRenderId, createBgmSoundRenderId } from "../audioIds.js";
 import { resolveSoundBoundaryEffect } from "../resolveAudioEffects.js";
 
 const jemplFunctions = {
@@ -4005,7 +4005,7 @@ export const createBgmChannelNode = ({
       children.push(
         applyBgmSoundMix({
           node: createSoundNode({
-            id: createAudioRenderId("bgm", sound.id),
+            id: createBgmSoundRenderId(bgm, sound),
             sound: renderSound,
             resource: audioResource,
             projectResources: resources,

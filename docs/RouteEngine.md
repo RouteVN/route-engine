@@ -2191,9 +2191,11 @@ playing sound, provided the source and playback timing remain the same. ID
 components escape `%` and `:` just like canonical sound IDs.
 
 This fallback is runtime-only; it does not rewrite project data or save data.
-Explicit canonical IDs, including `default` and previously generated IDs,
-remain authoritative. Separate occurrences must retain distinct IDs, and a
-changed source, playback range, or start delay can still restart playback.
+For compatibility with older editor conversions, a single canonical clip with
+ID `default` also uses its `resourceId` as its runtime identity. Other explicit
+IDs remain authoritative, including `default` in multi-clip channels. Separate
+occurrences must retain distinct IDs. A changed source, playback range, or start
+delay can still restart playback.
 Voice and SFX identity rules are unchanged.
 
 ### Audio Volumes

@@ -1,10 +1,11 @@
 ---
 title: Legacy BGM Playback Identity
-description: Volume changes across legacy and canonical BGM retain the actual playing audio source.
+description: Volume changes across legacy, converted-default, and canonical BGM retain the actual playing audio source.
 skipInitialScreenshot: true
 specs:
   - a canvas click starts legacy BGM through a real audio user gesture
-  - legacy and canonical volume changes reuse the source in both directions
+  - legacy, converted-default, and canonical volume changes reuse the source
+  - an update effect targets the converted clip without restarting playback
   - an explicit new clip ID and a stop followed by replay still start new sources
 steps:
   - action: click
@@ -45,6 +46,23 @@ steps:
     type: js
     global: __vtAudioSourceStartCount
     value: 1
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect.targetId
+    value: bgm:theme
+  - action: assert
+    type: js
+    global: __vtLastAudioEffect.properties.volume.update.keyframes.0.value
+    value: 20
+  - action: wait
+    ms: 300
+  - action: click
+    x: 320
+    y: 180
+  - action: assert
+    type: js
+    global: __vtAudioSourceStartCount
+    value: 1
   - action: click
     x: 320
     y: 180
@@ -74,6 +92,13 @@ resources:
   sounds:
     theme:
       fileId: 3ka3s
+  audioEffects:
+    quieter:
+      type: update
+      tween:
+        volume:
+          keyframes:
+            - { value: 50, duration: 250 }
   colors:
     canvas:
       hex: "#10131A"
@@ -104,10 +129,14 @@ story:
               actions:
                 control: { resourceId: advance }
                 bgm: { resourceId: theme, volume: 80 }
-            - id: legacy-volume
+            - id: converted-volume
               actions:
                 control: { resourceId: advance }
-                bgm: { resourceId: theme, volume: 60 }
+                bgm:
+                  loop: true
+                  volume: 60
+                  sounds:
+                    - { id: default, resourceId: theme, loop: false }
             - id: canonical-volume
               actions:
                 control: { resourceId: advance }
@@ -116,6 +145,20 @@ story:
                   volume: 35
                   sounds:
                     - { id: theme, resourceId: theme, loop: false }
+            - id: converted-effect
+              actions:
+                control: { resourceId: advance }
+                bgm:
+                  loop: true
+                  volume: 50
+                  sounds:
+                    - {
+                        id: default,
+                        resourceId: theme,
+                        loop: false,
+                        volume: 40,
+                      }
+                  audioEffects: { resourceId: quieter }
             - id: legacy-again
               actions:
                 control: { resourceId: advance }
