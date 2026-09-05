@@ -41,7 +41,7 @@ out:
       muted: false
       pan: 0
       children:
-        - id: "bgm:default"
+        - id: "bgm:backgroundMusic"
           type: "sound"
           src: "bgm.mp3"
           loop: true
@@ -82,7 +82,7 @@ out:
       muted: false
       pan: 0
       children:
-        - id: "bgm:default"
+        - id: "bgm:simpleMusic"
           type: "sound"
           src: "simple.mp3"
           loop: true
@@ -125,7 +125,7 @@ out:
       muted: false
       pan: 0
       children:
-        - id: "bgm:default"
+        - id: "bgm:legacy-delay:customMusic"
           type: "sound"
           src: "custom.mp3"
           loop: false
@@ -168,7 +168,7 @@ out:
       muted: false
       pan: 0
       children:
-        - id: "bgm:default"
+        - id: "bgm:customMusic"
           type: "sound"
           src: "custom.mp3"
           loop: true

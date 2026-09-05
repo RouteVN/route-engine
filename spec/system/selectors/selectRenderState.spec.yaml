@@ -101,7 +101,7 @@ out:
       muted: false
       pan: 0
       children:
-        - id: "bgm:default"
+        - id: "bgm:cde"
           type: "sound"
           src: "audio/cde.mp3"
           loop: true
@@ -493,7 +493,7 @@ out:
       muted: false
       pan: 0
       children:
-        - id: "bgm:default"
+        - id: "bgm:cde"
           type: "sound"
           src: "audio/cde.mp3"
           loop: true

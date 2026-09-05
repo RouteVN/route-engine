@@ -79,7 +79,7 @@ resources:
         volume:
           initialValue: 0
           keyframes:
-            - { value: 100, duration: 1000, easing: easeInOutSine }
+            - { value: 60, duration: 1000, easing: easeInOutSine }
   colors:
     advance:
       hex: "#10131A"

@@ -12,7 +12,11 @@ import {
   VISUAL_LAYER,
   VISUAL_LAYER_VALUES,
 } from "../renderLayers.js";
-import { createAudioRenderId } from "../audioIds.js";
+import {
+  createAudioRenderId,
+  getBgmSounds,
+  resolveBgmSoundRenderIds,
+} from "../audioIds.js";
 import { resolveSoundBoundaryEffect } from "../resolveAudioEffects.js";
 
 const jemplFunctions = {
@@ -3956,6 +3960,7 @@ export const addControl = (
 
 export const createBgmChannelNode = ({
   presentationState,
+  previousBgmRender,
   resources = {},
   runtime,
   variables,
@@ -3965,19 +3970,7 @@ export const createBgmChannelNode = ({
   if (presentationState?.bgm && resources) {
     const bgm = presentationState.bgm;
     const usesLegacySound = !Array.isArray(bgm.sounds);
-    const sounds = usesLegacySound
-      ? bgm.resourceId
-        ? [
-            {
-              id: "default",
-              resourceId: bgm.resourceId,
-              loop: bgm.loop ?? true,
-              volume: bgm.volume,
-              startDelayMs: bgm.startDelayMs ?? 0,
-            },
-          ]
-        : []
-      : bgm.sounds;
+    const sounds = getBgmSounds(bgm);
     const loopsChannel = !usesLegacySound && bgm.loop === true;
     const children = [];
 
@@ -3994,6 +3987,11 @@ export const createBgmChannelNode = ({
       }
     }
 
+    const soundRenderIds = resolveBgmSoundRenderIds({
+      bgm,
+      resources,
+      previousBgmRender,
+    });
     sounds.forEach((sound) => {
       const audioResource = resources.sounds?.[sound.resourceId];
       if (!audioResource) return;
@@ -4005,10 +4003,7 @@ export const createBgmChannelNode = ({
       children.push(
         applyBgmSoundMix({
           node: createSoundNode({
-            id: createAudioRenderId(
-              "bgm",
-              usesLegacySound ? "default" : sound.id,
-            ),
+            id: soundRenderIds.get(sound.id),
             sound: renderSound,
             resource: audioResource,
             projectResources: resources,

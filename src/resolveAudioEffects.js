@@ -1,4 +1,4 @@
-import { createAudioRenderId } from "./audioIds.js";
+import { createBgmSoundRenderId } from "./audioIds.js";
 
 const hasOwn = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
 
@@ -49,9 +49,12 @@ const getCanonicalSoundProperty = ({
   renderedSound,
   property,
 }) => {
-  const sound = bgm?.sounds?.find(
-    ({ id }) => createAudioRenderId("bgm", id) === renderedSound?.id,
-  );
+  const sound =
+    bgm?.sounds?.length === 1
+      ? bgm.sounds[0]
+      : bgm?.sounds?.find(
+          (sound) => createBgmSoundRenderId(bgm, sound) === renderedSound?.id,
+        );
   const resource = resources.sounds?.[sound?.resourceId];
   return (
     sound?.[property] ?? resource?.[property] ?? DEFAULT_AUDIO_VALUES[property]
@@ -518,6 +521,17 @@ export const resolveAudioEffects = (options) => {
       children: [sound],
     };
   };
+  // Match the authored sound by its position in the complete rendered
+  // channel before splitting effects into individual targets. Runtime IDs
+  // can retain aliases, and multiple clips can share the same resource.
+  const createSingleSoundBgm = (bgm, resources, channel, sound) => {
+    if (!Array.isArray(bgm?.sounds)) return bgm;
+    const index = channel?.children?.indexOf(sound) ?? -1;
+    const authored = bgm.sounds.filter(
+      (item) => resources.sounds?.[item.resourceId],
+    )[index];
+    return { ...bgm, sounds: authored ? [authored] : [] };
+  };
   const resolveTargets = (targets) =>
     targets
       .map(({ previousSound, nextSound }, index) =>
@@ -531,6 +545,18 @@ export const resolveAudioEffects = (options) => {
                   occurrenceId: `${occurrence.occurrenceId}:${index}`,
                 },
           resources: nextResources,
+          previousBgm: createSingleSoundBgm(
+            options.previousBgm,
+            options.previousResources ?? nextResources,
+            options.previousChannel,
+            previousSound,
+          ),
+          nextBgm: createSingleSoundBgm(
+            options.nextBgm,
+            nextResources,
+            options.nextChannel,
+            nextSound,
+          ),
           previousChannel: createSingleSoundChannel(
             options.previousChannel,
             previousSound,

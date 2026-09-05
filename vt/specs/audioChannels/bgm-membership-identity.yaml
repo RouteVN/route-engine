@@ -1,0 +1,99 @@
+---
+title: BGM Membership Identity
+description: Isolated audio source continuity while adding, reordering, and removing an ambience clip whose ID collides with the retained default alias.
+skipInitialScreenshot: true
+specs:
+  - a canvas gesture starts one independently looping music clip
+  - adding ambience starts only that new source, even when its ID matches the music alias
+  - removing ambience retains the original music source
+steps:
+  - action: click
+    x: 320
+    y: 180
+  - action: wait
+    ms: 100
+  - action: assert
+    type: js
+    global: __vtAudioSourceStartCount
+    value: 1
+  - action: click
+    x: 320
+    y: 180
+  - action: wait
+    ms: 100
+  - action: assert
+    type: js
+    global: __vtAudioSourceStartCount
+    value: 2
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audio.0.children.1.id
+    value: bgm:theme
+  - action: assert
+    type: js
+    global: __vtAudioSourceStopCount
+    value: 0
+  - action: click
+    x: 320
+    y: 180
+  - action: wait
+    ms: 100
+  - action: assert
+    type: js
+    global: __vtAudioSourceStartCount
+    value: 2
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audio.0.children.0.id
+    value: bgm:theme
+  - action: assert
+    type: js
+    global: __vtAudioSourceStopCount
+    value: 1
+---
+screen: { width: 640, height: 360 }
+resources:
+  sounds:
+    theme: { fileId: 3ka3s }
+    ambience: { fileId: xk393 }
+  colors:
+    canvas: { hex: "#000000" }
+  controls:
+    advance:
+      elements:
+        - id: advance
+          type: rect
+          width: 640
+          height: 360
+          colorId: canvas
+          click:
+            payload:
+              actions:
+                nextLine: {}
+story:
+  initialSceneId: scene
+  scenes:
+    scene:
+      initialSectionId: section
+      sections:
+        section:
+          lines:
+            - id: silent
+              actions:
+                control: { resourceId: advance }
+            - id: music
+              actions:
+                bgm:
+                  sounds:
+                    - { id: default, resourceId: theme, loop: true }
+            - id: add-ambience
+              actions:
+                bgm:
+                  sounds:
+                    - { id: theme, resourceId: ambience, loop: true }
+                    - { id: default, resourceId: theme, loop: true }
+            - id: remove-ambience
+              actions:
+                bgm:
+                  sounds:
+                    - { id: default, resourceId: theme, loop: true }
