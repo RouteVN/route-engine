@@ -3969,7 +3969,7 @@ export const createBgmChannelNode = ({
       ? bgm.resourceId
         ? [
             {
-              id: "default",
+              id: bgm.resourceId,
               resourceId: bgm.resourceId,
               loop: bgm.loop ?? true,
               volume: bgm.volume,
@@ -4005,10 +4005,7 @@ export const createBgmChannelNode = ({
       children.push(
         applyBgmSoundMix({
           node: createSoundNode({
-            id: createAudioRenderId(
-              "bgm",
-              usesLegacySound ? "default" : sound.id,
-            ),
+            id: createAudioRenderId("bgm", sound.id),
             sound: renderSound,
             resource: audioResource,
             projectResources: resources,

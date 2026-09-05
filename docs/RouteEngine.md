@@ -2184,6 +2184,18 @@ sfx:
 They compile respectively to the BGM channel, Voice channel, and a default SFX
 channel.
 
+Legacy BGM has no authored clip ID, so its runtime sound ID is derived from
+`resourceId`: `bgm:music_1` in this example. It matches a canonical BGM sound
+whose `id` is `music_1`. Volume-only changes between those forms retain the
+playing sound, provided the source and playback timing remain the same. ID
+components escape `%` and `:` just like canonical sound IDs.
+
+This fallback is runtime-only; it does not rewrite project data or save data.
+Explicit canonical IDs, including `default` and previously generated IDs,
+remain authoritative. Separate occurrences must retain distinct IDs, and a
+changed source, playback range, or start delay can still restart playback.
+Voice and SFX identity rules are unchanged.
+
 ### Audio Volumes
 
 Canonical channel audio uses three multiplicative layers:
