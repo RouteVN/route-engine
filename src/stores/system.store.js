@@ -3871,6 +3871,7 @@ export const selectRenderState = ({ state }, options = {}) => {
 
   const renderState = constructRenderState({
     presentationState,
+    previousBgmRender: options?.previousBgmRender,
     previousPresentationState: previousPresentationStateForRender,
     currentLineActions,
     resources: state.projectData.resources,

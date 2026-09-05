@@ -125,7 +125,7 @@ out:
       muted: false
       pan: 0
       children:
-        - id: "bgm:customMusic"
+        - id: "bgm:legacy-delay:customMusic"
           type: "sound"
           src: "custom.mp3"
           loop: false

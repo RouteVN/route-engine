@@ -275,4 +275,175 @@ describe("legacy BGM playback identity", () => {
     ]);
     expect(nextLine(engine).audio[0].children[0].id).toBe("bgm:custom");
   });
+
+  it.each(["ambience", "theme"])(
+    "retains both clip identities when adding and removing %s",
+    (id) => {
+      const theme = { id: "default", resourceId: "theme" };
+      const companion = { id, resourceId: "other" };
+      const engine = createEngine([
+        { bgm: { sounds: [theme] } },
+        { bgm: { sounds: [companion, theme] } },
+        { bgm: { sounds: [companion] } },
+        { bgm: { sounds: [theme, companion] } },
+        { bgm: { sounds: [theme] } },
+      ]);
+      const originalId = engine.selectRenderState().audio[0].children[0].id;
+      const added = nextLine(engine).audio[0].children;
+      expect(added[1].id).toBe(originalId);
+      expect(added[0].id).not.toBe(originalId);
+      expect(nextLine(engine).audio[0].children[0].id).toBe(added[0].id);
+      const restored = nextLine(engine).audio[0].children;
+      expect(restored[1].id).toBe(added[0].id);
+      expect(nextLine(engine).audio[0].children[0].id).toBe(restored[0].id);
+    },
+  );
+
+  it.each(["ambience", "theme"])(
+    "retains an initially simultaneous default clip when removing %s",
+    (id) => {
+      const theme = { id: "default", resourceId: "theme" };
+      const engine = createEngine([
+        { bgm: { sounds: [theme, { id, resourceId: "other" }] } },
+        { bgm: { sounds: [theme] } },
+        {
+          bgm: {
+            sounds: [theme],
+            volume: 35,
+            audioEffects: { resourceId: "quieter" },
+          },
+        },
+      ]);
+      const originalId = engine.selectRenderState().audio[0].children[0].id;
+      expect(nextLine(engine).audio[0].children[0].id).toBe(originalId);
+      expect(nextLine(engine).audioEffects[0].targetId).toBe(originalId);
+    },
+  );
+
+  it.each(["theme", "default"])(
+    "reschedules delayed %s playback when handing a looping channel to legacy BGM",
+    (id) => {
+      const engine = createEngine([
+        {
+          bgm: {
+            loop: true,
+            sounds: [{ id, resourceId: "theme", startDelayMs: 100 }],
+          },
+        },
+        { bgm: { resourceId: "theme", startDelayMs: 100 } },
+        { bgm: { resourceId: "theme", startDelayMs: 100, volume: 35 } },
+      ]);
+      const original = engine.selectRenderState().audio[0].children[0];
+      const handoff = nextLine(engine).audio[0];
+      expect(handoff.loop).toBeUndefined();
+      expect(handoff.children[0]).toMatchObject({
+        src: original.src,
+        startDelayMs: 100,
+        loop: true,
+      });
+      expect(handoff.children[0].id).not.toBe(original.id);
+      expect(nextLine(engine).audio[0].children[0].id).toBe(
+        handoff.children[0].id,
+      );
+    },
+  );
+
+  it("targets the local mixes of aliased clips sharing a resource after reordering", () => {
+    const theme = { id: "default", resourceId: "mixed", volume: 50 };
+    const companion = { id: "mixed", resourceId: "mixed", volume: 20 };
+    const missing = { id: "missing", resourceId: "missing" };
+    const engine = createEngine([
+      { bgm: { sounds: [theme] } },
+      { bgm: { sounds: [missing, companion, theme] } },
+      {
+        bgm: {
+          sounds: [theme, missing, companion],
+          volume: 35,
+          audioEffects: { resourceId: "quieter" },
+        },
+      },
+    ]);
+    const added = nextLine(engine).audio[0].children;
+    const updated = nextLine(engine);
+    expect(updated.audio[0].children.map(({ id }) => id)).toEqual([
+      added[1].id,
+      added[0].id,
+    ]);
+    expect(updated.audioEffects.map(({ targetId }) => targetId)).toEqual([
+      added[1].id,
+      added[0].id,
+    ]);
+    expect(
+      updated.audioEffects.map(
+        (effect) => effect.properties.volume.update.keyframes[0].value,
+      ),
+    ).toEqual([17.5, 7]);
+  });
+
+  it("uses the committed alias when an intermediate membership render is discarded", () => {
+    const theme = { id: "default", resourceId: "theme" };
+    const companion = { id: "theme", resourceId: "other" };
+    const engine = createEngine([
+      { bgm: { sounds: [theme, companion] } },
+      { bgm: { sounds: [companion] } },
+      { bgm: { sounds: [theme] } },
+    ]);
+    const original = engine.selectRenderState().audio[0].children[0];
+    engine.handleAction("jumpToLine", {
+      sectionId: "section",
+      lineId: "line-1",
+    });
+    engine.prepareRenderState();
+    engine.handleAction("jumpToLine", {
+      sectionId: "section",
+      lineId: "line-2",
+    });
+    expect(engine.selectRenderState().audio[0].children[0].id).toBe(
+      original.id,
+    );
+  });
+
+  it("keeps new IDs unique after compatibility handoffs retain fallback IDs", () => {
+    const memberships = [
+      [
+        ["theme", "theme"],
+        ["default", "other"],
+      ],
+      [
+        ["other", "theme"],
+        ["default", "theme"],
+      ],
+      [
+        ["theme", "theme"],
+        ["other", "other"],
+      ],
+      [
+        ["theme", "theme"],
+        ["default", "other"],
+      ],
+      [
+        ["theme", "theme"],
+        ["other", "theme"],
+        ["default", "theme"],
+      ],
+    ];
+    const engine = createEngine(
+      memberships.map((sounds) => ({
+        bgm: { sounds: sounds.map(([id, resourceId]) => ({ id, resourceId })) },
+      })),
+    );
+    let previous = engine.selectRenderState().audio[0].children;
+    for (let i = 1; i < memberships.length; i++) {
+      const children = nextLine(engine).audio[0].children;
+      expect(new Set(children.map(({ id }) => id)).size).toBe(children.length);
+      memberships[i].forEach(([id], index) => {
+        const previousIndex = memberships[i - 1].findIndex(
+          ([priorId]) => priorId === id,
+        );
+        if (previousIndex >= 0)
+          expect(children[index].id).toBe(previous[previousIndex].id);
+      });
+      previous = children;
+    }
+  });
 });

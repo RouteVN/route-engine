@@ -31,8 +31,10 @@ const installAudioPathProbe = () => {
 
   window.__vtAudioParamRamps = [];
   window.__vtAudioSourceStartCount = 0;
+  window.__vtAudioSourceStopCount = 0;
   window.__vtAudioBoundarySettlementCancelCount = 0;
   window.__vtLastAudioBoundarySettlementValue = null;
+  const stoppedSources = new WeakSet();
   let lastRampedAudioParam;
 
   const audioParamPrototype = window.AudioParam?.prototype;
@@ -88,6 +90,23 @@ const installAudioPathProbe = () => {
 
   let sourcePrototype = window.AudioBufferSourceNode?.prototype;
   while (sourcePrototype) {
+    const stopDescriptor = Object.getOwnPropertyDescriptor(
+      sourcePrototype,
+      "stop",
+    );
+    if (typeof stopDescriptor?.value === "function") {
+      Object.defineProperty(sourcePrototype, "stop", {
+        ...stopDescriptor,
+        value(...args) {
+          // Renderer teardown can call stop more than once for one source.
+          if (!stoppedSources.has(this)) {
+            stoppedSources.add(this);
+            window.__vtAudioSourceStopCount += 1;
+          }
+          return stopDescriptor.value.apply(this, args);
+        },
+      });
+    }
     const startDescriptor = Object.getOwnPropertyDescriptor(
       sourcePrototype,
       "start",

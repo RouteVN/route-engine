@@ -1,0 +1,88 @@
+---
+title: Delayed BGM Legacy Handoff
+description: Isolated canonical channel-loop to legacy handoff before the pending music starts. Browser audio source starts verify the replacement schedule.
+skipInitialScreenshot: true
+specs:
+  - a canvas gesture schedules a delayed canonical looping channel
+  - a second gesture selects legacy playback before the canonical start delay expires
+  - the replacement starts once after its delay and survives a volume update
+steps:
+  - action: click
+    x: 320
+    y: 180
+  - action: wait
+    ms: 100
+  - action: assert
+    type: js
+    global: __vtAudioSourceStartCount
+    value: 0
+  - action: click
+    x: 320
+    y: 180
+  - action: wait
+    ms: 100
+  - action: assert
+    type: js
+    global: __vtAudioSourceStartCount
+    value: 0
+  - action: wait
+    ms: 1200
+  - action: assert
+    type: js
+    global: __vtAudioSourceStartCount
+    value: 1
+  - action: assert
+    type: js
+    global: __vtLastRenderState.audio.0.children.0.loop
+    value: true
+  - action: click
+    x: 320
+    y: 180
+  - action: wait
+    ms: 1200
+  - action: assert
+    type: js
+    global: __vtAudioSourceStartCount
+    value: 1
+---
+screen: { width: 640, height: 360 }
+resources:
+  sounds:
+    theme: { fileId: 3ka3s }
+  colors:
+    canvas: { hex: "#000000" }
+  controls:
+    advance:
+      elements:
+        - id: advance
+          type: rect
+          width: 640
+          height: 360
+          colorId: canvas
+          click:
+            payload:
+              actions:
+                nextLine: {}
+story:
+  initialSceneId: scene
+  scenes:
+    scene:
+      initialSectionId: section
+      sections:
+        section:
+          lines:
+            - id: silent
+              actions:
+                control: { resourceId: advance }
+            - id: canonical-delay
+              actions:
+                bgm:
+                  loop: true
+                  sounds:
+                    - { id: theme, resourceId: theme, startDelayMs: 1000 }
+            - id: legacy-delay
+              actions:
+                bgm: { resourceId: theme, startDelayMs: 1000 }
+            - id: legacy-volume
+              actions:
+                bgm: { resourceId: theme, startDelayMs: 1000, volume: 35 }

@@ -432,6 +432,7 @@ export default function createRouteEngine(options) {
     if (!systemState.projectData) return null;
     return createBgmChannelNode({
       presentationState: _systemStore.selectPresentationState(),
+      previousBgmRender: captureCommittedBgmRender(),
       resources: systemState.projectData?.resources,
       runtime: _systemStore.selectRuntime(),
       musicRoomPlayer: systemState.global?.musicRoomPlayer,
@@ -450,12 +451,19 @@ export default function createRouteEngine(options) {
       _systemStore.selectSystemState().projectData?.resources?.audioEffects ??
         {},
     ),
+    sounds: captureCurrentSoundResources(),
   });
 
   const captureCurrentSoundResources = () =>
     structuredClone(
       _systemStore.selectSystemState().projectData?.resources?.sounds ?? {},
     );
+
+  const captureCommittedBgmRender = () => ({
+    channel: _committedBgmChannel,
+    bgm: _committedBgmPresentation,
+    resources: _committedBgmResources,
+  });
 
   const hasBgmAudioEffectSelections = (bgm) => !!bgm?.audioEffects;
 
@@ -541,10 +549,7 @@ export default function createRouteEngine(options) {
         : null,
     };
 
-    const nextResources = {
-      ...captureCurrentBgmResources(),
-      sounds: captureCurrentSoundResources(),
-    };
+    const nextResources = captureCurrentBgmResources();
     const effects = resolveAudioEffects({
       occurrence,
       resources: nextResources,
@@ -737,6 +742,7 @@ export default function createRouteEngine(options) {
           )
         : new Map();
     const renderState = _systemStore.selectRenderState({
+      previousBgmRender: captureCommittedBgmRender(),
       activePersistentAnimations: collectSessionAnimations(
         activePersistentAnimationSessions,
       ),
