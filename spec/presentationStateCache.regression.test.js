@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { freeze, produce } from "immer";
 import { loadAll } from "js-yaml";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { constructPresentationState } from "../src/stores/constructPresentationState.js";
 import {
   selectPresentationState,
@@ -38,6 +38,153 @@ const random = (seed) => () => {
 
 describe("presentation cache regression boundaries", () => {
   it.each([
+    { rows: 512, warm: false },
+    { rows: 2048, warm: false },
+    { rows: 512, warm: true },
+    { rows: 2048, warm: true },
+  ])(
+    "bounds NVL page finalization for a $rows-row jump (warm: $warm)",
+    ({ rows, warm }) => {
+      const data = freeze(
+        project(
+          Array.from({ length: rows + 1 }, (_, index) => ({
+            id: String(index),
+            actions: {
+              dialogue: {
+                mode: "nvl",
+                content: [{ text: `NVL row ${index}` }],
+              },
+            },
+          })),
+        ),
+        true,
+      );
+      const before = warm
+        ? selectPresentationState({ state: at(data, "63") })
+        : null;
+      const expected = reference(data, rows - 1);
+      const expectedPrevious = normalizePersistentPresentationState(
+        reference(data, rows - 2),
+      );
+
+      // Each finalized NVL array copies/freezes its accumulated rows. Count that
+      // work rather than timing it: one transaction per row costs N * (N + 1) / 2.
+      const freezeObject = Object.freeze;
+      let finalizedRows = 0;
+      const freezeSpy = vi
+        .spyOn(Object, "freeze")
+        .mockImplementation((value) => {
+          if (
+            Array.isArray(value) &&
+            value[0]?.content?.[0]?.text === "NVL row 0"
+          ) {
+            finalizedRows += value.length;
+          }
+          return freezeObject(value);
+        });
+      let actual;
+      let previous;
+      try {
+        const state = at(data, String(rows - 1));
+        actual = selectPresentationState({ state });
+        previous = selectPreviousPresentationState({ state });
+      } finally {
+        freezeSpy.mockRestore();
+      }
+
+      expect(actual).toEqual(expected);
+      expect(previous).toEqual(expectedPrevious);
+      expect(finalizedRows).toBeGreaterThanOrEqual(rows);
+      expect(finalizedRows).toBeLessThanOrEqual(rows * 4);
+      if (before) expect(before.dialogue.lines).toHaveLength(64);
+      expect(
+        selectPresentationState({ state: at(data, String(rows)) }).dialogue
+          .lines,
+      ).toHaveLength(rows + 1);
+      expect(actual.dialogue.lines).toHaveLength(rows);
+    },
+  );
+
+  it.each([false, true])(
+    "projects each history section once per query despite repeated eviction (frozen: %s)",
+    (immutable) => {
+      let reads = 0;
+      const sections = Object.fromEntries(
+        Array.from({ length: 9 }, (_, sectionIndex) => [
+          `section-${sectionIndex}`,
+          {
+            lines: Array.from({ length: 100 }, (_, lineIndex) => {
+              const actions = {
+                dialogue: {
+                  mode: "adv",
+                  content: [
+                    { text: `Section ${sectionIndex}, line ${lineIndex}` },
+                  ],
+                },
+              };
+              return {
+                id: String(lineIndex),
+                get actions() {
+                  reads += 1;
+                  return actions;
+                },
+              };
+            }),
+          },
+        ]),
+      );
+      const data = {
+        resources: {},
+        story: { scenes: { scene: { sections } } },
+      };
+      if (immutable) freeze(data, true);
+      const state = at(data, "99", "section-8");
+      const entries = Array.from({ length: 25 }, () =>
+        Object.keys(sections).map((sectionId) => ({ sectionId, lineId: "99" })),
+      ).flat();
+      state.contexts[0].dialogueHistory = {
+        entries,
+        currentLength: entries.length,
+        checkpointLengths: [],
+      };
+      const expectedTexts = Array.from({ length: 25 }, () =>
+        Array.from({ length: 9 }, (_, index) => `Section ${index}, line 99`),
+      ).flat();
+
+      for (const query of ["cold", "repeat"]) {
+        reads = 0;
+        expect(
+          selectDialogueHistory({ state }).map((entry) => entry.text),
+        ).toEqual(expectedTexts);
+        // A repeated frozen query reuses the eight retained sections and only
+        // rebuilds the ninth. Mutable input must be evaluated again each call.
+        expect(reads, query).toBe(immutable && query === "repeat" ? 100 : 900);
+      }
+
+      // The persistent cache must still evict the oldest section between calls.
+      state.contexts[0].dialogueHistory = {
+        entries: [{ sectionId: "section-0", lineId: "99" }],
+        currentLength: 1,
+        checkpointLengths: [],
+      };
+      if (!immutable) {
+        sections["section-0"].lines[99] = {
+          id: "99",
+          get actions() {
+            reads += 1;
+            return { dialogue: { content: [{ text: "Edited" }] } };
+          },
+        };
+      }
+      reads = 0;
+      expect(selectDialogueHistory({ state })[0].text).toBe(
+        immutable ? "Section 0, line 99" : "Edited",
+      );
+      expect(reads).toBe(100);
+    },
+  );
+
+  it.each([
     "dialogue/append-reveal-continuation",
     "dialogue/nvl-mode",
     "background/playback-persistent-transition-continuity",
@@ -52,10 +199,22 @@ describe("presentation cache regression boundaries", () => {
       actions: structuredClone(authored[index % authored.length].actions),
     }));
     const data = freeze(project(lines, fixture.resources), true);
-    // Fill past the checkpoint retention window, then read both sides of old
-    // and recent boundaries, including a cold jump to the end of the section.
+    // Start with a cold jump, then visit enough checkpoint boundaries to
+    // exceed retention and read both sides of old and recent boundaries.
     for (const index of [
-      1152, 0, 63, 64, 62, 65, 1023, 1024, 1022, 127, 128, 1151,
+      1152,
+      ...Array.from({ length: 18 }, (_, index) => (index + 1) * 64 - 1),
+      0,
+      63,
+      64,
+      62,
+      65,
+      1023,
+      1024,
+      1022,
+      127,
+      128,
+      1151,
     ]) {
       const state = at(data, String(index));
       expect(selectPresentationState({ state }), `current ${index}`).toEqual(

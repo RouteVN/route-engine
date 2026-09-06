@@ -2744,8 +2744,12 @@ export const selectDialogueHistory = ({ state }) => {
       dialogueHistoryProjectionCaches.set(projectData, sectionProjectionCaches);
     }
   }
+  // A history traversal can revisit more sections than we retain between
+  // calls. Keep its projections alive until this query finishes, including
+  // retained sections that the LRU might evict before their first visit.
+  const invocationProjectionCaches = new Map(sectionProjectionCaches);
   const getHistoryLineProjection = (pointer) => {
-    let cache = sectionProjectionCaches.get(pointer.sectionId);
+    let cache = invocationProjectionCaches.get(pointer.sectionId);
     if (!cache) {
       const { section } = findSectionInProjectData(
         projectData,
@@ -2758,6 +2762,7 @@ export const selectDialogueHistory = ({ state }) => {
         nextLineIndex: 0,
         presentationState: {},
       };
+      invocationProjectionCaches.set(pointer.sectionId, cache);
     }
     sectionProjectionCaches.delete(pointer.sectionId);
     sectionProjectionCaches.set(pointer.sectionId, cache);

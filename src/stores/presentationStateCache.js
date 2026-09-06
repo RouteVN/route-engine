@@ -73,19 +73,22 @@ export const selectSectionPresentation = (
     }
   }
 
-  for (let index = startIndex + 1; index <= targetIndex; index += 1) {
+  // Finalize only the requested state and its predecessor. Finalizing every
+  // crossed line copies a growing NVL page repeatedly, making cold jumps
+  // quadratic. Checkpoints accumulate when navigation reaches their boundary.
+  for (const index of [targetIndex - 1, targetIndex]) {
+    if (index <= startIndex) continue;
     // Resume the reducer's state, not its action input: treating a prior
     // presentation as a fresh action would replay NVL/dialogue/audio semantics.
-    presentation = constructPresentationState([lines[index].actions || {}], {
-      resources: projectData.resources,
-      initialState: presentation,
-    });
+    presentation = constructPresentationState(
+      lines.slice(startIndex + 1, index + 1).map((line) => line.actions || {}),
+      { resources: projectData.resources, initialState: presentation },
+    );
     if ((index + 1) % CHECKPOINT_INTERVAL === 0) {
       remember(cache.checkpoints, index, presentation, MAX_CHECKPOINTS);
     }
-    if (index >= targetIndex - 1) {
-      remember(cache.recent, index, presentation, MAX_RECENT_STATES);
-    }
+    remember(cache.recent, index, presentation, MAX_RECENT_STATES);
+    startIndex = index;
   }
   remember(cache.recent, targetIndex, presentation, MAX_RECENT_STATES);
   return presentation;

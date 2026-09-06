@@ -124,3 +124,9 @@ reads, checkpoint eviction, resource-only edits, and cross-project/history
 isolation with fresh projections. Seeded cases report their seed in the test
 name. `projectRobustness.integration.test.js` also tests inactive-scene
 validation and the exact 1,000/1,001 effect-batch boundary.
+
+Cache performance regressions use structural work counts rather than elapsed
+time: long cold and warm NVL jumps bound the total rows in finalized page
+arrays, and repeated history visits across nine sections bound authored action
+reads per query. The history cases cover mutable and frozen projects, reuse
+between queries, and eviction from the retained eight-section cache.
