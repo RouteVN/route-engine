@@ -26,6 +26,8 @@ import {
   orderActionEntries,
 } from "../actionExecutionOrder.js";
 import { constructPresentationState } from "./constructPresentationState.js";
+import { selectSectionPresentation } from "./presentationStateCache.js";
+import { findSectionLineIndex } from "./sectionLineIndex.js";
 import { constructRenderState } from "./constructRenderState.js";
 import { estimateAutoForwardDelay } from "../autoForwardTiming.js";
 import { interpolateDialogueText } from "../dialogueText.js";
@@ -398,7 +400,7 @@ const findSectionInProjectData = (projectData, sectionId) => {
   };
 };
 
-const assertUniqueSectionIds = (projectData) => {
+const assertUniqueStoryIds = (projectData) => {
   const scenes = projectData?.story?.scenes ?? {};
   const seenSectionIds = new Map();
 
@@ -412,6 +414,19 @@ const assertUniqueSectionIds = (projectData) => {
         );
       }
       seenSectionIds.set(sectionId, sceneId);
+
+      const lines = sections[sectionId]?.lines;
+      const seenLineIds = new Map();
+      if (!Array.isArray(lines)) continue;
+      lines.forEach((line, index) => {
+        if (typeof line?.id !== "string") return;
+        if (seenLineIds.has(line.id)) {
+          throw new Error(
+            `Duplicate lineId "${line.id}" in scene "${sceneId}", section "${sectionId}": lines[${index}] duplicates lines[${seenLineIds.get(line.id)}]. Line IDs must be unique within a section.`,
+          );
+        }
+        seenLineIds.set(line.id, index);
+      });
     }
   }
 };
@@ -1585,24 +1600,20 @@ const validateFormFieldValue = (field, value) => {
   return null;
 };
 
-const selectPresentationStateForPointer = ({ state, pointer }) => {
-  if (!pointer?.sectionId || !pointer?.lineId) {
-    return {};
+const selectPresentationStateForPointer = ({ state, pointer }, offset = 0) => {
+  if (pointer?.sectionId == null || pointer?.lineId == null) {
+    return offset < 0 ? null : {};
   }
 
-  const section = selectSection({ state }, { sectionId: pointer.sectionId });
-  const lines = section?.lines || [];
-  const currentLineIndex = lines.findIndex(
-    (line) => line.id === pointer.lineId,
-  );
-
-  if (currentLineIndex < 0) {
-    return {};
-  }
-
-  return constructPresentationState(
-    lines.slice(0, currentLineIndex + 1).map((line) => line.actions || {}),
-    { resources: state.projectData.resources },
+  const projectData = isDraft(state.projectData)
+    ? current(state.projectData)
+    : state.projectData;
+  const { section } = findSectionInProjectData(projectData, pointer.sectionId);
+  return selectSectionPresentation(
+    projectData,
+    section,
+    pointer.lineId,
+    offset,
   );
 };
 
@@ -2585,7 +2596,7 @@ export const createInitialState = (payload) => {
     localizationPackages = [{ l10nId: null, language: null }],
   } = global;
 
-  assertUniqueSectionIds(projectData);
+  assertUniqueStoryIds(projectData);
   validateImageGalleryConfig(projectData);
   validateMusicRoomConfig(projectData);
   validateSceneReplayConfig(projectData);
@@ -2677,6 +2688,9 @@ export const selectDialogueUIHidden = ({ state }) => {
   return state.global.dialogueUIHidden;
 };
 
+const dialogueHistoryProjectionCaches = new WeakMap();
+const MAX_HISTORY_CACHED_SECTIONS = 8;
+
 export const selectDialogueHistory = ({ state }) => {
   const contexts = Array.isArray(state.contexts) ? state.contexts : [];
   const lastContext = contexts[contexts.length - 1];
@@ -2701,9 +2715,7 @@ export const selectDialogueHistory = ({ state }) => {
     if (!section?.lines || !Array.isArray(section.lines)) {
       return [];
     }
-    const currentLineIndex = section.lines.findIndex(
-      (line) => line.id === lineId,
-    );
+    const currentLineIndex = findSectionLineIndex(section.lines, lineId);
     historyPointers = section.lines
       .slice(0, currentLineIndex + 1)
       .map((line) => ({ sectionId, lineId: line.id }));
@@ -2720,44 +2732,88 @@ export const selectDialogueHistory = ({ state }) => {
     eager: false,
   });
 
-  const sectionProjectionCaches = new Map();
+  const projectData = isDraft(state.projectData)
+    ? current(state.projectData)
+    : state.projectData;
+  let sectionProjectionCaches = Object.isFrozen(projectData)
+    ? dialogueHistoryProjectionCaches.get(projectData)
+    : undefined;
+  if (!sectionProjectionCaches) {
+    sectionProjectionCaches = new Map();
+    if (Object.isFrozen(projectData)) {
+      dialogueHistoryProjectionCaches.set(projectData, sectionProjectionCaches);
+    }
+  }
+  // A history traversal can revisit more sections than we retain between
+  // calls. Keep its projections alive until this query finishes, including
+  // retained sections that the LRU might evict before their first visit.
+  const invocationProjectionCaches = new Map(sectionProjectionCaches);
   const getHistoryLineProjection = (pointer) => {
-    let cache = sectionProjectionCaches.get(pointer.sectionId);
+    let cache = invocationProjectionCaches.get(pointer.sectionId);
     if (!cache) {
-      const section = selectSection(
-        { state },
-        { sectionId: pointer.sectionId },
+      const { section } = findSectionInProjectData(
+        projectData,
+        pointer.sectionId,
       );
       const lines = Array.isArray(section?.lines) ? section.lines : [];
       cache = {
         lines,
-        lineIndexes: new Map(lines.map((line, index) => [line.id, index])),
         projections: new Map(),
         nextLineIndex: 0,
         presentationState: {},
       };
-      sectionProjectionCaches.set(pointer.sectionId, cache);
+      invocationProjectionCaches.set(pointer.sectionId, cache);
+    }
+    sectionProjectionCaches.delete(pointer.sectionId);
+    sectionProjectionCaches.set(pointer.sectionId, cache);
+    if (sectionProjectionCaches.size > MAX_HISTORY_CACHED_SECTIONS) {
+      sectionProjectionCaches.delete(
+        sectionProjectionCaches.keys().next().value,
+      );
     }
 
-    const targetLineIndex = cache.lineIndexes.get(pointer.lineId);
-    if (targetLineIndex === undefined) {
+    if (cache.projections.has(pointer.lineId)) {
+      return cache.projections.get(pointer.lineId);
+    }
+    const targetLineIndex = findSectionLineIndex(cache.lines, pointer.lineId);
+    if (targetLineIndex < 0) return null;
+    const targetLineActions = cache.lines[targetLineIndex].actions || {};
+    if (!targetLineActions.dialogue) {
+      cache.projections.set(pointer.lineId, null);
       return null;
     }
 
     while (cache.nextLineIndex <= targetLineIndex) {
       const line = cache.lines[cache.nextLineIndex];
-      const lineActions = line.actions || {};
+      const lineActions =
+        cache.nextLineIndex === targetLineIndex
+          ? targetLineActions
+          : line.actions || {};
       cache.presentationState = constructPresentationState(
         [cache.presentationState, lineActions],
         {
-          resources: state.projectData.resources,
+          resources: projectData.resources,
         },
       );
-      cache.projections.set(line.id, {
-        line,
-        lineActions,
-        dialogueState: cache.presentationState.dialogue || {},
-      });
+      const dialogueState = cache.presentationState.dialogue || {};
+      // Retain only history data per line. Keeping every full presentation
+      // would also retain growing NVL pages, visuals, and audio snapshots.
+      cache.projections.set(
+        line.id,
+        lineActions.dialogue
+          ? {
+              line,
+              lineActions,
+              dialogueState: {
+                characterId: dialogueState.characterId,
+                character: dialogueState.character,
+                ...(lineActions.dialogue.append === true
+                  ? { content: dialogueState.content }
+                  : {}),
+              },
+            }
+          : null,
+      );
       cache.nextLineIndex += 1;
     }
 
@@ -3017,12 +3073,11 @@ const selectIsLineSeenInRegistry = ({ state, registry }, payload) => {
   }
 
   // Find indices of both lines in the lines array
-  const lastLineIndex = foundSection.lines.findIndex(
-    (line) => line.id === section.lastLineId,
+  const lastLineIndex = findSectionLineIndex(
+    foundSection.lines,
+    section.lastLineId,
   );
-  const currentLineIndex = foundSection.lines.findIndex(
-    (line) => line.id === lineId,
-  );
+  const currentLineIndex = findSectionLineIndex(foundSection.lines, lineId);
 
   // If we can't find either line in the array, fallback to simple comparison
   if (lastLineIndex === -1 || currentLineIndex === -1) {
@@ -3411,38 +3466,33 @@ const selectVisibleChoiceResourceId = ({
   const lineId = pointer?.lineId;
   const section = selectSection({ state }, { sectionId });
   const lines = section?.lines || [];
-  const currentLineIndex = lines.findIndex((line) => line.id === lineId);
+  const currentLineIndex = findSectionLineIndex(lines, lineId);
 
   if (currentLineIndex < 0) {
     return undefined;
   }
 
-  let visibleChoiceResourceId;
-  for (const line of lines.slice(0, currentLineIndex + 1)) {
-    const actions = line?.actions;
-    if (actions?.cleanAll) {
-      visibleChoiceResourceId = undefined;
-    }
-
+  // Only an animation-only choice carries a previous choice forward. Stop at
+  // the first defining or clearing line instead of scanning the entire prefix.
+  for (let index = currentLineIndex; index >= 0; index -= 1) {
+    const actions = lines[index]?.actions;
     if (!actions || !Object.prototype.hasOwnProperty.call(actions, "choice")) {
-      visibleChoiceResourceId = undefined;
-      continue;
+      return undefined;
     }
 
     const choice = actions.choice;
     if (choice?.resourceId) {
-      visibleChoiceResourceId = choice.resourceId;
-      continue;
+      return choice.resourceId;
     }
 
     // `choice: { animations: ... }` should preserve the previous choice state,
     // while `choice: {}` explicitly clears it.
-    if (!choice?.animations) {
-      visibleChoiceResourceId = undefined;
+    if (!choice?.animations || actions.cleanAll) {
+      return undefined;
     }
   }
 
-  return visibleChoiceResourceId;
+  return undefined;
 };
 
 export const selectIsChoiceVisible = ({ state }) => {
@@ -3452,6 +3502,27 @@ export const selectIsChoiceVisible = ({ state }) => {
 export const selectSystemState = ({ state }) => {
   return structuredClone(state);
 };
+
+// Internal render snapshots must not clone the story, rollback history, or saves.
+const selectBgmResources = ({ state }) =>
+  cloneStateValue({
+    audioEffects: state.projectData?.resources?.audioEffects ?? {},
+    sounds: state.projectData?.resources?.sounds ?? {},
+  });
+
+const selectBgmPlaybackContext = ({ state }) => {
+  const runtime = selectRuntimeFromState(state);
+  return {
+    runtime,
+    musicRoomPlayer: cloneStateValue(state.global.musicRoomPlayer),
+    skipTransitionsAndAnimations:
+      runtime.skipTransitionsAndAnimations === true ||
+      shouldSettleCurrentLinePresentation(state),
+  };
+};
+
+const selectSceneIdForSection = ({ state }, { sectionId }) =>
+  findSectionInProjectData(state.projectData, sectionId).sceneId;
 
 export const selectAchievements = ({ state }) => {
   return cloneStateValue(state.projectData.resources?.achievements ?? {});
@@ -3555,37 +3626,14 @@ export const selectCurrentLine = ({ state }) => {
     return undefined;
   }
 
-  return section.lines.find((line) => line.id === lineId);
+  return section.lines[findSectionLineIndex(section.lines, lineId)];
 };
 
 export const selectPresentationState = ({ state }) => {
-  const { sectionId, lineId } = selectCurrentPointer({ state }).pointer;
-  const section = selectSection({ state }, { sectionId });
-
-  // get all lines up to the current line index, inclusive
-  const lines = section?.lines || [];
-  const currentLineIndex = lines.findIndex((line) => line.id === lineId);
-
-  // Return all lines up to and including the current line
-  const currentLines = lines.slice(0, currentLineIndex + 1);
-
-  // Create presentation state from unified actions
-  const presentationActions = currentLines.map((line) => {
-    const actions = line.actions || {};
-    const presentationData = {};
-
-    // Extract only presentation-related actions
-    Object.keys(actions).forEach((actionType) => {
-      presentationData[actionType] = actions[actionType];
-    });
-
-    return presentationData;
+  return selectPresentationStateForPointer({
+    state,
+    pointer: selectCurrentPointer({ state }).pointer,
   });
-
-  const presentationState = constructPresentationState(presentationActions, {
-    resources: state.projectData.resources,
-  });
-  return presentationState;
 };
 
 const selectCurrentLineAutoForwardText = (state) => {
@@ -3697,33 +3745,13 @@ export const selectSectionLineChanges = (
 };
 
 export const selectPreviousPresentationState = ({ state }) => {
-  const { sectionId, lineId } = selectCurrentPointer({ state }).pointer;
-  const section = selectSection({ state }, { sectionId });
-
-  const lines = section?.lines || [];
-  const currentLineIndex = lines.findIndex((line) => line.id === lineId);
-
-  // Return all lines before the current line (not including current)
-  if (currentLineIndex <= 0) {
-    return null;
-  }
-
-  const previousLines = lines.slice(0, currentLineIndex);
-
-  const presentationActions = previousLines.map((line) => {
-    const actions = line.actions || {};
-    const presentationData = {};
-    Object.keys(actions).forEach((actionType) => {
-      presentationData[actionType] = actions[actionType];
-    });
-    return presentationData;
-  });
-
-  return normalizePersistentPresentationState(
-    constructPresentationState(presentationActions, {
-      resources: state.projectData.resources,
-    }),
+  const previous = selectPresentationStateForPointer(
+    { state, pointer: selectCurrentPointer({ state }).pointer },
+    -1,
   );
+  return previous === null
+    ? null
+    : normalizePersistentPresentationState(previous);
 };
 
 /**
@@ -4586,12 +4614,11 @@ const recordViewedLineInRegistry = (state, registry, { sectionId, lineId }) => {
     // Update existing section only if new line is after the current lastLineId
     const foundSection = selectSection({ state }, { sectionId });
     if (foundSection?.lines) {
-      const lastLineIndex = foundSection.lines.findIndex(
-        (line) => line.id === section.lastLineId,
+      const lastLineIndex = findSectionLineIndex(
+        foundSection.lines,
+        section.lastLineId,
       );
-      const newLineIndex = foundSection.lines.findIndex(
-        (line) => line.id === lineId,
-      );
+      const newLineIndex = findSectionLineIndex(foundSection.lines, lineId);
 
       // Update only if newLineIndex is greater (later in the section) or if lastLineId not found
       if (lastLineIndex === -1 || newLineIndex > lastLineIndex) {
@@ -5759,7 +5786,7 @@ export const updateProjectData = ({ state }, payload) => {
   }
   const { projectData } = payload;
 
-  assertUniqueSectionIds(projectData);
+  assertUniqueStoryIds(projectData);
   validateImageGalleryConfig(projectData);
   validateMusicRoomConfig(projectData);
   validateSceneReplayConfig(projectData);
@@ -6011,9 +6038,7 @@ export const nextLine = ({ state, rollbackActionBatchStack }, payload) => {
   const lastContext = state.contexts[state.contexts.length - 1];
 
   const lines = section?.lines || [];
-  const currentLineIndex = lines.findIndex(
-    (line) => line.id === pointer?.lineId,
-  );
+  const currentLineIndex = findSectionLineIndex(lines, pointer?.lineId);
   const nextLineIndex = currentLineIndex + 1;
 
   if (nextLineIndex < lines.length) {
@@ -6222,9 +6247,7 @@ export const nextLineFromSystem = (
   const lastContext = state.contexts[state.contexts.length - 1];
 
   const lines = section?.lines || [];
-  const currentLineIndex = lines.findIndex(
-    (line) => line.id === pointer?.lineId,
-  );
+  const currentLineIndex = findSectionLineIndex(lines, pointer?.lineId);
   const nextLineIndex = currentLineIndex + 1;
 
   if (nextLineIndex < lines.length) {
@@ -7346,6 +7369,9 @@ export const createSystemStore = (initialState, options = {}) => {
     selectActiveSceneReplayEntry,
     selectNextLineConfig,
     selectSystemState,
+    selectBgmResources,
+    selectBgmPlaybackContext,
+    selectSceneIdForSection,
     selectAchievements,
     selectAchievement,
     selectSaveSlotMap,

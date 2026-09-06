@@ -1,0 +1,241 @@
+---
+title: Routing Cycle Recovery
+description: >-
+  A canvas-triggered immediate cycle must report the bounded execution error; a host reset must
+  leave normal input usable.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: entry
+  - action: assert
+    type: js
+    global: __vtCheckpoint.completed
+    value: true
+  - action: click
+    x: 115
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: assert
+    type: js
+    global: __vtExpectedError.matched
+    value: true
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.timerCount
+    value: 0
+  - action: customEvent
+    name: vt:engineActions
+    detail:
+      actions:
+        resetStoryAtSection:
+          sectionId: safe
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: safe
+      lineId: safe
+  - action: assert
+    type: js
+    global: __vtCheckpoint.completed
+    value: true
+  - action: click
+    x: 815
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: safe
+      lineId: recovered
+  - action: assert
+    type: js
+    global: __vtCheckpoint.completed
+    value: true
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pendingEffects
+    value: []
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+resources:
+  controls:
+    main:
+      elements:
+        - id: background
+          type: rect
+          width: 960
+          height: 540
+          colorId: background
+        - id: title
+          type: text
+          x: 45
+          "y": 40
+          content: Immediate routing cycle can be recovered
+          textStyleId: title
+        - id: loop
+          type: rect
+          x: 40
+          "y": 435
+          width: 150
+          height: 80
+          colorId: button
+          click:
+            payload:
+              _vtExpectedError: exceeded 1000 synchronous effect batches
+              actions:
+                jumpToLine:
+                  lineId: loop
+        - id: loop-label
+          type: text
+          x: 115
+          "y": 475
+          anchorX: 0.5
+          anchorY: 0.5
+          content: RUN CYCLE
+          textStyleId: button
+    safe:
+      elements:
+        - id: background
+          type: rect
+          width: 960
+          height: 540
+          colorId: background
+        - id: title
+          type: text
+          x: 45
+          "y": 40
+          content: Recovered input after routing failure
+          textStyleId: title
+        - id: next
+          type: rect
+          x: 740
+          "y": 435
+          width: 150
+          height: 80
+          colorId: button
+          click:
+            payload:
+              actions:
+                nextLine: {}
+        - id: next-label
+          type: text
+          x: 815
+          "y": 475
+          anchorX: 0.5
+          anchorY: 0.5
+          content: NEXT
+          textStyleId: button
+  layouts:
+    dialogue:
+      elements:
+        - id: dialogue-panel
+          type: rect
+          x: 40
+          "y": 110
+          width: 880
+          height: 280
+          colorId: panel
+        - id: dialogue-text
+          type: text
+          x: 65
+          "y": 170
+          width: 825
+          content: ${dialogue.content}
+          textStyleId: body
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    background:
+      hex: "#111827"
+    panel:
+      hex: "#1F4939"
+    button:
+      hex: "#2563EB"
+    text:
+      hex: "#FFFFFF"
+  textStyles:
+    title:
+      fontId: default
+      colorId: text
+      fontSize: 30
+      lineHeight: 1.2
+    body:
+      fontId: default
+      colorId: text
+      fontSize: 27
+      lineHeight: 1.4
+    button:
+      fontId: default
+      colorId: text
+      fontSize: 20
+      lineHeight: 1.2
+story:
+  initialSceneId: scene
+  scenes:
+    scene:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: entry
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogue
+                  content:
+                    - text: Run the invalid immediate route.
+                control:
+                  resourceId: main
+            - id: loop
+              actions:
+                jumpToLine:
+                  lineId: loop
+        safe:
+          lines:
+            - id: safe
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogue
+                  content:
+                    - text: The host reset the engine to a safe section.
+                control:
+                  resourceId: safe
+            - id: recovered
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogue
+                  content:
+                    - text: Canvas input works after routing-loop recovery.

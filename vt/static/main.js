@@ -4,6 +4,11 @@ import createRouteEngine, {
   createIndexedDbPersistence,
 } from "./RouteEngine.js";
 import { createSaveThumbnailAssetId } from "./saveSlotUtils.js";
+import {
+  createExpectedErrorHandler,
+  dispatchEngineActionsEvent,
+  readEngineCheckpoint,
+} from "./engineRobustnessProbe.js";
 
 import createRouteGraphics, {
   createAssetBufferManager,
@@ -456,7 +461,7 @@ const init = async () => {
     },
   });
 
-  const routeGraphicsEventHandler =
+  const handleRouteGraphicsEvent =
     effectsHandler.createRouteGraphicsEventHandler({
       preprocessPayload: async (eventName, payload) => {
         const preprocessDelayMs = payload?._vtPreprocessDelayMs;
@@ -514,6 +519,15 @@ const init = async () => {
       },
     });
 
+  const routeGraphicsEventHandler = isVtCaptureMode()
+    ? createExpectedErrorHandler({
+        getEngine: () => engine,
+        handleEvent: handleRouteGraphicsEvent,
+        observe: (result) => {
+          window.__vtExpectedError = result;
+        },
+      })
+    : handleRouteGraphicsEvent;
   window.__vtHandleRouteGraphicsEvent = routeGraphicsEventHandler;
 
   setBootstrapPhase("initialize Route Graphics");
@@ -565,6 +579,18 @@ const init = async () => {
   window.__vtEngine = engine;
   window.__vtPersistence = persistence;
   window.__vtNamespace = persistence.namespace;
+
+  if (isVtCaptureMode()) {
+    window.addEventListener("vt:checkpoint", () => {
+      window.__vtCheckpoint = readEngineCheckpoint(engine, {
+        timerCount: playbackTickerCallbacks.size,
+        renderState: window.__vtLastRenderState,
+      });
+    });
+    window.addEventListener("vt:engineActions", (event) => {
+      dispatchEngineActionsEvent(engine, event);
+    });
+  }
 
   window.addEventListener("vt:nextLine", () => {
     engine.handleActions({

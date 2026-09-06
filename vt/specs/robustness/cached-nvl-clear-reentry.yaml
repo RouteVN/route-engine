@@ -1,0 +1,308 @@
+---
+title: Cached NVL Clear and Re-entry
+description: Cached NVL pages must clear, roll back, and re-enter without retaining or duplicating rows.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: one
+  - action: assert
+    type: js
+    global: __vtCheckpoint.completed
+    value: true
+  - action: click
+    x: 815
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: two
+  - action: assert
+    type: js
+    global: __vtCheckpoint.completed
+    value: true
+  - action: assert
+    type: js
+    global: __vtCheckpoint.nvlTexts
+    value:
+      - First NVL row.
+      - Second NVL row.
+  - action: screenshot
+  - action: click
+    x: 815
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: clear
+  - action: assert
+    type: js
+    global: __vtCheckpoint.completed
+    value: true
+  - action: assert
+    type: js
+    global: __vtCheckpoint.nvlTexts
+    value:
+      - Fresh page only.
+  - action: screenshot
+  - action: click
+    x: 115
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: two
+  - action: assert
+    type: js
+    global: __vtCheckpoint.completed
+    value: true
+  - action: assert
+    type: js
+    global: __vtCheckpoint.nvlTexts
+    value:
+      - First NVL row.
+      - Second NVL row.
+  - action: click
+    x: 295
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: one
+  - action: assert
+    type: js
+    global: __vtCheckpoint.completed
+    value: true
+  - action: click
+    x: 815
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: two
+  - action: assert
+    type: js
+    global: __vtCheckpoint.completed
+    value: true
+  - action: assert
+    type: js
+    global: __vtCheckpoint.nvlTexts
+    value:
+      - First NVL row.
+      - Second NVL row.
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+resources:
+  controls:
+    main:
+      elements:
+        - id: background
+          type: rect
+          width: 960
+          height: 540
+          colorId: background
+        - id: title
+          type: text
+          x: 45
+          "y": 40
+          content: NVL pages after clear, rollback and re-entry
+          textStyleId: title
+        - id: back
+          type: rect
+          x: 40
+          "y": 435
+          width: 150
+          height: 80
+          colorId: button
+          click:
+            payload:
+              actions:
+                rollbackByOffset:
+                  offset: -1
+        - id: back-label
+          type: text
+          x: 115
+          "y": 475
+          anchorX: 0.5
+          anchorY: 0.5
+          content: BACK
+          textStyleId: button
+        - id: restart
+          type: rect
+          x: 220
+          "y": 435
+          width: 150
+          height: 80
+          colorId: button
+          click:
+            payload:
+              actions:
+                sectionTransition:
+                  sectionId: main
+        - id: restart-label
+          type: text
+          x: 295
+          "y": 475
+          anchorX: 0.5
+          anchorY: 0.5
+          content: RE-ENTER
+          textStyleId: button
+        - id: next
+          type: rect
+          x: 740
+          "y": 435
+          width: 150
+          height: 80
+          colorId: button
+          click:
+            payload:
+              actions:
+                nextLine: {}
+        - id: next-label
+          type: text
+          x: 815
+          "y": 475
+          anchorX: 0.5
+          anchorY: 0.5
+          content: NEXT
+          textStyleId: button
+  layouts:
+    dialogue:
+      elements:
+        - id: dialogue-panel
+          type: rect
+          x: 40
+          "y": 110
+          width: 880
+          height: 280
+          colorId: panel
+        - id: dialogue-text
+          type: text
+          x: 65
+          "y": 170
+          width: 825
+          content: ${dialogue.content}
+          textStyleId: body
+    nvl:
+      elements:
+        - id: nvl-panel
+          type: rect
+          x: 40
+          "y": 110
+          width: 880
+          height: 280
+          colorId: panel
+        - id: nvl-rows
+          type: container
+          x: 60
+          "y": 145
+          direction: vertical
+          gapY: 24
+          children:
+            - $for row, i in dialogue.lines:
+                - id: nvl-row-${i}
+                  type: text
+                  width: 825
+                  content: ${row.content}
+                  textStyleId: body
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    background:
+      hex: "#111827"
+    panel:
+      hex: "#1F4939"
+    button:
+      hex: "#2563EB"
+    text:
+      hex: "#FFFFFF"
+  textStyles:
+    title:
+      fontId: default
+      colorId: text
+      fontSize: 30
+      lineHeight: 1.2
+    body:
+      fontId: default
+      colorId: text
+      fontSize: 27
+      lineHeight: 1.4
+    button:
+      fontId: default
+      colorId: text
+      fontSize: 20
+      lineHeight: 1.2
+story:
+  initialSceneId: scene
+  scenes:
+    scene:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: one
+              actions:
+                dialogue:
+                  mode: nvl
+                  ui:
+                    resourceId: nvl
+                  content:
+                    - text: First NVL row.
+                control:
+                  resourceId: main
+            - id: two
+              actions:
+                dialogue:
+                  content:
+                    - text: Second NVL row.
+            - id: clear
+              actions:
+                dialogue:
+                  clearPage: true
+                  content:
+                    - text: Fresh page only.

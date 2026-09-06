@@ -1,0 +1,552 @@
+---
+title: Cached Dialogue Save and Rollback
+description: >-
+  Warm both sides of a presentation checkpoint; append text, save, advance, roll back, and load
+  without stale or duplicated text.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: line-0
+  - action: assert
+    type: js
+    global: __vtCheckpoint.completed
+    value: true
+  - action: click
+    x: 115
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: line-61
+  - action: assert
+    type: js
+    global: __vtCheckpoint.completed
+    value: true
+  - action: click
+    x: 815
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: line-62
+  - action: assert
+    type: js
+    global: __vtCheckpoint.completed
+    value: true
+  - action: click
+    x: 815
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: line-63
+  - action: assert
+    type: js
+    global: __vtCheckpoint.completed
+    value: true
+  - action: click
+    x: 815
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: line-64
+  - action: assert
+    type: js
+    global: __vtCheckpoint.completed
+    value: true
+  - action: assert
+    type: js
+    global: __vtCheckpoint.dialogueText
+    value: Checkpoint prefix + appended tail.
+  - action: screenshot
+  - action: click
+    x: 115
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: click
+    x: 815
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: line-65
+  - action: assert
+    type: js
+    global: __vtCheckpoint.completed
+    value: true
+  - action: click
+    x: 295
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: line-64
+  - action: assert
+    type: js
+    global: __vtCheckpoint.completed
+    value: true
+  - action: assert
+    type: js
+    global: __vtCheckpoint.dialogueText
+    value: Checkpoint prefix + appended tail.
+  - action: screenshot
+  - action: click
+    x: 815
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: line-65
+  - action: assert
+    type: js
+    global: __vtCheckpoint.completed
+    value: true
+  - action: click
+    x: 475
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: line-64
+  - action: assert
+    type: js
+    global: __vtCheckpoint.completed
+    value: true
+  - action: assert
+    type: js
+    global: __vtCheckpoint.dialogueText
+    value: Checkpoint prefix + appended tail.
+  - action: assert
+    type: js
+    global: __vtCheckpoint.historyLineIds
+    value:
+      - line-0
+      - line-61
+      - line-62
+      - line-63
+      - line-64
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+resources:
+  controls:
+    main:
+      elements:
+        - id: background
+          type: rect
+          width: 960
+          height: 540
+          colorId: background
+        - id: title
+          type: text
+          x: 45
+          "y": 40
+          content: Cached dialogue survives save and rollback
+          textStyleId: title
+        - id: save
+          type: rect
+          x: 40
+          "y": 435
+          width: 150
+          height: 80
+          colorId: button
+          click:
+            payload:
+              actions:
+                saveSlot:
+                  slotId: checkpoint
+        - id: save-label
+          type: text
+          x: 115
+          "y": 475
+          anchorX: 0.5
+          anchorY: 0.5
+          content: SAVE
+          textStyleId: button
+        - id: back
+          type: rect
+          x: 220
+          "y": 435
+          width: 150
+          height: 80
+          colorId: button
+          click:
+            payload:
+              actions:
+                rollbackByOffset:
+                  offset: -1
+        - id: back-label
+          type: text
+          x: 295
+          "y": 475
+          anchorX: 0.5
+          anchorY: 0.5
+          content: BACK
+          textStyleId: button
+        - id: load
+          type: rect
+          x: 400
+          "y": 435
+          width: 150
+          height: 80
+          colorId: button
+          click:
+            payload:
+              actions:
+                loadSlot:
+                  slotId: checkpoint
+        - id: load-label
+          type: text
+          x: 475
+          "y": 475
+          anchorX: 0.5
+          anchorY: 0.5
+          content: LOAD
+          textStyleId: button
+        - id: next
+          type: rect
+          x: 740
+          "y": 435
+          width: 150
+          height: 80
+          colorId: button
+          click:
+            payload:
+              actions:
+                nextLine: {}
+        - id: next-label
+          type: text
+          x: 815
+          "y": 475
+          anchorX: 0.5
+          anchorY: 0.5
+          content: NEXT
+          textStyleId: button
+    seek:
+      elements:
+        - id: background
+          type: rect
+          width: 960
+          height: 540
+          colorId: background
+        - id: title
+          type: text
+          x: 45
+          "y": 40
+          content: Jump near a presentation checkpoint
+          textStyleId: title
+        - id: seek
+          type: rect
+          x: 40
+          "y": 435
+          width: 150
+          height: 80
+          colorId: button
+          click:
+            payload:
+              actions:
+                jumpToLine:
+                  lineId: line-61
+        - id: seek-label
+          type: text
+          x: 115
+          "y": 475
+          anchorX: 0.5
+          anchorY: 0.5
+          content: JUMP TO 61
+          textStyleId: button
+  layouts:
+    dialogue:
+      elements:
+        - id: dialogue-panel
+          type: rect
+          x: 40
+          "y": 110
+          width: 880
+          height: 280
+          colorId: panel
+        - id: dialogue-text
+          type: text
+          x: 65
+          "y": 170
+          width: 825
+          content: ${dialogue.content}
+          textStyleId: body
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    background:
+      hex: "#111827"
+    panel:
+      hex: "#1F4939"
+    button:
+      hex: "#2563EB"
+    text:
+      hex: "#FFFFFF"
+  textStyles:
+    title:
+      fontId: default
+      colorId: text
+      fontSize: 30
+      lineHeight: 1.2
+    body:
+      fontId: default
+      colorId: text
+      fontSize: 27
+      lineHeight: 1.4
+    button:
+      fontId: default
+      colorId: text
+      fontSize: 20
+      lineHeight: 1.2
+story:
+  initialSceneId: scene
+  scenes:
+    scene:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: line-0
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogue
+                  content:
+                    - text: Jump near a presentation checkpoint.
+                control:
+                  resourceId: seek
+            - id: line-1
+              actions: {}
+            - id: line-2
+              actions: {}
+            - id: line-3
+              actions: {}
+            - id: line-4
+              actions: {}
+            - id: line-5
+              actions: {}
+            - id: line-6
+              actions: {}
+            - id: line-7
+              actions: {}
+            - id: line-8
+              actions: {}
+            - id: line-9
+              actions: {}
+            - id: line-10
+              actions: {}
+            - id: line-11
+              actions: {}
+            - id: line-12
+              actions: {}
+            - id: line-13
+              actions: {}
+            - id: line-14
+              actions: {}
+            - id: line-15
+              actions: {}
+            - id: line-16
+              actions: {}
+            - id: line-17
+              actions: {}
+            - id: line-18
+              actions: {}
+            - id: line-19
+              actions: {}
+            - id: line-20
+              actions: {}
+            - id: line-21
+              actions: {}
+            - id: line-22
+              actions: {}
+            - id: line-23
+              actions: {}
+            - id: line-24
+              actions: {}
+            - id: line-25
+              actions: {}
+            - id: line-26
+              actions: {}
+            - id: line-27
+              actions: {}
+            - id: line-28
+              actions: {}
+            - id: line-29
+              actions: {}
+            - id: line-30
+              actions: {}
+            - id: line-31
+              actions: {}
+            - id: line-32
+              actions: {}
+            - id: line-33
+              actions: {}
+            - id: line-34
+              actions: {}
+            - id: line-35
+              actions: {}
+            - id: line-36
+              actions: {}
+            - id: line-37
+              actions: {}
+            - id: line-38
+              actions: {}
+            - id: line-39
+              actions: {}
+            - id: line-40
+              actions: {}
+            - id: line-41
+              actions: {}
+            - id: line-42
+              actions: {}
+            - id: line-43
+              actions: {}
+            - id: line-44
+              actions: {}
+            - id: line-45
+              actions: {}
+            - id: line-46
+              actions: {}
+            - id: line-47
+              actions: {}
+            - id: line-48
+              actions: {}
+            - id: line-49
+              actions: {}
+            - id: line-50
+              actions: {}
+            - id: line-51
+              actions: {}
+            - id: line-52
+              actions: {}
+            - id: line-53
+              actions: {}
+            - id: line-54
+              actions: {}
+            - id: line-55
+              actions: {}
+            - id: line-56
+              actions: {}
+            - id: line-57
+              actions: {}
+            - id: line-58
+              actions: {}
+            - id: line-59
+              actions: {}
+            - id: line-60
+              actions: {}
+            - id: line-61
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogue
+                  content:
+                    - text: Before the checkpoint.
+                control:
+                  resourceId: main
+            - id: line-62
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogue
+                  content:
+                    - text: First normal advance.
+            - id: line-63
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogue
+                  content:
+                    - text: Checkpoint prefix
+            - id: line-64
+              actions:
+                dialogue:
+                  append: true
+                  content:
+                    - text: " + appended tail."
+            - id: line-65
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogue
+                  content:
+                    - text: Later line; the saved append must restore exactly once.
+            - id: line-66
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogue
+                  content:
+                    - text: "Sentinel: should not be reached."

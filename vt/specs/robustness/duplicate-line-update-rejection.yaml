@@ -1,0 +1,312 @@
+---
+title: Duplicate Line Update Rejection
+description: >-
+  An invalid project replacement must reject without changing the live game; the next real canvas
+  click must still advance.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: entry
+  - action: assert
+    type: js
+    global: __vtCheckpoint.completed
+    value: true
+  - action: click
+    x: 115
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: assert
+    type: js
+    global: __vtExpectedError.matched
+    value: true
+  - action: assert
+    type: js
+    global: __vtExpectedError.statePreserved
+    value: true
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: entry
+  - action: assert
+    type: js
+    global: __vtCheckpoint.completed
+    value: true
+  - action: click
+    x: 815
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: next
+  - action: assert
+    type: js
+    global: __vtCheckpoint.completed
+    value: true
+  - action: assert
+    type: js
+    global: __vtCheckpoint.dialogueText
+    value: Still playable after the rejected update.
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+resources:
+  controls:
+    main:
+      elements:
+        - id: background
+          type: rect
+          width: 960
+          height: 540
+          colorId: background
+        - id: title
+          type: text
+          x: 45
+          "y": 40
+          content: Rejected project update preserves input
+          textStyleId: title
+        - id: invalid
+          type: rect
+          x: 40
+          "y": 435
+          width: 150
+          height: 80
+          colorId: button
+          click:
+            payload:
+              _vtExpectedError: Duplicate lineId "entry"
+              actions:
+                updateProjectData:
+                  projectData:
+                    screen:
+                      width: 960
+                      height: 540
+                    resources:
+                      controls:
+                        main:
+                          elements:
+                            - id: background
+                              type: rect
+                              width: 960
+                              height: 540
+                              colorId: background
+                            - id: title
+                              type: text
+                              x: 45
+                              "y": 40
+                              content: Rejected project update preserves input
+                              textStyleId: title
+                            - id: next
+                              type: rect
+                              x: 740
+                              "y": 435
+                              width: 150
+                              height: 80
+                              colorId: button
+                              click:
+                                payload:
+                                  actions:
+                                    nextLine: {}
+                            - id: next-label
+                              type: text
+                              x: 815
+                              "y": 475
+                              anchorX: 0.5
+                              anchorY: 0.5
+                              content: NEXT
+                              textStyleId: button
+                      layouts:
+                        dialogue:
+                          elements:
+                            - id: dialogue-panel
+                              type: rect
+                              x: 40
+                              "y": 110
+                              width: 880
+                              height: 280
+                              colorId: panel
+                            - id: dialogue-text
+                              type: text
+                              x: 65
+                              "y": 170
+                              width: 825
+                              content: ${dialogue.content}
+                              textStyleId: body
+                      fonts:
+                        default:
+                          fileId: Arial
+                      colors:
+                        background:
+                          hex: "#111827"
+                        panel:
+                          hex: "#1F4939"
+                        button:
+                          hex: "#2563EB"
+                        text:
+                          hex: "#FFFFFF"
+                      textStyles:
+                        title:
+                          fontId: default
+                          colorId: text
+                          fontSize: 30
+                          lineHeight: 1.2
+                        body:
+                          fontId: default
+                          colorId: text
+                          fontSize: 27
+                          lineHeight: 1.4
+                        button:
+                          fontId: default
+                          colorId: text
+                          fontSize: 20
+                          lineHeight: 1.2
+                    story:
+                      initialSceneId: scene
+                      scenes:
+                        scene:
+                          initialSectionId: main
+                          sections:
+                            main:
+                              lines:
+                                - id: entry
+                                  actions:
+                                    dialogue:
+                                      mode: adv
+                                      ui:
+                                        resourceId: dialogue
+                                      content:
+                                        - text: Original project is still active.
+                                    control:
+                                      resourceId: main
+                                - id: entry
+                                  actions:
+                                    dialogue:
+                                      mode: adv
+                                      ui:
+                                        resourceId: dialogue
+                                      content:
+                                        - text: Still playable after the rejected update.
+        - id: invalid-label
+          type: text
+          x: 115
+          "y": 475
+          anchorX: 0.5
+          anchorY: 0.5
+          content: INVALID UPDATE
+          textStyleId: button
+        - id: next
+          type: rect
+          x: 740
+          "y": 435
+          width: 150
+          height: 80
+          colorId: button
+          click:
+            payload:
+              actions:
+                nextLine: {}
+        - id: next-label
+          type: text
+          x: 815
+          "y": 475
+          anchorX: 0.5
+          anchorY: 0.5
+          content: NEXT
+          textStyleId: button
+  layouts:
+    dialogue:
+      elements:
+        - id: dialogue-panel
+          type: rect
+          x: 40
+          "y": 110
+          width: 880
+          height: 280
+          colorId: panel
+        - id: dialogue-text
+          type: text
+          x: 65
+          "y": 170
+          width: 825
+          content: ${dialogue.content}
+          textStyleId: body
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    background:
+      hex: "#111827"
+    panel:
+      hex: "#1F4939"
+    button:
+      hex: "#2563EB"
+    text:
+      hex: "#FFFFFF"
+  textStyles:
+    title:
+      fontId: default
+      colorId: text
+      fontSize: 30
+      lineHeight: 1.2
+    body:
+      fontId: default
+      colorId: text
+      fontSize: 27
+      lineHeight: 1.4
+    button:
+      fontId: default
+      colorId: text
+      fontSize: 20
+      lineHeight: 1.2
+story:
+  initialSceneId: scene
+  scenes:
+    scene:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: entry
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogue
+                  content:
+                    - text: Original project is still active.
+                control:
+                  resourceId: main
+            - id: next
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogue
+                  content:
+                    - text: Still playable after the rejected update.

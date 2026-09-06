@@ -1356,7 +1356,7 @@ export const cleanAll = (state, presentation) => {
  */
 export const constructPresentationState = (
   presentations,
-  { resources } = {},
+  { resources, initialState } = {},
 ) => {
   const actions = [
     cleanAll,
@@ -1376,7 +1376,7 @@ export const constructPresentationState = (
   ];
 
   const executeActions = createSequentialActionsExecutor(
-    createInitialState,
+    () => initialState ?? createInitialState(),
     actions,
   );
 
