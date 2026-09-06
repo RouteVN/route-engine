@@ -1,0 +1,304 @@
+---
+title: Cached Backlog Localization
+description: >-
+  A warmed dialogue-history cache must follow translated line content and speaker resources, then
+  restore the canonical text.
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: one
+  - action: assert
+    type: js
+    global: __vtCheckpoint.completed
+    value: true
+  - action: click
+    x: 815
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: two
+  - action: assert
+    type: js
+    global: __vtCheckpoint.completed
+    value: true
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.history-row-0
+    value: "Source speaker: Source first."
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.history-row-1
+    value: "Source speaker: Source second."
+  - action: screenshot
+  - action: click
+    x: 115
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: two
+  - action: assert
+    type: js
+    global: __vtCheckpoint.completed
+    value: true
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.history-row-0
+    value: "Translated speaker: Translated first."
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.history-row-1
+    value: "Translated speaker: Translated second."
+  - action: screenshot
+  - action: click
+    x: 815
+    "y": 475
+  - action: wait
+    ms: 180
+  - action: customEvent
+    name: vt:checkpoint
+  - action: assert
+    type: js
+    global: __vtCheckpoint.pointer
+    value:
+      sectionId: main
+      lineId: two
+  - action: assert
+    type: js
+    global: __vtCheckpoint.completed
+    value: true
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.history-row-0
+    value: "Source speaker: Source first."
+  - action: assert
+    type: js
+    global: __vtCheckpoint.textById.history-row-1
+    value: "Source speaker: Source second."
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+resources:
+  controls:
+    main:
+      elements:
+        - id: background
+          type: rect
+          width: 960
+          height: 540
+          colorId: background
+        - id: title
+          type: text
+          x: 45
+          "y": 40
+          content: Localized backlog after warming the cache
+          textStyleId: title
+        - id: next
+          type: rect
+          x: 740
+          "y": 435
+          width: 150
+          height: 80
+          colorId: button
+          click:
+            payload:
+              actions:
+                nextLine: {}
+        - id: next-label
+          type: text
+          x: 815
+          "y": 475
+          anchorX: 0.5
+          anchorY: 0.5
+          content: NEXT
+          textStyleId: button
+  layouts:
+    dialogue:
+      elements:
+        - id: dialogue-panel
+          type: rect
+          x: 40
+          "y": 110
+          width: 880
+          height: 280
+          colorId: panel
+        - id: dialogue-text
+          type: text
+          x: 65
+          "y": 170
+          width: 825
+          content: ${dialogue.content}
+          textStyleId: body
+    history:
+      elements:
+        - id: history-panel
+          type: rect
+          width: 960
+          height: 540
+          colorId: background
+        - id: history-title
+          type: text
+          x: 45
+          "y": 40
+          content: Cached backlog follows the active language
+          textStyleId: title
+        - id: history-rows
+          type: container
+          x: 60
+          "y": 145
+          direction: vertical
+          gapY: 24
+          children:
+            - $for row, i in historyDialogue:
+                - id: history-row-${i}
+                  type: text
+                  content: "${row.characterName}: ${row.text}"
+                  textStyleId: body
+        - id: translate
+          type: rect
+          x: 40
+          "y": 435
+          width: 150
+          height: 80
+          colorId: button
+          click:
+            payload:
+              actions:
+                updateLocalizationPackage:
+                  l10nId: translation
+        - id: translate-label
+          type: text
+          x: 115
+          "y": 475
+          anchorX: 0.5
+          anchorY: 0.5
+          content: TRANSLATE
+          textStyleId: button
+        - id: source
+          type: rect
+          x: 740
+          "y": 435
+          width: 150
+          height: 80
+          colorId: button
+          click:
+            payload:
+              actions:
+                updateLocalizationPackage:
+                  l10nId: null
+        - id: source-label
+          type: text
+          x: 815
+          "y": 475
+          anchorX: 0.5
+          anchorY: 0.5
+          content: SOURCE
+          textStyleId: button
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    background:
+      hex: "#111827"
+    panel:
+      hex: "#1F4939"
+    button:
+      hex: "#2563EB"
+    text:
+      hex: "#FFFFFF"
+  textStyles:
+    title:
+      fontId: default
+      colorId: text
+      fontSize: 30
+      lineHeight: 1.2
+    body:
+      fontId: default
+      colorId: text
+      fontSize: 27
+      lineHeight: 1.4
+    button:
+      fontId: default
+      colorId: text
+      fontSize: 20
+      lineHeight: 1.2
+  characters:
+    hero:
+      name: Source speaker
+story:
+  initialSceneId: scene
+  scenes:
+    scene:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: one
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogue
+                  content:
+                    - text: Source first.
+                  characterId: hero
+                control:
+                  resourceId: main
+            - id: two
+              actions:
+                dialogue:
+                  mode: adv
+                  ui:
+                    resourceId: dialogue
+                  content:
+                    - text: Source second.
+                  characterId: hero
+                pushOverlay:
+                  resourceId: history
+l10nData:
+  packages:
+    translation:
+      language: Test translation
+      files: []
+      patches:
+        - type: resource.character
+          resourceId: hero
+          payload:
+            name: Translated speaker
+        - type: line.dialogue
+          lineId: one
+          payload:
+            content:
+              - text: Translated first.
+        - type: line.dialogue
+          lineId: two
+          payload:
+            content:
+              - text: Translated second.

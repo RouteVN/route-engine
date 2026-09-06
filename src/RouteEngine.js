@@ -1,7 +1,4 @@
-import {
-  createSystemStore,
-  shouldSettleCurrentLinePresentation,
-} from "./stores/system.store.js";
+import { createSystemStore } from "./stores/system.store.js";
 import { normalizeNamespace } from "./indexedDbPersistence.js";
 import {
   evaluateRouteCondition,
@@ -80,6 +77,7 @@ const SHOW_IMAGE_GALLERY_VARIANT_ACTION_TYPE = "showImageGalleryVariant";
 const PLAY_MUSIC_ROOM_TRACK_ACTION_TYPE = "playMusicRoomTrack";
 const START_SCENE_REPLAY_ACTION_TYPE = "startSceneReplay";
 const BGM_RENDER_CHANNEL_ID = "channel:bgm";
+const MAX_SYNCHRONOUS_EFFECT_BATCHES = 1000;
 const PLAYBACK_DIRTY_ACTION_TYPES = new Set([
   "startAutoMode",
   "stopAutoMode",
@@ -362,10 +360,22 @@ export default function createRouteEngine(options) {
     }
 
     _isProcessingPendingEffects = true;
+    let effectBatchCount = 0;
     try {
       while (_systemStore.selectPendingEffects().length > 0) {
         const enteredLinePointer =
           _systemStore.selectCurrentPointer()?.pointer ?? null;
+        if (effectBatchCount >= MAX_SYNCHRONOUS_EFFECT_BATCHES) {
+          const error = new Error(
+            `RouteEngine exceeded ${MAX_SYNCHRONOUS_EFFECT_BATCHES} synchronous effect batches at section "${enteredLinePointer?.sectionId}", line "${enteredLinePointer?.lineId}". Check for an immediate routing cycle.`,
+          );
+          // Keep the undelivered work, as for other post-commit failures, but
+          // suspend playback until the host corrects or resets the story.
+          setAutomaticAttemptErrorClassification(error, "postCommitUnsettled");
+          invalidatePlaybackSchedule(error);
+          throw error;
+        }
+        effectBatchCount += 1;
         const pendingSnapshot = [..._systemStore.selectPendingEffects()];
         const snapshot = pendingSnapshot.map((effect) => {
           if (effect.name !== "handleLineActions") return effect;
@@ -419,45 +429,20 @@ export default function createRouteEngine(options) {
     }
   };
 
-  const captureCurrentSkipTransitionsAndAnimations = () => {
-    const systemState = _systemStore.selectSystemState();
-    return (
-      _systemStore.selectRuntime()?.skipTransitionsAndAnimations === true ||
-      shouldSettleCurrentLinePresentation(systemState)
-    );
-  };
-
   const captureCurrentBgmChannel = () => {
-    const systemState = _systemStore.selectSystemState();
-    if (!systemState.projectData) return null;
     return createBgmChannelNode({
       presentationState: _systemStore.selectPresentationState(),
       previousBgmRender: captureCommittedBgmRender(),
-      resources: systemState.projectData?.resources,
-      runtime: _systemStore.selectRuntime(),
-      musicRoomPlayer: systemState.global?.musicRoomPlayer,
-      skipTransitionsAndAnimations:
-        captureCurrentSkipTransitionsAndAnimations(),
+      resources: _systemStore.selectBgmResources(),
+      ..._systemStore.selectBgmPlaybackContext(),
     });
   };
 
   const captureCurrentBgmPresentation = () => {
-    if (!_systemStore.selectSystemState().projectData) return null;
     return structuredClone(_systemStore.selectPresentationState()?.bgm ?? null);
   };
 
-  const captureCurrentBgmResources = () => ({
-    audioEffects: structuredClone(
-      _systemStore.selectSystemState().projectData?.resources?.audioEffects ??
-        {},
-    ),
-    sounds: captureCurrentSoundResources(),
-  });
-
-  const captureCurrentSoundResources = () =>
-    structuredClone(
-      _systemStore.selectSystemState().projectData?.resources?.sounds ?? {},
-    );
+  const captureCurrentBgmResources = () => _systemStore.selectBgmResources();
 
   const captureCommittedBgmRender = () => ({
     channel: _committedBgmChannel,
@@ -485,11 +470,7 @@ export default function createRouteEngine(options) {
       : captureCurrentBgmResources();
 
   const getSceneIdForSection = (sectionId) => {
-    const scenes =
-      _systemStore.selectSystemState().projectData?.story?.scenes ?? {};
-    return Object.entries(scenes).find(
-      ([, scene]) => scene?.sections?.[sectionId],
-    )?.[0];
+    return _systemStore.selectSceneIdForSection({ sectionId });
   };
 
   const finalizePendingAudioEffectOccurrences = () => {

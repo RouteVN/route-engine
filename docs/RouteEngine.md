@@ -73,6 +73,10 @@ different visual novels on the same domain do not share persistence. The
 returned adapter also exposes `clear()` to delete persisted data for that
 namespace.
 
+Persistence assumes one active engine writer per namespace. Saves replace the
+stored slot map with that engine's map; use distinct namespace keys for
+independent engines.
+
 Initialization may also receive complete imported L10n packages through
 `initialState.l10nData`. The canonical project is the default; an existing
 device preference under `initialState.global.runtime.localizationPackageId`
@@ -123,6 +127,19 @@ timers, render-completion ownership, and pending asynchronous renderer input
 from the previous generation are invalidated before the replacement begins.
 If validation of the replacement state fails, the existing generation remains
 active.
+
+Section IDs must be unique across scenes, and line IDs must be unique within
+each section. `init(...)` and `updateProjectData` reject duplicates with the
+scene, section, and conflicting line indexes before replacing active state.
+Different sections may reuse a line ID.
+
+An initialization or action dispatch may process at most 1,000 synchronous
+effect batches before yielding back to the host. Exceeding that limit throws
+an error naming the current section and line and invalidates playback timers.
+This bounds immediate routing cycles, including conditional cycles. Each
+completed dispatch gets a fresh budget, so loops that pause for player input
+continue to work. After a limit error, the host can reinitialize, dispose, or
+reset to a safe section with `resetStoryAtSection`.
 
 ### `dispose()`
 

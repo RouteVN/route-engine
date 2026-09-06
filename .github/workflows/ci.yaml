@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   test:
@@ -48,10 +49,18 @@ jobs:
             item: robustness/alpha-opacity-compat.yaml
           - id: async-stale-click
             item: robustness/async-stale-click.yaml
+          - id: cached-backlog-localization
+            item: robustness/cached-backlog-localization.yaml
+          - id: cached-dialogue-save-rollback
+            item: robustness/cached-dialogue-save-rollback.yaml
+          - id: cached-nvl-clear-reentry
+            item: robustness/cached-nvl-clear-reentry.yaml
           - id: context-runtime-rollback
             item: robustness/context-runtime-rollback.yaml
           - id: effect-owned-line-actions
             item: robustness/effect-owned-line-actions.yaml
+          - id: duplicate-line-update-rejection
+            item: robustness/duplicate-line-update-rejection.yaml
           - id: form-mixed-action-guard
             item: robustness/form-mixed-action-guard.yaml
           - id: l10n-roundtrip
@@ -70,6 +79,8 @@ jobs:
             item: robustness/playback-skip-authored-co-due.yaml
           - id: save-load-timers
             item: robustness/save-load-skip-timer-cleanup.yaml
+          - id: routing-cycle-recovery
+            item: robustness/routing-cycle-recovery.yaml
           - id: settings-batch
             item: robustness/settings-runtime-batch.yaml
           - id: template-click
