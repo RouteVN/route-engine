@@ -1,0 +1,153 @@
+---
+title: Structural Choice Action Guard
+description: A false nested template guard must omit nextLine until enabled.
+specs:
+  - clicking the locked choice leaves the first line active
+  - enabling the variable rerenders the same authored choice
+  - clicking the enabled choice advances to the green success page
+skipInitialScreenshot: true
+viewport:
+  id: capture
+  width: 960
+  height: 540
+steps:
+  - action: wait
+    ms: 150
+  - action: screenshot
+  - action: click
+    x: 270
+    y: 320
+  - action: wait
+    ms: 150
+  - action: screenshot
+  - action: click
+    x: 690
+    y: 320
+  - action: wait
+    ms: 150
+  - action: screenshot
+  - action: click
+    x: 270
+    y: 320
+  - action: wait
+    ms: 150
+  - action: screenshot
+---
+screen:
+  width: 960
+  height: 540
+resources:
+  variables:
+    enabled:
+      type: boolean
+      scope: context
+      default: false
+  fonts:
+    default:
+      fileId: Arial
+  colors:
+    background:
+      hex: "#111827"
+    locked:
+      hex: "#92400E"
+    ready:
+      hex: "#166534"
+    enable:
+      hex: "#1D4ED8"
+    text:
+      hex: "#FFFFFF"
+  textStyles:
+    label:
+      fontId: default
+      colorId: text
+      fontSize: 30
+  layouts:
+    choices:
+      elements:
+        - id: background
+          type: rect
+          width: 960
+          height: 540
+          colorId: background
+        - id: state-label
+          type: text
+          x: 80
+          y: 80
+          content:
+            $if variables.enabled: "READY: the choice can now advance"
+            $else: "LOCKED: clicking Continue must do nothing"
+          textStyleId: label
+        - id: continue
+          type: rect
+          x: 80
+          y: 250
+          width: 380
+          height: 140
+          colorId:
+            $if variables.enabled: ready
+            $else: locked
+          click:
+            payload:
+              actions:
+                nextLine:
+                  $when: variables.enabled
+        - id: continue-label
+          type: text
+          x: 175
+          y: 300
+          content: CONTINUE
+          textStyleId: label
+        - id: enable
+          type: rect
+          x: 500
+          y: 250
+          width: 380
+          height: 140
+          colorId: enable
+          click:
+            payload:
+              actions:
+                updateVariable:
+                  id: enableChoice
+                  operations:
+                    - variableId: enabled
+                      op: set
+                      value: true
+        - id: enable-label
+          type: text
+          x: 625
+          y: 300
+          content: ENABLE
+          textStyleId: label
+    success:
+      elements:
+        - id: success
+          type: rect
+          width: 960
+          height: 540
+          colorId: ready
+        - id: success-label
+          type: text
+          x: 100
+          y: 230
+          content: "SUCCESS: only the enabled choice advanced"
+          textStyleId: label
+story:
+  initialSceneId: main
+  scenes:
+    main:
+      initialSectionId: main
+      sections:
+        main:
+          lines:
+            - id: guarded
+              actions:
+                choice:
+                  resourceId: choices
+                  items:
+                    - id: continue
+                      text: Continue
+            - id: success
+              actions:
+                layout:
+                  resourceId: success
