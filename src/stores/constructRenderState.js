@@ -1041,6 +1041,19 @@ const cloneLayoutValue = (value) => {
   );
 };
 
+// Layouts may contain arbitrary JSON metadata/action keys. Assignment to
+// target["__proto__"] would invoke Object.prototype's setter, silently losing
+// data and making later resolution passes observe inherited element fields.
+// Define an ordinary own property, retaining plain-object output and key order.
+const setLayoutOwnProperty = (target, key, value) => {
+  Object.defineProperty(target, key, {
+    value,
+    enumerable: true,
+    configurable: true,
+    writable: true,
+  });
+};
+
 export const resolveTextStyleIds = (node, resources = {}, path = "root") => {
   if (Array.isArray(node)) {
     return node.map((item, index) =>
@@ -1070,10 +1083,10 @@ export const resolveTextStyleIds = (node, resources = {}, path = "root") => {
       continue;
     }
 
-    resolvedNode[key] = resolveTextStyleIds(
-      value,
-      resources,
-      getLayoutResourcePath(path, key),
+    setLayoutOwnProperty(
+      resolvedNode,
+      key,
+      resolveTextStyleIds(value, resources, getLayoutResourcePath(path, key)),
     );
   }
 
@@ -1155,10 +1168,10 @@ const resolveRectInteractionColorIds = (
       continue;
     }
 
-    resolvedNode[key] = resolveColorIds(
-      value,
-      resources,
-      getLayoutResourcePath(path, key),
+    setLayoutOwnProperty(
+      resolvedNode,
+      key,
+      resolveColorIds(value, resources, getLayoutResourcePath(path, key)),
     );
   }
 
@@ -1217,10 +1230,10 @@ export const resolveColorIds = (node, resources = {}, path = "root") => {
       continue;
     }
 
-    resolvedNode[key] = resolveColorIds(
-      value,
-      resources,
-      getLayoutResourcePath(path, key),
+    setLayoutOwnProperty(
+      resolvedNode,
+      key,
+      resolveColorIds(value, resources, getLayoutResourcePath(path, key)),
     );
   }
 
@@ -1348,10 +1361,10 @@ export const resolveImageIds = (node, resources = {}, path = "root") => {
       continue;
     }
 
-    resolvedNode[key] = resolveImageIds(
-      value,
-      resources,
-      getLayoutResourcePath(path, key),
+    setLayoutOwnProperty(
+      resolvedNode,
+      key,
+      resolveImageIds(value, resources, getLayoutResourcePath(path, key)),
     );
   }
 
